@@ -1,0 +1,194 @@
+# LD3 — LD2's wage on in every harness
+
+Built from main `8a67da4d` (QB1, 0.9.106), on 2026-11-14. The brief is
+`docs/queue/LD2-notes.md`, section 6. Every check names the PC's
+`earth-2.bin` and `world-1.bin`. No entry in the starting known-reds registry
+names LD2 or LD3. DeathRecordCheck's orphan-section law already belongs to
+OX1, and stays distinct from the fixture work here.
+
+## What changed
+
+The seven remaining harness assignments to `WantedPosts.carryKeptOut` are
+removed. `Game.repriceLabour()` always takes the supply against existing
+posts, and the switch is removed from WantedPosts. ScaleCheck already uses
+LD2's wage following ST3, with QB1's month-225 fixture.
+
+CM2's replay-copy section and its files are untouched.
+
+## Checks and fixture decisions
+
+The initial focused run enables the wage before further fixture changes.
+`target/ld3-first-checks/` retains its logs. All eight harnesses finish in
+291 seconds, exit 3, with only the existing OX1 assertion red. None of the
+seven passing harnesses reports a missed observation.
+
+| Harness | Reached condition with LD2's wage | Fixture history |
+|---|---|---|
+| HoldersCheck 6 | Household, bank and central-bank paper round-trip, and the next settle and coupons agree | GW1 reapplies the Heavy Industry hold to the twin, `4adf2e12` |
+| DeskCheck 8 | Gain line worth 512.3 against 517.7 carried, loss line worth 522.8 against 517.7 carried. The closing gains are +5.4 and -5.1 | BA1 searches the sale dial and the final cut between the two coupons, and FloatLinkCheck holds its fixture's sectors |
+| AutoBuildCheck 4 | Both loaded and live cities place 17 orders during 36 months with identical cash, debt, ground, people, buildings and order logs, worst drift zero | R0b repairs this same 36-month no-order fixture by holding its death causes from founding. WN3 supplies the literal-world cities. The current path also includes HW1's works rewrite and QB1's quoted borrowing |
+| CurveCheck 7, 9 | At m39 the 1-month is 1.0000%, 1-year 2.0612%, 10-year 3.3914%. The hand-held dial is exactly two points below its rule and the issue-at-curve laws execute | WG1's going-rate minimum, WN3-R's world band and GW1's held Manufacturing and Wood Products |
+| OrderSearchCheck 2 | The natural copy judges 138 orders, largest 6,318 against 16 slices, with 31 below-slice searches. With controlled boundaries it records 33. The twin records 17 | EM1's existing m500 copy, BA1's build-ahead path, and BF1's explicit controlled boundaries and retained natural counts |
+| CurrencyRegimeCheck 9 | Both pegged cities buy US$1,365k and owe D$1,331.2119k, then both settle that exact bill with their recorded payer | BA1 searches the depot count, XR5 makes the peg buy its pressure, and GW1 repairs the draw-path peg fixture |
+| ScaleCheck 6 | QB1's m225 own-town fixture satisfies the scale, price, unemployment, policy and register laws in all six played months | ST3 already removed this harness's wage opt-out. QB1 re-picked only its month from 172 to 225 |
+| DeathRecordCheck 3 | The original m48 fixture reaches the known rehire fault. A second pair at m60 causes the same closing and checks its same-month excess in every one of 24 months | LD3 adds the paired measurement while retaining the m48 hard law for OX1 |
+
+LD3 restores hard fixture assertions for AutoBuildCheck's post-load orders,
+CurveCheck's steep curve in both consumers, and CurrencyRegimeCheck's
+purchase. Their former Observation guards could skip these requested
+conditions. The conditions and all dependent laws retain their bounds.
+
+### The original HoldersCheck save gap
+
+The exact original model `524af54a` was unpacked under `target/ld2/`, compiled
+with the PC's two data files, and its unmodified wage-on fixture run through
+section 6. The diagnostic leaves the model untouched and stops after that
+section. It reproduces LD2's figures exactly.
+
+| At the next settle | Live city | Loaded twin |
+|---|---|---|
+| Households' paper purchase | 55.037203 | 0.002938 |
+| Coupons to households | 0.276167 | 0.125011 |
+
+The live city calls `holdSector(HEAVY_INDUSTRY)` before its first month.
+The old loaded twin never reapplies that hold. On the same model and fixture,
+adding only that call after the load makes both comparisons pass to 1e-9
+and both audits close. The apparent missing state is
+`BusinessInvestment.held`, the harness-only set of held sectors.
+GW1 already supplies that exact call on main. LD3 adds a hard assertion
+that both twins hold the sector before the next settle.
+
+★ Keep the harness-only hold out of player saves. The brief's presumed
+missing game-save field proves to be this fixture hold. Consequently there
+is no DataSave field or loader addition, no format bump, and no invented
+save conversion. SaveFileCheck and ReadPathCheck are run with the final
+changes. The existing save coverage continues to check real game state.
+Orchestrator agreed on cbs-bus at 22.55 on 2026-11-14 that the hold parity
+assertion is the correct mend and this field stays unsaved.
+Evidence is in `target/ld3-historical-focused.log`,
+`target/ld3-hold.log` and `target/ld3-candidates.log`. Copying each of the
+bank's, households', Game's, Exchange's, EconomyManager's and national
+accounts' primitive scalars back into the old twin leaves the failure.
+Reapplying only the held sector fixes it.
+
+### DeathRecordCheck and OX1
+
+Unchanged main `8a67da4d` Game, WantedPosts and DeathRecordCheck were compiled
+into `target/main-deaths/` ahead of the unchanged support classes. Its old
+wage-off harness still fails the same orphan-section assertion, with the
+closed town peaking at 19.1 and its open twin at 14.1 when the adults return
+to work. `target/ld3-main-deaths.log` retains the full run. With the wage on,
+the m48 peaks are 19.07 and 13.25, and the closed town's adults at home fall
+to zero at the spike. This is the registered OX1 rehire fault. Its original
+fixture and exact hard assertion are retained.
+
+★ Add the paired layoff measurement at m60, preserving all buildings, the
+closing, the 24-month window and the one-orphan allowance. The wave has
+60 adults at home and 28.640 children with them. Under the old rule it would
+orphan 28.640 children against 13.245 before, so it still exceeds the
+original doubling premise. The greatest simultaneous excess against the
+open twin is 0.923 across all 24 months. It compares each month with its
+twin's same month. The m48 OX1 case remains separately visible.
+
+The month scan is in `target/ld3-deaths.log`. Earlier candidates m36, m42,
+m48 and m54 have maximum simultaneous excesses 11.941, 11.938, 5.820 and
+9.854. M60 is the first sampled month satisfying the complete paired law.
+M72 also holds at 0.891, while m84 onward loses the original doubling
+premise. No failed premise was relaxed.
+
+★ Keep the fixtures already repaired on main whenever they still cause their
+conditions. LD2's old red figures describe its earlier model and are checked
+against the current path before another seed, month or city is selected.
+
+## Verification
+
+The initial `./batch-check.sh --fast` passes compilation, maps and tree checks,
+with zero firm Stale findings. The final focused run finishes seven harnesses in 257 seconds, exit 3.
+HoldersCheck, AutoBuildCheck, CurveCheck, CurrencyRegimeCheck, SaveFileCheck
+and ReadPathCheck pass. DeathRecordCheck passes all new paired layoff laws
+and retains only OX1's original red. Its new window records 28.640 children
+with 60 laid-off adults and maximum same-month excess 0.923. The builder's
+post-load window places 17 orders in both twins with zero drift.
+
+`target/checks/ld3-mended.txt` and `target/checks/suite.txt` retain that run.
+The final local `./batch-check.sh --pick` selects ALL, 202 harnesses,
+including its direct nightly picks, and compiles successfully. Orchestrator
+requested its cancellation at 23.02 on 2026-11-14 because CM2's full dry run
+was already running and concurrent suites had timed KeptCheck out the night
+before. The local run is incomplete. Only LD3's verified process tree was
+ended, including its detached MSYS batch-check and JVM children.
+
+Per that direction, the coordinated fresh-clone dry run will execute the
+same full pick for LD3. The request `LD3 dry run?` was sent on cbs-bus, and
+Orchestrator grants the slot after CM2 ships. At 23.15 on 2026-11-14 he
+reports CM2 shipped as main `2853630b` (0.9.107), directs the main merge,
+and gives the go for the normal gate route.
+
+Origin/main is merged before the dry run. Source merges cleanly. Four
+generated indexes conflict, and are regenerated from the combined source
+through `./batch-check.sh --fast`. Against the new main, Game.java still
+has only LD3's one wage-supply hunk. All CM2 replay and UI changes and the
+publisher's version, queue, changelog and gate record arrive from main.
+
+No process script, check machinery or standing rule changes. The process
+one-in, one-out count is zero added and zero removed.
+
+
+## Retained gate run
+
+`sh tools/gate.sh LD3 --dry-run` finishes on 2026-11-14 with launcher exit 0
+and suite exit 3. The kept directory is `/tmp/cbs-gate-LD3-mauTys0a`, native
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-LD3-mauTys0a`.
+
+The two commits judged are
+
+- Branch `96736191c3d7412ee6f2cd43381fe502ebcb6a36`.
+- Main `2853630bd9fa6526a95f7127e3e90850254dc7fa` (CM2, 0.9.107).
+
+The launcher sets prospective version 0.9.108 and selects ALL, 202 registered
+harnesses. Its normal gate tier plus the four directly picked nightly
+harnesses runs 191 in 1,606 seconds. The nightly picks are AuctionCheck,
+IslandLinkCheck, OrderSearchCheck and ShortSellingCheck. KeptCheck belongs
+to the nightly tier and is outside this normal-route selection.
+
+188 harnesses pass. The only red harnesses are the existing registered cases
+
+- MapCheck's every-30th-month drawing tally, separate road network and road
+  surface laws, already assigned to DM3, BF1-M and DM3-R respectively.
+- DeathRecordCheck's original m48 orphan-section law, OX1. All four new
+  paired layoff assertions pass, with maximum excess 0.923.
+- LongPlaytest's registered CL6 no-FAIL verdict. Its 2,405-month run also
+  records the existing moved-map finding at m2389, already assigned to
+  DM3-R. Its money fixtures finish with the footer `All checks passed.`,
+  while the runner correctly retains the known finding verdict.
+
+All requested wage-on fixture laws execute. HoldersCheck's hold parity,
+AutoBuildCheck's 17 post-load orders, both steep-curve consumers and the
+pegged purchase pass. DeskCheck, OrderSearchCheck, ScaleCheck, SaveFileCheck
+and ReadPathCheck pass in the retained run.
+
+Eight soft timing assertions and four played-path observations elsewhere
+are informational. Compilation and generated maps pass, with zero firm
+Stale findings. `checks.complete`, `checks.sha256`, `selection`, `ship.log`
+and `checks/suite.txt` retain the complete verdict and individual logs.
+`unnamed.txt` is empty. Remote refs before and after the dry run are equal.
+The source remains frozen at the judged branch commit. Only LD3's notes
+and ship file advance after this run.
+
+## Default trace and ensemble
+
+The retained LongPlaytest output is compared with main's retained CM2 run,
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CM2-GH6EhASW/checks/LongPlaytest.log`.
+CM2's published main is the main commit judged above. Both complete logs
+decode as UTF-8. After removing the startup JDK-option line, normalizing
+line endings and excluding elapsed-run fields and narration clock prefixes,
+all 523 lines are identical. The SHA-256 of both normalized payloads is
+`e2e11915d9fee03cb993a163b10cb8d7bad8e76a552f21661e5b941b1077286c`.
+
+The raw differences are the overall runtime, layout-window runtime and the
+two clock prefixes on the vault-land fixture's narration. Every model
+figure, finding and money assertion agrees. Evidence is
+`target/ld3-trace-comparison.json` and `target/ld3-trace.diff`, beside the
+two retained full logs. The ensemble is skipped under batch.md section 6
+because the default model trace is identical to main's. No main baseline
+was rerun.

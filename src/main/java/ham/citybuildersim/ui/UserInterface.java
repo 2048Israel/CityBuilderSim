@@ -2171,7 +2171,7 @@ public class UserInterface extends Application {
      * @param more   the (i)'s popover, or null for a tile with none
      * @param keys   the lines City History draws when the tile is clicked
      */
-    private record Headline(String label, String area, String value, String valueTone,
+    record Headline(String label, String area, String value, String valueTone,
                             String[] change, String changeTone, double[] series,
                             String tip, String more, String[] keys) { }
 
@@ -2261,9 +2261,9 @@ public class UserInterface extends Application {
             gdpLine = words("flat, real, 12 mo", "flat, real", "flat");
         } else {
             String arrow = grew > 0 ? "▲" : "▼";
-            gdpLine = words(String.format("%s %.1f%% real, 12 mo", arrow, Math.abs(grew) * 100),
-                    String.format("%s %.1f%% real", arrow, Math.abs(grew) * 100),
-                    String.format("%s %.1f%%", arrow, Math.abs(grew) * 100));
+            gdpLine = words(arrow + " " + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", "") + " real, 12 mo",
+                    arrow + " " + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", "") + " real",
+                    arrow + " " + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", ""));
             gdpTone = grew > 0 ? Palette.GOOD : Palette.BAD;
         }
         out.add(new Headline("GDP", Palette.BUSINESS, money(annualGdp(na)) + " / yr", Palette.TEXT_HEAD,
@@ -2288,7 +2288,7 @@ public class UserInterface extends Application {
         if (prices.hasRate()) {
             double inflation = prices.inflation();
             double off = inflation - target;
-            inflValue = String.format("%.1f%% / yr", unsigned0(inflation * 100, 1));
+            inflValue = Formats.INSTANCE.percentage(unsigned0(inflation * 100, 1) / 100, "%.1f%%") + " / yr";
             String side = off > 0 ? "over" : "under";
             inflLine = Math.abs(off) < .0005
                     ? words("on the " + DebtManager.targetWords(target) + " target", "on target")
@@ -2486,14 +2486,14 @@ public class UserInterface extends Application {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
         // The look the pointer calls for (a kept block is not entered afresh when it is drawn again under the pointer).
         block.setStyle(rest + " -fx-border-color: " + (block.isHover() ? Palette.MONEY : Palette.EDGE) + ";");
-        block.setOnMouseEntered(e -> block.setStyle(rest + " -fx-border-color: " + Palette.MONEY + ";"));
-        block.setOnMouseExited(e -> block.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
+        Kept.give(block.onMouseEnteredProperty(), e -> block.setStyle(rest + " -fx-border-color: " + Palette.MONEY + ";"));
+        Kept.give(block.onMouseExitedProperty(), e -> block.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
         Kept.tip(block, String.format("The city's cash%s.%n"
                         + "Under it: what the month EARNED, at today's tax rates - not the budget's surplus, nor the change in the cash%s.%n"
                         + "Click for Finances.",
                 cash < 0 ? " - overdrawn: the central bank advances it at the policy rate" : "",
                 banked ? ", which was " + signedTight(moved, false) : ""), 300);
-        block.setOnMouseClicked(e -> {
+        Kept.give(block.onMouseClickedProperty(), e -> {
             resetSection("finances");
             railJump = true;            // clearMenu: arriving, not redrawing
             financesScreen.showFinanceMenu();
@@ -2568,10 +2568,10 @@ public class UserInterface extends Application {
                     + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
             // The look the pointer calls for: a kept tile is not entered afresh when it is drawn again under the pointer.
             tile.setStyle(rest + " -fx-border-color: " + (tile.isHover() ? t.area() : Palette.EDGE) + ";");
-            tile.setOnMouseEntered(e -> tile.setStyle(rest + " -fx-border-color: " + t.area() + ";"));
-            tile.setOnMouseExited(e -> tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
+            Kept.give(tile.onMouseEnteredProperty(), e -> tile.setStyle(rest + " -fx-border-color: " + t.area() + ";"));
+            Kept.give(tile.onMouseExitedProperty(), e -> tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
             Kept.tip(tile, t.tip(), 300);
-            tile.setOnMouseClicked(e -> openHistory(t.keys()));
+            Kept.give(tile.onMouseClickedProperty(), e -> openHistory(t.keys()));
             return tile;
         });
     }
@@ -2670,7 +2670,7 @@ public class UserInterface extends Application {
      * shortest wording, so none of the three is ever cut; HeadlineRow gives
      * every tile at least that.
      */
-    private static final class HeadlineTile extends Region {
+    static final class HeadlineTile extends Region {
         private final Label label = new Label();
         private final HBox labelRow = new HBox(4, label);
         private final Label figure = new Label();
@@ -2770,10 +2770,13 @@ public class UserInterface extends Application {
             labelRow.resizeRelocate(x, y + (top - labelRow.prefHeight(-1)) / 2, labelWide, labelRow.prefHeight(-1));
             double sparkWide = Math.min(SPARK_WIDTH, w - labelWide - Palette.GAP);
             boolean drawn = sparkWide >= SPARK_MIN;
-            spark.setVisible(drawn);
+            Kept.give(spark.visibleProperty(), drawn);
             if (drawn) {
                 spark.resizeRelocate(snapPositionX(x + w - sparkWide), snapPositionY(y + (top - SPARK_HEIGHT) / 2),
                         snapSizeX(sparkWide), SPARK_HEIGHT);
+            } else {
+                // FB2 (KS1-UI): a line not drawn stands where a tile built new leaves it, at the corner with no size (see the wordings below).
+                spark.resizeRelocate(0, 0, 0, 0);
             }
             double fh = figure.prefHeight(-1);
             figure.resizeRelocate(x, y + top, Math.max(w, figure.prefWidth(-1)), fh);
@@ -2787,8 +2790,12 @@ public class UserInterface extends Application {
                 for (Label c : changes) if (c.prefWidth(-1) < shown.prefWidth(-1)) shown = c;
             }
             for (Label c : changes) {
-                c.setVisible(c == shown);
+                Kept.give(c.visibleProperty(), c == shown);
                 if (c == shown) c.resizeRelocate(x, y + top + fh, Math.max(w, c.prefWidth(-1)), c.prefHeight(-1));
+                // FB2 (KS1-UI): a wording not shown stands where a tile built new leaves it - at the corner, no size - not where it was last
+                // laid out: a wording shown last month and hidden this one kept its 145 x 14 at (11, 44), and the kept header was not the new one's
+                // in 18 states of KeptCheck's section 98 (the RATE tile's "D$1,000,000,000.00 per US$" at the rate's ceiling).
+                else c.resizeRelocate(0, 0, 0, 0);
             }
         }
     }
@@ -2816,9 +2823,9 @@ public class UserInterface extends Application {
         Sparkline() {
             getChildren().add(canvas);
             setMinSize(0, 0);
-            setPrefSize(SPARK_WIDTH, SPARK_HEIGHT);
+            Pieces.prefSize(this, SPARK_WIDTH, SPARK_HEIGHT);
             setMaxSize(SPARK_WIDTH, SPARK_HEIGHT);
-            setMouseTransparent(true);
+            Kept.give(mouseTransparentProperty(), true);
         }
 
         Sparkline(double[] series, List<Integer> months, String colour) {
@@ -2832,6 +2839,8 @@ public class UserInterface extends Application {
          * was last laid out at (no layout is asked for: the size has not moved), or at its first layout.
          */
         void set(double[] series, List<Integer> months, String colour) {
+            // A header tile owns one, and Pieces.sparkline pools one directly: each retell gives this state in either case.
+            Kept.give(mouseTransparentProperty(), true);
             List<Double> finite = new ArrayList<>();
             List<Integer> when = new ArrayList<>();
             int first = 0, last = 0;
@@ -2937,18 +2946,18 @@ public class UserInterface extends Application {
         Button play = Kept.of(Button.class, Button::new);
         play.setGraphic(glyph);
         play.setMinSize(44, 44);
-        play.setPrefSize(44, 44);
+        Pieces.prefSize(play, 44, 44);
         play.setMaxSize(44, 44);
         play.setPadding(javafx.geometry.Insets.EMPTY);
         play.setStyle("-fx-background-color: " + Palette.GOOD + "; -fx-background-radius: 22;"
                 + " -fx-border-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
         // Its tooltip through Kept, installed once and its words set at each draw (they follow the clock).
         Kept.tip(play, clockRunning ? "Pause  (Space)" : "Run the clock  (Space)", 250);
-        play.setOnAction(e -> {
+        Kept.give(play.onActionProperty(), e -> {
             setClockRunning(!clockRunning);
             redrawScreen.run();
         });
-        play.setVisible(inCity);
+        Kept.give(play.visibleProperty(), inCity);
 
         /*
          * THE DAY, which is the only thing in the header that moves between
@@ -2987,7 +2996,7 @@ public class UserInterface extends Application {
         Kept.tip(speed, "How fast a month passes: " + (int) SECONDS_PER_MONTH
                 + " seconds a month at 1×. ← and → change it too. In amber: the speed the city is reaching,"
                 + " when it cannot keep up with the one asked for.", 1000);
-        speed.setVisible(inCity);
+        Kept.give(speed.visibleProperty(), inCity);
 
         HBox second = Kept.row(8, monthFigure, speed);
         second.setAlignment(Pos.CENTER_LEFT);
@@ -3032,9 +3041,9 @@ public class UserInterface extends Application {
         String rest = "-fx-font-size: 14px; -fx-padding: 0 4 0 4; -fx-cursor: hand; -fx-text-fill: ";
         // The look the pointer calls for: a kept arrow is not entered afresh when it is drawn again under the pointer.
         arrow.setStyle(rest + (arrow.isHover() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL) + ";");
-        arrow.setOnMouseEntered(e -> arrow.setStyle(rest + Palette.TEXT_HEAD + ";"));
-        arrow.setOnMouseExited(e -> arrow.setStyle(rest + Palette.TEXT_LABEL + ";"));
-        arrow.setOnMouseClicked(e -> {
+        Kept.give(arrow.onMouseEnteredProperty(), e -> arrow.setStyle(rest + Palette.TEXT_HEAD + ";"));
+        Kept.give(arrow.onMouseExitedProperty(), e -> arrow.setStyle(rest + Palette.TEXT_LABEL + ";"));
+        Kept.give(arrow.onMouseClickedProperty(), e -> {
             int pick = Math.max(0, Math.min(SPEEDS.length - 1, speedIndex + step));
             if (pick == speedIndex) return;
             speedIndex = pick;
@@ -3059,11 +3068,11 @@ public class UserInterface extends Application {
 
         inboxHolder = Kept.stack();
         refreshInboxButton();
-        inboxHolder.setVisible(inCity);
+        Kept.give(inboxHolder.visibleProperty(), inCity);
 
         // "Needs you" and its count by the rating and the envelope since 0.7.24: the drawer's door.
         Region needs = Kept.scope("needs", this::needsChip);
-        needs.setVisible(inCity);
+        Kept.give(needs.visibleProperty(), inCity);
 
         HBox box = Kept.row(10, needs, chip, inboxHolder);
         box.setAlignment(Pos.CENTER_LEFT);
@@ -3276,7 +3285,7 @@ public class UserInterface extends Application {
             };
             titleDim = new Region();
             titleDim.setStyle("-fx-background-color: " + Palette.STAGE + ";");
-            titleDim.setOpacity(FOUNDING_DIM);
+            Kept.give(titleDim.opacityProperty(), FOUNDING_DIM);
             titleContent = new StackPane();
             // One listener for the life of the window: the menu's column is
             // placed again when the window's height changes under it.
@@ -3286,7 +3295,7 @@ public class UserInterface extends Application {
             titleLayer = new StackPane(canvasHost, titleDim, titleContent);
             titleLayer.setStyle("-fx-background-color: " + Palette.STAGE + ";");
         }
-        titleDim.setVisible(dim);
+        Kept.give(titleDim.visibleProperty(), dim);
         titleContent.getChildren().clear();
         if (!windowStack.getChildren().contains(titleLayer)) {
             // Over the window, under a dialog that might already be up.
@@ -3516,8 +3525,8 @@ public class UserInterface extends Application {
                         + " · " + savedWhen(autosave.getSavedAt())
                 : "nothing to continue yet";
         Button resume = menuButton("Continue", where, true);
-        resume.setDisable(!cityOpen && !autosaveWaiting);
-        resume.setOnAction(e -> {
+        Kept.give(resume.disableProperty(), !cityOpen && !autosaveWaiting);
+        Kept.give(resume.onActionProperty(), e -> {
             if (cityOpen) {
                 game.resumeGame();
                 if (resumeTo != null) resumeTo.run(); else openCity();
@@ -3538,23 +3547,23 @@ public class UserInterface extends Application {
          * it (Game.buildWorld()).
          */
         Button found = menuButton("New city", null, false);
-        found.setOnAction(e -> foundingScreen.show());
+        Kept.give(found.onActionProperty(), e -> foundingScreen.show());
         Button load = menuButton("Load a city", null, false);
-        load.setOnAction(e -> showLoadMenu());
+        Kept.give(load.onActionProperty(), e -> showLoadMenu());
         Button settings = menuButton("Settings", null, false);
-        settings.setOnAction(e -> showSettingsMenu());
+        Kept.give(settings.onActionProperty(), e -> showSettingsMenu());
         Button credits = menuButton("Credits", null, false);
-        credits.setOnAction(e -> showCreditsMenu());
+        Kept.give(credits.onActionProperty(), e -> showCreditsMenu());
         Button quit = menuButton("Quit", null, false);
         // Asks first (0.7.20); see showQuitDialog.
-        quit.setOnAction(e -> showQuitDialog());
+        Kept.give(quit.onActionProperty(), e -> showQuitDialog());
 
         VBox column = new VBox(12, name, line, resume);
         // A city in play still needs saving to a slot: Save keeps its place,
         // under Continue, and is not there when there is nothing to save.
         if (cityOpen) {
             Button save = menuButton("Save", null, false);
-            save.setOnAction(e -> showSavingMenu());
+            Kept.give(save.onActionProperty(), e -> showSavingMenu());
             column.getChildren().add(save);
         }
         column.getChildren().addAll(found, load, settings, credits, quit);
@@ -3610,7 +3619,7 @@ public class UserInterface extends Application {
             Label sub = new Label(under);
             sub.setStyle(Fonts.sansMedium() + " -fx-font-size: 12px; -fx-text-fill: "
                     + (primary ? Palette.ON_FILL : Palette.TEXT_MUTED) + ";");
-            sub.setOpacity(primary ? .8 : 1);
+            Kept.give(sub.opacityProperty(), primary ? .8 : 1);
             face.getChildren().add(sub);
         }
         Button button = new Button();
@@ -3624,8 +3633,8 @@ public class UserInterface extends Application {
         String rest = "-fx-padding: 12 20 12 20; -fx-background-radius: 10; -fx-border-radius: 10;"
                 + " -fx-cursor: hand; -fx-border-color: " + (primary ? Palette.MONEY : Palette.EDGE) + ";";
         button.setStyle(rest + " -fx-background-color: " + ground + ";");
-        button.setOnMouseEntered(e -> button.setStyle(rest + " -fx-background-color: " + lit + ";"));
-        button.setOnMouseExited(e -> button.setStyle(rest + " -fx-background-color: " + ground + ";"));
+        Kept.give(button.onMouseEnteredProperty(), e -> button.setStyle(rest + " -fx-background-color: " + lit + ";"));
+        Kept.give(button.onMouseExitedProperty(), e -> button.setStyle(rest + " -fx-background-color: " + ground + ";"));
         return button;
     }
 
@@ -3672,13 +3681,13 @@ public class UserInterface extends Application {
             Label compare = new Label("Compare ›");
             String rest = Fonts.sansSemiBold() + " -fx-font-size: 12px; -fx-text-fill: " + Palette.MONEY + "; -fx-cursor: hand;";
             compare.setStyle(rest);
-            compare.setOnMouseEntered(e -> compare.setStyle(rest + " -fx-underline: true;"));
-            compare.setOnMouseExited(e -> compare.setStyle(rest));
-            compare.setOnMouseClicked(e -> {
+            Kept.give(compare.onMouseEnteredProperty(), e -> compare.setStyle(rest + " -fx-underline: true;"));
+            Kept.give(compare.onMouseExitedProperty(), e -> compare.setStyle(rest));
+            Kept.give(compare.onMouseClickedProperty(), e -> {
                 game.resumeGame();
                 rankingsScreen.openSaved();
             });
-            HBox.setMargin(compare, new javafx.geometry.Insets(0, 0, 0, 8));
+            Pieces.hMargin(compare, new javafx.geometry.Insets(0, 0, 0, 8));
             Tooltip.install(compare, new Tooltip("Rank " + game.getCityName() + " against the cities you saved."));
             headRow.getChildren().add(compare);
         }
@@ -3718,11 +3727,11 @@ public class UserInterface extends Application {
         String rest = "-fx-padding: 14; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 10; -fx-border-radius: 10; -fx-cursor: hand; -fx-border-color: ";
         card.setStyle(rest + Palette.EDGE + ";");
-        card.setOnMouseEntered(e -> card.setStyle(rest + Palette.ACCENT + ";"));
-        card.setOnMouseExited(e -> card.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(card.onMouseEnteredProperty(), e -> card.setStyle(rest + Palette.ACCENT + ";"));
+        Kept.give(card.onMouseExitedProperty(), e -> card.setStyle(rest + Palette.EDGE + ";"));
         Tooltip.install(card, new Tooltip("Load " + header.getCityName() + " from slot " + slot
                 + (header.hasName() ? " (“" + header.getSlotName() + "”)" : "") + "."));
-        card.setOnMouseClicked(e -> loadSlot(slot));
+        Kept.give(card.onMouseClickedProperty(), e -> loadSlot(slot));
         return card;
     }
 
@@ -3807,8 +3816,8 @@ public class UserInterface extends Application {
         // On the LOAD list, a slot is clickable only if it can actually be
         // loaded. A damaged file is not an empty slot and must not offer a
         // button that silently does nothing.
-        pick.setDisable(disableEmpty && !files.slotIsLoadable(slot));
-        pick.setOnAction(e -> onPick.accept(slot));
+        Kept.give(pick.disableProperty(), disableEmpty && !files.slotIsLoadable(slot));
+        Kept.give(pick.onActionProperty(), e -> onPick.accept(slot));
 
         Label detail = new Label(slotSummary(slot));
         detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
@@ -3845,7 +3854,7 @@ public class UserInterface extends Application {
         }
 
         Button cancel = new Button("Cancel");
-        cancel.setOnAction(e -> showMainMenu());
+        Kept.give(cancel.onActionProperty(), e -> showMainMenu());
         page.getChildren().add(cancel);
     }
 
@@ -3888,11 +3897,11 @@ public class UserInterface extends Application {
         Button confirm = new Button(occupied ? "Overwrite" : "Save");
         Button cancel = new Button("Back");
 
-        confirm.setOnAction(e -> {
+        Kept.give(confirm.onActionProperty(), e -> {
             String typed = name.getText();
             saveInBackground(slot, (typed == null || typed.isBlank()) ? null : typed.trim());
         });
-        cancel.setOnAction(e -> showSavingMenu());
+        Kept.give(cancel.onActionProperty(), e -> showSavingMenu());
 
         page.getChildren().addAll(confirm, cancel);
     }
@@ -3916,7 +3925,7 @@ public class UserInterface extends Application {
         }
 
         Button cancel = new Button("Cancel");
-        cancel.setOnAction(e -> showMainMenu());
+        Kept.give(cancel.onActionProperty(), e -> showMainMenu());
         page.getChildren().add(cancel);
     }
 
@@ -3937,7 +3946,7 @@ public class UserInterface extends Application {
             why.setWrapText(true);
             why.setMaxWidth(320);
             Button back = new Button("Back");
-            back.setOnAction(e -> showLoadMenu());
+            Kept.give(back.onActionProperty(), e -> showLoadMenu());
             page.getChildren().addAll(outcome, why, back);
             return;
         }
@@ -4092,7 +4101,7 @@ public class UserInterface extends Application {
         saveAdvice.setMaxWidth(320);
 
         Button back = new Button("Back");
-        back.setOnAction(e -> showMainMenu());
+        Kept.give(back.onActionProperty(), e -> showMainMenu());
 
         page.getChildren().addAll(saveOutcome, saveDetail, saveAdvice, back);
 
@@ -4144,8 +4153,8 @@ public class UserInterface extends Application {
 
         saveAdvice.setText(adviceText == null ? "" : adviceText);
         saveAdvice.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
-        saveAdvice.setVisible(adviceText != null);
-        saveAdvice.setManaged(adviceText != null);
+        Kept.give(saveAdvice.visibleProperty(), adviceText != null);
+        Kept.give(saveAdvice.managedProperty(), adviceText != null);
     }
 
     /** How the player likes the window. Loaded once in start(). */
@@ -4189,16 +4198,18 @@ public class UserInterface extends Application {
 
         Label ask = new Label("Quit to the desktop?");
         ask.setStyle(Palette.words(Palette.SIZE_LEAD, Palette.TEXT_HEAD) + " -fx-font-weight: bold;");
-        // Only a city in play is autosaved (Game.autosave() writes nothing before one).
-        Label why = new Label(cityOpen ? "This city is autosaved." : "There is no city open.");
+        // The model's shared guard also owns the words when a broken skip has suspended autosaves (UP6b).
+        Label why = new Label(cityOpen ? game.autosaveStatus() : "There is no city open.");
+        why.setWrapText(true);
+        why.setMaxWidth(420);
         why.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
 
         Button yes = new Button("Quit");
         yes.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
                 + " -fx-background-color: " + Palette.ALERT_EDGE + ";");
-        yes.setOnAction(e -> { stopRecorder(); game.toggleQuit(); });   // (TR1) the input log is closed before the exit
+        Kept.give(yes.onActionProperty(), e -> { stopRecorder(); game.toggleQuit(); });   // (TR1) the input log is closed before the exit
         Button no = new Button("Cancel");
-        no.setOnAction(e -> closeQuitDialog());
+        Kept.give(no.onActionProperty(), e -> closeQuitDialog());
         HBox buttons = new HBox(Palette.GAP, no, yes);
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
@@ -4210,7 +4221,7 @@ public class UserInterface extends Application {
         StackPane layer = new StackPane(card);
         layer.setStyle("-fx-background-color: rgba(5, 10, 15, 0.62);");
         // The layer swallows a click anywhere outside the card; Cancel is the way out.
-        layer.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        Kept.give(layer.onMouseClickedProperty(), javafx.scene.input.MouseEvent::consume);
         quitDialog = layer;
         windowStack.getChildren().add(layer);
         // Cancel holds the focus, so Space or Enter on it is the safe answer.
@@ -4265,14 +4276,14 @@ public class UserInterface extends Application {
         }
 
         Button no = new Button(yes == null ? "Close" : "Cancel");
-        no.setOnAction(e -> closeQuitDialog());
+        Kept.give(no.onActionProperty(), e -> closeQuitDialog());
         HBox buttons = new HBox(Palette.GAP, no);
         buttons.setAlignment(Pos.CENTER_RIGHT);
         if (yes != null) {
             Button go = new Button(yesText);
             go.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
                     + " -fx-background-color: " + Palette.ALERT_EDGE + ";");
-            go.setOnAction(e -> {
+            Kept.give(go.onActionProperty(), e -> {
                 closeQuitDialog();
                 yes.run();
             });
@@ -4288,7 +4299,7 @@ public class UserInterface extends Application {
 
         StackPane layer = new StackPane(card);
         layer.setStyle("-fx-background-color: rgba(5, 10, 15, 0.62);");
-        layer.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        Kept.give(layer.onMouseClickedProperty(), javafx.scene.input.MouseEvent::consume);
         quitDialog = layer;
         windowStack.getChildren().add(layer);
         no.requestFocus();
@@ -4418,7 +4429,7 @@ public class UserInterface extends Application {
         column.getChildren().add(statementLine("Backspace  \u00b7  Delete", "on the build tab: clear them"));
 
         Button back = new Button("Back");
-        back.setOnAction(e -> showMainMenu());
+        Kept.give(back.onActionProperty(), e -> showMainMenu());
 
         // Over the backdrop the panel scrolls itself; in a city the column scrolls in the page.
         page.getChildren().addAll(title, page == rootMenu ? scrolled(column) : column, back);
@@ -4427,9 +4438,9 @@ public class UserInterface extends Application {
     /* ----- the Credits page (CR1, 2026-11-09) ----- */
 
     /**
-     * The Credits page: the Earth and nations attribution files in full and the fonts' notice with its
-     * licence, each as Credits reads it from the jar (the game is sold, and those licences ask that the
-     * credit reach the player). Drawn like Settings, and scrolled the same way: ~400 lines of text, so
+     * The Credits page: the data's, fonts' and libraries' notices and licences in full,
+     * each as Credits reads it from the jar (the game is sold, and those licences ask that the
+     * credit reach the player). Drawn like Settings, and scrolled the same way: long legal texts, so
      * it must scroll in the Esc menu (the column in the page) and over the title backdrop (the panel
      * menuPage() makes scrolls itself, so the column is not wrapped a second time there).
      */
@@ -4444,8 +4455,8 @@ public class UserInterface extends Application {
         column.setMaxWidth(Region.USE_PREF_SIZE);
 
         column.getChildren().add(statementNote(
-                "The data the city's world is made from, and the type it is set in. "
-                + "Each file is shown as it ships beside the game."));
+                "The data the city's world is made from, the type it is set in, the libraries and the Java runtime it uses, "
+                + "and where their source code is. Their licences and notices are shown in full."));
         for (Credits.Section s : Credits.sections()) {
             column.getChildren().add(statementHead(s.title()));
             if (s.lead() != null) column.getChildren().add(statementNote(s.lead()));
@@ -4465,7 +4476,7 @@ public class UserInterface extends Application {
         }
 
         Button back = new Button("Back");
-        back.setOnAction(e -> showMainMenu());
+        Kept.give(back.onActionProperty(), e -> showMainMenu());
 
         // Over the backdrop the panel scrolls itself; in a city the column scrolls in the page.
         page.getChildren().addAll(title, page == rootMenu ? scrolled(column) : column, back);
@@ -4498,7 +4509,7 @@ public class UserInterface extends Application {
                 + " -fx-border-color: " + (on ? "transparent" : Palette.CONTROL_EDGE) + ";"
                 + " -fx-border-radius: " + Palette.RADIUS_TIGHT + ";"
                 + " -fx-min-width: 52; -fx-cursor: hand;");
-        state.setOnAction(e -> flip.run());
+        Kept.give(state.onActionProperty(), e -> flip.run());
 
         HBox row = new HBox(Palette.GAP_LOOSE, name, gap, state);
         row.setAlignment(Pos.CENTER_LEFT);
@@ -4562,6 +4573,8 @@ public class UserInterface extends Application {
 
     /** Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). */
     static final double PAGE_FOOT = 24;
+    /** One bottom margin for every kept scrolling page; the dimensions follow PAGE_FOOT. */
+    private static final javafx.geometry.Insets PAGE_FOOT_ROOM = new javafx.geometry.Insets(0, 0, PAGE_FOOT, 0);
 
     /** A left-aligned column inside a scroll pane, which these screens all want. */
     javafx.scene.control.ScrollPane scrolled(VBox column) {
@@ -4597,7 +4610,7 @@ public class UserInterface extends Application {
          * (its figure was the header's TREASURY tile, and is the money
          * block's since 0.7.24), and PAGE_FOOT is a margin again.
          */
-        content.setPadding(new javafx.geometry.Insets(0, 0, PAGE_FOOT, 0));
+        Pieces.pad(content, PAGE_FOOT_ROOM);
         column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
         content.getChildren().setAll(column);
 
@@ -4692,7 +4705,7 @@ public class UserInterface extends Application {
             final int step = amount;
             Button button = new Button("+" + amount);
             button.setPrefWidth(60);
-            button.setOnAction(e -> {
+            Kept.give(button.onActionProperty(), e -> {
                 months[0] += step;
                 totalLabel.setText("Months to simulate: " + months[0]);
             });
@@ -4700,14 +4713,14 @@ public class UserInterface extends Application {
         }
 
         Button reset = new Button("Reset");
-        reset.setOnAction(e -> {
+        Kept.give(reset.onActionProperty(), e -> {
             months[0] = 0;
             totalLabel.setText("Months to simulate: 0");
         });
 
         Button run = new Button("Run");
         run.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
-        run.setOnAction(e -> {
+        Kept.give(run.onActionProperty(), e -> {
             if (months[0] > 0) {
                 int completed = game.simulateMonths(months[0]);
                 showSimulateResultMenu(months[0], completed);
@@ -4715,7 +4728,7 @@ public class UserInterface extends Application {
         });
 
         Button back = new Button("Cancel");
-        back.setOnAction(e -> openCity());
+        Kept.give(back.onActionProperty(), e -> openCity());
 
         rootMenu.getChildren().addAll(title, info, totalLabel, grid, note, reset, run, back);
     }
@@ -4759,11 +4772,14 @@ public class UserInterface extends Application {
             VBox problem = reportSection("SOMETHING WENT WRONG");
             for (String line : failure.split("\n")) {
                 Label item = monoLabel("  " + line);
+                item.setWrapText(true);
+                item.setMaxWidth(Double.MAX_VALUE);
                 item.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.BAD + ";");
                 problem.getChildren().add(item);
             }
             Label advice = monoLabel("  The months that did run are real. "
-                    + "Save or reload before continuing.");
+                    + "You can save by hand or reload the earlier autosave.");
+            advice.setWrapText(true);
             advice.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
             problem.getChildren().add(advice);
             column.getChildren().add(problem);
@@ -4946,10 +4962,10 @@ public class UserInterface extends Application {
         scroll.setStyle("-fx-background-color:transparent;");
 
         Button again = new Button("Simulate more");
-        again.setOnAction(e -> showSimulateMonthsMenu());
+        Kept.give(again.onActionProperty(), e -> showSimulateMonthsMenu());
 
         Button done = new Button("Done");
-        done.setOnAction(e -> openCity());
+        Kept.give(done.onActionProperty(), e -> openCity());
 
         rootMenu.getChildren().addAll(title, result, scroll, again, done);
     }
@@ -5077,7 +5093,7 @@ public class UserInterface extends Application {
         }
 
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> back.run());
+        Kept.give(backButton.onActionProperty(), e -> back.run());
 
         rootMenu.getChildren().addAll(heading, scrollPane);
         if (extra != null) {
@@ -5174,7 +5190,7 @@ public class UserInterface extends Application {
         if (n > 8) said.append("\n...and ").append(n - 8).append(" more");
         said.append("\nClick for the City overview.");
         Kept.tip(chip, said.toString(), 300);
-        chip.setOnMouseClicked(e -> {
+        Kept.give(chip.onMouseClickedProperty(), e -> {
             mapAwayFromHeader();
             drawerOpen = !drawerOpen;
             if (drawerOpen) openOnNeeds();
@@ -5237,7 +5253,7 @@ public class UserInterface extends Application {
         pin.setStyle(Palette.words(Palette.SIZE_LABEL, pinned ? Palette.ACCENT : Palette.TEXT_LABEL)
                 + " -fx-cursor: hand; -fx-padding: 2 6 2 6;");
         Kept.tip(pin, pinned ? "Pinned: it stays open across screens. Click to unpin." : "Keep it open across screens", 1000);
-        pin.setOnMouseClicked(e -> {
+        Kept.give(pin.onMouseClickedProperty(), e -> {
             if (prefs == null) return;
             prefs.setDrawerPinned(!prefs.isDrawerPinned());
             prefs.save(game.getGameFiles());
@@ -5246,7 +5262,7 @@ public class UserInterface extends Application {
         Label close = Kept.label("", Pieces.icon(Icons.CLOSE, Palette.TEXT_LABEL, 14));
         close.setStyle("-fx-cursor: hand; -fx-padding: 2 2 2 4;");
         Kept.tip(close, "Close  (Esc)", 1000);
-        close.setOnMouseClicked(e -> {
+        Kept.give(close.onMouseClickedProperty(), e -> {
             drawerOpen = false;
             placeFrame();
         });
@@ -5311,8 +5327,8 @@ public class UserInterface extends Application {
         String rest = "-fx-padding: 10 0 10 0; -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;"
                 + " -fx-cursor: hand; -fx-background-color: ";
         constructionTab.setStyle(rest + (open || constructionTab.isHover() ? Palette.RAISED : Palette.PANEL) + ";");
-        constructionTab.setOnMouseEntered(e -> constructionTab.setStyle(rest + Palette.RAISED + ";"));
-        constructionTab.setOnMouseExited(e -> constructionTab.setStyle(rest + (open ? Palette.RAISED : Palette.PANEL) + ";"));
+        Kept.give(constructionTab.onMouseEnteredProperty(), e -> constructionTab.setStyle(rest + Palette.RAISED + ";"));
+        Kept.give(constructionTab.onMouseExitedProperty(), e -> constructionTab.setStyle(rest + (open ? Palette.RAISED : Palette.PANEL) + ";"));
 
         Label chevron = Kept.label(open ? "›" : "‹");
         chevron.setStyle(Palette.words(14, Palette.TEXT_LABEL));
@@ -5336,7 +5352,7 @@ public class UserInterface extends Application {
         Kept.tip(constructionTab, sites == 0 ? "Under construction: nothing on site. Click to " + (open ? "fold the panel." : "open the panel.")
                 : "Under construction: " + sites + " site" + (sites == 1 ? "" : "s") + ". Click to "
                         + (open ? "fold the panel." : "open the panel."), 300);
-        constructionTab.setOnMouseClicked(e -> {
+        Kept.give(constructionTab.onMouseClickedProperty(), e -> {
             if (prefs == null) return;
             prefs.setConstructionOpen(!prefs.isConstructionOpen());
             prefs.save(game.getGameFiles());
@@ -5395,7 +5411,7 @@ public class UserInterface extends Application {
          */
         Label open = Kept.label("Open ›");
         open.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 0 2 4 0;");
-        open.setOnMouseClicked(e -> constructionScreen.show());
+        Kept.give(open.onMouseClickedProperty(), e -> constructionScreen.show());
         Region headGap = Kept.region();
         HBox.setHgrow(headGap, Priority.ALWAYS);
         HBox headRow = Kept.row(4, header, headGap, open);
@@ -5415,7 +5431,7 @@ public class UserInterface extends Application {
         // less than its crews could do is capped at. See BuildingManager,
         // EVERY BUILDING GETS THE CREW IT CAN USE.
         int forSites = game.getBuildingOutput();
-        int buildingsOnSite = 0;
+        long buildingsOnSite = 0;
         for (BuildingsStacks s : sites) buildingsOnSite += s.getUnderConstruction();
 
         // ...and the crews kept on, when the builders have laid some off
@@ -5448,7 +5464,7 @@ public class UserInterface extends Application {
                 l.setStyle("-fx-text-fill: " + Palette.TEXT_FAINT + "; -fx-padding: 8 0 0 0;");
                 if (handOnIt) {
                     l.setStyle(l.getStyle() + " -fx-cursor: hand;");
-                    l.setOnMouseClicked(e -> constructionScreen.show());
+                    Kept.give(l.onMouseClickedProperty(), e -> constructionScreen.show());
                 }
                 return l;
             });
@@ -5458,7 +5474,7 @@ public class UserInterface extends Application {
             return;
         }
 
-        final int sitesOnShow = siteCount, onSite = buildingsOnSite;
+        final long sitesOnShow = siteCount, onSite = buildingsOnSite;
         Label split = Kept.scope("split", () -> monoLabel(sitesOnShow + " site(s), " + formatter.format(onSite)
                 + " building(s): " + formatter.format(forSites) + " after repairs, crews by what each building can use"));
         split.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
@@ -5498,7 +5514,7 @@ public class UserInterface extends Application {
                         + Palette.TEXT_MUTED + "; -fx-cursor: hand;");
                 hand.setWrapText(true);
                 hand.setMaxWidth(PANEL_TEXT);
-                hand.setOnMouseClicked(e -> constructionScreen.show());
+                Kept.give(hand.onMouseClickedProperty(), e -> constructionScreen.show());
                 return hand;
             }));
         }
@@ -5514,8 +5530,8 @@ public class UserInterface extends Application {
     private VBox siteRow(BuildingsStacks site, BuildingManager.Plan sitePlan, int forSites) {
         {
 
-            int remaining = site.getUnderConstruction();
-            int built = site.getQuantity();
+            long remaining = site.getUnderConstruction();
+            long built = site.getQuantity();
             int pointsEach = site.getBuilding().getConstructionPoints();
             double progress = site.getConstructionProgress();
 
@@ -5531,7 +5547,7 @@ public class UserInterface extends Application {
             name.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 12px; -fx-text-fill: " + Palette.TEXT_HEAD + ";"
                     + " -fx-cursor: hand;");
             String siteKey = ConstructionControl.keyOf(site.getBuilding());
-            name.setOnMouseClicked(e -> constructionScreen.showSite(siteKey));
+            Kept.give(name.onMouseClickedProperty(), e -> constructionScreen.showSite(siteKey));
 
             ProgressBar bar = Kept.of(ProgressBar.class, ProgressBar::new);
             bar.setProgress(fraction);
@@ -5587,7 +5603,7 @@ public class UserInterface extends Application {
     static Region areaSwatch(String colour, double size) {
         Region swatch = Kept.region();
         swatch.setMinSize(size, size);
-        swatch.setPrefSize(size, size);
+        Pieces.prefSize(swatch, size, size);
         swatch.setMaxSize(size, size);
         swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
         return swatch;
@@ -5804,7 +5820,7 @@ public class UserInterface extends Application {
         Region swatch = area == null ? null : Kept.scope("pageTitle.swatch", () -> {
             Region s = Kept.region();
             s.setMinSize(10, 10);
-            s.setPrefSize(10, 10);
+            Pieces.prefSize(s, 10, 10);
             s.setMaxSize(10, 10);
             s.setStyle("-fx-background-color: " + area + "; -fx-background-radius: 3;");
             return s;
@@ -6177,7 +6193,7 @@ public class UserInterface extends Application {
          * coordinates Lucide gave it inside a box the same size for all of them.
          */
         javafx.scene.layout.Pane box = Kept.plain(mark);
-        box.setPrefSize(24, 24);
+        Pieces.prefSize(box, 24, 24);
         box.setMinSize(24, 24);
         box.setMaxSize(24, 24);
         box.setScaleX(RAIL_ICON / 24);
@@ -6189,7 +6205,7 @@ public class UserInterface extends Application {
 
         VBox cell = Kept.column(1, box, word);
         cell.setAlignment(Pos.CENTER);
-        cell.setPrefSize(RAIL_WIDTH, RAIL_BUTTON);
+        Pieces.prefSize(cell, RAIL_WIDTH, RAIL_BUTTON);
         cell.setMinSize(RAIL_WIDTH, RAIL_BUTTON_MIN);
         cell.setMaxSize(RAIL_WIDTH, RAIL_BUTTON);
 
@@ -6207,14 +6223,14 @@ public class UserInterface extends Application {
 
         Kept.tip(cell, name, 400);
 
-        cell.setOnMouseClicked(e -> go.run());
+        Kept.give(cell.onMouseClickedProperty(), e -> go.run());
         if (!active) {
-            cell.setOnMouseEntered(e -> {
+            Kept.give(cell.onMouseEnteredProperty(), e -> {
                 cell.setStyle("-fx-background-color: " + Palette.CONTROL + "; " + bar + "transparent; -fx-cursor: hand;");
                 mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_HEAD));
                 word.setStyle(wordRest + Palette.TEXT_LABEL + ";");
             });
-            cell.setOnMouseExited(e -> {
+            Kept.give(cell.onMouseExitedProperty(), e -> {
                 cell.setStyle(bar + "transparent; -fx-cursor: hand;");
                 mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
                 word.setStyle(wordRest + Palette.TEXT_MUTED + ";");
@@ -6366,7 +6382,7 @@ public class UserInterface extends Application {
         mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
         mark.setStroke(javafx.scene.paint.Color.web(urgent != null ? Palette.BAD : Palette.TEXT_LABEL));
         javafx.scene.layout.Pane glyph = Kept.plain(mark);
-        glyph.setPrefSize(24, 24);
+        Pieces.prefSize(glyph, 24, 24);
         glyph.setMinSize(24, 24);
         glyph.setMaxSize(24, 24);
         glyph.setScaleX(.75);
@@ -6374,7 +6390,7 @@ public class UserInterface extends Application {
 
         StackPane envelope = Kept.stack(glyph);
         envelope.setMinSize(40, 40);
-        envelope.setPrefSize(40, 40);
+        Pieces.prefSize(envelope, 40, 40);
         envelope.setMaxSize(40, 40);
         envelope.setStyle("-fx-background-color: " + (inboxOpen ? Palette.PINNED : Palette.RAISED) + ";"
                 + " -fx-background-radius: 8; -fx-border-color: " + (inboxOpen ? Palette.ACCENT : Palette.EDGE) + ";"
@@ -6391,11 +6407,11 @@ public class UserInterface extends Application {
                 StackPane.setAlignment(count, Pos.TOP_RIGHT);
                 count.setTranslateX(6);
                 count.setTranslateY(-6);
-                count.setMouseTransparent(true);
+                Kept.give(count.mouseTransparentProperty(), true);
                 return count;
             }));
         }
-        envelope.setOnMouseClicked(e -> {
+        Kept.give(envelope.onMouseClickedProperty(), e -> {
             mapAwayFromHeader();
             inboxOpen = !inboxOpen;
             refreshInbox();
@@ -6440,7 +6456,7 @@ public class UserInterface extends Application {
         VBox head = Kept.column(1, title, when);
         head.setStyle("-fx-padding: 5 4 5 4; -fx-cursor: hand;"
                 + (open ? " -fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: 3;" : ""));
-        head.setOnMouseClicked(e -> {
+        Kept.give(head.onMouseClickedProperty(), e -> {
             game.getInbox().markRead(notice, game.getMonth());
             inboxExpanded = open ? "" : notice.getKey();
             refreshInbox();
@@ -6475,7 +6491,7 @@ public class UserInterface extends Application {
                     act.setText(dealLabel(notice.getKey()));
                     act.setStyle("-fx-font-size: 11px; -fx-background-color: " + Palette.CONFIRM + ";"
                             + " -fx-text-fill: white;");
-                    act.setOnAction(e -> deal(notice));
+                    Kept.give(act.onActionProperty(), e -> deal(notice));
                     VBox.setMargin(act, new javafx.geometry.Insets(6, 0, 0, 0));
                     return act;
                 }));
@@ -6487,7 +6503,10 @@ public class UserInterface extends Application {
 
     private String dealLabel(String key) {
         // The ground no port links (ET5): one notice for each landmass, "island:" and its id, so no exact key names it.
-        if (LandmassView.noticeId(key) >= 0) return LandmassView.noticeButton(game.getLandManager().getLandmasses(), LandmassView.noticeId(key));
+        if (LandmassView.noticeId(key) >= 0) {
+            int island = LandmassView.noticeId(key);
+            return LandmassView.noticeButton(game.getLandManager().getLandmasses(), island, BuildAdvice.islandLink(game, island));
+        }
         switch (key) {
             case "shedding":   return "Go to the builders →";
             case "landlock":   return "Go to the land office →";
@@ -6519,8 +6538,13 @@ public class UserInterface extends Application {
         // city owns no shore on it and a terminal cannot stand there yet, the Land office, where the sea in front of it is bought.
         int island = LandmassView.noticeId(notice.getKey());
         if (island >= 0) {
-            if (game.getLandManager().getLandmasses().shorePlots(island) > 0) buildScreen.openPortCardFor(island);
-            else landScreen.showLandMenu();
+            // ...or, where the rule would link the island by a bridge (FB13, AL1-W), or one is on site to it, the bridge's card.
+            BuildAdvice.Link link = BuildAdvice.islandLink(game, island);
+            switch (LandmassView.noticeDoor(game.getLandManager().getLandmasses(), island, link)) {
+                case BRIDGE -> buildScreen.openBridgeCardFor(island, link);
+                case PORT -> buildScreen.openPortCardFor(island);
+                case LAND_OFFICE -> landScreen.showLandMenu();
+            }
             return;
         }
         switch (notice.getKey()) {
@@ -6643,10 +6667,10 @@ public class UserInterface extends Application {
                 new javafx.animation.PauseTransition(Duration.seconds(TOAST_SECONDS)), fade);
         life.setOnFinished(e -> toastStack.getChildren().remove(toast));
         // Held while the pointer is on it, so it cannot fade under a click.
-        toast.setOnMouseEntered(e -> { life.stop(); toast.setOpacity(1); });
-        toast.setOnMouseExited(e -> life.playFromStart());
+        Kept.give(toast.onMouseEnteredProperty(), e -> { life.stop(); Kept.give(toast.opacityProperty(), 1); });
+        Kept.give(toast.onMouseExitedProperty(), e -> life.playFromStart());
 
-        toast.setOnMouseClicked(e -> {
+        Kept.give(toast.onMouseClickedProperty(), e -> {
             life.stop();
             toastStack.getChildren().remove(toast);
             game.getInbox().markRead(notice, game.getMonth());
@@ -7139,13 +7163,14 @@ public class UserInterface extends Application {
 
     /**
      * The platform calls this as the last window goes: the input log is closed (flushed) with it, and the city is autosaved
-     * as Quit autosaves it (UP6), written before this returns - the JVM ends once it has.
+     * as Quit autosaves it (UP6), unless a broken skip has suspended autosaves (UP6b). Pending writes finish before this returns.
      */
     @Override
     public void stop() {
         stopRecorder();
         // The window's close autosaves like Quit (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): the real
-        // city, never a replay's throwaway copy (Quit leaves the replay first, ReplayMode). Nothing is written before a city is in play.
+        // city, never a replay's throwaway copy (Quit leaves the replay first, ReplayMode). Game uses the skip's completion
+        // flag for both exits, preserving its return point after a broken month. Nothing is written before a city is in play.
         Game city = replayOn() ? replayMode.realGame() : game;
         if (city != null) city.saveForClose();
     }
@@ -7254,6 +7279,11 @@ public class UserInterface extends Application {
         if (panKeys != null) panKeys.replayChanged();
     }
 
+    /** A cancelled camera move releases its store now, even when Ready has stopped the map's frames (CM1b). */
+    void replayCancelMove(ReplayCamera camera) {
+        if (panKeys != null) panKeys.cancelMove(camera);
+    }
+
     /** The land office's map over the window on the city, as Expand opens it (the replay's M key). */
     void replayOpenMap() { openMapOn(null); }
 
@@ -7307,6 +7337,28 @@ public class UserInterface extends Application {
     void replaySetResumeTo(Runnable again) { resumeTo = again; }
 
     void replayStopClock() { setClockRunning(false); }
+
+    /** The player's own prefs while a replay's copy is on screen holding prefs of its own (replayHoldPrefs); null when none is. */
+    private GamePrefs playerPrefs;
+
+    /**
+     * The copy takes prefs of its own (TR2-G): the player's values, in a copy that never writes (GamePrefs.copyForReplay), so a
+     * click in the copy on the drawer's pin, the construction tab, a map toggle or the Reports' pins changes the copy's and no
+     * more, in memory and on disk. One seam, at the replay's entry, in place of a guard in each handler that writes a pref.
+     * The player's F11 on the window in a replay is not remembered for the same reason (the window is the film's there).
+     */
+    void replayHoldPrefs() {
+        if (playerPrefs != null || prefs == null) return;
+        playerPrefs = prefs;
+        prefs = prefs.copyForReplay();
+    }
+
+    /** The replay is left: the player's own prefs are the window's again, as they were when it was entered. */
+    void replayReleasePrefs() {
+        if (playerPrefs == null) return;
+        prefs = playerPrefs;
+        playerPrefs = null;
+    }
 
     /** Another city on screen (the copy's month loaded, or the real city given back): the per-city reset a load does, and the notices it already had not toasted. */
     void replayAnotherCity() {
@@ -7374,7 +7426,7 @@ public class UserInterface extends Application {
                 stagePane.getChildren().addAll(drawer, constructionPanel, inboxCorner, toastStack);
                 liftChartPane(false);
             }
-            scene.setCursor(null);
+            Kept.give(scene.cursorProperty(), null);
             cinematic = false;
             cinematicKeepsChrome = false;
         }
@@ -7389,7 +7441,7 @@ public class UserInterface extends Application {
                 root.setRight(null);
                 stagePane.getChildren().removeAll(drawer, constructionPanel, inboxCorner, toastStack);
             }
-            scene.setCursor(javafx.scene.Cursor.NONE);
+            Kept.give(scene.cursorProperty(), javafx.scene.Cursor.NONE);
             if (!keepChrome) liftChartPane(true);
         }
         // The expanded map keeps its own chrome in the kept form too: its canvas is then the size the player's clicks were made on.

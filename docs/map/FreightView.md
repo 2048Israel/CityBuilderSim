@@ -1,6 +1,6 @@
-# FreightView.java - 470 lines · 23 methods · 1 constants · model
+# FreightView.java - 472 lines · 23 methods · 1 constants · model
 
-`ham/citybuildersim/FreightView.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FreightView.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The Freight sector's divisions as the screens draw them (batch FR4;
 > docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this
@@ -50,7 +50,7 @@
 
 **Uses:** [Ports](Ports.md) (11), [Haulage](Haulage.md) (10), [Freight](Freight.md) (9), [PortDivision](PortDivision.md) (6), [Game](Game.md) (5), [BuildingManager](BuildingManager.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [Good](Good.md) (3), [Sector](Sector.md) (2), [Traffic](Traffic.md) (2), [BoatSchedule](BoatSchedule.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (6):** [FreightViewCheck](FreightViewCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md)
+**Used by (7):** [FreightViewCheck](FreightViewCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -59,7 +59,7 @@
 | 63 | THE VOCABULARY |
 | 119 | THE RECORDS |
 | 230 | THE VIEW |
-| 348 | THE WORKS' STRIP: HOW ITS TONNES MOVE (board 3) |
+| 349 | THE WORKS' STRIP: HOW ITS TONNES MOVE (board 3) |
 
 ## Enum constants
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 412 | **type** `public final class FreightView` | The Freight sector's divisions as the screens draw them (batch FR4; docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this month in legs, and the Haulage, Rail and Ports pages with each division's... |
+| 59 | 414 | **type** `public final class FreightView` | The Freight sector's divisions as the screens draw them (batch FR4; docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this month in legs, and the Haulage, Rail and Ports pages with each division's... |
 | 61 | 1 | `private FreightView()` |  |
 
 ### THE VOCABULARY (lines 63-118)
@@ -129,13 +129,13 @@
 | 137 | 1 | **type** `public record Quote(Unit unit, double quote, boolean known, OptionalDouble floor, OptionalDouble target)` | A division's price: in force now, whether a month has struck it, and the rule's floor and target where the model keeps them (empty where it does not). |
 | 140 | 20 | **type** `public record HaulagePage(double trucks, double needed, double asked, double shortBy, int depots, double de...` | Haulage's page: the trucks against the city leg's need, the depots, the month's carriage, the quote and its bill. |
 | 162 | 27 | **type** `public record RailPage(double sets, double setsNeeded, double track, double stations, double sidings, doubl...` | Rail's page: the wagon sets and the track against the freight offered, FR6's own-bulk tonnes and bill, the quote and its bill. |
-| 191 | 15 | **type** `public record Berth(Ports.Cargo kind, int berths, double capacity, double onSite, double tonnes, double use...` | One kind of berth on the Ports page: the terminals standing, the tonnes against their room, the handling quote, the dues and the calls. |
-| 208 | 12 | **type** `public record PortsPage(List<Berth> kinds, int berths, double capacity, double tonnes, double handlingBille...` | The Ports page: berths by kind, the month's handling billed and dues paid, the dial and the calls. |
+| 191 | 15 | **type** `public record Berth(Ports.Cargo kind, long berths, double capacity, double onSite, double tonnes, double us...` | One kind of berth on the Ports page: the terminals standing, the tonnes against their room, the handling quote, the dues and the calls. |
+| 208 | 12 | **type** `public record PortsPage(List<Berth> kinds, long berths, double capacity, double tonnes, double handlingBill...` | The Ports page: berths by kind, the month's handling billed and dues paid, the dial and the calls. |
 | 218 | 1 | `public Berth of(Ports.Cargo kind)` _(in FreightView.PortsPage)_ | The row of one kind. |
 | 222 | 1 | **type** `public record Shipper(String sector, double haulage, double rail, double handling, double total)` | A shipper billed in the month: what each division charged it (Haulage's, the railway's, the quay's handling) and the sum. |
 | 225 | 1 | **type** `public record View(Legs legs, HaulagePage haulage, RailPage rail, PortsPage ports, List<Shipper> shippers, ...` | The whole of it: the legs, the three pages, the shippers billed (largest bill first) and the three divisions' bills together. |
 
-### THE VIEW (lines 230-347)
+### THE VIEW (lines 230-348)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -144,20 +144,20 @@
 | 263 | 3 | `private static Row row(Leg leg, Mode mode, double tonnes)` |  |
 | 267 | 13 | `static HaulagePage haulagePage(Freight fr, BuildingManager buildings)` |  |
 | 281 | 12 | `static RailPage railPage(Freight fr, Ports ports)` |  |
-| 294 | 36 | `static PortsPage portsPage(Game game, Freight fr, Ports ports, BuildingManager buildings)` |  |
-| 332 | 15 | `static List<Shipper> shippers(Game game, Freight fr)` | The shippers billed, largest bill first (the sector order breaking ties): each sector's three lines of the month, those with nothing billed left out. |
+| 294 | 37 | `static PortsPage portsPage(Game game, Freight fr, Ports ports, BuildingManager buildings)` |  |
+| 333 | 15 | `static List<Shipper> shippers(Game game, Freight fr)` | The shippers billed, largest bill first (the sector order breaking ties): each sector's three lines of the month, those with nothing billed left out. |
 
-### THE WORKS' STRIP: HOW ITS TONNES MOVE (board 3) (lines 348-470)
+### THE WORKS' STRIP: HOW ITS TONNES MOVE (board 3) (lines 349-472)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 359 | 26 | **type** `public record Tonnes(String sector, boolean moved, List<Haulage.Move> lines, double crossed, double rail, d...` | One sector's tonnes in the month billed, as its Operations page draws them under the flow card. |
-| 387 | 4 | `private static Tonnes none(String sector, double quote, double homeShare, double standing)` | The all-zero strip: no sector, Freight itself (it bills, it is not billed), or a sector that moved nothing. |
-| 396 | 30 | `public static Tonnes tonnesOf(Game game, Sector sector)` | A sector's tonnes of the month billed: the tally Haulage struck at the haul, the statement's freight lines and the siding's saving. |
-| 428 | 1 | **type** `public record PlantLine(Good good, boolean made, double tonnes)` | One BULK good a building makes or uses, tonnes a month at nameplate. |
-| 431 | 1 | **type** `public record Plan(double truckTonnes, double sidingTonnes, double trucks, double drivers, double haulage)` | One way of moving a building's tonnes: those the trucks carry and the siding does, the trucks and drivers that takes (Haulage.TONNES_A_TRUCK_MONTH, DRIVERS_A_TRUCK), and a month of haulage at the quote. |
-| 439 | 2 | **type** `public record Plant(String building, List<PlantLine> lines, double tonnes, double quote, double relief, Pla...` | A building's city legs at nameplate, before and after a siding (spec 3.6, the Pelletising Plant): every tonne of the BULK goods it makes and uses (Freight.bulkTonnesOf()) a city leg, carried all by truck, or with a si... |
-| 443 | 17 | `public static Plant plantOf(Game game, BuildingsTemplate t)` | A building's legs at nameplate, at Haulage's quote in force (the estimate before a month struck one): all by truck, and with a siding. |
-| 461 | 4 | `private static Plan plan(double truckTonnes, double sidingTonnes, double quote)` |  |
-| 467 | 3 | `private static double fin(double v)` | A finite figure: NaN and infinity read 0, so no page ever draws or divides by one. |
+| 360 | 26 | **type** `public record Tonnes(String sector, boolean moved, List<Haulage.Move> lines, double crossed, double rail, d...` | One sector's tonnes in the month billed, as its Operations page draws them under the flow card. |
+| 388 | 4 | `private static Tonnes none(String sector, double quote, double homeShare, double standing)` | The all-zero strip: no sector, Freight itself (it bills, it is not billed), or a sector that moved nothing. |
+| 397 | 30 | `public static Tonnes tonnesOf(Game game, Sector sector)` | A sector's tonnes of the month billed: the tally Haulage struck at the haul, the statement's freight lines and the siding's saving. |
+| 429 | 1 | **type** `public record PlantLine(Good good, boolean made, double tonnes)` | One BULK good a building makes or uses, tonnes a month at nameplate. |
+| 432 | 1 | **type** `public record Plan(double truckTonnes, double sidingTonnes, double trucks, double drivers, double haulage)` | One way of moving a building's tonnes: those the trucks carry and the siding does, the trucks and drivers that takes (Haulage.tonnesATruck(), driverPostsATruck()), and a month of haulage at the quote. |
+| 440 | 2 | **type** `public record Plant(String building, List<PlantLine> lines, double tonnes, double quote, double relief, Pla...` | A building's city legs at nameplate, before and after a siding (spec 3.6, the Pelletising Plant): every tonne of the BULK goods it makes and uses (Freight.bulkTonnesOf()) a city leg, carried all by truck, or with a si... |
+| 444 | 18 | `public static Plant plantOf(Game game, BuildingsTemplate t)` | A building's legs at nameplate, at Haulage's quote in force (the estimate before a month struck one): all by truck, and with a siding. |
+| 463 | 4 | `private static Plan plan(Haulage haulage, double truckTonnes, double sidingTonnes, double quote)` |  |
+| 469 | 3 | `private static double fin(double v)` | A finite figure: NaN and infinity read 0, so no page ever draws or divides by one. |
 

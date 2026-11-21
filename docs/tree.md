@@ -19,14 +19,30 @@ adds its line here, not in `CLAUDE.md`.
                                    demolitions, fabrication offcuts and worn wagon sets, 85% recovered,
                                    kept by seller; Iron & Steel's Scrap Yards buy it at 70% of scrap's
                                    export price, the rest to landfill - saved under one key, MaterialsCheck
-                                   12 and MoneyCheck hold it (docs/studies/spec-materials.md 2.9); since 0.7.133
+                                   12 and LongPlaytest hold it (docs/studies/spec-materials.md 2.9); since 0.7.133
                                    (batch I8) its old copper in a pool of its own beside it (copper():
                                    23 kg a car, 0.1 t a unit of a demolished building's material), which
                                    Copper Refining's Scrap Copper Refineries buy the same way at 70% of
                                    COPPER_SCRAP's export price before they bid for scrap -
-                                   CopperRefiningCheck and MoneyCheck hold it
+                                   CopperRefiningCheck and LongPlaytest hold it
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
+        CopperBufferCheck.java     CPB1's empty-yard refinery regression: no feed for an undemanded
+                                   loss-making buffer, with domestic/captive demand, stock sales,
+                                   recipe identity and the national accounts kept intact
+        UndemandedFeedCheck.java   CPB2: no feed for undemanded output that cannot cover it - the
+                                   allocated-cost export spare beside a rod mill and the plants of
+                                   goods with no world buyer, with demand, stock sales and sunk feed kept
+        GroundInputCheck.java      NG1: a works the ground limits buys the inputs of what its ground
+                                   gives - iron diesel, coal diesel, leach acid, a gold mill's acid and
+                                   diesel - none on worked-out ground, ample ground kept to the bit, held vans in HELD
+        HousingDoorCheck.java      HN1's landlords at the lender's door: the ensemble's AUTO2 seed 12
+                                   played to m500, no landlord whose till buys one of the homes the
+                                   plan passed held with none, and LongPlaytest's homeless watch
+        CreditCrunchCheck.java     MC1's credit crunch: the bank's leverage ratio binding, a
+                                   mortgage desk with no room, and the landlords' owners asked
+                                   for the whole order (the ensemble's seed 13, its bank held in
+                                   its band from m150), no month with over one household homeless
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
@@ -74,7 +90,10 @@ adds its line here, not in `CLAUDE.md`.
                                    Forestry's logs bought before the world's) - each new sector held
                                    by its own check: CoalMiningCheck, QuarryingCheck and
                                    CementConcreteCheck, CopperMiningCheck and CopperRefiningCheck,
-                                   ForestryCheck and WoodProductsCheck;
+                                   ForestryCheck and WoodProductsCheck; GD4 adds GoldMining,
+                                   the twenty-fifth, on ExtractionSector, with gold fields by geology,
+                                   declining recovered grades, and the mint buying under Gold;
+                                   GoldMiningCheck holds its exports, mint and money audit;
                                    Mining.java is the shape to copy for a mine (on ExtractionSector
                                    since 0.7.112), CementConcrete.java the shortest of all (0.7.131,
                                    on ProcessingSector) and Materials.java the shortest on Sector;
@@ -287,16 +306,19 @@ adds its line here, not in `CLAUDE.md`.
                                    strictness (CentralBankCheck 21); advice, not a model change -
                                    PolicyPreviewCheck holds it
         PolicyDates.java           when Canada first had each Policy lever, as pure data (R0, 2026-11-04;
-                                   research-1900.md 7.1): the Lever enum's opening month (a year-only date
-                                   opens in January; the levers the study does not date are open from
-                                   founding, each with its reason), the study's entry key, the act and its
-                                   first terms, openingMonth/isOpen/earliestOpening (MAX_EARLY_MONTHS, the
-                                   law field's four years) and the inbox notice; nothing reads it until R0's
-                                   second slice puts the gate in the model - PolicyDatesCheck holds it
-        PolicyDatesCheck.java      the table of 7.1 typed out as the specification: each lever's year and
-                                   month, shut the month before and open from its date, founding with the
-                                   open levers open, the early-opening bound and its floor, the notices
-                                   and keys, and history's order (R0)
+                                   research-1900.md 7.1): the Lever enum's year and month (canadaMonth(),
+                                   a year-only date in January; the levers a city had before 1900 at month
+                                   1, each with its reason), the study's entry key, the act and its first
+                                   terms; and the dollar's gold years (GOLD_SUSPENDED, GOLD_RETURN,
+                                   GOLD_END, goldPeriod(), R0f). From R0 to OP1 (2026-11-19) the levers
+                                   opened on those dates and a law find brought one forward; since OP1
+                                   every lever is open from the founding (TaxPolicy.openAtFounding()) and
+                                   the dates are history's record, which the law rows of research.json carry
+        PolicyOpenCheck.java       every lever open from month 1 (OP1, replacing R0's PolicyDatesCheck):
+                                   the table of 7.1 typed out as the record, the opening rates in a 1900
+                                   city and a default one, every setter taking in month 1 and standing a
+                                   month on, Money the player's from the founding, a law find opening
+                                   nothing, no screen or notice telling a date, no gate member declared
         HomeFuel.java              the homes' lamp oil and coal (R0c, 2026-11-05; research-1900.md 4): the
                                    shares of the homes lit by a lamp and heated by a stove, the litres and
                                    tonnes a home burns, and the month's sale Retail.sellHomeFuel() strikes;
@@ -326,9 +348,29 @@ adds its line here, not in `CLAUDE.md`.
                                    in a city founded the 1900 way, set on the template as the mix of its
                                    fitted and unfitted parts; chosen where the Policy hears the month,
                                    applied again after the sites advance and on a load; saved by template id
+        RecipeChange.java          R2d's sourced signed undo for one discovery, independent of other pieces.
+        RecipeChanges.java         Composes those changes, preserving saved process choices and each piece's fitted count.
+        NewUnit.java               QN1's one new building as it would run (its fitted pieces and process), a value beside
+                                   its template, which every order, stack and key keeps; what future readers read
+        HistoricalRecipeCheck.java R2d's per-row date/fitting fixtures, both fitting orders, default and real-clock checks.
+        PostwarRecipeCheck.java    R2e's postwar row transitions, independent and catalyst-stage composition, wood dates and default control.
+        NewUnitCheck.java          QN1's new-building readers: the rejected robot's 300 posts, staffing, the order bar, the bank's
+                                   clerks and fee boundary, identities, what is on site and the power ahead
+        HistoricalLicenceCheck.java Independent recipe/piece and rail patent invoices, closed audits, saved bills and exemptions.
         RecipeCheck.java           R1c's recipes: the data read, a default city choosing nothing, the best
                                    recipe at the city's prices, known and runnable, the mix, the piece's
                                    gain, the save, New Game, and the shipped rows in a 1900 town
+        LicenceFees.java           imported patent rent in 1900-way cities (R2c): net planner and fitting
+                                   gains, firms' IP service imports at the strike, saved statement and history
+        LicenceFeesCheck.java      positive payments, same-month money and foreign accounts, expiry,
+                                   exemptions, equal-gross ranking and nonzero save/read fixtures
+        MedicalRows.java           which medical rows (M, PM) a 1900-way city knows in a month and how far
+                                   ahead of the world it found each (R2f, 2026-11-16; research-design Q17);
+                                   TODAY in a default city. CausesOfDeath's steps and Sickness's undone
+                                   constants read it
+        MedicineCheck.java         R2f's rows: every medical row mapped, the steps history's, no find to the
+                                   bit, a find ahead brings a step forward, the undone constants switch at
+                                   the row's month or a find, a ring and a real 1900 city read them
         ResearchCatalog.java       the research catalogue (R2, 2026-11-05; research-design 4, research-1900
                                    8): research.json's 89 discoveries, each with its field, kind, history's
                                    month (the law rows PolicyDates' own), what it needs, its fee and its
@@ -341,7 +383,8 @@ adds its line here, not in `CLAUDE.md`.
                                    recipes in use, the equipment rows with each verdict, a building's
                                    origin and NEW, City History's discovery flags; empty in a default city
                                    (R3b: also the Overview and Funding pages' reads - a field's reach,
-                                   its card, a staged grant - and the cached preview with its words)
+                                   its card, a staged grant - and the cached preview with its words; since FB13 the
+                                   licence line a building's card draws, from LicenceFees' own reads)
         ResearchViewCheck.java     R5's reads on a default city and a 1900 one, the series kept, and
                                    researchTown(), the 1900 city the research screens' KeptCheck shares
                                    (R3b: sections 11-19, the Overview, the Funding card, the preview, the dials, the schools, R5's
@@ -369,6 +412,21 @@ adds its line here, not in `CLAUDE.md`.
         FittingCheck.java          R1b's fit acted on: the forms at rest and cleared, the 1900 founding, what
                                    a new building comes with, the order ranked with the buildings, its money,
                                    goods and work, one at a time, the depot's trucks, the player's Fit, the save
+        Fitout.java                R1e's new building's equipment as its order fixes it: the pieces it comes
+                                   without (fittedForNew() at the quote), what that makes its cash and points
+                                   (each built-in piece its goods at the catalogue's prices and its work);
+                                   on site as BuildingsStacks' lots, delivered at the finish, saved
+        FitoutCheck.java           R1e's orders: the split, the default city, two orders, a discovery on site,
+                                   a save mid-build, the receipts, VAT and investment, the shell, R1d kept
+        DriverlessTruckCheck.java  R6b's FE1: the driven share's dials, the kit unknown then known by history or
+                                   a find, its gain, the depots fitted (tonnes a truck, the drivers struck), the
+                                   room-weighted share, a city founded today's way at 1, a played count
+        SulphideLeachCheck.java    R6b's FE2: the Sulphide Leach & SX-EW Plant's row, known from FE2's month in a
+                                   1900 city and never in one founded today's way, its cathode on a sulphide
+                                   field with no smelter, the plan against the Mine & Mill, a played count
+        HydrogenSteelCheck.java    R6b's FE4: the Hydrogen Steel Works' row, known from FE4's month, where it
+                                   pays and where it does not on the grid's price, its captive pellets, nothing
+                                   moved without it, a played count
         EquipmentCheck.java        R1's equipment: the data read, none unfitted in a played city, the counts
                                    setting the forms and the save carrying them, the rule's arithmetic, the
                                    verdicts at the city's prices, and the verdict changing nothing
@@ -380,12 +438,12 @@ adds its line here, not in `CLAUDE.md`.
                                    stock bought on credit when the till could not pay, struck at the clearing
                                    and repaid at the next strike out of the sale it stocked, on both sides'
                                    books, the world's share in the money audit; SupplierCreditCheck holds it
-        World.java, Resource.java, Deposit.java, CityLand.java, LandConversion.java
+        World.java, Resource.java, Deposit.java, CityLand.java, LandDrawing.java
                                    the world a city stands on (0.7.56: one seed's coast, lakes, river and
                                    fields of seven resources; since 0.7.99 a tenth as many fields, each ten
                                    times bigger, in clusters, and no iron asked of a founding) and the
                                    city's land on it (0.7.57; since 0.7.67 whole blocks of a grid, six
-                                   offers a side; an older save converted once, and since 0.7.99 the ground
+                                   offers a side; HA1 removes obsolete load converters, and since 0.7.99 the ground
                                    it brings holding the old world's fields; since 0.7.106 a new city's
                                    centre its rings and its founding lake's blocks, one water plant's fresh
                                    water; since 0.7.110 each field of a type, Deposit.type() and
@@ -496,6 +554,11 @@ adds its line here, not in `CLAUDE.md`.
                                    file to 2025, Random's swings and crises against their dials over a
                                    thousand seeded years, goods' swings, pegs held, output never negative,
                                    the ease past 2100 and a missing figure filled (WN1)
+        WorldChain.java            the world market's chain (batch CU2; docs/studies/spec-world-prices.md 3):
+                                   forty rows, each made good on its works' inputs at their shares of its
+                                   price in buildings.json, and the order the January solves the goods in,
+                                   inputs first, so a made good's price follows what it is made of (CU1
+                                   found rod priced apart from its cathode)
         WorldMarket.java           the world market (batch WN3; docs/studies/spec-nations.md 4): each traded
                                    good's mill price in each of the 196 nations on a smooth spatial
                                    equilibrium (a CES gravity model on the base year's flows, exact hat
@@ -510,13 +573,18 @@ adds its line here, not in `CLAUDE.md`.
                                    the file's, once a process (pairs, freight, the calibration that keeps
                                    the literals the prices at Halifax in 2025); WorldMarket is one city's.
                                    Game's THE WORLD MARKET solves it every January and strikes its band
-                                   into each traded good's GoodsMarket every month (WN3)
+                                   into each traded good's GoodsMarket every month (WN3). Since CU2 the
+                                   January is chained (WorldChain): a root anchored on its reference band,
+                                   a made good its inputs' landed cost plus its own part, the copper charge
+                                   as money (Nations' swing), a guard against a non-finite pass
         WorldMarketCheck.java      WorldMarket held to its equations: every maker clears and the level
                                    meets the path (recomputed from the file's pairs), the reference city
                                    sees Good's literals to 1e-9, the floor never above the ceiling in every
                                    good, year, path and site, a small city a price-taker and a big one not,
                                    the month's step against a re-solve with the city's tonnes in, seeds
-                                   repeat to the bit, the save round trip, the stand-in, the timings (WN3)
+                                   repeat to the bit, the save round trip, the stand-in, the timings (WN3);
+                                   the chained January, the recipe table against buildings.json, the guard
+                                   and the copper charge (CU2)
         WorldMeasures.java         the Rankings' real-world figures (batch LB1, 2026-10-30; docs/studies/
                                    spec-leaderboards.md 6-8): the reader of the resource
                                    world/world-2025.json, tools/world/measures.py's file - the 196 nations
@@ -668,11 +736,11 @@ adds its line here, not in `CLAUDE.md`.
                                    cut so its parts add up to it, a zone's row, a sector's page and the
                                    forest law's before and after a staged copy - every figure a model
                                    read; pure, ui/ZoningScreen paints it, ZoningViewCheck holds it
-        LandGrid.java, GridOffers.java, LegacyLand.java, GridConversion.java
+        LandGrid.java, GridOffers.java
                                    the block grid (0.7.65 to 0.7.67): the ground owned as a quadtree of
                                    blocks lined up with the world, the six places a side and their
-                                   rectangles, spec-land's lanes kept read-only, and a saved city's ground
-                                   put on the grid once at load - GridCheck and ConversionCheck hold them
+                                   rectangles, and the current plotted-ground helpers in LandDrawing; old
+                                   save conversion is gone (HA1) - GridCheck and LandCheck hold them
         CityMap.java, TilePainter.java, TileRaster.java, BuildingVisual.java, DistrictPicture.java
                                    the city map (0.7.60): the buildings by type in 7.68 km districts,
                                    each drawn once on its own land; since 0.7.88 a tile painted from
@@ -835,7 +903,7 @@ adds its line here, not in `CLAUDE.md`.
                                    at most 1,000, each on a highway route from the world line
                                    (CityMap.truckRoutes()) or an access road to its gate - drawn at the
                                    near view alone and while the setting is on; a truck's body and
-                                   colour by its load - the map's - TruckCheck and TruckRouteCheck hold them
+                                   colour by its load - the map's - TruckRouteCheck hold them
         InterchangeGround.java     the ground a highway interchange keeps (0.8.6, batch FR7; spec-freight
                                    4.6, D19): a 19 x 19 reserve on a highway crossing (a cloverleaf), an
                                    11 x 11 one where an arm ends at another highway (a trumpet), else a
@@ -908,13 +976,27 @@ adds its line here, not in `CLAUDE.md`.
                                    takes a bottom padding as tall as the toasts while one shows and gives
                                    it back, the scroller keeping its pixel offset; ToastCheck lays the
                                    same nodes out on a scene of its own). The model never imports it.
-        *Check.java                143 harnesses, each a main() with static helpers
+        *Check.java                144 harnesses, each a main() with static helpers
+        HouseholdFlowCheck.java    HS1's money follows people: each flow's stocks to the cent, the estates, the leavers, a real run
+        HouseholdStageCheck.java   HS2's two adult stages: residence of 204 and 420 months, ageing carries the money, no teen shape
+                                   among the young, the pool's group (tier, stage), the 108 working cells
         Credits.java               the Credits page's sections (CR1, 2026-11-09): the Earth and nations attribution files and the
                                    fonts' OFL notice read from the jar, as the exe ships them, and cut into paragraphs for the
                                    screen (UserInterface.showCreditsMenu(), from the title screen and the Esc menu); no JavaFX
+                                   (CR1-L: Gson and OpenJFX; CR1-J: the Java runtime's runtime/legal read from the image it runs on,
+                                   Microsoft's Visual C++ runtime terms, and source/README.txt for the two source archives beside the exe)
         CreditsCheck.java          the page held to the files: every ATTRIBUTION copy in Build EXE.bat is a section whose text is
                                    the file exactly, the fonts' notice over OFL.txt in full, a missing file named beside the exe,
                                    the paragraphs losing no line, and both files saying "Credits page"
+                                   (CR1-J: a fixture runtime's legal folder in order, its references resolved, a dangling one missing;
+                                   the Microsoft terms whole and every DLL in OpenJFX's jar named; the source section the README)
+        PackagingCheck.java        tools.Packaging on fixture images (CR1-J): a complete one passes; a missing or changed source
+                                   archive, a lost notice, a dangling legal reference, an Oracle or NFTC runtime, another OpenJFX
+                                   build, an unnamed Microsoft DLL each fail; the pins held to pom.xml and Build EXE.bat's order
+        DistressBleedCheck.java    the distress rule for a lent price taker (AQ1), on a town of eight Contact Centres and a minimum wage
+                                   lifted until Business Services loses money on its operations: nothing sold under the dial, one a
+                                   step from the dial while the desk lends, never faster than BLEED_MONTHS, nothing sold on a loss that
+                                   is only interest, the quarter once overdrawn, and only a sector with no demand reading bleeds
         MarketCheck.java           the efficient market (EM1), each case on a fixture that causes it: one value for a share, one
                                    yardstick, two shares alike but for price, the buyback finding its sellers, a share earning
                                    less than dollars abroad sold, a quiet market, the save
@@ -926,6 +1008,11 @@ adds its line here, not in `CLAUDE.md`.
                                    on its money's curve (its bank's policy rate, the country premium, the term premium), kept in
                                    its own money and read in D$ at the month's rate, its coupons paid, revalued, bought back,
                                    rolled and held as reserves in it, over a save and a load; US$ paper as it was, to the bit
+        ForeignCouponView.java     what the Government screen says of the coupons the city pays abroad (batch FB13, CD9-G): the
+                                   note on its "...of which paid abroad" row, D$ and the moneys the foreign paper is written in
+        FB13Check.java             FB13's three texts asked of the model that says them: the island's words (table, chip, notice,
+                                   door, the Build tab's card) naming a bridge where the survey allows one, the coupons' note, and
+                                   the build card's licence line; a screen's read moves nothing of the rule's
         InterventionCheck.java     a purchase or sale of dollars moves the D$ a bounded amount (batch XI1): ForeignAccounts'
                                    interventionMove() and its inverse equal the old linear expressions to the bit up to
                                    INTERVENTION_LINEAR of a year's GDP and are logarithmic past it, continuous in value and slope;
@@ -937,6 +1024,8 @@ adds its line here, not in `CLAUDE.md`.
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
                                    -Dcbs.timing=soft a figure over its budget says SOFT and is not counted, so
                                    two batches' suites check side by side; TimingCheck holds it
+        Observation.java           played-path readings, dependent-law skips and locked nightly last-held records (PO1)
+        ObservationCheck.java      a held-off premise, its skipped law, hard independent failures and child-JVM forwarding
         DeterminismCheck.java      the month reads nothing of the machine (batch DT1, 2026-11-05): three child
                                    JVMs play FloatLinkCheck's town and the Earth city - as AllChecks gives the
                                    machine, on the opposite machine (identity hash 1, one processor, C1 alone,
@@ -966,7 +1055,7 @@ adds its line here, not in `CLAUDE.md`.
                                    -Dplaytest.budget=N prints the treasury's month line by line; since
                                    0.8.14 (batch CL3) its layout watch: how many boxes the map moved
                                    between month pairs, and where industry and the homes stand
-        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/), LandTable (world/land-2024.json from tools/world/land.tsv, WN5) and IslandRailRenders (RI1-C: IslandRailCheck's linked island and its railway drawn, docs/queue/RI1/); nothing in the game uses them
+        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/), Packaging (CR1-J: Build EXE.bat's JDK check, the source archives fetched, staged and the image verified), LandTable (world/land-2024.json from tools/world/land.tsv, WN5) and IslandRailRenders (RI1-C: IslandRailCheck's linked island and its railway drawn, docs/queue/RI1/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          research.json the research catalogue (R2; codes permanent);
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
@@ -982,6 +1071,9 @@ adds its line here, not in `CLAUDE.md`.
                                          tools/world/measures.py and read by WorldMeasures; and land-2024.json,
                                          each nation's land a hectare (WN5), made by tools.LandTable from
                                          tools/world/land.tsv and read by LandFactors
+    tools/credits/                       the libraries' notices the jar carries under credits/ (CR1-L), Microsoft's VC++ and SDK terms
+                                         and our notice (CR1-J), sources.properties their provenance, source-archives.properties
+                                         the OpenJFX, Temurin and temurin-build archives pinned by version and SHA-256 (CR1-J)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
                                          fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c
@@ -1006,7 +1098,8 @@ adds its line here, not in `CLAUDE.md`.
     tools/ensemble/                      the 16-seed x 5-policy ensemble (EN1, 2026-10-20; until then only in
                                          workbench/workbench-delta-20261010.zip and each session's copy):
                                          the driver (class Ensemble), compiled at run time against a snapshot of
-                                         target/classes; ensemble.sh the runner, five runs at once on the PC;
+                                         target/classes; ensemble.sh the runner, on the gate box first, eight
+                                         at once, else five on the laptop (GB3, 2026-11-20, "Gatebox first");
                                          score.py the scorer (pandas); README.md. Its scores, one a version
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
                                          the driver compiling against the tree and the newest score readable
@@ -1027,25 +1120,33 @@ adds its line here, not in `CLAUDE.md`.
     tools/pick.sh                        the harnesses that read what a branch changed, picked from its diff against
                                          main through docs/harnesses.md's reverse index, with no JVM: one line, the
                                          names, ALL or NONE, for batch-check.sh --pick, and on stderr whether the
-                                         diff touches money, saves or threading (BP1, 2026-10-24); against the tip of
-                                         the unmerged batch the branch is built on, when there is one (RL1)
-    tools/carries.sh                     the ids of the unmerged batch branches on origin that a branch is built on:
-                                         pick.sh's base, day.sh's "waiting", wait.sh --ship's "not ready", ship.sh's
-                                         stop and batch-check's note on a NEW red, one test for all (RL1, 2026-10-27)
+                                         diff touches money, saves or threading (BP1, 2026-10-24)
     tools/day.sh                         the orchestrator's morning in one call: main's version against the last tag,
                                          main's recorded reds, the queue's next rows and Pending, and each unmerged
-                                         batch branch as ready, waiting, working, stuck or off-queue; --due only the
+                                         batch branch as ready, working, stuck or off-queue; --due only the
                                          ready and the stuck, for the hourly check-in (BP1, 2026-10-24)
     tools/wait.sh                        waits inside one command, so a session need not end its turn: until a
                                          batch's row has left origin/main's queue (--row), a batch branch on
                                          origin has its ship file (--ship, the orchestrator's: GP1, 2026-10-27),
                                          or a line of a file matches (--line); --for MIN gives up after so long
-                                         (BP1, 2026-10-24); --row also ends on a predecessor sent back and mended,
-                                         for the batch built on it (RL1)
+                                         (BP1, 2026-10-24)
+    tools/bus.sh                         the one way to MemWatch's bus: cbs-bus ($CBS_BUS, else MemWatch's own),
+                                         nothing where there is none, exit 0 always (BW1, 2026-11-18)
     tools/ship-selftest.sh               ship.sh run against a throwaway local origin with a stub batch-check.sh, so
                                          no JVM: its stops and its records in about two minutes; run it after any
                                          change to ship.sh (BP1's review, 2026-10-25)
     tools/wait-selftest.sh               wait.sh against a throwaway local origin, no JVM: --ship ends on a ship file
-                                         pushed, not on other pushes, a merged or deleted branch, --skip or a branch
-                                         built on an unmerged one; --row on a predecessor mended; about 30 seconds;
-                                         run it after any change to wait.sh (GP1, 2026-10-27; RL1)
+                                         pushed, not on other pushes, a merged or deleted branch or --skip; --row once
+                                         its ids leave the Queued table; about 30 seconds;
+                                         run it after any change to wait.sh (GP1, 2026-10-27)
+
+`KnownReds` judges exact gate records and harness-scoped repository approvals for AllChecks, batch-check and ship (GR2).
+
+        FormatsCheck.java          SX1: ordinary percentages stay exact; large ratios and returns use one formatter,
+                                   with a compound yearly rate over an observed span or a compact multiple
+
+BF1: BankFailureCheck causes the hands-off bank's mill-sales, closing-debt and
+new-credit failures, distinguishes consolidations from missing shares, and
+audits 24 default Random cities for 120 months apiece.
+
+`MoneyDatesCheck.java` (R0f; OP1): founded cities cross Canada's two gold episodes with Money the player's from the first month, a player who leaves gold staying off it, and the Bank of Canada's date passing as data; exhausted reserves remain off gold after JSON and the next month.

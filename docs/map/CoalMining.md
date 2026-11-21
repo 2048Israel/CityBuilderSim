@@ -1,6 +1,6 @@
-# CoalMining.java - 447 lines · 23 methods · 7 constants · sectors
+# CoalMining.java - 503 lines · 27 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Coal mines and the plants that wash their coal - Coal Mining (0.7.126,
 > batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the
@@ -64,91 +64,95 @@
 > blast furnaces the thermal (I4); Cement & Concrete's kilns and cement
 > ... (2 more lines in the source)
 
-**Uses:** [Good](Good.md) (28), [BuildingsTemplate](BuildingsTemplate.md) (11), [BusinessInvestment](BusinessInvestment.md) (11), [Resource](Resource.md) (5), [Deposit](Deposit.md) (4), [Game](Game.md) (4), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (30), [BuildingsTemplate](BuildingsTemplate.md) (14), [BusinessInvestment](BusinessInvestment.md) (11), [Resource](Resource.md) (7), [NewUnit](NewUnit.md) (6), [Deposit](Deposit.md) (5), [Game](Game.md) (5), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
-**Used by (10):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md), [Sectors](Sectors.md)
+**Used by (11):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 119 | · the flow |
-| 192 | · the ground |
-| 284 | · the estimate |
-| 344 | · the plan |
-| 400 | · the page |
-| 430 | THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and |
+| 120 | · the flow |
+| 213 | · the ground |
+| 331 | · the estimate |
+| 398 | · the plan |
+| 456 | · the page |
+| 486 | THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `CoalMining.SURFACE_MINE` | `111` | The Surface Coal Mine's permanent id in buildings.json (0.7.126): 100,000 t of thermal coal a month on one thermal site. |
-| 91 | `CoalMining.LARGE_SURFACE_MINE` | `112` | The Large Surface Mine's (0.7.126): a dragline pit, 800,000 t of thermal coal a month on four sites of one thermal field. |
-| 94 | `CoalMining.UNDERGROUND_MINE` | `113` | The Underground Coal Mine's (0.7.126): a longwall, 250,000 t of raw coal a month on one coking site. |
-| 97 | `CoalMining.PREPARATION_PLANT` | `114` | The Coal Preparation Plant's (0.7.126): washes 500,000 t of raw coal a month. |
-| 100 | `CoalMining.COKING_YIELD` | `.55` | The coking coal a tonne of raw coal washes into: .55, the study's 3.3 (275,000 t of 500,000). |
-| 103 | `CoalMining.THERMAL_YIELD` | `.20` | ...the thermal coal it washes into, the middlings: .20, the study's 3.3 (100,000 t of 500,000). |
-| 106 | `CoalMining.SPOIL_YIELD` | `.25` | ...and the spoil, the rest, to the tip: .25, the study's 3.3 (125,000 t of 500,000). |
+| 89 | `CoalMining.SURFACE_MINE` | `111` | The Surface Coal Mine's permanent id in buildings.json (0.7.126): 100,000 t of thermal coal a month on one thermal site. |
+| 92 | `CoalMining.LARGE_SURFACE_MINE` | `112` | The Large Surface Mine's (0.7.126): a dragline pit, 800,000 t of thermal coal a month on four sites of one thermal field. |
+| 95 | `CoalMining.UNDERGROUND_MINE` | `113` | The Underground Coal Mine's (0.7.126): a longwall, 250,000 t of raw coal a month on one coking site. |
+| 98 | `CoalMining.PREPARATION_PLANT` | `114` | The Coal Preparation Plant's (0.7.126): washes 500,000 t of raw coal a month. |
+| 101 | `CoalMining.COKING_YIELD` | `.55` | The coking coal a tonne of raw coal washes into: .55, the study's 3.3 (275,000 t of 500,000). |
+| 104 | `CoalMining.THERMAL_YIELD` | `.20` | ...the thermal coal it washes into, the middlings: .20, the study's 3.3 (100,000 t of 500,000). |
+| 107 | `CoalMining.SPOIL_YIELD` | `.25` | ...and the spoil, the rest, to the tip: .25, the study's 3.3 (125,000 t of 500,000). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 363 | **type** `public final class CoalMining extends ExtractionSector` | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study's 3): the second chain's digging industry, the first sector added on ... |
-| 108 | 10 | `public CoalMining()` |  |
+| 86 | 418 | **type** `public final class CoalMining extends ExtractionSector` | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study's 3): the second chain's digging industry, the first sector added on ... |
+| 109 | 10 | `public CoalMining()` |  |
 
-### the flow (lines 119-191)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 126 | 6 | **type** `public record Flow(double surface, double raw, double wash, double washed, double coking, double thermal, d...` | A month of the sector's coal (pure): the surface mines' thermal, the coking mines' raw, the plants' wash, what of the raw was washed, and the two coals and the spoil that came of it, in tonnes. |
-| 128 | 3 | `public double of(Good g)` _(in CoalMining.Flow)_ | The tonnes of a good it makes: COKING_COAL or THERMAL_COAL; nothing of any other. |
-| 140 | 6 | `public static Flow flow(double surface, double raw, double wash)` | The flow (pure; the spec's 2.10): `surface` t of thermal coal as dug, `raw` t of a coking field's raw coal, through plants that wash `wash` t: washed = min(raw, wash); COKING_YIELD of it coking, THERMAL_YIELD thermal,... |
-| 148 | 4 | `public static boolean digsRaw(BuildingsTemplate t)` | Whether a building digs a coking field's raw coal: it stands on a COKING site. |
-| 154 | 4 | `static double[] streamsOf(BuildingsTemplate t)` | A building's part of the flow's streams at nameplate: {surface, raw, wash}. |
-| 160 | 10 | `double[] streams(boolean onSite)` | The streams of the plant standing, and with `onSite` what is on site too: {surface, raw, wash} at nameplate. |
-| 172 | 4 | `public Flow flow()` | The month's flow at nameplate, of the plant standing: what getCapacity() reads. |
-| 179 | 4 | `public double getCapacity(Good g)` | Nameplate of either coal a month: the flow's (0.7.126) - with no plant standing a coking mine's raw coal is thermal, tonne for tonne. |
-| 186 | 5 | `public double getPipeline(Good g)` | ...and what the buildings on site will add to it, which counts as supply for the planner: the flow with them less the flow without, never below nothing (a plant on site makes coking coal of what was thermal). |
-
-### the ground (lines 192-283)
+### the flow (lines 120-212)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 195 | 1 | **type** `record Kind(Deposit.FieldType type, double dig, boolean raw, double capacity)` | One kind of dig its mines make: the type of field they stand on (null for ANY), the tonnes of field a tonne takes, whether its coal is raw, and their nameplate. |
-| 198 | 16 | `List<Kind> kinds()` | Its mines standing, by the type of field they stand on and their dig, each kind's nameplate, in the catalogue's order. |
-| 221 | 18 | `double[] dug(List<Kind> kinds)` | What each kind of its mines digs this month (pure): its nameplate at the sector's rate, held to what its type still has in the ground - the kinds on one type sharing it in proportion to the seam they ask for - in tonn... |
-| 247 | 11 | `public Flow lift()` | The month's coal at the sector's rate, as far as the ground holds it (pure): each kind's dig (dug()) through the flow, the plants washing their wash at the same rate. |
-| 261 | 4 | `protected double madeAtRate(Good g)` | Either coal this month: the lift's, the ground's limit in it (Sector.madeAtRate()). |
-| 272 | 11 | `public void endOfMonth(Game game)` | The month's coal out of the ground, once every good is made: each kind's dig (dug(), the figures the month's coal was made of) taken out of its type's ground at its dig, so E and W hold by type to the tonne. |
+| 127 | 6 | **type** `public record Flow(double surface, double raw, double wash, double washed, double coking, double thermal, d...` | A month of the sector's coal (pure): the surface mines' thermal, the coking mines' raw, the plants' wash, what of the raw was washed, and the two coals and the spoil that came of it, in tonnes. |
+| 129 | 3 | `public double of(Good g)` _(in CoalMining.Flow)_ | The tonnes of a good it makes: COKING_COAL or THERMAL_COAL; nothing of any other. |
+| 141 | 6 | `public static Flow flow(double surface, double raw, double wash)` | The flow (pure; the spec's 2.10): `surface` t of thermal coal as dug, `raw` t of a coking field's raw coal, through plants that wash `wash` t: washed = min(raw, wash); COKING_YIELD of it coking, THERMAL_YIELD thermal,... |
+| 149 | 4 | `public static boolean digsRaw(BuildingsTemplate t)` | Whether a building digs a coking field's raw coal: it stands on a COKING site. |
+| 155 | 3 | `static double[] streamsOf(BuildingsTemplate t)` | A building's part of the flow's streams at nameplate: {surface, raw, wash}. |
+| 160 | 5 | `static double[] streamsOf(NewUnit u)` | ...for one new building already resolved (QN1): the coal its own recipe makes; the site and the wash are its template's. |
+| 167 | 10 | `double[] streams(boolean onSite)` | The streams of the plant standing, and with `onSite` what is on site too: {surface, raw, wash} at nameplate. |
+| 179 | 4 | `public Flow flow()` | The month's flow at nameplate, of the plant standing: what getCapacity() reads. |
+| 186 | 4 | `public double getCapacity(Good g)` | Nameplate of either coal a month: the flow's (0.7.126) - with no plant standing a coking mine's raw coal is thermal, tonne for tonne. |
+| 193 | 5 | `public double getPipeline(Good g)` | ...and what the buildings on site will add to it, which counts as supply for the planner: the flow with them less the flow without, never below nothing (a plant on site makes coking coal of what was thermal). |
+| 206 | 6 | `public double[] retirementDemandAndCapacity(Game game)` | Worked-out mines in their raw nameplate tonnes, as unitsOf() counts them (RT2). |
 
-### the estimate (lines 284-343)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 294 | 11 | `public Map<Good, Double> madeBy(BuildingsTemplate t)` | What one more of `t` adds to the flow at nameplate, on top of what stands and is on site: {good: tonnes}, a tonne a plant stops selling raw as thermal a negative tonne of thermal. |
-| 315 | 12 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its buildings would clear a month: ExtractionSector's estimate on what it adds to the flow (madeBy()), not its template's makes - its gains through BusinessInvestment.estimatedMakerProfit(), the therm... |
-| 335 | 8 | `public double lostValue(Good g, double units, BusinessInvestment plans)` | What `units` of a good the sector would no longer make were worth to it: the mirror of estimatedMakerProfit()'s split - off what it sends abroad first, at the net export price (its make past the planners' forecast of ... |
-
-### the plan (lines 344-399)
+### the ground (lines 213-330)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 347 | 4 | `public double unwashed()` | The raw coal its coking mines standing and on site make past what its plants standing and on site wash, a month at nameplate. |
-| 358 | 4 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine, or a plant to wash the raw coal: the plant first (planWash()), whenever raw coal goes unwashed and one would staff and pay; otherwise ExtractionSector's rule for a mine. |
-| 375 | 24 | `BusinessInvestment.Decision planWash(BusinessInvestment plans, Game game)` | A preparation plant beside the coking mines (the study's 3.4: "the sector builds one beside every coking mine"): with raw coal standing or on site that no plant, standing or on site, washes, the plant that earns most ... |
+| 216 | 1 | **type** `record Kind(Deposit.FieldType type, double dig, boolean raw, double capacity)` | One kind of dig its mines make: the type of field they stand on (null for ANY), the tonnes of field a tonne takes, whether its coal is raw, and their nameplate. |
+| 219 | 16 | `List<Kind> kinds()` | Its mines standing, by the type of field they stand on and their dig, each kind's nameplate, in the catalogue's order. |
+| 242 | 18 | `double[] dug(List<Kind> kinds)` | What each kind of its mines digs this month (pure): its nameplate at the sector's rate, held to what its type still has in the ground - the kinds on one type sharing it in proportion to the seam they ask for - in tonn... |
+| 268 | 18 | `protected double groundShare(BuildingsTemplate t)` | The share of a mine's ask its type's ground holds this month (Sector.groundShare(), NG1): its kind's dig (dug()) over its ask at the sector's rate - exactly 1 where the seam holds the whole ask, as dug() then returns ... |
+| 294 | 11 | `public Flow lift()` | The month's coal at the sector's rate, as far as the ground holds it (pure): each kind's dig (dug()) through the flow, the plants washing their wash at the same rate. |
+| 308 | 4 | `protected double madeAtRate(Good g)` | Either coal this month: the lift's, the ground's limit in it (Sector.madeAtRate()). |
+| 319 | 11 | `public void endOfMonth(Game game)` | The month's coal out of the ground, once every good is made: each kind's dig (dug(), the figures the month's coal was made of) taken out of its type's ground at its dig, so E and W hold by type to the tonne. |
 
-### the page (lines 400-429)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 403 | 26 | `public List<Line> ownLines(Game game)` |  |
-
-### THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and (lines 430-447)
+### the estimate (lines 331-397)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 437 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its: a mine that lifts its coal, and since its plants are planned too (planWash()), a plant that washes it. |
-| 443 | 4 | `protected String groundRefusal(BuildingsTemplate t)` | A wash plant's ground is the raw coal: planWash() weighs one only while raw coal standing or on site goes unwashed (unwashed()); a mine's is ExtractionSector's. |
+| 341 | 3 | `public Map<Good, Double> madeBy(BuildingsTemplate t)` | What one more of `t` adds to the flow at nameplate, on top of what stands and is on site: {good: tonnes}, a tonne a plant stops selling raw as thermal a negative tonne of thermal. |
+| 346 | 11 | `public Map<Good, Double> madeBy(NewUnit t)` | ...for one new building already resolved (QN1): what its own recipe adds to the flow. |
+| 368 | 13 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What one more of its buildings would clear a month: ExtractionSector's estimate on what it adds to the flow (madeBy()), not its template's makes - its gains through BusinessInvestment.estimatedMakerProfit(), the therm... |
+| 389 | 8 | `public double lostValue(Good g, double units, BusinessInvestment plans)` | What `units` of a good the sector would no longer make were worth to it: the mirror of estimatedMakerProfit()'s split - off what it sends abroad first, at the net export price (its make past the planners' forecast of ... |
+
+### the plan (lines 398-455)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 401 | 4 | `public double unwashed()` | The raw coal its coking mines standing and on site make past what its plants standing and on site wash, a month at nameplate. |
+| 412 | 4 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine, or a plant to wash the raw coal: the plant first (planWash()), whenever raw coal goes unwashed and one would staff and pay; otherwise ExtractionSector's rule for a mine. |
+| 429 | 26 | `BusinessInvestment.Decision planWash(BusinessInvestment plans, Game game)` | A preparation plant beside the coking mines (the study's 3.4: "the sector builds one beside every coking mine"): with raw coal standing or on site that no plant, standing or on site, washes, the plant that earns most ... |
+
+### the page (lines 456-485)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 459 | 26 | `public List<Line> ownLines(Game game)` |  |
+
+### THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and (lines 486-503)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 493 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its: a mine that lifts its coal, and since its plants are planned too (planWash()), a plant that washes it. |
+| 499 | 4 | `protected String groundRefusal(BuildingsTemplate t)` | A wash plant's ground is the raw coal: planWash() weighs one only while raw coal standing or on site goes unwashed (unwashed()); a mine's is ExtractionSector's. |
 

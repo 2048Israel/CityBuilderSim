@@ -49,7 +49,7 @@ import java.util.Set;
  *      bar 2 is land per unit, the posts the city likely cannot fill per
  *      10,000 served, or the share of an office's posts it could not staff;
  *      value added is the market's prices on what one makes and uses; the
- *      running cost is the upkeep and the posts at today's wages.
+ *      running cost is the upkeep and the filled posts at today's wages.
  *   3. THE TAGS: only the strict best on a bar, only in a group of two or
  *      more, and never in a group of one.
  *   4. THE NOTES: each group's note reads the sector's own figures.
@@ -301,10 +301,18 @@ public class BuildCardCheck {
                 }
             }
         }
-        int catalogue = g.getBuildingManager().getTemplates().size();
+        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows.
+        int catalogue = 0, nearFuture = 0;
+        boolean nearOnNone = true;
         Set<String> every = new HashSet<>(market);
         every.addAll(city);
-        assertTrue("every building in the catalogue (" + catalogue + ") is on a card", every.size() == catalogue);
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (g.getBuildingManager().isTemplateKnown(t)) catalogue++;
+            else if (ResearchCatalog.nearFuture(t.getSinceText())) { nearFuture++; nearOnNone &= !every.contains(t.getName()); }
+        }
+        assertTrue("every building in the catalogue the city knows (" + catalogue + ") is on a card", every.size() == catalogue);
+        assertTrue("...and the near future's (" + nearFuture + "), which a city founded today's way never knows, on none",
+                nearFuture > 0 && nearFuture == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
         assertTrue("...a market building on exactly one, in one group (" + market.size() + " market buildings)",
                 marketTwice == 0 && market.size() + city.size() == catalogue);
         assertTrue("...and every card and group has a name", named);
@@ -319,12 +327,12 @@ public class BuildCardCheck {
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
         // ...the mills' and the mines' named for their sectors since 0.7.120 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
-        assertTrue("Industry is fourteen groups by owning sector - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &"
+        assertTrue("Industry groups follow owning sectors, including Gold Mining - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &"
                         + " Concrete's \"Cement\" since 0.7.131, copper's \"Copper\" since 0.7.133, Forestry's \"Wood\" since 0.7.138 - and"
                         + " oil storage (0.7.85), the ports (0.7.86) and the oil at sea's platforms and pipelines (0.7.91): " + industry,
                 industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal",
                         "Stone", "Cement", "Copper", "Wood", "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage",
-                        "Building materials", "Builders")));
+                        "Building materials", "Builders", Sectors.GOLD_MINING)));
         // ...less the ports (0.7.86) since FR4 (2026-10-19): the sea terminals and the Strategic Reserve are Infrastructure's, below.
         // ...and the Coal group (0.7.126, batch I6; spec-materials 4: "+ Coal, Copper, Stone, Wood, Cement"): Coal Mining's four.
         List<String> coal = new ArrayList<>();
@@ -474,6 +482,7 @@ public class BuildCardCheck {
         double[] fill = g.getPopulationManager().getJobFillRate();
         double[] wages = g.getPopulationManager().getWagesPerType();
         int cards = 0, makers = 0, offices = 0, labs = 0, cityCards = 0, landBars = 0, roadCards = 0, conversion = 0, washers = 0;
+        int staffShortCards = 0;
         boolean hero = true, bar1 = true, bar2 = true, va = true, run = true, sticker = true, head = true;
         for (BuildCard.Group gr : allGroups(g)) {
             for (BuildCard.Figures f : gr.cards()) {
@@ -482,7 +491,7 @@ public class BuildCardCheck {
                 Game.BuildQuote q = g.quoteBuild(t, 1);
                 sticker &= f.price() == q.total && f.sticker() == q.sticker;
                 BuildingsStacks st = g.getBuildingManager().getStack(t);
-                int site = st == null ? 0 : st.getUnderConstruction();
+                long site = st == null ? 0 : st.getUnderConstruction();
                 head &= f.owned() == g.getBuildingManager().getQuantity(t.getId()) && f.onSite() == site
                         && f.siteMonths() == (site > 0 ? g.onSiteMonths(t) : 0)
                         && f.landFree() == g.getLandManager().getAvailableSqFt();
@@ -606,11 +615,17 @@ public class BuildCardCheck {
                         : f.bar2Kind() == (f.kind() == BuildCard.Kind.OFFICE ? BuildCard.Bar2.UNSTAFFABLE : BuildCard.Bar2.LAND);
                 if (!kindOk) { bar2 = false; out.println("      bar 2 kind: " + t.getName()); }
 
-                // What one costs to run: the upkeep and the posts at today's wages.
-                double bill = t.getUpkeep();
+                // The monthly bill uses the same filled-post basis as payroll.
+                double bill = t.getUpkeep(), fullPayroll = 0, paidPayroll = 0;
                 for (JobType job : JobType.values()) {
-                    if (t.getJobs(job) > 0 && wages != null && job.ordinal() < wages.length) bill += t.getJobs(job) * wages[job.ordinal()];
+                    if (t.getJobs(job) > 0 && wages != null && job.ordinal() < wages.length) {
+                        double full = t.getJobs(job) * wages[job.ordinal()];
+                        fullPayroll += full;
+                        paidPayroll += full * fill[job.ordinal()];
+                    }
                 }
+                bill += paidPayroll;
+                if (paidPayroll > 0 && paidPayroll < fullPayroll) staffShortCards++;
                 if (Math.abs(f.running() - bill) > 1e-9 * Math.max(1, bill)) { run = false; out.println("      runs: " + t.getName()); }
             }
         }
@@ -630,10 +645,11 @@ public class BuildCardCheck {
                 + " over the trips it takes off the road (0.7.70; " + roadCards + " road cards)", bar1 && roadCards > 0);
         assertTrue("bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100"
                 + " on an office's, and unfilled posts per 10,000 served on the other city cards'", bar2 && landBars > 0);
-        assertTrue("the running cost is the upkeep and the posts at today's wages", run);
+        assertTrue("fixture: the cards include paid staff-short works", staffShortCards > 0);
+        assertTrue("the running cost is the upkeep and filled posts at today's wages", run);
     }
 
-    static int onSite(BuildingManager bm, BuildingsTemplate t) {
+    static long onSite(BuildingManager bm, BuildingsTemplate t) {
         BuildingsStacks s = bm.getStack(t);
         return s == null ? 0 : s.getUnderConstruction();
     }
@@ -1101,7 +1117,7 @@ public class BuildCardCheck {
         BuildingsTemplate store = template(g, "Department Store");
         BuildCard.SectorInvestors lux = BuildCard.sectorInvestors(g, g.getSectors().luxuryRetail());
         assertTrue("fixture (section 5): Luxury Retail's three department stores are still on site", onSite(g.getBuildingManager(), store) >= 3);
-        int theirSites = 0;
+        long theirSites = 0;
         double wait = 0;
         for (BuildCard.Investors i : lux.buildings()) {
             if (!i.theirs()) continue;
@@ -1120,9 +1136,9 @@ public class BuildCardCheck {
     }
     /* ============================ 9. A RUN OF ORDERS ============================ */
 
-    static Map<BuildingsTemplate, Integer> run(Object... pairs) {
-        Map<BuildingsTemplate, Integer> r = new LinkedHashMap<>();
-        for (int i = 0; i < pairs.length; i += 2) r.put((BuildingsTemplate) pairs[i], (Integer) pairs[i + 1]);
+    static Map<BuildingsTemplate, Long> run(Object... pairs) {
+        Map<BuildingsTemplate, Long> r = new LinkedHashMap<>();
+        for (int i = 0; i < pairs.length; i += 2) r.put((BuildingsTemplate) pairs[i], ((Number) pairs[i + 1]).longValue());
         return r;
     }
 
@@ -1132,7 +1148,7 @@ public class BuildCardCheck {
         LandManager land = g.getLandManager();
         BuildingsTemplate house = template(g, "House"), road = template(g, "Paved Road"), water = template(g, "Water Treatment Plant");
         BuildingsTemplate mine = g.getBuildingManager().getTemplate(Mining.IRON_MINE), eso = template(g, "Engineering Services Office");
-        Map<BuildingsTemplate, Integer> three = run(house, 3, road, 2, water, 1);
+        Map<BuildingsTemplate, Long> three = run(house, 3, road, 2, water, 1);
         double cash = g.getCash();
 
         // The yard holds the first order's material and half the second's.
@@ -1142,7 +1158,7 @@ public class BuildCardCheck {
                 bm.getConstructionMaterials() == yard && yard > house.getConstructionMaterials() * 3.0
                 && yard < house.getConstructionMaterials() * 3.0 + road.getConstructionMaterials() * 2.0);
         double alone = 0;
-        for (Map.Entry<BuildingsTemplate, Integer> e : three.entrySet()) alone += g.quoteBuild(e.getKey(), e.getValue()).total;
+        for (Map.Entry<BuildingsTemplate, Long> e : three.entrySet()) alone += g.quoteBuild(e.getKey(), e.getValue()).total;
         double invoice = g.buildRunInvoice(three);
         assertTrue("...so the run's invoice is more than its orders quoted alone, which each count the same yard free",
                 invoice > alone);
@@ -1164,7 +1180,7 @@ public class BuildCardCheck {
         double[] charged = { 0 };
         boolean[] placed = { true };
         quietly(() -> {
-            for (Map.Entry<BuildingsTemplate, Integer> e : three.entrySet()) {
+            for (Map.Entry<BuildingsTemplate, Long> e : three.entrySet()) {
                 placed[0] &= g.buildStack(e.getKey(), e.getValue(), false) == Game.BuildResult.SUCCESS;
                 charged[0] += g.getTotalBuildingCost();
             }
@@ -1174,7 +1190,7 @@ public class BuildCardCheck {
 
         // Ground: the second order short once the first has taken its own, though each fits alone.
         double owned = land.getOwnedSqFt();
-        Map<BuildingsTemplate, Integer> ground = run(house, 3, water, 1, road, 1);
+        Map<BuildingsTemplate, Long> ground = run(house, 3, water, 1, road, 1);
         land.setOwnedSqFt(land.getAllocatedSqFt() + water.getLandSqFt() + house.getLandSqFt() * 3 / 2);
         assertTrue("fixture: the free ground holds either of the first two orders alone and not both ("
                 + (long) land.getAvailableSqFt() + " sq ft)",
@@ -1196,12 +1212,12 @@ public class BuildCardCheck {
         int deposits = land.getIronDeposits();
         double reserve = land.getIronReserveTonnes();
         land.restoreIron(g.minesCommitted() + 1, Math.max(1, reserve));
-        Map<BuildingsTemplate, Integer> ore = run(house, 1, mine, 2);
+        Map<BuildingsTemplate, Long> ore = run(house, 1, mine, 2);
         assertTrue("a run whose second order is two mines, with one deposit free, goes one order ahead and stops for the deposit",
                 g.buildRunAhead(ore) == 1 && g.buildRunStop(ore) == Game.BuildResult.NO_DEPOSIT
                 && !g.hasDepositFor(mine, 2) && g.hasDepositFor(mine, 1));
         land.restoreIron(deposits, reserve);
-        Map<BuildingsTemplate, Integer> licensed = run(house, 1, eso, 1);
+        Map<BuildingsTemplate, Long> licensed = run(house, 1, eso, 1);
         assertTrue("a run with an office nobody is licensed for stops there for licences, as buildStack() would",
                 g.buildRunAhead(licensed) == 1 && g.buildRunStop(licensed) == Game.BuildResult.NO_LICENCE
                 && !g.hasLicencesFor(eso, 1));
@@ -1685,10 +1701,12 @@ public class BuildCardCheck {
                 String.format("earns %s on %s, the bar %s; %s", Formats.INSTANCE.amount(w.earns()), Formats.INSTANCE.amount(w.cost()),
                         Formats.INSTANCE.amount(w.hurdle()), w.why()));
         SpreadPlanner.Candidate c = steel.appraise(pellets, plans);
+        // ...asked for the plant itself, as the planner asks it (City.money(t, ...), BA1): the interest on the wait for it is in the bar. On the
+        // chained world prices (CU2) the plant earns, and its words name that bar; where it lost, as on main, they named no bar and the two agreed.
         assertTrue("its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant"
                 + " alone, no van and no truck in it, since the pellets and their feed are bulk and go by Haulage's trucks (FR2) - with"
                 + " its city legs at the quote in what it earns", w.why().equals(c.refusal(SpreadPlanner.Gate.MONEY))
-                && w.why().equals(steel.planner().city(steel, plans, g).money(w.earns(), w.cost())) && w.fleet() == 0 && w.vans() == 0
+                && w.why().equals(steel.planner().city(steel, plans, g).money(pellets, w.earns(), w.cost())) && w.fleet() == 0 && w.vans() == 0
                 && Math.abs(w.cost() - plans.getCostOf(pellets, 1)) <= 1e-9 * w.cost()
                 && ProcessingSector.cityLegs(pellets, 1, steel.legPrice()) > 0);
         BuildCard.Investors inv = BuildCard.investors(g, pellets);
@@ -1745,13 +1763,13 @@ public class BuildCardCheck {
     /** e. Who buys what it makes: the sectors here whose buildings use a good, its owner's own works first, or it ships. */
     static void whoBuys(Game g) {
         BuildingManager bm = g.getBuildingManager();
-        // buyers() against a count of its own: every sector whose catalogue holds a building that uses the good.
+        // buyers() against a count of its own: every sector whose catalogue holds a building it knows that uses the good (R6b: not the near future's in a city founded today's way).
         boolean same = true;
         for (Good good : Good.values()) {
             Set<String> expect = new HashSet<>();
             for (BuildingsTemplate t : bm.getTemplates()) {
                 Sector s = g.getSectors().ownerOf(t);
-                if (t.uses(good) > 0 && s != null && s.key().equals(t.getSector())) expect.add(s.key());
+                if (bm.isTemplateKnown(t) && t.uses(good) > 0 && s != null && s.key().equals(t.getSector())) expect.add(s.key());
             }
             Set<String> got = new HashSet<>();
             for (BuildCard.Buyer b : BuildCard.buyers(g, good)) {
@@ -1769,10 +1787,12 @@ public class BuildCardCheck {
         for (BuildCard.Outlet o : BuildCard.outlets(g, panels)) if (o.good() == Good.PANELS) board = o;
         for (BuildCard.Outlet o : BuildCard.outlets(g, saw)) if (o.good() == Good.RESIDUES) chips = o;
         CopperMining cm = g.getSectors().copperMining();
-        assertTrue("a Copper Smelter's acid goes to Copper Mining's leach plants, its take theirs at nameplate; its anode to its"
+        assertTrue("a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its"
                 + " own refineries first", acid != null && acid.made() == smelter.makes(Good.ACID) && !acid.ships()
-                && acid.others().size() == 1 && acid.others().get(0).sector() == cm
+                && acid.others().size() == 2 && acid.others().get(0).sector() == cm
                 && acid.others().get(0).takes() == cm.getInputAtCapacity(Good.ACID)
+                && acid.others().get(1).sector() == g.getSectors().goldMining()
+                && acid.others().get(1).takes() == g.getSectors().goldMining().getInputAtCapacity(Good.ACID)
                 && anode != null && anode.captive() && anode.ownTakes() == g.getSectors().copperRefining().getInputAtCapacity(Good.ANODE));
         assertTrue("a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's"
                 + " residues go to its own mills first", board != null && board.ships() && chips != null && chips.captive()
@@ -1795,7 +1815,7 @@ public class BuildCardCheck {
                 i++;
             }
         }
-        assertTrue("each of the nine industries' pages says who here buys each good it makes, or that it ships", pages == 9 && lines);
+        assertTrue("each of the ten industries' pages says who here buys each good it makes, or that it ships", pages == 10 && lines);
     }
 
     /** f. E on a forest town: the card's crew rule is Forestry's, and its refusal the plan's own words. */
@@ -1921,7 +1941,7 @@ public class BuildCardCheck {
 
     /** Whether the card's payback for every terminal of the measure's kind says what the advice would do: it pays back (PAYS, or UPKEEP, which the break-even does not see) exactly when portTerminal() orders that terminal, with the others passed over, on the same uncovered tonnes. */
     static boolean agreesWithAdvice(Game g, List<BuildingsTemplate> ports, BuildAdvice.Measure m) {
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, m);
         double uncovered = BuildAdvice.portUncovered(g, m, site);
         boolean ok = true;
         for (BuildingsTemplate t : ports) {
@@ -2221,7 +2241,7 @@ public class BuildCardCheck {
                     words.startsWith("the lender would lend $") && words.contains(", a payment of $") && words.contains(" a month at the insured "
                             + String.format("%.2f%%", refused.insured() * 100))
                     && words.contains(String.format("covers it %.2f× - the lender asks %.2f×", refused.coverage(), refused.asks())));
-            int before = g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House");
+            long before = g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House");
             landlordsOrder(g, house, refused.cash(), refused.rent());
             String said = g.getLastInvestment(slot);
             assertTrue("THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \""
@@ -2250,10 +2270,17 @@ public class BuildCardCheck {
                     said != null && said.equals(shortOf.decision().refusal("House", shortOf.tested(), shortOf.insured()))
                     && said.startsWith("Holding: needs "));
 
-            // 3. A till of nine tenths of the cost: the loan is small, the rent covers it - and a raised insured rate takes that away.
-            economy.setSectorCash(re, .9 * cost);
+            // 3. A till of nine tenths of the cost or more: the loan is small, the rent covers it - and a raised insured rate takes that away.
+            // OP1: from nine tenths up by hundredths until the rent covers the payment half again what the lender asks, short of the whole
+            // cost; with the builders' sales tax open from the founding a tenth of a House is a dearer loan than its rent covered at 1900.
+            double share = .9;
+            economy.setSectorCash(re, share * cost);
+            while (share < .99 && !(g.lenderTest(re, house).coverage() >= 1.5 * Mortgage.MORTGAGE_DEBT_COVERAGE)) {
+                share += .01;
+                economy.setSectorCash(re, share * cost);
+            }
             Game.LenderTest passes = g.lenderTest(re, house);
-            assertTrue("fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment",
+            assertTrue(String.format("fixture: with %.0f%% of a House in the till the lender is still asked, and the rent covers the payment", share * 100),
                     !passes.outright() && !passes.shortOfDown() && passes.passes() && passes.coverage() >= passes.asks());
             assertTrue("A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick",
                     BuildCard.investors(g, house).own() == null
@@ -2278,7 +2305,7 @@ public class BuildCardCheck {
 
             // ...and at today's rate again the card passes it and the same order builds it on an insured mortgage.
             credit.setInsuredMortgageRate(insured);
-            int standing = g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House");
+            long standing = g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House");
             Game.LenderTest again = g.lenderTest(re, house);
             boolean cardPasses = BuildCard.investors(g, house).own() == null && BuildCard.appraise(g, house).at(BuildCard.GateKind.LENDER) == BuildCard.Mark.PASS;
             landlordsOrder(g, house, again.cash(), again.rent());

@@ -1,6 +1,6 @@
-# Nations.java - 780 lines · 44 methods · 42 constants · model
+# Nations.java - 841 lines · 47 methods · 52 constants · model
 
-`ham/citybuildersim/Nations.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Nations.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The nations beyond the city, each on the world's path: its year - output,
 > people, prices and its money's rate to the US dollar - from the path
@@ -39,9 +39,9 @@
 > The map draws it (WN2) and the world market trades on it (WN3). It copies
 > what it needs from the file and keeps no reference to it.
 
-**Uses:** [WorldData](WorldData.md) (14), [World](World.md) (4), [CityCalendar](CityCalendar.md) (2)
+**Uses:** [WorldData](WorldData.md) (14), [World](World.md) (5), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (42):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [FittingCheck](FittingCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [GoldPrice](GoldPrice.md), [GoldPriceCheck](GoldPriceCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [NewGameCheck](NewGameCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PolicyRates](PolicyRates.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollar](RealDollar.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [VaultView](VaultView.md), [WorldDataCheck](WorldDataCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
+**Used by (44):** [BankFailureCheck](BankFailureCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [FittingCheck](FittingCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [GoldPrice](GoldPrice.md), [GoldPriceCheck](GoldPriceCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [NewGameCheck](NewGameCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PolicyRates](PolicyRates.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollar](RealDollar.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [VaultView](VaultView.md), [WorldDataCheck](WorldDataCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 
@@ -51,9 +51,10 @@
 | 189 | THE RECORDS |
 | 216 | THE NATIONS - copied from the file when this is made |
 | 415 | WHAT A CALLER ASKS |
-| 533 | THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins |
-| 606 | THE DRAWS |
-| 622 | THE YEAR - people, output, prices, moneys, goods, in that order |
+| 470 | · the copper charge (CU2) |
+| 594 | THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins |
+| 667 | THE DRAWS |
+| 683 | THE YEAR - people, output, prices, moneys, goods, in that order |
 
 ## Enum constants
 
@@ -108,6 +109,16 @@
 | 186 | `Nations.WORLD` | `1, REGION = 2, OWN = 3, CRISIS = 4, CRISIS_DEPTH = 5, INFLATION = 6, RATE = 7...` | The kinds of draw, and where a draw that belongs to no nation sits among the nations' numbers. |
 | 187 | `Nations.WORLD_NATION` | `0, REGION_BASE = 1000, GOOD_BASE = 2000` |  |
 | 211 | `Nations.NO_DRAWS` | `new Draws(0, 0, 0, 0, false)` |  |
+| 476 | `Nations.CHARGE_MID` | `.055` | The middle of the copper charge's swing, over the reference year's copper price at the reference year's manufactures: the two charges together (treatment and refining) as the record has them over the manufactures inde... |
+| 479 | `Nations.CHARGE_HALF` | `.022` | The swing's half-height, over the same price: the charge runs between about 3% and 8%. |
+| 482 | `Nations.CHARGE_YEARS` | `9` | The years between two large peaks of the swing (the record's 1997, 2006, 2015 and 2024 stand nine years apart). |
+| 485 | `Nations.CHARGE_PEAK_YEAR` | `1997` | The year the Historical path's large peaks stand on, and every CHARGE_YEARS after it (the record's 1997, 2006, 2015, 2024). |
+| 488 | `Nations.CHARGE_SLOW` | `2.7` | The slower turn beside the main one runs at one over this many times the main turn's rate, so no two swings are the same height. |
+| 491 | `Nations.CHARGE_MAIN_WEIGHT` | `.75, CHARGE_SLOW_WEIGHT =.45` | The weight of the main turn in the swing, and of the slower turn beside it (est.: the two make the peaks differ by about a third). |
+| 494 | `Nations.CHARGE_SLOW_PHASE` | `1` | The slower turn's phase against the main one, radians. |
+| 497 | `Nations.CHARGE_DRAW` | `0x7C2CL` | Added to a path's seed, before the mix, for the draw of a path's phase (the draw's "what"): a path off the record has its peaks where this puts them. |
+| 500 | `Nations.CHARGE_RECORD_FROM` | `2000` | The first year of CHARGE_RECORD. |
+| 507 | `Nations.CHARGE_RECORD` | `{ }` | The two charges together over the copper price, each year from CHARGE_RECORD_FROM on the Historical path. |
 
 ## Fields (state)
 
@@ -144,7 +155,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 728 | **type** `public final class Nations` | The nations beyond the city, each on the world's path: its year - output, people, prices and its money's rate to the US dollar - from the path (Historical or Random), the seed and the world file (WN1; spec-nations 7). |
+| 53 | 789 | **type** `public final class Nations` | The nations beyond the city, each on the world's path: its year - output, people, prices and its money's rate to the US dollar - from the path (Historical or Random), the seed and the world file (WN1; spec-nations 7). |
 | 56 | 1 | **type** `public enum Path` | The world's path, picked at founding (D9): the real years from January of FIRST_YEAR (the file's from 2000, the stand-in century before them), or a path drawn from the seed. |
 
 ### THE DIALS - each with its source: [R..] is the spec's list, (est.) the game's estimate (lines 70-188)
@@ -168,7 +179,7 @@
 | 262 | 3 | `Nations(WorldData file, Path path, long seed, Map<String, String> regimes)` | As above, but regimes (iso3 to float, peg:CODE or uses:CODE) stand in for the file's: a harness's, the fixture having no peg to cause. |
 | 266 | 148 | `Nations(WorldData file, Path path, long seed, Map<String, String> regimes, Absent absent)` |  |
 
-### WHAT A CALLER ASKS (lines 415-532)
+### WHAT A CALLER ASKS (lines 415-469)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -184,46 +195,54 @@
 | 456 | 1 | `public String goodKey(int good)` | The key of good 1..goodCount() (the file's goods layer: the Good constant's name). |
 | 459 | 4 | `public synchronized double goodPrice(int good, int year)` | A good's real price in a year, a ratio to 2025's (so 2025 is 1 on Historical): the file's to 2025 on Historical, the path's own AR(1) around 1 after it and on Random. |
 | 465 | 4 | `public synchronized int goodPriceMark(int good, int year)` | The mark of that price: the file's where it is the file's, else 1. |
-| 471 | 1 | `public static int yearOf(int gameMonth)` | The year of the city's calendar a game month is in (CityCalendar.yearOf), so a caller asks for the city's year. |
-| 474 | 4 | `synchronized Draws draws(int nation, int year)` | What the year drew for a nation, for the harness. |
-| 480 | 1 | `synchronized boolean inCrisis(int nation, int year)` | Whether a nation is in a crisis in a year (the year it starts included). |
-| 483 | 1 | `String region(int nation)` | A nation's region, the World Bank's (the file's; East Asia & Pacific for the one it gives none). |
-| 486 | 1 | `String regime(int nation)` | A nation's regime in the file (or the harness's): "float", "peg:CODE" or "uses:CODE". |
-| 489 | 1 | `boolean usedAfterHistory(String code)` | Whether any nation is on this money after the history (Historical: in 2025, Random: from the year after FIRST_YEAR): the later moneys, the ones a path goes on ruling. |
-| 492 | 1 | `String[] pathMoneys()` | Every money the path can name, sorted by code (WN4): Random's are each nation's money of its first December and its later one, Historical's every money of the file's history and the 2025 one. |
-| 498 | 5 | `int anchorNation(String code)` | The nation whose price level is a money's, 1-based, 0 for a code the path cannot name: a later money's anchor (the largest 2025 output using it, not a uses: nation), else, for a money of the history only (the lira, th... |
-| 505 | 1 | `double priceSwing(int good)` | A good's yearly price swing, one standard deviation of its file's own log change 2001-2025 (not the stand-in century's), never under MIN_PRICE_SWING. |
-| 508 | 3 | `static int incomeGroup(double outputPerHead)` | The income group of a nation by its output a head in US$ of 2015: 0 high, 1 upper middle, 2 lower middle, 3 low. |
-| 512 | 4 | `private int check(int nation)` |  |
-| 517 | 4 | `private int checkGood(int good)` |  |
-| 523 | 5 | `private int reach(int year)` | The year's index, the path worked out to it. |
-| 529 | 3 | `private void ensure(int year)` |  |
 
-### THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins (lines 533-605)
+### the copper charge (CU2) (lines 470-593)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 538 | 4 | `private static double rawFigure(WorldData file, String series, int number, int year, Absent gone)` | The file's figure for a nation and year, NaN where it has none or the harness says it is absent. |
-| 544 | 9 | `private static Series fromFile(WorldData file, String series, int number, int cap, Absent gone)` | A series of the file for a nation, indexed from FIRST_YEAR (the stand-in century's years first) and filled to its last figure at or before cap; null when it has none. |
-| 559 | 29 | `static Series filled(double[] raw, int[] mark, int cap)` | A series from its figures, a NaN being none: the figures up to cap kept with their marks, the years before the first taking the first figure and a gap between two figures filled log-linearly between them, both marked ... |
-| 590 | 3 | `private static Series standIn(double value)` | A series that is one figure, the game's estimate, in FIRST_YEAR: the rule works the rest. |
-| 598 | 7 | `private static double swingOf(Series s, int lead)` | One standard deviation of a good's yearly log change over the file's own years, the year after its first on, never under MIN_PRICE_SWING. |
+| 510 | 3 | `public boolean copperChargeRecorded(int year)` | Whether the Historical path has the record's figure for a year (never, while CHARGE_RECORD is empty). |
+| 515 | 3 | `public double copperChargeRecord(int year)` | The record's two charges over the copper price in a year; NaN where copperChargeRecorded says there is none. |
+| 525 | 5 | `public double copperChargeSwing(int year)` | The copper charge in a year off the record, over the reference year's copper price at the reference year's manufactures index (the game prices a charge as it prices every conversion, on that index): CHARGE_MID plus or... |
+| 532 | 1 | `public static int yearOf(int gameMonth)` | The year of the city's calendar a game month is in (CityCalendar.yearOf), so a caller asks for the city's year. |
+| 535 | 4 | `synchronized Draws draws(int nation, int year)` | What the year drew for a nation, for the harness. |
+| 541 | 1 | `synchronized boolean inCrisis(int nation, int year)` | Whether a nation is in a crisis in a year (the year it starts included). |
+| 544 | 1 | `String region(int nation)` | A nation's region, the World Bank's (the file's; East Asia & Pacific for the one it gives none). |
+| 547 | 1 | `String regime(int nation)` | A nation's regime in the file (or the harness's): "float", "peg:CODE" or "uses:CODE". |
+| 550 | 1 | `boolean usedAfterHistory(String code)` | Whether any nation is on this money after the history (Historical: in 2025, Random: from the year after FIRST_YEAR): the later moneys, the ones a path goes on ruling. |
+| 553 | 1 | `String[] pathMoneys()` | Every money the path can name, sorted by code (WN4): Random's are each nation's money of its first December and its later one, Historical's every money of the file's history and the 2025 one. |
+| 559 | 5 | `int anchorNation(String code)` | The nation whose price level is a money's, 1-based, 0 for a code the path cannot name: a later money's anchor (the largest 2025 output using it, not a uses: nation), else, for a money of the history only (the lira, th... |
+| 566 | 1 | `double priceSwing(int good)` | A good's yearly price swing, one standard deviation of its file's own log change 2001-2025 (not the stand-in century's), never under MIN_PRICE_SWING. |
+| 569 | 3 | `static int incomeGroup(double outputPerHead)` | The income group of a nation by its output a head in US$ of 2015: 0 high, 1 upper middle, 2 lower middle, 3 low. |
+| 573 | 4 | `private int check(int nation)` |  |
+| 578 | 4 | `private int checkGood(int good)` |  |
+| 584 | 5 | `private int reach(int year)` | The year's index, the path worked out to it. |
+| 590 | 3 | `private void ensure(int year)` |  |
 
-### THE DRAWS (lines 606-621)
+### THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins (lines 594-666)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 611 | 6 | `static long scramble(long seed, long nation, long year, long what)` | A draw's seed: the path's seed, the nation (a region's, a good's, 0 for the world's), the year and what is drawn, chained through SplitMix64. |
-| 618 | 1 | `private double gauss(int what, long nation, int year)` |  |
-| 620 | 1 | `private double unit(int what, long nation, int year)` |  |
+| 599 | 4 | `private static double rawFigure(WorldData file, String series, int number, int year, Absent gone)` | The file's figure for a nation and year, NaN where it has none or the harness says it is absent. |
+| 605 | 9 | `private static Series fromFile(WorldData file, String series, int number, int cap, Absent gone)` | A series of the file for a nation, indexed from FIRST_YEAR (the stand-in century's years first) and filled to its last figure at or before cap; null when it has none. |
+| 620 | 29 | `static Series filled(double[] raw, int[] mark, int cap)` | A series from its figures, a NaN being none: the figures up to cap kept with their marks, the years before the first taking the first figure and a gap between two figures filled log-linearly between them, both marked ... |
+| 651 | 3 | `private static Series standIn(double value)` | A series that is one figure, the game's estimate, in FIRST_YEAR: the rule works the rest. |
+| 659 | 7 | `private static double swingOf(Series s, int lead)` | One standard deviation of a good's yearly log change over the file's own years, the year after its first on, never under MIN_PRICE_SWING. |
 
-### THE YEAR - people, output, prices, moneys, goods, in that order (lines 622-780)
+### THE DRAWS (lines 667-682)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 626 | 102 | `private void step(int t)` |  |
-| 730 | 4 | `private String moneyOf(int i, int t)` | The money a nation is in in a year: Historical's is the file's of December to 2025 and its 2025 one after; Random's is its money of its first December, or the one its regime uses from the year after FIRST_YEAR. |
-| 742 | 26 | `private double moneyLevel(String code, int t, int year, double share, Map<String, Double> cur, Set<String> busy, double[] infla...` | A money's rate to the dollar this year, NaN for one no nation uses after the history. |
-| 770 | 5 | `private double levelAt(String code, int t)` | A money's rate in an earlier year of the path; NaN where it had none. |
-| 777 | 3 | `private double held(String code, int t)` | A money's rate last year; NaN where it had none. |
+| 672 | 6 | `static long scramble(long seed, long nation, long year, long what)` | A draw's seed: the path's seed, the nation (a region's, a good's, 0 for the world's), the year and what is drawn, chained through SplitMix64. |
+| 679 | 1 | `private double gauss(int what, long nation, int year)` |  |
+| 681 | 1 | `private double unit(int what, long nation, int year)` |  |
+
+### THE YEAR - people, output, prices, moneys, goods, in that order (lines 683-841)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 687 | 102 | `private void step(int t)` |  |
+| 791 | 4 | `private String moneyOf(int i, int t)` | The money a nation is in in a year: Historical's is the file's of December to 2025 and its 2025 one after; Random's is its money of its first December, or the one its regime uses from the year after FIRST_YEAR. |
+| 803 | 26 | `private double moneyLevel(String code, int t, int year, double share, Map<String, Double> cur, Set<String> busy, double[] infla...` | A money's rate to the dollar this year, NaN for one no nation uses after the history. |
+| 831 | 5 | `private double levelAt(String code, int t)` | A money's rate in an earlier year of the path; NaN where it had none. |
+| 838 | 3 | `private double held(String code, int t)` | A money's rate last year; NaN where it had none. |
 

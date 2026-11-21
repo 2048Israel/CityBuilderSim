@@ -245,10 +245,10 @@ public class PolicyCheck {
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         try {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0): this harness is about what the Policy dials do once set, and on history's dates the
-            // taxes and the pension are shut (held at zero, their setters refusing) until 1916-1927. Every lever opened, defaults put back.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): this harness is about what the Policy dials do once set, and until OP1 on history's
+            // dates the taxes and the pension were shut (held at zero, their setters refusing) until 1916-1927. Since OP1 every lever is open
+            // from the founding; the defaults are put back.
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             city.buildStack(template(city, "House"), 120, false);
             city.buildStack(template(city, "Convenience Store"), 4, false);
             city.buildStack(template(city, "Construction Depot"), 3, false);

@@ -534,7 +534,7 @@ public class BusinessDebtManager {
      * by now, and the debt schedule would be unreadable. Overshooting slightly
      * keeps it to a handful of larger loans.
      */
-    private static final double BUFFER_MONTHS = 3;
+    static final double BUFFER_MONTHS = 3;
 
     private List<BusinessDebt> loans = new ArrayList<>();
 
@@ -768,10 +768,74 @@ public class BusinessDebtManager {
         return repaidBySector.getOrDefault(sector, 0.0);
     }
 
+    /** Borrowers whose last plant closed this turn, resolved after their sheets refresh (BF1). */
+    private final java.util.Set<String> closedBorrowers = new java.util.HashSet<>();
+    private final Map<String, Double> closedRecovery = new LinkedHashMap<>();
+
+    /**
+     * Retirement cash pays the bank's claims in the backstop's rank order:
+     * interim first, then its other loans pro rata. This is repayment, not
+     * a creditor loss. The caller debits the till; the month's bank settle
+     * collects getRepaidThisMonth(). An empty borrower resolves what remains.
+     */
+    public double settleRetirement(String sector, double available, boolean empty) {
+        return settleRetirement(sector, available, empty, 0);
+    }
+
+    /** Liquid inventory can carry its claim at realizable proceeds until the regular sale settles. */
+    public double settleRetirement(String sector, double available, boolean empty, double recoverable) {
+        if (empty) {
+            closedRecovery.put(sector, Math.max(0, recoverable));
+            for (BusinessDebt loan : loans) if (loan.getSector().equals(sector)) loan.markRetirementClaim();
+        }
+        double paid = repayLoanClaims(sector, available, false);
+        if (empty && getPrincipal(sector) > 0) closedBorrowers.add(sector);
+        return paid;
+    }
+
+    /** Current realizable inventory and unbanked invoices, refreshed alongside the borrower's assets. */
+    public void setRetirementRecovery(String sector, double value) {
+        closedRecovery.put(sector, Math.max(0, value));
+    }
+
+    /** Cash from the retired inventory repays its marked claims before the next default judgment. */
+    public double settleRetiringLoans(String sector, double available) {
+        return repayLoanClaims(sector, available, true);
+    }
+
+    private double repayLoanClaims(String sector, double available, boolean retiredOnly) {
+        double left = Math.max(0, available), paid = 0;
+        for (boolean interim : new boolean[] { true, false }) {
+            double owed = 0;
+            for (BusinessDebt loan : loans) if (loan.getSector().equals(sector)
+                    && (!retiredOnly || loan.isRetirementClaim())
+                    && (loan instanceof InterimLoan) == interim) owed += loan.getOutstandingPrincipal();
+            double take = Math.min(left, owed);
+            if (!(take > 0)) continue;
+            double keep = Math.max(0, 1 - take / owed);
+            for (BusinessDebt loan : loans) if (loan.getSector().equals(sector)
+                    && (!retiredOnly || loan.isRetirementClaim())
+                    && (loan instanceof InterimLoan) == interim) {
+                double part = loan.getOutstandingPrincipal() * (1 - keep);
+                loan.writeDown(keep);
+                moved(sector, REPAID, kindOf(loan), part);
+                if (loan instanceof Mortgage) mortgageRepaidBySector.merge(sector, part, Double::sum);
+            }
+            paid += take;
+            left -= take;
+        }
+        loans.removeIf(loan -> loan.getSector().equals(sector) && !(loan.getOutstandingPrincipal() > 0));
+        repaidThisMonth += paid;
+        repaidBySector.merge(sector, paid, Double::sum);
+        return paid;
+    }
+
     public void startAuditMonth() {
         shortfallPlans.clear();
         lentThisMonth = 0;
         repaidThisMonth = 0;
+        projectSettledLent = projectSettledRepaid = 0;
+        projectBookSettled = false;
         lentBySector.clear();
         repaidBySector.clear();
         feesThisMonth = 0;
@@ -1359,6 +1423,14 @@ public class BusinessDebtManager {
 
         while (iterator.hasNext()) {
             BusinessDebt loan = iterator.next();
+            // A retired bullet waits for its liquidation cash, keeping its marker and interest.
+            // Refinancing its maturity here would turn that claim into an ordinary new loan.
+            if (!(loan instanceof Mortgage) && loan.isRetirementClaim()) {
+                if (!loan.isMatured()) loan.processMonth();
+                if (loan.isMatured() && loan.getOutstandingPrincipal() == 0
+                        && loan.getMonthlyInterestExpense() == 0) iterator.remove();
+                continue;
+            }
             loan.processMonth();
 
             /*
@@ -1820,7 +1892,7 @@ public class BusinessDebtManager {
         if (!(amount > 0) || !lendingOpen || isBorrowingBlocked(sector) || keepGoingOnly) return 0;
         if (pastDefaultPoint(sector, getCash(sector))) return 0;   // round 2
         double line = (Math.max(0, getAssets(sector)) + amount) * INSOLVENCY_TRIGGER - getPrincipal(sector);
-        return Math.max(0, Math.min(amount, Math.min(line, capitalRoom(sector))));
+        return Math.max(0, Math.min(amount, Math.min(line, Math.min(capitalRoom(sector), projectRoom()))));
     }
 
     /** ...and the bond's own ceiling: the same default point after the deal, and the ban. */
@@ -1960,7 +2032,7 @@ public class BusinessDebtManager {
         // ...and what the bank's capital lets it lend this month (0.7.8): a
         // building is new lending, never keeping a borrower going - GROWTH,
         // which the capital rule still rations (CREDIT LINES STAY OPEN).
-        if (keepGoingOnly || amount > capitalRoom(sector)) {
+        if (keepGoingOnly || amount > Math.min(capitalRoom(sector), projectRoom())) {
             refusedForCapital.add(sector);
             refusedProjectForCapital.add(sector);
             return false;
@@ -2098,20 +2170,61 @@ public class BusinessDebtManager {
             return false;
         }
         double principal = loan * (1 + Mortgage.premiumRate());
-        double assetsAfter = Math.max(0, getAssets(sector)) + principal;
-        // ...as it stands, too (0.7.12, round 2): see canFundProject().
-        if (pastDefaultPoint(sector, getCash(sector))
-                || getPrincipal(sector) + principal > assetsAfter * INSOLVENCY_TRIGGER) {
+        if (mortgagePastDefaultPoint(sector, principal)) {
             mortgageRefusal = MORTGAGE_PAST_DEFAULT_POINT;
             return false;
         }
-        if (insuredRationed && principal > capitalRoom(sector)) {
+        if (capitalShortFor(sector, principal)) {
             mortgageRefusal = MORTGAGE_CAPITAL;
             refusedForCapital.add(sector);
             refusedMortgageForCapital.add(sector);
             return false;
         }
         return true;
+    }
+
+    /** canFundMortgage()'s default-point test on a mortgage of this principal: past it as the sector stands, or once lent (0.7.12, round 2; see canFundProject()). */
+    private boolean mortgagePastDefaultPoint(String sector, double principal) {
+        double assetsAfter = Math.max(0, getAssets(sector)) + principal;
+        return pastDefaultPoint(sector, getCash(sector))
+                || getPrincipal(sector) + principal > assetsAfter * INSOLVENCY_TRIGGER;
+    }
+
+    /** canFundMortgage()'s capital test on a mortgage of this principal: only while the leverage requirement binds (round 2). */
+    private boolean capitalShortFor(String sector, double principal) {
+        return insuredRationed && principal > Math.min(capitalRoom(sector), insuredProjectRoom());
+    }
+
+    /**
+     * ...the same door asked before the order goes to it, with nothing
+     * recorded: whether it would refuse the mortgage this shortfall takes for
+     * the bank's capital, and for nothing else (MC1). So it is no while the
+     * lender is shut, while the landlord is banned from borrowing, and while
+     * it is past its default point, as the door's own tests before the
+     * capital's are (REV-MC1: a banned landlord, or one past its default
+     * point, was asked for the whole order in a crunch).
+     */
+    public boolean mortgageShortOfCapital(String sector, double shortfall) {
+        if (!(shortfall > 0) || !lendingOpen || isBorrowingBlocked(sector)) return false;
+        double principal = Mortgage.loanFor(shortfall) * (1 + Mortgage.premiumRate());
+        return !mortgagePastDefaultPoint(sector, principal) && capitalShortFor(sector, principal);
+    }
+
+    /**
+     * What a landlord's owners are asked for on an order of this cost bought
+     * on a mortgage, the till and its money abroad holding `held`
+     * (Game.consider(), THE OWNERS FIRST): what the till lacks on the down
+     * payment - or, while the door would refuse the order's mortgage for the
+     * bank's capital (mortgageShortOfCapital()), what it lacks on the whole
+     * order (MC1). That mortgage is the one the door is asked for once the
+     * down payment is in: the cost less the larger of the till and the down
+     * payment (REV-MC1: on the till alone it priced a loan up to 1.18 times
+     * the door's, so a bank with room for the door's loan read short).
+     */
+    public double ownersAskOnMortgage(String sector, double cost, double held) {
+        double down = Mortgage.ownFundsFor(cost);
+        if (mortgageShortOfCapital(sector, cost - Math.max(held, down))) return cost - held;
+        return Math.min(down, down - held);
     }
 
     /** Why canFundMortgage() last said no, or null if it said yes. */
@@ -2439,6 +2552,47 @@ public class BusinessDebtManager {
 
     private double capitalGrowth = Double.POSITIVE_INFINITY;
     private boolean keepGoingOnly;
+    /** The bank's uninsured project allowance, shared this turn; insured mortgages keep their own rule (BF1). */
+    private double projectBudget = Double.POSITIVE_INFINITY, projectBudgetLent;
+    private Bank projectBank;
+    private boolean projectBookSettled;
+    private double projectSettledLent, projectSettledRepaid;
+
+    /** Struck before lending, and again after defaults, net of lending still awaiting the bank's settle. */
+    public void setProjectBudget(double room) {
+        projectBudget = Math.max(0, room - pendingProjectLoans());
+        projectBudgetLent = lentThisMonth;
+    }
+
+    /** Read immediate bank claims too: bonds, securities and carry settle before loans do. */
+    public void setProjectBudget(Bank bank) {
+        projectBank = bank;
+        setProjectBudget(bank.projectHeadroom());
+    }
+
+    /** New borrowing and claims already on the bank's books consume one allowance. */
+    public double projectRoom() {
+        double room = projectBudget - Math.max(0, lentThisMonth - projectBudgetLent);
+        if (projectBank != null) room = Math.min(room, (projectBookSettled ? projectBank.headroom() : projectBank.projectHeadroom()) - pendingProjectLoans());
+        return Math.max(0, room);
+    }
+    private double insuredProjectRoom() {
+        if (projectBank == null) return projectRoom();
+        double room = projectBookSettled ? projectBank.leverageHeadroom() : projectBank.projectLeverageHeadroom();
+        return Math.max(0, room - pendingProjectLoans());
+    }
+
+    private double pendingProjectLoans() {
+        return Math.max(0, (lentThisMonth - projectSettledLent) - (repaidThisMonth - projectSettledRepaid));
+    }
+
+    /** The bank has refreshed its loan book: these claims are now counted there, not pending too. */
+    public void projectLoansSettled() {
+        projectBookSettled = true;
+        projectSettledLent = lentThisMonth;
+        projectSettledRepaid = repaidThisMonth;
+    }
+
     private final Map<String, Double> principalAtRule = new LinkedHashMap<>();
     /** Sectors whose project the capital rule refused this month, so the investor can say so. */
     private final java.util.Set<String> refusedForCapital = new java.util.HashSet<>();
@@ -2513,6 +2667,17 @@ public class BusinessDebtManager {
     public boolean wasProjectRefusedForCapital(String sector) { return refusedProjectForCapital.contains(sector); }
     /** ...a new mortgage, this month. */
     public boolean wasMortgageRefusedForCapital(String sector) { return refusedMortgageForCapital.contains(sector); }
+
+    /**
+     * ...and a capital no taken back (HN1, REV-HN1-1): a smaller order then
+     * got past the door, so the sector was trimmed, not held. Its marks stand
+     * as they stood before the order was first tried - a no at another door
+     * this month is kept - for the investor's next line and the playtest.
+     */
+    public void takeBackCapitalRefusal(String sector, boolean refusedBefore, boolean mortgageRefusedBefore) {
+        if (!refusedBefore) refusedForCapital.remove(sector);
+        if (!mortgageRefusedBefore) refusedMortgageForCapital.remove(sector);
+    }
 
     /* =====================================================================
        THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3)
@@ -2871,7 +3036,8 @@ public class BusinessDebtManager {
      */
     public double restructure(String sector, boolean forced) {
 
-        if (!forced && !isInsolvent(sector)) {
+        boolean closed = closedBorrowers.contains(sector);
+        if (!forced && !closed && !isInsolvent(sector)) {
             return 0;
         }
 
@@ -2886,7 +3052,8 @@ public class BusinessDebtManager {
          * grows when the ban ENDS and the sector is still under water, which
          * is what "defaulted again" means.
          */
-        if (isBorrowingBlocked(sector)) {
+        boolean alreadyBlocked = isBorrowingBlocked(sector);
+        if (alreadyBlocked && !closed) {
             if (forced) {
                 double open = Math.max(0, -getCash(sector));
                 if (open > 0) {
@@ -2899,7 +3066,8 @@ public class BusinessDebtManager {
         }
 
         double principal = getPrincipal(sector);
-        double target = Math.max(getAssets(sector) * RESTRUCTURE_TARGET, 0);
+        double target = Math.max(getAssets(sector) * RESTRUCTURE_TARGET,
+                closed ? closedRecovery.getOrDefault(sector, 0.0) : 0);
         double writeOff = Math.max(0, principal - target);
 
         /*
@@ -2965,8 +3133,10 @@ public class BusinessDebtManager {
 
         writtenOffThisMonth.put(sector, getWrittenOffThisMonth(sector) + loanWriteOff);
         writtenOffTotal.put(sector, getWrittenOffTotal(sector) + loanWriteOff);
-        restructures.put(sector, getRestructureCount(sector) + 1);
-        blockedMonths.put(sector, exclusionFor(getRestructureCount(sector)));
+        if (!alreadyBlocked) {
+            restructures.put(sector, getRestructureCount(sector) + 1);
+            blockedMonths.put(sector, exclusionFor(getRestructureCount(sector)));
+        }
         restructuredThisMonth.add(sector);
         /*
          * ...AND ITS QUARTER RESTARTS (0.7.8, round 4). A lender re-rates a
@@ -3275,6 +3445,8 @@ public class BusinessDebtManager {
     public double restructureInsolventSectors() {
 
         double total = 0;
+        for (BusinessDebt loan : loans) if (loan.isRetirementClaim() && loan.getOutstandingPrincipal() > 0)
+            closedBorrowers.add(loan.getSector());
         for (String sector : SECTORS) {
             writtenOffThisMonth.put(sector, 0.0);
         }
@@ -3300,7 +3472,8 @@ public class BusinessDebtManager {
             // backstop has had its turn.
             double cannotPay = cannotPayShare(sector);
             double owedBefore = getPrincipal(sector);
-            total += defaultSlice(sector, cannotPay);
+            // A closed borrower was resolved as a whole above, including its realizable stock.
+            if (!closedBorrowers.contains(sector)) total += defaultSlice(sector, cannotPay);
             double overdraft = Math.max(0, -getCash(sector));
             if (overdraft > 0) {
                 cannotPayShort.put(sector, overdraft);
@@ -3324,6 +3497,8 @@ public class BusinessDebtManager {
                 }
             }
         }
+        closedBorrowers.clear();
+        closedRecovery.clear();
         // What each owes as the rule judged it, for the bank's allowance (0.7.8).
         principalJudged.clear();
         for (String sector : SECTORS) principalJudged.put(sector, getPrincipal(sector));
@@ -3513,6 +3688,13 @@ public class BusinessDebtManager {
 
     public void clearLoans() {
         loans.clear();
+        closedBorrowers.clear();
+        closedRecovery.clear();
+        projectBudget = Double.POSITIVE_INFINITY;
+        projectBudgetLent = 0;
+        projectBank = null;
+        projectSettledLent = projectSettledRepaid = 0;
+        projectBookSettled = false;
         for (String sector : SECTORS) {
             maturedPrincipal.put(sector, 0.0);
             writtenOffThisMonth.put(sector, 0.0);
@@ -3589,6 +3771,11 @@ public class BusinessDebtManager {
     public void redenominate(double scale) {
         lentThisMonth   *= scale;
         repaidThisMonth *= scale;
+        closedRecovery.replaceAll((k, v) -> v * scale);
+        projectBudget *= scale;
+        projectBudgetLent *= scale;
+        projectSettledLent *= scale;
+        projectSettledRepaid *= scale;
         lentBySector.replaceAll((k, v) -> v * scale);
         repaidBySector.replaceAll((k, v) -> v * scale);
         for (BusinessDebt loan : loans) {

@@ -31,6 +31,12 @@ import ham.citybuildersim.sectors.Freight;
  *      starved one quotes near the lorries, and in between it covers what it
  *      costs to run plus a return on the track. A haulage rate that did not
  *      respond to either would make this a subsidy rather than a sector.
+ *      (FS7: section 4's city is a town built for it, the steel town and ten
+ *      works; whether its railway is sized is read at the month the track has
+ *      run, from the quote's own last step and the model's bounds, and the
+ *      over-built railway is the same track laid at four times the sized
+ *      track, read after the months the model's REPRICE_SPEED takes to close
+ *      its walk to the ceiling - the law is the walk, not a played drift.)
  *
  * See claude/transport-and-the-freight-band.md and sectors.Freight.
  */
@@ -251,9 +257,9 @@ public class RailCheck {
 
         quietly(() -> {
             game.newGame();
-            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the town below was written against one that taxes from month 1.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): the town below was
+            // written against one that taxes from month 1; every lever is open from the founding since OP1.
             game.getEconomyManager().getTaxPolicy().reset();
-            game.getEconomyManager().getTaxPolicy().openAll();
             // ...and 1900's causes of death held off (R0b), as ScaleCheck's city is: the freight this town ships is its people's, and the railway's net is read against it.
             game.holdCausesOfDeathOff();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
@@ -316,8 +322,11 @@ public class RailCheck {
         Freight rail = game.getSectors().freight();
         BuildingManager live = game.getBuildingManager();
 
+        // FS7: this asked for more than 10,000 t, a figure picked off the town's play. The railway's own measure of freight worth a line is the one asked:
+        // the planner lays track when the offer fills Freight.MIN_LINE_UTILISATION of a line (a spur's tonnes), and a town under that is no fixture for a railway.
+        final double spurTonnes = live.getTemplateByName("Rail Spur").getRailCapacity();
         report("a city that trades steel has freight to move",
-                rail.getTradeTonnes() > 10_000,
+                rail.getTradeTonnes() >= Freight.MIN_LINE_UTILISATION * spurTonnes,
                 String.format("%,.0f tonnes a month, worth %,.0fk by lorry",
                         rail.getTradeTonnes(), rail.getTruckBill()));
         /*
@@ -375,7 +384,11 @@ public class RailCheck {
                 String.format("%,.1f wagon sets now carry %,.0f tonnes",
                         rail.fleet(), rail.getCapacityTonnes()));
 
-        quietly(() -> { for (int i = 0; i < 28; i++) game.toggleNextMonth(); });
+        // FS7: the last of the twenty-eight months is run apart, so the quote's last step is read: the rule's target the quote walked toward that month is
+        // quotePrior + (quote - quotePrior) / REPRICE_SPEED, the model's own repricing (Freight.haul(), step 4), and the sizing below is read from it.
+        quietly(() -> { for (int i = 0; i < 27; i++) game.toggleNextMonth(); });
+        final double quotePrior = rail.getQuote();
+        quietly(game::toggleNextMonth);
 
         // Since FR2 the sector's other revenue is the railway's bill and Haulage's (the trucks' city leg): the railway's is the rest.
         double trucksBilled = rail.haulage().getBill();
@@ -498,28 +511,52 @@ public class RailCheck {
         double sizedNet = rail.getHaulageBilled() - rail.getRunningCost();
         double sizedCapital = rail.getBuildingsValue() + rail.getLandValue();
 
+        /*
+         * FS7: THE SIZING IS READ, NOT MEASURED. The railway "sized to its city" was ten works on a spur and a depot, billing within .25 of what the rule allowed
+         * because that was what the town's play came to (ten works 'measured 0.95', its comment said). A railway bills what the rule allows when the quote is
+         * walking to a target inside the bounds (Freight.RAIL_FLOOR, 1): the month's target is read off the quote's last step, and a town whose target stands
+         * at either bound is not sized, whatever its works - that fails here as the fixture it is. In the month the shares in force are the shares next
+         * month's are struck at (both the whole offer: the track and the stations are past it), the bill is the month's lorry bill at the quote in force and the
+         * target the allowed over that same bill, so billed = allowed x quotePrior / target, and only the city leg (billed at the share in force, struck at the next) is
+         * apart from it. The quote still walks a trade that grew under it: it bills within one repricing step (REPRICE_SPEED) of the rule, and no nearer is the law.
+         */
+        final double sizedTarget = quotePrior + (sizedQuote - quotePrior) / Freight.REPRICE_SPEED;
         report("a railway sized to its city bills about what the rule allows it",
-                sizedAllowed > 0 && near(sizedBilled, sizedAllowed, .25),
-                String.format("billed %,.0fk against %,.0fk allowed, at %.0f%% of the lorry rate",
-                        sizedBilled, sizedAllowed, sizedQuote * 100));
+                sizedAllowed > 0 && sizedTarget > Freight.RAIL_FLOOR + 1e-9 && sizedTarget < 1 - 1e-9
+                        && near(sizedBilled, sizedAllowed * quotePrior / sizedTarget, 1e-9 + rail.getHomeBill() / sizedAllowed)
+                        && near(sizedBilled, sizedAllowed, Freight.REPRICE_SPEED),
+                String.format("billed %,.0fk against %,.0fk allowed, at %.0f%% of the lorry rate, walking to %.1f%% from %.1f%%",
+                        sizedBilled, sizedAllowed, sizedQuote * 100, sizedTarget * 100, quotePrior * 100));
         report("...and is inside its own bounds while it does",
                 sizedQuote > Freight.RAIL_FLOOR && sizedQuote <= 1 + 1e-12,
                 String.format("%.1f%%, floor %.0f%%", sizedQuote * 100, Freight.RAIL_FLOOR * 100));
 
+        /*
+         * FS7: SIX SPURS AND FORTY MONTHS were the play's four times the track and the time it took to pin. Now the spurs are what puts the track at four times the
+         * sized railway's (3 x its track again, in spurs), and the months are what the model's own walk takes to close 99% of its gap to the ceiling,
+         * ceil(ln .01 / ln(1 - REPRICE_SPEED)): a target above the ceiling (the rule asks more than a lorry would charge) walks the quote
+         * 1 - (1 - q0)(1 - REPRICE_SPEED)^n in n months, to the bit of the arithmetic, which is asserted below instead of a quote read off a forty-month play.
+         */
+        final double sizedTrack = rail.trackTonnes();
+        final int moreSpurs = (int) Math.ceil(3 * sizedTrack / spurTonnes);
+        final int walk = (int) Math.ceil(Math.log(.01) / Math.log(1 - Freight.REPRICE_SPEED));
         quietly(() -> {
-            lay(game, "Rail Spur", 6);
-            for (int i = 0; i < 40; i++) game.toggleNextMonth();
+            lay(game, "Rail Spur", moreSpurs);
+            for (int i = 0; i < walk; i++) game.toggleNextMonth();
         });
 
         report("four times the track it needs, and it cannot charge for it",
-                rail.getHaulageBilled() < rail.getAllowedRevenue() * .75,
+                rail.trackTonnes() >= 4 * sizedTrack && rail.getAllowedRevenue() > rail.getTruckBill() + rail.getHomeBill()
+                        && rail.getHaulageBilled() < rail.getAllowedRevenue()
+                        && rail.getHaulageBilled() <= (rail.getTruckBill() + rail.getHomeBill()) * (1 + 1e-12),
                 String.format("billed %,.0fk against %,.0fk allowed, on %,.0f tonnes of track"
                         + " for %,.0f tonnes of freight",
                         rail.getHaulageBilled(), rail.getAllowedRevenue(),
                         rail.getCapacityTonnes(), rail.getTradeTonnes()));
+        final double pinned = 1 - (1 - sizedQuote) * Math.pow(1 - Freight.REPRICE_SPEED, walk);
         report("...so it pins at the lorries' price, which is its ceiling",
-                rail.getQuote() > sizedQuote && rail.getQuote() <= 1 + 1e-12,
-                String.format("%.1f%% against %.1f%%", rail.getQuote() * 100, sizedQuote * 100));
+                rail.getQuote() > sizedQuote && rail.getQuote() <= 1 + 1e-12 && near(rail.getQuote(), pinned, 1e-9),
+                String.format("%.1f%% against %.1f%%, the walk of %d months to the ceiling being %.4f%%", rail.getQuote() * 100, sizedQuote * 100, walk, pinned * 100));
         double railNet = rail.getHaulageBilled() - rail.getRunningCost();
         report("...and earns LESS on four times the capital",
                 railNet < sizedNet,

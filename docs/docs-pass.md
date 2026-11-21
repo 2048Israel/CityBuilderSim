@@ -90,13 +90,13 @@ from the code.
    them over and empties the file.
 
 5. **The two front doors.** `README.md` and `CLAUDE.md` state counts and
-   shapes — files, harnesses, sectors, the tree — and so do `docs/batch.md`
-   and `docs/orchestrator.md` beside them, the batch procedure out of
-   `CLAUDE.md` since 2026-10-24 and split by reader since 2026-10-28; each
-   batch that changes one leaves another wrong. `grep -c` the real number;
-   fix the sentence (`Stale` checks the counts of the first two only).
-   `AGENTS.md` only points at `CLAUDE.md`, `docs/batch.md` and
-   `docs/orchestrator.md` and should stay that way. Each
+   shapes — files, harnesses, sectors, the tree — and so do
+   `docs/contract.md` and `docs/orchestrator.md` beside them, the rules out
+   of `CLAUDE.md` since WC1 (2026-11-18); each batch that changes one leaves
+   another wrong, and the contract must stay true of the scripts. `grep -c`
+   the real number; fix the sentence (`Stale` checks the counts of the first
+   two only). `AGENTS.md` only points at `docs/contract.md` and `CLAUDE.md`
+   and should stay that way. Each
    file's entry and history is `docs/tree.md`'s since 2026-10-13, not
    `CLAUDE.md`'s: a new or reshaped file gets its line there, and `CLAUDE.md`
    stays short, because every session pays for it on every turn.
@@ -117,7 +117,7 @@ from the code.
   `TODO(docs): <what you could not tell>` in the comment and a line in the
   report, not a plausible paragraph.
 - **Do not renormalise line endings.** The repository stores LF and the
-  `.bat` files CRLF (see `CLAUDE.md`); write LF, never convert a file
+  `.bat` files CRLF (see `docs/contract.md`); write LF, never convert a file
   wholesale, and `git ls-files --eol` shows no `w/crlf` but the `.bat`
   files.
 - **Do not touch saves, `buildings.json`, or `AllChecks`' list.**

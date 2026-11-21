@@ -1,6 +1,6 @@
-# ForeignCheck.java - 1,909 lines · 16 methods · 1 constants · harnesses
+# ForeignCheck.java - 2,071 lines · 17 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ForeignCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The balance of payments, and whether the boundary it is drawn on is honest.
 > 
@@ -45,8 +45,14 @@
 > draws come to the move the reprice makes and do its readers change
 > nothing, does a loaded city say its month is not counted yet, and do the
 > verdicts and the cover a purchase buys stand where their constants say?
+> 
+> And what causes each premise (FS10), where a played city was left to reach it: section 2 reads its trade in the months its
+> bakery, shops and drivers' fuel bill stand, and its payroll against the trade balance in every year its ordered town
+> stands; section 5's jam is the roadless build's, read in every month the shops sell, its restock bound the model's own
+> Retail.STORE_COVER_MONTHS; section 8's twins buy what the model's own quotes priced and sell the bakeries' food from the
+> month the first stands, and the border prices at the two rates are read on the goods markets at one month.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (102), [Game](Game.md) (20), [Sectors](Sectors.md) (17), [GameFiles](GameFiles.md) (7), [Good](Good.md) (7), [TempDirs](TempDirs.md) (6), [MoneyAudit](MoneyAudit.md) (6), [CurrencyCheck](CurrencyCheck.md) (6), [Founding](Founding.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Retail](Retail.md) (4), [Sector](Sector.md) (2), [CentralBank](CentralBank.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Consumption](Consumption.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (102), [Game](Game.md) (22), [Sectors](Sectors.md) (17), [Retail](Retail.md) (9), [GameFiles](GameFiles.md) (8), [TempDirs](TempDirs.md) (7), [Good](Good.md) (7), [MoneyAudit](MoneyAudit.md) (6), [CurrencyCheck](CurrencyCheck.md) (6), [Founding](Founding.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [WorldMarket](WorldMarket.md) (4), [Landmasses](Landmasses.md) (4), [Sector](Sector.md) (2), [GoodsMarket](GoodsMarket.md) (2), [CentralBank](CentralBank.md) (1), [Consumption](Consumption.md) (1)
 
 **Used by (7):** [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [PassThroughCheck](PassThroughCheck.md), [RealDollarCheck](RealDollarCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
@@ -54,69 +60,73 @@
 
 | line | section |
 |---:|---|
-| 91 | · 1. the rate is pinned |
-| 102 | · 2. a city that trades |
-| 329 | · 3. across a reload |
-| 401 | · 4. nothing behaves differently |
-| 433 | · 5. every unit that leaves the shelf is paid for |
-| 549 | · 5b. reserves you sell are reserves you no longer have |
-| 648 | · 6. the rate is bounded, and moves the right way |
-| 737 | · 7. and it comes home |
-| 780 | · 8. a devaluation improves the current account |
-| 988 | · 9. the vault is held in dollars |
-| 1062 | · 10. and the move is not money anybody moved |
-| 1102 | · 11. a reform does not reach the dollars |
-| 1131 | · 12. an older save |
-| 1238 | · 13. the vault defends, it does not hold down |
-| 1340 | 14. land bought by conversion is no intervention |
-| 1587 | · ...AND THE SHOPS AND THE KITCHENS, HELD OUT FOR REAL ESTATE'S OWN |
-| 1754 | 15. what the Trade tab reads (0.7.35) |
+| 104 | · 1. the rate is pinned |
+| 115 | · 2. a city that trades |
+| 382 | · 3. across a reload |
+| 454 | · 4. nothing behaves differently |
+| 486 | · 5. every unit that leaves the shelf is paid for |
+| 623 | · 5b. reserves you sell are reserves you no longer have |
+| 722 | · 6. the rate is bounded, and moves the right way |
+| 811 | · 7. and it comes home |
+| 854 | · 8. a devaluation improves the current account |
+| 1122 | · 9. the vault is held in dollars |
+| 1196 | · 10. and the move is not money anybody moved |
+| 1236 | · 11. a reform does not reach the dollars |
+| 1265 | · 12. an older save |
+| 1372 | · 13. the vault defends, it does not hold down |
+| 1474 | 14. land bought by conversion is no intervention |
+| 1721 | · ...AND THE SHOPS AND THE KITCHENS, HELD OUT FOR REAL ESTATE'S OWN |
+| 1916 | 15. what the Trade tab reads (0.7.35) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 62 | `ForeignCheck.TRADED_BEFORE` | `24` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, kept so the fixtures are the cities they always were. |
+| 75 | `ForeignCheck.TRADED_BEFORE` | `24` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, kept so the fixtures are the cities they always were. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 54 | `static int fails` |  |
-| 55 | `static PrintStream out` |  |
-| 56 | `static PrintStream quiet` |  |
-| 59 | `static double scrappedPlantBuiltWith` | What the last devaluationCity() built from its own scrapped plant, in dollars at the landed price. |
-| 1734 | `static double lastCash` |  |
+| 60 | `static int fails` |  |
+| 61 | `static PrintStream out` |  |
+| 62 | `static PrintStream quiet` |  |
+| 65 | `static double scrappedPlantBuiltWith` | What the last devaluationCity() built from its own scrapped plant, in dollars at the landed price. |
+| 68 | `static double programmeQuotedImports` | What the model quoted the last devaluationCity()'s orders to import from the world, each quoted as it was placed, in local money at the rate the city was pinned at: the programme it must buy. |
+| 71 | `static int bakeryFirstMonth` | The first month the last devaluationCity() began with an Industrial Bakery standing (-1 if none ever did), and whether food crossed the border outward in that month. |
+| 72 | `static boolean bakerySoldFirstMonth` |  |
+| 1896 | `static double lastCash` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 1858 | **type** `public class ForeignCheck` | The balance of payments, and whether the boundary it is drawn on is honest. |
-| 64 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 69 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 79 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 86 | 887 | `public static void main(String[] args) throws Exception` |  |
-| 986 | 204 | `static void vaultInDollars() throws Exception` | Sections 9 to 12: the vault kept in dollars (2026-09-21). |
-| 1192 | 3 | `static double lift(ForeignAccounts fx)` | What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against. |
-| 1197 | 8 | `static ForeignAccounts deepVaultCity(double exports, double imports, double gdp)` | A city that has traded its months, with a vault twice the cover that earns the most absorption - its purchase the fixture's set-up, not a purchase under test, so the rate forgets it (forgetDealing()) as it forgets a f... |
-| 1236 | 103 | `static void reserveDefends()` | Section 13: the vault damps a fall and nothing else (2026-09-21). |
+| 58 | 2014 | **type** `public class ForeignCheck` | The balance of payments, and whether the boundary it is drawn on is honest. |
+| 77 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 82 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 92 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 99 | 1008 | `public static void main(String[] args) throws Exception` |  |
+| 1120 | 204 | `static void vaultInDollars() throws Exception` | Sections 9 to 12: the vault kept in dollars (2026-09-21). |
+| 1326 | 3 | `static double lift(ForeignAccounts fx)` | What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against. |
+| 1331 | 8 | `static ForeignAccounts deepVaultCity(double exports, double imports, double gdp)` | A city that has traded its months, with a vault twice the cover that earns the most absorption - its purchase the fixture's set-up, not a purchase under test, so the rate forgets it (forgetDealing()) as it forgets a f... |
+| 1370 | 103 | `static void reserveDefends()` | Section 13: the vault damps a fall and nothing else (2026-09-21). |
 
-### 14. land bought by conversion is no intervention (lines 1340-1753)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1360 | 89 | `static void landByConversion()` |  |
-| 1451 | 5 | `static ForeignAccounts copyOf(ForeignAccounts fx)` | A copy of the accounts as they stand: a save and a restore, so a month can be tried without moving the original. |
-| 1458 | 6 | `static MoneyAudit.Result intervention(double soldIn, double boughtOut)` | A month whose only foreign flow is the treasury working its own vault. |
-| 1471 | 6 | `static MoneyAudit.Result month(double exports, double imports)` | A synthetic month, which is the only honest way to test the rate rule. |
-| 1483 | 222 | `static Game devaluationCity(Path dir, double rate, double[] food) throws Exception` | The same city twice, differing only in what its currency is worth. |
-| 1707 | 26 | `static double worldFoodPrice(double rate) throws Exception` | What a foreign basket costs in local money at a given rate. |
-| 1737 | 16 | `static long run(Path dir) throws Exception` | One deterministic city, played the same way twice. |
-
-### 15. what the Trade tab reads (0.7.35) (lines 1754-1909)
+### 14. land bought by conversion is no intervention (lines 1474-1915)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1769 | 140 | `static void whatTheTradeTabReads()` |  |
+| 1494 | 89 | `static void landByConversion()` |  |
+| 1585 | 5 | `static ForeignAccounts copyOf(ForeignAccounts fx)` | A copy of the accounts as they stand: a save and a restore, so a month can be tried without moving the original. |
+| 1592 | 6 | `static MoneyAudit.Result intervention(double soldIn, double boughtOut)` | A month whose only foreign flow is the treasury working its own vault. |
+| 1605 | 6 | `static MoneyAudit.Result month(double exports, double imports)` | A synthetic month, which is the only honest way to test the rate rule. |
+| 1617 | 229 | `static Game devaluationCity(Path dir, double rate, double[] food) throws Exception` | The same city twice, differing only in what its currency is worth. |
+| 1848 | 26 | `static double worldFoodPrice(double rate) throws Exception` | What a foreign basket costs in local money at a given rate. |
+| 1876 | 19 | `static double[][] borderPrices(double rate) throws Exception` | The border prices of every shelf good at a pinned rate, read at the month the rate is struck: [0] what the world pays for one (exportPrice()), [1] what one costs landed (importPrice()), in local money, NaN where the w... |
+| 1899 | 16 | `static long run(Path dir) throws Exception` | One deterministic city, played the same way twice. |
+
+### 15. what the Trade tab reads (0.7.35) (lines 1916-2071)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1931 | 140 | `static void whatTheTradeTabReads()` |  |
 

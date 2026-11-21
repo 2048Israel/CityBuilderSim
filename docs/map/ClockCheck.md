@@ -1,6 +1,6 @@
-# ClockCheck.java - 689 lines · 25 methods · 6 constants · harnesses
+# ClockCheck.java - 690 lines · 25 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ClockCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ClockCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and
 > drops what it could not run, the header's speed says when the city falls short of it, and the
@@ -55,8 +55,8 @@
 | 275 | 3. a stall is not paid back |
 | 305 | 4. the speed says when it falls short |
 | 396 | 5. the header reads the window it draws |
-| 505 | 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one |
-| 605 | 7. a stall the clock makes itself, again and again |
+| 506 | 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one |
+| 606 | 7. a stall the clock makes itself, again and again |
 
 ## Constants
 
@@ -86,7 +86,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 642 | **type** `public class ClockCheck` | The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and drops what it could not run, the header's speed says when the city falls short of it, and the header reads only the mont... |
+| 48 | 643 | **type** `public class ClockCheck` | The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and drops what it could not run, the header's speed says when the city falls short of it, and the header reads only the mont... |
 | 52 | 4 | `static void check(String label, boolean ok)` |  |
 | 66 | 3 | `static boolean near(double a, double b, double eps)` |  |
 | 75 | 58 | **type** `static final class Sim` | The timer's frames on a clock moved by hand: each step is one frame of FRAME seconds plus whatever the work of the frame before it took (the timer's dt is the gap between two pulses, and the work is in it), months and... |
@@ -125,7 +125,7 @@
 | 323 | 4 | `static boolean readsReached(ClockPace pace, String label, double rung)` | Whether the pace reads a speed reached, alone: reading() is reached(), which is not the rung's words. |
 | 328 | 66 | `static void reading()` |  |
 
-### 5. the header reads the window it draws (lines 396-504)
+### 5. the header reads the window it draws (lines 396-505)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -134,18 +134,18 @@
 | 414 | 3 | `static double[] whole(HistorySave h, String key)` |  |
 | 419 | 41 | `static void headerReads(String what, HistorySave h, int...tails)` | The header's reads on one history: the five tiles, the change line, and every series' tail. |
 | 461 | 31 | `static void windows()` |  |
-| 494 | 10 | `static double foldedValue(String name, int month)` | A value for every series of a history grown by hand: positive, different by series and month, with a hole in the price index. |
+| 494 | 11 | `static double foldedValue(String name, int month)` | A value for every series of a history grown by hand: positive, different by series and month, with a hole in the price index. |
 
-### 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one (lines 505-604)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 507 | 97 | `static void stallAndPair()` |  |
-
-### 7. a stall the clock makes itself, again and again (lines 605-689)
+### 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one (lines 506-605)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 612 | 15 | `static Sim redrawing(double rung, double costS, double seconds, double from, int[] seen)` | The timer's loop with a redraw of {@code costS} seconds whenever one is due: a frame, then the redraw (whose cost lands in the next frame's dt), for {@code seconds}. |
-| 628 | 61 | `static void recurringStall()` |  |
+| 508 | 97 | `static void stallAndPair()` |  |
+
+### 7. a stall the clock makes itself, again and again (lines 606-690)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 613 | 15 | `static Sim redrawing(double rung, double costS, double seconds, double from, int[] seen)` | The timer's loop with a redraw of {@code costS} seconds whenever one is due: a frame, then the redraw (whose cost lands in the next frame's dt), for {@code seconds}. |
+| 629 | 61 | `static void recurringStall()` |  |
 

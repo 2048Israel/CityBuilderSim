@@ -1,6 +1,6 @@
-# Quarrying.java - 412 lines · 21 methods · 3 constants · sectors
+# Quarrying.java - 436 lines · 24 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Quarrying.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md
 > 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's
@@ -59,7 +59,7 @@
 > aggregate or the blocks until the construction upgrade (Q18), so they ship
 > - a quarry pays where it replaces imported limestone (the study's 6.5).
 
-**Uses:** [Good](Good.md) (43), [Resource](Resource.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (15), [Deposit](Deposit.md) (8), [LandManager](LandManager.md) (6), [GoodsMarket](GoodsMarket.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
+**Uses:** [Good](Good.md) (44), [Resource](Resource.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (14), [NewUnit](NewUnit.md) (10), [Deposit](Deposit.md) (8), [LandManager](LandManager.md) (6), [GoodsMarket](GoodsMarket.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
 **Used by (9):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [Sectors](Sectors.md)
 
@@ -67,81 +67,84 @@
 
 | line | section |
 |---:|---|
-| 103 | · which field a quarry is on |
-| 231 | · the ground |
-| 271 | · the carry |
-| 318 | · the estimate |
-| 344 | · the plan and the retirement |
-| 388 | · the page |
+| 104 | · which field a quarry is on |
+| 248 | · the ground |
+| 288 | · the carry |
+| 340 | · the estimate |
+| 368 | · the plan and the retirement |
+| 412 | · the page |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 81 | `Quarrying.QUARRY` | `115` | The Quarry's permanent id in buildings.json (0.7.131): 40,000 t a month on one stone site of either type. |
-| 84 | `Quarrying.LARGE_QUARRY` | `116` | The Large Quarry's (0.7.131): 250,000 t a month on three sites of one stone field. |
-| 87 | `Quarrying.DIMENSION_STONE_QUARRY` | `117` | The Dimension Stone Quarry's (0.7.131): 1,000 t of blocks a month on one hard-rock site. |
+| 82 | `Quarrying.QUARRY` | `115` | The Quarry's permanent id in buildings.json (0.7.131): 40,000 t a month on one stone site of either type. |
+| 85 | `Quarrying.LARGE_QUARRY` | `116` | The Large Quarry's (0.7.131): 250,000 t a month on three sites of one stone field. |
+| 88 | `Quarrying.DIMENSION_STONE_QUARRY` | `117` | The Dimension Stone Quarry's (0.7.131): 1,000 t of blocks a month on one hard-rock site. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 90 | `private double carried` | Limestone carried into aggregate at the last clearing (THE CARRY), tonnes; nothing until limestone first clears. |
+| 91 | `private double carried` | Limestone carried into aggregate at the last clearing (THE CARRY), tonnes; nothing until limestone first clears. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 335 | **type** `public final class Quarrying extends ExtractionSector` | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's digging industry, on Sectors.KEYS after Coal Mining - its end when it ... |
-| 92 | 10 | `public Quarrying()` |  |
+| 79 | 358 | **type** `public final class Quarrying extends ExtractionSector` | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's digging industry, on Sectors.KEYS after Coal Mining - its end when it ... |
+| 93 | 10 | `public Quarrying()` |  |
 
-### which field a quarry is on (lines 103-230)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 106 | 3 | `static boolean onAny(BuildingsTemplate t)` | Whether a building of its stands on a stone site of either type: the Quarry and the Large Quarry. |
-| 111 | 3 | `static double tonnesOf(BuildingsTemplate t)` | What a quarry digs a month at nameplate, whatever field it stands on: what its row makes of aggregate and blocks. |
-| 125 | 67 | `double[] nameplate(boolean onSite, BuildingsTemplate plus)` | Its quarries' nameplate a month by good, placed as the ground packs them (pure but for the city's ground): {LIMESTONE, AGGREGATE, DIMENSION_STONE} of the quarries standing, with `onSite` those on site too, and with `p... |
-| 194 | 3 | `private static int slot(Good g)` | The index of a good in nameplate()'s array, or -1 for one it does not make. |
-| 200 | 4 | `public double getCapacity(Good g)` | Nameplate of each of its goods a month: the quarries standing as the ground packs them - those on limestone make limestone, on hard rock aggregate. |
-| 207 | 5 | `public double getPipeline(Good g)` | ...and what the quarries on site will add, which counts as supply for the planner: the packing with them less the packing without, never below nothing (one on site can push no standing quarry off its field, but a fixt... |
-| 219 | 11 | `public Map<Good, Double> madeBy(BuildingsTemplate t)` | What one more of `t` adds to its nameplate, on top of what stands and is on site: {good: tonnes} - one more on ANY makes limestone while a limestone field has room for it, aggregate on hard rock past that; the Dimensi... |
-
-### the ground (lines 231-270)
+### which field a quarry is on (lines 104-247)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 243 | 10 | `protected double groundLimit(Good g, double asked)` | The ground decides what comes up, by type: the month's ask of a good - limestone out of limestone ground, aggregate and blocks out of hard rock - at its quarries' dig (one tonne of field a tonne of stone, three a tonn... |
-| 255 | 15 | `double digOf(Good g)` | The tonnes of field a tonne of a good takes: its quarries' dig, weighted by their nameplate of it (a tonne a tonne for limestone and aggregate, three for blocks); 1 with none standing. |
+| 107 | 3 | `static boolean onAny(BuildingsTemplate t)` | Whether a building of its stands on a stone site of either type: the Quarry and the Large Quarry. |
+| 112 | 3 | `static double tonnesOf(BuildingsTemplate t)` | What a quarry digs a month at nameplate, whatever field it stands on: what its row makes of aggregate and blocks. |
+| 117 | 3 | `static double tonnesOf(NewUnit t)` | ...for one new building already resolved (QN1): what its own recipe makes of aggregate, limestone and blocks. |
+| 132 | 72 | `double[] nameplate(boolean onSite, NewUnit plus)` | Its quarries' nameplate a month by good, placed as the ground packs them (pure but for the city's ground): {LIMESTONE, AGGREGATE, DIMENSION_STONE} of the quarries standing, with `onSite` those on site too, and with `p... |
+| 206 | 3 | `private static int slot(Good g)` | The index of a good in nameplate()'s array, or -1 for one it does not make. |
+| 212 | 4 | `public double getCapacity(Good g)` | Nameplate of each of its goods a month: the quarries standing as the ground packs them - those on limestone make limestone, on hard rock aggregate. |
+| 219 | 5 | `public double getPipeline(Good g)` | ...and what the quarries on site will add, which counts as supply for the planner: the packing with them less the packing without, never below nothing (one on site can push no standing quarry off its field, but a fixt... |
+| 231 | 3 | `public Map<Good, Double> madeBy(BuildingsTemplate t)` | What one more of `t` adds to its nameplate, on top of what stands and is on site: {good: tonnes} - one more on ANY makes limestone while a limestone field has room for it, aggregate on hard rock past that; the Dimensi... |
+| 236 | 11 | `public Map<Good, Double> madeBy(NewUnit t)` | ...for one new building already resolved (QN1): what its own recipe adds to the packing. |
 
-### the carry (lines 271-317)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 275 | 4 | `public void produceFlow(Good g)` | The month's limestone is made: and the last month's carry is spent, so carried() is this month's from here (THE CARRY). |
-| 288 | 12 | `public void shipUnsoldFlow(Good g, GoodsMarket market)` | A flow good's unsold units, once its market has taken what it wants: LIMESTONE's carried into the month's AGGREGATE output, tonne for tonne, booking nothing (THE CARRY) - aggregate clears after it and sells them at ho... |
-| 302 | 3 | `public double carried()` | Limestone carried into aggregate at the last clearing, tonnes (THE CARRY): what the works that burn limestone weigh it at its export price for (ProcessingSector.values()). |
-| 308 | 3 | `protected void saveExtras(Map<String, Double> extras)` | The carry crosses a save (FW6, 2026-10-25): the first investment pass after a load weighs limestone by it. |
-| 314 | 3 | `protected void restoreExtras(Map<String, Double> extras)` | A save without it reads none. |
-
-### the estimate (lines 318-343)
+### the ground (lines 248-287)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 327 | 16 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its quarries would clear a month: ExtractionSector's estimate on what it adds to the packing (madeBy()), not its row's makes - limestone the city would buy at the makers' rule, and the rest of it as a... |
+| 260 | 10 | `protected double groundLimit(Good g, double asked)` | The ground decides what comes up, by type: the month's ask of a good - limestone out of limestone ground, aggregate and blocks out of hard rock - at its quarries' dig (one tonne of field a tonne of stone, three a tonn... |
+| 272 | 15 | `double digOf(Good g)` | The tonnes of field a tonne of a good takes: its quarries' dig, weighted by their nameplate of it (a tonne a tonne for limestone and aggregate, three for blocks); 1 with none standing. |
 
-### the plan and the retirement (lines 344-387)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 348 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A quarry of its digs stone: aggregate or limestone, or the Dimension Stone Quarry's blocks. |
-| 354 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its quarries contributes to the measures it is retired on: the tonnes it digs a month at nameplate. |
-| 366 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Stone worked out leaves its quarries spare, measured in the tonnes they dig: all of them once the city's stone is out; while some is left, those over a type worked out (ExtractionSector's workedOut(): the Dimension St... |
-| 378 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each digs (unitsOf()): the blocks' once the hard rock is out. |
-
-### the page (lines 388-412)
+### the carry (lines 288-339)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 391 | 21 | `public List<Line> ownLines(Game game)` |  |
+| 292 | 4 | `public void produceFlow(Good g)` | The month's limestone is made: and the last month's carry is spent, so carried() is this month's from here (THE CARRY). |
+| 305 | 12 | `public void shipUnsoldFlow(Good g, GoodsMarket market)` | A flow good's unsold units, once its market has taken what it wants: LIMESTONE's carried into the month's AGGREGATE output, tonne for tonne, booking nothing (THE CARRY) - aggregate clears after it and sells them at ho... |
+| 319 | 3 | `public double carried()` | Limestone carried into aggregate at the last clearing, tonnes (THE CARRY): what the works that burn limestone weigh it at its export price for (ProcessingSector.values()). |
+| 324 | 3 | `public void setCarriedForTest(double tonnes)` | A harness's carry, by name (FB3, FW6-C): ReloadCheck places one when no checkpoint of its probe city has any, because produceFlow() zeroes it a month on. |
+| 330 | 3 | `protected void saveExtras(Map<String, Double> extras)` | The carry crosses a save (FW6, 2026-10-25): the first investment pass after a load weighs limestone by it. |
+| 336 | 3 | `protected void restoreExtras(Map<String, Double> extras)` | A save without it reads none. |
+
+### the estimate (lines 340-367)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 350 | 17 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What one more of its quarries would clear a month: ExtractionSector's estimate on what it adds to the packing (madeBy()), not its row's makes - limestone the city would buy at the makers' rule, and the rest of it as a... |
+
+### the plan and the retirement (lines 368-411)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 372 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A quarry of its digs stone: aggregate or limestone, or the Dimension Stone Quarry's blocks. |
+| 378 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its quarries contributes to the measures it is retired on: the tonnes it digs a month at nameplate. |
+| 390 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Stone worked out leaves its quarries spare, measured in the tonnes they dig: all of them once the city's stone is out; while some is left, those over a type worked out (ExtractionSector's workedOut(): the Dimension St... |
+| 402 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each digs (unitsOf()): the blocks' once the hard rock is out. |
+
+### the page (lines 412-436)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 415 | 21 | `public List<Line> ownLines(Game game)` |  |
 

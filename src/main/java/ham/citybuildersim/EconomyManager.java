@@ -726,6 +726,7 @@ public class EconomyManager {
                     sheet.getTotalAssets() - sheet.getTradePayables() + getForeignAssets(s.key())
                             + getBondAssets(s.key()));
             businessDebtManager.setCash(s.key(), s.getCash());
+            businessDebtManager.setRetirementRecovery(s.key(), s.retirementRecovery());
         }
     }
 
@@ -1191,7 +1192,7 @@ public class EconomyManager {
         // ...and the bank's branches, which are commercial buildings nobody in the private sector owns.
         BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
         if (branch != null) {
-            int n = buildingManager.getQuantity(branch.getId());
+            long n = buildingManager.getQuantity(branch.getId());
             double bill = withBuildersTax(n * (buildingManager.nonMaterialCost(branch)
                     + branch.getConstructionMaterials() * Math.max(0, materialPrice)) * MAINTENANCE_RATE);
             if (Double.isFinite(bill) && bill > 0) {
@@ -1224,7 +1225,7 @@ public class EconomyManager {
      * count, not named buildings - and the operating cost is the rest's. See
      * Bank, THE BRANCHES, BY THEIR CUSTOMERS.
      */
-    public double bankOperatingCost(int branches) {
+    public double bankOperatingCost(long branches) {
         if (branches <= 1) return 0;
         double running = (branches - 1) * bankOperatingCostPerLaterBranch();
         return Double.isFinite(running) && running > 0 ? running : 0;
@@ -1492,6 +1493,10 @@ public class EconomyManager {
             double matured = businessDebtManager.takeMaturedPrincipal(s.key());
             businessDebtManager.setMonthObligations(s.key(), monthObligations(s, matured));
             double cash = s.getCash() - matured;
+            // BF1: a subtraction's rounding is not a cash shortfall. A hair
+            // below zero otherwise draws BUFFER_MONTHS of losses, while the
+            // same books in another money unit draw nothing.
+            if (cash < 0 && -cash <= MoneyAudit.tolerance(0, businessDebtManager.getMonthObligations(s.key()))) cash = 0;
             if (cash < 0) {
                 double need = -cash;
                 if (outward != null) need -= outward.recall(s.key(), need, this);
@@ -1500,6 +1505,8 @@ public class EconomyManager {
                 }
                 cash = s.getCash() - matured;
             }
+            // Liquidation cash pays the retired claim before a new loan or a default slice can reuse it.
+            if (cash > 0) cash = Math.max(0, cash - businessDebtManager.settleRetiringLoans(s.key(), cash));
             double loss = Math.max(-s.getNetIncome(), 0);
             double lent = businessDebtManager.coverShortfall(s.key(), cash, loss, month);
             // ...less the loan's fee, which the bank keeps back (0.7.7);
@@ -1993,6 +2000,13 @@ public class EconomyManager {
     public double getCityRepairsPaid()  { return cityRepairsPaid; }
     public double getArrearsPaidDown()  { return arrearsPaidDown; }
 
+    /** The licence the city's own patented works paid abroad at the last strike (R2c-P; Game.settlePublicLicences()), a budget line, an import and part of the services valued at cost. */
+    private double publicIpCharges;
+
+    /** Sets the month's public works' licence (R2c-P); a figure that is not finite or is below 0 is 0. */
+    public void setPublicIpCharges(double charges) { this.publicIpCharges = Double.isFinite(charges) ? Math.max(0, charges) : 0; }
+    public double getPublicIpCharges() { return publicIpCharges; }
+
     /** Sets the month's student-loan interest, the treasury's. See Game.getStudentLoanInterest(). */
     public void setStudentLoanInterest(double interest) { this.studentLoanInterest = Math.max(0, interest); }
 
@@ -2097,6 +2111,20 @@ public class EconomyManager {
         this.transitFares = Math.max(0, fares);
     }
     public double getTransitBill()  { return transitBill; }
+
+    /** The part of the transit bill that is upkeep (HL1): the infrastructure's and the ports', bought of Business Services; the rest is the crews' wages. */
+    private double transitUpkeep;
+
+    /** Sets the month's transit upkeep, clamped to [0, the bill] (HL1). */
+    public void setTransitUpkeep(double upkeep) {
+        this.transitUpkeep = Math.max(0, Math.min(transitBill, upkeep));
+    }
+
+    /** The transit bill's upkeep (HL1), never more than the bill. */
+    public double getTransitUpkeep() { return Math.min(transitBill, transitUpkeep); }
+
+    /** The transit bill's wages (HL1): what is left of the bill once the upkeep is taken out. */
+    public double getTransitWages()  { return transitBill - getTransitUpkeep(); }
     public double getTransitFares() { return transitFares; }
 
     /** Negative when the fare more than covers the wages, which a player can arrange. */
@@ -2299,11 +2327,20 @@ public class EconomyManager {
             exports += s.statement().exports;
             if (s != retail && s != construction) rawImports += s.statement().imports;
         }
+        // ...less the bank's upkeep Business Services bought abroad (HL1, 2026-11-11, the review's finding). The rule is the drivers'
+        // fuel's, above: what is in no final term is not taken off as an import either. The bank is not the government, so its
+        // operating cost is in no G, and nobody buys its output over a counter, so it is in no C; the world's part of it is in
+        // neither C nor the imports. The money audit and the balance of payments still see the import, because the cash did leave
+        // (the sector's own statement keeps it). The five services' upkeep stays in: it is in G.
+        rawImports -= sectors.businessServices().statement().otherInputs
+                .getOrDefault(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES, 0.0);
         // ...and the reserve's crude across the edge, as the strike settled it (0.7.85).
         if (cityCrudeExports > 0) exports += cityCrudeExports;
         if (cityCrudeImports > 0) rawImports += cityCrudeImports;
         // ...and the coal the utility bought abroad and the upkeep it paid abroad (PW1; Game.buyPowerFuel()).
         if (utilityImports > 0) rawImports += utilityImports;
+        // ...and the licence the city's own patented works paid abroad, as the strike settled it (R2c-P).
+        if (publicIpCharges > 0) rawImports += publicIpCharges;
         double foodImports = retail.statement().imports;
         double materialImports = construction.statement().imports;
 
@@ -2315,7 +2352,8 @@ public class EconomyManager {
                 governmentServices,
                 foodImports, materialImports,
                 rawImports, exports,
-                heldUnits, heldWrittenOff, heldPrices);
+                heldUnits, heldWrittenOff, heldPrices,
+                sectors.goldMining().statement().localSales);
 
         nationalAccounts.updateGovernment(
                 getBusinessTax(), getIndustrialTax(), salesTax, totalWageTax,
@@ -2338,6 +2376,7 @@ public class EconomyManager {
         nationalAccounts.setCityRepairs(cityRepairsPaid);
         nationalAccounts.setArrearsPaid(arrearsPaidDown);
         nationalAccounts.setReserveCrude(reserveCrudeBought, reserveCrudeSold);
+        nationalAccounts.setPublicIpCharges(publicIpCharges);
         setMortgageInsuranceLines();
 
         GDP = nationalAccounts.getGdp();
@@ -2422,6 +2461,7 @@ public class EconomyManager {
         nationalAccounts.setCityRepairs(cityRepairsPaid);
         nationalAccounts.setArrearsPaid(arrearsPaidDown);
         nationalAccounts.setReserveCrude(reserveCrudeBought, reserveCrudeSold);
+        nationalAccounts.setPublicIpCharges(publicIpCharges);
         setMortgageInsuranceLines();
     }
 
@@ -2478,6 +2518,8 @@ public class EconomyManager {
         // 0.7.62-0.7.75 file's FUEL is PETROL's and DIESEL's by now (FuelSplit, 0.7.76).
         nationalAccounts.restoreHeld(held >= NationalAccounts.HELD_BEFORE_FUEL
                 ? java.util.Arrays.copyOfRange(a, heldAt, heldAt + held) : null);
+        int valuablesAt = heldAt + NationalAccounts.HELD.length;
+        nationalAccounts.restoreValuables(a.length > valuablesAt ? a[valuablesAt] : 0);
     }
 
     public double[] getNationalAccountsState() {
@@ -2500,8 +2542,9 @@ public class EconomyManager {
         };
         // ...and slots 15 on, the other goods held (0.7.58), in HELD's order.
         double[] held = nationalAccounts.getLastHeldUnits();
-        double[] out = java.util.Arrays.copyOf(base, base.length + held.length);
+        double[] out = java.util.Arrays.copyOf(base, base.length + held.length + 1);
         System.arraycopy(held, 0, out, base.length, held.length);
+        out[base.length + held.length] = nationalAccounts.getInvestmentValuables();
         return out;
     }
 
@@ -2638,6 +2681,7 @@ public class EconomyManager {
         salesTax = 0;
         cityCrudeTonnes = cityCrudeImports = cityCrudeExports = 0;
         utilityImports = 0;
+        publicIpCharges = 0;
         sectors.reset();
         markets.reset();
         salesTaxLedger.reset();
@@ -2694,11 +2738,13 @@ public class EconomyManager {
         foodAssistance *= scale;
         cityRepairsPaid *= scale;  arrearsPaidDown *= scale;
         reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
+        publicIpCharges *= scale;
         // ...and the month's transit wages and fares (B6, 0.7.47): the next
         // month bills the households last month's fares (Game.startOfMonthUpdate,
         // households.setTransitFares()), and in the old unit a reform by a
         // thousand billed every working row a thousand times its ride.
         transitBill *= scale;
+        transitUpkeep *= scale;
         transitFares *= scale;
         exchangeRate *= scale;
         struckRate *= scale;   // the D$ the goods are struck at is a rate in today's unit too (AN1)

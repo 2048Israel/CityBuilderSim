@@ -55,6 +55,14 @@ import java.util.Map;
  * AND THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30), section 16: the
  * name field opens blank, a place searched fills it unless the player has
  * typed a name, and a blank name is the model's refusal.
+ *
+ * FS17 (the flaky-suite sweep): section 2's used city is made used by hand
+ * where it used to be found used. Its landlords' insured mortgage and the
+ * premium on it are written by BusinessDebtManager.issueMortgage rather than
+ * read off whatever the 120 played months let them borrow, and the vault is
+ * sold and spent on a parcel by hand; the 120 months stay, the identity's
+ * breadth, and section 3's comparison of the reset against a fresh Game is
+ * untouched.
  */
 public class NewGameCheck {
 
@@ -349,7 +357,24 @@ public class NewGameCheck {
         used.sellForeignCurrency(used.getForeignAccounts().sellableReserves() * .4);
         // ...and land paid for out of it, with the toggle left on (0.7.6).
         used.setLandPaidFromVault(true);
-        used.buyLandParcel(used.getLandManager().getMarket().bestValue().getId());
+        assertTrue("fixture: the land office sold the parcel, paid out of the vault",
+                used.buyLandParcel(used.getLandManager().getMarket().bestValue().getId()));
+        /*
+         * FS17: this section read, on the played city, whether its landlords
+         * happened to owe insured mortgages and to have paid the city
+         * premiums on them after 120 months - a history (the lender's test
+         * met or not, a landlord building or not), and a comment in this
+         * check called it path-dependent. It is caused now, as ReadPathCheck
+         * causes its own: the lender's insured rate set and a mortgage
+         * written by hand, a claim and its premium (the model's own call,
+         * BusinessDebtManager.issueMortgage), so the two months run below take
+         * it through a payment whatever the 120 played months did. The vault
+         * is spent by hand just above (sold at 40%, a parcel bought out of
+         * it); the 120 months stay, for the identity's breadth.
+         */
+        BusinessDebtManager lender = used.getEconomyManager().getBusinessDebtManager();
+        lender.setInsuredMortgageRate(used.getBank().insuredMortgageRate(used.getDebtManager().getPolicyRate()));
+        lender.issueMortgage(Sectors.REAL_ESTATE, 50_000 * PriceLevel.FACTOR, used.getMonth());
 
         used.simulateMonths(2);
 
@@ -367,7 +392,7 @@ public class NewGameCheck {
         assertTrue("...and it paid for land out of it, and pays that way still",
                 used.isLandPaidFromVault() && used.getForeignAccounts().getLandUsdFromVaultLifetime() > 0);
         // ...and its landlords owe insured mortgages the city has taken premiums on (0.7.11),
-        // so the sweep of the lender's and the insurance's records is not 0 == 0.
+        // so the sweep of the lender's and the insurance's records is not 0 == 0 (FS17: written by hand above).
         assertTrue("...and its landlords owe insured mortgages, and have paid the city premiums on them",
                 used.getEconomyManager().getBusinessDebtManager().getMortgagePrincipal() > 0
                         && used.getEconomyManager().getBusinessDebtManager().getPremiumsTotal() > 0);
@@ -1052,6 +1077,12 @@ public class NewGameCheck {
            a hand, the autopilot comes back the autopilot, and a save from
            before either key - no autopilot, no rollover - loads with the
            hand on the dial and rolling nothing, as it was played.
+
+       A city founded the 1900 way - the founding screen's "1900" chip since R1d -
+       has its central bank open from the founding since OP1, as every lever
+       is, so the rule has the dial from the first month, a save reloads with
+       it there, and the player's hand can take it in that month (from R0f to
+       OP1 the rule waited for the bank, March 1935).
        ===================================================================== */
     static void theDialAndTheRollover(GameFiles files) throws Exception {
         System.out.println("\n--- 12. the dial and the rollover a player founds with ---");
@@ -1102,6 +1133,22 @@ public class NewGameCheck {
         assertTrue("a save from before either key loads with the hand on the dial",
                 !back[0].getDebtManager().isAutopilot());
         assertTrue("...and rolls nothing, as it was played", back[0].getRolloverMode() == Rollover.Mode.MANUAL);
+
+        // R1d: the founding screen's own city on its "1900" chip. Since OP1 its bank is open from the founding, as every lever is, so the rule
+        // has the dial from the first month, as in a city founded the default way (from R0f to OP1 it waited for March 1935).
+        Founding opened = Founding.named("Arden", Founding.Preset.LEAN, WorldEconomy.DEFAULT_MEAN_INFLATION).withUnfitted(true);
+        Game old = new Game(files);
+        quietly(() -> old.newGame(opened));
+        assertTrue("fixture: the founding screen's city founded the 1900 way, on its \"1900\" chip", old.foundedUnfitted());
+        assertTrue("a 1900 city: the bank is open from the founding, so the rule has the dial from the first month",
+                old.getDebtManager().isAutopilot());
+        assertTrue("...and it rolls in the same structure", old.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
+        assertTrue("saved", old.saveGame(10, "a 1900 city's rule").ok);
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(10); });
+        assertTrue("...and its save reloads with the rule on the dial", back[0].getLoadFailure() == null && back[0].getDebtManager().isAutopilot());
+        old.getDebtManager().takeTheDial(.04);
+        assertTrue("the player's hand takes the dial from the rule in the first month, at 4%",
+                Math.abs(old.getDebtManager().getPolicyRate() - .04) < 1e-12 && !old.getDebtManager().isAutopilot());
     }
 
     /* =====================================================================

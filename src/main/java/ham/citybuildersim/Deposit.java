@@ -185,6 +185,23 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
        they did. Read for oil; the draw is the same for any field.
        ===================================================================== */
 
+    /** Gold's reference recovered grade, grams per tonne of ore (GD4, estimate). */
+    public static final double GOLD_REFERENCE_GRADE = 10;
+
+    /** The grade left at the last ounce, as a share of the unworked grade (GD4, estimate). */
+    public static final double GOLD_LAST_GRADE_SHARE = .2;
+
+    /** Unworked gold grades by geology, g/t: shields richer, placers poorer (GD4, estimates). */
+    private static final double[] GOLD_GRADES = { 0, 12, 10, 6, 0, 4, 8 };
+
+    /** The field's deterministic unworked recovered gold grade, g/t, within 25% of its class mean. */
+    public double goldGrade() {
+        if (kind != Resource.GOLD) return 0;
+        double mean = geology == null ? GOLD_REFERENCE_GRADE : GOLD_GRADES[geology.ordinal()];
+        long draw = World.mix(((long) cell << 32) ^ index ^ 0x474F4C4447524144L);
+        return mean * (.75 + .5 * World.unit(draw));
+    }
+
     /** A crude's grade: LIGHT (Brent's cuts), MEDIUM (the research's blend) or HEAVY (Maya's), in that order. */
     public enum Grade { LIGHT, MEDIUM, HEAVY }
 

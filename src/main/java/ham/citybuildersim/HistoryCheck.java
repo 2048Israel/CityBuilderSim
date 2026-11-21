@@ -1,9 +1,15 @@
 package ham.citybuildersim;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +40,16 @@ import java.util.Map;
  * the oldest years fold a year to an entry, each series by its rule, and
  * every reader has to read a folded year as a year - a fold that summed a
  * level, or a chart that drew a year's flow as one month's, looks fine too.
+ *
+ * And since CU2 (REV-CU2-1), a fifth (section 7): the eight prices roundSig
+ * records are written at today's prices to six figures and read back times
+ * FACTOR, and a reload that moved one bit of one of them would move the bank's
+ * volatility, and every trace played from the file, without a word.
+ *
+ * FS17: sections 1, 2, 2b and 2c are identities over whatever was played and stay so. What sections 2d, 2e and 2f read off a played city
+ * is caused now: the bank's fees, loss record and sheet on one fixture bank (a founding with a loan written to Retail, its capital record
+ * put by hand to no bad year and then to the worst one, its fee taken as the settle takes it - the "lent" city, scratch files), and the
+ * schools' diplomas at the month they first flow, inside a bound that fails as a fixture.
  */
 public class HistoryCheck {
 
@@ -292,15 +308,39 @@ public class HistoryCheck {
                 Math.abs(h.aligned("bankFees")[last] - lender.feeIncome())
                         <= MoneyAudit.tolerance(.005 + 1e-9, lender.feeIncome()));
         double[] dials = h.aligned("policyRate"), primes = h.aligned("bankPrime");
-        boolean primeOverDial = true, anyFee = false;
+        boolean primeOverDial = true;
         for (int i = 0; i < h.months(); i++) {
             // Every part of the price is at least zero and the first is the
             // dial itself, so prime is never under it (rounding allowed).
             if (primes[i] < Math.max(0, dials[i]) - 1e-4) primeOverDial = false;
-            if (h.aligned("bankFees")[i] > 0) anyFee = true;
         }
         assertTrue("prime is never under the dial, in any month", primeOverDial);
-        assertTrue("...and the founding bank charged a fee in some month", anyFee);
+        /*
+         * FS17: the fee series used to be read off the played city - "the founding bank charged a fee in some month" held only while an
+         * unbuilt default city's thirty months happened to charge one - and the bank's capital (2e) off the same city's bank, whether it
+         * had lived through a bad year and had anything on its sheet. Both are CAUSED on one fixture city now, a founding played a month, the
+         * bank lent by hand through its own call (Bank.lendCarry(): cash out, book up, the claim as large as its equity so its weighted
+         * book is a figure against its capital), its loss record put to a bank that has lived no year by Bank.restoreCapitalRecord(), the fee
+         * on the loan taken by Bank.takeLoanFees() as Game's settle takes it (a business loan written between months is not settled: the
+         * month's audit starts after it, and a founding's Retail cannot carry one), and the month recorded by the game's own recordMonth().
+         * 2d reads the fee, 2e the six series and the leverage pair, on it.
+         */
+        Game lent = new Game(GameFiles.scratch("historycheck-bank"));
+        quietly(() -> { lent.newGame(); lent.simulateMonths(1); });
+        Bank lentBank = lent.getBank();
+        double face = lentBank.equity();
+        lentBank.lendCarry(face);
+        lentBank.restoreCapitalRecord(new double[3 + 4 * Bank.YEAR_MONTHS]);
+        lentBank.takeLoanFees(BusinessDebtManager.feeOn(face));
+        quietly(lent::recordMonth);
+        HistorySave lentHist = lent.getHistorySave();
+        int lentLast = lentHist.months() - 1;
+        assertTrue("fixture: the bank lent, and took the fee on the loan this month",
+                BusinessDebtManager.feeOn(face) > 0 && lentBank.feeIncome() >= BusinessDebtManager.feeOn(face));
+        assertTrue("...and the bank's bankFees reads that month's fee income, no less than the fee on its loan",
+                Math.abs(lentHist.aligned("bankFees")[lentLast] - lentBank.feeIncome())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.feeIncome())
+                        && lentHist.aligned("bankFees")[lentLast] >= BusinessDebtManager.feeOn(face) - (.005 + 1e-9));
 
         /* ============ 2e. the bank's capital (0.7.8) ============
 
@@ -314,51 +354,65 @@ public class HistoryCheck {
            ================================================================= */
         System.out.println("\n--- the bank's capital ---");
 
+        // FS17: the six series, the leverage pair and the targets below are read on the caused fixture bank above (lent), whose loss record
+        // and sheet are set, not on the played city's bank.
         System.out.printf("  last month: ratio %.4f, target %.4f, allowance %.2f, provisions %.2f, dividends %.2f, ROE %.4f%n",
-                h.aligned("bankCapitalRatio")[last], h.aligned("bankCapitalTarget")[last],
-                h.aligned("bankAllowance")[last], h.aligned("bankProvisions")[last],
-                h.aligned("bankDividends")[last], h.aligned("bankReturnOnEquity")[last]);
-        double weighted = lender.getWeightedBook();
+                lentHist.aligned("bankCapitalRatio")[lentLast], lentHist.aligned("bankCapitalTarget")[lentLast],
+                lentHist.aligned("bankAllowance")[lentLast], lentHist.aligned("bankProvisions")[lentLast],
+                lentHist.aligned("bankDividends")[lentLast], lentHist.aligned("bankReturnOnEquity")[lentLast]);
+        double weighted = lentBank.getWeightedBook();
         assertTrue("the last month's bankCapitalRatio is Bank.capitalRatio(), clamped at ten",
-                Math.abs(h.aligned("bankCapitalRatio")[last]
-                        - (weighted > 0 ? Math.min(10, lender.capitalRatio()) : 10)) <= 5e-5 + 1e-12);
+                Math.abs(lentHist.aligned("bankCapitalRatio")[lentLast]
+                        - (weighted > 0 ? Math.min(10, lentBank.capitalRatio()) : 10)) <= 5e-5 + 1e-12);
         assertTrue("...its bankCapitalTarget is the target the bank chose",
-                Math.abs(h.aligned("bankCapitalTarget")[last] - lender.capitalTarget()) <= 5e-5 + 1e-12);
+                Math.abs(lentHist.aligned("bankCapitalTarget")[lentLast] - lentBank.capitalTarget()) <= 5e-5 + 1e-12);
         assertTrue("...its bankAllowance is what it has set aside, to the cent",
-                Math.abs(h.aligned("bankAllowance")[last] - lender.getAllowance())
-                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.getAllowance()));
+                Math.abs(lentHist.aligned("bankAllowance")[lentLast] - lentBank.getAllowance())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.getAllowance()));
         assertTrue("...its bankProvisions is the month's provision, to the cent",
-                Math.abs(h.aligned("bankProvisions")[last] - lender.provisions())
-                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.provisions()));
+                Math.abs(lentHist.aligned("bankProvisions")[lentLast] - lentBank.provisions())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.provisions()));
         assertTrue("...its bankDividends is what it paid its owners, to the cent",
-                Math.abs(h.aligned("bankDividends")[last] - lender.getDividendsPaid())
-                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.getDividendsPaid()));
+                Math.abs(lentHist.aligned("bankDividends")[lentLast] - lentBank.getDividendsPaid())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.getDividendsPaid()));
         assertTrue("...and its bankReturnOnEquity is the month's return, a year, clamped at ten",
-                Math.abs(h.aligned("bankReturnOnEquity")[last]
-                        - Math.max(-10, Math.min(10, lender.returnOnEquity()))) <= 5e-5 + 1e-12);
-        double[] targets = h.aligned("bankCapitalTarget");
+                Math.abs(lentHist.aligned("bankReturnOnEquity")[lentLast]
+                        - Math.max(-10, Math.min(10, lentBank.returnOnEquity()))) <= 5e-5 + 1e-12);
+        double[] targets = lentHist.aligned("bankCapitalTarget");
         boolean young = true;
-        for (int i = 0; i < h.months(); i++) {
+        for (int i = 0; i < lentHist.months(); i++) {
             if (!Double.isNaN(targets[i])
                     && Math.abs(targets[i] - (Bank.CAPITAL_RATIO + Bank.CONSERVATION_BUFFER)) > 5e-5 + 1e-12) young = false;
         }
-        assertTrue("fixture: the founding bank has lived through no bad year", lender.getWorstLossRate() <= Bank.CONSERVATION_BUFFER);
+        assertTrue("fixture: the founding bank has lived through no bad year", lentBank.getWorstLossRate() <= Bank.CONSERVATION_BUFFER);
         assertTrue("...so it targets the minimum and the conservation buffer in every month", young);
+        // FS17: ...and the other side of it, the same bank with a bad year in its record (Bank.restoreCapitalRecord(), the worst year it has
+        // lived at the buffer's ceiling): the series reads the target it chose, above the minimum and the conservation buffer.
+        double[] badYear = new double[3 + 4 * Bank.YEAR_MONTHS];
+        badYear[1] = Bank.MAX_BUFFER;
+        lentBank.restoreCapitalRecord(badYear);
+        quietly(lent::recordMonth);
+        lentHist = lent.getHistorySave();
+        lentLast = lentHist.months() - 1;
+        assertTrue("a bank that has lived through a bad year targets the minimum and the buffer that year sized, in the month it is recorded",
+                lentBank.capitalTarget() == Bank.CAPITAL_RATIO + Bank.MAX_BUFFER
+                        && Math.abs(lentHist.aligned("bankCapitalTarget")[lentLast] - lentBank.capitalTarget()) <= 5e-5 + 1e-12
+                        && lentHist.aligned("bankCapitalTarget")[lentLast] > Bank.CAPITAL_RATIO + Bank.CONSERVATION_BUFFER + 5e-5);
         /*
          * ...AND THE OTHER MEASURE (A7, 0.7.46): the leverage ratio - which
          * can bind where the clamped capital ratio reads ten - and the target
          * the bank holds on it, every month, at the getters' own figures.
          */
         assertTrue("fixture: the bank has something on its sheet, so its leverage ratio is a figure",
-                lender.exposure() > 0 && lender.leverageRatio() < 10);
+                lentBank.exposure() > 0 && lentBank.leverageRatio() < 10);
         // ...and the outbreak the year book names an epidemic on (A8, 0.7.46), as Health reads it.
         assertTrue("the outbreak series is Health's outbreak, 0 between them, every month",
                 h.monthsRecorded("outbreak") == h.months()
                         && Math.abs(h.aligned("outbreak")[last] - city.getHealth().getOutbreakSeverity()) <= 5e-5 + 1e-12);
         assertTrue("the leverage ratio and its target are recorded every month as the bank reads them",
-                h.monthsRecorded("bankLeverageRatio") == h.months() && h.monthsRecorded("bankLeverageTarget") == h.months()
-                        && Math.abs(h.aligned("bankLeverageRatio")[last] - Math.min(10, lender.leverageRatio())) <= 5e-5 + 1e-12
-                        && Math.abs(h.aligned("bankLeverageTarget")[last] - lender.leverageTarget()) <= 5e-5 + 1e-12);
+                lentHist.monthsRecorded("bankLeverageRatio") == lentHist.months() && lentHist.monthsRecorded("bankLeverageTarget") == lentHist.months()
+                        && Math.abs(lentHist.aligned("bankLeverageRatio")[lentLast] - Math.min(10, lentBank.leverageRatio())) <= 5e-5 + 1e-12
+                        && Math.abs(lentHist.aligned("bankLeverageTarget")[lentLast] - lentBank.leverageTarget()) <= 5e-5 + 1e-12);
 
         /* ============ 2f. the month's graduates (A6, 0.7.46) ============
 
@@ -370,24 +424,41 @@ public class HistoryCheck {
            few months.
            ================================================================= */
         System.out.println("\n--- the month's graduates are the people who gained a qualification ---");
+        /*
+         * FS17: this played twelve months and read the twelfth for a month the high schools handed out diplomas in. It plays a month at a
+         * time until they do, and reads THAT month: the diplomas the schools hand out are Education.getNewDiplomas() (the teens ageing out
+         * at the ladder's coverage, once the schools are built and staffed, which the model gives no month for), and the twelve months are
+         * the fixture's bound, not a reading - a town whose schools hand out none by then fails the fixture line below, not the series.
+         * The town is then played on to twelve months in all, as 2g reads a company a household holds a share of in it.
+         */
+        final int schoolBound = 12;
+        final int[] schoolMonths = { 0 };
+        final double[] atFirst = new double[3];   // the month the diplomas first flowed: the schools' diplomas, what they gained, the series' point
         Game[] schooledBox = new Game[1];
         quietly(() -> {
             schooledBox[0] = EducationCheck.city(null);
             EducationCheck.build(schooledBox[0], "Elementary School", 2);
             EducationCheck.build(schooledBox[0], "Middle School", 2);
             EducationCheck.build(schooledBox[0], "High School", 2);
-            schooledBox[0].simulateMonths(12);
+            while (!(schooledBox[0].getEducation().getNewDiplomas() > 0) && schoolMonths[0] < schoolBound) {
+                schooledBox[0].simulateMonths(1);
+                schoolMonths[0]++;
+            }
+            double[] pointsThen = schooledBox[0].getHistorySave().aligned("graduates");
+            atFirst[0] = schooledBox[0].getEducation().getNewDiplomas();
+            atFirst[1] = schooledBox[0].getEducation().gainedThisMonth();
+            atFirst[2] = pointsThen[pointsThen.length - 1];
+            for (; schoolMonths[0] < schoolBound; schoolMonths[0]++) schooledBox[0].simulateMonths(1);
         });
+        System.out.printf("  the month the diplomas first flowed: %.3f handed out, %.3f gained, %.2f recorded%n", atFirst[0], atFirst[1], atFirst[2]);
         Game schooled = schooledBox[0];
         double[] graduated = schooled.getHistorySave().aligned("graduates");
         boolean neverNegative = true;
         for (double v : graduated) if (v < 0) neverNegative = false;
-        assertTrue("fixture: the town's high schools handed out diplomas this month",
-                schooled.getEducation().getNewDiplomas() > 0);
+        assertTrue("fixture: the town's high schools handed out diplomas this month", atFirst[0] > 0);
         assertTrue("the graduates series is never negative", neverNegative);
         assertTrue("...and its last month is what the schools gained, to the history's rounding",
-                Math.abs(graduated[graduated.length - 1] - schooled.getEducation().gainedThisMonth()) <= .005 + 1e-9
-                        && graduated[graduated.length - 1] > 0);
+                Math.abs(atFirst[2] - atFirst[1]) <= .005 + 1e-9 && atFirst[2] > 0);
 
         /* ============ 2g. a consolidated company's price (C5, 0.7.48) ============
 
@@ -642,6 +713,8 @@ public class HistoryCheck {
 
         folds(root);
 
+        todaysPrices(root, files, city);
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -845,6 +918,194 @@ public class HistoryCheck {
         int end = close + 1;
         if (end < json.length() && json.charAt(end) == ',') end++;
         return json.substring(0, at) + json.substring(end);
+    }
+
+    /* ============ 7. the eight prices write at today's prices (CU2, REV-CU2-1) ============
+     *
+     * HistorySave.roundSig keeps six figures of a price at today's prices and
+     * multiplies them back by PriceLevel.FACTOR, a long decimal, so the double
+     * it records takes seventeen digits to write: 935,000 characters of a
+     * default playtest's history. The file now writes those six figures,
+     * {"todays":[...]}, and the load multiplies them again, which is the
+     * product roundSig made - the same bits, not the same to six figures. A
+     * series a reform or a fold moved off that grid is written as the plain
+     * array it always was. The city played here is section 1's, its history
+     * saved and reloaded the way the game does; the one moved off the grid is
+     * that history after a reform by a seventh.
+     */
+    static final String[] PRICES = {"minimumWage", "landPrice", "foodPrice", "materialsPrice", "orePrice", "rentPrice"};
+
+    /** The eight prices of a history, by the name seriesByName() gives them: the six, and each company's share price and value. */
+    static Map<String, List<? extends Number>> eight(HistorySave h) {
+        Map<String, List<? extends Number>> all = h.seriesByName(), found = new LinkedHashMap<>();
+        for (String name : PRICES) found.put(name, all.get(name));
+        for (Map.Entry<String, List<? extends Number>> e : all.entrySet()) {
+            if (e.getKey().startsWith("sharePrice:") || e.getKey().startsWith("shareValue:")) found.put(e.getKey(), e.getValue());
+        }
+        return found;
+    }
+
+    /** One of the eight in the written file: the field by its name, or a company's series inside its share field. */
+    static JsonElement inFile(JsonObject file, String name) {
+        int colon = name.indexOf(':');
+        if (colon < 0) return file.get(name);
+        JsonElement byCompany = file.get(name.substring(0, colon));
+        return byCompany == null || !byCompany.isJsonObject() ? null : byCompany.getAsJsonObject().get(name.substring(colon + 1));
+    }
+
+    /** The significant digits a number is written with: its mantissa's, from the first to the last that is not a zero. */
+    static int figures(String number) {
+        String digits = number.toLowerCase().split("e")[0].replace("-", "").replace(".", "");
+        int first = 0, last = digits.length();
+        while (first < last && digits.charAt(first) == '0') first++;
+        while (last > first && digits.charAt(last - 1) == '0') last--;
+        return last - first;
+    }
+
+    /** Two series the same length, with a null where the other has one and every other entry the same double to the bit. */
+    static boolean sameBits(List<? extends Number> a, List<? extends Number> b) {
+        if (a == null || b == null || a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            Number x = a.get(i), y = b.get(i);
+            if (x == null || y == null) {
+                if (x != y) return false;
+            } else if (Double.doubleToLongBits(x.doubleValue()) != Double.doubleToLongBits(y.doubleValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** How many of the eight in `a` are, to the bit, what `b` has under the same name. */
+    static int sameEight(HistorySave a, HistorySave b) {
+        int same = 0;
+        Map<String, List<? extends Number>> other = eight(b);
+        for (Map.Entry<String, List<? extends Number>> e : eight(a).entrySet()) {
+            if (sameBits(e.getValue(), other.get(e.getKey()))) same++;
+        }
+        return same;
+    }
+
+    /** The text the eight take when each is written by Gson as the plain array of its doubles, the form before CU2. */
+    static int plainBytes(HistorySave h) {
+        Gson gson = new Gson();
+        int bytes = 0;
+        for (List<? extends Number> series : eight(h).values()) bytes += gson.toJson(series).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        return bytes;
+    }
+
+    /** The text the eight take in the file as written: each one's element, as Gson writes it. */
+    static int writtenBytes(HistorySave h, JsonObject file) {
+        Gson gson = new Gson();
+        int bytes = 0;
+        for (String name : eight(h).keySet()) bytes += gson.toJson(inFile(file, name)).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        return bytes;
+    }
+
+    static void todaysPrices(Path root, GameFiles files, Game city) throws Exception {
+        System.out.println("\n--- the eight prices write at today's prices ---");
+        HistorySave live = city.getHistorySave();
+        Map<String, List<? extends Number>> prices = eight(live);
+        int companies = (int) prices.keySet().stream().filter(n -> n.startsWith("sharePrice:")).count();
+
+        boolean valued = true, onGrid = true;
+        for (List<? extends Number> series : prices.values()) {
+            valued &= series != null && !series.isEmpty();
+            if (series != null) for (Number n : series) onGrid &= n == null || HistorySave.onTodaysGrid(n.doubleValue());
+        }
+        assertTrue("the played city has values in each of the eight series (" + prices.size() + " of them, " + companies + " companies listed)",
+                valued && companies > 0 && prices.size() == PRICES.length + 2 * companies);
+        assertTrue("...and every one of them is a figure roundSig recorded: it is on the grid of six figures at today's prices", onGrid);
+        Map<String, long[]> before = new LinkedHashMap<>();
+        for (Map.Entry<String, List<? extends Number>> e : prices.entrySet()) {
+            before.put(e.getKey(), e.getValue().stream().mapToLong(n -> n == null ? 0L : Double.doubleToLongBits(n.doubleValue())).toArray());
+        }
+
+        // (a) saved
+        assertTrue("the city saved to slot 2 of its scratch files", city.saveGame(2, "todays").ok);
+        Path written = files.historyFile(2);
+        JsonObject file = JsonParser.parseString(Files.readString(written)).getAsJsonObject();
+        int todays = 0, figuresMost = 0, entries = 0;
+        for (Map.Entry<String, List<? extends Number>> e : prices.entrySet()) {
+            JsonElement at = inFile(file, e.getKey());
+            if (at == null || !at.isJsonObject() || !at.getAsJsonObject().has("todays") || !at.getAsJsonObject().get("todays").isJsonArray()) continue;
+            com.google.gson.JsonArray array = at.getAsJsonObject().getAsJsonArray("todays");
+            if (array.size() != e.getValue().size()) continue;
+            todays++;
+            for (JsonElement n : array) {
+                if (n.isJsonNull()) continue;
+                entries++;
+                figuresMost = Math.max(figuresMost, figures(n.getAsString()));
+            }
+        }
+        assertTrue("each of the eight is written as {\"todays\":[...]} with an entry for every month (" + todays + " of " + prices.size() + ")", todays == prices.size());
+        assertTrue("...and a todays entry is written with at most " + HistorySave.SHARE_PRICE_DIGITS + " significant digits (" + entries + " entries, " + figuresMost + " at most)",
+                entries > 0 && figuresMost <= HistorySave.SHARE_PRICE_DIGITS);
+
+        // (b) reloaded the way the game reloads: the save and its history, from the slot
+        Game again = new Game(files);
+        quietly(() -> again.loadGameSave(2));
+        HistorySave reloaded = again.getHistorySave();
+        int reloadedSame = sameEight(live, reloaded);
+        assertTrue("reloaded, the axis and each of the eight series are the live ones, to the bit: nulls in place, the same length, every company's two ("
+                + reloadedSame + " of " + prices.size() + ")", reloaded.months() == live.months() && reloadedSame == prices.size());
+        boolean unmoved = true;
+        for (Map.Entry<String, List<? extends Number>> e : eight(live).entrySet()) {
+            long[] was = before.get(e.getKey());
+            unmoved &= was.length == e.getValue().size();
+            for (int i = 0; unmoved && i < was.length; i++) {
+                Number n = e.getValue().get(i);
+                unmoved &= (n == null ? 0L : Double.doubleToLongBits(n.doubleValue())) == was[i];
+            }
+        }
+        assertTrue("...and saving moved no bit of the series held in memory", unmoved);
+
+        // the kept read of a slot (LB4): the prices the measures read come off the file as primitives, to the bit
+        HistorySave slim = HistorySave.readKept(new StringReader(Files.readString(written)), SavedCities.KEPT);
+        int keptPrices = 0, keptSame = 0;
+        for (String name : PRICES) {
+            if (!SavedCities.KEPT.contains(name)) continue;
+            keptPrices++;
+            List<? extends Number> read = slim.seriesByName().get(name);
+            if (read instanceof HistorySave.PackedDoubles && sameBits(live.seriesByName().get(name), read)) keptSame++;
+        }
+        assertTrue("the slim read of the file holds the prices the measures keep as a PackedDoubles, to the bit (" + keptSame + " of " + keptPrices + ")",
+                keptPrices >= 2 && keptSame == keptPrices);
+
+        // (c) off the grid: the same history after a reform that scales every price by a seventh (a decimal shift can leave a short figure on the grid)
+        HistorySave moved = new HistorySave();
+        moved.restoreFrom(live);
+        moved.redenominate(1.0 / 7);
+        int off = 0;
+        for (Number n : moved.seriesByName().get("minimumWage")) if (n != null && !HistorySave.onTodaysGrid(n.doubleValue())) off++;
+        assertTrue("fixture: after a reform by a seventh " + off + " of the wage's " + moved.seriesByName().get("minimumWage").size() + " figures are off the grid", off > 0);
+        GameFiles reformed = new GameFiles(root.resolve("todays"), root.resolve("todays-no-legacy"));
+        assertTrue("the reformed history saved", moved.saveHistory(reformed, 10).ok);
+        String reformedText = Files.readString(reformed.historyFile(10));
+        JsonObject reformedFile = JsonParser.parseString(reformedText).getAsJsonObject();
+        assertTrue("the wage, off the grid, is written as a plain array, the one Gson writes of its list",
+                reformedFile.get("minimumWage").isJsonArray()
+                        && new Gson().toJson(reformedFile.get("minimumWage")).equals(new Gson().toJson(moved.seriesByName().get("minimumWage"))));
+        assertTrue("the ground's price, which a reform does not scale, is still {\"todays\":[...]}", reformedFile.get("landPrice").isJsonObject()
+                && reformedFile.get("landPrice").getAsJsonObject().has("todays"));
+        HistorySave movedBack = new HistorySave();
+        movedBack.restoreFrom(new Gson().fromJson(reformedText, HistorySave.class));
+        int movedSame = sameEight(moved, movedBack);
+        assertTrue("every one of the eight reads back after the reform as it was, to the bit (" + movedSame + " of " + prices.size() + ")", movedSame == prices.size());
+
+        // a file as every build before CU2 wrote it still reads
+        HistorySave plain = new Gson().fromJson("{\"month\":[1,2,3],\"minimumWage\":[0.5,null,0.123456789],\"sharePrice\":{\"Bank\":[1.5,2.5]},"
+                + "\"shareValue\":{\"Bank\":{\"todays\":[null,2]}}}", HistorySave.class);
+        assertTrue("a plain array as older builds wrote it reads as it is, a null where it was, and a todays series with a null in it reads as its figures times FACTOR",
+                plain.seriesByName().get("minimumWage").equals(java.util.Arrays.asList(0.5, null, 0.123456789))
+                        && plain.seriesByName().get(HistorySave.priceKey("Bank")).equals(List.of(1.5, 2.5))
+                        && plain.seriesByName().get(HistorySave.valueKey("Bank")).equals(java.util.Arrays.asList(null, 2 * PriceLevel.FACTOR)));
+
+        // (d) shorter
+        int shortBytes = writtenBytes(live, file), longBytes = plainBytes(live);
+        System.out.printf("  the eight series' text: %,d bytes at today's prices, %,d bytes as plain arrays of the same values (%.1f%% shorter); the history file %,d bytes%n",
+                shortBytes, longBytes, 100.0 * (longBytes - shortBytes) / longBytes, Files.size(written));
+        assertTrue("the eight series take fewer bytes written at today's prices (" + shortBytes + ") than as plain arrays of the same values (" + longBytes + ")", shortBytes < longBytes);
     }
 
     static void cleanUp(Path root) {

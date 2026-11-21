@@ -1,6 +1,6 @@
-# WorldMoneysCheck.java - 1,215 lines · 48 methods · 15 constants · harnesses
+# WorldMoneysCheck.java - 1,282 lines · 49 methods · 15 constants · harnesses
 
-`ham/citybuildersim/WorldMoneysCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMoneysCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The world's moneys (batch WN4; spec-exchange-rates 3.7, spec-nations 5.1): WorldMoneys' monthly rate of each money to the US dollar -
 > its parity path, the dollar cycle, the risk-off, the terms of trade and its own swing, with the pegs held and the soft ones broken by
@@ -29,7 +29,8 @@
 >      major's and an emerging float's own swing's, within 5% of CYCLE_SIGMA / CYCLE_HALF_LIFE and the money's sigma / OWN_HALF_LIFE; printed:
 >      each one's volatility a year and the half-life an economist would fit, beside the study's table.
 >   4. PEGS HOLD AND BREAK BY THE RULE: a held peg's rate over its anchor's is its ratio; a loop holds; no board ever breaks; the breaks
->      over the paths are the sum of ForeignAccounts.hazard(gap) over the held months, within 3 sd (Poisson).
+>      over the paths are the sum of ForeignAccounts.hazard(gap) over the held months, within 3 sd (Poisson). XR7's floating twins expose
+>      each signed overshoot and its fade; the real-world paths count strong and weak break landings separately.
 >   5. A RISK-OFF moves the havens up and the high yielders down by their loadings, and fades by its half-life; starts counted against RISK_OFF_RATE.
 >   6. THE TERMS OF TRADE: a January's rise of 0.1 in a commodity exporter's ln terms of trade moves its money by TOT_PASS x its commodity share
 >      x 0.1, a third in each of January, February and March, and no other money; the market's two reads (commodityShare, lnTermsOfTrade)
@@ -45,7 +46,7 @@
 > Every fixture causes its condition: a quiet WorldMoneys has no term but the one the section adds, a peg is given by a regime, a risk-off is
 > forced, and the statistics are counted over enough seeded paths that a wrong dial would show.
 
-**Uses:** [WorldMoneys](WorldMoneys.md) (74), [Nations](Nations.md) (66), [WorldData](WorldData.md) (23), [Game](Game.md) (10), [ForeignCheck](ForeignCheck.md) (7), [WorldMarket](WorldMarket.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [Good](Good.md) (4), [PartnerTrade](PartnerTrade.md) (4), [HistorySave](HistorySave.md) (4), [Founding](Founding.md) (2), [WorldDataCheck](WorldDataCheck.md) (1), [GameFiles](GameFiles.md) (1), [YearBook](YearBook.md) (1), [CityCalendar](CityCalendar.md) (1)
+**Uses:** [WorldMoneys](WorldMoneys.md) (78), [Nations](Nations.md) (69), [WorldData](WorldData.md) (23), [Game](Game.md) (10), [ForeignCheck](ForeignCheck.md) (7), [WorldMarket](WorldMarket.md) (5), [ForeignAccounts](ForeignAccounts.md) (5), [Good](Good.md) (4), [PartnerTrade](PartnerTrade.md) (4), [HistorySave](HistorySave.md) (4), [Founding](Founding.md) (2), [WorldDataCheck](WorldDataCheck.md) (1), [GameFiles](GameFiles.md) (1), [YearBook](YearBook.md) (1), [CityCalendar](CityCalendar.md) (1)
 
 **Used by (1):** [VaultMoneysCheck](VaultMoneysCheck.md)
 
@@ -53,204 +54,205 @@
 
 | line | section |
 |---:|---|
-| 216 | THE RUNS - helpers the sections share |
-| 250 | 0. THE MONEYS |
-| 283 | 1. ONE SEED, ONE PATH |
-| 357 | 2. HISTORICAL IS THE FILE |
-| 402 | THE PASS - seeded paths, counted once, read by sections 3, 4 and 5 |
-| 618 | 3. THE SWINGS ARE THE DIALS' |
-| 646 | 4. PEGS HOLD AND BREAK BY THE RULE |
-| 704 | 5. A RISK-OFF |
-| 761 | 6. THE TERMS OF TRADE |
-| 918 | 7. CROSS RATES |
-| 946 | 8. PARITY |
-| 1010 | 9. WHAT IT COSTS |
-| 1032 | THE FULL FILE'S OWN FINDINGS |
-| 1056 | 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) |
+| 257 | THE RUNS - helpers the sections share |
+| 291 | 0. THE MONEYS |
+| 324 | 1. ONE SEED, ONE PATH |
+| 398 | 2. HISTORICAL IS THE FILE |
+| 443 | THE PASS - seeded paths, counted once, read by sections 3, 4 and 5 |
+| 664 | 3. THE SWINGS ARE THE DIALS' |
+| 692 | 4. PEGS HOLD AND BREAK BY THE RULE |
+| 751 | 5. A RISK-OFF |
+| 808 | 6. THE TERMS OF TRADE |
+| 985 | 7. CROSS RATES |
+| 1013 | 8. PARITY |
+| 1077 | 9. WHAT IT COSTS |
+| 1099 | THE FULL FILE'S OWN FINDINGS |
+| 1123 | 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
-| 64 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
-| 67 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
-| 70 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a Random path the statistics are counted over: the 26-year run (the first January to the November 26 years on). |
-| 73 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run on Random: thirty years. |
-| 76 | `WorldMoneysCheck.RULED_MONTHS` | `48` | The months Historical's rule runs in the identity and restore sections: 48, after the table's end. |
-| 84 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
-| 87 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
-| 90 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
-| 94 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
-| 95 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
-| 98 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
-| 99 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { ...` |  |
-| 100 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
-| 1061 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
+| 62 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
+| 65 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
+| 68 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
+| 71 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a Random path the statistics are counted over: the 26-year run (the first January to the November 26 years on). |
+| 74 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run on Random: thirty years. |
+| 77 | `WorldMoneysCheck.RULED_MONTHS` | `48` | The months Historical's rule runs in the identity and restore sections: 48, after the table's end. |
+| 85 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
+| 88 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
+| 91 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
+| 95 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
+| 96 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
+| 99 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
+| 100 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { ...` |  |
+| 101 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
+| 1128 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 59 | `static int fails` |  |
-| 109 | `int n, bad` |  |
-| 110 | `String first` |  |
-| 144 | `final String name` |  |
-| 145 | `final WorldData data` |  |
-| 146 | `final WorldMarket.Base base` |  |
-| 147 | `final double[] shares` |  |
-| 408 | `double xy, xx, yy` |  |
-| 409 | `long n` |  |
-| 435 | `final Acc cycle` |  |
-| 436 | `final Acc[] own` |  |
-| 437 | `final double[] sum12, sumSq12, halfLife, worst` |  |
-| 438 | `final long[] n12` |  |
-| 439 | `long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks` |  |
-| 440 | `final long[] breaks` |  |
-| 441 | `final double[] hazard` |  |
-| 442 | `final long[] faced` |  |
-| 460 | `final Scope sc` |  |
-| 461 | `final int seeds` |  |
-| 462 | `final Map<String, String> regimes` |  |
-| 463 | `final String[] watch` |  |
-| 464 | `final String[] pegs, pegTarget` |  |
-| 465 | `final boolean[] board` |  |
-| 466 | `final Acc cycle` |  |
-| 467 | `final Acc[] own` |  |
-| 468 | `final double[] sum12, sumSq12` |  |
-| 469 | `final long[] n12` |  |
-| 470 | `final List<List<Double>> halfLives` |  |
-| 471 | `long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks` |  |
-| 472 | `final long[] breaks, faced` |  |
-| 473 | `final double[] hazard` |  |
-| 474 | `final double millis` |  |
+| 60 | `static int fails` |  |
+| 110 | `int n, bad` |  |
+| 111 | `String first` |  |
+| 145 | `final String name` |  |
+| 146 | `final WorldData data` |  |
+| 147 | `final WorldMarket.Base base` |  |
+| 148 | `final double[] shares` |  |
+| 449 | `double xy, xx, yy` |  |
+| 450 | `long n` |  |
+| 476 | `final Acc cycle` |  |
+| 477 | `final Acc[] own` |  |
+| 478 | `final double[] sum12, sumSq12, halfLife, worst` |  |
+| 479 | `final long[] n12` |  |
+| 480 | `long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks, strongBreaks, weakBreaks` |  |
+| 481 | `final long[] breaks` |  |
+| 482 | `final double[] hazard` |  |
+| 483 | `final long[] faced` |  |
+| 501 | `final Scope sc` |  |
+| 502 | `final int seeds` |  |
+| 503 | `final Map<String, String> regimes` |  |
+| 504 | `final String[] watch` |  |
+| 505 | `final String[] pegs, pegTarget` |  |
+| 506 | `final boolean[] board` |  |
+| 507 | `final Acc cycle` |  |
+| 508 | `final Acc[] own` |  |
+| 509 | `final double[] sum12, sumSq12` |  |
+| 510 | `final long[] n12` |  |
+| 511 | `final List<List<Double>> halfLives` |  |
+| 512 | `long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks, strongBreaks, weakBreaks` |  |
+| 513 | `final long[] breaks, faced` |  |
+| 514 | `final double[] hazard` |  |
+| 515 | `final double millis` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 1159 | **type** `public class WorldMoneysCheck` | The world's moneys (batch WN4; spec-exchange-rates 3.7, spec-nations 5.1): WorldMoneys' monthly rate of each money to the US dollar - its parity path, the dollar cycle, the risk-off, the terms of trade and its own swi... |
-| 79 | 3 | `static int longMonths(Nations.Path path)` | The last month the identity and restore sections step a path to: Random's thirty years; Historical's whole replay and RULED_MONTHS of the rule. |
-| 102 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 108 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
-| 112 | 7 | `void see(boolean ok, Supplier<String> what)` _(in WorldMoneysCheck.Tally)_ |  |
-| 121 | 6 | `static void tally(String label, Tally t)` |  |
-| 128 | 1 | `static boolean same(double a, double b)` |  |
-| 131 | 4 | `static void within(String label, double measured, double dial, double tol)` | A measured figure judged against the constant it is drawn from, within a share of it. |
-| 137 | 4 | `static void poisson(String label, double observed, double expected, double sd)` | A count judged against its expected number, within SIGMAS standard deviations of it. |
-| 143 | 24 | **type** `static final class Scope` | The world file and what is built on it: the fixture or the full file, the nations' commodity shares of exports. |
-| 149 | 7 | `Scope(String name, WorldData data)` _(in WorldMoneysCheck.Scope)_ |  |
-| 157 | 3 | `Nations nations(Nations.Path path, long seed, Map<String, String> regimes)` _(in WorldMoneysCheck.Scope)_ |  |
-| 161 | 1 | `WorldMoneys moneys(Nations nations)` _(in WorldMoneysCheck.Scope)_ |  |
-| 163 | 1 | `WorldMoneys moneys(Nations.Path path, long seed, Map<String, String> regimes)` _(in WorldMoneysCheck.Scope)_ |  |
-| 165 | 1 | `int nation(String iso3)` _(in WorldMoneysCheck.Scope)_ |  |
-| 168 | 32 | `public static void main(String[] args) throws Exception` |  |
-| 202 | 13 | `static void sections(Scope sc, Pass floats, Pass pegs, Map<String, String> pegRegimes)` | The sections both scopes run; floats is the pass over the file's own regimes, pegs the one the pegs are counted on (the fixture's with the regimes it is given). |
+| 58 | 1225 | **type** `public class WorldMoneysCheck` | The world's moneys (batch WN4; spec-exchange-rates 3.7, spec-nations 5.1): WorldMoneys' monthly rate of each money to the US dollar - its parity path, the dollar cycle, the risk-off, the terms of trade and its own swi... |
+| 80 | 3 | `static int longMonths(Nations.Path path)` | The last month the identity and restore sections step a path to: Random's thirty years; Historical's whole replay and RULED_MONTHS of the rule. |
+| 103 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 109 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
+| 113 | 7 | `void see(boolean ok, Supplier<String> what)` _(in WorldMoneysCheck.Tally)_ |  |
+| 122 | 6 | `static void tally(String label, Tally t)` |  |
+| 129 | 1 | `static boolean same(double a, double b)` |  |
+| 132 | 4 | `static void within(String label, double measured, double dial, double tol)` | A measured figure judged against the constant it is drawn from, within a share of it. |
+| 138 | 4 | `static void poisson(String label, double observed, double expected, double sd)` | A count judged against its expected number, within SIGMAS standard deviations of it. |
+| 144 | 24 | **type** `static final class Scope` | The world file and what is built on it: the fixture or the full file, the nations' commodity shares of exports. |
+| 150 | 7 | `Scope(String name, WorldData data)` _(in WorldMoneysCheck.Scope)_ |  |
+| 158 | 3 | `Nations nations(Nations.Path path, long seed, Map<String, String> regimes)` _(in WorldMoneysCheck.Scope)_ |  |
+| 162 | 1 | `WorldMoneys moneys(Nations nations)` _(in WorldMoneysCheck.Scope)_ |  |
+| 164 | 1 | `WorldMoneys moneys(Nations.Path path, long seed, Map<String, String> regimes)` _(in WorldMoneysCheck.Scope)_ |  |
+| 166 | 1 | `int nation(String iso3)` _(in WorldMoneysCheck.Scope)_ |  |
+| 169 | 33 | `public static void main(String[] args) throws Exception` |  |
+| 204 | 37 | `static void theSignedBreaks(Scope sc)` | XR7: a floating twin exposes the shadow before a peg's signed overshoot is added. |
+| 243 | 13 | `static void sections(Scope sc, Pass floats, Pass pegs, Map<String, String> pegRegimes)` | The sections both scopes run; floats is the pass over the file's own regimes, pegs the one the pegs are counted on (the fixture's with the regimes it is given). |
 
-### THE RUNS - helpers the sections share (lines 216-249)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 221 | 5 | `static double[] synthetic(int t, int nations)` | A January's ln terms of trade for the identity and restore sections: a made-up but deterministic figure per nation and year (the market's own are section 6's). |
-| 228 | 3 | `static void run(WorldMoneys w, int last, int nations)` | Steps from the month after w's to last, with a January's terms of trade handed in each January. |
-| 233 | 9 | `static boolean alike(WorldMoneys a, WorldMoneys b)` | Whether two WorldMoneys are in the same state: every money's rate, parity and shadow, the cycle, the risk-off, the swings and the terms of trade, bit for bit. |
-| 244 | 5 | `static List<String> floats(WorldMoneys w)` | The floats: moneys with no peg that the rule rules (a Historical lira, with no nation on it, keeps its last rate). |
-
-### 0. THE MONEYS (lines 250-282)
+### THE RUNS - helpers the sections share (lines 257-290)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 254 | 28 | `static void theMoneys(Scope sc)` |  |
+| 262 | 5 | `static double[] synthetic(int t, int nations)` | A January's ln terms of trade for the identity and restore sections: a made-up but deterministic figure per nation and year (the market's own are section 6's). |
+| 269 | 3 | `static void run(WorldMoneys w, int last, int nations)` | Steps from the month after w's to last, with a January's terms of trade handed in each January. |
+| 274 | 9 | `static boolean alike(WorldMoneys a, WorldMoneys b)` | Whether two WorldMoneys are in the same state: every money's rate, parity and shadow, the cycle, the risk-off, the swings and the terms of trade, bit for bit. |
+| 285 | 5 | `static List<String> floats(WorldMoneys w)` | The floats: moneys with no peg that the rule rules (a Historical lira, with no nation on it, keeps its last rate). |
 
-### 1. ONE SEED, ONE PATH (lines 283-356)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 287 | 59 | `static void theSeed(Scope sc, Map<String, String> regimes)` |  |
-| 348 | 8 | `static boolean refused(WorldMoneys w, double[] saved, String word)` | Whether restoring that save throws an IllegalArgumentException whose message holds the word. |
-
-### 2. HISTORICAL IS THE FILE (lines 357-401)
+### 0. THE MONEYS (lines 291-323)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 361 | 40 | `static void theFile(Scope sc)` |  |
+| 295 | 28 | `static void theMoneys(Scope sc)` |  |
 
-### THE PASS - seeded paths, counted once, read by sections 3, 4 and 5 (lines 402-617)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 407 | 25 | **type** `static final class Acc` | A lag-1 regression's sums: the persistence and the innovation sd. |
-| 411 | 6 | `void add(double prev, double now)` _(in WorldMoneysCheck.Acc)_ |  |
-| 418 | 6 | `void merge(Acc o)` _(in WorldMoneysCheck.Acc)_ |  |
-| 425 | 1 | `double phi()` _(in WorldMoneysCheck.Acc)_ |  |
-| 427 | 4 | `double innovationSd()` _(in WorldMoneysCheck.Acc)_ |  |
-| 434 | 23 | **type** `static final class Part` | One seeded path's counts. |
-| 444 | 12 | `Part(int watch, int pegs)` _(in WorldMoneysCheck.Part)_ |  |
-| 459 | 158 | **type** `static final class Pass` | The paths of one scope: Random, seeds seeds, PATH_MONTHS months each, merged in seed order so that the figures do not depend on the threads. |
-| 476 | 59 | `Pass(Scope sc, int seeds, Map<String, String> regimes)` _(in WorldMoneysCheck.Pass)_ |  |
-| 536 | 62 | `private Part runSeed(long seed)` _(in WorldMoneysCheck.Pass)_ |  |
-| 600 | 4 | `double volatility(int j)` _(in WorldMoneysCheck.Pass)_ | The sd of the 12-month log changes of a watched money, pooled over the paths. |
-| 605 | 5 | `double mean(List<Double> list)` _(in WorldMoneysCheck.Pass)_ |  |
-| 611 | 5 | `double median(List<Double> list)` _(in WorldMoneysCheck.Pass)_ |  |
-
-### 3. THE SWINGS ARE THE DIALS' (lines 618-645)
+### 1. ONE SEED, ONE PATH (lines 324-397)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 622 | 23 | `static void theSwings(Scope sc, Pass pass)` |  |
+| 328 | 59 | `static void theSeed(Scope sc, Map<String, String> regimes)` |  |
+| 389 | 8 | `static boolean refused(WorldMoneys w, double[] saved, String word)` | Whether restoring that save throws an IllegalArgumentException whose message holds the word. |
 
-### 4. PEGS HOLD AND BREAK BY THE RULE (lines 646-703)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 650 | 53 | `static void thePegs(Scope sc, Pass pass, boolean given)` |  |
-
-### 5. A RISK-OFF (lines 704-760)
+### 2. HISTORICAL IS THE FILE (lines 398-442)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 708 | 52 | `static void theRiskOff(Scope sc, Pass pass)` |  |
+| 402 | 40 | `static void theFile(Scope sc)` |  |
 
-### 6. THE TERMS OF TRADE (lines 761-917)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 766 | 8 | `static int findExporter(Scope sc, WorldMoneys w, Nations n)` | The nation of the most commodity-heavy exports that is the anchor of its money and floats: Canada on the full file, whatever the fixture has. |
-| 775 | 56 | `static void theTermsOfTrade(Scope sc)` |  |
-| 833 | 84 | `static void theMarketReads(Scope sc)` | The market's two reads held to the file's pairs: the share of exports in bulk goods and the ln terms of trade, recomputed from the flows. |
-
-### 7. CROSS RATES (lines 918-945)
+### THE PASS - seeded paths, counted once, read by sections 3, 4 and 5 (lines 443-663)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 922 | 23 | `static void theCross(Scope sc)` |  |
+| 448 | 25 | **type** `static final class Acc` | A lag-1 regression's sums: the persistence and the innovation sd. |
+| 452 | 6 | `void add(double prev, double now)` _(in WorldMoneysCheck.Acc)_ |  |
+| 459 | 6 | `void merge(Acc o)` _(in WorldMoneysCheck.Acc)_ |  |
+| 466 | 1 | `double phi()` _(in WorldMoneysCheck.Acc)_ |  |
+| 468 | 4 | `double innovationSd()` _(in WorldMoneysCheck.Acc)_ |  |
+| 475 | 23 | **type** `static final class Part` | One seeded path's counts. |
+| 485 | 12 | `Part(int watch, int pegs)` _(in WorldMoneysCheck.Part)_ |  |
+| 500 | 163 | **type** `static final class Pass` | The paths of one scope: Random, seeds seeds, PATH_MONTHS months each, merged in seed order so that the figures do not depend on the threads. |
+| 517 | 61 | `Pass(Scope sc, int seeds, Map<String, String> regimes)` _(in WorldMoneysCheck.Pass)_ |  |
+| 579 | 65 | `private Part runSeed(long seed)` _(in WorldMoneysCheck.Pass)_ |  |
+| 646 | 4 | `double volatility(int j)` _(in WorldMoneysCheck.Pass)_ | The sd of the 12-month log changes of a watched money, pooled over the paths. |
+| 651 | 5 | `double mean(List<Double> list)` _(in WorldMoneysCheck.Pass)_ |  |
+| 657 | 5 | `double median(List<Double> list)` _(in WorldMoneysCheck.Pass)_ |  |
 
-### 8. PARITY (lines 946-1009)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 951 | 7 | `static double lnRelative(Nations n, int anchor, int usa, int t)` | ln(P_a / P_US) in a month, log-linear between Januaries, from Nations itself. |
-| 959 | 50 | `static void theParity(Scope sc)` |  |
-
-### 9. WHAT IT COSTS (lines 1010-1031)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1014 | 17 | `static void theCost(Scope sc)` |  |
-
-### THE FULL FILE'S OWN FINDINGS (lines 1032-1055)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1036 | 19 | `static void theFullOnly(Scope all, Pass pass)` |  |
-
-### 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) (lines 1056-1215)
+### 3. THE SWINGS ARE THE DIALS' (lines 664-691)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1064 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
-| 1071 | 1 | `static void play(Game city)` | One month of a city, the narration sent nowhere. |
-| 1074 | 16 | `static Game town(String label)` | A trading town on the default founding, as ExchangeRateCheck builds it (its own copy: that one is tied to its harness's streams), on a scratch folder. |
-| 1092 | 1 | `static boolean sameArray(double[] a, double[] b)` | Two arrays the same to the bit. |
-| 1094 | 121 | `static void theCity()` |  |
+| 668 | 23 | `static void theSwings(Scope sc, Pass pass)` |  |
+
+### 4. PEGS HOLD AND BREAK BY THE RULE (lines 692-750)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 696 | 54 | `static void thePegs(Scope sc, Pass pass, boolean given)` |  |
+
+### 5. A RISK-OFF (lines 751-807)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 755 | 52 | `static void theRiskOff(Scope sc, Pass pass)` |  |
+
+### 6. THE TERMS OF TRADE (lines 808-984)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 813 | 8 | `static int findExporter(Scope sc, WorldMoneys w, Nations n)` | The nation of the most commodity-heavy exports that is the anchor of its money and floats: Canada on the full file, whatever the fixture has. |
+| 822 | 56 | `static void theTermsOfTrade(Scope sc)` |  |
+| 880 | 104 | `static void theMarketReads(Scope sc)` | The market's two reads held to the file's pairs: the share of exports in bulk goods and the ln terms of trade, recomputed from the flows. |
+
+### 7. CROSS RATES (lines 985-1012)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 989 | 23 | `static void theCross(Scope sc)` |  |
+
+### 8. PARITY (lines 1013-1076)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1018 | 7 | `static double lnRelative(Nations n, int anchor, int usa, int t)` | ln(P_a / P_US) in a month, log-linear between Januaries, from Nations itself. |
+| 1026 | 50 | `static void theParity(Scope sc)` |  |
+
+### 9. WHAT IT COSTS (lines 1077-1098)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1081 | 17 | `static void theCost(Scope sc)` |  |
+
+### THE FULL FILE'S OWN FINDINGS (lines 1099-1122)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1103 | 19 | `static void theFullOnly(Scope all, Pass pass)` |  |
+
+### 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) (lines 1123-1282)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1131 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
+| 1138 | 1 | `static void play(Game city)` | One month of a city, the narration sent nowhere. |
+| 1141 | 16 | `static Game town(String label)` | A trading town on the default founding, as ExchangeRateCheck builds it (its own copy: that one is tied to its harness's streams), on a scratch folder. |
+| 1159 | 1 | `static boolean sameArray(double[] a, double[] b)` | Two arrays the same to the bit. |
+| 1161 | 121 | `static void theCity()` |  |
 

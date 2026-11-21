@@ -87,7 +87,7 @@ public final class Research {
     /** How many years before history's date business science exists: 4 (est.; [MANS91] has none for it). */
     public static final int LAG_YEARS_BUSINESS = 4;
 
-    /** How many years before history's date legal science exists: 4, and so many months as a law lever may be brought forward (PolicyDates.MAX_EARLY_MONTHS), which DiscoveryCheck holds equal. */
+    /** How many years before history's date legal science exists: 4 (research-1900.md 7.2). A law find opens no lever since OP1: every lever is open from the founding. */
     public static final int LAG_YEARS_LAW = 4;
 
     /** The fewest years of work a building takes, however many work on it: 3 [DIMASI] (est.). */
@@ -246,7 +246,7 @@ public final class Research {
      * The jobs `posts` posts of a field are, by JobType ordinal: the first researcher type takes the larger half (posts less posts / 2), the
      * second the smaller (posts / 2, whole numbers), and the support staff are the support per post of them, rounded.
      */
-    public static long[] jobs(Field f, int posts) {
+    public static long[] jobs(Field f, long posts) {
         long[] out = new long[JobType.values().length];
         if (posts <= 0) return out;
         out[researcherA(f).ordinal()] += posts - posts / 2;
@@ -275,7 +275,7 @@ public final class Research {
     }
 
     /** The researchers the posts give: the researcher jobs (not the support staff) times their fill. */
-    public static double filledResearchers(Field f, int posts, double[] fillPerType) {
+    public static double filledResearchers(Field f, long posts, double[] fillPerType) {
         long[] jobs = jobs(f, posts);
         int a = researcherA(f).ordinal(), b = researcherB(f).ordinal();
         return jobs[a] * fillOf(fillPerType, a) + jobs[b] * fillOf(fillPerType, b);
@@ -659,7 +659,7 @@ public final class Research {
      * (labIdleMonths()). A find counts at once for the fields after it, as in the model, and for the same field the next month. Idle researchers,
      * open problems and the finds and arrivals are kept for the month (idle(), openProblems(), foundThisMonth(), arrivedThisMonth()).
      */
-    public void month(int month, long seed, EnumMap<Field, Double> researchers, EnumMap<Field, Integer> labs, EnumMap<Field, Double> labResearchers,
+    public void month(int month, long seed, EnumMap<Field, Double> researchers, EnumMap<Field, Long> labs, EnumMap<Field, Double> labResearchers,
                       double[] wagePerType) {
         foundThisMonth.clear();
         arrivedThisMonth.clear();
@@ -679,7 +679,7 @@ public final class Research {
         for (Field f : Field.values()) {
             double people = sane(researchers == null ? null : researchers.get(f));
             double labPeople = sane(labResearchers == null ? null : labResearchers.get(f));
-            Integer labCount = labs == null ? null : labs.get(f);
+            Long labCount = labs == null ? null : labs.get(f);
             List<Entry> open = openProblems(f, month);
             researchersNow.put(f, people);
             openNow.put(f, open.size());
@@ -739,7 +739,7 @@ public final class Research {
     }
 
     /** The same with labs: every lab researcher is idle too, and a field with labs has a lab too many this month as month() counts it (labIdleMonths()). */
-    public void idleMonth(EnumMap<Field, Double> researchers, EnumMap<Field, Integer> labs, EnumMap<Field, Double> labResearchers) {
+    public void idleMonth(EnumMap<Field, Double> researchers, EnumMap<Field, Long> labs, EnumMap<Field, Double> labResearchers) {
         foundThisMonth.clear();
         arrivedThisMonth.clear();
         researchersNow.clear();
@@ -771,10 +771,10 @@ public final class Research {
      * field has one when it has labs and the idle labs' researchers are at least LAB_ROOM_SHARE of one lab's (a lab nobody works in counts); a
      * month without one, or a field without labs, zeroes the count.
      */
-    private void recordLabs(Field f, Integer labCount, double labPeople, double labIdle) {
+    private void recordLabs(Field f, Long labCount, double labPeople, double labIdle) {
         labResearchersNow.put(f, labPeople);
         labsIdleNow.put(f, labIdle);
-        int n = labCount == null ? 0 : labCount;
+        long n = labCount == null ? 0 : labCount;
         if (n > 0 && labIdle >= LAB_ROOM_SHARE * labPeople / n) labIdleMonths.merge(f, 1, Integer::sum);
         else labIdleMonths.remove(f);
     }

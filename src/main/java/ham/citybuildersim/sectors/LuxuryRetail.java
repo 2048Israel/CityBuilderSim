@@ -6,6 +6,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
@@ -113,6 +114,38 @@ public class LuxuryRetail extends Sector {
      * read at today's rate, already carries the currency and the world.
      */
     public static final double MARGIN_SPEED = 1.0 / 6;
+
+    /* =====================================================================
+       WHAT A POST SELLS (LX1, 2026-11-17)
+
+       LS1 (docs/studies/spec-labour-share.md) read the shops' payroll at 2.2%
+       of their value added, where BEA's other retail pays 41.7%, and found
+       the gap in the sales per post: a Boutique covered 320 pieces of a
+       $22,000 good a month with seven posts, so each post took 47 mean
+       monthly wages of margin a month where BEA's take 2.4. On main after
+       CU2 it was 0.5-1.7% and 54-185 wages (docs/queue/LX1-notes.md).
+
+       A piece lands at about two and a half mean monthly wages, so at the
+       margin the planner builds to a post earns its wage and BEA's margin
+       over it on about one piece a month: the Boutique covers 7 with 8 posts
+       and the Department Store 80 with its 91 (buildings.json ids 69 and 70).
+       The buildings, their floor and their cost are held, which are a shop's
+       a worker already (750 square feet and $148k a post, beside the
+       Convenience Store's 1,000 and $88k). The piece's price is not touched:
+       the trade accounts and the household basket read it.
+
+       What it costs the city is posts: the households' luxury budget is
+       spent at whatever margin the counters strike, so the workers it pays
+       are the budget's share, and the old city grows to staff them.
+       LuxuryRetailCheck holds the catalogue and a town's Boutiques to the
+       band below.
+       ===================================================================== */
+
+    /** BEA's compensation of employees over value added for other retail (4A0), the mean of 2023-2025 (LS1's bea-compensation-share.csv): what a luxury shop's payroll is of its margin less power, water and upkeep, the share the two shops' posts over their coverage are struck to (LX1). */
+    public static final double LABOUR_SHARE = .417;
+
+    /** ...and how far either way of it a shop's payroll over its value added may read and still be on BEA's mark: a factor of two, what a piece's landed cost over the mean wage alone moves through one run (1.6 to 3.4 mean monthly wages on main's seed 0, LX1's notes), where the shops stood at 0.02-0.05 of it before LX1. */
+    public static final double LABOUR_SHARE_FACTOR = 2;
 
     /** What one shop's counter is worth a month, before anybody has told it anything. */
     private double sellPrice;
@@ -414,7 +447,6 @@ public class LuxuryRetail extends Sector {
         }
 
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         BuildingsTemplate best = null;
         double bestScore = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
@@ -430,10 +462,7 @@ public class LuxuryRetail extends Sector {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
@@ -446,7 +475,7 @@ public class LuxuryRetail extends Sector {
         }
         if (best == null) {
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }
@@ -475,9 +504,12 @@ public class LuxuryRetail extends Sector {
      * THE MARGIN, NOT THE TICKET, and net of what it costs to run. A shop that
      * sells a nine-dollar watch for twelve has made three dollars, owes the
      * world nine, and still has to pay its staff and its lights.
+     *
+     * ...for one new building already resolved (QN1; NewUnit): its own posts, draw and water in what it costs to run.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || t.getCoverage() <= 0) return 0;
         double landed = rLanded > 0 ? rLanded : Good.LUXURIES.worldImportPrice();
         double price = sellPrice > 0 ? sellPrice : landed * MARGIN_FLOOR;
@@ -485,7 +517,7 @@ public class LuxuryRetail extends Sector {
         // city with a hundred spare counters sells nothing.
         double served = Math.min(t.getCoverage(), Math.max(0, rWanted - coverage() - coverageOnSite()));
         if (served <= 0) served = t.getCoverage() * .5;
-        return served * (price - landed) - plans.runningCostOf(t);
+        return served * (price - landed) - plans.runningCostOf(u);
     }
 
     /* ===================================================================

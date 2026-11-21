@@ -1,6 +1,6 @@
-# ZoningScreen.java - 1,135 lines · 71 methods · 24 constants · interface
+# ZoningScreen.java - 1,122 lines · 71 methods · 24 constants · interface
 
-`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's
 > ground and its zones on one page, a sector's zone on its own page of dial
@@ -38,7 +38,7 @@
 > PolicyPreview's (the tax take, THE BUDGET, zoningTaxChange()) and
 > LandManager's - ZoningViewCheck holds them; nothing here adds up a figure.
 
-**Uses:** [PolicyScreen](PolicyScreen.md) (75), [Palette](Palette.md) (73), [ZoningView](ZoningView.md) (64), [Zoning](Zoning.md) (52), [Kept](Kept.md) (52), [LandManager](LandManager.md) (42), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [PolicyDates](PolicyDates.md) (8), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [Game](Game.md) (3), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [LandMap](LandMap.md) (1), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [PolicyScreen](PolicyScreen.md) (75), [Palette](Palette.md) (73), [ZoningView](ZoningView.md) (64), [Kept](Kept.md) (56), [Zoning](Zoning.md) (52), [LandManager](LandManager.md) (42), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [Game](Game.md) (3), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [LandMap](LandMap.md) (1), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 **Used by (3):** [BuildScreen](BuildScreen.md), [KeptBench](KeptBench.md), [PolicyScreen](PolicyScreen.md)
 
@@ -50,10 +50,10 @@
 | 189 | THE FOUR FIGURES (board 1's head): ZONED, HELD FOR THEM, PRICE GIVEN |
 | 229 | THE COLOURS: a zone in its sector's colour, the map's own (ZT1: it was |
 | 310 | THE GROUND (board 1) |
-| 546 | THE STAGED SET: the zone's and the law's keys, beside the taxes' |
-| 727 | A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES |
-| 1023 | THE FOREST LAW (board 3) |
-| 1104 | THE HUB'S CARD (Policy's fifth area card) |
+| 541 | THE STAGED SET: the zone's and the law's keys, beside the taxes' |
+| 722 | A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES |
+| 1010 | THE FOREST LAW (board 3) |
+| 1091 | THE HUB'S CARD (Policy's fifth area card) |
 
 ## Constants
 
@@ -70,19 +70,19 @@
 | 315 | `ZoningScreen.GROUND_INFO` | `"The city's dry ground, all of it: what is built on; each zone's ground - bui...` | THE CITY'S GROUND's (i). |
 | 322 | `ZoningScreen.ZONES_INFO` | `"A zone holds its size, less what its sector has built in it, out of the free...` | THE ZONES' (i). |
 | 328 | `ZoningScreen.LAW_INFO` | `"Of the city's forest ground, a protected share is never cut nor built on and...` | THE FOREST LAW's (i) on the hub. |
-| 386 | `ZoningScreen.PICK` | `"zoning:pick"` | The open line of the sector picker. |
-| 564 | `ZoningScreen.PROTECTED_KEY` | `"forest:protected", KEPT_KEY = "forest:kept"` | The forest law's two staged keys: its protected share and its kept share. |
-| 567 | `ZoningScreen.SHARE_STEP` | `.005` | A share of the dry ground's step: half a point. |
-| 570 | `ZoningScreen.PRICE_STEP` | `.05` | A price share's step: five points of the going price, a twentieth (PolicyScreen's TUITION_STEP's). |
-| 573 | `ZoningScreen.LAW_STEP` | `.01` | The forest law's step: a point of the forest. |
-| 576 | `ZoningScreen.KM2_STEPS` | `200` | How many steps a km² dial is cut into across the city's dry ground, before its step is rounded to 1, 2 or 5 of a power of ten. |
-| 691 | `ZoningScreen.BUDGET_INFO` | `PolicyScreen.BUDGET_INFO + " On a zone's page it adds the property tax its st...` | THE BUDGET's (i) on these pages. |
-| 695 | `ZoningScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: the zone's si...` | The tray's (i). |
-| 732 | `ZoningScreen.SIZE_INFO` | `"A share of the city's dry ground - re-read as the city buys land, so 2% stay...` | HOW MUCH GROUND's (i). |
-| 738 | `ZoningScreen.PRICE_INFO` | `"What the city sells the zone's ground at, as a share of the going business p...` | ITS PRICE's (i). |
-| 743 | `ZoningScreen.TAXES_INFO` | `"A zone's taxes are its sector's own rates: the city's rate and the sector's ...` | ITS TAXES' (i). |
-| 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
-| 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the for...` | The law's (i) on its page. |
+| 381 | `ZoningScreen.PICK` | `"zoning:pick"` | The open line of the sector picker. |
+| 559 | `ZoningScreen.PROTECTED_KEY` | `"forest:protected", KEPT_KEY = "forest:kept"` | The forest law's two staged keys: its protected share and its kept share. |
+| 562 | `ZoningScreen.SHARE_STEP` | `.005` | A share of the dry ground's step: half a point. |
+| 565 | `ZoningScreen.PRICE_STEP` | `.05` | A price share's step: five points of the going price, a twentieth (PolicyScreen's TUITION_STEP's). |
+| 568 | `ZoningScreen.LAW_STEP` | `.01` | The forest law's step: a point of the forest. |
+| 571 | `ZoningScreen.KM2_STEPS` | `200` | How many steps a km² dial is cut into across the city's dry ground, before its step is rounded to 1, 2 or 5 of a power of ten. |
+| 686 | `ZoningScreen.BUDGET_INFO` | `PolicyScreen.BUDGET_INFO + " On a zone's page it adds the property tax its st...` | THE BUDGET's (i) on these pages. |
+| 690 | `ZoningScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: the zone's si...` | The tray's (i). |
+| 727 | `ZoningScreen.SIZE_INFO` | `"A share of the city's dry ground - re-read as the city buys land, so 2% stay...` | HOW MUCH GROUND's (i). |
+| 733 | `ZoningScreen.PRICE_INFO` | `"What the city sells the zone's ground at, as a share of the going business p...` | ITS PRICE's (i). |
+| 738 | `ZoningScreen.TAXES_INFO` | `"A zone's taxes are its sector's own rates: the city's rate and the sector's ...` | ITS TAXES' (i). |
+| 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
+| 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the for...` | The law's (i) on its page. |
 
 ## Fields (state)
 
@@ -95,7 +95,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 1067 | **type** `final class ZoningScreen` | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial cards, and the forest law on a third - drawn in Policy's own style (the... |
+| 69 | 1054 | **type** `final class ZoningScreen` | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial cards, and the forest law on a third - drawn in Policy's own style (the... |
 | 74 | 4 | `ZoningScreen(PolicyScreen policy, UserInterface ui)` |  |
 
 ### THE PAGES (lines 79-188)
@@ -130,82 +130,82 @@
 | 278 | 11 | `static String partWhat(ZoningView.Part p)` | ...its tooltip's second line. |
 | 291 | 18 | `Pieces.CauseBar groundBar(List<ZoningView.Part> parts, double band)` | The bar: a part a stretch, held ground hatched, a click on a zone's part its page. |
 
-### THE GROUND (board 1) (lines 310-545)
+### THE GROUND (board 1) (lines 310-540)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 332 | 52 | `void groundPage(VBox page)` |  |
-| 389 | 17 | `VBox picker()` | "Zone ground for an industry": every sector with no zone, a chip each, opening its page. |
-| 408 | 3 | `static String sizeWords(Zoning.Size kind, double size)` | A zone's size in words: "2.50% of the dry ground", "1.25 km²". |
-| 413 | 5 | `static String rateChip(Zoning.Tax tax, double rate, double offset)` | A rate chip's words: "profit 15.00%", "sales 13.00% (−2.00 pts)". |
-| 420 | 64 | `HBox zoneRow(ZoningView.Row r)` | One zone: its sector, its size and share, used against held, its price, its three rates, its relief, a door. |
-| 486 | 4 | `static String usedWords(ZoningView.Row r)` | "built 0.4 · holds 1.6 km²", and "of 4.0 it wants" when it is short. |
-| 495 | 9 | `VBox lawCard(ZoningView.Forest f, Zoning z, Runnable go)` | The forest law's card: the forest as a bar of its kinds, cleared ground grey, and what the law means; a door to the law's page when `go` is not null, its style set once, whole (KP2b: it was the plain card's and then t... |
-| 506 | 4 | `static String lawTitle(Zoning z)` | "NO FOREST LAW", "10% PROTECTED · 25% KEPT FROM BUILDING". |
-| 512 | 10 | `static String lawWords(ZoningView.Forest f, Zoning z)` | What a law means, in one sentence. |
-| 524 | 6 | `static String m3(double m3)` | Cubic metres of wood: "13.7k m³", "1.2M m³". |
-| 532 | 13 | `Pieces.CauseBar forestBar(ZoningView.Forest f, double band)` | The forest as a bar: protected, working, the open forest standing, and the cleared ground. |
+| 332 | 47 | `void groundPage(VBox page)` |  |
+| 384 | 17 | `VBox picker()` | "Zone ground for an industry": every sector with no zone, a chip each, opening its page. |
+| 403 | 3 | `static String sizeWords(Zoning.Size kind, double size)` | A zone's size in words: "2.50% of the dry ground", "1.25 km²". |
+| 408 | 5 | `static String rateChip(Zoning.Tax tax, double rate, double offset)` | A rate chip's words: "profit 15.00%", "sales 13.00% (−2.00 pts)". |
+| 415 | 64 | `HBox zoneRow(ZoningView.Row r)` | One zone: its sector, its size and share, used against held, its price, its three rates, its relief, a door. |
+| 481 | 4 | `static String usedWords(ZoningView.Row r)` | "built 0.4 · holds 1.6 km²", and "of 4.0 it wants" when it is short. |
+| 490 | 9 | `VBox lawCard(ZoningView.Forest f, Zoning z, Runnable go)` | The forest law's card: the forest as a bar of its kinds, cleared ground grey, and what the law means; a door to the law's page when `go` is not null, its style set once, whole (KP2b: it was the plain card's and then t... |
+| 501 | 4 | `static String lawTitle(Zoning z)` | "NO FOREST LAW", "10% PROTECTED · 25% KEPT FROM BUILDING". |
+| 507 | 10 | `static String lawWords(ZoningView.Forest f, Zoning z)` | What a law means, in one sentence. |
+| 519 | 6 | `static String m3(double m3)` | Cubic metres of wood: "13.7k m³", "1.2M m³". |
+| 527 | 13 | `Pieces.CauseBar forestBar(ZoningView.Forest f, double band)` | The forest as a bar: protected, working, the open forest standing, and the cleared ground. |
 
-### THE STAGED SET: the zone's and the law's keys, beside the taxes' (lines 546-726)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 559 | 1 | `static String sizeKey(String s)` |  |
-| 560 | 1 | `static String unitKey(String s)` |  |
-| 561 | 1 | `static String priceKey(String s)` |  |
-| 562 | 1 | `static String offKey(String s)` |  |
-| 579 | 1 | `double dryKm2()` | The dry ground that is room, km² (ET5: the linked ground, which a share zone is a share of; the whole dry ground while nothing is unlinked). |
-| 582 | 6 | `double km2Step()` | A km² dial's step: the dry ground over KM2_STEPS, down to 1, 2 or 5 of a power of ten. |
-| 590 | 4 | `double km2Top()` | ...and its top: the dry ground, up to a whole step. |
-| 596 | 1 | `Zoning.Size kindNow(String s)` | A zone's settings as the city has them - a sector with no zone: a share, nothing, at the going price. |
-| 597 | 1 | `double sizeNow(String s)` |  |
-| 598 | 1 | `double priceNow(String s)` |  |
-| 601 | 1 | `double sizeAs(String s, Zoning.Size kind)` | A zone's size as the city has it, said in a unit: what its size dial reads as current in the unit staged - and what an unstaged size is, the unit staged. |
-| 604 | 3 | `double value(String k, double current, String key, double v)` | A key's value as staged, or a value of the caller's for one key (a thumb while it is dragged). |
-| 608 | 1 | `Zoning.Size kindOf(double unit)` |  |
-| 610 | 1 | `static double unitOf(Zoning.Size kind)` |  |
-| 613 | 5 | `double convert(double size, Zoning.Size from, Zoning.Size to)` | A size in one unit, said in the other: a share of the dry ground as km², or km² as a share. |
-| 620 | 12 | `Set<String> stagedSectors(String extra)` | The sectors with anything of their zone staged, and `extra`. |
-| 634 | 1 | `Zoning stagedZoning()` | The city's zoning with everything staged put through a copy (ZoningView.with(), without(), withLaw()). |
-| 637 | 27 | `Zoning stagedZoning(String key, double v)` | ...and one key at a value of the caller's on top. |
-| 666 | 7 | `void applyZone(String s)` | A zone as staged, through its door: Game.setZone() with its three as staged - nothing for a new zone of no size, nothing when it is to come off. |
-| 675 | 4 | `void applyLaw()` | The law as staged, through its door. |
-| 681 | 8 | `Effect budget(String key, double v)` | THE BUDGET under everything staged - the taxes through the staged policy, the zones' relief through the staged zoning (PolicyPreview.zoningTaxChange()) - with one key at a thumb's value. |
-| 704 | 19 | `Region tray()` | The tray (Policy's, 0.7.36): a chip a change, THE BUDGET before and after the set, "Apply it" or "Apply all N", and "Leave it as it is". |
-| 725 | 1 | `static String applyWords(int count)` | "Apply it", "Apply all 3". |
-
-### A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES (lines 727-1022)
+### THE STAGED SET: the zone's and the law's keys, beside the taxes' (lines 541-721)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 750 | 25 | `void zonePage(VBox page, String s)` |  |
-| 777 | 14 | `Node offControl(String s, String name, boolean off)` | "Take the zone off" - staged, its chip in the tray - or, staged, "Keep it". |
-| 793 | 25 | `VBox sizeCard(String s, String name, Sector sector)` | HOW MUCH GROUND: the unit's two chips over the dial, staged before → after. |
-| 825 | 13 | `Label unitChip(String s, String words, Zoning.Size to, Zoning.Size kind)` | One unit's chip: lit when it is the unit; a click stages the other - the zone's own ground said in it, or a staged size carried over, snapped to the new unit's step (an unstaged size is the city's, in whichever unit i... |
-| 840 | 18 | `java.util.function.DoubleFunction<List<Effect>> sizeEffects(String s, ZoningView.Page now)` | HOW MUCH GROUND's effects at any value of its thumb (pure: the probe reads them): what it carries, what it holds, the ground left free for anyone, its ground at the going price. |
-| 860 | 12 | `VBox priceCard(String s, String name)` | ITS PRICE: 0-100% of the going price a m², and what it gives up. |
-| 874 | 16 | `java.util.function.DoubleFunction<List<Effect>> priceEffects(String s, ZoningView.Page now)` | ITS PRICE's effects at any value of its thumb (pure: the probe reads them): a plot's ground, the price given up on what it holds, the tax relief, THE BUDGET. |
-| 892 | 1 | **type** `record Dial(Node words, String key, Ladder ladder, double at)` | One dial of a card of several: its words, its key, its ladder (unbuilt) and where its thumb sits. |
-| 895 | 53 | `static VBox multiDialCard(String svg, String title, String info, String status, List<Dial> dials, BiFunction<String, Double, Li...` | A dial card of several dials (ITS TAXES, the forest law): their words and ladders down the left, what they would do at the right, following whichever thumb moves. |
-| 950 | 7 | `static String taxKey(Zoning.Tax t, String s)` | A tax row's key, as Policy › Taxes' rows have it. |
-| 959 | 4 | `static String taxName(Zoning.Tax t)` | "Profit", "Sales", "Property". |
-| 965 | 5 | `static String taxWords(Zoning.Tax t, double city, double offset, double rate, double then, double paid)` | A tax row's words over its dial: "PROFIT · the city's 15.00% −2.00 pts → 13.00% · $1.2M last month". |
-| 972 | 45 | `VBox taxesCard(String s, String name)` | ITS TAXES: the sector's three offsets, as Policy › Taxes' rows, the same keys. |
-| 1019 | 3 | `static String sameDials(String name)` | The study's line: "The same dials as Policy › Taxes: a move here moves it for every Agriculture building." |
+| 554 | 1 | `static String sizeKey(String s)` |  |
+| 555 | 1 | `static String unitKey(String s)` |  |
+| 556 | 1 | `static String priceKey(String s)` |  |
+| 557 | 1 | `static String offKey(String s)` |  |
+| 574 | 1 | `double dryKm2()` | The dry ground that is room, km² (ET5: the linked ground, which a share zone is a share of; the whole dry ground while nothing is unlinked). |
+| 577 | 6 | `double km2Step()` | A km² dial's step: the dry ground over KM2_STEPS, down to 1, 2 or 5 of a power of ten. |
+| 585 | 4 | `double km2Top()` | ...and its top: the dry ground, up to a whole step. |
+| 591 | 1 | `Zoning.Size kindNow(String s)` | A zone's settings as the city has them - a sector with no zone: a share, nothing, at the going price. |
+| 592 | 1 | `double sizeNow(String s)` |  |
+| 593 | 1 | `double priceNow(String s)` |  |
+| 596 | 1 | `double sizeAs(String s, Zoning.Size kind)` | A zone's size as the city has it, said in a unit: what its size dial reads as current in the unit staged - and what an unstaged size is, the unit staged. |
+| 599 | 3 | `double value(String k, double current, String key, double v)` | A key's value as staged, or a value of the caller's for one key (a thumb while it is dragged). |
+| 603 | 1 | `Zoning.Size kindOf(double unit)` |  |
+| 605 | 1 | `static double unitOf(Zoning.Size kind)` |  |
+| 608 | 5 | `double convert(double size, Zoning.Size from, Zoning.Size to)` | A size in one unit, said in the other: a share of the dry ground as km², or km² as a share. |
+| 615 | 12 | `Set<String> stagedSectors(String extra)` | The sectors with anything of their zone staged, and `extra`. |
+| 629 | 1 | `Zoning stagedZoning()` | The city's zoning with everything staged put through a copy (ZoningView.with(), without(), withLaw()). |
+| 632 | 27 | `Zoning stagedZoning(String key, double v)` | ...and one key at a value of the caller's on top. |
+| 661 | 7 | `void applyZone(String s)` | A zone as staged, through its door: Game.setZone() with its three as staged - nothing for a new zone of no size, nothing when it is to come off. |
+| 670 | 4 | `void applyLaw()` | The law as staged, through its door. |
+| 676 | 8 | `Effect budget(String key, double v)` | THE BUDGET under everything staged - the taxes through the staged policy, the zones' relief through the staged zoning (PolicyPreview.zoningTaxChange()) - with one key at a thumb's value. |
+| 699 | 19 | `Region tray()` | The tray (Policy's, 0.7.36): a chip a change, THE BUDGET before and after the set, "Apply it" or "Apply all N", and "Leave it as it is". |
+| 720 | 1 | `static String applyWords(int count)` | "Apply it", "Apply all 3". |
 
-### THE FOREST LAW (board 3) (lines 1023-1103)
+### A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES (lines 722-1009)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1032 | 40 | `void forestPage(VBox page)` |  |
-| 1079 | 9 | `static String crewRuleWords(BuildCard.CrewRule rule, BuildingsTemplate smallest)` | The crew rule in a line (0.7.142; spec-zoning board 3: "room for 1 more crew now; the forest carries 7"): a crew is added only while the forest Forestry may cut lasts FOREST_CREW_MONTHS of every crew's cut - BuildCard... |
-| 1090 | 13 | `List<Effect> forestEffects(ZoningView.Forest now, String key, double v)` | WHAT IT WOULD DO at any value of either thumb (pure: the probe reads them): the wood kept standing for ever, the most that may be cut, the forest a building may take, the ground free for anyone. |
+| 745 | 24 | `void zonePage(VBox page, String s)` |  |
+| 771 | 14 | `Node offControl(String s, String name, boolean off)` | "Take the zone off" - staged, its chip in the tray - or, staged, "Keep it". |
+| 787 | 23 | `VBox sizeCard(String s, String name, Sector sector)` | HOW MUCH GROUND: the unit's two chips over the dial, staged before → after. |
+| 817 | 13 | `Label unitChip(String s, String words, Zoning.Size to, Zoning.Size kind)` | One unit's chip: lit when it is the unit; a click stages the other - the zone's own ground said in it, or a staged size carried over, snapped to the new unit's step (an unstaged size is the city's, in whichever unit i... |
+| 832 | 18 | `java.util.function.DoubleFunction<List<Effect>> sizeEffects(String s, ZoningView.Page now)` | HOW MUCH GROUND's effects at any value of its thumb (pure: the probe reads them): what it carries, what it holds, the ground left free for anyone, its ground at the going price. |
+| 852 | 12 | `VBox priceCard(String s, String name)` | ITS PRICE: 0-100% of the going price a m², and what it gives up. |
+| 866 | 16 | `java.util.function.DoubleFunction<List<Effect>> priceEffects(String s, ZoningView.Page now)` | ITS PRICE's effects at any value of its thumb (pure: the probe reads them): a plot's ground, the price given up on what it holds, the tax relief, THE BUDGET. |
+| 884 | 1 | **type** `record Dial(Node words, String key, Ladder ladder, double at)` | One dial of a card of several: its words, its key, its ladder (unbuilt) and where its thumb sits. |
+| 887 | 53 | `static VBox multiDialCard(String svg, String title, String info, String status, List<Dial> dials, BiFunction<String, Double, Li...` | A dial card of several dials (ITS TAXES, the forest law): their words and ladders down the left, what they would do at the right, following whichever thumb moves. |
+| 942 | 7 | `static String taxKey(Zoning.Tax t, String s)` | A tax row's key, as Policy › Taxes' rows have it. |
+| 951 | 4 | `static String taxName(Zoning.Tax t)` | "Profit", "Sales", "Property". |
+| 957 | 5 | `static String taxWords(Zoning.Tax t, double city, double offset, double rate, double then, double paid)` | A tax row's words over its dial: "PROFIT · the city's 15.00% −2.00 pts → 13.00% · $1.2M last month". |
+| 964 | 40 | `VBox taxesCard(String s, String name)` | ITS TAXES: the sector's three offsets, as Policy › Taxes' rows, the same keys. |
+| 1006 | 3 | `static String sameDials(String name)` | The study's line: "The same dials as Policy › Taxes: a move here moves it for every Agriculture building." |
 
-### THE HUB'S CARD (Policy's fifth area card) (lines 1104-1135)
+### THE FOREST LAW (board 3) (lines 1010-1090)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1109 | 14 | `VBox areaCard()` | Policy's ZONING area card: the zoned ground, the dry ground as slices, the zones' line and the law. |
-| 1125 | 8 | `static SegmentBar areaSlices(List<Slice> slices)` | Area slices as one bar, a part's name and ground its tooltip. |
-| 1134 | 1 | `static String pct0(double share)` |  |
+| 1019 | 40 | `void forestPage(VBox page)` |  |
+| 1066 | 9 | `static String crewRuleWords(BuildCard.CrewRule rule, BuildingsTemplate smallest)` | The crew rule in a line (0.7.142; spec-zoning board 3: "room for 1 more crew now; the forest carries 7"): a crew is added only while the forest Forestry may cut lasts FOREST_CREW_MONTHS of every crew's cut - BuildCard... |
+| 1077 | 13 | `List<Effect> forestEffects(ZoningView.Forest now, String key, double v)` | WHAT IT WOULD DO at any value of either thumb (pure: the probe reads them): the wood kept standing for ever, the most that may be cut, the forest a building may take, the ground free for anyone. |
+
+### THE HUB'S CARD (Policy's fifth area card) (lines 1091-1122)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1096 | 14 | `VBox areaCard()` | Policy's ZONING area card: the zoned ground, the dry ground as slices, the zones' line and the law. |
+| 1112 | 8 | `static SegmentBar areaSlices(List<Slice> slices)` | Area slices as one bar, a part's name and ground its tooltip. |
+| 1121 | 1 | `static String pct0(double share)` |  |
 

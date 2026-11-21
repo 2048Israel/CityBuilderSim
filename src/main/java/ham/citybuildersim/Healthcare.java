@@ -609,7 +609,7 @@ public class Healthcare {
     /** People treated this month, by kind of care. Reporting only. */
     private final double[] served = new double[CareType.values().length];
 
-    /** People the staffed beds could have treated this month, before the fee turned anybody away. Reporting only. */
+    /** People the staffed beds could have treated this month, before the fee turned anybody away; the builder reads the shortfall next month. */
     private final double[] offered = new double[CareType.values().length];
 
     /** Of the people each kind of care would serve, the share whose household could pay its fee. 1 until the price bites. */
@@ -856,6 +856,35 @@ public class Healthcare {
     }
 
     /* ------------------------------- saving ------------------------------- */
+
+    /**
+     * The month's access to care, offered then affordable for each kind of
+     * living care. The builder subtracts those priced out from its capacity
+     * before the next strike, so these flows must cross a save (SZ1).
+     * Kept apart from the established healthcare array: an older save has
+     * no access figures, without changing what its existing figures mean.
+     */
+    public double[] getAccessState() {
+        return new double[] {
+            offered[CareType.CHILDCARE.ordinal()],
+            offered[CareType.GENERAL.ordinal()],
+            offered[CareType.SENIOR.ordinal()],
+            affordable[CareType.CHILDCARE.ordinal()],
+            affordable[CareType.GENERAL.ordinal()],
+            affordable[CareType.SENIOR.ordinal()]
+        };
+    }
+
+    /** Restore the carried access figures whole; absent or malformed data leaves them alone. */
+    public boolean restoreAccessState(double[] state) {
+        if (state == null || state.length != 6) return false;
+        int i = 0;
+        for (CareType care : new CareType[] { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR })
+            offered[care.ordinal()] = Math.max(0, state[i++]);
+        for (CareType care : new CareType[] { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR })
+            affordable[care.ordinal()] = clamp(state[i++]);
+        return true;
+    }
 
     /**
      * The state, in order. New fields go on the END.

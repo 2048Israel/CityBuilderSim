@@ -1,6 +1,6 @@
-# HousingCheck.java - 963 lines · 9 methods · 1 constants · harnesses
+# HousingCheck.java - 1,066 lines · 10 methods · 1 constants · harnesses
 
-`ham/citybuildersim/HousingCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Audits the three subsystems that describe the same housing, every month, and
 > makes them agree. Not part of the game.
@@ -58,49 +58,54 @@
 >      still plan one, the investors' card does not refuse it for staffing,
 >      and the block, once standing, counts whole in the city's housing, bills
 >      its rent with its posts mostly empty, and pays the wages of those filled.
+> 
+>   7. HEADROOM IS SPARE HOMES OVER DEMAND (RN1-H). At equal demand and
+>      capacity the plan orders the margin, counts homes on site once,
+>      and stops at that margin, both before and after they finish.
 
-**Uses:** [RealEstate](RealEstate.md) (17), [Game](Game.md) (13), [BuildCard](BuildCard.md) (8), [FamilyModel](FamilyModel.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [Sector](Sector.md) (6), [GameFiles](GameFiles.md) (4), [FamilyStructure](FamilyStructure.md) (4), [JobType](JobType.md) (2), [BuildingManager](BuildingManager.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sectors](Sectors.md) (1), [PriceLevel](PriceLevel.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [DebtManager](DebtManager.md) (1), [Founding](Founding.md) (1)
+**Uses:** [RealEstate](RealEstate.md) (18), [Game](Game.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (10), [BusinessInvestment](BusinessInvestment.md) (10), [FamilyModel](FamilyModel.md) (8), [BuildCard](BuildCard.md) (8), [Sector](Sector.md) (6), [GameFiles](GameFiles.md) (5), [FamilyStructure](FamilyStructure.md) (4), [BuildingManager](BuildingManager.md) (2), [JobType](JobType.md) (2), [Observation](Observation.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sectors](Sectors.md) (1), [PriceLevel](PriceLevel.md) (1), [DebtManager](DebtManager.md) (1), [Founding](Founding.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 107 | · · 1. every door is accounted for |
-| 131 | · · 2. every household is accounted for |
-| 158 | · · 3. rent paid is rent received |
-| 182 | · · 3b. the two segments partition everything |
-| 198 | · · 3c. rent never falls through the floor |
-| 244 | · · 3d. repairs are a flow, not a number |
-| 350 | · 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE. |
-| 394 | · WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09. |
-| 478 | · 5. AND ALL OF IT SURVIVES A SAVE. |
-| 543 | · 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT. |
-| 635 | · 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29) |
+| 111 | · · 1. every door is accounted for |
+| 135 | · · 2. every household is accounted for |
+| 162 | · · 3. rent paid is rent received |
+| 186 | · · 3b. the two segments partition everything |
+| 202 | · · 3c. rent never falls through the floor |
+| 248 | · · 3d. repairs are a flow, not a number |
+| 354 | · 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE. |
+| 398 | · WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09. |
+| 482 | · 5. AND ALL OF IT SURVIVES A SAVE. |
+| 547 | · 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT. |
+| 639 | · 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 68 | `HousingCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
+| 72 | `HousingCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 65 | `static int fails` |  |
+| 69 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 901 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
-| 70 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
-| 79 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 84 | 705 | `public static void main(String[] args)` |  |
-| 790 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 803 | 15 | `static boolean assertGlutLegsNotLifted(ham.citybuildersim.sectors.RealEstate re, int month)` | A leg under GLUT_PRESSURE is its own cost times its scarcity and is not lifted to cover the carry (RN1, 2026-11-09). |
-| 832 | 74 | `static void heldRateRentsItsGlutAtNoLift()` | RN1, 2026-11-09. |
-| 913 | 36 | `static void aClosedHomesDebtIsTheLandlordsLoss()` | RN1, 2026-11-09. |
-| 951 | 3 | `static void isNear(String label, double actual, double expected)` | assertTrue, said as an equality within TOLERANCE, so a figure that is right prints its line. |
-| 955 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
+| 67 | 1000 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
+| 74 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
+| 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 88 | 706 | `public static void main(String[] args)` |  |
+| 795 | 86 | `static void homesKeepHeadroomOverDemand()` |  |
+| 882 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 895 | 15 | `static boolean assertGlutLegsNotLifted(ham.citybuildersim.sectors.RealEstate re, int month)` | A leg under GLUT_PRESSURE is its own cost times its scarcity and is not lifted to cover the carry (RN1, 2026-11-09). |
+| 924 | 85 | `static void heldRateRentsItsGlutAtNoLift()` | RN1, 2026-11-09. |
+| 1016 | 36 | `static void aClosedHomesDebtIsTheLandlordsLoss()` | RN1, 2026-11-09. |
+| 1054 | 3 | `static void isNear(String label, double actual, double expected)` | assertTrue, said as an equality within TOLERANCE, so a figure that is right prints its line. |
+| 1058 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
 

@@ -604,6 +604,54 @@ public class BuildingsTemplate {
        figures are set back to. */
     private java.util.List<Recipe> recipes;
     private String recipePieceId;
+    private java.util.List<RecipeChange> recipeChanges = java.util.List.of();
+    private double recipeProduction, recipeLand;
+    private Site recipeSite;
+    private double steamRailShare;
+    private double crackerPetrol = 0.55;
+
+    /** Independent discovery undos, in code order, anchored to the immutable default. */
+    public java.util.List<RecipeChange> getRecipeChanges() { return recipeChanges; }
+
+    /** Installs independent changes before the template first runs. */
+    public BuildingsTemplate setRecipeChanges(java.util.List<RecipeChange> changes) {
+        if (recipes == null) recipes = java.util.List.of(Recipe.topLevelOf(this));
+        recipeChanges = changes.stream().sorted(java.util.Comparator.comparing(RecipeChange::code)).toList();
+        recipeProduction = production1;
+        recipeLand = landSqFt;
+        recipeSite = site;
+        return this;
+    }
+
+    /** Whether an independent recipe change needs this piece. */
+    public boolean changeNeeds(String piece) {
+        return recipeChanges.stream().anyMatch(c -> piece.equals(c.piece()));
+    }
+
+    /** Utility output before any undo. */
+    double recipeProduction() { return recipeProduction; }
+
+    /** Ground before any undo. */
+    double recipeLand() { return recipeLand; }
+
+    /** The immutable modern extraction coefficient and site identity. */
+    Site recipeSite() { return recipeSite; }
+
+    /** Share of rail engines on steam, for the actual fuel invoice. */
+    public double steamRailShare() { return steamRailShare; }
+
+    /** Petrol per litre fed to this cracking unit after the chosen process. */
+    public double crackerPetrol() { return crackerPetrol; }
+
+    /** Sets the non-goods figures of the independent changes. */
+    void runRecipeExtras(double production, double land, double steamRail, double petrol, double dig) {
+        production1 = production;
+        landSqFt = land;
+        steamRailShare = steamRail;
+        crackerPetrol = petrol;
+        if (recipeSite != null) site = new Site(recipeSite.resource(), recipeSite.type(), recipeSite.sites(), dig);
+    }
+
     private volatile String runsFitted, runsUnfitted;
 
     /**
@@ -648,6 +696,7 @@ public class BuildingsTemplate {
 
     /** The recipe of this id, or null if the building knows none of it. */
     public Recipe getRecipe(String id) {
+        if (id != null && id.contains("~")) return RecipeChanges.decode(this, id);
         if (recipes == null) return Recipe.DEFAULT_ID.equals(id) ? Recipe.topLevelOf(this) : null;
         for (Recipe r : recipes) if (r.getId().equals(id)) return r;
         return null;
@@ -660,7 +709,7 @@ public class BuildingsTemplate {
     }
 
     /** Whether it has a choice of ways to run: a list with more than the default in it. A building with none is never touched by Recipes. */
-    public boolean hasRecipeChoice() { return recipes != null && recipes.size() > 1; }
+    public boolean hasRecipeChoice() { return !recipeChanges.isEmpty() || recipes != null && recipes.size() > 1; }
 
     /** The id of the piece of equipment its recipes need (at most one per template), or null where none does. */
     public String recipePieceId() { return recipePieceId; }
@@ -675,12 +724,12 @@ public class BuildingsTemplate {
      * posts, which are whole numbers, the weighted mean rounded to the nearest. EXACTLY a recipe's figures when one part is empty or both run the
      * same recipe (no arithmetic: the default's are the top level to the bit). The maps are replaced, not changed (see the fields).
      */
-    public void runRecipes(Recipe fitted, int fittedBuildings, Recipe unfitted, int unfittedBuildings) {
+    public void runRecipes(Recipe fitted, long fittedBuildings, Recipe unfitted, long unfittedBuildings) {
         Recipe a = fitted != null ? fitted : defaultRecipe();
         Recipe b = unfitted != null ? unfitted : defaultRecipe();
         runsFitted = a.getId();
         runsUnfitted = b.getId();
-        int na = Math.max(0, fittedBuildings), nb = Math.max(0, unfittedBuildings);
+        long na = Math.max(0, fittedBuildings), nb = Math.max(0, unfittedBuildings);
         if (na + nb == 0) na = 1;
         if (nb == 0 || a.getId().equals(b.getId())) {
             setFigures(a);
@@ -723,11 +772,20 @@ public class BuildingsTemplate {
         this.consumables = r.getConsumables();
     }
 
+    /** Retains the saved process decisions when independent equipment changes live figures. */
+    void setRunningRecipeIds(String[] ids) {
+        runsFitted = ids[0];
+        runsUnfitted = ids[1];
+    }
+
     /** The ids of the recipes the fitted part and the unfitted part last ran (runRecipes()), in that order; the default's where it has run none. A fresh array. */
     public String[] runningRecipeIds() {
         String fallback = defaultRecipe().getId();
         return new String[] { runsFitted == null ? fallback : runsFitted, runsUnfitted == null ? fallback : runsUnfitted };
     }
+
+    /** Whether this recipe list has reached production since it was installed. */
+    boolean hasRunningRecipes() { return runsFitted != null && runsUnfitted != null; }
 
     /* ----- WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) -----
        The research study (Jerus's start year 1900, 2026-10-10) asks every
@@ -1408,14 +1466,17 @@ public class BuildingsTemplate {
          * the three add to roadLoad to the bit rather than to within three
          * roundings of it. The network's total is what has to be preserved and
          * this is the cheapest way to make that arithmetic rather than a
-         * tolerance.
+         * tolerance. The remainder is taken from the two shares' sum, in
+         * the order they are added back (LX1, 2026-11-17): taken one at a
+         * time it was rounded twice, and the Boutique's 8 of road load on
+         * 7 pieces came back as 7.999999999999999.
          */
         double asCommuters = roadLoad * commuters / total;
         double asGoods = roadLoad * goods / total;
         switch (stream) {
             case COMMUTERS: return asCommuters;
             case GOODS:     return asGoods;
-            default:        return roadLoad - asCommuters - asGoods;
+            default:        return roadLoad - (asCommuters + asGoods);
         }
     }
 

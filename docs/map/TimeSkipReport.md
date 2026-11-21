@@ -1,6 +1,6 @@
 # TimeSkipReport.java - 682 lines · 68 methods · 1 constants · model
 
-`ham/citybuildersim/TimeSkipReport.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimeSkipReport.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > What happened while you were not watching.
 > 
@@ -82,7 +82,7 @@
 | 65 | `double householdSavingRate` |  |
 | 66 | `double householdRentBurden` |  |
 | 67 | `double cumulativeWriteOffs` |  |
-| 69 | `final Map<String, Integer> buildings` |  |
+| 69 | `final Map<String, Long> buildings` |  |
 | 72 | `private Snapshot before` |  |
 | 73 | `private Snapshot after` |  |
 | 75 | `private boolean complete` |  |
@@ -109,7 +109,7 @@
 | 417 | `private double worstWorkRatio` |  |
 | 418 | `private double peakUnburied` |  |
 | 506 | `public final String name` |  |
-| 507 | `public final int change` |  |
+| 507 | `public final long change` |  |
 
 ## Methods, in file order, under their sections
 
@@ -198,11 +198,11 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 505 | 11 | **type** `public static class BuildingChange` | A building type whose count moved, and by how much. |
-| 509 | 4 | `BuildingChange(String name, int change)` _(in TimeSkipReport.BuildingChange)_ |  |
+| 509 | 4 | `BuildingChange(String name, long change)` _(in TimeSkipReport.BuildingChange)_ |  |
 | 514 | 1 | `public boolean isGain()` _(in TimeSkipReport.BuildingChange)_ |  |
 | 526 | 23 | `public List<BuildingChange> getBuildingChanges()` | Everything whose count moved, biggest change first. |
-| 550 | 7 | `public int getBuildingsGained()` |  |
-| 558 | 7 | `public int getBuildingsLost()` |  |
+| 550 | 7 | `public long getBuildingsGained()` |  |
+| 558 | 7 | `public long getBuildingsLost()` |  |
 
 ### episodes (lines 566-682)
 

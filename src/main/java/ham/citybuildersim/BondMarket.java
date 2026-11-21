@@ -39,14 +39,15 @@ import java.util.Map;
  * bank still buys at issue and its desk still buys back. And not a place
  * where anybody must trade: an order waits until somebody meets it.
  *
- * EVERY DIAL HERE IS ANOTHER CLASS'S. The underwriter's charge is the one
+ * THE CORPORATE DIALS COME FROM THE EXISTING MARKETS. The underwriter's charge is the one
  * the city paid until CD2 (Game.FIXED_ISSUE_COST, UNDERWRITING_SPREAD; the
  * city's auctions pay the fixed cost alone since); each
  * participant bids by the rule it already follows for the nearest thing it
  * holds today - the households by their rule for the city's paper, the
  * companies and the world by the rules that send idle cash and hot money
  * where the return is, the bank by its own loan price. The term is
- * CorporateBond.TERM_MONTHS.
+ * CorporateBond.TERM_MONTHS. SZ1 also keeps the city's reference-price issue
+ * lot dials here, shared by the borrowing pages and automatic funding.
  */
 public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtManager.BondDesk {
 
@@ -150,6 +151,66 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /** The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). */
     static final double CHEAPER_BY = 1e-11;
 
+    /** The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). */
+    static final double ISSUE_ROUNDING = 1e-14;
+
+    /** The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). */
+    static final double PRICE_TICK = 1e-12;
+
+    /* ===================== THE CITY'S ISSUE LOTS (SZ1) ===================== */
+
+    /** A bill's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double BILL_LOT = 1_000;
+    /** A fixed-rate bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double BOND_LOT = 100_000;
+    /** An amortizing bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double AMORTIZING_LOT = 10_000;
+    /** A floating-rate note's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double FLOATING_LOT = 100_000;
+    /** An inflation-linked bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double LINKED_LOT = 100_000;
+
+    /** An instrument's reference-price lot; the keys are the city's quoting API's. */
+    public static double referenceLot(String kind) {
+        return switch (kind) {
+            case "Note" -> BILL_LOT;
+            case "Serial" -> AMORTIZING_LOT;
+            case "Term" -> BOND_LOT;
+            case "Float" -> FLOATING_LOT;
+            case "Linked" -> LINKED_LOT;
+            default -> throw new IllegalArgumentException("Unknown issue kind: " + kind);
+        };
+    }
+
+    /** The month's price level is relative to reference prices, in the same money as minimum; round down so a lot never exceeds either. */
+    public static double issueLot(String kind, double priceLevel, double minimum) {
+        return MagnitudeSteps.roundDown125(fundingLot(kind, priceLevel, minimum));
+    }
+
+    /** Exact price-level funding for the model; rounding in nominal money would break EP1's scaled twins. */
+    public static double fundingLot(String kind, double priceLevel, double minimum) {
+        double lot = Math.min(referenceLot(kind) * priceLevel, minimum);
+        if (!(lot > 0) || !Double.isFinite(lot)) throw new IllegalArgumentException("funding needs a positive finite lot");
+        return lot;
+    }
+
+    /** The player's round issue lot, in local money or the foreign paper's own money at this month's cross rate. */
+    public static double issueLot(Game game, String kind, String money) {
+        return MagnitudeSteps.roundDown125(fundingLot(game, kind, money));
+    }
+
+    /** The model's exact priced-and-capped lot, in the paper's own money. */
+    public static double fundingLot(Game game, String kind, String money) {
+        double level = PriceLevel.FACTOR * game.getPriceIndex().getIndex() / game.getDenomination().getUnit();
+        double minimum = game.minimumIssueSize();
+        if (money != null) {
+            double per = game.localPer(money);
+            level /= per;
+            minimum = game.minimumIssueSizeIn(money);
+        }
+        return fundingLot(kind, level, minimum);
+    }
+
     /* ============================ what it reads ============================ */
 
     /** The city's readings the market prices on, which Game supplies. */
@@ -222,6 +283,12 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private double worldBought, worldSold;                    // cash, the world <-> the pools
     private double couponsToHouseholds, couponsToBank, couponsToCompanies, couponsAbroad;
     private double principalToHouseholds, principalToBank, principalToCompanies, principalAbroad;
+    /**
+     * What the issuers paid this month on the households' face (principal and coupons, by the bond's record) that no cell was credited, the
+     * record less the cells' own, signed: the census moves a cell's bond stock with the orphan clamps and nothing tells the bond's record, so
+     * the two drift. HL1 names it (MoneyAudit's "- households BondFaceOrphaned"), HL2 mends it; not saved, struck and read inside one press.
+     */
+    private double orphanedToHouseholds;
     private double lossHouseholds, lossBank, lossCompanies, lossWorld;  // face written off, by holder
     private double bankLossCost;                              // what the bank's holdings cost it, written off
     private double issuedFace, issuedCosts;
@@ -316,12 +383,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
        reform does not move, so OrderBook.DUST stays a literal there.
        ===================================================================== */
 
-    /** OrderBook.DUST of face, in today's money. See above. */
-    private double dust = OrderBook.DUST;
+    /** OrderBook.DUST of face is money, seeded at founding prices (BF1). */
+    static final double FACE_DUST = PriceLevel.atFounding(OrderBook.DUST);
+    private double dust = FACE_DUST;
 
     /** Re-seeds the dust at a given unit, and every open book's with it. See Denomination. */
     public void seedConstants(double unit) {
-        dust = OrderBook.DUST / (unit > 0 ? unit : 1);
+        dust = FACE_DUST / (unit > 0 ? unit : 1);
         for (OrderBook book : books.values()) book.setDust(dust);
     }
 
@@ -652,8 +720,15 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 double perDollar = bank.capitalPerDollar(Bank.RISK_BUSINESS, issuer);
                 room = perDollar > 0 ? Math.max(0, bank.spareCapital()) / perDollar : 0;
             }
-            this.bankRoom = room;
+            this.bankRoom = Math.min(room, bankClaimRoom());
         }
+    }
+
+    /** The same capital allowance as project loans, including loans awaiting settlement. */
+    private double bankClaimRoom() {
+        BusinessDebtManager c = credit();
+        return Math.min(bank == null ? 0 : bank.projectHeadroom(),
+                c == null ? Double.POSITIVE_INFINITY : c.projectRoom());
     }
 
     /** Every participant's bid for one new issue of this size, offered at this size, as a function of its coupon. */
@@ -823,11 +898,11 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         double s = bondRoom;
         double bond = 0, threshold = Double.NaN;
         Demand at = null;
-        for (int i = 0; i < 40 && s > 0; i++) {
+        for (int i = 0; i < 100 && s > 0; i++) {
             Demand dm = i == 0 ? whole : new Demand(who, s, bondRoom, deal, extraAssets);
             double t = loanAllIn - issueCost(s) / s / TERM_YEARS;
             double filled = Math.min(bondRoom, dm.total(t));
-            if (filled >= s * (1 - 1e-9)) { bond = s; threshold = t; at = dm; break; }
+            if (filled >= s * (1 - ISSUE_ROUNDING)) { bond = s; threshold = t; at = dm; break; }
             if (!(filled > 0)) break;
             s = filled;
         }
@@ -1027,7 +1102,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             repaidSoFar.merge(b.issuer, b.face, Double::sum);
             if (b.households > 0) {
                 // Each cell its own face (round 2).
-                if (households != null) households.creditBondPrincipal(b.id);
+                if (households != null) {
+                    double paid = households.creditBondPrincipal(b.id);
+                    orphanedToHouseholds += b.households - paid;
+                }
                 principalToHouseholds += b.households;
             }
             if (b.bank > 0) {
@@ -1056,7 +1134,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private void payCoupons() {
         if (dueHouseholds > 0) {
             // To the cells that held them at the record date (round 2).
-            if (households != null) households.creditBondCoupons(dueCells);
+            if (households != null) {
+                double paid = households.creditBondCoupons(dueCells);
+                orphanedToHouseholds += dueHouseholds - paid;
+            }
             couponsToHouseholds += dueHouseholds;
             lifeCouponsHouseholds += dueHouseholds;
         }
@@ -1111,6 +1192,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         worldBought = worldSold = 0;
         couponsToHouseholds = couponsToBank = couponsToCompanies = couponsAbroad = 0;
         principalToHouseholds = principalToBank = principalToCompanies = principalAbroad = 0;
+        orphanedToHouseholds = 0;
         lifeLossHouseholds += lossHouseholds;
         lifeLossBank += lossBank;
         lifeLossCompanies += lossCompanies;
@@ -1213,7 +1295,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 double perDollar = bank.capitalPerDollar(Bank.RISK_BUSINESS, b.issuer);
                 if (!(perDollar > 0)) continue;
                 double p = b.priceAt(bankYield(b.issuer, n, 0, 0, 0), month);
-                double q = Math.min(b.face - b.bank, spare / perDollar);
+                double q = Math.min(b.face - b.bank, Math.min(spare / perDollar, bankClaimRoom() / p));
                 if (!(q > dust) || !(p > 0)) continue;
                 submit(b, BANK, OrderBook.Side.BUY, p, q, month);
                 spare -= q * perDollar;
@@ -1576,12 +1658,14 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** One order on a bond's book, settled, between two steps: for FundLedgerCheck (0.7.39), as Exchange.tradeForCheck(). The month never calls it. */
     List<OrderBook.Fill> tradeForCheck(CorporateBond b, String who, OrderBook.Side side, double price, double quantity) {
-        return openBook(b).submit(who, side, price, quantity, ledgerMonth(), new Settle(b));
+        return submit(b, who, side, price, quantity, ledgerMonth());
     }
 
-    private void submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month) {
-        if (!(quantity > dust) || !(price > 0) || !Double.isFinite(price)) return;
-        openBook(b).submit(who, side, price, quantity, month, new Settle(b));
+    private List<OrderBook.Fill> submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month) {
+        if (!(quantity > dust) || !(price > 0) || !Double.isFinite(price)) return List.of();
+        double ticked = Math.rint(price / PRICE_TICK) * PRICE_TICK;
+        if (!(ticked > 0) || !Double.isFinite(ticked)) return List.of();
+        return openBook(b).submit(who, side, ticked, quantity, month, new Settle(b));
     }
 
     /** Where each participant's money and holding is, for one bond's book. */
@@ -1592,7 +1676,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         @Override public double capacity(String who, OrderBook.Side side, double price) {
             if (side == OrderBook.Side.BUY) {
                 if (WORLD.equals(who)) return Double.POSITIVE_INFINITY;
-                if (BANK.equals(who)) return bankBuys() ? Double.POSITIVE_INFINITY : 0;
+                if (BANK.equals(who)) return bankBuys() ? bankClaimRoom() / price : 0;
                 // The city's fund (0.7.14): what its cash buys - the rule's, less what
                 // the hand's buys hold of it (0.7.39, TreasuryFund.handReserve()).
                 if (FUND.equals(who)) return fund == null ? 0 : fund.cashForTheRule() / price;
@@ -1778,6 +1862,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     public double getPrincipalToBank()         { return principalToBank; }
     public double getPrincipalToCompanies()    { return principalToCompanies; }
     public double getPrincipalAbroad()         { return principalAbroad; }
+    /** The principal and coupons the issuers paid this month on the households' face that no cell was credited (HL1): the bond's record less the cells' own. */
+    public double getOrphanedToHouseholds()    { return orphanedToHouseholds; }
     /** Face written off this month's defaults, by holder. The world's is declared across the border. */
     public double getLossHouseholds()          { return lossHouseholds; }
     public double getLossBank()                { return lossBank; }
@@ -2080,6 +2166,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         worldBought *= scale; worldSold *= scale;
         couponsToHouseholds *= scale; couponsToBank *= scale; couponsToCompanies *= scale; couponsAbroad *= scale;
         principalToHouseholds *= scale; principalToBank *= scale; principalToCompanies *= scale; principalAbroad *= scale;
+        orphanedToHouseholds *= scale;
         lossHouseholds *= scale; lossBank *= scale; lossCompanies *= scale; lossWorld *= scale;
         bankLossCost *= scale; issuedFace *= scale; issuedCosts *= scale; emigrantsFace *= scale;
         lastPostedBuy *= scale; lastPostedSell *= scale; lastFilled *= scale; lastSellQuantityWaited *= scale;

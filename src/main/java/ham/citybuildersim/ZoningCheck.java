@@ -100,10 +100,10 @@ public class ZoningCheck {
         Game g = new Game(new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy")));
         quietly(() -> {
             g.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0): the zone's door and Policy > Taxes set the same offsets, and on history's dates the taxes
-            // are shut (held at zero, their setters refusing) until 1916-1920. Every lever opened and the defaults put back, before a month.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): the zone's door and Policy > Taxes set the same offsets, and until OP1 on history's
+            // dates the taxes were shut (held at zero, their setters refusing) until 1916-1920. Since OP1 every lever is open from the founding,
+            // and the defaults are put back before a month.
             g.getEconomyManager().getTaxPolicy().reset();
-            g.getEconomyManager().getTaxPolicy().openAll();
             // XR1 (2026-10-21): this harness measures ground, zones and the forest, not the currency. Under THE
             // FLOAT the D$ falls to 0.72 in these two years and the city's prices with it, until section 8's
             // fields find no farm that pays ("a bad year would leave $80,324 a month on it") and its fixture
@@ -235,7 +235,7 @@ public class ZoningCheck {
         assertTrue("a shop is refused: Retail has no ground the zone does not hold", !shop && land.getAllocatedSqFt() == allocated);
         assertTrue("...the city's own works too (Build's refusal: no ground for anyone)",
                 g.buildStack(LongPlaytest.template(g, "Walk-in Clinic"), 1, true) == Game.BuildResult.NO_LAND);
-        int stores = g.getBuildingManager().countByName("Convenience Store");
+        long stores = g.getBuildingManager().countByName("Convenience Store");
         boolean dinerBuilt = g.buildFor(g.getSectorInvestor(Sectors.RESTAURANTS), diner, 2);
         assertTrue("two diners stand on the zone's ground, and it records them as used",
                 dinerBuilt && stores == g.getBuildingManager().countByName("Convenience Store")
@@ -319,12 +319,11 @@ public class ZoningCheck {
         Game a = new Game(GameFiles.scratch("zoningcheck-a")), b = new Game(GameFiles.scratch("zoningcheck-b"));
         quietly(() -> { a.run(); b.run(); });
         TaxPolicy pa = a.getEconomyManager().getTaxPolicy(), pb = b.getEconomyManager().getTaxPolicy();
-        // THE LEVERS OPENED IN THE FIXTURE (R0): the question is whether the zone's door and Policy > Taxes are one dial, and the tax
-        // offsets are shut (held at zero, their setters refusing) on history's dates until 1916-1920. Opened on both twins.
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): the question is whether the zone's door and Policy > Taxes are one dial, and until OP1
+        // the tax offsets were shut (held at zero, their setters refusing) on history's dates until 1916-1920. Every lever is open from the
+        // founding since OP1; the defaults are put back on both twins.
         pa.reset();
-        pa.openAll();
         pb.reset();
-        pb.openAll();
         quietly(() -> {
             a.setZoneTax(Sectors.MINING, Zoning.Tax.PROFIT, -.04);
             a.setZoneTax(Sectors.MINING, Zoning.Tax.SALES, .02);
@@ -466,7 +465,7 @@ public class ZoningCheck {
         out.println("\n--- 8. zoned fields do not yield to homes: short of homes, the fields build in their zone alone ---");
         // Somebody sleeping outside: most of the houses bought out and demolished.
         BuildingsTemplate house = LongPlaytest.template(g, "House");
-        int houses = g.getBuildingManager().countByName("House");
+        long houses = g.getBuildingManager().countByName("House");
         g.setCashForTest(g.getCash() + 10_000_000);
         quietly(() -> {
             g.buyOutAndDemolish(house, houses * 9 / 10);

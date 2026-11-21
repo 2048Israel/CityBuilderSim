@@ -1,6 +1,6 @@
 # MediumTermBond.java - 255 lines · 18 methods · 1 constants · model
 
-`ham/citybuildersim/MediumTermBond.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MediumTermBond.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in
 > fives, one coupon, each sale its own line (CD2). It was the serial bond; the
@@ -42,7 +42,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Auction](Auction.md) (1), [Game](Game.md) (1)
 
-**Used by (11):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BookDesk](BookDesk.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [MoneyCheck](MoneyCheck.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (12):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BookDesk](BookDesk.md), [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Constants
 

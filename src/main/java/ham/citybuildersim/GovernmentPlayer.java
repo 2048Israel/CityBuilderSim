@@ -8,8 +8,8 @@ import java.util.WeakHashMap;
  *
  * WHY (GV1/GV2, spec-wealth.md 3.2). Scripted income and property tax changes ignored the government's accumulating wealth and fought the
  * study's policy rule. This is a player's move, called by LongPlaytest after a successful January; Game never calls it for a live city.
- * January has finished before this runs, so this January's newly opened policy levers accept their setters. The prototype acted after
- * December instead, before those gates opened. The first eligible January is month 13, with a full year's revenue history.
+ * Every lever it moves is open from the founding (OP1), so its first move can come in the first eligible January, month 13, with a full
+ * year's revenue history.
  */
 public final class GovernmentPlayer {
 
@@ -59,7 +59,7 @@ public final class GovernmentPlayer {
             tax.setEiBenefitRate(Math.min(TaxPolicy.MAX_EI_BENEFIT, ei + TRANSFER_STEP));
             g.setFundWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
         } else if (years < GovernmentView.SOUND_MIN) {
-            // A newly opened promise can still be zero, or a manually set tax already above this player's ceiling. Never reverse the move.
+            // A promise can still be at the founding's zero, or a manually set tax already above this player's ceiling. Never reverse the move.
             tax.setProfitTaxRate(Math.max(profit, Math.min(POOR_PROFIT_MAX, profit + PROFIT_STEP)));
             tax.setSalesTaxRate(Math.max(sales, Math.min(POOR_SALES_MAX, sales + SALES_STEP)));
             tax.setPensionReplacement(Math.min(pension, Math.max(POOR_PENSION_MIN, pension - TRANSFER_STEP)));

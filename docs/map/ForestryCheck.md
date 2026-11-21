@@ -1,6 +1,6 @@
 # ForestryCheck.java - 706 lines · 21 methods · 22 constants · harnesses
 
-`ham/citybuildersim/ForestryCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForestryCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1,
 > 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research.md
@@ -64,7 +64,7 @@
 >      protected - by the regrowth rule's own constant.
 > ... (8 more lines in the source)
 
-**Uses:** [Forestry](Forestry.md) (80), [Good](Good.md) (53), [LandManager](LandManager.md) (25), [Sectors](Sectors.md) (21), [Game](Game.md) (16), [BuildingManager](BuildingManager.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [GameFiles](GameFiles.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [Zoning](Zoning.md) (5), [Resource](Resource.md) (4), [LandMarket](LandMarket.md) (4), [LandParcel](LandParcel.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Equity](Equity.md) (3), [MoneyAudit](MoneyAudit.md) (3), [CityLand](CityLand.md) (3), [JobType](JobType.md) (3), [Sector](Sector.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Traffic](Traffic.md) (2), [Ports](Ports.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PayTier](PayTier.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [World](World.md) (1), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1)... and 7 more
+**Uses:** [Forestry](Forestry.md) (80), [Good](Good.md) (53), [LandManager](LandManager.md) (25), [Sectors](Sectors.md) (21), [Game](Game.md) (16), [BuildingManager](BuildingManager.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [GameFiles](GameFiles.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [Zoning](Zoning.md) (5), [Resource](Resource.md) (4), [LandMarket](LandMarket.md) (4), [LandParcel](LandParcel.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Equity](Equity.md) (3), [MoneyAudit](MoneyAudit.md) (3), [CityLand](CityLand.md) (3), [JobType](JobType.md) (3), [Sector](Sector.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Traffic](Traffic.md) (2), [Ports](Ports.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PayTier](PayTier.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [World](World.md) (1), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1)... and 6 more
 
 **Used by (4):** [BuildCardCheck](BuildCardCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
 
@@ -167,7 +167,7 @@
 |---:|---:|---|---|
 | 489 | 66 | `static void planting()` |  |
 | 557 | 6 | `static void cutAMonth(Game g)` | The month's cut, as the market's first step makes it: both goods' produceFlow(). |
-| 565 | 4 | `static int onOrder(BuildingManager b)` | Planted stands on site. |
+| 565 | 4 | `static long onOrder(BuildingManager b)` | Planted stands on site. |
 
 ### 7. the salvage cut (lines 570-622)
 

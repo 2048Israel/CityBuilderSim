@@ -1,6 +1,6 @@
-# Automotive.java - 312 lines · 7 methods · 3 constants · sectors
+# Automotive.java - 315 lines · 8 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Automotive.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Automotive.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The automobile industry. THE THIRTEENTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -63,7 +63,7 @@
 > short of vans cannot move what it makes, and a railway with track and no
 > locomotives carries nothing. See claude/the-railway.md for where that goes.
 
-**Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (5), [Formats](Formats.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (5), [Formats](Formats.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1), [NewUnit](NewUnit.md) (1)
 
 **Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CarCheck](CarCheck.md), [Sectors](Sectors.md)
 
@@ -71,37 +71,38 @@
 
 | line | section |
 |---:|---|
-| 149 | PLANNING - can the city supply it, and then is it worth it |
-| 265 | · the screen |
+| 150 | PLANNING - can the city supply it, and then is it worth it |
+| 268 | · the screen |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 112 | `Automotive.MAX_SHARE_OF_LOCAL_SUPPLY` | `.25` | The most of the city's WHOLE fabrication output one new plant may want. |
-| 122 | `Automotive.LUBRICANT_LITRES_A_VEHICLE` | `8` | Lubricants a vehicle built takes (0.7.83, batch O6; docs/studies/spec-oil.md 2.5, est., to confirm): eight litres - its first fill of engine, gearbox and axle oils and the line's own - on the car plants' and (star O6)... |
-| 131 | `Automotive.LUBRICANT_LITRES_A_TRUCK` | `40` | Lubricants a heavy truck built takes (FR2, 2026-10-18; docs/queue/FR2.md section 2, est.): forty litres of engine, gearbox and axle oils for its fifteen tonnes of tractor and trailer, on the Heavy Truck Plant's `uses`. |
+| 113 | `Automotive.MAX_SHARE_OF_LOCAL_SUPPLY` | `.25` | The most of the city's WHOLE fabrication output one new plant may want. |
+| 123 | `Automotive.LUBRICANT_LITRES_A_VEHICLE` | `8` | Lubricants a vehicle built takes (0.7.83, batch O6; docs/studies/spec-oil.md 2.5, est., to confirm): eight litres - its first fill of engine, gearbox and axle oils and the line's own - on the car plants' and (star O6)... |
+| 132 | `Automotive.LUBRICANT_LITRES_A_TRUCK` | `40` | Lubricants a heavy truck built takes (FR2, 2026-10-18; docs/queue/FR2.md section 2, est.): forty litres of engine, gearbox and axle oils for its fifteen tonnes of tractor and trailer, on the Heavy Truck Plant's `uses`. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 237 | **type** `public final class Automotive extends Sector` | The automobile industry. |
-| 133 | 15 | `public Automotive()` |  |
+| 77 | 239 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 134 | 15 | `public Automotive()` |  |
 
-### PLANNING - can the city supply it, and then is it worth it (lines 149-264)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 154 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
-| 159 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
-| 172 | 76 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
-| 263 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
-
-### the screen (lines 265-312)
+### PLANNING - can the city supply it, and then is it worth it (lines 150-267)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 268 | 1 | `public boolean hasPlantBlock()` |  |
-| 271 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 155 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
+| 160 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
+| 173 | 74 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
+| 262 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
+| 266 | 1 | `public boolean bleedsWhileLent()` | With no demand reading it shrinks on its losses alone, so it sells plant while still lent (AQ1: GW1's seed 2 lent it 92 months of them). |
+
+### the screen (lines 268-315)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 271 | 1 | `public boolean hasPlantBlock()` |  |
+| 274 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
 

@@ -33,7 +33,10 @@ import java.util.Map;
  *      is a Freight.
  *   2. TRUCKS. The world sells them and never buys them, one truck weighs 40 t
  *      gross less a load, and the Heavy Truck Plant alone makes them.
- *   3. EACH LEG ONCE. In a played city with a mine selling ore at home to a
+ *   3. EACH LEG ONCE. (FS7: the months short of trucks and the months with
+ *      enough are caused, the fleet set to half the need at one month and to
+ *      twice it at another, and read the month after each; the legs the plant's
+ *      trade makes are still the play's.) In a played city with a mine selling ore at home to a
  *      pelletising plant that lands its coal and ships its pellets, every
  *      sector's "Haulage" line is its legs' tonnes at its own share in force and
  *      the quote, a tonne sold at home is its buyer's and nobody else's, a goods
@@ -43,7 +46,10 @@ import java.util.Map;
  *   4. THE SIDING. A railway carrying a share r of the imports takes
  *      RAIL_ROAD_RELIEF x r of their truck tonnes off the city leg; a share
  *      carried by sea alone relieves nothing (since FR6 a station beside a
- *      sea terminal is a port yard that does: HomeRailCheck 4).
+ *      sea terminal is a port yard that does: HomeRailCheck 4). (FS7: the
+ *      share is caused, 0 < r < 1: the spurs are floor(bulk offered / P) - 1,
+ *      P a spur's sidings, so their sidings stand short of the bulk and are
+ *      at least one; the sea city's "goes by sea, not rail" is still the play's.)
  *   5. VANS FOR GOODS. A works whose tonnes are all bulk keeps no vans; the
  *      vans of a sector with goods are its goods' tonnes over TONNES_PER_VAN.
  *   6. THE FREIGHT FACTOR. A bulk sector runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE)
@@ -457,12 +463,21 @@ public class HaulageCheck {
         double homeTonnes = 0, coalTonnes = 0, pelletTonnes = 0, oreImpTonnes = 0, fBefore = 0, quoteBefore = 0, soldLocalTonnes = 0;
         double mineBill = Double.NaN, mineExports = Double.NaN, plantWant = 0, plantGot = 0;
         StringBuilder misses = new StringBuilder();
+        final int SHORT_AT = 2, ENOUGH_AT = 10;
+        Pred pShort = null, pEnough = null;
         for (int m = 0; m < 16; m++) {
             // THE SHORTAGE IS CAUSED: the fleet is seeded at the plant's nameplate need, so left alone the trucks suffice every
             // month. Month 2 is run with half of them (Freight buys them back at an eighth of the need a month, so a few
             // months are short and the rest are not): both sides of the share are billed.
-            if (m == 2) fr.setPantry(Good.TRUCKS, h.getNeed() / T * .5);
+            if (m == SHORT_AT) fr.setPantry(Good.TRUCKS, h.getNeed() / T * .5);
+            // FS7: the months short of trucks and the months with enough were counted off the run (the half fleet bought back over the months after the
+            // second, the rest found "enough"). Both are caused now, the way sections 7 to 9 cause a fleet: the fleet set to twice the need at a month of its own,
+            // so the share struck at that month's haul is a whole 1 for every sector, and each side is read at the month after the one that caused it (a share is
+            // struck at a haul and billed from the next one).
+            if (m == ENOUGH_AT) fr.setPantry(Good.TRUCKS, h.getNeed() / T * 2);
             Pred p = predict(a);
+            if (m == SHORT_AT + 1) pShort = p;
+            if (m == ENOUGH_AT + 1) pEnough = p;
             // A GOODS tonne has no truck leg, whatever crossed: counted, so the premise that goods crossed is caused and not assumed.
             for (Sector s : a.getSectors().all()) {
                 for (Good g : Good.values()) {
@@ -490,6 +505,7 @@ public class HaulageCheck {
             }
             quietly(a::toggleNextMonth);
             months++;
+            // FS7: compare()'s miss is a ratio of two billed fractions (each a share of its legs, about one), so its 1e-9 is a relative tolerance already.
             double[] c = compare(a, p);
             if (c[0] > 1e-9 && misses.length() < 600) misses.append("month " + m + ": " + worstWhere + "; ");
             worst = Math.max(worst, c[0]);
@@ -509,7 +525,9 @@ public class HaulageCheck {
                 String.format("%d months, %d sector-bills compared, worst miss %.2e; the builders' repair imports added %,.4fk at the top of the months %s",
                         months, sectorsBilled, worst, topOfMonth, misses));
         report("...and the months cover the trucks short and the trucks enough, so neither side is vacuous",
-                short_ > 0 && enough > 0, String.format("%d months short of trucks, %d enough, %d with the cap binding", short_, enough, capped));
+                pShort != null && pEnough != null && pShort.lowest < 1 && same(pEnough.lowest, 1) && pEnough.fit == 1,
+                String.format("the month after the half fleet: the least share billed %.4f; the month after twice the need: %.4f; %d months short of trucks, %d enough, %d with the cap binding",
+                        pShort == null ? Double.NaN : pShort.lowest, pEnough == null ? Double.NaN : pEnough.lowest, short_, enough, capped));
         report("the plant pays the ore it bought at home, the ore and coal it landed and the pellets it shipped, each a leg",
                 homeTonnes > 0 && oreImpTonnes > 0 && coalTonnes > 0 && pelletTonnes > 0 && near(plantGot, plantWant, 1e-9),
                 String.format("%,.0f t ore at home + %,.0f t ore landed + %,.0f t coal + %,.0f t pellets, x%.4f x D$%.5fk = %,.4fk against %,.4fk billed",
@@ -1031,14 +1049,24 @@ public class HaulageCheck {
         System.out.println("\n--- 4. the siding: a railed share of the imports relieves RAIL_ROAD_RELIEF of their truck tonnes; the sea relieves none ---");
         // ...on the goods' literals (base(): the plant's ore must land every month for the siding to relieve a landed tonne to read)
         Game b = played(GameFiles.scratch("haulagecheck-rail"), 14, true, true);
-        quietly(() -> lay(b, "Rail Spur", 1));
-        quietly(() -> { for (int i = 0; i < 4; i++) b.toggleNextMonth(); });
         Freight fr = b.getSectors().freight();
+        // FS7: this laid one spur and found, four months on, that the railway carried a share strictly between none and all of the bulk (the play's
+        // 50,000 t of sidings against whatever the bulk offered came to). The spurs are now sized from the bulk the played city offers while it has
+        // no track (the haul runs every month, so the fourteenth's offer is read): floor(offered / P) - 1 of them, P a spur's sidings, which stand short of the
+        // bulk by at least a spur's whole sidings and are at least one, so the railed share is its sidings over the bulk, past none and short of all, by construction.
+        final double bulkPlayed = fr.getBulkOffered();
+        final double spurSidings = b.getBuildingManager().getTemplateByName("Rail Spur").getRailCapacity();
+        final int spursLaid = (int) Math.floor(bulkPlayed / spurSidings) - 1;
+        assertTrue("fixture: the played city offers more than two spurs' sidings of bulk, so a spur count leaves the bulk past its sidings",
+                spursLaid >= 1);
+        quietly(() -> lay(b, "Rail Spur", Math.max(spursLaid, 0)));
+        quietly(() -> { for (int i = 0; i < 4; i++) b.toggleNextMonth(); });
         Haulage h = fr.haulage();
         Sector plant = b.getSectors().heavyIndustry();
         double r = fr.railShareInForce(Good.IRON);
         assertTrue("fixture: the railway carries a share of the bulk stream, strictly between nothing and all",
-                r > 0 && r < 1 && fr.trackTonnes() > 0 && fr.getHauledTonnes() > 0);
+                r > 0 && r < 1 && fr.trackTonnes() > 0 && fr.getHauledTonnes() > 0 && fr.sidingTonnes() == spursLaid * spurSidings
+                        && fr.getBulkOffered() > fr.sidingTonnes());
         double imp = plant.unitsImported(Good.IRON), home = plant.unitsBoughtLocal(Good.IRON);
         double tpu = Good.IRON.tonnesPerUnit();
         double got = Haulage.legTonnes(plant, Good.IRON, r), none = Haulage.legTonnes(plant, Good.IRON, 0), all = Haulage.legTonnes(plant, Good.IRON, 1);
@@ -1274,7 +1302,7 @@ public class HaulageCheck {
         for (Good g : pt.goodsMade().keySet()) if (g.traffic() == Traffic.BULK) legs += pt.makes(g) * g.tonnesPerUnit() * p.out(g);
         report("cityLegs() is its bulk inputs' tonnes x p.in() plus its outputs' x p.out(), at the rate",
                 legs > 0 && near(ProcessingSector.cityLegs(pt, rate, p), legs * rate, 1e-12) && same(ProcessingSector.cityLegs(pt, 0, p), 0)
-                        && same(ProcessingSector.cityLegs(null, rate, p), 0),
+                        && same(ProcessingSector.cityLegs((BuildingsTemplate) null, rate, p), 0),
                 String.format("D$%,.1fk a month at a rate of %.1f", ProcessingSector.cityLegs(pt, rate, p), rate));
         report("...and the plant's freight is its legs and nothing else: freightRunning() = fleetRunning() + cityLegs(), vans being nought",
                 near(ProcessingSector.freightRunning(pt, v, rate, p), ProcessingSector.cityLegs(pt, rate, p), 1e-12),
@@ -1351,9 +1379,17 @@ public class HaulageCheck {
          * exported its bread and imported its crops (632 t carried); at the world's band for 2000 bread is dearer to import than to make and
          * they raised none, so only Retail, Heavy Industry and Restaurants carried anything (3 sectors with legs, 4 wanted).
          */
-        Town(String label, boolean bakery) {
+        Town(String label, boolean bakery) { this(label, bakery, null); }
+
+        /**
+         * ...with `held` a sector held out of the planner's hands through the sixteen months (CU2), so it stands no works at the haul. On the
+         * chained world prices the investors raised a Manufacturing works of their own in them (2,462 t of standing need), and the growth
+         * section's sector new at the haul was not new.
+         */
+        Town(String label, boolean bakery, String held) {
             files = GameFiles.scratch(label);
             Game built = base(files);
+            if (held != null) built.getBusinessInvestment().holdSector(held);
             if (bakery) land(built, "Industrial Bakery", 1);
             quietly(() -> { for (int i = 0; i < 16; i++) built.toggleNextMonth(); });
             game = built;
@@ -1540,7 +1576,7 @@ public class HaulageCheck {
 
         System.out.println("\n--- ...the growth is served pro rata from what room is left, and a sector's first works is growth at the haul after it stands ---");
 
-        Town t3 = new Town("haulagecheck-deal-growth");
+        Town t3 = new Town("haulagecheck-deal-growth", false, Sectors.MANUFACTURING);
         Game g3 = t3.game;
         Haulage h3 = t3.h;
         Sector heavy3 = g3.getSectors().heavyIndustry(), retail3 = g3.getSectors().retail(), works3 = g3.getSectors().manufacturing();

@@ -664,7 +664,16 @@ public class PopulationCheck {
         FamilyModel doubled = new FamilyModel();
         doubled.rebuild(crowd, mix);
         long[] shortOfDoors = new long[7];
-        shortOfDoors[6] = (int) Math.floor(doubled.totalHouseholds()) - 200;   // family doors, two hundred short
+        /*
+         * Two hundred short of what the flatshares leave (HS2). The fixture
+         * was two hundred short of the matrix, which valve one absorbs whole
+         * - five singles to a door - so the doubling it asserted was the
+         * second match's rounding dust (1e-10 of a household on 0.9.159),
+         * and HS2's matrix left none. Short by more than the flatshares can
+         * take, two hundred households really do double up.
+         */
+        double flatshares = doubled.totalOf(FamilyStructure.SINGLE_ADULT) / 5 * 4;
+        shortOfDoors[6] = (int) Math.floor(doubled.totalHouseholds() - flatshares) - 200;   // family doors
         doubled.squeezeUnplaced(doubled.house(shortOfDoors));
         doubled.noteUnplaced(doubled.house(shortOfDoors));
         assertTrue("fixture: households doubled up, and nobody with nowhere",
@@ -991,6 +1000,8 @@ public class PopulationCheck {
                         : wgRate >= Migration.ARRIVALS_STOP_OUT_OF_WORK);
                 check("arrivals " + wgNames[i] + " are the unbraked arrivals x the brake at the rate it reads",
                         wgBraked.getLastArrivals(), wgTwin.getLastArrivals() * Migration.arrivalBrake(wgRate), 1e-9);
+                check("...and the brake it kept (what the People screen's word reads) is the brake at the rate it read",
+                        wgBraked.getLastBrake(), Migration.arrivalBrake(wgRate), 1e-12);
                 check("...and the mix by band is of the braked arrivals", wgMixed, wgBraked.getLastArrivals(), 1e-6);
             }
             PopulationManager wgPast = cityOutOfWork(wgAdults, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04);
@@ -998,6 +1009,15 @@ public class PopulationCheck {
             wgStopped.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
                     new LabourMarket(), wgPast);
             check("past the stop nobody arrives, however many jobs are going", wgStopped.getLastArrivals(), 0, 1e-9);
+            // FB4's review: the month with no people read (the 7-argument overload) keeps no brake, even after a month
+            // that braked. A fresh Migration starts at 1 and would pass whatever the reset did, so the city brakes first.
+            Migration wgEmptied = oldMigration();
+            wgEmptied.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
+                    new LabourMarket(), wgPast);
+            assertTrue("fixture: a city past the stop kept a brake below 1 in the month it read its people",
+                    wgEmptied.getLastBrake() < 1);
+            wgEmptied.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0);
+            check("...and its next month, with no people read, kept none: a brake of 1", wgEmptied.getLastBrake(), 1, 1e-12);
 
             // A young city is not braked: the same people, past the stop, with no months recorded.
             Migration wgYoung = new Migration(), wgYoungTwin = new Migration();
@@ -1011,6 +1031,7 @@ public class PopulationCheck {
                             && wgYoungTwin.getLastArrivals() > 0);
             check("a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole",
                     wgYoung.getLastArrivals(), wgYoungTwin.getLastArrivals(), 1e-9);
+            check("...and its kept brake is 1, whatever share it read", wgYoung.getLastBrake(), 1, 1e-12);
 
             // ---- 3. the jobless past the healthy rate leave ----
             System.out.println("   3. the jobless past the healthy rate leave");
@@ -1554,15 +1575,18 @@ public class PopulationCheck {
          * lost, and the round-trip below would not match.
          *
          * TWO BLOCKS ARE BAND-INDEXED SINCE 2026-09-15, not one: the orphans,
-         * and the children who went out of work with their parent at the very
-         * end. So a band added is TWO slots, not one, and this fixture spliced
+         * and the children who went out of work with their parent, at the end
+         * until HS2 put the young's two matrices after them (2026-11-19). So a
+         * band added is TWO slots, not one, and this fixture spliced
          * one and was refused - correctly, and it is a better test for having
          * had to learn it. The tail is spliced from the BACK first so the
          * orphan block's offset is still the one measured on the original.
          */
         String[] withExtra = java.util.Arrays.copyOf(names, bands + 1);
         withExtra[bands] = "A_BAND_FROM_THE_FUTURE";
-        double[] widened = spliceOneSlot(savedFamilies, savedFamilies.length, 8_888);
+        // The kin block's band slot is before the young's two matrices since HS2 (FamilyModel.stageSlots()).
+        double[] widened = spliceOneSlot(savedFamilies,
+                savedFamilies.length - FamilyModel.stageSlots(shapes.length), 8_888);
         widened = spliceOneSlot(widened, orphanBlockEnd(bands, shapes.length), 7_777);
 
         FamilyModel wider = new FamilyModel();

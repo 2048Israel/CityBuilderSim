@@ -225,6 +225,9 @@ public class BusinessServicesCheck {
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 2, true);
             b.addStack(b.getTemplateByName("Paved Road"), 30, true);
             b.addStack(b.getTemplateByName("Contact Centre"), 2, true);
+            // FS15: the two centres caused. The sector's own plan is held, so the 24 months trade on the two placed
+            // here: on HS1's path the plan ordered a third (900 seats) and the section read a city it did not build.
+            city.getBusinessInvestment().holdSector(Sectors.BUSINESS_SERVICES);
             for (int i = 0; i < 24; i++) city.simulateMonths(1);
         });
 
@@ -268,14 +271,13 @@ public class BusinessServicesCheck {
 
         // THE WAGE BILL. Same trick from the other side - move the floor every
         // wage is built on and the sector stops being worth expanding.
-        // WG1 (2026-11-10): the floor lifts only the wages under it, and only where it is law. This 1900 town has no minimum wage until 1918
-        // (R0), where until WG1 the dial was the ladder's anchor and moved every wage threefold, law or none (on WG1's first run, unopened, the
-        // centre's $9k a month was $9k after it); so the fixture opens that one lever before the floor is raised. Three times the floor in force
-        // is 2.55 times the going rate, past the rungs most posts are paid (spec-wages 3.8).
+        // WG1 (2026-11-10): the floor lifts only the wages under it, and only where it is law. From R0 to OP1 this 1900 town had no minimum wage
+        // until 1918, where until WG1 the dial was the ladder's anchor and moved every wage threefold, law or none (on WG1's first run, unopened,
+        // the centre's $9k a month was $9k after it); the minimum wage is open from the founding since OP1, so the floor is law when it is
+        // raised. Three times the floor in force is 2.55 times the going rate, past the rungs most posts are paid (spec-wages 3.8).
         double profitCheap = bs.estimatedMonthlyProfit(contact, plans);
         double floor = city.getLabourMarket().getMinimumWage();
         quietly(() -> {
-            city.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.MINIMUM_WAGE);
             city.getLabourMarket().setFloorBinding(true);
             city.getLabourMarket().setMinimumWage(floor * 3);
             for (int i = 0; i < 36; i++) city.simulateMonths(1);
@@ -380,6 +382,125 @@ public class BusinessServicesCheck {
         assertTrue("...and a city from before cars existed owns none",
                 first.cars == 0);
 
+        /* ====== 7. the upkeep it keeps follows its seats (HL1-R), no cliff at the first one ====== */
+        out.println("\n--- the city's upkeep, kept as far as the seats can serve it ---");
+        /*
+         * HL1-R (2026-11-19). HL1 bought the city's upkeep of this sector and kept a quarter of it (1 - UPKEEP_IMPORTED) from the first seat, none
+         * before: a cliff, a margin with no capacity behind it (HL1's review, low). It keeps now the quarter or what its seats can serve of the
+         * month (upkeepCapacity(): every seat at what the world pays for it), whichever is less, the bank's bill and the services' sharing the
+         * seats. The fixtures CAUSE each side: a city with no seats; one seat, built by giving the office template a capacity of one; seats
+         * past the quarter; and the bills are set from the model's own figures (the capacity and the dial), never from a literal.
+         */
+        final double kept25 = 1 - BusinessServices.UPKEEP_IMPORTED;
+        Game seam = new Game(files);
+        quietly(seam::run);
+        BusinessServices sbs = seam.getSectors().businessServices();
+        BuildingsTemplate seamOffice = seam.getBuildingManager().getTemplateByName(CONTACT);
+        double seatsBuilt = seamOffice.makes(Good.SUPPORT_WORK);
+        check("fixture: no seat stands, so what its seats can serve is nothing", sbs.getSeats() + sbs.upkeepCapacity(), 0, 0);
+        double seatPrice = sbs.priceOfSeat(Good.SUPPORT_WORK);
+        assertTrue("fixture: a seat-month of support work has a price in this city (and the dial leaves a kept share to cap)",
+                seatPrice > 0 && kept25 > 0 && kept25 < 1);
+        double bigBill = 100 * seatPrice;
+
+        sbs.sellUpkeep(bigBill);
+        check("with no seats none of the upkeep is kept...", sbs.upkeepKept(), 0, MoneyAudit.CENT);
+        check("...and all of it is imported, the whole sold", importedUpkeep(sbs), sbs.pending().upkeepSold, MoneyAudit.CENT);
+        check("...and the whole of the bill was sold", sbs.pending().upkeepSold, bigBill, MoneyAudit.CENT);
+
+        // One seat: the template of the contact centre made to hold one, and one standing.
+        seamOffice.makes(Good.SUPPORT_WORK, 1);
+        quietly(() -> seam.getBuildingManager().addStack(seamOffice, 1, true));
+        double oneSeat = sbs.upkeepCapacity();
+        assertTrue("fixture: one seat stands, and a quarter of the bill is more than that seat can serve",
+                sbs.getSeats() == 1 && oneSeat > 0 && kept25 * bigBill > oneSeat + MoneyAudit.CENT);
+
+        sbs.pending().clear();
+        sbs.sellUpkeep(bigBill);
+        check("one seat keeps what one seat can serve of a bill that is far more...", sbs.upkeepKept(), oneSeat, MoneyAudit.CENT);
+        assertTrue("...which is not the quarter of the whole bill, the cliff HL1 left (the kept share rose from nothing to a quarter at the first seat)",
+                sbs.upkeepKept() < kept25 * bigBill - MoneyAudit.CENT);
+        check("...the rest of the bill imported", importedUpkeep(sbs), bigBill - oneSeat, MoneyAudit.CENT);
+
+        double smallBill = oneSeat;
+        sbs.pending().clear();
+        sbs.sellUpkeep(smallBill);
+        check("one seat keeps the dial's quarter of a bill it can serve whole...", sbs.upkeepKept(), kept25 * smallBill, MoneyAudit.CENT);
+        check("...and imports the dial's share of it, to the bit", importedUpkeep(sbs), smallBill * BusinessServices.UPKEEP_IMPORTED, 1e-12);
+
+        // The bank's bill and the services' share the month's seats: kept once between them, not once each.
+        sbs.pending().clear();
+        sbs.sellUpkeep(2 * oneSeat);
+        double firstKept = sbs.upkeepKept();
+        sbs.sellBankUpkeep(4 * oneSeat);
+        check("the services' bill, paid first, keeps the dial's quarter of it", firstKept, kept25 * 2 * oneSeat, MoneyAudit.CENT);
+        check("...the bank's the room the seats have left, and the two together no more than the seats can serve",
+                sbs.upkeepKept(), oneSeat, MoneyAudit.CENT);
+        check("...so the bank's line imports what it could not keep: its bill less that room",
+                sbs.pending().otherInputs.getOrDefault(BusinessServices.BANK_UPKEEP_SUPPLIES, 0.0), 4 * oneSeat - (oneSeat - firstKept), MoneyAudit.CENT);
+
+        // The kept share steps up with the seats, a seat adding no more than its own price: no jump anywhere on the way, from none to one included.
+        // The bill is twice what the whole contact centre bills at capacity, so the quarter is more than the early steps can serve and less than the last.
+        double[] seatCounts = { 1, 2, 5, 10, 40, 100, seatsBuilt };
+        double scanBill = 2 * seatsBuilt * seatPrice;
+        double previousKept = 0, previousCapacity = 0;
+        boolean followed = true, stepped = true, rose = true;
+        boolean capacityBound = false, dialBound = false;
+        for (double seats : seatCounts) {
+            seamOffice.makes(Good.SUPPORT_WORK, seats);
+            double capacity = sbs.upkeepCapacity();
+            sbs.pending().clear();
+            sbs.sellUpkeep(scanBill);
+            double kept = sbs.upkeepKept();
+            followed &= Math.abs(kept - Math.min(kept25 * scanBill, capacity)) <= MoneyAudit.CENT;
+            stepped &= kept - previousKept <= capacity - previousCapacity + MoneyAudit.CENT;
+            rose &= kept >= previousKept - MoneyAudit.CENT;
+            if (seats == 1) capacityBound = kept25 * scanBill > capacity + MoneyAudit.CENT;
+            if (seats == seatsBuilt) dialBound = capacity > kept25 * scanBill + MoneyAudit.CENT;
+            previousKept = kept;
+            previousCapacity = capacity;
+        }
+        assertTrue("fixture: the scan's bill is more than one seat can serve a quarter of, and less than a whole contact centre's seats can", capacityBound && dialBound);
+        assertTrue("seat by seat the kept share is the less of the dial's quarter and what the seats can serve (1, 2, 5, 10, 40, 100 seats and a whole contact centre)", followed);
+        assertTrue("...it never falls as seats are added...", rose);
+        assertTrue("...and what each step adds, from nothing to one seat included, is no more than the seats added can serve", stepped);
+        check("with seats enough the kept share is the dial's quarter of the bill, no more than that",
+                previousKept, kept25 * scanBill, MoneyAudit.CENT);
+
+        /*
+         * A MONTH PLAYED, not only a call: a played city with the clinic, the school, the police stations, a bus network and three bank branches
+         * (MoneyFixtures.upkeepCity, HL1's), its office given ONE seat. The month's bills are the city's own; the books must still close and
+         * the households' identity too, whatever share is kept, a dollar kept being the seller's income once and the buyer's spending once.
+         */
+        GameFiles seatFiles = GameFiles.scratch("bscheck-upkeep-seat");
+        Game played = LongPlaytest.MoneyFixtures.upkeepCity(seatFiles, false);
+        BusinessServices pbs = played.getSectors().businessServices();
+        BuildingsTemplate playedOffice = played.getBuildingManager().getTemplateByName(CONTACT);
+        playedOffice.makes(Good.SUPPORT_WORK, 1);
+        quietly(() -> played.getBuildingManager().addStack(playedOffice, 1, true));
+        quietly(() -> played.simulateMonths(1));
+        double playedCapacity = pbs.upkeepCapacity();
+        double playedBills = LongPlaytest.MoneyFixtures.upkeepBills(played);
+        double playedKept = pbs.upkeepKept();
+        out.printf("   played city, one seat: bills %,.2f, capacity %,.4f, kept %,.4f, sold %,.2f%n",
+                playedBills, playedCapacity, playedKept, pbs.pending().upkeepSold);
+        assertTrue("fixture: the played city has one seat and paid upkeep, a quarter of it more than that seat serves",
+                pbs.getSeats() == 1 && playedBills > 0 && kept25 * playedBills > playedCapacity * 1.0001);
+        check("a month played with one seat: the whole bill is sold to Business Services", pbs.pending().upkeepSold, playedBills, MoneyAudit.CENT);
+        check("...it keeps what its one seat can serve, not the quarter", playedKept, playedCapacity, Math.max(MoneyAudit.CENT, playedCapacity * 1e-6));
+        assertTrue("...and that month's audit closes", played.getLastMoneyAudit().relative() < 1e-4);
+        assertTrue("...and the households' books close too", LongPlaytest.MoneyFixtures.householdsClose(played.getLastHouseholdsAudit()));
+        quietly(() -> played.simulateMonths(1));
+        Sector.Statement playedBooks = pbs.statement();
+        Double playedPart = playedBooks.otherParts.get(Sector.UPKEEP_SOLD);
+        double playedImported = playedBooks.otherInputs.getOrDefault(BusinessServices.UPKEEP_SUPPLIES, 0.0)
+                + playedBooks.otherInputs.getOrDefault(BusinessServices.BANK_UPKEEP_SUPPLIES, 0.0);
+        assertTrue("the next press strikes it: the statement names the upkeep sold and imports all of it but the seat's worth",
+                playedPart != null && playedPart > 0 && playedPart - playedImported <= playedCapacity * 1.01 + MoneyAudit.CENT
+                        && playedPart - playedImported < kept25 * playedPart);
+        assertTrue("...that month's audit and households' books close too",
+                played.getLastMoneyAudit().relative() < 1e-4 && LongPlaytest.MoneyFixtures.householdsClose(played.getLastHouseholdsAudit()));
+
         out.println();
         if (fails == 0) {
             out.println("Business Services works: the world pays, the wage bill decides, and the"
@@ -388,6 +509,12 @@ public class BusinessServicesCheck {
             out.println(fails + " check(s) failed.");
         }
         System.exit(fails);
+    }
+
+    /** What of the upkeep billed this month the sector imports: its two input lines (HL1-R). */
+    static double importedUpkeep(BusinessServices bs) {
+        return bs.pending().otherInputs.getOrDefault(BusinessServices.UPKEEP_SUPPLIES, 0.0)
+                + bs.pending().otherInputs.getOrDefault(BusinessServices.BANK_UPKEEP_SUPPLIES, 0.0);
     }
 
     static double jobsOf(BuildingsTemplate t) {

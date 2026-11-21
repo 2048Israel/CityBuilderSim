@@ -9,11 +9,11 @@ package ham.citybuildersim;
 public class BuildingsStacks {
 
     private BuildingsTemplate template;
-    private int quantity;
-    private int underConstruction;
+    private long quantity;
+    private long underConstruction;
 
     /** Finished in the most recent advanceConstruction() call. Not saved: monthly. */
-    private int lastFinished;
+    private long lastFinished;
 
     /** Points the most recent advanceConstruction() call put into buildings: never more than the stack owed (0.7.17). Not saved: monthly. */
     private double lastApplied;
@@ -128,9 +128,19 @@ public class BuildingsStacks {
         this.underConstruction = 0;
     }
 
-    public void startConstruction(int n) {
+    public void startConstruction(long n) {
+        startConstruction(n, null);
+    }
+
+    /**
+     * ...and the order's fitout with it (R1e; Fitout): an order a city founded the 1900 way chose goes on site as a lot of its own,
+     * behind the lots already there, and keeps its set and its points until it finishes. A fitout no one chose (the whole template,
+     * a city founded the default way), or none, adds no lot: those buildings are loose (see THE ORDERS' EQUIPMENT ON SITE).
+     */
+    public void startConstruction(long n, Fitout fit) {
         underConstruction += n;
         materialsOwed += template.getConstructionMaterials() * (double) n;
+        if (n > 0 && fit != null && fit.isChosen() && fit.template() == template) addLot(n, fit);
     }
 
     /**
@@ -214,6 +224,8 @@ public class BuildingsStacks {
         underConstruction = 0;
         constructionProgress = 0;
         materialsOwed = 0;
+        // ...and its lots go with it (R1e): the caller reads them first (getLots()), for the shell to keep.
+        lots.clear();
         return out;
     }
 
@@ -222,11 +234,18 @@ public class BuildingsStacks {
      * them and the material they still owe, beside whatever is on site
      * already. The new order's contract is booked apart (bookContract()).
      */
-    void resumeShell(int buildings, double progress, double owedUnits) {
+    void resumeShell(long buildings, double progress, double owedUnits) {
+        resumeShell(buildings, progress, owedUnits, null);
+    }
+
+    /** ...with the lots it was stopped with (R1e): back on site behind what is there, each with its set; a shell with none comes back loose. */
+    void resumeShell(long buildings, double progress, double owedUnits, java.util.List<Lot> stopped) {
         underConstruction += Math.max(0, buildings);
         // ...a shell cancelled before its site's preparation was done holds it owed, progress below nothing (addPreparation()): it goes back as owed.
         constructionProgress += progress;
         materialsOwed += Math.max(0, owedUnits);
+        if (stopped != null) for (Lot lot : stopped) if (lot != null && lot.buildings > 0) addLot(lot.buildings, lot.fitOf(template));
+        trimLots();
     }
 
     /** This month's work, payer by payer - per the last advanceConstruction() call. */
@@ -256,24 +275,24 @@ public class BuildingsStacks {
      * unfitted one first, the older plant, so a count never outlives the buildings it counts. Saved, by template id, only where a stack has any
      * (BuildingManager.getUnfittedById(); DataSave.unfittedById). A sorted map, so that anything that walks it walks it in one order.
      */
-    private final java.util.TreeMap<String, Integer> unfitted = new java.util.TreeMap<>();
+    private final java.util.TreeMap<String, Long> unfitted = new java.util.TreeMap<>();
 
     /** How many of this stack's buildings are still without the piece of equipment of this id: 0 for a piece none lacks. */
-    public int getUnfitted(String id) {
-        Integer n = id == null ? null : unfitted.get(id);
+    public long getUnfitted(String id) {
+        Long n = id == null ? null : unfitted.get(id);
         return n == null ? 0 : n;
     }
 
     /** Sets how many of this stack's buildings are without a piece: clamped to 0..quantity, and 0 takes the piece off the count. */
-    public void setUnfitted(String id, int n) {
+    public void setUnfitted(String id, long n) {
         if (id == null) return;
-        int c = Math.max(0, Math.min(n, quantity));
+        long c = Math.max(0, Math.min(n, quantity));
         if (c == 0) unfitted.remove(id);
         else unfitted.put(id, c);
     }
 
     /** Every piece some of this stack's buildings lack, with how many, in the pieces' id order; unmodifiable, and empty for a stack that is fully fitted. For the save. */
-    public java.util.Map<String, Integer> getUnfittedView() {
+    public java.util.Map<String, Long> getUnfittedView() {
         return java.util.Collections.unmodifiableMap(unfitted);
     }
 
@@ -282,21 +301,187 @@ public class BuildingsStacks {
         return !unfitted.isEmpty();
     }
 
+    private java.util.function.Consumer<BuildingsStacks> onScrap = s -> { };
+
+    /** The city's fitting queue hears every removal, retirement and a harness's immediate removal included, after the counts are lowered (R1d). */
+    void setOnScrap(java.util.function.Consumer<BuildingsStacks> listener) { onScrap = listener; }
+
     /** After the quantity fell from `before`: the buildings scrapped were the unfitted ones first (the older plants), and no count stays above what stands. */
-    private void lowerUnfitted(int before) {
-        int removed = before - quantity;
-        java.util.Iterator<java.util.Map.Entry<String, Integer>> it = unfitted.entrySet().iterator();
+    private void lowerUnfitted(long before) {
+        long removed = before - quantity;
+        java.util.Iterator<java.util.Map.Entry<String, Long>> it = unfitted.entrySet().iterator();
         while (it.hasNext()) {
-            java.util.Map.Entry<String, Integer> e = it.next();
-            int n = Math.min(Math.max(0, e.getValue() - Math.max(0, removed)), quantity);
+            java.util.Map.Entry<String, Long> e = it.next();
+            long n = Math.min(Math.max(0, e.getValue() - Math.max(0, removed)), quantity);
             if (n <= 0) it.remove();
             else e.setValue(n);
         }
+        // ...and then the fittings on site, which may now have fewer unfitted buildings than jobs (Fittings.scrapped()).
+        onScrap.accept(this);
+    }
+
+    /*
+     * ===== THE ORDERS' EQUIPMENT ON SITE (R1e, 2026-11-19; Fitout, docs/queue/R1e.md) =====
+     *
+     * The buildings on site are one pool of progress, but not of what they come with: each order a city founded the 1900 way
+     * placed is a LOT, its buildings and the pieces its quote chose them without, behind the lots before it. A lot's building
+     * owes its fitout's points (Fitout.points(): the template's less the work of the pieces left off), and the site finishes
+     * off the front, first placed first finished, so each order delivers the set it was priced on and the finish records it
+     * (getLastFinishedWithout(); Game.fitWhatFinished()). A building on site with no lot is LOOSE: placed by no order that chose
+     * (every building of a city founded the default way, a site a harness put up, a save from before R1e); the loose are the
+     * front of the site, owe the template's points and come as the finish decides, as before. Saved by template id, only where
+     * a stack has any (BuildingManager.getLotsById(); DataSave.lotsById); a shell keeps the lots it was stopped with.
+     */
+
+    /** One order's buildings on site and the pieces they come without (R1e): plain fields, so the save and a shell carry it. */
+    public static final class Lot {
+        /** How many of the order's buildings are still on site. */
+        public long buildings;
+        /** The pieces they come without, by id; empty for every piece. */
+        public java.util.List<String> without;
+        /** The fitout these read as on this stack's template; not saved (Gson skips a transient field), read again from the ids. */
+        private transient Fitout fit;
+
+        public Lot() { }
+
+        Lot(long buildings, Fitout fit) {
+            this.buildings = buildings;
+            this.without = new java.util.ArrayList<>(fit.without());
+            this.fit = fit;
+        }
+
+        /** Its fitout on `t`: the ids it was saved with, those the template no longer carries dropped (Fitout.without()). */
+        public Fitout fitOf(BuildingsTemplate t) {
+            if (fit == null || fit.template() != t) fit = Fitout.without(t, without);
+            return fit;
+        }
+
+        /** A copy that shares nothing with this one: a shell's, the save's. */
+        public Lot copy() {
+            Lot c = new Lot();
+            c.buildings = buildings;
+            c.without = without == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(without);
+            c.fit = fit;
+            return c;
+        }
+    }
+
+    private final java.util.ArrayList<Lot> lots = new java.util.ArrayList<>();
+
+    /** Finished in the most recent advanceConstruction() call with no lot: loose, theirs to be decided at the finish. Not saved: monthly. */
+    private long lastFinishedLoose;
+    /** ...and of those that finished in lots, how many came without each piece, by id. Not saved: monthly. */
+    private final java.util.TreeMap<String, Long> lastFinishedWithout = new java.util.TreeMap<>();
+
+    /** A lot of n behind the others; one with the same set as the last joins it, which finishes the same buildings in the same order. */
+    private void addLot(long n, Fitout fit) {
+        Lot last = lots.isEmpty() ? null : lots.get(lots.size() - 1);
+        if (last != null && last.fitOf(template).without().equals(fit.without())) last.buildings += n;
+        else lots.add(new Lot(n, fit));
+    }
+
+    /** No lot holds more buildings than are on site: the newest give way first (a site cut by hand, a save's count). */
+    private void trimLots() {
+        long over = lotted() - Math.max(0, underConstruction);
+        for (int i = lots.size() - 1; i >= 0 && over > 0; i--) {
+            Lot lot = lots.get(i);
+            long cut = Math.min(over, lot.buildings);
+            lot.buildings -= cut;
+            over -= cut;
+            if (lot.buildings <= 0) lots.remove(i);
+        }
+    }
+
+    private long lotted() {
+        long n = 0;
+        for (Lot lot : lots) n += lot.buildings;
+        return n;
+    }
+
+    /** The buildings on site with no lot, the front of the site: every building on site where there is no lot. */
+    public long getLooseOnSite() {
+        return Math.max(0, underConstruction - lotted());
+    }
+
+    /** The lots on site, front first: copies, for the save and a shell. Empty with none. */
+    public java.util.List<Lot> getLots() {
+        java.util.List<Lot> out = new java.util.ArrayList<>(lots.size());
+        for (Lot lot : lots) out.add(lot.copy());
+        return out;
+    }
+
+    /** Puts a save's lots back, front first, after the site's count (BuildingManager.restoreLots()): none, or empty, restores none. */
+    public void restoreLots(java.util.List<Lot> saved) {
+        lots.clear();
+        if (saved != null) for (Lot lot : saved) if (lot != null && lot.buildings > 0) addLot(lot.buildings, lot.fitOf(template));
+        trimLots();
+    }
+
+    /**
+     * The points every building on site takes, before any progress: the loose at the template's points, each lot at its
+     * fitout's. With no lot, the site's buildings times the template's points, to the bit.
+     */
+    public double pointsOnSite() {
+        double points = getLooseOnSite() * (double) template.getConstructionPoints();
+        for (Lot lot : lots) points += lot.buildings * lot.fitOf(template).points();
+        return points;
+    }
+
+    /** ...and the first k of them, front first: what the site owes before its k-th building finishes, progress aside. */
+    public double pointsOfFirst(long k) {
+        long left = Math.max(0, Math.min(k, underConstruction));
+        long loose = Math.min(left, getLooseOnSite());
+        double points = loose * (double) template.getConstructionPoints();
+        left -= loose;
+        for (Lot lot : lots) {
+            if (left <= 0) break;
+            long n = Math.min(left, lot.buildings);
+            points += n * lot.fitOf(template).points();
+            left -= n;
+        }
+        return points;
+    }
+
+    /** Points still owed on site: every building's points less the progress made (a foothill's preparation owed reads as more). */
+    public double owedPoints() {
+        return pointsOnSite() - constructionProgress;
+    }
+
+    /** The points the building at the front of the site takes: a loose one's the template's, else the first lot's. */
+    private double nextPoints() {
+        if (getLooseOnSite() > 0 || lots.isEmpty()) return template.getConstructionPoints();
+        return lots.get(0).fitOf(template).points();
+    }
+
+    /** Takes k finished buildings off the front, the loose first, and counts what they come without. While they still count on site. */
+    private void finishFront(long k) {
+        long left = Math.max(0, k);
+        long loose = Math.min(left, getLooseOnSite());
+        lastFinishedLoose += loose;
+        left -= loose;
+        while (left > 0 && !lots.isEmpty()) {
+            Lot lot = lots.get(0);
+            long n = Math.min(left, lot.buildings);
+            for (String id : lot.fitOf(template).without()) lastFinishedWithout.merge(id, n, Long::sum);
+            lot.buildings -= n;
+            left -= n;
+            if (lot.buildings <= 0) lots.remove(0);
+        }
+    }
+
+    /** Of the buildings the most recent advanceConstruction() call finished, those with no lot: their pieces are decided at the finish. */
+    public long getLastFinishedLoose() {
+        return lastFinishedLoose;
+    }
+
+    /** ...and of those it finished in lots, how many came without each piece, by id: unmodifiable, empty when every one came with all. */
+    public java.util.Map<String, Long> getLastFinishedWithout() {
+        return java.util.Collections.unmodifiableMap(lastFinishedWithout);
     }
 
     // for immediate add
-    public void addQuantity(int n) {
-        int before = quantity;
+    public void addQuantity(long n) {
+        long before = quantity;
         quantity += n;
         if (quantity < before) lowerUnfitted(before);
     }
@@ -307,8 +492,11 @@ public class BuildingsStacks {
         lastFinished = 0;
         lastApplied = 0;
         dues.clear();
+        lastFinishedLoose = 0;
+        lastFinishedWithout.clear();
 
         if (underConstruction == 0) {
+            lots.clear();
             // Nothing on site: a residue here is rounding, not an order. The
             // money is not dropped - the builders were paid it - it is earned.
             // ...and the material nobody will draw is refunded to whoever paid
@@ -324,8 +512,9 @@ public class BuildingsStacks {
             return;
         }
 
-        int finished = 0;
-        double owedPoints = underConstruction * (double) template.getConstructionPoints() - constructionProgress;
+        long finished = 0;
+        // ...each building its own points: a lot's are its fitout's (R1e), a loose building's the template's.
+        double owedPoints = pointsOnSite() - constructionProgress;
 
         /*
          * NEVER MORE THAN IT OWES (0.7.17). What this stack is handed past
@@ -343,16 +532,19 @@ public class BuildingsStacks {
 
         if (applied >= owedPoints) {
             finished = underConstruction;
+            finishFront(underConstruction);
             underConstruction = 0;
             remainingOutput = 0;
         }
-        while ((remainingOutput >= template.getConstructionPoints() && (underConstruction > 0))) {
+        // ...off the front, first placed first finished: the loose, then the lots in the order they came (R1e).
+        while (underConstruction > 0 && remainingOutput >= nextPoints()) {
+            remainingOutput -= nextPoints();
+            finishFront(1);
             finished++;
             underConstruction--;
-            remainingOutput -= template.getConstructionPoints();
         }
 
-        int startedConstruction = underConstruction + finished;
+        long startedConstruction = underConstruction + finished;
         quantity += finished;
         constructionProgress = underConstruction > 0 ? remainingOutput : 0;
         lastFinished = finished;
@@ -397,7 +589,7 @@ public class BuildingsStacks {
             }
 
             double monthsLeft = Math.ceil(
-                    (underConstruction * template.getConstructionPoints() - remainingOutput)
+                    (pointsOnSite() - remainingOutput)
                             / applied);
             System.out.println(" " + (int) monthsLeft + " month(s).");
         }
@@ -412,7 +604,7 @@ public class BuildingsStacks {
      * completions, and a running total here would need clearing by someone,
      * which is the shape of bug this codebase keeps finding in monthly state.
      */
-    public int getLastFinished() {
+    public long getLastFinished() {
         return lastFinished;
     }
 
@@ -428,7 +620,7 @@ public class BuildingsStacks {
      * BuildingManager.clearBankedProgress(), which says why no money moves.
      */
     public double clearBankedProgress() {
-        double cap = Math.max(0, underConstruction * (double) template.getConstructionPoints());
+        double cap = Math.max(0, pointsOnSite());
         double over = constructionProgress - cap;
         if (!(over > 0)) return 0;
         constructionProgress = cap;
@@ -440,18 +632,18 @@ public class BuildingsStacks {
         return (long) template.getJobs(type) * quantity;
     }
 
-    public int getQuantity() {
+    public long getQuantity() {
         return quantity;
     }
 
     /** Scraps finished buildings. Floors at zero rather than going negative. The unfitted ones go first (see the unfitted counts). */
-    public void removeQuantity(int amount) {
-        int before = quantity;
+    public void removeQuantity(long amount) {
+        long before = quantity;
         quantity = Math.max(quantity - amount, 0);
         if (quantity < before) lowerUnfitted(before);
     }
 
-    public int getUnderConstruction() {
+    public long getUnderConstruction() {
         return underConstruction;
     }
 
@@ -463,8 +655,8 @@ public class BuildingsStacks {
         return constructionProgress;
     }
 
-    public void increaseQuantity(int amount) {
-        int before = quantity;
+    public void increaseQuantity(long amount) {
+        long before = quantity;
         this.quantity += amount;
         if (quantity < before) lowerUnfitted(before);
     }
@@ -515,8 +707,9 @@ public class BuildingsStacks {
         this.constructionProgress = progress;
     }
 
-    public void setUnderConstruction(int quantity) {
+    public void setUnderConstruction(long quantity) {
         this.underConstruction = quantity;
+        trimLots();
     }
 
     public void setMaterialsOwed(double units) {

@@ -283,15 +283,24 @@ public final class Founding {
     /** The seed that draws the path (WN1; spec-nations 7.3) - not worldSeed, which is the ground's. */
     private final long pathSeed;
     /**
-     * The city founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false in every constructor and preset,
-     * on only by withUnfitted().
+     * The city founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false in every constructor and preset, on only by withUnfitted().
      *
      * WHY (R1b, 2026-11-05; research-1900.md 3: "A 1900 building starts without them and fits them when they pay"). R1 made a piece of equipment
      * a count of the buildings still without it (BuildingsStacks.getUnfitted()), empty in every played city; a city founded this way starts
-     * with the counts full and its new buildings come with a piece only where it pays (Game.fitWhatFinished()). Off by default until R1d
-     * switches it on with R0d's 1901 ladder, so no city a player or a harness founds moves. Saved with the founding (DataSave.foundedUnfitted).
+     * with the counts full and its new buildings come with a piece only where it pays (Game.fitWhatFinished()). R1d offers it
+     * with R0d's 1901 ladder where a city is played: the founding screen's "1900" chip, beside "All fitted", which the screen opens on
+     * until the 1900 city grows (R1g), and the playtest under -Dplaytest.founded=1900 (LongPlaytest.played()). The engine's own door stays
+     * all fitted, so every harness city keeps the premise it was written on and asks for 1900 by name (R1d calls 1 and 2). Saved with the founding (DataSave.foundedUnfitted).
      */
     private final boolean unfitted;
+
+    /**
+     * The founding screen's "start on gold" box beside the money (FB14; GD3-F, spec-gold-money 4.3): the city founds on Gold
+     * (ForeignAccounts.Regime.GOLD, Game.foundOnGold()) with goldUsd() of the founders' vault in gold. False in every constructor and
+     * preset, on only by withGold(). Not saved: it acts once, at the founding, and what it did is in the save itself (the vault's gold and
+     * the regime, ForeignAccounts' own slots), so a loaded city's founding reads false and nothing after the founding asks.
+     */
+    private final boolean onGold;
 
     /**
      * A founding exactly as given. The load path's door, and the one the
@@ -315,11 +324,12 @@ public final class Founding {
         this.path = Nations.DEFAULT_PATH;
         this.pathSeed = Nations.DEFAULT_SEED;
         this.unfitted = false;
+        this.onGold = false;
     }
 
     /** A founding as given on the world a key names (0.7.115): its seed the key's. */
     private Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation,
-                     World.Key worldKey, Nations.Path path, long pathSeed, boolean unfitted) {
+                     World.Key worldKey, Nations.Path path, long pathSeed, boolean unfitted, boolean onGold) {
         this.cityName = cityName;
         this.currency = currency;
         this.cash = cash;
@@ -330,6 +340,7 @@ public final class Founding {
         this.path = path;
         this.pathSeed = pathSeed;
         this.unfitted = unfitted;
+        this.onGold = onGold;
     }
 
     /** ...on the default world, DEFAULT_WORLD_SEED. */
@@ -356,17 +367,17 @@ public final class Founding {
 
     /** The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. */
     public Founding withCurrency(Currency typed) {
-        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, unfitted);
+        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, unfitted, onGold);
     }
 
     /** The same founding on another world: the founding screen's World field and its dice (0.7.56). */
     public Founding withWorldSeed(long seed) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, World.Key.generated(seed), path, pathSeed, unfitted);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, World.Key.generated(seed), path, pathSeed, unfitted, onGold);
     }
 
     /** The same founding on the world a key names (0.7.115): an Earth world (onEarth()) or a harness's; a generated key is withWorldSeed(). */
     public Founding withWorldKey(World.Key key) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key, path, pathSeed, unfitted);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key, path, pathSeed, unfitted, onGold);
     }
 
     /** The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_2 - the founding screen's Earth. */
@@ -376,18 +387,23 @@ public final class Founding {
 
     /** The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. */
     public Founding withMeanInflation(double meanInflation) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, unfitted);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, unfitted, onGold);
     }
 
     /** The same founding on another path of the world beyond the city, drawn from this seed (WN1; spec-nations 7): the founding screen's Historical or Random and its dice. */
     public Founding withPath(Nations.Path path, long seed) {
         return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey,
-                Objects.requireNonNull(path, "path"), seed, unfitted);
+                Objects.requireNonNull(path, "path"), seed, unfitted, onGold);
     }
 
     /** The same founding founded the 1900 way, its buildings' equipment unfitted, or not (R1b; isUnfitted()): every other choice kept. */
     public Founding withUnfitted(boolean on) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, on);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, on, onGold);
+    }
+
+    /** The same founding with the founding screen's "start on gold" box ticked, or not (FB14; isOnGold()): every other choice kept. */
+    public Founding withGold(boolean on) {
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, unfitted, on);
     }
 
     /** What a save from before 0.7.10 was founded with. See the class header. */
@@ -415,7 +431,52 @@ public final class Founding {
     public Nations.Path getPath()      { return path; }
     /** The seed that draws the path (WN1; spec-nations 7.3) - not getWorldSeed(), the ground's. */
     public long getPathSeed()          { return pathSeed; }
-    /** Whether the city is founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false unless withUnfitted() said so. */
+    /**
+     * THE FOUNDERS' GOLD (FB14; GD3-F, ★): how much of the vault the "start on gold" box puts into gold, in thousands of US dollars, at this
+     * rate (D$ per US$) - none without the box. Enough for the law's cover (ForeignAccounts.COVER_RATIO, the Federal Reserve Act's 40%) of
+     * the treasury it is founded with, at the rate, and never more than the vault: all of it in every preset at the OPENING_RATE (Lean's and
+     * Wealthy's vaults are exactly 40% of their treasuries, Standard's 25%), the rest kept in dollars by a custom founding with a deeper vault.
+     *
+     * WHY NOT 40% OF M0 (the call as GD3 worded it, "enough for the 40% cover"): the cover the law reads is the gold over M0, and a new
+     * city's M0 is what its central bank has made - nothing at the founding and about D$2k at month 1 against a D$648k vault. 40% of that is
+     * 0.13% of the vault, the cover on the floor, Defend the gold's whole spread on the rate, interest on reserves making M0 sixty times over
+     * in a year, and the city off gold by its cover in month 26 (38 founded the 1900 way). FB14's notes have the probe's table.
+     */
+    public double goldUsd(double rate) { return onGold ? goldUsd(cash, reserveUsd, rate) : 0; }
+
+    /** ...for these figures, box or not: what the founding screen quotes beside the box. */
+    public static double goldUsd(double cash, double reserveUsd, double rate) {
+        if (!(rate > 0) || !(reserveUsd > 0) || !(cash > 0)) return 0;
+        double cover = ForeignAccounts.COVER_RATIO * cash / rate;
+        return cover >= reserveUsd * (1 - 1e-9) ? reserveUsd : cover;   // ...a preset's exact 40% is all of it, not all but a rounding
+    }
+
+    /** What of the vault stays in US dollars at this rate (FB14; REV-FB14): the vault less goldUsd(rate) - all of it without the box. */
+    public double dollarsUsd(double rate) { return reserveUsd - goldUsd(rate); }
+
+    /** ...for these figures, the box ticked: the vault less goldUsd(cash, reserveUsd, rate), nothing in every preset. */
+    public static double dollarsUsd(double cash, double reserveUsd, double rate) {
+        return Math.max(0, reserveUsd - goldUsd(cash, reserveUsd, rate));
+    }
+
+    /**
+     * ...and what that gold is worth against the treasury, at this rate (FB14; REV-FB14): COVER_RATIO when the vault is deep enough (Lean's,
+     * Wealthy's, a deeper custom vault's), less when the whole vault falls short of it (Standard's 25%, any shallower vault's), 0 with none.
+     */
+    public static double goldShareOfTreasury(double cash, double reserveUsd, double rate) {
+        double gold = goldUsd(cash, reserveUsd, rate);
+        return gold > 0 ? gold * rate / cash : 0;
+    }
+
+    /** ...whether the gold is the law's whole share of the treasury, not all a shallower vault has (a rounding short of it counts). */
+    public static boolean goldCoversTheLaw(double cash, double reserveUsd, double rate) {
+        return goldShareOfTreasury(cash, reserveUsd, rate) >= ForeignAccounts.COVER_RATIO * (1 - 1e-9);
+    }
+
+    /** Whether the city founds on Gold, the founding screen's "start on gold" box (FB14; withGold()): false unless it says so. */
+    public boolean isOnGold() { return onGold; }
+
+    /** Whether the city is founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false unless withUnfitted() said so (the founding screen's "1900" chip and the playtest's flag since R1d). */
     public boolean isUnfitted()        { return unfitted; }
     /** Which world it stands on (0.7.121): GENERATED, or EARTH. */
     public World.Kind getWorldKind()   { return worldKey.kind(); }
@@ -558,13 +619,13 @@ public final class Founding {
     }
 
     /**
-     * The builders' sales tax on a new city: what a fresh policy charges them in the city's first month (0.7.19; Game, THE BUILDERS' PRICE).
-     * A bare policy hears no month and has every lever open, so it quoted the old 15% while a city on history's dates (R0) charges nothing
-     * until the sales tax opens in 1920: the policy is told it is month 1, the founding month, as a city's is (Game.policyHearsTheMonth()).
+     * The builders' sales tax on a new city: what a fresh policy charges them in the city's first month (0.7.19; Game, THE BUILDERS' PRICE),
+     * opened as a city's is at its founding (TaxPolicy.openAtFounding(), OP1: the sales tax at the founding rate; from R0 to OP1 it was
+     * nothing until 1920).
      */
     public static double foundingBuildersRate() {
         TaxPolicy founding = new TaxPolicy();
-        founding.setMonth(1);
+        founding.openAtFounding();
         return founding.effectiveSalesRate("Construction");
     }
 

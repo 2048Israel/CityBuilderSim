@@ -551,7 +551,8 @@ public final class PolicyPreview {
      * (Game.fundIdleCash(), RB1) - TreasuryFund.dueAt(), which is
      * Game.fundTransferDue() at the dial in force, to the bit; its cash
      * after what last month's sale still owes (getToRaise()), which the top
-     * of the month pays first; and the value times (1 - the rate) to the
+     * of the month pays first - the idle cash is read on the cash after it
+     * too (Game.fundIdleCash(), RB1-R); and the value times (1 - the rate) to the
      * twelfth, a year of withdrawals with nothing earned - the idle cash
      * in it at the larger of the rate and IDLE_TRANSFER_SHARE, as the due
      * takes it, and the rest at the rate. Prices, dividends

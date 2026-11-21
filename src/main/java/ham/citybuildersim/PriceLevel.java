@@ -51,6 +51,9 @@ public final class PriceLevel {
      */
     public static final double FACTOR = factor();
 
+    /** The calendar's actual US CPI ratio, independent of a counterfactual price-level override. */
+    public static final double HISTORICAL_FACTOR = usCpi(CityCalendar.EPOCH_YEAR) / usCpi(LAST_YEAR);
+
     private PriceLevel() { }
 
     private static double factor() {

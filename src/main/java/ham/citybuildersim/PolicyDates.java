@@ -1,20 +1,21 @@
 package ham.citybuildersim;
 
 /**
- * When Canada first had each of the Policy tab's levers, as pure data: the game month each one opens in a city founded in January 1900, the
- * study's entry for it, what Canada first did and on what terms, and how far a law discovery may bring it forward (R0, research-1900.md 7).
+ * When Canada first had each of the Policy tab's levers, as history: the game month Canada first had each one in a city founded in January
+ * 1900, the study's entry for it, and what Canada first did and on what terms (R0, research-1900.md 7); and the dollar's gold years, the one
+ * dated regime the game still plays (R0f).
  *
- * WHY. Until R0 every lever was open from month 1, so a city founded in January 1900 could tax incomes 17 years before Canada did, set a
- * minimum wage 18 years early and promise old-age pensions 27 years before the country had any: the Policy screen was open in full on the
- * first day, and there was nothing in it to learn. The game's institutions are Canada's (a law, unlike a technology, does not cross borders
- * under licence), so each lever now opens on the date Canada first had it, the inbox says when and on what terms, and the player decides:
- * history is the tutorial. The three income taxes open at the city's founding rate and the promises (the pensions, EI, the health premium,
- * student aid) at zero (opensAtFoundingRate(), call 16). This class is only the dates. Nothing reads it yet (R0's first slice): the gate that holds a lever shut
- * is the second slice's (TaxPolicy's effective rates and setters, the minimum wage, zoning, the save and the inbox) and the Policy screen's
- * drawing of a shut one the third's. Money's two dates are here as data; the gate on them, and the gold years between, are batch R0f's.
+ * WHY. R0 (0.9.10x, 2026-11-04) opened each lever on its date, the inbox saying when and on what terms, history as the tutorial; R3 let a
+ * law discovery bring one forward by up to four years. Jerus, 2026-11-19 (OP1, which replaced PP1's political points): "everything policy
+ * related is available right away, and later ill think of an actual tutorial". So since OP1 nothing in the game opens on these dates: every
+ * lever is open from a city's founding, in every city, each as a lever opened under R0 (opensAtFoundingRate(), call 16: the three income
+ * taxes at the city's founding rate, every promise at zero; TaxPolicy.openAtFounding()), and only the player moves them. The table stays as
+ * the study's record: research.json's law rows carry its dates (ResearchCheck holds the two equal), and a tutorial may read it. The gold
+ * years stay history's (OP1 call 2): a city founded the 1900 way is founded on gold at par, which August 1914 suspends, July 1926 restores
+ * and September 1931 ends (goldPeriod(), ForeignAccounts.hearMoneyMonth()), unless the player has taken the dollar off it first.
  *
- * Pure: no state, no instances, no randomness. A lever the study dates by the year alone opens in January of that year, because a month would
- * be a claim the study does not make; one it dates to a month opens in that month.
+ * Pure: no state, no instances, no randomness. A lever the study dates by the year alone is Canada's in January of that year, because a
+ * month would be a claim the study does not make; one it dates to a month is Canada's in that month.
  */
 public final class PolicyDates {
 
@@ -27,14 +28,14 @@ public final class PolicyDates {
        subsidies (PL11: care has one price lever, the clinic fee scale, and no subsidy of its own) and deposit insurance (L1, 1967: a bank's
        resolution is modelled, a deposit-insurance dial is not). The game's three income taxes are the study's profit tax (PL2, 1916),
        income tax (PL3, 1917: the game's wage tax, banded, is the personal income tax) and sales tax (PL5, 1920). The levers the table does
-       not date are open from founding, each with the reason in its terms, so a later source moves one line. Declared in the order they
-       open, the dated ones first.
+       not date were a city's own before 1900, each with the reason in its terms, so a later source moves one line. Declared in the order
+       Canada had them, the dated ones first. Since OP1 every one of them is open from founding.
        ===================================================================== */
 
     /**
-     * The Policy levers that history dates, in the order they open, then the ones open from founding. A dated lever has the study's entry key
-     * ("PL3", "L5": the law discovery that can bring it forward) and the act or body that first had it; an open one has no key and its terms
-     * are the reason it is open.
+     * The Policy levers, the ones history dates in the order Canada had them, then the ones a city set before 1900. A dated lever has the
+     * study's entry key ("PL3", "L5": the law discovery of the same date in research.json) and the act or body that first had it; an undated
+     * one has no key and its terms are the reason a city had it in 1900. Every one is open from founding (OP1).
      */
     public enum Lever {
 
@@ -55,7 +56,7 @@ public final class PolicyDates {
         PENSION_REPLACEMENT("old-age pension", 1927, "PL7", "the Old Age Pensions Act",
                 "up to C$20 a month at 70; income under C$365; Ottawa paid half"),
         /** Money, 11 March 1935: the Bank of Canada opens the rest of Money (the policy rate having opened in 1914). */
-        CENTRAL_BANK("central bank", 1935, 3, "PL8", "the Bank of Canada", "Bank Rate 2.5%"),
+        CENTRAL_BANK("central bank", 1935, 3, "", "the Bank of Canada", "Bank Rate 2.5%"),
         /** Taxes and Promises, 1939: the grant and the loan rate together. */
         STUDENT_AID("student aid", 1939, "PL9", "Dominion-Provincial Student Aid", "terms not found"),
         /** Taxes and Promises, 7 August 1940: the premium and the benefit together; contributions began on 1 July 1941. */
@@ -101,12 +102,12 @@ public final class PolicyDates {
             this(label, year, monthOfYear, true, false, entry, act, terms);
         }
 
-        /** A lever the study dates by the year alone: it opens in January. */
+        /** A lever the study dates by the year alone: Canada's in January. */
         Lever(String label, int year, String entry, String act, String terms) {
             this(label, year, 1, false, false, entry, act, terms);
         }
 
-        /** A lever open from founding, with the reason. */
+        /** A lever a city had before 1900, with the reason. */
         Lever(String label, String reason) {
             this(label, CityCalendar.EPOCH_YEAR, 1, false, true, "", "", reason);
         }
@@ -124,27 +125,21 @@ public final class PolicyDates {
 
         /** The lever as a player reads it: "income tax". */
         public String label()       { return label; }
-        /** The calendar year it opens in. */
+        /** The calendar year Canada first had it in. */
         public int year()           { return year; }
         /** 1-12; 1 where the study dates it by the year alone. */
         public int monthOfYear()    { return monthOfYear; }
-        /** Whether the study dates it to a month (else it opens in January of its year). */
+        /** Whether the study dates it to a month (else January of its year). */
         public boolean monthKnown() { return monthKnown; }
-        /** The study's entry key ("PL3", "L5"), or "" for an open lever and for the policy rate. */
+        /** The study's entry key ("PL3", "L5"), or "" for an undated lever and for the policy rate. */
         public String entry()       { return entry; }
         /** The law or body that first had it ("the Income War Tax Act"), or "". */
         public String act()         { return act; }
-        /** Its first terms in a phrase with no full stop; for an open lever, the reason it is open. */
+        /** Its first terms in a phrase with no full stop; for an undated lever, the reason a city had it in 1900. */
         public String terms()       { return terms; }
-        /** The sources the terms rest on: SOURCES for a dated lever, OPEN_SOURCES for an open one. */
+        /** The sources the terms rest on: SOURCES for a dated lever, OPEN_SOURCES for an undated one. */
         public String sources()     { return open ? OPEN_SOURCES : SOURCES; }
     }
-
-    /**
-     * The most months a law discovery may bring a lever forward: four years, the law field's reach (research-1900.md 7.2). The saved opening
-     * month is what a find moves; the finds themselves are batch R3's, and nothing opens early without one.
-     */
-    public static final int MAX_EARLY_MONTHS = 48;
 
     /** The sources the table's rows rest on, as the study lists them under it: P4 section 3.1 and the keys in its brackets. */
     public static final String SOURCES = "[P4] 3.1: [BURNS], [CYB25], [H1], [H113], [LOP], [SC-UI], [ILO63], [BOC-W], [BOC-BR], [AWCBC],"
@@ -156,140 +151,38 @@ public final class PolicyDates {
 
     /* ----- the dates as game months ----- */
 
-    /** The game month of a real calendar month: the epoch's January is month 1, and a date before the epoch is month 1 (open at founding). */
+    /** The game month of a real calendar month: the epoch's January is month 1, and a date before the epoch is month 1. */
     static int monthOf(int year, int monthOfYear) {
         return Math.max(1, 1 + 12 * (year - CityCalendar.EPOCH_YEAR) + (monthOfYear - 1));
     }
 
-    /** The game month a lever opens in on Canada's date; 1 for a lever open from founding. */
-    public static int openingMonth(Lever lever) {
+    /** The game month Canada first had a lever in; 1 for a lever a city had before 1900. History only: nothing opens on it (OP1). */
+    public static int canadaMonth(Lever lever) {
         return monthOf(lever.year(), lever.monthOfYear());
     }
 
-    /** Whether a lever is open in a game month: from its opening month on. */
-    public static boolean isOpen(Lever lever, int gameMonth) {
-        return gameMonth >= openingMonth(lever);
-    }
+    /** Canada's suspension of gold, August 1914, when the Finance Act let the government lend to the banks (research-1900.md 7.2). */
+    public static final int GOLD_SUSPENDED = monthOf(1914, 8);
 
-    /** Whether a lever is open in the founding month, the first month of the game. */
-    public static boolean openAtFounding(Lever lever) {
-        return openingMonth(lever) <= 1;
+    /** Canada's return to gold, July 1926 (research-1900.md 7.2). */
+    public static final int GOLD_RETURN = monthOf(1926, 7);
+
+    /** Canada's final departure, September 1931, following Britain; the study's 1929-31 interval ends here. */
+    public static final int GOLD_END = monthOf(1931, 9);
+
+    /** The dated gold episode (1 from the epoch to GOLD_SUSPENDED, 2 from GOLD_RETURN to GOLD_END), or 0 between and after. */
+    public static int goldPeriod(int month) {
+        if (month < GOLD_SUSPENDED) return 1;
+        return month >= GOLD_RETURN && month < GOLD_END ? 2 : 0;
     }
 
     /**
      * Whether a lever opens at the city's founding rate (TaxPolicy.DEFAULT_INCOME_TAX) and not at zero: the three income taxes, which fund the
-     * city, where a promise (a pension, EI, the health premium, student aid) costs it and opens at zero. WHY (R0 call 16): opening at zero left
-     * the playtest's untended city with no profit, wage or sales tax until about 1950, its treasury below zero from 1921 to 1967.
+     * city, where a promise (a pension and its contribution, EI, the health premium, student aid) costs it and opens at zero. WHY (R0 call 16):
+     * opening at zero left the playtest's untended city with no profit, wage or sales tax until about 1950, its treasury below zero from 1921
+     * to 1967. Since OP1 the founding opens every lever this way (TaxPolicy.openAtFounding()).
      */
     public static boolean opensAtFoundingRate(Lever lever) {
         return lever == Lever.PROFIT_TAX || lever == Lever.WAGE_TAX || lever == Lever.SALES_TAX;
-    }
-
-    /** The earliest month a law discovery may bring a lever to: MAX_EARLY_MONTHS before its opening month, never before month 1. */
-    public static int earliestOpening(Lever lever) {
-        return earliestFor(openingMonth(lever));
-    }
-
-    /** MAX_EARLY_MONTHS before an opening month, floored at month 1 (separate from the lever so the floor can be held on fixtures). */
-    static int earliestFor(int openingMonth) {
-        return Math.max(1, openingMonth - MAX_EARLY_MONTHS);
-    }
-
-    /**
-     * The lever a discovery's code brings forward ("PL3" -> the income tax, "L5" -> the pension contribution), or null for a code that is no
-     * lever's key (a blank, a code the table does not date, and every lever that has no key: the policy rate and the open ones). Game asks it
-     * of a find (R3), so that the lever's own entry decides what a find moves and nothing else does.
-     */
-    public static Lever leverOf(String code) {
-        if (code == null || code.isBlank()) return null;
-        for (Lever lever : Lever.values()) if (!lever.entry().isEmpty() && lever.entry().equals(code.trim())) return lever;
-        return null;
-    }
-
-    /* ----- what the player is told ----- */
-
-    /** The date a lever opens as the Policy screen prints it: "1917", "August 1940", or "founding" for a lever open from the start. */
-    public static String openingDate(Lever lever) {
-        return dateOf(lever, openingMonth(lever));
-    }
-
-    /** A lever's opening month as a date: "founding" for month 1 or earlier, the month and year where the study dates it to a month, else the year alone. */
-    private static String dateOf(Lever lever, int openingMonth) {
-        if (openingMonth <= 1) return "founding";
-        return lever.monthKnown() ? CityCalendar.format(openingMonth) : Integer.toString(CityCalendar.yearOf(openingMonth));
-    }
-
-    /**
-     * The lever as a player reads it, with its article, lower case: "an income tax", "a profit tax", "student aid", "zoning" (the three that
-     * take none: EI, student aid and zoning). One rule for the inbox's title and the Policy screen's shut card, so they never disagree.
-     */
-    public static String named(Lever lever) {
-        String label = lever.label();
-        boolean uncountable = lever == Lever.EI || lever == Lever.STUDENT_AID || lever == Lever.ZONING;
-        if (uncountable) return label;
-        return ("AEIOUaeiou".indexOf(label.charAt(0)) >= 0 ? "an " : "a ") + label;
-    }
-
-    /**
-     * What a shut lever's card says first, on Canada's date: "Opens 1917 - an income tax: 4% above $1,500 (single) or $3,000; a supertax of
-     * 2% to 25%": when it opens, what it is, and Canada's first terms for it.
-     */
-    public static String shutLine(Lever lever) {
-        return shutLine(lever, openingMonth(lever));
-    }
-
-    /** The same on the city's own opening month (R3's finds move it earlier): the month and year where the study dates it to a month, else the year. */
-    public static String shutLine(Lever lever, int cityOpeningMonth) {
-        return "Opens " + dateOf(lever, cityOpeningMonth) + " - " + named(lever) + ": " + lever.terms();
-    }
-
-    /** What a shut lever's card says second, on Canada's date: "Canada had none until then; the tax opens at the city's founding rate, 15%." */
-    public static String shutWhy(Lever lever) {
-        return shutWhy(lever, openingMonth(lever));
-    }
-
-    /** The same for a city whose opening month a find has moved earlier: then "then" would name the wrong date, so it says history's and the find. */
-    public static String shutWhy(Lever lever, int cityOpeningMonth) {
-        String until = cityOpeningMonth == openingMonth(lever) ? "then"
-                : openingDate(lever) + ", and a find has brought it forward";
-        String opens = opensAt(lever);
-        return "Canada had none until " + until + "; " + Character.toLowerCase(opens.charAt(0)) + opens.substring(1) + ".";
-    }
-
-    /**
-     * The inbox sentence for the month a lever opens: when Canada first had it, under what, on what terms, where it opens (an income tax at
-     * the founding rate, the minimum wage's floor at the going unskilled wage, zoning with no ground zoned until a zone is drawn, every other
-     * dated lever at zero) and that the setting is the
-     * player's. A lever open from founding has no first day to report, so its notice is empty.
-     */
-    public static String notice(Lever lever) {
-        if (openAtFounding(lever)) return "";
-        String under = lever.act().isEmpty() ? "" : " (" + lever.act() + ")";
-        return "Canada's first " + lever.label() + " came in " + openingDate(lever) + under + ": " + lever.terms() + ". " + opensAt(lever)
-                + "; the setting is yours.";
-    }
-
-    /**
-     * The one line under a dial that sets several levers at once ("every tax") naming the ones still shut, which it leaves alone: "Still shut, so
-     * this dial leaves them alone: profit tax (opens 1916) and sales tax (opens 1920)." Each lever's date is the city's own opening month, as
-     * the caller reads it; an empty list gives an empty line.
-     */
-    public static String stillShut(java.util.List<Lever> shut, java.util.function.ToIntFunction<Lever> cityOpeningMonth) {
-        if (shut.isEmpty()) return "";
-        java.util.List<String> parts = new java.util.ArrayList<>();
-        for (Lever l : shut) parts.add(l.label() + " (opens " + dateOf(l, cityOpeningMonth.applyAsInt(l)) + ")");
-        String list = parts.size() == 1 ? parts.get(0)
-                : String.join(", ", parts.subList(0, parts.size() - 1)) + " and " + parts.get(parts.size() - 1);
-        return "Still shut, so this dial leaves " + (shut.size() == 1 ? "it" : "them") + " alone: " + list + ".";
-    }
-
-    /** Where a dated lever opens, as a sentence the notice finishes: the founding rate, the going unskilled wage, or zero. */
-    static String opensAt(Lever lever) {
-        if (opensAtFoundingRate(lever)) {
-            return "The tax opens at the city's founding rate, " + DecisionLog.pct(TaxPolicy.DEFAULT_INCOME_TAX);
-        }
-        if (lever == Lever.MINIMUM_WAGE) return "The floor opens at the going unskilled wage";
-        if (lever == Lever.ZONING) return "No ground is zoned until you draw a zone";
-        return "The lever opens at zero";
     }
 }

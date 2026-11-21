@@ -394,7 +394,7 @@ public final class ConstructionControl {
     public static final class Shell implements Cloneable {
         public int templateId;
         public String building;
-        public int buildings;
+        public long buildings;
         /** The points of work it holds. */
         public double progress;
         /** Units of material it has still to draw - what a restart quotes for. */
@@ -403,12 +403,23 @@ public final class ConstructionControl {
         public double refunded;
         /** The month it stopped. */
         public int month;
+        /**
+         * The equipment its buildings' orders froze (R1e; BuildingsStacks' lots): the buildings that come without a piece, by the
+         * pieces; the rest are the whole template, as every building stopped before R1e is. Null for none, so a default city's
+         * shell and an old save's carry none.
+         */
+        public java.util.List<BuildingsStacks.Lot> lots;
         public Shell() { }
 
         /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
         Shell copy() {
             try {
-                return (Shell) super.clone();
+                Shell c = (Shell) super.clone();
+                if (lots != null) {
+                    c.lots = new java.util.ArrayList<>();
+                    for (BuildingsStacks.Lot lot : lots) c.lots.add(lot.copy());
+                }
+                return c;
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError(e);
             }
@@ -420,7 +431,7 @@ public final class ConstructionControl {
         public int id;
         public int templateId;
         public String building;
-        public int buildings;
+        public long buildings;
         /** The points of work it is, all told: DEMOLITION_SHARE of the work it holds. */
         public double points;
         public double progress;
@@ -466,7 +477,7 @@ public final class ConstructionControl {
         public int month;
         public int templateId;
         public String building;
-        public int buildings;
+        public long buildings;
         public String sector;
         public double buildingValue;
         public double ground;
@@ -490,7 +501,7 @@ public final class ConstructionControl {
     /** One stack's run since it last stood empty: how many of it have opened, and what its orders cost. For the panel's "done of total" and "paid". */
     public static final class Run implements Cloneable {
         public int templateId;
-        public int built;
+        public long built;
         public double billed;
         public Run() { }
 
@@ -511,9 +522,9 @@ public final class ConstructionControl {
      * traffic, until their own Paved Roads open.
      */
     public static final class Paving implements Cloneable {
-        public int roads;
+        public long roads;
         /** Paved Roads on the site ahead of this paving, which open first. */
-        public int ahead;
+        public long ahead;
         /** The month it was ordered. */
         public int month;
         public Paving() { }
@@ -721,7 +732,13 @@ public final class ConstructionControl {
     }
 
     /** A stopped order's buildings, onto the shell of that building - a second stop joins the first. */
-    Shell addShell(BuildingsTemplate t, int buildings, double progress, double materialsOwed, int month) {
+    Shell addShell(BuildingsTemplate t, long buildings, double progress, double materialsOwed, int month) {
+        return addShell(t, buildings, progress, materialsOwed, month, null);
+    }
+
+    /** ...with the equipment their orders froze (R1e, BuildingsStacks.getLots()), joining the shell's; none for null or empty. */
+    Shell addShell(BuildingsTemplate t, long buildings, double progress, double materialsOwed, int month,
+                   java.util.List<BuildingsStacks.Lot> lots) {
         Shell s = shellOf(t.getId());
         if (s == null) {
             s = new Shell();
@@ -733,6 +750,10 @@ public final class ConstructionControl {
         s.buildings += buildings;
         s.progress += progress;
         s.materialsOwed += materialsOwed;
+        if (lots != null && !lots.isEmpty()) {
+            if (s.lots == null) s.lots = new java.util.ArrayList<>();
+            for (BuildingsStacks.Lot lot : lots) if (lot != null && lot.buildings > 0) s.lots.add(lot.copy());
+        }
         return s;
     }
 
@@ -747,7 +768,7 @@ public final class ConstructionControl {
         return null;
     }
 
-    Demolition addDemolition(BuildingsTemplate t, int buildings, double points, double salvageUnits,
+    Demolition addDemolition(BuildingsTemplate t, long buildings, double points, double salvageUnits,
                              double landSqFt, double paid, String from, int month, boolean closing) {
         Demolition d = new Demolition();
         d.id = state.nextDemolition++;
@@ -767,8 +788,8 @@ public final class ConstructionControl {
     }
 
     /** Buildings of this kind ordered demolished that still stand until the month starts. */
-    public int closingOf(int templateId) {
-        int n = 0;
+    public long closingOf(int templateId) {
+        long n = 0;
         for (Demolition d : state.demolitions) if (d.closing && d.templateId == templateId) n += d.buildings;
         return n;
     }
@@ -786,14 +807,14 @@ public final class ConstructionControl {
     public java.util.List<Paving> pavings() { return java.util.Collections.unmodifiableList(state.paving); }
 
     /** Gravel roads being paved: on the Paved Road site, standing until their paving opens. */
-    public int paving() {
-        int n = 0;
+    public long paving() {
+        long n = 0;
         for (Paving p : state.paving) n += p.roads;
         return n;
     }
 
     /** A paving of n roads, behind the `ahead` Paved Roads already on the site. */
-    Paving addPaving(int roads, int ahead, int month) {
+    Paving addPaving(long roads, long ahead, int month) {
         Paving p = new Paving();
         p.roads = Math.max(0, roads);
         p.ahead = Math.max(0, ahead);
@@ -807,13 +828,13 @@ public final class ConstructionControl {
      * the ones that are pavings', each paving moved up the site by them: the
      * gravel roads to retire. A paving all of whose roads have opened is gone.
      */
-    int pavedOf(int finished) {
+    long pavedOf(long finished) {
         if (finished <= 0 || state.paving.isEmpty()) return 0;
-        int paved = 0;
+        long paved = 0;
         java.util.Iterator<Paving> it = state.paving.iterator();
         while (it.hasNext()) {
             Paving p = it.next();
-            int own = Math.max(0, Math.min(p.roads, finished - p.ahead));
+            long own = Math.max(0, Math.min(p.roads, finished - p.ahead));
             p.roads -= own;
             p.ahead = Math.max(0, p.ahead - finished);
             paved += own;
@@ -875,7 +896,7 @@ public final class ConstructionControl {
      * (BuildingManager.goesFirst()), whose points the foreign contractor builds as theirs and never had on his book
      * (FC1b; Construction.bill()).
      */
-    public record Refund(int templateId, String building, int buildings, double value, double allowance,
+    public record Refund(int templateId, String building, long buildings, double value, double allowance,
                          double points, Shell shell, boolean servedFirst) { }
 
     /**
@@ -897,7 +918,7 @@ public final class ConstructionControl {
     }
 
     /** F. Gravel roads whose paving opened this month (0.7.70): retired as their Paved Roads opened, the ground between the two to free. */
-    public record Paved(int roads, double landFreedSqFt) { }
+    public record Paved(long roads, double landFreedSqFt) { }
 
     /** The month's events, as the advance left them. */
     public static final class Events {

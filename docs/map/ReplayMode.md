@@ -1,6 +1,6 @@
-# ReplayMode.java - 1,629 lines · 85 methods · 12 constants · interface
+# ReplayMode.java - 1,641 lines · 86 methods · 12 constants · interface
 
-`ham/citybuildersim/ui/ReplayMode.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ReplayMode.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own
 > window, with a time bar across the bottom to move through the months - play either way, step, drag, at 1 to 16 months a
@@ -32,7 +32,7 @@
 > navigation mode. A live take cannot be repeated (a peg breaks by chance, a collapse comes when it comes); a recording can.
 > Everything here runs on the FX thread: the copy loads on the calling thread and the screens read it as it loads.
 
-**Uses:** [Palette](Palette.md) (53), [InputTimeline](InputTimeline.md) (21), [FollowPlayer](FollowPlayer.md) (11), [Recording](Recording.md) (10), [UserInterface](UserInterface.md) (8), [ReplayCamera](ReplayCamera.md) (8), [InputLog](InputLog.md) (7), [CameraPath](CameraPath.md) (6), [Game](Game.md) (4), [ReplayCity](ReplayCity.md) (4), [GameVersion](GameVersion.md) (3), [CityCalendar](CityCalendar.md) (3), [ReplayGraphLayer](ReplayGraphLayer.md) (2), [GhostLayer](GhostLayer.md) (2), [Branding](Branding.md) (1), [MapView](MapView.md) (1)
+**Uses:** [Palette](Palette.md) (53), [InputTimeline](InputTimeline.md) (21), [FollowPlayer](FollowPlayer.md) (11), [Recording](Recording.md) (10), [UserInterface](UserInterface.md) (8), [ReplayCamera](ReplayCamera.md) (8), [InputLog](InputLog.md) (7), [ReplayCity](ReplayCity.md) (6), [CameraPath](CameraPath.md) (6), [Game](Game.md) (4), [GameVersion](GameVersion.md) (3), [CityCalendar](CityCalendar.md) (3), [ReplayGraphLayer](ReplayGraphLayer.md) (2), [GhostLayer](GhostLayer.md) (2), [Branding](Branding.md) (1), [MapView](MapView.md) (1)
 
 **Used by (5):** [FollowBench](FollowBench.md), [ReplayCamera](ReplayCamera.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
 
@@ -40,18 +40,18 @@
 
 | line | section |
 |---:|---|
-| 249 | · the menu's entries |
-| 284 | · the list |
-| 352 | · entering and leaving |
-| 499 | · the replay's menu |
-| 555 | · the keys |
-| 676 | · the clock |
-| 691 | · moving in time |
-| 773 | · the frame |
-| 814 | · Follow |
-| 1129 | · Follow, the viewer's own input |
-| 1203 | · the bar |
-| 1544 | · cinematic mode, the window |
+| 252 | · the menu's entries |
+| 287 | · the list |
+| 355 | · entering and leaving |
+| 504 | · the replay's menu |
+| 560 | · the keys |
+| 686 | · the clock |
+| 701 | · moving in time |
+| 785 | · the frame |
+| 826 | · Follow |
+| 1141 | · Follow, the viewer's own input |
+| 1215 | · the bar |
+| 1556 | · cinematic mode, the window |
 
 ## Constants
 
@@ -146,160 +146,161 @@
 | 209 | `private int shownFollowFlags` |  |
 | 210 | `private String shownFollowText` |  |
 | 213 | `private AnimationTimer timer` | The replay's frame, made when the first replay opens: an AnimationTimer needs the toolkit, which a harness's UserInterface does not have. |
-| 817 | `private final FollowPlayer.Target followTarget` | What the player turns the log into: a month loaded whole, an event re-enacted. |
-| 1131 | `private final EventHandler<MouseEvent> pressFilter` |  |
-| 1132 | `private final EventHandler<ScrollEvent> wheelFilter` |  |
-| 1133 | `private final EventHandler<KeyEvent> keyFilter` |  |
-| 1134 | `private final EventHandler<MouseEvent> moveFilter` |  |
+| 829 | `private final FollowPlayer.Target followTarget` | What the player turns the log into: a month loaded whole, an event re-enacted. |
+| 1143 | `private final EventHandler<MouseEvent> pressFilter` |  |
+| 1144 | `private final EventHandler<ScrollEvent> wheelFilter` |  |
+| 1145 | `private final EventHandler<KeyEvent> keyFilter` |  |
+| 1146 | `private final EventHandler<MouseEvent> moveFilter` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 80 | 1550 | **type** `final class ReplayMode` | Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own window, with a time bar across the bottom to move through the months - play either way, step, d... |
+| 80 | 1562 | **type** `final class ReplayMode` | Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own window, with a time bar across the bottom to move through the months - play either way, step, d... |
 | 215 | 5 | `ReplayMode(UserInterface ui)` |  |
 | 221 | 1 | `boolean isOn()` |  |
 | 224 | 1 | `Game realGame()` | The real game while a replay is on - the one Quit and the window's close autosave (UP6) - or null when none is. |
 | 227 | 1 | `ReplayCamera camera()` | The replay's camera: MapView asks for it each frame (UserInterface.replayCamera()). |
-| 230 | 1 | `int shownMonth()` | The recorded month on screen. |
-| 236 | 7 | `void showMonth(int month)` | The camera asks for a month (a glide of views with different months moves time with it): the recorded month nearest it, by quick steps; the bar's play stops. |
-| 245 | 3 | `String title()` | The window's title in a replay: "Replay - Medellin - Civic Ledger 0.9.0". |
+| 230 | 1 | `ReplayCity moveCity()` | The replay copy whose months a loaded camera move retains, on the FX thread (CM2). |
+| 233 | 1 | `int shownMonth()` | The recorded month on screen. |
+| 239 | 7 | `void showMonth(int month)` | The camera asks for a month (a glide of views with different months moves time with it): the recorded month nearest it, by quick steps; the bar's play stops. |
+| 248 | 3 | `String title()` | The window's title in a replay: "Replay - Medellin - Civic Ledger 0.9.0". |
 
-### the menu's entries (lines 249-283)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 255 | 24 | `List<Node> menuEntries()` | The main menu's two entries (TR1): "Record this city" - only while a city is open - which says under it what it keeps, and "Replay a recording", always. |
-| 280 | 3 | `private static String megabytes(long bytes)` |  |
-
-### the list (lines 284-351)
+### the menu's entries (lines 252-286)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 287 | 32 | `void showList(String failure)` | The list of recordings, drawn as the Load list is; {@code failure} is shown at its head (a recording that would not open). |
-| 321 | 30 | `private VBox row(Recording r)` | One recording: the city's name on the button, and under it its months, how many are kept, its size and when it was started. |
+| 258 | 24 | `List<Node> menuEntries()` | The main menu's two entries (TR1): "Record this city" - only while a city is open - which says under it what it keeps, and "Replay a recording", always. |
+| 283 | 3 | `private static String megabytes(long bytes)` |  |
 
-### entering and leaving (lines 352-498)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 360 | 70 | `private void enter(Recording rec)` | Opens a recording at its first month. |
-| 436 | 28 | `void leave()` | Leaves the replay: cinematic mode off, the bar gone, the real game back on screen (the per-city reset done for it, whether a city was open as it was, the screen Continue goes back to and the window's title as they wer... |
-| 466 | 3 | `void enterFolder(Path folder)` | Opens the recording in a folder at its first month (a harness's way in; the list's rows enter the recording they were drawn from). |
-| 471 | 14 | `private static InputTimeline readTimeline(Recording rec, int[] ms)` | The recording's input log read once, as the timeline Follow and the ghost play; its time is the log's. |
-| 487 | 11 | `private static String wholeLoad(ReplayCity rc, int month)` | A month loaded whole (ReplayCity.loadWhole), its time in the log; a load that threw is a failure with the reason, as one that returned it is. |
-
-### the replay's menu (lines 499-554)
+### the list (lines 287-354)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 505 | 49 | `boolean showMenu()` | In a replay the main menu is this one: Back to the replay, Leave the replay, Quit - no Save, Load, New city or Continue. |
+| 290 | 32 | `void showList(String failure)` | The list of recordings, drawn as the Load list is; {@code failure} is shown at its head (a recording that would not open). |
+| 324 | 30 | `private VBox row(Recording r)` | One recording: the city's name on the button, and under it its months, how many are kept, its size and when it was started. |
 
-### the keys (lines 555-675)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 577 | 62 | `boolean key(KeyEvent e, boolean typing)` | The replay's keys, taken at the top of the window's key filter (UserInterface); true when one was taken, and the event is consumed there, so none reaches the clock's Space or the speed ladder's arrows. |
-| 641 | 7 | `private void drift(double across, double down, double zoom)` | A step of drift, with the map over the window; with none, the bar says so. |
-| 650 | 4 | `private void glide()` | The glide, from the key or the bar's button: the seconds the field says first. |
-| 656 | 7 | `private void toggleGraphs()` | G or the bar's button: the faint GDP and population lines behind the city on or off. |
-| 665 | 10 | `private void commitGlideSeconds()` | The bar's field of seconds read into the camera, and written back as it took it. |
-
-### the clock (lines 676-690)
+### entering and leaving (lines 355-503)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 687 | 3 | `double clockMonths()` | The clock the map's boats, trains and trucks sail on (UserInterface.clockMonths()): the copy's month and the real seconds since the replay began, over the seconds a month takes - growing without wrapping, so they keep... |
+| 363 | 71 | `private void enter(Recording rec)` | Opens a recording at its first month. |
+| 440 | 29 | `void leave()` | Leaves the replay: cinematic mode off, the bar gone, the real game back on screen (the per-city reset done for it, whether a city was open as it was, the screen Continue goes back to and the window's title as they wer... |
+| 471 | 3 | `void enterFolder(Path folder)` | Opens the recording in a folder at its first month (a harness's way in; the list's rows enter the recording they were drawn from). |
+| 476 | 14 | `private static InputTimeline readTimeline(Recording rec, int[] ms)` | The recording's input log read once, as the timeline Follow and the ghost play; its time is the log's. |
+| 492 | 11 | `private static String wholeLoad(ReplayCity rc, int month)` | A month loaded whole (ReplayCity.loadWhole), its time in the log; a load that threw is a failure with the reason, as one that returned it is. |
 
-### moving in time (lines 691-772)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 693 | 4 | `private void togglePlay()` |  |
-| 698 | 5 | `private void play(int direction)` |  |
-| 704 | 4 | `private void turn()` |  |
-| 709 | 4 | `private void step(int by)` |  |
-| 714 | 4 | `private void jump(int index)` |  |
-| 719 | 3 | `private void setSpeed(int index)` |  |
-| 728 | 21 | `private void go(int index)` | Shows the month at {@code index} of the recording's months (a gap in the recording is stepped over: the index is into the months that are there): only the map, by ReplayCity.stepQuick; when the land changed between th... |
-| 751 | 10 | `private void rest()` | The month on screen has stood still: it is loaded whole, and every screen shows exactly that month. |
-| 763 | 4 | `private void afterWhole()` | A month loaded whole: the per-city reset a load does (the expanded map and its view kept), the open screen drawn again. |
-| 768 | 4 | `void say(String words)` |  |
-
-### the frame (lines 773-813)
+### the replay's menu (lines 504-559)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 775 | 23 | `private void frame(long now)` |  |
-| 800 | 13 | `private void advance(double dt)` | Play: the months due since the last frame, in the direction chosen; the end of the recording either way ends the play. |
+| 510 | 49 | `boolean showMenu()` | In a replay the main menu is this one: Back to the replay, Leave the replay, Quit - no Save, Load, New city or Continue. |
 
-### Follow (lines 814-1128)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 823 | 1 | `boolean following()` | Whether Follow is on. |
-| 826 | 1 | `String loggedScreen()` | The screen the log has open now (the last SCREEN marker played), "" before any. |
-| 829 | 1 | `boolean ghostShown()` | Whether the ghost cursor is on view, and where its tip is (scene pixels), or null when it is not. |
-| 831 | 1 | `double[] ghostAt()` |  |
-| 834 | 1 | `InputTimeline timeline()` | The recording's input timeline, read once when the replay was entered; null outside a replay. |
-| 837 | 4 | `void setFollow(boolean want)` | Follow on or off, as the L key and the bar's button do it. |
-| 842 | 3 | `private void toggleFollow()` |  |
-| 847 | 5 | `private void toggleGhost()` | H or the bar's button: the ghost cursor on or off, in Follow and outside it. |
-| 853 | 5 | `private void toggleSkipIdle()` |  |
-| 859 | 4 | `private void setFollowSpeed(int index)` |  |
-| 864 | 3 | `private static String speedWords(double speed)` |  |
-| 873 | 47 | `private void startFollow()` | Follow on: from where it last stopped when the bar has not moved since, else from the start of the month on the bar. |
-| 922 | 22 | `private void beginFollow(int token, InputTimeline.Moment moment, InputTimeline.State state)` | The window is at the player's size (or as near as the screen allows): his state applied, the player started. |
-| 949 | 19 | `private void stopFollow(String why, boolean quiet)` | Follow off, and where it stopped kept for joining again (not when the log ended). |
-| 970 | 16 | `private void followLoad(int month)` | The player's loadMonth: the recorded month nearest it loaded whole and the bar on it, the pointer's hover and press forgotten (their nodes are gone). |
-| 988 | 26 | `private void followEvent(InputLog.Event e, boolean catchingUp)` | The player's event: the markers keep the logged screen, the window and the map; an input is re-enacted, and the ghost follows it. |
-| 1016 | 3 | `private void applyMapMarker(InputLog.Event e)` | A MAP_VIEW marker: the expanded map closed, or opened and its view set. |
-| 1021 | 9 | `private void showLoggedMap(boolean open, boolean globe, double a, double b, double scale)` | The expanded map closed, or opened if it is not and set to the view (the globe's roll is not set: the map has no hand for it). |
-| 1036 | 11 | `private void resync(String when)` | The copy's screen looked at against the logged one: when the copy is on a game menu and the log is not, the copy goes back to the city; and when the logged screen is on another rail tab than the copy's, the copy goes ... |
-| 1049 | 14 | `void followStep(double realMs)` | What a frame does for Follow, for the real milliseconds since the last: the window, the screen check, the player. |
-| 1065 | 14 | `private void followWindowStep()` | The log's window size, set once it has stopped changing for a step: one fit at a time, and not again for a size the screen refused. |
-| 1080 | 4 | `private boolean sameSize(double w, double h)` |  |
-| 1086 | 5 | `private void placeGhost()` | The ghost where the player's pointer is, or hidden: Follow's own placing. |
-| 1096 | 17 | `private void refreshGhost()` | Outside Follow the ghost stands where the player's pointer was as the month on the bar began, when that moment's screen is the one on view and the pointer is known; hidden when no log reaches the month, on a game menu... |
-| 1115 | 4 | `private String stampOf(InputTimeline.Moment m)` | The sitting's date and time of day at a moment. |
-| 1121 | 7 | `private String followReading()` | The bar's Follow readout: the player's date and time at the moment and the speed while following; else why Follow cannot start. |
-
-### Follow, the viewer's own input (lines 1129-1202)
+### the keys (lines 560-685)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1136 | 10 | `private void installFilters()` |  |
-| 1147 | 9 | `private void removeFilters()` |  |
-| 1158 | 6 | `private boolean inFollowGroup(Object target)` | Whether the event's target is on the bar's Follow group, whose presses and moves are Follow's own. |
-| 1166 | 8 | `private void viewerPressed(Object target)` | A press or a wheel turn of the viewer's: Follow ends, then the press does its own thing; not on the Follow group, and not one the Reenactor fired. |
-| 1176 | 17 | `private void viewerMoved(MouseEvent e)` | A real mouse move of the viewer's: from where the pointer first was after Follow began, more than VIEWER_MOVE_PX ends Follow. |
-| 1195 | 7 | `private void viewerKey(KeyEvent e)` | A key of the viewer's: Follow ends, then the key does its own thing; but not Follow's own keys (L, H, Up and Down, C). |
+| 582 | 67 | `boolean key(KeyEvent e, boolean typing)` | The replay's keys, taken at the top of the window's key filter (UserInterface); true when one was taken, and the event is consumed there, so none reaches the clock's Space or the speed ladder's arrows. |
+| 651 | 7 | `private void drift(double across, double down, double zoom)` | A step of drift, with the map over the window; with none, the bar says so. |
+| 660 | 4 | `private void glide()` | The glide, from the key or the bar's button: the seconds the field says first. |
+| 666 | 7 | `private void toggleGraphs()` | G or the bar's button: the faint GDP and population lines behind the city on or off. |
+| 675 | 10 | `private void commitGlideSeconds()` | The bar's field of seconds read into the camera, and written back as it took it. |
 
-### the bar (lines 1203-1543)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1205 | 71 | `private void buildBar()` |  |
-| 1278 | 6 | `private Button barButton(String text, String tip, Runnable act)` | A bar button: it stops a glide or fly in flight where it is, and then does what it says. |
-| 1285 | 8 | `private Button camButton(String text, String tip, Runnable act)` |  |
-| 1299 | 37 | `private HBox cameraRow()` | The bar's camera group (TR1): the map button, A and B (lit when marked, their tooltips say the mark), Glide with its field of seconds, Fly out and Fly in, Graphs (lit when on), Stop - and, when a drift is set, its rea... |
-| 1341 | 32 | `private HBox followGroup()` | The bar's Follow group (TR2): the Follow toggle, its speed chips, the Skip idle and Ghost toggles and the readout of the player's own date and time. |
-| 1374 | 6 | `private static SVGPath glyph(String content)` |  |
-| 1382 | 9 | `private void showBar()` | The bar laid over the bottom of the window, and the page above it given room so the bar covers no part of it. |
-| 1392 | 11 | `private void hideBar()` |  |
-| 1409 | 29 | `private void keepBarAbove()` | The bar's place in the window's stack, kept every frame: above the window and the expanded map's pane (which is added to the stack when it expands, after the bar), below the menu's layer and a dialog. |
-| 1440 | 38 | `private void refreshBar()` | The bar's figures and lit buttons, set only when they change; the window's room for the bar. |
-| 1480 | 9 | `private void applyRoom()` | The page ends above the bar, not under it; none of it while the bar is hidden (cinematic mode) or while Follow plays: the page is then the player's layout and the bar lies over it. |
-| 1491 | 22 | `private void refreshFollow()` | Follow's group: the lit toggles, the speed chip and the readout, set only when they change. |
-| 1515 | 24 | `private void refreshCamera()` | The camera group's lit buttons, their tooltips and the drift's reading, set only when they change. |
-| 1540 | 3 | `private static void litButton(Button b, boolean lit)` |  |
-
-### cinematic mode, the window (lines 1544-1629)
+### the clock (lines 686-700)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1550 | 6 | `private void setCinematic(boolean want)` | Cinematic mode on or off: the window's chrome (UserInterface.replayCinematic()) and the time bar. |
-| 1558 | 3 | `private void filmSize()` | The 1920 x 1080 button: the window set so its picture is that size, for the screen recorder. |
-| 1569 | 15 | `private void fitWindow(double w, double h, Consumer<Boolean> done)` | The window set so its scene is exactly {@code w} x {@code h}: out of full screen and not maximised, the stage sized to the picture plus the window's decoration (the stage's size less the scene's), then looked at again... |
-| 1585 | 44 | `private void fitStage(double w, double h, boolean wasFull, int pass, Consumer<Boolean> done)` |  |
+| 697 | 3 | `double clockMonths()` | The clock the map's boats, trains and trucks sail on (UserInterface.clockMonths()): the copy's month and the real seconds since the replay began, over the seconds a month takes - growing without wrapping, so they keep... |
+
+### moving in time (lines 701-784)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 703 | 4 | `private void togglePlay()` |  |
+| 708 | 5 | `private void play(int direction)` |  |
+| 714 | 4 | `private void turn()` |  |
+| 719 | 4 | `private void step(int by)` |  |
+| 724 | 4 | `private void jump(int index)` |  |
+| 729 | 3 | `private void setSpeed(int index)` |  |
+| 738 | 22 | `private void go(int index)` | Shows the month at {@code index} of the recording's months (a gap in the recording is stepped over: the index is into the months that are there): only the map, by ReplayCity.stepQuick; when the land changed between th... |
+| 762 | 10 | `private void rest()` | The month on screen has stood still: it is loaded whole, and every screen shows exactly that month. |
+| 774 | 5 | `private void afterWhole()` | A month loaded whole: the per-city reset a load does (the expanded map and its view kept), the open screen drawn again. |
+| 780 | 4 | `void say(String words)` |  |
+
+### the frame (lines 785-825)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 787 | 23 | `private void frame(long now)` |  |
+| 812 | 13 | `private void advance(double dt)` | Play: the months due since the last frame, in the direction chosen; the end of the recording either way ends the play. |
+
+### Follow (lines 826-1140)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 835 | 1 | `boolean following()` | Whether Follow is on. |
+| 838 | 1 | `String loggedScreen()` | The screen the log has open now (the last SCREEN marker played), "" before any. |
+| 841 | 1 | `boolean ghostShown()` | Whether the ghost cursor is on view, and where its tip is (scene pixels), or null when it is not. |
+| 843 | 1 | `double[] ghostAt()` |  |
+| 846 | 1 | `InputTimeline timeline()` | The recording's input timeline, read once when the replay was entered; null outside a replay. |
+| 849 | 4 | `void setFollow(boolean want)` | Follow on or off, as the L key and the bar's button do it. |
+| 854 | 3 | `private void toggleFollow()` |  |
+| 859 | 5 | `private void toggleGhost()` | H or the bar's button: the ghost cursor on or off, in Follow and outside it. |
+| 865 | 5 | `private void toggleSkipIdle()` |  |
+| 871 | 4 | `private void setFollowSpeed(int index)` |  |
+| 876 | 3 | `private static String speedWords(double speed)` |  |
+| 885 | 47 | `private void startFollow()` | Follow on: from where it last stopped when the bar has not moved since, else from the start of the month on the bar. |
+| 934 | 22 | `private void beginFollow(int token, InputTimeline.Moment moment, InputTimeline.State state)` | The window is at the player's size (or as near as the screen allows): his state applied, the player started. |
+| 961 | 19 | `private void stopFollow(String why, boolean quiet)` | Follow off, and where it stopped kept for joining again (not when the log ended). |
+| 982 | 16 | `private void followLoad(int month)` | The player's loadMonth: the recorded month nearest it loaded whole and the bar on it, the pointer's hover and press forgotten (their nodes are gone). |
+| 1000 | 26 | `private void followEvent(InputLog.Event e, boolean catchingUp)` | The player's event: the markers keep the logged screen, the window and the map; an input is re-enacted, and the ghost follows it. |
+| 1028 | 3 | `private void applyMapMarker(InputLog.Event e)` | A MAP_VIEW marker: the expanded map closed, or opened and its view set. |
+| 1033 | 9 | `private void showLoggedMap(boolean open, boolean globe, double a, double b, double scale)` | The expanded map closed, or opened if it is not and set to the view (the globe's roll is not set: the map has no hand for it). |
+| 1048 | 11 | `private void resync(String when)` | The copy's screen looked at against the logged one: when the copy is on a game menu and the log is not, the copy goes back to the city; and when the logged screen is on another rail tab than the copy's, the copy goes ... |
+| 1061 | 14 | `void followStep(double realMs)` | What a frame does for Follow, for the real milliseconds since the last: the window, the screen check, the player. |
+| 1077 | 14 | `private void followWindowStep()` | The log's window size, set once it has stopped changing for a step: one fit at a time, and not again for a size the screen refused. |
+| 1092 | 4 | `private boolean sameSize(double w, double h)` |  |
+| 1098 | 5 | `private void placeGhost()` | The ghost where the player's pointer is, or hidden: Follow's own placing. |
+| 1108 | 17 | `private void refreshGhost()` | Outside Follow the ghost stands where the player's pointer was as the month on the bar began, when that moment's screen is the one on view and the pointer is known; hidden when no log reaches the month, on a game menu... |
+| 1127 | 4 | `private String stampOf(InputTimeline.Moment m)` | The sitting's date and time of day at a moment. |
+| 1133 | 7 | `private String followReading()` | The bar's Follow readout: the player's date and time at the moment and the speed while following; else why Follow cannot start. |
+
+### Follow, the viewer's own input (lines 1141-1214)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1148 | 10 | `private void installFilters()` |  |
+| 1159 | 9 | `private void removeFilters()` |  |
+| 1170 | 6 | `private boolean inFollowGroup(Object target)` | Whether the event's target is on the bar's Follow group, whose presses and moves are Follow's own. |
+| 1178 | 8 | `private void viewerPressed(Object target)` | A press or a wheel turn of the viewer's: Follow ends, then the press does its own thing; not on the Follow group, and not one the Reenactor fired. |
+| 1188 | 17 | `private void viewerMoved(MouseEvent e)` | A real mouse move of the viewer's: from where the pointer first was after Follow began, more than VIEWER_MOVE_PX ends Follow. |
+| 1207 | 7 | `private void viewerKey(KeyEvent e)` | A key of the viewer's: Follow ends, then the key does its own thing; but not Follow's own keys (L, H, Up and Down, C). |
+
+### the bar (lines 1215-1555)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1217 | 71 | `private void buildBar()` |  |
+| 1290 | 6 | `private Button barButton(String text, String tip, Runnable act)` | A bar button: it stops a glide or fly in flight where it is, and then does what it says. |
+| 1297 | 8 | `private Button camButton(String text, String tip, Runnable act)` |  |
+| 1311 | 37 | `private HBox cameraRow()` | The bar's camera group (TR1): the map button, A and B (lit when marked, their tooltips say the mark), Glide with its field of seconds, Fly out and Fly in, Graphs (lit when on), Stop - and, when a drift is set, its rea... |
+| 1353 | 32 | `private HBox followGroup()` | The bar's Follow group (TR2): the Follow toggle, its speed chips, the Skip idle and Ghost toggles and the readout of the player's own date and time. |
+| 1386 | 6 | `private static SVGPath glyph(String content)` |  |
+| 1394 | 9 | `private void showBar()` | The bar laid over the bottom of the window, and the page above it given room so the bar covers no part of it. |
+| 1404 | 11 | `private void hideBar()` |  |
+| 1421 | 29 | `private void keepBarAbove()` | The bar's place in the window's stack, kept every frame: above the window and the expanded map's pane (which is added to the stack when it expands, after the bar), below the menu's layer and a dialog. |
+| 1452 | 38 | `private void refreshBar()` | The bar's figures and lit buttons, set only when they change; the window's room for the bar. |
+| 1492 | 9 | `private void applyRoom()` | The page ends above the bar, not under it; none of it while the bar is hidden (cinematic mode) or while Follow plays: the page is then the player's layout and the bar lies over it. |
+| 1503 | 22 | `private void refreshFollow()` | Follow's group: the lit toggles, the speed chip and the readout, set only when they change. |
+| 1527 | 24 | `private void refreshCamera()` | The camera group's lit buttons, their tooltips and the drift's reading, set only when they change. |
+| 1552 | 3 | `private static void litButton(Button b, boolean lit)` |  |
+
+### cinematic mode, the window (lines 1556-1641)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1562 | 6 | `private void setCinematic(boolean want)` | Cinematic mode on or off: the window's chrome (UserInterface.replayCinematic()) and the time bar. |
+| 1570 | 3 | `private void filmSize()` | The 1920 x 1080 button: the window set so its picture is that size, for the screen recorder. |
+| 1581 | 15 | `private void fitWindow(double w, double h, Consumer<Boolean> done)` | The window set so its scene is exactly {@code w} x {@code h}: out of full screen and not maximised, the stage sized to the picture plus the window's decoration (the stage's size less the scene's), then looked at again... |
+| 1597 | 44 | `private void fitStage(double w, double h, boolean wasFull, int pass, Consumer<Boolean> done)` |  |
 

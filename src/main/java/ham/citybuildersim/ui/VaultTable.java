@@ -135,7 +135,7 @@ final class VaultTable {
     /** A move against the US$ as a signed per cent to a place, with a true minus: "−0.9%", "+0.4%", "0.0%". */
     static String signedPct(double move) {
         double shown = Money.unsigned0(move * 100, 1);
-        return (shown > 0 ? "+" : shown < 0 ? "−" : "") + String.format("%.1f%%", Math.abs(shown));
+        return ham.citybuildersim.Formats.INSTANCE.change(shown / 100, 0, shown == 0 ? "%.1f%%" : "%+.1f%%").replace('-', '−');
     }
 
     /**

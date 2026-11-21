@@ -25,52 +25,12 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 /**
- * The inflation ensemble is in the tree and still runs: its driver compiles
- * against this tree, its two halves name the same policies, and the stored
- * baseline reads.
+ * Checks the ensemble runner, driver compilation, policy names and stored baseline.
  *
- * WHY (EN1, 2026-10-20). The ensemble - sixteen seeds under five monetary
- * policies - lived in a workbench zip, compiled at run time against a snapshot
- * of target/classes. Its driver calls LongPlaytest's code, so a refactor of the
- * model could break it and nobody would know until the next batch whose trace
- * moved came to run it (the ensemble runs only then, since EN1), on the day the
- * answer was wanted. It now lives in tools/ensemble, outside src/ (it is never
- * part of the build), and this harness is the only thing in the suite that
- * touches it.
- *
- * WHAT THIS HAS TO PROVE, and none of it is about what the model does - the
- * ensemble itself is the check of that, and it takes about eighty minutes of
- * machine time:
- *
- *   1. THE RUNNER IS IN THE TREE. The shell script, the scorer, the driver and
- *      the readme are there and not empty.
- *
- *   2. THE DRIVER COMPILES AGAINST THIS TREE. It is compiled here with the
- *      JDK's own compiler against the classpath this harness runs on, which is
- *      what the ensemble does with its snapshot. The guard is proved on
- *      fixtures: a source that calls a method no class has fails the same way
- *      and says which, and a source that calls a real class compiles. On a JRE
- *      there is no compiler and this is one SKIP line, not a failure.
- *
- *   3. THE DRIVER AND THE SCORER NAME THE SAME POLICIES. The constants of the
- *      driver's Policy enum and the strings of the scorer's POLICIES list, each
- *      read from the source text, are the same set and not empty. A policy in
- *      one and not the other is five runs the scorer never counts, or a score
- *      for runs that were never made.
- *
- *   4. THE BASELINE IS THERE AND READS. docs/ensemble holds one page per
- *      version; the newest by number is not newer than the game; and it carries
- *      the line "criteria passed: N/M" and a summary.json block that parses to
- *      the seeds, the take-offs and, for every policy of (3), the median final
- *      population and the two counts the next run is compared with. The reader
- *      is proved on canned pages: one missing a policy, one with no block, one
- *      with no verdict line and a few more each fail, and a sound one passes -
- *      a reader that rejects everything would pass the rest of this section.
- *
- * Run from the repository root; -Dtools=<path to tools> and -Ddocs=<path to
- * docs> say where else to look.
- *
- *     java -cp target/classes;gson.jar ham.citybuildersim.EnsembleCheck
+ * WHY (EN1): an out-of-tree driver could break against LongPlaytest unnoticed
+ * until a batch needed its score. Fixtures prove both compiler verdicts, policy
+ * agreement and baseline parsing, including missing fields and malformed JSON.
+ * Run at the repository root, with -Dtools and -Ddocs overriding those folders.
  */
 public class EnsembleCheck {
 
@@ -172,11 +132,7 @@ public class EnsembleCheck {
         }
     }
 
-    /**
-     * Compile these sources into outDir against the classpath this JVM runs on,
-     * and say what went wrong: one line per error, file:line and the message, in
-     * English whatever the machine's own language is. Empty when it compiled.
-     */
+    /** Compiles against this JVM's classpath, returning English diagnostics or an empty list on success. */
     static List<String> compileProblems(JavaCompiler compiler, List<Path> sources, Path outDir) throws IOException {
         List<String> problems = new ArrayList<>();
         for (Path s : sources) {
@@ -310,6 +266,7 @@ public class EnsembleCheck {
 
     /** The three numbers of x.y.z, or null when it is not one. */
     static int[] versionOf(String s) {
+        if (s == null) return null;
         Matcher m = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)").matcher(s);
         if (!m.matches()) return null;
         return new int[] {Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3))};
@@ -324,6 +281,11 @@ public class EnsembleCheck {
 
     /** The file name of the newest baseline among these names, or null when none is named x.y.z.md. */
     static String newestBaseline(List<String> names) {
+        return newestBaseline(names, null);
+    }
+
+    /** EN2's untagged, data-backed baseline supersedes older literal-world scores until a later version is scored. */
+    static String newestBaseline(List<String> names, String en2Version) {
         String best = null;
         for (String n : names) {
             Matcher m = BASELINE_NAME.matcher(n);
@@ -331,6 +293,8 @@ public class EnsembleCheck {
             String v = n.substring(0, n.length() - ".md".length());
             if (best == null || compareVersions(v, best.substring(0, best.length() - ".md".length())) > 0) best = n;
         }
+        if (names.contains("EN2.md") && versionOf(en2Version) != null
+                && (best == null || compareVersions(en2Version, best.substring(0, best.length() - 3)) >= 0)) return "EN2.md";
         return best;
     }
 
@@ -344,13 +308,7 @@ public class EnsembleCheck {
         return d == Math.rint(d) && !Double.isInfinite(d);
     }
 
-    /**
-     * Null when this baseline page is sound, else the reason it is not: the
-     * verdict line, then the first json block, which has to parse to the seeds
-     * (an integer of 1 or more), the take-offs (an integer) and, for every one
-     * of these policies, the median final population (a number above 0) and the
-     * count of runs with a finding and of audit months failed (numbers).
-     */
+    /** Checks the verdict and JSON seeds, takeoffs and per-policy population, finding and audit fields. */
     static String baselineProblem(String text, List<String> policies) {
         if (text == null) return "the page cannot be read";
         if (policies == null || policies.isEmpty()) return "no policies to hold the page to";
@@ -405,11 +363,7 @@ public class EnsembleCheck {
              "takeoffs": 3
             }""";
 
-    /**
-     * A canned page with one change made to its json. A change that finds
-     * nothing to change would leave a sound page behind a rejection's label, so
-     * that is a failure of its own and says so.
-     */
+    /** Changes canned JSON, failing the fixture if its replacement finds nothing. */
     static String withJson(String from, String to) {
         if (!JSON.contains(from)) {
             fails++;
@@ -458,6 +412,9 @@ public class EnsembleCheck {
         assertTrue("the newest of several pages is the highest number",
                 "0.8.11.md".equals(newestBaseline(List.of("0.8.9.md", "0.8.11.md", "0.8.10.md", "README.md", "0.9.md"))));
         assertTrue("a folder with no page named x.y.z.md has no newest", newestBaseline(List.of("README.md", "notes.txt")) == null);
+        assertTrue("EN2 supersedes older and same-version scores", "EN2.md".equals(newestBaseline(List.of("0.9.110.md", "EN2.md"), "0.9.110")));
+        assertTrue("a later data-backed version supersedes EN2", "0.9.111.md".equals(newestBaseline(List.of("0.9.111.md", "EN2.md"), "0.9.110")));
+        assertTrue("EN2 needs a valid model version", newestBaseline(List.of("EN2.md"), "broken") == null);
 
         // the tree's own
         List<String> names = new ArrayList<>();
@@ -467,10 +424,14 @@ public class EnsembleCheck {
                 list.forEach(p -> names.add(p.getFileName().toString()));
             }
         }
-        String newest = newestBaseline(names);
+        String en2 = read(dir.resolve("EN2.md"));
+        Matcher header = Pattern.compile("(?m)^# Ensemble baseline: (\\d+\\.\\d+\\.\\d+)$").matcher(en2 == null ? "" : en2);
+        String en2Version = header.find() ? header.group(1) : null;
+        if (en2 != null) assertTrue("EN2 names its model version", en2Version != null);
+        String newest = newestBaseline(names, en2Version);
         assertTrue("docs/ensemble holds at least one page named x.y.z.md", newest != null, "looked in " + dir.toAbsolutePath());
         if (newest == null) return;
-        String version = newest.substring(0, newest.length() - ".md".length());
+        String version = newest.equals("EN2.md") ? en2Version : newest.substring(0, newest.length() - ".md".length());
         System.out.println("(the newest baseline is " + newest + "; the game is " + GameVersion.VERSION + ")");
         assertTrue("the newest baseline is not newer than the game", compareVersions(version, GameVersion.VERSION) <= 0);
         String problem = baselineProblem(read(dir.resolve(newest)), policies);

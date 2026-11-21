@@ -32,7 +32,11 @@ import java.util.TreeSet;
  *   4. THE STATIONS CAP WHAT IS RAILED: goods only through a station, bulk
  *      past the stations on the spurs' sidings, and nothing at all with
  *      neither - first as the dealing's arithmetic, then in a played city's
- *      months.
+ *      months (FS7: where the spurs laid are sized from the bulk the played
+ *      city offers while it rails nothing - floor(offered / P) - 1 of them, P
+ *      a spur's sidings - so the cap binds by construction, and the depot
+ *      comes with the spurs that put its stations' and the sidings' tonnes
+ *      past the offer, so the goods ride it by construction).
  *   5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING: the bulk-works predicate
  *      (counted and named), a spur ordered while a bulk works has none and
  *      the track and the sidings are short, none when every works has one or
@@ -48,6 +52,11 @@ import java.util.TreeSet;
  *      the planner would buy back (the freight left unserved is a first
  *      station's rung) is refused, by the distress rule as by any other, and
  *      allowed a tonne under it or with a second station standing.
+ *   10. SPARE TRACK IS COUNTED AS TRACK (RT2), even while wagon sets or
+ *      stations limit operating capacity; losses sell the most-held line
+ *      by the headroom and gradual-retirement constants, without cutting
+ *      into the track the offered freight needs. Goods retain station room:
+ *      spare sidings cannot replace a goods yard, even when sets bind.
  *
  * The fixtures are bare cities (a catalogue, a planner, a Freight with nothing
  * else), because plan() asks for nothing a city adds except the staffing,
@@ -314,14 +323,14 @@ public class RailDepotCheck {
          * against the sidings' 100,000. At the literals the plant lands its ore and coal and ships its pellets every month
          * (HaulageCheck.base()), which is the premise: bulk past two sidings.
          */
-        // THE LEVERS OPENED IN THE FIXTURE (R0, call 17's class): HaulageCheck.played() is base() and fourteen months, and the
-        // fixture needs the pre-R0 city, one that taxes and pays its wage floor from its first month; a 1900 city on history's dates has neither
-        // until 1916-1918, and in the suite's first read of it the spurs' month offered 56,438 t of bulk to sidings of 100,000, fewer than they hold.
-        // So base() is taken, every lever opened and the defaults put back before a month, and the fourteen months played here (played()'s own body).
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, call 17's class; OP1): HaulageCheck.played() is base() and fourteen months, and the fixture
+        // needs the pre-R0 city, one that taxes and pays its wage floor from its first month; until OP1 a 1900 city on history's dates had
+        // neither until 1916-1918, and in the suite's first read of it the spurs' month offered 56,438 t of bulk to sidings of 100,000, fewer
+        // than they hold. So base() is taken, the defaults are put back before a month (every lever is open from the founding since OP1), and the
+        // fourteen months played here (played()'s own body).
         // ...both (BA1 merged with R0): on the literals, with the plant, and every lever opened.
         Game city = HaulageCheck.base(GameFiles.scratch("raildepotcheck-city"), true, true);
         city.getEconomyManager().getTaxPolicy().reset();
-        city.getEconomyManager().getTaxPolicy().openAll();
         quietly(() -> { for (int i = 0; i < 14; i++) city.toggleNextMonth(); });
         Freight fr = city.getSectors().freight();
         GoodsMarket ore = city.getMarkets().get(Good.IRON);
@@ -338,26 +347,46 @@ public class RailDepotCheck {
          * month's shares, which can pass a capacity a rising trade has just outgrown. The shares in force are the dealing's own,
          * made of this month's offer, so offered x share is exactly what the capacity let through.
          */
-        quietly(() -> { HaulageCheck.lay(city, "Rail Spur", 2); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });
+        // FS7: this laid two spurs and found, in the played months, that the bulk offered passed their sidings (a premise the play decided). The spurs
+        // are now sized from the bulk the played city offers while it rails nothing (the lines' month, read just above): floor(offered / P) - 1 of them,
+        // P a spur's sidings (the template's), so their sidings are short of the bulk offered by at least one spur's whole sidings - past any month's
+        // drift - and the cap binds by construction, whatever the played city offers. A city offering under two spurs' sidings has no fixture (the gate).
+        final double bulkPlayed = fr.getBulkOffered();
+        final int spursLaid = (int) Math.floor(bulkPlayed / P) - 1;
+        assertTrue("fixture: the played city offers more than two spurs' sidings of bulk, so there is a spur count that leaves the bulk past its sidings",
+                spursLaid >= 1);
+        quietly(() -> { HaulageCheck.lay(city, "Rail Spur", Math.max(spursLaid, 0)); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });
         double goodsOffered = fr.getOfferedTonnes() - fr.getBulkOffered();
         double dealtSpurs = dealtNow(fr);
-        report("then two spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it",
-                fr.getCapacityTonnes() == fr.sidingTonnes() && fr.sidingTonnes() == 2 * P && fr.getHauledTonnes() > 0
+        report("then spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it",
+                fr.getCapacityTonnes() == fr.sidingTonnes() && fr.sidingTonnes() == spursLaid * P && fr.getHauledTonnes() > 0
                         && fr.getBulkOffered() > fr.sidingTonnes() && near(dealtSpurs, fr.sidingTonnes(), 1e-9)
                         && fr.getCarried()[Traffic.BULK.ordinal()] > 0,
-                String.format("%,.0f t offered (%,.0f of it bulk), %,.0f dealt of the sidings' %,.0f", fr.getOfferedTonnes(), fr.getBulkOffered(),
-                        dealtSpurs, fr.getCapacityTonnes()));
+                String.format("%d spur(s) for %,.0f t of bulk played; %,.0f t offered (%,.0f of it bulk), %,.0f dealt of the sidings' %,.0f", spursLaid, bulkPlayed,
+                        fr.getOfferedTonnes(), fr.getBulkOffered(), dealtSpurs, fr.getCapacityTonnes()));
+        // FS7: the goods offered are the shops' imports in the played city, a stream of the sectors' trade rows that no setter reaches: the premise stays the play's,
+        // and it fails here as the fixture it is when the played city offers none (the law below is vacuous without them).
         report("...and the goods, which go only through a station, are not railed at all (the fixture offers some)",
                 goodsOffered > 0 && fr.getCarried()[Traffic.GOODS.ordinal()] == 0,
                 String.format("%,.0f t of goods offered, goods share %s", goodsOffered, fr.getCarried()[Traffic.GOODS.ordinal()]));
 
-        quietly(() -> { HaulageCheck.lay(city, "Rail Depot", 1); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });
+        // FS7: the depot step laid the depot beside the two spurs the city stood on and read that its stations and sidings passed the offered tonnes (the
+        // play's 112,925 t under 150,000): with fewer spurs, bulk takes the station first (deal()) and the goods ride nothing. So the depot comes with the spurs
+        // that put the stations' and the sidings' tonnes past what the spurs' month offered by at least one spur's sidings: ceil((offered - S) / P) in all, and one
+        // over; the goods ride the station by construction (the capacity is past the offer), whatever the played city offered.
+        final double offeredSpurs = fr.getOfferedTonnes();
+        final int moreSpurs = (int) Math.max(0, Math.ceil((offeredSpurs - S) / P) - spursLaid) + 1;
+        quietly(() -> {
+            HaulageCheck.lay(city, "Rail Depot", 1);
+            HaulageCheck.lay(city, "Rail Spur", moreSpurs);
+            for (int i = 0; i < 3; i++) city.toggleNextMonth();
+        });
         double wagons = fr.fleet() * Freight.TONNES_PER_SET;
         double dealtDepot = dealtNow(fr);
-        report("then a depot: the capacity is the stations' and the sidings' together, and the goods ride the station",
+        report("then a depot (and the spurs that carry the offer past it): the capacity is the stations' and the sidings' together, and the goods ride the station",
                 wagons >= fr.stationTonnes() + fr.sidingTonnes() && fr.getCapacityTonnes() == fr.stationTonnes() + fr.sidingTonnes()
                         && fr.stationTonnes() == depot.getStationTonnes()
-                        && near(dealtDepot, Math.min(fr.getCapacityTonnes(), fr.getOfferedTonnes()), 1e-9)
+                        && fr.getCapacityTonnes() > fr.getOfferedTonnes() && near(dealtDepot, Math.min(fr.getCapacityTonnes(), fr.getOfferedTonnes()), 1e-9)
                         && fr.getCarried()[Traffic.GOODS.ordinal()] > 0,
                 String.format("%,.0f t dealt of %,.0f offered and %,.0f capacity (%,.0f stations + %,.0f sidings), goods share %.3f", dealtDepot,
                         fr.getOfferedTonnes(), fr.getCapacityTonnes(), fr.stationTonnes(), fr.sidingTonnes(), fr.getCarried()[Traffic.GOODS.ordinal()]));
@@ -585,10 +614,108 @@ public class RailDepotCheck {
         assertTrue("a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back",
                 !cat.fr.wouldOrderAgain(spur) && !cat.fr.wouldOrderAgain(null) && !cat.fr.wouldOrderAgain(cat.t("Truck Depot")));
 
+        retirement();
+
         if (fails > 0) {
             System.out.printf("%n%d check(s) failed%n", fails);
             System.exit(1);
         }
         System.out.println("\nAll checks passed.");
+    }
+
+    /** The operating bottleneck must not hide spare standing track (RT2). */
+    static void retirement() {
+        System.out.println("\n--- 10. spare track counts in track tonnes, while sets or stations limit what runs ---");
+        int held = (int) Math.ceil(2 / BusinessInvestment.MAX_RETIREMENT_FRACTION);
+        for (boolean setsLimit : new boolean[] { true, false }) {
+            Fx f = new Fx().stand("Freight Line", held).stand("Rail Depot", held / 2);
+            f.offer(0, 0, setsLimit ? 1 : f.fr.setsNeeded());
+            BuildingsTemplate line = f.t("Freight Line");
+            double counted = 0;
+            for (BuildingsTemplate t : f.bm.getTemplatesBySector(f.fr.key())) counted += f.bm.getQuantity(t.getId()) * f.fr.unitsOf(t);
+            double[] measure = f.fr.retirementDemandAndCapacity(null);
+            assertTrue("fixture: the most-held kind is the line, with " + (setsLimit ? "sets" : "stations") + " limiting operating capacity",
+                    f.bm.getQuantity(line.getId()) == held && held > f.bm.getQuantity(f.t("Rail Depot").getId())
+                            && f.fr.getCapacityTonnes() > 0 && f.fr.getCapacityTonnes() < f.fr.trackTonnes()
+                            && f.fr.getCapacityTonnes() == (setsLimit ? Freight.TONNES_PER_SET : f.fr.stationTonnes()));
+            assertTrue("the buildings add up to the retirement capacity in track tonnes (sets limit=" + setsLimit + ")",
+                    measure[0] == 0 && measure[1] == counted && counted == f.fr.trackTonnes());
+            for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) f.plans.recordSectorResult(f.fr.key(), -1);
+            int allowed = Math.min((int) Math.floor(counted / line.getRailCapacity()),
+                    Math.min((int) Math.ceil(held * BusinessInvestment.MAX_RETIREMENT_FRACTION), held));
+            BusinessInvestment.Decision shed = f.plans.planRetirement(f.fr, measure[0], measure[1], 0);
+            report("the rule sells the most-held line and the share its constants allow (sets limit=" + setsLimit + ")",
+                    allowed > 0 && shed.build && shed.template == line && shed.quantity == allowed,
+                    String.format("%d of %d; track %,.0f, operating capacity %,.0f", shed.quantity, held, counted, f.fr.getCapacityTonnes()));
+            f.offer(0, counted / (1 + BusinessInvestment.TARGET_HEADROOM), setsLimit ? 1 : f.fr.setsNeeded());
+            measure = f.fr.retirementDemandAndCapacity(null);
+            assertTrue("offered freight that needs the track with TARGET_HEADROOM prevents a sale (sets limit=" + setsLimit + ")",
+                    !f.plans.planRetirement(f.fr, measure[0], measure[1], 0).build);
+        }
+
+        // REV-RT2-1: a depot's handling can be needed even when its track is spare.
+        for (String kind : new String[] { "Rail Depot", "Rail Spur" }) {
+            for (int spare : new int[] { 1, 2 }) {
+                Fx f = new Fx().stand(kind, held).stand("Freight Line", held / 2);
+                if (kind.equals("Rail Spur")) f.stand("Rail Depot", held / 2);
+                BuildingsTemplate selling = f.t(kind);
+                double eachHandling = selling.getStationTonnes() + (selling.isSiding() ? selling.getRailCapacity() : 0);
+                double handling = f.fr.stationTonnes() + f.fr.sidingTonnes();
+                double demand = handling - spare * eachHandling;
+                f.offer(demand, 0);
+                double keep = demand * (1 + BusinessInvestment.TARGET_HEADROOM);
+                int gradual = Math.min((int) Math.ceil(held * BusinessInvestment.MAX_RETIREMENT_FRACTION), held);
+                int safe = Math.max(0, Math.min(gradual, (int) Math.floor((handling - keep) / eachHandling)));
+                assertTrue("fixture: " + kind + " is most held, its track is spare but its handling limits the sale (spare=" + spare + ")",
+                        f.fr.getCapacityTonnes() >= demand && f.fr.trackTonnes() > handling
+                                && f.bm.getQuantity(selling.getId()) == held && safe < gradual);
+                for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) f.plans.recordSectorResult(f.fr.key(), -1);
+                double[] measure = f.fr.retirementDemandAndCapacity(null);
+                BusinessInvestment.Decision shed = f.plans.planRetirement(f.fr, measure[0], measure[1], 0);
+                double after = Freight.capacityOf(f.fr.trackTonnes() - shed.quantity * selling.getRailCapacity(), f.fr.fleet(),
+                        f.fr.stationTonnes() - shed.quantity * selling.getStationTonnes(),
+                        f.fr.sidingTonnes() - (selling.isSiding() ? shed.quantity * selling.getRailCapacity() : 0));
+                report("the whole sale preserves operating headroom and sells only the safe quantity of " + kind + " (spare=" + spare + ")",
+                        shed.quantity == safe && shed.build == (safe > 0) && (!shed.build || shed.template == selling) && after >= keep,
+                        String.format("%d sold, %d safe; offered %,.0f, headroom %,.0f, remaining capacity %,.0f", shed.quantity, safe, demand, keep, after));
+            }
+        }
+        goodsRetirement();
+    }
+
+    /** A siding sorts bulk only: the aggregate operating minimum alone can hide a goods shortfall. */
+    static void goodsRetirement() {
+        System.out.println("\n--- goods keep station headroom even when spare sidings hide the lost yard room ---");
+        int held = (int) Math.ceil(2 / BusinessInvestment.MAX_RETIREMENT_FRACTION);
+        Fx cat = new Fx();
+        double step = cat.t("Rail Depot").getStationTonnes();
+        double[][] offers = { { 0, held * step }, { 0, (held - 1) * step }, { held / 2 * step, held / 2 * step } };
+        for (double[] offer : offers) {
+            Fx f = new Fx().stand("Rail Depot", held + 1).stand("Rail Spur", held).stand("Freight Line", held / 2);
+            BuildingsTemplate depot = f.t("Rail Depot");
+            f.offer(offer[0], offer[1], (held + 1) * step / Freight.TONNES_PER_SET);
+            double factor = 1 + BusinessInvestment.TARGET_HEADROOM;
+            double bulkKeep = offer[0] * factor, goodsKeep = offer[1] * factor;
+            int gradual = Math.min((int) Math.ceil((held + 1) * BusinessInvestment.MAX_RETIREMENT_FRACTION), held + 1);
+            double afterGradual = Freight.capacityOf(f.fr.trackTonnes() - gradual * depot.getRailCapacity(), f.fr.fleet(),
+                    f.fr.stationTonnes() - gradual * step, f.fr.sidingTonnes());
+            assertTrue("fixture: depots are most held, sets bind, and even the whole gradual sale passes the aggregate headroom",
+                    held + 1 > held && f.fr.getCapacityTonnes() == f.fr.fleet() * Freight.TONNES_PER_SET
+                            && f.fr.getCapacityTonnes() < f.fr.stationTonnes() + f.fr.sidingTonnes()
+                            && f.fr.stationTonnes() >= goodsKeep && afterGradual >= bulkKeep + goodsKeep);
+            int safe = Math.max(0, Math.min(gradual, (int) Math.floor((f.fr.stationTonnes() - goodsKeep) / step)));
+            for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) f.plans.recordSectorResult(f.fr.key(), -1);
+            double[] measure = f.fr.retirementDemandAndCapacity(null);
+            BusinessInvestment.Decision shed = f.plans.planRetirement(f.fr, measure[0], measure[1], 0);
+            double stations = f.fr.stationTonnes() - shed.quantity * step;
+            double capacity = Freight.capacityOf(f.fr.trackTonnes() - shed.quantity * depot.getRailCapacity(), f.fr.fleet(),
+                    stations, f.fr.sidingTonnes());
+            double[] dealt = Freight.deal(capacity, stations, f.fr.sidingTonnes(), bulkKeep, goodsKeep);
+            report("only the depots spare to goods are sold, while bulk may use sidings",
+                    shed.quantity == safe && shed.build == (safe > 0) && (!shed.build || shed.template == depot),
+                    String.format("bulk %,.0f, goods %,.0f: %d sold, %d safe", offer[0], offer[1], shed.quantity, safe));
+            assertTrue("the railway still deals both kinds' headroom after the whole sale",
+                    near(dealt[0], bulkKeep, 1e-12) && near(dealt[1], goodsKeep, 1e-12));
+        }
     }
 }

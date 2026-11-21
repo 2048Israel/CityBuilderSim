@@ -63,6 +63,25 @@ public class ServicesManager {
         return steam > 0 ? draw * (1 - steam) : draw;
     }
 
+    /**
+     * The grid units a month the Hydrogen Steel Works fitted with FE10's electrolysers no longer draw, at nameplate and net of their sector's steam share
+     * (R6d, REV-R6d P1): EquipmentForms sets it from the works' counts at every pass (HeavyIndustry.getGridUnitsSaved()), 0 in a city founded today's way. The
+     * grid is sized and rationed for the power drawn from it, so the saving comes off the city's demand and the draw invoiced, as the sector's own bill
+     * takes it off (HeavyIndustry.setElectricityConsumption()). 0, to the bit, with no works fitted.
+     */
+    private double electrolyserSaving;
+
+    public void setElectrolyserSaving(double units) {
+        electrolyserSaving = Double.isFinite(units) && units > 0 ? units : 0;
+    }
+
+    public double getElectrolyserSaving() { return electrolyserSaving; }
+
+    /** A draw the grid is asked for, less the electrolysers' saving, kept at 0 or more; the draw itself, to the bit, while none is saved. */
+    private double lessElectrolysers(double draw) {
+        return electrolyserSaving > 0 ? Math.max(0, draw - electrolyserSaving) : draw;
+    }
+
     // ===============================
     // MAIN UPDATE
     // ===============================
@@ -91,10 +110,10 @@ public class ServicesManager {
                 BuildingsTemplate::getProduction1);
 
         // ...and the plants themselves, each with its count, for the month's merit order (PW1; UtilitiesHandler, THE MERIT ORDER).
-        Map<BuildingsTemplate, Integer> plants = new LinkedHashMap<>();
+        Map<BuildingsTemplate, Long> plants = new LinkedHashMap<>();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
             if (t.getCategory() != BuildingType.ELECTRICITY) continue;
-            int n = buildingManager.getQuantity(t.getId());
+            long n = buildingManager.getQuantity(t.getId());
             if (n > 0) plants.put(t, n);
         }
         utilitiesHandler.setPlants(plants);
@@ -103,10 +122,8 @@ public class ServicesManager {
         // own draws, sold to the grid (0.7.112, batch I2; UtilitiesHandler, THE POWER THE WORKS MAKE):
         // every building's whole draw, and none sold, while no works that makes power stands (since 0.7.123
         // the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop make some).
-        // ...less what a sector turns with steam on site (R0c, the steam form): the grid is sized and rationed for the power drawn from it.
-        updateHandlerDouble(
-                utilitiesHandler::setWattsConsumption,
-                this::gridDraw);
+        // ...less what a sector turns with steam on site (R0c, the steam form) and what the works with FE10's electrolysers no longer draw (R6d): the grid is sized and rationed for the power drawn from it.
+        utilitiesHandler.setWattsConsumption(lessElectrolysers(buildingManager.getTotalDouble(this::gridDraw)));
         updateHandlerDouble(
                 utilitiesHandler::setWorksPower,
                 BuildingsTemplate::powerSold);
@@ -149,9 +166,9 @@ public class ServicesManager {
         // utility's REVENUE is read off the statements themselves (see
         // UtilitiesHandler.setBilledRevenue); these two draws are what the
         // utilities screen shows as "invoiced to somebody".
-        utilitiesHandler.setBilledElectricityDraw(
+        utilitiesHandler.setBilledElectricityDraw(lessElectrolysers(
                 buildingManager.getTotalDouble(
-                        t -> BuildingsTemplate.isBilledForUtilities(t) ? gridDraw(t) : 0));
+                        t -> BuildingsTemplate.isBilledForUtilities(t) ? gridDraw(t) : 0)));
 
         utilitiesHandler.setBilledWaterDraw(
                 buildingManager.getTotalDouble(

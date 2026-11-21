@@ -175,7 +175,8 @@ public class EquipmentCheck {
         sectionOne();
         Game played = Forms1900Check.town("equipment-played");
         sectionTwo(played);
-        Game counted = Forms1900Check.town("equipment-counted");
+        // RT2: observe months 1-4, before the bakery sales at months 6-7.
+        Game counted = Forms1900Check.town("equipment-counted", 0);
         Game carts = cartTown("equipment-carts");
         sectionThree(counted, carts);
         sectionFour(counted, carts);
@@ -183,7 +184,7 @@ public class EquipmentCheck {
         sectionSix(counted);
         sectionSeven(counted, played);
         sectionEight(played);
-        Game steam = Forms1900Check.town("equipment-fit-steam");
+        Game steam = Forms1900Check.town("equipment-fit-steam", 2);
         sectionNine(steam);
         Game fitCarts = cartTown("equipment-fit-carts");
         sectionTen(steam, fitCarts);
@@ -233,7 +234,8 @@ public class EquipmentCheck {
         quietly(bm::initializeTemplates);
 
         // R1c: a piece may end no form (it enables a recipe), so "ends" may be missing from the file; the pieces that DO end one are the notes' whole.
-        int expectedPieces = DRIVES.length + 1 + FARMS.length, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
+        // The depot's two: the motor truck (R1) and the driverless kit (R6b, FE1: it ends CAB_DRIVERS), which is why it is 2 and not 1 here; then (R6d) the Hydrogen Steel Works' electrolyser (FE10: ELECTROLYSERS) and the Mixed Farm's and the Grain Farm's autonomy kit (FE8: FIELD_OPERATORS), the + 1 + 2.
+        int expectedPieces = DRIVES.length + 2 + FARMS.length + 1 + 2, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
         String firstMismatch = null;
         for (JsonObject o : file.values()) {
             if (!o.has("equipment")) continue;
@@ -279,15 +281,15 @@ public class EquipmentCheck {
         for (String name : DRIVES) {
             BuildingsTemplate t = bm.getTemplateByName(name);
             Equipment p = t == null ? null : t.getEquipment(DRIVE);
-            boolean ok = p != null && t.getEquipment().size() == 1 && p.getEnds() == Equipment.Form.STEAM && p.isYear() && p.getSince().equals("1900")
+            boolean ok = p != null && t.getEquipment().stream().filter(e -> e.getEnds() == Equipment.Form.STEAM).count() == 1 && p.getEnds() == Equipment.Form.STEAM && p.isYear() && p.getSince().equals("1900")
                     && p.getLifeMonths() == 300;
             // The rules the figures were struck by (R1-notes call 9, est.): the motors' tonnes are 8 kg a kW of peak draw, the month's mean
-            // over a 0.6 load factor, to a tenth of a tonne; the work a tenth of the building's own construction points, to a point.
+            // over a 0.6 load factor, to a tenth of a tonne; R1d's work is setup plus rounded-up mass-based installation points.
             if (ok) {
                 double machinery = p.getBuys().getOrDefault(Good.MACHINERY, -1.0);
                 ok = p.getBuys().size() == 1
                         && Math.abs(machinery - t.getElectricityConsumption() * 0.008 / 0.6) <= 0.05 + 1e-9
-                        && Math.abs(p.getWork() - t.getConstructionPoints() / 10.0) <= 0.5 + 1e-9;
+                        && p.getWork() == Equipment.DRIVE_SETUP_POINTS + Math.ceil(machinery * Equipment.DRIVE_WORK_PER_TONNE);
             }
             if (ok) driveOk++;
             else if (bad == null) bad = name;
@@ -297,15 +299,15 @@ public class EquipmentCheck {
 
         BuildingsTemplate depot = bm.getTemplateByName("Truck Depot");
         Equipment truck = depot == null ? null : depot.getEquipment(TRUCK);
-        check("the motor truck is on the Truck Depot alone, ending CART_HORSES, its room in TRUCKS and no work",
-                truck != null && depot.getEquipment().size() == 1 && truck.getEnds() == Equipment.Form.CART_HORSES && truck.isYear()
+        check("the motor truck is on the Truck Depot, ending CART_HORSES, its room in TRUCKS and no work; the depot carries two pieces since R6b, it and the driverless kit",
+                truck != null && depot.getEquipment().size() == 2 && depot.getEquipment("driverless-kit") != null && truck.getEnds() == Equipment.Form.CART_HORSES && truck.isYear()
                         && truck.getBuys().size() == 1 && truck.getBuys().getOrDefault(Good.TRUCKS, -1.0) == depot.getTruckRoom()
                         && truck.getWork() == 0 && truck.getLifeMonths() > 0);
 
         for (String name : FARMS) {
             BuildingsTemplate t = bm.getTemplateByName(name);
             Equipment p = t == null ? null : t.getEquipment(TRACTOR);
-            boolean ok = p != null && t.getEquipment().size() == 1 && p.getEnds() == Equipment.Form.FARM_HORSES && !p.isYear()
+            boolean ok = p != null && t.getEquipment().stream().filter(e -> e.getEnds() == Equipment.Form.FARM_HORSES).count() == 1 && p.getEnds() == Equipment.Form.FARM_HORSES && !p.isYear()
                     && p.getSince().equals("PE14") && p.getWork() == 0 && p.getLifeMonths() == 180 && p.getBuys().size() == 1;
             // 3 t of machinery a hundred acres of the farm's land (R1-notes call 9, est.), to a tenth of a tonne.
             if (ok) ok = Math.abs(p.getBuys().getOrDefault(Good.MACHINERY, -1.0) - 3.0 * t.getLandSqFt() / 43_560 / 100) <= 0.05 + 1e-9;
@@ -321,23 +323,24 @@ public class EquipmentCheck {
         List<String> named = new ArrayList<>(List.of(DRIVES));
         named.addAll(List.of(FARMS));
         named.add("Truck Depot");
+        named.add("Hydrogen Steel Works");   // R6d, FE10: its electrolyser, the one piece it carries
         for (BuildingsTemplate t : bm.getTemplates()) {
-            if (t.getEquipment().isEmpty() || named.contains(t.getName()) || t.recipePieceId() != null) continue;
+            if (t.getEquipment().isEmpty() || named.contains(t.getName()) || t.recipePieceId() != null || !t.getRecipeChanges().isEmpty()) continue;
             other++;
             if (firstOther == null) firstOther = t.getName();
         }
-        check("no other template carries a piece than the drive's, the depot's, the farms' and the ones whose recipes need one", other == 0, other + " do, " + firstOther + " first");
+        check("no other template carries a piece than the drive's, the depot's, the farms' and the ones whose process or independent recipes need one", other == 0, other + " do, " + firstOther + " first");
 
         boolean everyEnds = true;
         String firstEnds = null;
         for (BuildingsTemplate t : bm.getTemplates()) {
             for (Equipment p : t.getEquipment()) {
-                boolean ok = p.getEnds() != null || p.getId().equals(t.recipePieceId());
+                boolean ok = p.getEnds() != null || p.getId().equals(t.recipePieceId()) || t.changeNeeds(p.getId());
                 everyEnds &= ok;
                 if (!ok && firstEnds == null) firstEnds = t.getName() + "/" + p.getId();
             }
         }
-        check("every piece ends one of the three forms or is its template's recipe piece, the one its recipes need", everyEnds, firstEnds);
+        check("every piece ends one of the three forms or is needed by a process or independent recipe on its template", everyEnds, firstEnds);
 
         int formless = 0, formlessWanted = 0;
         String firstFormless = null;
@@ -354,13 +357,17 @@ public class EquipmentCheck {
                         wanted |= recipe.has("needsEquipment") && recipe.get("needsEquipment").getAsString().equals(piece.get("id").getAsString());
                     }
                 }
+                if (o.has("recipeChanges")) for (JsonElement r : o.getAsJsonArray("recipeChanges")) {
+                    JsonObject change = r.getAsJsonObject();
+                    wanted |= change.has("equipment") && change.get("equipment").getAsString().equals(piece.get("id").getAsString());
+                }
                 BuildingsTemplate t = bm.getTemplate(o.get("id").getAsInt());
-                wanted &= t != null && piece.get("id").getAsString().equals(t.recipePieceId());
+                wanted &= t != null && (piece.get("id").getAsString().equals(t.recipePieceId()) || t.changeNeeds(piece.get("id").getAsString()));
                 if (wanted) formlessWanted++;
                 else if (firstFormless == null) firstFormless = o.get("name").getAsString() + "/" + piece.get("id").getAsString();
             }
         }
-        check("...and the file's pieces that end none (" + formless + ") are each needed by a recipe of their building, and are the template's recipe piece once read",
+        check("...and the file's pieces that end none (" + formless + ") are each needed by a recipe of their building, and are needed by its process or independent recipe once read",
                 formless > 0 && formlessWanted == formless, formlessWanted + " of " + formless + ", first " + firstFormless);
 
         BuildingsTemplate grainFarm = bm.getTemplateByName("Grain Farm"), bakery = bm.getTemplateByName("Bakery");
@@ -441,7 +448,7 @@ public class EquipmentCheck {
         check("fixture: two Bakeries, an Industrial Bakery and a Grain Farm stand", bakery.getQuantity() == 2 && industrial.getQuantity() >= 1
                 && grain.getQuantity() >= 1, bakery.getQuantity() + "/" + industrial.getQuantity() + "/" + grain.getQuantity());
         // One of the two Bakeries, the whole of the Industrial Bakery stack and of the Grain Farm stack.
-        int industrialAll = industrial.getQuantity(), grainAll = grain.getQuantity();
+        long industrialAll = industrial.getQuantity(), grainAll = grain.getQuantity();
         bakery.setUnfitted(DRIVE, 1);
         industrial.setUnfitted(DRIVE, industrialAll);
         grain.setUnfitted(TRACTOR, grainAll);
@@ -452,6 +459,9 @@ public class EquipmentCheck {
                 steam + " / " + horses);
         check("fixture: before the month the shares are 0", industry.getSteamShare() == 0 && farms.getHorseShare() == 0);
         play(g, 1);
+        check("fixture: the observed month keeps the same unfitted bakery counts",
+                bakery.getQuantity() == 2 && industrial.getQuantity() == industrialAll
+                        && bakery.getUnfitted(DRIVE) == 1 && industrial.getUnfitted(DRIVE) == industrialAll);
         near("Industry's steam share is the unfitted bakeries' grid draw over all its buildings'", industry.getSteamShare(), steam, 1e-9);
         near("the farms' horse share is the unfitted farms' land over all their land", farms.getHorseShare(), horses, 1e-9);
         check("no other sector has a steam share", maxSteamExcept(g, industry.key()) == 0, "largest " + maxSteamExcept(g, industry.key()));
@@ -461,7 +471,7 @@ public class EquipmentCheck {
 
         Haulage haulage = c.getSectors().freight().haulage();
         BuildingsStacks depot = stack(c, "Truck Depot");
-        int q = depot.getQuantity();
+        long q = depot.getQuantity();
         check("fixture: depots stand in the cart town", q >= 2, "quantity " + q);
         depot.setUnfitted(TRUCK, 1);
         double carted = cartShare(c);
@@ -561,11 +571,11 @@ public class EquipmentCheck {
 
         // ...and through the city's own paths: the order the player or the investor places, and a retirement.
         BuildingsStacks live = stack(g, "Bakery");
-        int before = live.getQuantity();
+        long before = live.getQuantity();
         live.setUnfitted(DRIVE, 1);
         quietly(() -> g.buildStack(bakery, 1, true));
         check("a Bakery bought into the city (buildStack) leaves the stack's count as it was", live.getQuantity() == before + 1 && live.getUnfitted(DRIVE) == 1);
-        int scrapped = g.getBuildingManager().retire(bakery, live.getQuantity());
+        long scrapped = g.getBuildingManager().retire(bakery, live.getQuantity());
         check("every Bakery retired by the city takes the count with it", scrapped == before + 1 && live.getQuantity() == 0 && !live.hasUnfitted());
         quietly(() -> g.buildStack(bakery, before, true));
     }
@@ -579,7 +589,7 @@ public class EquipmentCheck {
 
     static boolean throwsOnPut(BuildingsStacks s) {
         try {
-            s.getUnfittedView().put("x", 1);
+            s.getUnfittedView().put("x", 1L);
             return false;
         } catch (UnsupportedOperationException e) {
             return true;
@@ -605,7 +615,7 @@ public class EquipmentCheck {
         // The counts: one of two Bakeries, the Industrial Bakery stack and the Grain Farm stack whole; then a month, so the shares stand as the city has them.
         // The counts as set are kept: the month may put up another building on a stack (the investors build), which comes fitted and moves the
         // quantity, not the count.
-        final int industrialSet = stack(g, "Industrial Bakery").getQuantity(), grainSet = stack(g, "Grain Farm").getQuantity();
+        final long industrialSet = stack(g, "Industrial Bakery").getQuantity(), grainSet = stack(g, "Grain Farm").getQuantity();
         stack(g, "Bakery").setUnfitted(DRIVE, 1);
         stack(g, "Industrial Bakery").setUnfitted(DRIVE, industrialSet);
         stack(g, "Grain Farm").setUnfitted(TRACTOR, grainSet);
@@ -614,9 +624,9 @@ public class EquipmentCheck {
         play(g, 1);
         check("fixture: the counts stand after the month and the forms are up", anyUnfitted(g) && g.getSectors().industry().getSteamShare() > 0
                 && g.getSectors().agriculture().getHorseShare() > 0);
-        Map<Integer, Map<String, Integer>> saved = g.getBuildingManager().getUnfittedById();
+        Map<Integer, Map<String, Long>> saved = g.getBuildingManager().getUnfittedById();
         check("the save's view is each template's id and its counts, only where a stack has any", saved.size() == 3
-                && saved.get(stack(g, "Bakery").getBuilding().getId()).equals(Map.of(DRIVE, 1))
+                && saved.get(stack(g, "Bakery").getBuilding().getId()).equals(Map.of(DRIVE, 1L))
                 && saved.get(stack(g, "Industrial Bakery").getBuilding().getId()).equals(Map.of(DRIVE, industrialSet))
                 && saved.get(stack(g, "Grain Farm").getBuilding().getId()).equals(Map.of(TRACTOR, grainSet)), saved.toString());
 
@@ -843,13 +853,15 @@ public class EquipmentCheck {
     }
 
     static void sectionNine(Game g) {
+        FittingCheck.holdAll(g); // the priced verdicts must not become orders during their setup month
         out.println("\n--- 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that pays ---");
         Sector industry = g.getSectors().industry();
         BuildingsStacks bakery = stack(g, "Bakery");
         BuildingsTemplate t = bakery.getBuilding();
         Equipment drive = t.getEquipment(DRIVE);
-        bakery.setUnfitted(DRIVE, 1);
         play(g, 1);
+        bakery.setUnfitted(DRIVE, 1);
+        g.getEquipmentForms().apply(g);
         check("fixture: a Bakery is unfitted, a month is played, and it is 1900", bakery.getUnfitted(DRIVE) == 1 && yearOf(g) == 1900 && drive.knownAt(g.getMonth()), "year " + yearOf(g));
 
         double coal = cityPrice(g, Good.THERMAL_COAL), power = g.getEconomyManager().getPricePerWatt(), point = g.getBuildingManager().nonMaterialPricePerPoint();
@@ -867,8 +879,11 @@ public class EquipmentCheck {
         double expectedCost = 0;
         for (Map.Entry<Good, Double> e : drive.getBuys().entrySet()) expectedCost += e.getValue() * cityPrice(g, e.getKey());
         expectedCost += drive.getWork() * point;
-        check("its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, to the bit",
-                v.cost() == EquipmentFit.cost(drive, good -> cityPrice(g, good), point), v.cost() + " vs " + expectedCost);
+        // OP1: the builders' sales tax is open from the founding, and the fitting is the builders' sale, so the cost is grossed up at their rate.
+        double taxed = 1 - g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().construction());
+        expectedCost /= taxed;
+        check("its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, grossed up at the builders' sales tax, to the bit",
+                v.cost() == EquipmentFit.cost(drive, good -> cityPrice(g, good), point) / taxed, v.cost() + " vs " + expectedCost);
         near("...and the same written out here", v.cost(), expectedCost, 1e-12);
         check("fixture: the fitting buys machinery and has work, so both halves of the cost are in it", drive.getBuys().containsKey(Good.MACHINERY) && drive.getWork() > 0
                 && v.cost() > drive.getWork() * point);
@@ -961,7 +976,7 @@ public class EquipmentCheck {
         // The carts' two prices a tonne, written out here from the model's own constants and prices.
         double crops = c.getMarkets().get(Good.CROPS).landedPrice(), diesel = c.getMarkets().get(Good.DIESEL).landedPrice();
         double carter = c.getEconomyManager().getWageRates()[JobType.NO_DIPLOMA.ordinal()], driver = c.getEconomyManager().getWageRates()[JobType.DIPLOMA.ordinal()];
-        double teams = (Haulage.HORSES_A_TEAM * Haulage.HORSE_FEED_TONNES_A_MONTH * crops + Haulage.CARTERS_A_TEAM * carter) / Haulage.TONNES_A_TEAM_MONTH;
+        double teams = (Haulage.HORSES_A_TEAM * Haulage.HORSE_FEED_TONNES_A_MONTH * crops + Haulage.CARTERS_A_TEAM * carter + haulage.teamHirePerMonth()) / Haulage.TONNES_A_TEAM_MONTH;
         double trucks = Haulage.DIESEL_LITRES_A_TONNE * diesel + driver / Haulage.TONNES_A_TRUCK_MONTH;
         near("a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries", haulage.horseEstimate(), teams, 1e-9);
         near("...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries", haulage.truckRunningEstimate(), trucks, 1e-9);
@@ -981,8 +996,9 @@ public class EquipmentCheck {
         double room = truck.getBuys().getOrDefault(Good.TRUCKS, -1.0);
         check("the motor truck buys the depot's truck room in TRUCKS and has no work", room == dt.getTruckRoom() && truck.getWork() == 0 && truck.getBuys().size() == 1);
         double truckPrice = cityPrice(c, Good.TRUCKS);
-        check("the depot's cost is its trucks at the city's price of TRUCKS, to the bit, and nothing for work", v.cost() == room * truckPrice && truckPrice > 0,
-                v.cost() + " vs " + room * truckPrice);
+        double taxed = 1 - c.getEconomyManager().getTaxPolicy().effectiveSalesRate(c.getSectors().construction());
+        check("the depot's cost is its trucks at the city's price of TRUCKS grossed up at the builders' sales tax (OP1), to the bit, and nothing for work",
+                v.cost() == room * truckPrice / taxed && truckPrice > 0, v.cost() + " vs " + room * truckPrice / taxed);
         check("its life is the truck's and its rate is struck for Freight on the whole cost",
                 v.lifeMonths() == truck.getLifeMonths() && v.realRate() == c.getBusinessInvestment().realTestRate(
                         c.getEconomyManager().getBusinessDebtManager().projectRate(c.getSectors().freight().key(), v.cost())),
@@ -1003,10 +1019,11 @@ public class EquipmentCheck {
 
         // The rank, in the steam town: two Bakeries' drives with different earnings on cost.
         BuildingsStacks bakery = stack(g, "Bakery");
+        play(g, 1);
         bakery.setUnfitted(DRIVE, 1);
         bread.setUnfitted(DRIVE, 1);
+        g.getEquipmentForms().apply(g);
         Sector industry = g.getSectors().industry();
-        play(g, 1);
         EquipmentFit.Verdict small = EquipmentFit.verdict(g, bakery, bakery.getBuilding().getEquipment(DRIVE));
         EquipmentFit.Verdict large = EquipmentFit.verdict(g, bread, bread.getBuilding().getEquipment(DRIVE));
         double evenSmall = breakEvenCoal(g, bakery.getBuilding(), small), evenLarge = breakEvenCoal(g, bread.getBuilding(), large);
@@ -1144,14 +1161,23 @@ public class EquipmentCheck {
         }
         check("fixture: the twins start equal, with the same counts and nothing asked", Forms1900Check.firstDifference(a, b) == null && formsAndCounts(a).equals(formsAndCounts(b))
                 && anyUnfitted(a));
-        String diff = twinsAfter(a, b, 6, false);
+        // Since R1d the twins buy and work their drives' fittings (they pay), so the steam share falls as the drives go in: it is read each month.
+        String diff = null;
+        boolean steamFirst = false;
+        for (int m = 0; m < 6 && diff == null; m++) {
+            diff = twinsAfter(a, b, 1, false);
+            if (diff != null) diff = "month " + (m + 1) + " of six: " + diff;
+            else if (m == 0) steamFirst = a.getSectors().industry().getSteamShare() > 0;
+        }
         check("six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal",
                 diff == null, diff);
-        check("...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both",
-                a.getSectors().industry().getSteamShare() > 0 && a.getSectors().industry().getSteamShare() == b.getSectors().industry().getSteamShare());
+        check("...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both after the first",
+                diff == null && steamFirst);
 
         Game ca = cartTown("equipment-twin-carts-a"), cb = cartTown("equipment-twin-carts-b");
-        for (Game g : new Game[]{ca, cb}) stack(g, "Truck Depot").setUnfitted(TRUCK, 1);
+        for (Game g : new Game[]{ca, cb}) {
+            stack(g, "Truck Depot").setUnfitted(TRUCK, 1);
+        }
         check("fixture: the cart twins start equal with a depot unfitted", Forms1900Check.firstDifference(ca, cb) == null && anyUnfitted(ca) && anyUnfitted(cb));
         String cartDiff = twinsAfter(ca, cb, 6, true);
         check("...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included", cartDiff == null, cartDiff);

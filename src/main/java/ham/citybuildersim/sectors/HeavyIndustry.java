@@ -1,7 +1,9 @@
 package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingType;
+import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.HydroSites;
 
 /**
  * The mills - Iron & Steel since 0.7.120, under the key it was saved by,
@@ -44,8 +46,8 @@ import ham.citybuildersim.Good;
  * Jerus's Q4, Q6, Q7, Q8, Q19 and Q20 of 2026-10-08). Seven more rows, each a
  * candidate the same way:
  *   - the SCRAP YARD sorts the city's old steel (OldMetal) into scrap;
- *   - the PELLETISING PLANT fires ore into pellets, which ship (nothing here
- *     uses them until a DRI plant exists, the study's 2.8);
+ *   - the PELLETISING PLANT fires ore into pellets, which ship (since R6b the
+ *     Hydrogen Steel Works, FE4, takes them first: HYDROGEN-REDUCED IRON below);
  *   - the COKE OVENS bake coking coal into coke;
  *   - the MINI BLAST FURNACE and the BLAST FURNACE smelt ore, coke and
  *     limestone into pig iron;
@@ -58,16 +60,31 @@ import ham.citybuildersim.Good;
  * feed for export is under every hurdle (case A, at most 0.2%), and the route
  * pays on the city's own feed or replacing imports (cases B to D).
  *
- * CAPTIVE (ProcessingSector, the spec's 2.7): coke, pig iron and scrap go to
- * its own works' need first - the ovens' coke to the furnaces, the furnaces'
- * pig iron to the oxygen shop, the yards' scrap to the shop and the arc
- * furnaces - and only the rest is bought or sold.
+ * CAPTIVE (ProcessingSector, the spec's 2.7): coke, pig iron, scrap and since
+ * R6b pellets go to its own works' need first - the ovens' coke to the
+ * furnaces, the furnaces' pig iron to the oxygen shop, the yards' scrap to
+ * the shop and the arc furnaces, the pelletising plants' pellets to the
+ * Hydrogen Steel Works - and only the rest is bought or sold.
  *
  * ITS OWN POWER (the spec's 2.8, Q20): the Coke Ovens make 8,000 kW against a
  * 2,200 kW draw, the Blast Furnace 60,000 against 51,400 and the Oxygen Steel
  * Shop 25,000 against 51,600, from their gas (BuildingsTemplate.getGen()): the
  * sector buys from the grid only its works' draw past what they make and
  * sells the grid what they make past it, at the tariff (I2's machinery).
+ *
+ * HYDROGEN-REDUCED IRON (R6b, FE4: Boden, Sweden, projected June 2028; a city
+ * founded today's way never knows it, one founded the 1900 way from FE4's month
+ * or when its research finds it): the HYDROGEN STEEL WORKS takes pellets and
+ * power and makes steel, no coke, no limestone, no scrap. The game has no DRI
+ * good, so it is one integrated works (the shaft furnace and the arc furnace in
+ * it), its figures composed as 0.4 of a Blast Furnace plus 0.8 of a Large
+ * Mini-Mill (estimates); where it pays is the grid's power, HYDROGEN_MWH_A_TONNE
+ * of it a tonne (HydroSites.KWH_PER_UNIT the unit), and the pellets' price.
+ *
+ * ELECTROLYSIS AT 46 kWh A KILOGRAM (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037; a
+ * city founded today's way never knows it): the works' piece "electrolyser" takes HYDROGEN_MWH_SAVED_A_TONNE (54 kg of hydrogen a tonne of iron at 9 kWh
+ * less each, 0.486 MWh) off each tonne of steel, and a works that has it draws that much less (setElectrolyserWorks(); EquipmentForms counts them).
+ * The piece is fitted works by works, as any other: where power is dear it pays, and where it is not it does not.
  *
  * THE OLD STEEL (OldMetal): a yard takes old steel, which is not a good, so
  * its feed is not on a market. It is bought when the yards make their scrap
@@ -108,6 +125,68 @@ public final class HeavyIndustry extends ProcessingSector {
     /** The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. */
     public static final int LARGE_MINI_MILL = 107;
 
+    /** The Hydrogen Steel Works' permanent id (R6b, FE4): pellets and power into steel by hydrogen reduction, no coke - one integrated works, the game having no DRI good. */
+    public static final int HYDROGEN_WORKS = 154;
+
+    /** The grid's megawatt-hours a tonne of liquid steel the Hydrogen Steel Works draws, 3.48: the study's N9 and N10, the electrolysers' hydrogen, the shaft furnace and the arc furnace together (an estimate). */
+    public static final double HYDROGEN_MWH_A_TONNE = 3.48;
+
+    /** The kilograms of hydrogen a tonne of iron takes by the chemistry, 54 (FE4's note, research-near-future 3). */
+    public static final double HYDROGEN_KG_A_TONNE = 54;
+
+    /** The kilowatt-hours an electrolysis system takes to make a kilogram of hydrogen today, 55 (61% of the fuel's energy): the US energy department's 2022 status for PEM electrolysis, its page of 29 May 2026 (research-speculative X8). HYDROGEN_MWH_A_TONNE holds it. */
+    public static final double ELECTROLYSIS_KWH_A_KG = 55;
+
+    /** The figure FE10's electrolysers reach, 46 (72%): the same page's ultimate target for the whole system. The page gives it no year, and the row's date is the study's own (R6d, research-speculative 3.2). */
+    public static final double ELECTROLYSIS_KWH_A_KG_FE10 = 46;
+
+    /** The megawatt-hours a tonne of steel FE10's electrolysers save: HYDROGEN_KG_A_TONNE kilograms at ELECTROLYSIS_KWH_A_KG less ELECTROLYSIS_KWH_A_KG_FE10 each, 0.486 (calc). */
+    public static final double HYDROGEN_MWH_SAVED_A_TONNE = HYDROGEN_KG_A_TONNE * (ELECTROLYSIS_KWH_A_KG - ELECTROLYSIS_KWH_A_KG_FE10) / 1000;
+
+    /**
+     * The Hydrogen Steel Works that carry FE10's electrolysers (R6d): EquipmentForms sets it from the stacks' counts, in a city founded the 1900 way only
+     * (a city founded today's way never knows FE10, and it is 0 there). Not saved: the counts are.
+     */
+    private long electrolyserWorks;
+
+    /** The draw the buildings' templates sum to, before FE10's saving: kept so that a count set after the month's sum can take its saving off the same figure. NaN until EconomyManager has set one. */
+    private double drawBeforeSaving = Double.NaN;
+
+    /** The grid units a month's draw one Hydrogen Steel Works saves at nameplate with FE10's electrolysers: its steel a month at HYDROGEN_MWH_SAVED_A_TONNE, in the units the sectors are billed (HydroSites.KWH_PER_UNIT). */
+    public static double unitsSavedAWorks(BuildingsTemplate t) {
+        return t == null ? 0 : t.makes(Good.STEEL) * HYDROGEN_MWH_SAVED_A_TONNE * 1000 / HydroSites.KWH_PER_UNIT;
+    }
+
+    /** Sets how many Hydrogen Steel Works carry FE10's electrolysers (never below 0) and takes their saving off the month's draw. */
+    public void setElectrolyserWorks(long n) {
+        long was = electrolyserWorks;
+        electrolyserWorks = Math.max(0, n);
+        if (was != electrolyserWorks && !Double.isNaN(drawBeforeSaving)) setElectricityConsumption(drawBeforeSaving);
+    }
+
+    public long getElectrolyserWorks() { return electrolyserWorks; }
+
+    /** The grid units the fitted works save at nameplate: 0 with none fitted. */
+    public double getElectrolyserUnitsSaved() {
+        return electrolyserWorks > 0 && buildings != null ? electrolyserWorks * unitsSavedAWorks(buildings.getTemplate(HYDROGEN_WORKS)) : 0;
+    }
+
+    /** What the works with FE10's electrolysers save the GRID at nameplate: getElectrolyserUnitsSaved() less the part of the sector's draw its steam form turns on site (1 - getSteamShare()), the draw the sector is billed on and the city's demand is struck on. */
+    public double getGridUnitsSaved() {
+        double saved = getElectrolyserUnitsSaved();
+        return getSteamShare() > 0 ? saved * (1 - getSteamShare()) : saved;
+    }
+
+    /**
+     * The sector's draw at nameplate: the buildings' (EconomyManager.setElectricityConsumption()) less what the works with FE10's electrolysers
+     * save, kept at 0 or more. With none fitted, every city founded today's way, the buildings' own figure, to the bit.
+     */
+    @Override
+    public void setElectricityConsumption(double kw) {
+        drawBeforeSaving = kw;
+        super.setElectricityConsumption(electrolyserWorks > 0 ? Math.max(0, kw - getElectrolyserUnitsSaved()) : kw);
+    }
+
     public HeavyIndustry() {
         super("Heavy Industry", "Iron & Steel", BuildingType.HEAVY_INDUSTRY);
         makes(Good.STEEL);
@@ -124,10 +203,13 @@ public final class HeavyIndustry extends ProcessingSector {
         uses(Good.THERMAL_COAL);
         uses(Good.LIMESTONE);
         uses(Good.LIME);
+        // ...and R6b's (FE4): the Hydrogen Steel Works takes the pelletising plants' pellets, captive - the plants' to the works first.
+        uses(Good.PELLETS);
         blurb("Makes steel: arc furnaces melt scrap, and since the integrated route "
                 + "blast furnaces smelt ore with coke into pig iron for an oxygen shop. "
                 + "Sorts the city's old steel into scrap at its yards, and sells the grid "
-                + "the power its ovens and furnaces make from their gas. Builds whichever "
+                + "the power its ovens and furnaces make from their gas; where it is known, "
+                + "a hydrogen works makes steel from pellets and power alone. Builds whichever "
                 + "works pays most on its whole cost: where the city imports steel, and "
                 + "where its own ore and scrap are cheap.");
     }

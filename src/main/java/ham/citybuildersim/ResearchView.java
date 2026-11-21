@@ -25,8 +25,9 @@ import java.util.Map;
  * HistorySave keeps it (researchersKey(), RESEARCH_SPEND, EQUIPMENT_FITTED).
  *
  * ONLY A CITY FOUNDED THE 1900 WAY HAS ANYTHING TO SHOW (Game.foundedUnfitted(); Research's and Recipes' headers say the same). In a city founded the
- * default way every discovery is known from the start, nothing arrives, nothing is chosen and nothing is unfitted, so every list here is empty, every
- * origin null and knownAtFounding() the whole catalogue: the screens then draw nothing new, and every city a player has played keeps its screens.
+ * default way every discovery but the near future's (R6b's call 1) is known from the start, nothing arrives, nothing is chosen and nothing is unfitted, so
+ * every list here is empty, every origin null and knownAtFounding() the catalogue less the near future's: the screens then draw nothing new, and every city
+ * a player has played keeps its screens.
  *
  * TWO LAYERS, as EquipmentFit and Recipes are: the cores that take a catalogue, a research and a month (package-private) let a harness put the city at
  * any month and the catalogue at any shape; the public reads take the game and pass its own.
@@ -117,12 +118,36 @@ public final class ResearchView {
     }
 
     /**
-     * How many discoveries the city knew at the founding: the entries history dates at FIRST_MONTH or before in a city founded the 1900 way, and the whole
-     * catalogue in a city founded the default way, which "founded knowing all N".
+     * How many discoveries the city knew at the founding: the entries history dates at FIRST_MONTH or before in a city founded the 1900 way, and in a city
+     * founded the default way every entry that is not the near future's (Entry.isNearFuture(), R6b's call 1), which "founded knowing all N".
      */
     public static int knownAtFounding(Game game) {
         ResearchCatalog catalogue = ResearchCatalog.get();
-        return game.foundedUnfitted() ? knownAtFounding(catalogue, game.getResearch()) : catalogue.entries().size();
+        return game.foundedUnfitted() ? knownAtFounding(catalogue, game.getResearch()) : catalogue.entries().size() - nearFutureCount();
+    }
+
+    /** How many of the catalogue's discoveries are the near future's (Entry.isNearFuture()): the ones a city founded the default way never knows. */
+    public static int nearFutureCount() {
+        int n = 0;
+        for (Entry e : ResearchCatalog.get().entries()) if (e.isNearFuture()) n++;
+        return n;
+    }
+
+    /**
+     * What the Research screens say of a city founded the default way, for each to finish: "founded knowing all 91 of the catalogue's discoveries dated
+     * before January 2025; the near future's 3 come only to a city founded the 1900 way".
+     */
+    public static String foundedKnowingWords(Game game) {
+        return "founded knowing all " + knownAtFounding(game) + " of the catalogue's discoveries dated before " + CityCalendar.format(ResearchCatalog.NEAR_FUTURE)
+                + "; the near future's " + nearFutureCount() + " come only to a city founded the 1900 way";
+    }
+
+    /**
+     * A date's words with the entry's mark after them in brackets ("from abroad, June 2028 (projected, 2027-2030)"), and the words alone for a history row
+     * or no entry, so that no screen prints a projection as history (the study's rule 5).
+     */
+    public static String marked(Entry entry, String words) {
+        return entry == null || entry.mark().isEmpty() ? words : words + " (" + entry.mark() + ")";
     }
 
     /** How many of the discoveries came by a source. */
@@ -167,15 +192,15 @@ public final class ResearchView {
 
     /**
      * One entry for each discovery of the timeline, oldest first, of kind FLAG_KIND at the discovery's month: "Found here: Electric arc steel furnace,
-     * 0.8 years before the world" (one decimal, and always "years") or "From abroad: Electric arc steel furnace". They are NOT put into the decision
+     * 0.8 years before the world" (one decimal, and always "years") or "From abroad: Electric arc steel furnace", each with the mark of a projected row after it (marked()). They are NOT put into the decision
      * log - a discovery is not a decision - and the chart is handed them beside the log's flags (ChartModel.flags(DecisionLog, List)).
      */
     public static List<DecisionLog.Entry> flagEntries(Game game) {
         List<DecisionLog.Entry> out = new ArrayList<>();
         for (Discovery d : timeline(game)) {
-            String words = d.source() == Source.HERE
+            String words = marked(d.entry(), d.source() == Source.HERE
                     ? String.format(Locale.ROOT, "Found here: %s, %.1f years before the world", d.entry().name(), d.yearsAhead())
-                    : "From abroad: " + d.entry().name();
+                    : "From abroad: " + d.entry().name());
             out.add(new DecisionLog.Entry(d.month(), FLAG_KIND, words));
         }
         return out;
@@ -190,11 +215,11 @@ public final class ResearchView {
      * the piece, how many are being fitted now, the verdict on the piece (the same call the Fit pill makes) and the discovery that made the piece known
      * (null when it was known at the founding or by a year).
      */
-    public record PieceRow(BuildingsTemplate template, Equipment piece, int buildings, int unfitted, int onSite, EquipmentFit.Verdict verdict,
+    public record PieceRow(BuildingsTemplate template, Equipment piece, long buildings, long unfitted, long onSite, EquipmentFit.Verdict verdict,
                            Discovery from) {
 
         /** The buildings that carry the piece: the buildings less those that lack it. */
-        public int fitted() {
+        public long fitted() {
             return buildings - unfitted;
         }
 
@@ -205,7 +230,7 @@ public final class ResearchView {
     }
 
     /** One stack's piece, before it is judged: what both equipment() and fittedShare() read. */
-    private record Standing(BuildingsStacks stack, Equipment piece, int buildings, int unfitted) { }
+    private record Standing(BuildingsStacks stack, Equipment piece, long buildings, long unfitted) { }
 
     /** The pieces standing in the city's stacks, known at the city's month, in the templates' order and each template's pieces' order; `sectorKey` null is the whole city. */
     private static List<Standing> standing(Game game, String sectorKey) {
@@ -275,7 +300,7 @@ public final class ResearchView {
      * unfitted part that chose it, as Recipes.apply() weighs them; 0 for one known and not chosen) and the discovery that made it known (null when it
      * was known at the founding or by a year).
      */
-    public record RecipeUse(BuildingsTemplate template, Recipe recipe, int running, int buildings, Discovery from) {
+    public record RecipeUse(BuildingsTemplate template, Recipe recipe, long running, long buildings, Discovery from) {
 
         /** The share of the stack that runs the recipe, 0 to 1 (the bar on the Found page): running over the buildings, 0 where there are none. */
         public double share() {
@@ -285,7 +310,8 @@ public final class ResearchView {
 
     /**
      * The recipes in use, in a city founded the 1900 way: for each template with a choice of recipes and a stack of buildings, each of its recipes other
-     * than the default that is known at the city's month. `running` counts the buildings of the parts that run it: the fitted part is the stack's quantity
+     * than the default that is known at the city's month, resolving selected independent variants from their saved ids.
+     * `running` counts the buildings of the parts that run it: the fitted part is the stack's quantity
      * less its unfitted count of the template's recipe piece, the unfitted part that count, and a template with no recipe piece is all one part (the
      * way Recipes.apply() counts them), as chosen by Recipes.chosen(). Empty in a city founded the default way.
      */
@@ -300,13 +326,27 @@ public final class ResearchView {
             if (!t.hasRecipeChoice()) continue;
             BuildingsStacks stack = buildings.getStack(t);
             if (stack == null || stack.getQuantity() <= 0) continue;
-            int quantity = stack.getQuantity();
+            long quantity = stack.getQuantity();
             String piece = t.recipePieceId();
-            int unfitted = piece == null ? 0 : Math.min(quantity, stack.getUnfitted(piece));
+            long unfitted = piece == null ? 0 : Math.min(quantity, stack.getUnfitted(piece));
             String[] picked = game.getRecipes().chosen(t.getId());
-            for (Recipe r : t.getRecipes()) {
+            // Retain known alternatives at zero; resolve the saved variant for any selected base.
+            Map<String, Recipe> variants = new java.util.LinkedHashMap<>();
+            for (Recipe base : t.getRecipes()) {
+                boolean selected = false;
+                if (picked != null) for (String id : picked) {
+                    if (!id.equals(base.getId()) && !id.startsWith(base.getId() + "~")) continue;
+                    Recipe variant = t.getRecipe(id);
+                    if (variant != null) {
+                        variants.put(variant.getId(), variant);
+                        selected = true;
+                    }
+                }
+                if (!selected) variants.put(base.getId(), base);
+            }
+            for (Recipe r : variants.values()) {
                 if (r.isDefault() || !r.knownAt(month, research)) continue;
-                int running = 0;
+                long running = 0;
                 if (picked != null && picked[0].equals(r.getId())) running += quantity - unfitted;
                 if (picked != null && picked[1].equals(r.getId())) running += unfitted;
                 out.add(new RecipeUse(t, r, running, quantity, found.get(r.getSince())));
@@ -381,6 +421,69 @@ public final class ResearchView {
         return t != null && t.getResearches() != null;
     }
 
+    /* ----- the licence line (FB13, R5-L; research-design 2.4, mockup 5) ----- */
+
+    /** What a building's licence is: patents running on one more of it, or - with none running - found here, found here since, not patented, or its patent ended. */
+    public enum LicenceKind { HERE, OWN, FREE, UNDER, ENDED }
+
+    /**
+     * What one more of a building owes for its patents (R2c, R2c-P), read from LicenceFees.rentOnNew(), the reckoning the planners' running cost sums: its
+     * kind, the patents that are running among those the bill is made of (the building's own, its recipe's, a fitted piece's), the soonest to end first,
+     * what the licence costs a month (the rent's; 0 where it adds nothing now), and the entry of the building's own discovery where it has one (null for a
+     * building known by a year, whose pieces' patents may still run).
+     */
+    public record Licence(LicenceKind kind, java.util.List<LicenceFees.Patent> patents, double perMonth, Entry entry) {
+
+        /** The month the building's own patent ends (history's date and LicenceFees.TERM_MONTHS); 0 where it has no entry or none to end. */
+        public int ownEnds() { return entry == null || !entry.fee() ? 0 : entry.worldMonth() + LicenceFees.TERM_MONTHS; }
+    }
+
+    /**
+     * The licence of a template in a city founded the 1900 way, or null where its card has no line (a city founded the default way, and a building
+     * with no patent running and no discovery of its own to say it was found here). UNDER wherever LicenceFees.rentOnNew() has a patent due - the
+     * building's or a recipe's or a piece's, so a building known by a year with a patented piece has its line too - and, with none due, by the building's
+     * own discovery: HERE where the city found it before history's date, OWN where it has found it since, FREE where the entry is not patented, ENDED
+     * once its patent has run out.
+     */
+    public static Licence licence(Game game, BuildingsTemplate t) {
+        if (!game.foundedUnfitted()) return null;
+        LicenceFees.Rent rent = LicenceFees.rentOnNew(game, t);
+        Origin o = origin(game, t);
+        Entry e = o == null ? null : o.entry();
+        if (!rent.patents().isEmpty()) return new Licence(LicenceKind.UNDER, rent.patents(), rent.perMonth(), e);
+        if (e == null) return null;
+        if (o.source() == Source.HERE) return new Licence(LicenceKind.HERE, java.util.List.of(), 0, e);
+        if (!e.fee()) return new Licence(LicenceKind.FREE, java.util.List.of(), 0, e);
+        return new Licence(game.getMonth() >= e.worldMonth() + LicenceFees.TERM_MONTHS ? LicenceKind.ENDED : LicenceKind.OWN, java.util.List.of(), 0, e);
+    }
+
+    /** The world's share as the line says it: "a quarter" for LicenceFees.SHARE's .25, else a percentage. */
+    public static String shareWords() {
+        return LicenceFees.SHARE == .25 ? "a quarter" : Math.round(LicenceFees.SHARE * 100) + "%";
+    }
+
+    /**
+     * The card's line on its licence (mockup 5): "Licence: a quarter of what it adds goes abroad until June 1975, about D$1.17M a month." while one patent
+     * runs, "... on 3 patents, the first ending June 1975 and the last March 1991, ..." while several do, "Licence: none. Found by the Institute of technology;
+     * your builders pay no fee, ever." for what the city found first, and the rest in the same shape. `money` writes the month's fee in the screen's money
+     * (thousands in); the fee is left out where it is nothing.
+     */
+    public static String licenceWords(Licence l, java.util.function.DoubleFunction<String> money) {
+        return switch (l.kind()) {
+            case HERE -> "Licence: none. Found by " + l.entry().field().school() + "; your builders pay no fee, ever.";
+            case OWN -> "Licence: none now. Your researchers have found it themselves, so your builders pay no fee.";
+            case FREE -> "Licence: none. It is not patented.";
+            case ENDED -> "Licence: none now. The patent ended " + CityCalendar.format(l.ownEnds()) + ".";
+            case UNDER -> {
+                java.util.List<LicenceFees.Patent> p = l.patents();
+                int first = p.get(0).endsMonth(), last = p.get(p.size() - 1).endsMonth();
+                String until = p.size() == 1 ? "until " + CityCalendar.format(first)
+                        : "on " + p.size() + " patents, the first ending " + CityCalendar.format(first) + (last != first ? " and the last " + CityCalendar.format(last) : "");
+                yield "Licence: " + shareWords() + " of what it adds goes abroad " + until + (l.perMonth() > 0 ? ", about " + money.apply(l.perMonth()) + " a month" : "") + ".";
+            }
+        };
+    }
+
     /* =====================================================================
        THE LAID-ON AXIS AND WHAT IS STILL TO COME (R3b, from R5's gate review: the Found page worked these out itself)
        ===================================================================== */
@@ -408,8 +511,9 @@ public final class ResearchView {
         return Math.max(0, all - knownAtFounding - here - abroad);
     }
 
-    /** How many of the catalogue's discoveries are still to come in the city: those history has not yet dated and the city has not found, in a city founded the 1900 way; none in any other. */
+    /** How many of the catalogue's discoveries are still to come in the city: those history has not yet dated and the city has not found, in a city founded the 1900 way; none in any other (the near future's come to no city founded the default way). */
     public static int stillToCome(Game game) {
+        if (!game.foundedUnfitted()) return 0;
         List<Discovery> timeline = timeline(game);
         return stillToCome(ResearchCatalog.get().entries().size(), knownAtFounding(game), count(timeline, Source.HERE), count(timeline, Source.ABROAD));
     }
@@ -419,7 +523,7 @@ public final class ResearchView {
        ===================================================================== */
 
     /** A school standing that hosts a field's research, by its template's name and how many of it stand. */
-    public record SchoolCount(String name, int count) { }
+    public record SchoolCount(String name, long count) { }
 
     /**
      * One field on the Overview page: its researchers (the city's own and the labs'), the idle among them, the problems open to them and what those
@@ -585,7 +689,7 @@ public final class ResearchView {
      * part of the grant they did not use, the labs standing and on site and the least prize that would bring one (NaN where none could be).
      */
     public record Funding(Field field, double grant, double prize, int posts, int grantPosts, double room, double postCost, double grantToFillRoom,
-                          double faculty, double postResearchers, double bill, double unspent, int labsStanding, int labsOnSite, double labThreshold) {
+                          double faculty, double postResearchers, double bill, double unspent, long labsStanding, long labsOnSite, double labThreshold) {
 
         /** The posts the field's pot bought beyond the grant (Research.strikePosts()). */
         public int potPosts() {
@@ -677,7 +781,7 @@ public final class ResearchView {
     }
 
     /** One field's dial card as it stands (the core), the labs being the ones standing and on site. */
-    static Funding funding(Pieces p, Field f, int labsStanding, int labsOnSite) {
+    static Funding funding(Pieces p, Field f, long labsStanding, long labsOnSite) {
         Research r = p.research();
         double cost = Research.postCost(f, p.wages()), room = roomOf(p, f), grant = r.grant(f);
         int posts = r.posts(f), grantPosts = r.grantPosts(f);
@@ -891,7 +995,7 @@ public final class ResearchView {
     }
 
     /** The researchers that `labs` Research Labs give once they are staffed: Research.LAB_POSTS posts each. */
-    public static int labPosts(int labs) {
+    public static long labPosts(long labs) {
         return Math.max(0, labs) * Research.LAB_POSTS;
     }
 
@@ -928,7 +1032,7 @@ public final class ResearchView {
      */
     public record Card(Field field, FieldReach reach, Funding funding, AtGrant at, boolean researching, double grant, double prize, boolean grantMoved,
                        boolean prizeMoved, int roomPosts, double researchersNow, double researchersAfter, int grantPostsNow, int grantPostsAfter,
-                       double labResearchersNow, double labResearchersAfter, int labsNow, int labsAfter, double billNow, double billAfter,
+                       double labResearchersNow, double labResearchersAfter, long labsNow, long labsAfter, double billNow, double billAfter,
                        double unspentNow, double unspentAfter, double findsNow, double findsAfter, double chanceNow, double chanceAfter) {
 
         /** Whether something is staged on the card. */
@@ -972,7 +1076,7 @@ public final class ResearchView {
         double grant = stagedGrant == null ? r.grant(f) : stagedGrant, prize = stagedPrize == null ? r.prize(f) : stagedPrize;
         boolean grantMoved = stagedGrant != null && stagedGrant != r.grant(f), prizeMoved = stagedPrize != null && stagedPrize != r.prize(f);
         AtGrant at = atGrant(p, f, grant);
-        int labsAfter = prizeMoved ? afterResult.labsFirstMonth(f) : fu.labsStanding();
+        long labsAfter = prizeMoved ? afterResult.labsFirstMonth(f) : fu.labsStanding();
         double labsNowResearchers = reach.labResearchers();
         double labsAfterResearchers = labsAfter == fu.labsStanding() ? labsNowResearchers : labPosts(labsAfter);
         double unspentAfter = Math.max(0, grant - Research.bill(f, at.grantPosts(), p.wages(), p.fill()));
@@ -1029,14 +1133,14 @@ public final class ResearchView {
     }
 
     /** A hosting kind of school standing in the city, as the Overview lists it: its name, how many stand and what it carries. */
-    public record SchoolRow(EducationType kind, String name, int count, List<SchoolPosts> posts) { }
+    public record SchoolRow(EducationType kind, String name, long count, List<SchoolPosts> posts) { }
 
     /** The kinds of school that host research and stand in the city, in the education kinds' order. */
     public static List<SchoolRow> schoolRows(Game game) {
         List<SchoolRow> out = new ArrayList<>();
         for (EducationType kind : EducationType.values()) {
             if (!hostsResearch(kind)) continue;
-            int count = 0;
+            long count = 0;
             String name = null;
             for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
                 if (stack.getBuilding().getTeaches() != kind || stack.getQuantity() <= 0) continue;

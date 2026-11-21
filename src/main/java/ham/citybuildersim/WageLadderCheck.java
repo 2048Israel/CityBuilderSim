@@ -166,8 +166,8 @@ public class WageLadderCheck {
         check("...and every job's wage in the market PayTier's (the base is the floor times a ratio: to a part in 10^12)", marketWages, "worst " + worst);
         check("...its rents the rent for PayTier's unskilled wage", Double.compare(homes.getRentPrice(), RealEstate.rentFor(PayTier.UNSKILLED.getMonthlyWage())) == 0
                 && Double.compare(homes.getStudioRentPrice(), RealEstate.rentFor(PayTier.UNSKILLED.getMonthlyWage())) == 0);
-        double grant = tax.isOpen(PolicyDates.Lever.STUDENT_AID) ? TaxPolicy.DEFAULT_FIXED_GRANT : 0;
-        check("...its grant the default fixed grant (held at zero while the student-aid lever is shut) and its pension's wage base PayTier's unskilled wage, to the bit",
+        double grant = 0;
+        check("...its grant zero (student aid opens at zero, as every promise does since OP1) and its pension's wage base PayTier's unskilled wage, to the bit",
                 tax.getGrantBasis() == TaxPolicy.GrantBasis.FIXED && Double.compare(tax.getGrantAmount(), grant) == 0
                         && Double.compare(tax.foundingPensionWage(), PayTier.UNSKILLED.getMonthlyWage()) == 0,
                 tax.getGrantAmount() + " vs " + grant + ", " + tax.foundingPensionWage());
@@ -211,15 +211,16 @@ public class WageLadderCheck {
                         && market.getMinimumWage() >= market.getMinSettable() && market.getMinimumWage() <= market.getMaxSettable());
         check("the rents are the rent for the 1901 anchor", Double.compare(homes.getRentPrice(), RealEstate.rentFor(anchor)) == 0
                 && Double.compare(homes.getStudioRentPrice(), RealEstate.rentFor(anchor)) == 0, homes.getRentPrice() + " vs " + RealEstate.rentFor(anchor));
-        double grant = tax.isOpen(PolicyDates.Lever.STUDENT_AID) ? TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * anchor : 0;
-        check("the grant is held at zero while the student-aid lever is shut, else the default share of the anchor; the pension's wage base is the anchor",
+        double grant = 0;
+        check("the grant opens at zero (student aid opens as every promise does since OP1); the pension's wage base is the anchor",
                 tax.getGrantBasis() == TaxPolicy.GrantBasis.FIXED && Double.compare(tax.getGrantAmount(), grant) == 0
                         && Double.compare(tax.foundingPensionWage(), anchor) == 0,
                 tax.getGrantAmount() + " vs " + grant + ", pension " + tax.foundingPensionWage());
         TaxPolicy open = new TaxPolicy();
         open.foundOn(WageLadder.Y1901);
-        check("...and a policy with the lever open founded on 1901's has the default share of the anchor for its grant",
-                open.isOpen(PolicyDates.Lever.STUDENT_AID) && Double.compare(open.getGrantAmount(), TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * anchor) == 0
+        open.reset();
+        check("...and a policy founded on 1901's and put back to its defaults (reset()) has the default share of the anchor for its grant",
+                Double.compare(open.getGrantAmount(), TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * anchor) == 0
                         && Double.compare(open.foundingPensionWage(), anchor) == 0, open.getGrantAmount() + "");
         check("a pension is the replacement rate times the anchor", Double.compare(tax.pensionPerSenior(), tax.getPensionReplacement() * anchor) == 0,
                 tax.pensionPerSenior() + " vs " + tax.getPensionReplacement() * anchor);
@@ -403,8 +404,31 @@ public class WageLadderCheck {
 
         boolean finite = true, positive = true, floorHolds = true;
         String bad = null;
+        // The unskilled wage followed month by month (CU2): each month's move is the market's rule on 1901's base - ADJUST_RATE of the way to
+        // the base times the curve's multiple at its band's tightness (LabourMarket, THE MODEL), the floor under it - so a rise is scarcity.
+        LabourMarket lm = g.getLabourMarket();
+        JobType unskilled = JobType.NO_DIPLOMA;
+        WageBand unskilledBand = WageBand.of(unskilled);
+        double worstMiss = 0, mostMultiple = 0;
+        boolean onBase = true, onCurve = true;
+        String off = null;
         for (int m = 1; m <= 24; m++) {
+            double before = lm.getWage(unskilled);
             step(g, 1);
+            double base = lm.baseWage(unskilled), tight = lm.getTightness(unskilledBand), curve = lm.getBandMultiple(unskilledBand);
+            if (Math.abs(lm.getGoingRate() / WageLadder.Y1901.monthlyWage(PayTier.UNSKILLED) - 1) > 1e-12
+                    || Double.compare(lm.ratio(unskilled), WageLadder.Y1901.ratio(unskilled)) != 0) {
+                onBase = false;
+                if (off == null) off = "month " + m + ": going rate " + lm.getGoingRate() + ", ratio " + lm.ratio(unskilled);
+            }
+            if (Double.compare(curve, tight > 0 ? LabourMarket.multipleAt(tight) : LabourMarket.MIN_MULTIPLE) != 0) {
+                onCurve = false;
+                if (off == null) off = "month " + m + ": multiple " + curve + " at tightness " + tight;
+            }
+            double aimed = base * Math.min(LabourMarket.MAX_MULTIPLE, curve * lm.getLicenceMultiple(unskilled));
+            double moved = before + (aimed - before) * LabourMarket.ADJUST_RATE, now = lm.getWage(unskilled);
+            worstMiss = Math.max(worstMiss, Math.min(Math.abs(now - moved), Math.abs(now - Math.max(moved, lm.cashMinimumWage()))) / now);
+            mostMultiple = Math.max(mostMultiple, curve);
             for (JobType job : JobType.values()) {
                 double w = g.getLabourMarket().getWage(job), p = people.getWagesPerType()[job.ordinal()];
                 if (!(w > 0) || !(p > 0)) { positive = false; if (bad == null) bad = "month " + m + " " + job + " " + w + " / " + p; }
@@ -418,7 +442,17 @@ public class WageLadderCheck {
         check("...with the rent and the floor positive and finite", floorHolds, bad);
         check("...the city still on 1901's ladder, its allocator's bases unchanged", g.getLabourMarket().getLadder() == WageLadder.Y1901 && people.getLadder() == WageLadder.Y1901
                 && Double.compare(people.getBandBase(WageBand.DIPLOMA), WageLadder.Y1901.ratio(JobType.DIPLOMA)) == 0);
-        double share = g.getLabourMarket().getWage(JobType.NO_DIPLOMA) / WageLadder.TODAY.monthlyWage(PayTier.UNSKILLED);
-        check("...and its unskilled wage still under half of today's after two years' scarcity", share > 0 && share < .5, String.valueOf(share));
+        // CU2: "under half of today's" was the share main's village reached (.34 at month 24, .45 at its most), not a bound the model keeps. On
+        // the chained world prices the village grows to 2,501 people in the two years (main's 1,358), and its shortage lifts the wage to .60 of
+        // today's at month 13. What the ladder keeps is the cause: the wage on 1901's base, moved only by the curve at the band's tightness,
+        // asserted above month by month (REV-CU2-1). The share is printed, the finding; CU2-W asks Jerus whether a 1900 village may earn it.
+        double base1901 = WageLadder.Y1901.monthlyWage(PayTier.UNSKILLED), wage = lm.getWage(unskilled);
+        double share = wage / WageLadder.TODAY.monthlyWage(PayTier.UNSKILLED);
+        out.printf(java.util.Locale.ROOT, "      the unskilled wage after 24 months: %.3f of today's, %.2f times 1901's base (itself %.3f of today's); the curve's"
+                + " multiple %.2f at the band's tightness %.2f, %.2f at its most%n", share, wage / base1901, base1901 / WageLadder.TODAY.monthlyWage(PayTier.UNSKILLED),
+                lm.getBandMultiple(unskilledBand), lm.getTightness(unskilledBand), mostMultiple);
+        check("...and its unskilled wage risen by scarcity alone: every month on 1901's base (its going rate and ratio), the band's multiple the curve's at its"
+                + " tightness, the wage moved ADJUST_RATE of the way to the two (worst miss " + String.format(java.util.Locale.ROOT, "%.1e", worstMiss) + ")",
+                onBase && onCurve && worstMiss <= 1e-9 && wage > 0, off);
     }
 }

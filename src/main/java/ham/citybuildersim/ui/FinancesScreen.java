@@ -194,7 +194,7 @@ final class FinancesScreen {
      * blurb behind the tile's (i).
      */
     record Instrument(String key, String name, String short_,
-                              int[] terms, double rounding,
+                              int[] terms,
                               String unit, String blurb, String colour, String range, String line) { }
 
     /**
@@ -210,25 +210,25 @@ final class FinancesScreen {
      * spec 2.7).
      */
     static final Instrument[] INSTRUMENTS = {
-        new Instrument("Note", "Bills", "BILL", ShortTermTBill.TERMS, 1000, "months",
+        new Instrument("Note", "Bills", "BILL", ShortTermTBill.TERMS, "months",
                 "Sold at a discount to the face and repaid at the face: the buyer's return is the difference, so a "
                 + "bill pays no coupon, costs nothing monthly and everything at once. Sold at auction at 1, 3, 6 or "
                 + "12 months, each sale its own line, never reopened.",
                 Palette.LADDER[0], "1–12 months", "At a discount: no coupon."),
-        new Instrument("Term", "Bonds", "BOND", LongTermBond.MATURITIES, 100000, "years",
+        new Instrument("Term", "Bonds", "BOND", LongTermBond.MATURITIES, "years",
                 "A coupon every month on the whole face and the whole face at the end. A new line's coupon is the "
                 + "auction's yield rounded down to an eighth of a point, so it sells just under 100; a sale at a term "
                 + "whose line still has " + pc(Auction.BENCHMARK_LIFE) + " of its life left reopens that line, at its "
                 + "coupon and its date, at today's price. Sold at 2, 5, 10, 20, 30 or 50 years.",
                 Palette.LADDER[2], "2–50 years", "The market's coupon, near par; lines reopen."),
-        new Instrument("Serial", "Amortizing", "AMORTIZING", MediumTermBond.YEARS, 10000, "years",
+        new Instrument("Serial", "Amortizing", "AMORTIZING", MediumTermBond.YEARS, "years",
                 "The face is repaid in equal yearly slices and one coupon, the auction's yield itself, is paid "
                 + "monthly on what is left, so the debt and the coupon shrink together and nothing falls due in a "
                 + "lump. Sold at 5 to 30 years in fives, each sale its own line, never reopened.",
                 Palette.LADDER[1], "5–30 years", "Repaid in yearly slices, on one coupon."),
         // CD5: the floating-rate note and the inflation-linked bond. The ladder draws both as bonds, so their tiles
         // are cousins of the bonds' blue (not Palette.LADDER's, which stays three) and differ from every other tile.
-        new Instrument("Float", "Floating", "FLOATING", FloatingRateNote.MATURITIES, 100000, "years",
+        new Instrument("Float", "Floating", "FLOATING", FloatingRateNote.MATURITIES, "years",
                 "A coupon every month on the whole face and the whole face at the end, as a bond's - but the coupon "
                 + "is the policy rate of the month plus a margin the sale fixes, never under nothing. The margin is "
                 + "what prices the note at 100 on today's curve, plus the tail the auction cleared at, so a note "
@@ -236,7 +236,7 @@ final class FinancesScreen {
                 + "costs it more every month, a fall costs it less. Sold at 2 or 5 years, each sale its own line, "
                 + "never reopened, at home only.",
                 Palette.REVENUE_RAMP[3], "2 or 5 years", "The dial each month, plus a fixed margin."),
-        new Instrument("Linked", "Linked", "LINKED", InflationLinkedBond.MATURITIES, 100000, "years",
+        new Instrument("Linked", "Linked", "LINKED", InflationLinkedBond.MATURITIES, "years",
                 "A real coupon every month on a principal that follows the city's price index, and at the end the "
                 + "indexed principal - never less than the face: if prices end lower than they began, the city still "
                 + "repays what it borrowed. The real coupon is what prices the bond at 100 on the inflation the "
@@ -295,6 +295,11 @@ final class FinancesScreen {
     static Instrument instrument(String key) {
         for (Instrument i : INSTRUMENTS) if (i.key().equals(key)) return i;
         return INSTRUMENTS[1];
+    }
+
+    /** The instrument's lot in the paper's own money at the month shown. */
+    double lot(Instrument kit, boolean foreign) {
+        return ham.citybuildersim.BondMarket.issueLot(ui.game, kit.key(), foreign ? borrowMoney : null);
     }
 
     /** The auction's name for an instrument's kind of paper. */
@@ -661,9 +666,9 @@ final class FinancesScreen {
         String rest = Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;";
         l.setStyle(l.isHover() ? rest + " -fx-underline: true;" : rest);
         l.setMinWidth(Region.USE_PREF_SIZE);
-        l.setOnMouseEntered(e -> l.setStyle(rest + " -fx-underline: true;"));
-        l.setOnMouseExited(e -> l.setStyle(rest));
-        l.setOnMouseClicked(e -> {
+        Kept.give(l.onMouseEnteredProperty(), e -> l.setStyle(rest + " -fx-underline: true;"));
+        Kept.give(l.onMouseExitedProperty(), e -> l.setStyle(rest));
+        Kept.give(l.onMouseClickedProperty(), e -> {
             e.consume();
             go.run();
         });
@@ -960,7 +965,7 @@ final class FinancesScreen {
         if (nothing) return new Gain(d(0), "", Palette.TEXT_BODY);
         double p = Math.abs(share) * 100;
         String pct = !Double.isFinite(share) || p < 0.005 ? ""
-                : String.format(p >= 0.05 ? "%s%,.1f%%" : "%s%.2f%%", share < 0 ? "−" : "+", p);
+                : Formats.INSTANCE.change(share, 0, p >= 0.05 ? "%+,.1f%%" : "%+.2f%%").replace('-', '−');
         return new Gain(signedD(gain), pct, gain > 0 ? Palette.GOOD : Palette.BAD);
     }
 
@@ -1025,16 +1030,16 @@ final class FinancesScreen {
     String perMoney(String code, double rate) { return sym() + fxRate(rate) + " per " + markOf(code).trim(); }
 
     /** A share as a whole per cent: "58%". */
-    static String pc(double share) { return String.format("%.0f%%", share * 100).replace('-', '−'); }
+    static String pc(double share) { return Formats.INSTANCE.percentage(share, "%.0f%%").replace('-', '−'); }
 
     /** ...to one place: "1.5%". */
-    static String pc1(double share) { return String.format("%.1f%%", share * 100).replace('-', '−'); }
+    static String pc1(double share) { return Formats.INSTANCE.percentage(share, "%.1f%%").replace('-', '−'); }
 
     /** Points of a rate, signed: "+0.02 pts". */
     static String pts(double rate) { return String.format("%+.2f pts", rate * 100).replace('-', '−'); }
 
     /** A yield to three places, as an auction stops: "3.602%". */
-    static String pct3(double rate) { return String.format("%.3f%%", rate * 100).replace('-', '−'); }
+    static String pct3(double rate) { return Formats.INSTANCE.percentage(rate, "%.3f%%").replace('-', '−'); }
 
     /** A tail in basis points: "28 bp". */
     static String bp(double rate) { return String.format("%.0f bp", rate * 10_000).replace('-', '−'); }
@@ -1485,9 +1490,9 @@ final class FinancesScreen {
         String rest = "-fx-padding: 2 4 2 4; -fx-background-radius: 4; -fx-cursor: hand;";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set.
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> openLine(debt));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> openLine(debt));
         return row;
     }
 
@@ -1730,7 +1735,7 @@ final class FinancesScreen {
                 resolve.setText("Resolve the bank – " + d(cost));
                 resolve.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                         + " -fx-padding: 6 16 6 16;");
-                resolve.setOnAction(e -> {
+                Kept.give(resolve.onActionProperty(), e -> {
                     g.resolveBank();
                     showFinanceMenu();
                 });
@@ -1898,9 +1903,9 @@ final class FinancesScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand; -fx-border-color: ";
         // Kept (KP5): the edge the pointer calls for is chosen from isHover() where it is set.
         c.setStyle(rest + (c.isHover() ? Palette.ACCENT : Palette.EDGE) + ";");
-        c.setOnMouseEntered(e -> c.setStyle(rest + Palette.ACCENT + ";"));
-        c.setOnMouseExited(e -> c.setStyle(rest + Palette.EDGE + ";"));
-        c.setOnMouseClicked(e -> open(area, null, null));
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(rest + Palette.ACCENT + ";"));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(c.onMouseClickedProperty(), e -> open(area, null, null));
         return c;
     }
 
@@ -2436,7 +2441,7 @@ final class FinancesScreen {
         javafx.scene.layout.ColumnConstraints narrow = new javafx.scene.layout.ColumnConstraints();
         narrow.setPercentWidth(34);
         narrow.setHgrow(Priority.ALWAYS);
-        two.getColumnConstraints().addAll(wide, narrow);
+        Kept.columns(two).addAll(wide, narrow);
         two.setMaxWidth(Double.MAX_VALUE);
         if (left instanceof Region r) GridPane.setFillHeight(r, true);
         if (right instanceof Region r) GridPane.setFillHeight(r, true);
@@ -2582,7 +2587,7 @@ final class FinancesScreen {
         sample.getStrokeDashArray().setAll(java.util.Arrays.stream(dash).boxed().toList());
         javafx.scene.layout.Pane holder = Kept.plain(sample);
         holder.setMinSize(22, 10);
-        holder.setPrefSize(22, 10);
+        Pieces.prefSize(holder, 22, 10);
         holder.setMaxSize(22, 10);
         HBox row = Kept.row(5, holder, captionWords(name));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -2600,7 +2605,7 @@ final class FinancesScreen {
         dot.setStrokeWidth(1.5);
         javafx.scene.layout.Pane holder = Kept.plain(dot);
         holder.setMinSize(10, 10);
-        holder.setPrefSize(10, 10);
+        Pieces.prefSize(holder, 10, 10);
         holder.setMaxSize(10, 10);
         HBox row = Kept.row(5, holder, captionWords(name));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -3256,8 +3261,8 @@ final class FinancesScreen {
         t.setHgap(4);
         t.setVgap(0);
         // The first column takes what a wide window leaves; a narrow one scrolls the table across (acrossWhenNarrow()).
-        t.getColumnConstraints().get(0).setMaxWidth(Double.MAX_VALUE);
-        t.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
+        Kept.columns(t).get(0).setMaxWidth(Double.MAX_VALUE);
+        Kept.columns(t).get(0).setHgrow(Priority.ALWAYS);
         // The headings are words, in the words' face: the figures' face is wider than a heading's column (KP2b: made so, not made in the
         // figures' face and set again).
         if (dollars) gridHead(t, true, "Line", "If closed now", Money.ours() + "'s move since sold", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
@@ -3318,10 +3323,10 @@ final class FinancesScreen {
                 boolean over = false;
                 for (Node h : hot) {
                     over |= h.isHover();
-                    h.setCursor(javafx.scene.Cursor.HAND);
-                    h.setOnMouseClicked(e -> openLine(debt));
-                    h.setOnMouseEntered(e -> bg.setStyle(lit));
-                    h.setOnMouseExited(e -> bg.setStyle(resting));
+                    Kept.give(h.cursorProperty(), javafx.scene.Cursor.HAND);
+                    Kept.give(h.onMouseClickedProperty(), e -> openLine(debt));
+                    Kept.give(h.onMouseEnteredProperty(), e -> bg.setStyle(lit));
+                    Kept.give(h.onMouseExitedProperty(), e -> bg.setStyle(resting));
                 }
                 // The look the pointer calls for is chosen from isHover() where it is set: a pointer that has not moved stays over a kept row.
                 bg.setStyle(over ? lit : resting);
@@ -3402,9 +3407,9 @@ final class FinancesScreen {
         close.setFocusTraversable(false);
         close.setStyle("-fx-font-size: 9px; -fx-padding: 2 4 2 4; -fx-background-radius: 6;");
         Kept.tip(close, "Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part. The figure beside it is at fair; the page shows what the auction would book, at the holders' asks (BB1).", 1000);
-        close.setOnAction(e -> openClose(l.debt()));
+        Kept.give(close.onActionProperty(), e -> openClose(l.debt()));
         // The click is the button's, not the row's: the rest of the row opens the line's page.
-        close.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        Kept.give(close.onMouseClickedProperty(), javafx.scene.input.MouseEvent::consume);
         Label figure = gainFigure(gainOf(l.ifClosedNow(), l.ifClosedNowShare()), Palette.SIZE_BODY);
         figure.setMinWidth(CLOSE_FIGURE);
         figure.setPrefWidth(CLOSE_FIGURE);
@@ -3476,13 +3481,17 @@ final class FinancesScreen {
             parts.add("call from " + CityCalendar.formatShort(bond.getFirstCallMonth()));
         }
         // A phrase at a time, so the line wraps between phrases and never inside one.
-        javafx.scene.layout.FlowPane sub = Kept.flow(0, 0);
-        for (int i = 0; i < parts.size(); i++) {
-            Label part = Kept.label(parts.get(i) + (i < parts.size() - 1 ? " · " : ""));
-            part.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            part.setMinWidth(Region.USE_PREF_SIZE);
-            sub.getChildren().add(part);
-        }
+        // BF1: optional terms must not borrow a numeric cell's retained label.
+        javafx.scene.layout.FlowPane sub = Kept.scope("line-terms", () -> {
+            javafx.scene.layout.FlowPane terms = Kept.flow(0, 0);
+            for (int i = 0; i < parts.size(); i++) {
+                Label part = Kept.label(parts.get(i) + (i < parts.size() - 1 ? " · " : ""));
+                part.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                part.setMinWidth(Region.USE_PREF_SIZE);
+                terms.getChildren().add(part);
+            }
+            return terms;
+        });
         return Kept.column(2, top, sub);
     }
 
@@ -3817,14 +3826,14 @@ final class FinancesScreen {
             closeIt.setStyle(affordable ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
             if (!affordable && taken) Kept.tip(closeIt, "Closing all of it costs " + d(whole.paid()) + "; the treasury has " + d(g.getCash())
                     + ". The page can close part of it.", 1000);
-            closeIt.setOnAction(e -> openClose(debt));
+            Kept.give(closeIt.onActionProperty(), e -> openClose(debt));
             boolean callable = debt instanceof LongTermBond bond && bond.isCallable();
             Button callIt = Kept.of(Button.class, Button::new);
             callIt.setText(callable ? "Call it…" : "Call it · not callable");
             callIt.setMinWidth(Region.USE_PREF_SIZE);
-            callIt.setDisable(!callable);
+            Kept.give(callIt.disableProperty(), !callable);
             // Close it now is where the call is: the page that holds the call card.
-            callIt.setOnAction(e -> openClose(debt));
+            Kept.give(callIt.onActionProperty(), e -> openClose(debt));
             HBox buttons = Kept.row(Palette.GAP, closeIt, callIt);
             buttons.setAlignment(Pos.CENTER_LEFT);
             card.getChildren().add(buttons);
@@ -3995,7 +4004,7 @@ final class FinancesScreen {
         Drawn(double least, double first, double height) {
             this.first = first;
             setMinSize(least, height);
-            setPrefSize(first, height);
+            Pieces.prefSize(this, first, height);
             setMaxSize(Double.MAX_VALUE, height);
         }
 
@@ -4464,6 +4473,7 @@ final class FinancesScreen {
             case BANK       -> Palette.MONEY;
             case FIRMS      -> Palette.BUSINESS_DARK;
             case WORLD      -> Palette.BUILDING_DARK;
+            case UNSETTLED  -> Palette.WARN;
         };
     }
 
@@ -4474,6 +4484,7 @@ final class FinancesScreen {
             case BANK       -> "the bank";
             case FIRMS      -> "the businesses";
             case WORLD      -> "the world";
+            case UNSETTLED  -> "the cancelled sale";
         };
     }
 
@@ -4539,7 +4550,7 @@ final class FinancesScreen {
             if (which == 1) closeFaceText = typed;
             else            closeMaxText = typed;
         }, null);
-        box.setOnAction(e -> showFinanceMenu());
+        Kept.give(box.onActionProperty(), e -> showFinanceMenu());
         // Kept (KP5): the box is the one the last draw made, so the focus listener is added once and reads at its firing what the
         // page was last drawn on, which each draw puts in the box's properties.
         box.getProperties().put(CLOSE_SHOWN, shown);
@@ -4582,6 +4593,8 @@ final class FinancesScreen {
      * holders ask this much over fair, the one that asks the most named with its amount.
      */
     String whyTheyDiffer(Buyback.Result q) {
+        if (q.cancelledFace() > 0) return "The quote returns " + d(q.cancelledCash())
+                + " of original proceeds to cancel the unpaid sale and buys the paid holdings at their holders' offers.";
         if (q.overFair() < BRIDGE_NOTHING) return "The offers taken are at fair, so the two agree.";
         Buyback.Holder most = null;
         for (Buyback.Holder h : Buyback.Holder.values()) if (most == null || q.overFair(h) > q.overFair(most)) most = h;
@@ -4734,7 +4747,7 @@ final class FinancesScreen {
 
         VBox result = Kept.column(6);
         result.getChildren().add(caption("WHAT IT BUYS", null));
-        result.getChildren().add(cardLine("Offered by the holders", d(q.offeredFace())
+        result.getChildren().add(cardLine("Face available to close", d(q.offeredFace())
                 + (asked > 0 && q.offeredFace() > 0 ? String.format(" · %.2f× the face asked", q.cover()) : ""),
                 q.offeredFace() > 0 ? null : Palette.TEXT_MUTED));
         for (Buyback.Holder h : Buyback.Holder.values()) {
@@ -4743,12 +4756,14 @@ final class FinancesScreen {
                 case HOUSEHOLDS -> q.householdFace();
                 case FIRMS -> q.firmFace();
                 case WORLD -> q.worldFace();
+                case UNSETTLED -> q.cancelledFace();
             };
             double hp = switch (h) {
                 case BANK -> q.bankPaid();
                 case HOUSEHOLDS -> q.householdPaid();
                 case FIRMS -> q.firmPaid();
                 case WORLD -> q.worldPaid();
+                case UNSETTLED -> q.cancelledCash();
             };
             if (hf > 0) result.getChildren().add(Kept.scope(h, () -> takenLine(holderName(h), holderColour(h), hf, hp)));
         }
@@ -4765,9 +4780,9 @@ final class FinancesScreen {
         Button buy = Kept.of(Button.class, Button::new);
         buy.setText(taken ? "Buy back " + d(q.takenFace()) + " · pay " + d(q.paid()) : "Buy back");
         buy.setMinWidth(Region.USE_PREF_SIZE);
-        buy.setDisable(!taken || !afford);
+        Kept.give(buy.disableProperty(), !taken || !afford);
         buy.setStyle(taken && afford ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
-        buy.setOnAction(e -> {
+        Kept.give(buy.onActionProperty(), e -> {
             ui.game.buyBack(debt, face, typedMax);
             // A freshly built page: retiring paper moves the rate, so every other card's price is now stale.
             open("The book", null, debt);
@@ -4797,6 +4812,7 @@ final class FinancesScreen {
                         swatch(holderColour(Buyback.Holder.HOUSEHOLDS), "households", false),
                         swatch(holderColour(Buyback.Holder.FIRMS), "the businesses", false),
                         swatch(holderColour(Buyback.Holder.WORLD), "the world", false),
+                        swatch(holderColour(Buyback.Holder.UNSETTLED), "the cancelled sale", false),
                         swatch(Palette.TEXT_MUTED, "offered and not taken, outlined", true)));
             }
             return offers;
@@ -4877,9 +4893,9 @@ final class FinancesScreen {
         Button call = Kept.of(Button.class, Button::new);
         call.setText(can ? "Call it · pay " + d(cost) : "Call it");
         call.setMinWidth(Region.USE_PREF_SIZE);
-        call.setDisable(!can || !afford);
+        Kept.give(call.disableProperty(), !can || !afford);
         call.setStyle(can && afford ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
-        call.setOnAction(e -> {
+        Kept.give(call.onActionProperty(), e -> {
             ui.game.callLine(bond);
             open("The book", null, null);
         });
@@ -4918,38 +4934,81 @@ final class FinancesScreen {
         private double drawnAt;
         /** Whether it has been told a quote (Kept, KP5). */
         private boolean told;
+        /** What the picture on show was drawn from: only a quote that reads differently draws it again (FB2, KL1). */
+        private Reading drawn;
+
+        /** The finest a length is drawn at, in pixels: a bar a fraction of a quarter pixel different is the same bar. */
+        static final double PIXEL_QUANTUM = .25;
+
+        /**
+         * One slice as the picture reads it: who offers it, the price and the face as they are written, the bar's length and the solid
+         * part's (-1: none of it is taken) at PIXEL_QUANTUM, and the tooltip's words.
+         */
+        record Slice(Buyback.Holder holder, String price, String face, double length, double solid, String tip) { }
+
+        /**
+         * Everything draw() reads of a quote at a width, at the resolution it is drawn at: the slices, the fair price as written, the
+         * last slice taken and the stop's name, the last slice at or under the most to pay and the line's name.
+         */
+        record Reading(List<Slice> slices, String fair, int lastTaken, String stop, int lastWithin, String most) { }
 
         /** The picture, its offers to come from set() (Kept, KP5: a kept ladder is told each month's quote and draws again only where it moved). */
         BuybackLadder() { }
 
-        /** The quote to draw and the most to pay: drawn again, and its height set to its slices, only when either moved. */
+        /** The quote to draw and the most to pay: drawn again, and its height set to its slices, only when what they read of it moved. */
         void set(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money) {
             this.money = money;
-            if (told && drawsAlike(q, this.q) && Double.compare(maxPer100, this.maxPer100) == 0) {
-                this.q = q;
-                return;
-            }
-            told = true;
+            double at = drawnAt > 0 ? drawnAt : FIRST_W;
+            boolean alike = told && reading(q, maxPer100, at).equals(drawn);
+            // The newest quote is the one a draw at another width reads; what was last drawn is what the next is compared with.
             this.q = q;
             this.maxPer100 = maxPer100;
+            if (alike) return;
+            told = true;
             int n = q.ladder().size();
             this.row = n > 24 ? 13 : 18;
             double h = TOP + n * row + FOOT;
             setMinSize(LEAST_W, h);
-            setPrefSize(FIRST_W, h);
+            Pieces.prefSize(this, FIRST_W, h);
             setMaxSize(Double.MAX_VALUE, h);
-            draw(drawnAt > 0 ? drawnAt : FIRST_W);
+            draw(at);
         }
 
         /**
-         * Whether two quotes draw the same ladder: the offers, the face taken and the fair price, all the picture reads.
-         * Not the whole quote: what the books carry of the face taken grows a little every month (a bond's discount
-         * accreting) and is not drawn, so a quote compared whole moved every month and drew the ladder again for nothing
-         * (KP5's gate, on R1c's city).
+         * A length at the picture's resolution. WHY (FB2, KL1): the picture was kept while two quotes compared bit for bit, so a holder's
+         * face that moved by 1e-8 of itself (18,935 of 1.3265e12 in months 2 and 6 of GW1's city, with nothing typed) drew the ladder
+         * again as the same picture: a face is written to the unit and a bar is a few hundred pixels long. What it does not show it
+         * does not read, and a kept ladder and one built new, told the same quote, read the same.
          */
-        static boolean drawsAlike(Buyback.Result a, Buyback.Result b) {
-            return a.ladder().equals(b.ladder()) && Double.compare(a.takenFace(), b.takenFace()) == 0
-                    && Double.compare(a.fairPer100(), b.fairPer100()) == 0;
+        private static double snap(double pixels) {
+            return Math.round(pixels / PIXEL_QUANTUM) * PIXEL_QUANTUM;
+        }
+
+        /** What a quote reads as at a width: the figures draw() puts on the picture, as written and at pixel resolution. */
+        private Reading reading(Buyback.Result q, double maxPer100, double w) {
+            List<Buyback.Offer> ladder = q.ladder();
+            int n = ladder.size();
+            double biggest = 0;
+            for (Buyback.Offer o : ladder) biggest = Math.max(biggest, o.face());
+            final double barMax = Math.max(60, w - LEFT - FACE_ROOM - MARKS);
+            List<Slice> slices = new ArrayList<>(n);
+            int lastTaken = -1, lastWithin = -1;
+            double left = q.takenFace();
+            for (int i = 0; i < n; i++) {
+                Buyback.Offer o = ladder.get(i);
+                double took = Math.min(o.face(), Math.max(0, left));
+                left -= took;
+                if (took > 0) lastTaken = i;
+                if (Double.isNaN(maxPer100) || o.per100() <= maxPer100) lastWithin = i;
+                String price = String.format("%.3f", o.per100()), face = money.apply(o.face());
+                String tip = holderName(o.holder()) + " offers " + face + " at " + price
+                        + " for each 100" + (took > 0 ? "; " + money.apply(took) + " of it is taken." : "; none of it is taken.");
+                slices.add(new Slice(o.holder(), price, face, snap(biggest > 0 ? barMax * o.face() / biggest : 0),
+                        took > 0 ? Math.max(2, snap(biggest > 0 ? barMax * took / biggest : 0)) : -1, tip));
+            }
+            return new Reading(slices, String.format("fair %.3f", q.fairPer100()), lastTaken,
+                    lastTaken >= 0 ? String.format("stop %.3f", ladder.get(lastTaken).per100()) : null, lastWithin,
+                    Double.isNaN(maxPer100) ? null : String.format("most to pay %.3f", maxPer100));
         }
 
         @Override protected void layoutChildren() {
@@ -4962,70 +5021,57 @@ final class FinancesScreen {
         private void draw(double w) {
             drawnAt = w;
             getChildren().clear();
-            List<Buyback.Offer> ladder = q.ladder();
-            int n = ladder.size();
-            double biggest = 0;
-            for (Buyback.Offer o : ladder) biggest = Math.max(biggest, o.face());
-            final double barMax = Math.max(60, w - LEFT - FACE_ROOM - MARKS);
+            final Reading read = reading(q, maxPer100, w);
+            drawn = read;
+            int n = read.slices().size();
             final double plotRight = w - MARKS;
             double barH = Math.max(6, row - 5);
 
-            int lastTaken = -1, lastWithin = -1;
-            double left = q.takenFace();
             for (int i = 0; i < n; i++) {
-                Buyback.Offer o = ladder.get(i);
+                Slice s = read.slices().get(i);
                 double y = TOP + i * row;
-                double len = biggest > 0 ? barMax * o.face() / biggest : 0;
-                double took = Math.min(o.face(), Math.max(0, left));
-                left -= took;
-                if (took > 0) lastTaken = i;
-                if (Double.isNaN(maxPer100) || o.per100() <= maxPer100) lastWithin = i;
-                String colour = holderColour(o.holder());
+                String colour = holderColour(s.holder());
 
                 // The whole slice as a ghost; what the ticket takes of it, solid over it.
-                javafx.scene.shape.Rectangle ghost = new javafx.scene.shape.Rectangle(LEFT, y + 2.5, Math.max(2, len), barH);
+                javafx.scene.shape.Rectangle ghost = new javafx.scene.shape.Rectangle(LEFT, y + 2.5, Math.max(2, s.length()), barH);
                 ghost.setFill(javafx.scene.paint.Color.web(colour, .25));
                 ghost.setStroke(javafx.scene.paint.Color.web(colour));
                 ghost.setArcWidth(4);
                 ghost.setArcHeight(4);
-                Tooltip tip = new Tooltip(holderName(o.holder()) + " offers " + money.apply(o.face()) + String.format(" at %.3f", o.per100())
-                        + " for each 100" + (took > 0 ? "; " + money.apply(took) + " of it is taken." : "; none of it is taken."));
+                Tooltip tip = new Tooltip(s.tip());
                 tip.setShowDelay(Duration.millis(150));
                 Tooltip.install(ghost, tip);
                 getChildren().add(ghost);
-                if (took > 0) {
-                    javafx.scene.shape.Rectangle solid = new javafx.scene.shape.Rectangle(LEFT, y + 2.5,
-                            Math.max(2, biggest > 0 ? barMax * took / biggest : 0), barH);
+                if (s.solid() >= 0) {
+                    javafx.scene.shape.Rectangle solid = new javafx.scene.shape.Rectangle(LEFT, y + 2.5, s.solid(), barH);
                     solid.setFill(javafx.scene.paint.Color.web(colour));
                     solid.setArcWidth(4);
                     solid.setArcHeight(4);
                     Tooltip.install(solid, tip);
                     getChildren().add(solid);
                 }
-                label(String.format("%.3f", o.per100()), LEFT - 8, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_RIGHT, LEFT - 10,
-                        took > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
-                label(money.apply(o.face()), LEFT + len + 6, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_LEFT, FACE_ROOM - 6,
+                label(s.price(), LEFT - 8, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_RIGHT, LEFT - 10,
+                        s.solid() >= 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
+                label(s.face(), LEFT + s.length() + 6, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_LEFT, FACE_ROOM - 6,
                         Palette.TEXT_MUTED);
             }
 
             // Fair, at the top: every offer is at or over it.
             horizontal(TOP, plotRight, Palette.TEXT_MUTED);
-            label(String.format("fair %.3f", q.fairPer100()), plotRight + 8, TOP - 15, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.TEXT_LABEL);
+            label(read.fair(), plotRight + 8, TOP - 15, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.TEXT_LABEL);
             label("price for each 100 of face", LEFT - 8, 2, javafx.geometry.Pos.CENTER_LEFT, 200, Palette.TEXT_MUTED);
 
             // The stop, under the dearest slice taken: the name above its line, in the right-hand room.
-            if (lastTaken >= 0) {
-                double y = TOP + (lastTaken + 1) * row;
+            if (read.lastTaken() >= 0) {
+                double y = TOP + (read.lastTaken() + 1) * row;
                 horizontal(y, plotRight, Palette.WARN);
-                label(String.format("stop %.3f", ladder.get(lastTaken).per100()), plotRight + 8, y - 14,
-                        javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.WARN);
+                label(read.stop(), plotRight + 8, y - 14, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.WARN);
             }
             // The most to pay, between the last slice at or under it and the first over: its name below the line.
-            if (!Double.isNaN(maxPer100)) {
-                double y = TOP + (lastWithin + 1) * row;
+            if (read.most() != null) {
+                double y = TOP + (read.lastWithin() + 1) * row;
                 horizontal(y, plotRight, Palette.BAD);
-                label(String.format("most to pay %.3f", maxPer100), plotRight + 8, y + 1,
-                        javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.BAD_SOFT);
+                label(read.most(), plotRight + 8, y + 1, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.BAD_SOFT);
             }
         }
 
@@ -5048,7 +5094,7 @@ final class FinancesScreen {
             l.setMaxWidth(wide);
             double at = align == javafx.geometry.Pos.CENTER_RIGHT ? x - wide : align == javafx.geometry.Pos.CENTER ? x - wide / 2 : x;
             l.relocate(at, y);
-            l.setMouseTransparent(true);
+            Kept.give(l.mouseTransparentProperty(), true);
             getChildren().add(l);
         }
     }
@@ -5113,8 +5159,10 @@ final class FinancesScreen {
             + "the world's appetite, not the bank's room - and says what that costs.";
 
     /** The ask's (i): the spec's T56. */
-    static final String LOTS_INFO = "Issues round to a lot, and the market will not arrange anything under the "
-            + "smallest issue for a city this size - the legal and rating work costs the same however little you raise.";
+    static final String LOTS_INFO = "Each kind's lot follows this month's price level, rounded down to 1, 2 or 5 "
+            + "times a power of ten, never above the smallest issue for this city. Steps follow the ask's leading "
+            + "digit and its tenth, never below a lot. The market will not arrange anything under the smallest "
+            + "issue: the legal and rating work costs the same however little you raise.";
 
     /** The quote's empty state: the spec's T57. */
     static final String NO_ASK = "Ask for something and the quote appears here - at home the auction itself, run on "
@@ -5122,9 +5170,10 @@ final class FinancesScreen {
             + "button.";
 
     /** Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). */
-    static final String PROCEEDS_INFO = "A bill's ask is the cash it should raise, and its face is the lot that brings "
-            + "it, so the proceeds land on whichever side of the request the rounding puts them - and the smallest "
-            + "issue worth arranging can be more than a lot. A bond's ask is its face; what it raises is the face at "
+    static final String PROCEEDS_INFO = "A bill's ask is the cash it should raise. Its face rounds up to lots large "
+            + "enough to cover that cash and the fixed cost; a short auction can raise less. The smallest "
+            + "issue worth arranging can be more than a lot. Lots follow this month's prices and are rounded down "
+            + "to 1, 2 or 5 times a power of ten, capped at the minimum issue. A bond's ask is its face; what it raises is the face at "
             + "the auction's price, less the fixed cost.";
 
     /** Who bids: the spec's T61 and 4.2 (CD2). */
@@ -5185,9 +5234,9 @@ final class FinancesScreen {
         // ...a bond asked callable (CD4) goes through the callable overload of the same quote.
         boolean callable = callableAsked(kit, foreign);
         DebtQuote quote = borrowAsk > 0
-                ? (foreign ? g.quoteForeign(kit.key(), borrowMoney, borrowAsk, borrowTerm, kit.rounding())
-                   : callable ? g.quoteLongBond(borrowAsk, borrowTerm, kit.rounding(), borrowCap, true)
-                           : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, kit.rounding(), borrowCap))
+                ? (foreign ? g.quoteForeign(kit.key(), borrowMoney, borrowAsk, borrowTerm, lot(kit, foreign))
+                   : callable ? g.quoteLongBond(borrowAsk, borrowTerm, lot(kit, foreign), borrowCap, true)
+                           : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, lot(kit, foreign), borrowCap))
                 : null;
         // What the call adds to the coupon, read once off the model for the three places that say it.
         callWords = quote != null && quote.callable()
@@ -5300,7 +5349,7 @@ final class FinancesScreen {
         DebtManager ledger = ui.game.getDebtManager();
         double from = ledger.usdPer(borrowMoney), to = ledger.usdPer(code);
         if (borrowAsk > 0 && from > 0 && to > 0 && Double.isFinite(from) && Double.isFinite(to)) {
-            double lot = instrument(borrowType).rounding();
+            double lot = ham.citybuildersim.BondMarket.issueLot(ui.game, borrowType, code);
             borrowAsk = Math.max(lot, Math.round(borrowAsk * from / to / lot) * lot);
         } else {
             borrowAsk = 0;
@@ -5366,7 +5415,7 @@ final class FinancesScreen {
 
         java.util.function.DoubleFunction<String> w = foreign ? figuresIn(borrowMoney) : this::d;
         double base = askBase();
-        double[] by = askSteps(base, kit.rounding());
+        double[] by = askSteps(base, lot(kit, foreign));
         javafx.scene.layout.FlowPane steps = Kept.flow(6, 6);
         if (base > 0) {
             steps.getChildren().add(Kept.scope("÷10", () -> stepChip("÷10", () -> setAsk(askBase() / 10), false)));
@@ -5383,7 +5432,7 @@ final class FinancesScreen {
         }
         presets.getChildren().add(Kept.scope("clear", () -> stepChip("clear", () -> setAsk(0), true)));
         card.getChildren().addAll(steps, presets);
-        card.getChildren().add(noteLine("lots of " + w.apply(kit.rounding()) + " · nothing under "
+        card.getChildren().add(noteLine("lots of " + w.apply(lot(kit, foreign)) + " · nothing under "
                 + w.apply(foreign ? g.minimumIssueSizeIn(borrowMoney) : minimum),
                 LOTS_INFO, 560));
         if (!foreign) card.getChildren().addAll(Kept.scope("cap", () -> capControls(fair)));
@@ -5546,10 +5595,7 @@ final class FinancesScreen {
 
     /** The ± steps for an ask: one unit of its leading digit and a tenth of that - D$1B and D$100M at D$3.4B - never under a lot; at nothing, one lot. Pure. */
     static double[] askSteps(double ask, double lot) {
-        if (!(ask > 0)) return new double[] { lot };
-        double big = Math.max(lot, Math.pow(10, Math.floor(Math.log10(ask))));
-        double fine = Math.max(lot, big / 10);
-        return fine < big ? new double[] { big, fine } : new double[] { big };
+        return ham.citybuildersim.MagnitudeSteps.of(ask, lot);
     }
 
     /** What a step or a scale starts from: what is typed and not yet set, when it reads as an amount, else the ask. */
@@ -5588,7 +5634,7 @@ final class FinancesScreen {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
         List<AskPreset> out = new ArrayList<>();
-        out.add(new AskPreset("the minimum", Math.max(foreign ? g.minimumIssueSizeIn(borrowMoney) : g.minimumIssueSize(), kit.rounding())));
+        out.add(new AskPreset("the minimum", Math.max(foreign ? g.minimumIssueSizeIn(borrowMoney) : g.minimumIssueSize(), lot(kit, foreign))));
         double[] figures = foreign
                 ? new double[] { ledger.dueAbroadWithinUsd(12) / ledger.usdPer(borrowMoney) }
                 : new double[] { ledger.dueWithin(12), g.monthOfSpending(), ledger.annualCapacityRevenue(), g.cashShortfall() };
@@ -5616,7 +5662,7 @@ final class FinancesScreen {
                     askTyped = typed;
                     askTypedOver = borrowAsk;
                 }, null);
-        box.setOnAction(e -> commitAsk(box, true));
+        Kept.give(box.onActionProperty(), e -> commitAsk(box, true));
         // Kept (KP5): the box is the one the last draw made, so the focus listener is added once; it reads the box it is on and the
         // screen's own fields when it fires.
         if (Kept.isNew(box)) {
@@ -5721,7 +5767,7 @@ final class FinancesScreen {
         String ground = on ? " -fx-background-color: " + Palette.PINNED + "; -fx-border-color: " + Palette.ACCENT + ";"
                 : " -fx-background-color: " + Palette.PANEL + "; -fx-border-color: " + Palette.EDGE + ";";
         t.setStyle(rest + ground);
-        t.setOnMouseClicked(e -> {
+        Kept.give(t.onMouseClickedProperty(), e -> {
             if (borrowType.equals(kit.key())) return;
             borrowType = kit.key();
             borrowTerm = nearestTerm(kit, "Note".equals(kit.key()) ? 6 : 10);
@@ -5888,8 +5934,8 @@ final class FinancesScreen {
         return Kept.scope("offer", () -> {
             VBox offer = offerCard(quoteName(kit, foreign), foreign ? abroadBlurb(kit, money) : kit.blurb(), quote, pct2(quote.marketRate()) + " a year",
                     rateColour(quote, ledger), ending, "Issue for " + w.apply(quote.cashReceived()), () -> {
-                        String summary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, kit.rounding(), hold)
-                                                 : executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
+                        String summary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, lot(kit, foreign), hold)
+                                                 : executeDebtLogic(kit.key(), ask, term, lot(kit, foreign), cap);
                         borrowAsk = 0;
                         showDebtResultMenu(booked, foreign, money, summary);
                     }, w);
@@ -5989,12 +6035,12 @@ final class FinancesScreen {
         boolean raises = quote.cashReceived() > 0;
         go.setText(raises ? (sale.shortSale() ? "Sell what the bids cover · raise " : "Hold the auction · raise ")
                 + w.apply(quote.cashReceived()) : "Nothing is raised after the fixed cost of " + w.apply(sale.ask().fee()));
-        go.setDisable(!raises);
+        Kept.give(go.disableProperty(), !raises);
         go.setWrapText(true);
         go.setMaxWidth(Double.MAX_VALUE);
         go.setStyle(Palette.words(Palette.SIZE_LABEL, "white") + " -fx-background-color: " + Palette.CONFIRM + ";");
-        go.setOnAction(e -> {
-            String summary = executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap, callable);
+        Kept.give(go.onActionProperty(), e -> {
+            String summary = executeDebtLogic(kit.key(), ask, term, lot(kit, false), cap, callable);
             borrowAsk = 0;
             showDebtResultMenu(booked, false, null, summary);
         });
@@ -6389,7 +6435,7 @@ final class FinancesScreen {
             l.setMaxWidth(wide);
             double left = align == javafx.geometry.Pos.CENTER_RIGHT ? x - wide : align == javafx.geometry.Pos.CENTER ? x - wide / 2 : x;
             l.relocate(left, y);
-            l.setMouseTransparent(true);
+            Kept.give(l.mouseTransparentProperty(), true);
             getChildren().add(l);
         }
     }
@@ -6418,7 +6464,7 @@ final class FinancesScreen {
         repudiate.setText("Default on the foreign debt…");
         repudiate.setStyle("-fx-background-color: transparent; -fx-border-color: " + Palette.BAD + ";"
                 + " -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: " + Palette.BAD_SOFT + ";");
-        repudiate.setOnAction(e -> showForeignDefaultMenu());
+        Kept.give(repudiate.onActionProperty(), e -> showForeignDefaultMenu());
         HBox row = Kept.row(0, repudiate);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 6 0 4 0;");
@@ -6460,11 +6506,11 @@ final class FinancesScreen {
             p.getChildren().add(pair(wipes, costs));
             Button keep = Kept.of(Button.class, Button::new);
             keep.setText("Keep paying");
-            keep.setOnAction(e -> open("Borrow", "Abroad", null));
+            Kept.give(keep.onActionProperty(), e -> open("Borrow", "Abroad", null));
             Button confirm = Kept.of(Button.class, Button::new);
             confirm.setText("Default. I understand nobody will lend abroad for five years.");
             confirm.setStyle("-fx-background-color: " + Palette.ALERT_EDGE + "; -fx-text-fill: white;");
-            confirm.setOnAction(e -> {
+            Kept.give(confirm.onActionProperty(), e -> {
                 ui.game.defaultOnForeignDebt("the city chose to");
                 open(null, null, null);
             });
@@ -6771,9 +6817,9 @@ final class FinancesScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand; -fx-border-color: ";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept card is not entered afresh).
         c.setStyle(rest + (c.isHover() ? Palette.BUSINESS : Palette.EDGE) + ";");
-        c.setOnMouseEntered(e -> c.setStyle(rest + Palette.BUSINESS + ";"));
-        c.setOnMouseExited(e -> c.setStyle(rest + Palette.EDGE + ";"));
-        c.setOnMouseClicked(e -> {
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(rest + Palette.BUSINESS + ";"));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(c.onMouseClickedProperty(), e -> {
             bookBondId = is.largestId();
             open("The bond market", "A bond's book", null);
         });
@@ -6965,7 +7011,7 @@ final class FinancesScreen {
         double w = most > 0 ? Math.max(2, l.quantity() / most * side) : 2;
         Region bar = Kept.region();
         bar.setMinSize(w, 12);
-        bar.setPrefSize(w, 12);
+        Pieces.prefSize(bar, w, 12);
         bar.setMaxSize(w, 12);
         bar.setStyle("-fx-background-color: " + (bid ? Palette.MONEY : Palette.BUSINESS_LIGHT) + "; -fx-background-radius: 2;");
         HBox left = Kept.row(0), right = Kept.row(0);

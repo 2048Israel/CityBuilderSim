@@ -1,6 +1,6 @@
 # WoodProducts.java - 107 lines · 2 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/WoodProducts.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/WoodProducts.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Sawmills, and the panel, pulp, paper and pellet mills - Wood Products
 > (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.7, 2.8, 2.12 and
@@ -58,7 +58,7 @@
 
 **Uses:** [Good](Good.md) (11), [ProcessingSector](ProcessingSector.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (6):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [GdpCheck](GdpCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (7):** [BankFailureCheck](BankFailureCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [GdpCheck](GdpCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Constants
 

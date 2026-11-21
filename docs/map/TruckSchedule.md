@@ -1,6 +1,6 @@
 # TruckSchedule.java - 592 lines · 38 methods · 12 constants · model
 
-`ham/citybuildersim/TruckSchedule.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TruckSchedule.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The month's trucks, as a pure function of time: which loads Haulage's
 > trucks carry, when each reaches its gate, and where each one is at any
@@ -66,7 +66,7 @@
 
 **Uses:** [CityMap](CityMap.md) (7), [World](World.md) (5), [Haulage](Haulage.md) (4), [BoatSchedule](BoatSchedule.md) (3), [TrainSchedule](TrainSchedule.md) (3), [Freight](Freight.md) (3), [MapFrame](MapFrame.md) (1), [BuildingVisual](BuildingVisual.md) (1), [DistrictPlan](DistrictPlan.md) (1)
 
-**Used by (6):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [TruckCheck](TruckCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckShapes](TruckShapes.md)
+**Used by (5):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckShapes](TruckShapes.md)
 
 ## Sections
 

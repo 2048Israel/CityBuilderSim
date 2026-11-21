@@ -9,6 +9,7 @@ import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.LandManager;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sectors;
 
@@ -109,6 +110,11 @@ public final class Quarrying extends ExtractionSector {
 
     /** What a quarry digs a month at nameplate, whatever field it stands on: what its row makes of aggregate and blocks. */
     static double tonnesOf(BuildingsTemplate t) {
+        return tonnesOf(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): what its own recipe makes of aggregate, limestone and blocks. */
+    static double tonnesOf(NewUnit t) {
         return t == null ? 0 : t.makes(Good.AGGREGATE) + t.makes(Good.LIMESTONE) + t.makes(Good.DIMENSION_STONE);
     }
 
@@ -120,25 +126,30 @@ public final class Quarrying extends ExtractionSector {
      * quarries on ANY placed by LandManager.packed() in that order, their
      * limestone sites making limestone and their hard-rock sites aggregate;
      * a quarry on a type makes its type's good (Resource.goodOf()); the
-     * blocks as the row says.
+     * blocks as the row says. `plus` is one new building already resolved (QN1): its own recipe's makes are what it
+     * adds; the quarries standing and on site are read as their templates stand.
      */
-    double[] nameplate(boolean onSite, BuildingsTemplate plus) {
+    double[] nameplate(boolean onSite, NewUnit plus) {
         double[] out = new double[3];
         if (buildings == null) return out;
-        int[] building = onSite ? buildings.getUnderConstructionById() : new int[0];
+        long[] building = onSite ? buildings.getUnderConstructionById() : new long[0];
         List<BuildingsTemplate> who = new ArrayList<>();
+        List<NewUnit> units = new ArrayList<>();
         List<LandManager.Claim> claims = new ArrayList<>();
-        List<Integer> counts = new ArrayList<>();
+        List<Long> counts = new ArrayList<>();
         for (int pass = 0; pass < 3; pass++) {
             if (pass == 1 && !onSite) continue;
             if (pass == 2 && plus == null) continue;
             for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-                int n = pass == 0 ? buildings.getQuantity(t.getId())
+                long n = pass == 0 ? buildings.getQuantity(t.getId())
                         : pass == 1 ? (t.getId() < building.length ? building[t.getId()] : 0)
-                        : t == plus ? 1 : 0;
-                if (n <= 0 || !(tonnesOf(t) > 0)) continue;
+                        : t == plus.template() ? 1 : 0;
+                if (n <= 0) continue;
+                NewUnit u = pass == 2 ? plus : NewUnit.standing(t);
+                if (!(tonnesOf(u) > 0)) continue;
                 BuildingsTemplate.Site site = t.site();
                 who.add(t);
+                units.add(u);
                 counts.add(n);
                 claims.add(site == null || site.resource() != Resource.STONE ? null
                         : new LandManager.Claim(site.type(), site.sites(), n));
@@ -150,9 +161,10 @@ public final class Quarrying extends ExtractionSector {
         double anyLime = 0, anyHard = 0;
         for (int i = 0; i < who.size(); i++) {
             BuildingsTemplate t = who.get(i);
-            int n = counts.get(i);
-            out[2] += t.makes(Good.DIMENSION_STONE) * n;
-            double stone = (t.makes(Good.AGGREGATE) + t.makes(Good.LIMESTONE)) * n;
+            NewUnit u = units.get(i);
+            long n = counts.get(i);
+            out[2] += u.makes(Good.DIMENSION_STONE) * n;
+            double stone = (u.makes(Good.AGGREGATE) + u.makes(Good.LIMESTONE)) * n;
             if (!(stone > 0)) continue;
             BuildingsTemplate.Site site = t.site();
             if (site == null || site.resource() != Resource.STONE || !site.any()) {
@@ -217,6 +229,11 @@ public final class Quarrying extends ExtractionSector {
      * Dimension Stone Quarry its blocks.
      */
     public Map<Good, Double> madeBy(BuildingsTemplate t) {
+        return madeBy(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): what its own recipe adds to the packing. */
+    public Map<Good, Double> madeBy(NewUnit t) {
         Map<Good, Double> out = new EnumMap<>(Good.class);
         if (t == null) return out;
         double[] before = nameplate(true, null), after = nameplate(true, t);
@@ -256,7 +273,7 @@ public final class Quarrying extends ExtractionSector {
         if (buildings == null) return 1;
         double units = 0, field = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int n = buildings.getQuantity(t.getId());
+            long n = buildings.getQuantity(t.getId());
             if (n <= 0) continue;
             double made = g == Good.DIMENSION_STONE ? t.makes(Good.DIMENSION_STONE) : t.makes(Good.AGGREGATE) + t.makes(Good.LIMESTONE);
             if (!(made > 0)) continue;
@@ -303,6 +320,11 @@ public final class Quarrying extends ExtractionSector {
         return carried;
     }
 
+    /** A harness's carry, by name (FB3, FW6-C): ReloadCheck places one when no checkpoint of its probe city has any, because produceFlow() zeroes it a month on. */
+    public void setCarriedForTest(double tonnes) {
+        carried = Math.max(0, tonnes);
+    }
+
     /** The carry crosses a save (FW6, 2026-10-25): the first investment pass after a load weighs limestone by it. */
     @Override
     protected void saveExtras(Map<String, Double> extras) {
@@ -322,11 +344,13 @@ public final class Quarrying extends ExtractionSector {
      * estimate on what it adds to the packing (madeBy()), not its row's
      * makes - limestone the city would buy at the makers' rule, and the rest
      * of it as aggregate (THE CARRY) - less its consumables and its freight.
+     * ...for one new building already resolved (QN1; NewUnit): its own makes and consumables.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        if (t == null || plans == null || markets == null || !key().equals(t.getSector())) return super.estimatedMonthlyProfit(t, plans);
-        Map<Good, Double> made = madeBy(t);
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
+        if (t == null || plans == null || markets == null || !key().equals(t.getSector())) return super.estimatedMonthlyProfit(u, plans);
+        Map<Good, Double> made = madeBy(u);
         double limestone = made.getOrDefault(Good.LIMESTONE, 0.0);
         if (limestone > 0) {
             GoodsMarket m = markets.get(Good.LIMESTONE);
@@ -337,8 +361,8 @@ public final class Quarrying extends ExtractionSector {
             if (limestone > home) made.merge(Good.AGGREGATE, limestone - home, Double::sum);
         }
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
-        return plans.estimatedMakerProfit(this, t, made) - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), powerPriceFor(t))
-                - freightRunning(t, rate);
+        return plans.estimatedMakerProfit(this, u, made) - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), powerPriceFor(t))
+                - freightRunning(u, rate);
     }
 
     /* ----- the plan and the retirement ----- */
@@ -379,7 +403,7 @@ public final class Quarrying extends ExtractionSector {
         double spare = 0;
         if (buildings == null || land == null) return 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int held = buildings.getQuantity(t.getId());
+            long held = buildings.getQuantity(t.getId());
             if (held > 0 && workedOut(land, t)) spare += held * tonnesOf(t);
         }
         return spare;

@@ -1,6 +1,6 @@
-# ZoningCheck.java - 616 lines · 17 methods · 3 constants · harnesses
+# ZoningCheck.java - 615 lines · 17 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ZoningCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ZoningCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and
 > LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury,
@@ -62,12 +62,12 @@
 | 211 | 2. A ZONE'S GROUND IS ITS SECTOR'S |
 | 262 | 3. THE PRICE AND THE ROLL |
 | 315 | 4. ONE DIAL, TWO DOORS |
-| 351 | 5. BIGGER THAN THE FREE GROUND |
-| 376 | 6. THE FOREST LAW |
-| 406 | 7. CLEARING |
-| 463 | 8. ZONED FIELDS DO NOT YIELD |
-| 531 | 9. SAVED AND RELOADED |
-| 573 | 10. FORESTRY ON THE ZONES AND THE LAW |
+| 350 | 5. BIGGER THAN THE FREE GROUND |
+| 375 | 6. THE FOREST LAW |
+| 405 | 7. CLEARING |
+| 462 | 8. ZONED FIELDS DO NOT YIELD |
+| 530 | 9. SAVED AND RELOADED |
+| 572 | 10. FORESTRY ON THE ZONES AND THE LAW |
 
 ## Constants
 
@@ -89,7 +89,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 558 | **type** `public class ZoningCheck` | Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury, the roll and the world's totals. |
+| 59 | 557 | **type** `public class ZoningCheck` | Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury, the roll and the world's totals. |
 | 65 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 1 | `static boolean near(double a, double b)` |  |
 | 76 | 1 | `static boolean same(double a, double b)` | ...and two ground or wood figures the same to a part in a billion of the larger: one rounding, not a square foot. |
@@ -116,45 +116,45 @@
 |---:|---:|---|---|
 | 264 | 50 | `static void thePriceAndTheRoll(Game g)` |  |
 
-### 4. ONE DIAL, TWO DOORS (lines 315-350)
+### 4. ONE DIAL, TWO DOORS (lines 315-349)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 317 | 33 | `static void oneDialTwoDoors(Path root)` |  |
+| 317 | 32 | `static void oneDialTwoDoors(Path root)` |  |
 
-### 5. BIGGER THAN THE FREE GROUND (lines 351-375)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 353 | 22 | `static void biggerThanTheFreeGround()` |  |
-
-### 6. THE FOREST LAW (lines 376-405)
+### 5. BIGGER THAN THE FREE GROUND (lines 350-374)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 378 | 27 | `static void theForestLaw()` |  |
+| 352 | 22 | `static void biggerThanTheFreeGround()` |  |
 
-### 7. CLEARING (lines 406-462)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 408 | 54 | `static void clearing()` |  |
-
-### 8. ZONED FIELDS DO NOT YIELD (lines 463-530)
+### 6. THE FOREST LAW (lines 375-404)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 465 | 65 | `static void theFields(Game g)` |  |
+| 377 | 27 | `static void theForestLaw()` |  |
 
-### 9. SAVED AND RELOADED (lines 531-572)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 533 | 39 | `static void savedAndReloaded(Path root, Game g)` |  |
-
-### 10. FORESTRY ON THE ZONES AND THE LAW (lines 573-616)
+### 7. CLEARING (lines 405-461)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 575 | 41 | `static void forestry()` |  |
+| 407 | 54 | `static void clearing()` |  |
+
+### 8. ZONED FIELDS DO NOT YIELD (lines 462-529)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 464 | 65 | `static void theFields(Game g)` |  |
+
+### 9. SAVED AND RELOADED (lines 530-571)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 532 | 39 | `static void savedAndReloaded(Path root, Game g)` |  |
+
+### 10. FORESTRY ON THE ZONES AND THE LAW (lines 572-615)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 574 | 41 | `static void forestry()` |  |
 

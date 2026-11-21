@@ -1,6 +1,6 @@
 # EarthTerrain.java - 3,287 lines · 171 methods · 63 constants · model
 
-`ham/citybuildersim/EarthTerrain.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthTerrain.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the founding site snapped to dry ground, and a point's sea - spec-earth 3's detail below the data, drawn from earth-1 through EarthData and EarthProj.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (190), [EarthData](EarthData.md) (95), [EarthProj](EarthProj.md) (37), [Resource](Resource.md) (13), [Geology](Geology.md) (7), [MapFrame](MapFrame.md) (4)
 
-**Used by (26):** [BridgeCheck](BridgeCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [HydroSites](HydroSites.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [World](World.md)
+**Used by (28):** [BridgeCheck](BridgeCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FB13Check](FB13Check.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [HydroSites](HydroSites.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [World](World.md)
 
 ## Sections
 

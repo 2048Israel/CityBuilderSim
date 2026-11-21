@@ -1,6 +1,6 @@
 # Mortgage.java - 556 lines · 40 methods · 10 constants · model
 
-`ham/citybuildersim/Mortgage.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Mortgage.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > An insured mortgage on a new residential building: a level payment every
 > month over a forty-year amortization, at a rate fixed for a ten-year term
@@ -66,7 +66,7 @@
 
 **Uses:** [Bank](Bank.md) (2), [BusinessDebt](BusinessDebt.md) (1), [Formats](Formats.md) (1)
 
-**Used by (19):** [Bank](Bank.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessInvestment](BusinessInvestment.md), [CorporateBond](CorporateBond.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md)
+**Used by (22):** [Bank](Bank.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessInvestment](BusinessInvestment.md), [CorporateBond](CorporateBond.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HousingDoorCheck](HousingDoorCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 
@@ -130,15 +130,15 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 278 | 4 | `public static Decision decide(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double ...` | WHAT THE LANDLORD CAN BUY ON A MORTGAGE, and why not more: the largest number of these, up to what was asked for (found by halving since 0.7.54: THE LANDLORD'S ORDER IS A RUN FROM ONE), that its own funds buy outright... |
-| 289 | 22 | `public static Decision decide(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double ...` | ...with the interest on the wait (BA1): the lender's test reads the payment on the shortfall of n grown by {@code carryOf(n)}, what BusinessInvestment.carryOf() reads for an order of n - the cost of the building paid ... |
+| 278 | 4 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, doubl...` | WHAT THE LANDLORD CAN BUY ON A MORTGAGE, and why not more: the largest number of these, up to what was asked for (found by halving since 0.7.54: THE LANDLORD'S ORDER IS A RUN FROM ONE), that its own funds buy outright... |
+| 289 | 22 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, doubl...` | ...with the interest on the wait (BA1): the lender's test reads the payment on the shortfall of n grown by {@code carryOf(n)}, what BusinessInvestment.carryOf() reads for an order of n - the cost of the building paid ... |
 | 350 | 20 | **type** `private record Slice(boolean outright, double own, boolean shortOfDown, double coverage, String failedOn)` | One slice of a landlord's order, read as decide()'s count read it: bought outright, or its down payment, and the lender's test. |
 | 351 | 1 | `boolean passes()` _(in Mortgage.Slice)_ |  |
-| 353 | 16 | `static Slice of(int n, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, java.u...` _(in Mortgage.Slice)_ |  |
-| 378 | 42 | **type** `public record Decision(int quantity, String trimmedBy, boolean shortOfDown, double ownFundsForOne, double c...` | The order, decided: how many; what trimmed it from what was asked, if anything did (DOWN_PAYMENT or LENDERS_TEST, what the whole order failed on - the first failure a count down from it would meet); and, when not even... |
+| 353 | 16 | `static Slice of(long n, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, java...` _(in Mortgage.Slice)_ |  |
+| 378 | 42 | **type** `public record Decision(long quantity, String trimmedBy, boolean shortOfDown, double ownFundsForOne, double ...` | The order, decided: how many; what trimmed it from what was asked, if anything did (DOWN_PAYMENT or LENDERS_TEST, what the whole order failed on - the first failure a count down from it would meet); and, when not even... |
 | 387 | 8 | `public String refusal(String building)` _(in Mortgage.Decision)_ | The advisor's line when not even one passes: the down payment it needs, or the lender's figure against its own. |
 | 401 | 9 | `public String refusal(String building, double testedRate, double insuredRate)` _(in Mortgage.Decision)_ | ...and with the rate the lender read the payment at, against the insured rate the mortgage would be written at (0.7.44): the real rate, when expected inflation took something off it. |
-| 412 | 7 | `public String trimmed(int asked)` _(in Mortgage.Decision)_ | ...and the words for an order cut down from what was asked, or nothing when it was not. |
+| 412 | 7 | `public String trimmed(long asked)` _(in Mortgage.Decision)_ | ...and the words for an order cut down from what was asked, or nothing when it was not. |
 
 ### the month (lines 421-493)
 

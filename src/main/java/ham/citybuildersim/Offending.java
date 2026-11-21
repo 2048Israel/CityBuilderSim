@@ -124,6 +124,17 @@ public final class Offending {
      * the audit's pools for the households, like a wage; what the households
      * lose stays among them.
      *
+     * ONLY AN OFFENDER WHO CAN BE HANDED IT STEALS (BO1-S, 2026-11-19). The
+     * weight is the offenders' in the cells creditByWeight() pays, the ones
+     * not under half a household (Household.isEmpty()). It used to be every
+     * cell's, so a city whose offenders were all in empty cells was robbed
+     * and nobody was paid: the savers lost their half and the tills theirs,
+     * which the audit books as handed to households, and the households'
+     * identity missed both (ShortSellingCheck's town of 16 with the owner line
+     * on: its three families took 6 of its 9 adults, every working cell fell
+     * under half a household, and it lost 2 x StolenFromBusinesses a month,
+     * 3.3e-4 of its wage bill).
+     *
      * Was Game.steal(); the body is that one, through Game's getters.
      */
     void steal(Game game, double[] offenderWeight) {
@@ -132,8 +143,10 @@ public final class Offending {
         EconomyManager economyManager = game.getEconomyManager();
 
         double wanted = crime.getTheftWanted();
-        double weight = 0;
-        for (double w : offenderWeight) weight += Math.max(0, w);
+        // The weight creditByWeight() pays (BO1-S and HS2 found the same
+        // theft paid to nobody, and this one sum is both their mends): the
+        // offenders' in the cells not under half a household.
+        double weight = householdBalance.creditableWeight(offenderWeight);
         if (!(wanted > 0) || !(weight > 0)) {
             crime.recordStolen(0, 0);
             return;

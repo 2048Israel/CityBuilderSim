@@ -243,12 +243,34 @@ public final class GamePrefs {
     }
 
     /**
-     * Writes them back, through the same atomic replace the saves use.
+     * A copy of these for a replay's throwaway city to hold as its own (TR2-G): the same values, and a copy that never writes
+     * ({@link #save} on it does nothing and says no). The window's prefs are the player's; the copy of a recorded city that
+     * replay shows is on the same window, so a click on the drawer's pin or the construction tab in it set the player's
+     * in-memory values, which the next save after the replay took to the player's own folder (TR2's review, 6; TR1's viewer
+     * clicks did the same since 0.9.77). A replay gets this on entering and the player's own back on leaving
+     * (UserInterface.replayHoldPrefs), so what the copy does reaches neither the player's prefs in memory nor on disk.
+     */
+    public GamePrefs copyForReplay() {
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        GamePrefs copy = gson.fromJson(gson.toJson(this), GamePrefs.class);
+        copy.detached = true;
+        return copy;
+    }
+
+    /** Whether this is a replay's copy ({@link #copyForReplay}), which never writes. Not in the file: Gson leaves a transient alone. */
+    public boolean isDetached() { return detached; }
+
+    private transient boolean detached;
+
+    /**
+     * Writes them back, through the same atomic replace the saves use. A replay's copy ({@link #copyForReplay}) writes
+     * nothing, to any folder, and says no.
      *
      * @return true if it landed - the caller may want to say so, and may
      *         equally not care, which is why this reports rather than throws
      */
     public boolean save(GameFiles files) {
+        if (detached) return false;
         try {
             return files.write(fileIn(files),
                     new com.google.gson.Gson().toJson(this)).ok;

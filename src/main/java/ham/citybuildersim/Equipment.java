@@ -25,6 +25,10 @@ import java.util.Map;
  * June 1917, and not before; a code that is not in the catalogue is never known. knownAt() asks by the game month, knownIn() by the year.
  */
 public final class Equipment {
+    /** Estimated installation points per tonne of motor, shafting and switchgear; replaces a tenth of an unrelated building's work (R1d). */
+    public static final double DRIVE_WORK_PER_TONNE = 10;
+    /** A crew's fixed setup for an electric-drive installation, in BUILDING_WORK points (R1d, estimate). */
+    public static final double DRIVE_SETUP_POINTS = 1;
 
     /** The 1900 form a piece ends: the share of a sector (or of the carts) that still runs the old way, EquipmentForms sets it from the count of buildings unfitted. */
     public enum Form {
@@ -33,7 +37,24 @@ public final class Equipment {
         /** Farms on horses: Agriculture.setHorseShare(). */
         FARM_HORSES,
         /** Freight's road leg on horse and wagon: Haulage.setHorseShare(). */
-        CART_HORSES
+        CART_HORSES,
+        /**
+         * Freight's trucks with a driver in the cab, held to the driver's hours (R6b, FE1): Haulage.setDriverShare(). The first form whose old
+         * way is today's: the driverless kit is a near-future piece, so a building that lacks it is today's, and one not yet known is on no
+         * building (EquipmentForms, THE DRIVERS).
+         */
+        CAB_DRIVERS,
+        /**
+         * The farms' tractors and combines with an operator in the cab (R6d, FE8): Agriculture.setOperatedShare(). Like CAB_DRIVERS, the old way
+         * is today's: the autonomy kit is a speculative piece, so a building that lacks it is today's, and a city founded today's way has none
+         * (EquipmentForms, THE OPERATORS).
+         */
+        FIELD_OPERATORS,
+        /**
+         * A Hydrogen Steel Works whose electrolysers make a kilogram of hydrogen on 55 kWh, today's system (R6d, FE10): HeavyIndustry.setElectrolyserWorks()
+         * counts the works that have the 46 kWh piece. Today's way is the old one here too, and a city founded today's way has no works fitted.
+         */
+        ELECTROLYSERS
     }
 
     private final String id;

@@ -1,6 +1,6 @@
 # RefineryView.java - 1,618 lines · 82 methods · 43 constants · model
 
-`ham/citybuildersim/RefineryView.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryView.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The refinery's month as a picture (0.7.95, batch O11;
 > docs/studies/spec-oil.md 2.12): the crude it ran and where that came from,
@@ -40,9 +40,9 @@
 > Pure: it reads the city and changes nothing (the planner's appraisals of
 > one more unit are the build card's reads).
 
-**Uses:** [Good](Good.md) (71), [Refining](Refining.md) (17), [RefineryFlow](RefineryFlow.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sector](Sector.md) (4), [Deposit](Deposit.md) (4), [Freight](Freight.md) (3), [Currency](Currency.md) (3), [Game](Game.md) (2), [Sectors](Sectors.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Oil](Oil.md) (1), [Haulage](Haulage.md) (1), [Retail](Retail.md) (1)
+**Uses:** [Good](Good.md) (71), [Refining](Refining.md) (17), [RefineryFlow](RefineryFlow.md) (8), [SpreadPlanner](SpreadPlanner.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sector](Sector.md) (4), [Deposit](Deposit.md) (4), [Freight](Freight.md) (3), [Currency](Currency.md) (3), [Game](Game.md) (2), [Sectors](Sectors.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Oil](Oil.md) (1), [Haulage](Haulage.md) (1), [Retail](Retail.md) (1)
 
-**Used by (9):** [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [KeptCheck](KeptCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (10):** [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [KeptCheck](KeptCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 
@@ -183,9 +183,9 @@
 |---:|---:|---|---|
 | 78 | 3 | `public static double litresOf(Good g, double units)` | A product's units as litres for the picture: a litre good's own, a tonne of bitumen or coke at LITRES_A_TONNE_DRAWN. |
 | 83 | 1 | **type** `public enum SourceKind` | Where a part of the month's crude came from. |
-| 95 | 4 | **type** `public record Source(SourceKind kind, int count, double bought, double tonnes, double[] grades)` | A part of the month's run, by where it was bought. |
+| 95 | 4 | **type** `public record Source(SourceKind kind, long count, double bought, double tonnes, double[] grades)` | A part of the month's run, by where it was bought. |
 | 97 | 1 | `public double litres()` _(in RefineryView.Source)_ | The run's litres credited to it. |
-| 114 | 5 | **type** `public record Unit(Kind kind, int standing, int onSite, double feed, double run, double share, double sprea...` | One kind of conversion unit, all its buildings together. |
+| 114 | 5 | **type** `public record Unit(Kind kind, long standing, long onSite, double feed, double run, double share, double spr...` | One kind of conversion unit, all its buildings together. |
 | 117 | 1 | `public boolean idle()` _(in RefineryView.Unit)_ | Whether it stood and took nothing: no feed spare, or a spread of nothing or less - or, since 0.7.105, a month the crude units ran nothing (Refining's THE RUN), which the picture does not draw. |
 | 121 | 1 | **type** `public enum BuyerKind` | Who took a product. |
 | 132 | 16 | **type** `public record Buyer(BuyerKind kind, String sector, Map<Good, Double> local, Map<Good, Double> imported)` | A taker of the month's products. |
@@ -203,7 +203,7 @@
 | 178 | 1 | `public static End product(Good g)` _(in RefineryView.End)_ |  |
 | 179 | 1 | `public boolean furnaces()` _(in RefineryView.End)_ |  |
 | 183 | 1 | **type** `public record Link(End from, End to, double litres)` | Litres a month from one end to another, at the month's rate (bitumen and coke at LITRES_A_TONNE_DRAWN). |
-| 204 | 36 | **type** `public record View(boolean standing, boolean counted, int crudeUnits, double rate, RefineryFlow.Flow flow, ...` | The month. |
+| 204 | 36 | **type** `public record View(boolean standing, boolean counted, long crudeUnits, double rate, RefineryFlow.Flow flow,...` | The month. |
 | 209 | 1 | `public double runLitres()` _(in RefineryView.View)_ | The crude the month ran, litres. |
 | 212 | 1 | `public double runTonnes()` _(in RefineryView.View)_ | ...and tonnes. |
 | 215 | 6 | `public double cut(Stream s)` _(in RefineryView.View)_ | A straight-run cut of the month's run, litres - the residue with the heavy crude's. |
@@ -212,7 +212,7 @@
 | 235 | 1 | `public boolean drawn()` _(in RefineryView.View)_ | Whether there is a month to draw: a crude unit standing, counted, that ran something. |
 | 238 | 1 | `public Picture picture(double width, double height)` _(in RefineryView.View)_ | The picture at a width and a height (THE PICTURE). |
 | 242 | 159 | `public static View of(Game game)` | The refinery's month in `game` (pure). |
-| 402 | 3 | `private static void addSource(List<Source> to, SourceKind kind, int count, double bought, double tonnes, double[] grades)` |  |
+| 402 | 3 | `private static void addSource(List<Source> to, SourceKind kind, long count, double bought, double tonnes, double[] grades)` |  |
 | 412 | 12 | `static double[] wellsGrades(double[] purchases, double local, double imported)` | The grades of the crude bought at home this month (pure): what the month's purchases' mix (Refining.monthsMix() of them, getCrudeMix() at the month's end) holds once the imports' MEDIUM is taken out; MEDIUM with none ... |
 | 426 | 7 | `static BuyerKind kindOf(Sector s, Good g)` | What a sector's purchase of a product is, as a taker: the forecourts' petrol the cars', diesel the vans' (the railway's its own), lubricants the factories', bitumen the roads'. |
 | 439 | 12 | `static SpreadPlanner.Candidate oneMore(Refining r, Game game, List<BuildingsTemplate> sizes)` | One more of a kind, weighed by the planner (Refining.appraise(), the build card's read): of its sizes, the one that passes every gate and earns most on its cost, or - with none passing - the smallest's. |

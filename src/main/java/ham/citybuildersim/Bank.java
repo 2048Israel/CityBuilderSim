@@ -3153,7 +3153,9 @@ public class Bank {
      * branch cost its payroll and its repairs and no more. Jerus's branch
      * rule is "maintenance and operating costs", so it is paid now, here,
      * as the city's own services pay their templates' upkeep: a real
-     * outflow, declared to the audit as "- bank Operating".
+     * outflow of the bank's cash, bought of Business Services since HL1
+     * (Game.nextMonth(); BusinessServices.sellBankUpkeep()) and noted to the
+     * audit as "chk - bank Operating", a pool paying a pool.
      *
      * @param repairs   the branches' repair bill, paid to the builders
      * @param operating their templates' operating cost, paid out of the city
@@ -5406,7 +5408,7 @@ public class Bank {
     public boolean feesWouldCoverAnother() { return feesWouldCoverAnother(branches); }
     public boolean feesWouldCoverAnother(double standing) {
         double cost = laterBranchCost();
-        return cost > 0 && accountFees + lastUpkeepPerLater >= (standing + 1) * cost;
+        return cost > 0 && accountFees + lastUpkeepPerLater >= (standing + 1) * cost + newBranchExtra();
     }
 
     /**
@@ -5416,6 +5418,28 @@ public class Bank {
      * cost. The same as runningCostPerBranch() for a bank whose branches all
      * paid alike.
      */
+    /*
+     * THE NEW BRANCH'S OWN CREW (QN1, 2026-11-19; docs/queue/QN1.md, REV-R2e-6 finding 4). A later branch's cost C is
+     * what the standing branches paid last month; a branch opened now may open on another recipe (a city founded the
+     * 1900 way rejects a machine the standing branches have, and hires the clerks it replaced), costing C_new. With N
+     * branches standing and the charter's exemption E the opening gate asks fees >= N x C + C_new - E: the new crew once,
+     * on the one branch that would have it. The branches standing, their closures (branchesTheFeesCover()) and the
+     * book's costs keep C. R2e's first repair multiplied the difference by N + 1.
+     */
+    private transient java.util.function.DoubleSupplier newBranchExtra;
+
+    /** The investors hand in C_new - C for the branch they would open (BusinessInvestment.newBranchExtra()); null for none. */
+    public void setNewBranchExtra(java.util.function.DoubleSupplier extra) { newBranchExtra = extra; }
+
+    /** C_new - C: what a new branch's own crew costs over a later branch's cached cost; 0 with none handed in. */
+    double newBranchExtra() { return newBranchExtra == null ? 0 : newBranchExtra.getAsDouble(); }
+
+    /** C_new: what the branch opened next would cost a month, a later branch's cost and its own crew's difference; 0 with nothing known to cost. */
+    public double newBranchCost() {
+        double cost = laterBranchCost();
+        return cost > 0 ? cost + newBranchExtra() : cost;
+    }
+
     public double laterBranchCost() {
         return branches > 0 ? (lastPayroll + lastUpkeep - lastOperating) / branches + lastUpkeepPerLater : 0;
     }
@@ -5472,7 +5496,7 @@ public class Bank {
         if (!feesWouldCoverAnother(standing)) {
             return String.format("another branch's customers would pay %s a month in fees against the %s a branch costs",
                     Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
-                    Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
+                    Currency.writing().write(String.format("%,.1fk", newBranchCost())));
         }
         return null;
     }
@@ -5482,7 +5506,7 @@ public class Bank {
         if (standing <= 0) return "nowhere in the city to bank - its credit comes from outside, at the window's price";
         return String.format("%,.0f customers - another branch's fees of %s a month would cover the %s it costs",
                 customers, Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
-                Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
+                Currency.writing().write(String.format("%,.1fk", newBranchCost())));
     }
 
     /* ----------------- a branch whose fees do not cover it is closed (0.7.19) -----------------
@@ -5552,6 +5576,40 @@ public class Bank {
             room = Math.min(room, Math.max(0, Math.max(0, equity()) / leverageTarget() - exposure()));
         }
         return room;
+    }
+
+    /**
+     * Growth commitments fit the target even above it (BF1). Defaults are
+     * known before the month's loan book settles: remove the losses not
+     * covered by that borrower's existing allowance from the capital room.
+     * Working-capital lines remain commitments already made.
+     */
+    public double projectHeadroom() {
+        if (branches <= 0) return Double.POSITIVE_INFINITY;
+        double loss = unsettledCreditLoss();
+        return Math.max(0, Math.min(headroom(), Math.min(
+                (equity() - loss) / capitalTarget() - getWeightedBook(),
+                (equity() - loss) / leverageTarget() - exposure())));
+    }
+
+    /** Insured growth consumes exposure, with no risk weight or assumed business-loan mix. */
+    public double leverageHeadroom() {
+        return branches <= 0 ? Double.POSITIVE_INFINITY
+                : Math.max(0, equity() / leverageTarget() - exposure());
+    }
+
+    /** The same leverage room before the month's known losses have reached the loan book. */
+    public double projectLeverageHeadroom() {
+        return branches <= 0 ? Double.POSITIVE_INFINITY
+                : Math.max(0, (equity() - unsettledCreditLoss()) / leverageTarget() - exposure());
+    }
+
+    private double unsettledCreditLoss() {
+        double loss = Math.max(0, householdWrittenOff - householdAllowance);
+        for (java.util.Map.Entry<String, Double> e : writtenOffBySector.entrySet()) {
+            loss += Math.max(0, e.getValue() - getSectorAllowance(e.getKey()));
+        }
+        return loss;
     }
 
     public void setCash(double value) { this.cash = value; }
@@ -6248,6 +6306,41 @@ public class Bank {
     /** ...and the same of the sheet a year ago; nothing when none is on file. */
     public double yearAgoResidual() { return knowsYearAgo() ? residual(this::yearAgo) : 0; }
 
+    /* ----- when the lines do not add up (BI1, 2026-11-20) -----
+     * The Bank page raised "Its lines do not add up" and "Its two parts do not add up to its equity" on an
+     * absolute $5 (.005 of a thousand), and a double's own step at 1e13 is .002 to .008: KeptCheck's city of
+     * 4,820 months lit both on float dust alone, each sum of a dozen figures carrying its rounding in. The
+     * audit's own rule for comparing money is MoneyAudit.tolerance(size): a cent, or a part in a trillion of
+     * the figures' size, and never under 64 steps of a double at that size. The page's test is that one, here
+     * in the model, so the screen reads one verdict and recomputes none (not LongPlaytest.audit()'s part in
+     * ten million of what moved, which is a flow's rule: on a 5.8e13 sheet it would leave a $5.8 billion line
+     * dark).
+     */
+
+    /** Whether a residual is within what MoneyAudit.tolerance() allows a book of this size; a residual or a size that is not a finite number is not, so the page says so rather than hiding it. */
+    public static boolean addsUp(double residual, double size) {
+        return Double.isFinite(residual) && Double.isFinite(size) && Math.abs(residual) <= MoneyAudit.tolerance(size);
+    }
+
+    /** The size of the sheet the lines are read against: every line's magnitude, each carrying its own rounding into the sum (the allowance is negative on the page). */
+    public double sheetSize() { return sizeOf(this::sheet); }
+
+    /** ...the sheet a year ago; nothing when none is on file. */
+    public double yearAgoSheetSize() { return knowsYearAgo() ? sizeOf(this::yearAgo) : 0; }
+
+    /** True when its lines add up within MoneyAudit.tolerance() of the sheet's size: the page's "Its lines do not add up" is its opposite. */
+    public boolean sheetAddsUp() { return addsUp(sheetResidual(), sheetSize()); }
+
+    /** ...and the sheet a year ago; true when none is on file, which the page has nothing to say of. */
+    public boolean yearAgoSheetAddsUp() { return !knowsYearAgo() || addsUp(yearAgoResidual(), yearAgoSheetSize()); }
+
+    private static double sizeOf(java.util.function.ToDoubleFunction<Sheet> at) {
+        double size = Math.abs(at.applyAsDouble(Sheet.EQUITY));
+        for (Sheet s : SHEET_ASSETS) size += Math.abs(at.applyAsDouble(s));
+        for (Sheet s : SHEET_LIABILITIES) size += Math.abs(at.applyAsDouble(s));
+        return size;
+    }
+
     /** The other side of the sheet: its liabilities and its equity together. */
     public double liabilitiesAndEquity() { return sheet(Sheet.LIABILITIES) + sheet(Sheet.EQUITY); }
 
@@ -6584,6 +6677,17 @@ public class Bank {
             for (double t : terms) size += Math.abs(t);
             return size;
         }
+
+        /**
+         * True when the causes explain the month's change in equity within MoneyAudit.tolerance() of scale() - the
+         * rule of the sheet and its split (addsUp(), BI1) - and the page's "Something moved its equity without
+         * telling it", its waterfall's red "Not accounted for" and the statement's are this one's opposite (BI2,
+         * 2026-11-20). WHY: they were an absolute $5 against a residual that is a signed sum of seventeen figures,
+         * whose rounding is a few steps of a double at their size: float dust past $5 on a bank of 1e13 and more,
+         * and the same $5 let a small bank's miss of a few dollars by. A residual or a scale that is not a finite
+         * number does not add up: that is the screen's red line, not its silence.
+         */
+        public boolean addsUp() { return Bank.addsUp(residual(), scale()); }
     }
 
     /**
@@ -6691,6 +6795,14 @@ public class Bank {
     public double equitySplitResidual() {
         return splitKnown ? paidInCapital() + retainedEarnings() + preferredOutstanding() - equity() : 0;
     }
+
+    /** The size of what the split is read against: the magnitudes of its three parts and of equity, each carrying its own rounding into the sum; nothing when !knowsEquitySplit(). */
+    public double equitySplitSize() {
+        return splitKnown ? Math.abs(paidInCapital()) + Math.abs(retainedEarnings()) + Math.abs(preferredOutstanding()) + Math.abs(equity()) : 0;
+    }
+
+    /** True when the parts add up to equity within MoneyAudit.tolerance() of the split's size (see sheetAddsUp()); true when !knowsEquitySplit(), which the page has nothing to say of. */
+    public boolean equitySplitAddsUp() { return !splitKnown || addsUp(equitySplitResidual(), equitySplitSize()); }
 
     /** Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). */
     public double paidInOpening()   { return splitKnown ? paidInOpening : 0; }

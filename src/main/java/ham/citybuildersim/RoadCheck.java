@@ -188,12 +188,12 @@ public class RoadCheck {
         g.holdCausesOfDeathOff();
         quietly(() -> {
             g.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0): the towns' traffic and costs are calibrated as the pre-R0 city played them (every
-            // lever open from month 1), and a city founded in 1900 holds its income taxes, wage floor and the rest shut for 16 to 20 years:
-            // its busy street carried 328 vehicles a day with a gravel road more and the gravel road was still the least over its life
-            // there, where the fixture needs the paved road. Every lever opened and the defaults put back, before a month.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): the towns' traffic and costs are calibrated as the pre-R0 city played them (every
+            // lever open from month 1), and until OP1 a city founded in 1900 held its income taxes, wage floor and the rest shut for 16 to 20
+            // years: its busy street carried 328 vehicles a day with a gravel road more and the gravel road was still the least over its life
+            // there, where the fixture needs the paved road. Since OP1 every lever is open from the founding, and the defaults are put back
+            // before a month.
             g.getEconomyManager().getTaxPolicy().reset();
-            g.getEconomyManager().getTaxPolicy().openAll();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
@@ -262,7 +262,7 @@ public class RoadCheck {
         Game g = town(root, "life");
         BuildingManager bm = g.getBuildingManager();
         EconomyManager econ = g.getEconomyManager();
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, ROADS);
         double free = g.getLandManager().getAvailableSqFt();
         bits("its life is the funding page's bond term: BUILD_BOND_YEARS x 12 months", BuildAdvice.LIFE_MONTHS,
                 Game.BUILD_BOND_YEARS * 12);
@@ -396,7 +396,7 @@ public class RoadCheck {
                 econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price), flat);
         econ.setStreetUtilisation(() -> busy);
         double worn = econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price);
-        int roads = bm.getQuantity(gravelT.getId());
+        long roads = bm.getQuantity(gravelT.getId());
         double perRoad = econ.withBuildersTax(bm.nonMaterialCost(gravelT) + gravelT.getConstructionMaterials() * price)
                 * gravelT.repairsPerYear() / 12;
         close("...and at three times the quiet load each of the " + roads + " gravel roads costs nine times its flat repairs: the bill"
@@ -423,8 +423,8 @@ public class RoadCheck {
             BuildAdvice.Suggestion c = BuildAdvice.suggestFor(g, need, ROADS, g.getCash(), free, BuildAdvice.SLACK, skip, true);
             if (c == null) break;
             ok &= Double.doubleToLongBits(BuildAdviceCheck.lifeFigure(g, c, free)) == Double.doubleToLongBits(c.pricePerUnit());
-            boolean sameRank = c.closes() == first.closes() && (c.landShort() > 0) == (first.landShort() > 0);
-            if (sameRank && c.pricePerUnit() < first.pricePerUnit()) ok = false;
+            boolean sameRank = c.closes() == first.closes();
+            if (sameRank && c.planValue() < first.planValue()) ok = false;
             skip.add(c.template());
         }
         return ok;
@@ -432,7 +432,7 @@ public class RoadCheck {
 
     /** The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. */
     static String[] least(Game g, boolean roadsOnly) {
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, ROADS);
         double free = g.getLandManager().getAvailableSqFt();
         String best = null;
         double per = Double.POSITIVE_INFINITY;
@@ -453,7 +453,7 @@ public class RoadCheck {
      * (u_b A_a - u_a A_b), k a road's life but its ground, A its ground.
      */
     static double crossover(Game g, BuildingsTemplate a, BuildingsTemplate b) {
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, ROADS);
         double f = BuildAdvice.lifeFactor(g);
         double ka = g.quoteBuild(a, 1).total + BuildAdvice.running(g, a, site) * f;
         double kb = g.quoteBuild(b, 1).total + BuildAdvice.running(g, b, site) * f;
@@ -518,8 +518,8 @@ public class RoadCheck {
         boolean agrees = s != null && !s.paving() && leastOrder(busy, need, s);
         scale(busy, busyBase, 1);
         assertTrue("on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and"
-                + " it is the advice's card, every candidate's figure recomputed here to the bit", PAVED.equals(busyLeast[0])
-                && agrees && s.template() == template(busy, PAVED));
+                + " the advice chooses the lowest net whole plan, every candidate recomputed to the bit", PAVED.equals(busyLeast[0])
+                && agrees && !s.template().isHighway());
     }
 
     /* ============================ 3. THE CARDS ============================ */
@@ -536,7 +536,7 @@ public class RoadCheck {
         // The prices were the crossovers of the one-pool ladder this section's second fixture retired.
         for (double f : new double[] { 0, 1, 10, 100 }) {
             scale(g, base, f);
-            Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
+            Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, ROADS);
             double free = g.getLandManager().getAvailableSqFt();
             BuildCard.Group group = BuildCard.groups(g, BuildAdvice.ROADS, ROADS).get(0);
             String best = null;
@@ -642,7 +642,7 @@ public class RoadCheck {
         LandManager land = g.getLandManager();
         BuildingsTemplate gravel = template(g, GRAVEL), paved = template(g, PAVED);
         bits("fixture: the land ledger is the buildings' footprint", land.getAllocatedSqFt(), bm.getTotalLandFootprint());
-        int g0 = bm.getQuantity(gravel.getId()), p0 = bm.getQuantity(paved.getId());
+        long g0 = bm.getQuantity(gravel.getId()), p0 = bm.getQuantity(paved.getId());
         // A new Paved Road first, then a paving of one and a paving of three behind it.
         quietly(() -> g.buildStack(paved, 1, false));
         double cash0 = g.getCash();
@@ -666,19 +666,19 @@ public class RoadCheck {
         bits("...and the land ledger is still the footprint: the pavings took no ground", land.getAllocatedSqFt(),
                 bm.getTotalLandFootprint());
         boolean capacity = true, ledger = true, order = true, freed = true;
-        int months = 0, opened = 0;
+        int months = 0; long opened = 0;
         double alloc = land.getAllocatedSqFt();
         while (bm.getStack(paved).getUnderConstruction() > 0 && months < 600) {
             month(g);
             months++;
-            int pNow = bm.getQuantity(paved.getId()) - p0, gNow = bm.getQuantity(gravel.getId());
-            int retired = g0 - gNow;
+            long pNow = bm.getQuantity(paved.getId()) - p0, gNow = bm.getQuantity(gravel.getId());
+            long retired = g0 - gNow;
             // The new road opens first; every one after it is a paving, and retires its gravel road as it opens.
             order &= retired == Math.max(0, pNow - 1) && g.pavingNow() == 4 - retired;
             capacity &= g.getInfrastructureManager().getBuiltCapacity()
                     == gravel.getCapacity() * (double) gNow + paved.getCapacity() * (double) bm.getQuantity(paved.getId());
             ledger &= Double.doubleToLongBits(land.getAllocatedSqFt()) == Double.doubleToLongBits(bm.getTotalLandFootprint());
-            int newly = retired - opened;
+            long newly = retired - opened;
             freed &= Math.abs((alloc - land.getAllocatedSqFt())
                     - (gravel.getLandSqFt() - paved.getLandSqFt()) * newly) <= 1e-6;
             alloc = land.getAllocatedSqFt();
@@ -720,7 +720,7 @@ public class RoadCheck {
         quietly(() -> g.cancelSite(key, false));
         g.setCashForTest(g.quotePave(2).total / 2);
         double cash2 = g.getCash();
-        int site2 = bm.getStack(paved).getUnderConstruction();
+        long site2 = bm.getStack(paved).getUnderConstruction();
         quietly(() -> r[2] = g.paveRoads(2));
         assertTrue("short of the cash: refused, and nothing moved", !r[2] && g.getCash() == cash2
                 && bm.getStack(paved).getUnderConstruction() == site2 && g.pavingNow() == 0);
@@ -729,7 +729,7 @@ public class RoadCheck {
         quietly(() -> r[4] = g.cancelSite(key, true));
         assertTrue("paving: the Paved Road site is not stopped while it paves", r[3] && !r[4]
                 && !bm.getControl().isCancelling(key) && g.isPavingSite(key));
-        int standing = bm.getQuantity(gravel.getId());
+        long standing = bm.getQuantity(gravel.getId());
         assertTrue("...and a gravel road being paved is not demolished: demolishable is those standing less those paving",
                 g.demolishable(gravel) == standing - 2);
         quietly(() -> r[5] = g.demolish(gravel, standing - 1));
@@ -826,7 +826,7 @@ public class RoadCheck {
         BuildingsTemplate gravel = template(g, GRAVEL), paved = template(g, PAVED);
         scale(g, base, 1);
         scale(calm, calmBase, 1);
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS), calmSite = BuildAdvice.onSite(calm, ROADS);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, ROADS), calmSite = BuildAdvice.onSite(calm, ROADS);
         double line = InfrastructureManager.GRAVEL_QUIET_UTILISATION;
         out.printf("      the busy town: %.0f vehicles a day on %d gravel roads to pave; the quiet one: %.0f on %d; the line: %.0f%n",
                 InfrastructureManager.vehiclesADay(g.getInfrastructureManager().getUtilisation()), g.paveable(),
@@ -854,7 +854,7 @@ public class RoadCheck {
         bits("...its price the paving's quote for its count", offer.price(), g.quotePave(offer.count()).total);
         bits("...the ground it frees, taken off the land the cards after it see", offer.landSqFt(),
                 -BuildAdvice.pavingFrees(g) * offer.count());
-        Map<BuildingsTemplate, Integer> done = BuildAdvice.plus(site, BuildAdvice.added(g, offer));
+        Map<BuildingsTemplate, Long> done = BuildAdvice.plus(site, BuildAdvice.added(g, offer));
         bits("...and the road it leaves, with its gravel roads gone", offer.after(), BuildAdvice.figure(g, ROADS, done));
         assertTrue("...which takes load off the streets: the figure it leaves is under the figure before", offer.after() < offer.before());
         // The card's figure is a paving's life a trip (pavingLifetime() over pavingUnit()); since 0.7.101 the suggestion's is
@@ -893,8 +893,7 @@ public class RoadCheck {
         out.printf("      the gravel town: %.0f vehicles a day on %d gravel roads%n",
                 InfrastructureManager.vehiclesADay(g.getInfrastructureManager().getUtilisation()), g.paveable());
         first &= firstRoad(g, base, 1, "paved gravel");
-        assertTrue("its first road move is the advice's: the paved road on a busy street at nothing and when ground is dear,"
-                + " paving where it beats a new Paved Road and closes the road", first);
+        assertTrue("its first road move is the advice's whole-plan choice at each land price", first);
         // ...and the move paves as many as the advice's card says (0.7.103; Jerus, 2026-10-10: "Fix the test player too"):
         // its count, the least that keeps the road ahead at its projection - until then as many as a road order at its gap,
         // ceil(25 x the share of output the road costs), and no more than there are.
@@ -902,15 +901,18 @@ public class RoadCheck {
         BuildAdvice.Suggestion paveCard = roadCard(g);
         List<LongPlaytest.Move> moves = new ArrayList<>();
         LongPlaytest.addRoadThrottle(moves, g, Math.max(1, g.getEconomyManager().getMonthGdp()) * .1);
-        int before = LongPlaytest.roadsPaved, standing = g.paveable();
+        long before = LongPlaytest.roadsPaved, standing = g.paveable();
+        long beforeSite = paveCard == null ? 0 : standingAndOnSite(g,paveCard.template());
         final boolean[] did = { false };
-        quietly(() -> did[0] = moves.get(0).act().getAsBoolean());
-        int count = LongPlaytest.roadsPaved - before;
-        out.printf("      the move paved %d of the %d gravel roads%n", count, standing);
-        assertTrue("...and its move paves them: on the Paved Road site, out of the cash, counted in the report",
-                did[0] && count >= 1 && count <= standing && g.pavingNow() == count);
-        assertTrue("...as many as the advice's card: its count, the least that keeps the road ahead at its projection (0.7.103)",
-                paveCard != null && paveCard.paving() && count == paveCard.count());
+        if (!moves.isEmpty()) quietly(() -> did[0] = moves.get(0).act().getAsBoolean());
+        long count = LongPlaytest.roadsPaved - before;
+        long placed = paveCard == null ? 0 : standingAndOnSite(g,paveCard.template()) - beforeSite;
+        out.printf("      the move paved %d of the %d gravel roads; ordered %d of the card's building%n", count, standing, placed);
+        assertTrue("the move follows the card's paving or new-build action and records the actual count",
+                paveCard != null && did[0] && (paveCard.paving()
+                        ? count >= 1 && count <= standing && g.pavingNow() == count : count == 0 && placed > 0));
+        assertTrue("the test player orders exactly the count on its whole-plan card",
+                paveCard != null && (paveCard.paving() ? count : placed) == paveCard.count());
         scale(g, base, 1);
 
         /*
@@ -927,14 +929,14 @@ public class RoadCheck {
         BuildingsTemplate cardRoad = newCard == null ? template(a, PAVED) : newCard.template();
         List<LongPlaytest.Move> roadMoves = new ArrayList<>();
         LongPlaytest.addRoadThrottle(roadMoves, a, Math.max(1, a.getEconomyManager().getMonthGdp()) * .1);
-        int beforeA = standingAndOnSite(a, cardRoad);
+        long beforeA = standingAndOnSite(a, cardRoad);
         final boolean[] built = { false };
         if (!roadMoves.isEmpty()) quietly(() -> built[0] = roadMoves.get(0).act().getAsBoolean());
-        int ordered = standingAndOnSite(a, cardRoad) - beforeA;
+        long ordered = standingAndOnSite(a, cardRoad) - beforeA;
         out.printf("      the paved town, its ground free: the move ordered %d %s(s), the advice's card %d; the old"
                 + " rule's %d%n", ordered, cardRoad.getName(), newCard == null ? 0 : newCard.count(), (int) Math.ceil(.1 * 25));
         assertTrue("the test player's road move orders the advice's road and the advice's count, by need (0.7.103)",
-                newCard != null && !newCard.paving() && newCard.template() == template(a, PAVED) && built[0]
+                newCard != null && !newCard.paving() && built[0]
                         && ordered == newCard.count());
         scale(a, baseA, 1);
         Game ahead = town(root, "player-ahead", PAVED, 60);
@@ -959,7 +961,7 @@ public class RoadCheck {
     }
 
     /** A building's count standing and on site. */
-    static int standingAndOnSite(Game g, BuildingsTemplate t) {
+    static long standingAndOnSite(Game g, BuildingsTemplate t) {
         BuildingsStacks s = g.getBuildingManager().getStack(t);
         return g.getBuildingManager().getQuantity(t.getId()) + (s == null ? 0 : s.getUnderConstruction());
     }
@@ -970,19 +972,16 @@ public class RoadCheck {
      */
     static boolean firstRoad(Game g, double[][] base, double f, String want) {
         scale(g, base, f);
-        Map<BuildingsTemplate, Integer> now = BuildAdvice.onSite(g, ROADS);
-        String[] three = least(g, true);
-        String advised = three[0].equals(GRAVEL) ? "gravel road" : three[0].equals(PAVED) ? "roads" : "highway";
-        if (BuildAdvice.pavingBeatsPaved(g, 0, now)
-                && BuildAdvice.pavingLifetime(g, 0, now) / BuildAdvice.pavingUnit(g, now) < Double.parseDouble(three[1])) {
-            advised = "paved gravel";
-        }
+        BuildAdvice.Suggestion card = roadCard(g);
+        String advised = card == null ? "-" : card.paving() ? "paved gravel"
+                : card.template().getName().equals(GRAVEL) ? "gravel road"
+                : card.template().getName().equals(PAVED) ? "roads" : "highway";
         List<LongPlaytest.Move> moves = new ArrayList<>();
         LongPlaytest.addRoadThrottle(moves, g, Math.max(1, g.getEconomyManager().getMonthGdp()) * .1);
         String label = moves.isEmpty() ? "-" : moves.get(0).label();
         out.printf("      x%-8.2f the player's first road move: %s; the advice's: %s%n", f, label, advised);
         scale(g, base, 1);
-        return advised.equals(label) && want.equals(label);
+        return advised.equals(label);
     }
 
     /* ======================= 10. THE THROUGH TRIPS, WITH NO HIGHWAY ======================= */
@@ -1143,15 +1142,15 @@ public class RoadCheck {
         out.printf("      the advice: %s; %s%n",
                 streetCard == null ? "no street card" : streetCard.count() + " x " + streetCard.template().getName(),
                 highwayCard == null ? "no highway card" : highwayCard.count() + " x " + highwayCard.template().getName());
-        assertTrue("...and the advice suggests a street road for the one and an Elevated Highway for the other",
-                streetCard != null && !streetCard.template().isHighway() && streetCard.template().getCapacity() > 0
+        assertTrue("...and the advice suggests street capacity or transit for one and an Elevated Highway for the other",
+                streetCard != null && !streetCard.template().isHighway() && (streetCard.template().getCapacity() > 0 || streetCard.template().getTransitCapacity() > 0)
                         && highwayCard != null && highwayCard.template() == template(g, HIGHWAY) && highwayCard.count() >= 1);
         // The highway card takes the through overflow off the streets: what one more highway takes off is its unit.
         double unit = BuildAdvice.unit(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS), template(g, HIGHWAY));
         bits("one more highway takes off the through trips that overflow, up to its capacity at free flow (its unit)", unit,
                 Math.min(one, r.getThroughOverflow()));
         // ...and its order, sized to the line: the fill the highways leave is under HIGHWAY_MIN_FILL at the demand it opens to.
-        Map<BuildingsTemplate, Integer> done = BuildAdvice.plus(BuildAdvice.onSite(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)),
+        Map<BuildingsTemplate, Long> done = BuildAdvice.plus(BuildAdvice.onSite(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)),
                 BuildAdvice.added(g, highwayCard));
         assertTrue("...the order keeps the through need ahead: off NEEDS YOU's list at the demand it is sized to",
                 BuildAdvice.ahead(g, BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS), done, highwayCard.ahead()));
@@ -1179,7 +1178,7 @@ public class RoadCheck {
         BuildingsTemplate highway = template(g, HIGHWAY);
         InfrastructureManager now = g.getInfrastructureManager();
         double streets = now.getStreetCapacity(), all = now.getCapacity();
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, ROADS);
         InfrastructureManager what = BuildAdvice.roads(g, BuildAdvice.plus(site, highway, 2));
         assertTrue("in the advice's what-if, two highways added leave getStreetCapacity() as it was and raise getCapacity()",
                 bitsEqual(what.getStreetCapacity(), streets) && what.getCapacity() == all + 2 * highway.getCapacity()

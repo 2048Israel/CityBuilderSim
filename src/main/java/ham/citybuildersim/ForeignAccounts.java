@@ -833,6 +833,11 @@ public class ForeignAccounts {
         return rate > 0 ? interventionLocalFor(lift, annual) / rate : 0;
     }
 
+    /** XR7: compare lifts before taking the exponential inverse, so even an extreme repeg cannot overflow its purchase. */
+    private static boolean holdPurchaseTooLarge(double lift, double annual) {
+        return annual > 0 && lift > interventionMove(HOLD_PURCHASE_YEARS * annual, annual);
+    }
+
     /**
      * The sale itself, at the month's rate - before the reprice moves it, so
      * the dollars sold are never revalued (revalueVault() strikes the move on
@@ -1069,15 +1074,17 @@ public class ForeignAccounts {
              * those that bring it back down (THE STRONG EDGE), inside it deals
              * nothing - and what it dealt before still shows, fading, in the rate
              * (holdFelt). If a sale would take the vault under its floor the band
-             * gives way for the month: nothing is dealt, the rate stands at free,
+             * gives way for the month, as it does for a purchase above
+             * HOLD_PURCHASE_YEARS of output (XR7): nothing is dealt, the rate stands at free,
              * and the regime stays (Jerus's call, "gives way for the month").
              */
             double free = x + holdFelt;
             double weak = bandWeakEdge();
             double strong = bandStrongEdge();
             double lift = Math.max(Math.log(strong), Math.min(Math.log(weak), free)) - free;
-            double usd = holdUsd(lift, annual);
-            if (usd < 0 && getReservesUsd() + usd < vaultFloorUsd()) {
+            boolean purchaseTooLarge = holdPurchaseTooLarge(lift, annual);
+            double usd = purchaseTooLarge ? 0 : holdUsd(lift, annual);
+            if (purchaseTooLarge || (usd < 0 && getReservesUsd() + usd < vaultFloorUsd())) {
                 rate = clampRate(Math.exp(free));
             } else {
                 if (usd < 0) sellToDefend(-usd); else edgeBuy(usd);
@@ -1095,11 +1102,11 @@ public class ForeignAccounts {
             double held = heldRate();
             shadow = clampRate(Math.exp(x));
             double gap = Math.log(shadow / held);
-            double h = hazard(Math.max(0, gap));
+            double h = isCanadaGold() ? 0 : hazard(Math.max(0, gap));
             BreakCause cause = BreakCause.NONE;
             // (a) DOUBT: a draw from a stream of its own, so the market's path is the same
             // pegged or not. A quiet (unseeded) market never draws and never doubts.
-            if (marketSeeded) {
+            if (marketSeeded && !isCanadaGold()) {
                 double u = new java.util.Random(mix(marketSeed ^ PEG_SALT, pegDraws++)).nextDouble();
                 if (u < h) cause = BreakCause.DOUBT;
             }
@@ -1111,16 +1118,22 @@ public class ForeignAccounts {
             // rate and deals nothing.
             double free = x + holdFelt;
             double lift = Math.log(held) - free;
-            double usd = holdUsd(lift, annual);
+            boolean purchaseTooLarge = !isCanadaGold() && holdPurchaseTooLarge(lift, annual);
+            double usd = purchaseTooLarge ? 0 : holdUsd(lift, annual);
+            if (cause == BreakCause.NONE && purchaseTooLarge) cause = BreakCause.PURCHASE_LIMIT;
             // (b) THE VAULT: that sale would take it under its floor.
-            if (cause == BreakCause.NONE && usd < 0 && getReservesUsd() + usd < vaultFloorUsd()) {
+            if (isCanadaGold() && (getReservesUsd() <= 0 || (usd < 0 && getReservesUsd() + usd <= 0))) {
+                // The game rule is exhaustion, not the chosen peg's import floor or doubt.
+                sellToDefend(getReservesUsd());
+                cause = BreakCause.VAULT;
+            } else if (!isCanadaGold() && cause == BreakCause.NONE && usd < 0 && getReservesUsd() + usd < vaultFloorUsd()) {
                 cause = BreakCause.VAULT;
             }
             lastHazard = h;
             lastPegGap = gap;
             if (cause == BreakCause.NONE) {
                 // (c) HELD: the vault deals what the lift takes and the rate is the peg. A
-                // purchase never breaks a peg: the vault only fills.
+                // purchase below HOLD_PURCHASE_YEARS fills the vault.
                 if (usd < 0) sellToDefend(-usd); else edgeBuy(usd);
                 holdFelt += lift;
                 rate = clampRate(held);
@@ -1165,11 +1178,14 @@ public class ForeignAccounts {
                 double lift = Math.max(Math.log(strong), Math.min(Math.log(weak), free)) - free;
                 double usd = holdUsd(lift, annual);
                 // (b) THE COVER: a sale, paid in gold first, that the gold cannot pay or that would leave the
-                // cover under COVER_RATIO. A purchase never breaks it, and the vault's floor is not asked.
+                // cover under COVER_RATIO. A purchase never breaks it, and the vault's floor is not asked. The cover
+                // after the sale is over M0 after it: what the gold fetched is retired (FB14; CentralBank, THE GOLD'S OWN
+                // DEFENCE), no more than the bank's reserves can retire (setMoneyBase(m0, retirable); REV-FB14).
                 if (cause == BreakCause.NONE && usd < 0) {
                     double goldUsd = getHoldingUsd(GOLD);
                     double ouncesLeft = Math.max(0, goldUsd + usd) / usdPer[GOLD];
-                    if (-usd > goldUsd || coverOf(ouncesLeft, moneyBase) < COVER_RATIO) cause = BreakCause.COVER;
+                    double m0After = moneyBase - Math.min(retirableBase, -usd * rate);
+                    if (-usd > goldUsd || coverOf(ouncesLeft, m0After) < COVER_RATIO) cause = BreakCause.COVER;
                 }
                 lastHazard = h;
                 lastPegGap = gap;
@@ -1218,10 +1234,12 @@ public class ForeignAccounts {
      * sets the shadow to the rate (it floats now).
      */
     private void breakTheHold(BreakCause cause, double x, double gap, double shadow, double prevLog) {
+        if (isCanadaGold()) canadaGoldLeft = true;
         double overshoot = OVERSHOOT * gap;
         breakFelt += overshoot;
         holdFelt = 0;
         rate = clampRate(Math.exp(x + overshoot));
+        lastBreakGold = regime == Regime.GOLD;
         regime = Regime.FLOAT;
         brokeThisMonth = true;
         breaks++;
@@ -1297,8 +1315,10 @@ public class ForeignAccounts {
      * vault under VAULT_FLOOR months of imports (Krugman's first generation),
      * or by chance, hazard(gap) a month, which rises with the shadow's gap
      * from the peg (Obstfeld's second: doubt itself breaks a peg). A purchase
-     * never breaks a peg, and a band whose sale the vault cannot afford gives
-     * way for the month and stays a band. The rate lands at the shadow plus
+     * above HOLD_PURCHASE_YEARS of annual output breaks a player-chosen peg
+     * before it deals (XR7); a band past that bound, or whose sale the vault
+     * cannot afford, gives way for the month and stays a band. The rate lands
+     * at the shadow plus
      * OVERSHOOT of the gap again - past the shadow on the strong side where it
      * was the stronger (XR5: the Swiss franc, 2015), on the weak side where it
      * was the weaker - (breakFelt, fading as the market's swings do; holdFelt
@@ -1377,9 +1397,9 @@ public class ForeignAccounts {
         EdgePayer(String words) { this.words = words; }
     }
 
-    /** Why a peg broke: holding it would take the vault under its floor (XR5: the sale the hold needs, not the month's deficit), or doubt itself did it (star 4); under Gold, the cover fell under the law's (GD3, last: its ordinal is saved). */
+    /** Why a peg broke: the vault floor, doubt, the gold cover, or XR7's purchase limit. Append causes: their ordinals are saved. */
     public enum BreakCause {
-        NONE("none"), VAULT("the vault ran short"), DOUBT("doubt"), COVER("the gold cover fell under the law's 40%");
+        NONE("none"), VAULT("the vault ran short"), DOUBT("doubt"), COVER("the gold cover fell under the law's 40%"), PURCHASE_LIMIT("the hold's purchase exceeded its limit");
         public final String words;
         BreakCause(String words) { this.words = words; }
     }
@@ -1410,6 +1430,9 @@ public class ForeignAccounts {
 
     /** Months of imports the vault must keep under a peg or a band: under it the hold gives way (the usual rule of thumb is three months of cover; the study's prototype breaks at one). */
     public static final double VAULT_FLOOR = 1;
+
+    /** Most a peg or band may buy in a month, in years of GDP: one year leaves room for a 50% devaluation's bill while refusing a monthly bill larger than annual city income (estimate, XR7). */
+    public static final double HOLD_PURCHASE_YEARS = 1;
 
     /** A broken peg lands at the shadow plus this share of the gap from the peg again - past the shadow on the weak side where the D$ was weaker than the peg, on the strong side where it was stronger (XR5; the Swiss franc, 2015) - and fades as the market's swings do (RatesModel, the study's prototype). */
     public static final double OVERSHOOT = .25;
@@ -1477,6 +1500,8 @@ public class ForeignAccounts {
     private BreakCause lastBreakCause = BreakCause.NONE;
     private double lastBreakJump, lastBreakShadow;
     private boolean brokeThisMonth;
+    /** Whether the last break was the gold's (GD3's Gold, by its cover or by doubt) and not a peg's: what the Policy flag calls it (FB14; GD3's review, 4). Saved (slot 158); an older save reads a peg's. */
+    private boolean lastBreakGold;
     /** The gold's mint price, D$ a troy ounce, and the rate it was struck at, D$ per US$ (the mint price over gold's US$ price that month). 0 until Gold is entered. Saved (slots 152, 153). */
     private double mintPrice, mintRate;
     /** Whether the mint price moves with the dollar: re-struck every month at the mint rate times gold's price (GoldChoice.FOLLOW). Saved (slot 154). */
@@ -1485,6 +1510,63 @@ public class ForeignAccounts {
     private GoldEvent goldEvent = GoldEvent.NONE;
     /** M0, in the game's thousands of D$ (CentralBank.m0()): NOT saved. Game hands it every month right before the reprice (setMoneyBase()), and a fixture hands its own; 0 until it is. */
     private double moneyBase;
+    /** ...and how much of it a sale of gold can retire (CentralBank.goldRetirable(), the reserves past what is already due): NOT saved; M0 itself when a fixture hands M0 alone. */
+    private double retirableBase;
+
+    /* ===== MONEY ON CANADA'S DATES (R0f) ===== */
+
+    /** Saved slot of the dated Canadian gold episode. */
+    public static final int CANADA_GOLD_PERIOD_SLOT = 156;
+    /** Saved slot of the dated episode's exhausted flag. */
+    public static final int CANADA_GOLD_EXIT_SLOT = 157;
+    /** Saved slot of whether the last break was the gold's (FB14). */
+    public static final int LAST_BREAK_GOLD_SLOT = 158;
+    /** Exact size of the foreign-account stock, through Canada's dated gold state and the last break's regime. */
+    public static final int SAVE_SLOTS = LAST_BREAK_GOLD_SLOT + 1;
+
+    /** The dated episode last heard, and whether this city's dollar left it (its vault ran out, or the player took it off); saved in slots 156-157. */
+    private int canadaGoldPeriod;
+    private boolean canadaGoldLeft;
+
+    /** Whether Canada's dated gold rule currently holds the dollar at par to the US$, using the whole vault. */
+    public boolean isCanadaGold() {
+        return canadaGoldPeriod > 0 && !canadaGoldLeft && regime == Regime.PEG;
+    }
+
+    /**
+     * Hears the calendar (R0f) in a city founded the 1900 way (Game.moneyHearsTheMonth(); one founded the default way hears a month past every
+     * episode). History moves the dollar only when an episode begins or ends (OP1 call 2: Money is the player's from the founding, and the gold
+     * years stay history's): the founding is on gold at par to the US$ (episode 1), the return of July 1926 puts a floating dollar (Float or
+     * Lean) back on it at the old par (episode 2), and an episode's end floats a dollar still on it (August 1914, September 1931). A dollar the
+     * player put on a band, a peg or the gold of their own is left on it, and the return passes it by. Between, nothing is forced: the vault
+     * may run out (breakTheHold()) or the player may leave (leaveCanadaGold()). A load hears the episode it saved, so it replays nothing.
+     */
+    public void hearMoneyMonth(int month, double par) {
+        int period = PolicyDates.goldPeriod(month);
+        if (period == canadaGoldPeriod) return;
+        boolean wasOnGold = isCanadaGold();
+        boolean floating = regime == Regime.FLOAT || regime == Regime.LEAN;
+        canadaGoldPeriod = period;
+        canadaGoldLeft = false;
+        if (period == 1 || (period > 0 && floating)) {
+            holdFelt = 0;
+            doubtShare = lastHazard = lastPegGap = 0;
+            regime = Regime.PEG;
+            pegAnchor = 0;
+            pegRate = par;
+        } else if (period > 0) {
+            canadaGoldLeft = true;
+        } else if (wasOnGold) {
+            holdFelt = 0;
+            doubtShare = lastHazard = lastPegGap = 0;
+            regime = Regime.FLOAT;
+        }
+    }
+
+    /** The player's hand on the dollar while Canada's gold holds it (setRegime(), repeg(), setPegAnchor()): it leaves gold for the rest of the episode, as an exhausted vault does. */
+    private void leaveCanadaGold() {
+        if (isCanadaGold()) canadaGoldLeft = true;
+    }
 
     /**
      * Chooses the regime. Entering a peg pegs to the rate of the day; entering a
@@ -1503,6 +1585,7 @@ public class ForeignAccounts {
     public void setRegime(Regime r) {
         if (r == null || r == regime) return;
         if (r == Regime.GOLD && (!hasRate(GOLD) || !(usdPer[GOLD] > 0))) return;
+        leaveCanadaGold();
         if (r == Regime.PEG) {
             // At the day's rate, in the anchor's money (WN4b): D$ per unit of the anchor.
             pegRate = pegAnchor == 0 ? rate : rate * anchorUsd();
@@ -1534,7 +1617,17 @@ public class ForeignAccounts {
      * without covers nothing). Not saved.
      */
     public void setMoneyBase(double m0) {
+        setMoneyBase(m0, m0);
+    }
+
+    /**
+     * ...with how much of it a sale of gold can retire (FB14; REV-FB14): CentralBank.goldRetirable(), the reserves past what is due, so the
+     * cover test retires what the bank's books will (settleGoldRedeemed() retires no more than its reserves), not all of M0. Clamped to
+     * [0, M0]; a NaN reads 0. Not saved.
+     */
+    public void setMoneyBase(double m0, double retirable) {
         moneyBase = Double.isFinite(m0) && m0 > 0 ? m0 : 0;
+        retirableBase = Double.isFinite(retirable) && retirable > 0 ? Math.min(retirable, moneyBase) : 0;
     }
 
     /**
@@ -1584,6 +1677,7 @@ public class ForeignAccounts {
      */
     public void repeg(double newPeg) {
         if (regime != Regime.PEG || !(newPeg > 0) || !Double.isFinite(newPeg)) return;
+        leaveCanadaGold();
         pegRate = pegAnchor == 0 ? clampRate(newPeg) : clampRate(newPeg / anchorUsd()) * anchorUsd();
     }
 
@@ -1597,6 +1691,7 @@ public class ForeignAccounts {
     public void setPegAnchor(int k) {
         if (k < 0 || k >= WorldMoneys.EIGHT.size() || k == pegAnchor) return;   // gold (GD2) anchors no peg
         if (k != 0 && !hasRate(k)) return;
+        leaveCanadaGold();
         double held = heldRate();
         pegAnchor = k;
         if (pegRate > 0) pegRate = k == 0 ? held : held * anchorUsd();
@@ -1635,7 +1730,7 @@ public class ForeignAccounts {
     /** The peg itself, D$ per unit of its anchor (D$ per US$ for the US$; WN4b): what a devaluation changes, and what does not move as the anchor does against the US$. 0 with no peg yet. */
     public double getPegPerAnchor()   { return pegRate; }
     /** The regime in words for a decision's line or a screen (WN4b): under a peg, whose ("Peg to the euro"); else the regime's own. */
-    public String regimeWords()       { return regime == Regime.PEG ? Regime.PEG.words + " to " + MONEY_NAME[pegAnchor] : regime.words; }
+    public String regimeWords()       { return isCanadaGold() ? "Gold at par (Canada's dates)" : regime == Regime.PEG ? Regime.PEG.words + " to " + MONEY_NAME[pegAnchor] : regime.words; }
     public double getBandCentre()     { return bandCentre; }
     /** The log a year the band's centre crawls. */
     public double getBandSlope()      { return bandSlope; }
@@ -1741,6 +1836,8 @@ public class ForeignAccounts {
     public double getDoubtShare()     { return doubtShare; }
     /** Whether the last reprice broke a peg. */
     public boolean brokeThisMonth()   { return brokeThisMonth; }
+    /** Whether the last break was the gold's - GD3's Gold given way, by its cover or by doubt - and not a peg's (FB14). */
+    public boolean lastBreakWasGold() { return lastBreakGold; }
     /** Pegs broken since founding. */
     public int getBreaks()            { return breaks; }
     public BreakCause getLastBreakCause() { return lastBreakCause; }
@@ -1765,13 +1862,35 @@ public class ForeignAccounts {
         return shadow * Math.exp(OVERSHOOT * Math.log(shadow / heldRate()));
     }
 
-    /** How many months the vault lasts at the last reprice's sales (the hold's, XR5: what holding the rate took), to its floor, under a peg or a band that sold; under Gold, how many the gold above the law's cover (freeGoldUsd(), at the M0 last handed; 0 when it is under it) lasts; infinity when it sold nothing. Pure. */
-    public double monthsToFloor() {
+    /**
+     * How many months the vault lasts at the last reprice's sales (the hold's, XR5: what holding the rate took), to its floor, under a peg or
+     * a band that sold; infinity when it sold nothing. Under Gold, over this M0 (CentralBank.m0(), as freeGoldUsd() is read: FB14, GD3's
+     * review 3 - it read the M0 the last reprice was handed, which is not saved and was 0 after a load, so the pace counted all the gold
+     * free), how many until the cover breaks: each sale takes its gold and retires as much of M0 with it (CentralBank, THE GOLD'S OWN
+     * DEFENCE), so the gold above the law's cover falls by (1 - COVER_RATIO) of the sale; a gold that covers more than the whole of M0
+     * retires it to nothing first and never meets the law's floor, and lasts until the gold is gone. Pure. All of M0 retirable: a fixture's.
+     */
+    public double monthsToFloor(double m0) {
+        return monthsToFloor(m0, m0);
+    }
+
+    /**
+     * ...with only so much of M0 retirable (FB14; REV-FB14: CentralBank.goldRetirable(), the reserves past what is due, as the cover test
+     * reads it): the free gold falls by (1 - COVER_RATIO) of each sale while the sales retire, and by the whole sale once the retirable is
+     * spent. A gold covering all of M0, all of it retirable, lasts until it is gone, as before. Pure.
+     */
+    public double monthsToFloor(double m0, double retirable) {
         if ((regime == Regime.PEG || regime == Regime.BAND) && defenceUsd > 0) {
             return (getReservesUsd() - vaultFloorUsd()) / defenceUsd;
         }
         if (regime == Regime.GOLD && defenceUsd > 0) {
-            return Math.max(0, freeGoldUsd(moneyBase)) / defenceUsd;
+            double free = Math.max(0, freeGoldUsd(m0));
+            if (!(mintPrice > 0) || !(usdPer[GOLD] > 0)) return free / ((1 - COVER_RATIO) * defenceUsd);
+            // The retirable M0 at gold's price in US$, the units freeGoldUsd() reads M0 in.
+            double canRetire = Math.max(0, Math.min(retirable, Math.max(0, m0))) * usdPer[GOLD] / mintPrice;
+            double whileRetiring = (1 - COVER_RATIO) * canRetire;
+            if (free <= whileRetiring) return free / ((1 - COVER_RATIO) * defenceUsd);
+            return canRetire / defenceUsd + (free - whileRetiring) / defenceUsd;
         }
         return Double.POSITIVE_INFINITY;
     }
@@ -2260,6 +2379,21 @@ public class ForeignAccounts {
         for (int k = 0; k < MONEYS; k++) if (share[k] > 0) vault[k] += usd * share[k] / usdPer[k];
     }
 
+    /**
+     * THE FOUNDERS' GOLD (FB14; GD3-F, the founding screen's "start on gold" box, Game.foundOnGold()): moves this many US$ of the vault's
+     * dollars into gold at gold's last handed price, and returns what it moved. The founders' endowment kept in another metal, not a purchase:
+     * no dealing, no flow, nothing booked - the endowment's own buyReserves() was forgotten as dealing the line after it (forgetDealing()), and
+     * the US$ worth of the vault is the same after as before. Nothing without a gold price, and never more than the vault's dollars.
+     */
+    public double foundInGold(double usd) {
+        if (!(usd > 0) || !Double.isFinite(usd) || !hasRate(GOLD) || !(usdPer[GOLD] > 0)) return 0;
+        double moved = Math.min(usd, Math.max(0, vault[0]));
+        if (!(moved > 0)) return 0;
+        vault[0] = moved >= vault[0] ? 0 : vault[0] - moved;
+        vault[GOLD] += moved / usdPer[GOLD];
+        return moved;
+    }
+
     /** Puts these dollars into one money's balance; a code that is none of the eight goes by the mix, and a money with no rate this month goes to the US$. */
     private void vaultAddInto(double usd, String code) {
         int k = moneyIndex(code);
@@ -2737,6 +2871,17 @@ public class ForeignAccounts {
 
     /** What the treasury has dealt since the last reprice, local money, a purchase of dollars positive: what the next reprice feels (THE FLOAT, step 5). */
     public double getDealtSinceReprice() { return dealtSinceReprice; }
+
+    /**
+     * Receives fine ounces offered to the mint under Gold, at the next
+     * strike when their agreed payment reaches the miner. A change of regime
+     * between offer and settlement leaves that contract payable. The vault
+     * keeps thousands of ounces. The central bank issues the agreed payment.
+     */
+    public void receiveMinedGold(double ounces) {
+        if (!(ounces > 0) || !Double.isFinite(ounces)) return;
+        vault[GOLD] += ounces / 1000;
+    }
 
     /**
      * Local currency spent buying foreign money. Raises the stock.
@@ -3386,8 +3531,9 @@ public class ForeignAccounts {
                  * HOLD PAYS THE PRESSURE): holdFelt, the log rate's support from a
                  * peg's or a band's dealing, fading at INTERVENTION_HALF_LIFE. A
                  * level the month cannot restrike from the state it ended in: the
-                 * rate under a peg is the shadow plus it. A save that has none of
-                 * it reads a hold with no support, as a peg just entered would.
+                 * rate under a peg is the shadow plus it. DataSave carries this
+                 * slot through Game's writer and load path (XR7); do not infer
+                 * it from the loaded rate or charge the full gap again.
                  *
                  * ...AND THE PEG'S ANCHOR, slot 148 (WN4b, THE PEG'S ANCHOR): the
                  * money of the eight the peg (slot 76) is kept in, as an index, 0
@@ -3417,7 +3563,10 @@ public class ForeignAccounts {
                  * ordinal 4 not existing then).
                  */
                 vault[GOLD], usdPer[GOLD], chosen[GOLD],
-                mintPrice, mintRate, mintFollows ? 1 : 0, (double) goldEvent.ordinal() };
+                mintPrice, mintRate, mintFollows ? 1 : 0, (double) goldEvent.ordinal(),
+                canadaGoldPeriod, canadaGoldLeft ? 1 : 0,
+                // FB14: whether the last break was the gold's (158).
+                lastBreakGold ? 1 : 0 };
     }
 
     public void restore(double[] saved) {
@@ -3597,7 +3746,7 @@ public class ForeignAccounts {
             interestDriverUsd = interestDriver >= 0 && Double.isFinite(saved[145]) ? saved[145] : 0;
             interestBaseUsd = Double.isFinite(saved[146]) ? Math.max(0, saved[146]) : 0;
         }
-        // What the hold still puts on the rate (XR5, slot 147); a save from before it has a hold with no support.
+        // What the hold still puts on the rate (XR5, slot 147); carried by DataSave and Game, not reconstructed (XR7).
         if (saved.length > 147) holdFelt = Double.isFinite(saved[147]) ? saved[147] : 0;
         // The peg's anchor (WN4b, slot 148); a save from before it is a peg to the US$. A money with no saved rate to measure it by cannot anchor a peg: it reads the US$.
         if (saved.length > 148) {
@@ -3622,6 +3771,12 @@ public class ForeignAccounts {
             mintFollows = saved[154] > .5;
             goldEvent = GoldEvent.values()[ordinalOr(saved[155], GoldEvent.values().length, GoldEvent.NONE.ordinal())];
         }
+        if (saved.length > CANADA_GOLD_EXIT_SLOT) {
+            canadaGoldPeriod = ordinalOr(saved[CANADA_GOLD_PERIOD_SLOT], 3, 0);
+            canadaGoldLeft = saved[CANADA_GOLD_EXIT_SLOT] > .5;
+        }
+        // FB14's: an older save's last break reads a peg's.
+        if (saved.length > LAST_BREAK_GOLD_SLOT) lastBreakGold = saved[LAST_BREAK_GOLD_SLOT] > .5;
     }
 
     /** A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. */
@@ -3631,6 +3786,9 @@ public class ForeignAccounts {
     }
 
     public void reset() {
+        canadaGoldPeriod = 0;
+        canadaGoldLeft = false;
+        lastBreakGold = false;
         rate = OPENING_RATE;
         pinned = false;
         // The vault in eight (WN4): empty, all US$ (the default mix), no money but the dollar rated, nothing moved across the moneys.
@@ -3725,7 +3883,7 @@ public class ForeignAccounts {
         lastBreakJump = lastBreakShadow = 0;
         brokeThisMonth = false;
         // ...and the mint (GD3): none struck, not following, no event open, no M0 handed.
-        mintPrice = mintRate = moneyBase = 0;
+        mintPrice = mintRate = moneyBase = retirableBase = 0;
         mintFollows = false;
         goldEvent = GoldEvent.NONE;
     }

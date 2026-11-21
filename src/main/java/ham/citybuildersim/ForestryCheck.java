@@ -387,8 +387,8 @@ public class ForestryCheck {
         Game g = new Game(files);
         quietly(() -> {
             g.newGame();
-            // The premise is a zone's mechanics (Forestry's plantations stand on its zone), and a 1900 city has no zoning until 1924 (R0): zoning opened in the fixture.
-            g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.ZONING);
+            // The premise is a zone's mechanics (Forestry's plantations stand on its zone), and zoning is open from the founding since OP1 (from
+            // R0 to OP1 a 1900 city had none until 1924).
             g.setCashForTest(Founding.WEALTHY_CASH);
             LandManager land = g.getLandManager();
             land.setOwnedSqFt(land.getOwnedSqFt() + LandManager.sqFt(TOWN_KM2));
@@ -496,7 +496,7 @@ public class ForestryCheck {
         quietly(() -> b.addStack(b.getTemplate(Forestry.HARVESTING_OPERATION), 1, true));
         fo.addCash(1_000_000);
         cutAMonth(g);
-        int stands0 = b.getUnderConstructionById()[Forestry.TREE_PLANTATION];
+        long stands0 = b.getUnderConstructionById()[Forestry.TREE_PLANTATION];
         report("fixture: a Harvesting Operation's month cut, more than the regrowth; no zone", fo.getCutThisMonth() > land.regrowthDue()
                 && g.getZoning().zone(Sectors.FORESTRY) == null, String.format("%,.0f m3 cut", fo.getCutThisMonth()));
         quietly(() -> fo.endOfMonth(g));
@@ -562,8 +562,8 @@ public class ForestryCheck {
     }
 
     /** Planted stands on site. */
-    static int onOrder(BuildingManager b) {
-        int[] site = b.getUnderConstructionById();
+    static long onOrder(BuildingManager b) {
+        long[] site = b.getUnderConstructionById();
         return site[Forestry.TREE_PLANTATION] + site[Forestry.WOODLOT];
     }
 

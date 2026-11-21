@@ -1,6 +1,6 @@
 # Research.java - 1,168 lines · 98 methods · 24 constants · model
 
-`ham/citybuildersim/Research.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Research.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's research (R3): the grants the player sets, the posts they buy, the researchers who fill them, the work piled on each open problem, the
 > discoveries found here and the month's pure step that moves the work on (docs/studies/research-design.md 1.8, 5.1, 5.2, 6.3).
@@ -38,7 +38,7 @@
 
 **Uses:** [JobType](JobType.md) (17), [ResearchCatalog](ResearchCatalog.md) (7), [World](World.md) (2), [EducationType](EducationType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1)
 
-**Used by (21):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [Recipes](Recipes.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
+**Used by (28):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicalRows](MedicalRows.md), [MedicineCheck](MedicineCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
 
 ## Sections
 
@@ -76,7 +76,7 @@
 | 82 | `Research.LAG_YEARS_ENGINEERING` | `7` | How many years before history's date engineering science exists: 7, academic finding to product [MANS91]. |
 | 85 | `Research.LAG_YEARS_MEDICINE` | `9` | How many years before history's date medical science exists: 9, drugs 8.8 [MANS91]. |
 | 88 | `Research.LAG_YEARS_BUSINESS` | `4` | How many years before history's date business science exists: 4 (est.; [MANS91] has none for it). |
-| 91 | `Research.LAG_YEARS_LAW` | `4` | How many years before history's date legal science exists: 4, and so many months as a law lever may be brought forward (PolicyDates.MAX_EARLY_MONTHS), which DiscoveryCheck holds equal. |
+| 91 | `Research.LAG_YEARS_LAW` | `4` | How many years before history's date legal science exists: 4 (research-1900.md 7.2). |
 | 94 | `Research.MIN_YEARS_BUILDING` | `3` | The fewest years of work a building takes, however many work on it: 3 [DIMASI] (est.). |
 | 97 | `Research.MIN_YEARS_EQUIPMENT` | `3` | The fewest years of work a piece of equipment takes: 3, as a building (est.). |
 | 100 | `Research.MIN_YEARS_RECIPE` | `2` | The fewest years of work a recipe takes: 2 (est.). |
@@ -146,11 +146,11 @@
 |---:|---:|---|---|
 | 230 | 7 | `public static double postCost(Field f, double[] wagePerType)` | What one post costs a month, all in: half the pay of each researcher job type and the support staff a post carries at theirs, over the labour share. |
 | 239 | 5 | `public static int posts(double grant, double cost, double room)` | Whole posts a grant buys: the grant over a post's cost, never more than the room there is; none for a grant that is not above nothing, a cost that is not a number above nothing, or no room. |
-| 249 | 8 | `public static long[] jobs(Field f, int posts)` | The jobs `posts` posts of a field are, by JobType ordinal: the first researcher type takes the larger half (posts less posts / 2), the second the smaller (posts / 2, whole numbers), and the support staff are the suppo... |
+| 249 | 8 | `public static long[] jobs(Field f, long posts)` | The jobs `posts` posts of a field are, by JobType ordinal: the first researcher type takes the larger half (posts less posts / 2), the second the smaller (posts / 2, whole numbers), and the support staff are the suppo... |
 | 259 | 3 | `private static double fillOf(double[] fillPerType, int type)` | The fill of a job type: its entry in the array, or 1 where there is none (BuildingManager.getCategoryPayroll() reads a missing fill as full). |
 | 264 | 7 | `public static double payroll(Field f, int posts, double[] wagePerType, double[] fillPerType)` | The pay of the posts, as BuildingManager.getCategoryPayroll() sums it: each job type's jobs times its wage times its fill. |
 | 273 | 3 | `public static double bill(Field f, int posts, double[] wagePerType, double[] fillPerType)` | What the filled posts cost the city, all in: their pay over the labour share. |
-| 278 | 5 | `public static double filledResearchers(Field f, int posts, double[] fillPerType)` | The researchers the posts give: the researcher jobs (not the support staff) times their fill. |
+| 278 | 5 | `public static double filledResearchers(Field f, long posts, double[] fillPerType)` | The researchers the posts give: the researcher jobs (not the support staff) times their fill. |
 
 ### THE SCHOOLS: whose staff research, and the room for posts (pure) (lines 284-342)
 
@@ -226,11 +226,11 @@
 | 628 | 7 | `private double sizeOf(long seed, Entry e)` | The size of a discovery in this city, drawn once for a seed (hiddenSize()). |
 | 637 | 3 | `private static double sane(Double people)` | A researcher count made safe to add: what is not a number or is below nothing is none. |
 | 645 | 3 | `public void month(int month, long seed, EnumMap<Field, Double> researchers)` | The month's step with no labs: month() with none and no wages, so that nothing is on the chase (the city's own researchers alone; a find with a prize set then pays the whole purse to the schools). |
-| 662 | 68 | `public void month(int month, long seed, EnumMap<Field, Double> researchers, EnumMap<Field, Integer> labs, EnumMap<Field, Double...` | The month's step (research_model.py run(), one month). |
+| 662 | 68 | `public void month(int month, long seed, EnumMap<Field, Double> researchers, EnumMap<Field, Long> labs, EnumMap<Field, Double> l...` | The month's step (research_model.py run(), one month). |
 | 737 | 3 | `public void idleMonth(EnumMap<Field, Double> researchers)` | The month of a city founded the default way (Game.advanceDemographics()): every discovery is known from the start, so nothing is open and nothing is found or arrives, and the researchers its faculty and posts give hav... |
-| 742 | 17 | `public void idleMonth(EnumMap<Field, Double> researchers, EnumMap<Field, Integer> labs, EnumMap<Field, Double> labResearchers)` | The same with labs: every lab researcher is idle too, and a field with labs has a lab too many this month as month() counts it (labIdleMonths()). |
+| 742 | 17 | `public void idleMonth(EnumMap<Field, Double> researchers, EnumMap<Field, Long> labs, EnumMap<Field, Double> labResearchers)` | The same with labs: every lab researcher is idle too, and a field with labs has a lab too many this month as month() counts it (labIdleMonths()). |
 | 761 | 7 | `private void clearLabMonth()` | Forgets the labs' month: the shares, the researchers, the idle, the purses owed. |
-| 774 | 7 | `private void recordLabs(Field f, Integer labCount, double labPeople, double labIdle)` | Records a field's labs for the month: the researchers in them and the idle ones, and the count of consecutive months with a lab too many. |
+| 774 | 7 | `private void recordLabs(Field f, Long labCount, double labPeople, double labIdle)` | Records a field's labs for the month: the researchers in them and the idle ones, and the count of consecutive months with a lab too many. |
 | 787 | 6 | `public List<Entry> chase(Field f, int month, double[] wagePerType)` | A field's chase in a month: its open problems that the field's prize pays for (purseCovers(), at the post's cost at these wages) and that a team at its limit could finish before the world (beforeTheWorld()), with toda... |
 | 795 | 9 | `private List<Entry> chaseOf(List<Entry> open, int month, double prize, double cost)` | The chase among problems already open, in the catalogue's order (the sort is stable, so equal remaining work keeps that order). |
 | 806 | 3 | `public List<String> foundThisMonth()` | The codes found here this month (month()), in the order found. |

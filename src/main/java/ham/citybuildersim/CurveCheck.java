@@ -42,7 +42,8 @@ import java.util.function.IntToDoubleFunction;
  *   5. The autopilot's gap is nothing: in a Game city on the rule, the struck
  *      pair is what the month's top read, the rule at the struck inflation IS
  *      the dial, and the only gap expected to close is the floor over the
- *      dial - at Standard and at Strict.
+ *      dial - at Standard and at Strict. (FS13: on a city whose inflation and expectation are
+ *      SET, the rule reading SHOCK over the target it expects, where Strict and Standard part.)
  *   6. Every payment on its month: a term loan, a serial, a note and a dollar
  *      term loan are worth the hand sum of their flows at their factors; the
  *      solved yield reprices them flat to the cent; two 20-year loans with
@@ -50,19 +51,24 @@ import java.util.function.IntToDoubleFunction;
  *   7. The issue at the curve: on a steep city's curve the serial's booked
  *      coupon prices its schedule at par, the term loan is worth its quoted
  *      gross the moment it is booked, the note is worth at least what it raised.
+ *      (FS13: the steep city reads the target and expects it, its dial is held STEEP_GAP under
+ *      where that settles, its cash is set, and its control is the same dial held AT the settle.)
  *   8. No money pump: issued and bought straight back, each kind, home and
  *      abroad (the dollar legs where the window is open, and always on
- *      ForeignDebtCheck's trading city), in the steep city and in a calm one,
- *      the city is no richer and the piece is gone.
+ *      ForeignDebtCheck's trading city, which is handed its exports and its
+ *      window asserted open: FS13), in the steep city and in a calm one,
+ *      the city is no richer to the rounding of its cash and the piece is gone.
  *   9. BondMarket reads it: the market's benchmark is the city's curveRate().
  *  10. The strike holds through the month and a save: the pair, the curve and
  *      every piece's price survive a save and a load to the bit, and the pair
- *      struck at a month's top is not moved by the month's end.
+ *      struck at a month's top is not moved by the month's end (FS13: the
+ *      month's end is made to move the expectation, by the smoothed inflation set).
  *  11. The parts add up: the dial expected, the credit spread, the term
  *      premium less the compression are the zero rate, in all four cities.
  *  12. How often it fires in a real run: the months the 10-year sits under the
  *      1-year and the months the dial is off the rule by more than a quarter
- *      point, over 120 months of the playtest's founding.
+ *      point, over 120 months of the playtest's founding (FS13: the pair is made
+ *      to move once, by the smoothed inflation set halfway).
  *
  * @author Jerus
  */
@@ -117,10 +123,6 @@ public class CurveCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path section 7's steep city
-        // at month 39 is not steep (1-month 2.25, 1-year 2.65, 10-year 3.46), so its fixture fails. The claim is the curve's
-        // issue, not the wage; queued (LD3) to make the city steep on LD2's path.
-        WantedPosts.carryKeptOut = false;
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         Path root = TempDirs.create("curve");
@@ -254,20 +256,14 @@ public class CurveCheck {
 
     /** The playtest's founding with the rule's hand on the dial, played on to this month. */
     static Game city(Path root, String label, int toMonth) {
-        return city(root, label, toMonth, false);
-    }
-
-    /** ...with the minimum wage set at the going rate before the first month where asked (steepCity()'s fixture, WG1). */
-    static Game city(Path root, String label, int toMonth, boolean floorAtTheGoingRate) {
-        return city(root, label, toMonth, floorAtTheGoingRate, new String[0]);
+        return city(root, label, toMonth, new String[0]);
     }
 
     /** ...and with the sectors named held out of the investor's building from the founding's first month (BusinessInvestment.holdSector(), GW1: steepCity()'s fixture). */
-    static Game city(Path root, String label, int toMonth, boolean floorAtTheGoingRate, String... held) {
+    static Game city(Path root, String label, int toMonth, String... held) {
         Game[] g = new Game[1];
         quietly(() -> {
             g[0] = MonetaryCheck.founding(root, label, false, held);
-            if (floorAtTheGoingRate) g[0].getLabourMarket().setMinimumWage(g[0].getLabourMarket().getGoingRate());
             g[0].getDebtManager().setAutopilot(true);
             while (g[0].getMonth() < toMonth) press(g[0]);
         });
@@ -277,6 +273,42 @@ public class CurveCheck {
     /** The inflation the month's top reads: the year's, or the target before there is one (Game.strikeTheCurve()). */
     static double inflationRead(Game g) {
         return g.getPriceIndex().hasRate() ? g.getPriceIndex().inflation() : g.getDebtManager().getInflationTarget();
+    }
+
+    /**
+     * What the price index's save array carries of its ring (PriceIndex.toSaveArray()): the months it has seen at SEEN, then the WINDOW
+     * readings of the index from RING on, the last at (seen - 1) % WINDOW and the one a year ago at seen % WINDOW - the two that
+     * inflation() divides.
+     */
+    static final int SEEN = 4, RING = 5;
+
+    /** How far over where the city expects to settle the inflation is set where a section needs the rule off its floor and Strict apart from Standard: the tolerance four times, past Strict's half point under the target and the floor of a dial. */
+    static final double SHOCK = 4 * Expectations.TOLERANCE;
+
+    /**
+     * THE INFLATION THE RULE READS, SET (FS13, 2026-11-20). The month's top reads the price index's year on year (strikeTheCurve(), and the
+     * autopilot's rule), so the figure is set where it is read: the year-ago reading of the ring is re-struck at the last one over
+     * 1 + inflation, and the index takes it back through its own restore(). Needs a year of prices (hasRate()), which is the caller's
+     * fixture. The next month the index takes overwrites the slot, so a section sets it again before each press that reads it.
+     */
+    static void setInflation(Game g, double inflation) {
+        PriceIndex px = g.getPriceIndex();
+        double[] saved = px.toSaveArray();
+        int seen = (int) Math.round(saved[SEEN]);
+        saved[RING + seen % PriceIndex.WINDOW] = saved[RING + (seen - 1) % PriceIndex.WINDOW] / (1 + inflation);
+        px.restore(saved);
+    }
+
+    /**
+     * ...AND WHAT THE CITY EXPECTS, SET (Expectations.toSaveArray(): credibility, smoothed inflation, expected inflation, ...). The
+     * smoothed figure is what the month's end moves the expectation from, and the expected one is what the next top strikes.
+     */
+    static void setExpectation(Game g, double smoothed, double expected) {
+        Expectations x = g.getExpectations();
+        double[] saved = x.toSaveArray();
+        saved[1] = smoothed;
+        saved[2] = expected;
+        x.restore(saved);
     }
 
     static Debt lastPiece(Game g) {
@@ -402,42 +434,59 @@ public class CurveCheck {
         out.println("\n--- 5. the autopilot's gap is nothing ---");
         Game c = city(root, "x5", 54);
         DebtManager dm = c.getDebtManager();
-        // GW1: the draw lets a young city's businesses order earlier, and this founding (pop 1,273 at month 54, 413 on main's path) is deflating at 54:
-        // inflation -2.27%, the year's prices having fallen, so the rule at Standard and at Strict both sit on the 0% floor and agree - the fixture below
-        // asks for a month where the dial's strictness matters. Run on, a month at a time (at most MAX_RUN_ON), to the first month where Strict and Standard
-        // advise different rates at the inflation the city reads; this founding is at 2.58% a year at month 56 (Standard 3.87%, Strict 4.39%).
-        for (int m = 0; m < MAX_RUN_ON && !strictnessMatters(c); m++) pressQuietly(c);
-        out.printf("   the autopilot city at month %d: inflation %.4f, Standard's rule %.4f, Strict's %.4f%n", c.getMonth(),
-                c.getPriceIndex().hasRate() ? c.getPriceIndex().inflation() : Double.NaN,
-                dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STANDARD),
-                dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STRICT));
         check("fixture: the city is past its base month with a year of prices, and the rule has the dial",
                 c.getPriceIndex().isBased() && c.getPriceIndex().hasRate() && dm.isAutopilot());
+        // FS13, 2026-11-20: the inflation the rule reads is SET, and where the city expects it to settle. GW1 ran this city on from month 54
+        // to the first month where Strict and Standard advise different rates (it was deflating at 54, both rules on the 0% floor), and DQ1
+        // released it (2026-11-16: 9.03% at month 54, Standard 13.55%, Strict 15.68%): the parting was whatever the played city read. Now
+        // it is the shock's, SHOCK over the target, where Strict's aim and weight (the Strictness constants) part from Standard's.
+        shock(c);
+        double target = dm.getInflationTarget();
+        out.printf("   the autopilot city at month %d, its inflation set to %.4f (the target %.4f and SHOCK): Standard's rule %.4f, Strict's %.4f%n",
+                c.getMonth(), c.getPriceIndex().inflation(), target,
+                dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STANDARD),
+                dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STRICT));
+        check("fixture: the inflation the rule reads is set SHOCK over the target, and the city expects the target",
+                Math.abs(c.getPriceIndex().inflation() - (target + SHOCK)) < 1e-12 && c.getExpectations().getExpectedInflation() == target);
         autopilotMonth(c, "Standard");
 
         dm.setStrictness(DebtManager.Strictness.STRICT);
+        shock(c);
         check("fixture: at Strict the rule says something other than Standard's at this inflation, so the curve's rule matters",
                 strictnessMatters(c));
         autopilotMonth(c, "Strict");
     }
 
-    /** The most months section 5 runs its city on to find one where the dial's strictness changes the rule (GW1). */
-    static final int MAX_RUN_ON = 60;
+    /** The autopilot city's next press set up: the inflation the rule reads SHOCK over the target, and the city expecting the target (the pair the month's top strikes). */
+    static void shock(Game c) {
+        double target = c.getDebtManager().getInflationTarget();
+        setInflation(c, target + SHOCK);
+        setExpectation(c, target, target);
+    }
 
-    /** Whether, at the inflation the price index reads now, Strict advises a rate more than a tenth of a point from Standard's. */
+    /** Whether, at the inflation the price index reads now, Strict advises a rate more than a tenth of a point from Standard's, both off the ends of the dial. */
     static boolean strictnessMatters(Game c) {
         if (!c.getPriceIndex().hasRate()) return false;
         double inflation = c.getPriceIndex().inflation();
         DebtManager dm = c.getDebtManager();
-        return Math.abs(dm.advisedPolicyRate(inflation, DebtManager.Strictness.STRICT)
-                - dm.advisedPolicyRate(inflation, DebtManager.Strictness.STANDARD)) > .001;
+        double strict = dm.advisedPolicyRate(inflation, DebtManager.Strictness.STRICT);
+        double standard = dm.advisedPolicyRate(inflation, DebtManager.Strictness.STANDARD);
+        return Math.abs(strict - standard) > .001
+                && Math.min(strict, standard) > DebtManager.MIN_POLICY_RATE && Math.max(strict, standard) < DebtManager.MAX_POLICY_RATE;
     }
+
+    /** The least the rule is expected to fall by, a fraction a year: half a point, which the shock (SHOCK over the target, at the rule's weight over one) is far over. */
+    static final double RULE_FALLS_BY = .005;
 
     /** One press of the autopilot city, read against what the month's top read just before it. */
     static void autopilotMonth(Game c, String at) {
         DebtManager dm = c.getDebtManager();
         double inflation = c.getPriceIndex().inflation();
         double expected = c.getExpectations().getExpectedInflation();
+        // FS13, 2026-11-20: the premise of the last line, caused by the shock the caller set: the rule at the inflation read is over the rule
+        // at where the city expects it to settle, by the rule's own figures (advisedPolicyRate()), before the month has run.
+        check("fixture: at " + at + " the rule at the inflation read is over the rule at where the city expects it to settle by more than half a point",
+                dm.advisedPolicyRate(inflation) - dm.advisedPolicyRate(expected) > RULE_FALLS_BY);
         pressQuietly(c);
         check("at " + at + ": the curve's expectations are struck", dm.isStruck());
         same("at " + at + ": the struck inflation is the price index's, as read just before the press",
@@ -453,7 +502,7 @@ public class CurveCheck {
                 dm.expectedDialIn(YieldCurve.DRIFT_MONTHS) - ruleThen,
                 (dm.floorRate() - dm.getPolicyRate()) * Math.exp(-1), 1e-12);
         check("at " + at + ": the inflation is above where the city expects it to settle, so the rule is expected to fall",
-                Math.abs(dm.expectedDialIn(0) - dm.expectedDialIn(YieldCurve.HORIZON - 1)) > .005);
+                Math.abs(dm.expectedDialIn(0) - dm.expectedDialIn(YieldCurve.HORIZON - 1)) > RULE_FALLS_BY);
     }
 
     /* ================= 6. every payment on its month ================= */
@@ -516,34 +565,66 @@ public class CurveCheck {
     /** What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). */
     static final double ASK = 20_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
+    /** How far under the dial the market expects to settle at the steep city's dial is held. */
+    static final double STEEP_GAP = .02;
+
+    /** How far over the 1-month the 10-year of the steep city's curve must stand, as a fraction a year (section 7 asks two points). */
+    static final double STEEP_10Y = .02;
+
+    /** What the steep city holds in cash, and what it can pay a buyback of any one piece it borrows out of: ten asks, over the three the fixture wants (FS13: set, as the played city's cash was a path's). */
+    static final double STEEP_CASH = 10 * ASK;
+
+    /** The steep city's 10-year over its 1-month with its dial held at where the market expects it to settle, no gap held: the condition's control (steepCity()). */
+    static double spanBeforeTheHold;
+
+    /** Whether the pair struck on the steep city before its hold was the target and the target (steepCity(), section 7's fixture). */
+    static boolean struckAtTheTarget;
+
+    /** The dial the market expects, far out: the rule at the inflation it expects, where its path comes to rest (YieldCurve.expectedPath()). */
+    static double expectedToSettleAt(DebtManager dm) {
+        return dm.expectedDialIn(YieldCurve.HORIZON - 1);
+    }
+
     /**
      * A founded city with the rule's hand on the dial to month 38, then the
-     * dial held two points under the rule by hand and one press on: the
-     * market expects the dial to rise to the rule, so the curve is steep. The
-     * city has no year of prices yet at this month, so the rule reads the
-     * target, which is the month's own strike.
+     * dial held STEEP_GAP under the dial the market expects to settle at, by
+     * hand, and one press on: the market expects the dial to rise to where it
+     * settles, so the curve is steep. The gap is taken from the path the market
+     * expects (YieldCurve.expectedPath()), which is what the curve is built on,
+     * and not from the rule at the month's inflation: the two are one at this
+     * month (the city has no year of prices yet, so the rule reads the target,
+     * and the market expects the target), but only there.
+     *
+     * FS13, 2026-11-20: and so the pair the month's top strikes is SET, the target and
+     * the target, where the played city's was whatever it read at month 38 - the inflation
+     * the rule reads (setInflation(), where the city has a year of prices; where it has none
+     * the top reads the target) and the expectation (setExpectation()). The path then runs
+     * flat but for the hold: the steepness is the hold's, the gap under the dial the market
+     * expects to settle at, and the control (spanBeforeTheHold) is the same city with its
+     * dial held AT that dial, no gap, read before the hold. The city's cash is set (STEEP_CASH).
+     *
+     * The city's wage floor
+     * is its default, the .85 of the going rate WG1 gave a new city. WG1-D set
+     * it at the going rate here, for a curve of 1.31, 2.21 and 3.41 where .85
+     * read 1.80, 2.44 and 3.44; on the default today (after GW1's held sectors
+     * and WN3-R's band) it reads 1.00, 2.06 and 3.39, and the pin is gone: the
+     * steepness is the hold's, and spanBeforeTheHold is the control.
      */
     static Game steepCity(Path root, String label) {
-        // On the world's band since WN3-R (2026-11-08). The curve is steep only while the short end is the dial's. WN3 played this founding
-        // on the literals: on the band at 0.8.75 a cement works' bank loan sent the young bank to the central bank's window, and its cost
-        // of funds plus Bank.MIN_MARGIN floored the 1-month at 2.1% on a dial of 1%, the 10-year 1.3 points over it. On 0.9.55 the band's
-        // founding is the steep city: at month 39 the 1-month 1.31%, the 1-year 2.21%, the 10-year 3.41%, 2.1 points over the 1-month.
-        // WG1 (2026-11-10): the floor is set at the going rate before the first month, the wage this fixture was written against. A new city's floor
-        // is .85 of the going rate now (WG1, a real minimum), and the unskilled wage then falls to the market's own level in a glut: this city at month 39
-        // read 1-month 1.8021, 1-year 2.4377, 10-year 3.4350, the 10-year 1.63 points over the 1-month, under the 2 the fixture asks; with the floor at the
-        // going rate (main's path, the old default) it is the steep city above.
-        // GW1 (2026-11-10): Manufacturing and Wood Products held from the founding, as WN3 held the cement works. With the draw in the staffing gate the
-        // founding's manufacturers order a plant on a bank loan before month 26 (Manufacturing 549 on the bank's book; main's path had Wood Products 430 at
-        // month 33), and the retailers and restaurants that follow it at months 34 to 38 take the bank to 1,104 borrowed against 986 of deposits: the bank
-        // is at the central bank's window, its cost of funds 2.16% and the floor of the 1-month 3.16% on a dial the fixture set at 1%. Month 39 read 1-month
-        // 2.25, 1-year 2.65, 10-year 3.46 (the 10-year 1.21 points over the 1-month, under the 2 the fixture asks, and the 1-year 0.40 under its 0.5). Holding
-        // Wood Products alone changes nothing (the Manufacturing loan is the cause); both held, the bank has 158 borrowed against 1,599 of deposits at month
-        // 38, its cost of funds 0.00%, and month 39 reads 1-month 1.00, 1-year 2.06, 10-year 3.39, the 10-year 2.39 points over the 1-month.
-        Game g = city(root, label, 38, true, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
+        // On the world's band since WN3-R (2026-11-08). Manufacturing and Wood Products held (GW1); DQ1 tried them free
+        // (2026-11-16) and the curve came out 1.39 points from the 1-month to the 10-year, under the 2 section 7 asks: held.
+        Game g = city(root, label, 38, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
         DebtManager dm = g.getDebtManager();
-        double rule = dm.advisedPolicyRate(inflationRead(g));
-        dm.takeTheDial(Math.max(0, rule - .02));
+        double target = dm.getInflationTarget();
+        if (g.getPriceIndex().hasRate()) setInflation(g, target);   // without a year of prices the top reads the target already
+        setExpectation(g, target, target);
+        g.strikeTheCurve();
+        struckAtTheTarget = Math.abs(dm.getStruckInflation() - target) < 1e-12 && dm.getStruckExpected() == target;
+        dm.takeTheDial(expectedToSettleAt(dm));   // the control: the dial at where the market expects it to settle, no gap held
+        spanBeforeTheHold = dm.curveRate(120) - dm.curveRate(1);
+        dm.takeTheDial(expectedToSettleAt(dm) - STEEP_GAP);
         pressQuietly(g);
+        g.setCashForTest(STEEP_CASH);   // after the press, which has moved it by a month's flows
         return g;
     }
 
@@ -553,12 +634,16 @@ public class CurveCheck {
         YieldCurve curve = dm.curve();
         out.printf("   the steep city at month %d: 1-month %.4f, 1-year %.4f, 10-year %.4f%n", g.getMonth(),
                 dm.curveRate(1) * 100, dm.curveRate(12) * 100, dm.curveRate(120) * 100);
-        check("fixture: the dial is held by hand, two points under the rule at the inflation the month struck",
-                !dm.isAutopilot() && dm.isStruck()
-                        && Math.abs(dm.advisedPolicyRate(dm.getStruckInflation()) - dm.getPolicyRate() - .02) < 1e-12);
+        out.printf("   the dial %.4f, the dial expected to settle at %.4f, the rule at the inflation struck %.4f%n", dm.getPolicyRate() * 100,
+                expectedToSettleAt(dm) * 100, dm.advisedPolicyRate(dm.getStruckInflation()) * 100);
+        check("fixture: the city read the target and expected the target when the dial was held, so its path is flat but for the hold", struckAtTheTarget);
+        check("fixture: the dial is held by hand, two points under the dial the market expects it to settle at (the rule at the inflation it expects)",
+                !dm.isAutopilot() && dm.isStruck() && Math.abs(expectedToSettleAt(dm) - dm.getPolicyRate() - STEEP_GAP) < 1e-12);
         check("fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points",
-                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > .02);
-        check("fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised)",
+                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > STEEP_10Y);
+        check(String.format("fixture: the hold is what makes it steep - this same city with its dial at where the market expects it to settle, no gap held, stood %.4f points from its 1-month to its 10-year, under the %.1f asked",
+                spanBeforeTheHold * 100, STEEP_10Y * 100), spanBeforeTheHold < STEEP_10Y);
+        check("fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised): its cash is set, STEEP_CASH",
                 g.getCash() > 3 * ASK);
 
         // The serial: the coupon is the one that prices its schedule at par on the curve.
@@ -605,6 +690,13 @@ public class CurveCheck {
         roundTrips("steep", steep);
         roundTrips("calm", city(root, "calm", 54));
         Game trading = tradingCity(root);
+        // FS13, 2026-11-20: the trading city is handed its exports, sized to RestructureCheck's dollar ask as that section sizes them
+        // (ForeignDebtCheck.earnsAbroad()), so the world's window is open to it by cause and its dollar round trips always run: they
+        // ran on whatever the depots and bakeries had earned abroad by month 60, and were skipped, with a println, where the window was shut.
+        DebtManager abroad = trading.getDebtManager();
+        ForeignDebtCheck.earnsAbroad(abroad, RestructureCheck.DOLLAR_ASK * abroad.rateOf("USD"), RestructureCheck.DOLLAR_STRESS_SHARE);
+        check("fixture: the trading city earns abroad, so its dollar window is open",
+                abroad.getMonthlyExports() > 0 && trading.foreignWindowOpen());
         roundTrips("trading", trading);
     }
 
@@ -629,8 +721,8 @@ public class CurveCheck {
             // round trip sells the 30-year, a line of its own.
             roundTrip(city, g, "Term", () -> g.handleLongBondLogic(ASK, 30, 1000 * PriceLevel.FACTOR));
         }
-        // The dollar legs: on the home cities when the window is open, and always on ForeignDebtCheck's trading
-        // city, the fixture RestructureCheck proves the world's pricing on.
+        // The dollar legs: on the home cities when the window is open (it is, owing nothing abroad), and always on ForeignDebtCheck's
+        // trading city, the fixture RestructureCheck proves the world's pricing on, which noMoneyPump() hands its exports and asserts open.
         if (!g.foreignWindowOpen()) {
             out.println("   the " + city + " city's dollar window is shut (" + g.foreignWindowReason()
                     + "): no dollar round trip there");
@@ -657,8 +749,10 @@ public class CurveCheck {
             check("the " + city + " " + kind + " is off the books after the buyback", !dm.getDebt().contains(piece));
             double net = g.getCash() - before;
             worst = Math.max(worst, net);
+            // FS13, 2026-11-20: a float identity of money, stated with its own tolerance: the rounding of the cash and not a cent of slack
+            // (it failed once at +4.5e-13 on a cash of 3,580.98, one ulp: 530.80 added and taken back).
             check("the " + city + " " + kind + " bought straight back leaves the city no richer (raised "
-                    + String.format("%,.2f", raised) + ", net " + String.format("%,.2f", net) + ")", net <= 0);
+                    + String.format("%,.2f", raised) + ", net " + String.format("%,.2f", net) + ")", net <= MoneyAudit.tolerance(0, before));
         }
         out.printf("   %s %s: the best of two round trips nets the city %,.2f%n", city, kind, worst);
     }
@@ -701,19 +795,19 @@ public class CurveCheck {
             same("piece " + i + " (" + a.getType() + ") is worth the same after the load", bm.marketValue(b), dm.marketValue(a));
         }
 
-        // The pair struck at the month's top is held to the month's end. Press on to a month where the end
-        // of the month moves the expectation (the founding has no year of prices at first, and an
-        // expectation with nothing to read does not move).
+        // The pair struck at the month's top is held to the month's end. FS13, 2026-11-20: the month's end is MADE to move the
+        // expectation, where this pressed on, up to 24 months, until a played city's did (the founding has no year of prices at first,
+        // and an expectation with nothing to read does not move). Expectations.takeMonth() moves the smoothed inflation a twelfth of the
+        // way to what the index reads and strikes the expectation anew from it and from the credibility, once the basket is based: so the
+        // smoothed inflation is set SHOCK over the target, a miss past the tolerance that the held dial does not lean against (the
+        // credibility falls) and that the month's reading, the target or a year's rate, does not equal, and the month cannot leave the
+        // expectation where it was.
         Expectations x = g.getExpectations();
+        check("fixture: the basket is based, so the month's end reads the city's prices and moves what it expects", g.getPriceIndex().isBased());
+        setExpectation(g, dm.getInflationTarget() + SHOCK, x.getExpectedInflation());
         double expectedBefore = x.getExpectedInflation();
         double inflationBefore = inflationRead(g);
-        int guard = 0;
-        while (guard++ < 24) {
-            expectedBefore = x.getExpectedInflation();
-            inflationBefore = inflationRead(g);
-            pressQuietly(g);
-            if (x.getExpectedInflation() != expectedBefore) break;
-        }
+        pressQuietly(g);
         out.printf("   the month's end moved the expectation from %.6f to %.6f (month %d)%n", expectedBefore,
                 x.getExpectedInflation(), g.getMonth());
         check("fixture: the end of the month moved the expectation", x.getExpectedInflation() != expectedBefore);
@@ -744,6 +838,10 @@ public class CurveCheck {
     }
 
     /* ================= 12. how often it fires in a real run ================= */
+
+    /** The press of the run (counting from its first, 0) before which the smoothed inflation is set over the target: halfway through its 120 months. */
+    static final int SHOCKED_AT = 60;
+
     static void howOften(Path root) {
         out.println("\n--- 12. how often it fires in a real run ---");
         for (boolean ruleHasTheDial : new boolean[] {false, true}) {
@@ -756,9 +854,21 @@ public class CurveCheck {
             int inverted = 0, steep = 0, gapped = 0, moved = 0, counted = 0;
             double widest = 0, pairInflation = Double.NaN, pairExpected = Double.NaN;
             int from = g[0].getMonth();
+            double expectedAtTheShock = Double.NaN, expectedAfterIt = Double.NaN;
             for (int i = 0; i < 120; i++) {
+                // FS13, 2026-11-20: the pair is MADE to move once in the run, where the count read what the played city did: the smoothed
+                // inflation set SHOCK over the target before this press (as section 10 does), so the month's end strikes the expectation
+                // anew and the next top strikes a pair that is not this one's. (The dial is no input to the pair: it is the inflation the rule
+                // reads and the expectation, and the dial reaches the expectation only through the lean, which a miss does not change.)
+                if (i == SHOCKED_AT) {
+                    check("fixture: the basket is based when the smoothed inflation is set (" + (ruleHasTheDial ? "the rule's dial" : "the held dial") + ")",
+                            g[0].getPriceIndex().isBased());
+                    setExpectation(g[0], dm.getInflationTarget() + SHOCK, g[0].getExpectations().getExpectedInflation());
+                }
                 pressQuietly(g[0]);
                 if (!dm.isStruck()) continue;
+                if (i == SHOCKED_AT) expectedAtTheShock = dm.getStruckExpected();
+                if (i == SHOCKED_AT + 1) expectedAfterIt = dm.getStruckExpected();
                 counted++;
                 if (dm.curveRate(120) < dm.curveRate(12)) inverted++;
                 if (dm.curveRate(120) - dm.curveRate(12) > .02) steep++;
@@ -780,6 +890,8 @@ public class CurveCheck {
             check("fixture: every month of the run was struck", counted == 120);
             check("the struck pair moved in at least one month of the run (" + (ruleHasTheDial ? "the rule's dial" : "the held dial") + ")",
                     moved >= 1);
+            check("...and in the month after the smoothed inflation was set over the target (" + (ruleHasTheDial ? "the rule's dial" : "the held dial") + ")",
+                    Double.compare(expectedAtTheShock, expectedAfterIt) != 0);
         }
     }
 }

@@ -8,10 +8,12 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.LandManager;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,9 +136,56 @@ public abstract class ExtractionSector extends Sector {
                 came += part;
                 continue;
             }
-            came += dig(land, d.type, part * d.dig, i > 0) / d.dig;
+            double field = part * d.dig, got = dig(land, d.type, field, i > 0);
+            came += got / d.dig;
+            // ...and what of its ask each kind's ground gave, for the inputs it orders after the dig (NG1, groundShare()).
+            noteDug(d.type, d.dig, field, got);
         }
         return came;
+    }
+
+    /** What of its ask each kind of dig (kind()) got from its ground in this month's market pass (NG1): put by noteDug(), emptied as the pass's orders are planned, never saved. */
+    private final Map<String, Double> dugShares = new HashMap<>();
+
+    /**
+     * Keeps what of its field tonnes one kind of dig got this month (NG1, groundShare()): groundLimit()'s, and a sector's own copy of
+     * the dig's (CopperMining's concentrate). Exactly 1 where the ground held the whole ask, as extract() then returns it whole.
+     */
+    protected final void noteDug(Deposit.FieldType type, double dig, double field, double got) {
+        if (field > 0) dugShares.put(kind(type, dig), got / field);
+    }
+
+    /** The share of its ask a building's kind of dig got this month (noteDug()): 1 before the dig and for a kind not dug. */
+    protected final double dugShare(BuildingsTemplate t) {
+        return dugShares.isEmpty() ? 1 : dugShares.getOrDefault(kindOf(t), 1.0);
+    }
+
+    /** A month's dig shares are the month's: none until groundLimit() digs, so every building reads 1 before it (THE ORDER, NG1). */
+    @Override
+    public void planOrders() {
+        dugShares.clear();
+        super.planOrders();
+    }
+
+    /**
+     * The share of a building's ask its ground gave this month (Sector.groundShare(), NG1): its kind of dig's (kind()), once
+     * groundLimit() has dug the month's flow good; 1 before the dig, for a kind not dug, and for a building that makes no ground good.
+     */
+    @Override
+    protected double groundShare(BuildingsTemplate t) {
+        return t.makes(groundGood()) > 0 ? dugShare(t) : 1;
+    }
+
+    /** A building's kind of dig, as digs() merges them: the type of field it stands on and its dig (ANY at a tonne a tonne off its resource). */
+    final String kindOf(BuildingsTemplate t) {
+        BuildingsTemplate.Site site = t.site();
+        boolean on = site != null && site.resource() == resource;
+        return kind(on ? site.type() : null, on ? site.dig() : 1);
+    }
+
+    /** The key a kind of dig is merged and its share kept by. */
+    static String kind(Deposit.FieldType type, double dig) {
+        return type + "/" + dig;
     }
 
     /** What the ground gives of `asked` this month: its resource's remainder taken out (LandManager.extract()). Mining keeps the iron's own tally. */
@@ -172,7 +221,7 @@ public abstract class ExtractionSector extends Sector {
             boolean on = site != null && site.resource() == resource;
             Deposit.FieldType type = on ? site.type() : null;
             double dig = on ? site.dig() : 1;
-            kinds.merge(type + "/" + dig, new Dig(type, dig, units), (a, b) -> new Dig(a.type, a.dig, a.capacity + b.capacity));
+            kinds.merge(kind(type, dig), new Dig(type, dig, units), (a, b) -> new Dig(a.type, a.dig, a.capacity + b.capacity));
         }
         return new ArrayList<>(kinds.values());
     }
@@ -196,14 +245,16 @@ public abstract class ExtractionSector extends Sector {
      * Iron Mine's explosives and wear parts, D$199.8k a month at nameplate,
      * and no power). The figure the plan, Game.consider() and the build card
      * read.
+     * ...for one new building already resolved (QN1; NewUnit): its own makes, posts, draw and consumables.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         // The maker's estimate itself (not Sector's, which would weigh the legs a second time): its freight below.
-        if (t == null) return super.estimatedMonthlyProfit(t, plans);
-        double maker = plans.estimatedMakerProfit(this, t);
+        if (t == null) return super.estimatedMonthlyProfit(u, plans);
+        double maker = plans.estimatedMakerProfit(this, u);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
-        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), powerPriceFor(t)) - freightRunning(t, rate);
+        return maker - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), powerPriceFor(t)) - freightRunning(u, rate);
     }
 
     /*
@@ -232,12 +283,22 @@ public abstract class ExtractionSector extends Sector {
 
     /** What the freight of one of `t` costs a month at `rate`: ProcessingSector.freightRunning() at what a van and a litre cost here and at Haulage's quote (legPrice()); none with no markets. */
     public double freightRunning(BuildingsTemplate t, double rate) {
+        return freightRunning(NewUnit.standing(t), rate);
+    }
+
+    /** ...for one new building already resolved (QN1): the freight of its own recipe. */
+    public double freightRunning(NewUnit t, double rate) {
         return markets == null || t == null ? 0
                 : ProcessingSector.freightRunning(t, SpreadPlanner.values(markets), rate, legPrice());
     }
 
     /** ...and buying its vans: ProcessingSector.fleetCapital() (no truck is in a mine's cost: FR2); none with no markets. */
     public double fleetCapital(BuildingsTemplate t) {
+        return fleetCapital(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): the vans of its own recipe. */
+    public double fleetCapital(NewUnit t) {
         return markets == null || t == null ? 0 : ProcessingSector.fleetCapital(t, SpreadPlanner.values(markets));
     }
 
@@ -249,12 +310,12 @@ public abstract class ExtractionSector extends Sector {
     }
 
     /** The sites of its resource the city owns: how many of its buildings can stand. */
-    public int sitesOwned() {
+    public long sitesOwned() {
         return game == null ? 0 : game.getLandManager().getSites(resource);
     }
 
     /** ...and those its buildings stand on, standing, on site or ordered (Game.committedOn()). */
-    public int sitesWorked() {
+    public long sitesWorked() {
         return game == null ? 0 : game.committedOn(resource);
     }
 
@@ -290,7 +351,7 @@ public abstract class ExtractionSector extends Sector {
         String sector = key();
 
         LandManager land = game.getLandManager();
-        int unminedDeposits = land.getSites(resource) - game.committedOn(resource);
+        long unminedDeposits = land.getSites(resource) - game.committedOn(resource);
         double reserveTonnes = land.getRemaining(resource);
 
         if (unminedDeposits <= 0) return BusinessInvestment.Decision.no(sector, "no deposit to dig");
@@ -302,7 +363,6 @@ public abstract class ExtractionSector extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         BuildingsTemplate moneyHold = null;
         double moneyEarns = 0, moneyCost = 0;
         BuildingsTemplate fieldHold = null;
@@ -316,17 +376,16 @@ public abstract class ExtractionSector extends Sector {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             // ...its lorries with it (0.7.124, ★): their wear and diesel in what it earns, the vans in what it costs.
-            cost += fleetCapital(t);
-            double earns = estimatedMonthlyProfit(t, plans);
+            // ...of one new mine as it would open (QN1, NewUnit): its own vans and its own earnings.
+            NewUnit unit = plans.newUnit(t);
+            cost += fleetCapital(unit);
+            double earns = estimatedMonthlyProfit(unit, plans);
             // ...and one that would carry the interest on its whole cost (0.7.120, batch I3; spec-materials 2.6b).
             if (!planner.passesMoney(this, plans, game, t, 1, earns, cost)) {
                 if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
@@ -348,7 +407,7 @@ public abstract class ExtractionSector extends Sector {
                 return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
                         + planner.city(this, plans, game).money(moneyHold, moneyEarns, moneyCost));
             }
-            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             return BusinessInvestment.Decision.no(sector, fieldHold != null ? noField(land, fieldHold) : "nothing worth sinking");
         }
         if (plans.plotsAvailableFor(best) < 1) {
@@ -357,8 +416,8 @@ public abstract class ExtractionSector extends Sector {
         BuildingsTemplate.Site site = best.site();
         Deposit.FieldType type = site == null ? null : site.type();
         return new BusinessInvestment.Decision(sector, best, 1,
-                String.format("%d deposit(s) unworked, %,.0fk tonnes %sin the ground",
-                        unminedDeposits, land.getRemaining(resource, type) / 1000,
+                String.format("%d deposit(s) unworked, %,.0fk %s %sin the ground",
+                        unminedDeposits, land.getRemaining(resource, type) / 1000, resource.unit() + "s",
                         type == null ? "" : "of " + typeWord(type) + " "), true);
     }
 
@@ -490,7 +549,7 @@ public abstract class ExtractionSector extends Sector {
         if (buildings == null || land == null) return 0;
         Good g = groundGood();
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int held = buildings.getQuantity(t.getId());
+            long held = buildings.getQuantity(t.getId());
             if (held > 0 && workedOut(land, t)) spare += held * t.makes(g);
         }
         return spare;
@@ -524,7 +583,7 @@ public abstract class ExtractionSector extends Sector {
         List<Line> lines = new java.util.ArrayList<>();
         if (game == null) return lines;
         Formats f = Formats.INSTANCE;
-        int owned = sitesOwned(), worked = sitesWorked();
+        long owned = sitesOwned(), worked = sitesWorked();
         lines.add(Line.head("What is under the ground"));
         lines.add(Line.of("Deposits found", f.count(owned)));
         lines.add(Line.of("Being worked", f.count(worked),
@@ -582,6 +641,11 @@ public abstract class ExtractionSector extends Sector {
         return fits(land, t, game.claimsOn(resource)) ? null : noField(land, t);
     }
 
+    /** ...for one new building already resolved (QN1): the ground's test is its template's, as it is here; a sector whose test reads its recipe's figures (Forestry's cut) overrides this. */
+    protected String groundRefusal(NewUnit u) {
+        return groundRefusal(u.template());
+    }
+
     /**
      * One more of `t` weighed as plan() weighs it (above), every gate asked:
      * its ground (groundRefusal()), the ground for the building, the staff,
@@ -591,8 +655,9 @@ public abstract class ExtractionSector extends Sector {
      */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
         if (t == null || plans == null || game == null || buildings == null || markets == null || !isWeighed(t)) return null;
-        double cost = plans.getCostOf(t, 1) + fleetCapital(t);
-        return SpreadPlanner.judge(t, estimatedMonthlyProfit(t, plans), cost, groundRefusal(t), planner.city(this, plans, game), null);
+        NewUnit unit = plans.newUnit(t);
+        double cost = plans.getCostOf(t, 1) + fleetCapital(unit);
+        return SpreadPlanner.judge(t, estimatedMonthlyProfit(unit, plans), cost, groundRefusal(unit), planner.city(this, plans, game), null);
     }
 
     /** Whether a building of its stands over ground with nothing left of its type (workedOut()): a mine that lifts nothing; false with no city. */

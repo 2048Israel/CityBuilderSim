@@ -996,9 +996,9 @@ final class PolicyScreen {
         String rest = own + " -fx-cursor: hand;";
         String lit = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? lit : rest);
-        c.setOnMouseEntered(e -> c.setStyle(lit));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(lit));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         return c;
     }
 
@@ -1033,49 +1033,6 @@ final class PolicyScreen {
 
     /** ...muted. */
     static Label muted(String text) { return words(text, Palette.SIZE_LABEL, Palette.TEXT_MUTED); }
-
-    /* ----- a lever that is still shut (R0, 2026-11-04) -----
-
-       Each lever opens on the date Canada first had it (PolicyDates), and until then the model refuses its setters. The screen draws a shut
-       lever shut: a card at the top of its page saying when it opens, what it is and Canada's first terms, then where it opens - the words
-       are PolicyDates', never composed here - and the lever's own dial greyed (Ladder.greyed()), so the player cannot stage a change the
-       model would refuse. The screen is rebuilt on the clock and holds no state of its own for this: the card is gone the month it opens. */
-
-    /** Whether a lever is still shut in this city (null: a lever with no date of its own, never shut). */
-    boolean isShut(PolicyDates.Lever lever) {
-        return lever != null && !ui.game.isLeverOpen(lever);
-    }
-
-    /** A shut lever's card, on a warning edge: one or two lines of words, the second muted (null: none). */
-    static VBox shutBox(String first, String second) {
-        // The card without card()'s plain style (KP2b): its warning one is set here, once, and not over the plain one in the same draw.
-        VBox c = cardBody(words(first, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
-                second == null ? null : Kept.scope("second", () -> muted(second)));
-        c.setStyle(cardStyle(Palette.WARN));
-        return c;
-    }
-
-    /** A shut lever's card in this city (its own opening month, which a find may have moved), or null while it is open: a scope of its own, since it comes and goes (KP6). */
-    VBox shutCard(PolicyDates.Lever lever) {
-        if (!isShut(lever)) return null;
-        int opens = ui.game.leverOpeningMonth(lever);
-        return Kept.scope("shut:" + lever, () -> shutBox(PolicyDates.shutLine(lever, opens), PolicyDates.shutWhy(lever, opens)));
-    }
-
-    /** A shut lever's card, if it is shut, as the next child of a page. */
-    void addShutCard(VBox page, PolicyDates.Lever lever) {
-        VBox shut = shutCard(lever);
-        if (shut != null) page.getChildren().add(shut);
-    }
-
-    /** A dial card with its own lever's shut card above it when that lever is shut: for two dials side by side that open on different dates. */
-    Node withShutCard(PolicyDates.Lever lever, VBox dial) {
-        VBox shut = shutCard(lever);
-        if (shut == null) return dial;
-        VBox both = Kept.column(TILE_GAP, shut, dial);
-        both.setMinWidth(0);
-        return both;
-    }
 
     /** A heading's quiet words at its right, never cut. */
     static Label quiet(String text) {
@@ -1186,7 +1143,7 @@ final class PolicyScreen {
     static String rateMove(double d) { return points(d); }
 
     /** A percentage to none: "45%". */
-    static String pct0(double share) { return String.format("%.0f%%", unsigned0(share * 100, 0)); }
+    static String pct0(double share) { return Formats.INSTANCE.percentage(unsigned0(share * 100, 0) / 100, "%.0f%%"); }
 
     /** "x1.00". */
     static String times(double scale) { return String.format("x%.2f", scale); }
@@ -1400,7 +1357,7 @@ final class PolicyScreen {
     /** Inflation as a signed share to one place, with a true minus: "+0.2%". */
     static String signedPct1(double v) {
         double shown = unsigned0(v * 100, 1);
-        return (shown < 0 ? "−" : "+") + String.format("%.1f%%", Math.abs(shown));
+        return Formats.INSTANCE.change(shown / 100, 0, "%+.1f%%").replace('-', '−');
     }
 
     /* ------------------------------ what is biting ------------------------------ */
@@ -1537,19 +1494,31 @@ final class PolicyScreen {
         /* ------------------------- the peg (XR2, the study's alerts) -------------------------
          * A peg whose vault is under THIN_COVER months of imports, and the month
          * a peg broke: the two moments the board's alerts name for the regime.
+         * The gold's the same (FB14; GD3's review, 4): the month it gave way,
+         * named as the gold's and not a peg's, and a cover under the one the
+         * defence starts at (DebtManager.GOLD_DEFENCE_FROM, twice the law's).
          */
         ForeignAccounts fx = ui.game.getForeignAccounts();
         if (fx.brokeThisMonth()) {
-            out.add(new Flag(Palette.BAD, "The peg broke",
-                    "It broke by " + fx.getLastBreakCause().words + ": the " + sym() + " fell "
-                    + share1(Math.abs(Math.expm1(fx.getLastBreakJump()))) + " in the month and floats now. The bank is"
+            boolean gold = fx.lastBreakWasGold();
+            double jump = Math.expm1(fx.getLastBreakJump());
+            out.add(new Flag(Palette.BAD, gold ? "The " + sym() + " came off gold" : "The peg broke",
+                    (gold ? "The gold gave way, by " : "It broke by ") + fx.getLastBreakCause().words + ": the " + sym()
+                    + (gold ? (jump >= 0 ? " fell " : " rose ") : " fell ")
+                    + share1(Math.abs(jump)) + " in the month and floats now. The bank is"
                     + " believed less for it.", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
+        } else if (fx.getRegime() == ForeignAccounts.Regime.GOLD && ui.game.getGoldCover() < DebtManager.GOLD_DEFENCE_FROM) {
+            double cover = ui.game.getGoldCover();
+            out.add(new Flag(cover < ForeignAccounts.COVER_RATIO ? Palette.BAD : Palette.WARN, "The gold's cover is thin",
+                    "The gold covers " + share1(cover) + " of M0; the law asks " + pct0(ForeignAccounts.COVER_RATIO)
+                    + ", and the first sale that would leave it under that takes the " + sym() + " off gold. At this pace: "
+                    + coverPace(ui.game.getMonthsToFloor()) + ".", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
         } else if (fx.getRegime() == ForeignAccounts.Regime.PEG && fx.monthlyImports() > 0
                 && fx.importCover() < ForeignAccounts.THIN_COVER) {
             out.add(new Flag(Palette.WARN, "The peg's vault is thin",
                     String.format("The vault covers %.1f months of imports; the peg breaks under %s. %s", fx.importCover(),
                             plain(ForeignAccounts.VAULT_FLOOR) + (ForeignAccounts.VAULT_FLOOR == 1 ? " month" : " months"),
-                            floorWords(fx.monthsToFloor())) + ".", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
+                            floorWords(ui.game.getMonthsToFloor())) + ".", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
         }
 
         /* ---------------------------- the money itself ---------------------------- */
@@ -1693,14 +1662,6 @@ final class PolicyScreen {
         page.getChildren().add(row(cards));
 
         page.getChildren().add(Kept.scope(EVERY_TAX, () -> everyTaxCard(live)));
-        // The dial stays open: it sets only the open taxes (TaxPolicy does that). One line names the income taxes still shut and when each opens.
-        List<PolicyDates.Lever> shutTaxes = new ArrayList<>();
-        for (PolicyDates.Lever l : List.of(PolicyDates.Lever.PROFIT_TAX, PolicyDates.Lever.WAGE_TAX, PolicyDates.Lever.SALES_TAX)) {
-            if (isShut(l)) shutTaxes.add(l);
-        }
-        if (!shutTaxes.isEmpty()) {
-            page.getChildren().add(Kept.scope("shutTaxes", () -> shutBox(PolicyDates.stillShut(shutTaxes, ui.game::leverOpeningMonth), null)));
-        }
     }
 
     /** THE TAX TAKE: last month's four as one bar, a click on a part its page; and once anything is staged, the four at the staged rates, a moved part a ghost with its move over it. */
@@ -2010,7 +1971,6 @@ final class PolicyScreen {
     /** One tax's page: its base on a dial card, who pays it ranked with each row's own move, the payslip (wage) or the farmland (property), and the old table under "details". */
     void taxPage(VBox page, String which) {
         TaxPolicy live = policy();
-        addShutCard(page, taxLever(which));
         page.getChildren().add(Kept.scope("base:" + which, () -> baseCard(which, live)));
         String info = switch (which) {
             case "Profit" -> PROFIT_INFO + " " + LOSS_INFO + " " + OFFSET_INFO;
@@ -2030,16 +1990,6 @@ final class PolicyScreen {
             if (farm != null) page.getChildren().add(farm);
         }
         page.getChildren().add(fold("table:" + which, "the table, as it was", () -> taxTable(which, live)));
-    }
-
-    /** The lever a tax page's dials belong to (R0), or null: the property tax is open from founding. */
-    static PolicyDates.Lever taxLever(String which) {
-        return switch (which) {
-            case "Profit" -> PolicyDates.Lever.PROFIT_TAX;
-            case "Sales" -> PolicyDates.Lever.SALES_TAX;
-            case "Wage" -> PolicyDates.Lever.WAGE_TAX;
-            default -> null;
-        };
     }
 
     /** P9, the offsets' note. */
@@ -2068,7 +2018,7 @@ final class PolicyScreen {
         double step = property ? STEP_PROPERTY : STEP_INCOME;
         Lever lever = new Lever(key, "The " + which.toLowerCase() + " rate", current, 0,
                 property ? TaxPolicy.MAX_PROPERTY_TAX : TaxPolicy.MAX_INCOME_TAX, step, Money::pct2, apply);
-        Ladder ladder = ladderOf(lever).stepReads(PolicyScreen::stepWord).greyed(isShut(taxLever(which)));
+        Ladder ladder = ladderOf(lever).stepReads(PolicyScreen::stepWord);
         DoubleFunction<List<Effect>> effects = baseEffects(which, key, current, step, live);
         String status = switch (which) {
             case "Profit" -> "Moves every sector's profit tax, and only those.";
@@ -2231,7 +2181,7 @@ final class PolicyScreen {
                 // Kept (KP6, KP2b): the style set once, whole, not words()' and then this one on top of it (which wrote it twice at each draw).
                 Label fold = words((shown ? "▾ " : "▸ ") + zero.size() + " paid nothing: " + names, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED,
                         " -fx-cursor: hand; -fx-padding: 6 6 6 6;");
-                fold.setOnMouseClicked(e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
+                Kept.give(fold.onMouseClickedProperty(), e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
                 return fold;
             }));
             if (shown) for (Payer p : zero) addPayer(list, p, scale, which);
@@ -2314,9 +2264,9 @@ final class PolicyScreen {
             String hand = rest + " -fx-cursor: hand;";
             String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
             row.setStyle(row.isHover() ? over : hand);
-            row.setOnMouseEntered(e -> row.setStyle(over));
-            row.setOnMouseExited(e -> row.setStyle(hand));
-            row.setOnMouseClicked(e -> toggle.run());
+            Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(over));
+            Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(hand));
+            Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         } else {
             row.setStyle(rest);
         }
@@ -2329,7 +2279,7 @@ final class PolicyScreen {
     /** A payer's own move, opened in place: its offset's dial, and that payer's tax and THE BUDGET before and after. */
     VBox offsetCard(Payer p, String which) {
         Lever lever = p.lever();
-        Ladder ladder = ladderOf(lever).stepReads(PolicyScreen::stepWord).greyed(isShut(taxLever(which)));
+        Ladder ladder = ladderOf(lever).stepReads(PolicyScreen::stepWord);
         DoubleFunction<List<Effect>> effects = offsetEffects(p, which);
         VBox c = dialCard(new DialCard(p.svg(), Palette.MONEY, p.name().toUpperCase() + ": ITS MOVE OFF THE RATE",
                 OFFSET_INFO, null, "Taxed at " + p.rate().apply(p.rateNow()) + " now.", null, ladder,
@@ -2715,7 +2665,6 @@ final class PolicyScreen {
         String says = floorSays(market, people);
         String joined = view.joinedWords(Money::moneyFull);
 
-        addShutCard(page, PolicyDates.Lever.MINIMUM_WAGE);
         // The dial's column (its card, and under it what the study measured when the floor it shows is over the going rate) beside the two gauges.
         VBox dial = Kept.column(TILE_GAP, Kept.scope("floor", () -> floorCard(market, floor, view)));
         if (view.stagedZone() == FloorView.Zone.ALWAYS) dial.getChildren().add(Kept.scope("aboveNote", () -> muted(ABOVE_GOING_NOTE)));
@@ -2792,7 +2741,7 @@ final class PolicyScreen {
             c.setPercentWidth(100 * share[i] / FloorView.GAUGE_TOP);
             c.setHgrow(Priority.ALWAYS);
             c.setFillWidth(true);
-            names.getColumnConstraints().add(c);
+            Kept.columns(names).add(c);
             Label zone = words(words[i], Palette.SIZE_CAPTION, Palette.TEXT_MUTED,
                     " -fx-border-color: transparent transparent transparent " + Palette.EDGE + "; -fx-border-width: 0 0 0 1; -fx-padding: 0 4 0 4;");
             names.add(zone, i, 0);
@@ -2968,20 +2917,15 @@ final class PolicyScreen {
         };
     }
 
-    /** TIE IT TO: the three ties as the currency page's regimes are chosen, the one in force marked and a choice staged under its own key until its Apply; greyed while the lever is shut. */
+    /** TIE IT TO: the three ties as the currency page's regimes are chosen, the one in force marked and a choice staged under its own key until its Apply. */
     VBox tieCard(LabourMarket market, FloorView view) {
         LabourMarket.FloorTie[] all = LabourMarket.FloorTie.values();
         LabourMarket.FloorTie now = view.tie(), want = stagedChoice(FLOOR_TIE, now, all);
-        boolean shut = isShut(PolicyDates.Lever.MINIMUM_WAGE);
         double share = now == LabourMarket.FloorTie.AVERAGE_WAGE ? view.tieShare() : view.enteringShare();
         Node[] options = new Node[all.length];
         for (int i = 0; i < all.length; i++) {
             LabourMarket.FloorTie tie = all[i];
-            VBox o = option(tieName(tie, share), tieSays(tie), tie == want, tie == now, () -> {
-                if (!shut) choose(FLOOR_TIE, now, tie);
-            });
-            o.setDisable(shut);
-            o.setOpacity(shut ? .5 : 1);
+            VBox o = option(tieName(tie, share), tieSays(tie), tie == want, tie == now, () -> choose(FLOOR_TIE, now, tie));
             options[i] = o;
         }
         VBox c = card(cardHead(Icons.POLICY, Palette.MONEY, "TIE IT TO", TIE_INFO, null), Kept.column(Palette.GAP, options),
@@ -3064,7 +3008,7 @@ final class PolicyScreen {
     VBox floorCard(LabourMarket market, double floor, FloorView view) {
         double min = market.getMinSettable(), max = market.getMaxSettable(), step = (max - min) / 200;
         DoubleFunction<String> today = v -> moneyFull(market.cashAt(v));
-        Ladder ladder = ownLadder("floor", floor, min, max, step, today).stepReads(today).greyed(isShut(PolicyDates.Lever.MINIMUM_WAGE));
+        Ladder ladder = ownLadder("floor", floor, min, max, step, today).stepReads(today);
         double want = staged("floor", floor);
         String info = FLOOR_INFO + " The floor is tied to " + market.getFloorTie().label() + ": " + floorTieWords(market)
                 + ". The dial is set in founding money - " + moneyFull(floor) + " a month at founding "
@@ -4166,7 +4110,7 @@ final class PolicyScreen {
         choice.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;"
                 + (lit ? Palette.block(Palette.CONTROL, Palette.ACCENT) + Palette.strong(Palette.SIZE_CAPTION + 1, Palette.TEXT_HEAD)
                         : Palette.block(Palette.PANEL) + Palette.words(Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL)));
-        choice.setOnMouseClicked(e -> pick.run());
+        Kept.give(choice.onMouseClickedProperty(), e -> pick.run());
         return choice;
     }
 
@@ -4492,8 +4436,8 @@ final class PolicyScreen {
             dealt = Kept.scope("dealt", () -> fxCell("THIS MONTH THE VAULT DEALT", "nothing", "the float's rule and the peg were in step", null));
         }
         VBox vault = fxCell("THE VAULT", coverMonths(fx.importCover()), "of imports (" + usd(fx.getReservesUsd()) + ")", null);
-        VBox pace = fxCell("AT THIS PACE", floorWords(fx.monthsToFloor()),
-                Double.isInfinite(fx.monthsToFloor()) ? "the vault is not falling: it sold nothing at the last reprice"
+        VBox pace = fxCell("AT THIS PACE", floorWords(ui.game.getMonthsToFloor()),
+                Double.isInfinite(ui.game.getMonthsToFloor()) ? "the vault is not falling: it sold nothing at the last reprice"
                         : "the floor is " + usd(fx.vaultFloorUsd()) + ", " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports",
                 null);
         return new Node[] {shadow, dealt, vault, pace};
@@ -4863,7 +4807,7 @@ final class PolicyScreen {
     VBox goldCard(ForeignAccounts fx, ForeignAccounts.Regime now) {
         if (now != ForeignAccounts.Regime.GOLD) return goldNote(fx);
         double mint = fx.getMintPrice(), want = staged(XR_MINT, mint), step = mint * MINT_STEP;
-        double m0 = ui.game.getCentralBank().m0(), cover = ui.game.getGoldCover(), free = ui.game.getFreeGoldUsd();
+        double m0 = ui.game.getGoldBase(), cover = ui.game.getGoldCover(), free = ui.game.getFreeGoldUsd();   // M0 as the cover reads it (FB14: the last sale retired)
         boolean under = cover < ForeignAccounts.COVER_RATIO;
         VBox cMint = fxCell("THE MINT PRICE", mintWords(want), "an ounce" + (isStaged(XR_MINT) ? " · staged" : ""), null);
         cMint.getChildren().add(stepper(XR_MINT, mint, step, step, Double.MAX_VALUE, pct0(MINT_STEP) + " · revalue", pct0(MINT_STEP) + " · devalue"));
@@ -4877,11 +4821,11 @@ final class PolicyScreen {
                 "worth " + usd(fx.getHoldingUsd(ForeignAccounts.GOLD)) + " at gold's price", null);
         VBox cFree = fxCell("FREE GOLD", signedUsd(free), curLocal(fx.toLocal(free)) + (free >= 0 ? ", free to leave the vault" : ", short of the law's cover"),
                 null, free < 0 ? Palette.BAD : Palette.TEXT_HEAD);
-        double months = fx.monthsToFloor();
+        double months = ui.game.getMonthsToFloor();   // over M0 as FREE GOLD reads it (FB14: the M0 the reprice was handed is not saved)
         VBox cPace = fxCell("AT THIS PACE", coverPace(months), Double.isInfinite(months)
                 ? "the gold is not falling: the vault sold none at the last reprice"
                 : months <= 0 ? "last month's sale of " + usd(fx.getDefenceUsd()) + " leaves it there"
-                : "to the law's cover, at last month's sale of " + usd(fx.getDefenceUsd()), null);
+                : (cover > 1 ? "until the gold is gone (the sales retire M0 first, and the cover only rises), at last month's sale of " : "to the law's cover, at last month's sale of ") + usd(fx.getDefenceUsd()), null);
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE GOLD STANDARD", goldInfo(), quiet("a higher mint price is a weaker " + sym())));
         if (fx.getGoldEvent() != ForeignAccounts.GoldEvent.NONE) c.getChildren().add(Kept.scope("decision", () -> goldDecision(fx)));
         c.getChildren().add(row(cMint, cCentre, cWeak, cStrong, cPrice));
@@ -5466,16 +5410,14 @@ final class PolicyScreen {
                     muted("No pensioner household in the city this month.")));
         }
         page.getChildren().add(row(cover, household));
-        // Two dials, two dates (R0): each card's own shut card above it.
-        page.getChildren().add(row(Kept.scope("contribution", () -> withShutCard(PolicyDates.Lever.PENSION_CONTRIBUTION, contributionCard(em, policy))),
-                Kept.scope("pension", () -> withShutCard(PolicyDates.Lever.PENSION_REPLACEMENT, pensionDialCard(em, policy, bal)))));
+        page.getChildren().add(row(Kept.scope("contribution", () -> contributionCard(em, policy)),
+                Kept.scope("pension", () -> pensionDialCard(em, policy, bal))));
     }
 
     /** WHAT WORKERS PAY IN (P-4): the contribution, its own Apply; collected, covered, out of the treasury and a payslip before and after (M3: struck on the wage bill, so a dial at nothing previews something - B9). */
     VBox contributionCard(EconomyManager em, TaxPolicy policy) {
         double contribution = policy.getContributionRate();
-        Ladder ladder = ownLadder("contrib", contribution, 0, TaxPolicy.MAX_CONTRIBUTION, .0025, Money::pct2)
-                .greyed(isShut(PolicyDates.Lever.PENSION_CONTRIBUTION));
+        Ladder ladder = ownLadder("contrib", contribution, 0, TaxPolicy.MAX_CONTRIBUTION, .0025, Money::pct2);
         double want = staged("contrib", contribution);
         DoubleFunction<List<Effect>> effects = contributionEffects(policy);
         return dialCard(new DialCard(Icons.STAFF, Palette.MONEY, "WHAT WORKERS PAY IN",
@@ -5507,8 +5449,7 @@ final class PolicyScreen {
     /** WHAT SENIORS RECEIVE (P-5): the pension, of the FOUNDING unskilled wage (B10, D9), its own Apply; each senior, paid, out of the treasury and what one pensioner household would have. */
     VBox pensionDialCard(EconomyManager em, TaxPolicy policy, HouseholdBalance bal) {
         double replacement = policy.getPensionReplacement();
-        Ladder ladder = ownLadder("pension", replacement, 0, TaxPolicy.MAX_REPLACEMENT, .01, PolicyScreen::pct0)
-                .greyed(isShut(PolicyDates.Lever.PENSION_REPLACEMENT));
+        Ladder ladder = ownLadder("pension", replacement, 0, TaxPolicy.MAX_REPLACEMENT, .01, PolicyScreen::pct0);
         double want = staged("pension", replacement);
         DoubleFunction<List<Effect>> effects = pensionEffects(policy);
         // The wage base is struck at the expected price level since 0.7.42 (the UI spec's B10, D13): it keeps up
@@ -5586,7 +5527,6 @@ final class PolicyScreen {
         double collected = em.getEiPremiums(), paid = em.getEiBenefits();
         double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
 
-        addShutCard(page, PolicyDates.Lever.EI);
         VBox cover = Kept.scope("cover", () -> card(cardHead(Icons.STAFF, Palette.MONEY, "THE EI COVER", EI_INFO, null),
                 figure(paid > 0 ? "premiums cover " + pct0(em.getEiCoverage()) : "nobody drew EI", Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 bulletBar(collected, paid, Palette.MONEY, 0, "premiums " + money(collected) + " against EI paid "
@@ -5722,8 +5662,7 @@ final class PolicyScreen {
     /** What workers pay for EI (E-3), its own Apply: raised, and what EI and the grants take from the treasury. */
     VBox eiPremiumCard(EconomyManager em, TaxPolicy policy) {
         double premium = policy.getEiPremiumRate(), benefit = policy.getEiBenefitRate();
-        Ladder ladder = ownLadder("eiPremium", premium, 0, TaxPolicy.MAX_EI_PREMIUM, .0005, Money::pct2)
-                .greyed(isShut(PolicyDates.Lever.EI));
+        Ladder ladder = ownLadder("eiPremium", premium, 0, TaxPolicy.MAX_EI_PREMIUM, .0005, Money::pct2);
         double want = staged("eiPremium", premium);
         DoubleFunction<List<Effect>> effects = eiPremiumEffects(policy);
         return dialCard(new DialCard(Icons.COIN, Palette.MONEY, "WHAT WORKERS PAY FOR EI",
@@ -5746,8 +5685,7 @@ final class PolicyScreen {
     /** What EI replaces (E-3), its own Apply: the pool's bill, a claimant's cheque and the treasury's share, struck on the pool (M5). */
     VBox eiBenefitCard(EconomyManager em, TaxPolicy policy, Unemployment u) {
         double premium = policy.getEiPremiumRate(), benefit = policy.getEiBenefitRate();
-        Ladder ladder = ownLadder("eiBenefit", benefit, 0, TaxPolicy.MAX_EI_BENEFIT, .01, PolicyScreen::pct0)
-                .greyed(isShut(PolicyDates.Lever.EI));
+        Ladder ladder = ownLadder("eiBenefit", benefit, 0, TaxPolicy.MAX_EI_BENEFIT, .01, PolicyScreen::pct0);
         double want = staged("eiBenefit", benefit);
         DoubleFunction<List<Effect>> effects = eiBenefitEffects(policy);
         String status = "Of the wage a claimant lost, up to the insured maximum of " + moneyFull(u.getInsuredCap()) + " a month.";
@@ -5870,9 +5808,8 @@ final class PolicyScreen {
                             care.getAffordability(kind) * 100) : "nobody priced out"))));
         }
         page.getChildren().add(row(cells.toArray(new Node[0])));
-        // The fee scale is open from founding; only the premium is dated (R0), so its shut card sits above its own dial.
         page.getChildren().add(row(Kept.scope("fee", () -> feeCard(care, policy)),
-                Kept.scope("premium", () -> withShutCard(PolicyDates.Lever.HEALTH_PREMIUM, healthPremiumCard(em, care, policy)))));
+                Kept.scope("premium", () -> healthPremiumCard(em, care, policy))));
     }
 
     /** P64, both layers. */
@@ -5945,8 +5882,7 @@ final class PolicyScreen {
     VBox healthPremiumCard(EconomyManager em, Healthcare care, TaxPolicy policy) {
         double scale = policy.getHealthFeeScale(), premium = policy.getHealthPremiumRate();
         double wages = em.getWageBill(), gross = care.getGrossCost();
-        Ladder ladder = ownLadder("healthPremium", premium, 0, TaxPolicy.MAX_HEALTH_PREMIUM, .0005, Money::pct2)
-                .greyed(isShut(PolicyDates.Lever.HEALTH_PREMIUM));
+        Ladder ladder = ownLadder("healthPremium", premium, 0, TaxPolicy.MAX_HEALTH_PREMIUM, .0005, Money::pct2);
         double want = staged("healthPremium", premium);
         DoubleFunction<List<Effect>> effects = healthPremiumEffects(policy);
         String status = "Off every wage in the city, employee side, beside the EI premium - into the "
@@ -6126,8 +6062,6 @@ final class PolicyScreen {
         page.getChildren().add(row(Kept.scope("share", () -> shareCard(shareLever, schools, policy)),
                 Kept.scope("month", () -> schoolsMonthCard(schools)),
                 Kept.scope(EVERY_SCHOOL, () -> everySchoolCard(everySchool, policy))));
-        // The grant and the loan rate are one lever, student aid (R0): its shut card above the two dials; tuition above is open from founding.
-        addShutCard(page, PolicyDates.Lever.STUDENT_AID);
         page.getChildren().add(row(Kept.scope("grant", () -> grantCard(policy)), Kept.scope("loan", () -> loanCard(loanLever, policy))));
     }
 
@@ -6229,9 +6163,9 @@ final class PolicyScreen {
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
         String lit = rest + " -fx-background-color: " + Palette.CONTROL + ";";
         row.setStyle(row.isHover() ? lit : rest);
-        row.setOnMouseEntered(e -> row.setStyle(lit));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> toggle.run());
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(lit));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         return row;
     }
 
@@ -6416,9 +6350,7 @@ final class PolicyScreen {
         double amountStep = wantBasis == TaxPolicy.GrantBasis.FIXED ? Math.max(1e-9, amountMax / 100) : .01;
         Lever amountLever = new Lever("grantAmount", "...at", amountNow, 0, amountMax, amountStep,
                 v -> amountWords(wantBasis, v, ui.game.getExpectations().getExpectedLevel()), v -> policy.setGrant(wantBasis, v));
-        boolean shut = isShut(PolicyDates.Lever.STUDENT_AID);
-        pick.setDisable(shut);
-        Ladder ladder = ladderOf(amountLever).greyed(shut);
+        Ladder ladder = ladderOf(amountLever);
         double each = ui.game.grantPerStudentUnder(basis, amount);
         DoubleFunction<List<Effect>> effects = grantEffects(policy);
         String caveat = "Against today's students, wage, surplus and courses. A smaller grant "
@@ -6463,7 +6395,7 @@ final class PolicyScreen {
     VBox loanCard(Lever lever, TaxPolicy policy) {
         HouseholdBalance bal = ui.game.getHouseholdBalance();
         double rate = policy.getStudentLoanRate();
-        Ladder ladder = ladderOf(lever).greyed(isShut(PolicyDates.Lever.STUDENT_AID));
+        Ladder ladder = ladderOf(lever);
         List<Node> lines = List.of(
                 cardLine("Owed on student loans today", money(bal.totalStudentDebt()), null),
                 cardLine("...of it by graduates, repaying", money(bal.totalGraduateDebt()), null),

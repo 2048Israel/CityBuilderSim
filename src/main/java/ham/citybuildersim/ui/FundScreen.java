@@ -100,8 +100,11 @@ final class FundScreen {
         return page;
     }
 
-    /** The months of the record Activity shows before "show older", and how many more each press adds. */
-    static final int ACTIVITY_MONTHS = 60;
+    /** The months of Activity shown outside the older calendar years' folds. */
+    static final int ACTIVITY_MONTHS = 12;
+
+    /** The first Search results shown, and the additional rows each Show more reveals. */
+    static final int SEARCH_ROWS = 40;
 
     /** The rows of a security's own record under its book. */
     static final int SECURITY_ROWS = 12;
@@ -112,8 +115,8 @@ final class FundScreen {
     /** The most closed lots the CLOSED card lists with its fold open, the newest; the older are counted, not drawn (CD9: a fund 2,400 months old had closed 5,562, and the fold drew every one, over a gigabyte of nodes, which took KeptCheck past its heap). */
     static final int CLOSED_FOLD_ROWS = 200;
 
-    /** The money steps: the ticket's on a buy by amount and on a bond's face, and PAY IN, DRAW OUT's; a quantity of shares steps by 1, 10, 100 and 1,000 instead. */
-    static final double[] MONEY_STEPS = {1_000, 10_000, 100_000, 1_000_000};
+    /** The least money step in thousands for the order ticket and PAY IN, DRAW OUT; larger steps follow the amount. */
+    static final double MONEY_STEP = 1_000;
 
     /** The security page's two columns at the 1,389 window: the picture and its facts, then the position and the ticket. */
     static final double LEFT = 812, RIGHT = 412;
@@ -129,6 +132,8 @@ final class FundScreen {
     String filter = "All";
     String group = "All";
     int activityMonths = ACTIVITY_MONTHS;
+    int searchRows = SEARCH_ROWS;
+    private String resultsQuery = "", resultsFilter = "All";
 
     /** Folds and opened rows, by key. */
     final Set<String> open = new HashSet<>();
@@ -283,7 +288,7 @@ final class FundScreen {
 
     /** A share as a percentage, to one place, with a true minus. */
     static String pct1(double share) {
-        return Double.isFinite(share) ? String.format("%.1f%%", share * 100).replace('-', '−') : "—";
+        return Formats.INSTANCE.percentage(share, "%.1f%%").replace('-', '−');
     }
 
     /** A unit share as "a tenth" or "a 24th": the dial the sentence names (the fund's sale of the excess, its idle cash's transfer), not a copy of it. */
@@ -299,15 +304,18 @@ final class FundScreen {
     /** ...signed: "+14.4%". */
     static String signedPct(double share) {
         if (!Double.isFinite(share)) return "—";
-        return (share < 0 ? "−" : "+") + String.format("%,.1f%%", Math.abs(share) * 100);
+        return Formats.INSTANCE.change(share == 0 ? 0 : share, 0, "%+,.1f%%").replace('-', '−');
     }
 
     /** A move in ink with its arrow: "▲ +4.3%", or "unchanged" when it rounds to none - never a verdict's colour. */
-    static String move(double share) {
+    static String move(double share) { return move(share, 0); }
+
+    /** An observed move over its actual span; the common formatter chooses its readable unit. */
+    static String move(double share, int months) {
         if (!Double.isFinite(share)) return null;
         if (Math.abs(share) < 0.0005) return "unchanged";
         String arrow = share > 0 ? "▲ " : share < 0 ? "▼ " : "";
-        return arrow + signedPct(share);
+        return arrow + Formats.INSTANCE.change(share, months, "%+,.1f%%").replace('-', '−');
     }
 
     /** The time a bond has left: "3y 5m left", "5 months left", "a month left", "falls due this month". */
@@ -387,9 +395,7 @@ final class FundScreen {
                 d(g, p.takenOut()), d(g, p.value()), signed(g, p.gain()));
         String cashNote = p.reserved() > 0 ? d(g, p.reserved()) + " held for your orders; it earns nothing"
                 : "waits for the book; it earns nothing";
-        String incomeNote = p.transferLastMonth() > 0 && p.incomeLastMonth() > 0
-                ? "covered " + pct1(p.incomeLastMonth() / p.transferLastMonth()).replace(".0%", "%") + " of the transfer"
-                : "dividends and coupons";
+        String incomeNote = incomeNote(p.transferLastMonth(), p.incomeLastMonth());
         String transferNote = p.transferShort() > 0 ? d(g, p.transferShort()) + (g.getFund().getToRaise() > 0
                         ? " of it sold for, to pay next month" : " of it not paid, for want of cash")
                 : withdrawalShare(g.getFund().getWithdrawal());
@@ -426,6 +432,37 @@ final class FundScreen {
 
     /** The holdings' groups, in the page's order. */
     static final String SHARES = "COMPANY SHARES", RESCUE = "THE RESCUE BOOK", BONDS = "BONDS";
+
+    /**
+     * What the fund's income is made of, in words (LF1c): a share lot's income holds the lending fees the world pays for the shares the
+     * market book lent a short (FundLedger.lendingFee()) beside its dividends, and a bond's its coupons. It said dividends and coupons
+     * only, and the fees were in the figure with no name.
+     */
+    static final String INCOME_KINDS = "dividends, coupons and lending fees";
+
+    /** The note under INCOME LAST MONTH: how much of the transfer the income covered when there was both, else what the income is made of. */
+    static String incomeNote(double transferLastMonth, double incomeLastMonth) {
+        return transferLastMonth > 0 && incomeLastMonth > 0
+                ? "covered " + pct1(incomeLastMonth / transferLastMonth).replace(".0%", "%") + " of the transfer"
+                : INCOME_KINDS;
+    }
+
+    /** The label of a lot's income on its page, by its kind: coupons for a bond; dividends and the lending fees for the market book's shares, which the fee is credited to; dividends for the rescue book's, the preferred's and the rest. */
+    static String incomeLabel(String kind) {
+        if (FundView.BOND.equals(kind)) return "Coupons";
+        return FundView.SHARE.equals(kind) ? "Dividends and lending fees" : "Dividends";
+    }
+
+    /** The record's line for a security written off with what it was: a bond's face is gone, a company's shares go with the company (LF1c: it said "its face gone" of both). */
+    static String writtenOffWords(String name, boolean bond) {
+        return "Written off: " + name + (bond ? ", its face gone" : ", its shares gone with the company");
+    }
+
+    /** The record's one line a month for the fees the world paid on the shares the market book lent a short, in this many companies (LF1c: it was the row's kind, LENDING_FEE). */
+    static String lendingFeeWords(double companies) {
+        int n = (int) Math.round(companies);
+        return "Lending fees from the world on the shares lent to a short in " + n + (companies == 1 ? " company" : " companies");
+    }
 
     static List<Holding> holdings(Game g) {
         List<Holding> out = new ArrayList<>();
@@ -518,9 +555,14 @@ final class FundScreen {
                  String held, double[] spark, int company, String issuer) { }
 
     static List<Found> found(Game g, String query, String filter) {
+        return found(g, FundView.search(g, query, filter));
+    }
+
+    /** Only the hits on show need their prices, dates and moves put into words. */
+    static List<Found> found(Game g, List<FundView.Hit> hits) {
         List<Found> out = new ArrayList<>();
         int now = g.getMonth();
-        for (FundView.Hit h : FundView.search(g, query, filter)) {
+        for (FundView.Hit h : hits) {
             boolean bond = FundView.BOND.equals(h.kind());
             String sub, tag, mv;
             switch (h.kind()) {
@@ -685,7 +727,7 @@ final class FundScreen {
             Pnl re = pnl(sym(g), p.realized(), Double.NaN);
             out.add(new PositionLine("Realized", re.text(), re.tone(), null));
             String since = p.since() >= 0 ? "since " + month(p.since()) : null;
-            out.add(new PositionLine(bond ? "Coupons" : "Dividends", d(g, p.income()), null,
+            out.add(new PositionLine(incomeLabel(p.kind()), d(g, p.income()), null,
                     p.incomeBefore() > 0 ? "before " + month(p.since()) + ": " + d(g, p.incomeBefore()) : since));
             if (FundView.RESCUE.equals(p.kind())) {
                 double yoc = FundView.yieldOnCost(g, p);
@@ -854,19 +896,22 @@ final class FundScreen {
 
     /** The record's lines, newest first, grouped: a month's rule trades on one side of one market are one line with the lots inside. */
     static List<Act> acts(Game g, String group, String key, int months) {
-        List<Act> out = new ArrayList<>();
-        int now = g.getMonth();
         List<FundView.Line> lines = FundView.activity(g, group, key);
+        if (months > 0) lines = lines.stream().filter(l -> g.getMonth() - l.month() < months).toList();
+        return acts(g, lines, key);
+    }
+
+    /** The visible part of the record, with the same grouping on every page. */
+    static List<Act> acts(Game g, List<FundView.Line> lines, String key) {
+        List<Act> out = new ArrayList<>();
         int i = 0;
         while (i < lines.size()) {
             FundView.Line l = lines.get(i);
-            if (months > 0 && now - l.month() >= months) break;
             FundLedger.Activity a = l.row();
             if (a != null && !a.hand() && (FundLedger.BUY.equals(a.kind()) || FundLedger.SELL.equals(a.kind())) && key == null) {
                 // The rule's same-month, same-side trades in one market: one line.
                 boolean bondRow = a.key() != null && a.key().startsWith("B:");
                 List<Act> inside = new ArrayList<>();
-                double money = 0, realized = 0;
                 int j = i;
                 while (j < lines.size()) {
                     FundView.Line m = lines.get(j);
@@ -874,15 +919,14 @@ final class FundScreen {
                     if (b == null || b.hand() || b.month() != a.month() || !b.kind().equals(a.kind())
                             || (b.key() != null && b.key().startsWith("B:")) != bondRow) break;
                     inside.add(act(g, m));
-                    money += b.money();
-                    realized += b.realized();
                     j++;
                 }
                 if (inside.size() == 1) out.add(inside.get(0));
                 else {
                     String verb = FundLedger.BUY.equals(a.kind()) ? "bought" : "sold";
-                    out.add(new Act(a.month(), "The rule " + verb + " " + inside.size() + (bondRow ? " bonds" : " companies' shares"),
-                            "the rule", "", d(g, money), FundLedger.SELL.equals(a.kind()) ? pnl(sym(g), realized, Double.NaN) : null,
+                    FundView.ActivityTotals totals = FundView.activityTotals(lines.subList(i, j));
+                    out.add(new Act(a.month(), "The rule " + verb + " " + totals.trades() + (bondRow ? " bonds" : " companies' shares"),
+                            "the rule", "", d(g, totals.money()), FundLedger.SELL.equals(a.kind()) ? pnl(sym(g), totals.realized(), Double.NaN) : null,
                             null, false, inside));
                 }
                 i = j;
@@ -935,8 +979,9 @@ final class FundScreen {
                     + (a.note() == null ? "nothing to post" : a.note());
             case FundLedger.DIVIDEND -> what = "Dividends from " + (int) Math.round(a.units()) + (a.units() == 1 ? " company" : " companies");
             case FundLedger.COUPON -> what = "Coupons on " + (int) Math.round(a.units()) + (a.units() == 1 ? " bond" : " bonds");
+            case FundLedger.LENDING_FEE -> what = lendingFeeWords(a.units());
             case FundLedger.MATURED -> what = name + " repaid at par";
-            case FundLedger.WRITTEN_DOWN -> what = "gone".equals(a.note()) ? "Written off: " + name + ", its face gone"
+            case FundLedger.WRITTEN_DOWN -> what = "gone".equals(a.note()) ? writtenOffWords(name, bond)
                     : "Written down: " + name + ", " + d(g, a.units()) + " of its face";
             case FundLedger.RESCUE -> what = "Rescued the bank for its shares: " + d(g, a.money())
                     + (a.realized() < 0 ? "; its market-book shares went with the rest, for nothing" : "");
@@ -1124,7 +1169,7 @@ final class FundScreen {
             + "method: a buy adds what it paid to the lot's adjusted cost base, a sale takes out the cost of what it "
             + "sold in proportion, and the average is the cost base over the units - so a split moves the average and "
             + "not the cost. The rule's buys and yours are one lot a company; the bank's rescue book is its own. "
-            + "Dividends and coupons are income, not cost. A holding bought before this build tracked costs is counted "
+            + "Dividends, coupons and lending fees are income, not cost. A holding bought before this build tracked costs is counted "
             + "at its market value in the month it began, and says so.";
 
     VBox holdingsCard(Game g) {
@@ -1173,7 +1218,7 @@ final class FundScreen {
                 card.getChildren().add(Kept.scope("more:" + grp, () -> {
                     Label more = Kept.label("and " + hidden + " more under " + d(g, FundView.FOLD_UNDER) + " ▸");
                     more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 4 0 4 6;");
-                    more.setOnMouseClicked(e -> { open.add(k); redraw(); });
+                    Kept.give(more.onMouseClickedProperty(), e -> { open.add(k); redraw(); });
                     return more;
                 }));
             }
@@ -1311,9 +1356,9 @@ final class FundScreen {
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> openSecurity(hd.key()));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> openSecurity(hd.key()));
         return row;
     }
 
@@ -1350,9 +1395,9 @@ final class FundScreen {
         String rest = "-fx-padding: 5 6 5 6; -fx-background-radius: 6; -fx-cursor: hand;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> toggle.run());
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         return row;
     }
 
@@ -1461,7 +1506,7 @@ final class FundScreen {
         HBox row = Kept.row(8, named, fig);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-cursor: hand; -fx-padding: 2 0 2 0;");
-        row.setOnMouseClicked(e -> openSecurity(c.key()));
+        Kept.give(row.onMouseClickedProperty(), e -> openSecurity(c.key()));
         return row;
     }
 
@@ -1494,10 +1539,12 @@ final class FundScreen {
         page.getChildren().add(Kept.scope("top", () -> {
             box = searchBox(query, "Search shares and bonds", 600, typed -> {
                 query = typed;
+                searchRows = SEARCH_ROWS;
                 fillResults(g, results);
             }, () -> { if (ui.rootMenu != null) ui.rootMenu.requestFocus(); });
             FlowPane chips = chipStrip(FILTERS, filter, Palette.SIZE_LABEL, pick -> {
                 filter = pick;
+                searchRows = SEARCH_ROWS;
                 redraw();
             });
             HBox top = Kept.row(14, box, chips);
@@ -1519,28 +1566,39 @@ final class FundScreen {
     /** The results, refilled in place as the box is typed in (a redraw would lose the next key). */
     void fillResults(Game g, VBox results) {
         results.getChildren().clear();
-        List<Found> all = found(g, query, filter);
+        if (!query.equals(resultsQuery) || !filter.equals(resultsFilter)) searchRows = SEARCH_ROWS;
+        resultsQuery = query;
+        resultsFilter = filter;
+        List<FundView.Hit> all = FundView.search(g, query, filter);
         if (all.isEmpty()) {
             results.getChildren().add(Kept.scope("none", () -> line(query.isBlank() ? "Nothing on the market."
                     : "Nothing matches \"" + query.trim() + "\".")));
             return;
         }
-        // Kept (KP5): a row is a scope keyed by the security it shows, a section's head by the section, and what the list says only
-        // sometimes is a scope of its own.
+        // FP1 keeps a result row in its place when the market changes its securities. Every field and click target is set again.
+        // Section heads and the lines said only sometimes have scopes of their own.
         String section = null;
-        boolean anyBond = false;
-        for (Found f : all) {
+        boolean anyBond = all.stream().anyMatch(h -> FundView.BOND.equals(h.kind()));
+        int shown = Math.min(searchRows, all.size());
+        List<Found> visible = found(g, all.subList(0, shown));
+        for (int row = 0; row < visible.size(); row++) {
+            Found f = visible.get(row);
             if (f.section() != null && !f.section().equals(section)) {
                 section = f.section();
                 final String head = section;
                 results.getChildren().add(Kept.scope("section:" + head, () -> groupHead(head)));
             }
-            anyBond |= "BOND".equals(f.tag());
-            results.getChildren().add(Kept.scope("found:" + f.key(), () -> foundRow(g, f)));
+            results.getChildren().add(Kept.scope("found:" + row, () -> foundRow(g, f)));
         }
         if (query.isBlank() && !anyBond && ("All".equals(filter) || "Bonds".equals(filter))) {
             results.getChildren().add(Kept.scope("noBonds", () -> groupHead(FundView.BONDS_SECTION)));
             results.getChildren().add(Kept.scope("noBond", () -> line("No company has a bond outstanding.")));
+        }
+        if (shown < all.size()) {
+            results.getChildren().add(Kept.scope("more", () -> stepChip("Show more · " + (all.size() - shown) + " left", () -> {
+                searchRows += SEARCH_ROWS;
+                fillResults(g, results);
+            }, false)));
         }
     }
 
@@ -1562,8 +1620,8 @@ final class FundScreen {
         HBox tagBox = Kept.row(0, tag(f.tag(), colourOf(f.key())));
         tagBox.setMinWidth(86);
         tagBox.setAlignment(Pos.CENTER_LEFT);
-        VBox priceBox = figureCell(f.price(), null, null, 150);
-        Label mv = words(f.move(), Palette.SIZE_LABEL, Palette.TEXT_BODY);
+        VBox priceBox = Kept.scope(f.price().isEmpty() ? "empty price" : "price", () -> figureCell(f.price(), null, null, 150));
+        Label mv = Kept.scope(f.move().isEmpty() ? "empty move" : "move", () -> words(f.move(), Palette.SIZE_LABEL, Palette.TEXT_BODY));
         mv.setMinWidth(0);
         mv.setPrefWidth(220);
         mv.setMaxWidth(220);
@@ -1571,7 +1629,7 @@ final class FundScreen {
         boolean lined = f.spark() != null && f.spark().length >= 2;
         Node spark = Kept.scope(lined ? "spark" : "space", () -> lined
                 ? sparkline(f.spark(), months(g, f.spark().length), Palette.BUSINESS, 96, 22) : spacer(96));
-        Label held = words(f.held(), Palette.SIZE_LABEL, Palette.TEXT_LABEL);
+        Label held = Kept.scope(f.held().isEmpty() ? "empty held" : "held", () -> words(f.held(), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         held.setMinWidth(0);
         HBox.setHgrow(held, Priority.ALWAYS);
         held.setMaxWidth(Double.MAX_VALUE);
@@ -1586,9 +1644,9 @@ final class FundScreen {
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> openSecurity(f.key()));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> openSecurity(f.key()));
         return row;
     }
 
@@ -1682,7 +1740,7 @@ final class FundScreen {
         while (i0 < i1 && !(series[i0] > 0)) i0++;
         double a = series[i0], b = series[i1];
         if (!(a > 0) || !(b > 0) || i1 <= i0) return null;
-        String m = move(b / a - 1);
+        String m = move(b / a - 1, axis.get(i1) - axis.get(i0));
         return m == null ? null : m + (wholeRange(window) ? " over " + rangeName(window.range())
                 : " from " + month(axis.get(i0)) + " to " + month(axis.get(i1)));
     }
@@ -1817,7 +1875,7 @@ final class FundScreen {
         double w = most > 0 ? Math.max(2, l.quantity() / most * side) : 2;
         Region bar = Kept.region();
         bar.setMinSize(w, 12);
-        bar.setPrefSize(w, 12);
+        Pieces.prefSize(bar, w, 12);
         bar.setMaxSize(w, 12);
         bar.setStyle("-fx-background-color: " + (bid ? Palette.MONEY : Palette.BUSINESS_LIGHT) + "; -fx-background-radius: 2;");
         HBox left = Kept.row(0), right = Kept.row(0);
@@ -1910,7 +1968,7 @@ final class FundScreen {
                 words("the city's stake in its bank, both books", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         ring.setAlignment(Pos.CENTER_LEFT);
         ring.setStyle("-fx-cursor: hand;");
-        ring.setOnMouseClicked(e -> ui.bankScreen.openPage("Capital & owners"));
+        Kept.give(ring.onMouseClickedProperty(), e -> ui.bankScreen.openPage("Capital & owners"));
         return card(caption("THE CITY'S STAKE", null), ring, doorPill("The bank's owners", Icons.BANK, Palette.MONEY, () -> ui.bankScreen.openPage("Capital & owners")));
     }
 
@@ -1939,7 +1997,8 @@ final class FundScreen {
             + "place it. Past the cap the rule asks the excess back " + nth(TreasuryFund.LIMIT_SALE_SHARE)
             + " a month at fair value, from the next step, ahead of the companies' buybacks. "
             + "The quote reads today's book, which the step withdraws and posts afresh, so it says what stands now, not "
-            + "what will fill.";
+            + "what will fill. Steps follow the figure's leading digit and its tenth, never below the least money "
+            + "step for an amount or a bond's face, and one for a count of shares.";
 
     VBox ticketCard(Game g, String key) {
         if (!key.equals(ticketKey)) resetTicket(key);
@@ -1976,12 +2035,12 @@ final class FundScreen {
         FlowPane up = Kept.flow(4, 4), down = Kept.flow(4, 4);
         double held = t.quote() == null ? 0 : t.quote().unitsHeld();
         if (byAmount || bond) {
-            for (double s : MONEY_STEPS) {
+            for (double s : ham.citybuildersim.MagnitudeSteps.of(amount, MONEY_STEP)) {
                 up.getChildren().add(Kept.scope("up:+" + s, () -> stepChip("+" + d(g, s), () -> { amount += s; review = false; redraw(); }, false)));
                 down.getChildren().add(Kept.scope("down:-" + s, () -> stepChip("−" + d(g, s), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true)));
             }
         } else {
-            for (double s : new double[] {1, 10, 100, 1_000}) {
+            for (double s : ham.citybuildersim.MagnitudeSteps.of(amount, 1)) {
                 up.getChildren().add(Kept.scope("up:+" + s, () -> stepChip("+" + shares(s).replace(".00", ""), () -> { amount += s; review = false; redraw(); }, false)));
                 down.getChildren().add(Kept.scope("down:-" + s, () -> stepChip("−" + shares(s).replace(".00", ""), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true)));
             }
@@ -2088,7 +2147,7 @@ final class FundScreen {
         Press p = t.press();
         if (p.look() == Look.CHOOSE) {
             // Nothing chosen: the first step of the amount.
-            amount = byAmount ? MONEY_STEPS[0] : 1;
+            amount = byAmount ? MONEY_STEP : 1;
             redraw();
             return;
         }
@@ -2199,41 +2258,62 @@ final class FundScreen {
                     + "one market are one line: open it for the lots. Before this build kept a record, the rescues and the "
                     + "fund's and the bank's decisions fill in, from the decision log.", chips);
         }));
-        List<Act> rows = acts(g, group, null, activityMonths);
-        VBox list = Kept.scope("list", () -> {
-            VBox column = Kept.column(0);
-            int lastMonth = Integer.MIN_VALUE;
-            for (Act a : rows) {
-                if (a.month() != lastMonth) {
-                    lastMonth = a.month();
-                    final int dated = lastMonth;
-                    column.getChildren().add(Kept.scope("month:" + dated, () -> {
-                        Label m = Kept.label(CityCalendar.format(dated));
-                        m.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 6;");
-                        return m;
-                    }));
-                }
-                String k = "fund:act:" + a.month() + ":" + a.what();
-                column.getChildren().add(Kept.scope("act:" + k, () -> actRow(g, a, true, "")));
-                if (!a.inside().isEmpty() && open.contains(k)) {
-                    for (Act inner : a.inside()) {
-                        column.getChildren().add(Kept.scope("inside:" + k + ":" + inner.what(), () -> actRow(g, inner, false, " -fx-padding: 2 6 2 40;")));
-                    }
-                }
-            }
-            if (rows.isEmpty()) column.getChildren().add(Kept.scope("nothing", () -> line("Nothing in the last " + activityMonths + " months.")));
-            return column;
-        });
-        page.getChildren().add(Kept.scope("card", () -> card(list)));
-        List<Act> older = acts(g, group, null, 0);
-        if (older.size() > rows.size()) {
-            page.getChildren().add(Kept.scope("older", () -> door("Show older", Palette.ACCENT, () -> { activityMonths += ACTIVITY_MONTHS; redraw(); })));
+        FundView.ActivityRecord record = FundView.activityRecord(g, group, activityMonths);
+        page.getChildren().add(Kept.scope("recent", () -> {
+            VBox list = activityRows(g, acts(g, record.recent(), null));
+            if (record.recent().isEmpty()) list.getChildren().add(Kept.scope("nothing",
+                    () -> line("Nothing in the last " + activityMonths + " months.")));
+            return card(list);
+        }));
+        for (FundView.ActivityYear year : record.years()) {
+            page.getChildren().add(Kept.scope("year:" + year.year(), () -> {
+                String key = "fund:year:" + year.year();
+                boolean expanded = open.contains(key);
+                Label head = words((expanded ? "▾ " : "▸ ") + year.year() + " · " + year.months()
+                        + (year.months() == 1 ? " month" : " months"), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, true);
+                Kept.give(head.onMouseClickedProperty(), e -> { if (!open.remove(key)) open.add(key); redraw(); });
+                Pnl net = pnl(sym(g), year.net(), Double.NaN);
+                Label figure = words("Net realized + income " + net.text(), Palette.SIZE_LABEL, net.tone());
+                Kept.tip(figure, "Realized gains and losses plus income in these recorded months, under the selected chip.", 150);
+                HBox header = Kept.row(14, head, figure);
+                header.setAlignment(Pos.CENTER_LEFT);
+                VBox content = Kept.column(0, header);
+                if (expanded) content.getChildren().add(Kept.scope("months",
+                        () -> activityRows(g, acts(g, year.lines(), null))));
+                return card(content);
+            }));
         }
         FundLedger ledger = g.getFund().getLedger();
         if (ledger.getDropped() > 0) {
             page.getChildren().add(Kept.scope("dropped", () -> muted("The record keeps its newest " + FundLedger.ACTIVITY_ROWS + " lines; "
                     + ledger.getDropped() + " older ones have gone.")));
         }
+    }
+
+    /** The months on show, with the rule's trades still opening to their lots. */
+    VBox activityRows(Game g, List<Act> rows) {
+        VBox column = Kept.column(0);
+        int lastMonth = Integer.MIN_VALUE;
+        for (Act a : rows) {
+            if (a.month() != lastMonth) {
+                lastMonth = a.month();
+                final int dated = lastMonth;
+                column.getChildren().add(Kept.scope("month:" + dated, () -> {
+                    Label m = Kept.label(CityCalendar.format(dated));
+                    m.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 6;");
+                    return m;
+                }));
+            }
+            String k = "fund:act:" + a.month() + ":" + a.what();
+            column.getChildren().add(Kept.scope("act:" + k, () -> actRow(g, a, true, "")));
+            if (!a.inside().isEmpty() && open.contains(k)) {
+                for (Act inner : a.inside()) {
+                    column.getChildren().add(Kept.scope("inside:" + k + ":" + inner.what(),
+                            () -> actRow(g, inner, false, " -fx-padding: 2 6 2 40;")));
+                }
+            }
+        }
+        return column;
     }
 
     /** One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. `extra` is more style for the row (an inner line's deeper padding). */
@@ -2244,7 +2324,7 @@ final class FundScreen {
         Label what = words((opens ? (open.contains(k) ? "▾ " : "▸ ") : "") + a.what(), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY, opens);
         HBox.setHgrow(what, Priority.ALWAYS);
         what.setMaxWidth(Double.MAX_VALUE);
-        if (opens) what.setOnMouseClicked(e -> { if (!open.remove(k)) open.add(k); redraw(); });
+        if (opens) Kept.give(what.onMouseClickedProperty(), e -> { if (!open.remove(k)) open.add(k); redraw(); });
         Label by = words(a.by(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
         by.setMinWidth(80);
         by.setPrefWidth(80);
@@ -2257,7 +2337,7 @@ final class FundScreen {
                 arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.ACCENT) + " -fx-cursor: hand;");
                 arrow.setMinWidth(16);
                 String key = a.key();
-                arrow.setOnMouseClicked(e -> openSecurity(key));
+                Kept.give(arrow.onMouseClickedProperty(), e -> openSecurity(key));
                 return arrow;
             }));
         } else {
@@ -2369,7 +2449,7 @@ final class FundScreen {
     static final String WITHDRAWAL_CAVEAT = "next month's on the fund as it stands - its prices and what the book takes will move it";
     /** ...and the sentence behind it, its (i). */
     static final String WITHDRAWAL_CAVEAT_INFO = "Next month's withdrawal is struck on what the fund is worth at the top of "
-            + "next month; this reads it on the fund as it stands. Its prices move by then, its dividends and coupons come "
+            + "next month; this reads it on the fund as it stands. Its prices move by then, its dividends, coupons and lending fees come "
             + "in, and a sale fills only as far as somebody bids for it - what it cannot sell is not paid.";
 
     /**
@@ -2535,7 +2615,8 @@ final class FundScreen {
         VBox card = card(caption("PAY IN, DRAW OUT", "A transfer between the treasury and its own fund: not revenue and "
                         + "not spending, so the budget and its surplus do not see it. The treasury journal carries it, as "
                         + "\"Paid into the fund\" or \"Drawn from the fund\". Only the fund's free cash can be drawn - "
-                        + "not what your orders hold - and only the treasury's paid in; sell first to draw more."),
+                        + "not what your orders hold - and only the treasury's paid in; sell first to draw more. "
+                        + "Steps follow the amount's leading digit and its tenth, never below " + d(g, MONEY_STEP) + "."),
                 cardLine("The treasury holds", d(g, g.getCash()), null),
                 cardLine("The fund's cash", d(g, fund.getCash()), null),
                 cardLine("...of it free, not held for your orders", d(g, g.fundCashFree()), null));
@@ -2543,7 +2624,7 @@ final class FundScreen {
                 Palette.SIZE_TITLE, fin.fundAsk > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
         FlowPane up = Kept.flow(6, 6), down = Kept.flow(6, 6);
         // Kept (KP5): a step is a scope keyed by its words in its row.
-        for (double step : MONEY_STEPS) {
+        for (double step : ham.citybuildersim.MagnitudeSteps.of(fin.fundAsk, MONEY_STEP)) {
             up.getChildren().add(Kept.scope("up:" + step, () -> stepChip("+" + d(g, step), () -> { fin.fundAsk += step; redraw(); }, false)));
             down.getChildren().add(Kept.scope("down:" + step, () -> stepChip("−" + d(g, step), () -> { fin.fundAsk = Math.max(0, fin.fundAsk - step); redraw(); }, false)));
         }

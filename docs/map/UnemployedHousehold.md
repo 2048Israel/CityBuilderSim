@@ -1,6 +1,6 @@
 # UnemployedHousehold.java - 88 lines · 14 methods · 0 constants · model
 
-`ham/citybuildersim/UnemployedHousehold.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UnemployedHousehold.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Adults who are out of work, as one ledger per situation.
 > 
@@ -31,7 +31,7 @@
 
 **Uses:** [PayTier](PayTier.md) (2), [Household](Household.md) (1)
 
-**Used by (7):** [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md)
+**Used by (8):** [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md)
 
 ## Enum constants
 

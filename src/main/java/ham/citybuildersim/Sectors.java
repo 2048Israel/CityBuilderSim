@@ -24,6 +24,7 @@ import ham.citybuildersim.sectors.RealEstate;
 import ham.citybuildersim.sectors.Refining;
 import ham.citybuildersim.sectors.Retail;
 import ham.citybuildersim.sectors.WoodProducts;
+import ham.citybuildersim.sectors.GoldMining;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,7 +81,8 @@ public final class Sectors {
             // ...and wood's first (0.7.138, batch I9): the crews that cut the forest, and the plantations they plant.
             FORESTRY = "Forestry",
             // ...and its second (0.7.140, batch I10): the sawmills, the panel, pulp, paper and pellet mills.
-            WOOD_PRODUCTS = "Wood Products";
+            WOOD_PRODUCTS = "Wood Products",
+            GOLD_MINING = "Gold Mining";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -106,7 +108,7 @@ public final class Sectors {
         COPPER_MINING, COPPER_REFINING,
         // ...then wood's (0.7.138, batch I9): the crews on the forest the law lets them cut, then (0.7.140, batch I10) the mills
         // that saw, press, pulp and pellet their logs.
-        FORESTRY, WOOD_PRODUCTS
+        FORESTRY, WOOD_PRODUCTS, GOLD_MINING
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -136,6 +138,7 @@ public final class Sectors {
     private final CopperRefining copperRefining;
     private final Forestry forestry;
     private final WoodProducts woodProducts;
+    private final GoldMining goldMining;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -162,6 +165,7 @@ public final class Sectors {
         copperRefining = add(new CopperRefining(), buildings, markets);
         forestry = add(new Forestry(), buildings, markets);
         woodProducts = add(new WoodProducts(), buildings, markets);
+        goldMining = add(new GoldMining(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -304,6 +308,7 @@ public final class Sectors {
 
     /** ...and the mills (0.7.140, batch I10), which saw, press, pulp and pellet the crews' logs, their chips and pulp to their own mills first. See sectors.WoodProducts. */
     public WoodProducts woodProducts() { return woodProducts; }
+    public GoldMining goldMining() { return goldMining; }
 
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {

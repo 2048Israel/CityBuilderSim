@@ -1,6 +1,6 @@
-# CopperRefining.java - 261 lines · 13 methods · 4 constants · sectors
+# CopperRefining.java - 286 lines · 16 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/CopperRefining.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperRefining.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8;
 > docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the
@@ -59,16 +59,16 @@
 > plants the acid; the world the rest - anode, cathode, rod and acid all
 > ship.
 
-**Uses:** [Good](Good.md) (23), [OldMetal](OldMetal.md) (10), [SpreadPlanner](SpreadPlanner.md) (3), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [ProcessingSector](ProcessingSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildCard](BuildCard.md) (1)
+**Uses:** [Good](Good.md) (25), [OldMetal](OldMetal.md) (11), [SpreadPlanner](SpreadPlanner.md) (3), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [ProcessingSector](ProcessingSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildCard](BuildCard.md) (1)
 
-**Used by (10):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [Sectors](Sectors.md)
+**Used by (13):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperBufferCheck](CopperBufferCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [Sectors](Sectors.md), [SulphideLeachCheck](SulphideLeachCheck.md), [UndemandedFeedCheck](UndemandedFeedCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 105 | THE OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9) |
-| 239 | · the page |
+| 264 | · the page |
 
 ## Constants
 
@@ -79,14 +79,21 @@
 | 83 | `CopperRefining.SCRAP_REFINERY` | `126` | The Scrap Copper Refinery's (0.7.133): 4,000 t of cathode a month from 4,400 t of the city's old copper and scrap. |
 | 86 | `CopperRefining.ROD_MILL` | `127` | The Rod Mill's (0.7.133): 8,000 t of wire rod a month from 8,016 t of cathode. |
 
+## Fields (state)
+
+| line | field | says |
+|---:|---|---|
+| 133 | `private double orderedOldCopper` | The current clearing's recovered feed, anticipated before its purchase and fixed when it settles (CPB1). |
+| 134 | `private boolean orderingOldCopper` |  |
+
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 188 | **type** `public final class CopperRefining extends ProcessingSector` | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the study's - materials-chains-research.md - 4): copper's processing industry... |
+| 74 | 213 | **type** `public final class CopperRefining extends ProcessingSector` | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the study's - materials-chains-research.md - 4): copper's processing industry... |
 | 88 | 16 | `public CopperRefining()` |  |
 
-### THE OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9) (lines 105-238)
+### THE OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9) (lines 105-263)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -94,17 +101,20 @@
 | 115 | 3 | `public double oldCopperIntake()` | Tonnes of old copper its standing scrap refineries take a month at nameplate (their rows' oldMetal). |
 | 120 | 5 | `public double oldCopperPrice()` | What its refineries pay a tonne of old copper today: OldMetal.PAY_SHARE of COPPER_SCRAP's export price; 0 with no markets. |
 | 127 | 4 | `public double oldCopperTaken()` | Old copper its refineries took this month, tonnes: the pool's last purchase (settled when the month's flow goods are made, before any market clears); nothing with no city. |
-| 145 | 21 | `public void produceFlow(Good g)` | Makes a flow good for the month; and with its anode - the first flow good it makes, before any market clears - the month's old copper is bought (THE OLD COPPER): its refineries' intake at the rate, no more than arose,... |
-| 169 | 5 | `public double bid(Good g)` | What it asks the market for of a good this month; of scrap, its need past the old copper its refineries took this month (THE OLD COPPER). |
-| 177 | 6 | `protected double inputCostAtRate()` | The month's inputs at the rate, at today's prices: Sector's, its old copper at what it paid for it rather than the scrap market's price. |
-| 190 | 3 | `public double oldCopperOnSite()` | Tonnes of old copper its scrap refineries on site will take once they open (BA1, 2026-11-02): spareOldCopper() counted the refineries standing only while a sector could have one order on site; with no cap a second wou... |
-| 195 | 4 | `public double spareOldCopper()` | Old copper arisen in the pool's last month past what the refineries standing and on site take at nameplate: what one more would run on. |
-| 201 | 8 | `public double leftForTheLast()` | ...and what the others leave the last one standing: the pool's last month less the rest's intake at nameplate, at most its own. |
-| 221 | 17 | `protected SpreadPlanner.Values values()` | The city's values a works of its is weighed at (ProcessingSector's), with the old copper in its scrap (THE OLD COPPER): one more refinery's scrap is the old copper past what those standing take, at oldCopperPrice(), a... |
+| 137 | 6 | `public void planOrders()` |  |
+| 145 | 3 | `protected double committedInput(Good g)` |  |
+| 150 | 4 | `public void endOrders()` |  |
+| 168 | 22 | `public void produceFlow(Good g)` | Makes a flow good for the month; and with its anode - the first flow good it makes, before any market clears - the month's old copper is bought (THE OLD COPPER): its refineries' intake at the rate, no more than arose,... |
+| 193 | 5 | `public double bid(Good g)` | What it asks the market for of a good this month; of scrap, its need past the old copper its refineries took this month (THE OLD COPPER). |
+| 201 | 7 | `protected double inputCostAtRate()` | The month's inputs at the rate, at today's prices: Sector's, its old copper at what it paid for it rather than the scrap market's price. |
+| 215 | 3 | `public double oldCopperOnSite()` | Tonnes of old copper its scrap refineries on site will take once they open (BA1, 2026-11-02): spareOldCopper() counted the refineries standing only while a sector could have one order on site; with no cap a second wou... |
+| 220 | 4 | `public double spareOldCopper()` | Old copper arisen in the pool's last month past what the refineries standing and on site take at nameplate: what one more would run on. |
+| 226 | 8 | `public double leftForTheLast()` | ...and what the others leave the last one standing: the pool's last month less the rest's intake at nameplate, at most its own. |
+| 246 | 17 | `protected SpreadPlanner.Values values()` | The city's values a works of its is weighed at (ProcessingSector's), with the old copper in its scrap (THE OLD COPPER): one more refinery's scrap is the old copper past what those standing take, at oldCopperPrice(), a... |
 
-### the page (lines 239-261)
+### the page (lines 264-286)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 242 | 19 | `public List<Line> ownLines(Game game)` |  |
+| 267 | 19 | `public List<Line> ownLines(Game game)` |  |
 

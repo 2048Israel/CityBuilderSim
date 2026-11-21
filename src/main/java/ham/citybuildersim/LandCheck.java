@@ -68,7 +68,9 @@ import ham.citybuildersim.sectors.Mining;
  * as the getters the sector pages read give them, "nothing is digging" for an
  * ore with a deposit and no mine, and not for one a mine stands on, iron's as
  * it was (30); and, since LM1, the founding's water as one patch of blocks,
- * never a strip along a river (section 1, theFoundingsWaterIsOnePatch()).
+ * never a strip along a river, the square widened a block at a time to
+ * FRESH_PATCH_MOST where FRESH_PATCH holds too little (section 1,
+ * theFoundingsWaterIsOnePatch()).
  */
 public class LandCheck {
 
@@ -857,6 +859,13 @@ public class LandCheck {
        world, rings of dry ground on it that hold none unless a fixture says
        so, and the lake's centre at the site, as on an Earth world. Each
        fixture is built to cause its condition and asserts that it does.
+       (a)-(d) are freshPatch(): the Stockholm shape, a river alone, a lake
+       against the rings, the default world. (e) is freshWater(), which
+       widens the square a block at a time to FRESH_PATCH_MOST where
+       FRESH_PATCH holds too little: a wide river that needs more than
+       FRESH_PATCH and stops at the first half-side that holds the target,
+       a river too thin even at FRESH_PATCH_MOST that takes its best patch,
+       and (a)'s map, which is not widened.
        ===================================================================== */
 
     /** A painted map of fresh plots a block (by CityLand.blockKey()), as CityLand.freshPatch() reads one. */
@@ -922,7 +931,7 @@ public class LandCheck {
     static void theFoundingsWaterIsOnePatch(CityLand opening, int r0) {
         System.out.println("\n--- LM1: the founding's water is one patch ---");
         long b = 1L << opening.level(), last = World.SIDE / b - 1, reach = (CityLand.FRESH_REACH + b - 1) / b, patch = CityLand.FRESH_PATCH;
-        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - LandDrawing.WHOLE_PLOT);
         long sbx = last / 2, sby = last / 2;
         double lx = sbx * b + b / 2.0, ly = sby * b + b / 2.0;
         java.util.Set<Long> rings = new java.util.HashSet<>();
@@ -1021,6 +1030,51 @@ public class LandCheck {
         assertTrue("the default world's water is one patch inside FRESH_PATCH of its first block", !lake.isEmpty() && onePiece(lake) && inSquareOfFirst(lake, patch));
         assertTrue("...holding FOUNDING_FRESH_KM2, and less than a block more", opening.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2
                 && opening.centreKm2(CityLand.FRESH) - LandManager.FOUNDING_FRESH_KM2 < b * b * World.KM2_PER_PLOT);
+
+        /* (e) the square widens where FRESH_PATCH holds too little (freshWater()): to the first half-side that holds the target, to FRESH_PATCH_MOST's best where none does, and not at all where FRESH_PATCH holds it */
+        long most = CityLand.FRESH_PATCH_MOST;
+        // e1: a river four blocks across, each block holding the same share of its plots, the share such that the target is held at a half-side of FRESH_PATCH + 2 and (checked below, not assumed) not a block narrower
+        long rows = 4, intended = patch + 2, across = rows * (2 * intended + 1);
+        long share = (target + across - 1) / across;
+        java.util.Map<Long, Long> wide = new java.util.HashMap<>();
+        for (long x = -14; x <= 14; x++) for (long y = 4; y < 4 + rows; y++) wide.put(CityLand.blockKey(sbx + x, sby + y), share);
+        long wideRings = freshOn(rings, wide), wide3 = bestSquareHolds(wide, patch), needs = 0;
+        for (long r = patch; r <= most && needs == 0; r++) if (wideRings + bestSquareHolds(wide, r) >= target) needs = r;
+        System.out.printf("   a wide river: %d blocks of %d of their %d plots; the best square holds %d at %d blocks, the target %d plots; the least half-side that holds it is %d (%d held there, %d one block narrower)%n",
+                wide.size(), share, b * b, wide3, patch, target, needs, needs > 0 ? bestSquareHolds(wide, needs) : -1, needs > patch ? bestSquareHolds(wide, needs - 1) : -1);
+        assertTrue("the fixture: a river " + rows + " blocks across whose blocks hold no more than a block does, and the rings none of it",
+                share >= 1 && share <= b * b && wideRings == 0 && wide.keySet().stream().noneMatch(rings::contains));
+        assertTrue("...the square of FRESH_PATCH blocks holds less than the target", wideRings + wide3 < target);
+        assertTrue("...but some square of at most FRESH_PATCH_MOST blocks holds it, the least a half-side r over FRESH_PATCH", needs > patch && needs <= most);
+        java.util.List<Long> widened = CityLand.freshWater(painted(wide), rings, sbx, sby, reach, last, lx, ly, b, target);
+        long widenedHeld = freshOn(widened, wide);
+        System.out.printf("   freshWater: %d blocks holding %d plots after widening to r = %d%n", widened.size(), widenedHeld, needs);
+        assertTrue("a river FRESH_PATCH could not hold: freshWater's patch reaches the target", wideRings + widenedHeld >= target);
+        assertTrue("...is one piece, edge to edge, outside the rings", onePiece(widened) && widened.stream().noneMatch(rings::contains));
+        assertTrue("...lies inside the square of 2 * r + 1 blocks round its first block", inSquareOfFirst(widened, needs));
+        assertTrue("...and the square of r - 1 could not hold it, so it widened and stopped at the first that does",
+                wideRings + bestSquareHolds(wide, needs - 1) < target && !inSquareOfFirst(widened, needs - 1)
+                && widened.equals(CityLand.freshPatch(painted(wide), rings, sbx, sby, reach, last, lx, ly, b, target, needs)));
+
+        // e2: the river of (a), one plot wide, too thin to hold the target in any square up to FRESH_PATCH_MOST
+        long thinRings = freshOn(rings, river), thin3 = bestSquareHolds(river, patch), thinMost = bestSquareHolds(river, most);
+        java.util.List<Long> thinWater = CityLand.freshWater(painted(river), rings, sbx, sby, reach, last, lx, ly, b, target);
+        long thinHeld = freshOn(thinWater, river);
+        System.out.printf("   a thin river: the best square holds %d at %d blocks and %d at %d, the target %d plots; freshWater takes %d blocks holding %d%n",
+                thin3, patch, thinMost, most, target, thinWater.size(), thinHeld);
+        assertTrue("the fixture: a river one plot wide holds less than the target even in the square of FRESH_PATCH_MOST blocks", thinRings + thinMost < target);
+        assertTrue("...and more there than in the square of FRESH_PATCH blocks, so widening takes more", thinMost > thin3);
+        assertTrue("a river too thin for the target: freshWater is freshPatch at FRESH_PATCH_MOST, the widest square's best patch",
+                thinWater.equals(CityLand.freshPatch(painted(river), rings, sbx, sby, reach, last, lx, ly, b, target, most)));
+        assertTrue("...holding the widest square's best, short of the target, and more than FRESH_PATCH's best",
+                thinHeld == thinMost && thinRings + thinHeld < target && thinHeld > thin3);
+        assertTrue("...one piece inside the square of 2 * FRESH_PATCH_MOST + 1 blocks round its first block", onePiece(thinWater) && inSquareOfFirst(thinWater, most));
+
+        // e3: (a)'s map, where the square of FRESH_PATCH blocks reaches the target: no widening
+        java.util.List<Long> stays = CityLand.freshWater(painted(both), rings, sbx, sby, reach, last, lx, ly, b, target);
+        System.out.printf("   (a)'s map: freshWater takes %d blocks, as freshPatch at FRESH_PATCH does (%d)%n", stays.size(), water.size());
+        assertTrue("the Stockholm shape, where the square of FRESH_PATCH blocks holds the target: freshWater is freshPatch at FRESH_PATCH, the same blocks in the same order",
+                held >= target && stays.equals(water));
     }
 
     /* ==================================================================
@@ -1374,7 +1428,7 @@ public class LandCheck {
         json.remove("landPaidFromVault");
         for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landCentreRects", "landHoldings",
                 "landPartFields", "landConverted", "landLanes", "landPurchases", "landOffers", "nextOfferId", "depletion" }) json.remove(key);
-        json.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+        json.addProperty("saveFormat", 30);
         com.google.gson.JsonArray listing = new com.google.gson.JsonArray();
         listing.add(-5.0);
         listing.add(10.0);
@@ -1527,7 +1581,7 @@ public class LandCheck {
             check("the gap is the plot's local price less the cash", gap, price - g.getCash());
             assertTrue("...so its button opens the funding page", g.landNeedsFunding(just));
             boolean bond = paper.equals("bond");
-            double granule = bond ? Game.BUILD_BOND_GRANULE : Game.BUILD_NOTE_GRANULE;
+            double granule = g.issueLot(bond ? "Term" : "Note");
             DebtQuote quote = bond
                     ? g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, granule)
                     : g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, granule);
@@ -1569,7 +1623,7 @@ public class LandCheck {
             assertTrue("fixture: the window abroad is open", g.foreignWindowOpen());
             boolean bond = type.equals("Term");
             int term = bond ? Game.BUILD_BOND_YEARS : Game.BUILD_NOTE_MONTHS;
-            double granule = bond ? Game.BUILD_BOND_GRANULE : Game.BUILD_NOTE_GRANULE;
+            double granule = BondMarket.issueLot(g, type, "USD");
             DebtQuote quote = g.quoteForeignForCash(type, gapUsd, term, granule);
             assertTrue("the dollar " + (bond ? "bond" : "note") + "'s dollars cover the gap",
                     quote.cashReceived() >= gapUsd - 1e-9);
@@ -1890,7 +1944,7 @@ public class LandCheck {
                 }
             }
         }
-        return GridConversion.km2Of(cls);
+        return LandDrawing.km2Of(cls);
     }
 
     /* ==================================================================
@@ -1983,7 +2037,7 @@ public class LandCheck {
         for (LandParcel p : tiled.getListing()) {
             int under = 0;
             for (int k = 0; k < onIron.sites(); k++) {
-                long[] at = GridConversion.sitePlot(onIron, k);
+                long[] at = LandDrawing.sitePlot(onIron, k);
                 if (p.contains(at[0], at[1]) && !t.ownsPlot(at[0], at[1])) under++;
             }
             sitesUnderOffers += under;
@@ -1992,7 +2046,7 @@ public class LandCheck {
         }
         System.out.printf("   a city founded on the iron field nearest the default site on dry ground (%d sites, %,.0f Mt, %.1f km out): %d of its sites under"
                         + " its first offers%n", onIron.sites(), onIron.amount() / 1e6,
-                LegacyLand.radius(onIron.x() - World.of(t.seed()).foundingX(), onIron.y() - World.of(t.seed()).foundingY()) * World.PLOT_M / 1000,
+                LandDrawing.radius(onIron.x() - World.of(t.seed()).foundingX(), onIron.y() - World.of(t.seed()).foundingY()) * World.PLOT_M / 1000,
                 sitesUnderOffers);
         assertTrue("fixture: a new city's centre holds an iron field some of whose sites lie under its first offers", sitesUnderOffers > 0);
         assertTrue("no offer of a new city's carries any of the field its centre holds: it goes whole with the ground its centre is on", noneCarry);
@@ -2008,7 +2062,7 @@ public class LandCheck {
             for (Resource r : Resource.values()) {
                 if (!r.inFields()) continue;
                 for (Deposit d : world.fieldsInCell(cell, r)) {
-                    if (LegacyLand.radius(d.x() - t.siteX(), d.y() - t.siteY()) > far) continue;
+                    if (LandDrawing.radius(d.x() - t.siteX(), d.y() - t.siteY()) > far) continue;
                     double each = 0;
                     for (int k = 0; k < d.sites(); k++) each += d.siteAmount(k);
                     sitesWhole &= each == d.amount();
@@ -2022,7 +2076,7 @@ public class LandCheck {
                     // Where its sites lie: under how many pieces (the old rule's test, site by site).
                     java.util.Set<Integer> under = new java.util.HashSet<>();
                     for (int k = 0; k < d.sites(); k++) {
-                        long[] at = GridConversion.sitePlot(d, k);
+                        long[] at = LandDrawing.sitePlot(d, k);
                         int h = t.holdingOf(at[0], at[1]);
                         if (h < 0) for (LandParcel p : tiled.getListing()) if (p.contains(at[0], at[1])) h = -1000 - p.getId();
                         under.add(h);
@@ -2052,7 +2106,7 @@ public class LandCheck {
         if (founding != null) {
             LandParcel first = MiningCheck.nearestOffer(fresh.getMarket(), founding.x(), founding.y());
             System.out.printf("   the founding field: %d sites, %,.0f Mt, its centre %.0f plots out; the offer nearest it, %s, runs [%d, %d) x [%d, %d)%n",
-                    founding.sites(), founding.amount() / 1e6, LegacyLand.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
+                    founding.sites(), founding.amount() / 1e6, LandDrawing.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
                     first.where(), first.getX0(), first.getX1(), first.getY0(), first.getY1());
             /*
              * IRON IN THE GROUND STAYS US$0.40 A TONNE (0.7.120, batch I3;
@@ -2195,7 +2249,7 @@ public class LandCheck {
         double plotSqFt = LandManager.sqFt(World.KM2_PER_PLOT);
         check("the city owns exactly the figure", hand.getOwnedSqFt(), want);
         assertTrue("...and its land's dry ground is that figure to within a plot, and never less",
-                hand.getLandDrySqFt() >= want - 1e-6 && hand.getLandDrySqFt() < want + plotSqFt && LandConversion.sameGround(want, hand.getLandDrySqFt()));
+                hand.getLandDrySqFt() >= want - 1e-6 && hand.getLandDrySqFt() < want + plotSqFt && LandDrawing.sameGround(want, hand.getLandDrySqFt()));
         check("...all of it in the centre, nothing bought", drawn.purchases().size(), 0);
         check("its iron sites are kept", hand.getIronDeposits(), 5);
         check("...and what remains of its tonnes", hand.getIronReserveTonnes(), 39_000_000);
@@ -2341,8 +2395,7 @@ public class LandCheck {
        (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
        saves need not load until the game is published), so each of the four
        is turned away in P7's words, its file untouched, and the conversion
-       above is not reached; LandConversion stays, for the day old saves load
-       again.
+       above is not reached; HA1 removes its unreachable converters.
        ================================================================== */
 
     /** One research city's land as its save carries it: its name, its world's seed, its square feet, iron sites and tonnes, and its Iron Mines. */
@@ -2372,7 +2425,7 @@ public class LandCheck {
                     java.nio.file.Files.readString(files.saveFile(4))).getAsJsonObject();
             for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landCentreRects", "landHoldings",
                     "landPartFields", "landConverted", "landLanes", "landPurchases", "landOffers", "nextOfferId", "depletion" }) json.remove(key);
-            json.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+            json.addProperty("saveFormat", 30);
             json.addProperty("worldSeed", r.seed());
             json.addProperty("landOwned", r.landOwned());
             json.addProperty("ironDeposits", r.ironSites());
@@ -2402,7 +2455,7 @@ public class LandCheck {
             for (long x = cx - 1; x <= cx + 1; x++) {
                 if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                 for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), kind)) {
-                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    double r = LandDrawing.radius(d.x() - land.siteX(), d.y() - land.siteY());
                     if (land.ownsPlot(d.x(), d.y()) || r >= best) continue;
                     best = r;
                     nearest = d;
@@ -2423,7 +2476,7 @@ public class LandCheck {
                 if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                 for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), kind)) {
                     byte c = world.terrainAt(d.x(), d.y());
-                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    double r = LandDrawing.radius(d.x() - land.siteX(), d.y() - land.siteY());
                     if (c == World.SALT || c == World.FRESH || land.ownsPlot(d.x(), d.y()) || r >= best) continue;
                     best = r;
                     nearest = d;
@@ -3657,7 +3710,7 @@ public class LandCheck {
 
         // A coal mine on every coal site: coal is dug, and iron, with no mine, is still flagged.
         quietly(() -> b.addStack(b.getTemplate(ham.citybuildersim.sectors.CoalMining.SURFACE_MINE), 1, true));
-        int taken = g.committedOn(Resource.COAL);
+        long taken = g.committedOn(Resource.COAL);
         assertTrue("fixture: a surface coal mine stands on " + taken + " of the coal sites", taken >= 1 && taken < coal.deposits());
         quietly(() -> land.restoreSites(Resource.COAL, taken, taken * Resource.COAL.amountPerSite()));
         coal = OreView.ores(g).stream().filter(o -> o.resource() == Resource.COAL).findFirst().orElse(null);
@@ -3670,7 +3723,7 @@ public class LandCheck {
 
         // An iron mine on every iron site: iron is dug too, and its words are the same ones.
         quietly(() -> b.addStack(b.getTemplate(Mining.IRON_MINE), 1, true));
-        int ironTaken = g.committedOn(Resource.IRON);
+        long ironTaken = g.committedOn(Resource.IRON);
         assertTrue("fixture: an iron mine stands on " + ironTaken + " of the three iron sites", ironTaken >= 1 && ironTaken < 3);
         quietly(() -> land.restoreSites(Resource.IRON, ironTaken, ironTaken * Resource.IRON.amountPerSite()));
         ironCard = ironLine(screen);

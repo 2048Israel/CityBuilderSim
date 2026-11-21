@@ -48,6 +48,12 @@ import java.nio.file.Path;
  * draws come to the move the reprice makes and do its readers change
  * nothing, does a loaded city say its month is not counted yet, and do the
  * verdicts and the cover a purchase buys stand where their constants say?
+ *
+ * And what causes each premise (FS10), where a played city was left to reach it: section 2 reads its trade in the months its
+ * bakery, shops and drivers' fuel bill stand, and its payroll against the trade balance in every year its ordered town
+ * stands; section 5's jam is the roadless build's, read in every month the shops sell, its restock bound the model's own
+ * Retail.STORE_COVER_MONTHS; section 8's twins buy what the model's own quotes priced and sell the bakeries' food from the
+ * month the first stands, and the border prices at the two rates are read on the goods markets at one month.
  */
 public class ForeignCheck {
 
@@ -57,6 +63,13 @@ public class ForeignCheck {
 
     /** What the last devaluationCity() built from its own scrapped plant, in dollars at the landed price. */
     static double scrappedPlantBuiltWith;
+
+    /** What the model quoted the last devaluationCity()'s orders to import from the world, each quoted as it was placed, in local money at the rate the city was pinned at: the programme it must buy. */
+    static double programmeQuotedImports;
+
+    /** The first month the last devaluationCity() began with an Industrial Bakery standing (-1 if none ever did), and whether food crossed the border outward in that month. */
+    static int bakeryFirstMonth;
+    static boolean bakerySoldFirstMonth;
 
     /** The months a fixture trades before its test month: 24, the currency's settling months until XR1, kept so the fixtures are the cities they always were. */
     static final int TRADED_BEFORE = 24;
@@ -113,7 +126,19 @@ public class ForeignCheck {
         int monthsSold = 0, monthsBought = 0;
         // ...and the households' imported fuel: PETROL's since 0.7.76, FUEL's from 0.7.62, an import with no good from 0.7.49.
         double worstFuel = 0;
-        int monthsFuel = 0;
+        /*
+         * WHAT THE BUILD MAKES TRUE, READ IN THE MONTHS IT STANDS (FS10). The footings below are identities, true of any
+         * month; they mean something only in a month with trade in it, so the premise is the build's, not a count of the
+         * months a played city happened to trade. The city is ordered a bakery (a seller abroad: its surplus is the
+         * world's to buy), shops (buyers abroad: the shelf's goods no city producer makes), and its people buy cars and
+         * burn fuel (the forecourts' PETROL, which no refinery here makes, bought the month after the bill is struck); each month the cause stands at the start,
+         * the effect is counted and asserted in that month: sellerMonths/sellerSold, shopMonths/shopBought,
+         * drivingMonths/drivingBought. And the households' flows against the trade balance are read in every year the
+         * ordered town stands (its five hundred houses on the ground), each twelve months of it whole.
+         */
+        int sellerMonths = 0, sellerSold = 0, shopMonths = 0, shopBought = 0, drivingMonths = 0, drivingBought = 0;
+        double blockDomesticOut = 0, blockTrade = 0;
+        int blockMonths = 0, townYears = 0, townYearsSwamped = 0;
 
         System.setOut(quiet);
         try {
@@ -144,6 +169,14 @@ public class ForeignCheck {
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
 
             for (int m = 0; m < 180; m++) {
+                boolean bakeryStands = city.getBuildingManager()
+                        .standingWhere(t -> t.getName().equals("Industrial Bakery")) > 0;
+                boolean shopStands = city.getBuildingManager().standingWhere(
+                        t -> t.getName().equals("Convenience Store") || t.getName().equals("Small Grocery Store")) > 0;
+                boolean townStands = city.getBuildingManager()
+                        .standingWhere(t -> t.getName().equals("House")) >= 500;
+                // The drivers' bill is struck at the month's close and the forecourts buy against it the month after.
+                boolean driversBurned = city.getMotoring().getFuelBill() > 0;
                 city.simulateMonths(1);
                 MoneyAudit.Result r = city.getLastMoneyAudit();
                 // The last year's households' flows and trade balance, for
@@ -195,7 +228,20 @@ public class ForeignCheck {
                 // banked - and the households' own import nothing.
                 double fuel = city.getSectors().retail().statement().bought
                         .getOrDefault(Good.PETROL, new Sector.Split()).abroad;
-                if (fuel > 0) monthsFuel++;
+                if (bakeryStands) { sellerMonths++; if (f.getExports() > 0) sellerSold++; }
+                if (shopStands) { shopMonths++; if (f.tradeImports() > 0) shopBought++; }
+                if (driversBurned) { drivingMonths++; if (fuel > 0) drivingBought++; }
+                if (townStands) {
+                    blockDomesticOut += r.domesticOut();
+                    blockTrade += r.tradeBalance();
+                    if (++blockMonths == 12) {
+                        townYears++;
+                        if (blockDomesticOut > Math.abs(blockTrade)) townYearsSwamped++;
+                        blockDomesticOut = 0;
+                        blockTrade = 0;
+                        blockMonths = 0;
+                    }
+                }
                 Sectors.GoodTrade fuelTrade = goods.goods().get(Good.PETROL);
                 double fuelBooked = fuelTrade == null ? 0 : fuelTrade.buyers().getOrDefault(Sectors.RETAIL, 0.0);
                 double theirs = fuelTrade == null ? 0 : fuelTrade.buyers().getOrDefault(Sectors.HOUSEHOLDS, 0.0);
@@ -273,13 +319,17 @@ public class ForeignCheck {
 
         out.printf("   the goods: sold abroad in %d of 180 months, bought in %d; worst footing %.2e sold, %.2e bought%n",
                 monthsSold, monthsBought, worstSold, worstBought);
+        out.printf("   the cause standing: a bakery for %d months, sold abroad in %d; a shop for %d, bought abroad in %d;"
+                + " drivers' fuel struck for %d, the forecourts bought it abroad in %d%n",
+                sellerMonths, sellerSold, shopMonths, shopBought, drivingMonths, drivingBought);
         assertTrue("fixture: the city sold abroad and bought abroad, month after month",
-                monthsSold > 12 && monthsBought > 12);
+                sellerMonths > 0 && shopMonths > 0 && sellerSold == sellerMonths && shopBought == shopMonths);
         close("the goods the businesses sold abroad are the month's exports, every month",
                 worstSold, 0, 1e-9);
         close("...and what they bought, with the fuel and the households' cars, its imports",
                 worstBought, 0, 1e-9);
-        assertTrue("fixture: the city's drivers' fuel was bought abroad, month after month", monthsFuel > 12);
+        assertTrue("fixture: the city's drivers' fuel was bought abroad, month after month",
+                drivingMonths > 0 && drivingBought == drivingMonths);
         close("the drivers' imported fuel is PETROL's (FUEL's until 0.7.76), the forecourts among its buyers and the households"
                 + " not (0.7.83; the households until then)", worstFuel, 0, 1e-9);
 
@@ -323,8 +373,11 @@ public class ForeignCheck {
          */
         out.printf("   the last year: $%,.0fk left the pools for households against a trade balance of $%,.0fk%n",
                 yearDomesticOut, yearTrade);
+        // FS10: and in every year the ordered town stood, not the last year picked: each twelve months of it holds the law.
+        out.printf("   %d years of the town standing, the payroll the larger against the trade balance in %d%n",
+                townYears, townYearsSwamped);
         assertTrue("...and large enough that counting them as trade would swamp the balance",
-                yearDomesticOut > Math.abs(yearTrade));
+                townYears > 0 && townYearsSwamped == townYears);
 
         /* ================= 3. across a reload ================= */
         out.println("\n--- and it survives a reload ---");
@@ -464,6 +517,16 @@ public class ForeignCheck {
 
         double soldUnits = 0, paidUnits = 0, boughtUnits = 0, soldKg = 0;
         double worstRatio = 1;
+        /*
+         * THE SHORTAGE IS THE BUILD'S, READ IN THE MONTHS IT BINDS (FS10). The town has no roads, so the road ratio the
+         * shops' baskets move at (Sector.getRoadRatio(), 1 when nothing binds) falls below 1 as its people arrive:
+         * each month the shops sell, the sale is asserted to have been made under the jam, sellingMonths against
+         * jammedMonths, rather than a worst ratio over the run found below some figure. And the restock's bound is the
+         * model's own: the shelf is topped up to STORE_COVER_MONTHS of what the month sold, so everything bought is
+         * either sold or on that shelf - lastMonthKg and lastBasketKg (a whole basket is the grain it is filled in).
+         */
+        int sellingMonths = 0, jammedMonths = 0;
+        double lastMonthKg = 0, lastBasketKg = 0;
 
         System.setOut(quiet);
         try {
@@ -518,18 +581,25 @@ public class ForeignCheck {
                      basketKg += shops.kgPerHead(fg);
                  }
                  soldKg += sold * basketKg;
+                lastMonthKg = sold * basketKg;
+                lastBasketKg = basketKg;
+                if (sold > 0) {
+                    sellingMonths++;
+                    if (shops.getRoadRatio() < 1) jammedMonths++;
+                }
                 worstRatio = Math.min(worstRatio, shops.getRoadRatio());
             }
         } finally {
             System.setOut(out);
         }
 
-        out.printf("   a city at %.0f%% road throughput over ten years:%n", worstRatio * 100);
+        out.printf("   a city at %.0f%% road throughput over ten years, the jam on the roads in %d of the %d months the shops sold:%n",
+                worstRatio * 100, jammedMonths, sellingMonths);
         out.printf("   bought %,.0f units, sold %,.0f, was paid for %,.0f%n",
                 boughtUnits, soldUnits, paidUnits);
 
         assertTrue("the fixture is genuinely short of something",
-                worstRatio < .95);
+                sellingMonths > 0 && jammedMonths == sellingMonths);
         assertTrue("...and the shops actually traded", soldUnits > 0);
 
         close("every unit that leaves the shelf is paid for",
@@ -543,8 +613,12 @@ public class ForeignCheck {
          */
         out.printf("   bought/sold ratio %.3f, both in kilograms%n",
                 boughtUnits / Math.max(1, soldKg));
+        out.printf("   bought less sold %,.0f kg against the shelf's bound %,.0f kg (%.1f months of the last month's sale)%n",
+                boughtUnits - soldKg, ham.citybuildersim.sectors.Retail.STORE_COVER_MONTHS * lastMonthKg + lastBasketKg,
+                ham.citybuildersim.sectors.Retail.STORE_COVER_MONTHS);
         assertTrue("...so the shops are not importing to replace goods nobody bought",
-                boughtUnits <= soldKg * 1.15);
+                boughtUnits - soldKg <= ham.citybuildersim.sectors.Retail.STORE_COVER_MONTHS * lastMonthKg + lastBasketKg);
+        assertTrue("...nor selling what they never bought", boughtUnits >= soldKg);
 
         /* ============ 5b. reserves you sell are reserves you no longer have ============ */
         out.println("\n--- and a reserve sold is a reserve gone ---");
@@ -796,6 +870,9 @@ public class ForeignCheck {
         Path ml = TempDirs.create("foreigncheck-ml");
         double lifeCaPar, lifeCaWeak, lifeImpPar, lifeImpWeak, lifeExpPar, lifeExpWeak;
         double salvagePar, salvageWeak;
+        double quotedPar, quotedWeak;
+        int bakeryFirstPar, bakeryFirstWeak;
+        boolean bakerySoldPar, bakerySoldWeak;
         double[] foodPar, foodWeak;
         System.setOut(quiet);
         try {
@@ -803,6 +880,9 @@ public class ForeignCheck {
             ForeignAccounts par = devaluationCity(ml.resolve("par"), 1.00, foodPar).getForeignAccounts();
             lifeImpPar = par.getLifetimeImports();
             salvagePar = scrappedPlantBuiltWith;
+            quotedPar = programmeQuotedImports;
+            bakeryFirstPar = bakeryFirstMonth;
+            bakerySoldPar = bakerySoldFirstMonth;
             lifeExpPar = par.getLifetimeExports();
             lifeCaPar = lifeExpPar - lifeImpPar - par.getLifetimeInterest();
 
@@ -810,6 +890,9 @@ public class ForeignCheck {
             ForeignAccounts dev = devaluationCity(ml.resolve("dev"), 1.40, foodWeak).getForeignAccounts();
             lifeImpWeak = dev.getLifetimeImports();
             salvageWeak = scrappedPlantBuiltWith;
+            quotedWeak = programmeQuotedImports;
+            bakeryFirstWeak = bakeryFirstMonth;
+            bakerySoldWeak = bakerySoldFirstMonth;
             lifeExpWeak = dev.getLifetimeExports();
             lifeCaWeak = lifeExpWeak - lifeImpWeak - dev.getLifetimeInterest();
         } finally {
@@ -836,9 +919,6 @@ public class ForeignCheck {
         out.printf("   40%% weaker: %,.0fk out, %,.0fk in, trade balance %,.0fk"
                 + " (current account $%,.0fk)%n",
                 lifeImpWeak, lifeExpWeak, lifeExpWeak - lifeImpWeak, lifeCaWeak);
-
-        assertTrue("the fixture trades enough for the question to mean anything",
-                lifeImpPar > 500);
 
         /*
          * ON THE TRADE BALANCE, AND NOT ON THE IMPORT BILL ALONE.
@@ -942,7 +1022,18 @@ public class ForeignCheck {
         double usdImpPar = lifeImpPar / 1.00 + salvagePar, usdImpWeak = lifeImpWeak / 1.40 + salvageWeak;
         out.printf("   food, in dollars: out $%,.0fk in $%,.0fk at parity; out $%,.0fk in $%,.0fk weaker%n",
                 foodPar[0], foodPar[1], foodWeak[0] / 1.40, foodWeak[1] / 1.40);
-        assertTrue("the fixture sells food abroad at all", foodPar[0] > 0);
+        /*
+         * THE TWO PREMISES, CAUSED IN THE TWINS' BUILD (FS10), where they were Observations a played city happened to reach.
+         * The town and the programme are ordered whole in both cities (the placed orders are asserted in the builder), and
+         * the model's own quote for those orders - what the builders must buy from the world, quoted as each was placed -
+         * is the floor of what the run imports, counted whole as the premise below counts it (imports and the plant it
+         * built from): the question has a programme in it when the run bought what the quotes priced. And the bakeries the programme orders
+         * are the food seller: the first month one stands at the month's start, the city sells food abroad.
+         */
+        assertTrue("fixture: the programme the model quoted was bought, so the fixture trades enough for the question to mean anything",
+                quotedPar > 0 && quotedWeak > 0 && usdImpPar >= quotedPar / 1.00 && usdImpWeak >= quotedWeak / 1.40);
+        assertTrue("fixture: the bakeries the programme ordered stand, and the month the first does the city sells food abroad",
+                bakeryFirstPar >= 0 && bakerySoldPar && bakeryFirstWeak >= 0 && bakerySoldWeak && foodPar[0] > 0);
         out.printf("   the programme, in dollars: $%,.0fk at parity, $%,.0fk weaker (x%.4f); of it built from scrapped plant $%,.0fk and $%,.0fk%n",
                 usdImpPar, usdImpWeak, usdImpPar > 0 ? usdImpWeak / usdImpPar : 0, salvagePar, salvageWeak);
         close("the same programme costs the same in the world's money",
@@ -961,6 +1052,49 @@ public class ForeignCheck {
         assertTrue("the fixture has a world price to move at all", parPrice > 0);
         close("a 40% devaluation is a 40% rise in what an import costs",
                 weakPrice / parPrice, 1.40, .02);
+
+        /*
+         * ...AND THE ELASTICITY ON THE GOODS MARKETS, read at one month (FS10).
+         *
+         * The twins above are played; this is the same question caused. At the two pinned rates, one month on a fresh
+         * seeded city, every shelf good the world will trade is priced at the border by its GoodsMarket: what an import
+         * costs (importPrice()) and what the world pays for one (exportPrice()), in local money. A price taker's border
+         * price moves with the rate one for one - an elasticity of exactly 1 to the rate, the same dollars at either rate -
+         * so the volumes are the only place a devaluation can act, and the model's own constants for them are the
+         * world's (WorldMarket.SUPPLY_ELASTICITY, DEMAND_ELASTICITY), printed beside. The elasticity is asserted from both
+         * sides (the dearest and the cheapest good's, each against 1), the model's own 1e-9.
+         */
+        double[][] atPar = borderPrices(1.00), atWeak = borderPrices(1.40);
+        double lowestExport = Double.MAX_VALUE, highestExport = -Double.MAX_VALUE;
+        double lowestImport = Double.MAX_VALUE, highestImport = -Double.MAX_VALUE;
+        int exportedGoods = 0, importedGoods = 0;
+        for (int i = 0; i < atPar[0].length; i++) {
+            if (atPar[0][i] > 0 && atWeak[0][i] > 0) {
+                double e = Math.log(atWeak[0][i] / atPar[0][i]) / Math.log(1.40 / 1.00);
+                lowestExport = Math.min(lowestExport, e);
+                highestExport = Math.max(highestExport, e);
+                exportedGoods++;
+            }
+            if (atPar[1][i] > 0 && atWeak[1][i] > 0) {
+                double e = Math.log(atWeak[1][i] / atPar[1][i]) / Math.log(1.40 / 1.00);
+                lowestImport = Math.min(lowestImport, e);
+                highestImport = Math.max(highestImport, e);
+                importedGoods++;
+            }
+        }
+        out.printf("   the border on %d exported and %d imported shelf goods: the rate's elasticity %.9f to %.9f out, %.9f to %.9f in;"
+                + " the world's own volume elasticities: supply %.2f, demand %.2f (together %.2f)%n",
+                exportedGoods, importedGoods, lowestExport, highestExport, lowestImport, highestImport,
+                WorldMarket.SUPPLY_ELASTICITY, WorldMarket.DEMAND_ELASTICITY,
+                WorldMarket.SUPPLY_ELASTICITY + WorldMarket.DEMAND_ELASTICITY);
+        assertTrue("fixture: the shelf's goods are priced at the border both ways, at both rates",
+                exportedGoods > 0 && importedGoods > 0);
+        close("what the world pays for an export moves one for one with the rate: the least elastic good's",
+                lowestExport, 1.0, 1e-9);
+        close("...and the most elastic good's", highestExport, 1.0, 1e-9);
+        close("what an import costs moves one for one with the rate: the least elastic good's",
+                lowestImport, 1.0, 1e-9);
+        close("...and the most elastic good's", highestImport, 1.0, 1e-9);
 
         vaultInDollars();
         reserveDefends();
@@ -1621,15 +1755,8 @@ public class ForeignCheck {
          * premise to 1.0533. Held, the weaker city imports the programme and nothing that grows with its own size.
          */
         g.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
-        /*
-         * ...AND HEAVY INDUSTRY (LD1, 2026-10-31), the same hinge a fourth time, found where the premise read 0.9438 against a band
-         * of .05. A refused plant now prices its posts into the band's wage (WantedPosts), as far as the building can pay, and what
-         * a building can pay in local money is the currency's: at about month 72 the parity city's Blast Furnace asked 1,099 posts
-         * (the unskilled wage 1.52 for a month), passed the staffing gate and was built, and its materials landed as $16,332k of
-         * Heavy Industry imports; the weaker city's asked 111 posts, for a Mini Blast Furnace, and built nothing (none). The
-         * furnace is no part of the programme, it grows with a city's own size, and which furnace a city can staff is the rate's
-         * doing twice over. Held, both cities import the programme and the shops' and mills' lesser share, and the premise reads 0.9777.
-         */
+        // ...AND HEAVY INDUSTRY (LD1, 2026-10-31), the same hinge a fourth time, found where the premise read
+        // 0.9438 against a band of .05.
         g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         /*
          * ...AND CEMENT & CONCRETE (IC1, 2026-11-01), the same hinge a fifth time, found where the premise read 1.1266 against a band
@@ -1640,8 +1767,12 @@ public class ForeignCheck {
          * own size, and the premise reads 0.9860.
          */
         g.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
+        programmeQuotedImports = 0;
+        programmeQuotedImports += g.quoteBuildOn(template(g, "House"), 500, Landmasses.CHOSEN).importCost;
         g.buildStack(template(g, "House"), 500, false);
+        programmeQuotedImports += g.quoteBuildOn(template(g, "Convenience Store"), 8, Landmasses.CHOSEN).importCost;
         g.buildStack(template(g, "Convenience Store"), 8, false);
+        programmeQuotedImports += g.quoteBuildOn(template(g, "Small Grocery Store"), 3, Landmasses.CHOSEN).importCost;
         g.buildStack(template(g, "Small Grocery Store"), 3, false);
         // The builders' depots stand, as in section 2 and for its reason
         // (0.7.17): on site beside the programme's coal plant they got a
@@ -1654,22 +1785,27 @@ public class ForeignCheck {
         // refused for cash (NEEDS_FUNDING with D$15k left) - a city that built less than the parity city, the premise of the
         // comparison gone. So the treasury is made up by the model's own figure for the rest of the run, its invoice less
         // the cash (Game.buildFundingGap()), in the city that is short of it, and the orders are asserted placed.
-        java.util.Map<BuildingsTemplate, Integer> programme = new java.util.LinkedHashMap<>();
-        programme.put(template(g, "Coal Power Plant"), 1);
-        programme.put(template(g, "Water Treatment Plant"), 1);
-        programme.put(template(g, "Industrial Bakery"), 2);
-        programme.put(template(g, "Paved Road"), 40);
-        programme.put(template(g, "Walk-in Clinic"), 4);
-        programme.put(template(g, "Municipal Cemetery"), 1);
+        java.util.Map<BuildingsTemplate, Long> programme = new java.util.LinkedHashMap<>();
+        programme.put(template(g, "Coal Power Plant"), 1L);
+        programme.put(template(g, "Water Treatment Plant"), 1L);
+        programme.put(template(g, "Industrial Bakery"), 2L);
+        programme.put(template(g, "Paved Road"), 40L);
+        programme.put(template(g, "Walk-in Clinic"), 4L);
+        programme.put(template(g, "Municipal Cemetery"), 1L);
         g.setCashForTest(g.getCash() + g.buildFundingGap(programme));
         boolean programmeOrdered = true;
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> order : programme.entrySet()) {
+        for (java.util.Map.Entry<BuildingsTemplate, Long> order : programme.entrySet()) {
+            programmeQuotedImports += g.quoteBuildOn(order.getKey(), order.getValue(), Landmasses.CHOSEN).importCost;
             programmeOrdered &= g.buildStack(order.getKey(), order.getValue(), false) == Game.BuildResult.SUCCESS;
         }
         assertTrue("fixture: every order of the programme is placed, at " + rate, programmeOrdered);
         double[] bySector = new double[Sectors.KEYS.length];
         scrappedPlantBuiltWith = 0;
+        bakeryFirstMonth = -1;
+        bakerySoldFirstMonth = false;
         for (int m = 0; m < 180; m++) {
+            boolean bakeryStands = g.getBuildingManager().standingWhere(t -> t.getName().equals("Industrial Bakery")) > 0;
+            double foodSoldBefore = food[0];
             g.simulateMonths(1);
             /*
              * THIRTEEN LINES WHERE THERE WAS ONE. This used to read Good.FOOD,
@@ -1683,6 +1819,11 @@ public class ForeignCheck {
                 GoodsMarket f = g.getMarkets().get(fg);
                 food[0] += f.getExported() * f.exportPrice();
                 food[1] += f.getImported() * f.importPrice();
+            }
+            // THE SELLER STANDING: the first month the programme's bakery is on the ground at the month's start, its food is the city's to sell abroad.
+            if (bakeryStands && bakeryFirstMonth < 0) {
+                bakeryFirstMonth = m;
+                bakerySoldFirstMonth = food[0] > foodSoldBefore;
             }
             for (int i = 0; i < Sectors.KEYS.length; i++) {
                 bySector[i] += g.getSectors().byKey(Sectors.KEYS[i]).statement().imports;
@@ -1729,6 +1870,27 @@ public class ForeignCheck {
             if (it != null && p > 0) bill += it.referenceKg() * p;
         }
         return bill;
+    }
+
+    /** The border prices of every shelf good at a pinned rate, read at the month the rate is struck: [0] what the world pays for one (exportPrice()), [1] what one costs landed (importPrice()), in local money, NaN where the world will not trade it. */
+    static double[][] borderPrices(double rate) throws Exception {
+        Path dir = TempDirs.create("foreigncheck-border" + (int) (rate * 100));
+        Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
+        System.setOut(quiet);
+        try {
+            g.run();
+            g.getForeignAccounts().pinRate(rate);
+            g.getEconomyManager().setExchangeRate(rate);
+        } finally {
+            System.setOut(out);
+        }
+        double[][] prices = new double[2][ham.citybuildersim.sectors.Retail.SHELF.length];
+        for (int i = 0; i < prices[0].length; i++) {
+            GoodsMarket m = g.getMarkets().get(ham.citybuildersim.sectors.Retail.SHELF[i]);
+            prices[0][i] = m.exportPrice();
+            prices[1][i] = m.importPrice();
+        }
+        return prices;
     }
 
     static double lastCash;

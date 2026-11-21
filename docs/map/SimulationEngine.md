@@ -1,11 +1,11 @@
-# SimulationEngine.java - 245 lines · 5 methods · 0 constants · model
+# SimulationEngine.java - 251 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/SimulationEngine.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SimulationEngine.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The order the month runs in: the sites advance, the roads, the posts and
 > the wages, the people, then the economy and the services.
 
-**Uses:** [Game](Game.md) (5), [BuildingManager](BuildingManager.md) (3), [EconomyManager](EconomyManager.md) (2), [PopulationManager](PopulationManager.md) (2), [ServicesManager](ServicesManager.md) (2), [DebtManager](DebtManager.md) (2), [AgeBand](AgeBand.md) (2)
+**Uses:** [Game](Game.md) (5), [BuildingManager](BuildingManager.md) (3), [EconomyManager](EconomyManager.md) (2), [PopulationManager](PopulationManager.md) (2), [ServicesManager](ServicesManager.md) (2), [DebtManager](DebtManager.md) (2), [AgeBand](AgeBand.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
 **Used by (1):** [Game](Game.md)
 
@@ -23,10 +23,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 10 | 236 | **type** `public class SimulationEngine` | The order the month runs in: the sites advance, the roads, the posts and the wages, the people, then the economy and the services. |
+| 10 | 242 | **type** `public class SimulationEngine` | The order the month runs in: the sites advance, the roads, the posts and the wages, the people, then the economy and the services. |
 | 18 | 13 | `public SimulationEngine(EconomyManager economyManager, PopulationManager populationManager, ServicesManager servicesManager, Bu...` |  |
-| 32 | 125 | `public void simulateMonth(Game game)` |  |
-| 158 | 13 | `public void updatePopulation(Game game)` |  |
-| 172 | 63 | `public void updateEconomy(Game game)` |  |
-| 236 | 8 | `public void updateServices(Game game)` |  |
+| 32 | 126 | `public void simulateMonth(Game game)` |  |
+| 159 | 13 | `public void updatePopulation(Game game)` |  |
+| 173 | 68 | `public void updateEconomy(Game game)` |  |
+| 242 | 8 | `public void updateServices(Game game)` |  |
 

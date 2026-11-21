@@ -87,7 +87,7 @@ public final class CityNeeds {
     public record Need(String label, String reading, int level, double near,
                        Kind kind, Go go, CareType care, EducationType school,
                        double value, double yellow, double red, boolean higherWorse,
-                       int onSite, double onSiteMonths, double a, double b) {
+                       long onSite, double onSiteMonths, double a, double b) {
 
         /** A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. */
         public boolean cityBuilds() {
@@ -129,7 +129,7 @@ public final class CityNeeds {
             return s == null || s.level() < 0 ? level : s.level();
         }
 
-        Need withOnSite(String moreReading, int units, double months, int newLevel) {
+        Need withOnSite(String moreReading, long units, double months, int newLevel) {
             return new Need(label, reading + moreReading, newLevel, near, kind, go, care, school,
                     value, yellow, red, higherWorse, units, months, a, b);
         }
@@ -899,7 +899,7 @@ public final class CityNeeds {
     static void onTheWay(Game game, Words w, List<Need> out, int at,
                          java.util.function.Predicate<BuildingsTemplate> serves) {
         if (at < 0 || at >= out.size()) return;
-        int units = 0;
+        long units = 0;
         double soonest = Double.NaN;
         for (BuildingsStacks site : game.getBuildingManager().getStacksUnderConstruction()) {
             if (!serves.test(site.getBuilding())) continue;
@@ -996,7 +996,7 @@ public final class CityNeeds {
     /* ----- the student body the city would get and hire (0.7.51) ----- */
 
     /** A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FARM_UTILISATION). */
-    public static final double FIRST_SCHOOL_SHARE = .5;
+    public static final double FIRST_SCHOOL_SHARE = BuildAdvice.FIRST_WORK_SHARE;
 
     /** Whether a school above the ladder is a row: a class's worth wanted (SEATS_FLOOR), and with no seats of its kind yet, FIRST_SCHOOL_SHARE of the smallest school's. */
     public static boolean listsSchool(Game game, EducationType type, double want, double seats) {
@@ -1007,7 +1007,7 @@ public final class CityNeeds {
     /** The seats of the smallest building that teaches this; 0 when none does. */
     public static double smallestSchool(Game game, EducationType type) {
         double least = Double.MAX_VALUE;
-        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+        for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (t.getTeaches() == type && t.getCapacity() > 0) least = Math.min(least, t.getCapacity());
         }
         return least == Double.MAX_VALUE ? 0 : least;
@@ -1066,7 +1066,9 @@ public final class CityNeeds {
         long[] posts = game.getJobs();
         double[] coming = new double[JobType.values().length];
         for (BuildingsStacks site : bm.getStacksUnderConstruction()) {
-            for (JobType j : JobType.values()) coming[j.ordinal()] += site.getUnderConstruction() * (double) site.getBuilding().getJobs(j);
+            // ...each with the posts it will open with (QN1, NewUnit): a plant on site whose new recipe differs from the fleet's.
+            NewUnit unit = bm.newUnit(site.getBuilding());
+            for (JobType j : JobType.values()) coming[j.ordinal()] += site.getUnderConstruction() * (double) unit.getJobs(j);
         }
         double standing = 0, onSite = 0, qualified;
         if (type.isProfessional()) {

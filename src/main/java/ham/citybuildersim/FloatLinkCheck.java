@@ -86,6 +86,21 @@ import java.util.function.Supplier;
  * forgets it in one month, which the fixture lets pass first. Run with section
  * numbers (FloatLinkCheck 1 3) to run just those; 6 reads what 3-5 pressed.
  *
+ * How the played sections get theirs (FS14), so that no line reads what a played city happens to do:
+ *   2, and every section that sells in readyCity()'s town: the bank's room for the sales is capital put in its till by hand
+ *      (handBankRoom(), as BondCheck 7 hands its capital) and the sale's size against its fixed fee is the households' savings lifted
+ *      by hand (liftSpare()), each only where the town's is less and both between months; the fee's threshold is shown from both
+ *      sides against EFFECTIVE_OFF_COUPON, and a town whose tax caps the sale (SALE_OF_REVENUE of a year's, which nothing here sets)
+ *      under the least the fee needs fails as a fixture; the margin rule itself is a formula over the quote;
+ *   5. the index is the path the section hands the manager (setPriceIndexSource), no inflation is played, and each maturity is held
+ *      to the face and the ratio that path makes;
+ *   7. the dial is taken by hand after the sale has settled, the offers are held to fair worked out here from that dial and the index
+ *      the manager expects, and the sale's room and size are readyCity()'s;
+ *   8. the due pieces are set by hand (dueNextMonth()), the bank is handed its room for what the plan issues (handRolloverRoom()), and
+ *      what is asserted is the rollover's own kind rule;
+ *   and the one condition no setter pins, nobody leaving (a town with a tier in decline), is played to in playedCity(), bounded
+ *   (DECLINE_WAIT_MONTHS), and FAILS as a fixture if the bound passes; the bank's room is no longer waited for.
+ *
  * @author Jerus
  */
 public class FloatLinkCheck {
@@ -190,6 +205,7 @@ public class FloatLinkCheck {
 
     /** Which of sections 3-5 have run, for section 6 to know what it can ask of the months they pressed. */
     static final boolean[] ran = new boolean[10];
+    static boolean ranRisingMaturity, ranFallingMaturity;
 
     /** A month, held to the audit and told to the tally. */
     static MoneyAudit.Result press(Game g, String event) {
@@ -516,19 +532,18 @@ public class FloatLinkCheck {
             theSale();
             if (wanted(args, 2)) neverUnasked();
             if (wanted(args, 3)) {
-                followsTheDial();
-                ran[3] = true;
+                if (city != null) followsTheDial();
+                ran[3] = city != null;
             }
             if (wanted(args, 4)) {
-                theUplift();
-                ran[4] = true;
+                if (city != null) theUplift();
+                ran[4] = city != null;
             }
         }
         if (wanted(args, 5)) {
             toMaturity();
-            ran[5] = true;
         }
-        if (wanted(args, 6) && (wanted(args, 3) || wanted(args, 4) || wanted(args, 5))) theMoneyCloses();
+        if (wanted(args, 6) && (ran[3] || ran[4] || wanted(args, 5))) theMoneyCloses();
         if (wanted(args, 7)) theBuyback();
         if (wanted(args, 8)) theRollover();
         if (wanted(args, 9)) theSave();
@@ -553,15 +568,14 @@ public class FloatLinkCheck {
         city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): this town, and DeskCheck's through readyCity() (the only other
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, a fixture condition; OP1): this town, and DeskCheck's through readyCity() (the only other
             // caller), was written against a city that taxes from month 1: its households' spare for paper sizes every sale, and the near-par
-            // assertions read the sale's fixed fee against that size ("the asks were too small for the fixed fee" below). A 1900 town has no
-            // income tax to 1916-17 and no sales tax to 1920, and plays another: the 2-year floater's effective rate stands 17 basis points
-            // off its coupon and the fee's share, a linker's quote for the cash it must bring does not cover it, and a five-point rise of
-            // the dial leaves a line worth more than the books carry it at (DeskCheck's fixture). Every lever opened and the defaults put
-            // back, before a month has run.
+            // assertions read the sale's fixed fee against that size ("the asks were too small for the fixed fee" below). Until OP1 a 1900 town
+            // had no income tax to 1916-17 and no sales tax to 1920, and played another: the 2-year floater's effective rate stood 17 basis
+            // points off its coupon and the fee's share, a linker's quote for the cash it must bring did not cover it, and a five-point rise of
+            // the dial left a line worth more than the books carry it at (DeskCheck's fixture). Since OP1 every lever is open from the founding,
+            // and the defaults are put back before a month has run.
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
@@ -590,18 +604,18 @@ public class FloatLinkCheck {
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(60);
-            for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
-            // BA1, 2026-11-04 (numbers 2026-11-05): the sales of this harness are covered at fair by the bank's capital room (the households'
-            // bid at fair is a few points of an issue; the firms' nothing, for fair is under the world's rate). The town is played on,
-            // month by month, until the room is ROOM_FOR_SALES times the sale section 2 makes, saleOf(city, 1) (six of them in one city, each
-            // taking its face from the room until it settles); readyCity() asserts that it is. With every sector held it is from the start.
-            for (int i = 0; i < ROOM_WAIT_MONTHS && bankRoomOf(city) < ROOM_FOR_SALES * saleOf(city, 1); i++) city.simulateMonths(1);
+            // FS14: the one condition no setter pins - nobody leaving (a tier in decline sends its paper to the bank's desk on the way out) -
+            // is played to, bounded, and FAILS as a fixture just below if the bound passes. The bank's room for the sales, which this loop
+            // used to wait for (BA1, up to 60 more months), is handed by readyCity() (handBankRoom()), not waited for.
+            for (int i = 0; i < DECLINE_WAIT_MONTHS && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
+        check("fixture: no pay tier in the played town is in decline, so nobody leaves while the paper is watched",
+                city.getMigration().getLastDecliningShare() == 0);
         return city;
     }
 
-    /** BA1: the most months the played city is given past its settling for the bank to have room for its sales. */
-    static final int ROOM_WAIT_MONTHS = 60;
+    /** FS14: the most months the played city is given past its settling for no tier to be in decline. */
+    static final int DECLINE_WAIT_MONTHS = 36;
 
     /** BA1: the bank's room for the sales of a section, as a multiple of the one section 2 makes (saleOf(city, 1): the households' whole spare, no more than a third of a year of tax): that section sells six of them in one city and section 3 a quarter of one more, and each takes its face from the room. */
     static final double ROOM_FOR_SALES = 8;
@@ -624,7 +638,7 @@ public class FloatLinkCheck {
     }
 
     /** A played city ready to sell: the world wants paper, cash to spare, nothing rolled over by itself, the dial where the harness holds it. */
-    static Game readyCity(String label, boolean manualRollover, double centralBankShare) {
+    static Game preparedCity(String label, boolean manualRollover, double centralBankShare) {
         Game city = playedCity(label);
         worldWantsPaper(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
@@ -634,15 +648,98 @@ public class FloatLinkCheck {
         // The cash just set is no flow: the treasury bridge opens a month with last month's closing, so it takes a month
         // to forget the difference, and the months that follow are the ones the harness holds to the bridge.
         press(city, "a month for the bridge to forget the cash set");
+        return city;
+    }
+
+    /**
+     * FS14: the least sale, in face, at which the fixed fee of an issue (Game.costOfIssuance(), the same whatever the face) stands within
+     * half the rate allowance on a 2-year floater: the fee's share of a year's interest, fee over face over the term, at most
+     * EFFECTIVE_OFF_COUPON / 2 (what readyCity() used to ask the played sale to have).
+     */
+    static double leastSale(Game city) {
+        return city.costOfIssuance(1) / (FloatingRateNote.MATURITIES[0] * (EFFECTIVE_OFF_COUPON / 2));
+    }
+
+    /** FS14: the fixed fee's share of a year's interest on a 2-year floater sold at this face: fee over face over the term. */
+    static double feeShareOf(Game city, double sale) {
+        return city.costOfIssuance(sale) / sale / FloatingRateNote.MATURITIES[0];
+    }
+
+    /**
+     * FS14: the spare for paper readyCity() hands the households when theirs is less, as a multiple of the least sale the fee needs
+     * (leastSale()): at exactly the least sale the fee's share is the allowance to the last place of a float, and a quarter of the
+     * spare, which sections 5, 7 and 8 sell (askOf(city, .25)), still covers it.
+     */
+    static final double SPARE_OVER_LEAST_SALE = 4;
+
+    /** FS14: the room readyCity() hands the bank is this much over the sales' face, so the last place of a float never decides it. */
+    static final double ROOM_HANDED_OVER = 1.001;
+
+    /**
+     * FS14: the households' savings raised, never lowered, until what they could put into paper (HouseholdBalance.spareForPaper()) is
+     * this much: first every non-empty cell to its cushion, so that a dollar a household adds is a dollar of spare to each that may
+     * buy paper, then the gap spread over those as a dollar a household. Set between months: the audit opens each month at what the
+     * households hold, so a hand-set saving is no flow in it. Returns whether it lifted anything.
+     */
+    static boolean liftSpare(HouseholdBalance hb, double target) {
+        if (hb.spareForPaper() >= target) return false;
+        for (Household c : hb.cells()) {
+            if (!c.isEmpty()) c.savings = Math.max(c.savings, HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+        }
+        double before = hb.spareForPaper();
+        for (Household c : hb.cells()) if (!c.isEmpty()) c.savings += 1;
+        double buyers = hb.spareForPaper() - before;
+        for (Household c : hb.cells()) if (!c.isEmpty()) c.savings -= 1;
+        if (!(buyers > 0)) return false;
+        double each = (target - before) / buyers;
+        for (Household c : hb.cells()) if (!c.isEmpty()) c.savings += each;
+        return true;
+    }
+
+    /**
+     * FS14: the bank handed its room for this face of the city's paper, as the auction counts it (Game.auctionBidders(): its equity over
+     * Bank.CAPITAL_RATIO less its weighted book, over Bank.RISK_CITY), by what its equity lacks put in its till (Bank.setCash: equity
+     * is its assets less what it owes, so the cash is capital), as BondCheck's section 7 hands its capital. Between months, nothing if
+     * it has the room. Returns the cash put in.
+     */
+    static double handBankRoom(Game city, double face) {
+        Bank bank = city.getBank();
+        double lacking = Bank.CAPITAL_RATIO * (face * ROOM_HANDED_OVER * Bank.RISK_CITY + bank.getWeightedBook()) - bank.equity();
+        if (!(lacking > 0)) return 0;
+        bank.setCash(bank.getCash() + lacking);
+        return lacking;
+    }
+
+    /** Whether the fee threshold has been shown from both sides in this run (it is the fee's, not a city's, so once). */
+    static boolean feeThresholdShown;
+
+    /**
+     * A prepared city that has what a played sale needs, caused (FS14): the households' spare lifted until a sale of section 2's size
+     * covers its fixed fee, and the bank handed its room for the sales of a section, both between months and each only where the town's
+     * is less. A city whose sale, capped by SALE_OF_REVENUE of a year of tax (saleOf(): nothing in the harness sets a town's tax), is
+     * still under the least sale the fee needs, or whose bank cannot be given its room, fails as a fixture and is null.
+     */
+    static Game readyCity(String label, boolean manualRollover, double centralBankShare) {
+        Game city = preparedCity(label, manualRollover, centralBankShare);
+        double least = leastSale(city);
+        if (!feeThresholdShown) {
+            feeThresholdShown = true;
+            check("fixture: a sale a hundredth over the least the fee needs is within the rate allowance, and one a hundredth under it is not (" + String.format("%,.0f", least) + ")",
+                    feeShareOf(city, least * 1.01) <= EFFECTIVE_OFF_COUPON / 2 && feeShareOf(city, least * .99) > EFFECTIVE_OFF_COUPON / 2);
+        }
+        if (liftSpare(city.getHouseholdBalance(), SPARE_OVER_LEAST_SALE * least)) {
+            out.printf("   fixture: the households' savings lifted to a spare for paper of D$%,.0f (%.0f times the least sale the fee needs)%n",
+                    city.getHouseholdBalance().spareForPaper(), SPARE_OVER_LEAST_SALE);
+        }
         // BA1, 2026-11-05: the sale is the one section 2 makes (saleOf: the households' whole spare, no more than a third of a year of tax).
         double sale = saleOf(city, 1);
-        check("fixture (BA1): the bank has the room for the sales of a section, " + ROOM_FOR_SALES + " times section 2's sale, at fair ("
-                + String.format("%,.0f for %,.0f", bankRoomOf(city), sale) + ")", bankRoomOf(city) >= ROOM_FOR_SALES * sale);
-        double feeShare = city.costOfIssuance(sale) / sale / FloatingRateNote.MATURITIES[0];
-        check("fixture (BA1): section 2's sale is big enough for the fixed fee: its share of a " + FloatingRateNote.MATURITIES[0] + "-year floater's rate is "
-                + String.format("%.1f", feeShare * 1e4) + " basis points, under half of the " + String.format("%.0f", EFFECTIVE_OFF_COUPON * 1e4)
-                + " its effective rate may stand off the coupon", feeShare <= EFFECTIVE_OFF_COUPON / 2);
-        return city;
+        double handed = handBankRoom(city, ROOM_FOR_SALES * sale);
+        if (handed > 0) out.printf("   fixture: the bank handed D$%,.0f of capital, for a room of %.0f sales of D$%,.0f%n", handed, ROOM_FOR_SALES, sale);
+        boolean roomForSales = bankRoomOf(city) >= ROOM_FOR_SALES * sale;
+        check("fixture: the played bank has room for section sales", roomForSales);
+        boolean saleLargeEnough = feeShareOf(city, sale) <= EFFECTIVE_OFF_COUPON / 2;
+        check("fixture: the played sale covers its fixed fee within the rate allowance", saleLargeEnough);
+        return roomForSales && saleLargeEnough ? city : null;
     }
 
     /** The piece the last call put on the books, or null. */
@@ -868,6 +965,8 @@ public class FloatLinkCheck {
         out.println("\n--- 2. a sale: the margin is fair plus the tail, the real coupon fair plus the tail rounded down; the index is the dial, the base the price index ---");
 
         city = readyCity("floatlink", true, .1);
+
+        if (city == null) return;
         DebtManager dm = city.getDebtManager();
         // WN3: the sales are asked at the households' whole spare, not a quarter of it, and no more than EM1's third of a year of tax
         // (saleOf). The fixed fee of an issue is a share of its face that falls as the face rises, and the near-par assertions read against
@@ -1123,6 +1222,7 @@ public class FloatLinkCheck {
         near("...and owes no coupon (the face alone in the last month)", under.scheduleOwed()[0], 0, 0);
 
         runFixtures();
+        if (fxCity == null) return;
         near("a floater built through addFloatingRateNote() with a margin of -1 point pays no coupon in the month the dial is at nothing", fxNegAtNothing, 0, 0);
         near("...nor in the month it is at half a point (the coupon is never under nothing)", fxNegAtHalf, 0, 0);
         near("...and with the dial at two points it pays the point that is left: 10,000 x 1% / 12", fxNegAtTwo, 10_000 * PriceLevel.FACTOR * (.02 - .01) / 12, 1e-9);
@@ -1288,7 +1388,8 @@ public class FloatLinkCheck {
      */
     static void runFixtures() {
         if (fxCity != null) return;
-        fxCity = readyCity("floatlink-fixtures", true, 0);
+        fxCity = preparedCity("floatlink-fixtures", true, 0);
+        if (fxCity == null) return;
         Game fx = fxCity;
         DebtManager dm = fx.getDebtManager();
         double l0 = dm.priceIndexLevel();
@@ -1335,8 +1436,15 @@ public class FloatLinkCheck {
     static void toMaturity() {
         out.println("\n--- 5. to maturity: the indexed face under inflation, the original face under deflation, the books closing to the cent ---");
 
+        fixtureMaturity();
+        ranRisingMaturity = risingMaturity();
+        ranFallingMaturity = fallingMaturity();
+    }
+
+    static void fixtureMaturity() {
         // --- bank-held fixtures: the literal walk, the floor ---
         runFixtures();
+        if (fxCity == null) return;
         DebtManager dm = fxCity.getDebtManager();
         NationalAccounts na = fxCity.getEconomyManager().getNationalAccounts();
         Books fb = fxBooks;
@@ -1360,8 +1468,12 @@ public class FloatLinkCheck {
         FX_ZERO.report("the walk from EARNED to the budget leaves nothing in any month - the uplift months, the margin under nothing, the maturity - when the bank holds the paper", 1e-3);
         report("fixtures", fb);
 
+    }
+
+    static boolean risingMaturity() {
         // --- a real linker under a rising index, a real floater to maturity with the dial moved twice ---
         Game rg = readyCity("floatlink-rising", true, .1);
+        if (rg == null) return false;
         DebtManager rdm = rg.getDebtManager();
         NationalAccounts rna = rg.getEconomyManager().getNationalAccounts();
         double[] rise = new double[13];
@@ -1440,8 +1552,13 @@ public class FloatLinkCheck {
         check("fixture: the floater played to maturity moved the dial twice and rolled nothing (the rollover is off)",
                 !rdm.getDebt().contains(floater) && !rdm.getDebt().contains(linker) && rb.moves >= 2);
 
+        return true;
+    }
+
+    static boolean fallingMaturity() {
         // --- a real linker under a falling index ---
         Game dg = readyCity("floatlink-falling", true, .1);
+        if (dg == null) return false;
         DebtManager ddm = dg.getDebtManager();
         NationalAccounts dna = dg.getEconomyManager().getNationalAccounts();
         double[] fall = new double[13];
@@ -1478,6 +1595,7 @@ public class FloatLinkCheck {
         db.catchUp.report("...its carrying value caught up with the index every month", 1e-6);
         db.carry.report("...the carrying value rolls by the expense and the coupon", 1e-6);
         report("falling city", db);
+        return true;
     }
 
     /* =====================================================================
@@ -1494,14 +1612,15 @@ public class FloatLinkCheck {
             if (e.getValue()[1] > 0) out.printf("   OPEN in %s: %d of %d months%n", e.getKey(), e.getValue()[1], e.getValue()[0]);
         }
         // The months each kind of event is pressed in, by the section that presses them.
-        String[][] needed = { { "3", "sale month: the settle" }, { "3", "dial moved up" }, { "3", "dial at nothing" },
-                { "4", "indexation: the index rises" }, { "4", "deflation month: the index falls" },
-                { "5", "maturity: a linker repays the indexed face by each holder's share" },
-                { "5", "maturity: a floater repays its face, the dial having moved twice" },
-                { "5", "maturity: a linker repays the original face (the floor), the index having fallen" } };
-        for (String[] need : needed) {
-            if (!ran[Integer.parseInt(need[0])]) continue;
-            check("...among them the month of: " + need[1], audits.byEvent.containsKey(need[1]) && audits.byEvent.get(need[1])[1] == 0);
+        record Event(boolean ran, String label) { }
+        Event[] needed = { new Event(ran[3], "sale month: the settle"), new Event(ran[3], "dial moved up"), new Event(ran[3], "dial at nothing"),
+                new Event(ran[4], "indexation: the index rises"), new Event(ran[4], "deflation month: the index falls"),
+                new Event(ranRisingMaturity, "maturity: a linker repays the indexed face by each holder's share"),
+                new Event(ranRisingMaturity, "maturity: a floater repays its face, the dial having moved twice"),
+                new Event(ranFallingMaturity, "maturity: a linker repays the original face (the floor), the index having fallen") };
+        for (Event need : needed) {
+            if (!need.ran()) continue;
+            check("...among them the month of: " + need.label(), audits.byEvent.containsKey(need.label()) && audits.byEvent.get(need.label())[1] == 0);
         }
         X_HOLDERS.report("every holder - households, businesses, the world, the central bank - was paid its share of every coupon, the uplift's in the last", 1e-6);
         X_TREASURY.report("the cash coupons the pieces paid are what the treasury paid on its interest line, with the uplift paid beside it - nothing counted twice", 1e-6);
@@ -1605,6 +1724,8 @@ public class FloatLinkCheck {
         out.println("\n--- 7. the buyback: every offer at or over fair on the dial and index the market expects, a part of a floater and of a linker bought back ---");
 
         Game g = readyCity("floatlink-buyback", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         double ask = askOf(g, .25);
         Set<Debt> before = piecesOf(dm);
@@ -1695,6 +1816,8 @@ public class FloatLinkCheck {
                         && InflationLinkedBond.nearestYears(50) == 30);
 
         Game g = readyCity("floatlink-rollover", false, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         g.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         check("fixture: the city rolls each piece into its own kind", g.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
@@ -1708,6 +1831,7 @@ public class FloatLinkCheck {
         for (Rollover.Issue i : plan.issues()) issues.add(i.type() + " " + i.term());
         check("the plan before the press rolls each into its own kind, by the nearest term of its own: " + issues,
                 issues.contains("Float 2") && issues.contains("Float 5") && issues.contains("Linked 10") && issues.contains("Linked 30") && issues.size() == 4);
+        handRolloverRoom(g, plan);
         Set<Debt> had = piecesOf(dm);
         MoneyAudit.Result r = press(g, "the rollover: each piece into its own kind");
         List<Debt> fresh = new ArrayList<>();
@@ -1745,6 +1869,7 @@ public class FloatLinkCheck {
         Rollover.Plan bills = g.rolloverPlan();
         check("the plan under TWELVE_MONTH_BILL is bills alone: " + bills.issues(),
                 !bills.issues().isEmpty() && bills.issues().stream().allMatch(i -> i.type().equals("Note") && i.term() == Rollover.BILL_MONTHS));
+        handRolloverRoom(g, bills);
         Set<Debt> had2 = piecesOf(dm);
         MoneyAudit.Result r2 = press(g, "the rollover: everything into a bill");
         List<Debt> fresh2 = new ArrayList<>();
@@ -1756,6 +1881,7 @@ public class FloatLinkCheck {
         // The central bank's own par rolls too (Game, THE CENTRAL BANK ROLLS ITS OWN): a floater and a linker it holds, falling due, are
         // replaced by the same kinds, and it holds them from issue.
         Game c = readyCity("floatlink-central-bank", false, .1);
+        if (c == null) return;
         DebtManager cdm = c.getDebtManager();
         c.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         double cask = askOf(c, .25);
@@ -1798,6 +1924,18 @@ public class FloatLinkCheck {
         check("the audit closes the month it rolled, and the next", closes(rc) && closes(press(c, "the month after the central bank's par rolled")));
     }
 
+    /**
+     * FS14: the bank handed its room for what the plan is about to issue (handBankRoom(): its equity by hand, between months), and the room
+     * asserted: the rollover sells the plan's issues at the auction, and the bank is what covers what the others do not bid.
+     */
+    static void handRolloverRoom(Game g, Rollover.Plan plan) {
+        double face = 0;
+        for (Rollover.Issue i : plan.issues()) face += i.face();
+        double handed = handBankRoom(g, face);
+        if (handed > 0) out.printf("   fixture: the bank handed D$%,.0f of capital, for a room of D$%,.0f for the rollover's issues%n", handed, face);
+        check("fixture: the bank has room for what the rollover issues (D$" + String.format("%,.0f", face) + ")", bankRoomOf(g) >= face);
+    }
+
     /** A fixture that falls due at the next press: its term stays what it was, its remaining months are one. */
     static Debt dueNextMonth(Debt piece) {
         piece.remainingMonths = 1;
@@ -1812,6 +1950,8 @@ public class FloatLinkCheck {
         out.println("\n--- 9. the save: a floater and a linker mid-life keep their terms, books and market value, and the month after a load books what the same month does without one ---");
 
         Game g = readyCity("floatlink-save", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         double[] path = new double[12];

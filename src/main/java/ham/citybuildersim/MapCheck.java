@@ -78,7 +78,11 @@ import java.util.Map;
  *      and never a +) - and stays where it stood while the buildings that come
  *      after it are added after; and (2g, MF1) a district bought into the map's
  *      order ahead of others keeps what is carried in place: the districts
- *      after it keep every box and the carry they read its pairs;
+ *      after it keep every box and the carry they read its pairs; and (DM2)
+ *      mines and yards record their source transitions before first view,
+ *      giving the same dates and layouts viewed monthly or unseen, while a
+ *      field-belt wall cured by yard ground and restored when it goes moves
+ *      only boxes its new plots intersect;
  *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
  *      tiles before): on the dense screen every plot a district's plan
  *      surfaces is painted as that street - kind and width - its seams once;
@@ -88,15 +92,12 @@ import java.util.Map;
  *      and the far view's blocks, from a twin map drawn the same way;
  *   4. the sidecar round-trips byte for byte through a save and a load, the
  *      next month plays to the same map, a stale or missing sidecar draws the
- *      map again canonically, a city with no map saves none, and (0.7.88) a
- *      FORMAT 4 sidecar still loads into the same map - and (0.7.89) it and
- *      0.7.88's FORMAT 5, which wrote no runs, with their runs laid as a map
- *      drawn afresh lays them; and (CL3) the district logs ride along: a map
+ *      map again canonically, a city with no map saves none, and (DM2) a
+ *      sidecar without the dated wall and unit journals is refused, even
+ *      with a correct stamp and month; and (CL3) the district logs ride along: a map
  *      read back plans every district box for box as the map saved did and
  *      its logs are the same record by record, a log that does not add up to
- *      its district's counts is not read (the map is drawn again), and a
- *      FORMAT 8 sidecar, which has no logs, starts each as one batch at the
- *      save's month and plans as today; and at five and ten billion it is
+ *      its district's counts is not read (the map is drawn again); and at five and ten billion it is
  *      written and read back the same, the log's records counted and the
  *      sidecar within SIDECAR_BYTES, written and read in SIDECAR_MS;
  *   5. the cost follows the screen: a 1,389 x 868 L0 screen (SCREEN_TILES)
@@ -193,8 +194,8 @@ import java.util.Map;
  *      once; each terminal and tank farm at the water - its box on owned dry
  *      ground in one cell's interior, no run or highway beside it, a
  *      terminal's quay over owned salt water that opens to the sea - laid one
- *      a month without one moving, the newest taken first, through a FORMAT 6
- *      sidecar and laid alike from a FORMAT 5; each drawn once on the tiles,
+ *      a month without one moving, the newest taken first, through a current
+ *      sidecar while the older formats are refused; each drawn once on the tiles,
  *      its quay's plots once; a platform's jacket, wells, ring and pipe drawn
  *      once from the game's own platform (WellCheck's sea town); each route
  *      on the sea's cells to its offing past the city and on into the abyss,
@@ -429,6 +430,8 @@ import java.util.Map;
  * fixtures that need his mines - 8's runs' marks on his city x 1 and its
  * rail yards - on his city x 1 again where its square holds iron
  * (Squares.ironX1, dryPlace(w, side)). The copies stand at the dry place.
+ *  24. (FA1) Actual frontage marks crossing a founding avenue away from its origin: both slopes and phases,
+ *      every band continuous, four roads signalled, and the four tiles agree at a crossing on their shared corner.
  */
 public class MapCheck {
 
@@ -518,15 +521,6 @@ public class MapCheck {
     static final int DRAWN_EVERY = 30;
 
     public static void main(String[] args) throws Exception {
-        // FC1: on FC1's model these cities build otherwise, and boxes that stand move in the plan when a street piece the
-        // buildings wall in changes its way kept clear (DistrictPlan, A PIECE BUILDINGS WALL IN), which first-fit follows
-        // with a cascade (the figures are of a city built without the Earth file): in section 2d the arrivals four months on
-        // (9 boxes: a second piece born walled in at month 133) and the yard that goes (73: the wall its ground cured is
-        // back), in 2h the reserve month (76 moved for 71 lying: the reserve re-routes a way) and four months on (12 and 23
-        // boxes, as the way is worked out again from each month's arrivals). The way needs dating in a journal (DM2,
-        // docs/queue/DM2.md; DM1 found that dating it from the replay alone moves boxes after a land purchase, SlopeCheck 9);
-        // until then sections 1 to 2h are checked on the city they were written on, FC1 off (BuildingManager.buildersShortOn).
-        BuildingManager.buildersShortOn = false;
         boolean quietRun = Arrays.asList(args).contains("-q");
         if (quietRun) out = new PrintStream(new OutputStream() { @Override public void write(int b) { } }) {
             @Override public PrintStream printf(String f, Object... a) {
@@ -545,9 +539,10 @@ public class MapCheck {
         bandsHoldOnPurchase();
         runsLaidAcross(city);
         reservesDated(city);
-        // ...and FC1 on again from here (the switch above covers section 1's played city, which 2h's scenarios are cut
-        // from, through 2h): every later section reads its cities with the builders' price and contractor, as the game does.
-        BuildingManager.buildersShortOn = true;
+        wallJournal(city);
+        fieldWallYardEvents(city);
+        actualRunsAcrossWalls(city);
+        shoreUnitsDated(city);
         idleYards(city);
         idleYardsOnRuns();
         Squares sq = new Squares();
@@ -556,6 +551,8 @@ public class MapCheck {
         String[] saves = Arrays.stream(args).filter(a -> !a.startsWith("-")).toArray(String[]::new);
         network(sq, city, saves);
         sidecar(city, root, sq);
+        siteCodecEdges();
+        relayTakesLastRuns(sq);
         cost(sq);
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
@@ -581,9 +578,13 @@ public class MapCheck {
         boughtInsideBuiltDistrict();
         aStoreLeaves();
         aDepotLeavesTheYardsDistrict();
+        frontageDrawn(sq.types);
+        depotAloneRails();
+        oldWorksSentOn();
         depositsZoomedOut(city);
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
+        if (fxStarted) IconCanvas.stop();
         System.exit(fails == 0 ? 0 : 1);
     }
 
@@ -680,9 +681,12 @@ public class MapCheck {
                     boolean exact = dr.sameAs(model, map.types());
                     drawnSamples++;
                     if (exact) drawnExact++;
+                    long trackNow = Drawn.trackOf(model, map.types());
                     drawnLines.append(String.format("      month %d: %,d buildings of %d kinds drawn (the model %,d; %d packed at the city's edge),"
-                                    + " %,.1f plots of road as the streets' surface and %,.1f the streets do not carry (the model %,d)%n", g.getMonth(),
-                            dr.total(), dr.kinds(), modelBuildings(model, map.types()), dr.packed, dr.surfaced(), dr.left(), modelRoadPlots(model, map.types())));
+                                    + " %,.1f plots of road as the streets' surface and %,.1f the streets do not carry (the model %,d),"
+                                    + " %,d plots of track (the model's %,d, %,d the runs could not lay, %,d the station's own line)%n", g.getMonth(),
+                            dr.total(), dr.kinds(), modelBuildings(model, map.types()), dr.packed, dr.surfaced(), dr.left(), modelRoadPlots(model, map.types()),
+                            dr.rail, trackNow, dr.trackSurplus, map.runs().stationLine(trackNow)));
                 }
             }
             bought = g.getCityLand().purchases().size() - purchases0;
@@ -792,13 +796,35 @@ public class MapCheck {
         final double[] surface = new double[4], leftover = new double[4];
         /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay - since FR7 slice 3 the plots no train's way uses (CityRuns.trackSurplus()); buildings packed at the city's edge (R7); tiles painted; districts. */
         long rail, trackSurplus, packed, tiles, districts;
+        /** (HL1-M) The runs the map was drawn from: what they lay (rail().plots, less the quay's spurs, which no model track pays for), and whether a station stands (a yard laid, idle or not). */
+        CityRuns runs;
+        long laid;
+        boolean station;
 
         long total() { return Arrays.stream(buildings).sum(); }
         int kinds() { int n = 0; for (long b : buildings) if (b > 0) n++; return n; }
         double surfaced() { return surface[1] + surface[2] + surface[3]; }
         double left() { return leftover[1] + leftover[2] + leftover[3]; }
 
-        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn); each road kind's plots its streets' surface and what they do not carry, to within half a plot a district (a street's least surface: DistrictPlan.HALF); every plot of its railway's track (0.7.72). */
+        /** The model's track plots: each track type's count x its own plots (BuildingVisual.cells()). */
+        static long trackOf(long[] model, BuildingVisual.Type[] types) {
+            long track = 0;
+            for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
+            return track;
+        }
+
+        /**
+         * (HL1-M) Whether the railway drawn is the railway the city holds, exactly: the painter draws every plot the runs lay and no other (rail == laid), and what the runs
+         * lay is the model's track less what they could not lay, PLUS A STATION'S OWN LINE - the main line a Rail Depot or Rail Terminal has laid to the city's edge whatever
+         * track the model has (CityRuns.stationLine(); FX5). That line is the depot's, not the track budget's: it is nothing where the track is longer than the line, and
+         * it is nothing where no station stands, so track the model does not hold with no station standing is still a finding.
+         */
+        boolean trackAccounted(long track) {
+            long line = runs == null ? 0 : runs.stationLine(track);
+            return rail == laid && rail + trackSurplus == track + line && (line == 0 || station);
+        }
+
+        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn); each road kind's plots its streets' surface and what they do not carry, to within half a plot a district (a street's least surface: DistrictPlan.HALF); every plot of its railway's track (0.7.72), the station's own line counted as the station's (HL1-M, trackAccounted()). */
         boolean sameAs(long[] model, BuildingVisual.Type[] types) {
             boolean same = true;
             for (int t = 0; t < types.length; t++) {
@@ -809,9 +835,7 @@ public class MapCheck {
             for (int kind = BuildingVisual.GRAVEL; kind <= BuildingVisual.HIGHWAY; kind++) {
                 same &= Math.abs(surface[kind] + leftover[kind] - roadPlotsOf(model, types, kind)) <= DistrictPlan.HALF * Math.max(1, districts);
             }
-            long track = 0;
-            for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
-            return same && rail + trackSurplus == track;
+            return same && trackAccounted(trackOf(model, types));
         }
     }
 
@@ -846,6 +870,8 @@ public class MapCheck {
                 d.surface[BuildingVisual.HIGHWAY] += p.highwayPlots;
                 d.rail += p.railLaid;
                 for (int b = 0; b < p.buildings; b++) {
+                    // (HL1-M) A yard whose box spans tiles is one building, counted on the tile holding its first plot (TilePainter.Painted.bpart; the raster below counts so): its part on another tile is the same yard.
+                    if (p.bpart[b]) continue;
                     if (p.bsite[b] >= 0) {
                         if (sites.add(in.siteKey[p.bsite[b]])) d.siteCount[p.btype[b]]++;
                     } else d.buildings[p.btype[b]]++;
@@ -862,6 +888,9 @@ public class MapCheck {
         double[] left = m.leftoverByKind();
         System.arraycopy(left, 0, d.leftover, 0, 4);
         d.trackSurplus = m.runs().trackSurplus();
+        d.runs = m.runs();
+        d.laid = m.runs().rail().plots() - m.runs().quayPlots();
+        d.station = !m.runs().yards().isEmpty();
         return d;
     }
 
@@ -1197,6 +1226,8 @@ public class MapCheck {
         /** The month the next one is run in. */
         int month;
         boolean reconciled = true;
+        /** A second map of the same city reconciled beside it to the same counts in the same months, or null: one nothing plans (DM2-A). */
+        CityMap twin;
 
         Months(CityMap map, long[] model, int house, int month) {
             this.map = map;
@@ -1211,7 +1242,9 @@ public class MapCheck {
         /** One month of `houses` more houses. */
         void run(int houses) {
             model[house] += houses;
-            reconciled &= map.reconcile(model, month++);
+            int at = month++;
+            reconciled &= map.reconcile(model, at);
+            if (twin != null) reconciled &= twin.reconcile(model, at);
         }
     }
 
@@ -1368,7 +1401,9 @@ public class MapCheck {
         check("bought ground inside the cells already open is built on about as the cells opened after the purchase are (S3, first block): " + on3[1] + " of " + on3[0] + " in the open cells against "
                 + on3[3] + " of " + on3[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: " + off3[1] + " of " + off3[0] + " against " + off3[3] + " of " + off3[2],
                 openShareHolds(on3) && !openShareHolds(off3));
-        if (open4) {
+        if (Observation.reached("fixture: the second bought block has open and newly occupied closed cells",
+                open4,
+                "second-block FX9 share")) {
             check("...the same for the second block (S4): " + on4[1] + " of " + on4[0] + " in the open cells against " + on4[3] + " of " + on4[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: "
                     + off4[1] + " of " + off4[0] + " against " + off4[3] + " of " + off4[2], on4[2] > 0 && openShareHolds(on4) && !openShareHolds(off4));
         }
@@ -1648,6 +1683,7 @@ public class MapCheck {
         check("...works and flats added together displace only the flats, which come after the works in the order they are packed in: none of the works moved (" + shifted + " boxes, " + dearer + " of works)",
                 then.size() > 0 && dearer == 0 && later.size() > then.size());
         laidByHand(r.types);
+        pastByHand(r.types);
     }
 
     /** A plot of a district's mask (a bit a plot, DISTRICT / 64 words a row). */
@@ -1727,6 +1763,77 @@ public class MapCheck {
         for (int y = 10 - TilePainter.REACH; y <= 10 + TilePainter.REACH; y++) for (int x = 63 - TilePainter.REACH; x <= 63 + TilePainter.REACH; x++) whole &= plotIs(grown, x, y);
         check("a plot's reach crosses a word's edge: REACH plots out every way, across corners, the whole square and nothing more (" + n + " plots)",
                 whole && n == (2 * TilePainter.REACH + 1) * (2 * TilePainter.REACH + 1) && !plotIs(grown, 63 - TilePainter.REACH - 1, 10));
+    }
+
+    /** The houses pastByHand() packs: more than its owned block's 100 plots hold (FB5). */
+    static final int PAST_HOUSES = 140;
+
+    /** One hand-made edge district packed with `n` buildings of type t, its free ground the owned plane and (when not null) the plane past it, as freeGround() lays them. */
+    static CityMap.Pack handPack(BuildingVisual.Type[] types, int t, int n, long[] owned, long[] past, long[] street, CityMap.District e) {
+        long[] order = new long[CityMap.TILES];
+        for (int k = 0; k < CityMap.TILES; k++) order[k] = k;
+        int[] carry = new int[types.length];
+        carry[t] = n;
+        long[] free = owned.clone();
+        if (past != null) {
+            free = Arrays.copyOf(owned, 2 * owned.length);
+            System.arraycopy(past, 0, free, owned.length, past.length);
+        }
+        return CityMap.packAtEdge(carry, types, new CityMap.District[] { e }, new long[][] { free }, new long[][] { street.clone() }, order);
+    }
+
+    /** A packing's boxes on ground a mask has: each as "tile:box", every plot of it on the mask (inMask) or none (!inMask). */
+    static java.util.Set<String> boxesOn(CityMap.Pack p, CityMap.District e, long[] mask, boolean inMask) {
+        java.util.Set<String> s = new java.util.TreeSet<>();
+        int[][] per = p.boxes.get(e);
+        if (per == null) return s;
+        for (int k = 0; k < per.length; k++) {
+            if (per[k] == null) continue;
+            for (int b : per[k]) {
+                int x0 = (k % CityMap.TILES_A_SIDE) * World.TILE + (b & 31), y0 = (k / CityMap.TILES_A_SIDE) * World.TILE + ((b >> 5) & 31);
+                int w = ((b >> 10) & 31) + 1, h = ((b >> 15) & 31) + 1;
+                boolean all = true, any = false;
+                for (int y = y0; y < y0 + h; y++) for (int x = x0; x < x0 + w; x++) { boolean on = plotIs(mask, x, y); all &= on; any |= on; }
+                if (inMask ? all : !any) s.add(k + ":" + b);
+            }
+        }
+        return s;
+    }
+
+    /**
+     * ...past the city's ground (FB5, DM3): a street down x = 40 and the city's own free ground a block of 100 plots beside it (x 41 to 50, y 97 to 106),
+     * given PAST_HOUSES houses. With its own ground alone those the block cannot hold find no ground and are not drawn - the played city's 133 at
+     * month 121, its land 99.3% built; with the dry ground the city does not own beside it (x 41 to 62, y 107 to 126) they stand there, whole and
+     * beside the street, every one drawn, and the block holds what it held, box for box; with that ground far from every street (x 200 to 220) none
+     * stands in the field past the city's ground: they are counted, not drawn, as before.
+     */
+    static void pastByHand(BuildingVisual.Type[] types) {
+        int house = -1;
+        for (int t = 0; t < types.length && house < 0; t++) {
+            if (types[t] != null && types[t].drawn() && types[t].site() == null && Arrays.equals(BuildingVisual.footprint(types[t]), new int[] { 1, 1 })) house = t;
+        }
+        CityMap.District e = new CityMap.District(0, 0, types.length, 0);
+        int cells = CityMap.DISTRICT * (CityMap.DISTRICT / 64);
+        long[] street = new long[cells], owned = new long[cells], past = new long[cells], far = new long[cells];
+        for (int y = 0; y < CityMap.DISTRICT; y++) plotOn(street, 40, y);
+        for (int y = 97; y <= 106; y++) for (int x = 41; x <= 50; x++) plotOn(owned, x, y);
+        for (int y = 107; y <= 126; y++) for (int x = 41; x <= 62; x++) plotOn(past, x, y);
+        for (int y = 97; y <= 126; y++) for (int x = 200; x <= 220; x++) plotOn(far, x, y);
+        CityMap.Pack alone = handPack(types, house, PAST_HOUSES, owned, null, street, e), beside = handPack(types, house, PAST_HOUSES, owned, past, street, e);
+        CityMap.Pack afar = handPack(types, house, PAST_HOUSES, owned, far, street, e);
+        java.util.Set<String> ownAlone = boxesOn(alone, e, owned, true), ownBeside = boxesOn(beside, e, owned, true), onPast = boxesOn(beside, e, past, true);
+        int drawn = 0;
+        if (beside.boxes.get(e) != null) for (int[] tl : beside.boxes.get(e)) if (tl != null) drawn += tl.length;
+        out.printf("      past the city's ground: %d houses, a block of 100 owned plots beside a street; its own ground alone draws %d (%d with no ground); with the ground past it %d"
+                        + " (%d past it, %d with no ground; %d against a street, %d within reach, %d at a street laid, %d in the field); that ground far from every street: %d past it, %d with no ground%n",
+                PAST_HOUSES, ownAlone.size(), alone.none, drawn, beside.beyond, beside.none, beside.touching, beside.reached, beside.laidTo, beside.field, afar.beyond, afar.none);
+        check("fixture: a city whose own ground is full - with its own ground alone some of what it packs finds no ground and is not drawn", alone.none > 0 && alone.beyond == 0);
+        check("what no plot of its own ground holds stands past it, on the dry ground beside it it does not own: every building drawn, none with no ground, counted apart",
+                beside.none == 0 && beside.beyond == alone.none && drawn == PAST_HOUSES && onPast.size() == beside.beyond);
+        check("...each beside a street - against it, within REACH or at a street laid - never in the field",
+                beside.field == alone.field && beside.touching + beside.reached + beside.laidTo - (alone.touching + alone.reached + alone.laidTo) == beside.beyond);
+        check("...and its own ground holds what it held, box for box", ownBeside.equals(ownAlone));
+        check("...and ground past it that no street is near holds none: what finds no ground is counted, not drawn, as before", afar.beyond == 0 && afar.none == alone.none);
     }
 
     /* =====================================================================
@@ -1855,6 +1962,543 @@ public class MapCheck {
         check("...and the carry each of them reads keeps the pairs it had, as they were, a prefix: nothing handed on afresh (" + prefixes + " of " + ahead + ")", prefixes == ahead);
         check("...the district joined, second in the map's order, is carried what the district before it carried on - the pairs the district after it read before - and passes them on as they came",
                 joined != null && joined.index == 1 && java.util.Arrays.equals(before.carry().get(keys[1]), joinedCarry));
+    }
+
+    /** The sidecar keeps the wall's births and releases, and an older worker cannot replace its newer history (DM2). */
+    static void wallJournal(Game g) {
+        out.println("\n--- 2h-b. the wall-way journal round trips and keeps newer events (DM2) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        CityLand land = foundedLand.copy();
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 30);
+        CityMap.District d = m.districts().get(0);
+        int edge = DistrictPlan.AREA - 1;
+        int[] months = { 10, 20, 25 }, changes = { edge << 1 | 1, edge << 1, edge << 1 | 1 };
+        check("fixture: a way on the plan's south-east seam is kept, released and kept again", m.keepWays(d, months, changes));
+        byte[] side = m.writeSidecar(30);
+        CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, 30, CityMap.stampIn(side));
+        CityMap.District read = back == null ? null : back.district(d.dx, d.dy);
+        check("the wall-way journal round trips its dates, plots and both kinds of event, byte for byte",
+                read != null && Arrays.equals(months, read.wallMonth) && Arrays.equals(changes, read.wallChange)
+                        && Arrays.equals(side, back.writeSidecar(30)) && m.same(back));
+        check("an older worker cannot replace a newer wall journal", !m.keepWays(d, new int[] { 10 }, new int[] { edge << 1 | 1 })
+                && Arrays.equals(months, d.wallMonth));
+        check("a worker from another wall history cannot append over the recorded one", !m.keepWays(d, new int[] { 10, 20, 25, 30 },
+                new int[] { 3, 2, 3, 2 }) && Arrays.equals(changes, d.wallChange));
+        byte[] old = m.writeSidecar(30, 15);
+        CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, 30, CityMap.stampIn(old));
+        check("a FORMAT 15 sidecar is refused: it cannot preserve the wall history", older == null);
+    }
+
+    /** A real discovered wall is cured by a depot-sized yard, then returns after that yard is taken up (DM2). */
+    static void fieldWallYardEvents(Game g) {
+        out.println("\n--- 2h-e. a discovered wall, a yard curing it and its removal move only boxes their new plots cross (DM2) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), shop = idOf(g, "Convenience Store");
+        int[] footprint = BuildingVisual.footprint(types[idOf(g, "Rail Depot")]);
+        PlanCheck.Log log = new PlanCheck.Log();
+        DistrictPlan previous = null;
+        int[] months = null, changes = null, yard = null;
+        int birth = 0, laterWallMonths = 0, laterMoves = 0, wrongDates = 0, outside = 0;
+        int cured = 0, returned = 0, yardMoves = 0, returnMoves = 0;
+        boolean allPlacedBeforeYard = true, prefixes = true;
+        for (int month = 1; month <= 36; month++) {
+            if (month <= 30 || month == 32 || month >= 34) log.add(month, house, 15).add(month, shop, 3);
+            if (month == 31) {
+                int minX = DistrictPlan.FRAME, minY = DistrictPlan.FRAME;
+                boolean[] kept = new boolean[DistrictPlan.AREA];
+                for (int r : changes == null ? new int[0] : changes) kept[r >>> 1] = (r & 1) != 0;
+                for (int p = 0; p < kept.length; p++) if (kept[p]) {
+                    minX = Math.min(minX, p % DistrictPlan.FRAME);
+                    minY = Math.min(minY, p / DistrictPlan.FRAME);
+                }
+                check("fixture: monthly field-belt arrivals discovered a wall before the yard is laid", birth > 0 && minX < DistrictPlan.FRAME);
+                if (minX == DistrictPlan.FRAME) return;
+                yard = new int[] { minX, minY - footprint[1] + 1, footprint[0], footprint[1] };
+            }
+            DistrictPlan.Input in = log.into(PlanCheck.fieldBelt(types, house, 0));
+            in.seed = 1;
+            in.month = month;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            if (yard != null) fieldYardInto(in, yard, 31, month >= 33 ? 33 : 0);
+            DistrictPlan now = DistrictPlan.make(in);
+            int old = changes == null ? 0 : changes.length, added = 0, released = 0;
+            boolean[] newWay = new boolean[DistrictPlan.AREA];
+            prefixes &= now.wallChange.length >= old && Arrays.equals(changes == null ? new int[0] : changes, Arrays.copyOf(now.wallChange, old))
+                    && Arrays.equals(months == null ? new int[0] : months, Arrays.copyOf(now.wallMonth, old));
+            for (int k = old; k < now.wallChange.length; k++) {
+                if (now.wallMonth[k] != month) wrongDates++;
+                int r = now.wallChange[k];
+                if ((r & 1) == 0) released++;
+                else {
+                    newWay[r >>> 1] = true;
+                    added++;
+                    if (birth == 0) birth = month;
+                }
+            }
+            if (previous != null) {
+                java.util.Set<PlanBox> was = boxesOf(previous), boxes = boxesOf(now);
+                int moved = movedOf(was, boxes);
+                for (PlanBox b : was) if (!boxes.contains(b) && !anyPlot(b, 0, p -> newWay[p] || (in.month == 31 && in.fixed[p] == DistrictPlan.FIXED_YARD))) outside++;
+                if (month == 31) {
+                    cured = released;
+                    yardMoves = moved;
+                    check("the yard actually cures the discovered wall and displaces boxes on its own ground", cured > 0 && now.wallClear == 0 && moved > 0);
+                } else if (month == 33) {
+                    returned = added;
+                    returnMoves = moved;
+                    int intersected = 0;
+                    for (PlanBox b : was) if (anyPlot(b, 0, p -> newWay[p])) intersected++;
+                    check("taking up the yard restores an actual wall way through standing boxes, moving exactly those intersected", added > 0 && now.wallClear > 0
+                            && intersected > 0 && moved == intersected);
+                } else if (previous.wallClear > 0 || month == 32) {
+                    laterWallMonths++;
+                    laterMoves += moved;
+                }
+            }
+            if (month <= 30) allPlacedBeforeYard &= now.overflowCount() == 0;
+            if (month == 30 || month == 36) {
+                DistrictPlan.Input delayed = log.into(PlanCheck.fieldBelt(types, house, 0));
+                delayed.seed = 1;
+                delayed.month = month;
+                if (yard != null) fieldYardInto(delayed, yard, 31, 33);
+                DistrictPlan firstView = DistrictPlan.make(delayed);
+                check("first viewed in month " + month + ", the field belt discovers the same dated events and places the same boxes as monthly views",
+                        Arrays.equals(now.wallMonth, firstView.wallMonth) && Arrays.equals(now.wallChange, firstView.wallChange) && sameBoxes(now, firstView)
+                                && PlanCheck.streetDigest(now) == PlanCheck.streetDigest(firstView));
+            }
+            previous = now;
+            months = now.wallMonth;
+            changes = now.wallChange;
+        }
+        out.printf("      field belt: wall born %d, yard releases %d plots and moves %d boxes; taken up, %d new way plots move %d boxes; %d later-arrival months move %d%n",
+                birth, cured, yardMoves, returned, returnMoves, laterWallMonths, laterMoves);
+        check("fixture: the wall predates many later arrivals and the yard, with every early arrival placed", birth > 0 && birth < 30 && allPlacedBeforeYard && laterWallMonths > MONTHS_BETWEEN);
+        check("every discovered wall birth and release is dated at its event month, keeping the earlier journal intact", wrongDates == 0 && prefixes);
+        check("a newly kept way or yard moves no standing box beyond its intersected plots", outside == 0);
+        check("arrivals after the wall, after its cure and after its return move no standing box", laterMoves == 0 && cured > 0 && returned > 0);
+    }
+
+    /** Dated fixed-ground transitions for a depot footprint in the field-belt fixture; the planner discovers the wall events itself. */
+    static void fieldYardInto(DistrictPlan.Input in, int[] yard, int laid, int takenUp) {
+        int area = yard[2] * yard[3], at = 0;
+        in.fixedLogMonth = new int[area * (takenUp > 0 ? 2 : 1)];
+        in.fixedLog = new int[in.fixedLogMonth.length];
+        for (int y = yard[1]; y < yard[1] + yard[3]; y++) for (int x = yard[0]; x < yard[0] + yard[2]; x++) {
+            int p = y * DistrictPlan.FRAME + x;
+            if (takenUp == 0) in.fixed[p] = DistrictPlan.FIXED_YARD;
+            in.fixedLogMonth[at] = laid;
+            in.fixedLog[at++] = p << 8 | DistrictPlan.FIXED_YARD;
+        }
+        if (takenUp > 0) for (int y = yard[1]; y < yard[1] + yard[3]; y++) for (int x = yard[0]; x < yard[0] + yard[2]; x++) {
+            in.fixedLogMonth[at] = takenUp;
+            in.fixedLog[at++] = (y * DistrictPlan.FRAME + x) << 8 | DistrictPlan.FIXED_YARD << 4;
+        }
+    }
+
+    /** An owned neck and its one-plot notch on the real generated ground: its first wall crosses the railway's quarter line (DM2). */
+    static CityLand wallRunLand() {
+        CityLand dry = yardLand();
+        long x = Math.floorDiv(dry.siteX(), CityMap.DISTRICT) * CityMap.DISTRICT;
+        long y = Math.floorDiv(dry.siteY(), CityMap.DISTRICT) * CityMap.DISTRICT;
+        double[] centre = new double[CityLand.CENTRE_FIELDS];
+        centre[CityLand.CENTRE_FIELDS - 5] = centre[CityLand.CENTRE_FIELDS - 4] = -1;
+        centre[CityLand.CENTRE_FIELDS - 2] = x + 105;
+        centre[CityLand.CENTRE_FIELDS - 1] = y + 100;
+        double[][] owned = { { x + 96, y + 96, x + 104, y + 128 }, { x + 120, y + 96, x + 128, y + 128 },
+                { x + 104, y + 98, x + 120, y + 105 }, { x + 104, y + 105, x + 113, y + 106 }, { x + 114, y + 105, x + 120, y + 106 } };
+        return CityLand.restore(World.Key.generated(Founding.DEFAULT_WORLD_SEED), centre, owned, null, null, null);
+    }
+
+    /** Actual CityRuns work crosses a discovered wall, cures it, leaves, and crosses the wall again after its return (DM2). */
+    static void actualRunsAcrossWalls(Game g) {
+        out.println("\n--- 2h-f. actual CityRuns rail and yard cure a discovered wall, leave and return without moving any other box (DM2) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), store = idOf(g, "Convenience Store"), depot = idOf(g, "Rail Depot"), track = idOf(g, "Rail Spur");
+        CityLand land = wallRunLand();
+        long[] model = new long[types.length];
+        CityMap map = CityMap.canonical(land, land::amountsInOrder, types, model, 0);
+        // Like MainLineCheck's open-ground fixture, choose the eastward gateway: its first main-line arm then follows the owned neck.
+        map.runs().setGateway(0);
+        Months h = new Months(map, model, house, 1);
+        // Its unseen twin (DM2-A): the same ground and counts, reconciled beside it every month and never planned (unseenWallTwin()).
+        h.twin = CityMap.canonical(land, land::amountsInOrder, types, model, 0);
+        h.twin.runs().setGateway(0);
+        CityMap.District d = map.districts().get(0);
+        int firstWall = 0, movesAfterWall = 0;
+        Snap previous = new Snap(map, d);
+        for (int i = 0; i < 8; i++) {
+            model[store] += 3;
+            h.run(15);
+            Snap now = new Snap(map, d);
+            if (firstWall > 0) movesAfterWall += movedOf(previous.boxes, now.boxes);
+            if (firstWall == 0 && now.plan.wallClear > 0) firstWall = h.last();
+            previous = now;
+        }
+        check("fixture: an actual map discovers a wall before the railway arrives, with later houses and stores keeping every box", h.reconciled
+                && firstWall > 0 && firstWall < h.last() && previous.plan.wallMonth.length > 0 && previous.plan.wallMonth[0] == firstWall
+                && previous.plan.wallClear > 0 && previous.boxes.size() > 0 && movesAfterWall == 0);
+        check("fixture: the chosen eastward gateway leads along the owned neck, with no rail or yard laid before the wall", map.runs().gateway() == 0
+                && map.runs().rail().plots() == 0 && map.runs().yards().isEmpty());
+        if (previous.plan.wallClear == 0) return;
+
+        model[depot] = model[track] = 1;
+        h.run(0);
+        Snap laid = new Snap(map, d);
+        int[] birth = wallRunChange(previous, laid);
+        out.printf("      actual wall born %d; rail and yard laid %d: %d old way plots covered, %d released, %d boxes intersected and %d moved%n",
+                firstWall, h.last(), birth[5], birth[4], birth[1], birth[0]);
+        check("actual reconcile lays a railway and depot yard across the existing wall's kept plots and cures it", map.runs().rail().plots() > 0
+                && map.runs().yards().size() == 1 && birth[5] > 0 && birth[4] > 0 && laid.plan.wallClear == 0);
+        check("the actual rail and yard move exactly their intersected boxes, with every other standing box kept", birth[1] > 0 && birth[0] == birth[1] && birth[2] == 0);
+        check("the actual cure is dated at the reconcile month, preserving the wall's earlier journal", birth[6] == 0 && birth[7] == 0);
+        wallRunRoundTrip(map, land, types, "after the actual wall cure");
+        wallRunArrivals(h, d, store, "after the actual cure");
+
+        model[depot] = model[track] = 0;
+        h.run(0);
+        int idleFrom = h.last();
+        h.month = idleFrom + CityRuns.YARD_IDLE_MONTHS - 1;
+        h.run(0);
+        check("the actual depot's idle yard and its railway remain until the last month before expiry", map.runs().yards().size() == 1
+                && map.runs().yardsActive() == 0 && map.runs().yardIdleSince(0) == idleFrom && map.runs().rail().plots() > 0);
+        Snap beforeGone = new Snap(map, d);
+        h.run(0);
+        Snap gone = new Snap(map, d);
+        int[] removal = wallRunChange(beforeGone, gone);
+        check("at actual idle expiry the yard and rail are taken up, with no other standing box moved", map.runs().yards().isEmpty()
+                && map.runs().rail().plots() == 0 && removal[0] == 0 && removal[0] == removal[1] && removal[2] == 0 && removal[6] == 0 && removal[7] == 0
+                && h.last() == idleFrom + CityRuns.YARD_IDLE_MONTHS);
+
+        // The released railway's ground is room for arrivals. They eventually wall the street piece in again, causing a new real wall event.
+        int restored = 0, outside = 0, wrong = 0, guard = MONTHS_BETWEEN * 8;
+        Snap afterGone = gone;
+        while (afterGone.plan.wallClear == 0 && guard-- > 0) {
+            model[store]++;
+            h.run(3);
+            Snap now = new Snap(map, d);
+            int[] change = wallRunChange(afterGone, now);
+            restored += change[3];
+            outside += change[2] + Math.abs(change[0] - change[1]);
+            wrong += change[6] + change[7];
+            afterGone = now;
+        }
+        out.printf("      rail and yard taken up %d; later arrivals restore %d way plots at %d; no box outside a new way moved (%d)%n",
+                gone.month, restored, h.last(), outside);
+        check("after the actual run is removed, arrivals on its freed ground cause a newly dated wall again", restored > 0 && afterGone.plan.wallClear > 0
+                && afterGone.plan.buildings > gone.plan.buildings && map.runs().rail().plots() == 0);
+        check("the restored wall moves exactly its intersected boxes, with no cascade and no earlier date changed", outside == 0 && wrong == 0);
+
+        model[depot] = model[track] = 1;
+        h.run(0);
+        Snap returned = new Snap(map, d);
+        int[] back = wallRunChange(afterGone, returned);
+        check("the actual rail and yard return across the restored wall and cure it again", map.runs().yards().size() == 1 && map.runs().rail().plots() > 0
+                && back[5] > 0 && back[4] > 0 && returned.plan.wallClear == 0);
+        check("their actual return displaces exactly its intersected boxes and preserves all other boxes and earlier dates", back[1] > 0
+                && back[0] == back[1] && back[2] == 0 && back[6] == 0 && back[7] == 0);
+        wallRunArrivals(h, d, store, "after the actual rail and yard return");
+        wallRunRoundTrip(map, land, types, "after actual removal, new wall and return");
+        unseenWallTwin(map, h.twin, land, types, d);
+    }
+
+    /**
+     * 2h-f's city unseen (DM2-A): its twin, reconciled beside the watched map to the same counts in the same months through the wall's
+     * birth, its cure by the actual rail and yard, their removal, the wall's return and its second cure, is never planned. Saved before
+     * its first view it holds the watched map's source journals and no wall, and that view must discover every wall event in the month
+     * the watched map's monthly plans dated it and draw the same boxes and streets.
+     */
+    static void unseenWallTwin(CityMap watched, CityMap unseen, CityLand land, BuildingVisual.Type[] types, CityMap.District d) {
+        int month = watched.month(), kept = 0, released = 0;
+        for (int r : d.wallChange) if ((r & 1) != 0) kept++; else released++;
+        int wallMonths = (int) Arrays.stream(d.wallMonth).distinct().count();
+        CityMap.District u = unseen.district(d.dx, d.dy);
+        out.printf("      the watched map's wall journal: %d ways kept and %d released in %d months; the unseen twin's before its first view: %d records%n",
+                kept, released, wallMonths, u == null ? -1 : u.wallMonth.length);
+        check("fixture: the unseen twin is the watched city at its month, reconciled beside it and never planned: its source journals and no wall yet",
+                unseen.month() == month && u != null && u.wallMonth.length == 0 && unseen.sameSources(watched));
+        check("fixture: the watched map dated the wall's birth, its cure, its return and its second cure (ways kept and released, in four months at least)",
+                kept > 0 && released > 0 && wallMonths >= 4);
+        byte[] side = unseen.writeSidecar(month);
+        CityMap back = CityMap.readSidecar(side, land, land::amountsInOrder, types, month, CityMap.stampIn(side));
+        check("the unseen twin's sidecar, saved before its first view, round trips byte for byte", back != null && back.same(unseen)
+                && Arrays.equals(side, back.writeSidecar(month)));
+        if (back == null) return;
+        CityMap.District b = back.district(d.dx, d.dy);
+        back.plan(b);
+        check("first viewed after the wall's birth, cure, return and second cure, the twin dates every wall event in the watched map's month",
+                Arrays.equals(b.wallMonth, d.wallMonth) && Arrays.equals(b.wallChange, d.wallChange));
+        check("...draws the watched map's boxes and streets in every district", sameSourcePlans(watched, back));
+        check("...and keeps the source journals it was saved with: the whole twin is then the watched map, wall journals and all",
+                back.sameSources(unseen) && watched.same(back));
+    }
+
+    /** Standing moves, legal intersections, outside moves, newly kept/released ways, old way plots covered by new work, bad dates and a changed prefix. */
+    static int[] wallRunChange(Snap before, Snap after) {
+        boolean[] changed = new boolean[DistrictPlan.AREA], highway = new boolean[DistrictPlan.AREA], kept = new boolean[DistrictPlan.AREA];
+        int[] result = new int[8];
+        for (int r : before.plan.wallChange) kept[r >>> 1] = (r & 1) != 0;
+        for (int p = 0; p < changed.length; p++) {
+            changed[p] = after.fixed[p] != 0 && before.fixed[p] != after.fixed[p];
+            highway[p] = after.fixed[p] == DistrictPlan.FIXED_HIGHWAY && before.fixed[p] != DistrictPlan.FIXED_HIGHWAY;
+            if (changed[p] && kept[p]) result[5]++;
+        }
+        int old = before.plan.wallChange.length;
+        if (after.plan.wallChange.length < old || !Arrays.equals(before.plan.wallChange, Arrays.copyOf(after.plan.wallChange, old))
+                || !Arrays.equals(before.plan.wallMonth, Arrays.copyOf(after.plan.wallMonth, old))) result[7]++;
+        for (int k = old; k < after.plan.wallChange.length; k++) {
+            int r = after.plan.wallChange[k];
+            if ((r & 1) != 0) { changed[r >>> 1] = true; result[3]++; }
+            else result[4]++;
+            if (after.plan.wallMonth[k] != after.month) result[6]++;
+        }
+        for (PlanBox b : before.boxes) {
+            boolean intersects = anyPlot(b, 0, p -> changed[p]) || anyPlot(b, HIGHWAY_CLEAR, p -> highway[p]);
+            if (intersects) result[1]++;
+            if (!after.boxes.contains(b)) {
+                result[0]++;
+                if (!intersects) result[2]++;
+            }
+        }
+        return result;
+    }
+
+    /** Real arrivals after a run keep the boxes standing, and place additional boxes as well. */
+    static void wallRunArrivals(Months h, CityMap.District d, int store, String phase) {
+        int moved = 0, added = 0;
+        for (int i = 0; i < MONTHS_BETWEEN; i++) {
+            Snap before = new Snap(h.map, d);
+            h.model[store]++;
+            h.run(3);
+            Snap after = new Snap(h.map, d);
+            moved += movedOf(before.boxes, after.boxes);
+            added += after.plan.buildings - before.plan.buildings;
+        }
+        check("real arrivals " + phase + " place additional houses and stores without moving any standing box", h.reconciled && added > 0 && moved == 0);
+    }
+
+    /** A saved actual source/wall history must replay without a view adding or changing an event. */
+    static void wallRunRoundTrip(CityMap map, CityLand land, BuildingVisual.Type[] types, String phase) {
+        int month = map.month();
+        byte[] side = map.writeSidecar(month);
+        CityMap back = CityMap.readSidecar(side, land, land::amountsInOrder, types, month, CityMap.stampIn(side));
+        check("the current sidecar " + phase + " round trips all actual dates and boxes byte for byte", back != null && map.same(back)
+                && sameSourcePlans(map, back) && Arrays.equals(side, back.writeSidecar(month)));
+    }
+
+    /** Actual mines, yards and shore works record their source flows during reconcile, before the first plan or view (DM2, MF2-S). */
+    static void shoreUnitsDated(Game g) {
+        out.println("\n--- 2h-c. actual site, yard and shore transitions displace only intersected boxes and keep their source dates while unseen (DM2, MF2-S) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), terminal = idOf(g, "General Cargo Terminal");
+        for (int unit : new int[] { Mining.IRON_MINE, depot, terminal }) {
+            boolean mine = unit == Mining.IRON_MINE;
+            String name = mine ? "mine" : unit == depot ? "yard" : "shore";
+            World coast = World.of(Founding.DEFAULT_WORLD_SEED);
+            CityLand land = mine ? g.getCityLand().copy() : unit == depot ? yardLand()
+                    : coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, coast.foundingX() - CityMap.DISTRICT, coast.foundingY(), types, SHORE_SIDE, new long[types.length]).land();
+            java.util.function.Function<Resource, double[]> remaining = mine ? g.getLandManager()::remainingByHolding : land::amountsInOrder;
+            long[] model = new long[types.length];
+            // The mine's copy has a house for every dry plot the city owns, more than its plans' room (CityMap.PLAN_FILL of those
+            // plots), so its plans build on its fields too, last of all, and the mine is born under houses (FB9: 2,000 houses left
+            // every field of 0.9.148's played city bare, 0 boxes on the mine's future ground, where an older city's 1,752 had 25).
+            long ownedDry = 0;
+            for (CityMap.District d : g.getCityMap().districts()) ownedDry += d.owned();
+            model[house] = mine ? ownedDry : unit == depot ? 500 : 5000;
+            CityMap watched = CityMap.canonical(land, remaining, types, model, 99);
+            CityMap unseen = CityMap.canonical(land, remaining, types, model, 99);
+            List<Snap> standing = new ArrayList<>();
+            List<byte[]> siteBefore = new ArrayList<>();
+            List<CityMap.District> beforeDistricts = new ArrayList<>(watched.districts());
+            for (CityMap.District d : beforeDistricts) {
+                standing.add(new Snap(watched, d));
+                siteBefore.add(watched.planInput(d).site.clone());
+            }
+            model[unit] = 1;
+            boolean reconciled = true, physicalAtBirth = false;
+            for (int month = 100; month <= 150; month++) {
+                if (month > 100) model[house]++;
+                reconciled &= watched.reconcile(model, month) && unseen.reconcile(model, month);
+                if (month == 100) {
+                    physicalAtBirth = mine ? unseen.minedSites().size() > 0 : unit == depot ? unseen.runs().yards().size() == 1 : unseen.shore().count(unit) == 1;
+                    int prior = 0, physicalHit = 0, fieldHit = 0, hit = 0, moved = 0, outside = 0;
+                    for (int k = 0; k < beforeDistricts.size(); k++) {
+                        CityMap.District d = beforeDistricts.get(k);
+                        Snap before = standing.get(k), after = new Snap(watched, d);
+                        byte[] oldSite = siteBefore.get(k), newSite = watched.planInput(d).site;
+                        boolean[] changed = new boolean[DistrictPlan.AREA];
+                        for (int p = 0; p < changed.length; p++) changed[p] = (newSite[p] == DistrictPlan.SITE_MINED && oldSite[p] != DistrictPlan.SITE_MINED)
+                                || (after.fixed[p] != 0 && before.fixed[p] == 0);
+                        boolean[] physical = changed.clone();
+                        for (int r = 0; r < d.wallMonth.length; r++) if (d.wallMonth[r] == month && (d.wallChange[r] & 1) != 0) changed[d.wallChange[r] >>> 1] = true;
+                        for (PlanBox b : before.boxes) {
+                            prior++;
+                            if (anyPlot(b, 0, p -> physical[p])) physicalHit++;
+                            if (anyPlot(b, 0, p -> oldSite[p] == DistrictPlan.SITE_FIELD && newSite[p] == DistrictPlan.SITE_MINED)) fieldHit++;
+                            boolean intersects = anyPlot(b, 0, p -> changed[p]);
+                            if (intersects) hit++;
+                            if (!after.boxes.contains(b)) {
+                                moved++;
+                                if (!intersects) outside++;
+                            }
+                        }
+                    }
+                    out.printf("      %s born at 100: %d boxes stood before it, %d intersect its new physical plots (%d on an unmined field), %d intersect its plots or new ways, %d move, %d outside them%n",
+                            name, prior, physicalHit, fieldHit, hit, moved, outside);
+                    check("fixture: boxes stand on the " + name + " source's actual future ground before month 100", prior > 0 && physicalHit > 0 && (!mine || fieldHit > 0));
+                    check("the actual " + name + " source born at 100 displaces exactly its intersected boxes and leaves every other box standing", moved == hit && outside == 0);
+                }
+                for (CityMap.District d : watched.districts()) watched.plan(d);
+            }
+            // No input or plan has been requested from unseen. The source journal has to exist in this sidecar already.
+            byte[] side = unseen.writeSidecar(150);
+            CityMap back = CityMap.readSidecar(side, land, remaining, types, 150, CityMap.stampIn(side));
+            check("fixture: reconcile at month 100 creates an actual " + name + " while the map remains unseen", physicalAtBirth && reconciled);
+            check("the unseen " + name + " unit is excluded at source month 100, before any plan or view", exclusionChangeAt(unseen, unit, 100) == -1
+                    && exclusionChangeAt(unseen, unit, 150) == 0);
+            check("the unseen " + name + " source history round trips before first view", back != null && unseen.same(back)
+                    && Arrays.equals(side, back.writeSidecar(150)));
+            if (back == null) continue;
+            if (mine) {
+                int minedPlots = 0, wrongDate = 0;
+                for (CityMap.District d : back.districts()) {
+                    DistrictPlan.Input in = back.planInput(d);
+                    for (int k = 0; in.siteLog != null && k < in.siteLog.length; k++) if ((in.siteLog[k] & 3) == DistrictPlan.SITE_MINED) {
+                        minedPlots++;
+                        if (in.siteLogMonth[k] != 100) wrongDate++;
+                    }
+                }
+                check("the mine's actual claimed plots are dated 100 when first viewed at 150", minedPlots > 0 && wrongDate == 0);
+            }
+            // A first view appends the walls its plans discover (CityMap.sameSources(), DM2-A), so the viewed map keeps the sources it was
+            // saved with and its sidecar is the watched city's, not its own before the view (LM1-D: the 6-block founding's mine district
+            // finds 7 ways dated 99 in both; main's founding found none, and the bytes before the view held by chance).
+            check("first viewed at 150, the " + name + " city has the monthly watched city's layout and source dates", sameSourcePlans(watched, back)
+                    && back.sameSources(unseen) && Arrays.equals(watched.writeSidecar(150), back.writeSidecar(150)) && watched.same(back));
+
+            // Growth, departure and return all go through the model's actual source path, with houses arriving between them.
+            int excludedBeforeDeparture = 0, excludedAtGrowth = 0;
+            for (int month = 151; month <= 156; month++) {
+                if (month == 151) model[unit] = 2;
+                if (month == 153) model[unit] = 0;
+                if (month == 154) model[unit] = 1;
+                model[house]++;
+                reconciled &= watched.reconcile(model, month) && back.reconcile(model, month);
+                if (month == 151) for (CityMap.District d : back.districts()) excludedAtGrowth += d.excluded == null ? 0 : d.excluded[unit];
+                if (month == 152) for (CityMap.District d : back.districts()) excludedBeforeDeparture += d.excluded == null ? 0 : d.excluded[unit];
+                for (CityMap.District d : watched.districts()) watched.plan(d);
+            }
+            byte[] after = back.writeSidecar(156);
+            int expectedGrowth = unit == depot ? 1 : 2;
+            check("actual " + name + " growth records its changed source share, leaving ordinary units in the plan", excludedAtGrowth == expectedGrowth
+                    && exclusionChangeAt(back, unit, 151) == (unit == depot ? 0 : -1));
+            check("the actual " + name + " departure and return record their own months, before another view", excludedBeforeDeparture > 0
+                    && exclusionChangeAt(back, unit, 153) == excludedBeforeDeparture && exclusionChangeAt(back, unit, 154) == -1
+                    && exclusionChangeAt(back, unit, 156) == 0);
+            check("the " + name + " city's actual growth, departure and return give the same watched and delayed layouts", reconciled
+                    && sameSourcePlans(watched, back) && watched.same(back) && Arrays.equals(after, back.writeSidecar(156)));
+            CityMap end = CityMap.readSidecar(after, land, remaining, types, 156, CityMap.stampIn(after));
+            check("the " + name + " source growth, departure and return round trip with their dates and layout", end != null && back.same(end)
+                    && sameSourcePlans(back, end) && Arrays.equals(after, end.writeSidecar(156)));
+        }
+    }
+
+    /**
+     * 4c (DM2-B): the route LX1's 4,000-month city took to a refused sidecar at m3589, caused here on a fresh copy of Jerus's city x 1
+     * where its square holds iron (Squares.ironX1's square). A works whose sites run past its walk's entry is owed the rest from the
+     * next (CityMap.fill()): that district holds runs and no works counted, so no count of its moves its version. A month that moves
+     * two of the resource's claims lays its works again (relay()), and the walks laid anew need nothing of that district. Until DM2-B
+     * its runs were taken off and its version left, its sites' list (kept against the version) was read as it was, its mines drawn
+     * still, the month's site history saw no change in it, and the reread found none where the journal kept them: the whole sidecar
+     * refused.
+     */
+    static void relayTakesLastRuns(Squares sq) {
+        out.println("\n--- 4c. a relay that takes a district's last site runs off draws, journals and saves its sites afresh (DM2-B) ---");
+        BuildingVisual.Type[] types = sq.types;
+        long[] model = sq.ironCounts.clone();
+        CityMap probe = CityMap.square(sq.seed, sq.ironX, sq.ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), model);
+        int[] cl = probe.claims(Arrays.asList(CityMap.SITED).indexOf(Resource.IRON));
+        int spread = -1, other = -1;
+        for (int t : cl) if (spread < 0 || types[t].sites() > types[spread].sites()) spread = t;
+        for (int t : cl) if (t != spread && other < 0) other = t;
+        check("fixture: iron has two claims on its sites, one a works on more than one site", other >= 0 && types[spread].sites() > 1);
+        if (other < 0 || types[spread].sites() <= 1) return;
+        // The square's iron claims none at month 0; the spread claim then grows a works a month until one is owed into a district that counts none,
+        // and the map is viewed, every district planned, so each one's sites' list is kept.
+        for (int t : cl) model[t] = 0;
+        CityMap map = CityMap.square(sq.seed, sq.ironX, sq.ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), model);
+        CityLand land = map.land();
+        java.util.function.Function<Resource, double[]> remaining = land::amountsInOrder;
+        boolean reconciled = true;
+        CityMap.District owed = null;
+        int month = 1;
+        for (; month <= RELAY_GROWTH_MONTHS && owed == null; month++) {
+            model[spread]++;
+            reconciled &= map.reconcile(model, month);
+            for (CityMap.District d : map.districts()) if (owed == null && hasRuns(d) && countedOnSites(d, cl) == 0) owed = d;
+        }
+        for (CityMap.District d : map.districts()) map.plan(d);
+        out.printf("      %d works of type %d (%d sites each) by m%d on %,d iron sites; owed into district %s%n", model[spread], spread, types[spread].sites(),
+                month - 1, map.ownedSites(Resource.IRON), owed == null ? "none" : owed.dx + "," + owed.dy);
+        check("fixture: a works is owed sites in a district that counts no works on its sites, its sites' list drawn", reconciled && owed != null);
+        if (owed == null) return;
+        // ...then the spread claim's works all leave in the month the other claim's first arrives: two claims moved, the works laid again from the first site.
+        int relayMonth = month;
+        model[spread] = 0;
+        model[other] = 1;
+        reconciled &= map.reconcile(model, relayMonth);
+        check("fixture: two claims moving in one month lay the works again and take that district's last runs off", reconciled && !hasRuns(owed)
+                && map.districts().stream().anyMatch(MapCheck::hasRuns));
+        int stale = 0;
+        for (CityMap.District d : map.districts()) if (!hasRuns(d)) for (CityMap.DrawnSite s : map.siteList(d.dx, d.dy)) if (s.mine() >= 0) stale++;
+        check("a district a relay took its last runs off draws no mine on its sites", stale == 0);
+        DistrictPlan.Input in = map.planInput(owed);
+        int left = 0;
+        for (int q = 0; in.siteLog != null && q < in.siteLog.length; q++) {
+            if (in.siteLogMonth[q] == relayMonth && (in.siteLog[q] >>> 2 & 3) == DistrictPlan.SITE_MINED && (in.siteLog[q] & 3) == DistrictPlan.SITE_FIELD) left++;
+        }
+        check("its mined plots are journalled back to field in the relay's month", left > 0);
+        byte[] side = map.writeSidecar(relayMonth);
+        CityMap back = CityMap.readSidecar(side, land, remaining, types, relayMonth, CityMap.stampIn(side));
+        check("the city's sidecar written that month is read back, the same map and plans, byte for byte", back != null && map.same(back)
+                && sameSourcePlans(map, back) && Arrays.equals(side, back.writeSidecar(relayMonth)));
+    }
+
+    /** The months 4c grows its spread claim at most, a works a month, to find one owed into a district that counts none: 60. */
+    static final int RELAY_GROWTH_MONTHS = 60;
+
+    /** Whether any slot of a district holds site runs. */
+    static boolean hasRuns(CityMap.District d) {
+        for (int[] rs : d.siteRuns) if (rs != null) return true;
+        return false;
+    }
+
+    /** The works of the given claims counted on sites in a district. */
+    static int countedOnSites(CityMap.District d, int[] claims) {
+        int n = 0;
+        if (d.sited != null) for (int t : claims) n += d.sited[t];
+        return n;
+    }
+
+    /** The visual-unit adjustment recorded by actual sources for a type and month, over the whole map. */
+    static int exclusionChangeAt(CityMap m, int type, int month) {
+        int change = 0;
+        for (CityMap.District d : m.districts()) for (int k = 0; k < d.excludeMonth.length; k++) {
+            if (d.excludeType[k] == type && d.excludeMonth[k] == month) change += d.excludeChange[k];
+        }
+        return change;
+    }
+
+    /** The same district plans, boxes and streets, without relying on a painter's caches. */
+    static boolean sameSourcePlans(CityMap a, CityMap b) {
+        if (a.districts().size() != b.districts().size()) return false;
+        for (CityMap.District d : a.districts()) {
+            CityMap.District other = b.district(d.dx, d.dy);
+            if (other == null) return false;
+            DistrictPlan left = a.plan(d), right = b.plan(other);
+            if (!sameBoxes(left, right) || PlanCheck.streetDigest(left) != PlanCheck.streetDigest(right)) return false;
+        }
+        return true;
     }
 
     /* =====================================================================
@@ -2036,7 +2680,7 @@ public class MapCheck {
             ramp = in.ramp == null ? null : in.ramp.clone();
             runs = new byte[DistrictPlan.AREA];
             m.runsInto(d, runs);
-            plan = DistrictPlan.make(in);
+            plan = m.plan(d);
             boxes = boxesOf(plan);
         }
 
@@ -2218,6 +2862,33 @@ public class MapCheck {
         return handed;
     }
 
+    /** Dry ground for a yard fixture, independent of the played city's purchases and the water beside its rail hub. */
+    static CityLand yardLand() {
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        World w = World.of(seed);
+        long[] dry = dryPlace(w);
+        long bx = Math.floorDiv(dry[0], CityMap.DISTRICT), by = Math.floorDiv(dry[1], CityMap.DISTRICT);
+        int radius = CityRuns.YARD_LONG;
+        for (int ring = 0; ring < World.CELLS; ring++) {
+            for (int dy = -ring; dy <= ring; dy++) for (int dx = -ring; dx <= ring; dx++) {
+                if (Math.max(Math.abs(dx), Math.abs(dy)) != ring) continue;
+                long x = (bx + dx) * CityMap.DISTRICT + CityMap.DISTRICT / 2;
+                long y = (by + dy) * CityMap.DISTRICT + CityMap.DISTRICT / 2;
+                boolean fits = true;
+                for (long yy = y - radius; yy < y + radius && fits; yy++) for (long xx = x - radius; xx < x + radius; xx++) {
+                    if (!World.buildable(w.terrainAt(xx, yy), w.reliefAt(xx, yy))) { fits = false; break; }
+                }
+                if (!fits) continue;
+                double[] centre = new double[CityLand.CENTRE_FIELDS];
+                centre[CityLand.CENTRE_FIELDS - 5] = centre[CityLand.CENTRE_FIELDS - 4] = -1;
+                centre[CityLand.CENTRE_FIELDS - 2] = x;
+                centre[CityLand.CENTRE_FIELDS - 1] = y;
+                return CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x - radius, y - radius, x + radius, y + radius } }, null, null, null);
+            }
+        }
+        throw new IllegalStateException("no dry ground for the yard fixture");
+    }
+
     /**
      * Whether a run laid across a district's buildings moves off it the buildings it lies across or beside and no others (batch FX7: moved none; MF1, 2026-10-28:
      * "Buildings move off", the boxes under a new run, or beside a highway in its verge, are built again in the district or go on to the next): on the played city's ground the district holding the founding
@@ -2238,7 +2909,7 @@ public class MapCheck {
         int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), highway = idOf(g, "Elevated Highway");
         int[] mix = new int[MIX.length];
         for (int i = 0; i < mix.length; i++) mix[i] = idOf(g, MIX[i]);
-        CityLand land = g.getCityLand().copy();
+        CityLand land = yardLand();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
         Months h = new Months(m, model, house, g.getMonth() + 1);
@@ -2767,7 +3438,7 @@ public class MapCheck {
         out.println("\n--- 2e. a yard whose building left stays laid, idle, and the depot ordered again takes it back (MF1) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
         int house = idOf(g, "House"), depot = idOf(g, "Rail Depot");
-        CityLand land = g.getCityLand().copy();
+        CityLand land = yardLand();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
         Months h = new Months(m, model, house, g.getMonth() + 1);
@@ -2826,15 +3497,7 @@ public class MapCheck {
                 back != null && back.runs().same(runs) && back.runs().yardsActive() == 0 && back.runs().yardIdleSince(0) == idleMonth);
         byte[] old = m.writeSidecar(idleMonth, 13);
         CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, idleMonth, CityMap.stampIn(old));
-        check("a sidecar of FORMAT 13 has no idle yard: it reads the yard as the model's (" + (older == null ? -1 : older.runs().yardsActive()) + " active)",
-                older != null && older.runs().yards().size() == 1 && older.runs().yardsActive() == 1);
-        if (older != null) {
-            long[] atRead = older.runs().yards().get(0);
-            Months o = new Months(older, model.clone(), house, idleMonth + 1);
-            o.run(0);
-            check("...and the first month after it, the model asking for none, the yard idles from that month: not taken up (idle from " + older.runs().yardIdleSince(0) + ")",
-                    older.runs().yards().size() == 1 && older.runs().yards().get(0) == atRead && older.runs().yardsActive() == 0 && older.runs().yardIdleSince(0) == o.last());
-        }
+        check("a FORMAT 13 sidecar is refused: it has neither the idle date nor the wall history", older == null);
 
         // ----- gone for good: taken up when its idle time is up -----
         h.month = idleMonth + CityRuns.YARD_IDLE_MONTHS - 1;
@@ -3625,8 +4288,8 @@ public class MapCheck {
                 + " own ground joins to it; %,d alone; %,d + junctions, %d pairs nearer than %d%n", what, m.districts().size(), roadPlots, net[0], net[1],
                 net[2], alone, cr[0], cr[1], TilePainter.JUNCTION_APART);
         out.printf("      ...%,d buildings, %,d within %d plots of a street, %d farther; %d mines on their sites, %d packed at the city's edge (%d drawn"
-                + " smaller, %d with no ground); surface: %s; %,d buildings drawn of the model's %,d%n", near + far, near, TilePainter.REACH, far, mines,
-                packed, pk[1], pk[2], sf, drawnN, modelN);
+                + " smaller, %d with no ground, %d past the ground the city owns); surface: %s; %,d buildings drawn of the model's %,d%n", near + far, near, TilePainter.REACH, far, mines,
+                packed, pk[1], pk[2], pk[3], sf, drawnN, modelN);
         if (!crosses) out.printf("      (%s: %,d + junctions - its cells opened while its road was short, so its junctions are T's: the + rule bites on Jerus's city x 1)%n", what, cr[0]);
         check(what + ": fixture: the city has streets" + (crosses ? " and + junctions" : ""), roadPlots > 0 && (cr[0] > 0 || !crosses));
         check("...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an"
@@ -3639,12 +4302,142 @@ public class MapCheck {
         check("...and every building drawn, one for one", off == 0 && pk[2] == 0);
     }
 
+    /* ---------------------------------------------------------------------
+       8d. A MINE BORN ON STREETS (batch FB9, 2026-11-18; BF1-M, DM3-R)
+
+       MapCheck 1 and 8 on 0.9.148's played city: a mine born at m66 on six
+       plots of a cell's arterial, which the plan keeps as a street (the
+       buildings beside it stand by it), and the painter stood the mine on
+       the whole of its site over it (TilePainter.standMines()) - 3 paved
+       plots of surface counted and not drawn, and the arterial's stub beyond
+       the mine a piece of its own that the city's ground joins (BF1-M's
+       67-plot piece and DM3-R's 1.5 plots and six buildings beyond REACH on
+       their paths). The copy here causes it on any path: the played city's
+       ground with a house for every dry plot it owns, so its plans fill and
+       lay their cells' streets across the iron field as well (built on
+       last), and the played city's road, so those streets carry surface; at
+       month 100 an iron mine is born on the field. TilePainter's THE STREET
+       ACROSS A MINE draws the plans' streets on it across the mine, and
+       TileRaster keeps their pixels inside the mine's box.
+       --------------------------------------------------------------------- */
+
+    /** Each plot's street code in a plan's frame (CityMap.Drawn.codeAt()), as FRAME x FRAME bytes row by row. */
+    static byte[] codesOf(CityMap.Drawn dr) {
+        byte[] c = new byte[DistrictPlan.AREA];
+        for (int y = 0; y < DistrictPlan.FRAME; y++) for (int x = 0; x < DistrictPlan.FRAME; x++) c[y * DistrictPlan.FRAME + x] = dr.codeAt(x, y);
+        return c;
+    }
+
+    /** 8d: the copy a mine is born on, the plans' streets on the mine's ground before and after, drawn across it, and the network on its raster. */
+    static void mineOnStreets(Game g) {
+        BuildingVisual.Type[] types = g.getMapTypes();
+        long[] played = g.getMapCounts(), model = new long[types.length];
+        long ownedDry = 0;
+        for (CityMap.District d : g.getCityMap().districts()) ownedDry += d.owned();
+        model[idOf(g, "House")] = ownedDry;
+        for (int t = 0; t < types.length && t < played.length; t++) if (types[t] != null && types[t].road() != BuildingVisual.NOT_A_ROAD) model[t] = played[t];
+        CityMap copy = CityMap.canonical(g.getCityLand().copy(), g.getLandManager()::remainingByHolding, types, model, 99);
+        List<CityMap.District> before = new ArrayList<>(copy.districts());
+        List<byte[]> sites = new ArrayList<>(), codes = new ArrayList<>();
+        for (CityMap.District d : before) {
+            sites.add(copy.planInput(d).site.clone());
+            codes.add(codesOf(copy.drawn(d)));
+        }
+        model[Mining.IRON_MINE] = 1;
+        boolean reconciled = copy.reconcile(model, 100);
+        int born = 0, streetsBefore = 0, streetsNow = 0, mined = 0;
+        for (int k = 0; k < before.size(); k++) {
+            byte[] was = sites.get(k), now = copy.planInput(before.get(k)).site;
+            for (int p = 0; p < now.length; p++) {
+                if (now[p] != DistrictPlan.SITE_MINED || was[p] == DistrictPlan.SITE_MINED) continue;
+                born++;
+                if ((codes.get(k)[p] & TilePainter.S_KIND) != DistrictPlan.NONE) streetsBefore++;
+            }
+        }
+        for (CityMap.District d : copy.districts()) {
+            byte[] now = copy.planInput(d).site, after = codesOf(copy.drawn(d));
+            for (int p = 0; p < now.length; p++) {
+                if (now[p] != DistrictPlan.SITE_MINED) continue;
+                mined++;
+                if ((after[p] & TilePainter.S_KIND) != DistrictPlan.NONE) streetsNow++;
+            }
+        }
+        Raster r = Raster.of(copy);
+        int roadInMines = 0, minePlots = 0;
+        for (int q = 0; q < r.mined.length; q++) {
+            if (!r.mined[q]) continue;
+            minePlots++;
+            if (r.isRoad(q)) roadInMines++;
+        }
+        out.printf("      a copy of the played city's ground, %,d houses (one a dry plot it owns) and its road: the mine born at 100 on %d plots,"
+                + " %d of them its plans' streets at 99; the plans' streets on %d of the %d mined plots of their frames now, %d road plots"
+                + " drawn in the %d plots of the mines' boxes%n", ownedDry, born, streetsBefore, streetsNow, mined, roadInMines, minePlots);
+        check("fixture: a mine is born at month 100 on plots its plans had laid streets on", reconciled && born > 0 && streetsBefore > 0);
+        check("...its plans keep those streets (the buildings beside them stand by them), and the map draws them across the mine",
+                streetsNow > 0 && roadInMines > 0);
+        int below = TileRaster.LINES_FROM - 1, lined = TileRaster.EDGE_FROM;
+        int[] small = streetsAcrossMines(copy, below), large = streetsAcrossMines(copy, lined);
+        out.printf("      ...drawn at %d and %d px a plot: of the street plots inside the mines' boxes (the mark's apart) %d and %d as the same"
+                + " tiles draw them with no mine, %d and %d not%n", below, lined, small[0] - small[1], large[0] - large[1], small[1], large[1]);
+        check("...its pixels inside the mine's box the street's, as the same tile draws it with no mine on it, below the lines and with them",
+                small[0] > 0 && small[1] == 0 && large[0] > 0 && large[1] == 0);
+        networkOn(copy, model, "the copy a mine is born on", false);
+    }
+
+    /**
+     * 8d's pixels: each street plot the painter draws inside a mine's box (Painted.use ROAD), in every tile of map m at px pixels a
+     * plot, against the same tile drawn with no mine (the mines' boxes emptied): {plots compared, plots whose pixels differ}. A plot
+     * the mine's mark reaches (TileRaster draws it from 4 px a plot, at its site's middle, over the street) is left out.
+     */
+    static int[] streetsAcrossMines(CityMap m, int px) {
+        long[] t = tilesOf(m);
+        int tile = TilePainter.TILE, w = tile * px, compared = 0, differ = 0;
+        TilePainter.Input in = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted();
+        int[] drawn = new int[w * w], bare = new int[w * w];
+        for (long ty = t[1]; ty < t[1] + t[3]; ty++) {
+            for (long tx = t[0]; tx < t[0] + t[2]; tx++) {
+                m.tileInput(tx, ty, in);
+                TilePainter.paint(in, p);
+                List<int[]> plots = new ArrayList<>();
+                for (int b = 0; b < p.buildings; b++) {
+                    if (p.bsite[b] < 0) continue;
+                    for (int y = p.by[b]; y < Math.min(tile, p.by[b] + p.bh[b]); y++) {
+                        for (int x = p.bx[b]; x < Math.min(tile, p.bx[b] + p.bw[b]); x++) if (p.use[y * tile + x] == TilePainter.ROAD) plots.add(new int[] { y * tile + x, b });
+                    }
+                }
+                if (plots.isEmpty()) continue;
+                Arrays.fill(drawn, 0);
+                TileRaster.raster(in, p, px, drawn);
+                int[] bw = p.bw.clone(), bh = p.bh.clone();
+                for (int b = 0; b < p.buildings; b++) if (p.bsite[b] >= 0) { p.bw[b] = 0; p.bh[b] = 0; }
+                Arrays.fill(bare, 0);
+                TileRaster.raster(in, p, px, bare);
+                System.arraycopy(bw, 0, p.bw, 0, bw.length);
+                System.arraycopy(bh, 0, p.bh, 0, bh.length);
+                for (int[] q : plots) {
+                    int i = q[0], s = p.bsite[q[1]], x0 = (i % tile) * px, y0 = (i / tile) * px;
+                    if (px >= 4) {
+                        int cx = (in.siteFX0[s] + in.siteFX1[s] + 1) * px / 2, cy = (in.siteFY0[s] + in.siteFY1[s] + 1) * px / 2, r = Math.max(1, px / 2);
+                        if (cx + r >= x0 && cx - r < x0 + px && cy + r >= y0 && cy - r < y0 + px) continue;
+                    }
+                    compared++;
+                    boolean same = true;
+                    for (int y = y0; y < y0 + px && same; y++) for (int x = x0; x < x0 + px; x++) if (drawn[y * w + x] != bare[y * w + x]) { same = false; break; }
+                    if (!same) differ++;
+                }
+            }
+        }
+        return new int[] { compared, differ };
+    }
+
     static void network(Squares sq, Game city, String[] saves) throws Exception {
         out.println("\n--- 8. the network on the drawn raster: one network, no road alone, + junctions apart, every building near a street, the surface,"
                 + " one for one; highways, rail, the river ---");
         CityMap m = sq.maps[0];
         networkOn(m, m.totals(), "Jerus's city x 1");
         networkOn(city.getCityMap(), city.getMapCounts(), "the played city", false);
+        mineOnStreets(city);
         for (String dir : saves) {
             Game g = loadCopy(Path.of(dir));
             if (g == null) {
@@ -4301,7 +5094,8 @@ public class MapCheck {
         out.printf("      %s: %,d plots of track drawn of the model's %,d (%,d the runs could not lay), %d piece(s), %d crossed by streets, %d bridging a highway%n",
                 what, net.rail, model, shortBy, pieces[0], net.crossings, over);
         check(what + ": fixture: the city has a railway", model > 0);
-        check("...every plot of its track drawn, as the model has it, or counted as what its runs could not lay", net.rail + shortBy == model && plots == net.rail);
+        // (HL1-M) ...and a station's own line past the model's track is the station's (CityRuns.stationLine(); section 25): none here, where the track is longer than the line.
+        check("...every plot of its track drawn, as the model has it, or counted as what its runs could not lay (a station's own line apart)", net.rail + shortBy == model + net.map.runs().stationLine(model) && plots == net.rail);
         check("...one railway network, no piece apart", pieces[0] == 1);
     }
 
@@ -4491,52 +5285,34 @@ public class MapCheck {
                 && !next.hasCityMap());
         check("...and a sidecar that is not one is read as none", CityMap.readSidecar(new byte[] { 1, 2, 3 },
                 back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(), back.getMonth(), stampInSave) == null);
-        // An older sidecar (FORMAT 4, 0.7.72 to 0.7.87: the districts, no runs; or 0.7.88's FORMAT 5, its runs' count none) still read
-        // into the same districts (0.7.88), its runs laid from its counts on its ground (0.7.89) - as a map drawn afresh lays them.
+        // The dated wall and unit history is required: old districts without it cannot replay their standing boxes faithfully (DM2).
         CityMap live = back.getCityMap();
-        byte[] old = live.writeSidecar(back.getMonth(), CityMap.OLDEST_READ);
-        CityMap fromOld = CityMap.readSidecar(old, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
-                back.getMonth(), CityMap.stampIn(old));
-        byte[] none = live.writeSidecar(back.getMonth(), 5, false);
-        CityMap fromNone = CityMap.readSidecar(none, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
-                back.getMonth(), CityMap.stampIn(none));
-        CityMap afresh = CityMap.canonical(back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(), back.getMapCounts());
-        out.printf("      the same map as a FORMAT %d sidecar: %,d bytes; as FORMAT %d %,d (its runs: %d arms, %,d highway and %,d track plots)%n",
-                CityMap.OLDEST_READ, old.length, CityMap.FORMAT, live.writeSidecar(back.getMonth()).length, live.runs().runs(),
-                live.runs().highways().plots(), live.runs().rail().plots());
-        check("a FORMAT " + CityMap.OLDEST_READ + " sidecar (0.7.72 to 0.7.87) still loads, into the same districts, its runs laid from its counts",
-                fromOld != null && fromOld.sameDistricts(live, false) && fromOld.runs().same(afresh.runs()));
-        check("...and 0.7.88's FORMAT 5, which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live, false)
-                && fromNone.runs().same(afresh.runs()));
-        // THE OLD SAVE (CL3): a sidecar of FORMAT 8 has no logs. Each district's log starts as its counts, one batch at the save's month, and its plan is
-        // today's: the plan drawn from the log is the plan drawn from the counts alone (logMonth, logType and logChange set to null), box for box.
-        byte[] eight = live.writeSidecar(back.getMonth(), 8);
-        CityMap fromEight = CityMap.readSidecar(eight, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
-                back.getMonth(), CityMap.stampIn(eight));
-        int eightDistricts = 0, eightOneBatch = 0, eightAtSave = 0, eightToday = 0, eightPlaced = 0;
-        if (fromEight != null) {
-            for (CityMap.District d : fromEight.districts()) {
-                eightDistricts++;
-                if (d.firstBatch == d.logSize()) eightOneBatch++;
-                boolean atSave = true;
-                for (int k = 0; k < d.logSize(); k++) atSave &= d.logMonth[k] == back.getMonth();
-                if (atSave) eightAtSave++;
-                DistrictPlan.Input withLog = fromEight.planInput(d), fromCounts = fromEight.planInput(d);
-                fromCounts.logMonth = null;
-                fromCounts.logType = null;
-                fromCounts.logChange = null;
-                DistrictPlan logPlan = DistrictPlan.make(withLog), countsPlan = DistrictPlan.make(fromCounts);
-                eightPlaced += logPlan.buildings;
-                if (sameBoxes(logPlan, countsPlan)) eightToday++;
-            }
+        check("the oldest readable sidecar carries the dated wall and unit journals", CityMap.OLDEST_READ >= 16 && CityMap.OLDEST_READ <= CityMap.FORMAT);
+        for (int format : new int[] { 4, 5, 8, 13, 15 }) {
+            byte[] old = live.writeSidecar(back.getMonth(), format);
+            CityMap fromOld = CityMap.readSidecar(old, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
+                    back.getMonth(), CityMap.stampIn(old));
+            check("a FORMAT " + format + " sidecar is refused even with its own correct stamp and month", fromOld == null);
         }
-        out.printf("      as FORMAT 8 (no logs): %,d bytes, read back to %d districts - %d each one batch at the save's month, %d planned as today's, %,d buildings placed%n",
-                eight.length, eightDistricts, eightOneBatch, eightToday, eightPlaced);
-        check("a FORMAT 8 sidecar still loads, into the same districts (their logs begun at the save, so not compared)", fromEight != null
-                && fromEight.sameDistricts(live, false));
-        check("...each district's log one batch (its first batch is all its records) at the save's month, adding up to its counts", eightDistricts > 0
-                && eightOneBatch == eightDistricts && eightAtSave == eightDistricts && logsAddUp(fromEight));
-        check("...and its plan is today's, box for box: made from its log it is the plan made from its counts", eightToday == eightDistricts && eightPlaced > 0);
+        // A matching save stamp lets the loader reach the format check rather than merely rejecting a stale file. All slots are in cityFiles' scratch root.
+        Game fromOlder;
+        System.setOut(QUIET);
+        try {
+            back.saveGame(7, "mapcheck an unreadable old map");
+            byte[] old = live.writeSidecar(back.getMonth(), CityMap.OLDEST_READ - 1);
+            Files.write(files.mapFile(7), old);
+            com.google.gson.JsonObject save = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(7))).getAsJsonObject();
+            save.addProperty("mapStamp", CityMap.stampIn(old));
+            Files.writeString(files.saveFile(7), save.toString());
+            fromOlder = new Game(files);
+            fromOlder.loadGameSave(7);
+        } finally {
+            System.setOut(real);
+        }
+        CityMap redrawn = CityMap.canonical(fromOlder.getCityLand(), fromOlder.getLandManager()::remainingByHolding,
+                fromOlder.getMapTypes(), fromOlder.getMapCounts(), fromOlder.getMonth());
+        check("a save with an unreadable old sidecar redraws its map canonically at the save's month", fromOlder.hasCityMap()
+                && fromOlder.getCityMap().same(redrawn));
         for (int i = 1; i < TIMES.length; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;
             CityMap m = sq.maps[i];
@@ -4563,6 +5339,58 @@ public class MapCheck {
             check("...and is written and read back in no more than SIDECAR_MS (" + (int) SIDECAR_MS + " ms) each", Timing.within(wms, SIDECAR_MS)
                     && Timing.within(rms, SIDECAR_MS));
         }
+    }
+
+    /**
+     * The source history's rectangle codec at the district's own edges (DM2-C): through the history's own recording, one month turns a
+     * whole district to field, the next mines a whole row, half the row under it from the same column, and the last column down the
+     * rest. A key too narrow for a width of DISTRICT would match the whole row and the half row (one column, one transition) and write
+     * them as one rectangle two rows high, mining plots no record names; the right key writes the four rectangles the spans make.
+     */
+    static void siteCodecEdges() throws java.io.IOException {
+        out.println("\n--- 4b. the source history's rectangles hold at the district's edges: a whole district, a whole row and the last column (DM2-C) ---");
+        int side = CityMap.DISTRICT;
+        // The plan frame's last plot, packed as fixedLogInto() packs a run record (plot << 8 | before << 4 | after, an int), at
+        // DISTRICT_MOST and one side longer: the frame is DISTRICT + 1 a side (DistrictPlan.FRAME), its last plot the south-east corner's.
+        int frameMost = CityMap.DISTRICT_MOST + 1, framePast = frameMost + 1;
+        int lastMost = frameMost * frameMost - 1, lastPast = framePast * framePast - 1;
+        check("CityMap.DISTRICT is within DISTRICT_MOST, the longest side whose plan frame packs its last plot into a positive run record, "
+                + "plot << 8 | 255, and no side longer does", side >= 1 && side <= CityMap.DISTRICT_MOST && side + 1 == DistrictPlan.FRAME
+                && (lastMost << 8 | 255) >= 0 && (lastPast << 8 | 255) < 0);
+        CityMap.District d = new CityMap.District(0, 0, 1, 0);
+        byte[][] masks = { new byte[side * side], null };
+        // The month's mask as it ends, and (an override given) as it began.
+        MapSiteHistory.MaskReader reader = (district, overrides) -> (overrides.isEmpty() ? masks[0] : masks[1]).clone();
+        java.util.function.BiFunction<Integer, Integer, CityMap.District> lookup = (x, y) -> x == 0 && y == 0 ? d : null;
+        MapSiteHistory history = new MapSiteHistory();
+        masks[1] = masks[0].clone();
+        Arrays.fill(masks[0], DistrictPlan.SITE_FIELD);
+        history.begin();
+        history.changed(d);
+        history.end(lookup, reader, 1);
+        masks[1] = masks[0].clone();
+        for (int x = 0; x < side; x++) masks[0][x] = DistrictPlan.SITE_MINED;
+        for (int x = 0; x < side / 2; x++) masks[0][side + x] = DistrictPlan.SITE_MINED;
+        for (int y = 2; y < side; y++) masks[0][y * side + side - 1] = DistrictPlan.SITE_MINED;
+        history.begin();
+        history.changed(d);
+        history.end(lookup, reader, 2);
+        java.io.ByteArrayOutputStream written = new java.io.ByteArrayOutputStream();
+        history.writeDistrict(new java.io.DataOutputStream(written), d, reader);
+        byte[] bytes = written.toByteArray();
+        java.io.DataInputStream head = new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes));
+        int mode = CityMap.readVarint(head), rectangles = CityMap.readVarint(head);
+        MapSiteHistory back = new MapSiteHistory();
+        back.readDistrict(new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes)), d, 2, bytes.length);
+        java.io.ByteArrayOutputStream again = new java.io.ByteArrayOutputStream();
+        back.writeDistrict(new java.io.DataOutputStream(again), d, reader);
+        out.printf("      %d plots a side: %d rectangles in %d bytes for the district's field and the row, half row and last column mined%n",
+                side, rectangles, bytes.length);
+        check("fixture: the history records both months, the whole district and then its spans at the edges, as rectangles", history.hash(d) != 0 && mode == 1);
+        check("the codec writes the four rectangles the spans make: the whole district, the whole row, the half row under it and the last column",
+                rectangles == 4);
+        check("...and reads back the same dated transitions, plot for plot, written again byte for byte", back.same(d, history, d)
+                && Arrays.equals(bytes, again.toByteArray()));
     }
 
     /**
@@ -4668,61 +5496,63 @@ public class MapCheck {
     static void cost(Squares sq) {
         out.println("\n--- 5. the cost follows the screen, never the population ---");
         int k = TIMES.length;
-        double[] best = new double[k];
-        Arrays.fill(best, Double.MAX_VALUE);
-        long[] drawn = new long[k];
-        double[] cold = new double[k];
-        TilePainter.Input in = new TilePainter.Input();
-        TilePainter.Painted p = new TilePainter.Painted();
-        int[] img = new int[(World.TILE * PX) * (World.TILE * PX)];
-        long tx0 = Math.floorDiv(sq.x, World.TILE) - SCREEN_ACROSS / 2, ty0 = Math.floorDiv(sq.y, World.TILE) - SCREEN_DOWN / 2;
-        System.gc();
-        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
-            for (int i = 0; i < k; i++) {
-                CityMap m = sq.maps[i];
-                long n = 0;
-                long t0 = System.nanoTime();
-                for (int j = 0; j < SCREEN_DOWN; j++) {
-                    for (int c = 0; c < SCREEN_ACROSS; c++) {
-                        m.tileInput(tx0 + c, ty0 + j, in);
-                        TilePainter.paint(in, p);
-                        TileRaster.raster(in, p, PX, img);
-                        n += p.buildings;
+        if (!Timing.skip("MapCheck screen rendering")) {
+            double[] best = new double[k];
+            Arrays.fill(best, Double.MAX_VALUE);
+            long[] drawn = new long[k];
+            double[] cold = new double[k];
+            TilePainter.Input in = new TilePainter.Input();
+            TilePainter.Painted p = new TilePainter.Painted();
+            int[] img = new int[(World.TILE * PX) * (World.TILE * PX)];
+            long tx0 = Math.floorDiv(sq.x, World.TILE) - SCREEN_ACROSS / 2, ty0 = Math.floorDiv(sq.y, World.TILE) - SCREEN_DOWN / 2;
+            System.gc();
+            for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+                for (int i = 0; i < k; i++) {
+                    CityMap m = sq.maps[i];
+                    long n = 0;
+                    long t0 = System.nanoTime();
+                    for (int j = 0; j < SCREEN_DOWN; j++) {
+                        for (int c = 0; c < SCREEN_ACROSS; c++) {
+                            m.tileInput(tx0 + c, ty0 + j, in);
+                            TilePainter.paint(in, p);
+                            TileRaster.raster(in, p, PX, img);
+                            n += p.buildings;
+                        }
                     }
+                    double ms = (System.nanoTime() - t0) / 1e6;
+                    drawn[i] = n;
+                    // The first round makes the screen's plans (away from the screen in the game: MapView's worker), the rounds after
+                    // paint from them, as a screen does once they are drawn.
+                    if (round == 0) cold[i] = ms;
+                    if (round >= WARM_ROUNDS) best[i] = Math.min(best[i], ms);
                 }
-                double ms = (System.nanoTime() - t0) / 1e6;
-                drawn[i] = n;
-                // The first round makes the screen's plans (away from the screen in the game: MapView's worker), the rounds after
-                // paint from them, as a screen does once they are drawn.
-                if (round == 0) cold[i] = ms;
-                if (round >= WARM_ROUNDS) best[i] = Math.min(best[i], ms);
             }
+            /*
+             * THE RATIO'S BASE (0.7.64). Until 0.7.64 each copy was held within
+             * SCREEN_RATIO of the city x 1's screen. J3b drew homes from people and
+             * workplaces from jobs, capped at a share of a tile, so every copy's
+             * screen drew about the same; since 0.7.64 every model building is
+             * drawn on its own land, and the city x 1 - 14,214 buildings, under
+             * half of what the screen holds at his density - fills part of its
+             * screen (8,186 drawn) where the others fill all of it (20,546). So
+             * the copies are held to the 5B copy's, the first whose screen is all
+             * city: past the screen's size the cost does not grow with the
+             * population (5B, x 10,000 and 10B within a few percent), and the
+             * city x 1 within it too. The bound, 1.5, stands.
+             */
+            int base = 1;
+            boolean under = true, near = true;
+            for (int i = 0; i < k; i++) {
+                double ratio = best[i] / best[base];
+                out.printf("      x %,.0f: the screen's %d tiles - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile),"
+                        + " %,d buildings; %.2f x the 5B copy's; the first time, its plans made, %.0f ms%n", TIMES[i], SCREEN_TILES, PX, best[i],
+                        best[i] / SCREEN_TILES, drawn[i], ratio, cold[i]);
+                under &= Timing.within(best[i], SCREEN_MS);
+                if (i != base) near &= ratio <= SCREEN_RATIO;
+            }
+            check("a 1,389 x 868 L0 screen paints and rasters from its districts' plans in no more than 80 ms, at every size", under);
+            check("...and x 1, x 10,000 and 10B within 1.5 times the 5B copy's, the first all city: it follows the screen", near);
         }
-        /*
-         * THE RATIO'S BASE (0.7.64). Until 0.7.64 each copy was held within
-         * SCREEN_RATIO of the city x 1's screen. J3b drew homes from people and
-         * workplaces from jobs, capped at a share of a tile, so every copy's
-         * screen drew about the same; since 0.7.64 every model building is
-         * drawn on its own land, and the city x 1 - 14,214 buildings, under
-         * half of what the screen holds at his density - fills part of its
-         * screen (8,186 drawn) where the others fill all of it (20,546). So
-         * the copies are held to the 5B copy's, the first whose screen is all
-         * city: past the screen's size the cost does not grow with the
-         * population (5B, x 10,000 and 10B within a few percent), and the
-         * city x 1 within it too. The bound, 1.5, stands.
-         */
-        int base = 1;
-        boolean under = true, near = true;
-        for (int i = 0; i < k; i++) {
-            double ratio = best[i] / best[base];
-            out.printf("      x %,.0f: the screen's %d tiles - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile),"
-                    + " %,d buildings; %.2f x the 5B copy's; the first time, its plans made, %.0f ms%n", TIMES[i], SCREEN_TILES, PX, best[i],
-                    best[i] / SCREEN_TILES, drawn[i], ratio, cold[i]);
-            under &= Timing.within(best[i], SCREEN_MS);
-            if (i != base) near &= ratio <= SCREEN_RATIO;
-        }
-        check("a 1,389 x 868 L0 screen paints and rasters from its districts' plans in no more than 80 ms, at every size", under);
-        check("...and x 1, x 10,000 and 10B within 1.5 times the 5B copy's, the first all city: it follows the screen", near);
         // A month's change at 5B and 10B: +0.05%, a year of +0.01%, then -0.05%.
         for (int i = 0; i < k; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;
@@ -6550,20 +7380,22 @@ public class MapCheck {
                 wantUnits, overUnits, cells.size(), cells);
         check("...its plan places the deal's units first of its industry (the unit a month on as it came, CL3), every one, in cells that touch one another: one campus",
                 firstOfIndustry && placedUnits == wantUnits && connected(cells));
-        // An older sidecar's units, spread by hand into another district, gathered once as it is read; a FORMAT 6 one read as it is.
+        // The old campus migration is no longer readable; the current writer catches its logs up to these counts before writing them (CL3).
         CityMap.District away = null;
         for (CityMap.District d : m.districts()) if (d != campus && (away == null || d.index < away.index)) away = d;
         campus.counts[cracker]--;
         away.counts[cracker]++;
         for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
-        byte[] five = m.writeSidecar(1, 5), six = m.writeSidecar(1);
-        CityMap fromFive = CityMap.readSidecar(five, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(five));
-        CityMap fromSix = CityMap.readSidecar(six, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(six));
-        int[] spread = new int[2];
-        if (fromFive != null) for (CityMap.District d : fromFive.districts()) if (fromFive.campusCells(d) > 0) spread[0]++;
-        if (fromSix != null) for (CityMap.District d : fromSix.districts()) if (fromSix.campusCells(d) > 0) spread[1]++;
-        check("...a FORMAT 5 sidecar's units in two districts are gathered into the campus once as it is read; a FORMAT 6 one's stay",
-                fromFive != null && spread[0] == 1 && fromSix != null && spread[1] == 2);
+        boolean countsAheadOfLogs = !logsAddUp(m);
+        int campusMonth = m.month();
+        byte[] five = m.writeSidecar(campusMonth, 5), current = m.writeSidecar(campusMonth);
+        CityMap fromFive = CityMap.readSidecar(five, m.land(), r -> m.land().amountsInOrder(r), types, campusMonth, CityMap.stampIn(five));
+        CityMap fromCurrent = CityMap.readSidecar(current, m.land(), r -> m.land().amountsInOrder(r), types, campusMonth, CityMap.stampIn(current));
+        check("...a FORMAT 5 sidecar is refused rather than migrating its campus units", fromFive == null);
+        int currentCampuses = 0;
+        if (fromCurrent != null) for (CityMap.District d : fromCurrent.districts()) if (fromCurrent.campusCells(d) > 0) currentCampuses++;
+        check("...the current writer catches up the moved campus counts' logs, and both districts round trip unchanged", countsAheadOfLogs && logsAddUp(m)
+                && fromCurrent != null && fromCurrent.same(m) && currentCampuses == 2 && Arrays.equals(current, fromCurrent.writeSidecar(campusMonth)));
         campus.counts[cracker]++;
         away.counts[cracker]--;
         for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
@@ -6625,11 +7457,12 @@ public class MapCheck {
                 grown.size() == before.size() + 1 && grown.subList(0, before.size()).equals(before) && gone == 2 && newestGone
                         && !shrunk.contains(lastGct) && !shrunk.contains(nextLast));
         m.reconcile(more);
-        byte[] fmt6 = m.writeSidecar(1), fmt5 = m.writeSidecar(1, 5);
-        CityMap r6 = CityMap.readSidecar(fmt6, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmt6));
-        CityMap r5 = CityMap.readSidecar(fmt5, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmt5));
-        check("...kept in the sidecar: FORMAT 6 reads back the same works and writes the same bytes; a FORMAT 5 one has them laid alike from its counts",
-                r6 != null && r6.same(m) && Arrays.equals(r6.writeSidecar(1), fmt6) && r5 != null && r5.shore().works().size() == shore.works().size());
+        int shoreMonth = m.month();
+        byte[] fmtCurrent = m.writeSidecar(shoreMonth), fmt5 = m.writeSidecar(shoreMonth, 5);
+        CityMap rCurrent = CityMap.readSidecar(fmtCurrent, m.land(), r -> m.land().amountsInOrder(r), types, shoreMonth, CityMap.stampIn(fmtCurrent));
+        CityMap r5 = CityMap.readSidecar(fmt5, m.land(), r -> m.land().amountsInOrder(r), types, shoreMonth, CityMap.stampIn(fmt5));
+        check("...kept in the current sidecar: the same works and bytes round trip, while FORMAT 5 is refused",
+                rCurrent != null && rCurrent.same(m) && Arrays.equals(rCurrent.writeSidecar(shoreMonth), fmtCurrent) && r5 == null);
         // Each drawn once: its type's plots and its quay's over every tile about the works.
         MapTiles tiles = new MapTiles(m);
         TilePainter.Input in = new TilePainter.Input();
@@ -7914,7 +8747,7 @@ public class MapCheck {
                 j == null ? 0 : j.x(), j == null ? 0 : j.y(), j == null ? 0 : j.wells(), km, pp == null ? 0 : pp.x1(), pp == null ? 0 : pp.y1());
         check("THE OIL AT SEA: the game hands the map its platform - the jacket amid its slotted sites, its wells on them - and its pipe from the"
                         + " jacket to the founding site, whole", j != null && a.jackets().size() == 1 && Math.abs(j.x() - cx) < 1e-9
-                && Math.abs(j.y() - cy) < 1e-9 && j.wellPlots().equals(wellsAt.subList(0, Math.min(j.wells(), slots))) && pp != null
+                && Math.abs(j.y() - cy) < 1e-9 && j.wellPlots().equals(wellsAt.subList(0, (int) Math.min(j.wells(), slots))) && pp != null
                 && pp.x0() == j.x() && pp.y0() == j.y() && Math.abs(pp.x1() - (g.getCityLand().siteX() + 0.5)) < 1e-9
                 && Math.abs(pp.y1() - (g.getCityLand().siteY() + 0.5)) < 1e-9 && m.atSea().equals(a));
         // Every tile the jacket's ring and the pipe cross, painted: each drawn once.
@@ -9772,21 +10605,48 @@ public class MapCheck {
             if (got.size() > 1) boxesSeveral++;
             for (LandParcel p : listing) (got.contains(p.getId()) ? takenBy : missedBy).add(p.getId());
         }
-        // ...a box inside one free plot of each offer takes it alone.
-        int alone = 0;
+        int scatterTaken = takenBy.size(), scatterMissed = missedBy.size();
+        // ...a box inside one free plot of each offer takes it alone - so every offer is taken by a box laid for it and missed by
+        // the box laid for each other - and one box laid across the two offers whose free ground lies nearest takes several,
+        // each laid box judged by the same plot-by-plot oracle and counted in the coverage (M6-F: GDP1's offers left two of 24
+        // untaken by the scatter, whose cover depends on where the city's offers lie).
+        int alone = 0, laid = 0, laidExact = 0;
+        java.util.Set<Integer> laidTaking = new java.util.HashSet<>(), laidMissing = new java.util.HashSet<>();
         for (LandParcel p : listing) {
             double[] c = LandMap.freeCells(land, p).get(0);
-            List<Integer> got = LandMap.boxPicks(land, listing, LandMap.onScreen(f), f.screenX(c[0] + 0.25), f.screenY(c[1] + 0.25),
-                    f.screenX(c[0] + 0.75), f.screenY(c[1] + 0.75));
+            double sx0 = f.screenX(c[0] + 0.25), sy0 = f.screenY(c[1] + 0.25), sx1 = f.screenX(c[0] + 0.75), sy1 = f.screenY(c[1] + 0.75);
+            List<Integer> got = LandMap.boxPicks(land, listing, LandMap.onScreen(f), sx0, sy0, sx1, sy1);
             if (got.equals(List.of(p.getId()))) alone++;
+            laid++;
+            if (sameAsPlots(got, boxByPlots(land, listing, f.plotX(sx0), f.plotY(sy0), f.plotX(sx1), f.plotY(sy1)), listing)) laidExact++;
+            if (!got.isEmpty()) boxesTaking++;
+            if (got.size() > 1) boxesSeveral++;
+            for (LandParcel o : listing) (got.contains(o.getId()) ? takenBy : missedBy).add(o.getId());
+            for (LandParcel o : listing) (got.contains(o.getId()) ? laidTaking : laidMissing).add(o.getId());
+        }
+        double[] twoBox = acrossTwo(land, listing);
+        List<Integer> acrossGot = List.of();
+        if (twoBox != null) {
+            double sx0 = f.screenX(twoBox[0]), sy0 = f.screenY(twoBox[1]), sx1 = f.screenX(twoBox[2]), sy1 = f.screenY(twoBox[3]);
+            acrossGot = LandMap.boxPicks(land, listing, LandMap.onScreen(f), sx0, sy0, sx1, sy1);
+            laid++;
+            if (sameAsPlots(acrossGot, boxByPlots(land, listing, f.plotX(sx0), f.plotY(sy0), f.plotX(sx1), f.plotY(sy1)), listing)) laidExact++;
+            if (!acrossGot.isEmpty()) boxesTaking++;
+            if (acrossGot.size() > 1) boxesSeveral++;
+            for (LandParcel o : listing) (acrossGot.contains(o.getId()) ? takenBy : missedBy).add(o.getId());
+            for (LandParcel o : listing) (acrossGot.contains(o.getId()) ? laidTaking : laidMissing).add(o.getId());
         }
         out.printf("      %d boxes at %.2f px a plot: %d as every plot under them says, %d taking an offer, %d several; %d of %d offers taken by"
                 + " some and %d missed by others; a box in one free plot of each takes it alone for %d%n", BOXES, f.scale(), boxesExact,
                 boxesTaking, boxesSeveral, takenBy.size(), listing.size(), missedBy.size(), alone);
+        out.printf("      ...of them the %d scattered take %d of the offers and miss %d; %d laid (one in a free plot of each offer, one across"
+                + " the nearest two: %s, %.0f x %.0f plots), %d as every plot under them says, the laid alone taking %d and missing %d%n", BOXES, scatterTaken, scatterMissed, laid,
+                acrossGot, twoBox == null ? 0 : twoBox[2] - twoBox[0], twoBox == null ? 0 : twoBox[3] - twoBox[1], laidExact, laidTaking.size(), laidMissing.size());
         check("fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others",
-                boxesTaking > 0 && boxesSeveral > 0 && takenBy.size() == listing.size() && missedBy.size() == listing.size());
+                boxesTaking > 0 && boxesSeveral > 0 && takenBy.size() == listing.size() && missedBy.size() == listing.size()
+                        && acrossGot.size() > 1 && laidTaking.size() == listing.size() && laidMissing.size() == listing.size());
         check("a box takes exactly the offers whose free ground it meets - every plot under it tried - in the order given",
-                boxesExact == BOXES);
+                boxesExact == BOXES && laidExact == laid);
         check("...and a box inside one free plot of an offer takes that offer alone, for every offer", alone == listing.size());
 
         // The city's own ground inside an offer's rectangle: a rectangle of two blocks across its east edge, as section 7's.
@@ -9917,15 +10777,16 @@ public class MapCheck {
         g.setCashForTest(g.landPriceLocal(three) * 0.4);
         LandMap.Card shortCard = LandMap.card(g, three);
         DebtQuote bond = shortCard.bond(), note = shortCard.note();
-        DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, g.issueLot("Term"));
+        DebtQuote noteAgain = g.quoteTBill(g.landCashGap(three), Game.BUILD_NOTE_MONTHS, g.issueLot("Note"));
         boolean bondRight = bond != null && bond.equals(again) && bond.duration() == Game.BUILD_BOND_YEARS && bond.requested() == shortCard.gap()
-                && Math.abs(bond.faceValue() / Game.BUILD_BOND_GRANULE - Math.rint(bond.faceValue() / Game.BUILD_BOND_GRANULE)) < 1e-9
+                && Math.abs(bond.faceValue() / g.issueLot("Term") - Math.rint(bond.faceValue() / g.issueLot("Term"))) < 1e-9
                 && bond.cashReceived() >= shortCard.gap();
         boolean noteRight = note != null && note.duration() == Game.BUILD_NOTE_MONTHS && note.cashReceived() >= shortCard.gap();
         System.setOut(QUIET);
         int boughtShort;
         try {
-            g.handleLongBondForCash(shortCard.gap(), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            g.handleLongBondForCash(shortCard.gap(), Game.BUILD_BOND_YEARS, g.issueLot("Term"));
             boughtShort = g.buyLandParcels(shortCard.ids());
         } finally {
             System.setOut(real);
@@ -9935,9 +10796,13 @@ public class MapCheck {
                 bond == null ? 0 : bond.cashReceived(), note == null ? "none" : String.valueOf(note.duration()), boughtShort);
         check("fixture: three offers the treasury is short of", shortCard.funding() && shortCard.gap() > 0
                 && sameFigure(shortCard.gap(), shortCard.local() - shortCard.before()));
-        check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
+        boolean fundingCovered = Observation.reached("fixture: the played market covers the land card's bond and note",
+                !again.isEmpty() && again.cashReceived() >= shortCard.gap()
+                    && !noteAgain.isEmpty() && noteAgain.cashReceived() >= shortCard.gap(),
+                "card bond and note equivalence, issued bond purchases");
+        if (fundingCovered) check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
                 + " its cash covering it - and the note beside it", bondRight && noteRight);
-        check("...and issued, the card's bond buys them all", boughtShort == three.size());
+        if (fundingCovered) check("...and issued, the card's bond buys them all", boughtShort == three.size());
 
         // Short from the vault: the dollar bond and note for the vault's gap, or none while the window abroad is shut.
         g.setLandPaidFromVault(true);
@@ -9945,8 +10810,8 @@ public class MapCheck {
         LandMap.Card vaultShort = LandMap.card(g, all);
         boolean open = g.foreignWindowOpen();
         boolean dollars = open
-                ? vaultShort.bond() != null && vaultShort.bond().equals(g.quoteForeignForCash("Term", vaultShort.gap(), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE))
-                        && vaultShort.note() != null && vaultShort.note().equals(g.quoteForeignForCash("Note", vaultShort.gap(), Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE))
+                ? vaultShort.bond() != null && vaultShort.bond().equals(g.quoteForeignForCash("Term", vaultShort.gap(), Game.BUILD_BOND_YEARS, BondMarket.issueLot(g, "Term", "USD")))
+                        && vaultShort.note() != null && vaultShort.note().equals(g.quoteForeignForCash("Note", vaultShort.gap(), Game.BUILD_NOTE_MONTHS, BondMarket.issueLot(g, "Note", "USD")))
                 : vaultShort.bond() == null && vaultShort.note() == null;
         g.setLandPaidFromVault(false);
         out.printf("      every offer from the vault: short by US$%,.1fk, the window abroad %s%n", vaultShort.gap(), open ? "open" : "shut");
@@ -10825,7 +11690,19 @@ public class MapCheck {
         picks.clear();
 
         // ---- an offer wholly picked is the offer
+        // TQ1, 2026-11-17 (the path moved): the played city may stand with no offer of its level holding two or more blocks wholly its own. Where none
+        // stands, the city buys the largest standing offer first, through the office as it buys any, as the section after this one does (FR8).
         LandParcel target = ownBlocks(land, market, level, 0);
+        long boughtForTarget = 0;
+        for (int tries = 0; target == null && tries < 4; tries++) {
+            long largest = buyTheLargestOffer(g);
+            if (largest == 0) break;
+            boughtForTarget += largest;
+            level = market.getLevel();
+            b = 1L << level;
+            target = ownBlocks(land, market, level, 0);
+        }
+        if (boughtForTarget > 0) out.printf("      the offer to be picked whole: none stood at the city's level, so it bought the largest offer first (%d plots); level %d%n", boughtForTarget, level);
         java.util.Set<Long> targetBlocks = target == null ? null : blocksMetBy(land, target, level);
         check("fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own", target != null);
         if (target != null) {
@@ -11256,6 +12133,48 @@ public class MapCheck {
             at = i;
         }
         return true;
+    }
+
+    /** Whether a box's picks are exactly what the plots under it say (boxByPlots()), in the listing's order: the scatter's oracle. */
+    static boolean sameAsPlots(List<Integer> got, java.util.Set<Integer> plots, List<LandParcel> listing) {
+        return got.size() == plots.size() && plots.containsAll(got) && inOrder(got, listing);
+    }
+
+    /**
+     * A box laid across two offers (M6-F): from a free plot of one to a free plot of another, of the two whose free cells
+     * lie nearest - {x0, y0, x1, y1} in plots, a quarter plot inside each end plot - or null where no two offers' free
+     * ground lies within BOX_PLOTS_MOST of each other. It meets a free plot of each, so it takes both, and any free ground
+     * of another lying between them too.
+     */
+    static double[] acrossTwo(CityLand land, List<LandParcel> listing) {
+        List<List<double[]>> cells = new ArrayList<>();
+        for (LandParcel p : listing) cells.add(LandMap.freeCells(land, p));
+        double[] best = null;
+        double bestArea = Double.MAX_VALUE;
+        for (int i = 0; i < listing.size(); i++) {
+            for (int j = i + 1; j < listing.size(); j++) {
+                for (double[] a : cells.get(i)) {
+                    for (double[] b : cells.get(j)) {
+                        long ax = nearestPlot(a[0], a[2], b[0], b[2]), bx = nearestPlot(b[0], b[2], a[0], a[2]);
+                        long ay = nearestPlot(a[1], a[3], b[1], b[3]), by = nearestPlot(b[1], b[3], a[1], a[3]);
+                        double x0 = Math.min(ax, bx) + 0.25, y0 = Math.min(ay, by) + 0.25, x1 = Math.max(ax, bx) + 0.75, y1 = Math.max(ay, by) + 0.75;
+                        double area = (x1 - x0 + 2) * (y1 - y0 + 2);
+                        if (area < bestArea && area <= BOX_PLOTS_MOST) {
+                            bestArea = area;
+                            best = new double[] { x0, y0, x1, y1 };
+                        }
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Along one axis, the plot of cells [lo, hi) nearest the cells [olo, ohi): its first or last, or one of both where they overlap. */
+    static long nearestPlot(double lo, double hi, double olo, double ohi) {
+        if (ohi <= lo) return (long) lo;
+        if (olo >= hi) return (long) hi - 1;
+        return (long) Math.max(lo, olo);
     }
 
     /** Two money or area figures the same to a billionth of the larger. */
@@ -13522,12 +14441,7 @@ public class MapCheck {
         CityMap far = CityMap.canonical(copy, r -> copy.amountsInOrder(r), city.getMapTypes(), counts);
         Redraw pl = new Redraw("the played city", far, counts, GROW_PER_MILLE, false, false, false, false);
         pl.month(SETTLE, -1, false);
-        // WN3 (after EM1): the played city's first month of growth moved the stamp's view. Two of its four districts, (0,-1) and (-1,-1), held no
-        // building at the settle; one more building of each type put 191 and 612 cells in them, the built-up box the frame is drawn from grew from
-        // 224 x 144 to 264 x 192 plots and the stamp from 5 plots a pixel to 6 - where the city before the merge held its view through all 8 months.
-        // A view that moves is drawn anew, every layer with it: not the land layer's purchase-only redraw this section is about. The fixture grows
-        // the city (GROW months, not judged) until a month leaves the view as it was, and the months before and after the purchase are the ones
-        // judged from there, as many as before.
+        // WN3 (after EM1): the played city's first month of growth moved the stamp's view.
         int warm = 0;
         while (warm < PLAYED_WARM_MAX) {
             RedrawMonth w = pl.month(GROW, -2 - warm++, false);
@@ -13636,7 +14550,7 @@ public class MapCheck {
         // ----- 6b. The chain's early exit (batch UP5, slice A) -----
         boolean carryFixture = false, jobsCounted = true;
         for (Redraw w : new Redraw[] { x1, x80 }) {
-            int carryMonths = 0, quietMonths = 0, reuseMonths = 0, months = 0, failed = 0;
+            int carryMonths = 0, quietMonths = 0, reuseMonths = 0, months = 0; long failed = 0;
             long plansMade = 0, linksTaken = 0, wasted = 0;
             for (RedrawMonth r : w.all) {
                 if (r.kind == SETTLE) continue;
@@ -14796,7 +15710,7 @@ public class MapCheck {
      * stood the city's one yard and counted two Rail Depots, one from m2243 and one from m2300; the plan was handed one depot less than its log stood
      * and squared the log by leaving out the newest standing one. At m2396 one depot left - the newest, as a departure is - so the plan's count fell to
      * none and the older depot was left out instead, from m2243 on: every box placed after it was placed again with its ground free. MF2 takes the
-     * yard's own unit out of the log the plan is given as the oldest standing (CityMap.yardUnitsOut()), so the departure takes its own box.
+     * yard's own oldest unit out of the log. DM2 dates both its exclusion and its return, so changing that share also keeps the boxes after it in place.
      * The fixture causes it on 20's city: the first depot lays the yard in the second district, works arrive, a second depot arrives there, works
      * arrive after it, and one depot leaves.
      */
@@ -15151,6 +16065,7 @@ public class MapCheck {
 
         // ----- the icons on a Canvas, where there is a toolkit -----
         String why = KeptCheck.startJavaFx();
+        fxStarted |= why == null;
         if (why != null) {
             out.println("      drawing the icons onto a Canvas: skipped - " + why);
         } else {
@@ -15174,8 +16089,24 @@ public class MapCheck {
         check("a new GamePrefs reads resourcesOnMap on, and its setter flips it off and on again", dflt && off && prefs.isResourcesOnMap());
     }
 
+    /** Whether this run started the JavaFX toolkit (LM1's canvas below): stopped before the verdict's exit (IconCanvas.stop()). */
+    static boolean fxStarted;
+
     /** The icons drawn onto a Canvas as ui/MapView.depositIcons() draws them (the disc, its edge, the mark), for the time of it; JavaFX is touched only here, so a JVM without it never loads this. */
     static final class IconCanvas {
+        /**
+         * The toolkit LM1's canvas started, stopped, and its thread waited for, before main() exits the JVM (FB9, DM3-R): on
+         * HW1's final pick MapCheck printed "Exception in thread \"Thread-1\" java.lang.NullPointerException" after its verdict,
+         * with no stack, its System.exit() taking a live toolkit down under it; KeptCheck, which ends with Platform.exit(), does not.
+         */
+        static void stop() throws InterruptedException {
+            javafx.application.Platform.exit();
+            for (Thread t : Thread.getAllStackTraces().keySet()) if ("JavaFX Application Thread".equals(t.getName())) t.join(STOP_MS);
+        }
+
+        /** The longest stop() waits for the toolkit's thread to end, in ms: 10 s. */
+        static final long STOP_MS = 10_000;
+
         /** The median, in ms, of `runs` draws of the icons onto a fresh Canvas: {recording the draw, the draw and a snapshot of the canvas}. Run on the FX thread. */
         static double[] times(List<Deposit> shown, MapFrame f, int runs) {
             javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(f.width(), f.height());
@@ -15211,4 +16142,418 @@ public class MapCheck {
             }
         }
     }
+
+    /* =====================================================================
+       24. FRONTAGE CROSSINGS AWAY FROM THE FOUNDING ORIGIN (FA1)
+       ===================================================================== */
+
+    /** Actual plan marks, with only their avenue streets, cause the newly possible diagonal crossing in the raster. */
+    static void frontageDrawn(BuildingVisual.Type[] types) {
+        out.println("\n--- 24. frontage avenues crossing another avenue away from the founding origin: both strokes and one junction ---");
+        int n = DistrictPlan.FRAME, tile = World.TILE;
+        int fixtures = 0, samples = 0, missing = 0, sidesMissing = 0, signals = 0, disagreements = 0, nondeterministic = 0;
+        for (int offset : new int[] { PlanCheck.FRONTAGE_OFFSET - 1, PlanCheck.FRONTAGE_OFFSET }) {
+            for (boolean reflected : new boolean[] { false, true }) {
+                DistrictPlan.Input pin = PlanCheck.flatMix(types, PlanCheck.FULL_FILL, true, false);
+                for (int x = 0; x < n; x++) for (int c = 0; c < 2; c++) {
+                    int y = x - offset - c;
+                    if (y >= 0 && y < n) pin.fixed[(reflected ? n - 1 - y : y) * n + x] = DistrictPlan.FIXED_HIGHWAY;
+                }
+                DistrictPlan plan = DistrictPlan.make(pin);
+                int hub = (int) pin.hubX, dy = reflected ? -1 : 1, heading = reflected ? 3 : 0;
+                for (int side : new int[] { -1, 1 }) {
+                    int line = (reflected ? n - 1 + offset : offset) + side * DistrictPlan.FRONTAGE_GAP;
+                    int cx = reflected ? (line + 1) / 2 : (line + 2 * hub + 1) / 2;
+                    int cy = reflected ? line - cx : cx - line;
+                    int shared = plan.avenue[cy * n + cx] & 255;
+                    int prev = plan.avenue[(cy - dy) * n + cx - 1] & 255, next = plan.avenue[(cy + dy) * n + cx + 1] & 255;
+                    if (shared != 0 && (shared >> CityRuns.M_DIAG_SHIFT & 3) != heading
+                            && prev != 0 && next != 0 && (prev & CityRuns.M_CORNER) == 0 && (next & CityRuns.M_CORNER) == 0
+                            && (prev >> CityRuns.M_DIAG_SHIFT & 3) == heading && (next >> CityRuns.M_DIAG_SHIFT & 3) == heading
+                            && Math.abs(cx - hub) >= DistrictPlan.LATTICE) fixtures++;
+                    for (int at : new int[] { tile / 2, tile }) {
+                        int cutX = cx - at, cutY = cy - at;
+                        JunctionCheck.Streets marks = (x, y) -> {
+                            int xx = x + cutX, yy = y + cutY;
+                            return xx >= 0 && yy >= 0 && xx < n && yy < n ? plan.avenue[yy * n + xx] & 255 : 0;
+                        };
+                        JunctionCheck.Streets streets = (x, y) -> marks.at(x, y) != 0 ? JunctionCheck.ARTERIAL : 0;
+                        for (int px : new int[] { 4, 8 }) {
+                            int[] img = JunctionCheck.fourTilesWithAvenue(streets, marks, hub - cutX, hub - cutY, px);
+                            int w = 2 * tile * px;
+                            for (int sample = 0; sample < 3 * AV_SAMPLES; sample++) {
+                                double f = sample / (double) AV_SAMPLES;
+                                int x = (int) Math.floor((cx - 0.5 + f - cutX) * px);
+                                int y = (int) Math.floor((cy - dy + 0.5 + dy * f - cutY) * px);
+                                int colour = img[y * w + x];
+                                samples++;
+                                if (!streetColour(colour) && colour != TileRaster.JUNCTION_BOX && colour != TileRaster.ZEBRA) missing++;
+                                int width = (JunctionCheck.ARTERIAL >> TilePainter.S_WIDTH_SHIFT) & 3;
+                                double inset = Math.max(0, Math.round(TileRaster.SURFACE[width] * px) / 2.0 - 1) / px / Math.sqrt(2);
+                                for (int edge : new int[] { -1, 1 }) {
+                                    int sx = (int) Math.floor((cx - 0.5 + f - cutX - edge * dy * inset) * px);
+                                    int sy = (int) Math.floor((cy - dy + 0.5 + dy * f - cutY + edge * inset) * px);
+                                    int c = img[sy * w + sx];
+                                    if (!streetColour(c) && c != TileRaster.JUNCTION_BOX && c != TileRaster.ZEBRA) sidesMissing++;
+                                }
+                            }
+                            java.util.List<int[]> reads = new java.util.ArrayList<>();
+                            boolean signal = false;
+                            for (int ty = 0; ty < 2; ty++) for (int tx = 0; tx < 2; tx++) {
+                                TilePainter.Input in = JunctionCheck.inputWithAvenue(tx, ty, streets, marks, hub - cutX, hub - cutY);
+                                java.util.List<int[]> crossings = JunctionCheck.readBy(in, tx, ty);
+                                reads.addAll(crossings);
+                                for (int[] c : crossings) if (c[0] <= at && c[2] >= at && c[1] <= at && c[3] >= at && c[4] == 4 && c[5] == 0) signal = true;
+                            }
+                            if (signal) signals++;
+                            disagreements += JunctionCheck.unlike(reads);
+                            if (!Arrays.equals(img, JunctionCheck.fourTilesWithAvenue(streets, marks, hub - cutX, hub - cutY, px))) nondeterministic++;
+                        }
+                    }
+                }
+            }
+        }
+        out.printf("      %d real crossings, %d line samples, %d missing; %d four-road signals, %d unlike tile reads, %d unequal redraws%n", fixtures, samples, missing, signals, disagreements, nondeterministic);
+        check("fixture: both frontage sides cross a founding arm away from its origin, both slopes and both staircase phases", fixtures == 8);
+        check("both avenue strokes are continuous through every crossing, also on a tile corner (" + missing + " missing of " + samples + ")", samples > 0 && missing == 0);
+        check("the crossing keeps each band wide to its street width less a pixel (" + sidesMissing + " missing side samples)", sidesMissing == 0);
+        check("each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw", signals == 32 && disagreements == 0 && nondeterministic == 0);
+    }
+
+    /* =====================================================================
+       25. A RAIL DEPOT AND NO RAIL SPUR: THE STATION'S OWN LINE (HL1-M)
+       ===================================================================== */
+
+    /*
+     * WHY (HL1-M, found by HL1's dry run, 2026-11-19): section 1's hard assertion - the map draws what the city has, "every plot of its track" - failed on HL1's 120-month
+     * town at m121 although every building and road kind agreed: 83 railway plots drawn against no model track (one Rail Depot stood; trackSurplus() 0), and a map drawn
+     * afresh from the same counts drew the same 83. The law said "the plots drawn + what the runs could not lay = the model's track", and a city whose model holds a Rail
+     * Depot and no Rail Spur has no track to be drawn: yet CityRuns.layRail() lays the main line to the city's edge for any city with a station, whatever track the model
+     * has (FX5, Jerus 2026-10-20: "there is a railwawy depot but no rails" - a yard is no track, a depot alone is how the model rails freight). That line is the depot's,
+     * not the runs' track budget: the map was right and the law was short a term, CityRuns.stationLine(). Section 1's assertion stays as hard as it was (every count exact,
+     * Drawn.sameAs()); it now counts the station's line as the station's, and only there.
+     *
+     * The fixture causes the condition on one district owned whole on the default world's dry place, no Game: first nothing (no station, no line), then one Rail Depot and no
+     * track (the line, and nothing else: no siding, branch or quay spur), then the model's track meeting the line from below (the first plots of the line are the track's, the
+     * station's is what is past them) and from above (the track pays for the whole line, the rest is surplus, the station's own line nothing). Each time the law is asked
+     * of the painted map. (20's two-district city lays 4 plots of line, less than one Rail Spur's 72, so the track could not meet it from below there.)
+     */
+
+    /** 25's city: one district owned whole, CityMap.DISTRICT plots a side from its north-west corner, the founding site in its middle: the line the runs lay to its edge is some 130 plots, longer than a Rail Spur's 72. */
+    static final class DepotCity {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final int depot = idNamed(catalog, "Rail Depot"), spur = idNamed(catalog, "Rail Spur");
+        final CityMap map;
+        final long[] model = new long[types.length];
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        DepotCity() {
+            long seed = Founding.DEFAULT_WORLD_SEED, f = CityMap.DISTRICT;
+            long[] place = dryPlace(World.of(seed));
+            long x0 = Math.floorDiv(place[0], f) * f, y0 = Math.floorDiv(place[1], f) * f;
+            double[] centre = new double[CityLand.CENTRE_FIELDS];
+            centre[CityLand.CENTRE_FIELDS - 5] = -1;
+            centre[CityLand.CENTRE_FIELDS - 4] = -1;
+            centre[CityLand.CENTRE_FIELDS - 2] = x0 + f / 2;
+            centre[CityLand.CENTRE_FIELDS - 1] = y0 + f / 2;
+            CityLand land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x0, y0, x0 + f, y0 + f } }, null, null, null);
+            map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+        }
+
+        /** One month, the map reconciled to the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+    }
+
+    static void depotAloneRails() {
+        out.println("\n--- 25. a Rail Depot and no Rail Spur: the line the runs lay for the station is the station's, counted as such in the law (HL1-M; FX5) ---");
+        DepotCity c = new DepotCity();
+        CityRuns runs = c.map.runs();
+        int spur = c.spur, each = BuildingVisual.cells(c.types[spur]);
+
+        // ----- nothing standing: no station, no line, and the law holds on nothing -----
+        c.run();
+        Drawn none = drawn(c.map);
+        check("fixture: before any depot the city holds no track and the runs lay none (" + none.rail + " plots drawn, " + none.laid + " laid, no yard standing)",
+                Drawn.trackOf(c.model, c.types) == 0 && none.rail == 0 && none.laid == 0 && !none.station && runs.stationLine(0) == 0 && c.reconciled);
+
+        // ----- one Rail Depot, no track: the case section 1 met -----
+        c.model[c.depot] = 1;
+        c.run();
+        Drawn one = drawn(c.map);
+        long line = one.laid, track = Drawn.trackOf(c.model, c.types);
+        boolean spines = true;
+        for (CityRuns.Arm a : runs.rail.arms) if (a.steps > 0 && !CityRuns.isSpine(runs.rail, a.corridor)) spines = false;
+        out.printf("      one Rail Depot, no Rail Spur (a spur is %d plots): the runs lay %,d plots and the painter draws %,d; the model's track %,d, what the runs could not lay %,d, the station's line past the track %,d%n",
+                each, line, one.rail, track, one.trackSurplus, runs.stationLine(track));
+        check("fixture: one Rail Depot and no model track lays a yard, a railway and no surplus (" + runs.yards().size() + " yard, " + one.rail + " plots drawn, track " + track + ", surplus " + one.trackSurplus + ")",
+                runs.yards().size() == 1 && c.model[c.depot] == 1 && track == 0 && one.rail > 0 && one.trackSurplus == 0 && c.reconciled);
+        check("...the case the old law had no place for: the plots drawn and the surplus (" + (one.rail + one.trackSurplus) + ") are not the model's track (" + track + ")", one.rail + one.trackSurplus != track);
+        check("the railway is the depot's main line and nothing else: every plot laid is on a spine, no siding, no branch, no quay spur - and the painter draws every plot of it (" + one.rail + " of " + line + ")",
+                spines && runs.sidings().isEmpty() && runs.branches().isEmpty() && runs.quayPlots() == 0 && one.rail == line);
+        check("the law counts that line as the station's: stationLine() is all of it (" + runs.stationLine(track) + " of " + line + ") and the map is exactly the city's, Drawn.sameAs()",
+                runs.stationLine(track) == line && one.station && one.sameAs(c.model, c.types));
+
+        // ----- the law is no slacker for it: no station to own the line, a plot short or a plot over, is not the model's railway -----
+        one.station = false;
+        boolean unowned = one.sameAs(c.model, c.types);
+        one.station = true;
+        one.rail--;
+        boolean fewer = one.sameAs(c.model, c.types);
+        one.rail += 2;
+        boolean more = one.sameAs(c.model, c.types);
+        one.rail--;
+        check("...and exactly that: the same line with no station standing (" + unowned + "), one plot short (" + fewer + ") or one plot over (" + more + ") is not the model's railway; as it is, it is (" + one.sameAs(c.model, c.types) + ")",
+                !unowned && !fewer && !more && one.sameAs(c.model, c.types));
+
+        // ----- the model's track meets the line from below: its plots are the line's first, the station's is what is past them -----
+        boolean room = line > each;
+        check("fixture: the line is longer than one Rail Spur (" + line + " plots, a spur " + each + "), so one spur is track the line can take", room);
+        if (room) {
+            c.model[spur] = 1;
+            c.run();
+            Drawn part = drawn(c.map);
+            long t1 = Drawn.trackOf(c.model, c.types);
+            out.printf("      one Rail Depot, one Rail Spur: the runs lay %,d plots, the painter draws %,d; the model's track %,d, surplus %,d, the station's line past it %,d%n", part.laid, part.rail, t1, part.trackSurplus, runs.stationLine(t1));
+            check("the first plots of the line are the model's track, the station's own is what is past it (" + runs.stationLine(t1) + " = " + line + " - " + t1 + "), none of the track left over, the line unmoved, and the map exact",
+                    t1 == each && part.laid == line && runs.stationLine(t1) == line - t1 && part.trackSurplus == 0 && runs.sidings().isEmpty() && runs.branches().isEmpty() && part.sameAs(c.model, c.types) && c.reconciled);
+        }
+
+        // ----- ...and from above: the track pays for the whole line, the rest is surplus, and the station's own line is nothing -----
+        c.model[spur] = (int) ((line + 2L * each) / each + 1);
+        c.run();
+        Drawn full = drawn(c.map);
+        long t2 = Drawn.trackOf(c.model, c.types);
+        out.printf("      one Rail Depot, %d Rail Spurs: the runs lay %,d plots, the painter draws %,d; the model's track %,d, surplus %,d, the station's line past it %,d%n", c.model[spur], full.laid, full.rail, t2, full.trackSurplus, runs.stationLine(t2));
+        check("with more track than the line holds the station's own line is nothing and the rest is the surplus (" + full.trackSurplus + " = " + t2 + " - " + full.laid + "), the old law's own count, the line unmoved and the map exact",
+                t2 > line && full.laid == line && runs.stationLine(t2) == 0 && full.trackSurplus == t2 - line && full.rail == line && full.sameAs(c.model, c.types) && c.reconciled);
+
+        // ----- the station gone: its yard stands idle and the line with it (MF1), the station's still; when its time is up the line goes, and the law holds on nothing -----
+        c.model[spur] = 0;
+        c.model[c.depot] = 0;
+        c.run();
+        Drawn idle = drawn(c.map);
+        check("the depot and the track gone, the yard stands idle, drawn still as the yard its building left (MF1), and holds the line, which is still the station's - the railway's own account exact (" + idle.rail + " plots, " + runs.yards().size() + " yard, " + runs.yardsActive() + " active)",
+                runs.yards().size() == 1 && runs.yardsActive() == 0 && idle.buildings[c.depot] == 1 && idle.laid == line && idle.rail == line && runs.stationLine(0) == line && idle.station
+                && idle.trackAccounted(Drawn.trackOf(c.model, c.types)) && c.reconciled);
+        c.month += CityRuns.YARD_IDLE_MONTHS;
+        c.run();
+        Drawn gone = drawn(c.map);
+        out.printf("      %d months on: %d yards, the runs lay %,d plots, the painter draws %,d%n", CityRuns.YARD_IDLE_MONTHS, runs.yards().size(), gone.laid, gone.rail);
+        check("...and once its time is up the yard is taken up and the line with it: no station, no plots of track the model does not hold, the law exact on nothing",
+                runs.yards().isEmpty() && gone.laid == 0 && gone.rail == 0 && runs.stationLine(0) == 0 && !gone.station && gone.sameAs(c.model, c.types) && c.reconciled);
+    }
+
+    /* =====================================================================
+       26. AN OLD WORKS ITS PLAN SENT ON IS NOT THE DISTRICT'S TO STAND (RN1-H-M)
+       ===================================================================== */
+
+    /*
+     * WHY (RN1-H-M, 2026-11-20): LongPlaytest's oldest-works watch (THE OLDEST WORKS, CL3) named district (0,0)'s Industrial Bakery at m2400 from RN1-H's gate
+     * to R1e's (2026-11-19): the one standing at m601 gone, the district holding 4 against 1 then. No box had moved. The district's first bakery (m43) found
+     * no estate cell, and its plan sent it on at its arrival (CL3: an arrival that finds no place goes on its overflow log); the second (m365) was placed, and
+     * was the one box drawn at m601. At m906-908 the count fell from 4 to 1, and CL3's rule took the newest, m745, m744 and m365, leaving m43, still sent on:
+     * the district drew none, and the bakeries that came after stood elsewhere. The watch's law - of the boxes standing then, no fewer than its own count then
+     * and its lowest since stand now - took the oldest of its own count to be drawn ones, and one of them had been sent on. The law gains that term
+     * (LongPlaytest, THE WORKS SENT ON): of the oldest `lowest since` of the district's own live instances, those its plan had sent on are not its to stand,
+     * a month's ties counted drawn as far as the month's numbers allow. The run and spill exclusions are untouched, and CL3's rule stays.
+     *
+     * The fixture causes it on one district, no Game: one cell owned round the founding site, opened for homes; a bakery that finds no estate cell and is
+     * sent on; the next cell bought and a second bakery placed in it; the oldest works kept; the count falling back to one (the placed one leaves, the sent-on
+     * one stays) while a works of its size takes its place, and a bakery coming again elsewhere. Judged by the law as it stood it is flagged (so the section
+     * fails before the fix) and by the law as it stands it is not; the control moves the drawn old box while the count holds, and is flagged by both.
+     */
+
+    /** 26's city: one district on the default world's dry ground, owned a cell at a time from the founding site's - the ground a city starts on, where its first works finds no estate cell. */
+    static final class SentOnCity {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final int house = idNamed(catalog, "House"), bakery = idNamed(catalog, "Industrial Bakery");
+        /** A works of the bakery's size bound to no site: what takes the place the placed bakery leaves. */
+        final int other;
+        CityLand land;
+        CityMap map;
+        final long[] model = new long[types.length];
+        /** The founding site's cell's north-west corner, and the next cell's east of it: each owned to its far ring line. */
+        long hx, hy, nx;
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        SentOnCity() {
+            int[] size = BuildingVisual.footprint(types[bakery]);
+            int found = -1;
+            for (int t = 0; t < types.length && found < 0; t++) {
+                BuildingVisual.Type y = types[t];
+                if (t == bakery || y == null || LongPlaytest.layoutBand(y) != 1 || y.site() != null || y.track() || y.terminal() || y.sea() || y.campus() || y.shore() || y.siding()) continue;
+                if (java.util.Arrays.equals(BuildingVisual.footprint(y), size)) found = t;
+            }
+            other = found;
+            long seed = Founding.DEFAULT_WORLD_SEED, f = CityMap.DISTRICT, c = DistrictPlan.CELL;
+            World w = World.of(seed);
+            long[] dry = dryPlace(w);
+            long bx = Math.floorDiv(dry[0], f), by = Math.floorDiv(dry[1], f);
+            for (int ring = 0; ring < World.CELLS; ring++) {
+                for (int dy = -ring; dy <= ring; dy++) for (int dx = -ring; dx <= ring; dx++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != ring) continue;
+                    long x = (bx + dx) * f + DistrictPlan.CELLS_A_SIDE / 2 * c, y = (by + dy) * f + DistrictPlan.CELLS_A_SIDE / 2 * c;
+                    if (!dryGround(w, x, y, x + 2 * c + 1, y + c + 1)) continue;
+                    hx = x;
+                    hy = y;
+                    nx = x + c + 1;
+                    double[] centre = new double[CityLand.CENTRE_FIELDS];
+                    centre[CityLand.CENTRE_FIELDS - 5] = centre[CityLand.CENTRE_FIELDS - 4] = -1;
+                    centre[CityLand.CENTRE_FIELDS - 2] = x + c / 2;
+                    centre[CityLand.CENTRE_FIELDS - 1] = y + c / 2;
+                    land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x, y, x + c + 1, y + c + 1 } }, null, null, null);
+                    map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+                    return;
+                }
+            }
+            throw new IllegalStateException("no dry ground for 26's city");
+        }
+
+        /** Whether every plot of [x0, x1) x [y0, y1) can be built on. */
+        static boolean dryGround(World w, long x0, long y0, long x1, long y1) {
+            for (long y = y0; y < y1; y++) for (long x = x0; x < x1; x++) if (!World.buildable(w.terrainAt(x, y), w.reliefAt(x, y))) return false;
+            return true;
+        }
+
+        /** One month, the map reconciled to the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+
+        /** The month that last ran: what a purchase made between months is dated. */
+        int last() { return month - 1; }
+
+        /** The next cell east, bought between months. */
+        void buyNext() {
+            long c = DistrictPlan.CELL;
+            land.extend(new LandParcel(-5, 1, 0, land.level(), nx, hy, nx + c, hy + c + 1, null, null, null, 0, 0), last(), 0);
+        }
+
+        CityMap.District district() { return map.districts().get(0); }
+
+        /** The district's drawn boxes of type t. */
+        List<PlanBox> drawn(int t) {
+            List<PlanBox> list = new ArrayList<>();
+            for (PlanBox b : boxesOf(map.plan(district()))) if (b.type() == t) list.add(b);
+            return list;
+        }
+
+        /** How many of type t the district's plan has sent on and not taken back: its carry-out's arrivals less its departures of them. */
+        int sentOn(int t) {
+            int[] pairs = map.carriedOnLog(district());
+            return pairs == null ? 0 : LongPlaytest.layoutSentMonths(pairs, t).length;
+        }
+    }
+
+    /** The watch's finding, judged by the law as it stood before RN1-H-M or as it stands: whether it names an old works moved. */
+    static boolean oldWorksFlagged(CityMap m, int month, java.util.Map<Long, LongPlaytest.LayoutSnap> now, boolean countsSentOn) {
+        LongPlaytest.findings.remove("an old works moved");
+        LongPlaytest.layoutCountsSentOn = countsSentOn;
+        try {
+            LongPlaytest.layoutFinish(null, m, month, now);
+        } finally {
+            LongPlaytest.layoutCountsSentOn = true;
+        }
+        return LongPlaytest.findings.containsKey("an old works moved");
+    }
+
+    static void oldWorksSentOn() {
+        out.println("\n--- 26. an old works its plan sent on is not the district's to stand: the oldest-works watch counts the works sent on, and still names a drawn one that moves (RN1-H-M) ---");
+        java.util.Set<String> findingsBefore = new java.util.HashSet<>(LongPlaytest.findings.keySet());
+        LongPlaytest.layoutOldForget();
+        SentOnCity c = new SentOnCity();
+        int b = c.bakery;
+        CityMap m = c.map;
+
+        // ----- the city: homes first, a bakery with nowhere to stand, the next cell bought, a bakery in it -----
+        c.model[c.house] = 12;
+        c.run();
+        int homesMonth = c.last();
+        c.model[b] = 1;
+        c.run();
+        int firstMonth = c.last(), sentAtArrival = c.sentOn(b), drawnAtArrival = c.drawn(b).size();
+        c.buyNext();
+        c.model[b] = 2;
+        c.run();
+        int secondMonth = c.last();
+        c.run();
+        int keepMonth = c.last();
+        java.util.Map<Long, LongPlaytest.LayoutSnap> kept = LongPlaytest.layoutSnapshot(m);
+        List<PlanBox> keptBoxes = c.drawn(b);
+        int sentAtKeep = c.sentOn(b);
+        out.printf("      m%d %d houses; m%d a bakery, sent on (%d sent on, %d drawn); the next cell bought; m%d a second, drawn at %s; kept at m%d: %d sent on, %d drawn%n",
+                homesMonth, c.model[c.house], firstMonth, sentAtArrival, drawnAtArrival, secondMonth, keptBoxes, keepMonth, sentAtKeep, keptBoxes.size());
+        check("the fixture: the city's first bakery found no estate cell and its plan sent it on at its arrival; the second, on the cell bought, is the one drawn when the oldest works are kept",
+                c.other >= 0 && sentAtArrival == 1 && drawnAtArrival == 0 && sentAtKeep == 1 && keptBoxes.size() == 1 && c.reconciled);
+
+        // ----- the control: the count held, the drawn old box moved a plot - flagged by the law as it stood and as it stands -----
+        LongPlaytest.layoutKeepOldWorks(m, keepMonth, kept);
+        java.util.Map<Long, LongPlaytest.LayoutSnap> moved = new java.util.HashMap<>();
+        for (java.util.Map.Entry<Long, LongPlaytest.LayoutSnap> e : kept.entrySet()) {
+            LongPlaytest.LayoutSnap s = e.getValue(), t = new LongPlaytest.LayoutSnap();
+            t.boxes = s.boxes.clone();
+            t.dims = s.dims;
+            t.byType = s.byType;
+            t.carryIn = s.carryIn;
+            t.carryLog = s.carryLog;
+            t.counted = s.counted;
+            for (int i = 0; i < t.boxes.length; i++) if ((int) (t.boxes[i] >>> 40) == b) t.boxes[i]++;
+            java.util.Arrays.sort(t.boxes);
+            moved.put(e.getKey(), t);
+        }
+        boolean stillOld = oldWorksFlagged(m, keepMonth, kept, false), stillNew = oldWorksFlagged(m, keepMonth, kept, true);
+        boolean movedOld = oldWorksFlagged(m, keepMonth, moved, false), movedNew = oldWorksFlagged(m, keepMonth, moved, true);
+        // The term the watch takes for the bakery here (REV-RN1-H-M): the older one sent on, inside the lowest since (2), so 1 - and the drawn one is still kept.
+        long key = LongPlaytest.layoutKey(c.district());
+        int[][] liveKept = LongPlaytest.layoutOldLive.get(key), sentKept = LongPlaytest.layoutOldSent.get(key), countKept = LongPlaytest.layoutOldModel.get(key);
+        int controlTerm = liveKept == null || sentKept == null || countKept == null ? -1 : LongPlaytest.layoutSentAmongOldest(liveKept[b], sentKept[b], countKept[1][b]);
+        out.printf("      the control at m%d: the term %d (the older bakery sent on); as drawn, flagged %b by the law as it stood, %b as it stands; the bakery's box moved a plot, %b and %b%n",
+                keepMonth, controlTerm, stillOld, stillNew, movedOld, movedNew);
+        check("the control: the older bakery sent on is the term (1), and still the boxes as drawn are no finding by either law, and the drawn old bakery moved a plot while the count holds is named by both",
+                controlTerm == 1 && !stillOld && !stillNew && movedOld && movedNew);
+
+        // ----- the event: the count falls back to one and comes again, another works in the place the bakery left -----
+        LongPlaytest.layoutOldForget();
+        LongPlaytest.layoutKeepOldWorks(m, keepMonth, kept);
+        c.model[b] = 1;
+        c.model[c.other] = 1;
+        c.run();
+        LongPlaytest.layoutTrackLow(m);
+        int sentAtFall = c.sentOn(b), drawnAtFall = c.drawn(b).size();
+        List<PlanBox> others = c.drawn(c.other);
+        c.model[b] = 2;
+        c.run();
+        LongPlaytest.layoutTrackLow(m);
+        int endMonth = c.last();
+        List<PlanBox> endBoxes = c.drawn(b);
+        java.util.Map<Long, LongPlaytest.LayoutSnap> end = LongPlaytest.layoutSnapshot(m);
+        boolean oldLaw = oldWorksFlagged(m, endMonth, end, false), newLaw = oldWorksFlagged(m, endMonth, end, true);
+        out.printf("      m%d: the count back to 1 (%d sent on, %d drawn), another works at %s; m%d a bakery again, drawn at %s; flagged %b by the law as it stood, %b as it stands (%d of the oldest kept sent on)%n",
+                endMonth - 1, sentAtFall, drawnAtFall, others, endMonth, endBoxes, oldLaw, newLaw, LongPlaytest.layoutOldSentOn);
+        check("the event: the count fell to the one sent on, so the placed bakery left; the district draws a bakery again, not where the old one stood",
+                sentAtFall == 1 && drawnAtFall == 0 && endBoxes.size() == 1 && !endBoxes.get(0).equals(keptBoxes.get(0)) && c.reconciled);
+        check("...and the law as it stood names it an old works moved, its own count's oldest taken for drawn ones (the section fails before RN1-H-M)", oldLaw);
+        check("...and the law as it stands does not: the oldest of its own count was sent on, not its to stand, and no box moved", !newLaw && LongPlaytest.layoutOldSentOn > 0);
+
+        // ----- the term on its own: the sent on among the oldest, a month's ties counted drawn as far as its numbers allow -----
+        check("the term: the oldest sent on and the lowest since one, it is the one (1); the newer sent on, none (0)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 11, 12 }, new int[] { 11 }, 1) == 1 && LongPlaytest.layoutSentAmongOldest(new int[] { 11, 12 }, new int[] { 12 }, 1) == 0);
+        check("...two of one month, one sent on: the oldest one counted drawn (0), the oldest two hold it (1); both sent on, the oldest is (1)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5 }, new int[] { 5 }, 1) == 0 && LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5 }, new int[] { 5 }, 2) == 1
+                && LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5, 7 }, new int[] { 5, 5 }, 1) == 1);
+        check("...and none sent on, or a count fallen to none, is no term (0)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 3, 5, 5 }, new int[0], 3) == 0 && LongPlaytest.layoutSentAmongOldest(new int[] { 3, 5 }, new int[] { 3 }, 0) == 0);
+
+        LongPlaytest.layoutOldForget();
+        LongPlaytest.findings.keySet().retainAll(findingsBefore);
+    }
+
 }

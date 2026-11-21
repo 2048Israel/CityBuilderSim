@@ -1,0 +1,181 @@
+# QN1 — new-building proposals beside canonical templates — notes
+
+Builder: Claude (Opus 5.5), started by the orchestrator 2026-11-19; branch `batch/QN1` from origin/main 3c4661a9d (0.9.155).
+Brief: `docs/queue/QN1.md`, from R2e's fifth review (`docs/queue/R2e-notes.md`, "Fifth review and complete prospective-reader
+audit"); commit 4c33a68d read as evidence only (its fixtures, not its copied templates).
+
+## What was built
+
+- **`NewUnit`** (new, `src/main/java/ham/citybuildersim/NewUnit.java`): one new building of a template as it would run: the
+  recipe, posts, draw, gen, water, consumables, makes and uses, and RecipeChanges' extras (production1, steamRail,
+  crackerPetrol, dig), held as a VALUE beside the template it is of. `NewUnit.of(game, t)` resolves it from the shared pair:
+  the pieces `EquipmentFit.fittedForNew()` keeps, on the process `RecipeChanges.newChoices()` gives (the saved choice once a
+  recipe list has run, a fresh one before), summed by `RecipeChanges.newUnit()` with `apply()`'s own arithmetic for a stack of
+  one. A city founded the default way, a template with one way to run, no game, or a call from inside a pricing gets
+  `NewUnit.standing(t)`: the template's live figures, the same numbers in the same arithmetic as main.
+- **Every future-building reader reads it** (inventory below); every order, stack, site, pending-map key, Suggestion,
+  Appraisal, Candidate, Decision and kept callback keeps the canonical template, and installed production keeps its values.
+- **The Bank's new-branch gate**: `feesWouldCoverAnother(N)` is `fees + E >= N*C + C_new`, `C = laterBranchCost()`,
+  `C_new = newBranchCost() = C + newBranchExtra()` (the new branch's extra clerks at today's wages, from BusinessInvestment);
+  C_new once, standing branches at C, closures (`branchesTheFeesCover`) unchanged. The hold and open reasons print C_new.
+- **`BuildAdvice.needs(Map)` kept**, `needs(Game, Map)` added for the Build screen's order bar (additions resolved, removals as
+  they stand), one body for both.
+- **`NewUnitCheck`** (new harness, registered in AllChecks): the brief's regressions and controls, nine sections.
+- No saved field changes meaning; `SAVE_FORMAT` unchanged.
+
+## Reader inventory
+
+R = reads the resolved new unit; S = keeps the figures the building stands with (main's values); I = identity, the template.
+
+| reader | verdict |
+|---|---|
+| BusinessInvestment.estimatedMonthlyProfit(key, t), estimatedMakerProfit, runningCostOf, wageBillFor | R: resolved once (`newUnit(t)`), the unit passed down; `standingRunningCostOf` S |
+| BusinessInvestment's bank estimate | R: a later branch's cost plus `newBranchExtra()` when the new branch's crew differs |
+| Bank.feesWouldCoverAnother, branchHoldReason, branchOpenReason | R: N*C + C_new; closures and booked costs S |
+| Sector.estimatedMonthlyProfit | R: the template door is final and resolves; the 15 sector overrides take NewUnit |
+| LicenceFees.forNew | R: the new building's rent struck on its own estimate; the pricing inside runs S (`pricing()`), the standing rent S |
+| Sector.staffing, staffableCount, staffingWithOwnSites, staffingWithCrewsSpare; Game.noteStaffingHold (WantedPosts' holds) | R |
+| Game.licencesNeededFor, hasLicencesFor | R (and a `(NewUnit, long)` overload) |
+| SpreadPlanner candidates: ProcessingSector.estimate/weigh/appraise, Refining.appraise/unitEstimate/packageEstimate, SpreadPlanner.earns | R through `City.unit(t)` (the game's frame resolves; a check's frame stands) |
+| ProcessingSector.lastEarns / lastOneEarns (idle, then shed), lastEarnsAt | S |
+| Sector plans: BusinessInvestment.planMaker (order size), Agriculture.worthAtTheFloor, Automotive (steel wall), Construction (points), Oil.planOnLand, ExtractionSector plan/appraise, CoalMining.planWash, Forestry plan (roomFor, eWords, groundRefusal), Manufacturing, FoodProcessing (fillFor) | R (sweep, `target/QN1-sweep.md`) |
+| Forestry.salvageCostPerM3 / crewRunning | S: the crews that stand |
+| "is this a mine" tests (lifts, isCrew, tonnesOf > 0, isLandWell), Refining.sizeOf, the plant-wide cracker yield | I: a kind or size class among templates |
+| BuildingManager.postsOnSite, getJobsUnderConstruction, Sector.getPipeline; on-site getters of Automotive, CoalMining, Forestry, Haulage, ProcessingSector, Refining (`underConstructionOfNew`) | R, per stack on site |
+| on-site getters of template-only figures (rail, stations, coverage, capacity, feed, pumps, old metal) | unchanged |
+| CityNeeds.hires (posts on site) | R |
+| CityNeeds' "power ahead" (no method of that name: BuildAdvice.figure's on-site additions, the jobs on site) | R |
+| Game.consider and its slices | R through the doors above; Game's own direct reads (retire, quoteDemolition, depots, overtime, fresh rights) S |
+| BuildCard.of, investors, gate, appraise, weighed, power, valueAdded, runningCost, worksValue, verdict | R, one unit per door; `Figures.template()` I, `Figures.newUnit()` beside it |
+| BuildAdvice.unit, built, staffing/unfilledPosts/hasPosts (unit overloads) | R at the doors; template overloads S |
+| BuildAdvice.figure, supplyDemand and their helpers (carePlaces, unburiedNext, school, officers, cells) | R for additions (n > 0), S for removals (the paving's gravel) |
+| BuildAdvice.running, lifetime, orderLife, licenceOf, runningChange | R for additions; `running(..., added=false)` S (a standing gravel road) |
+| BuildAdvice.rawRunningCostAt(Game, BuildingsTemplate, double) | S: LicenceFees and RecipeChanges.feesAt read it; the future callers pass the unit |
+| BuildAdvice suggestions | I: the candidate is the template given (BuildAdviceCheck's custom clinics) |
+| WorksValue.of; pendingLoads; pendingPowerLoad | R; the map keyed by the stack's own template, the unit's draw at its completion |
+| AutoBuilder | R through BuildAdvice and WorksValue; the measure's own standing spend `standingRunning` S |
+| EquipmentFit.choose (fitting against a new building) | R through the investors' estimate; fittedForNew/priced S (`standingWhile`) |
+| BuildScreen statCover (posts, power, water, its sentences `whatItDoes(t, unit)`), needsWords, the order bar | R through `Figures.newUnit()` and `needs(game, order)` |
+| BuildScreen heroDetail (the maker line: made, and from what), groupSubtitle, `whatItDoes(t, unit)`'s products; BuildCard stands() (what one more makes) and outlets() | R through `Figures.newUnit()` / `NewUnit.of`: `Refining.madeBy(unit)`, `Quarrying`/`CoalMining.madeBy(unit)`, the unit's goodsMade and goodsUsed (REV-QN1, A) |
+| BuildScreen scarceWords; `whatItDoes(t)` (BuildMenuCheck) | S |
+| SectorScreen's proposal row | R through BuildCard's getters; no edit |
+| Land, GroundPlan, ConstructionControl, quotes and invoices | unchanged: no recipe change moves land (NewUnitCheck 1's data guard), cash, materials or points |
+| RealEstate, Mortgage | no housing recipe; RealEstate's override changes its signature only (approved by mail) |
+
+## The calls (★ = a design decision a reviewer should weigh)
+
+- ★ **A value, not a template.** R2e's copied templates leaked into everything keyed by identity (getStack, WorksValue's pending
+  map, the card's kept order callbacks, BuildAdvice's custom clinics by id). `NewUnit` cannot be ordered, stacked or used as a
+  key; it carries the template's figure names, so a reader changes only the receiver of its figure reads.
+- ★ **One resolution per door.** A public future-building door (the investors' estimate, the card's `Figures`, BuildAdvice's
+  doors, WorksValue.of, the staffing gate, licencesNeededFor) resolves once and passes the unit down; a helper's NewUnit
+  overload holds the body and its template overload delegates with `NewUnit.standing(t)`, so every caller off the future path
+  (shed tests, the fleet's spend, the harnesses) reads main's values.
+- ★ **Pricings read standing.** Inside fittedForNew()'s verdicts and the process choice (`standingWhile`) and inside a
+  licence's pricing (`LicenceFees.pricing()`), `NewUnit.of` returns the template as it stands: those pricings price the states
+  they are given, as on main, and the loop licence → estimate → unit → fitting price → licence cannot close.
+- ★ **Sector's template door is final.** `Sector.estimatedMonthlyProfit(BuildingsTemplate, plans)` resolves and calls the
+  NewUnit door; the fifteen overrides take NewUnit, so no sector can skip the resolution.
+- ★ **The bank: (N+1)·C + Δ = N·C + C_new.** Δ is the new branch's extra clerks at today's wages; C_new is counted once.
+  NewUnitCheck 5 shows the (N+1)·(C+Δ) reading would refuse a branch the fees cover.
+- **Extras as apply() sums them**: production1, steamRail, crackerPetrol and dig come from RecipeChanges' own sum for a stack
+  of one, so a Coal Power Plant that rejects its turbine is quoted at its own generation (NewUnitCheck 9).
+- **Land is not carried**: no recipe change moves land (NewUnitCheck 1 guards the 63 "without" blocks); a later one that does
+  would need the unit to carry it.
+- **Performance**: `of()` is evaluated afresh per call, but only in a city founded the 1900 way and for the 42 templates with a
+  recipe choice; everywhere else it is a wrapper over the template, no pricing.
+- ★ **BuildScreen**: three read-only hunks beyond R2e's two: statCover's posts, power and water and its sentences
+  (`whatItDoes(t, unit)`), needsWords' posts, and the order bar's `needs(game, order)`; `whatItDoes(t)` and scarceWords stand.
+- **Left as they are** (the sweep's AMBIGUOUS rows): the "is this a mine" identity tests, Refining.sizeOf (a rank among
+  templates), the plant-wide cracker yield (a weighted mean over what stands), Forestry's salvage cost (the crews that stand).
+- **No save change**: no saved field; SAVE_FORMAT unchanged.
+
+## The slices and what review changed
+
+- **B1** (Sonnet: planners, order sizes, on site). Review found the planner candidates' template doors (ProcessingSector
+  estimate/weigh/appraise, Refining's, SpreadPlanner.earns) reading the fleet's figures; repaired through `City.unit(t)` (the
+  game's frame resolves, a check's frame stands) and `plans.newUnit(t)`; lastEarns and Forestry.crewRunning pinned standing.
+- **B2** (Sonnet: the sector plans' sweep, `target/QN1-sweep.md`): thirteen NEW rows taken as swept; the seven AMBIGUOUS rows
+  decided as above.
+- **A** (Sonnet: the card, the advice, the works' value, the order bar). Review changed: AutoBuilder's own standing spend had
+  begun valuing standing buildings at the new unit (`standingRunning`, cached per month); `BuildAdvice.running(..., added=false)`
+  resolved for a standing gravel road (now standing); the card's unit is `Figures.newUnit()` (`unit` was taken); BuildScreen's
+  needsWords and whatItDoes read the template (now the card's unit).
+- **C** (Sonnet: NewUnitCheck), reviewed against the oracle rule: every expected figure measured without NewUnit (the fleet's
+  recipe, the chosen recipe's own posts, a city with the piece's input cheap again).
+- **REV-QN1** (Codex: the Bank gate, the proposal's readers, saves, the trace, NewUnitCheck) found the money, saves, the trace
+  and the LicenceFees overload clean, and four P1s, mended:
+  - (A) the card's goods words still read the fleet's goods maps (a new Electric Arc Furnace that rejects its caster burns fuel
+    oil the card left out; a new Logging Camp without its chainsaw cuts less than the outlets quoted): BuildScreen's heroDetail,
+    groupSubtitle and `whatItDoes(t, unit)`, and BuildCard's stands() and outlets(), now read the new unit's goods (row above).
+  - (B) NewUnitCheck's expected profit and running cost went through the repaired readers: now the physically changed fleet
+    through the standing routes (`NewUnit.standingWhile` around the investors' door, `BuildCard.runningCost(g, NewUnit.standing(t))`).
+  - (C) the draw assertion passed on main. Section 9 queues two Cement Plants that reject the rotary kiln (a recipe list tied to
+    the piece: the shaft kilns' 2,800 kW against the fleet's 3,116) and asserts the power ahead from their completion; section 10
+    queues two Shared Services Centres without their business computer and asserts the colleges' places (`CityNeeds.hires`) and
+    the landlords' head shortage (`RealEstate.latentHeadShortfall`) from their own posts; section 8 adds the head shortage.
+  - (D) section 7 draws the Vehicles page kept (KeptBench) with two dialled, holds the card's order from the first draw, runs a
+    month and makes machinery dear, then runs the held reprice (the bar shows the new plants' 600 unskilled posts, not 200) and
+    presses the held Build button (two on the stack's site, the dial back to none). The redraw makes the order afresh, so its
+    reprice is new; the button is the kept node. KeptBench gained buildOrder, click, buildBarSays, buildDialled, buildHeroDetail.
+  - Section 12 is new for (A): the camp's outlets and the furnace's card words.
+- **REV-QN1-2** (Codex, on the mends at 2d9d6914c): SHIP, no P1; three small ones, mended in NewUnitCheck:
+  - (P2) section 12 guarded heroDetail and the outlets only. It now asserts the furnace's group heading (groupSubtitle's
+    used words: "from fuel oil") and the camp's sentences (whatItDoes(t, unit)'s products: "Makes 500 cubic metres of
+    sawlogs"), each red with its reader put back on the fleet's maps. The heading's made words and stands()' quarry/coal
+    branch cannot move today: no piece in the catalogue changes which goods a building makes, nor what a building on typed
+    ground makes (only posts and power). A tripwire asserts that, so a piece that does fails it and brings its card check.
+  - (P2) section 7 ran the first draw's reprice after the redraw, which no node holds. It now presses the kept card's own
+    steps (up to three, back to two: their actions are the last draw's) and the bar reads 900 then 600 unskilled, not 300
+    and 200; the Build button pressed is the same kept node. KeptBench's BuildOrder carries the small steps, and press().
+  - (P3) with no toolkit, section 7's last check says the order was placed by buildStack().
+  - With no toolkit, sections 7 and 12 skip their card parts and the harness exits 0, as KeptCheck does.
+  - main exits red on a throw: once the toolkit has started its thread holds the JVM open, so a throw ran to the suite's
+    timeout (a first run of the steps did, 1,740 s).
+
+## Checks
+
+- The repair switched off (NewUnit.of returning standing, reverted): NewUnitCheck 17 of 43 red, in sections 2, 3, 5, 7, 8 and 9
+  (the regressions) and the fixtures of guards 4 and 6, which read a resolved unit; section 1 (the default city) green.
+- `./batch-check.sh --fast` and the 23 named harnesses one at a time (NewUnitCheck, PostwarRecipeCheck, BuildAdviceCheck,
+  AutoBuildCheck, WantedPostsCheck, StaffingDrawCheck, LicenceFeesCheck, FittingCheck, HistoricalRecipeCheck,
+  HistoricalLicenceCheck, RecipeCheck, EquipmentCheck, ResearchCheck, DiscoveryCheck, BuildingDataCheck, BankCheck,
+  BuildCardCheck, KeptCheck, HaulageCheck, InvestCheck, BuildMenuCheck, PublicLicenceCheck, IndustryViewCheck): green but
+  BuildAdviceCheck's known red (main's) and PostwarRecipeCheck, which reflects on `LicenceFees.buildingFee`'s five-argument
+  signature: kept beside the unit's, green.
+- The eight default traces (LongPlaytest, `-Dplaytest.trace`) on 3c4661a9d before the change and on the final classes
+  (200b069de): all eight byte for byte (sha256: bank 965167c4, bonds 36b99679, borrow 6638435e, build 7ce87992, house
+  948bb33e, labour 8870a6aa, month ff22d492, pop 7b15aa27). No ensemble: the default trace does not move.
+- main merged at ddcb3400e (HL1-R, 0.9.156; conflicts only in the generated docs): `--fast` green and
+  HL1-R's BusinessServicesCheck green on the merge. `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed); review needed,
+  money: Bank.java.
+- After REV-QN1's mends: NewUnitCheck all 60 assertions; with the repair switched off again 25 of 60 red, every new or changed
+  section among them (2: 4, 3: 5, 7: 3, 8: 2, 9: 2, 10: 2, 12: 2; 4, 5, 6 and 11 as before), section 1 green
+  (`target/QN1-off2-NewUnitCheck.log`). BuildCardCheck, BuildMenuCheck and IndustryViewCheck green; KeptCheck and
+  BuildAdviceCheck main's known reds only (the exact lines in `docs/notes/gate.txt`); `--fast` green.
+- After REV-QN1-2's mends: NewUnitCheck all 63 assertions. The card readers put back on the fleet's maps (groupSubtitle's
+  made and used lines, whatItDoes(t, unit)'s products, stands()' quarry/coal branch): 2 of 63 red, the heading and the
+  sentences, the other two green as the tripwire says (`target/QN1-readers-off-NewUnitCheck.log`). The repair off: 27 of
+  63 red (2: 4, 3: 5, 4: 1, 5: 2, 6: 1, 7: 3, 8: 2, 9: 2, 10: 2, 11: 1, 12: 4), section 1 green
+  (`target/QN1-off3-NewUnitCheck.log`). `--fast` green.
+- main merged again at d05201e11 (RN1-H, 0.9.157; conflicts only in the generated docs; RealEstate.java merged clean, QN1's
+  hunk there the override's signature alone): RN1-H moved the homes' headroom onto demand, so NewUnitCheck's `latentWith`
+  (the head shortage from its parts) is now `(posts + coming) × 2.25 × (1 + TARGET_HEADROOM) − homes`, as
+  `latentHeadShortfall()` reads. `--fast` green; NewUnitCheck all 63.
+- The dry run (`sh tools/gate.sh QN1 --dry-run`, 9c8714d79 on main d05201e11; kept at `/tmp/cbs-gate-QN1-bckCEBFc`):
+  220 harnesses in 2,884 s, 206 passed, 14 red. Thirteen were main's known reds; ExchangeRateCheck stopped it on one line
+  not named: "the return holds the model's par FAIL 2.599604786428 != 1.000000000000", where main's registry (FS10) has
+  2.612783528664. Its other three lines are main's exactly. Section 8b's played 1900 city already floats on the eve of
+  the August 1914 suspension (2.6788 against parity 1.4621, the fixture's "dated gold peg survives" red as on main), and
+  the July 1926 return opens the peg onto an empty vault, which breaks it that month, so the return compares a float with
+  the stored par: FS10's cause. QN1 values that city's new buildings as they would run, which moves its path and so the
+  float the return lands on. Entered in the ship file's `## known-reds` against FS10 (on the queue), so it passes by name
+  (`docs/contract.md` 5, item 3). The kept suite judged again in `target/checks` with the ship file's rows
+  (`CBS_KNOWN_REDS=... ./batch-check.sh --judge`): known red only, 14 harnesses. When FS10 lands, main's 2.612783528664
+  row has no line left to match.
+
+## Left for Jerus
+
+Nothing is held. The ★ calls above are the ones to weigh; the one a later batch may want is the plant-wide cracker yield
+(Refining.crackerPetrol()), which with no cracker standing falls back to the Cracking Unit template's yield rather than a new
+cracker's own: blending a new unit into a weighted mean over what stands is a design question, left as main reads it.

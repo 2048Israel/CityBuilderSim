@@ -206,8 +206,6 @@ public class Inbox {
 
         takeIslands(game, month);
 
-        takeLevers(game, month);
-
         takeGold(game, month);
 
         takeResearch(game, month);
@@ -223,12 +221,14 @@ public class Inbox {
      * to announce. Later changes settle that notice and raise an unread one.
      * Keeping the current notice live preserves the baseline beyond the
      * resolved notices' two-year cull, including across a save and a load.
+     * The notice leaves its band only once the wealth is GovernmentView.BAND_MARGIN
+     * past the band's bound (GV1-R), so wealth sitting on a bound posts one
+     * notice, not one a month; the held band is the standing notice's own.
      */
     private void takeWealth(Game game, int month) {
         GovernmentView view = GovernmentView.of(game);
         if (!Double.isFinite(view.wealthYears()) || view.band() == null) return;
 
-        String key = WEALTH_BAND_PREFIX + view.band().name();
         Notice previous = null;
         for (int i = notices.size() - 1; i >= 0; i--) {
             Notice notice = notices.get(i);
@@ -237,10 +237,23 @@ public class Inbox {
                 break;
             }
         }
-        String title = "Government wealth: " + view.band().label();
-        List<String> body = wrapped(String.format(
-                "The government holds %.1f years of its revenue. Its wealth band is %s.",
-                view.wealthYears(), view.band().label()), BODY_COLUMNS);
+        GovernmentView.Band held = null;
+        if (previous != null) {
+            try {
+                held = GovernmentView.Band.valueOf(previous.getKey().substring(WEALTH_BAND_PREFIX.length()));
+            } catch (IllegalArgumentException unknown) {
+                held = null;
+            }
+        }
+        GovernmentView.Band band = GovernmentView.bandFrom(held, view.wealthYears());
+        String key = WEALTH_BAND_PREFIX + band.name();
+        String title = "Government wealth: " + band.label();
+        List<String> body = wrapped(band == view.band()
+                ? String.format("The government holds %.1f years of its revenue. Its wealth band is %s.",
+                        view.wealthYears(), band.label())
+                : String.format("The government holds %.1f years of its revenue, %s by the bands. Its notice stays at %s until the wealth is %.0f%% past that band's bound.",
+                        view.wealthYears(), view.band().label(), band.label(), GovernmentView.BAND_MARGIN * 100),
+                BODY_COLUMNS);
         if (previous != null && previous.getKey().equals(key)) {
             previous.refresh(title, body);
             return;
@@ -266,37 +279,11 @@ public class Inbox {
         return n == 1 ? "1 person" : String.format("%,d people", n);
     }
 
-    /** The levers whose opening is told: the ones TaxPolicy holds, the minimum wage (LabourMarket's floor, which TaxPolicy dates but does not hold) and zoning (Game.setZone's gate). */
-    private static final PolicyDates.Lever[] NOTICED = noticed();
-
-    private static PolicyDates.Lever[] noticed() {
-        PolicyDates.Lever[] all = java.util.Arrays.copyOf(TaxPolicy.GATED, TaxPolicy.GATED.length + 2);
-        all[TaxPolicy.GATED.length] = PolicyDates.Lever.MINIMUM_WAGE;
-        all[TaxPolicy.GATED.length + 1] = PolicyDates.Lever.ZONING;
-        return all;
-    }
-
-    /**
-     * The Policy levers history opens (R0): in the month a lever opens, one notice of Canada's first terms for it, titled "An income
-     * tax: 1917", keyed "lever:" and its name so it is raised once. The month of a city's first day raises none (a lever open from the
-     * start has no first day to report), and nor does a save from before R0, whose levers are all open from month 1. It is settled the
-     * month after, like any one-off, and kept two years. Only the levers TaxPolicy holds, the minimum wage and zoning; the others are raised by their own batches.
-     */
-    private void takeLevers(Game game, int month) {
-        for (PolicyDates.Lever lever : NOTICED) {
-            boolean opensNow = month > 1 && month == game.leverOpeningMonth(lever);
-            take(game, month, "lever:" + lever.name(),
-                    opensNow,
-                    leverTitle(lever),
-                    opensNow ? wrapped(PolicyDates.notice(lever), BODY_COLUMNS) : new ArrayList<>());
-        }
-    }
-
     /**
      * The US$'s gold dates (GD3), one condition each, keyed "gold:" and the date's name (gold:LEFT_1933, gold:PAR_1934, gold:WINDOW_1971): a city on
      * Gold has a decision to make in the month the dollar left gold, came back at its par or closed its window (Game.takeTheDollarsGoldDates() opens
      * it), and the notice stands for as long as the date is open - it is refreshed each month with where the D$ stands - and is settled the month after
-     * the city answers it (or comes off gold, which closes it), like a lever's, and kept two years. A city not on Gold has none: its date never opens.
+     * the city answers it (or comes off gold, which closes it), like any one-off, and kept two years. A city not on Gold has none: its date never opens.
      */
     private void takeGold(Game game, int month) {
         for (ForeignAccounts.GoldEvent e : ForeignAccounts.GoldEvent.values()) {
@@ -330,7 +317,7 @@ public class Inbox {
     }
 
     /**
-     * What the city's research found and what reached it from abroad (R3), each a one-off like a lever's: raised in the month it happened, keyed
+     * What the city's research found and what reached it from abroad (R3), each a one-off: raised in the month it happened, keyed
      * "found:" or "abroad:" and the discovery's code so that it is raised once, settled the month after and kept two years. "Found here" names the
      * school that researched it, how far ahead of the world the city was and what the discovery touches; "From abroad" what the world did and what
      * it touches. None in the month of a city's first day, which reports nothing that predates it, and none in a city founded the default way,
@@ -348,14 +335,15 @@ public class Inbox {
             // ...and where the field's prize went, when it has one (R4): the part to the labs that did the work and the part to the schools' grants.
             Research.Purse purse = research.purses().get(code);
             take(game, month, "found:" + code, true, "Found here: " + entry.name(),
-                    wrapped(String.format("%s found it, %.1f years ahead of the world. It touches: %s.", capital(entry.field().school()), years, entry.touches())
+                    wrapped(ResearchView.marked(entry, String.format("%s found it, %.1f years ahead of the world", capital(entry.field().school()), years))
+                            + String.format(". It touches: %s.", entry.touches())
                             + (purse == null ? "" : " " + prizeSentence(purse)), BODY_COLUMNS));
         }
         for (String code : arrived) {
             ResearchCatalog.Entry entry = catalogue.entry(code);
             if (entry == null) continue;
             take(game, month, "abroad:" + code, true, "From abroad: " + entry.name(),
-                    wrapped(String.format("The world has it now (%s). It touches: %s.", entry.world(), entry.touches()), BODY_COLUMNS));
+                    wrapped(String.format("The world has it now (%s). It touches: %s.", entry.dateWords(), entry.touches()), BODY_COLUMNS));
         }
         // ...and the ones raised in an earlier month are settled: they were told once.
         for (Notice notice : new ArrayList<>(notices)) {
@@ -383,12 +371,6 @@ public class Inbox {
         return phrase.isEmpty() ? phrase : Character.toUpperCase(phrase.charAt(0)) + phrase.substring(1);
     }
 
-    /** "An income tax: 1917", "A profit tax: 1916", "Student aid: 1939", "Zoning: 1924": the lever as the player reads it (PolicyDates.named(), the rule the Policy screen's shut card shares), and the date it opened. */
-    static String leverTitle(PolicyDates.Lever lever) {
-        String named = PolicyDates.named(lever);
-        return Character.toUpperCase(named.charAt(0)) + named.substring(1) + ": " + PolicyDates.openingDate(lever);
-    }
-
     /**
      * The ground the city owns on landmasses no port links (ET5), a standing notice for each, key "island:" and its id: it stays
      * while the landmass is unlinked and the words in it follow what the city owns there, and it is settled the month a port links
@@ -398,7 +380,8 @@ public class Inbox {
         Landmasses lms = game.getLandManager().getLandmasses();
         List<Integer> unlinked = lms.unlinkedIds();
         for (int id : unlinked) {
-            take(game, month, LandmassView.noticeKey(id), true, LandmassView.noticeTitle(lms, id), LandmassView.noticeBody(lms, id));
+            take(game, month, LandmassView.noticeKey(id), true, LandmassView.noticeTitle(lms, id),
+                    LandmassView.noticeBody(lms, id, BuildAdvice.islandLink(game, id)));
         }
         for (Notice notice : new ArrayList<>(notices)) {
             int id = LandmassView.noticeId(notice.getKey());
@@ -407,6 +390,11 @@ public class Inbox {
     }
 
     /* ----- the autosave (UP6) ----- */
+
+    /** The broken-skip warning (UP6b): it stands through hand saves and is settled when that city is loaded again. */
+    public void autosavesPaused(int month, boolean paused, String advice) {
+        take(null, month, "autosave-paused", paused, "Autosaves are off", wrapped(advice, BODY_COLUMNS));
+    }
 
     /**
      * An autosave that could not be written whole (UP6, LB3-S), a condition notice keyed "autosave": the save failed, or it landed
@@ -419,7 +407,8 @@ public class Inbox {
         if (!result.ok) {
             title = "The autosave could not be written";
             body = wrapped("Month " + month + "'s autosave could not be written: " + result.error
-                    + ". The autosave before it is still on disk, whole. Check there is free disk space; the next autosave tries again.",
+                    + ". The save and its history may be from different months: the history is written even if the save fails. "
+                    + "Check there is free disk space; the next autosave tries again.",
                     BODY_COLUMNS);
         } else if (result.historyError != null) {
             title = "The autosave's history could not be written";
@@ -917,7 +906,7 @@ public class Inbox {
                 lines.add(String.format("%,.0f people have been ill for more than two months, and",
                         longSick));
                 lines.add(String.format("%,.0f died of it last month. Only %.0f%% of the sick get",
-                        sickness.getLastDeaths(), Sickness.recovery(generalCover) * 100));
+                        sickness.getLastDeaths(), sickness.recoveryAt(generalCover) * 100));
                 lines.add("better each month here.");
             }
             lines.add("");

@@ -1,6 +1,6 @@
-# WageLadderCheck.java - 424 lines · 14 methods · 2 constants · harnesses
+# WageLadderCheck.java - 458 lines · 14 methods · 2 constants · harnesses
 
-`ham/citybuildersim/WageLadderCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WageLadderCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The wage ladder a city is founded on (R0d): today's PayTier ladder in every city but one founded the 1900 way, which pays 1901's, the
 > census's. Not part of the game.
@@ -29,7 +29,7 @@
 > floor set for 5 is below today's lowest setting, so a load that clamped it to today's bounds would show; the market's tight and even
 > months are posts and supply handed to advanceMonth(). Figures are asserted against the model's own constants and methods.
 
-**Uses:** [WageLadder](WageLadder.md) (68), [LabourMarket](LabourMarket.md) (41), [JobType](JobType.md) (34), [Game](Game.md) (18), [PayTier](PayTier.md) (16), [TaxPolicy](TaxPolicy.md) (11), [RealEstate](RealEstate.md) (7), [Founding](Founding.md) (6), [WageBand](WageBand.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [PopulationManager](PopulationManager.md) (4), [GameFiles](GameFiles.md) (3), [FittingCheck](FittingCheck.md) (3), [PolicyDates](PolicyDates.md) (3)
+**Uses:** [WageLadder](WageLadder.md) (72), [LabourMarket](LabourMarket.md) (46), [JobType](JobType.md) (35), [PayTier](PayTier.md) (19), [Game](Game.md) (18), [TaxPolicy](TaxPolicy.md) (9), [RealEstate](RealEstate.md) (7), [WageBand](WageBand.md) (7), [Founding](Founding.md) (6), [EquipmentCheck](EquipmentCheck.md) (4), [PopulationManager](PopulationManager.md) (4), [GameFiles](GameFiles.md) (3), [FittingCheck](FittingCheck.md) (3)
 
 ## Sections
 
@@ -38,9 +38,9 @@
 | 98 | 1. the table |
 | 130 | 2. today's ladder is PayTier's to the bit |
 | 178 | 3. a 1900 city starts on 1901's ladder |
-| 237 | 4. the market still moves a 1901 ladder |
-| 315 | 5. saved and loaded |
-| 379 | 6. played |
+| 238 | 4. the market still moves a 1901 ladder |
+| 316 | 5. saved and loaded |
+| 380 | 6. played |
 
 ## Constants
 
@@ -61,7 +61,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 389 | **type** `public class WageLadderCheck` | The wage ladder a city is founded on (R0d): today's PayTier ladder in every city but one founded the 1900 way, which pays 1901's, the census's. |
+| 36 | 423 | **type** `public class WageLadderCheck` | The wage ladder a city is founded on (R0d): today's PayTier ladder in every city but one founded the 1900 way, which pays 1901's, the census's. |
 | 42 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 47 | 1 | `static void check(String label, boolean ok)` |  |
 | 50 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance. |
@@ -83,27 +83,27 @@
 |---:|---:|---|---|
 | 132 | 45 | `static void sectionTwo()` |  |
 
-### 3. a 1900 city starts on 1901's ladder (lines 178-236)
+### 3. a 1900 city starts on 1901's ladder (lines 178-237)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 180 | 56 | `static void sectionThree()` |  |
+| 180 | 57 | `static void sectionThree()` |  |
 
-### 4. the market still moves a 1901 ladder (lines 237-314)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 239 | 75 | `static void sectionFour()` |  |
-
-### 5. saved and loaded (lines 315-378)
+### 4. the market still moves a 1901 ladder (lines 238-315)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 317 | 61 | `static void sectionFive()` |  |
+| 240 | 75 | `static void sectionFour()` |  |
 
-### 6. played (lines 379-424)
+### 5. saved and loaded (lines 316-379)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 381 | 43 | `static void sectionSix()` |  |
+| 318 | 61 | `static void sectionFive()` |  |
+
+### 6. played (lines 380-458)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 382 | 76 | `static void sectionSix()` |  |
 

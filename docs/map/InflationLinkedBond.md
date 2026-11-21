@@ -1,6 +1,6 @@
 # InflationLinkedBond.java - 311 lines · 28 methods · 2 constants · model
 
-`ham/citybuildersim/InflationLinkedBond.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InflationLinkedBond.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > An inflation-linked bond: a REAL coupon every month on a principal that
 > follows the city's price index, and at the end the indexed principal, never
@@ -41,7 +41,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (6):** [BookDesk](BookDesk.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
+**Used by (7):** [BookDesk](BookDesk.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [GovernmentViewCheck](GovernmentViewCheck.md)
 
 ## Constants
 

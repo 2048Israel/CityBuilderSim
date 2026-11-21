@@ -95,7 +95,7 @@ public class DataSave implements Cloneable {
 
     //save variables
     private double cash;
-    private int[] buildings;
+    private long[] buildings;
     private int month = 1;
     private JsonArray debts;
 
@@ -125,7 +125,7 @@ public class DataSave implements Cloneable {
      * depots part-built reloaded to find the work gone.
      */
     private double[] constructionProgressById;
-    private int[] underConstructionById;
+    private long[] underConstructionById;
     /** Material the sites still have to draw, by id. Absent on a save from before the crews drew as they built. */
     private double[] materialsOwedById;
     /** The builders' contract still on each template's sites, by id. Absent on a save from before the book was kept per stack. */
@@ -361,12 +361,9 @@ public class DataSave implements Cloneable {
      * were: drawing again would tie every save to the exact counting and
      * pricing rules forever, and every player's offers would move with them.
      *
-     * READ ONLY TO CONVERT: landListing (the nine parcels), ironDeposits and
-     * ironReserveTonnes, which a save of format 30 or older carries and
-     * LandConversion reads - the iron, that is; the parcels go; and a format-31
-     * save's landLanes and landPurchases, with its 25-wide landCentre, which
-     * LandConversion.convertLanes() snaps to the grid. Boxed or null, so a save
-     * written now does not carry them.
+     * Older landListing, ironDeposits, ironReserveTonnes, landLanes and
+     * landPurchases keys are boxed or null so current saves omit them.
+     * HA1 removes their load converters: those formats are below the floor.
      * ---------------------------------------------------------------------- */
     private Double worldSeaTheta;
     private double[] worldTotals;
@@ -525,7 +522,7 @@ public class DataSave implements Cloneable {
     private double insurancePremiums;
 
     /** The city's own yard, in units. */
-    private int constructionMaterials;
+    private long constructionMaterials;
     private long population;
     
     /*
@@ -641,6 +638,10 @@ public class DataSave implements Cloneable {
      * path treats as "no land data" and falls back to the starting allocation.
      */
     private double landOwned;
+    /** AW2: the live land ledger, including an explicit zero; absent saves retain footprint reconstruction. */
+    private Double landAllocatedSqFt;
+    /** AW2: the catalogue footprint at save time, so a later plot-size change adjusts the ledger by its delta. */
+    private Double landFootprintSqFt;
     private int landBlocksPurchased;
     private double landPricePerSqFt;
     /*
@@ -747,7 +748,7 @@ public class DataSave implements Cloneable {
         }
         f = f.withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
         // The 1900 way (R1b): a save without the key was founded the default way.
-        if (Boolean.TRUE.equals(foundedUnfitted)) f = f.withUnfitted(true);
+        f = f.withUnfitted(Boolean.TRUE.equals(foundedUnfitted));
         return f;
     }
 
@@ -927,6 +928,8 @@ public class DataSave implements Cloneable {
     public double getHouseholdSavings()            { return householdSavings; }
 
     public void setLandOwned(double sqFt)          { this.landOwned = sqFt; }
+    public void setLandAllocatedSqFt(double sqFt)  { this.landAllocatedSqFt = sqFt; }
+    public void setLandFootprintSqFt(double sqFt)  { this.landFootprintSqFt = sqFt; }
     public void setLandBlocksPurchased(int blocks) { this.landBlocksPurchased = blocks; }
     public void setLandPricePerSqFt(double price)  { this.landPricePerSqFt = price; }
     /** The works' ground and the foothill prepared (ET2): LandManager.getWorksSqFt() and getPreparedSqFt(). */
@@ -938,6 +941,8 @@ public class DataSave implements Cloneable {
     public void setLandRuns(double runsSqFt) { this.landRunsSqFt = runsSqFt; }
 
     public double getLandOwned()          { return landOwned; }
+    public Double getLandAllocatedSqFt()  { return landAllocatedSqFt; }
+    public Double getLandFootprintSqFt()  { return landFootprintSqFt; }
     public int    getLandBlocksPurchased(){ return landBlocksPurchased; }
     public double getLandPricePerSqFt()   { return landPricePerSqFt; }
     /** The works' ground as saved (ET2), or null on a save without it: read from the standing buildings. */
@@ -967,10 +972,10 @@ public class DataSave implements Cloneable {
     }
 
     public void setBuildingNum(int i) {
-        buildings = new int[i];
+        buildings = new long[i];
     }
 
-    public void setBuildingQuantity(int index, int quantity) {
+    public void setBuildingQuantity(int index, long quantity) {
         if (index < 0 || index >= buildings.length) {
             throw new IllegalArgumentException("Invalid building index: " + index);
         }
@@ -992,7 +997,7 @@ public class DataSave implements Cloneable {
         this.progress = progress;
     }
     
-    public void setConstructionMaterials(int constructionMaterials){
+    public void setConstructionMaterials(long constructionMaterials){
         this.constructionMaterials = constructionMaterials;
     }
     
@@ -1108,6 +1113,7 @@ public class DataSave implements Cloneable {
         try {
             DataSave copy = (DataSave) super.clone();
             if (buildings != null) copy.buildings = buildings.clone();
+            if (licenceFees != null) copy.licenceFees = java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(licenceFees));
             return copy;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
@@ -1171,7 +1177,7 @@ public class DataSave implements Cloneable {
     public void setStackOrder(int[] templateIds) { this.stackOrder = templateIds; }
     public int[] getStackOrder() { return stackOrder; }
 
-    public void setConstructionById(int[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue) {
+    public void setConstructionById(long[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue) {
         this.underConstructionById = underConstruction;
         this.constructionProgressById = progress;
         this.materialsOwedById = materialsOwed;
@@ -1183,15 +1189,32 @@ public class DataSave implements Cloneable {
      * only for the stacks that have any: null, or empty, is every building fitted. A save from before R1 has no key, which Gson leaves alone, and
      * so reads as every building fitted, as it ran: no format bump.
      */
-    private java.util.Map<Integer, java.util.Map<String, Integer>> unfittedById;
+    private java.util.Map<Integer, java.util.Map<String, Long>> unfittedById;
 
-    public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Integer>> byId) {
+    public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Long>> byId) {
         this.unfittedById = byId == null || byId.isEmpty() ? null : byId;
     }
 
     /** The unfitted counts the save carries by template id, or an empty map for a save with none (every building fitted). */
-    public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
+    public java.util.Map<Integer, java.util.Map<String, Long>> getUnfittedById() {
         return unfittedById == null ? java.util.Map.of() : unfittedById;
+    }
+
+    /**
+     * The equipment each site's orders froze, by template id (R1e; BuildingsStacks' lots: so many buildings, the pieces they come
+     * without), written only for the sites that have a lot, so only a city founded the 1900 way ever writes the key. A save without it,
+     * every save from before R1e and every city founded the default way, reads every building on site as the whole template, its pieces
+     * decided at the finish, as it was ordered and paid for: Gson leaves a missing key alone, no format bump.
+     */
+    private java.util.Map<Integer, java.util.List<BuildingsStacks.Lot>> lotsById;
+
+    public void setLotsById(java.util.Map<Integer, java.util.List<BuildingsStacks.Lot>> byId) {
+        this.lotsById = byId == null || byId.isEmpty() ? null : byId;
+    }
+
+    /** The lots the save carries by template id, or an empty map for a save with none (every building on site loose). */
+    public java.util.Map<Integer, java.util.List<BuildingsStacks.Lot>> getLotsById() {
+        return lotsById == null ? java.util.Map.of() : lotsById;
     }
 
     /**
@@ -1201,6 +1224,30 @@ public class DataSave implements Cloneable {
      * so no format bump.
      */
     private java.util.Map<Integer, java.util.List<String>> recipeChoices;
+
+    /** The last captured royalty per installed building, by template id; a saved flow for standing readers (R2c). */
+    private java.util.Map<Integer, Double> licenceFees;
+
+    public void setLicenceFees(java.util.Map<Integer, Double> byId) {
+        licenceFees = byId == null || byId.isEmpty() ? null : java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(byId));
+    }
+
+    public java.util.Map<Integer, Double> getLicenceFees() {
+        return licenceFees == null ? java.util.Map.of() : licenceFees;
+    }
+
+    /**
+     * The bill on the city's own patented works (R2c-P; LicenceFees.capturePublic()): what production accrued, to be paid at the next strike, and
+     * what the last strike paid. A save from before reads 0 for both, the bill it never accrued, so no format bump.
+     */
+    private Double publicIpPending, publicIpPaid;
+
+    public double getPublicIpPending() { return publicIpPending == null ? 0 : publicIpPending; }
+    /** Stores the amount owed, null (no key in the file) for 0, a figure not finite or below 0 (R2c-P). */
+    public void setPublicIpPending(double amount) { publicIpPending = Double.isFinite(amount) && amount > 0 ? amount : null; }
+    public double getPublicIpPaid() { return publicIpPaid == null ? 0 : publicIpPaid; }
+    /** Stores the amount last paid, null (no key in the file) for 0, a figure not finite or below 0 (R2c-P). */
+    public void setPublicIpPaid(double amount) { publicIpPaid = Double.isFinite(amount) && amount > 0 ? amount : null; }
 
     public void setRecipeChoices(java.util.Map<Integer, java.util.List<String>> byId) {
         this.recipeChoices = byId == null || byId.isEmpty() ? null : byId;
@@ -1391,7 +1438,7 @@ public class DataSave implements Cloneable {
         return (underConstructionById == null) ? 0 : underConstructionById.length;
     }
 
-    public int getUnderConstructionById(int templateId) {
+    public long getUnderConstructionById(int templateId) {
         return (underConstructionById == null
                 || templateId < 0
                 || templateId >= underConstructionById.length)
@@ -1533,7 +1580,7 @@ public class DataSave implements Cloneable {
     public double[] getLandListing()        { return landListing; }
     public void setLandMarketPrices(double[] state) { this.landMarketPrices = state; }
     public double[] getLandMarketPrices()   { return landMarketPrices; }
-    /** An older save's pool of iron sites, 0 when it carries none: what LandConversion reads. */
+    /** An older save's pool of iron sites, 0 when it carries none: kept only as an obsolete save key. */
     public int getIronDeposits()            { return ironDeposits != null ? ironDeposits : 0; }
     /** ...and its tonnes. */
     public double getIronReserveTonnes()    { return ironReserveTonnes != null ? ironReserveTonnes : 0; }
@@ -1643,15 +1690,6 @@ public class DataSave implements Cloneable {
     public void setTaxPolicyState(double[] state)  { this.taxPolicyState = state; }
     public double[] getTaxPolicyState()            { return taxPolicyState; }
 
-    /**
-     * The month each Policy lever opens in this city, by the lever's NAME (R0; TaxPolicy.openingsForSave()). Null on a save from before R0,
-     * which loads with every lever open: its taxes were set before there was a gate.
-     */
-    private java.util.Map<String, Integer> leverOpenings;
-
-    public void setLeverOpenings(java.util.Map<String, Integer> openings) { this.leverOpenings = openings; }
-    public java.util.Map<String, Integer> getLeverOpenings()              { return leverOpenings; }
-
     public void setHouseholdBalance(double[] state) { this.householdBalance = state; }
     public double[] getHouseholdBalance()           { return householdBalance; }
 
@@ -1731,8 +1769,11 @@ public class DataSave implements Cloneable {
      * cannot be recovered from the month the save was taken in; the trailing
      * import figure is an average of months that have gone; the vault's
      * dollars, its revaluation and the debt's ride the end of the array. The
-     * slots are listed at ForeignAccounts.toSaveArray().
+     * slots are listed at ForeignAccounts.toSaveArray(). XR7: this includes
+     * holdFelt (147), the support already bought under a peg or band; restoring
+     * only the held rate would charge its whole gap again the next month.
      */
+    // R0f: includes the Canadian gold episode and its exhausted flag (ForeignAccounts slots 156-157).
     private double[] foreignAccounts;
 
     public void setForeignAccounts(double[] state) { this.foreignAccounts = state; }
@@ -2419,6 +2460,19 @@ public class DataSave implements Cloneable {
     public void setHouseholdGraduates(double[] v) { this.householdGraduates = v == null ? null : v.clone(); }
     public double[] getHouseholdGraduates()       { return householdGraduates == null ? null : householdGraduates.clone(); }
 
+    /**
+     * ...and the month's flows waiting for the next census (HS1,
+     * HouseholdBalance.flowsToSave()): the shares of each band who retired,
+     * aged on, died and left, which carry their own money at the census
+     * before the pool. Struck at the demographics and read at the next
+     * month's census, so every save holds one; shares, so a scaled save
+     * scales none of it.
+     */
+    private double[] householdFlows;
+
+    public void setHouseholdFlows(double[] v) { this.householdFlows = v == null ? null : v.clone(); }
+    public double[] getHouseholdFlows()       { return householdFlows == null ? null : householdFlows.clone(); }
+
     public void setRememberedCommute(double v) { this.rememberedCommute = v; }
     public double getRememberedCommute() {
         return rememberedCommute > 0 ? rememberedCommute : 1;
@@ -2552,6 +2606,9 @@ public class DataSave implements Cloneable {
      */
     private double[] sickness;
 
+    /** Acute influenza shares by saved age band, beside the mortality ring (R0h); null means none. */
+    private double[] sicknessAcute;
+
     /**
      * Crime and the prisons (2026-09-11): six monthly cohorts of prisoners,
      * the month as it was struck - the rate next month's migration reads, the
@@ -2598,6 +2655,9 @@ public class DataSave implements Cloneable {
      * a city with empty graveyards, which is exactly what those saves were.
      */
     private double[] healthcare;
+
+    /** SZ1: the month's offered care and shares who could pay it; null when the save did not carry access. */
+    private double[] healthcareAccess;
 
     /**
      * The minimum wage, then the eleven wages the city is actually paying.
@@ -2703,6 +2763,8 @@ public class DataSave implements Cloneable {
     public double[] getUnemployment()       { return unemployment; }
     public void setSickness(double[] a)     { this.sickness = a; }
     public double[] getSickness()           { return sickness; }
+    public void setSicknessAcute(double[] a) { this.sicknessAcute = a; }
+    public double[] getSicknessAcute()       { return sicknessAcute; }
     public void setCrime(double[] a)        { this.crime = a; }
     public double[] getCrime()              { return crime; }
     public void setHealth(double[] a)   { this.health = a; }
@@ -2711,6 +2773,8 @@ public class DataSave implements Cloneable {
     public double[] getCausesOfDeath()       { return causesOfDeath; }
     public void setHealthcare(double[] a){ this.healthcare = a; }
     public double[] getHealthcare()      { return healthcare; }
+    public void setHealthcareAccess(double[] a) { this.healthcareAccess = a == null ? null : a.clone(); }
+    public double[] getHealthcareAccess()       { return healthcareAccess; }
 
     /*
      * The private sector's memory, and the player's own turn.
@@ -2719,6 +2783,7 @@ public class DataSave implements Cloneable {
      * retirement needs six in a row, so forgetting it across a load reset the
      * clock and made scrapping capacity save-scummable. `populationTrend` is the
      * twelve-month window the retail and industry planners forecast from.
+     * `sectorOperatingLossMonths` is the same for the months its plant ran at an operating loss (AQ1, the streak a price taker's bleed reads); a save without it restarts the streak at 0.
      *
      * The last three accumulate DURING the player's turn and are read by next
      * month's national accounts. Save mid-turn without them and a building the
@@ -2726,6 +2791,7 @@ public class DataSave implements Cloneable {
      * borrowing rate, since the debt market prices off GDP.
      */
     private java.util.Map<String, Integer> sectorLossMonths;
+    private java.util.Map<String, Integer> sectorOperatingLossMonths;
     private java.util.List<Long> populationTrend;
     private double cityCapitalSpending;
     private double monthlyMaterialImports;
@@ -2736,10 +2802,12 @@ public class DataSave implements Cloneable {
      * old unit for that one month. See Game.monthlyMaterialImportBill.
      */
     private double monthlyMaterialImportBill;
-    private int materialsConsumed;
+    private long materialsConsumed;
 
     public void setSectorLossMonths(java.util.Map<String, Integer> m){ this.sectorLossMonths = m; }
     public java.util.Map<String, Integer> getSectorLossMonths(){ return sectorLossMonths; }
+    public void setSectorOperatingLossMonths(java.util.Map<String, Integer> m){ this.sectorOperatingLossMonths = m; }
+    public java.util.Map<String, Integer> getSectorOperatingLossMonths(){ return sectorOperatingLossMonths; }
     public void setPopulationTrend(java.util.List<Long> l){ this.populationTrend = l; }
     public java.util.List<Long> getPopulationTrend(){ return populationTrend; }
     public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }
@@ -2784,8 +2852,8 @@ public class DataSave implements Cloneable {
     public double getMonthlyMaterialImports(){ return monthlyMaterialImports; }
     public void setMonthlyMaterialImportBill(double v){ this.monthlyMaterialImportBill = v; }
     public double getMonthlyMaterialImportBill(){ return monthlyMaterialImportBill; }
-    public void setMaterialsConsumed(int v){ this.materialsConsumed = v; }
-    public int getMaterialsConsumed(){ return materialsConsumed; }
+    public void setMaterialsConsumed(long v){ this.materialsConsumed = v; }
+    public long getMaterialsConsumed(){ return materialsConsumed; }
 
     /**
      * What each protected sector was paid last month.
@@ -2871,7 +2939,7 @@ public class DataSave implements Cloneable {
         return month;
     }
     
-    public int getBuildingQuantity(int index){
+    public long getBuildingQuantity(int index){
         return buildings[index];
     }
     
@@ -2883,6 +2951,7 @@ public class DataSave implements Cloneable {
         return debts;
     }
 
+    /** All instrument fields, including BF1 retirementClaim, go out and back through the loan JSON. */
     public void setBusinessDebt(List<BusinessDebt> loans) {
         this.businessDebts = LOANS_GSON.toJsonTree(loans).getAsJsonArray();
     }
@@ -2899,7 +2968,7 @@ public class DataSave implements Cloneable {
         return progress[index];
     }
     
-    public int getConstructionMaterials(){
+    public long getConstructionMaterials(){
         return constructionMaterials;
     }
     

@@ -354,7 +354,7 @@ public final class TreasuryFund {
     // Over the fund's life, for the page and the playtest.
     private double paidInFromSurplus, paidInFromCash, handPaidIn, handDrawnOut;
     private double transfersPaid, transfersShort;
-    // ...and how much of the transfers were due on the idle cash (RB1).
+    // ...and how much of the transfers paid was struck on the idle cash (RB1; RB1-R: paid, not due).
     private double transfersFromIdle;
     private double dividendsMarket, dividendsRescue, coupons, principal, bondFaceLost;
     // The lending fee the world paid it for the shares its market book lent a short (EM2; LF1: a counter of its own, and a row).
@@ -367,7 +367,7 @@ public final class TreasuryFund {
     // went out, which the Fund page reads after the month has closed - and so
     // saved with it (State.month), since a reloaded city cannot rebuild a flow.
     private double transferDue, transferPaid;
-    // ...and the part of the due that was struck on the idle cash (RB1, idlePartAt()).
+    // ...and the part of what was paid that was struck on the idle cash (RB1, idlePartAt(); RB1-R: paid, not due).
     private double transferFromIdle;
     private double monthDividends, monthCoupons, monthPrincipal, monthBought, monthSold, monthLendingFees;
     // Over the default withdrawal (C1): what the month's cash could not cover,
@@ -599,8 +599,8 @@ public final class TreasuryFund {
      * rule cannot invest (idleCash()), and returns what was paid. The due is
      * the dial's share of what is invested and the larger of the dial and
      * IDLE_TRANSFER_SHARE of the idle cash (dueOn(), RB1), and at a dial of
-     * nothing nothing; the part struck on the idle cash is noted
-     * (getTransferFromIdle()). At or under the default withdrawal from its
+     * nothing nothing; the part of what was paid that is struck on the idle
+     * cash is noted (getTransferFromIdle(), RB1-R: paid, not due). At or under the default withdrawal from its
      * cash only - "the rule never sells to pay it" - and what the cash could
      * not cover is simply not paid, and counted (getTransferShort()).
      *
@@ -633,9 +633,10 @@ public final class TreasuryFund {
         }
         transferPaidLate = late;
         transferDue = dueOn(value, idle);
-        transferFromIdle = idlePartAt(withdrawalSteps, value, idle);
-        transfersFromIdle += transferFromIdle;
         transferPaid = Math.max(0, Math.min(transferDue, cash));
+        // ...the idle part counts what was paid of it (RB1-R), not the due: what the cash could not cover is short, not drawn from idle.
+        transferFromIdle = Math.min(idlePartAt(withdrawalSteps, value, idle), transferPaid);
+        transfersFromIdle += transferFromIdle;
         cash -= transferPaid;
         transfersThisYear += transferPaid;
         transferShortThisYear += transferDue - transferPaid;
@@ -650,10 +651,10 @@ public final class TreasuryFund {
         return payTransfer(value, 0, year);
     }
 
-    /** The part of this month's due struck on the idle cash (RB1): 0 with none idle, or at a dial of nothing. */
+    /** The part of what this month paid that is struck on the idle cash (RB1, RB1-R: paid, not due): 0 with none idle, or at a dial of nothing. */
     public double getTransferFromIdle()     { return transferFromIdle; }
 
-    /** ...and over the fund's life. */
+    /** ...and the part of what was paid, over the fund's life. */
     public double getTransfersFromIdle()    { return transfersFromIdle; }
 
     /** This month's transfer as due, and as paid. */

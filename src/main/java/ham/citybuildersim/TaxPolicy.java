@@ -79,193 +79,41 @@ public class TaxPolicy {
     }
 
     /* =====================================================================
-       THE LEVERS ON HISTORY'S DATES (R0, 2026-11-04; research-1900.md 7)
+       EVERY LEVER OPEN FROM THE FOUNDING (OP1, 2026-11-19)
 
-       Jerus: the game starts in January 1900 and history is the tutorial.
-       Each lever below opens on the date Canada first had it (PolicyDates),
-       with an inbox notice of its first terms; before its date it affects no
-       monthly flow and the player cannot set it. THE THREE INCOME TAXES OPEN
-       AT THE FOUNDING RATE (DEFAULT_INCOME_TAX), THE PROMISES AT ZERO (call
-       16): a tax funds the city and a promise costs it, and a tax that
-       opened at zero left an untended city untaxed for decades (the
-       playtest's, measured: no profit, wage or sales tax until about 1950,
-       its treasury below zero 1921-1967). Their offsets open at zero.
-       Every city runs on history's dates, harness cities too: a fixture
-       whose premise is a lever's mechanics opens it (openAll()), or builds
-       on a policy no city holds, whose month is 0 and whose every lever is
-       open.
-
-       THE WHY OF HOLDING AT ZERO RATHER THAN READING THROUGH A GATE. Every
-       rate here is read by name from a dozen places (the month's taxes, the
-       households' payslips, the previews), and the effective rates already
-       charge nothing when a base and its offsets are zero. A gate in each
-       reader would be a dozen lines to keep in step; a dial held at zero
-       and a setter that refuses is two, here, and the flows follow.
-
-       The city tells the policy its month (Game, every month before anything
-       is taxed or paid, at founding and after a load), and the policy holds
-       each closed lever at zero from then on, remembering which it held
-       (held) so that it knows the month one opens. The lever's opening month is
-       the city's (R3 lets a law find move it up to PolicyDates.MAX_EARLY_MONTHS
-       earlier) and is saved with it; a save from before R0 has none, and
-       loads with every lever open - its taxes were set before R0.
+       Jerus: "everything policy related is available right away, and
+       later ill think of an actual tutorial". From R0 (2026-11-04) to OP1
+       each lever below opened on the date Canada first had it (PolicyDates)
+       and was held at zero until then; since OP1 every lever is the
+       player's from the first month, in every city, and no setter here
+       refuses one. The founding opens each as a lever opened under R0
+       (openAtFounding(); call 16): THE THREE INCOME TAXES AT THE FOUNDING
+       RATE (DEFAULT_INCOME_TAX), THE PROMISES AT ZERO - a tax funds the city
+       and a promise costs it, so a city starts on its taxes and promises
+       nothing until the player does. A policy no city holds (a fixture's)
+       keeps reset()'s defaults, every promise at its default.
        ===================================================================== */
 
     /**
-     * The levers this class holds, in the order they open. STUDENT_AID holds the grant and the student loan's rate; the loans themselves are
-     * not made before it opens (HouseholdBalance.setStudentLoansOpen(), told by Game with the rate). The money levers (policy rate, central
-     * bank), the minimum wage and zoning belong to other classes.
+     * The founding's opening (OP1): every lever PolicyDates dates opens as R0 opened one on its date (PolicyDates.opensAtFoundingRate()): the
+     * profit, wage and sales taxes at DEFAULT_INCOME_TAX with no offsets, and every promise at zero - the pension's replacement and its
+     * contribution, EI's premium and benefit, the health premium, and student aid's grant and loan rate. Game calls it once, at the founding
+     * (a load puts back what the city saved over it). Writes no line to the decision log - nobody decided anything.
      */
-    public static final PolicyDates.Lever[] GATED = {
-            PolicyDates.Lever.PROFIT_TAX, PolicyDates.Lever.WAGE_TAX, PolicyDates.Lever.SALES_TAX,
-            PolicyDates.Lever.PENSION_REPLACEMENT, PolicyDates.Lever.STUDENT_AID, PolicyDates.Lever.EI,
-            PolicyDates.Lever.HEALTH_PREMIUM, PolicyDates.Lever.PENSION_CONTRIBUTION };
-
-    /** The city's game month as Game pushes it (setMonth()); 0 is a policy no city holds, whose every lever is open. Never saved: the city says. */
-    private int month;
-
-    /** Each lever's opening month: history's (PolicyDates.openingMonth()) until a find moves it or openAll() opens it. Saved with the city. */
-    private final java.util.EnumMap<PolicyDates.Lever, Integer> opening = historyOpenings();
-
-    /** True while a save is being read back: what a city saved is put back as it was, whatever month the policy last heard. */
-    private boolean restoring;
-
-    /**
-     * The gated levers this policy held shut at the last month it heard (setMonth()), so that the month one opens is known: the income taxes
-     * then open at the founding rate (call 16). Never saved; a restore, openAll() and reset() empty it (setMonth() fills it again with what
-     * is still shut), so a rate they put back is never overwritten by a later opening.
-     */
-    private final java.util.EnumSet<PolicyDates.Lever> held = java.util.EnumSet.noneOf(PolicyDates.Lever.class);
-
-    private static java.util.EnumMap<PolicyDates.Lever, Integer> historyOpenings() {
-        java.util.EnumMap<PolicyDates.Lever, Integer> m = new java.util.EnumMap<>(PolicyDates.Lever.class);
-        for (PolicyDates.Lever l : PolicyDates.Lever.values()) m.put(l, PolicyDates.openingMonth(l));
-        return m;
-    }
-
-    /** Whether a lever is open: always for a policy no city holds (month 0), else from its opening month on. */
-    public boolean isOpen(PolicyDates.Lever lever) {
-        return month <= 0 || month >= opening.get(lever);
-    }
-
-    /** The game month a lever opens in on this city: history's, or earlier where a find brought it forward, or 1 where openAll() opened it. */
-    public int openingMonth(PolicyDates.Lever lever) {
-        return opening.get(lever);
-    }
-
-    /** A setter's question: is this lever shut to the player? A save being read back is never refused. */
-    private boolean closed(PolicyDates.Lever lever) {
-        return !restoring && !isOpen(lever);
-    }
-
-    /**
-     * The city's month, told by Game at founding, after a load and at the top of every month before anything is taxed or paid. Stores it, and
-     * then HOLDS every closed lever at zero: its base rate and every offset, the promise or the grant. A lever held at the last month and
-     * open now has just opened: an income tax's base rate opens at the founding rate, DEFAULT_INCOME_TAX, and every promise stays at the
-     * zero it was held at (call 16: a tax opened at zero left an untended city untaxed for decades; a promise costs the city). Writes no
-     * line to the decision log - nobody decided anything.
-     */
-    public void setMonth(int gameMonth) {
-        month = gameMonth;
-        for (PolicyDates.Lever l : GATED) {
-            if (!isOpen(l)) {
-                held.add(l);
-            } else if (held.remove(l) && PolicyDates.opensAtFoundingRate(l)) {
-                switch (l) {
-                    case PROFIT_TAX -> profitTaxRate = DEFAULT_INCOME_TAX;
-                    case WAGE_TAX   -> wageTaxRate = DEFAULT_INCOME_TAX;
-                    case SALES_TAX  -> salesTaxRate = DEFAULT_INCOME_TAX;
-                    default         -> { }
-                }
-            }
-        }
-        if (!isOpen(PolicyDates.Lever.WAGE_TAX)) {
-            wageTaxRate = 0;
-            java.util.Arrays.fill(wageOffset, 0);
-        }
-        if (!isOpen(PolicyDates.Lever.PROFIT_TAX)) {
-            profitTaxRate = 0;
-            profitOffset.clear();
-        }
-        if (!isOpen(PolicyDates.Lever.SALES_TAX)) {
-            salesTaxRate = 0;
-            salesOffset.clear();
-        }
-        if (!isOpen(PolicyDates.Lever.PENSION_REPLACEMENT)) pensionReplacement = 0;
-        if (!isOpen(PolicyDates.Lever.PENSION_CONTRIBUTION)) contributionRate = 0;
-        if (!isOpen(PolicyDates.Lever.EI)) {
-            eiPremiumRate = 0;
-            eiBenefitRate = 0;
-        }
-        if (!isOpen(PolicyDates.Lever.HEALTH_PREMIUM)) healthPremiumRate = 0;
-        if (!isOpen(PolicyDates.Lever.STUDENT_AID)) {
-            grantAmount = 0;
-            studentLoanRate = 0;
-        }
-    }
-
-    /** Every lever's opening month to 1: a save from before R0, whose taxes were set before there was a gate, and a fixture whose premise is a lever's mechanics. */
-    public void openAll() {
-        for (PolicyDates.Lever l : PolicyDates.Lever.values()) opening.put(l, 1);
-        // Nothing is shut now, so nothing is about to open: a rate a fixture sets next must not be taken for the founding rate later.
-        held.clear();
-    }
-
-    /** One lever's opening month to 1, the rest and what was held untouched: a fixture whose premise is one lever's mechanics (a tax so opened still opens at the founding rate the next month it is told). */
-    public void openNow(PolicyDates.Lever lever) {
-        opening.put(lever, 1);
-    }
-
-    /**
-     * A law discovery found here brings its lever forward (R3): the lever opens in `month` or at the earliest the discovery allows
-     * (PolicyDates.earliestOpening(): MAX_EARLY_MONTHS before its date), whichever is later, and never later than it was. A lever already open
-     * by then, or one that history opens at founding, is untouched. Game says the first month the policy will hear after the find (the month
-     * after it), because setMonth() has already held the lever shut at the top of the find's month: an opening in that month itself would leave
-     * the lever open in name with its base rate held at zero, and the founding rate (setMonth()) would overwrite one the player set in between.
-     * Returns whether the opening moved. Saved with the other openings (openingsForSave()).
-     */
-    public boolean bringForward(PolicyDates.Lever lever, int month) {
-        if (lever == null || PolicyDates.openAtFounding(lever)) return false;
-        int now = opening.get(lever);
-        int earlier = Math.min(now, Math.max(month, PolicyDates.earliestOpening(lever)));
-        if (earlier >= now) return false;
-        opening.put(lever, earlier);
-        return true;
-    }
-
-    /** Every lever back to history's date: a new city. */
-    private void resetOpenings() {
-        opening.putAll(historyOpenings());
-    }
-
-    /** The dated levers' opening months for the save, keyed by the lever's name and never its ordinal. */
-    public java.util.Map<String, Integer> openingsForSave() {
-        java.util.Map<String, Integer> out = new java.util.LinkedHashMap<>();
+    public void openAtFounding() {
         for (PolicyDates.Lever l : PolicyDates.Lever.values()) {
-            if (!PolicyDates.openAtFounding(l)) out.put(l.name(), opening.get(l));
-        }
-        return out;
-    }
-
-    /**
-     * Puts a saved city's openings back. Null or empty is a save from before R0: every lever open. A key this build does not know is skipped,
-     * and a lever the save does not name keeps history's month.
-     */
-    public void restoreOpenings(java.util.Map<String, Integer> saved) {
-        if (saved == null || saved.isEmpty()) {
-            openAll();
-            return;
-        }
-        resetOpenings();
-        for (java.util.Map.Entry<String, Integer> e : saved.entrySet()) {
-            if (e.getKey() == null || e.getValue() == null) continue;
-            PolicyDates.Lever lever;
-            try {
-                lever = PolicyDates.Lever.valueOf(e.getKey());
-            } catch (IllegalArgumentException unknown) {
-                continue;
+            double at = PolicyDates.opensAtFoundingRate(l) ? DEFAULT_INCOME_TAX : 0;
+            switch (l) {
+                case PROFIT_TAX           -> { profitTaxRate = at; profitOffset.clear(); }
+                case WAGE_TAX             -> { wageTaxRate = at; java.util.Arrays.fill(wageOffset, 0); }
+                case SALES_TAX            -> { salesTaxRate = at; salesOffset.clear(); }
+                case PENSION_REPLACEMENT  -> pensionReplacement = at;
+                case PENSION_CONTRIBUTION -> contributionRate = at;
+                case EI                   -> { eiPremiumRate = at; eiBenefitRate = at; }
+                case HEALTH_PREMIUM       -> healthPremiumRate = at;
+                case STUDENT_AID          -> { grantAmount = at; studentLoanRate = at; }
+                default                   -> { }   // the undated levers keep reset()'s defaults; the minimum wage is LabourMarket.foundOn()'s, zoning starts free, Money's two are other classes'
             }
-            opening.put(lever, Math.max(1, e.getValue()));
         }
     }
 
@@ -400,7 +248,6 @@ public class TaxPolicy {
     public double getPensionReplacement() { return pensionReplacement; }
 
     public void setContributionRate(double rate) {
-        if (closed(PolicyDates.Lever.PENSION_CONTRIBUTION)) return;
         double was = contributionRate;
         contributionRate = Math.max(0, Math.min(MAX_CONTRIBUTION, rate));
         if (DecisionLog.moved(was, contributionRate)) {
@@ -409,7 +256,6 @@ public class TaxPolicy {
     }
 
     public void setPensionReplacement(double share) {
-        if (closed(PolicyDates.Lever.PENSION_REPLACEMENT)) return;
         double was = pensionReplacement;
         pensionReplacement = Math.max(0, Math.min(MAX_REPLACEMENT, share));
         if (DecisionLog.moved(was, pensionReplacement)) {
@@ -510,7 +356,6 @@ public class TaxPolicy {
     }
 
     public void setEiPremiumRate(double rate) {
-        if (closed(PolicyDates.Lever.EI)) return;
         double was = eiPremiumRate;
         eiPremiumRate = clamp(rate, MAX_EI_PREMIUM);
         if (DecisionLog.moved(was, eiPremiumRate)) {
@@ -519,7 +364,6 @@ public class TaxPolicy {
     }
 
     public void setEiBenefitRate(double share) {
-        if (closed(PolicyDates.Lever.EI)) return;
         double was = eiBenefitRate;
         eiBenefitRate = clamp(share, MAX_EI_BENEFIT);
         if (DecisionLog.moved(was, eiBenefitRate)) {
@@ -529,7 +373,6 @@ public class TaxPolicy {
 
     /** The grant as a share of the unskilled wage - the founding basis until 0.7.19, at this share. */
     public void setStudentGrantShare(double share) {
-        if (closed(PolicyDates.Lever.STUDENT_AID)) return;
         GrantBasis wasBasis = grantBasis;
         double was = grantAmount;
         grantBasis = GrantBasis.WAGE_SHARE;
@@ -783,7 +626,6 @@ public class TaxPolicy {
 
     /** Picks the basis; the amount is clamped to the new basis's ceiling and otherwise left where it was. */
     public void setGrantBasis(GrantBasis basis) {
-        if (closed(PolicyDates.Lever.STUDENT_AID)) return;
         GrantBasis wasBasis = grantBasis;
         double was = grantAmount;
         grantBasis = basis == null ? DEFAULT_GRANT_BASIS : basis;
@@ -793,7 +635,6 @@ public class TaxPolicy {
 
     /** Sets the amount, in the current basis's unit, clamped to its ceiling. */
     public void setGrantAmount(double amount) {
-        if (closed(PolicyDates.Lever.STUDENT_AID)) return;
         double was = grantAmount;
         grantAmount = clamp(amount, maxGrantAmount(grantBasis));
         grantDecided(grantBasis, was);
@@ -801,7 +642,6 @@ public class TaxPolicy {
 
     /** Both at once, so a screen can stage them together - and one line in the log for the two. */
     public void setGrant(GrantBasis basis, double amount) {
-        if (closed(PolicyDates.Lever.STUDENT_AID)) return;
         GrantBasis wasBasis = grantBasis;
         double was = grantAmount;
         grantBasis = basis == null ? DEFAULT_GRANT_BASIS : basis;
@@ -822,8 +662,6 @@ public class TaxPolicy {
     }
 
     public void setStudentLoanRate(double annual) {
-        // Shut with the loans themselves (R0): the treasury makes none before student aid opens, so there is no rate to set.
-        if (closed(PolicyDates.Lever.STUDENT_AID)) return;
         double was = studentLoanRate;
         studentLoanRate = clamp(annual, MAX_STUDENT_LOAN_RATE);
         if (DecisionLog.moved(was, studentLoanRate)) {
@@ -965,7 +803,6 @@ public class TaxPolicy {
     }
 
     public void setHealthPremiumRate(double rate) {
-        if (closed(PolicyDates.Lever.HEALTH_PREMIUM)) return;
         double was = healthPremiumRate;
         healthPremiumRate = clamp(rate, MAX_HEALTH_PREMIUM);
         if (DecisionLog.moved(was, healthPremiumRate)) {
@@ -1026,15 +863,13 @@ public class TaxPolicy {
     }
 
     /**
-     * A city founded on a ladder (R0d): its anchor, the pension's wage base on it, and the default grant it opens on - DEFAULT_STUDENT_GRANT_SHARE
-     * of the ladder's unskilled wage, as DEFAULT_FIXED_GRANT is of PayTier's - where the student-aid lever is open: a shut lever's grant is held
-     * at zero (setMonth()), and a city told its month before this must not be handed a grant the history it keeps has not opened. Founding only;
-     * a load restores the grant and re-strikes the base.
+     * A city founded on a ladder (R0d): its anchor and the pension's wage base on it. The grant stays where the founding opened it, at zero
+     * (openAtFounding(), OP1); defaultFixedGrant() reads the ladder for a policy reset() puts back. Founding only; a load restores the grant
+     * and re-strikes the base.
      */
     public void foundOn(WageLadder l) {
         setLadder(l);
         pensionWageBase = wageAnchor;
-        if (isOpen(PolicyDates.Lever.STUDENT_AID)) grantAmount = defaultFixedGrant();
     }
 
     /** The default grant on this policy's founding wage: DEFAULT_FIXED_GRANT where that is PayTier's, the same share of the 1900 city's own. */
@@ -1376,7 +1211,6 @@ public class TaxPolicy {
     public double getWageTaxRate()   { return wageTaxRate; }
 
     public void setProfitTaxRate(double rate) {
-        if (closed(PolicyDates.Lever.PROFIT_TAX)) return;
         double was = profitTaxRate;
         profitTaxRate = clamp(rate, MAX_INCOME_TAX);
         if (DecisionLog.moved(was, profitTaxRate)) {
@@ -1385,7 +1219,6 @@ public class TaxPolicy {
     }
 
     public void setSalesTaxRate(double rate) {
-        if (closed(PolicyDates.Lever.SALES_TAX)) return;
         double was = salesTaxRate;
         salesTaxRate = clamp(rate, MAX_INCOME_TAX);
         if (DecisionLog.moved(was, salesTaxRate)) {
@@ -1394,7 +1227,6 @@ public class TaxPolicy {
     }
 
     public void setWageTaxRate(double rate) {
-        if (closed(PolicyDates.Lever.WAGE_TAX)) return;
         double was = wageTaxRate;
         wageTaxRate = clamp(rate, MAX_INCOME_TAX);
         if (DecisionLog.moved(was, wageTaxRate)) {
@@ -1421,20 +1253,10 @@ public class TaxPolicy {
      */
     public void setIncomeTaxRate(double rate) {
         double r = clamp(rate, MAX_INCOME_TAX);
-        // Each of the three only where its lever is open (R0): a tax that does not yet exist is not set by "every tax".
-        boolean moved = false;
-        if (!closed(PolicyDates.Lever.PROFIT_TAX)) {
-            moved |= DecisionLog.moved(profitTaxRate, r);
-            profitTaxRate = r;
-        }
-        if (!closed(PolicyDates.Lever.SALES_TAX)) {
-            moved |= DecisionLog.moved(salesTaxRate, r);
-            salesTaxRate = r;
-        }
-        if (!closed(PolicyDates.Lever.WAGE_TAX)) {
-            moved |= DecisionLog.moved(wageTaxRate, r);
-            wageTaxRate = r;
-        }
+        boolean moved = DecisionLog.moved(profitTaxRate, r) | DecisionLog.moved(salesTaxRate, r) | DecisionLog.moved(wageTaxRate, r);
+        profitTaxRate = r;
+        salesTaxRate = r;
+        wageTaxRate = r;
         if (moved) decided(DecisionLog.TAX, "Taxes to " + DecisionLog.pct(r));
     }
 
@@ -1461,21 +1283,20 @@ public class TaxPolicy {
     public double getPropertyOffset(Sector s) { return getPropertyOffset(s.key()); }
 
     public void setWageOffset(WageBand band, double points) {
-        if (closed(PolicyDates.Lever.WAGE_TAX)) return;
         double was = wageOffset[band.ordinal()];
         wageOffset[band.ordinal()] = clampOffset(points);
         offsetDecided("Wage tax", band.label(), was, wageOffset[band.ordinal()]);
     }
 
     public void setProfitOffset(String sector, double points) {
-        if (sector == null || closed(PolicyDates.Lever.PROFIT_TAX)) return;
+        if (sector == null) return;
         double was = getProfitOffset(sector);
         profitOffset.put(sector, clampOffset(points));
         offsetDecided("Profit tax", sector, was, getProfitOffset(sector));
     }
 
     public void setSalesOffset(String sector, double points) {
-        if (sector == null || closed(PolicyDates.Lever.SALES_TAX)) return;
+        if (sector == null) return;
         double was = getSalesOffset(sector);
         salesOffset.put(sector, clampOffset(points));
         offsetDecided("Sales tax", sector, was, getSalesOffset(sector));
@@ -1645,9 +1466,6 @@ public class TaxPolicy {
     /** A detached copy of every dial (0.7.36): setters on it clamp as here and record nothing. See PolicyPreview. */
     public TaxPolicy copy() {
         TaxPolicy c = new TaxPolicy();
-        c.month = month;
-        c.opening.putAll(opening);
-        c.held.addAll(held);
         c.profitTaxRate = profitTaxRate;
         c.salesTaxRate = salesTaxRate;
         c.wageTaxRate = wageTaxRate;
@@ -1821,16 +1639,7 @@ public class TaxPolicy {
     public boolean restorePolicyState(double[] state) {
 
         if (state == null || state.length < STATE_BEFORE_EI || state.length > STATE_SLOTS) return false;
-        // A save is put back as it was, whatever month this policy last heard (R0: the setters below refuse a closed lever).
-        restoring = true;
-        try {
-            readPolicyState(state);
-        } finally {
-            restoring = false;
-        }
-        // What came back is what the city had, so no lever of it is about to "open" at the founding rate and overwrite it: nothing is held
-        // until the month is told again (setMonth() holds afresh whatever is still shut; Game tells it straight after the restore).
-        held.clear();
+        readPolicyState(state);
         return true;
     }
 
@@ -1947,29 +1756,19 @@ public class TaxPolicy {
         salesOffset.clear();
         propertyOffset.clear();
         if (saved == null) return;
-        // As the policy state: put back as saved, whatever month this policy last heard (R0).
-        restoring = true;
-        try {
-            for (SectorOffsets o : saved) {
-                if (o == null || o.sector == null) continue;
-                setProfitOffset(o.sector, o.profit);
-                setSalesOffset(o.sector, o.sales);
-                setPropertyOffset(o.sector, o.property);
-            }
-        } finally {
-            restoring = false;
+        for (SectorOffsets o : saved) {
+            if (o == null || o.sector == null) continue;
+            setProfitOffset(o.sector, o.profit);
+            setSalesOffset(o.sector, o.sales);
+            setPropertyOffset(o.sector, o.property);
         }
     }
 
     /**
-     * Back to a new city's policy: the defaults, history's dates for every lever, and a month no city holds (0), so that every default
-     * is set whatever the last city's month was. Game tells the new city's month straight after (setMonth()), which holds the closed
-     * levers at zero.
+     * Back to a policy's defaults, every dial at its default whatever the last city set. Game's founding opens the city's levers straight
+     * after (openAtFounding()): the income taxes at the founding rate and every promise at zero.
      */
     public void reset() {
-        month = 0;
-        resetOpenings();
-        held.clear();
         setIncomeTaxRate(DEFAULT_INCOME_TAX);
         propertyTaxRate = DEFAULT_PROPERTY_TAX;
         transitFare = DEFAULT_TRANSIT_FARE;

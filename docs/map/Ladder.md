@@ -1,6 +1,6 @@
 # Ladder.java - 449 lines · 31 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/Ladder.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Ladder.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > One dial, drawn the one way: a "−" worth one step, a slider that snaps to
 > the step, a "+" worth one step, the reading, and a line under them saying
@@ -57,7 +57,7 @@
 > the slider's properties, and shown() tells a dial card what value to
 > draw its effects at: the held thumb's, not the staged one.
 
-**Uses:** [Palette](Palette.md) (21), [Kept](Kept.md) (12)
+**Uses:** [Palette](Palette.md) (21), [Kept](Kept.md) (17), [Pieces](Pieces.md) (1)
 
 **Used by (16):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [Levers](Levers.md), [MortgageCheck](MortgageCheck.md), [PolicyScreen](PolicyScreen.md), [ResearchScreen](ResearchScreen.md), [SectorScreen](SectorScreen.md), [ZoningScreen](ZoningScreen.md)
 

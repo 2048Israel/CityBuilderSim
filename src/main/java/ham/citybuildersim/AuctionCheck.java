@@ -95,7 +95,12 @@ import java.util.Set;
  *      asserts no rate: the count is what the cap's default is a judgement about.
  *
  * Every fixture CAUSES its condition, and from both sides: the bank's room is
- * made ample or nearly gone, the issue small or too big for every rule.
+ * made ample or nearly gone, the issue small or too big for every rule. The
+ * cities: sections 9 and 10 stand on ChildcareCheck's town, 10 with depots stood
+ * until its builders are not short; 7 and 8 on the lineup city (lineupCity(),
+ * sixty months played), its households handed HANDED_SPARE past their cushion
+ * (handSpare()); 12 on the 1900 city twelve months on, handed twice the bill's
+ * face; 11 is the long run, kept played as the auction's audit (FS15).
  */
 public class AuctionCheck {
 
@@ -226,6 +231,7 @@ public class AuctionCheck {
         section7(city);
         section8(city);
         section11();
+        historicalAuction();
 
         out.println();
         if (fails == 0) {
@@ -776,19 +782,68 @@ public class AuctionCheck {
         return ledger.getDebt().stream().filter(kind::isInstance).count();
     }
 
+    /** The savings past their cushion sections 7 and 8 hand the lineup city's households at least (FS15): thirty-two of
+     *  the smallest asks, about what the city played sixty months held on 0.9.166's path (3,178k at month 61). */
+    static final double HANDED_SPARE = 32 * 100 * PriceLevel.FACTOR;
+
+    /**
+     * The households' savings past their cushion, handed (FS15): every household of the market's cells given the same
+     * savings more until their spare for paper is at least `spare`. A cell that may not buy paper (in debt, locked
+     * out, going short) takes its share and adds nothing, so each round after the first is sized by what the one
+     * before added. Outside the audited pools, as FundCheck hands its households theirs, so the month's audit is
+     * untouched. Until FS15 the sections read what the played city's households happened to hold, and an
+     * Observation stood where it held none.
+     */
+    static void handSpare(Game g, double spare) {
+        HouseholdBalance hb = g.getHouseholdBalance();
+        double households = 0;
+        for (Household c : hb.cellsForMarket()) if (!c.isEmpty()) households += c.households;
+        if (!(households > 0)) return;
+        double each = (spare - hb.spareForPaper()) / households;
+        for (int round = 0; round < 64 && hb.spareForPaper() < spare; round++) {
+            double before = hb.spareForPaper();
+            for (Household c : hb.cellsForMarket()) if (!c.isEmpty()) c.savings += each;
+            double added = hb.spareForPaper() - before;
+            each = added > 0 ? each * (spare - hb.spareForPaper()) / added * (1 + 1e-9) : each * 2;
+        }
+    }
+
     /* ============== 7. the lineup in a city ============== */
     static void section7(Game city) {
         out.println("--- 7. the lineup in a city: a line opens, reopens while it is the benchmark, and is not reopened past that ---");
         DebtManager ledger = city.getDebtManager();
+        handSpare(city, HANDED_SPARE);
         double spare = city.getHouseholdBalance().spareForPaper();
         double ask = Math.max(100 * PriceLevel.FACTOR, spare * .05);
         out.printf("   m%d: households hold $%,.0fk past their cushion; each sale below asks $%,.0fk of face%n",
                 city.getMonth(), spare, ask);
-        assertTrue("fixture: households with savings past the cushion", spare > 0);
+        assertTrue("fixture: households with savings past the cushion", spare >= HANDED_SPARE);
         assertTrue("fixture: no ten-year or two-year line stands yet", ledger.benchmarkLine(10) == null && ledger.benchmarkLine(2) == null);
 
+        int need2 = (int) Math.ceil(Auction.BENCHMARK_LIFE * 24 - 1e-9);
+        assertTrue("(nine tenths of 24 months is 21.6, so a two-year line needs 22 left)", need2 == 22);
+        lineupInCity(city, ask, need2);
+
+        /* A TERM THE TREASURY DOES NOT SELL. */
+        int debts = ledger.getDebt().size();
+        double cash = city.getCash();
+        int tallied = ledger.auctionSales();
+        String said = city.handleLongBondLogic(ask, 40, 100 * PriceLevel.FACTOR);
+        assertTrue("a 40-year ask is refused, in LongTermBond's words", LongTermBond.REFUSAL.equals(said));
+        assertTrue("...quoted nothing, and books nothing: no piece, no cash, no sale counted",
+                city.quoteLongBond(ask, 40, 100 * PriceLevel.FACTOR).isEmpty() && ledger.getDebt().size() == debts
+                        && city.getCash() == cash && ledger.auctionSales() == tallied);
+    }
+
+    /** The played lineup's dependent laws; the independent term refusal stays in section 7. */
+    static void lineupInCity(Game city, double ask, int need2) {
+        DebtManager ledger = city.getDebtManager();
+        double spare = city.getHouseholdBalance().spareForPaper();
         /* A NEW LINE: the stop, rounded down to an eighth. */
         DebtQuote q1 = city.quoteLongBond(ask, 10, 100 * PriceLevel.FACTOR);
+        boolean covered = !q1.isEmpty() && !q1.isShort();
+        assertTrue("fixture: the played market covers the ten-year lineup sale", covered);
+        if (!covered) return;
         Result r1 = q1.auction();
         assertTrue("a ten-year sale with no line to reopen offers a new one, and sells it in full",
                 r1 != null && r1.ask().isNewLine() && !q1.isEmpty() && !r1.shortSale() && r1.sold() == r1.ask().face());
@@ -810,11 +865,15 @@ public class AuctionCheck {
         /* A BILL AND AN AMORTIZING SALE open pieces of their own, and open another each time. */
         long bills = pieces(ledger, ShortTermTBill.class), serials = pieces(ledger, MediumTermBond.class);
         DebtQuote billQuote = city.quoteTBill(ask, 6, 100 * PriceLevel.FACTOR);
-        assertTrue("fixture: the bill sells in full", !billQuote.isEmpty() && !billQuote.isShort());
+        covered = !billQuote.isEmpty() && !billQuote.isShort();
+        assertTrue("fixture: the played market covers the lineup bill", covered);
+        if (!covered) return;
         quietly(() -> city.handleTBillLogic(ask, 6, 100 * PriceLevel.FACTOR));
         // Quoted after the bill is booked: its issue is on the books the amortizing sale is struck on.
         DebtQuote serialQuote = city.quoteMediumBond(ask, 10, 100 * PriceLevel.FACTOR);
-        assertTrue("fixture: the amortizing bond sells in full", !serialQuote.isEmpty() && !serialQuote.isShort());
+        covered = !serialQuote.isEmpty() && !serialQuote.isShort();
+        assertTrue("fixture: the played market covers the lineup serial", covered);
+        if (!covered) return;
         quietly(() -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         assertTrue("a six-month bill and a ten-year amortizing bond each open a piece of their own",
                 pieces(ledger, ShortTermTBill.class) == bills + 1 && pieces(ledger, MediumTermBond.class) == serials + 1
@@ -871,8 +930,6 @@ public class AuctionCheck {
         close("...the first amortizing bond is as it was sold", serial1.getOustandingPrincipal(), serialQuote.faceValue(), 1e-9);
 
         /* THE EDGE OF NINE TENTHS, on the two-year line: 22 months left is a benchmark, 21 is not. */
-        int need2 = (int) Math.ceil(Auction.BENCHMARK_LIFE * 24 - 1e-9);
-        assertTrue("(nine tenths of 24 months is 21.6, so a two-year line needs 22 left)", need2 == 22);
         for (int guard = 0; guard < 6 && two.getRemainingMonths() > need2; guard++) play(city);
         assertTrue("with " + two.getRemainingMonths() + " of its 24 months left the two-year line is still the benchmark",
                 two.getRemainingMonths() == need2 && ledger.benchmarkLine(2) == two);
@@ -892,15 +949,6 @@ public class AuctionCheck {
                         && newTwo.getRemainingMonths() >= need2 && two.getOustandingPrincipal() == twoFace);
         assertTrue("(the ten-year line, 117 months on, is still the benchmark)", ledger.benchmarkLine(10) == ten);
 
-        /* A TERM THE TREASURY DOES NOT SELL. */
-        int debts = ledger.getDebt().size();
-        double cash = city.getCash();
-        int tallied = ledger.auctionSales();
-        String said = city.handleLongBondLogic(ask, 40, 100 * PriceLevel.FACTOR);
-        assertTrue("a 40-year ask is refused, in LongTermBond's words", LongTermBond.REFUSAL.equals(said));
-        assertTrue("...quoted nothing, and books nothing: no piece, no cash, no sale counted",
-                city.quoteLongBond(ask, 40, 100 * PriceLevel.FACTOR).isEmpty() && ledger.getDebt().size() == debts
-                        && city.getCash() == cash && ledger.auctionSales() == tallied);
     }
 
     /* ============== 8. the quote is the deal, and the settle pays the allotment ============== */
@@ -918,6 +966,7 @@ public class AuctionCheck {
         BusinessDebtManager.BondDesk desk = lender.getBondDesk();
         lender.setBondMarket(city.getBondMarket(), null);
         play(city);                                    // section 7's last sales settle here, not in the month under test
+        handSpare(city, HANDED_SPARE);                 // FS15: section 7's sales took what was handed there
         double spare = hb.spareForPaper();
         double askFace = Math.max(100 * PriceLevel.FACTOR, spare * .2);
         assertTrue("fixture: households with savings past the cushion", spare > 0);
@@ -1015,6 +1064,30 @@ public class AuctionCheck {
     }
 
     /* ============== 11. the real run (D33) ============== */
+    /** R1f: a young 1900 city need not borrow on its own; the player's actual bill sale causes an auction. */
+    static void historicalAuction() {
+        out.println("--- 12. the 1900 city: a player's bill sale clears and is counted ---");
+        Game g = new Game(GameFiles.scratch("auctioncheck-1900"), LongPlaytest.founding().withUnfitted(true));
+        quietly(() -> { g.run(); g.simulateMonths(12); });
+        double granule = Game.BUILD_NOTE_GRANULE;
+        double ask = 10 * granule;
+        // FS15: the bill's buyers caused: the households handed twice its face past their cushion. Twelve months on, the
+        // city's bank has the room to buy it too (52,355 of face on 0.9.167's path), but that is the played months'.
+        handSpare(g, 2 * ask);
+        assertTrue("fixture: the 1900 households hold twice the bill's face past their cushion",
+                g.getHouseholdBalance().spareForPaper() >= 2 * ask);
+        DebtQuote q = g.quoteTBill(ask, 6, granule);
+        assertTrue("fixture: the 1900 bill has a nonempty auction", !q.isEmpty() && q.auction() != null && q.auction().sold() > 0);
+        AuctionTally tally = g.getDebtManager().getAuctionTally();
+        int sales = tally.auctionSales();
+        double sold = tally.faceSold(), cash = g.getCash();
+        quietly(() -> g.handleTBillLogic(ask, 6, granule));
+        assertTrue("the actual 1900 sale fires the auction tally once", tally.auctionSales() == sales + 1);
+        close("the tally books the quoted face", tally.faceSold() - sold, q.auction().sold(), 1e-9);
+        close("the treasury receives the quote's proceeds", g.getCash() - cash, q.cashReceived(), 1e-9);
+        assertTrue("the 1900 bill's stop respects the auction cap", q.auction().tail() <= Auction.MAX_TAIL + Auction.STOP_TOLERANCE);
+    }
+
     static void section11() {
         out.println("--- 11. the real run: LongPlaytest's city on automatic building, 1,200 months, its auctions counted ---");
         final int months = 1200;
@@ -1158,9 +1231,9 @@ public class AuctionCheck {
         return n;
     }
 
-    static int siteCount(Game g) {
-        int n = 0;
-        for (int v : g.getBuildingManager().getUnderConstructionById()) n += v;
+    static long siteCount(Game g) {
+        long n = 0;
+        for (long v : g.getBuildingManager().getUnderConstructionById()) n += v;
         return n;
     }
 
@@ -1189,8 +1262,8 @@ public class AuctionCheck {
         g.getBank().setDepositRate(.03);
         g.setCashForTest(cash);
         Rollover.Issue issue = g.rolloverPlan().issues().get(0);
-        DebtQuote capped = g.quoteTBill(issue.cash(), issue.term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
-        DebtQuote filled = g.quoteTBill(issue.cash(), issue.term(), Game.BUILD_NOTE_GRANULE, Cap.FILL);
+        DebtQuote capped = g.quoteTBill(issue.cash(), issue.term(), g.fundingLot("Note"), Cap.DEFAULT);
+        DebtQuote filled = g.quoteTBill(issue.cash(), issue.term(), g.fundingLot("Note"), Cap.FILL);
         Bidders b = g.auctionBidders(issue.term());
         double ask = capped.auction().ask().face();
         double hhCapped = Auction.householdsAt(capped.auction().ceiling(), b, ask);
@@ -1230,18 +1303,18 @@ public class AuctionCheck {
         /* A SHORT SALE: the cash covers the rest. */
         Game s1 = rolloverTown(root, "auction9-short");
         Scene sc = scene(s1, 1_000_000 * PriceLevel.FACTOR);
-        DebtQuote ample = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
+        DebtQuote ample = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.DEFAULT);
         assertTrue("fixture: a 3-month note rolls into a 3-month bill, and with the bank's room ample the sale covers at the default cap",
                 sc.issue().type().equals("Note") && sc.issue().term() == 3 && !ample.isShort());
         assertTrue("fixture: the households bid more at Fill it's ceiling than at a point over fair (a fifth of the issue a point over"
                         + " a deposit rate of 3%), so there is a room between the two",
                 sc.hhFilled() > sc.hhCapped() + .01 * sc.askFace() && sc.room() > 0 && sc.room() < sc.askFace());
         roomTo(s1, sc.room());
-        DebtQuote capped = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
-        DebtQuote filled = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.FILL);
+        DebtQuote capped = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.DEFAULT);
+        DebtQuote filled = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.FILL);
         assertTrue("fixture: with the bank's room left at that, a sale at the default cap sells short and a filled one covers",
                 capped.isShort() && capped.auction().sold() < sc.askFace() && !filled.isShort());
-        DebtQuote atFair = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.tail(0));
+        DebtQuote atFair = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.tail(0));
         assertTrue("a cap at fair allows no tail: the same room sells short at fair itself, and sells less than at fair plus a point",
                 atFair.isShort() && atFair.auction().ceiling() == atFair.auction().ask().fair()
                         && atFair.auction().stop() == atFair.auction().ask().fair() && atFair.auction().sold() < capped.auction().sold());
@@ -1277,7 +1350,7 @@ public class AuctionCheck {
         final double treasury = 300 * PriceLevel.FACTOR;   // D$300k: today's figure, priced at the founding's level (EP1)
         Scene sc2 = scene(s2, treasury);
         roomTo(s2, sc2.room());
-        DebtQuote capped2 = s2.quoteTBill(sc2.issue().cash(), sc2.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
+        DebtQuote capped2 = s2.quoteTBill(sc2.issue().cash(), sc2.issue().term(), s2.fundingLot("Note"), Cap.DEFAULT);
         assertTrue("fixture: a treasury of D$300k, the same room: the sale is short at the default cap, and the treasury cannot pay the rest",
                 capped2.isShort() && s2.getCash() == treasury && sc2.issue().cash() - capped2.cashReceived() > treasury);
         double shortfall = sc2.issue().cash() - capped2.cashReceived();
@@ -1297,7 +1370,7 @@ public class AuctionCheck {
         double advances2 = s2.getCentralBank().getAdvancesToTreasury();
         Game k = rolloverTown(root, "auction9-control");
         scene(k, treasury);
-        DebtQuote coveredK = k.quoteTBill(sc2.issue().cash(), sc2.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
+        DebtQuote coveredK = k.quoteTBill(sc2.issue().cash(), sc2.issue().term(), k.fundingLot("Note"), Cap.DEFAULT);
         quietly(() -> k.simulateMonths(1));
         quietly(() -> k.simulateMonths(1));
         double advancesK = k.getCentralBank().getAdvancesToTreasury();
@@ -1314,8 +1387,8 @@ public class AuctionCheck {
         Scene scf = scene(f, 1_000_000 * PriceLevel.FACTOR);
         roomTo(f, scf.room());
         f.setRolloverCap(Cap.FILL);
-        DebtQuote fq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.FILL);
-        DebtQuote cq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
+        DebtQuote fq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), f.fundingLot("Note"), Cap.FILL);
+        DebtQuote cq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), f.fundingLot("Note"), Cap.DEFAULT);
         assertTrue("fixture: the same room, the rollover filled: the sale covers, at a stop above the capped sale's, with a tail past a point",
                 !fq.isShort() && cq.isShort() && fq.auction().stop() > cq.auction().stop()
                         && fq.auction().tail() > Auction.MAX_TAIL);
@@ -1402,6 +1475,9 @@ public class AuctionCheck {
         out.println("--- 10. automatic building's own cap; the ask a short sale keeps open (D28, D30) ---");
 
         Game a = ChildcareCheck.town(root, "auction10-town");
+        // The capped-sale fixture's street candidate is a Paved Road, whose short issue and retained ask it exercises.
+        a.getBuildingManager().getTemplates().removeIf(t -> t.getCategory() == BuildingType.INFRASTRUCTURE
+                && !t.isHighway() && !t.getName().equals("Paved Road"));
         /*
          * FC1: THE BUILDERS ARE NOT SHORT, SO A QUOTE STANDS ACROSS THE PASSES. The town's four depots leave the sites a month that its
          * repairs eat away (41 of 385 at month 37, 33 of 377 at 38, none of 321 at 39): from month 39 the foreign crews take orders at
@@ -1409,24 +1485,38 @@ public class AuctionCheck {
          * granule's top-up). Eight more depots, stood free as the town's are, keep the sites' month at 557 of 903 and the price flat.
          */
         a.buildStack(ChildcareCheck.template(a, "Construction Depot"), 8, true);
-        assertTrue("fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes",
-                !a.getBuildingManager().foreignCrewsTakeOrders() && a.getBuildingManager().orderPriceMultiplier() == 1.0);
         AutoBuilder ab = a.getAutoBuilder();
         ab.setOn(true, null);
         ab.setCap(Cap.tail(0), null);
-        /*
-         * WG2, {next}, 2026-11-10: THE BUILDER'S MARGIN IS SET TO .30, SO THE ASK FOR GENERAL CARE IS FOR THE COMMUNITY HEALTH CENTRE AGAIN. The WITHDRAWN
-         * section below needs the town's General care ask to be for a Community Health Centre with money raised. WG2's pulls leave this town 3,904 people
-         * against 4,361 and its health posts less filled (what one Walk-in Clinic serves, 1,393 against 1,500; one Community Health Centre, 6,816 against
-         * 7,625), and the advice's first card for General care is three Walk-in Clinics (0.9106 a unit served over their life) ahead of one Centre
-         * (0.9157, 0.6% dearer), where main's was the Centre (0.7969 against 0.8294). The ask opened for the clinics, an issue of D$243k that raised nothing
-         * after the streets' sale took the buyers' money (main's Centre ask, an issue of D$507k, raised D$86k). The margin the builder keeps past
-         * today's demand (AutoBuilder.DEFAULT_SLACK, .15) sizes the order: from .25 up the Centre is the cheaper per unit served (.30: 0.9048
-         * against the clinics' 0.9106), so the fixture sets the player's slider to .30 and the ask is the Centre's.
-         */
+        // WG2, 2026-11-10: THE BUILDER'S MARGIN IS SET TO .30, SO THE ASK FOR GENERAL CARE IS FOR THE
+        // COMMUNITY HEALTH CENTRE AGAIN.
         ab.setSlack(.30, null);
         assertTrue("automatic building's cap is its own: set to fair, the rollover's stays at fair plus a point",
                 CapSetting.same(ab.getCap(), Cap.tail(0)) && CapSetting.same(a.getRolloverCap(), Cap.DEFAULT));
+        // FS15: and more, one at a time, while the town's builders are still short (a town moved by a change to the month
+        // may need more than FC1's eight); until FS15 an Observation stood here.
+        BuildingManager builders = a.getBuildingManager();
+        for (int more = 0; more < 64 && (builders.foreignCrewsTakeOrders() || builders.orderPriceMultiplier() != 1.0); more++)
+            a.buildStack(ChildcareCheck.template(a, "Construction Depot"), 1, true);
+        boolean notShort = !builders.foreignCrewsTakeOrders() && builders.orderPriceMultiplier() == 1.0;
+        assertTrue("fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes",
+                notShort);
+        if (!notShort) return;
+
+
+        /*
+         * HL1, 2026-11-11: THE BUILDER'S DEBT LIMIT IS SET TO ITS MOST, SO THE TOWN BORROWS. The ask is the builder's, not the limit's, and the
+         * town it asks in must be within the limit for the builder to borrow at all (AutoBuilder.within(): over it a pass sells no bond, so no ask
+         * opens). The town stood at 189% of a year's GDP against the default 240% (debt 8,537 of advances to the treasury, annual GDP 4,515) and the
+         * pass borrowed. HL1's B makes the city's services' upkeep Business Services' revenue, three quarters of it an imported service (and all of
+         * it where the sector has no seats, as in this town): the town's schools cost 143 a month and its care 2, imports rose by that and its GDP fell
+         * from 383 a month to 238, annual 4,515 to 2,769, the debt only from 8,537 to 7,844. At 283% the town was over its 240%, where a pass
+         * sells no bond, and no ask opened (0 open). So the limit is opened as AutoBuildCheck's copies open theirs (DEBT_LIMIT_MOST), and the
+         * fixture says the town is within it.
+         */
+        ab.setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
+        assertTrue(String.format("fixture: the town is within the builder's debt limit (HL1) - %.0f%% of a year's GDP against %.0f%% - so a pass borrows and a short sale opens an ask",
+                AutoBuilder.ratio(a) * 100, ab.getDebtLimit() * 100), ab.within(a));
 
         /* THE FIXTURE: the cash at the reserve, so every order needs its bond; the room used up. */
         BuildAdvice.Measure streets = streets();
@@ -1456,7 +1546,7 @@ public class AuctionCheck {
             snap[2 + i] = a.getDebtManager().getAllPrincipal();
             if (!after) monthAt[0] = a.getMonth(); else { snap[4] = AutoBuilder.spendable(a); snap[5] = a.getCash() - AutoBuilder.reserve(a); }
         };
-        int sites0 = siteCount(a);
+        long sites0 = siteCount(a);
         String log1 = month(a, false);
         a.autoBuildProbeForTest = null;
         List<AutoBuilder.OpenAsk> asks = ab.asks();
@@ -1528,7 +1618,7 @@ public class AuctionCheck {
         String log3 = month(a, true);
         AutoBuilder.OpenAsk gone = ab.askFor(streets);
         AutoBuilder.Entry placedEntry = null;
-        for (AutoBuilder.Entry e : ab.log()) if (e.measure().equals(streets.label())) placedEntry = e;
+        for (AutoBuilder.Entry e : ab.log()) if (e.measure().equals(streets.label()) && e.why().contains("waited 2 months")) placedEntry = e;
         assertTrue("the room back, the ask is covered by the sale that month and its order is placed on the same path as any other:"
                         + " one Paved Road, a site, the ask closed",
                 gone == null && placedEntry != null && placedEntry.building().equals("Paved Road") && placedEntry.count() == 1
@@ -1548,13 +1638,14 @@ public class AuctionCheck {
         for (AutoBuilder.OpenAsk k : bb.asks()) costs += k.cost();
         AutoBuilder.OpenAsk streetsB = bb.askFor(streets);
         double raisedB = streetsB == null ? Double.NaN : streetsB.raised();
-        int openB = bb.asks().size(), bondsB = bb.getBonds(), sitesB = siteCount(b);
+        long openB = bb.asks().size(), bondsB = bb.getBonds(), sitesB = siteCount(b);
         double principalB = b.getDebtManager().getAllPrincipal();
         useUpTheRoom(b);
-        b.setCashForTest(AutoBuilder.reserve(b) + costs + 1000);
+        // HW1 keeps working after an ask opens: fund the subsequent essential orders too.
+        b.setCashForTest(AutoBuilder.reserve(b) + costs + Founding.WEALTHY_CASH);
         String logB = printed(() -> b.simulateMonths(1));
         AutoBuilder.Entry placedB = null;
-        for (AutoBuilder.Entry e : bb.log()) if (e.measure().equals(streets.label())) placedB = e;
+        for (AutoBuilder.Entry e : bb.log()) if (e.measure().equals(streets.label()) && e.why().contains("waited 1 month")) placedB = e;
         assertTrue("the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,"
                         + " nothing in the month's report - and every ask is closed",
                 bb.asks().isEmpty() && openB >= 1 && bb.getBonds() == bondsB && salesBy(b, "Automatic building") == 0
@@ -1565,7 +1656,7 @@ public class AuctionCheck {
         /* THE MONTH'S BILLS DRAW THE MONEY: the paper is not sold twice, and the order waits for the cash. */
         Game p = load(saved);
         AutoBuilder pb = p.getAutoBuilder();
-        int openP = pb.asks().size(), sitesP = siteCount(p);
+        long openP = pb.asks().size(), sitesP = siteCount(p);
         p.getBank().setDepositRate(deposit);
         roomTo(p, 1e9);
         p.setCashForTest(AutoBuilder.reserve(p));
@@ -1584,21 +1675,27 @@ public class AuctionCheck {
                         + " order is placed on money that is not there",
                 pb.getOrders() == 0 && pb.log().isEmpty() && pb.asks().size() == openP);
         double principalP = p.getDebtManager().getAllPrincipal();
+        java.util.Map<AutoBuilder.OpenAsk, Double> raisedBefore = new java.util.IdentityHashMap<>();
+        for (AutoBuilder.OpenAsk k : pb.asks()) raisedBefore.put(k, k.raised());
         p.setCashForTest(AutoBuilder.reserve(p));
+        double askLot = p.fundingLot("Term");
         printed(() -> p.simulateMonths(1));
         Notice waits = p.getInbox().live("autobuild");
-        assertTrue("next month, drawn again, the asks have raised their whole cost and the paper is not sold twice: the only sales are a"
-                        + " granule's top-up for a price that drifted up (D$" + (int) Game.BUILD_BOND_GRANULE + "k of face at most each), the orders"
-                        + " still waiting",
+        double repricedGap = 0;
+        for (AutoBuilder.OpenAsk k : pb.asks()) repricedGap += Math.max(0, k.cost() - raisedBefore.getOrDefault(k, 0.0));
+        double askedAgain = p.getAutoSalesThisMonth().stream().mapToDouble(TimeSkipReport.AutoSale::asked).sum();
+        assertTrue("next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost"
+                        + " less the money already raised, rounded by at most a granule per ask; the orders still wait",
                 pb.asks().size() == openP && pb.getOrders() == 0
-                        && p.getAutoSalesThisMonth().stream().allMatch(s -> s.asked() <= Game.BUILD_BOND_GRANULE + 1e-9 && !s.shortSale())
-                        && p.getDebtManager().getAllPrincipal() <= principalP + openP * Game.BUILD_BOND_GRANULE + 1e-6);
+                        && p.getAutoSalesThisMonth().stream().noneMatch(TimeSkipReport.AutoSale::shortSale)
+                        && askedAgain <= repricedGap + openP * askLot + 1e-6
+                        && p.getDebtManager().getAllPrincipal() <= principalP + askedAgain + 1e-6);
         assertTrue("...and the inbox says the month's bills drew the money and that nothing more is borrowed for it",
                 waits != null && String.join(" ", waits.getBody()).contains("have drawn the rest")
                         && String.join(" ", waits.getBody()).contains("nothing more is borrowed for it"));
         int bondsP = pb.getBonds();
         double principalP2 = p.getDebtManager().getAllPrincipal();
-        p.setCashForTest(AutoBuilder.reserve(p) + costsP + 1000);
+        p.setCashForTest(AutoBuilder.reserve(p) + costsP + Founding.WEALTHY_CASH);
         printed(() -> p.simulateMonths(1));
         assertTrue("the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt",
                 pb.asks().isEmpty() && pb.getOrders() >= openP && siteCount(p) >= sitesP + openP && pb.getBonds() == bondsP
@@ -1610,9 +1707,37 @@ public class AuctionCheck {
         BuildAdvice.Measure care = null;
         for (BuildAdvice.Measure k : AutoBuilder.remit(c, CityNeeds.measure(c, CityNeeds.PLAIN))) if (k.label().equals("General care")) care = k;
         final BuildAdvice.Measure general = care;
+        BuildingsTemplate centre = c.getBuildingManager().getTemplateByName("Community Health Centre");
+        // A save from before ranked funding can contain two funded asks. The first pass above really sold the paper.
+        // Split those actual proceeds between the two reservations, preserving every dollar and all outstanding debt.
+        double reservedC = cb.askedRaised(), cashC = c.getCash(), principalC = c.getDebtManager().getAllPrincipal();
+        AutoBuilder.State legacy = cb.toState();
+        AutoBuilder.OpenAsk streetReservation = legacy.asks.stream()
+                .filter(k -> k.measure().equals(streets.label())).findFirst().orElse(null);
+        if (streetReservation != null && general != null) {
+            for (AutoBuilder.OpenAsk old : new java.util.ArrayList<>(legacy.asks)) if (old.measure().equals(general.label())) {
+                streetReservation.raised += old.raised;
+                legacy.asks.remove(old);
+            }
+            AutoBuilder.OpenAsk fundedCare = new AutoBuilder.OpenAsk();
+            fundedCare.measure = general.label();
+            fundedCare.building = centre.getName();
+            fundedCare.templateId = centre.getId();
+            fundedCare.count = 1;
+            fundedCare.cost = c.quoteBuild(centre, 1).total;
+            fundedCare.raised = streetReservation.raised / 2;
+            fundedCare.toRaise = Math.max(0, fundedCare.cost - fundedCare.raised);
+            fundedCare.month = streetReservation.month;
+            streetReservation.raised -= fundedCare.raised;
+            streetReservation.toRaise = Math.max(0, streetReservation.cost - streetReservation.raised);
+            legacy.asks.add(fundedCare);
+            cb.restore(legacy);
+        }
+        assertTrue("fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt",
+                streetReservation != null && reservedC > 0 && Math.abs(cb.askedRaised() - reservedC) < 1e-9
+                        && c.getCash() == cashC && c.getDebtManager().getAllPrincipal() == principalC);
         AutoBuilder.OpenAsk careAsk = general == null ? null : cb.askFor(general);
         double raisedC = careAsk == null ? 0 : careAsk.raised();
-        BuildingsTemplate centre = c.getBuildingManager().getTemplateByName("Community Health Centre");
         c.setCashForTest(Founding.WEALTHY_CASH);
         quietly(() -> c.buildStack(centre, 20, true));
         double[] snapC = new double[5];
@@ -1624,21 +1749,33 @@ public class AuctionCheck {
         String logC = month(c, false);
         c.autoBuildProbeForTest = null;
         String withdrew = String.join(" ", cb.asked());
-        assertTrue("fixture: the town had an ask open for its general care, with money raised for it, and then twenty Health Centres stand:"
+        assertTrue("fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:"
                         + " the measure is ahead of its margin without another",
                 careAsk != null && raisedC > 0 && general != null
                         && BuildAdvice.ahead(c, general, BuildAdvice.onSite(c, general), BuildAdvice.opening(c, 0, cb.getSlack())));
+        String careBuilding = careAsk == null ? "missing" : careAsk.building();
+        String cashWords = "stays in the treasury";
+        String debtWords = "cannot be unsold";
         assertTrue("an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the"
                         + " treasury - the paper is sold and cannot be unsold",
                 general != null && cb.askFor(general) == null
-                        && withdrew.contains("withdrew its ask for Community Health Centre (General care)")
-                        && withdrew.contains("stays in the treasury") && withdrew.contains("cannot be unsold")
-                        && logC.contains("withdrew its ask for Community Health Centre (General care)")
+                        && withdrew.contains("withdrew its ask for " + careBuilding + " (General care)")
+                        && withdrew.contains(cashWords) && withdrew.contains(debtWords)
+                        && logC.contains("withdrew its ask for " + careBuilding + " (General care)")
                         && c.getInbox().live("autobuild-ask") != null
-                        && String.join(" ", c.getInbox().live("autobuild-ask").getBody()).contains("cannot be unsold"));
+                        && String.join(" ", c.getInbox().live("autobuild-ask").getBody()).contains(debtWords));
         assertTrue("...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed"
                         + " (the withdrawn ask's money is the treasury's to spend now), and the city still owes every bond it sold",
                 cb.askFor(streets) != null && snapC[1] >= snapC[0] - placedIn(cb, (int) snapC[4]) - 1e-6 && snapC[3] >= snapC[2] - 1e-6);
+
+        double cashSoldC = c.getAutoSalesThisMonth().stream().filter(x -> x.by().equals("Automatic building"))
+                .mapToDouble(TimeSkipReport.AutoSale::raised).sum();
+        double faceSoldC = c.getAutoSalesThisMonth().stream().filter(x -> x.by().equals("Automatic building"))
+                .mapToDouble(TimeSkipReport.AutoSale::sold).sum();
+        close("funded withdrawal retains every dollar: cash changes only by new sales less placed orders",
+                snapC[1] - snapC[0], cashSoldC - placedIn(cb, (int) snapC[4]), 1e-8);
+        close("funded withdrawal retains every bond: principal changes only by newly sold face",
+                snapC[3] - snapC[2], faceSoldC, 1e-8);
 
         /* WITHDRAWN: the debt limit closes. */
         Game d = load(saved);

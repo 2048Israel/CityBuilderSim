@@ -5,7 +5,7 @@ the exe and the save folder keep the old one, CityBuilderSim.
 
 A macroeconomic city simulator in Java 21 and JavaFX. You lay out a city; the
 economy underneath it is the game. An age pyramid decides the workforce, a
-labour market prices it, twenty-four private sectors keep their own books and expand on
+labour market prices it, twenty-five private sectors keep their own books and expand on
 their own judgement, a commercial bank funds them and cannot lend below what its
 own money costs it, a treasury borrows at a rate the market quotes it, and a
 currency floats against a world that has its own prices and its own inflation.
@@ -103,8 +103,9 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   main; BP1, 2026-10-24); `Batch check.bat` is the same on Windows without
   `--pick`, the maps only with `--maps`.
 - `--timing` runs only the harnesses that time something (`Timing.HARNESSES`):
-  what the ship gate runs, alone and hard, before it commits.
-- `-Dcbs.timing=soft` makes timing soft: a timing figure over its budget says
+  run nightly on main, alone and hard, by `tools/nightly.sh` on the gate box.
+- `-Dcbs.timing=soft` skips sections whose only verdict is a clock (HA1).
+  Mixed correctness sections keep their work and make timing soft: a timing figure over its budget says
   `SOFT`, with the figure and the budget, and is not counted; every other
   assertion is as it was. `AllChecks` hands it to each harness, and `-f` says
   how many went soft. The check scripts set it by themselves while another
@@ -112,12 +113,19 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   (TM1, 2026-10-18); `TimingCheck` holds the mechanism.
 - `-Dcbs.timing.tsv=FILE` makes every timing assertion append its figure,
   budget and unit to FILE (`batch-check.sh` names `target/checks/timing.tsv`),
-  and the ship gate times a timing red again with main's classes and the
-  merge's in turn and judges those figures, not the label's prose
-  (`tools/timing-pair.awk`; TM3, 2026-10-27). A comparison of two measured
-  times is a `Timing` assertion like any budget.
-- Any other argument filters by substring: `AllChecks money bank` runs
-  `MoneyCheck` and `BankCheck` and nothing else.
+  and the nightly confirms a slower figure against the preceding quiet night's
+  commit with paired medians (`tools/timing-pair.awk`, GR1).
+- Any other argument filters by substring: `AllChecks money` runs
+  only harnesses whose names contain `money`.
+- `--gate` runs the default gate tier plus any exactly named nightly harnesses;
+  `--nightly` runs the 15 heavy harnesses listed once in `AllChecks.NIGHTLY`.
+  `tools/pick.sh --nightly` names only direct picks, even beside an `ALL` fallback.
+  The nightly runs the tier on main and reports merges since its last green run.
+- Played-path premises use `Observation.reached`. A miss prints `OBSERVED`
+  and names the dependent laws skipped. Reached laws retain their verdicts.
+  `AllChecks --observations` selects these harnesses, combined with the tier
+  by `--nightly --observations`. Nightly records each line's last hold and
+  reports every miss with the intervening merges. A miss is informational.
 - The exit status is the number of harnesses that failed, so a build script can
   read it.
 - `BuildMenuCheck` and `KeptCheck` need JavaFX on the classpath and are skipped
@@ -134,7 +142,8 @@ before.** A batch has more than once landed in the Java and not in
 **The ensemble is not in the suite.** Sixteen seeds under five monetary
 policies, 80 runs of up to 2,400 months, scored against the inflation
 roadmap's criteria: `tools/ensemble/ensemble.sh <label>`, about twenty
-minutes five at a time (`tools/ensemble/README.md`). It runs only for a
+minutes on the gate box, eight at a time, and nearly two hours on the laptop
+(`tools/ensemble/README.md`). It runs only for a
 batch whose playtest trace moves (EN1, 2026-10-20), once, on the batch's
 final model, against the newest stored score in `docs/ensemble/`, and that
 batch commits its own score there, under its id; `ship.sh` names it by the
@@ -247,7 +256,7 @@ src/main/java/ham/citybuildersim/     over 450 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the twenty-four sector classes, the refinery's flow and spread planner,
+    sectors/                          the twenty-five sector classes, the refinery's flow and spread planner,
                                       the materials chains' two bases (ProcessingSector, ExtractionSector), and
                                       Freight's Haulage and Ports divisions (Haulage, PortDivision)
     BondMarket.java, CorporateBond.java, OrderBook.java
@@ -378,10 +387,10 @@ own banners (`Stale report.bat` prints the list; `StaleCheck` asserts the firm
 half of it in the suite). A fourth, `tools.ManualToMarkdown`, turns the
 published manual into the two files under `docs/` described above, and a
 fifth, `tools.Names`, lists the names a branch's new text uses that the tree
-does not declare (`ship.sh` runs it on ChatGPT's and Gemini's branches). `CLAUDE.md` at the root is the
-briefing an AI session reads first — the standing rules and where everything
-is; how a batch is done, checked and shipped is `docs/batch.md` (a batch
-session) and `docs/orchestrator.md` (the orchestrator).
+does not declare (`ship.sh` runs it on ChatGPT's and Gemini's branches). `docs/contract.md` is what an AI
+session reads first, Claude or Codex: the standing rules and how a batch is
+built, checked and shipped; `CLAUDE.md` at the root is where everything is,
+and `docs/orchestrator.md` the orchestrator's own day.
 
 Beyond that, the code is the documentation. Class headers carry a `WHY` section
 explaining what the thing replaced and what went wrong with the previous

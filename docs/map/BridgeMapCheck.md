@@ -1,6 +1,6 @@
 # BridgeMapCheck.java - 1,015 lines · 51 methods · 9 constants · harnesses
 
-`ham/citybuildersim/BridgeMapCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeMapCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > A long bridge that stands is laid by the runs, kept clear by the plans and drawn with its deck (ET6; docs/studies/spec-earth2-terrain.md 6.5 and 6.6).
 > 
@@ -64,6 +64,8 @@
 > them, a month that grows the net, a sidecar written under another list.
 
 **Uses:** [CityRuns](CityRuns.md) (74), [World](World.md) (69), [CityMap](CityMap.md) (64), [TilePainter](TilePainter.md) (21), [IslandNetCheck](IslandNetCheck.md) (19), [TileRaster](TileRaster.md) (13), [BuildingVisual](BuildingVisual.md) (10), [DistrictPlan](DistrictPlan.md) (9), [CityLand](CityLand.md) (8), [MapCheck](MapCheck.md) (3), [Timing](Timing.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [Founding](Founding.md) (1), [GatewayCheck](GatewayCheck.md) (1), [JunctionCheck](JunctionCheck.md) (1), [Resource](Resource.md) (1)
+
+**Used by (1):** [IslandRailCheck](IslandRailCheck.md)
 
 ## Sections
 

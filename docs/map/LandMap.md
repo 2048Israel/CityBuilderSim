@@ -1,6 +1,6 @@
-# LandMap.java - 2,473 lines · 146 methods · 57 constants · model
+# LandMap.java - 2,722 lines · 163 methods · 60 constants · model
 
-`ham/citybuildersim/LandMap.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMap.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there), the box the land office opens on, and the hover card's words; pure, so MapCheck holds the hit-testing.
 > 
@@ -36,9 +36,9 @@
 > COORDINATES: the world's plots. A plot x covers x to x + 1, so a rectangle
 > [x0, x1) is drawn from x0 to x1 and the outlines lie on plot edges.
 
-**Uses:** [World](World.md) (79), [CityLand](CityLand.md) (59), [LandParcel](LandParcel.md) (40), [BuildingVisual](BuildingVisual.md) (27), [LandMarket](LandMarket.md) (26), [TilePainter](TilePainter.md) (26), [Game](Game.md) (21), [Resource](Resource.md) (20), [TileRaster](TileRaster.md) (19), [Deposit](Deposit.md) (17), [LandManager](LandManager.md) (15), [LandGrid](LandGrid.md) (13), [EarthData](EarthData.md) (9), [Landmasses](Landmasses.md) (6), [GridOffers](GridOffers.md) (5), [MapFrame](MapFrame.md) (5), [CityMap](CityMap.md) (5), [ShipShapes](ShipShapes.md) (4), [EarthTerrain](EarthTerrain.md) (3), [GlobeFrame](GlobeFrame.md) (3), [DebtQuote](DebtQuote.md) (3), [GlobePicture](GlobePicture.md) (2), [Currency](Currency.md) (2), [Geology](Geology.md) (2), [Sectors](Sectors.md) (2), [LandmassView](LandmassView.md) (2), [EarthProj](EarthProj.md) (2), [Formats](Formats.md) (1), [TrainShapes](TrainShapes.md) (1), [Zoning](Zoning.md) (1)... and 1 more
+**Uses:** [World](World.md) (79), [CityLand](CityLand.md) (64), [LandParcel](LandParcel.md) (44), [LandMarket](LandMarket.md) (38), [BuildingVisual](BuildingVisual.md) (27), [TilePainter](TilePainter.md) (26), [Game](Game.md) (23), [Resource](Resource.md) (20), [TileRaster](TileRaster.md) (19), [Deposit](Deposit.md) (17), [LandManager](LandManager.md) (15), [LandGrid](LandGrid.md) (14), [EarthData](EarthData.md) (9), [Landmasses](Landmasses.md) (6), [GridOffers](GridOffers.md) (5), [MapFrame](MapFrame.md) (5), [CityMap](CityMap.md) (5), [ShipShapes](ShipShapes.md) (4), [EarthTerrain](EarthTerrain.md) (3), [GlobeFrame](GlobeFrame.md) (3), [DebtQuote](DebtQuote.md) (3), [GlobePicture](GlobePicture.md) (2), [Currency](Currency.md) (2), [Geology](Geology.md) (2), [Sectors](Sectors.md) (2), [LandmassView](LandmassView.md) (2), [EarthProj](EarthProj.md) (2), [BondMarket](BondMarket.md) (2), [Formats](Formats.md) (1), [TrainShapes](TrainShapes.md) (1)... and 3 more
 
-**Used by (21):** [BuildScreen](BuildScreen.md), [DepositMarks](DepositMarks.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [HydroCheck](HydroCheck.md), [LandCheck](LandCheck.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (22):** [BuildScreen](BuildScreen.md), [DepositMarks](DepositMarks.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FB13Check](FB13Check.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [HydroCheck](HydroCheck.md), [LandCheck](LandCheck.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -55,7 +55,8 @@
 | 1259 | · the zones by district (0.8.0, batch I14) |
 | 1331 | · the ground no port links (ET5, slice D) |
 | 1544 | · buying from the map (0.7.137, batch M6) |
-| 1959 | · the blocks (BL1) |
+| 1565 | · the hover's asynchronous quotes (WN5d) |
+| 2208 | · the blocks (BL1) |
 
 ## Constants
 
@@ -106,18 +107,21 @@
 | 1536 | `LandMap.TRACK_WORDS` | `"Unmade street: the city has bought no road here"` | An unmade street's words in the hover (0.7.88; spec 5; "Track: ..." until FX5, with TRACK_ENTRY). |
 | 1539 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
 | 1542 | `LandMap.PACKED_WORDS` | `" · packed at the city's edge"` | A building packed at the city's edge, in the hover (R7; "packed without a street" until MF1: it stands beside one now, or has one laid to it). |
-| 2121 | `LandMap.Picks.BLOCK_BOUGHT_NOTE` | `"1 block dropped: the city bought it"` | The note when the city bought picked blocks (the player's buying or its own); one block. |
-| 2124 | `LandMap.Picks.BLOCKS_BOUGHT_NOTE` | `"%d blocks dropped: the city bought them"` | ...two or more blocks at once; %d how many. |
-| 2127 | `LandMap.Picks.BLOCK_UNJOINED_NOTE` | `"1 block dropped: no longer joined to the city"` | The note when picked blocks no longer join the city - the blocks or offers they joined through were dropped or bought away; one block. |
-| 2130 | `LandMap.Picks.BLOCKS_UNJOINED_NOTE` | `"%d blocks dropped: no longer joined to the city"` | ...two or more blocks at once; %d how many. |
-| 2133 | `LandMap.Picks.BLOCK_RESIZED_NOTE` | `"1 block dropped: the city's blocks changed size"` | The note when the city's blocks changed size (its level rose with its ground) and the picked blocks were the old ones'; one block. |
-| 2136 | `LandMap.Picks.BLOCKS_RESIZED_NOTE` | `"%d blocks dropped: the city's blocks changed size"` | ...two or more blocks at once; %d how many. |
-| 2139 | `LandMap.Picks.BOUGHT_NOTE` | `"%s dropped: the city bought its ground"` | The note when the city bought a pick's ground (the player's buying or the city's own); %s the offer's name, "North 3". |
-| 2142 | `LandMap.Picks.BOUGHT_MANY_NOTE` | `"%d picks dropped: the city bought their ground"` | ...two or more picks at once; %d how many. |
-| 2145 | `LandMap.Picks.UNOFFERED_NOTE` | `"%s dropped: no longer offered"` | The note when a pick's ground is for sale under no offer now; %s the offer's name. |
-| 2148 | `LandMap.Picks.UNOFFERED_MANY_NOTE` | `"%d picks dropped: no longer offered"` | ...two or more picks at once; %d how many. |
-| 2151 | `LandMap.Picks.CARRIED_NOTE` | `"%s carried onto %s, listed again"` | The note when a pick's offer left the shelf and its ground is offered again, under another id: carried onto it; %s the pick's name or "2 picks", %s the offer's name or "2 offers". |
-| 2159 | `LandMap.BOX_BLOCKS_MOST` | `2_000` | The most blocks one box takes (BL1): 2,000, the flood from the city's ground into the box stopping there, the nearest first - a city is some six to twelve blocks across, so this is several cities of ground, and a box ... |
+| 1574 | `LandMap.Quotes.KEPT` | `16` | The latest blocks whose prices the pointer keeps. |
+| 1576 | `LandMap.Quotes.RETRY_MS` | `2_000` | Milliseconds before a failed measurement may be asked again. |
+| 1578 | `LandMap.Quotes.FAILED` | `"Price could not be worked out"` | The failure line stays distinct from a successful empty quote. |
+| 2370 | `LandMap.Picks.BLOCK_BOUGHT_NOTE` | `"1 block dropped: the city bought it"` | The note when the city bought picked blocks (the player's buying or its own); one block. |
+| 2373 | `LandMap.Picks.BLOCKS_BOUGHT_NOTE` | `"%d blocks dropped: the city bought them"` | ...two or more blocks at once; %d how many. |
+| 2376 | `LandMap.Picks.BLOCK_UNJOINED_NOTE` | `"1 block dropped: no longer joined to the city"` | The note when picked blocks no longer join the city - the blocks or offers they joined through were dropped or bought away; one block. |
+| 2379 | `LandMap.Picks.BLOCKS_UNJOINED_NOTE` | `"%d blocks dropped: no longer joined to the city"` | ...two or more blocks at once; %d how many. |
+| 2382 | `LandMap.Picks.BLOCK_RESIZED_NOTE` | `"1 block dropped: the city's blocks changed size"` | The note when the city's blocks changed size (its level rose with its ground) and the picked blocks were the old ones'; one block. |
+| 2385 | `LandMap.Picks.BLOCKS_RESIZED_NOTE` | `"%d blocks dropped: the city's blocks changed size"` | ...two or more blocks at once; %d how many. |
+| 2388 | `LandMap.Picks.BOUGHT_NOTE` | `"%s dropped: the city bought its ground"` | The note when the city bought a pick's ground (the player's buying or the city's own); %s the offer's name, "North 3". |
+| 2391 | `LandMap.Picks.BOUGHT_MANY_NOTE` | `"%d picks dropped: the city bought their ground"` | ...two or more picks at once; %d how many. |
+| 2394 | `LandMap.Picks.UNOFFERED_NOTE` | `"%s dropped: no longer offered"` | The note when a pick's ground is for sale under no offer now; %s the offer's name. |
+| 2397 | `LandMap.Picks.UNOFFERED_MANY_NOTE` | `"%d picks dropped: no longer offered"` | ...two or more picks at once; %d how many. |
+| 2400 | `LandMap.Picks.CARRIED_NOTE` | `"%s carried onto %s, listed again"` | The note when a pick's offer left the shelf and its ground is offered again, under another id: carried onto it; %s the pick's name or "2 picks", %s the offer's name or "2 offers". |
+| 2408 | `LandMap.BOX_BLOCKS_MOST` | `2_000` | The most blocks one box takes (BL1): 2,000, the flood from the city's ground into the box stopping there, the nearest first - a city is some six to twelve blocks across, so this is several cities of ground, and a box ... |
 
 ## Fields (state)
 
@@ -131,27 +135,47 @@
 | 458 | `final List<Chip> chips` |  |
 | 470 | `private static UnlinkedKept unlinkedKept` |  |
 | 1409 | `private static volatile Places places` |  |
-| 1619 | `private final List<Pick> held` |  |
-| 1621 | `private final java.util.LinkedHashSet<Long> blocks` | The blocks picked, keys (blockKey()) at blocksLevel, in the order picked; every one is free ground that joins the city. |
-| 1622 | `private int blocksLevel` |  |
-| 1623 | `private java.util.Set<Long> blockView` |  |
-| 1625 | `private List<Integer> draftIds` | The drafts the picked blocks were last cut into: their ids, negative; the ground they were cut for is groundSeen and ownedSeen. |
-| 1626 | `private boolean blocksStale` |  |
-| 1627 | `private LandGrid groundSeen` |  |
-| 1628 | `private long ownedSeen` |  |
-| 1629 | `private List<Integer> snapshot` |  |
-| 1630 | `private LandManager office` |  |
-| 1631 | `private String note` |  |
-| 2194 | `final LandGrid grid` |  |
-| 2195 | `final int level` |  |
-| 2196 | `final long b` |  |
-| 2198 | `final List<double[]> free` | The free ground of the offers picked, as rectangles {x0, y0, x1, y1} in plots (freeCells()). |
+| 1579 | `private final java.util.function.Supplier<Game> game` |  |
+| 1580 | `private final java.util.concurrent.Executor worker` |  |
+| 1581 | `private final java.util.function.Consumer<Runnable> dispatcher` |  |
+| 1582 | `private final Runnable changed` |  |
+| 1583 | `private final java.util.function.LongSupplier clock` |  |
+| 1584 | `private final java.util.Map<Long, Answer> answers` |  |
+| 1587 | `private long wanted` |  |
+| 1588 | `private Request pending` |  |
+| 1589 | `private Scope scope` |  |
+| 1590 | `private LandMarket.Quoter quoter` |  |
+| 1591 | `private int quoterMonth` |  |
+| 1592 | `private int seenMonth` |  |
+| 1599 | `final long block` |  |
+| 1600 | `final Scope scope` |  |
+| 1601 | `volatile boolean cancelled` |  |
+| 1602 | `java.util.concurrent.FutureTask<Void> task` |  |
+| 1795 | `private final java.util.concurrent.Executor draftWorker` |  |
+| 1796 | `private final java.util.function.Consumer<Runnable> returnToOwner` |  |
+| 1797 | `private final Runnable pricesChanged` |  |
+| 1798 | `private LandMarket.DraftRequest pendingDraft` |  |
+| 1834 | `private final List<Pick> held` |  |
+| 1836 | `private final java.util.LinkedHashSet<Long> blocks` | The blocks picked, keys (blockKey()) at blocksLevel, in the order picked; every one is free ground that joins the city. |
+| 1837 | `private int blocksLevel` |  |
+| 1838 | `private java.util.Set<Long> blockView` |  |
+| 1840 | `private List<Integer> draftIds` | The drafts the picked blocks were last cut into: their ids, negative; the ground they were cut for is groundSeen and ownedSeen. |
+| 1841 | `private boolean blocksStale` |  |
+| 1842 | `private LandGrid groundSeen` |  |
+| 1843 | `private long ownedSeen` |  |
+| 1844 | `private List<Integer> snapshot` |  |
+| 1845 | `private LandManager office` |  |
+| 1846 | `private String note` |  |
+| 2443 | `final LandGrid grid` |  |
+| 2444 | `final int level` |  |
+| 2445 | `final long b` |  |
+| 2447 | `final List<double[]> free` | The free ground of the offers picked, as rectangles {x0, y0, x1, y1} in plots (freeCells()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 2433 | **type** `public final class LandMap` | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there... |
+| 41 | 2682 | **type** `public final class LandMap` | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there... |
 | 43 | 1 | `private LandMap()` |  |
 | 49 | 1 | **type** `public record Pick(long x, long y, byte ground, int owner, int side, int place, int purchase, LandParcel of...` | What lies under a plot: its ground (a World class), whose it is, its side and place, the purchase (from 0, in the order bought) or the offer. |
 | 52 | 16 | `public static Pick pick(CityLand land, LandMarket market, long x, long y)` | The plot (x, y) on this land, against these offers: its holding on the grid, else the offer whose rectangle holds it. |
@@ -306,63 +330,86 @@
 | 1446 | 5 | `private static String runWorksWords(TilePainter.Input in, TilePainter.Painted p, int plot)` | What carries a run's plot over its ground (ET4; spec-earth2-terrain 4.3), appended to "Highway" or "Railway": ", a tunnel" on very steep ground, ", a viaduct" on steep, ", a bridge" over fresh water, else nothing. |
 | 1465 | 45 | `public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot, java.util.function.IntFunction<String> na...` | What a painted plot holds, in the hover card's words, or null for bare ground: a building by its type's name (nameOf, by type id; its class when null) - since 0.7.64 every drawn building is one of the model's - and si... |
 
-### buying from the map (0.7.137, batch M6) (lines 1544-2473)
+### buying from the map (0.7.137, batch M6) (lines 1544-1564)
+
+### the hover's asynchronous quotes (WN5d) (lines 1565-2722)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1613 | 540 | **type** `public static final class Picks` | The ground picked on the expanded map: offers, in the order picked (B1 a click takes one, B3 shift adds or drops one, B7 a box or Ctrl+A adds what it takes), and since BL1 BLOCKS of the city's grid - whole blocks at t... |
-| 1615 | 3 | **type** `private record Pick(int id, long x0, long y0, long x1, long y1, String where)` _(in LandMap.Picks)_ | An offer picked: its id, its rectangle in plots as picked (half-open), and the land office's name for it ("North 3"), which outlives the offer. |
-| 1616 | 1 | `static Pick of(LandParcel p)` _(in LandMap.Picks.Pick)_ |  |
-| 1643 | 31 | `public List<Integer> live(Game g)` _(in LandMap.Picks)_ | The picks for this city as it stands, in order: the offers picked and then the drafts of the picked blocks (ids under zero). |
-| 1676 | 43 | `private void restand(Game g, LandMarket market, List<String> says)` _(in LandMap.Picks)_ | Some pick's offer has left the shelf: kept ones stay, the rest dropped or carried onto the ground's offers, the order kept; what it did is added to `says`. |
-| 1720 | 4 | `private static String whereOf(List<LandParcel> listing, int id)` _(in LandMap.Picks)_ |  |
-| 1725 | 6 | `private List<Integer> view()` _(in LandMap.Picks)_ |  |
-| 1740 | 20 | `private boolean refresh(LandMarket market, CityLand land, boolean offersMoved, List<String> says)` _(in LandMap.Picks)_ | The blocks and their drafts brought up to the city as it stands, called by live() every frame and doing nothing while neither the ground, the block set nor the offers have moved: the city's blocks changing size drops ... |
-| 1762 | 10 | `private void cut(LandMarket market, CityLand land, int level)` _(in LandMap.Picks)_ | The picked blocks cut into rectangles and drafted into the office (LandMarket.draft(): the ids kept for a rectangle that stands), the ground this was cut for kept. |
-| 1780 | 24 | `private int[] settle(CityLand land, LandMarket market, int level)` _(in LandMap.Picks)_ | The block set made true of the city as it stands, in this order: blocks the city now owns whole dropped (bought); every standing offer whose free ground the blocks wholly cover, and cover with nothing beyond it, picke... |
-| 1806 | 35 | `private void wholeOffers(CityLand land, LandMarket market, int level)` _(in LandMap.Picks)_ | Each standing offer whose whole free ground the picked blocks cover, and cover with nothing beyond it (a block's own free ground wholly inside the offer's rectangle), picked as the offer: its blocks leave the block set. |
-| 1843 | 8 | `private List<LandParcel> offerParcels(LandMarket market)` _(in LandMap.Picks)_ | The offers picked, as the office lists them now (those not listed are left out: live() has dealt with them). |
-| 1853 | 19 | `private void commit()` _(in LandMap.Picks)_ | After a change by hand: the block set settled against the city, the picked blocks drafted again, the picks as live() returns them brought up. |
-| 1873 | 3 | `private static String plural(int n, String one, String many)` _(in LandMap.Picks)_ |  |
-| 1886 | 1 | `public String dropNote()` _(in LandMap.Picks)_ | The words of the last live() that dropped or carried a pick, one short line, or null when none has since the picks were last changed by hand (only, toggle, add, drop and clear clear it): the screen shows it in place o... |
-| 1889 | 8 | `public void only(Game g, int id)` _(in LandMap.Picks)_ | A plain click: this offer alone (the blocks picked dropped with the rest). |
-| 1899 | 8 | `public boolean toggle(Game g, int id)` _(in LandMap.Picks)_ | Shift and a click: the offer added at the end, or dropped when it is picked already; true when added (an offer not listed is not added). |
-| 1909 | 6 | `public void add(Game g, List<Integer> more)` _(in LandMap.Picks)_ | A box or Ctrl+A: these added at the end in their order, those picked already kept where they stand. |
-| 1917 | 8 | `private boolean addListed(Game g, int id)` _(in LandMap.Picks)_ | The offer, if it is listed and not picked already, taken with the rectangle it has now. |
-| 1927 | 16 | `public void drop(int id)` _(in LandMap.Picks)_ | A chip's ×: this one dropped - an offer by its id, or a draft (a negative id) by the blocks it was cut from; blocks that joined through it may drop with it (dropNote()). |
-| 1945 | 13 | `public void clear()` _(in LandMap.Picks)_ | Esc, a click off the offers, the map collapsed: none - the blocks and their drafts too. |
-| 1962 | 1 | `public java.util.Set<Long> blocks()` _(in LandMap.Picks)_ | The blocks picked, as keys (blockKey()) at blocksLevel(), in the order picked: what the screen draws the outline of. |
-| 1965 | 1 | `public int blocksLevel()` _(in LandMap.Picks)_ | The block level the picked blocks are keyed at (the city's level when they were picked); -1 while none is. |
-| 1968 | 1 | `public List<Integer> draftIds()` _(in LandMap.Picks)_ | The ids of the drafts the picked blocks are cut into, negative, in the order they are returned by live() after the offers. |
-| 1971 | 6 | `public boolean pickable(Game g, long key)` _(in LandMap.Picks)_ | Whether the block `key` may be picked now (pickable(), against the blocks and offers picked): the hover's word for it. |
-| 1983 | 16 | `public boolean toggleBlock(Game g, long key)` _(in LandMap.Picks)_ | A click on a block with Shift: the block added when it may be picked (pickable()) and dropped when it is picked already - and the blocks that joined the city through it dropped with it, said in dropNote(). |
-| 2001 | 17 | `public boolean onlyBlock(Game g, long key)` _(in LandMap.Picks)_ | A plain click on a block: this block alone, the offers and blocks picked dropped; true when it may be picked (nothing is picked when it may not). |
-| 2026 | 15 | `public int addBox(Game g, long x0, long y0, long x1, long y1)` _(in LandMap.Picks)_ | A box on the plane, in plots [x0, x1) x [y0, y1) (any corners): the blocks it meets that are free ground not claimed by an offer picked and not picked already, kept only where they join the city - through ground it ow... |
-| 2047 | 6 | `public List<Long> boxBlocks(Game g, long x0, long y0, long x1, long y1)` _(in LandMap.Picks)_ | The blocks addBox() would take for this box, in the order it takes them (nearest the city first), and nothing picked: the screen's preview while a box is drawn, so the snap to the block grid is seen before the release. |
-| 2059 | 6 | `public boolean pressBoxes(Game g, long px, long py, boolean shift)` _(in LandMap.Picks)_ | Whether a left press at plot (px, py) draws a box rather than pans (pressBoxes()), against the blocks and offers picked now: on an offer's free ground, on a picked block, on a block that may be picked, or with Shift a... |
-| 2067 | 36 | `private List<Long> flood(CityLand land, int level, List<LandParcel> offerPicks, long x0, long y0, long x1, long y1)` _(in LandMap.Picks)_ | The flood: the blocks of the box that join the city, nearest first (a block's distance the steps through free blocks from the seeds), at most BOX_BLOCKS_MOST. |
-| 2105 | 6 | `private void seed(Joins j, java.util.ArrayDeque<Long> queue, java.util.HashSet<Long> seen, long bx, long by, long bx0, long by0...` _(in LandMap.Picks)_ | A block of the box that is free, unclaimed and not picked, queued once. |
-| 2113 | 6 | `private void neighbours(Joins j, java.util.ArrayDeque<Long> queue, java.util.HashSet<Long> seen, long bx, long by, long bx0, lo...` _(in LandMap.Picks)_ | The four blocks across a block's edges, queued as seed() does. |
-| 2167 | 9 | `public static boolean pickable(CityLand land, int level, long block, java.util.Set<Long> picked, List<LandParcel> offerPicks)` | Whether block `block` of `level` (blockKey()) may be picked on top of the blocks and offers already picked (BL1): on the world, not wholly the city's, not already picked, not on ground a picked offer's free ground has... |
-| 2178 | 13 | `private static java.util.LinkedHashSet<Long> joined(Joins j, java.util.Set<Long> blocks)` | The blocks of a set that join the city, in the set's order: those touching its ground or a picked offer's free ground, and those joined to them across an edge, block by block. |
-| 2193 | 38 | **type** `private static final class Joins` | What the block picks ask of the city's ground at a level: whether a block is free, whether an offer picked has its ground, whether it joins the city. |
-| 2200 | 6 | `Joins(CityLand land, int level, List<LandParcel> offerPicks)` _(in LandMap.Joins)_ |  |
-| 2208 | 4 | `boolean free(long bx, long by)` _(in LandMap.Joins)_ | Whether the block is on the world and not wholly the city's. |
-| 2214 | 3 | `boolean claimed(long bx, long by)` _(in LandMap.Joins)_ | Whether the block shares a plot with a picked offer's free ground. |
-| 2219 | 6 | `boolean seed(long bx, long by)` _(in LandMap.Joins)_ | Whether the block joins the city by itself: on its frontier, or beside a picked offer's free ground. |
-| 2226 | 4 | `private boolean meets(long x0, long y0, long x1, long y1)` _(in LandMap.Joins)_ |  |
-| 2233 | 1 | **type** `public interface ToScreen` | A point of the city's plane on a screen, {x, y} in pixels, or null where it is not seen: the plane's MapFrame (onScreen()), the globe's camera (GlobeFrame.screenOfPlot()). |
-| 2233 | 1 | `double[] at(double x, double y)` _(in LandMap.ToScreen)_ |  |
-| 2236 | 3 | `public static ToScreen onScreen(MapFrame f)` | ...the plane's: a MapFrame's. |
-| 2246 | 3 | `public static List<double[]> freeCells(CityLand land, LandParcel o)` | An offer's free ground as rectangles {x0, y0, x1, y1} in plots: its rectangle cut on the lines of the city's own ground in it (ownedIn()), the cuts the city owns left out - its whole rectangle when it takes in none. |
-| 2251 | 29 | `public static List<double[]> freeCells(CityLand land, long x0, long y0, long x1, long y1)` | ...for any rectangle of plots [x0, x1) x [y0, y1) (BL1: a picked block's, which the city's own ground may bite into as it bites into an offer's). |
-| 2287 | 30 | `public static boolean meets(double[] xs, double[] ys, double x0, double y0, double x1, double y1)` | Whether a convex polygon - its corners xs, ys in order, either way round - and the box [x0, x1] x [y0, y1] share some area: no axis of the box's or of the polygon's edges parts them (the separating axis theorem). |
-| 2328 | 16 | `public static List<Integer> boxPicks(CityLand land, List<LandParcel> offers, ToScreen screen, double sx0, double sy0, double sx...` | The offers a box on the screen takes (B1b and B7: "every offer whose free ground it touches"), in the order given: each whose free ground (freeCells()) shares some area with the box between (sx0, sy0) and (sx1, sy1) o... |
-| 2366 | 3 | `public static boolean pressBoxes(CityLand land, LandMarket market, long px, long py, boolean shift)` | What a left press on the expanded map starts, a box or a pan (MS1, Jerus 2026-10-26: "i should be able to not only click and shift click, but also drag and select"): a box when the press is on an offer's free ground -... |
-| 2371 | 8 | `public static boolean pressBoxes(CityLand land, LandMarket market, long px, long py, boolean shift, java.util.Set<Long> picked,...` | ...against the blocks and the offers picked now (Picks.pressBoxes()): a picked block boxes as a pickable one does. |
-| 2387 | 9 | `public static List<Deposit> offerFields(CityLand land, LandParcel o)` | The fields an offer holds whole (board 7: the card rings their sites wherever they lie): those of every resource in fields centred on its free ground - a field goes whole with the ground holding its centre plot (field... |
-| 2398 | 12 | `public static List<double[]> siteSquares(Deposit f)` | A field's sites as the map draws them (fieldsAt(), CityMap's site squares): each a square of plots, {x0, y0, x1, y1}. |
-| 2428 | 7 | **type** `public record Card(List<Integer> ids, double km2, double dryKm2, double freshKm2, double seaKm2, double dry...` | The card's figures for some picked offers (spec-earth 3.1, boards 5, 7 and 8): those still listed, in the order given, once each, and what the land office's rows and "Buy the best N" read from the model for them, summ... |
-| 2433 | 1 | `public double price()` _(in LandMap.Card)_ | The price in the money the toggle pays in: US dollars from the vault, local money converting. |
-| 2437 | 36 | `public static Card card(Game g, List<Integer> picks)` | The card's figures for these picks, as the city stands. |
+| 1572 | 173 | **type** `public static class Quotes` | The hover's quote lifecycle, with the worker and owner dispatcher supplied by the screen. |
+| 1594 | 1 | **type** `private record Scope(Game game, LandMarket market, CityLand land, LandGrid grid, long owned, int level, Lan...` _(in LandMap.Quotes)_ |  |
+| 1595 | 1 | **type** `private record Answer(LandParcel parcel, int month, boolean failed, long failedAt, int attemptedIn)` _(in LandMap.Quotes)_ |  |
+| 1598 | 8 | **type** `private static final class Request` _(in LandMap.Quotes)_ | Only cancellation crosses threads. |
+| 1604 | 1 | `Request(long block, Scope scope)` _(in LandMap.Quotes.Request)_ |  |
+| 1607 | 4 | `public Quotes(java.util.function.Supplier<Game> game, java.util.concurrent.Executor worker, java.util.function.Consumer<Runnabl...` _(in LandMap.Quotes)_ |  |
+| 1612 | 8 | `Quotes(java.util.function.Supplier<Game> game, java.util.concurrent.Executor worker, java.util.function.Consumer<Runnable> disp...` _(in LandMap.Quotes)_ |  |
+| 1621 | 13 | `private void sync()` _(in LandMap.Quotes)_ |  |
+| 1636 | 32 | `public List<String> words(long block, java.util.function.DoubleFunction<String> money)` _(in LandMap.Quotes)_ | The current hover's lines, including its action. |
+| 1669 | 1 | `LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect)` _(in LandMap.Quotes)_ |  |
+| 1671 | 25 | `private void ask(long block, LandMarket.Quoter use)` _(in LandMap.Quotes)_ |  |
+| 1697 | 16 | `private void finish(Request request, LandMarket.MeasuredQuote measured, boolean failed)` _(in LandMap.Quotes)_ |  |
+| 1714 | 6 | `private void cancel()` _(in LandMap.Quotes)_ |  |
+| 1722 | 1 | `public void leave()` _(in LandMap.Quotes)_ | The pointer left quoteable ground. |
+| 1725 | 4 | `public void redraw()` _(in LandMap.Quotes)_ | A new map picture under a stationary pointer must ask its hover again. |
+| 1731 | 13 | `public boolean tick()` _(in LandMap.Quotes)_ | Owner-thread clock work, called by the map's frame. |
+| 1794 | 608 | **type** `public static final class Picks` | The ground picked on the expanded map: offers, in the order picked (B1 a click takes one, B3 shift adds or drops one, B7 a box or Ctrl+A adds what it takes), and since BL1 BLOCKS of the city's grid - whole blocks at t... |
+| 1801 | 1 | `public Picks()` _(in LandMap.Picks)_ | Model/harness picks run synchronously. |
+| 1803 | 5 | `public Picks(java.util.concurrent.Executor worker, java.util.function.Consumer<Runnable> dispatcher, Runnable changed)` _(in LandMap.Picks)_ |  |
+| 1810 | 1 | `public boolean pricing()` _(in LandMap.Picks)_ | The picked blocks remain outlined, but no purchase uses an unfinished price. |
+| 1813 | 15 | `public List<String> groundWords(Game g, java.util.function.DoubleFunction<String> money)` _(in LandMap.Picks)_ | Words over picked ground, shared by the map hover and the headless check (WN5c). |
+| 1830 | 3 | **type** `private record Pick(int id, long x0, long y0, long x1, long y1, String where)` _(in LandMap.Picks)_ | An offer picked: its id, its rectangle in plots as picked (half-open), and the land office's name for it ("North 3"), which outlives the offer. |
+| 1831 | 1 | `static Pick of(LandParcel p)` _(in LandMap.Picks.Pick)_ |  |
+| 1858 | 32 | `public List<Integer> live(Game g)` _(in LandMap.Picks)_ | The picks for this city as it stands, in order: the offers picked and then the drafts of the picked blocks (ids under zero). |
+| 1892 | 43 | `private void restand(Game g, LandMarket market, List<String> says)` _(in LandMap.Picks)_ | Some pick's offer has left the shelf: kept ones stay, the rest dropped or carried onto the ground's offers, the order kept; what it did is added to `says`. |
+| 1936 | 4 | `private static String whereOf(List<LandParcel> listing, int id)` _(in LandMap.Picks)_ |  |
+| 1941 | 6 | `private List<Integer> view()` _(in LandMap.Picks)_ |  |
+| 1956 | 20 | `private boolean refresh(LandMarket market, CityLand land, boolean offersMoved, List<String> says)` _(in LandMap.Picks)_ | The blocks and their drafts brought up to the city as it stands, called by live() every frame and doing nothing while neither the ground, the block set nor the offers have moved: the city's blocks changing size drops ... |
+| 1978 | 37 | `private void cut(LandMarket market, CityLand land, int level)` _(in LandMap.Picks)_ | The picked blocks cut into rectangles and drafted into the office (LandMarket.draft(): the ids kept for a rectangle that stands), the ground this was cut for kept. |
+| 2016 | 4 | `private void cancelDraft()` _(in LandMap.Picks)_ |  |
+| 2028 | 24 | `private int[] settle(CityLand land, LandMarket market, int level)` _(in LandMap.Picks)_ | The block set made true of the city as it stands, in this order: blocks the city now owns whole dropped (bought); every standing offer whose free ground the blocks wholly cover, and cover with nothing beyond it, picke... |
+| 2054 | 35 | `private void wholeOffers(CityLand land, LandMarket market, int level)` _(in LandMap.Picks)_ | Each standing offer whose whole free ground the picked blocks cover, and cover with nothing beyond it (a block's own free ground wholly inside the offer's rectangle), picked as the offer: its blocks leave the block set. |
+| 2091 | 8 | `private List<LandParcel> offerParcels(LandMarket market)` _(in LandMap.Picks)_ | The offers picked, as the office lists them now (those not listed are left out: live() has dealt with them). |
+| 2101 | 19 | `private void commit()` _(in LandMap.Picks)_ | After a change by hand: the block set settled against the city, the picked blocks drafted again, the picks as live() returns them brought up. |
+| 2121 | 3 | `private static String plural(int n, String one, String many)` _(in LandMap.Picks)_ |  |
+| 2134 | 1 | `public String dropNote()` _(in LandMap.Picks)_ | The words of the last live() that dropped or carried a pick, one short line, or null when none has since the picks were last changed by hand (only, toggle, add, drop and clear clear it): the screen shows it in place o... |
+| 2137 | 8 | `public void only(Game g, int id)` _(in LandMap.Picks)_ | A plain click: this offer alone (the blocks picked dropped with the rest). |
+| 2147 | 8 | `public boolean toggle(Game g, int id)` _(in LandMap.Picks)_ | Shift and a click: the offer added at the end, or dropped when it is picked already; true when added (an offer not listed is not added). |
+| 2157 | 6 | `public void add(Game g, List<Integer> more)` _(in LandMap.Picks)_ | A box or Ctrl+A: these added at the end in their order, those picked already kept where they stand. |
+| 2165 | 8 | `private boolean addListed(Game g, int id)` _(in LandMap.Picks)_ | The offer, if it is listed and not picked already, taken with the rectangle it has now. |
+| 2175 | 16 | `public void drop(int id)` _(in LandMap.Picks)_ | A chip's ×: this one dropped - an offer by its id, or a draft (a negative id) by the blocks it was cut from; blocks that joined through it may drop with it (dropNote()). |
+| 2193 | 14 | `public void clear()` _(in LandMap.Picks)_ | Esc, a click off the offers, the map collapsed: none - the blocks and their drafts too. |
+| 2211 | 1 | `public java.util.Set<Long> blocks()` _(in LandMap.Picks)_ | The blocks picked, as keys (blockKey()) at blocksLevel(), in the order picked: what the screen draws the outline of. |
+| 2214 | 1 | `public int blocksLevel()` _(in LandMap.Picks)_ | The block level the picked blocks are keyed at (the city's level when they were picked); -1 while none is. |
+| 2217 | 1 | `public List<Integer> draftIds()` _(in LandMap.Picks)_ | The ids of the drafts the picked blocks are cut into, negative, in the order they are returned by live() after the offers. |
+| 2220 | 6 | `public boolean pickable(Game g, long key)` _(in LandMap.Picks)_ | Whether the block `key` may be picked now (pickable(), against the blocks and offers picked): the hover's word for it. |
+| 2232 | 16 | `public boolean toggleBlock(Game g, long key)` _(in LandMap.Picks)_ | A click on a block with Shift: the block added when it may be picked (pickable()) and dropped when it is picked already - and the blocks that joined the city through it dropped with it, said in dropNote(). |
+| 2250 | 17 | `public boolean onlyBlock(Game g, long key)` _(in LandMap.Picks)_ | A plain click on a block: this block alone, the offers and blocks picked dropped; true when it may be picked (nothing is picked when it may not). |
+| 2275 | 15 | `public int addBox(Game g, long x0, long y0, long x1, long y1)` _(in LandMap.Picks)_ | A box on the plane, in plots [x0, x1) x [y0, y1) (any corners): the blocks it meets that are free ground not claimed by an offer picked and not picked already, kept only where they join the city - through ground it ow... |
+| 2296 | 6 | `public List<Long> boxBlocks(Game g, long x0, long y0, long x1, long y1)` _(in LandMap.Picks)_ | The blocks addBox() would take for this box, in the order it takes them (nearest the city first), and nothing picked: the screen's preview while a box is drawn, so the snap to the block grid is seen before the release. |
+| 2308 | 6 | `public boolean pressBoxes(Game g, long px, long py, boolean shift)` _(in LandMap.Picks)_ | Whether a left press at plot (px, py) draws a box rather than pans (pressBoxes()), against the blocks and offers picked now: on an offer's free ground, on a picked block, on a block that may be picked, or with Shift a... |
+| 2316 | 36 | `private List<Long> flood(CityLand land, int level, List<LandParcel> offerPicks, long x0, long y0, long x1, long y1)` _(in LandMap.Picks)_ | The flood: the blocks of the box that join the city, nearest first (a block's distance the steps through free blocks from the seeds), at most BOX_BLOCKS_MOST. |
+| 2354 | 6 | `private void seed(Joins j, java.util.ArrayDeque<Long> queue, java.util.HashSet<Long> seen, long bx, long by, long bx0, long by0...` _(in LandMap.Picks)_ | A block of the box that is free, unclaimed and not picked, queued once. |
+| 2362 | 6 | `private void neighbours(Joins j, java.util.ArrayDeque<Long> queue, java.util.HashSet<Long> seen, long bx, long by, long bx0, lo...` _(in LandMap.Picks)_ | The four blocks across a block's edges, queued as seed() does. |
+| 2416 | 9 | `public static boolean pickable(CityLand land, int level, long block, java.util.Set<Long> picked, List<LandParcel> offerPicks)` | Whether block `block` of `level` (blockKey()) may be picked on top of the blocks and offers already picked (BL1): on the world, not wholly the city's, not already picked, not on ground a picked offer's free ground has... |
+| 2427 | 13 | `private static java.util.LinkedHashSet<Long> joined(Joins j, java.util.Set<Long> blocks)` | The blocks of a set that join the city, in the set's order: those touching its ground or a picked offer's free ground, and those joined to them across an edge, block by block. |
+| 2442 | 38 | **type** `private static final class Joins` | What the block picks ask of the city's ground at a level: whether a block is free, whether an offer picked has its ground, whether it joins the city. |
+| 2449 | 6 | `Joins(CityLand land, int level, List<LandParcel> offerPicks)` _(in LandMap.Joins)_ |  |
+| 2457 | 4 | `boolean free(long bx, long by)` _(in LandMap.Joins)_ | Whether the block is on the world and not wholly the city's. |
+| 2463 | 3 | `boolean claimed(long bx, long by)` _(in LandMap.Joins)_ | Whether the block shares a plot with a picked offer's free ground. |
+| 2468 | 6 | `boolean seed(long bx, long by)` _(in LandMap.Joins)_ | Whether the block joins the city by itself: on its frontier, or beside a picked offer's free ground. |
+| 2475 | 4 | `private boolean meets(long x0, long y0, long x1, long y1)` _(in LandMap.Joins)_ |  |
+| 2482 | 1 | **type** `public interface ToScreen` | A point of the city's plane on a screen, {x, y} in pixels, or null where it is not seen: the plane's MapFrame (onScreen()), the globe's camera (GlobeFrame.screenOfPlot()). |
+| 2482 | 1 | `double[] at(double x, double y)` _(in LandMap.ToScreen)_ |  |
+| 2485 | 3 | `public static ToScreen onScreen(MapFrame f)` | ...the plane's: a MapFrame's. |
+| 2495 | 3 | `public static List<double[]> freeCells(CityLand land, LandParcel o)` | An offer's free ground as rectangles {x0, y0, x1, y1} in plots: its rectangle cut on the lines of the city's own ground in it (ownedIn()), the cuts the city owns left out - its whole rectangle when it takes in none. |
+| 2500 | 29 | `public static List<double[]> freeCells(CityLand land, long x0, long y0, long x1, long y1)` | ...for any rectangle of plots [x0, x1) x [y0, y1) (BL1: a picked block's, which the city's own ground may bite into as it bites into an offer's). |
+| 2536 | 30 | `public static boolean meets(double[] xs, double[] ys, double x0, double y0, double x1, double y1)` | Whether a convex polygon - its corners xs, ys in order, either way round - and the box [x0, x1] x [y0, y1] share some area: no axis of the box's or of the polygon's edges parts them (the separating axis theorem). |
+| 2577 | 16 | `public static List<Integer> boxPicks(CityLand land, List<LandParcel> offers, ToScreen screen, double sx0, double sy0, double sx...` | The offers a box on the screen takes (B1b and B7: "every offer whose free ground it touches"), in the order given: each whose free ground (freeCells()) shares some area with the box between (sx0, sy0) and (sx1, sy1) o... |
+| 2615 | 3 | `public static boolean pressBoxes(CityLand land, LandMarket market, long px, long py, boolean shift)` | What a left press on the expanded map starts, a box or a pan (MS1, Jerus 2026-10-26: "i should be able to not only click and shift click, but also drag and select"): a box when the press is on an offer's free ground -... |
+| 2620 | 8 | `public static boolean pressBoxes(CityLand land, LandMarket market, long px, long py, boolean shift, java.util.Set<Long> picked,...` | ...against the blocks and the offers picked now (Picks.pressBoxes()): a picked block boxes as a pickable one does. |
+| 2636 | 9 | `public static List<Deposit> offerFields(CityLand land, LandParcel o)` | The fields an offer holds whole (board 7: the card rings their sites wherever they lie): those of every resource in fields centred on its free ground - a field goes whole with the ground holding its centre plot (field... |
+| 2647 | 12 | `public static List<double[]> siteSquares(Deposit f)` | A field's sites as the map draws them (fieldsAt(), CityMap's site squares): each a square of plots, {x0, y0, x1, y1}. |
+| 2677 | 7 | **type** `public record Card(List<Integer> ids, double km2, double dryKm2, double freshKm2, double seaKm2, double dry...` | The card's figures for some picked offers (spec-earth 3.1, boards 5, 7 and 8): those still listed, in the order given, once each, and what the land office's rows and "Buy the best N" read from the model for them, summ... |
+| 2682 | 1 | `public double price()` _(in LandMap.Card)_ | The price in the money the toggle pays in: US dollars from the vault, local money converting. |
+| 2686 | 36 | `public static Card card(Game g, List<Integer> picks)` | The card's figures for these picks, as the city stands. |
 

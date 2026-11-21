@@ -1,6 +1,6 @@
-# GamePrefs.java - 260 lines · 29 methods · 3 constants · model
+# GamePrefs.java - 282 lines · 31 methods · 3 constants · model
 
-`ham/citybuildersim/GamePrefs.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GamePrefs.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > How the player likes the window, kept between runs.
 > 
@@ -25,7 +25,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (3), [GameLog](GameLog.md) (2)
 
-**Used by (6):** [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckCheck](TruckCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
+**Used by (8):** [FollowBench](FollowBench.md), [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckRouteCheck](TruckRouteCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -58,12 +58,13 @@
 | 197 | `private boolean bordersOnMap` | Whether the map draws the nations' borders, dashed white - at the far views, and up close where one crosses the city's ground (WN2; Jerus: "a map button to ... |
 | 208 | `private boolean tradeRoutesOnMap` | Whether the map draws the city's trade as routes: on the Earth's globe a lane from the city toward each partner over D$0.3M a month at today's prices (TradeLanes.minLane(): TP1), the lanes that go the same way shared,... |
 | 214 | `private boolean mapLegendFolded` | Whether the expanded map's legend is folded to its head line (WN2; Jerus: "legend should be collapsable"). |
+| 263 | `private transient boolean detached` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 231 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
+| 30 | 253 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
 | 44 | 1 | `public boolean isFullScreen()` |  |
 | 45 | 1 | `public void setFullScreen(boolean value)` |  |
 | 61 | 1 | `public boolean isPanelDashboard()` |  |
@@ -91,11 +92,13 @@
 | 216 | 1 | `public boolean isMapLegendFolded()` |  |
 | 217 | 1 | `public void setMapLegendFolded(boolean value)` |  |
 
-### THE FILE (lines 219-260)
+### THE FILE (lines 219-282)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 223 | 3 | `private static Path fileIn(GameFiles files)` |  |
 | 228 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
-| 251 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
+| 253 | 6 | `public GamePrefs copyForReplay()` | A copy of these for a replay's throwaway city to hold as its own (TR2-G): the same values, and a copy that never writes ({@link #save} on it does nothing and says no). |
+| 261 | 1 | `public boolean isDetached()` | Whether this is a replay's copy ({@link #copyForReplay}), which never writes. |
+| 272 | 10 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
 

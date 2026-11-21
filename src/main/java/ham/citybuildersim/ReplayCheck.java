@@ -81,7 +81,12 @@ import ham.citybuildersim.ui.ReplayMoveProbe;
  *      from the month's start reaches, a viewer's press ends Follow and his move does only past the grace and 8 px, and leaving
  *      the replay leaves the copy and the player's folder as they were (FollowBench.check and followCheck; the window part is
  *      skipped where JavaFX cannot start); a press dragged off a button disarms it and a release there does not fire it, one dragged
- *      back on fires it, a key still down when Follow stops is released once, and the game menus are the model's own list.
+ *      back on fires it, a key still down when Follow stops is released once, and the game menus are the model's own list;
+ *  11. replay's copy leaves the player's prefs alone (TR2-G): a copy of the prefs holds the player's values, changes to it leave
+ *      his in memory as they were, and its save writes to no folder and says no; in the real window (skipped where JavaFX cannot
+ *      start) a click on the drawer's pin and on the construction tab outside the copy changes the player's prefs and saves them,
+ *      in the copy changes the copy's only (his prefs in memory and his file unchanged after a prefs save too, and no prefs file
+ *      in the copy's folder), and after leaving the replay the first prefs save is his own values and his clicks save again.
  */
 public class ReplayCheck {
 
@@ -437,6 +442,42 @@ public class ReplayCheck {
         helper("...and a month played on the copy writes no month into the recording",
                 Arrays.equals(rec.months(), have));
         replay.loadWhole(middle);
+        // CM2: cause a recorded purchase, not just a whole load on unchanged land.
+        Recording changedLand = landChangeRecording();
+        int landFirst = changedLand.firstMonth(), landLast = changedLand.lastMonth();
+        ReplayCity epochs = new ReplayCity(changedLand);
+        epochs.loadWhole(landFirst);
+        long oldLandStamp = epochs.game().getCityLand().stamp();
+        int oldPurchases = epochs.game().getCityLand().purchases().size();
+        helper("fixture: the recorded purchase rejects a quick step, and the whole month has another land stamp and more parcels",
+                !epochs.stepQuick(landLast) && epochs.loadWhole(landLast) == null
+                        && epochs.game().getCityLand().stamp() != oldLandStamp && epochs.game().getCityLand().purchases().size() > oldPurchases);
+        epochs.loadWhole(landFirst);
+        epochs.beginMove();
+        Game epochGame = epochs.game();
+        CityMap epochMap = epochGame.getCityMap();
+        CityLand epochLand = epochGame.getCityLand();
+        Game.ReplayMap epochToken = epochGame.keepReplayMap();
+        helper("a loaded move retains the purchased-land epoch separately from its first month",
+                !epochs.stepQuick(landLast) && epochs.loadWhole(landLast) == null && epochs.game() != epochGame
+                        && epochs.preparedMonths() == 2 && epochs.preparedContexts() == 2
+                        && epochGame.getCityMap() == epochMap && epochGame.getCityLand() == epochLand);
+        Game later = epochs.game();
+        Path hiddenMonth = changedLand.monthFile(landFirst).resolveSibling("cm2-held-month.bin");
+        Files.move(changedLand.monthFile(landFirst), hiddenMonth);
+        try {
+            helper("a prepared month switches back to its own context and exact map even with its recording file absent",
+                    epochs.stepQuick(landFirst) && epochs.game() == epochGame && epochs.game().getCityMap() == epochMap
+                            && epochs.game().getCityLand() == epochLand && !epochs.wholeMonth());
+            helper("a prepared map cannot be given to another copy or to the normal game",
+                    !later.replayMap(epochToken) && !g.replayMap(epochToken) && g.keepReplayMap() == null);
+            epochs.endMove();
+            helper("releasing a move drops its months and restores the ordinary file-reading step",
+                    epochs.preparedMonths() == 0 && !epochs.stepQuick(landFirst));
+        } finally {
+            epochs.endMove();
+            Files.move(hiddenMonth, changedLand.monthFile(landFirst));
+        }
         String hurt = firstDifference(playerBefore, hashes(files.getDirectory()));
         helper("the player's folder (the saves and the recording in it) is byte for byte what it was" + (hurt == null ? "" : " - " + hurt), hurt == null);
 
@@ -790,7 +831,17 @@ public class ReplayCheck {
         /* ====== 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1) ====== */
         System.out.println("\n--- 5d. a replay move loads first, then runs with nothing unpainted and nothing asked (CM1) ---");
         double glideSeconds = 2;        // short, to keep the suite quick: ReplayMoveProbe's main() measures the ten-second moves
-        ReplayMoveProbe.Checked cm = ReplayMoveProbe.check(rec.folder(), GameFiles.scratch("replaywindow"), glideSeconds);
+        // FB7 (GR2-R): the asks a glide is held to are the map's worker's own count, made as each job is handed in. The old count,
+        // getTaskCount(), lost a job the thread had taken and not begun, and under load a glide that asked nothing tallied asks -1.
+        ReplayMoveProbe.Transit transit = ReplayMoveProbe.inTransit();
+        helper("fixture: a job the map's worker has taken off its queue and not yet begun is in neither of getTaskCount()'s counts, so with nothing asked "
+                + "the old count went from " + transit.taskCountQueued() + " to " + transit.taskCountInTransit() + " (asks "
+                + (transit.taskCountInTransit() - transit.taskCountQueued()) + ")", transit.taskCountInTransit() == transit.taskCountQueued() - 1);
+        helper("...while the map's worker counts each job as it is handed in: across that moment its count holds (asks "
+                + (transit.askedInTransit() - transit.askedQueued()) + "), and one more job handed in is one more ask ("
+                + (transit.askedAnother() - transit.askedInTransit()) + ")",
+                transit.askedInTransit() == transit.askedQueued() && transit.askedAnother() == transit.askedInTransit() + 1 && transit.ended());
+        ReplayMoveProbe.Checked cm =ReplayMoveProbe.check(changedLand.folder(), GameFiles.scratch("replaywindow"), glideSeconds);
         if (cm.cannot() != null) {
             System.out.println("      skipped: " + cm.cannot());
         } else {
@@ -801,11 +852,19 @@ public class ReplayCheck {
                     nm.frames() >= 30 && !nm.camera() && !nm.moveHeld() && nm.cachesPinned() == 0);
             movedChecks(cm.zoomOut(), glideSeconds, "click", true);
             movedChecks(cm.months(), glideSeconds, "key", false);
+            helper("the glide crosses the fixture's recorded land purchase with both months and distinct land contexts prepared",
+                    cm.months().ready() && cm.months().preparedMonths() == changedLand.months().length && cm.months().preparedContexts() >= 2);
+            ReplayMoveProbe.Left left = cm.left();
+            helper("the real MapView chartNodes range covers every sampled GROUND point past the plane during a loaded move (" + left.chartMissed() + " missed of " + left.chartPoints() + ")",
+                    left.ready() && left.chartPoints() > 0 && left.chartMissed() == 0);
+            helper("leaving a Ready move synchronously releases MoveLoad, all pins and the replay's prepared contexts",
+                    left.ready() && left.preparedBefore() >= 2 && !left.replayAfter() && !left.heldAfter() && left.pinnedAfter() == 0 && left.preparedAfter() == 0);
             ReplayMoveProbe.Cancelled esc = cm.escape();
             System.out.printf("      Esc while loading: was loading %b, taken %b, camera %s after, move held %b, caches pinned %d%n",
                     esc.wasLoading(), esc.taken(), esc.phaseAfter(), esc.heldAfter(), esc.pinnedAfter());
             helper("Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)",
                     esc.wasLoading() && esc.taken() && "IDLE".equals(esc.phaseAfter()) && !esc.heldAfter() && esc.pinnedAfter() == 0);
+            cm.followups().forEach((label, passed) -> helper(label, passed));
         }
 
         /* ====== 6. recording costs the month only its fill, and changes nothing in it ====== */
@@ -893,11 +952,35 @@ public class ReplayCheck {
         long tenAt = System.nanoTime();
         followRulesChecks();
         followWindowChecks(rec);
+        prefsChecks(rec);
         System.out.printf("      sections 7, 8, 9 and 10 took %.1f s, %.1f s, %.1f s and %.1f s%n", (eightAt - sevenAt) / 1e9, (nineAt - eightAt) / 1e9,
                 (tenAt - nineAt) / 1e9, (System.nanoTime() - tenAt) / 1e9);
 
         System.out.printf("%n%s: %d failure(s)%n", ReplayCheck.class.getSimpleName(), fails);
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Two consecutive recorded months separated by a real land purchase; no other fixture's city is changed (CM2). */
+    static Recording landChangeRecording() throws Exception {
+        Game city = new Game(GameFiles.scratch("cm2landchange"));
+        city.newGame();
+        clockMonth(city);
+        city.setRecording(true);
+        clockMonth(city);
+        city.awaitSaves();
+        int before = city.getCityLand().purchases().size();
+        long stamp = city.getCityLand().stamp();
+        LandParcel offer = city.getLandManager().getMarket().bestValue();
+        boolean bought = offer != null && city.buyLandParcel(offer.getId());
+        boolean changed = bought && city.getCityLand().purchases().size() == before + 1 && city.getCityLand().stamp() != stamp;
+        helper("fixture: the replay city really buys an offered parcel between its two recorded months", changed);
+        if (!changed) throw new IllegalStateException("the land-change recording did not buy its parcel");
+        clockMonth(city);
+        city.setRecording(false);
+        city.awaitSaves();
+        Recording rec = Recording.at(city.recordingFolder());
+        helper("fixture: both sides of the purchase were recorded", rec.months().length == 2);
+        return rec;
     }
 
     /**
@@ -921,6 +1004,8 @@ public class ReplayCheck {
         boolean levels = acrossLevels ? m.levelFrames().containsKey("L0") && m.levelFrames().containsKey("FAR") : !m.levelFrames().isEmpty();
         helper("...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks " + m.asks() + ", unpainted frames "
                 + m.unpaintedFrames() + ", let go " + m.evicted() + ")", m.ready() && m.asks() == 0 && m.unpaintedFrames() == 0 && m.evicted() == 0);
+        helper("...and no frame's asks came out below nothing, so a sum of none is no ask and no -1 (" + m.asksBelowNothing() + " frames)",
+                m.ready() && m.asksBelowNothing() == 0);
         helper("...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan " + m.offPlan() + " of "
                 + m.frames() + " frames)", m.ready() && m.frames() > 0 && m.offPlan() == 0);
         helper("...and it ran frame by frame to its end, at least " + (int) (glideSeconds * 10) + " frames" + (acrossLevels ? " over at least L0 and FAR" : "") + " (" + m.frames() + ")", frames && levels);
@@ -1146,7 +1231,7 @@ public class ReplayCheck {
     }
 
     /** The bytes of a file, or null where there is none. */
-    static byte[] bytesOrNull(Path file) throws IOException {
+    public static byte[] bytesOrNull(Path file) throws IOException {
         return Files.isRegularFile(file) ? Files.readAllBytes(file) : null;
     }
 
@@ -1689,6 +1774,50 @@ public class ReplayCheck {
             markers &= FollowRules.judge(e, "showSavingMenu", "showMainMenu", true, false, true, true) == keep;
         }
         helper("the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input", markers);
+    }
+
+    /**
+     * 11. The copy's prefs (TR2-G): the model's half, then the window's (FollowBench.prefsCheck). Each assertion fails when
+     * UserInterface.replayHoldPrefs is not called at the replay's entry or GamePrefs.copyForReplay hands out the player's own.
+     */
+    static void prefsChecks(Recording rec) throws Exception {
+        System.out.println("\n--- 11. replay's copy leaves the player's prefs alone: in memory and on disk, and his own clicks still save ---");
+        Gson gson = new Gson();
+        GameFiles files = GameFiles.scratch("replayprefs");
+        GamePrefs mine = new GamePrefs();
+        mine.setFullScreen(false);
+        mine.setDrawerPinned(true);
+        mine.setPinnedLeft("population");
+        mine.setTrucksOnMap(false);
+        helper("the player's prefs are saved to the scratch folder first", mine.save(files));
+        Path file = files.getDirectory().resolve(GamePrefs.FILE);
+        byte[] disk = bytesOrNull(file);
+        GamePrefs copy = mine.copyForReplay();
+        helper("a replay's copy of the prefs holds the player's values and is marked a copy, which his are not",
+                gson.toJson(copy).equals(gson.toJson(mine)) && copy.isDetached() && !mine.isDetached() && !gson.toJson(copy).contains("detached"));
+        copy.setDrawerPinned(false);
+        copy.setConstructionOpen(true);
+        copy.setPinnedLeft("realGdp");
+        copy.setTrucksOnMap(true);
+        helper("changing the copy leaves the player's prefs in memory as they were",
+                mine.isDrawerPinned() && !mine.isConstructionOpen() && "population".equals(mine.getPinnedLeft()) && !mine.isTrucksOnMap());
+        GameFiles other = GameFiles.scratch("replayprefs-other");
+        helper("the copy's save says no and writes nothing, to the player's folder or to any other",
+                !copy.save(files) && !copy.save(other) && Arrays.equals(disk, bytesOrNull(file)) && !Files.exists(other.getDirectory().resolve(GamePrefs.FILE)));
+        mine.setConstructionOpen(true);
+        helper("the player's own prefs still save, and read back as he left them", mine.save(files) && GamePrefs.load(files).isConstructionOpen() && !GamePrefs.load(files).isDetached());
+
+        long began = System.nanoTime();
+        String cannot = FollowBench.startJavaFx();
+        if (cannot != null) {
+            System.out.println("      skipped in the window: " + cannot);
+            return;
+        }
+        GameFiles windowFiles = GameFiles.scratch("prefswindow");
+        Game city = FollowBench.fx(() -> LongPlaytest.probeCity(windowFiles, null));
+        List<String[]> found = FollowBench.fx(() -> FollowBench.prefsCheck(city, rec.folder()));
+        for (String[] f : found) helper("in the window: " + f[0], "true".equals(f[1]));
+        System.out.printf("      %d findings in the window, %.1f s%n", found.size(), (System.nanoTime() - began) / 1e9);
     }
 
     /**

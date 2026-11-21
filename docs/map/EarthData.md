@@ -1,6 +1,6 @@
 # EarthData.java - 1,118 lines · 99 methods · 37 constants · model
 
-`ham/citybuildersim/EarthData.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthData.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The reader of earth-2.bin (and of earth-1.bin, whose layers it holds), the
 > real Earth's ground as data: its layers' 1-degree tiles inflated into an
@@ -66,7 +66,7 @@
 
 **Uses:** [Palette](Palette.md) (9)
 
-**Used by (42):** [BridgeCheck](BridgeCheck.md), [BridgeView](BridgeView.md), [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [HarbourRenders](HarbourRenders.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [LandCheck](LandCheck.md), [LandClassRenders](LandClassRenders.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReloadCheck](ReloadCheck.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md)
+**Used by (44):** [BridgeCheck](BridgeCheck.md), [BridgeView](BridgeView.md), [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FB13Check](FB13Check.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [HarbourRenders](HarbourRenders.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassRenders](LandClassRenders.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReloadCheck](ReloadCheck.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md)
 
 ## Sections
 

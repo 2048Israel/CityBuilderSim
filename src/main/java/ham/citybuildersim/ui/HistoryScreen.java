@@ -207,9 +207,11 @@ final class HistoryScreen {
     record Trace(String key, String label, String group, String unit) { }
 
     static final Trace[] TRACES = withTheCrime(withTheHouseholds(withTheSectors(withTheMarket(new Trace[] {
-        new Trace("gdp",            "GDP",                "MONEY",      "money"),
+        // GDP is a rolling year since GY1 (the key "gdp" kept, so a pin or a door that names it draws the year); the month is "gdpMonth".
+        new Trace("gdp",            "GDP (yr)",           "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
         new Trace("realGdp",        "GDP, real (yr)",     "MONEY",      "money"),
+        new Trace("gdpMonth",       "GDP (month)",        "MONEY",      "money"),
         // GDP's four parts, a month each in its own money (0.7.37: kept since 0.7.6 for the layers, never offered).
         new Trace("consumption",    "GDP: consumption",   "MONEY",      "money"),
         new Trace("investment",     "GDP: investment",    "MONEY",      "money"),
@@ -217,6 +219,8 @@ final class HistoryScreen {
         new Trace("netExports",     "GDP: net exports",   "MONEY",      "money"),
         new Trace("cash",           "Treasury",           "MONEY",      "money"),
         new Trace("debt",           "Public debt",        "MONEY",      "money"),
+        // The debt over a year of GDP (GY1): the measure the debt limit reads, as a fraction the "percent" unit prints.
+        new Trace("debtToGdp",      "Debt to GDP",        "MONEY",      "percent"),
         new Trace("revenue",        "Revenue",            "MONEY",      "money"),
         new Trace("surplus",        "Surplus / deficit",  "MONEY",      "money"),
         new Trace("interestRate",   "Borrowing rate",     "MONEY",      "percent"),
@@ -489,7 +493,7 @@ final class HistoryScreen {
      */
     static String areaOf(Trace t) {
         switch (t.key()) {
-            case "gdp": case "gdpPerCapita": case "realGdp":        return Palette.BUSINESS;
+            case "gdp": case "gdpMonth": case "gdpPerCapita": case "realGdp": return Palette.BUSINESS;
             case "consumption": case "investment": case "government": case "netExports": return Palette.BUSINESS;
             case "constructionCapacity": case "landUse": case "landPrice": return Palette.BUILDING;
             case "foodPrice": case "materialsPrice": case "orePrice": return Palette.BUSINESS;
@@ -1147,7 +1151,7 @@ final class HistoryScreen {
             x.setStyle(Palette.strong(Palette.SIZE_HEADING + 4, Palette.TEXT_LABEL) + " -fx-cursor: hand; -fx-padding: 0 4 0 4;");
             x.setMinWidth(Region.USE_PREF_SIZE);
             tip(x, "Puts this away.");
-            x.setOnMouseClicked(e -> {
+            Kept.give(x.onMouseClickedProperty(), e -> {
                 bookExportSaid = null;
                 bookFolder = null;
                 bookFiles.clear();
@@ -1336,7 +1340,7 @@ final class HistoryScreen {
                 + " -fx-border-width: 0 0 2 0;"
                 + Palette.words(Palette.SIZE_CAPTION,
                         on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL));
-        chip.setOnMouseClicked(e -> act.run());
+        Kept.give(chip.onMouseClickedProperty(), e -> act.run());
         return chip;
     }
 
@@ -1368,7 +1372,7 @@ final class HistoryScreen {
     Label chip(String name, String text, javafx.scene.Node graphic, boolean on, Runnable act) {
         Label chip = pickChip(text, graphic, on, act);
         named.put(name, chip);
-        chip.setOnMouseClicked(e -> {
+        Kept.give(chip.onMouseClickedProperty(), e -> {
             pressed = name;
             pressedAt = chip.localToScene(0, 0).getY();
             act.run();
@@ -1961,7 +1965,7 @@ final class HistoryScreen {
             empty = "Nothing picked: a preset above the chart, or a line below.";
         } else if (!recorded) {
             boolean yearly = true;
-            for (String key : keys) yearly &= traceFor(key).label().endsWith("(yr)");
+            for (String key : keys) yearly &= traceFor(key).label().endsWith("(yr)") || key.equals("debtToGdp");
             empty = yearly ? "from the end of the first year" : "nothing recorded yet";
         }
 
@@ -2349,7 +2353,7 @@ final class HistoryScreen {
         // Kept: what a card shows only sometimes (the axis, the layers chip, the range bar) is a scope of its own.
         Region swatch = Kept.region();
         swatch.setMinSize(9, 9);
-        swatch.setPrefSize(9, 9);
+        Pieces.prefSize(swatch, 9, 9);
         swatch.setMaxSize(9, 9);
         swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
         Label name = Kept.label(r.label());
@@ -2415,7 +2419,7 @@ final class HistoryScreen {
         caption.setWrapText(true);
         caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         card.getChildren().add(caption);
-        if (hiddenLines.contains(key)) card.setOpacity(.5);
+        if (hiddenLines.contains(key)) Kept.give(card.opacityProperty(), .5);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle(Palette.block(Palette.RAISED, Palette.EDGE) + " -fx-padding: 10 12 10 12;");
         return card;
@@ -2446,12 +2450,7 @@ final class HistoryScreen {
                 // amount, in its own unit (0.7.37: it read "×-7").
                 if ((first < 0) != (last < 0) && last != 0) return (delta > 0 ? "+" : "-") + fmtUnit(unit, Math.abs(delta));
                 double share = delta / Math.abs(first);
-                // A city that grew its output a thousandfold did not grow it by
-                // "+136683.6%". Past a fivefold move the multiple is the figure
-                // a reader can hold, and the percentage is noise with a sign on
-                // it.
-                if (Math.abs(share) >= 5) return String.format("\u00d7%,.0f", last / first);
-                return String.format("%+.1f%%", unsigned0(share * 100, 1));
+                return Formats.INSTANCE.change(share, 0, "%+.1f%%");
         }
     }
 
@@ -2526,7 +2525,7 @@ final class HistoryScreen {
             });
         }
         // Enter hands the keys back to the page, so the window's shortcuts work again.
-        find.setOnAction(e -> { if (page != null) page.requestFocus(); });
+        Kept.give(find.onActionProperty(), e -> { if (page != null) page.requestFocus(); });
         filterField = find;
 
         Label drawn = hint(historyPicked.size() + " drawn · " + TRACES.length + " lines");
@@ -2642,7 +2641,9 @@ final class HistoryScreen {
      * (UP2) The header's five tiles do not come through here: UserInterface.sparkSeries()
      * reads their last SPARK_MONTHS straight off HistorySave.alignedTail() and
      * YearBook.unemploymentTail() - what this returns for those keys, cut to the tail. A case
-     * added below for population, gdp, priceIndex, unemployment or policyRate must be added there.
+     * added below for population, priceIndex, unemployment or policyRate must be added there. Not
+     * "gdp" (GY1): the chart's "gdp" is a year, the tile's sparkline is the month's output, which is
+     * the chart's "gdpMonth".
      */
     double[] historyValues(HistorySave h, String key) {
         switch (key) {
@@ -2677,6 +2678,17 @@ final class HistoryScreen {
              * is left alone for now.
              */
             case "realGdp":         return YearBook.realGdpYear(h);
+            /*
+             * GDP, NOMINAL, A ROLLING YEAR (GY1) - realGdp's twelve months summed without the price
+             * index, so it sits beside the public debt, a stock. Jerus, 2026-11-20: "in the graph,
+             * gdp can be shown yearly not monthly ... i want to be able to compare gdp with public
+             * debt, and also perhaps a debt to gdp ratio". The key stays "gdp": a pin, a preset or a
+             * door that names it draws the year; the month it used to draw is "gdpMonth".
+             */
+            case "gdp":             return YearBook.gdpYear(h);
+            case "gdpMonth":        return h.aligned("gdp");
+            /* The public debt over that year (GY1): YearBook.debtToGdp(), the debt limit's measure. */
+            case "debtToGdp":       return YearBook.debtToGdp(h);
             case "gdpPerCapita": {
                 double[] g = h.aligned("gdp"), p = h.aligned("population");
                 double[] out = new double[g.length];
@@ -2773,7 +2785,7 @@ final class HistoryScreen {
         switch (unit) {
             // Thousands, like everything else the model counts - see money().
             case "money":     return tightMoney(v * 1000);
-            case "percent":   return String.format("%.1f%%", unsigned0(v * 100, 1));
+            case "percent":   return Formats.INSTANCE.percentage(unsigned0(v * 100, 1) / 100, "%.1f%%");
             // Ground is kept per square foot in thousands, and the land screen
             // already shows it multiplied out. Two screens, one convention -
             // and in US dollars since 0.7.6, which is what the world asks, a
@@ -3031,9 +3043,9 @@ final class HistoryScreen {
         String over = rest + " -fx-background-color: " + Palette.CONTROL + ";";
         // Kept (KP2): the look the pointer calls for - a kept row under a still pointer is not entered afresh.
         row.setStyle(row.isHover() ? over : rest);
-        row.setOnMouseEntered(e -> row.setStyle(over));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> go.run());
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(over));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> go.run());
         tip(row, tipText);
     }
 
@@ -3097,7 +3109,7 @@ final class HistoryScreen {
         VBox box = details(key, caption, folds, this::showHistoryMenu, body);
         if (!box.getChildren().isEmpty() && box.getChildren().get(0) instanceof Label toggle) {
             named.put("fold:" + key, toggle);
-            toggle.setOnMouseClicked(e -> {
+            Kept.give(toggle.onMouseClickedProperty(), e -> {
                 pressed = "fold:" + key;
                 pressedAt = toggle.localToScene(0, 0).getY();
                 if (!folds.remove(key)) folds.add(key);

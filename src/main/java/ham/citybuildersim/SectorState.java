@@ -155,6 +155,8 @@ public final class SectorState {
         public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
         /** Sector.Ledger.oldMetalSold (0.7.123, batch I4): its old steel sold to the yards this month, named apart at the strike. An older save reads none, which is what it sold. */
         public double oldMetalSold;
+        /** Sector.Ledger.upkeepSold (HL1): the upkeep sold to the city's services and the bank this month, in transit until the next strike. An older save reads none. */
+        public double upkeepSold;
         /** Sector.Ledger.paidToCity (FR3): the dues it pays the city this month, in its inputs. An older save reads none. */
         public double paidToCity;
 
@@ -174,6 +176,7 @@ public final class SectorState {
             s.paidEarlier = l.paidEarlier;
             s.capitalBySupplier = new LinkedHashMap<>(l.capitalBySupplier);
             s.oldMetalSold = l.oldMetalSold;
+            s.upkeepSold = l.upkeepSold;
             s.paidToCity = l.paidToCity;
             return s;
         }
@@ -200,6 +203,7 @@ public final class SectorState {
             l.paidEarlier = paidEarlier;
             if (capitalBySupplier != null) l.capitalBySupplier.putAll(capitalBySupplier);
             l.oldMetalSold = oldMetalSold;
+            l.upkeepSold = upkeepSold;
             l.paidToCity = paidToCity;
             return l;
         }

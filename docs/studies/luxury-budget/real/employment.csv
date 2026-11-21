@@ -1,0 +1,32 @@
+series_id,item,unit,avg_2023,avg_2024,avg_2025,note
+CES0000000001,Total nonfarm employment (thousands),thousands,155895.2,157693.8,158438.9,annual average = mean of 12 NSA monthly values (derived)
+CES0500000001,Total private employment (thousands),thousands,133097.8,134325.8,134926.3,annual average = mean of 12 NSA monthly values (derived)
+CES4200000001,Retail trade (NAICS 44-45) (thousands),thousands,15547.5,15488.9,15441.5,annual average = mean of 12 NSA monthly values (derived)
+CES4245800001,"Clothing, clothing accessories, shoe, and jewelry retailers (458) (thousands)",thousands,1147.0,1138.6,1141.4,annual average = mean of 12 NSA monthly values (derived)
+CES4245810001,Clothing and clothing accessories retailers (4581) (thousands),thousands,850.9,842.8,842.7,annual average = mean of 12 NSA monthly values (derived)
+CES4245820001,Shoe retailers (4582) (thousands),thousands,172.4,169.3,172.3,annual average = mean of 12 NSA monthly values (derived)
+CES4245830001,"Jewelry, luggage, and leather goods retailers (4583) (thousands)",thousands,123.0,124.7,127.6,annual average = mean of 12 NSA monthly values (derived)
+CES4245500001,General merchandise retailers (455) (thousands),thousands,3213.8,3243.4,3238.6,annual average = mean of 12 NSA monthly values (derived)
+CES4245510001,Department stores (4551) (thousands),thousands,973.6,988.6,934.1,annual average = mean of 12 NSA monthly values (derived)
+CES4245520001,"Warehouse clubs, supercenters, other general merchandise retailers (4552) (thousands)",thousands,2240.2,2254.8,2304.5,annual average = mean of 12 NSA monthly values (derived)
+CES7072200001,Food services and drinking places (722) (thousands),thousands,12165.8,12220.9,12256.0,annual average = mean of 12 NSA monthly values (derived)
+CES0500000011,"Total private: average weekly earnings, all employees ($)",dollars,1159.40,1201.88,1246.64,annual average = mean of 12 NSA monthly values (derived)
+CES4200000011,"Retail trade: average weekly earnings, all employees ($)",dollars,715.93,727.24,758.57,annual average = mean of 12 NSA monthly values (derived)
+CES0500000003,"Total private: average hourly earnings, all employees ($)",dollars,33.70,35.06,36.44,annual average = mean of 12 NSA monthly values (derived)
+CES4200000003,"Retail trade: average hourly earnings, all employees ($)",dollars,23.90,24.51,25.46,annual average = mean of 12 NSA monthly values (derived)
+CES0500000007,"Total private: average weekly hours, all employees",hours,33.82,33.72,33.68,annual average = mean of 12 NSA monthly values (derived)
+CES4200000007,"Retail trade: average weekly hours, all employees",hours,30.38,30.32,30.38,annual average = mean of 12 NSA monthly values (derived)
+derived,Retail trade (NAICS 44-45) as % of total nonfarm,percent,9.973,9.822,9.746,derived
+derived,"Clothing, clothing accessories, shoe, and jewelry retailers (458) as % of total nonfarm",percent,0.736,0.722,0.720,derived
+derived,Clothing and clothing accessories retailers (4581) as % of total nonfarm,percent,0.546,0.534,0.532,derived
+derived,Shoe retailers (4582) as % of total nonfarm,percent,0.111,0.107,0.109,derived
+derived,"Jewelry, luggage, and leather goods retailers (4583) as % of total nonfarm",percent,0.079,0.079,0.081,derived
+derived,General merchandise retailers (455) as % of total nonfarm,percent,2.062,2.057,2.044,derived
+derived,Department stores (4551) as % of total nonfarm,percent,0.625,0.627,0.590,derived
+derived,"Warehouse clubs, supercenters, other general merchandise retailers (4552) as % of total nonfarm",percent,1.437,1.430,1.455,derived
+derived,Food services and drinking places (722) as % of total nonfarm,percent,7.804,7.750,7.735,derived
+CES4244100001,Motor vehicle and parts dealers (441) (thousands),thousands,,,2049.8,"annual average = mean of 12 monthly values, BLS API v1, read 2026-11-17 by LQ1 (derived)"
+CES4244500001,Food and beverage retailers (445) (thousands),thousands,,,3254.0,"annual average = mean of 12 monthly values, BLS API v1, read 2026-11-17 by LQ1 (derived)"
+derived,"Other retail (BEA 4A0's span: retail less 441, 445 and 455) (thousands)",thousands,,,6899.1,"15441.5 - 2049.8 - 3254.0 - 3238.6 (derived)"
+derived,"Other retail (BEA 4A0's span) as % of total nonfarm",percent,,,4.354,derived
+derived,"Other retail and general merchandise (4A0 + 455) as % of total nonfarm",percent,,,6.398,derived

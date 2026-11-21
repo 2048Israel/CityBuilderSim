@@ -109,7 +109,7 @@ public final class SectorFlow {
      * @param rate      getOperatingRate(); NaN with nothing standing (no plant has a rate)
      * @param let       the landlords' homes let over the homes they own; NaN for everyone else
      */
-    public record Plant(int standing, int onSite, long posts, double workers, double[] ratios, double[] cascade,
+    public record Plant(long standing, long onSite, long posts, double workers, double[] ratios, double[] cascade,
                         double rate, double let) {
         public boolean none() { return standing <= 0; }
         /** The throttle that cuts most: the lowest ratio, the first of equals; -1 with nothing standing. */
@@ -223,7 +223,7 @@ public final class SectorFlow {
 
     /** The plant alone (the Sectors list's cards and every page's RUNNING AT). */
     public static Plant plant(Sector sector) {
-        double[] ratios = { sector.getAverageFill(), sector.getEnergyRatio(), sector.getWaterRatio(),
+        double[] ratios = { sector.getAverageFill(), sector.getPowerRatio(), sector.getWaterRatio(),
                 sector.getRoadRatio(), sector.getHealthRatio(), sector.getFreightRatio() };
         // The running product in getOperatingRate()'s own order, so its last
         // step is the rate to the bit.
@@ -234,7 +234,7 @@ public final class SectorFlow {
             run = run * ratios[i];
             cascade[i] = run;
         }
-        int standing = sector.buildingsStanding();
+        long standing = sector.buildingsStanding();
         double let = Double.NaN;
         if (sector instanceof ham.citybuildersim.sectors.RealEstate homes && homes.getHomes() > 0) {
             let = homes.getOccupiedHomes() / homes.getHomes();

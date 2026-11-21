@@ -1,6 +1,6 @@
 # OldMetal.java - 418 lines · 40 methods · 10 constants · model
 
-`ham/citybuildersim/OldMetal.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OldMetal.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's old steel: what it throws out each month that a Scrap Yard can
 > buy and sort into scrap - its scrapped cars, its demolitions, its
@@ -62,7 +62,7 @@
 
 **Uses:** [Trade](Trade.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (17):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SpreadPlanner](SpreadPlanner.md)
+**Used by (22):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingStackCheck](BuildingStackCheck.md), [BusinessInvestment](BusinessInvestment.md), [CopperBufferCheck](CopperBufferCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [DistressBleedCheck](DistressBleedCheck.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SpreadPlanner](SpreadPlanner.md), [UndemandedFeedCheck](UndemandedFeedCheck.md)
 
 ## Sections
 
@@ -137,7 +137,7 @@
 |---:|---:|---|---|
 | 141 | 3 | `public void arise(Source source, String seller, double tonnes)` | `tonnes` of steel thrown out by `seller` from `source`, of which RECOVERY comes back as old steel; nothing for none, or for nobody. |
 | 146 | 4 | `public void carsScrapped(double cars)` | Cars the households scrapped (Motoring, at the top of the month): their steel, and since 0.7.133 their copper. |
-| 152 | 5 | `public void demolished(BuildingsTemplate t, int n, String owner)` | `n` of a building pulled down, its steel - and since 0.7.133 its copper - its owner's (`owner`, a sector's key). |
+| 152 | 5 | `public void demolished(BuildingsTemplate t, long n, String owner)` | `n` of a building pulled down, its steel - and since 0.7.133 its copper - its owner's (`owner`, a sector's key). |
 | 159 | 3 | `public void fabricated(String maker, double tonnes)` | `tonnes` of fabricated steel made by `maker` this month: its offcuts. |
 | 164 | 3 | `public void setsRetired(String railway, double sets)` | `sets` of rolling stock worn out by `railway` this month. |
 | 169 | 1 | `public double available()` | Tonnes of old steel standing to be bought now: arisen since the yards last bought. |

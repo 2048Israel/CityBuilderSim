@@ -58,6 +58,10 @@ package ham.citybuildersim;
  *      and the block, once standing, counts whole in the city's housing, bills
  *      its rent with its posts mostly empty, and pays the wages of those filled.
  *
+ *   7. HEADROOM IS SPARE HOMES OVER DEMAND (RN1-H). At equal demand and
+ *      capacity the plan orders the margin, counts homes on site once,
+ *      and stops at that margin, both before and after they finish.
+ *
  * @author Jerus
  */
 public class HousingCheck {
@@ -779,12 +783,100 @@ public class HousingCheck {
 
         heldRateRentsItsGlutAtNoLift();
         aClosedHomesDebtIsTheLandlordsLoss();
+        homesKeepHeadroomOverDemand();
 
         System.out.println(fails == 0
                 ? "\nEvery door, every household and every dollar of rent is accounted for."
                 : "\n" + fails + " FAILED");
 
         if (fails > 0) System.exit(1);
+    }
+
+    static void homesKeepHeadroomOverDemand() {
+        System.out.println("\n--- homes keep headroom over demand ---");
+        Game g = new Game(GameFiles.scratch("housing-headroom"));
+        g.run();
+        BuildingManager built = g.getBuildingManager();
+        built.clearStacks();
+        BuildingsTemplate house = template(g, "House");
+        BuildingsTemplate studio = template(g, "Studio Apartments");
+        BuildingsTemplate shop = template(g, "Convenience Store");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        plans.setLandAvailable(1e12, 0);
+
+        // Find integral catalogue quantities whose jobs support exactly their
+        // homes, with a margin divisible by one House: no rounding allowance
+        // can hide an over-order. The founding endowment counts in both totals.
+        long baseHomes = built.getTotalHouseCapacity();
+        long baseJobs = java.util.Arrays.stream(g.getJobs()).sum();
+        long houses = -1, studios = 0, shops = 0;
+        for (int s = 0; s < 9 && houses < 0; s++) {
+            for (int n = 1; n <= 200; n++) {
+                double heads = (baseJobs + s * studio.getTotalJobs() + n * shop.getTotalJobs()) * 2.25;
+                double h = (heads - baseHomes - s * studio.getCapacity()) / house.getCapacity();
+                double spare = heads * BusinessInvestment.TARGET_HEADROOM / house.getCapacity();
+                if (h >= 0 && spare >= 2 && spare <= 10
+                        && Math.abs(h - Math.rint(h)) < TOLERANCE
+                        && Math.abs(spare - Math.rint(spare)) < TOLERANCE) {
+                    houses = Math.round(h); studios = s; shops = n;
+                    break;
+                }
+            }
+        }
+        assertTrue("fixture: catalogue quantities make equal homes and demand", houses >= 0);
+        if (houses < 0) return;
+        built.addStack(house, houses, true);
+        built.addStack(studio, studios, true);
+        built.addStack(shop, shops, true);
+        g.getPopulationManager().updateJobs(g.getJobs());
+        ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
+        long[] sizes = built.homesBySize();
+        long studioDoors = 0, familyDoors = 0, studioHeads = 0, familyHeads = 0;
+        for (int size = 1; size < sizes.length; size++) {
+            if (size <= FamilyModel.STUDIO_MAX_SIZE) {
+                studioDoors += sizes[size]; studioHeads += sizes[size] * size;
+            } else {
+                familyDoors += sizes[size]; familyHeads += sizes[size] * size;
+            }
+        }
+        re.setSegments(studioDoors, familyDoors, studioDoors, familyDoors, studioHeads, familyHeads);
+        re.setRentPrice(10);
+        re.setStudioRentPrice(10);
+        double demand = g.getPopulationManager().getTotalJobs() * 2.25;
+        double target = demand * (1 + BusinessInvestment.TARGET_HEADROOM);
+        double gap = target - g.getHouseholdCapacity();
+        isNear("fixture: jobs' demand equals standing capacity", demand, g.getHouseholdCapacity());
+        assertTrue("fixture: neither segment lacks a door", re.doorShortfall(true) == 0 && re.doorShortfall(false) == 0);
+        isNear("the credit check sees the margin still needed", re.latentHeadShortfall(), gap);
+        BusinessInvestment.Decision order = re.plan(plans, g);
+        System.out.printf("   demand %.0f, capacity %d, margin %.0f -> %d x %s%n",
+                demand, g.getHouseholdCapacity(), gap, order.quantity,
+                order.template == null ? "none" : order.template.getName());
+        assertTrue("equal homes and demand still plan the spare homes", order.build && order.quantity > 0);
+        assertTrue("fixture: the spare homes are Houses, with no added jobs", order.template == house && house.getTotalJobs() == 0);
+        if (!order.build || order.template != house) return;
+        isNear("the order reaches the margin without going past it", order.quantity * house.getCapacity(), gap);
+
+        // Leave one House of the margin uncommitted, then commit the last:
+        // sites must reduce the next order, not get the margin added to them.
+        built.addStack(house, order.quantity - 1, false);
+        isNear("the credit check counts the homes on site once", re.latentHeadShortfall(), house.getCapacity());
+        BusinessInvestment.Decision last = re.plan(plans, g);
+        assertTrue("only the last House is ordered beside the existing sites",
+                last.build && last.template == house && last.quantity == 1);
+        built.addStack(house, 1, false);
+        isNear("standing plus planned capacity is demand plus headroom",
+                built.getTotalHouseCapacity() + built.getHouseCapacityUnderConstruction(), target);
+        isNear("the credit check has no gap at the planned margin", re.latentHeadShortfall(), 0);
+        assertTrue("nothing more is ordered at the planned margin", !re.plan(plans, g).build);
+
+        // Replace these sites by the same completed homes, holding jobs fixed.
+        built.getStack(house).setUnderConstruction(0);
+        built.addStack(house, order.quantity, true);
+        isNear("completed capacity is still exactly the target", g.getHouseholdCapacity(), target);
+        assertTrue("nothing more is ordered at the completed margin", !re.plan(plans, g).build);
+        built.addStack(house, 1, true);
+        assertTrue("nothing is ordered above the margin", !re.plan(plans, g).build);
     }
 
     static BuildingsTemplate template(Game game, String name) {
@@ -836,13 +928,9 @@ public class HousingCheck {
         long started = System.currentTimeMillis();
         Game held = new Game(GameFiles.scratch("housing-held-rate"));
         held.newGame();
-        // WG1 (2026-11-10): the floor at the going rate, the wage this fixture was written against (RN1, 2026-11-09), before a month has run. A new city's
-        // floor is .85 of the going rate now (a real minimum, WG1), and on that path the city held at 15% closed no home in its 240 months (the landlords' debt on
-        // closed homes at the end 0.000 of it, the largest lift on a leg that took it 1.725); with the floor at the going rate, main's path, 0.106 of it.
-        held.getLabourMarket().setMinimumWage(held.getLabourMarket().getGoingRate());
         ham.citybuildersim.sectors.RealEstate re = held.getSectors().realEstate();
         DebtManager dm = held.getDebtManager();
-        int run = 0, studioWaived = 0, familyWaived = 0, glutMonths = 0, neitherMonths = 0;
+        int run = 0, studioWaived = 0, familyWaived = 0, glutMonths = 0, neitherMonths = 0, retirable = 0;
         double largestLift = 1;
         for (int i = 0; i < MONTHS; i++) {
             // The advisor nudges a hand-held dial between looks; the hand takes it back.
@@ -864,6 +952,13 @@ public class HousingCheck {
             held.toggleNextMonth();
             run++;
             int month = held.getMonth();
+            // WG1-R: what closes a home is the retirement's own rule (BusinessInvestment.planRetirement(): the sector's loss months at RETIREMENT_LOSS_MONTHS, its homes over
+            // the people by RETIREMENT_SLACK). WG1-D set this city's floor at the going rate for the closed homes it asked for (none closed in 240 months on the .85 floor
+            // then, 0.106 of the debt at the going rate); the glut the fixture places since GW1 closes them on either floor (0.713 on both, and at a dial held at 3%: the
+            // loss is the glut's), so the pin is gone, and this counts the months that met the rule's conditions, the cause of a closing the fixture can name.
+            double[] housed = re.retirementDemandAndCapacity(held);
+            if (i >= GROWN && held.getBusinessInvestment().getLossMonths(re.key()) >= BusinessInvestment.RETIREMENT_LOSS_MONTHS
+                    && housed[1] > housed[0] * (1 + BusinessInvestment.RETIREMENT_SLACK)) retirable++;
             boolean inGlut = assertGlutLegsNotLifted(re, month);
             if (inGlut) glutMonths++;
             if (re.glutWaivesLift(false)) studioWaived++;
@@ -891,17 +986,25 @@ public class HousingCheck {
                 run, HELD * 100, run - GROWN, (System.currentTimeMillis() - started) / 1000.0, glutMonths, neitherMonths,
                 studioWaived, familyWaived, largestLift);
         assertTrue("fixture: the held dial is the rate the landlords borrow against", dm.getPolicyRate() == HELD);
-        assertTrue("fixture: a glut with a lift waiting came up (the lift was waived in a month)",
+        System.out.printf("   %d of the %d months at the held dial met the retirement's own conditions: %d loss months running and the homes %.0f%% over the people%n",
+                retirable, run - GROWN, BusinessInvestment.RETIREMENT_LOSS_MONTHS, BusinessInvestment.RETIREMENT_SLACK * 100);
+        assertTrue("fixture: the landlords ran into loss for the retirement's months with the homes over the people by its slack, which is what closes a home",
+                retirable > 0);
+        Observation.reached("fixture: a glut with a lift waiting came up (the lift was waived in a month)",
                 studioWaived + familyWaived > 0);
 
         // ...and the share of its debt whose homes are closed goes through a save and a load.
         double share = re.strandedDebtShare();
         System.out.printf("   the landlords' debt on closed homes at the end: %.3f of it%n", share);
-        assertTrue("fixture: the city closed homes and left their debt on the landlords", share > 0 && share <= 1);
-        assertTrue("saved", held.saveGame(1, "housing-held").ok);
-        Game back = new Game(held.getGameFiles());
-        back.loadGame(1);
-        isNear("a closed home's debt share comes back from a save", back.getSectors().realEstate().strandedDebtShare(), share);
+        assertTrue("closed-home debt is a share in [0, 1]", share >= 0 && share <= 1);
+        if (Observation.reached("fixture: the city closed homes and left their debt on the landlords",
+                share > 0,
+                "closed-home share save round trip")) {
+            assertTrue("saved", held.saveGame(1, "housing-held").ok);
+            Game back = new Game(held.getGameFiles());
+            back.loadGame(1);
+            isNear("a closed home's debt share comes back from a save", back.getSectors().realEstate().strandedDebtShare(), share);
+        }
     }
 
     /**

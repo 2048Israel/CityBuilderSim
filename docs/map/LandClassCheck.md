@@ -1,6 +1,6 @@
 # LandClassCheck.java - 1,349 lines · 51 methods · 8 constants · harnesses
 
-`ham/citybuildersim/LandClassCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandClassCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going
 > price stays the price of flat ground, foothill is that price less its preparation and never under the base price of
@@ -52,7 +52,7 @@
 
 **Uses:** [LandMarket](LandMarket.md) (59), [LandManager](LandManager.md) (46), [LandParcel](LandParcel.md) (45), [SectorStatements](SectorStatements.md) (45), [Sectors](Sectors.md) (44), [Game](Game.md) (36), [LandClassView](LandClassView.md) (33), [World](World.md) (29), [SectorBooks](SectorBooks.md) (15), [Money](Money.md) (15), [CityLand](CityLand.md) (14), [Resource](Resource.md) (10), [Sector](Sector.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [BuildingType](BuildingType.md) (8), [Zoning](Zoning.md) (5), [EconomyManager](EconomyManager.md) (5), [BuildingManager](BuildingManager.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Mining](Mining.md) (3), [GameFiles](GameFiles.md) (1), [SitePreparation](SitePreparation.md) (1), [Currency](Currency.md) (1)
 
-**Used by (3):** [HydroCheck](HydroCheck.md), [LandClassRenders](LandClassRenders.md), [RunWorksCheck](RunWorksCheck.md)
+**Used by (4):** [HydroCheck](HydroCheck.md), [LandClassRenders](LandClassRenders.md), [RunWorksCheck](RunWorksCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 

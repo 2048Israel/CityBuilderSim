@@ -1,6 +1,6 @@
-# RailDepotCheck.java - 594 lines · 14 methods · 1 constants · harnesses
+# RailDepotCheck.java - 721 lines · 16 methods · 1 constants · harnesses
 
-`ham/citybuildersim/RailDepotCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailDepotCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The railway's stations: the Rail Depot, and the rules that put a station
 > first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md
@@ -25,7 +25,11 @@
 >   4. THE STATIONS CAP WHAT IS RAILED: goods only through a station, bulk
 >      past the stations on the spurs' sidings, and nothing at all with
 >      neither - first as the dealing's arithmetic, then in a played city's
->      months.
+>      months (FS7: where the spurs laid are sized from the bulk the played
+>      city offers while it rails nothing - floor(offered / P) - 1 of them, P
+>      a spur's sidings - so the cap binds by construction, and the depot
+>      comes with the spurs that put its stations' and the sidings' tonnes
+>      past the offer, so the goods ride it by construction).
 >   5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING: the bulk-works predicate
 >      (counted and named), a spur ordered while a bulk works has none and
 >      the track and the sidings are short, none when every works has one or
@@ -41,6 +45,11 @@
 >      the planner would buy back (the freight left unserved is a first
 >      station's rung) is refused, by the distress rule as by any other, and
 >      allowed a tonne under it or with a second station standing.
+>   10. SPARE TRACK IS COUNTED AS TRACK (RT2), even while wagon sets or
+>      stations limit operating capacity; losses sell the most-held line
+>      by the headroom and gradual-retirement constants, without cutting
+>      into the track the offered freight needs. Goods retain station room:
+>      spare sidings cannot replace a goods yard, even when sets bind.
 > 
 > The fixtures are bare cities (a catalogue, a planner, a Freight with nothing
 > else), because plan() asks for nothing a city adds except the staffing,
@@ -50,7 +59,7 @@
 > only for what the stations let through. Every threshold is caused from both
 > sides, and every figure comes from the templates and the model's constants.
 
-**Uses:** [Freight](Freight.md) (36), [BusinessInvestment](BusinessInvestment.md) (31), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [HaulageCheck](HaulageCheck.md) (4), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (45), [Freight](Freight.md) (43), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (12), [HaulageCheck](HaulageCheck.md) (5), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 **Used by (1):** [HomeRailCheck](HomeRailCheck.md)
 
@@ -58,55 +67,57 @@
 
 | line | section |
 |---:|---|
-| 101 | THE FIXTURE: a bare city |
-| 162 | · 1. THE RAIL DEPOT IN THE CATALOGUE |
-| 223 | · 2. A YOUNG CITY'S FIRST RAIL ORDER IS A RAIL DEPOT |
-| 246 | · 3. NO SPUR OR LINE BEFORE A STATION |
-| 271 | · 4. THE STATIONS CAP WHAT IS RAILED |
-| 365 | · 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING |
-| 444 | · 6. THE OVERBUILD |
-| 492 | · 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS |
-| 511 | · 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS |
-| 532 | · 9. THE LAST STATION IS KEPT WHILE IT HAS A STATION'S FREIGHT (FD1) |
+| 110 | THE FIXTURE: a bare city |
+| 171 | · 1. THE RAIL DEPOT IN THE CATALOGUE |
+| 232 | · 2. A YOUNG CITY'S FIRST RAIL ORDER IS A RAIL DEPOT |
+| 255 | · 3. NO SPUR OR LINE BEFORE A STATION |
+| 280 | · 4. THE STATIONS CAP WHAT IS RAILED |
+| 394 | · 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING |
+| 473 | · 6. THE OVERBUILD |
+| 521 | · 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS |
+| 540 | · 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS |
+| 561 | · 9. THE LAST STATION IS KEPT WHILE IT HAS A STATION'S FREIGHT (FD1) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 65 | `RailDepotCheck.LORRY_A_TONNE` | `.319 * PriceLevel.FACTOR` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
+| 74 | `RailDepotCheck.LORRY_A_TONNE` | `.319 * PriceLevel.FACTOR` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 62 | `static int fails` |  |
-| 107 | `final BuildingManager bm` |  |
-| 108 | `final BusinessInvestment plans` |  |
-| 109 | `final Freight fr` |  |
+| 71 | `static int fails` |  |
+| 116 | `final BuildingManager bm` |  |
+| 117 | `final BusinessInvestment plans` |  |
+| 118 | `final Freight fr` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 535 | **type** `public class RailDepotCheck` | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md 1.1; sectors.Freight, THE STATIONS). |
-| 67 | 7 | `static void quietly(Runnable r)` |  |
-| 75 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 80 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 85 | 3 | `static boolean near(double a, double b, double tol)` |  |
-| 90 | 5 | `static double dealtNow(Freight fr)` | The tonnes the last haul dealt the railway: this month's bulk and goods offered at the shares it set for the month to come. |
-| 97 | 3 | `static String say(BusinessInvestment.Decision d)` | What a decision says, in a few words. |
+| 69 | 653 | **type** `public class RailDepotCheck` | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md 1.1; sectors.Freight, THE STATIONS). |
+| 76 | 7 | `static void quietly(Runnable r)` |  |
+| 84 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 89 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 94 | 3 | `static boolean near(double a, double b, double tol)` |  |
+| 99 | 5 | `static double dealtNow(Freight fr)` | The tonnes the last haul dealt the railway: this month's bulk and goods offered at the shares it set for the month to come. |
+| 106 | 3 | `static String say(BusinessInvestment.Decision d)` | What a decision says, in a few words. |
 
-### THE FIXTURE: a bare city (lines 101-594)
+### THE FIXTURE: a bare city (lines 110-721)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 106 | 40 | **type** `static final class Fx` | A catalogue, a planner with all the ground it wants, and a Freight attached to them: no city, so the staffing test passes. |
-| 111 | 6 | `Fx()` _(in RailDepotCheck.Fx)_ |  |
-| 118 | 1 | `BuildingsTemplate t(String name)` _(in RailDepotCheck.Fx)_ |  |
-| 121 | 4 | `Fx stand(String name, int n)` _(in RailDepotCheck.Fx)_ | n of the named building standing. |
-| 127 | 4 | `Fx works(int n)` _(in RailDepotCheck.Fx)_ | n bulk works standing: iron mines. |
-| 133 | 3 | `Fx offer(double bulk, double goods)` _(in RailDepotCheck.Fx)_ | A month's offer to the railway, the wagon sets enough for the track standing. |
-| 138 | 5 | `Fx offer(double bulk, double goods, double sets)` _(in RailDepotCheck.Fx)_ | ...with this many wagon sets, however many the track needs. |
-| 144 | 1 | `BusinessInvestment.Decision plan()` _(in RailDepotCheck.Fx)_ |  |
-| 147 | 447 | `public static void main(String[] args)` |  |
+| 115 | 40 | **type** `static final class Fx` | A catalogue, a planner with all the ground it wants, and a Freight attached to them: no city, so the staffing test passes. |
+| 120 | 6 | `Fx()` _(in RailDepotCheck.Fx)_ |  |
+| 127 | 1 | `BuildingsTemplate t(String name)` _(in RailDepotCheck.Fx)_ |  |
+| 130 | 4 | `Fx stand(String name, int n)` _(in RailDepotCheck.Fx)_ | n of the named building standing. |
+| 136 | 4 | `Fx works(int n)` _(in RailDepotCheck.Fx)_ | n bulk works standing: iron mines. |
+| 142 | 3 | `Fx offer(double bulk, double goods)` _(in RailDepotCheck.Fx)_ | A month's offer to the railway, the wagon sets enough for the track standing. |
+| 147 | 5 | `Fx offer(double bulk, double goods, double sets)` _(in RailDepotCheck.Fx)_ | ...with this many wagon sets, however many the track needs. |
+| 153 | 1 | `BusinessInvestment.Decision plan()` _(in RailDepotCheck.Fx)_ |  |
+| 156 | 469 | `public static void main(String[] args)` |  |
+| 627 | 58 | `static void retirement()` | The operating bottleneck must not hide spare standing track (RT2). |
+| 687 | 34 | `static void goodsRetirement()` | A siding sorts bulk only: the aggregate operating minimum alone can hide a goods shortfall. |
 

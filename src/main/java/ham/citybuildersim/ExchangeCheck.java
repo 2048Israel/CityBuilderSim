@@ -65,7 +65,11 @@ import java.nio.file.Path;
  *  10. A LIVE CITY: every month of share trading closes the audit, the
  *      register and the cells agree, the bank carries the desk at the
  *      exchange's mark, every price read is the quote (EM2) the book as it
- *      stands gives, and it all comes back from a save.
+ *      stands gives, and it all comes back from a save. The city is the
+ *      default founding in a TempDirs folder, 240 months: it asserts only
+ *      those identities, and counts (FS14) what it happened to do - the
+ *      months it traded, split, sold the desk's shares to a buyback - each
+ *      of which a section above causes.
  *
  * Every claim is CAUSED: a register handed shares, a book and a bank; a
  * family that leaves; a world shown a yield; cells given money, or left
@@ -187,6 +191,8 @@ public class ExchangeCheck {
 
     /** The companies, as the exchange sees them: a till, a balance sheet, a payroll. */
     static class Firms implements Exchange.Companies {
+        double wage;
+        @Override public double averageMonthlyWage() { return wage; }
         final double[] cash = new double[N], assets = new double[N], equity = new double[N], opex = new double[N];
         /** Interest and principal a month (0.7.11, round 2): nothing unless a fixture says so. */
         final double[] debt = new double[N];
@@ -237,6 +243,103 @@ public class ExchangeCheck {
         double[] book = new double[N];
         book[company] = equity;
         return book;
+    }
+
+    /** A split-month audit must observe an adjustment before its residual can prove anything (REV-SX1-1). */
+    static final class SplitAudit {
+        int months;
+        double worstRelative;
+
+        void observe(Exchange exchange, double relative) {
+            for (int c = 0; c < N; c++) {
+                // Exchange.startMonth clears this to zero; a split or consolidation writes its factor.
+                if (exchange.getSplit(c) != 0) {
+                    months++;
+                    worstRelative = Math.max(worstRelative, Math.abs(relative));
+                    return;
+                }
+            }
+        }
+
+        boolean happened() { return months > 0; }
+        boolean conserved() { return happened() && worstRelative < 1e-9; }
+    }
+
+    /** A perfectly closed audit without any split must fail the same law the played city uses. */
+    static void splitOccurrenceControls(Exchange realSplit) {
+        out.println("\n--- 8c. split-month audit rejects a no-split run and accepts an actual adjustment ---");
+        int industry = Equity.indexOf(Sectors.INDUSTRY);
+        Equity reg = equity();
+        HouseholdBalance hb = savers(20, 4);
+        reg.listIfUnlisted(industry, 10, hb);
+        Exchange ex = exchange();
+        Firms firms = new Firms();
+        firms.wage = 1 / Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW);
+        Bank bank = bankWith(100_000);
+        SplitAudit noSplits = new SplitAudit();
+        for (int m = 1; m <= 12; m++) {
+            step(ex, reg, hb, bank, firms, bookOf(industry, 10), W, .10, m);
+            noSplits.observe(ex, 0); // Even perfect closure cannot supply a missing split.
+        }
+        close("twelve actual exchange steps without a split count zero split months", noSplits.months, 0, 0);
+        assertTrue("the played-city split-occurrence assertion rejects that no-split run", !noSplits.happened());
+        assertTrue("the played-city split-month audit assertion rejects it too", !noSplits.conserved());
+        SplitAudit withSplit = new SplitAudit();
+        withSplit.observe(realSplit, 0);
+        close("the fixture's real split counts exactly one split month", withSplit.months, 1, 0);
+        assertTrue("the same occurrence and audit gates accept a real split with a closed audit",
+                withSplit.happened() && withSplit.conserved());
+        out.printf("   controls: no-split run %d months, split law %s, audit law %s; real-split run %d month, both laws %s%n",
+                noSplits.months, noSplits.happened(), noSplits.conserved(), withSplit.months,
+                withSplit.happened() && withSplit.conserved());
+    }
+
+    /** A century of rising and falling founding-share prices, with an independently growing wage. */
+    static void wageBand() {
+        int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
+        out.println("\n--- 8b. a century of quotes stays affordable without changing anybody's value ---");
+        Equity reg = equity();
+        HouseholdBalance hb = savers(20, 4);
+        reg.listIfUnlisted(INDUSTRY, 10, hb);
+        Exchange ex = exchange();
+        Firms firms = new Firms();
+        firms.wage = 100;
+        step(ex, reg, hb, bankWith(100_000), firms, bookOf(INDUSTRY, 10), W, .10, 1);
+        boolean band = true, value = true, history = true;
+        int splits = 0, consolidations = 0;
+        for (int m = 0; m < 1200; m++) {
+            firms.wage = 10 * Math.pow(1.001, m);
+            double foundingQuote = 1000 * Math.pow(1.015, m <= 600 ? m : 1200 - m);
+            ex.bookOf(INDUSTRY).withdrawAll();
+            ex.bookOf(INDUSTRY).seedLastPrice(foundingQuote / ex.getSplitFactor(INDUSTRY));
+            double beforeFactor = ex.getSplitFactor(INDUSTRY);
+            double before = hb.sharesHeld(INDUSTRY) * ex.price(INDUSTRY);
+            ex.splitForCheck();
+            double after = hb.sharesHeld(INDUSTRY) * ex.price(INDUSTRY);
+            double ratio = ex.price(INDUSTRY) / firms.wage;
+            band &= ratio >= Exchange.CONSOLIDATE_BELOW * (1 - 1e-12) && ratio <= Exchange.SPLIT_AT * (1 + 1e-12);
+            value &= Math.abs(after - before) <= 1e-12 * Math.max(1, Math.abs(before));
+            history &= Math.abs(ex.pricePerFoundingShare(INDUSTRY) - foundingQuote) <= 1e-12 * foundingQuote;
+            if (ex.getSplitFactor(INDUSTRY) > beforeFactor) splits++;
+            if (ex.getSplitFactor(INDUSTRY) < beforeFactor) consolidations++;
+        }
+        assertTrue("the century actually crosses both wage triggers", splits > 0 && consolidations > 0);
+        assertTrue("every live quote stays in the dial's wage band throughout the century", band);
+        assertTrue("every adjustment preserves the households' value", value);
+        assertTrue("every founding-share chart point keeps its value across the adjustment", history);
+        for (double boundary : new double[] {Exchange.CONSOLIDATE_BELOW, Exchange.SPLIT_AT}) {
+            ex.bookOf(INDUSTRY).seedLastPrice(boundary * firms.wage);
+            double before = ex.getSplitFactor(INDUSTRY);
+            ex.splitForCheck();
+            close("a quote exactly on the wage dial does not adjust", ex.getSplitFactor(INDUSTRY), before, 0);
+        }
+        ex.bookOf(INDUSTRY).seedLastPrice(firms.wage * Exchange.SPLIT_AT * 2);
+        for (double absent : new double[] {0, -1, Double.NaN, Double.POSITIVE_INFINITY}) {
+            firms.wage = absent;
+            double before = ex.getSplitFactor(INDUSTRY);
+            ex.splitForCheck();
+            close("with no usable paid wage the counts wait", ex.getSplitFactor(INDUSTRY), before, 0);
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -990,16 +1093,20 @@ public class ExchangeCheck {
         ex8.bookOf(INDUSTRY).seedLastPrice(520);             // last traded at $520
         Bank bank8 = bankWith(100_000);
         double valueBefore = few.sharesHeld(INDUSTRY) * 520;
-        step(ex8, reg8, few, bank8, new Firms(), book8, W, .10, 1);
-        close("a share last traded at five hundred and twenty is split a hundred for one", ex8.getSplit(INDUSTRY), 100, 1e-12);
-        close("...the register's count by the factor", reg8.getShares(INDUSTRY), 1_000, 1e-9);
-        close("...every household's count by the factor", couple(few).shares(INDUSTRY), 10, 1e-9);
-        close("...the last trade by its inverse: the price", ex8.price(INDUSTRY), 5.2, 1e-9);
-        close("...fair value with it", ex8.fair(INDUSTRY), 5.0, 1e-9);
+        Firms splitFirms = new Firms();
+        splitFirms.wage = 520 / (1.5 * Exchange.SPLIT_AT);
+        double expectedSplit = Math.pow(10, Math.floor(Math.log10(
+                520 / (splitFirms.wage * Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW)))));
+        step(ex8, reg8, few, bank8, splitFirms, book8, W, .10, 1);
+        close("a share past the wage dial splits by the derived power of ten", ex8.getSplit(INDUSTRY), expectedSplit, 1e-12);
+        close("...the register's count by the factor", reg8.getShares(INDUSTRY), 10 * expectedSplit, 1e-9);
+        close("...every household's count by the factor", couple(few).shares(INDUSTRY), .1 * expectedSplit, 1e-9);
+        close("...the last trade by its inverse: the price", ex8.price(INDUSTRY), 520 / expectedSplit, 1e-9);
+        close("...fair value with it", ex8.fair(INDUSTRY), 500 / expectedSplit, 1e-9);
         close("...and what the households hold is worth what it was", few.sharesHeld(INDUSTRY) * ex8.price(INDUSTRY), valueBefore, 1e-9);
-        close("the desk's resting bid moves too: its price by the inverse", ex8.bestBid(INDUSTRY), 5.0 * (1 - Exchange.SPREAD / 2), 1e-9);
-        close("...its quantity by the factor: still the ten shares' worth it was", ex8.bookOf(INDUSTRY).resting(DESK, OrderBook.Side.BUY), 1_000, 1e-9);
-        close("the split factor remembers it", ex8.getSplitFactor(INDUSTRY), 100, 1e-12);
+        close("the desk's resting bid moves too: its price by the inverse", ex8.bestBid(INDUSTRY), 500 / expectedSplit * (1 - Exchange.SPREAD / 2), 1e-9);
+        close("...its quantity by the factor: still the ten shares' worth it was", ex8.bookOf(INDUSTRY).resting(DESK, OrderBook.Side.BUY), 10 * expectedSplit, 1e-9);
+        close("the split factor remembers it", ex8.getSplitFactor(INDUSTRY), expectedSplit, 1e-12);
         close("...so the price per FOUNDING share is what it was: the history has no cliff",
                 ex8.pricePerFoundingShare(INDUSTRY), 520.0, 1e-9);
 
@@ -1007,11 +1114,18 @@ public class ExchangeCheck {
         HouseholdBalance lots = savers(20.0, 4.0);
         reg8b.listIfUnlisted(INDUSTRY, 1_000_000, lots);     // a million shares
         Exchange ex8b = exchange();
-        step(ex8b, reg8b, lots, bank8, new Firms(), bookOf(INDUSTRY, 100), W, .10, 1);   // worth a hundredth of a cent each
-        close("a share priced at a ten-thousandth is consolidated ten thousand for one", ex8b.getSplit(INDUSTRY), 1e-4, 1e-15);
-        close("...to a hundred shares", reg8b.getShares(INDUSTRY), 100, 1e-9);
-        close("...at a dollar", ex8b.price(INDUSTRY), 1.0, 1e-9);
+        Firms consolidateFirms = new Firms();
+        consolidateFirms.wage = .0001 / (Exchange.CONSOLIDATE_BELOW / 2);
+        double expectedConsolidation = Math.pow(10, Math.floor(Math.log10(
+                .0001 / (consolidateFirms.wage * Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW)))));
+        step(ex8b, reg8b, lots, bank8, consolidateFirms, bookOf(INDUSTRY, 100), W, .10, 1);
+        close("a share below the wage dial consolidates by the derived power of ten", ex8b.getSplit(INDUSTRY), expectedConsolidation, 1e-15);
+        close("...the register shrinks by that factor", reg8b.getShares(INDUSTRY), 1_000_000 * expectedConsolidation, 1e-9);
+        close("...the price rises by its inverse", ex8b.price(INDUSTRY), .0001 / expectedConsolidation, 1e-9);
         close("...the households still agreeing with the register", lots.sharesHeld(INDUSTRY), reg8b.getDomesticShares(INDUSTRY), 1e-9);
+
+        wageBand();
+        splitOccurrenceControls(ex8);
 
         /* ================= 9. the save ================= */
         out.println("\n--- 9. the exchange survives a save: the books, their orders, the last trade ---");
@@ -1028,7 +1142,7 @@ public class ExchangeCheck {
                 ex1.bookOf(INDUSTRY).resting(DESK, OrderBook.Side.BUY), 1e-12);
         Exchange backSplit = exchange();
         backSplit.restore(gson.fromJson(gson.toJson(ex8.toState()), Exchange.State.class));
-        close("...and the split factor", backSplit.getSplitFactor(INDUSTRY), 100, 1e-12);
+        close("...and the split factor", backSplit.getSplitFactor(INDUSTRY), expectedSplit, 1e-12);
         assertTrue("...closed until the bank says otherwise", !back.isOpen());
         back.reopen(bank1);
         assertTrue("...open once a bank with capital is put back", back.isOpen());
@@ -1061,7 +1175,8 @@ public class ExchangeCheck {
         int monthsTraded = 0, quoteMisread = 0, tradedBooks = 0, quoteNotLastTrade = 0;
         double bought = 0, soldBack = 0, boughtBack = 0, between = 0, emigrants = 0;
         double worstMarkGap = 0;
-        int excessMonths = 0, deskToCompanyMonths = 0;
+        int excessMonths = 0, deskToCompanyMonths = 0, outsideWageBand = 0;
+        SplitAudit splitAudit = new SplitAudit();
         double worstExcessResidual = 0, excessSoldBefore = 0, worstDeskSaleResidual = 0;
         try {
             city.run();
@@ -1069,6 +1184,15 @@ public class ExchangeCheck {
                 city.simulateMonths(1);
                 worstResidual = Math.max(worstResidual, Math.abs(city.getLastMoneyAudit().relative()));
                 Exchange x = city.getExchange();
+                double wage = city.getPopulationManager().getAverageWage();
+                for (int c = 0; c < N; c++) {
+                    if (wage > 0 && city.getEquity().getShares(c) > 0 && !x.atFloor(c)) {
+                        double ratio = x.price(c) / wage;
+                        if (ratio > Exchange.SPLIT_AT * (1 + 1e-12)
+                                || ratio < Exchange.CONSOLIDATE_BELOW * (1 - 1e-12)) outsideWageBand++;
+                    }
+                }
+                splitAudit.observe(x, city.getLastMoneyAudit().relative());
                 // The months the desk's excess over its caps sold (round 4).
                 if (x.getLifeExcessSold() > excessSoldBefore + 1e-12) {
                     excessMonths++;
@@ -1111,8 +1235,17 @@ public class ExchangeCheck {
                 + " leavers paid $%,.0fk; the desk holds $%,.0fk%n",
                 monthsTraded, x.getLifetimeVolume(), x.getLifeTrades(), bought, soldBack, boughtBack, between,
                 emigrants, city.getBank().getSecurities());
-        assertTrue("the city's shares traded on the book", monthsTraded > 0 && x.getLifeTrades() > 0);
+        // FS14: what the played city happened to do is counted, not asserted (the months it traded, split, sold the desk's shares to a
+        // buyback, and quoted other than its last trade are its path's: found). Each mechanic is caused above - the book's trades in 1-2c,
+        // the desk's sale to a buyback in 7, the split in 8 and its audit in 8c, a quote off the last trade in ShortSellingCheck 1 - and the
+        // identities that read them here hold on any path, and stay hard.
+        out.printf("   counted: %d months traded, %d month(s) with splits, %d company-months quoted off the last trade of %d traded%n",
+                monthsTraded, splitAudit.months, quoteNotLastTrade, tradedBooks);
         assertTrue("...and every month of it is conserved", worstResidual < 1e-9);
+        assertTrue("MoneyAudit closes in every month with a split", splitAudit.conserved());
+        assertTrue("the dearest and cheapest live quotes stay inside the wage band every month", outsideWageBand == 0);
+        out.printf("   wage band: %d months with splits, %d quotes outside, worst split audit %.3g%n",
+                splitAudit.months, outsideWageBand, splitAudit.worstRelative);
         out.printf("   the desk's excess over its caps sold in %d month(s), $%,.0fk offered and $%,.0fk sold over the 20 years%n",
                 excessMonths, x.getLifeExcessOffered(), x.getLifeExcessSold());
         /*
@@ -1124,13 +1257,10 @@ public class ExchangeCheck {
          * does as well: the audit through every month it sold to one.
          */
         out.printf("   the desk sold shares to a company's buyback in %d month(s)%n", deskToCompanyMonths);
-        assertTrue("fixture: the desk sold shares to a company's buyback in some month", deskToCompanyMonths > 0);
         assertTrue("...and the audit closed through every month it did", worstDeskSaleResidual < MoneyAudit.CENT && worstExcessResidual < MoneyAudit.CENT);
         assertTrue("...with the bank carrying the desk at the exchange's mark all along", worstMarkGap < 1e-9);
         assertTrue("...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands ("
-                + tradedBooks + " company-months)", tradedBooks > 0 && quoteMisread == 0);
-        assertTrue("fixture: ...in some of them the quote was not the last trade (" + quoteNotLastTrade + " of " + tradedBooks + "), so the line above could fail",
-                quoteNotLastTrade > 0);
+                + tradedBooks + " company-months)", quoteMisread == 0);
         boolean agree = true, whole = true;
         for (int c = 0; c < N; c++) {
             double reg_ = register.getDomesticShares(c), held_ = people.sharesHeld(c);
@@ -1146,9 +1276,15 @@ public class ExchangeCheck {
         again.loadGameSave(1);
         System.setOut(out);
         assertTrue("...and loads", again.getLoadFailure() == null);
-        boolean pricesBack = true, booksBack = true, deskBack = true;
+        boolean pricesBack = true, booksBack = true, deskBack = true, splitsBack = true, holdersBack = true;
         for (int c = 0; c < N; c++) {
             Exchange y = again.getExchange();
+            if (y.getSplitFactor(c) != x.getSplitFactor(c)
+                    || y.pricePerFoundingShare(c) != x.pricePerFoundingShare(c)) splitsBack = false;
+            if (again.getEquity().getShares(c) != register.getShares(c)
+                    || again.getEquity().getCityShares(c) != register.getCityShares(c)
+                    || Math.abs(again.getHouseholdBalance().sharesHeld(c) - people.sharesHeld(c))
+                       > 1e-9 * Math.max(1, people.sharesHeld(c))) holdersBack = false;
             if (Math.abs(y.price(c) - x.price(c)) > 1e-12 * Math.max(1, x.price(c))
                     || Math.abs(y.fair(c) - x.fair(c)) > 1e-12 * Math.max(1, x.fair(c))) pricesBack = false;
             // ...the last trade too, which the quote no longer says: NaN before the first, on both sides alike.
@@ -1164,6 +1300,8 @@ public class ExchangeCheck {
         assertTrue("every quote, last trade and fair value comes back", pricesBack);
         assertTrue("...every book with the orders resting on it", booksBack);
         assertTrue("...and the desk's inventory", deskBack);
+        assertTrue("a save across the played splits keeps the factors and founding-share charts", splitsBack);
+        assertTrue("...and the register, fund and households keep the same split holdings", holdersBack);
         close("...at the same mark", again.getBank().getSecurities(), city.getBank().getSecurities(), 1e-6 * Math.max(1, Math.abs(city.getBank().getSecurities())));
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");

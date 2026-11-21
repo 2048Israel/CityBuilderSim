@@ -111,10 +111,9 @@ public class FoodProcessingCheck {
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game game = new Game(files);
         quietly(game::run);
-        // THE LEVERS OPENED IN THE FIXTURE (R0): "twenty points on the sales tax" is a dial that does not exist before 1920 on history's
-        // dates. Every lever opened and the defaults put back, before a month has run.
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): "twenty points on the sales tax" is a dial that did not exist before 1920 on history's
+        // dates (until OP1). Since OP1 every lever is open from the founding, and the defaults are put back before a month has run.
         game.getEconomyManager().getTaxPolicy().reset();
-        game.getEconomyManager().getTaxPolicy().openAll();
 
         FoodProcessing fp = game.getSectors().foodProcessing();
         BuildingManager bm = game.getBuildingManager();
@@ -382,10 +381,117 @@ public class FoodProcessingCheck {
             for (Good g : goods) markets.get(g).setWorldPrices(g.worldImportPrice(), g.worldExportPrice());
         }
         GoodsMarket meatMarket = markets.get(Good.MEAT);
+
+        /*
+         * FPK1: THE REST OF THE SUM IS THE FIXTURE'S TOO. The estimate is what
+         * the plant sells less what it buys, at the rate it runs at, less a
+         * wage, less its upkeep, less a sales tax - and every term but the meat
+         * price is the lived-in city's own path: its wages, its exchange rate
+         * and freight, what the city takes of the processed meat and the
+         * ready meals (which prices them between the floor and the ceiling and
+         * puts the tax on them), the rate its sector happens to run at, and
+         * what it pays for the crops. Left as the city had them, the same two
+         * figures read -$244 against -$595 here, +$261 against -$156 on another
+         * path and +$1,255 against +$679 on a third: red or green by where the
+         * city stood, and green on the first only because -$244 is more than
+         * twice -$595, a plant that loses money on a herd.
+         *
+         * So the section sets them, each from the model's own figure, and puts
+         * the city's back before it reads it again:
+         *   - the band is the goods' literals at par on the lorries' freight
+         *     (exchange rate and freight factor of the five goods' markets);
+         *   - the Works is paid the founding's ladder (PayTier), the price level
+         *     the literals are struck at and section 3 measures payroll in;
+         *   - it runs at nameplate, as a plant that is not built does on paper
+         *     (the sector's four ratios, one);
+         *   - the city takes none of what the plant makes, so all of it goes
+         *     abroad at the world's floor and pays no sales tax at home, which is
+         *     the "sells at the world's floor" of the header (the demand trend);
+         *   - the vegetables and grains come off a ship in both cases, so the
+         *     meat is the only price that moves.
+         * What is left of the city in the sum is the Works' upkeep (repairs and
+         * the property tax) and its power and water, small beside its wage.
+         */
+        EconomyManager economy = game.getEconomyManager();
+        java.util.List<Good> inPlay = new java.util.ArrayList<>(meat.goodsUsed().keySet());
+        inPlay.addAll(meat.goodsMade().keySet());
+        double[] cityWages = economy.getWageRates();
+        long[] bankPosts = bm.getJobArrayByName("Commercial Bank");
+        double[] cityRatios = { fp.getEnergyRatio(), fp.getWaterRatio(), fp.getRoadRatio(), fp.getHealthRatio() };
+        java.util.Map<Good, double[]> cityMarket = new java.util.EnumMap<>(Good.class);   // exchange rate, freight factor, local price
+        java.util.Map<Good, double[]> cityTaken = new java.util.EnumMap<>(Good.class);
+        for (Good g : inPlay) {
+            GoodsMarket m = markets.get(g);
+            cityMarket.put(g, new double[] { m.getExchangeRate(), m.getFreightFactor(), m.getLocalPrice() });
+            cityTaken.put(g, m.getTakenHistory());
+        }
+
+        for (Good g : inPlay) {
+            markets.get(g).setExchangeRate(1);
+            markets.get(g).setFreightFactor(1);
+        }
+        double[] ladder = new double[cityWages.length];
+        for (JobType job : JobType.values()) if (job.ordinal() < ladder.length) ladder[job.ordinal()] = PayTier.wageOf(job);
+        economy.updateWages(ladder, bankPosts);
+        fp.setEnergyRatio(1);
+        fp.setWaterRatio(1);
+        fp.setRoadRatio(1);
+        fp.setHealthRatio(1);
+        for (Good g : meat.goodsMade().keySet()) markets.get(g).restoreTakenHistory(new double[0]);
+        for (Good g : meat.goodsUsed().keySet()) {
+            if (g != Good.MEAT) markets.get(g).setLocalPrice(markets.get(g).ceiling());
+        }
+
+        boolean atPar = true, onTheLadder = true, takesNone = true;
+        for (Good g : inPlay) {
+            atPar &= Math.abs(markets.get(g).ceiling() - g.worldImportPrice()) < 1e-12
+                    && Math.abs(markets.get(g).floor() - g.worldExportPrice()) < 1e-12;
+        }
+        for (JobType job : JobType.values()) {
+            if (meat.getJobs(job) > 0) onTheLadder &= economy.getWageRates()[job.ordinal()] == PayTier.wageOf(job);
+        }
+        for (Good g : meat.goodsMade().keySet()) takesNone &= markets.get(g).getDemandTrend() == 0;
+        double nameplate = BusinessInvestment.operatingRateOf(fp.getOperatingRate());
+
         meatMarket.setLocalPrice(meatMarket.ceiling());
         double imported = fp.estimatedMonthlyProfit(meat, game.getBusinessInvestment());
         meatMarket.setLocalPrice(meatMarket.floor());
         double homegrown = fp.estimatedMonthlyProfit(meat, game.getBusinessInvestment());
+
+        economy.updateWages(cityWages, bankPosts);
+        fp.setEnergyRatio(cityRatios[0]);
+        fp.setWaterRatio(cityRatios[1]);
+        fp.setRoadRatio(cityRatios[2]);
+        fp.setHealthRatio(cityRatios[3]);
+        for (Good g : inPlay) {
+            GoodsMarket m = markets.get(g);
+            double[] city = cityMarket.get(g);
+            m.setExchangeRate(city[0]);
+            m.setFreightFactor(city[1]);
+            m.setLocalPrice(city[2]);
+            m.restoreTakenHistory(cityTaken.get(g));
+        }
+
+        report("fixture: the goods' band is the world's literal, at par",
+                atPar, "meat " + Formats.INSTANCE.cash(Good.MEAT.worldExportPrice()) + " to "
+                        + Formats.INSTANCE.cash(Good.MEAT.worldImportPrice()) + " a kilo");
+        report("fixture: the Works is paid the founding's ladder and runs at nameplate",
+                onTheLadder && nameplate == 1, String.format("unskilled %s, rate %.2f",
+                        Formats.INSTANCE.cash(PayTier.wageOf(JobType.NO_DIPLOMA)), nameplate));
+        report("fixture: the city takes none of what the plant makes",
+                takesNone, "so all of it goes abroad at the floor");
+        /*
+         * THE HEADER'S "ORDINARY BUSINESS", CAUSED AND NOT ASSUMED: on a herd
+         * the Works earns, at the founding's ladder. (At the lived-in city's
+         * own wages, $163 an unskilled hand against the ladder's $90, it does
+         * not, even on a herd: that is a city whose wages have outrun the
+         * band, which is what the line above sets aside.) Without it
+         * "more than twice a ship's" below would pass on a herd that loses
+         * money, as it did when both figures were negative.
+         */
+        report("fixture: a Meat Works on a farm's floor is an ordinary business",
+                homegrown > 0, Formats.INSTANCE.cash(homegrown) + " a month");
+
         report("meat at a farm's floor is worth more to a Meat Works than meat off a ship",
                 homegrown > imported,
                 String.format("%s a month against %s",
@@ -397,12 +503,15 @@ public class FoodProcessingCheck {
          * any. In that city even dear meat leaves a little - the plant is
          * selling into a shortage - and an absolute "there is nothing left in
          * it" would be measuring the shortage, not the meat. What is true in
-         * every city is that the same building is worth several times more on a
-         * herd than on a ship.
+         * every city is that the same building is worth more than twice as much
+         * on a herd as on a ship - and on the founding's ladder a ship's meat
+         * does not even pay its wage, which is what "twenty-seven cents a tonne
+         * before a wage" says, so there is no ratio to print then.
          */
         report("...and the difference is most of what a Meat Works is worth",
                 homegrown > imported * 2,
-                String.format("%.1fx", imported > 0 ? homegrown / imported : Double.POSITIVE_INFINITY));
+                imported > 0 ? String.format("%.1fx", homegrown / imported)
+                        : "a ship's meat does not pay its wage: " + Formats.INSTANCE.cash(imported) + " a month");
 
         /*
          * AND THE PLANNER ACTS ON IT. Not "refuses to build anything" - the

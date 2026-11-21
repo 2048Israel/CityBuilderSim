@@ -270,6 +270,10 @@ public class GroceryCheck {
         System.setOut(quiet);
         try {
             g.run();
+            // EVERY SECTOR HELD (LX1, 2026-11-17): the town's posts are the orders below and no planner's, fewer than its
+            // workers, so households are out of work and under half a dial's line - the vouchers' subject, caused. Left to the
+            // planners, LX1's Boutiques took up every worker and for twelve months nobody was under it (main's town: 55 on EI).
+            for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 50_000_000L);
             for (String[] order : new String[][] {

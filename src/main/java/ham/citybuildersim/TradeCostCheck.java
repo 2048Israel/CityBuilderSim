@@ -166,6 +166,10 @@ public class TradeCostCheck {
         { Good.WOOD_PELLETS,             .220,       .150  },
         // ...and FR2's trucks (2026-10-18), imported and never exported, as vans and wagon sets are.
         { Good.TRUCKS,                 215.0,      Double.NaN  },
+        { Good.GOLD, GoldPrice.PAR_1900 * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE))
+                / (1000 * PriceLevel.HISTORICAL_FACTOR),
+                GoldPrice.PAR_1900 * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE))
+                / (1000 * PriceLevel.HISTORICAL_FACTOR) },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */
@@ -208,8 +212,11 @@ public class TradeCostCheck {
                     String.format("buy %.5f sell %.5f  (freight %.5f of a %.5f half-wedge)",
                             g.worldBuyPrice(), g.worldSellPrice(), f, half));
 
-            report("...and freight is three quarters of the half-wedge",
-                    Math.abs(f - .75 * half) < .015 * half,
+            double freightShare = g == Good.GOLD
+                    ? Good.GOLD_FREIGHT_SHARE / (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE) : .75;
+            report(g == Good.GOLD ? "...and gold freight has the declared share of the half-wedge"
+                            : "...and freight is three quarters of the half-wedge",
+                    Math.abs(f - freightShare * half) < .015 * half,
                     String.format("%.1f%%", f / half * 100));
         }
 
@@ -303,12 +310,12 @@ public class TradeCostCheck {
         System.out.println("\n--- and the network's total did not move ---");
         quietly(() -> {
             game.newGame();
-            // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): "a real city is mostly people, not ore" is measured on a
-            // city played ninety months, and the fixture needs the pre-R0 city, one that taxes, pays its wage floor and charges its sales tax from
-            // its first month; a 1900 city on history's dates has none of these to 1916-1920, so its investors keep their profit and raise more
-            // bulk (83% of the road load, commuters 17%, in the suite's first read). Every lever opened and the defaults put back, before a month.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, diagnostic - see the batch notes; OP1): "a real city is mostly people, not ore" is
+            // measured on a city played ninety months, and the fixture needs the pre-R0 city, one that taxes, pays its wage floor and charges its
+            // sales tax from its first month; until OP1 a 1900 city on history's dates had none of these to 1916-1920, so its investors kept
+            // their profit and raised more bulk (83% of the road load, commuters 17%, in the suite's first read). Since OP1 every lever is open
+            // from the founding, and the defaults are put back before a month.
             game.getEconomyManager().getTaxPolicy().reset();
-            game.getEconomyManager().getTaxPolicy().openAll();
             // WN3 (the world market): at the world's band for 2000 wood pellets fetch about twice their literal (.358 at the floor against
             // .150) and the town raises a Wood Pellet Mill inside the ninety months - 780 of the 1,088 road load, 755 of it bulk, in a town of
             // forty-five houses - so ore, not people, is most of it (commuters 31%, bulk 69%). One mill in a hamlet is not a real city, which

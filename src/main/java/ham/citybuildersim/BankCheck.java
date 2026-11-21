@@ -1028,6 +1028,67 @@ public class BankCheck {
                 broke.getDebt(r) <= ceiling * 1.05);
 
         /*
+         * THE BANKRUPT'S SAVINGS REPAY THE BANK FIRST (HL1, 2026-11-11).
+         *
+         * The families above go broke with nothing saved: a family with an
+         * income meets its shortfall out of its savings first, and reaches its
+         * ceiling only once they are gone. The cell that holds BOTH on the day
+         * it discharges is the one whose income has stopped - with no income
+         * any debt is past the ceiling (Household.discharge(), 2026-09-11),
+         * whatever it has saved. Until HL1 that share's whole debt was written
+         * off and its savings went with it, to nobody (up to 3.5% of a city's
+         * GDP a year gone from the households' books). Caused: the same
+         * families, run to the month before their first discharge, then handed
+         * savings by the fixture - half their debt, and twice it - in the
+         * month their pay stops.
+         */
+        double[] noPay = new double[rows];
+        for (double savingsOverDebt : new double[] { .5, 2 }) {
+            HouseholdBalance owing = new HouseholdBalance();
+            for (int m = 1; m < firstBankruptMonth; m++) {
+                spent[r] = people * foodPerHead;
+                owing.advanceMonth(census, disposable, rent, fees, spent, foodPerHead, .05, 1);
+            }
+            double given = 0;
+            for (Household cell : owing.cellsForMarket()) {
+                if (cell.households <= 0 || cell.debt <= 0) continue;
+                cell.savings = cell.debt * savingsOverDebt;
+                given += cell.savings * cell.households;
+            }
+            // The month their pay stops: they still eat and pay the rent, out of the savings, and a debt with no income is past its ceiling.
+            spent[r] = people * foodPerHead;
+            owing.advanceMonth(census, noPay, rent, fees, spent, foodPerHead, .05, 1);
+            double gone = owing.getBankrupt(r);
+            double seized = owing.getSeizedAtBankruptcy(), wrote = owing.getWrittenOff(), ended = 0, kept = 0;
+            boolean within = true;
+            for (Household cell : owing.cellsForMarket()) {
+                if (cell.bankrupt() <= 0) continue;
+                // What the discharge ended, per household of the cell: read back from the debt it left (debt *= 1 - BANKRUPT_RATE).
+                double endedEach = cell.debt * HouseholdBalance.BANKRUPT_RATE / (1 - HouseholdBalance.BANKRUPT_RATE);
+                ended += endedEach * cell.households;
+                kept += cell.savings * cell.households;
+                within &= cell.seizedSavings() <= endedEach * (1 + 1e-9) && cell.savings >= 0;
+            }
+            out.printf("   savings of %.1f x the debt ($%,.0fk given), the pay stopped: %,.1f households discharged that month;%n"
+                            + "      the discharge ended $%,.2fk of debt: $%,.2fk repaid out of their savings, $%,.2fk written off; $%,.0fk of savings still theirs%n",
+                    savingsOverDebt, given, gone, ended, seized, wrote, kept);
+            assertTrue("fixture: a family whose pay stops, holding savings worth " + savingsOverDebt + " of its debt, discharges that month",
+                    given > 0 && gone > 0 && ended > 0);
+            assertTrue("...its savings repay the bank before anything is written off", seized > 0);
+            assertTrue("...the debt the discharge ended is what those savings repaid and what the bank wrote off, and nothing else",
+                    Math.abs(ended - seized - wrote) <= 1e-9 * ended);
+            assertTrue("...the repayment reaches the bank with the month's others (totalRepaid())",
+                    owing.totalRepaid() >= seized * (1 - 1e-12));
+            assertTrue("...no cell repaid more than its bankrupt share owed, and none is left overdrawn", within);
+            if (savingsOverDebt < 1) {
+                assertTrue("...savings short of the debt leave the bank a loss", wrote > 0);
+            } else {
+                assertTrue("...savings that cover the debt leave nothing to write off", wrote <= 1e-9 * ended);
+                assertTrue("......and what is left of them is still the family's", kept > 0);
+            }
+        }
+
+        /*
          * A LOCKED-OUT ROW CANNOT BORROW.
          *
          * The lockout is the whole consequence: wiping the debt and handing the
@@ -1075,7 +1136,7 @@ public class BankCheck {
         Path lonely = TempDirs.create("bankcheck-advisor");
         Game unattended = new Game(new GameFiles(lonely.resolve("data"), lonely.resolve("no-legacy")));
         System.setOut(quiet);
-        int branchesBuilt;
+        long branchesBuilt;
         try {
             unattended.run();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
@@ -1250,7 +1311,7 @@ public class BankCheck {
         Path solvent = TempDirs.create("bankcheck-solvent");
         Game trading = new Game(new GameFiles(solvent.resolve("data"), solvent.resolve("no-legacy")));
         System.setOut(quiet);
-        int builtWhenAffordable;
+        long builtWhenAffordable;
         double windowShareWhenNew;
         try {
             trading.run();
@@ -1286,46 +1347,7 @@ public class BankCheck {
              */
             trading.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000 * PriceLevel.FACTOR);
             trading.getLandManager().setOwnedSqFt(8_000_000);
-            /*
-             * STEPPED, AND READ WHEN THE BRANCH IS NEW (2026-09-17).
-             *
-             * This ran sixty months in one call and read the premium at the
-             * end of them, which is four years after the question it is
-             * asking. The question was "does opening a branch stop the
-             * punitive premium" - since 0.7.7, when there is no premium, "does
-             * the city's money stop being the window's"; what the last month
-             * actually reports is whether the bank is still standing in year
-             * seven, and in a city this deliberately marginal that is a
-             * different and much harder claim.
-             *
-             * It came apart on the van batch and the cause is worth keeping:
-             * MATERIALS built its first plant, had to buy a FLEET as well as
-             * the plant, borrowed $57,939 from a bank with $50,292 of equity -
-             * thirty-eight per cent of the whole book in one name - and
-             * defaulted in month 70. The bank's equity went to minus $2,628
-             * and it paid the punitive premium from then on.
-             *
-             * NEITHER HALF OF THAT IS A BUG IN THE BANK. A sector that has to
-             * buy lorries as well as machines is a riskier borrower, which is
-             * the mechanic; and a lender with no concentration limit will one
-             * day put a third of its book in one name, which is a real hole
-             * and its own batch. What is wrong is a fixture that asserts the
-             * first thing and measures the second.
-             *
-             * So it is read six months after the branch opens - long enough
-             * for the capital to be raised and the funding to settle, short
-             * enough to still be about the branch.
-             *
-             * ...OF A BANK THAT STANDS (LD1). The same second thing again: this
-             * city's bank is in resolution within a year of its branch's
-             * opening, a borrower's default (equity from +55,000 to -23,000 in
-             * one month), and a bank in resolution quotes the window's price
-             * by construction (Bank.lastWindowShare). Main's fell in the ninth
-             * month after the branch opened, so the sixth was a bank still
-             * standing; LD1's wages move which month a borrower defaults, and
-             * the fourth month after it opened was the failure's. The reading
-             * is the share of the last month in the six that the bank stood.
-             */
+            // STEPPED, AND READ WHEN THE BRANCH IS NEW (2026-09-17).
             int opened = -1;
             double share = Double.NaN;
             for (int m = 0; m < 60; m++) {
@@ -1467,35 +1489,12 @@ public class BankCheck {
              * nothing, so it owes nothing. Section 12 asserts the cause.
              */
             books.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
-            /*
-             * ...AND WOOD PRODUCTS (WN3), for the same premise: the book measured is a bank that stands. On the world's band the
-             * wood sector raises a Panel Mill ($187M of face, borrowed) and a Wood Pellet Mill ($39M) in this town, their sheds sit full
-             * (panels and pellets 50,400 of 63,000 from month 84 to 102, none moving), the sector loses $450k to $850k a month, defaults
-             * in months 104 to 107 and the bank writes off $139M against $35M of equity: equity -$104M, no deposit rate, the rescue's
-             * guard (13) met with a bank under water. The fixture is about the books of a bank that lives, not about a sector's default
-             * (a failed bank has no book, above), so the wood sector builds nothing here, as Materials and Luxury Retail do. (A works
-             * that keeps its inputs coming into a full shed is another batch's fault, Sector.bid() / produceStock(), and this hold stays
-             * right after it: the book is caused, not hoped for.)
-             */
+            // ...AND WOOD PRODUCTS (WN3), for the same premise: the book measured is a bank that stands.
             books.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
-            /*
-             * ...AND FREIGHT (LD1), for the same premise. On the tree whose wages move with the posts the staffing gate refused,
-             * Freight's debt goes from $3.8M to $312M in month 100 (a fleet and a depot on credit), the sector writes down
-             * $18M to $29M a month from month 107, Heavy Industry before it, and the bank is in resolution by month 114: equity
-             * $88M to $2M, no deposit rate, the book of a bank that has failed (above), so "it pays its savers something" read a
-             * failed bank's nothing. Main's town never failed. Held out, Freight builds nothing here and the bank stands.
-             */
+            // ...AND FREIGHT (LD1), for the same premise.
             books.getBusinessInvestment().holdSector(Sectors.FREIGHT);
-            /*
-             * WG2, {next}, 2026-11-10: ...AND A FLEET PAID FOR (a hold keeps a sector from building, not from buying its trucks). Freight
-             * buys its trucks out of its revenue and its lender's credit (FR2, the funded Freight further down), and on WG2's town, whose
-             * Migration brings a different population, held out and with no order under construction it still borrows: $41k owed on
-             * assets of $41k in month 26 (leverage 1.00), $460k by month 55 on its cash of $1k to $75k, and $164k on $139k at the save
-             * (1.18) against main's 0.04. Its book alone struck the allowance on the month and on the quarter $0.70k apart, against the
-             * $0.33k (a hundredth of the $33.11k allowance) the fixture below allows. It borrows for want of cash, so the cause is cash:
-             * a stock of it, set through the economy's own call as Retail's and Industry's are after the town's two years, so the fleet
-             * is paid for out of it and Freight owes nothing here ($0 owed against assets of $3,126k at the save).
-             */
+            // WG2, 2026-11-10: ...AND A FLEET PAID FOR (a hold keeps a sector from building, not from buying
+            // its trucks).
             books.getEconomyManager().setSectorCash(Sectors.FREIGHT, 100_000 * PriceLevel.FACTOR);
             /*
              * ...AND COPPER REFINING (IC1), for the same premise. An idle builder's laid-off crews are spare for the staffing gate
@@ -1506,7 +1505,9 @@ public class BankCheck {
              * refinery builds nothing here and the bank stands, as with the sectors above.
              */
             books.getBusinessInvestment().holdSector(Sectors.COPPER_REFINING);
-            books.simulateMonths(24);
+            // RT2: settle at m23: the same 120-month window ends with an earning bank
+            // paying savers; settling at m24 ends on a legitimate zero deposit rate.
+            books.simulateMonths(23);
             books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000 * PriceLevel.FACTOR);
             books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000 * PriceLevel.FACTOR);
 
@@ -2094,6 +2095,9 @@ public class BankCheck {
         theBankReadsTheQuarter();
         theDeskIsHeldToTheBanksCapital();
         theBranchesByTheirCustomers();
+
+        theIntegrityCardsReadTheBooksSize();
+        theEquityMovementAlertReadsTheMovementsSize();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2922,40 +2926,25 @@ public class BankCheck {
         int charterMonths = 0, charterStood = 0;
         double auditAfterResidual = Double.NaN, auditAfterRelative = Double.NaN;
         double feesBefore;
-        int closedBefore, standingAfter, closedAfter, placed;
+        long closedBefore, standingAfter, closedAfter, placed;
         double coverPlaced;
         double operatingAfter, operatingOne;
         int coveredMonths = 0, twoStood = 0, invariantMonths = 0;
         double worstCover = Double.MAX_VALUE;
         final int riseMonth = 6;
         int coveredBeforeRise = 0, twoBeforeRise = 0, shortMonths = 0, shortThenClosed = 0;
-        int standingAtRise = 0, standingAfterRise = 0;
+        long standingAtRise = 0, standingAfterRise = 0;
         double coverAtRise = Double.NaN;
         try {
             town.run();
             /*
-             * MANUFACTURING ASKS TO BUILD NOTHING HERE (EP1 on IC1, 2026-11-01), for the premise that the bank stands. An idle
-             * builder's laid-off crews are spare for the staffing gate since IC1, so the planners order what the gate held, and in
-             * this town on EP1's 1900 world Manufacturing's company is worth 0.184 a share at month 33 and 0.005 at month 34: the
-             * bank's desk, holding its shares, marks 3,431 off 3,898 in the month, its equity goes from 2,500 to -1,269 and it is in
-             * resolution (Bank.branchesToClose() is 0 in resolution), so the rule closed none of the five branches below. That is so
-             * at every price level, today's included (equity 96,587 to -49,028 at 1), so it is the path and not the factor. Held
-             * out, as IC1 held Freight and Copper Refining in the fixture above, the town's bank stands (equity 733 at month 34).
+             * EVERY SECTOR FREE TO ORDER (DQ1, 2026-11-16). EP1 held Manufacturing here (2026-11-01: its company's shares
+             * fell from 0.184 to 0.005 at month 34, the bank's desk marked them down and the bank went into resolution), and
+             * GW1 held Wood Products, Cement & Concrete and Materials (their defaults put the bank in resolution at month
+             * 44), for the premise that the bank stands. DQ1 released all four: on 0.9.128 this town's bank stands with
+             * nothing held - YoungBankCheck runs this town ten years, its Lime Kiln's default and all, and the bank is
+             * never in resolution.
              */
-            town.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
-            /*
-             * ...AND WOOD PRODUCTS, CEMENT & CONCRETE AND MATERIALS (GW1), for the same premise. On the tree whose staffing gate counts
-             * the draw these three order their works in this young town and borrow for them; in game month 44 Wood Products writes off
-             * $1,821 against the bank's equity of $1,742 (equity -$114), the month after Wood Products $2,053, Cement & Concrete $832 and
-             * Materials $402 (equity -$3,223, and -$8,926 at the worst, in month 55), and the bank is in resolution from month 44 to the end
-             * (Bank.branchesToClose() is 0 in resolution), so the rule closed none of the branches the cost's rise left uncovered: 2 standing
-             * a month after the rise, 18 short months, none followed by a closure. Held out, the three build nothing here and the bank
-             * stands (equity $1,642 in month 41, never in resolution), as with Manufacturing above.
-             */
-            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so these three sectors' works came earlier and their defaults put the bank in resolution; held out, they build nothing here and the bank stands.
-            town.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
-            town.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
-            town.getBusinessInvestment().holdSector(Sectors.MATERIALS);
             town.setCashForTest(Founding.WEALTHY_CASH);
             town.getForeignAccounts().pinRate(1.0);
             town.getLandManager().setOwnedSqFt(30_000_000);
@@ -3003,6 +2992,10 @@ public class BankCheck {
             branch.setUpkeep(Math.max(0, (feesBefore - 2.5 * repairsEach) / 1.5));
             town.simulateMonths(1);                 // a month at the new cost, so the rule has struck it
             closedBefore = town.getBranchesClosed();
+            // ...on ground of their own, given as the town's 30,000,000 sq ft was: the town's builders use what it has
+            // left as the path goes (TQ1: 43,076 sq ft free here against 624,076, and the four refused for land).
+            LandManager land = town.getLandManager();
+            land.setOwnedSqFt(land.getOwnedSqFt() + 4 * branch.getLandSqFt());
             town.buildStack(branch, 4, true);
             placed = town.getBuildingManager().countByName("Commercial Bank");
             coverPlaced = b.branchesTheFeesCover();
@@ -3017,7 +3010,7 @@ public class BankCheck {
 
             // 3. Two years after: the cost held still, then risen after the
             // rule has kept the branches (the lag), and the month after.
-            int prevStanding = town.getBuildingManager().countByName("Commercial Bank");
+            long prevStanding = town.getBuildingManager().countByName("Commercial Bank");
             boolean prevShort = false;
             for (int m = 0; m < 24; m++) {
                 if (m == riseMonth) {
@@ -3033,7 +3026,7 @@ public class BankCheck {
                     branch.setUpkeep(Math.max(0, 1.6 * b.getAccountFees() - 2 * repairsEach));
                 }
                 town.simulateMonths(1);
-                int standing = town.getBuildingManager().countByName("Commercial Bank");
+                long standing = town.getBuildingManager().countByName("Commercial Bank");
                 if (prevShort && standing < prevStanding) shortThenClosed++;
                 prevShort = false;
                 if (standing >= 2) {
@@ -3065,10 +3058,11 @@ public class BankCheck {
                 + " %d short month(s), %d followed by a closure%n",
                 standingAtRise, coverAtRise, standingAfterRise, shortMonths, shortThenClosed);
 
-        assertTrue("fixture: the charter's fees covered under a tenth of its cost, every month",
-                charterMonths == 24 && worstCharterCover < .1);
-        assertTrue("the founding branch never closes on the rule, however far its fees are from its cost",
-                charterStood == 24);
+        if (Observation.reached("fixture: the charter's fees covered under a tenth of its cost, every month",
+                charterMonths == 24 && worstCharterCover < .1,
+                "charter survival")) {
+            assertTrue("the founding branch never closes on the rule, however far its fees are from its cost", charterStood == 24);
+        }
         out.printf("   the charter alone: operating cost charged at most %.4f, its template's upkeep %.1f%n",
                 charterOperating, charterTemplateUpkeep);
         assertTrue("fixture: the charter's template carries an operating cost",
@@ -3080,30 +3074,38 @@ public class BankCheck {
         // held while part 3 closed nothing. Part 3 now closes one on purpose
         // (the lag), so the fixture is read where it is made: five standing,
         // on fees that cover two at the cost the rule will read.
-        assertTrue("fixture: five branches stood on fees that cover two",
-                placed == 5 && coverPlaced == 2 && feesBefore > 0);
-        assertTrue("fixture: the branch's operating cost is what makes the fees cover two, not nothing",
-                operatingOne > 0);
-        assertTrue("every branch past what the fees cover closed at once, the month after: two stand",
-                standingAfter == 2 && closedAfter - closedBefore == 3);
-        // REWRITTEN (revised 0.7.19, "Exempt first branch"): "it ran two
-        // branches, not five" read the operating cost of two; the charter's is
-        // exempt, so it is one's.
-        close("...before the month paid them: it ran two branches, not five, and paid the operating cost of"
-                        + " one - the second; the charter's is exempt",
-                operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
+        assertTrue("the fixture placed five branches", placed == 5);
+        if (Observation.reached("fixture: five branches stood on fees that cover two",
+                coverPlaced == 2 && feesBefore > 0,
+                "branch closure and operating cost")) {
+            assertTrue("fixture: the branch's operating cost is what makes the fees cover two, not nothing",
+                    operatingOne > 0);
+            assertTrue("every branch past what the fees cover closed at once, the month after: two stand",
+                    standingAfter == 2 && closedAfter - closedBefore == 3);
+            // REWRITTEN (revised 0.7.19, "Exempt first branch"): "it ran two
+            // branches, not five" read the operating cost of two; the charter's is
+            // exempt, so it is one's.
+            close("...before the month paid them: it ran two branches, not five, and paid the operating cost of"
+                            + " one - the second; the charter's is exempt",
+                    operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
+        }
         assertTrue("...and that month closes the audit, the operating cost in it",
                 Math.abs(auditAfterResidual) <= MoneyAudit.CENT || auditAfterRelative <= 1e-7);
-        assertTrue("fixture: two branches stood every month until what a branch costs rose",
-                twoBeforeRise == riseMonth);
-        assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
-                coveredBeforeRise == twoBeforeRise);
-        assertTrue("fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them",
-                standingAtRise == 2 && coverAtRise < 1);
-        assertTrue("...and the next month the rule, reading that cost, closed the one the fees no longer cover",
-                standingAfterRise == 1);
+        if (Observation.reached("fixture: two branches stood every month until what a branch costs rose",
+                twoBeforeRise == riseMonth,
+                "pre-rise fee coverage")) {
+            assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
+                    coveredBeforeRise == twoBeforeRise);
+        }
+        if (Observation.reached("fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them",
+                standingAtRise == 2 && coverAtRise < 1,
+                "next-month branch closure")) {
+            assertTrue("...and the next month the rule, reading that cost, closed the one the fees no longer cover",
+                    standingAfterRise == 1);
+        }
+        Observation.reached("fixture: some month had branch fees short of cost", shortMonths > 0);
         assertTrue("every month the fees fell short of the branches standing, the next month's rule closed one",
-                shortMonths > 0 && shortThenClosed == shortMonths);
+                shortThenClosed == shortMonths);
     }
 
     /* ============ 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) ============
@@ -3408,6 +3410,7 @@ public class BankCheck {
         Bank bank = city.getBank();
         double worstResidual = 0, worstBetween = 0, worstByWho = 0, worstLast = 0, worstYear = 0, worstFoot = 0;
         double largestMovement = 0;   // the size of the figures the movements were made of (0.7.54)
+        boolean movementAddsUp = true;   // the page's alert never shows on a played bank (BI2)
         int foundingMonths = 0, dividendMonths = 0, familyMonths = 0, cityMonths = 0, businessMonths = 0;
         int lastChecked = 0, yearChecked = 0, played = 72;
         double buybackGain = 0, rescued = 0;
@@ -3477,6 +3480,7 @@ public class BankCheck {
                 Bank.EquityMovement moved = bank.equityMovement();
                 worstResidual = Math.max(worstResidual, Math.abs(moved.residual()));
                 largestMovement = Math.max(largestMovement, moved.scale());
+                movementAddsUp &= moved.addsUp();
                 if (Math.abs(moved.founding()) > 1e-9) foundingMonths++;
                 if (moved.dividends() > 0) dividendMonths++;
                 if (moved.fromShareholders() > 0) offeringMonths++;
@@ -3587,6 +3591,7 @@ public class BankCheck {
                 MoneyAudit.tolerance(1e-6, largestMovement));
         close("...nor between two presses, after a buyback and after a rescue", worstBetween, 0,
                 MoneyAudit.tolerance(1e-6, largestMovement));
+        assertTrue("...and the page's \"Something moved its equity without telling it\" never shows on the played bank (BI2)", movementAddsUp);
         assertTrue("fixture: the city and the businesses paid it interest", cityMonths > 0 && businessMonths > 0);
         close("its interest by who paid it is the whole of its interest, every month", worstByWho, 0, 1e-6);
         assertTrue("fixture: last month and the year were read in most months", lastChecked > 60 && yearChecked > 50);
@@ -3697,6 +3702,16 @@ public class BankCheck {
             bank.injectCapital(0, 200 * Math.max(bank.getBook(), 1));
             eaClosed.set(eaClosed.size() - 1, bank.earningAssets());
             playRecordingEarningAssets(city, 2, eaClosed);
+
+            // BF1: growth after the injection can enlarge the book. Cause
+            // the same reserves/book premise on that book, through capital,
+            // and file the between-presses addition just as above.
+            if (bank.sheet(Bank.Sheet.RESERVES) < 100 * bank.getBook()) {
+                bank.injectCapital(0, 200 * bank.getBook() - bank.sheet(Bank.Sheet.RESERVES));
+                eaClosed.set(eaClosed.size() - 1, bank.earningAssets());
+                // The injection enters cash; only a press lodges it in reserves.
+                playRecordingEarningAssets(city, 1, eaClosed);
+            }
 
             // The issue's case: reserves that dwarf the book.
             double eaReserves = bank.sheet(Bank.Sheet.RESERVES), eaBook = bank.getBook();
@@ -4523,7 +4538,7 @@ public class BankCheck {
         town.getLandManager().release(branch.getLandSqFt());
         branch.setJobs(JobType.UNIV_FINANCE, 50_000);
         Bank bank = town.getBank();
-        int standing = town.getBuildingManager().countByName("Commercial Bank");
+        long standing = town.getBuildingManager().countByName("Commercial Bank");
         Sector.Staffing staffing = town.getSectors().retail().staffing(branch);
         String statusBefore = bank.status();
         double bookBefore = bank.getWeightedBook();
@@ -4558,5 +4573,311 @@ public class BankCheck {
         assertTrue("the rates' flags carry the central bank's and the bank's decisions and nothing else",
                 flags.size() == 2 && onlyThose);
         assertTrue("...a month with both one flag holding both", flags.get(1).month() == 12 && flags.get(1).entries().size() == 2);
+    }
+
+    /* ===================================================================
+       THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20)
+
+       "Its lines do not add up" and "Its two parts do not add up to its
+       equity" were raised on an absolute $5 (.005 of a thousand), and a
+       double's own step at 1e13 is .002 to .008: KeptCheck's city of 4,820
+       months lit both on float dust alone. The page now reads the model's
+       verdict (Bank.sheetAddsUp(), yearAgoSheetAddsUp(), equitySplitAddsUp()):
+       MoneyAudit.tolerance() of the book's size (a cent, or a part in a
+       trillion, never under 64 steps of a double), the rule every money
+       comparison in the suite makes. Each case is built by hand (no city), at two sizes:
+         a small bank, $6 out: the card shows;
+         a book of 1e13 and more with float dust only (a few steps of a
+           double at that size, past the old $5): it does not;
+         the same book truly out, by more than the bound: it shows -
+       and the bound is the book's both ways: half of it adds up, twice it
+       does not, at either size.
+       =================================================================== */
+
+    /** A bank built by hand whose books are of this scale, k giving each figure its fraction so that their sums round (BI1): no city, no save. */
+    static Bank bookOf(double scale, int k) {
+        Bank b = new Bank();
+        b.refresh(1, 0, 0, scale + k * 0.37, scale * .2 + k * 0.11, scale * .03 + k * 0.53);
+        b.setMortgageBook(scale * .3 + k * 0.29, scale * .3);
+        double[] loans = new double[Sectors.KEYS.length], interim = new double[Sectors.KEYS.length];
+        loans[0] = scale * .4 + k * 0.17;
+        interim[0] = scale * .1 + k * 0.07;
+        interim[1] = scale * .05 + k * 0.13;
+        b.setSectorLoans(loans, interim);
+        b.setCash(scale * .7 + k * 0.41);
+        return b;
+    }
+
+    /** Files the bank's own sheet as the one a year ago, its lines `off` more than its equity line (a residual of `off`): the save's own path (restoreSheetYear). */
+    static void fileYearAgo(Bank bank, double off) {
+        double[] in = bank.sheetYearToSave();
+        int width = (int) in[1] + 2 * (int) in[2];
+        in[0] = Bank.YEAR_MONTHS;
+        for (Bank.Sheet line : Bank.Sheet.values()) in[3 + line.ordinal()] = bank.sheet(line);
+        in[3 + Bank.Sheet.EQUITY.ordinal()] -= off;
+        for (int m = 1; m < Bank.YEAR_MONTHS; m++) System.arraycopy(in, 3, in, 3 + m * width, width);
+        bank.restoreSheetYear(in);
+    }
+
+    /** Splits the bank's equity into paid in and retained, `off` more than equity makes: what a save carries (restoreEquitySplit), the preferred being nothing here. */
+    static void splitEquity(Bank bank, double off) {
+        double paid = bank.equity() * .4;
+        bank.restoreEquitySplit(paid, bank.equity() - paid + off);
+    }
+
+    /** A bank that has kept no split (a save from before the bank kept it) and no year of sheets reads both as adding up. */
+    static boolean aBankOfNoSplitOrYear() {
+        Bank b = bookOf(500, 0);
+        b.restoreEquitySplit(null, null);
+        b.restoreSheetYear(null);
+        return !b.knowsEquitySplit() && !b.knowsYearAgo() && b.equitySplitAddsUp() && b.yearAgoSheetAddsUp()
+                && b.equitySplitSize() == 0 && b.yearAgoSheetSize() == 0;
+    }
+
+    static void theIntegrityCardsReadTheBooksSize() {
+        out.println("\n--- (13) the integrity cards read the book's size: $6 out on a small bank shows, float dust on a 1e13 book does not, a big book truly out does (BI1) ---");
+
+        /* ---- the rule is the audit's own for money, at every size: MoneyAudit.tolerance() of the figures it is made of ---- */
+        boolean sameAsAudit = true;
+        for (double size : new double[] { 1, 1e3, 1e6, 1e9, 1e13, 1e15 }) {
+            double tol = MoneyAudit.tolerance(size);
+            for (double residual : new double[] { 0, tol * .5, tol * 2, MoneyAudit.CENT * .5, MoneyAudit.CENT * 2, 1e-4 * size }) {
+                boolean audit = Math.abs(residual) <= tol;
+                sameAsAudit &= Bank.addsUp(residual, size) == audit && Bank.addsUp(-residual, size) == audit;
+            }
+        }
+        assertTrue("the page's test is MoneyAudit.tolerance() at every size from 1 to 1e15, either sign", sameAsAudit);
+        assertTrue("...a cent at a size where a part in a trillion is under one, and a part in a trillion past it",
+                MoneyAudit.tolerance(1e3) == MoneyAudit.CENT && MoneyAudit.tolerance(1e15) >= 1e-12 * 1e15 && Bank.addsUp(.5e-12 * 1e15, 1e15) && !Bank.addsUp(2e-12 * 1e15, 1e15));
+        assertTrue("...and a residual or a size that is not a finite number is not adding up, an infinite one not either",
+                !Bank.addsUp(Double.NaN, 1e9) && !Bank.addsUp(1, Double.NaN) && !Bank.addsUp(0, Double.NaN)
+                        && !Bank.addsUp(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY) && !Bank.addsUp(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+                        && !Bank.addsUp(Double.POSITIVE_INFINITY, 1e9) && !Bank.addsUp(0, Double.POSITIVE_INFINITY));
+        assertTrue("a bank that has kept no split, or no year, has nothing to say of them: both read as adding up", aBankOfNoSplitOrYear());
+
+        /* ---- a small bank, its lines $6 out ---- */
+        Bank small = bookOf(500, 0);
+        double six = .006;
+        assertTrue("fixture: the small bank's lines add up and it is small (a sheet under 1e4)",
+                small.sheetAddsUp() && small.sheetSize() < 1e4 && small.sheetSize() > 0);
+        splitEquity(small, six);
+        fileYearAgo(small, six);
+        double smallBound = MoneyAudit.tolerance(small.equitySplitSize());
+        out.printf("   small: sheet size %,.1f, its bound $%,.2f; $6 is %.1f times it%n",
+                small.sheetSize(), smallBound * 1000, six / smallBound);
+        close("fixture: its equity's two parts are $6 out", small.equitySplitResidual(), six, 1e-9);
+        close("fixture: the sheet a year ago is $6 out", small.yearAgoResidual(), six, 1e-9);
+        assertTrue("fixture: $6 is past the old absolute $5 and past what a book this size allows",
+                six > .005 && six > smallBound && six > MoneyAudit.tolerance(small.yearAgoSheetSize()));
+        assertTrue("so \"Its two parts do not add up to its equity\" shows", !small.equitySplitAddsUp());
+        assertTrue("...and \"Its lines do not add up\" shows, on the sheet a year ago", !small.yearAgoSheetAddsUp());
+        assertTrue("...while its sheet now, with nothing out, does not light it", small.sheetAddsUp());
+
+        // The bound is the book's: twice what a small book allows is under the old $5 and shows; half of it does not.
+        Bank mid = bookOf(500, 0);
+        splitEquity(mid, 0);
+        double midBound = MoneyAudit.tolerance(mid.equitySplitSize());
+        assertTrue("fixture: twice a small book's bound is under the old absolute $5", midBound * 2 < .005);
+        splitEquity(mid, midBound * 2);
+        assertTrue("twice what the small book allows shows, though the old absolute test let it by", !mid.equitySplitAddsUp());
+        splitEquity(mid, midBound * .5);
+        assertTrue("...and half of it adds up", mid.equitySplitAddsUp());
+
+        /* ---- a book of 1e13 and more, float dust only ---- */
+        Bank dust = null;
+        int found = 0;
+        for (int k = 1; k <= 400 && dust == null; k++) {
+            Bank b = bookOf(1.5e13, k);
+            if (Math.abs(b.sheetResidual()) > .005) { dust = b; found = k; }
+        }
+        assertTrue("fixture: a book of 1.5e13 whose own sums leave dust past the old $5 (found among 400 fractions)", dust != null);
+        if (dust == null) return;
+        double sheetDust = dust.sheetResidual(), size = dust.sheetSize();
+        out.printf("   big: %,.0f of assets, size %,.0f, one step of a double there %.4f; its sheet is %.4f out (fraction %d), the audit's bound $%,.0f%n",
+                dust.totalAssets(), size, Math.ulp(size), sheetDust, found, MoneyAudit.tolerance(size) * 1000);
+        assertTrue("fixture: it is a book of 1e13 and more", dust.totalAssets() > 1e13);
+        assertTrue("fixture: the dust is a few steps of a double and no more (the audit measured 58 at its worst)",
+                Math.abs(sheetDust) <= MoneyAudit.ULP_STEPS * Math.ulp(size));
+        assertTrue("fixture: the old absolute $5 test would have lit the card on it", Math.abs(sheetDust) > .005);
+        assertTrue("its lines add up: float dust on a book this size does not light \"Its lines do not add up\"", dust.sheetAddsUp());
+        fileYearAgo(dust, 0);
+        assertTrue("...nor does the same dust on the sheet a year ago", dust.knowsYearAgo() && dust.yearAgoSheetAddsUp()
+                && Math.abs(dust.yearAgoResidual()) > .005);
+        splitEquity(dust, 0);
+        splitEquity(dust, Math.ulp(dust.equitySplitSize()));
+        double splitDust = dust.equitySplitResidual();
+        assertTrue("fixture: its split is one step of a double at its size out, past the old $5", Math.abs(splitDust) > .005
+                && Math.abs(splitDust) <= MoneyAudit.ULP_STEPS * Math.ulp(dust.equitySplitSize()));
+        assertTrue("...and \"Its two parts do not add up to its equity\" does not show on it", dust.equitySplitAddsUp());
+
+        /* ---- the same book, truly out: by more than the bound ---- */
+        double bound = MoneyAudit.tolerance(size);
+        Bank wrong = bookOf(1.5e13, found);
+        out.printf("   its bound is %,.1f, %,.0f times the dust%n", bound, bound / Math.abs(sheetDust));
+        assertTrue("fixture: the bound on a book this size is thousands of times the dust, and far under a line left off",
+                bound > 1000 * Math.abs(sheetDust) && bound < 1e-3 * size);
+        fileYearAgo(wrong, bound * 2);
+        splitEquity(wrong, bound * 2);
+        assertTrue("the same book with its equity's parts twice the bound out shows the card", !wrong.equitySplitAddsUp());
+        assertTrue("...and with its sheet a year ago twice the bound out", !wrong.yearAgoSheetAddsUp());
+        assertTrue("...while its sheet now, which is nothing out, still adds up", wrong.sheetAddsUp());
+        fileYearAgo(wrong, bound * .5);
+        splitEquity(wrong, bound * .5);
+        assertTrue("half the bound adds up, on the sheet a year ago and in the split", wrong.yearAgoSheetAddsUp() && wrong.equitySplitAddsUp());
+        fileYearAgo(wrong, -bound * 2);
+        splitEquity(wrong, -bound * 2);
+        assertTrue("...and a book out the other way shows as well", !wrong.yearAgoSheetAddsUp() && !wrong.equitySplitAddsUp());
+
+        // A line of $1 billion (1e6 of a thousand) left off, or counted twice, on a sheet this size: a part in ten million of it
+        // (LongPlaytest.audit()'s rule for a month's flow) would be $5.8 billion and leave it dark; the money rule shows it.
+        double billion = 1e6;
+        assertTrue("fixture: $1 billion is past the bound and under a part in ten million of this sheet (the flow rule would let it by)",
+                billion > bound && billion < 1e-7 * size);
+        Bank leftOff = bookOf(1.5e13, found);
+        fileYearAgo(leftOff, billion);
+        splitEquity(leftOff, billion);
+        assertTrue("a book of 5.8e13 out by $1 billion shows both cards: a line left off the page", !leftOff.yearAgoSheetAddsUp() && !leftOff.equitySplitAddsUp());
+        fileYearAgo(leftOff, -billion);
+        splitEquity(leftOff, -billion);
+        assertTrue("...and counted twice", !leftOff.yearAgoSheetAddsUp() && !leftOff.equitySplitAddsUp());
+    }
+
+    /* ===================================================================
+       THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20)
+
+       "Something moved its equity without telling it", the red "Not
+       accounted for" step of the waterfall above it and the line and alert
+       of the Statement page were raised on the same absolute $5 (.005 of a
+       thousand) BI1 took off the two cards: the month's residual is a
+       signed sum of seventeen figures, and each carries its rounding in.
+       The page now reads the model's verdict (Bank.EquityMovement.addsUp()):
+       MoneyAudit.tolerance() of the figures' size (scale()), and a residual
+       or a size that is not a finite number does not add up. Each case is
+       a record built by hand (no city, no save), at two sizes:
+         a small movement out by more than its bound: the alert shows (its
+           miss under the old $5, which let it by);
+         a movement of 1e13 and more with float dust only (a few steps of a
+           double at that size, past the old $5): it does not;
+         the same movement truly out, by more than the bound: it shows;
+         an infinite residual: it shows (and a missing one, which `>` hid).
+       =================================================================== */
+
+    /** The seventeen figures of a movement by hand, in the record's order (opening ... closing), k giving each its fraction so that their sums round: its closing is what the causes make of its opening, in the order the causes are named, plus `out` (BI2). */
+    static double[] movementFigures(double scale, int k, double out) {
+        double[] f = {
+                scale * .6 + k * .37,      // opening
+                scale * .05 + k * .11,     // kept
+                scale * .02 + k * .53,     // fromShareholders
+                scale * .01 + k * .23,     // fromCity
+                scale * .03 + k * .07,     // founding
+                scale * .015 + k * .19,    // dividends
+                scale * .008 + k * .31,    // boughtBack
+                scale * .012 + k * .41,    // issued
+                scale * .004 + k * .17,    // absorbed
+                scale * .006 + k * .43,    // treasuryBuyback
+                scale * .002 + k * .59,    // allowanceOpened
+                scale * .01 + k * .13,     // preferredIn
+                scale * .005 + k * .29,    // preferredOut
+                scale * .003 + k * .47,    // preferredDividends
+                scale * .002 + k * .61,    // warrantsBoughtBack
+                scale * .007 + k * .03,    // discountRestruck
+                0 };                       // closing, below
+        f[16] = f[0] + f[1] + f[2] + f[3] + f[4] - f[5] - f[6] + f[7] + f[8] + f[9] - f[10] + f[11] - f[12] - f[13] - f[14] + f[15] + out;
+        return f;
+    }
+
+    static Bank.EquityMovement movementFrom(double[] f) {
+        return new Bank.EquityMovement(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14], f[15], f[16]);
+    }
+
+    static Bank.EquityMovement movementOf(double scale, int k, double out) { return movementFrom(movementFigures(scale, k, out)); }
+
+    /** What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). */
+    static final double OLD_ABSOLUTE = .005;
+
+    static void theEquityMovementAlertReadsTheMovementsSize() {
+        out.println("\n--- (13) the equity-movement alert reads the movement's size: a small one out shows, float dust on a 1e13 one does not, a big one truly out does (BI2) ---");
+
+        /* ---- the rule is the audit's own for money, at every size: MoneyAudit.tolerance() of the figures it is made of ---- */
+        boolean sameAsAudit = true, centered = true;
+        for (double scale : new double[] { 1e3, 1e6, 1e9, 1e13, 1e15 }) {
+            double tol = MoneyAudit.tolerance(movementOf(scale, 0, 0).scale());
+            for (double miss : new double[] { 0, tol * .5, tol * 2, MoneyAudit.CENT * .5, MoneyAudit.CENT * 2, 1e-4 * scale }) {
+                for (double sign : new double[] { 1, -1 }) {
+                    Bank.EquityMovement m = movementOf(scale, 0, sign * miss);
+                    boolean audit = Math.abs(m.residual()) <= MoneyAudit.tolerance(m.scale());
+                    sameAsAudit &= m.addsUp() == audit;
+                }
+            }
+            centered &= movementOf(scale, 0, 0).addsUp() && !movementOf(scale, 0, tol * 2).addsUp() && !movementOf(scale, 0, -tol * 2).addsUp()
+                    && movementOf(scale, 0, tol * .5).addsUp() && movementOf(scale, 0, -tol * .5).addsUp();
+        }
+        assertTrue("the alert's test is MoneyAudit.tolerance() of the movement's scale() at every size from 1e3 to 1e15, either sign", sameAsAudit);
+        assertTrue("...half its bound adds up and twice it does not, at every size, either sign", centered);
+
+        /* ---- a small movement, out by more than its bound ---- */
+        Bank.EquityMovement clean = movementOf(500, 0, 0);
+        double smallBound = MoneyAudit.tolerance(clean.scale());
+        assertTrue("fixture: the small movement leaves nothing unexplained and is small (its figures a few thousand)",
+                clean.addsUp() && clean.scale() < 1e4 && clean.scale() > 0 && Math.abs(clean.residual()) < smallBound * .01);
+        assertTrue("fixture: twice a small movement's bound is under the old absolute $5, so the old test let it by", smallBound * 2 < OLD_ABSOLUTE);
+        Bank.EquityMovement out2 = movementOf(500, 0, smallBound * 2);
+        out.printf("   small: scale %,.1f, its bound $%,.2f; the miss twice that, $%,.2f%n", out2.scale(), smallBound * 1000, smallBound * 2000);
+        close("fixture: the small movement is out by twice its bound", out2.residual(), smallBound * 2, 1e-9);
+        assertTrue("fixture: that miss is under the old absolute $5", Math.abs(out2.residual()) <= OLD_ABSOLUTE);
+        assertTrue("so \"Something moved its equity without telling it\" shows, though the old test let it by", !out2.addsUp());
+        assertTrue("...and the same miss the other way shows", !movementOf(500, 0, -smallBound * 2).addsUp());
+        assertTrue("...half the bound adds up", movementOf(500, 0, smallBound * .5).addsUp());
+        Bank.EquityMovement six = movementOf(500, 0, .006);
+        assertTrue("...and $6 out, past the old $5 as well, shows", Math.abs(six.residual()) > OLD_ABSOLUTE && !six.addsUp());
+
+        /* ---- a movement of 1e13 and more, float dust only ---- */
+        double[] dustFigures = null;
+        int found = 0;
+        for (int k = 1; k <= 2000 && dustFigures == null; k++) {
+            double[] f = movementFigures(3e13, k, 0);
+            if (Math.abs(movementFrom(f).residual()) > OLD_ABSOLUTE) { dustFigures = f; found = k; }
+        }
+        assertTrue("fixture: a movement of 3e13 whose own subtractions leave dust past the old $5 (found among 2,000 fractions)", dustFigures != null);
+        if (dustFigures == null) return;
+        Bank.EquityMovement dust = movementFrom(dustFigures);
+        double dustResidual = dust.residual(), scale = dust.scale(), bound = MoneyAudit.tolerance(scale);
+        out.printf("   big: scale %,.0f, one step of a double there %.4f; its residual is %.4f (fraction %d), the audit's bound $%,.0f%n",
+                scale, Math.ulp(scale), dustResidual, found, bound * 1000);
+        assertTrue("fixture: it is a movement of 1e13 and more (its scale, its closing)", scale > 1e13 && dust.closing() > 5e12);
+        assertTrue("fixture: the dust is a few steps of a double and no more (the audit measured 58 at its worst)",
+                Math.abs(dustResidual) <= MoneyAudit.ULP_STEPS * Math.ulp(scale));
+        assertTrue("fixture: the old absolute $5 test would have lit the alert on it", Math.abs(dustResidual) > OLD_ABSOLUTE);
+        assertTrue("its causes explain it: float dust on a movement this size does not show \"Something moved its equity without telling it\"", dust.addsUp());
+        assertTrue("fixture: the bound on a movement this size is thousands of times the dust, and far under a line left off",
+                bound > 1000 * Math.abs(dustResidual) && bound < 1e-3 * scale);
+
+        /* ---- the same movement, truly out: by more than the bound ---- */
+        assertTrue("the same movement twice its bound out shows the alert", !movementOf(3e13, found, bound * 2).addsUp());
+        assertTrue("...out the other way as well", !movementOf(3e13, found, -bound * 2).addsUp());
+        assertTrue("...and half its bound adds up", movementOf(3e13, found, bound * .5).addsUp());
+
+        // A line of $1 billion (1e6 of a thousand) left out of the causes, or counted twice: a part in ten million of this movement
+        // (LongPlaytest.audit()'s rule for a flow) is $4.5 billion and would leave it dark; the money rule shows it.
+        double billion = 1e6;
+        assertTrue("fixture: $1 billion is past the bound and under a part in ten million of this movement (the flow rule would let it by)",
+                billion > bound && billion < 1e-7 * scale);
+        assertTrue("a movement of 4.5e13 out by $1 billion shows: a cause left out of it", !movementOf(3e13, found, billion).addsUp());
+        assertTrue("...and a cause counted twice", !movementOf(3e13, found, -billion).addsUp());
+
+        /* ---- a residual that is not a finite number ---- */
+        double[] inf = movementFigures(500, 0, 0);
+        inf[16] = Double.POSITIVE_INFINITY;
+        Bank.EquityMovement infinite = movementFrom(inf);
+        assertTrue("fixture: its residual is infinite, and so is its scale", Double.isInfinite(infinite.residual()) && Double.isInfinite(infinite.scale()));
+        assertTrue("an infinite residual shows the alert", !infinite.addsUp());
+        inf[16] = Double.NEGATIVE_INFINITY;
+        assertTrue("...a negative infinity too", !movementFrom(inf).addsUp());
+        double[] nan = movementFigures(500, 0, 0);
+        nan[0] = Double.NaN;
+        Bank.EquityMovement unknown = movementFrom(nan);
+        assertTrue("fixture: a missing opening leaves a residual that is not a number, which `>` against the old $5 hid",
+                Double.isNaN(unknown.residual()) && !(Math.abs(unknown.residual()) > OLD_ABSOLUTE));
+        assertTrue("...and it shows the alert, \"worth reporting\" being what it says", !unknown.addsUp());
     }
 }

@@ -123,7 +123,12 @@ public final class Markets {
 
     /** Every market back on the good's literal prices: a city with no world market, or whose market was refused. */
     public void clearWorldPrices() {
-        for (GoodsMarket m : markets.values()) m.setWorldPrices(Double.NaN, Double.NaN);
+        clearWorldPricesExcept(null);
+    }
+
+    /** Clears the world-market bands while retaining an independent quote, such as GoldPrice on load. */
+    void clearWorldPricesExcept(Good kept) {
+        for (GoodsMarket m : markets.values()) if (m.good() != kept) m.setWorldPrices(Double.NaN, Double.NaN);
     }
 
     /**
@@ -144,7 +149,23 @@ public final class Markets {
        THE MONTH
        =================================================================== */
 
+    /**
+     * The seller-priced goods' months begin (FB3, FW6-C): every market whose good is not traded forgets last month's trades and
+     * tally, as clear() does for each traded good when its clearing starts. Nothing did, so their trades list and their
+     * localFilled, offered, bid, imported and exported grew for the city's whole life (housing held 1,161 trades at month 606). Called
+     * in Game.nextMonth() before startOfMonthUpdate(), because the earliest seller-priced fill of a press is the luxury counter's,
+     * inside it; the retail and real-estate sales come after, in simulateMonth()'s markets pass. The draws are not wiped, as startMonth() keeps them.
+     */
+    public void startSellerPricedMonth() {
+        for (GoodsMarket m : markets.values()) {
+            if (!m.good().traded()) m.startMonth();
+        }
+    }
+
     public void clearMonth(Sectors sectors, Game game) {
+
+        // BF1: a demolished shed's lost stock cannot be sold by this clearing.
+        for (Sector s : sectors.all()) s.writeOffUnhousedStock();
 
         /*
          * 0. THE FLEETS, before anything is made with them.
@@ -163,12 +184,15 @@ public final class Markets {
         for (Sector s : sectors.all()) s.buyConsumables();
         // ...and what each works will make, so what it orders is for that and no more (WN3; Sector, THE ORDER): before anything is made or bought.
         for (Sector s : sectors.all()) s.planOrders();
+        LicenceFees.Production licences = game != null && game.foundedUnfitted() ? new LicenceFees.Production(game) : null;
 
         // 1. the flow goods are made
         for (Sector s : sectors.all()) {
+            if (licences != null) licences.before(s, false);
             for (Good g : s.goodsMade()) {
                 if (!g.stockable() && g.traded()) s.produceFlow(g);
             }
+            if (licences != null) licences.made(s, false);
         }
 
         // 2. the seller-priced goods
@@ -196,10 +220,16 @@ public final class Markets {
 
         // 4. into the warehouses, for next month
         for (Sector s : sectors.all()) {
+            if (licences != null) licences.before(s, true);
             for (Good g : s.goodsMade()) {
                 if (g.stockable() && g.traded()) s.produceStock(g, markets.get(g));
             }
+            if (licences != null) licences.made(s, true);
         }
+
+        // The producers already captured their bills. Only book those frozen
+        // numbers here, before the next mix/run is chosen.
+        if (licences != null) licences.finish();
 
         // 5. the month's loose ends
         for (Sector s : sectors.all()) s.endOfMonth(game);
@@ -385,6 +415,8 @@ public final class Markets {
 
         // the makers' unsold flow, to the world or to nobody
         for (Sector s : makers) s.shipUnsoldFlow(g, m);
+        // BF1: the world also buys what remains in a maker's shed.
+        for (Sector s : makers) s.shipUnsoldStock(g, m);
         // ...and the city's release past what the buyers took STAYS IN ITS TANKS (0.7.103, batch P4; Jerus's
         // A8, 2026-10-10): it shipped at the export price as the wells' unsold crude does from 0.7.85 (star O8-4).
         // A reserve is the city's to hold for a shock, so only what the buyers here take leaves it.
@@ -494,14 +526,25 @@ public final class Markets {
 
     /**
      * The month is over: every market forgets the draws it kept (FW5,
-     * 2026-10-25). Called last in Game.nextMonth(); the month's draws were
-     * shown with its fills, and a draw from here on - a hand order between
-     * the presses, the auto-builder at the top of the next month - is the
-     * next month's.
+     * 2026-10-25). Called in Game.nextMonth() after its last draw and before
+     * its saves (FB3): the month's draws were shown with its fills, and a
+     * draw from here on - a hand order between the presses, the
+     * auto-builder at the top of the next month - is the next month's, the
+     * only draws a save carries.
      */
     public void closeMonth() {
-        for (GoodsMarket m : markets.values()) m.closeDraws();
+        drawsClosed = 0;
+        for (GoodsMarket m : markets.values()) {
+            drawsClosed += m.monthsDraws().size();
+            m.closeDraws();
+        }
     }
+
+    /** How many draws the last closeMonth() forgot, every market's together (FB3): what a save taken before it would have carried. Not saved; ReloadCheck reads it. */
+    private int drawsClosed;
+
+    /** ...read. */
+    public int drawsClosedLastMonth() { return drawsClosed; }
 
     /**
      * Puts the draws made before the strike back on their sellers' rows
@@ -544,7 +587,8 @@ public final class Markets {
     /**
      * One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the
      * month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last clearing.
-     * An older save lacks the tally's keys and reads none, as it did.
+     * An older save lacks the tally's keys and reads none, as it did. Since FB3 (FW6-C) the draws themselves cross too
+     * (the list below), so a hand order made between the presses keeps its seller's row after a load.
      */
     public static final class State {
         public String good;
@@ -552,10 +596,22 @@ public final class Markets {
         public double[] taken;
         public double imported, exported, localFilled, offered, bid, drawn;
         /**
+         * The month's draws since it last closed (FB3, FW6-C): who sold, who bought, how many units, at what price; the good is this
+         * State's. Null when there are none, so a save without draws writes no key, and an older save reads none, as it did.
+         */
+        public List<DrawRow> draws;
+        /** One of the month's draws, as a save carries it (FB3, FW6-C): a Trade without its good. */
+        public static final class DrawRow {
+            public String seller, buyer;
+            public double units, price;
+        }
+        /**
          * The world's band the month was struck at (WN3): its import and export prices, thousands of world dollars a unit. Boxed: null is the
          * good's literal, so a city with no world market writes neither key, and a save without them reads the literals.
          */
         public Double worldImport, worldExport;
+        /** Gold's spot D$ quote, separate from ordinary goods' lagged, inflation-adjusted rate (GD4). */
+        public Double goldExchangeRate;
     }
 
     public List<State> toState() {
@@ -563,6 +619,7 @@ public final class Markets {
         for (GoodsMarket m : markets.values()) {
             State s = new State();
             s.good = m.good().name();
+            if (m.good() == Good.GOLD) s.goldExchangeRate = m.getExchangeRate();
             s.price = m.getLocalPrice();
             s.flow = m.getSupplyFlow();
             s.stock = m.getSupplyStock();
@@ -574,6 +631,18 @@ public final class Markets {
             s.offered = m.getOffered();
             s.bid = m.getBid();
             s.drawn = m.getDrawn();
+            // The draws since the month last closed (FB3, FW6-C): none writes no key.
+            if (!m.monthsDraws().isEmpty()) {
+                s.draws = new ArrayList<>();
+                for (Trade t : m.monthsDraws()) {
+                    State.DrawRow d = new State.DrawRow();
+                    d.seller = t.seller();
+                    d.buyer = t.buyer();
+                    d.units = t.units();
+                    d.price = t.price();
+                    s.draws.add(d);
+                }
+            }
             // ...and the band it was struck at (WN3): the tally above is what the next band is made of, and the draws between presses read this one.
             s.worldImport = Double.isNaN(m.getWorldImportSet()) ? null : m.getWorldImportSet();
             s.worldExport = Double.isNaN(m.getWorldExportSet()) ? null : m.getWorldExportSet();
@@ -592,9 +661,13 @@ public final class Markets {
             m.setLocalPrice(s.price);
             m.restoreStrike(s.flow, s.stock, s.demand);
             m.restoreTally(s.imported, s.exported, s.localFilled, s.offered, s.bid, s.drawn);
+            m.restoreDraws(s.draws);
             m.restoreTakenHistory(s.taken);
             // The band (WN3): put back as it was struck, never recomputed, so a city loaded between two presses draws at the prices the one saved would.
             m.setWorldPrices(s.worldImport == null ? Double.NaN : s.worldImport, s.worldExport == null ? Double.NaN : s.worldExport);
+            if (g == Good.GOLD && s.goldExchangeRate != null && Double.isFinite(s.goldExchangeRate) && s.goldExchangeRate > 0) {
+                m.setExchangeRate(s.goldExchangeRate);
+            }
         }
     }
 

@@ -60,6 +60,21 @@ public class PopulationCohorts {
 
     private final double[] band = new double[AgeBand.values().length];
 
+    /*
+     * THE ADULTS IN TWO STAGES (HS2, 2026-11-19; AdultStage's note). The
+     * young, 18-34, and the established, 35-69: two compartments in a row
+     * inside the one adult band, so band[ADULT] is always their sum and every
+     * reader of AgeBand.ADULT - the workforce, the arrivals, the screens -
+     * reads what it read before. Only this class writes either; each place
+     * that moves the adults moves the two stages and then strikes the sum
+     * (syncAdults()).
+     */
+    private final double[] stage = new double[AdultStage.values().length];
+    /** What each stage opened the month with, moved on with (the young to the established, the established to the seniors) and lost to death. */
+    private final double[] lastStageOpening = new double[AdultStage.values().length];
+    private final double[] lastStagePromoted = new double[AdultStage.values().length];
+    private final double[] lastStageDeaths = new double[AdultStage.values().length];
+
     /** Everything that happened last month, for the screen. */
     private double lastBirths;
     private double lastDeaths;
@@ -95,6 +110,22 @@ public class PopulationCohorts {
      */
     private double lastCauses;
 
+    /*
+     * ...AND THE MONTH'S SHARES OF EACH BAND, FOR THE HOUSEHOLDS' FLOWS (HS1,
+     * 2026-11-18). The households' books carry a retiree's, the dead's and a
+     * leaver's money from the cell they leave (HouseholdBalance, MONEY FOLLOWS
+     * PEOPLE), and a cell holds people, not a band's count: so the month is
+     * handed on as shares - who died, aged on and left, over what the band
+     * opened with - and each cell loses its people at its band's share. The
+     * month's working, like the by-band arrays above; the households' books
+     * keep what they were handed until their next census, and save it.
+     */
+    private final double[] lastOpening = new double[AgeBand.values().length];
+    /** The share of every band the month's net migration took out of the city, when it was out; 0 when it brought people in. */
+    private double lastLeftShare;
+    /** People of each band who left on their own account (leave(): the evicted who give up). */
+    private final double[] lastLeftByBand = new double[AgeBand.values().length];
+
     public PopulationCohorts() { }
 
     /* ----------------------------- reading ----------------------------- */
@@ -124,6 +155,40 @@ public class PopulationCohorts {
     public double[] getCauseDeaths()     { return lastCauseDeathsByBand.clone(); }
     /** Last month's deaths of the causes of 1900, every band together - saved, unlike the bands (R0b). */
     public double getLastCauseDeaths()   { return lastCauses; }
+    /** Of what the band opened the month with, the share that died - aged out at 120 included (HS1). */
+    public double deathShare(AgeBand b)  { return share(lastDeathsByBand[b.ordinal()], lastOpening[b.ordinal()]); }
+    /** ...and the share that aged into the next band: for the adults, the month's retirements (HS1). */
+    public double promotedShare(AgeBand b) {
+        return b.next() == null ? 0 : share(lastPromoted[b.ordinal()], lastOpening[b.ordinal()]);
+    }
+    /** The share of every band the month's net migration took out of the city: 0 in a month it brought people (HS1). */
+    public double getLeftShare()         { return lastLeftShare; }
+    /** People of a band who left on their own account this month (leave(); HS1). */
+    public double getLeft(AgeBand b)     { return lastLeftByBand[b.ordinal()]; }
+
+    private static double share(double part, double of) { return of > 0 ? Math.min(1, Math.max(0, part / of)) : 0; }
+
+    /** The adults of one stage (HS2): get(AgeBand.ADULT) is the two together. */
+    public double get(AdultStage s)          { return stage[s.ordinal()]; }
+    /** Last month's adults who moved on out of a stage: the young who turned 35, the established who retired (the same as getPromoted(ADULT)). */
+    public double getPromoted(AdultStage s)  { return lastStagePromoted[s.ordinal()]; }
+    /** Last month's deaths in a stage: the two add to getDeaths(ADULT). */
+    public double getDeaths(AdultStage s)    { return lastStageDeaths[s.ordinal()]; }
+    /** Of what the stage opened the month with, the share that moved on: for the young, the month's turning 35; for the established, its retirements (HS2). */
+    public double promotedShare(AdultStage s) {
+        return share(lastStagePromoted[s.ordinal()], lastStageOpening[s.ordinal()]);
+    }
+    /** Of the adults, the young's share: a no-argument reading for the ensemble's extra columns (HS2; the settled city's is settledYoungShareOfAdults()). */
+    public double getYoungShareOfAdults() { return share(stage[AdultStage.YOUNG.ordinal()], band[AgeBand.ADULT.ordinal()]); }
+    /** Last month's retirements over the adults who opened it: the ensemble's reading of the two stages' flow beside the one bucket's flat AgeBand.ADULT.monthlyOutflowRate() (HS2). */
+    public double getRetiringShareOfAdults() { return promotedShare(AgeBand.ADULT); }
+
+    /** The band's figure struck again from its two stages, after anything moved them. */
+    private void syncAdults() {
+        double sum = 0;
+        for (double v : stage) sum += v;
+        band[AgeBand.ADULT.ordinal()] = sum;
+    }
 
     public double total() {
         double sum = 0;
@@ -280,6 +345,12 @@ public class PopulationCohorts {
         lastCauses = 0;
         lastDeathsOfAge = 0;
         lastAgedOut = 0;
+        java.util.Arrays.fill(lastOpening, 0);
+        lastLeftShare = 0;
+        java.util.Arrays.fill(lastLeftByBand, 0);
+        java.util.Arrays.fill(lastStageOpening, 0);
+        java.util.Arrays.fill(lastStagePromoted, 0);
+        java.util.Arrays.fill(lastStageDeaths, 0);
 
         if (total() <= 0) {
             return;
@@ -298,6 +369,7 @@ public class PopulationCohorts {
 
             AgeBand b = AgeBand.values()[i];
             double opening = band[i];
+            lastOpening[i] = opening;
             if (opening <= 0) continue;
 
             double rate = factor == null
@@ -314,21 +386,47 @@ public class PopulationCohorts {
             double causeShare = all > 0 ? cause / all : 0;
             rate = both;
 
-            double dying  = opening * rate;
-            double ageing = opening * b.monthlyOutflowRate();
+            double dying, ageing;
+            if (b == AgeBand.ADULT) {
+                // The two stages, the established first (HS2): the young who move up land in a stage already done.
+                dying = 0;
+                ageing = 0;
+                for (int k = stage.length - 1; k >= 0; k--) {
+                    AdultStage s = AdultStage.values()[k];
+                    double open = stage[k];
+                    lastStageOpening[k] = open;
+                    if (open <= 0) continue;
+                    double d = open * rate, up = open * s.monthlyOutflowRate();
+                    if (d + up > open) {
+                        double scale = open / (d + up);
+                        d *= scale;
+                        up *= scale;
+                    }
+                    stage[k] -= d + up;
+                    lastStageDeaths[k] = d;
+                    lastStagePromoted[k] = up;
+                    dying += d;
+                    if (s.next() != null) stage[s.next().ordinal()] += up;
+                    else ageing = up;   // the established's retirements: the band's promoted, into SENIOR
+                }
+                syncAdults();
+            } else {
+                dying  = opening * rate;
+                ageing = opening * b.monthlyOutflowRate();
 
-            // Belt and braces. The rates are far below this and the cap in
-            // AgeBand keeps a modifier from getting near it, but a band losing
-            // more people than it has would be a negative population, and this
-            // pyramid is about to become the population.
-            double total = dying + ageing;
-            if (total > opening) {
-                double scale = opening / total;
-                dying *= scale;
-                ageing *= scale;
+                // Belt and braces. The rates are far below this and the cap in
+                // AgeBand keeps a modifier from getting near it, but a band losing
+                // more people than it has would be a negative population, and this
+                // pyramid is about to become the population.
+                double total = dying + ageing;
+                if (total > opening) {
+                    double scale = opening / total;
+                    dying *= scale;
+                    ageing *= scale;
+                }
+
+                band[i] -= (dying + ageing);
             }
-
-            band[i] -= (dying + ageing);
             lastPromoted[i] = ageing;
             lastDeathsByBand[i] = dying;
             lastDyingByBand[i] = dying;
@@ -342,7 +440,11 @@ public class PopulationCohorts {
                     - lastCauseDeathsByBand[i];
 
             AgeBand next = b.next();
-            if (next != null) {
+            if (next == AgeBand.ADULT) {
+                // Every eighteen-year-old is young (HS2).
+                stage[AdultStage.YOUNG.ordinal()] += ageing;
+                syncAdults();
+            } else if (next != null) {
                 band[next.ordinal()] += ageing;
             } else {
                 // Out of the top of the pyramid at 120, which is also a death.
@@ -386,11 +488,17 @@ public class PopulationCohorts {
         }
 
         lastMigration = netArrivals;
+        if (netArrivals < 0) lastLeftShare = Math.min(1, -netArrivals / t);
         if (netArrivals == 0) return;
 
         for (int i = 0; i < band.length; i++) {
             band[i] = Math.max(0, band[i] + netArrivals * (band[i] / t));
         }
+        // ...and the adults in the city's own proportions too, stage by stage (HS2).
+        for (int k = 0; k < stage.length; k++) {
+            stage[k] = Math.max(0, stage[k] + netArrivals * (stage[k] / t));
+        }
+        syncAdults();
     }
 
     /**
@@ -405,8 +513,16 @@ public class PopulationCohorts {
         if (!(people > 0)) return 0;
         int i = of.ordinal();
         double gone = Math.min(people, band[i]);
-        band[i] -= gone;
+        if (of == AgeBand.ADULT) {
+            // From both stages alike (HS2): the evicted are adults of any age.
+            double f = band[i] > 0 ? gone / band[i] : 0;
+            for (int k = 0; k < stage.length; k++) stage[k] -= stage[k] * f;
+            syncAdults();
+        } else {
+            band[i] -= gone;
+        }
         lastMigration -= gone;
+        lastLeftByBand[i] += gone;
         return gone;
     }
 
@@ -444,6 +560,10 @@ public class PopulationCohorts {
         for (AgeBand b : AgeBand.values()) {
             band[b.ordinal()] = livePopulation * equilibriumShare(b);
         }
+        for (AdultStage s : AdultStage.values()) {
+            stage[s.ordinal()] = livePopulation * equilibriumShare(s);
+        }
+        syncAdults();
     }
 
     /**
@@ -460,18 +580,50 @@ public class PopulationCohorts {
     public static double equilibriumShare(AgeBand of) {
         double[] weight = equilibriumWeights();
         double sum = 0;
-        for (double w : weight) sum += w;
+        for (int i = 0; i < AgeBand.values().length; i++) sum += weight[i];
         return sum > 0 ? weight[of.ordinal()] / sum : 0;
     }
 
+    /** Of a settled city's adults, the young's share (HS2): what the People screen sets beside the city's own, and how a save without the stages splits its adults. */
+    public static double settledYoungShareOfAdults() {
+        return share(equilibriumShare(AdultStage.YOUNG), equilibriumShare(AgeBand.ADULT));
+    }
+
+    /** ...and what share of a settled city sits in one adult stage (HS2): the two add to the adults'. */
+    public static double equilibriumShare(AdultStage of) {
+        double[] weight = equilibriumWeights();
+        double sum = 0;
+        for (int i = 0; i < AgeBand.values().length; i++) sum += weight[i];
+        return sum > 0 ? weight[AgeBand.values().length + of.ordinal()] / sum : 0;
+    }
+
+    /**
+     * The bands' weights, then the adult stages' (HS2). The adults are the
+     * chain the model runs: two stages in a row at the adult mortality, the
+     * young moving up at 1/204 and the established retiring at 1/420, so the
+     * band's weight is the two stages' and what reaches the seniors is what
+     * the established retire.
+     */
     private static double[] equilibriumWeights() {
         AgeBand[] bands = AgeBand.values();
-        double[] weight = new double[bands.length];
+        double[] weight = new double[bands.length + AdultStage.values().length];
 
         // One unit of births enters the bottom; everything else is what survives
         // the band below it.
         double arriving = 1;
         for (int i = 0; i < bands.length; i++) {
+            if (bands[i] == AgeBand.ADULT) {
+                double into = arriving;
+                for (AdultStage s : AdultStage.values()) {
+                    double out = s.monthlyOutflowRate() + bands[i].monthlyMortality();
+                    double w = out > 0 ? into / out : 0;
+                    weight[bands.length + s.ordinal()] = w;
+                    weight[i] += w;
+                    into = w * s.monthlyOutflowRate();
+                }
+                arriving = into;
+                continue;
+            }
             double leaving = bands[i].monthlyOutflowRate() + bands[i].monthlyMortality();
             weight[i] = leaving > 0 ? arriving / leaving : 0;
             arriving = weight[i] * bands[i].monthlyOutflowRate();
@@ -532,7 +684,7 @@ public class PopulationCohorts {
     }
 
     public double[] toSaveArray() {
-        double[] out = new double[band.length + 7];
+        double[] out = new double[band.length + 9];
         System.arraycopy(band, 0, out, 0, band.length);
         out[band.length]     = lastBirths;
         out[band.length + 1] = lastDeaths;
@@ -543,6 +695,11 @@ public class PopulationCohorts {
         out[band.length + 5] = lastAgedOut;
         // ...and the dead of the causes of 1900 (R0b).
         out[band.length + 6] = lastCauses;
+        // ...and the two adult stages (HS2, SAVE_FORMAT 58), each its own figure:
+        // the established struck as the adults less the young came back a bit
+        // off, and a reload played on was no longer the unbroken city.
+        out[band.length + 7] = stage[AdultStage.YOUNG.ordinal()];
+        out[band.length + 8] = stage[AdultStage.ESTABLISHED.ordinal()];
         return out;
     }
 
@@ -558,7 +715,8 @@ public class PopulationCohorts {
      *              file from before they travelled, which is always LEGACY_BANDS
      * @param saved those bands in that order, then births, deaths and migration
      *              - and since 0.7.27 the killed, the dead of age and the aged out,
-     *              and since R0b the dead of the causes of 1900
+     *              and since R0b the dead of the causes of 1900, and since HS2
+     *              the young adults and the established
      *
      * Refused whole on a length mismatch rather than padded, which is this
      * codebase's standing rule for state arrays: a pyramid read at the wrong
@@ -589,7 +747,15 @@ public class PopulationCohorts {
          * (CausesOfDeath). A save of the three reads its causes as 0, which is
          * what a city before them had: nobody died of them.
          */
-        boolean withFourth = saved.length == names.length + 7;
+        /*
+         * ...AND A FIFTH SINCE HS2: the two adult stages after those, the
+         * young then the established, and the band's adults their sum. A save
+         * without them splits its adults at the settled city's shares
+         * (equilibriumShare): an honest guess for a pyramid that never knew
+         * its ages, and its adults are still its adults.
+         */
+        boolean withStages = saved.length == names.length + 9;
+        boolean withFourth = withStages || saved.length == names.length + 7;
         boolean withCauses = withFourth || saved.length == names.length + 6;
         boolean withMigration = withCauses || saved.length == names.length + 3;
         if (!withMigration && saved.length != names.length + 2) {
@@ -625,6 +791,16 @@ public class PopulationCohorts {
         lastDeathsOfAge = withCauses ? saved[names.length + 4] : 0;
         lastAgedOut     = withCauses ? saved[names.length + 5] : 0;
         lastCauses      = withFourth ? saved[names.length + 6] : 0;
+        double adults = band[AgeBand.ADULT.ordinal()];
+        if (withStages) {
+            stage[AdultStage.YOUNG.ordinal()] = Math.max(0, saved[names.length + 7]);
+            stage[AdultStage.ESTABLISHED.ordinal()] = Math.max(0, saved[names.length + 8]);
+        } else {
+            double young = adults * settledYoungShareOfAdults();
+            stage[AdultStage.YOUNG.ordinal()] = young;
+            stage[AdultStage.ESTABLISHED.ordinal()] = Math.max(0, adults - young);
+        }
+        syncAdults();
     }
 
     /** The band of that name, or null if this build has no such band. */
@@ -648,5 +824,12 @@ public class PopulationCohorts {
         lastCauses = 0;
         lastDeathsOfAge = 0;
         lastAgedOut = 0;
+        java.util.Arrays.fill(lastOpening, 0);
+        lastLeftShare = 0;
+        java.util.Arrays.fill(lastLeftByBand, 0);
+        java.util.Arrays.fill(stage, 0);
+        java.util.Arrays.fill(lastStageOpening, 0);
+        java.util.Arrays.fill(lastStagePromoted, 0);
+        java.util.Arrays.fill(lastStageDeaths, 0);
     }
 }

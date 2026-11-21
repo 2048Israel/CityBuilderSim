@@ -49,7 +49,9 @@ import ham.citybuildersim.IslandNetCheck.Land;
  *
  *   8. THE ISLAND LINKED BY A PORT (a real map; RI1 slice B, ET5's "a linked island's hub at its port"). A real CityMap through a Game: Rotterdam's
  *      island (648) bought, a General Cargo Terminal ordered on it and a second on home's coast, the city given a railway (two Rail Terminals and
- *      Freight Lines handed to it), and home filled so that the houses once the island is linked are drawn there. The island's piece has the
+ *      Freight Lines handed to it), and home filled so that the houses once the island is linked are drawn there: filled in the instant of the
+ *      link, the ground free read in that instant (under half the island's buildable), and the map read in the one month that draws the fill
+ *      (FS7: no month between, no 36 months waited; LandmassCheck 12's FF1 hazard, a month that lets the town's own orders spend the ground). The island's piece has the
  *      terminal for its anchor - the middle of its box; its highway hub and its rail hub are the line crossings nearest the terminal (against a
  *      brute force over the piece's tiles) and nearer it than the crossing nearest the founding site was (the old rule, the premise); the island has
  *      track of its own, all on its ground, and a yard once the model has a second; a piece with no terminal (a second parcel of the island's, apart)
@@ -59,6 +61,9 @@ import ham.citybuildersim.IslandNetCheck.Land;
  *   9. NO PORT, NO ANCHOR; UNLINKED, NOTHING. The same city before the link, the terminal on the island and none at home: no piece holds the island
  *      and no rail or highway plot lies on it (ET5's rule), the railway is the home piece's alone (a premise: it has track and a yard at home), and
  *      the home piece's anchor is its hub.
+ *
+ *   10. A BRIDGE-LINKED ISLAND ON REAL MAP GROUND keeps the founding-side hub (RI1 call 3), with its own track and yard.
+ *      BridgeMapCheck's real channel is wider than a short crossing: only the bridge lays track across its water.
  *
  * WHY THIS EXISTS: CL5 gave every piece of the city's ground the water parts a highway net of its own and left the railway the home
  * piece's alone, so a city built on islands had no track and no yard on any but the founding site's (Jerus ticked "Rail on islands",
@@ -72,6 +77,12 @@ public class IslandRailCheck {
     static void check(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-110s %s%n", label, ok ? "ok" : "FAIL");
+    }
+
+    /** A check with the figures it read after its verdict (FS7). */
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        System.out.printf("%-110s %s  (%s)%n", label, ok ? "ok" : "FAIL", detail);
     }
 
     static final long SITE = IslandNetCheck.SITE;
@@ -220,6 +231,7 @@ public class IslandRailCheck {
             section7();
             section8();
             section9();
+            section10();
         } finally {
             CityRuns.islandRail = wasIslandRail;
         }
@@ -578,8 +590,6 @@ public class IslandRailCheck {
     /** The side, in squares of 64 plots, of the block of the island the city buys (its port's square is the north-west one): 3. */
     static final int ISLAND_SQUARES = 3;
 
-    /** Months after the link the fixture gives the island's piece to have weight and a railway hub. */
-    static final int LINK_MONTHS = 36;
 
     /** The city of sections 8 and 9, built once: LandmassCheck's section 10 city (Rotterdam, the island of 648, home's open coast), played through its unlinked month and its linked months. */
     static final class Port {
@@ -590,6 +600,8 @@ public class IslandRailCheck {
         /** The squares' boxes {x0, y0, x1, y1}, in plots. */
         long[] box, farBox, seaBox;
         boolean found, homeLandFound;
+        /** The linked ground the fill leaves free, read in the instant of its orders, and the half of the island's buildable ground it fills to (FS7). */
+        double filledFree = Double.NaN, half;
         // What the map was before the link (section 9).
         boolean islandPort, unlinked, railed;
         int piecesBefore, islandPieceBefore, farPieceBefore, seaPieceBefore;
@@ -665,11 +677,13 @@ public class IslandRailCheck {
         p.highwaysOnIsland = in(runs.highways(), p.box) + in(runs.highways(), p.farBox);
         p.homeAnchorBefore = Arrays.equals(map.pieces().anchor(0), map.pieces().hub(0));
         // The link: a terminal at home, standing at once. Then houses until the linked ground free is below half the island's buildable, so that the island's districts hold buildings (LandmassCheck 12's fill).
+        // FS7 (LandmassCheck 12's FF1 hazard): the fill is made in the instant of the link, no month between, and its ground read in that instant;
+        // then the one month that draws it (fillHome()'s), and the map is read: the draw is all that is waited for, not LINK_MONTHS (36, measured).
         p.linkOrdered = LandmassCheck.order(c, gc, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         p.linked = lms.linked(648);
-        LandmassCheck.quietly(() -> g.simulateMonths(1));
-        fillHome(c, house, lms.rows().get(1).buildableSqFt() / 2);
-        p.settled = LandmassCheck.until(c, () -> settled(c), LINK_MONTHS);
+        p.half = lms.rows().get(1).buildableSqFt() / 2;
+        p.filledFree = fillHome(c, house, p.half);
+        p.settled = settled(c);
         return p;
     }
 
@@ -721,14 +735,16 @@ public class IslandRailCheck {
         return false;
     }
 
-    /** Houses ordered at once until the linked ground free is below `left` square feet. */
-    static void fillHome(LandmassCheck.City c, BuildingsTemplate house, double left) {
+    /** Houses ordered at once until the linked ground free is below `left` square feet, then the month that draws them; the linked ground free read in the instant of the orders. */
+    static double fillHome(LandmassCheck.City c, BuildingsTemplate house, double left) {
         for (int round = 0; round < 40 && c.lm.getAvailableSqFt() >= left; round++) {
             LandmassCheck.quietly(() -> c.g.setCashForTest(Founding.WEALTHY_CASH * 100));
             int n = (int) Math.floor((c.lm.getAvailableSqFt() - left) / house.getLandSqFt()) + 1;
             if (LandmassCheck.order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
         }
+        double free = c.lm.getAvailableSqFt();
         LandmassCheck.quietly(() -> c.g.simulateMonths(1));
+        return free;
     }
 
     /** Whether the island's piece has weight and a railway hub and a highway hub (a net of each on it) on the map the city has now. */
@@ -856,8 +872,9 @@ public class IslandRailCheck {
         Game g = p.c.g;
         World w = p.w;
         Landmasses lms = p.c.books();
-        check("the island's terminal and then home's are ordered, the island is linked (the books), and the island's piece has weight, a highway hub and a railway hub within "
-                + LINK_MONTHS + " months", p.islandPort && p.linkOrdered && p.linked && lms.linked(648) && p.settled);
+        report("the island's terminal and then home's are ordered, the island is linked (the books), home is filled in that instant to under half the island's buildable ground,"
+                + " and in the month that draws the fill the island's piece has weight, a highway hub and a railway hub", p.islandPort && p.linkOrdered && p.linked && lms.linked(648)
+                && p.filledFree < p.half && p.settled, String.format("linked free %,.0f sq ft of the half's %,.0f, read in the instant of the fill", p.filledFree, p.half));
         CityMap map = g.getCityMap();
         CityMap.MapPieces pieces = map.pieces();
         CityRuns runs = map.runs();
@@ -942,5 +959,59 @@ public class IslandRailCheck {
         check("no piece of ground holds the island's squares: the pieces the map has are home's ground", p.islandPieceBefore == -1 && p.farPieceBefore == -1);
         check("no plot of the runs lies on the island (a loop over its squares): no rail, no highway ", p.railOnIsland == 0 && p.highwaysOnIsland == 0 && p.railPlotsBefore > 0);
         check("the home piece's anchor() is its hub() (piece 0 starts from the founding site always)", p.homeAnchorBefore);
+    }
+
+    /* ============ 10. a bridge-linked piece on real map ground (FB12, RI1-F) ============ */
+
+    /** BridgeMapCheck's real channel, with track and two yards: only a bridge crosses the water. */
+    static void section10() {
+        System.out.println("\n--- 10. a bridge-linked island starts from the founding site's side, with its own track and yard ---");
+        int before = BridgeMapCheck.fails;
+        BridgeMapCheck.MapFixture f = BridgeMapCheck.MapFixture.build();
+        check("fixture: BridgeMapCheck's real-world channel and dry banks are found", f != null && BridgeMapCheck.fails == before);
+        if (f == null) return;
+        for (int t = 0; t < f.types.length; t++) {
+            BuildingVisual.Type type = f.types[t];
+            if (type == null) continue;
+            if (BuildingVisual.freightLine(type)) f.counts[t] = LINES;
+            if (type.id() == BuildingVisual.RAIL_TERMINALS[0]) f.counts[t] = YARDS;
+        }
+        CityRuns.islandRail = true;
+        CityMap bare = f.draw(null);
+        CityMap map = f.draw(List.of(BridgeMapCheck.run(BridgeMapCheck.RAIL, f.rl)));
+        long[] box = { (long) f.rects[1][0], (long) f.rects[1][1], (long) f.rects[1][2] - 1, (long) f.rects[1][3] - 1 };
+        int ip = pieceIn(map, box);
+        check("fixture: the far bank is a separate map piece with built weight and no terminal", ip > 0 && map.pieces().weight(ip) > 0 && map.shore().works().isEmpty());
+        if (ip < 1) return;
+        List<long[]> tiles = tilesOf(map, ip, box);
+        long[] site = map.site();
+        long[] want = nearestHighway(map, tiles, Math.floorDiv(site[0], World.TILE), Math.floorDiv(site[1], World.TILE));
+        long[] anchor = map.pieces().anchor(ip);
+        check("the bridge-linked island's highway hub is the dry crossing nearest the founding site's tile", want != null && Arrays.equals(map.pieces().hub(ip), want));
+        check("with no port the bridge-linked island's anchor is that founding-side hub", want != null && Arrays.equals(anchor, want));
+        int rp = netOf(map.runs().rail(), map, ip);
+        long[] hub = rp < 1 ? null : map.runs().rail().pieceHub(rp);
+        long[] railWant = want == null ? null : nearestRail(map, tiles, want[0], want[1]);
+        check("its railway hub is a RAIL_AT crossing on its own piece nearest that anchor", hub != null && railWant != null
+                && Math.floorMod(hub[0] - CityRuns.RAIL_AT, CityRuns.CELL) == 0 && Math.floorMod(hub[1] - CityRuns.RAIL_AT, CityRuns.CELL) == 0
+                && map.pieces().pieceOf(hub[0], hub[1]) == ip && Math.abs(dist(hub, anchor) - dist(railWant, anchor)) < 1e-9);
+        check("the bridge-linked island grows track of its own on the far bank", rp >= 1 && map.runs().rail().piecePlots(rp) > 0
+                && in(map.runs().rail(), box) == map.runs().rail().piecePlots(rp));
+        int islandYards = 0;
+        for (long[] y : map.runs().yards()) if (map.pieces().pieceOf(y[0] + y[2] / 2, y[1] + y[3] / 2) == ip) islandYards++;
+        check("the two model yards include a yard on the bridge-linked island's railway", map.runs().yards().size() == YARDS && islandYards == 1);
+        boolean wetBare = true, wetBridge = true;
+        int water = 0;
+        for (long k : BridgeMapCheck.pathOf(f.rl)) {
+            long x = BridgeMapCheck.kx(k), y = BridgeMapCheck.ky(k);
+            if (World.dry(f.ground.at(x, y))) continue;
+            water++;
+            wetBare &= bare.runs().at(x, y) != CityRuns.F_RAIL;
+            wetBridge &= map.runs().at(x, y) == CityRuns.F_RAIL;
+        }
+        check("fixture: the real water is wider than both short-crossing constants and has no track without the bridge", water > BridgeMapCheck.shortest() && wetBare);
+        check("the rail bridge alone lays every water plot between the two real banks", water > BridgeMapCheck.shortest() && wetBridge);
+        System.out.printf("  far piece %d, hub %s, rail hub %s, %,d rail plots, %d island yard, %d water plots bridged%n",
+                ip, Arrays.toString(want), Arrays.toString(hub), rp < 1 ? 0 : map.runs().rail().piecePlots(rp), islandYards, water);
     }
 }

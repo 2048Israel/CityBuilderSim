@@ -1,6 +1,6 @@
 # BridgeView.java - 98 lines · 11 methods · 0 constants · model
 
-`ham/citybuildersim/BridgeView.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeView.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > What the build card says of a long bridge's crossing: the refusal of a survey in its own words, and the pieces of the
 > line a surveyed crossing gets. A pure model of what a screen draws; the money and the points are formatted by the screen.
@@ -12,7 +12,7 @@
 
 **Uses:** [BridgeSurvey](BridgeSurvey.md) (5), [Landmasses](Landmasses.md) (3), [EarthData](EarthData.md) (1)
 
-**Used by (8):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [EarthFoundingCheck](EarthFoundingCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (10):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [EarthFoundingCheck](EarthFoundingCheck.md), [FB13Check](FB13Check.md), [IslandLinkCheck](IslandLinkCheck.md), [LandmassView](LandmassView.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Methods, in file order
 

@@ -1,11 +1,15 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Agriculture;
 import ham.citybuildersim.sectors.Haulage;
+import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.SpreadPlanner;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -23,11 +27,11 @@ import java.util.function.ToDoubleFunction;
  *   4. it passes the money gate as a building does: g is at least the interest hurdle on its WHOLE cost.
  *
  * Both of 3 and 4 must hold, and a gain of nothing never pays. The verdict (Verdict, Kind) is a record the screens print and R1b ranks;
- * nothing in a played city's month calls any of this (since R1b only a city founded the 1900 way reads verdictForNew(), when a building opens:
+ * the all-fitted alternative calls none of this (since R1b only a city founded the 1900 way reads verdictForNew(), when a building opens:
  * Game.fitWhatFinished()), and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
  * and the building's remaining life, because a stack keeps no building's age (call 11).
  *
- * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
+ * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), driverGain(), operatorGain(), electrolyserGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
  * one across the break-even, and the game layer (verdict(), rank()) that reads the city's.
  */
 public final class EquipmentFit {
@@ -103,6 +107,37 @@ public final class EquipmentFit {
         return truckRoom * Haulage.TONNES_A_TRUCK_MONTH * (teamsPerTonne - trucksPerTonne);
     }
 
+    /**
+     * The driverless kit's gain a month on one depot (step 1, R6b): the same tonnes carried by fewer trucks and fewer posts. At nameplate the
+     * room's trucks carry what they carry driven; fitted, one truck carries F = DRIVERLESS_HOURS / SHIFT_HOURS times as much, so the room's tonnes
+     * need 1 / F of the trucks. It saves the drivers' wages (DRIVERS_A_TRUCK a truck in the room, driverWage a month each) less the oversight posts
+     * of the trucks that are left (OVERSIGHT_A_TRUCK a truck at the same wage), and the capital month (truckCapitalMonth(): wear and the return on
+     * the price) of the trucks no longer needed. The diesel a tonne is the same, so it is nowhere in it.
+     */
+    public static double driverGain(double truckRoom, double driverWage, double truckCapitalMonth) {
+        double f = Haulage.DRIVERLESS_HOURS / Haulage.SHIFT_HOURS;
+        return truckRoom * Haulage.DRIVERS_A_TRUCK * driverWage - truckRoom / f * Haulage.OVERSIGHT_A_TRUCK * driverWage
+                + truckRoom * (1 - 1 / f) * truckCapitalMonth;
+    }
+
+    /**
+     * The autonomy kit's gain a month on one farm (step 1, R6d, FE8): each of its machines (a tractor or a combine) strikes the operator's post,
+     * `wageNoDiploma` a month, and asks for the remote watch, WATCH_A_MACHINE of a DIPLOMA post at `wageDiploma`. The machine is the same machine, so
+     * its fuel, its output and its capital are nowhere in it. At nameplate, the posts unrounded (the sector rounds its whole).
+     */
+    public static double operatorGain(int machines, double wageNoDiploma, double wageDiploma) {
+        return machines * (Agriculture.OPERATORS_A_MACHINE * wageNoDiploma - Agriculture.WATCH_A_MACHINE * wageDiploma);
+    }
+
+    /**
+     * The 46 kWh electrolyser's gain a month on one Hydrogen Steel Works (step 1, R6d, FE10): the grid units it no longer draws at nameplate
+     * (HeavyIndustry.unitsSavedAWorks()) at the unit's price, as steamGain() prices the units a motor draws. Nothing else changes: the same steel from
+     * the same pellets.
+     */
+    public static double electrolyserGain(double unitsSaved, double powerPrice) {
+        return unitsSaved * powerPrice;
+    }
+
     /** What fitting one building costs (step 2): each good the piece buys at its price, plus the piece's work at the price of a point. NaN if a price is. */
     public static double cost(Equipment piece, ToDoubleFunction<Good> price, double pointPrice) {
         double c = piece.getWork() * pointPrice;
@@ -111,7 +146,7 @@ public final class EquipmentFit {
     }
 
     /** FITTED when no building of the stack lacks the piece, NOT_KNOWN when it is not known at the game month, else null: the two verdicts that price nothing. */
-    private static Kind settled(Equipment piece, int month, int unfitted, Research found) {
+    private static Kind settled(Equipment piece, int month, long unfitted, Research found) {
         if (unfitted <= 0) return Kind.FITTED;
         return piece.knownAt(month, found) ? null : Kind.NOT_KNOWN;
     }
@@ -125,13 +160,13 @@ public final class EquipmentFit {
      * @param annualRealRate the real rate a year the annuity is struck at
      * @param hurdle         what a month's gain must reach to pass the money gate (0 for none)
      */
-    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost,
+    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, long unfitted, double gain, double cost,
                                 double annualRealRate, double hurdle) {
         return judge(piece, t, month, unfitted, gain, cost, annualRealRate, hurdle, null);
     }
 
     /** The same in a city whose research may have found the piece's code before history's month (R3: Equipment.knownAt(int, Research)); no research (null) reads history's. */
-    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost,
+    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, long unfitted, double gain, double cost,
                                 double annualRealRate, double hurdle, Research found) {
         Kind early = settled(piece, month, unfitted, found);
         if (early != null) {
@@ -155,14 +190,41 @@ public final class EquipmentFit {
 
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
-     * sectors are billed, EconomyManager.getPowerPriceFor(t)), the motor truck's from Haulage's teams and trucks. The tractor's (FARM_HORSES) is NaN
-     * (so NOT_YET, never PAYS) until its petrol is written: its "since" is PE14, June 1917, and before that month no verdict reaches it. A piece that ends a form keeps its form's gain whether or not
+     * sectors are billed, EconomyManager.getPowerPriceFor(t)), the motor truck's from Haulage's teams and trucks, the driverless kit's from the drivers and trucks it saves (R6b), the autonomy kit's from the operators it strikes (R6d, FE8) and the 46 kWh electrolyser's from the grid units it saves (R6d, FE10). The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
      * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
      */
-    private static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
-        if (piece.getEnds() == null) return piece.getId().equals(t.recipePieceId()) ? Recipes.gainOf(game, t) : 0;
+    private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, Set<String> proposed) {
+        if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
+        boolean recipePiece = piece.getId().equals(t.recipePieceId());
+        // A piece that ends a form keeps its form's gain though a recipe needs it (R1c; RecipeCheck 6), but the horse form's gain is a recipe
+        // change, the feed and hands it saves less the tractor's fuel (R1d call 7), so the tractor is judged on that comparison, its rent with it.
+        if (t.changeNeeds(piece.getId()) || recipePiece && (piece.getEnds() == null || piece.getEnds() == Equipment.Form.FARM_HORSES)) {
+            return proposed == null ? RecipeChanges.netGainForRefit(game, t, piece)
+                    : RecipeChanges.netGainForSet(game, t, piece, proposed);
+        }
+        if (piece.getEnds() == null) return 0;
+        double gross = grossGainOf(game, t, piece);
+        return gross - (game.foundedUnfitted()
+                ? LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross) : 0);
+    }
+
+    /** Gain before patent rent, also used to bill the pieces actually fitted (R2c). */
+    static double grossGainOf(Game game, BuildingsTemplate t, Equipment piece) {
+        if (game.foundedUnfitted() && t.changeNeeds(piece.getId())) return RecipeChanges.gainOf(game, t, piece);
+        if (game.foundedUnfitted() && piece.getEnds() == Equipment.Form.FARM_HORSES)
+            return RecipeChanges.gainForSet(game, t, piece,
+                    t.getEquipment().stream().map(Equipment::getId).collect(java.util.stream.Collectors.toSet()));
+        if (piece.getEnds() == null) {
+            if (!piece.getId().equals(t.recipePieceId())) return 0;
+            Recipes.Prices p = Recipes.pricesOf(game);
+            Recipe fitted = game.foundedUnfitted() ? Recipes.best(t, true, game.getMonth(), p, game.getResearch())
+                    : Recipes.bestGross(t, true, game.getMonth(), p, game.getResearch());
+            Recipe without = game.foundedUnfitted() ? Recipes.best(t, false, game.getMonth(), p, game.getResearch())
+                    : Recipes.bestGross(t, false, game.getMonth(), p, game.getResearch());
+            return Recipes.value(fitted, p) - Recipes.value(without, p);
+        }
         switch (piece.getEnds()) {
             case STEAM:
                 return steamGain(t, cityPrice(game, Good.THERMAL_COAL), game.getEconomyManager().getPowerPriceFor(t));
@@ -170,6 +232,16 @@ public final class EquipmentFit {
                 Haulage haulage = game.getSectors().freight().haulage();
                 return cartGain(t.getTruckRoom(), haulage.horseEstimate(), haulage.truckRunningEstimate());
             }
+            case CAB_DRIVERS: {
+                Haulage haulage = game.getSectors().freight().haulage();
+                return driverGain(t.getTruckRoom(), haulage.driverWage(), haulage.truckCapitalMonth());
+            }
+            case FIELD_OPERATORS: {
+                double[] wages = Recipes.pricesOf(game).wages();
+                return operatorGain(Agriculture.machinesOf(t), wages[JobType.NO_DIPLOMA.ordinal()], wages[JobType.DIPLOMA.ordinal()]);
+            }
+            case ELECTROLYSERS:
+                return electrolyserGain(HeavyIndustry.unitsSavedAWorks(t), game.getEconomyManager().getPowerPriceFor(t));
             default:
                 return Double.NaN;
         }
@@ -184,27 +256,70 @@ public final class EquipmentFit {
      * judged at a rate of 0. Reads, prices and books nothing; the month never calls it.
      */
     public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece) {
-        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()));
+        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()), null);
     }
 
     /**
      * The verdict on a NEW building for a piece (R1b; research-design 2.2 step 6, "New buildings come with every piece that pays"): the same
-     * figures and the same judgement as verdict() for one building that lacks the piece whatever a stack holds, so FITTED never comes back,
+     * judgement as verdict() for one building that lacks the piece, pricing scoped changes against its own paying prerequisites. FITTED never comes back,
      * only NOT_KNOWN, PAYS or NOT_YET. Game.fitWhatFinished() reads it when a building opens in a city founded the 1900 way. Reads, prices and
      * books nothing.
      */
     public static Verdict verdictForNew(Game game, BuildingsTemplate t, Equipment piece) {
-        return priced(game, t, piece, 1);
+        if (!game.foundedUnfitted() || !piece.knownAt(game.getMonth(), game.getResearch()))
+            return priced(game, t, piece, 1, Set.of());
+        Set<String> chosen = fittedForNew(game, t);
+        Set<String> candidate = new java.util.HashSet<>(chosen);
+        candidate.add(piece.getId());
+        Verdict value = priced(game, t, piece, 1, candidate);
+        if (chosen.contains(piece.getId()) || value.kind() != Kind.PAYS) return value;
+        return new Verdict(Kind.NOT_YET, value.templateId(), value.pieceId(), value.gain(), value.cost(), value.lifeMonths(),
+                value.realRate(), value.factor(), value.earnsBack(), value.hurdle(), value.earningsOnCost());
+    }
+
+    /** Ephemeral new-building choice: remove one worst failure, in catalogue order on ties, then re-evaluate. */
+    public static Set<String> fittedForNew(Game game, BuildingsTemplate t) {
+        // ...its pricing reading every template as it stands (QN1, NewUnit.standingWhile()), wherever it is asked from.
+        return NewUnit.standingWhile(() -> chosenForNew(game, t));
+    }
+
+    private static Set<String> chosenForNew(Game game, BuildingsTemplate t) {
+        Set<String> chosen = new LinkedHashSet<>();
+        for (Equipment piece : t.getEquipment())
+            if (!game.foundedUnfitted() || piece.knownAt(game.getMonth(), game.getResearch())) chosen.add(piece.getId());
+        if (!game.foundedUnfitted()) return Set.copyOf(chosen);
+        while (!chosen.isEmpty()) {
+            Equipment worst = null;
+            double margin = Double.POSITIVE_INFINITY;
+            for (Equipment piece : t.getEquipment()) {
+                if (!chosen.contains(piece.getId())) continue;
+                Verdict value = priced(game, t, piece, 1, chosen);
+                if (value.kind() == Kind.PAYS) continue;
+                double shortfall = Double.isFinite(value.gain()) ? value.gain() - value.hurdle() : Double.NEGATIVE_INFINITY;
+                if (worst == null || shortfall < margin) {
+                    worst = piece;
+                    margin = shortfall;
+                }
+            }
+            if (worst == null) break;
+            chosen.remove(worst.getId());
+        }
+        return Set.copyOf(chosen);
     }
 
     /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
-    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted) {
+    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, long unfitted, Set<String> proposed) {
+        return NewUnit.standingWhile(() -> pricedAsStanding(game, t, piece, unfitted, proposed));
+    }
+
+    private static Verdict pricedAsStanding(Game game, BuildingsTemplate t, Equipment piece, long unfitted, Set<String> proposed) {
         int month = game.getMonth();
         Research found = game.getResearch();
         if (settled(piece, month, unfitted, found) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0, found);
 
-        double gain = gainOf(game, t, piece);
-        double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint());
+        double gain = gainOf(game, t, piece, proposed);
+        double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint())
+                / (1 - game.getEconomyManager().getTaxPolicy().effectiveSalesRate(game.getSectors().construction()));
         Sector sector = game.getSectors().byKey(t.getSector());
         BusinessInvestment plans = game.getBusinessInvestment();
         BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();

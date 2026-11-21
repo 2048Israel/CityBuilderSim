@@ -30,6 +30,7 @@ public class SimulationEngine {
     }
 
     public void simulateMonth(Game game) {
+        game.moneyHearsTheMonth();
 
         /*
          * The month's build rate: capacity, discounted for staffing and for

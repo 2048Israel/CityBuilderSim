@@ -1,6 +1,6 @@
-# CopperMining.java - 256 lines · 12 methods · 5 constants · sectors
+# CopperMining.java - 305 lines · 13 methods · 8 constants · sectors
 
-`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133,
 > batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the
@@ -27,6 +27,15 @@
 >   - the LEACH & SX-EW PLANT, 1,000 t of cathode from 280,000 t of ore and
 >     3,500 t of acid, on one oxide site - 1968 (Bluebird, Arizona).
 > 
+> AND A FOURTH, a city that knows FE2 (R6b; id 153): the SULPHIDE LEACH &
+> SX-EW PLANT, the oxide plant's 1,000 t of cathode and 3,500 t of acid on
+> one sulphide site, its heaps leached at the mine with no concentrator and
+> no smelter - Johnson Camp, Arizona, Nov 2025. Its dig is
+> SULPHIDE_LEACH_DIG, 1.18 t a tonne of cathode (85% recovered, the
+> builder's ceiling: an estimate), its water 71 L a kg of cathode (the
+> builder's). It runs on the machinery above - digs() keeps it a kind of its
+> own on the sulphide ground - and a city founded today's way never knows it.
+> 
 > THE GROUND (spec 2.4). A field holds tonnes of copper metal, and a
 > building's site says how much of it a unit made takes: CONC_DIG, .341 t a
 > tonne of concentrate (the mill's 88% recovery of 0.5% ore into 30%), and
@@ -51,58 +60,62 @@
 > cathode; the world the rest. The leach plants buy Copper Refining's acid
 > first, the world's past it.
 
-**Uses:** [Good](Good.md) (14), [LandManager](LandManager.md) (5), [Resource](Resource.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Deposit](Deposit.md) (1)
+**Uses:** [Good](Good.md) (18), [LandManager](LandManager.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [Resource](Resource.md) (4), [Game](Game.md) (3), [Deposit](Deposit.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (6):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md)
+**Used by (11):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [GroundInputCheck](GroundInputCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [SulphideLeachCheck](SulphideLeachCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 95 | · the ground |
-| 187 | · the plan and the retirement |
-| 234 | · the page |
+| 114 | · the ground |
+| 232 | · the plan and the retirement |
+| 279 | · the page |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 70 | `CopperMining.MINE_AND_MILL` | `121` | The Copper Mine & Mill's permanent id in buildings.json (0.7.133): 2,200 t of concentrate a month on one sulphide site. |
-| 73 | `CopperMining.LARGE_MINE` | `122` | The Large Copper Mine's (0.7.133): 26,400 t of concentrate a month on eight sites of one sulphide field. |
-| 76 | `CopperMining.LEACH_PLANT` | `123` | The Leach & SX-EW Plant's (0.7.133): 1,000 t of cathode a month on one oxide site, of 3,500 t of acid. |
-| 79 | `CopperMining.CONC_DIG` | `.341` | Tonnes of a sulphide field's copper a tonne of concentrate takes: .341 (spec 2.4; the study's 4.3 - 150,000 t of ore at 0.5% into 2,200 t of concentrate). |
-| 82 | `CopperMining.LEACH_DIG` | `1.4` | Tonnes of an oxide field's copper a tonne of leached cathode takes: 1.4 (spec 2.4; the study's 4.3 - 280,000 t of ore at 0.5% into 1,000 t). |
+| 79 | `CopperMining.MINE_AND_MILL` | `121` | The Copper Mine & Mill's permanent id in buildings.json (0.7.133): 2,200 t of concentrate a month on one sulphide site. |
+| 82 | `CopperMining.LARGE_MINE` | `122` | The Large Copper Mine's (0.7.133): 26,400 t of concentrate a month on eight sites of one sulphide field. |
+| 85 | `CopperMining.LEACH_PLANT` | `123` | The Leach & SX-EW Plant's (0.7.133): 1,000 t of cathode a month on one oxide site, of 3,500 t of acid. |
+| 88 | `CopperMining.CONC_DIG` | `.341` | Tonnes of a sulphide field's copper a tonne of concentrate takes: .341 (spec 2.4; the study's 4.3 - 150,000 t of ore at 0.5% into 2,200 t of concentrate). |
+| 91 | `CopperMining.LEACH_DIG` | `1.4` | Tonnes of an oxide field's copper a tonne of leached cathode takes: 1.4 (spec 2.4; the study's 4.3 - 280,000 t of ore at 0.5% into 1,000 t). |
+| 94 | `CopperMining.SULPHIDE_LEACH` | `153` | The Sulphide Leach & SX-EW Plant's (R6b, FE2): 1,000 t of cathode a month on one sulphide site, heap-leached with no concentrator or smelter. |
+| 97 | `CopperMining.SULPHIDE_LEACH_RECOVERY` | `.85` | The share of a sulphide heap's copper the plant recovers as cathode: the builder's "up to 85% from primary sulphides" (Rio Tinto, 4 Dec 2025; a ceiling, not an average). |
+| 100 | `CopperMining.SULPHIDE_LEACH_DIG` | `1 / SULPHIDE_LEACH_RECOVERY` | Tonnes of a sulphide field's copper a tonne of heap-leached cathode takes: 1 / SULPHIDE_LEACH_RECOVERY, about 1.18, against LEACH_DIG's 1.4 on oxide. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 190 | **type** `public final class CopperMining extends ExtractionSector` | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the study's - materials-chains-research.md - 4): the fourth materials chain... |
-| 84 | 10 | `public CopperMining()` |  |
+| 76 | 230 | **type** `public final class CopperMining extends ExtractionSector` | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the study's - materials-chains-research.md - 4): the fourth materials chain... |
+| 102 | 11 | `public CopperMining()` |  |
 
-### the ground (lines 95-186)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 106 | 21 | `protected double groundLimit(Good g, double asked)` | The ground decides what comes up of concentrate, as ExtractionSector's groundLimit() decides its resource's good: the month's ask split by each kind of dig's share of the nameplate (digs()), each part's field tonnes -... |
-| 135 | 18 | `double[] leached(List<Dig> kinds)` | What each kind of its leach plants makes of cathode this month (pure): its nameplate at the sector's rate, held to what its type still has in the ground - kinds on one type sharing it in proportion to the copper they ... |
-| 155 | 5 | `public double lift()` | The month's cathode at the sector's rate, as far as the oxide ground holds it (pure): what the market is priced on and the month makes. |
-| 163 | 4 | `protected double madeAtRate(Good g)` | Cathode this month: the leach plants' lift, the ground's limit in it (Sector.madeAtRate()); every other good as Sector's. |
-| 175 | 11 | `public void endOfMonth(Game game)` | The month's cathode out of the ground, once every good is made: each kind's lift (leached(), the figures the month's cathode was made of) taken out of its type's ground at its dig, so E and W hold by type to the tonne. |
-
-### the plan and the retirement (lines 187-233)
+### the ground (lines 114-231)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 190 | 3 | `static double tonnesOf(BuildingsTemplate t)` | What a building of its makes a month at nameplate, concentrate or cathode, in tonnes - what the plan weighs and the retirement measures. |
-| 196 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A building of its digs copper: the mines' concentrate or the leach plant's cathode (copper's pricing good is cathode, which the mines do not make). |
-| 202 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings contributes to the measures it is retired on: the tonnes it makes a month at nameplate. |
-| 212 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Copper worked out leaves its mines spare, measured in the tonnes they make: all of them once the city's copper is out; while some is left, those over a type worked out (ExtractionSector's workedOut()). |
-| 224 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each makes (unitsOf()). |
+| 125 | 24 | `protected double groundLimit(Good g, double asked)` | The ground decides what comes up of concentrate, as ExtractionSector's groundLimit() decides its resource's good: the month's ask split by each kind of dig's share of the nameplate (digs()), each part's field tonnes -... |
+| 157 | 18 | `double[] leached(List<Dig> kinds)` | What each kind of its leach plants makes of cathode this month (pure): its nameplate at the sector's rate, held to what its type still has in the ground - kinds on one type sharing it in proportion to the copper they ... |
+| 183 | 15 | `protected double groundShare(BuildingsTemplate t)` | The share of a leach plant's ask its type's ground holds this month (Sector.groundShare(), NG1): its kind's cathode (leached()) over its ask at the sector's rate - exactly 1 where the ore holds the whole ask, 0 once i... |
+| 200 | 5 | `public double lift()` | The month's cathode at the sector's rate, as far as the ground of the type each plant leaches holds it (pure): what the market is priced on and the month makes. |
+| 208 | 4 | `protected double madeAtRate(Good g)` | Cathode this month: the leach plants' lift, the ground's limit in it (Sector.madeAtRate()); every other good as Sector's. |
+| 220 | 11 | `public void endOfMonth(Game game)` | The month's cathode out of the ground, once every good is made: each kind's lift (leached(), the figures the month's cathode was made of) taken out of its type's ground at its dig, so E and W hold by type to the tonne. |
 
-### the page (lines 234-256)
+### the plan and the retirement (lines 232-278)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 237 | 19 | `public List<Line> ownLines(Game game)` |  |
+| 235 | 3 | `static double tonnesOf(BuildingsTemplate t)` | What a building of its makes a month at nameplate, concentrate or cathode, in tonnes - what the plan weighs and the retirement measures. |
+| 241 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A building of its digs copper: the mines' concentrate or the leach plant's cathode (copper's pricing good is cathode, which the mines do not make). |
+| 247 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings contributes to the measures it is retired on: the tonnes it makes a month at nameplate. |
+| 257 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Copper worked out leaves its mines spare, measured in the tonnes they make: all of them once the city's copper is out; while some is left, those over a type worked out (ExtractionSector's workedOut()). |
+| 269 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each makes (unitsOf()). |
+
+### the page (lines 279-305)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 282 | 23 | `public List<Line> ownLines(Game game)` |  |
 

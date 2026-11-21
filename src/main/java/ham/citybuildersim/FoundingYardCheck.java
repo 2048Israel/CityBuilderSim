@@ -257,7 +257,7 @@ public class FoundingYardCheck {
         Game.BuildResult[] result = new Game.BuildResult[1];
         quietly(() -> result[0] = g.buildStack(house, ordered, false));
         double owed = bm.getRemainingConstructionPoints();
-        int standingBefore = bm.countByName("House");
+        long standingBefore = bm.countByName("House");
         assertTrue("fixture: " + ordered + " houses are ordered and the sites owe their points",
                 result[0] == Game.BuildResult.SUCCESS && owed > 0);
         boolean unchanged = true, none = true;
@@ -364,7 +364,7 @@ public class FoundingYardCheck {
         out.printf("   the village is %,.0f points; TOWN_MONTHS is %d%n", villagePoints(g), limit);
 
         int monthsWithCrews = 0, monthsWithout = 0, standsAt = -1, builtAt = -1, firstCrews = -1;
-        java.util.Map<String, Integer> sold = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Long> sold = new java.util.LinkedHashMap<>();
         int zeroLeaks = 0, trapMonths = 0, trapStarved = 0, formulaOff = 0;
         double payroll = 0;
         StringBuilder trace = new StringBuilder();
@@ -376,7 +376,7 @@ public class FoundingYardCheck {
             if (m >= 2 && output != outputFormula(g)) formulaOff++;
             month(g);
             for (Game.Salvage s : g.getSalvageThisMonth()) {
-                if (!"City".equals(s.seller())) sold.merge(s.building(), s.buildings(), Integer::sum);
+                if (!"City".equals(s.seller())) sold.merge(s.building(), s.buildings(), Long::sum);
             }
             payroll += builders.statement().payroll;
             double recognised = builders.getRecognisedThisMonth();
@@ -405,9 +405,9 @@ public class FoundingYardCheck {
                 builtAt < 0 ? "never" : String.valueOf(builtAt), limit, standsAt < 0 ? "never" : String.valueOf(standsAt),
                 monthsWithCrews, monthsWithout, payroll);
         StringBuilder end = new StringBuilder();
-        int soldInVillage = 0;
+        long soldInVillage = 0;
         for (String[] line : Founding.VILLAGE) {
-            int soldOfLine = sold.getOrDefault(line[0], 0);
+            long soldOfLine = sold.getOrDefault(line[0], 0L);
             soldInVillage += soldOfLine;
             end.append(String.format(" %s %d/%d%s", line[0], bm.countByName(line[0]), Integer.parseInt(line[1]),
                     soldOfLine > 0 ? " (" + soldOfLine + " sold)" : ""));
@@ -445,9 +445,9 @@ public class FoundingYardCheck {
      * rule counts in (Agriculture.unitsOf()), the rule sold the founding village's second Mixed Farm (at month 31 in section 4's town) before
      * the rest of the village finished, so villageStands() never held at once; a building sold after it stood was built.
      */
-    static boolean villageBuilt(BuildingManager bm, java.util.Map<String, Integer> sold) {
+    static boolean villageBuilt(BuildingManager bm, java.util.Map<String, Long> sold) {
         for (String[] line : Founding.VILLAGE) {
-            if (bm.countByName(line[0]) + sold.getOrDefault(line[0], 0) < Integer.parseInt(line[1])) return false;
+            if (bm.countByName(line[0]) + sold.getOrDefault(line[0], 0L) < Integer.parseInt(line[1])) return false;
         }
         return true;
     }
@@ -495,7 +495,7 @@ public class FoundingYardCheck {
     /* ============================ 6. HANDS FOR ITS SHOPS, A DEPOT'S TOO SINCE IC1 ============================ */
 
     /** How many of the village's two small food shops stand. */
-    static int shops(BuildingManager bm) {
+    static long shops(BuildingManager bm) {
         return bm.countByName("Convenience Store") + bm.countByName("Small Grocery Store");
     }
 

@@ -1,6 +1,6 @@
-# BusinessServices.java - 295 lines · 10 methods · 0 constants · sectors
+# BusinessServices.java - 405 lines · 16 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Somebody else's work, done here, paid for from outside.
 > 
@@ -57,41 +57,67 @@
 > $8.50-10.50 an hour where one steelworker went from $16 to $8.75, and then
 > shedding two thousand jobs to the Philippines and India inside a decade.
 > Boom and bleed, documented. See claude/business-services.md.
+> 
+> AND THE CITY'S OWN UPKEEP IS BOUGHT OF IT (HL1, 2026-11-11): the treasury's
+> care, school, research, safety and transit upkeep and the bank's operating
+> cost are work billed to this sector, which imports the share of it a sector
+> of its kind imports (sellUpkeep() for the services', sellBankUpkeep() for
+> ... (1 more lines in the source)
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (7), [Game](Game.md) (4), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (7), [Game](Game.md) (4), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (5):** [BusinessServicesCheck](BusinessServicesCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [PrizeCheck](PrizeCheck.md), [Sectors](Sectors.md)
+**Used by (8):** [BusinessServicesCheck](BusinessServicesCheck.md), [DistressBleedCheck](DistressBleedCheck.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [LongPlaytest](LongPlaytest.md), [PrizeCheck](PrizeCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 119 | · plan |
-| 250 | · the screen |
+| 125 | · plan |
+| 261 | THE CITY'S UPKEEP (HL1, 2026-11-11) |
+| 360 | · the screen |
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 306 | `BusinessServices.UPKEEP_IMPORTED` | `0.75` | The share of the upkeep it sells the city's services and the bank that it buys abroad when its seats can serve all the rest, the kept share being one less this and no more than what its seats can serve (HL1, HL1-R; me... |
+| 309 | `BusinessServices.UPKEEP_SUPPLIES` | `"Upkeep supplies"` | The upkeep's name on its input line. |
+| 315 | `BusinessServices.BANK_UPKEEP_SUPPLIES` | `"Bank upkeep supplies"` | The bank's part of the upkeep on an input line of its own, because the national accounts keep it out of their imports: the bank's output is in no term of GDP (HL1, 2026-11-11, the review's finding). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 225 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
-| 73 | 11 | `public BusinessServices()` |  |
-| 86 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
-| 99 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
-| 110 | 8 | `public double payrollShare()` | Payroll as a share of revenue, at the wages the city is paying now. |
+| 77 | 329 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
+| 79 | 11 | `public BusinessServices()` |  |
+| 92 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
+| 105 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
+| 116 | 8 | `public double payrollShare()` | Payroll as a share of revenue, at the wages the city is paying now. |
 
-### plan (lines 119-249)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 145 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 223 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
-| 230 | 4 | `private double licencesOnSite(JobType licence, Game game)` | The licences of one kind this sector's practices on site will ask for when they open (BA1, 2026-11-02): each one's licensed posts at the share Game.licencesNeededFor() holds the first of a kind to. |
-| 239 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
-
-### the screen (lines 250-295)
+### plan (lines 125-260)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 253 | 38 | `public List<Line> ownLines(Game game)` |  |
-| 294 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
+| 151 | 67 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 225 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 234 | 1 | `public boolean bleedsWhileLent()` | "Twenty-four months of losses sheds plant", as the header says, and it did not (AQ1): the shortfall desk lent the losses and nothing closed until it refused, then everything closed in a year. |
+| 241 | 4 | `private double licencesOnSite(JobType licence, Game game)` | The licences of one kind this sector's practices on site will ask for when they open (BA1, 2026-11-02): each one's licensed posts at the share Game.licencesNeededFor() holds the first of a kind to. |
+| 250 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
+
+### THE CITY'S UPKEEP (HL1, 2026-11-11) (lines 261-359)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 318 | 3 | `public void sellUpkeep(double bill)` | Upkeep the city's five services have paid (care, schools, research, safety, transit), billed to this sector this month: other revenue now, the imported share its input. |
+| 323 | 3 | `public void sellBankUpkeep(double bill)` | What the bank paid to run this month, billed to this sector: other revenue now, the imported share its input on BANK_UPKEEP_SUPPLIES. |
+| 332 | 5 | `public double upkeepCapacity()` | What a month of its seats could bill at capacity, in the city's own money: every kind's seats at what the world pays for a seat-month (priceOfSeat(), the price the screen shows). |
+| 342 | 5 | `public double upkeepKept()` | What of the upkeep billed since the last strike it has kept, read off the pending ledger it was booked on: the whole sold less the imported lines (HL1-R). |
+| 353 | 6 | `private void sellUpkeepOn(String line, double bill)` | The one body of both: the whole bill is other revenue, and of it the share the seats cannot serve (or the dial's, if more) is booked as an imported service on the line called {@code line}. |
+
+### the screen (lines 360-405)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 363 | 38 | `public List<Line> ownLines(Game game)` |  |
+| 404 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
 

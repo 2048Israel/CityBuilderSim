@@ -1,0 +1,130 @@
+naics,industry,code,material,cost_musd,share_of_total_materials
+331110,Iron and steel mills and ferroalloy manufacturing,00772000,Total Materials,71764.1,1.0
+331110,Iron and steel mills and ferroalloy manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",14063.1,0.196
+331110,Iron and steel mills and ferroalloy manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",376.3,0.0052
+331110,Iron and steel mills and ferroalloy manufacturing,21211100,Coal used in the production of coke,0.0,0.0
+331110,Iron and steel mills and ferroalloy manufacturing,21220000,"Metallic ores, concentrates, and residues",4844.7,0.0675
+331110,Iron and steel mills and ferroalloy manufacturing,33000045,Iron and steel scrap (excluding home scrap),31610.5,0.4405
+331110,Iron and steel mills and ferroalloy manufacturing,33100028,Steel wire and wire products,0.0,0.0
+331110,Iron and steel mills and ferroalloy manufacturing,33110090,"Miscellaneous iron, steel, and ferroalloy ingot, shapes, and forms (excluding castings, forgings, bars, structural shapes, wire, sheet, strip, and semifinished shapes)",14708.3,0.205
+331110,Iron and steel mills and ferroalloy manufacturing,33141000,"Nonferrous metal shapes, forms, sheet, strip, powder, and wire (excluding castings and forgings), excluding aluminum and copper",4394.3,0.0612
+331420,"Copper rolling, drawing, extruding, and alloying",00772000,Total Materials,23252.5,1.0
+331420,"Copper rolling, drawing, extruding, and alloying",00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",2069.8,0.089
+331420,"Copper rolling, drawing, extruding, and alloying",00971000,"Materials, ingredients, containers, and supplies, nsk",146.8,0.0063
+331420,"Copper rolling, drawing, extruding, and alloying",32518000,"All basic organic and inorganic chemicals, excluding petrochemicals",204.3,0.0088
+331420,"Copper rolling, drawing, extruding, and alloying",33000046,Copper and copper-base alloy scrap (excluding home scrap),3243.5,0.1395
+331420,"Copper rolling, drawing, extruding, and alloying",33000053,"Nonferrous metal and metal-base alloy scrap, excluding aluminum, copper, and precious metal",89.4,0.0038
+331420,"Copper rolling, drawing, extruding, and alloying",33141000,"Nonferrous metal shapes, forms, sheet, strip, powder, and wire (excluding castings and forgings), excluding aluminum and copper",284.7,0.0122
+331420,"Copper rolling, drawing, extruding, and alloying",33142010,"Copper cathodes, ingots, cakes, slabs, blister or anode copper",8681.5,0.3734
+331420,"Copper rolling, drawing, extruding, and alloying",33142020,Copper and copper-base alloy wire products,1886.0,0.0811
+331420,"Copper rolling, drawing, extruding, and alloying",33142040,"Copper and copper-base alloy rod, bar, and bar shapes",5844.0,0.2513
+331420,"Copper rolling, drawing, extruding, and alloying",33142050,"Miscellaneous copper and copper-base alloy shapes and forms (excluding wire products, ingot, ingot bar, castings, cathodes, anodes, pipe, tube, rods, bar, and bar shapes)",802.3,0.0345
+332311,Prefabricated metal building and component manufacturing,00772000,Total Materials,7070.7,1.0
+332311,Prefabricated metal building and component manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",761.5,0.1077
+332311,Prefabricated metal building and component manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",2413.6,0.3414
+332311,Prefabricated metal building and component manufacturing,32610001,"Plastics products (including packaging, foam products, film, sheet, rod, tube, fabricated shapes, bottles, etc.), excluding containers, hoses, belting, and gaskets",186.3,0.0264
+332311,Prefabricated metal building and component manufacturing,33100025,"Steel structural shapes and sheet piling (excluding castings, forgings, and fabricated metal products)",1436.3,0.2031
+332311,Prefabricated metal building and component manufacturing,33110090,"Miscellaneous iron, steel, and ferroalloy ingot, shapes, and forms (excluding castings, forgings, bars, structural shapes, wire, sheet, strip, and semifinished shapes)",33.7,0.0048
+332311,Prefabricated metal building and component manufacturing,33120007,"Steel bars (including concrete reinforcing bars), bar shapes, and plate (excluding castings, forgings, and fabricated metal products)",334.7,0.0473
+332311,Prefabricated metal building and component manufacturing,33120073,"Steel sheet, steel strip, and tin mill products",1214.6,0.1718
+332311,Prefabricated metal building and component manufacturing,33131501,"Aluminum and aluminum-base alloy sheet, plate, foil (including packaging products), and welded tubing",133.1,0.0188
+332311,Prefabricated metal building and component manufacturing,33200091,"Miscellaneous fabricated metal products (excluding hardware, containers, screw machine products (bolts, nuts, screws, etc.), bearing components, castings, forgings, and wire products)",386.5,0.0547
+332311,Prefabricated metal building and component manufacturing,33272203,"Metal bolts, nuts, screws, washers, rivets, and other screw machine products",170.4,0.0241
+332312,Fabricated structural metal manufacturing,00772000,Total Materials,25705.3,1.0
+332312,Fabricated structural metal manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",1153.9,0.0449
+332312,Fabricated structural metal manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",9849.9,0.3832
+332312,Fabricated structural metal manufacturing,32551002,"Paints, varnishes, stains, lacquers, shellacs, japans, enamels, and allied products",177.4,0.0069
+332312,Fabricated structural metal manufacturing,33100025,"Steel structural shapes and sheet piling (excluding castings, forgings, and fabricated metal products)",7755.1,0.3017
+332312,Fabricated structural metal manufacturing,33110090,"Miscellaneous iron, steel, and ferroalloy ingot, shapes, and forms (excluding castings, forgings, bars, structural shapes, wire, sheet, strip, and semifinished shapes)",464.7,0.0181
+332312,Fabricated structural metal manufacturing,33120007,"Steel bars (including concrete reinforcing bars), bar shapes, and plate (excluding castings, forgings, and fabricated metal products)",3667.3,0.1427
+332312,Fabricated structural metal manufacturing,33120073,"Steel sheet, steel strip, and tin mill products",1623.3,0.0631
+332312,Fabricated structural metal manufacturing,33131020,"Miscellaneous aluminum and aluminum-base alloy shapes and forms, including powder (excluding castings, forgings, ingot, pig, shot, wire, sheet, plate, foil, welded tubing, rods, bars, and pipe)",72.7,0.0028
+332312,Fabricated structural metal manufacturing,33131501,"Aluminum and aluminum-base alloy sheet, plate, foil (including packaging products), and welded tubing",98.8,0.0038
+332312,Fabricated structural metal manufacturing,33141000,"Nonferrous metal shapes, forms, sheet, strip, powder, and wire (excluding castings and forgings), excluding aluminum and copper",38.4,0.0015
+332312,Fabricated structural metal manufacturing,33200091,"Miscellaneous fabricated metal products (excluding hardware, containers, screw machine products (bolts, nuts, screws, etc.), bearing components, castings, forgings, and wire products)",554.9,0.0216
+332312,Fabricated structural metal manufacturing,33272203,"Metal bolts, nuts, screws, washers, rivets, and other screw machine products",248.9,0.0097
+332313,Plate work manufacturing,00772000,Total Materials,5634.2,1.0
+332313,Plate work manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",381.6,0.0677
+332313,Plate work manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",1424.9,0.2529
+332313,Plate work manufacturing,32551002,"Paints, varnishes, stains, lacquers, shellacs, japans, enamels, and allied products",45.3,0.008
+332313,Plate work manufacturing,33100025,"Steel structural shapes and sheet piling (excluding castings, forgings, and fabricated metal products)",1125.1,0.1997
+332313,Plate work manufacturing,33120007,"Steel bars (including concrete reinforcing bars), bar shapes, and plate (excluding castings, forgings, and fabricated metal products)",593.6,0.1054
+332313,Plate work manufacturing,33120073,"Steel sheet, steel strip, and tin mill products",1444.0,0.2563
+332313,Plate work manufacturing,33131501,"Aluminum and aluminum-base alloy sheet, plate, foil (including packaging products), and welded tubing",128.1,0.0227
+332313,Plate work manufacturing,33141000,"Nonferrous metal shapes, forms, sheet, strip, powder, and wire (excluding castings and forgings), excluding aluminum and copper",54.2,0.0096
+332313,Plate work manufacturing,33200091,"Miscellaneous fabricated metal products (excluding hardware, containers, screw machine products (bolts, nuts, screws, etc.), bearing components, castings, forgings, and wire products)",365.4,0.0649
+332313,Plate work manufacturing,33272203,"Metal bolts, nuts, screws, washers, rivets, and other screw machine products",72.1,0.0128
+332710,Machine shops,00772000,Total Materials,13655.8,1.0
+332710,Machine shops,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",2113.4,0.1548
+332710,Machine shops,00971000,"Materials, ingredients, containers, and supplies, nsk",5102.6,0.3737
+332710,Machine shops,33100025,"Steel structural shapes and sheet piling (excluding castings, forgings, and fabricated metal products)",125.5,0.0092
+332710,Machine shops,33110090,"Miscellaneous iron, steel, and ferroalloy ingot, shapes, and forms (excluding castings, forgings, bars, structural shapes, wire, sheet, strip, and semifinished shapes)",182.2,0.0133
+332710,Machine shops,33120007,"Steel bars (including concrete reinforcing bars), bar shapes, and plate (excluding castings, forgings, and fabricated metal products)",1218.9,0.0893
+332710,Machine shops,33120073,"Steel sheet, steel strip, and tin mill products",673.0,0.0493
+332710,Machine shops,33131020,"Miscellaneous aluminum and aluminum-base alloy shapes and forms, including powder (excluding castings, forgings, ingot, pig, shot, wire, sheet, plate, foil, welded tubing, rods, bars, and pipe)",70.1,0.0051
+332710,Machine shops,33131040,"Aluminum and aluminum-base alloy rods, bar, and pipe",501.0,0.0367
+332710,Machine shops,33131501,"Aluminum and aluminum-base alloy sheet, plate, foil (including packaging products), and welded tubing",286.6,0.021
+332710,Machine shops,33141000,"Nonferrous metal shapes, forms, sheet, strip, powder, and wire (excluding castings and forgings), excluding aluminum and copper",149.9,0.011
+332710,Machine shops,33142040,"Copper and copper-base alloy rod, bar, and bar shapes",128.4,0.0094
+332710,Machine shops,33151000,Iron and steel castings,892.3,0.0653
+332710,Machine shops,33152300,Nonferrous metal castings (excluding aluminum and aluminum-based alloy),161.4,0.0118
+332710,Machine shops,33152401,Aluminum and aluminum-base alloy castings,688.3,0.0504
+332710,Machine shops,33200091,"Miscellaneous fabricated metal products (excluding hardware, containers, screw machine products (bolts, nuts, screws, etc.), bearing components, castings, forgings, and wire products)",452.3,0.0331
+332710,Machine shops,33211000,Metal forgings,255.3,0.0187
+332710,Machine shops,33272203,"Metal bolts, nuts, screws, washers, rivets, and other screw machine products",199.0,0.0146
+332710,Machine shops,33351505,Machine tool accessories (including cutting tools),455.6,0.0334
+336110,Automobile and light duty motor vehicle manufacturing,00772000,Total Materials,271169.5,1.0
+336110,Automobile and light duty motor vehicle manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",123230.4,0.4544
+336110,Automobile and light duty motor vehicle manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",0.0,0.0
+336110,Automobile and light duty motor vehicle manufacturing,32610001,"Plastics products (including packaging, foam products, film, sheet, rod, tube, fabricated shapes, bottles, etc.), excluding containers, hoses, belting, and gaskets",7061.6,0.026
+336110,Automobile and light duty motor vehicle manufacturing,32620100,"Fabricated rubber products, excluding tires, hose, belting, and gaskets",1993.9,0.0074
+336110,Automobile and light duty motor vehicle manufacturing,32721000,Glass and glass products,7186.6,0.0265
+336110,Automobile and light duty motor vehicle manufacturing,33200091,"Miscellaneous fabricated metal products (excluding hardware, containers, screw machine products (bolts, nuts, screws, etc.), bearing components, castings, forgings, and wire products)",5492.4,0.0203
+336110,Automobile and light duty motor vehicle manufacturing,33211000,Metal forgings,813.2,0.003
+336110,Automobile and light duty motor vehicle manufacturing,33341500,Air-conditioning and warm air heating equipment and commercial and industrial refrigeration equipment,1624.5,0.006
+336110,Automobile and light duty motor vehicle manufacturing,33361810,"Gasoline and gas-gasoline engines (excluding aircraft, automobile, and marine); diesel, semidiesel, and dual-fuel engines; and piston-type natural gas engines, and parts",0.0,0.0
+336110,Automobile and light duty motor vehicle manufacturing,33431000,"Audio and video equipment, including radios, speakers, television receivers, public address systems, amplifiers, etc.",3160.4,0.0117
+336110,Automobile and light duty motor vehicle manufacturing,33441310,"Semiconductors, including transistors, diodes, rectifiers, and integrated circuits for electronic circuitry, and related devices including electronic control modules",2925.8,0.0108
+336110,Automobile and light duty motor vehicle manufacturing,33451400,"Motor vehicle clusters, meters, and gauges, excluding electrical (including speedometers, fuel level)",2180.4,0.008
+336110,Automobile and light duty motor vehicle manufacturing,33631000,Motor vehicle gasoline engines and engine parts,15019.5,0.0554
+336110,Automobile and light duty motor vehicle manufacturing,33632000,Motor vehicle electrical and electronic equipment,10156.8,0.0375
+336110,Automobile and light duty motor vehicle manufacturing,33633000,"Shocks, struts, and other motor vehicle suspension equipment and parts",4220.4,0.0156
+336110,Automobile and light duty motor vehicle manufacturing,33635000,Motor vehicle transmission and power train parts,17148.0,0.0632
+336110,Automobile and light duty motor vehicle manufacturing,33636000,Motor vehicle seating and interior trim,10901.8,0.0402
+336110,Automobile and light duty motor vehicle manufacturing,33637000,"Automotive stampings (including body parts, hubcaps, fenders, etc.)",43710.8,0.1612
+336110,Automobile and light duty motor vehicle manufacturing,33639000,"Other motor vehicle parts, including air-conditioning systems and compressors, filters, exhaust system parts, wheels, trailer hitches, frames, bumper assemblies and parts, radiators, etc.",10995.2,0.0405
+336120,Heavy duty truck manufacturing,00772000,Total Materials,24210.3,1.0
+336120,Heavy duty truck manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",7161.1,0.2958
+336120,Heavy duty truck manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",961.7,0.0397
+336120,Heavy duty truck manufacturing,32620100,"Fabricated rubber products, excluding tires, hose, belting, and gaskets",200.6,0.0083
+336120,Heavy duty truck manufacturing,33200091,"Miscellaneous fabricated metal products (excluding hardware, containers, screw machine products (bolts, nuts, screws, etc.), bearing components, castings, forgings, and wire products)",445.8,0.0184
+336120,Heavy duty truck manufacturing,33211000,Metal forgings,646.5,0.0267
+336120,Heavy duty truck manufacturing,33341500,Air-conditioning and warm air heating equipment and commercial and industrial refrigeration equipment,0.0,0.0
+336120,Heavy duty truck manufacturing,33361810,"Gasoline and gas-gasoline engines (excluding aircraft, automobile, and marine); diesel, semidiesel, and dual-fuel engines; and piston-type natural gas engines, and parts",3804.4,0.1571
+336120,Heavy duty truck manufacturing,33441310,"Semiconductors, including transistors, diodes, rectifiers, and integrated circuits for electronic circuitry, and related devices including electronic control modules",0.0,0.0
+336120,Heavy duty truck manufacturing,33632000,Motor vehicle electrical and electronic equipment,762.5,0.0315
+336120,Heavy duty truck manufacturing,33633000,"Shocks, struts, and other motor vehicle suspension equipment and parts",889.1,0.0367
+336120,Heavy duty truck manufacturing,33635000,Motor vehicle transmission and power train parts,2863.3,0.1183
+336120,Heavy duty truck manufacturing,33636000,Motor vehicle seating and interior trim,862.9,0.0356
+336120,Heavy duty truck manufacturing,33637000,"Automotive stampings (including body parts, hubcaps, fenders, etc.)",779.9,0.0322
+336120,Heavy duty truck manufacturing,33639000,"Other motor vehicle parts, including air-conditioning systems and compressors, filters, exhaust system parts, wheels, trailer hitches, frames, bumper assemblies and parts, radiators, etc.",2131.6,0.088
+336510,Railroad rolling stock manufacturing,00772000,Total Materials,8122.0,1.0
+336510,Railroad rolling stock manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",1762.8,0.217
+336510,Railroad rolling stock manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",2938.7,0.3618
+336510,Railroad rolling stock manufacturing,33110090,"Miscellaneous iron, steel, and ferroalloy ingot, shapes, and forms (excluding castings, forgings, bars, structural shapes, wire, sheet, strip, and semifinished shapes)",88.7,0.0109
+336510,Railroad rolling stock manufacturing,33120007,"Steel bars (including concrete reinforcing bars), bar shapes, and plate (excluding castings, forgings, and fabricated metal products)",125.6,0.0155
+336510,Railroad rolling stock manufacturing,33151000,Iron and steel castings,169.0,0.0208
+336510,Railroad rolling stock manufacturing,33200091,"Miscellaneous fabricated metal products (excluding hardware, containers, screw machine products (bolts, nuts, screws, etc.), bearing components, castings, forgings, and wire products)",544.9,0.0671
+336510,Railroad rolling stock manufacturing,33272203,"Metal bolts, nuts, screws, washers, rivets, and other screw machine products",0.0,0.0
+336510,Railroad rolling stock manufacturing,33299109,"Antifriction bearing components and parts (balls, rollers, cages, collars, races, etc.)",0.0,0.0
+336510,Railroad rolling stock manufacturing,33531300,Switchgear and switchboard apparatus,0.0,0.0
+336510,Railroad rolling stock manufacturing,33651000,"Brake equipment, truck assemblies, hooks and other coupling devices, buffers, and parts for railroad rolling stock",2433.0,0.2996
+335929,Other communication and energy wire manufacturing,00772000,Total Materials,5873.1,1.0
+335929,Other communication and energy wire manufacturing,00970099,"Cost of all other materials and components, parts, containers, and supplies consumed",775.8,0.1321
+335929,Other communication and energy wire manufacturing,00971000,"Materials, ingredients, containers, and supplies, nsk",1124.4,0.1914
+335929,Other communication and energy wire manufacturing,32521100,Thermoplastic and thermosetting resins and plastics materials,494.9,0.0843
+335929,Other communication and energy wire manufacturing,32721000,Glass and glass products,15.5,0.0026
+335929,Other communication and energy wire manufacturing,33131020,"Miscellaneous aluminum and aluminum-base alloy shapes and forms, including powder (excluding castings, forgings, ingot, pig, shot, wire, sheet, plate, foil, welded tubing, rods, bars, and pipe)",39.0,0.0066
+335929,Other communication and energy wire manufacturing,33131040,"Aluminum and aluminum-base alloy rods, bar, and pipe",459.8,0.0783
+335929,Other communication and energy wire manufacturing,33142020,Copper and copper-base alloy wire products,1393.9,0.2373
+335929,Other communication and energy wire manufacturing,33142040,"Copper and copper-base alloy rod, bar, and bar shapes",1569.8,0.2673

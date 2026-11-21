@@ -247,6 +247,7 @@ public class BuildingCatalog {
         readEquipment(o, template, name);
         // ...and the ways it runs (R1c), which need the pieces read: and then the pieces that end no form and that no recipe needs go.
         readRecipes(o, template, name);
+        readRecipeChanges(o, template, name);
         dropIdlePieces(template, name);
 
         // The file's money is today's; the template is priced at the founding's, once, here (EP1).
@@ -513,12 +514,38 @@ public class BuildingCatalog {
         return goods;
     }
 
-    /** A piece that ends no form is there to enable a recipe: one that no recipe of the building needs is reported and dropped, once the recipes are read. */
+    /** Independent signed undos, each sourced and keyed by its discovery. */
+    private void readRecipeChanges(JsonObject o, BuildingsTemplate template, String name) {
+        if (!o.has("recipeChanges")) return;
+        if (!o.get("recipeChanges").isJsonArray()) {
+            System.out.println(FILE_NAME + ": " + name + " recipeChanges is not an array; skipped.");
+            return;
+        }
+        List<RecipeChange> changes = new ArrayList<>();
+        Set<String> codes = new HashSet<>();
+        for (JsonElement e : o.getAsJsonArray("recipeChanges")) {
+            try {
+                RecipeChange c = RecipeChange.read(e.getAsJsonObject(), template);
+                if (!codes.add(c.code())) throw new IllegalArgumentException("duplicate entry " + c.code());
+                changes.add(c);
+            } catch (RuntimeException bad) {
+                System.out.println(FILE_NAME + ": " + name + " recipe change skipped: " + bad.getMessage());
+            }
+        }
+        changes.removeIf(change -> {
+            if (change.after() == null || changes.stream().anyMatch(prior -> prior.code().equals(change.after()) && prior.after() == null)) return false;
+            System.out.println(FILE_NAME + ": " + name + " recipe change skipped: missing independent prerequisite " + change.after());
+            return true;
+        });
+        template.setRecipeChanges(changes);
+    }
+
+    /** Keeps a piece ending no form only if a process recipe or independent change needs it. */
     private void dropIdlePieces(BuildingsTemplate template, String name) {
         List<Equipment> kept = new ArrayList<>();
         boolean dropped = false;
         for (Equipment piece : template.getEquipment()) {
-            if (piece.getEnds() == null && !piece.getId().equals(template.recipePieceId())) {
+            if (piece.getEnds() == null && !piece.getId().equals(template.recipePieceId()) && !template.changeNeeds(piece.getId())) {
                 System.out.println(FILE_NAME + ": \"" + name + "\" piece \"" + piece.getId() + "\" ends no form and no recipe needs it; skipped.");
                 dropped = true;
                 continue;

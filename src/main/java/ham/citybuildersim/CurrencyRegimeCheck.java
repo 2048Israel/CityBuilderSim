@@ -42,8 +42,8 @@ import java.util.List;
  *      every month's rate, vault, defence, moves, M0, cash and credibility equal
  *      to the bit; under Lean the shadow is the rate, the held move is exactly
  *      0, nothing is bought at an edge, no doubt, no hot money left on doubt,
- *      nothing owed. The months the lean sold are counted (the comparison means
- *      nothing if the defence never fired).
+ *      nothing owed. The months the lean sold are counted; that the defence fires
+ *      is caused on a bare currency (FS10: a vault and a deficit month sell).
  *   1. FLOAT SELLS NOTHING. A vault and deficits that make Lean sell, and the
  *      Float twin on the same months: its defence is 0 every month, its vault
  *      unchanged.
@@ -61,7 +61,7 @@ import java.util.List;
  *      imports breaks (cause VAULT, nothing sold), its twin with a vault a
  *      little deeper holds; the rate lands at the shadow plus OVERSHOOT of its
  *      gap; in a city credibility falls by PEG_BREAK_DENT of its distance to
- *      KMIN. (The overshoot's two sides and its fade are section 16's.)
+ *      KMIN (two cities alike, credibility set, the city's peg struck so far under its shadow that the vault breaks it, the twin's at it). (The overshoot's two sides and its fade are section 16's.)
  *   4. THE CHANCE OF A BREAK, COUNTED OVER 1,000 SEEDED PEGS AGAINST hazard().
  *      The breaks counted are within three standard deviations of the hazards
  *      summed; the hazard's own shape; the market's path is the same pegged or
@@ -69,7 +69,7 @@ import java.util.List;
  *   5. THE DOUBT TAKES THE HOT MONEY HOME. A bare CapitalFlows: setDoubt(h)
  *      takes exactly h of the stock, setDoubt(0) changes nothing to the bit; in
  *      a city under a peg past BREAK_GAP the month's departure is the stock
- *      times the share the last reprice struck, and the audit closes. The saved
+ *      times the share the last reprice struck, and the audit closes (hot money placed, the peg revalued under its shadow, the market quiet). The saved
  *      array is 19 long (FX8): slot 15 the doubt's lifetime, 16 to 18 the month's
  *      arrived, departed and doubtDeparted, restored to the bit, and an array
  *      cut at 16 (as XR2 wrote it) restores with the month's three at 0.
@@ -84,13 +84,13 @@ import java.util.List;
  *      city: pegged, the policy rate is the US's rate (worldRate()) plus the spread, with
  *      the autopilot off or aiming at inflation; aiming at the currency it is
  *      the gap's; a band and the currency aim, a mix; Lean with any aim the
- *      inflation rule.
+ *      inflation rule. (The price index is put back on a year of prices, so the rule has a rate.)
  *   8. THE CURRENCY AIM HOLDS A BAND, COUNTED OVER 1,000 SEEDED YEARS. A band
  *      with the dial neutral against the dial the currency aim sets: its share
  *      of months with the shadow inside is higher and its vault spends less.
  *   9. THE TOGGLE'S TWO PAYERS EACH PAY EXACTLY WHAT THE EDGE BOUGHT. Cities
  *      pegged with a large spread, the shadow under the peg and the vault
- *      buying the lift (XR5): the central bank's pays in new money and the treasury's does not, the treasury's pays out of
+ *      buying the lift (XR5; the peg struck above the shadow by a gap sized from the bill the section asks for): the central bank's pays in new money and the treasury's does not, the treasury's pays out of
  *      its cash and the central bank's does not, the audit closes in both, and
  *      the central bank's equity is unmoved by the purchase once settled. FX8:
  *      the central bank keeps nothing, restated with what it paid in new money
@@ -103,7 +103,7 @@ import java.util.List;
  *      never saved; a bare currency restores every regime field, the hold's
  *      support (slot 147, XR5) among them, and an array cut before it restores
  *      with none; an array cut before the regimes restores as Lean with nothing
- *      owed.
+ *      owed. (The city: revalued under its shadow, then repegged to a chosen rate so the hold buys back a purchase; the market quiet.)
  *  11. A REAL RUN, COUNTED. A city pegged at founding for 240 months: the months
  *      held, sold, bought, the doubt's departures and the break are counted and
  *      consistent, every figure finite and the audit closing every month; the
@@ -112,13 +112,13 @@ import java.util.List;
  *  12. THE HOT MONEY'S MONTH CROSSES A SAVE (FX8). A pegged city in which hot
  *      money left on doubt this month, saved and loaded: arrived, departed and
  *      doubtDeparted, and the figure Policy draws from it, equal to the live
- *      city's to the bit, and one month on the two stay equal to the bit.
+ *      city's to the bit, and one month on the two stay equal to the bit (the city: hot money placed, the peg revalued under its shadow, the market quiet).
  *  13. LEAVING A PEG TAKES ITS DOUBT WITH IT (FX8). A bare peg with a doubt
  *      struck, left for Float, Lean or Band: no doubt; kept on a re-press of
  *      the peg; not revived by leaving and re-entering. In a city: twins from
  *      section 12's save, one leaving the peg between two presses, the month
  *      after the one that left loses no hot money on doubt and the one that
- *      stayed does, the audit closing in both.
+ *      stayed does, the audit closing in both (section 12's city, built caused every run).
  *
  *  14. A PEG PAYS THE PRESSURE, NOT THE MONTH'S BALANCE (XR5; Jerus,
  *      2026-10-23: "pay the pressure"). A bare currency with a GDP, pegged at
@@ -162,6 +162,13 @@ import java.util.List;
  *      projection (it leaves the cover's premium out, which only adds pressure);
  *      no GDP gives infinity, a vault under its floor 0, and asking changes
  *      nothing.
+ *
+ *  19. A DEEP REPEG CANNOT BUY YEARS OF OUTPUT IN A MONTH (XR7/XR8). At 3x and
+ *      5x the shadow the peg breaks before dealing, with a signed landing;
+ *      purchases just below the GDP bound still hold and just above break;
+ *      a band gives way for the month. MoneyAudit's cent still applies to the
+ *      old exponential bills. SaveFileCheck and ReadPathCheck also borrow a
+ *      real chosen peg with nonlinear purchases and nonzero saved support.
  *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
@@ -310,13 +317,14 @@ public class CurrencyRegimeCheck {
         if (causesHeldOff) city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the peg fixtures stand on a town that taxes from month 1, whose
-            // hot money, drawn by the dial, outruns its current account's deficit so that a month at the peg is a surplus (and, since XR5, strengthens the shadow under the peg: the vault buys the lift). A 1900 town has no income
-            // tax until 1916-17 and no sales tax until 1920: with the merge the town's financial inflow at the peg is US$124k a month against a deficit on current account of
-            // US$212k (the vault sells, 0 bought), and with every lever open it is US$326k (the vault buys US$115k the month after the peg). Opened, and the defaults put
-            // back, before a month has run, as MonetaryCheck 5 and the cities of RailDepotCheck do.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): the peg fixtures
+            // stand on a town that taxes from month 1, whose hot money, drawn by the dial, outruns its current account's deficit so that a month
+            // at the peg is a surplus (and, since XR5, strengthens the shadow under the peg: the vault buys the lift). Until OP1 a 1900 town had
+            // no income tax until 1916-17 and no sales tax until 1920: with the merge the town's financial inflow at the peg was US$124k a month
+            // against a deficit on current account of US$212k (the vault sells, 0 bought), and with every lever open it was US$326k (the vault
+            // buys US$115k the month after the peg). Since OP1 every lever is open from the founding, and the defaults are put back before a
+            // month has run, as MonetaryCheck 5 and the cities of RailDepotCheck do.
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             if (depotsStanding > 0) city.buildStack(ForeignCheck.template(city, "Construction Depot"), depotsStanding, true);
@@ -337,10 +345,6 @@ public class CurrencyRegimeCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path the pegged twins' month
-        // after the peg brings no money in (the vault bought US$0k), so the settlement's fixtures and the seven lines on them
-        // fail. The claim is the peg's payer, not the wage; queued (LD3) to cause the surplus at the peg on LD2's path.
-        WantedPosts.carryKeptOut = false;
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         long started = System.currentTimeMillis();
@@ -364,6 +368,7 @@ public class CurrencyRegimeCheck {
         theOvershootBothWays();
         theTiedPathPricesTheCurve();
         aThinVaultsMonthsAreWhatTheHoldDoes();
+        aDeepRepegsPurchaseIsBounded();
 
         out.printf("%n(%.0f s)%n", (System.currentTimeMillis() - started) / 1000.0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -414,6 +419,13 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: both cities are on Lean, the twin having been Float and back before its first month",
                 plain.getForeignAccounts().getRegime() == LEAN && twin.getForeignAccounts().getRegime() == LEAN
                         && plain.getMonth() == twin.getMonth());
+        // The defence the comparison is of, caused on a bare currency and not waited for in the town: a vault and a deficit month under Lean must sell.
+        ForeignAccounts deficit = book(.8 * TRADE, TRADE, 20 * TRADE, SEED, LEAN);
+        double vaultBefore = deficit.getReservesUsd();
+        deficitMonth(deficit, 0);
+        assertTrue("fixture: a bare Lean currency with a vault, in a month of deficit, sells (US$" + String.format("%,.2fk", deficit.getDefenceUsd())
+                + " of its US$" + String.format("%,.0fk", vaultBefore) + ")", deficit.getRegime() == LEAN && deficit.getDefenceUsd() > 0
+                && deficit.getReservesUsd() < vaultBefore);
         int apart = 0, unclean = 0, sold = 0, firstApart = 0;
         for (int m = 1; m <= 60; m++) {
             quietly(() -> {
@@ -427,7 +439,6 @@ public class CurrencyRegimeCheck {
         }
         out.printf("   60 months on the default founding: the lean sold in %d of them (US$%,.0fk in all); the rate ends %.6f%n", sold,
                 plain.getForeignAccounts().getDefenceUsdLifetime(), plain.getForeignAccounts().getRate());
-        assertTrue("fixture: the lean sold in some month, or the comparison means nothing (" + sold + " of 60)", sold > 0);
         assertTrue("the Float-and-back city plays the plain one's 60 months to the bit: rate, vault, defence, seven moves, M0, cash,"
                 + " credibility" + (apart == 0 ? "" : " (first apart: month " + firstApart + ")"), apart == 0);
         assertTrue("under Lean every month: the shadow is the rate, the held move is exactly 0, nothing bought at an edge, no doubt,"
@@ -606,110 +617,15 @@ public class CurrencyRegimeCheck {
     static final int PEG_DEPOTS = 12;
     static final double PEG_VAULT_MONTHS = 2 * ForeignAccounts.COMFORTABLE_COVER;
 
-    /**
-     * BA1, 2026-11-04, REDONE 2026-11-05: the months past its 36 that a town played for the credibility fixture is given at most to find prices in the
-     * band where the bank's credibility climbs (a smoothed miss within TOLERANCE of the target, the gain branch of Expectations.takeMonth()).
-     * The first mend (2026-11-04) waited out a dip: on the path of that day the first price readings fell (the index read -4% at month 39 and -8% at 45)
-     * and the smoothed inflation sat under zero from month 42 to 80, so the town was played to month 81 and pegged there. THE BUILDERS-FIRST TEST THEN
-     * COUNTED A DEPOT ON SITE TWICE (4f66f5fd: Sector.staffingWithOwnSites()); with it mended the young town builds its depots first again and the dip
-     * is gone from the years the fixture reads: the smoothed inflation holds 2.0% to month 38, is 1.2% at 41 to 43, 2.1% at 49 and 2.8% at 53,
-     * and the bank's credibility climbs from 0.83 at month 37 through the peg's eight months and the six after the repeg (the miss never
-     * past TOLERANCE until the smoothed inflation passes 3% at month 54). The old rule (dip under target less two TOLERANCEs, then stand back
-     * at it) played that town to month 107 and pegged it at a smoothed -0.05%, a credibility of 0.449 falling by 0.002 a month: no climb to
-     * read, and none of the 40 seeds met section 3's twin. The town is now pegged as soon as it is in the band, which on this path is at once
-     * (month 36), and the search over seeds finds the seed whose break is the doubt's. (GW1: not on its path; the month is found by climbMonth().)
-     */
-    static final int CLIMB_LOOK_MONTHS = 120;
-
     /** A trading town on the default founding as the peg fixtures need it (see PEG_DEPOTS), played its 36 months and its vault deepened: ready to be pegged. */
     static Game pegTown(String label) {
-        return pegTown(label, false);
+        return pegTown(label, PEG_DEPOTS, false);
     }
 
-    /** ...and, if `climbing`, played on until prices are in the band where the bank's credibility can climb (see CLIMB_LOOK_MONTHS). */
-    static Game pegTown(String label, boolean climbing) {
-        return pegTown(label, climbing, PEG_DEPOTS);
-    }
-
-    /** ...with this many depots standing (see PEG_DEPOTS, and surplusDepots() for a town that needs more). */
-    static Game pegTown(String label, boolean climbing, int depots) {
-        return pegTown(label, climbing, depots, false);
-    }
-
-    /** The month the climbing town was pegged and the smoothed inflation it read then (GW1: the log's figures). */
-    static int pegMonth;
-    static double pegSmoothed;
-
-    /** The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. */
-    static final int DOUBT_CRAWL_MONTHS = 8;
-
-    /**
-     * GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the
-     * smoothed miss is within TOLERANCE (the city's climb, the twin's gain branch). It is what the run of months in the band allows: on GW1's path the smoothed
-     * inflation is inside it at months 100 to 111 and nowhere longer, so a peg at 100 and DOUBT_CRAWL_MONTHS leave months 108 to 111, the revaluation's
-     * first three. Of nine seeds pegged there the breaks came 1, 2, 4, 5, 7, 7, 8, 9 and 10 months after it (by doubt at 1, 2, 4 and 9).
-     */
-    static final int BREAK_LOOK_MONTHS = 3;
-
-    /** The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). */
-    static final java.util.Map<String, Integer> climbMonths = new java.util.HashMap<>();
-
-    /**
-     * GW1: the month the climbing town is pegged in. On GW1's path the young town's prices swing for years (the groceries' price index relative to its base
-     * runs 0.69 at month 56, 0.85 at 65, 0.71 at 73 and 0.92 at 80, as migration brings the town from 2,500 to 5,500 people and the stores' building lags
-     * it; the year's rate reads -9% at month 43 and +16% at 167), so the smoothed inflation passes through the band and leaves it: it read inside it at months
-     * 40, 80-82, 100-111, 137-143, 162-164, 178-180, 206-208 and 228-233 and at no other of the 200 months past 36. A peg made in the first of them (the rule
-     * "as soon as it is in the band") read -3.9% at the break two months after the revaluation, a miss of 5.9 points and a credibility of 0.69 falling, so the
-     * twin's gain branch was not the month's. The month is found by playing a probe, the same town on the same path, until a month where the smoothed inflation
-     * is inside the band (the peg's own) and stays inside it from the month before the revaluation's first break to the month of the last one section 3 can use
-     * (DOUBT_CRAWL_MONTHS, BREAK_LOOK_MONTHS). The pegged town is the probe until the peg and stays near it for the months read (the smoothed inflation at
-     * month 110 read 0.0236 pegged beside 0.0251 unpegged); nothing of the model's state is placed, and the assertions of section 3 stand on what the pegged town reads.
-     */
-    static int climbMonth(int depots, boolean causesHeldOff) {
-        String key = depots + "/" + causesHeldOff;
-        Integer known = climbMonths.get(key);
-        if (known != null) return known;
-        Game probe = town("climb-probe-" + depots + (causesHeldOff ? "-off" : ""), steady(), depots, causesHeldOff);
-        play(probe, 36);
-        double target = probe.getDebtManager().getInflationTarget();
-        int span = CLIMB_LOOK_MONTHS + DOUBT_CRAWL_MONTHS + BREAK_LOOK_MONTHS + 1;
-        boolean[] in = new boolean[probe.getMonth() + span + 2];
-        int first = probe.getMonth(), found = -1;
-        StringBuilder inBand = new StringBuilder();
-        for (int played = 0; played < span && found < 0; played++) {
-            play(probe, 1);
-            int m = probe.getMonth();
-            in[m] = probe.getPriceIndex().hasRate() && Math.abs(probe.getExpectations().getSmoothedInflation() - target) <= Expectations.TOLERANCE;
-            if (in[m]) inBand.append(' ').append(m);
-            int s = m - DOUBT_CRAWL_MONTHS - BREAK_LOOK_MONTHS;
-            boolean run = s >= first && in[s];
-            for (int k = s + DOUBT_CRAWL_MONTHS; run && k <= m; k++) run = in[k];
-            if (run) found = s;
-        }
-        if (found < 0) found = first;
-        out.printf("   climb probe (depots %d): the smoothed inflation inside the band (+-%.2f of %.2f) at months%s; the town is pegged at month %d%n",
-                depots, Expectations.TOLERANCE, target, inBand, found);
-        climbMonths.put(key, found);
-        return found;
-    }
-
-    /** ...with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
-    static Game pegTown(String label, boolean climbing, int depots, boolean causesHeldOff) {
+    /** ...with this many depots standing, and the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
+    static Game pegTown(String label, int depots, boolean causesHeldOff) {
         Game g = town(label, steady(), depots, causesHeldOff);
         play(g, 36);
-        if (climbing) {
-            double target = g.getDebtManager().getInflationTarget();
-            play(g, climbMonth(depots, causesHeldOff) - g.getMonth());
-            // GW1: in the band means a price rate READ and the smoothed miss inside TOLERANCE. Until the basket gives a rate the smoothed inflation is the target
-            // itself, so the wait was vacuous at month 36 and the town was pegged before its first readings: on GW1's path they fell (the index read -9% at month 41,
-            // the smoothed inflation -4.8% by month 56), the credibility fell with them from 0.83 to 0.33, and none of 400 seeds met section 3's twin.
-            for (int past = 0; past < CLIMB_LOOK_MONTHS && !(g.getPriceIndex().hasRate()
-                    && Math.abs(g.getExpectations().getSmoothedInflation() - target) <= Expectations.TOLERANCE); past++) {
-                play(g, 1);
-            }
-            pegMonth = g.getMonth();
-            pegSmoothed = g.getExpectations().getSmoothedInflation();
-        }
         ForeignAccounts fx = g.getForeignAccounts();
         double bill = PEG_VAULT_MONTHS * fx.monthlyImports();
         quietly(() -> g.buyForeignCurrency(bill));
@@ -717,50 +633,108 @@ public class CurrencyRegimeCheck {
         return g;
     }
 
-    /**
-     * A city on the default founding pegged with the peg revalued a fifth under its shadow: the doubt fixture, a few months from its break at the peg's chance.
-     * XR5 (THE HOLD PAYS THE PRESSURE): the eight months the hot money takes to gather were played at the peg of the day, a peg that held the rate a quarter over
-     * a shadow the town's surplus and the dial's carry had made strong - and a hold pays for that by buying dollars every month, building a support (getHoldFelt())
-     * the revaluation then has to sell back: the repeg a fifth under the shadow was a lift of 0.69 in logs, a sale of more than a year of the town's output, the vault
-     * broke on it in the month, by the VAULT, and no doubt was ever struck. Now the peg follows the shadow month by month (a crawling peg, repegged each month to where the float's rule has
-     * the D$), which builds no support and leaves the hot money its eight months of the dial's carry; the revaluation is then a sale of a tenth of a year's output
-     * (INTERVENTION_LINEAR) and the support it builds is paid for out of a vault PEG_VAULT_MONTHS deep.
-     */
-    static Game doubtTown(String label, long reseed) {
-        return doubtTown(label, reseed, false, false);
-    }
 
-    /** ...and, if `climbing`, pegged in the month prices are back near the target (pegTown(), CLIMB_LOOK_MONTHS); with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
-    static Game doubtTown(String label, long reseed, boolean climbing, boolean causesHeldOff) {
-        Game g = pegTown(label, climbing, PEG_DEPOTS, causesHeldOff);
+    /* ---- FS10: the towns of sections 3, 5, 9, 10, 12 and 13 CAUSED, where the seed searches above once waited for them ---- */
+
+    /** The log gap the doubt fixtures revalue the peg under the shadow by: a fifth, past BREAK_GAP, so the reprice strikes more than the base chance. */
+    static final double DOUBT_GAP = .20;
+
+    /** The share of the target the dial draws its hot money toward that the doubt fixtures place as stock: below it, so money still arrives each month. */
+    static final double HOT_SHARE = .5;
+
+    /** The credibility the credibility fixture's cities are set to: between KMIN and KMAX, so the dent and the month's gain both have room. */
+    static final double CREDIT_START = .60;
+
+    /** The factor over what the vault can sell above its floor that the sale a break by the vault is sized at: room for the shadow's drift in the month. */
+    static final double BREAK_MARGIN = 4;
+
+    /** The factor over section 9's own floor (100 x PriceLevel.FACTOR of local money) that the bill its gap is sized for stands at. */
+    static final double BILL_MARGIN = 10;
+
+    /**
+     * A pegged town at the end of the month its dial was tied (a spread of 30 points over the US's rate, the market quiet so that nothing breaks by chance
+     * and no draw moves the shadow): the shadow has moved to where the tied dial puts it, so a revaluation struck at it afterwards is a gap the reprice
+     * measures. The peg stands at the rate of the day it was struck at.
+     */
+    static Game tiedPegTown(String label, boolean causesHeldOff) {
+        Game g = pegTown(label, PEG_DEPOTS, causesHeldOff);
         quietly(() -> {
+            g.getForeignAccounts().quietMarket();
             g.setCurrencyRegime(PEG);
             g.getDebtManager().setPegSpread(.30);
         });
-        for (int m = 0; m < DOUBT_CRAWL_MONTHS; m++) {
-            play(g, 1);
-            quietly(() -> g.repeg(g.getForeignAccounts().getShadowRate()));   // the peg follows the shadow: the vault builds no support to sell back
-        }
-        if (reseed != 0) g.getForeignAccounts().setMarketSeed(reseed);
-        quietly(() -> g.repeg(g.getForeignAccounts().getShadowRate() * Math.exp(-.20)));
+        play(g, 1);
         return g;
     }
 
     /**
-     * The doubt town's twin: played to the month before `months`, its credibility (start[0]) read, its peg moved to a rate so weak the shadow sits far
-     * under it, so that month nothing breaks by chance, and played the month.
+     * Hot money placed in the city by name (CapitalFlows.placeArrivalForTest(), as SaveFileCheck places a month's arrival) up to this share of the
+     * target its dial draws it toward, and into the bank that funds it, as Game does when a month's stock grows.
      */
-    static Game heldTwin(String label, long seed, int months, double[] start) {
-        return heldTwin(label, seed, months, start, false);
+    static void placeHotMoney(Game g, double shareOfTarget) {
+        CapitalFlows hot = g.getCapitalFlows();
+        double placed = Math.max(0, shareOfTarget * hot.getTarget() - hot.getStock());
+        hot.placeArrivalForTest(placed);
+        g.getBank().receiveHotMoney(placed);
+        g.getBank().setForeignDeposits(hot.getStock());
     }
 
-    static Game heldTwin(String label, long seed, int months, double[] start, boolean climbing) {
-        Game b = doubtTown(label, seed, climbing, false);
-        play(b, months - 1);
-        start[0] = b.getExpectations().getCredibility();
-        quietly(() -> b.repeg(b.getForeignAccounts().getShadowRate() * 1.5));
-        play(b, 1);
-        return b;
+    /**
+     * The doubt fixture, caused: a tied pegged town with hot money in it, the peg revalued DOUBT_GAP under its shadow. The next reprice strikes a doubt at
+     * the gap (hazard() of it) and the month after it that share of the stock leaves; with the market quiet no break comes by chance.
+     */
+    static Game causedDoubtTown(String label, boolean causesHeldOff) {
+        Game g = tiedPegTown(label, causesHeldOff);
+        placeHotMoney(g, HOT_SHARE);
+        pegWithGap(g, DOUBT_GAP);
+        return g;
+    }
+
+    /**
+     * The credibility fixture's city: a tied pegged town (tiedPegTown()) with credibility set to CREDIT_START and the smoothed inflation to the target (the bank's
+     * own save array put back, Expectations.restore()), the price index on a year of prices at the target: the next month's miss is inside TOLERANCE, so its credibility
+     * takes the gain branch whatever the town's own prices were doing.
+     */
+    static Game creditTown(String label) {
+        Game g = tiedPegTown(label, false);
+        double target = g.getDebtManager().getInflationTarget();
+        aYearOfPrices(g, target);
+        double[] saved = g.getExpectations().toSaveArray();
+        saved[0] = CREDIT_START;
+        saved[1] = target;
+        g.getExpectations().restore(saved);
+        return g;
+    }
+
+    /**
+     * The price index put back as a save would carry a year of prices rising at this rate (PriceIndex.restore(), as CurrencyCheck's section 5 puts its year
+     * back): thirteen readings, the newest at today's level and each a twelfth of the rate under the one after, so the inflation the index reads is the rate and
+     * hasRate() is true whatever month the city is in. The basket must already be based: an index not yet based has no chain to carry the readings.
+     */
+    static void aYearOfPrices(Game g, double rate) {
+        PriceIndex prices = g.getPriceIndex();
+        double[] saved = prices.toSaveArray();
+        int seen = Math.max((int) Math.round(saved[4]), PriceIndex.WINDOW + 1);
+        double now = prices.getIndex();
+        saved[4] = seen;
+        for (int k = 0; k < PriceIndex.WINDOW; k++) saved[5 + (seen - 1 - k) % PriceIndex.WINDOW] = now / Math.pow(1 + rate, k / 12.0);
+        prices.restore(saved);
+    }
+
+    /** The log gap a peg must stand under the shadow for the sale holding it to be BREAK_MARGIN times what the vault can sell above its floor: from the model's own rule, interventionLocalFor(). */
+    static double breakingGap(ForeignAccounts fx) {
+        double annual = 12 * fx.getGdpTrailing(), room = (fx.getReservesUsd() - fx.vaultFloorUsd()) * fx.getRate();
+        double gap = .01;
+        while (ForeignAccounts.interventionLocalFor(gap, annual) < BREAK_MARGIN * room && gap < 20) gap *= 1.05;
+        return gap;
+    }
+
+    /** The log gap a peg must stand over the shadow for the hold's purchase to cost BILL_MARGIN times section 9's floor of 100 x PriceLevel.FACTOR of local money (interventionLocalFor()). */
+    static double billGap(ForeignAccounts fx) {
+        double annual = 12 * fx.getGdpTrailing(), bill = BILL_MARGIN * 100 * PriceLevel.FACTOR;
+        double gap = .001;
+        while (ForeignAccounts.interventionLocalFor(gap, annual) < bill && gap < 20) gap *= 1.05;
+        return gap;
     }
 
     /**
@@ -873,70 +847,42 @@ public class CurrencyRegimeCheck {
 
         // In a city, credibility falls by PEG_BREAK_DENT of its distance to KMIN, against a twin where nothing broke.
         /*
-         * THE BREAK MUST BE ONE OF DOUBT, WHERE CREDIBILITY IS CLIMBING (EM1, 2026-10-29). The twin below is held to the gain
-         * branch of Expectations (a smoothed miss within TOLERANCE, the basket based and read), because the dent is taken out of
-         * that month's climb; and the peg breaks at the market's chance, in a month that depends on the city's path. At 0.8.72
-         * the default seed broke it by doubt in month 51, the year the climb began (month 50). On EM1's path the same seed
-         * breaks it in month 47, three months before the basket gives a rate to read, and the twin's credibility cannot climb in
-         * a month with nothing to be judged on. And the city's vault is drained faster (US$19M at month 46 beside main's US$28M,
-         * on a current account of -1.9M a month), so most breaks past month 53 are the vault's (BreakCause.VAULT), which the
-         * twin's repegged peg meets as well, and not the doubt this section is about.
-         * The fixture is made to cause it: a seed whose break is by doubt and follows a month the city's credibility climbed in
-         * (its step above nothing), the default seed first and then SEED + 1, + 2, ... - on EM1's path SEED + 11, in month 52.
-         * AND WHOSE TWIN HOLDS (EP1): the search takes the twin's conditions as it takes the city's, because the first seed that met the city's
-         * (SEED + 3, month 54, on the calendar of 1900) left the vault at US$48.3k against a floor of 38.7k and a month's deficit of 22.4k, so
-         * the twin's repegged peg broke by the vault too and its credibility fell as the city's did - no difference to read the dent in.
+         * CAUSED (FS10), where this section once searched 40 seeds for a break by doubt that followed a month credibility climbed in. Two cities alike to the bit,
+         * each tied (tiedPegTown(): the market quiet, so no break comes by chance), credibility set to CREDIT_START with the smoothed inflation at the target and the
+         * price index on a year of prices at it, so the month is the gain branch of Expectations (a smoothed miss within TOLERANCE) in both. They differ in one lever,
+         * where the peg is struck: the city's under its shadow by the gap whose sale would be BREAK_MARGIN times what its vault can sell above the floor, so it breaks
+         * that month by the vault (the dent is Game's on any break); the twin's at the shadow, which deals little of a deep vault and holds. The dent is what the
+         * two differ by in the month, with the month's gain divided out.
          */
-        Game a = null, b = null;
-        double c0 = 0;
-        long creditSeed = 0;
-        int k = 0;
-        final int seeds = 40;
-        for (int attempt = 0; attempt < seeds && a == null; attempt++) {
-            long tried = attempt == 0 ? 0 : SEED + attempt;
-            Game candidate = doubtTown("xr2-credibility-a-" + attempt, tried, true, false);
-            int months = 0;
-            boolean climbing = false;
-            while (months < 40 && !candidate.getForeignAccounts().brokeThisMonth()) {
-                climbing = candidate.getExpectations().getCredibilityStep() > 0;   // the month before the one about to be played
-                months++;
-                play(candidate, 1);
-            }
-            boolean fits = candidate.getForeignAccounts().brokeThisMonth() && climbing
-                    && candidate.getForeignAccounts().getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT;
-            Game twin = null;
-            double[] start = new double[1];
-            if (fits || attempt == seeds - 1) {
-                twin = heldTwin("xr2-credibility-b-" + attempt, tried, months, start, true);
-                fits = fits && !twin.getForeignAccounts().brokeThisMonth()
-                        && Math.abs(twin.getExpectations().getCredibility() - (start[0] + (Expectations.KMAX - start[0]) / Expectations.GAIN_MONTHS)) <= 1e-12;
-            }
-            if (attempt == seeds - 1 || fits) {
-                a = candidate;
-                b = twin;
-                c0 = start[0];
-                creditSeed = tried;
-                k = months;
-            }
-        }
-        out.printf("   credibility fixture: pegged at month %d (smoothed inflation %.4f, target band +-%.2f), seed %d, break %d months after the revaluation%n",
-                pegMonth, pegSmoothed, Expectations.TOLERANCE, creditSeed, k);
-        assertTrue("fixture: the doubt city's peg broke within " + k + " months of the revaluation", a.getForeignAccounts().brokeThisMonth());
-        if (a.getForeignAccounts().brokeThisMonth()) {
-            double afterA = a.getExpectations().getCredibility();
-            double afterB = b.getExpectations().getCredibility();
-            assertTrue("fixture: the twin's peg did not break that month, and the city's did", !b.getForeignAccounts().brokeThisMonth());
-            assertTrue("fixture: the twin's credibility climbed that month (the bank's gain branch, miss within tolerance)",
-                    Math.abs(afterB - (c0 + (Expectations.KMAX - c0) / Expectations.GAIN_MONTHS)) <= 1e-12);
-            // The month's gain is linear in credibility, so the dent shows in the difference once the gain's pull is divided out.
-            double dent = (afterB - afterA) / (1 - 1.0 / Expectations.GAIN_MONTHS);
-            out.printf("   credibility %.4f before the break month: %.4f in the twin that held, %.4f in the city that broke%n", c0, afterB, afterA);
-            double aim = a.getDebtManager().getInflationTarget();
-            out.printf("   the smoothed inflation that month: %.4f in the twin, %.4f in the city (the band %.4f to %.4f)%n",
-                    b.getExpectations().getSmoothedInflation(), a.getExpectations().getSmoothedInflation(), aim - Expectations.TOLERANCE, aim + Expectations.TOLERANCE);
-            close("the month a peg broke, credibility fell by PEG_BREAK_DENT of its distance to KMIN", dent,
-                    Expectations.PEG_BREAK_DENT * (c0 - Expectations.KMIN), 1e-9);
-        }
+        Game a = creditTown("xr2-credibility-a"), b = creditTown("xr2-credibility-b");
+        ForeignAccounts afx = a.getForeignAccounts(), bfx = b.getForeignAccounts();
+        double c0 = a.getExpectations().getCredibility();
+        assertTrue("fixture: the two cities are alike to the bit before the month: pegged, credibility CREDIT_START, a based index on a year of prices at the target, the same vault and shadow",
+                afx.getRegime() == PEG && bfx.getRegime() == PEG && c0 == CREDIT_START && Double.compare(c0, b.getExpectations().getCredibility()) == 0
+                        && a.getPriceIndex().isBased() && a.getPriceIndex().hasRate()
+                        && Math.abs(a.getPriceIndex().inflation() - a.getDebtManager().getInflationTarget()) <= 1e-9
+                        && Double.compare(afx.getReservesUsd(), bfx.getReservesUsd()) == 0 && Double.compare(afx.getShadowRate(), bfx.getShadowRate()) == 0);
+        double gapBreaking = breakingGap(afx);
+        pegWithGap(a, gapBreaking);
+        pegWithGap(b, 0);
+        play(a, 1);
+        play(b, 1);
+        out.printf("   credibility fixture: the city's peg struck %.3f under its shadow (a sale %.0f times what its vault could spare above the floor), the twin's at it%n",
+                gapBreaking, BREAK_MARGIN);
+        assertTrue("fixture: the city reached its peg break, by the vault its gap was struck to empty", afx.brokeThisMonth() && afx.getLastBreakCause() == ForeignAccounts.BreakCause.VAULT);
+        double afterA = a.getExpectations().getCredibility();
+        double afterB = b.getExpectations().getCredibility();
+        assertTrue("fixture: the twin's peg did not break that month, and the city's did", !bfx.brokeThisMonth() && afx.brokeThisMonth());
+        assertTrue("the twin's credibility follows the bank's gain branch, miss within tolerance",
+                Math.abs(afterB - (c0 + (Expectations.KMAX - c0) / Expectations.GAIN_MONTHS)) <= 1e-12);
+        // The month's gain is linear in credibility, so the dent shows in the difference once the gain's pull is divided out.
+        double dent = (afterB - afterA) / (1 - 1.0 / Expectations.GAIN_MONTHS);
+        out.printf("   credibility %.4f before the break month: %.4f in the twin that held, %.4f in the city that broke%n", c0, afterB, afterA);
+        double aim = a.getDebtManager().getInflationTarget();
+        out.printf("   the smoothed inflation that month: %.4f in the twin, %.4f in the city (the band %.4f to %.4f)%n",
+                b.getExpectations().getSmoothedInflation(), a.getExpectations().getSmoothedInflation(), aim - Expectations.TOLERANCE, aim + Expectations.TOLERANCE);
+        close("the month a peg broke, credibility fell by PEG_BREAK_DENT of its distance to KMIN", dent,
+                Expectations.PEG_BREAK_DENT * (c0 - Expectations.KMIN), 1e-9);
         Expectations bare = new Expectations();
         double was = bare.getCredibility();
         bare.pegBroke();
@@ -1074,7 +1020,7 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the month had hot money arrive, depart and leave on doubt (" + String.format("%,.1fk, %,.1fk, %,.1fk",
                 doubting.getArrived(), doubting.getDeparted(), doubting.getDoubtDeparted()) + ")",
                 doubting.getArrived() > 0 && doubting.getDeparted() > 0 && doubting.getDoubtDeparted() > 0);
-        assertTrue("the saved array is 24 slots long: XR2's 16, the month's three and XR4's five (what ran home in a risk-off)", saved.length == SAVE_SLOTS);
+        assertTrue("the saved array is CapitalFlows.SAVE_SLOTS (" + SAVE_SLOTS + ") long: XR2's 16, the month's three, XR4's five (what ran home in a risk-off) and FB3's two peaks", saved.length == SAVE_SLOTS);
         assertTrue("...slots 16, 17 and 18 are the month's arrived, departed and doubtDeparted", saved[SLOT_ARRIVED] == doubting.getArrived()
                 && saved[SLOT_DEPARTED] == doubting.getDeparted() && saved[SLOT_DOUBT_DEPARTED] == doubting.getDoubtDeparted());
         CapitalFlows back = restored(doubting);
@@ -1139,40 +1085,31 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: a city that pays the world rate attracts nothing", empty.getStock() == 0);
         close("a doubt with no stock to take leaves nothing on doubt", empty.getDoubtDeparted(), 0, 0);
 
-        // In a city: a peg a fifth over the D$ (a revaluation the shadow is far from), the surplus keeping the vault, hot money at home.
-        Game g = null;
-        double shareStruck = 0, stockBefore = 0;
-        for (int attempt = 0; attempt < 6 && g == null; attempt++) {
-            Game candidate = doubtTown("xr2-doubt-" + attempt, attempt == 0 ? 0 : SEED + attempt);
-            ForeignAccounts fx = candidate.getForeignAccounts();
-            play(candidate, 1);
-            if (fx.getRegime() == PEG && !fx.brokeThisMonth() && fx.getDoubtShare() > 0 && candidate.getCapitalFlows().getStock() > 0) {
-                g = candidate;
-                shareStruck = fx.getDoubtShare();
-                stockBefore = candidate.getCapitalFlows().getStock();
-            }
-        }
-        assertTrue("fixture: a city pegged a fifth under its shadow held the month, with hot money in the city and a doubt struck", g != null);
-        if (g != null) {
-            ForeignAccounts fx = g.getForeignAccounts();
-            CapitalFlows hot = g.getCapitalFlows();
-            assertTrue("fixture: the gap is past BREAK_GAP (" + String.format("%.3f", fx.getLastPegGap()) + ")", fx.getLastPegGap() > ForeignAccounts.BREAK_GAP);
-            close("the doubt share struck is hazard() of the gap, as the last reprice left it", shareStruck, ForeignAccounts.hazard(fx.getLastPegGap()), 1e-12);
-            double lifetimeBefore = hot.getDoubtDepartedLifetime();
-            play(g, 1);
-            double departed = hot.getDoubtDeparted(), left = hot.getStock();
-            out.printf("   hot money US$%,.0fk at the month's top, the doubt %.2f%%: %,.1fk left on doubt, %,.0fk remain%n", stockBefore, shareStruck * 100, departed, left);
-            // XR4: a risk-off in force sends home its share of what the doubt left, so the stock the doubt took its share of is what remains and what the risk-off took.
-            assertTrue("the month's doubt departure is the stock times the share the last reprice struck (the share of the stock after its own move)",
-                    departed > 0 && Math.abs(departed / (left + departed + hot.getRiskOffDeparted()) - shareStruck) <= 1e-9);
-            assertTrue("...it is inside what departed that month, and the lifetime rose by it", hot.getDeparted() >= departed - 1e-9
-                    && Math.abs(hot.getDoubtDepartedLifetime() - lifetimeBefore - departed) <= 1e-9);
-            assertTrue("...and the audit closes (residual " + String.format("%.4f", g.getLastMoneyAudit().residual) + ")", ExchangeRateCheck.auditCloses(g));
-        }
+        // In a city: a peg a fifth under its shadow (a revaluation the shadow is far from, DOUBT_GAP), hot money placed at home, the market quiet. CAUSED (FS10), where this
+        // section once tried six seeds of a played doubt town for a month with a doubt struck: the reprice of the first month strikes it at the gap.
+        Game g = causedDoubtTown("xr2-doubt", false);
+        ForeignAccounts fx = g.getForeignAccounts();
+        CapitalFlows hot = g.getCapitalFlows();
+        play(g, 1);
+        double shareStruck = fx.getDoubtShare(), stockBefore = hot.getStock();
+        assertTrue("fixture: a city pegged a fifth under its shadow held the month, with hot money in the city and a doubt struck",
+                fx.getRegime() == PEG && !fx.brokeThisMonth() && shareStruck > 0 && stockBefore > 0);
+        assertTrue("fixture: the gap is past BREAK_GAP (" + String.format("%.3f", fx.getLastPegGap()) + ")", fx.getLastPegGap() > ForeignAccounts.BREAK_GAP);
+        close("the doubt share struck is hazard() of the gap, as the last reprice left it", shareStruck, ForeignAccounts.hazard(fx.getLastPegGap()), 1e-12);
+        double lifetimeBefore = hot.getDoubtDepartedLifetime();
+        play(g, 1);
+        double departed = hot.getDoubtDeparted(), left = hot.getStock();
+        out.printf("   hot money US$%,.0fk at the month's top, the doubt %.2f%%: %,.1fk left on doubt, %,.0fk remain%n", stockBefore, shareStruck * 100, departed, left);
+        // XR4: a risk-off in force sends home its share of what the doubt left, so the stock the doubt took its share of is what remains and what the risk-off took.
+        assertTrue("the month's doubt departure is the stock times the share the last reprice struck (the share of the stock after its own move)",
+                departed > 0 && Math.abs(departed / (left + departed + hot.getRiskOffDeparted()) - shareStruck) <= 1e-9);
+        assertTrue("...it is inside what departed that month, and the lifetime rose by it", hot.getDeparted() >= departed - 1e-9
+                && Math.abs(hot.getDoubtDepartedLifetime() - lifetimeBefore - departed) <= 1e-9);
+        assertTrue("...and the audit closes (residual " + String.format("%.4f", g.getLastMoneyAudit().residual) + ")", ExchangeRateCheck.auditCloses(g));
     }
 
-    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). */
-    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24;
+    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them, FB3 the peaks; the model's own count). */
+    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = CapitalFlows.SAVE_SLOTS;
 
     static CapitalFlows restored(CapitalFlows f) {
         CapitalFlows back = new CapitalFlows();
@@ -1294,6 +1231,9 @@ public class CurrencyRegimeCheck {
 
     /* ================= 7. under a peg the dial is the US's rate plus the spread; the aim ================= */
 
+    /** The year of prices section 7 puts the index on: rising 6%, a few points over the 2% target, so the inflation rule's dial is not the neutral one. */
+    static final double PRICE_RISE = .06;
+
     /** Plays a month and returns the dial it set: nothing else moves the policy rate in a month. */
     static double dialAfter(Game g) {
         quietly(() -> g.simulateMonths(1));
@@ -1319,9 +1259,11 @@ public class CurrencyRegimeCheck {
     static void underAPegTheDialIsTheUSes() {
         out.println("\n--- 7. under a peg the dial is the US's rate plus the spread; the aim ---");
 
-        // Two depots stand beside the four ordered (PT1-M4): see town(); without them the price index has no rate at month 60.
-        Game g = town("xr2-dial", Founding.defaults(), 2);
-        play(g, 60);
+        // CAUSED (FS10): the price index is put back on a year of prices (PriceIndex.restore(), as CurrencyCheck's section 5 does), so no month count or depot count of a
+        // played town decides whether the inflation rule has a rate to read. The year rises PRICE_RISE, well off the target, so the rule asks a dial of its own.
+        Game g = pegTown("xr2-dial");
+        assertTrue("fixture: the price index is based, so a year of prices can be put back on it", g.getPriceIndex().isBased());
+        aYearOfPrices(g, PRICE_RISE);
         ForeignAccounts fx = g.getForeignAccounts();
         DebtManager dm = g.getDebtManager();
         assertTrue("fixture: the city has a year of prices, so the inflation rule has a rate to read", g.getPriceIndex().hasRate());
@@ -1456,50 +1398,18 @@ public class CurrencyRegimeCheck {
     static final String EDGE_BILL = "The band's or the peg's dollars";
 
     /**
-     * BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. A month at the peg is a surplus only where the hot money the dial draws
-     * (the financial account) outruns the current account's deficit, and the two move together with the builders: with 12 depots standing
-     * the first month at the peg is US$210.8k out on current account and US$180.4k in on financial, so the vault bought nothing (0.0k) and the
-     * section's bill was 0; since the builders-first test stopped counting a depot on site twice (4f66f5fd) the town of 500 houses needs more
-     * builders than the 12 PEG_DEPOTS stood on 2026-11-04 (US$136k bought then): 18 buy US$6.8k, 19 13.2k, 20 17.1k, 22 40.0k, 24 19.7k, and
-     * 12, 16, 17, 25 and 30 nothing - a surplus that comes and goes with the count, a hair either side of a deficit. The count is therefore
-     * SEARCHED for: the first of these whose first month at the peg owes the edge's bill the section asserts on (more than 100 x
-     * PriceLevel.FACTOR of local money), found once on a trial town and kept for the cities of the section.
-     *
-     * XR5, 2026-11-06 (THE HOLD PAYS THE PRESSURE): the vault no longer buys the month's surplus, it buys the dollars that bring the rate up to the peg
-     * when the shadow stands UNDER it. The same towns still buy, for the pressure's reason: at the first month at the peg the dial is tied to the US's
-     * rate plus the spread (30 points), the carry draws the hot money, and the shadow stands 0.7879 under a peg of 1.0292 at 12 depots - a lift of 0.267 in
-     * logs, bought as US$952k. The search still asks for the bill; the fixture assertion below now asks for its cause, the shadow under the peg.
+     * CAUSED (FS10), where surplusTown() searched trial towns over SURPLUS_DEPOTS for a first month at the peg that owed the edge's bill: a pegged town of PEG_DEPOTS
+     * depots with the large spread, its peg struck ABOVE its shadow (pegWithGap() with a negative gap) by the log gap billGap() sizes from the bill the section asks
+     * for, so the shadow stands under the peg and the vault buys the lift (XR5) on any town. The payer is the toggle's.
      */
-    static final int[] SURPLUS_DEPOTS = { PEG_DEPOTS, 18, 20, 22, 24, 30, 36 };
-    static int surplusDepotsFound = 0;
-
-    static int surplusDepots() {
-        if (surplusDepotsFound == 0) {
-            for (int depots : SURPLUS_DEPOTS) {
-                Game trial = pegTown("xr2-surplus-trial-" + depots, false, depots);
-                quietly(() -> {
-                    trial.setCurrencyRegime(PEG);
-                    trial.getDebtManager().setPegSpread(.30);
-                });
-                play(trial, 1);
-                if (trial.getForeignAccounts().getEdgeOwedLocal() > 100 * PriceLevel.FACTOR) {
-                    surplusDepotsFound = depots;
-                    break;
-                }
-            }
-            if (surplusDepotsFound == 0) surplusDepotsFound = PEG_DEPOTS;   // none met it: section 9's own fixture assertion says so
-        }
-        return surplusDepotsFound;
-    }
-
-    /** A city pegged at 36 months with a large positive spread: the dial high, money arriving, the shadow under the peg and the vault buying (XR5: the lift, not the month's surplus). */
-    static Game surplusTown(String label, ForeignAccounts.EdgePayer payer) {
-        Game g = pegTown(label, false, surplusDepots());
+    static Game pressedTown(String label, ForeignAccounts.EdgePayer payer) {
+        Game g = pegTown(label, PEG_DEPOTS, false);
         quietly(() -> {
             g.setCurrencyRegime(PEG);
             g.getDebtManager().setPegSpread(.30);
             g.setEdgePayer(payer);
         });
+        pegWithGap(g, -billGap(g.getForeignAccounts()));
         return g;
     }
 
@@ -1527,8 +1437,8 @@ public class CurrencyRegimeCheck {
         close("...getDollarsBought() and its lifetime", bare.getDollarsBought() + bare.getDollarsBoughtLifetime(), 500, 1e-9);
         close("...and it buys nothing for nothing", bare.buyDollarsForVault(0) + bare.buyDollarsForVault(-5) + bare.buyDollarsForVault(Double.NaN), 0, 0);
 
-        Game cb = surplusTown("xr2-payer-cb", ForeignAccounts.EdgePayer.CENTRAL_BANK);
-        Game tr = surplusTown("xr2-payer-tr", ForeignAccounts.EdgePayer.TREASURY);
+        Game cb = pressedTown("xr2-payer-cb", ForeignAccounts.EdgePayer.CENTRAL_BANK);
+        Game tr = pressedTown("xr2-payer-tr", ForeignAccounts.EdgePayer.TREASURY);
         ForeignAccounts cbFx = cb.getForeignAccounts(), trFx = tr.getForeignAccounts();
         assertTrue("fixture: two cities, pegged with a spread of 30 points, and the payer on the toggle is each's",
                 cbFx.getRegime() == PEG && trFx.getRegime() == PEG && cbFx.getEdgePayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
@@ -1542,9 +1452,13 @@ public class CurrencyRegimeCheck {
         double owed = cbFx.getEdgeOwedLocal();
         out.printf("   the month after the peg: the vault bought US$%,.0fk, owed %,.0fk of local money%n", cbFx.getEdgeBoughtUsd(), owed);
         assertTrue("fixture: money arrived and the vault bought dollars at the peg, the same in both cities (the shadow under the peg, " + String.format("%.4f under %.4f", cbFx.getShadowRate(), cbFx.getPegRate())
-                        + ": the hold bought the lift), and the payer is recorded with it",
-                owed > 100 * PriceLevel.FACTOR && Double.compare(owed, trFx.getEdgeOwedLocal()) == 0 && cbFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
-                        && trFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.TREASURY && cbFx.getEdgeBoughtUsd() > 0 && cbFx.getLastPegGap() < 0);
+                    + ": the hold bought the lift), and the payer is recorded with it",
+                owed > 100 * PriceLevel.FACTOR && trFx.getEdgeOwedLocal() > 100 * PriceLevel.FACTOR
+                    && cbFx.getEdgeBoughtUsd() > 0 && cbFx.getLastPegGap() < 0);
+        assertTrue("the same purchase is owed in both cities, with each payer recorded",
+                Double.compare(owed, trFx.getEdgeOwedLocal()) == 0
+                        && cbFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
+                        && trFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.TREASURY);
         assertTrue("fixture: nothing was paid yet: the bill is settled the month after, and the cities are alike to the bit until it is",
                 cb.getCentralBank().getDollarsBought() == 0 && billPaid(tr) == 0 && Double.compare(cb.getCentralBank().m0(), tr.getCentralBank().m0()) == 0
                         && Double.compare(cb.getCash(), tr.getCash()) == 0);
@@ -1640,7 +1554,7 @@ public class CurrencyRegimeCheck {
 
     /** The central bank keeps nothing, as FX8 states it: equity less the vault, plus what it paid in new money for the vault's dollars, less the remittance due plus the loss carried. 0 when it keeps nothing. */
     static double kept(CentralBank cb) {
-        return cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime() - (cb.getRemittanceDue() - cb.getLossCarried());
+        return cb.equity() - cb.getVault() + cb.vaultInNewMoney() - (cb.getRemittanceDue() - cb.getLossCarried());
     }
 
     /** A miss, as LongPlaytest counts one: past a cent and past a billionth of M0. */
@@ -1671,77 +1585,52 @@ public class CurrencyRegimeCheck {
     static void savedMidPeg() {
         out.println("\n--- 10. saved and loaded mid-peg ---");
 
-        /*
-         * ...AT THE FIRST MONTH IT HAS ALL FOUR (EM1, 2026-10-29). A purchase is owed only in a month the peg bought dollars at its
-         * edge, and the peg's chance of breaking is the market's: at 0.8.72 the first month after the revaluation had a purchase owed
-         * (month 46, D$423k), and on EM1's path it has none in the seeds tried - the first purchase owed is in month 55, and the
-         * default seed and SEED + 1 and + 2 break before it. The fixture is made to cause it: each candidate is played up to a year
-         * (the twelve months the section plays on after the save) until the month it is pegged, held, in doubt and owes a purchase;
-         * a peg that breaks first is no candidate.
-         */
-        /*
-         * ...WITH THE WORLD WANTING THE CITY'S MONEY (WN3, after EM1). The young town's month at the peg is a deficit (its companies'
-         * buybacks bought from the world took D$549k out of the city in month 46, against imports of D$608k), so the vault of
-         * the peg sells dollars every month, from US$18.8k at month 46 to US$3.9k at 55, and on the Random path every candidate that
-         * has outlived the doubt gives out by the vault at month 56 - one month before credibility has climbed and hot money floods
-         * in (month 57, D$1.3-1.5M owed), which is the first month with a purchase owed. The world is given an appetite for the
-         * city, as FloatLinkCheck's played city is given one (a tenth of the hot money it had, as early in a boom): the dollars it
-         * brings keep the vault above its floor to month 57, and the candidates that survive the doubt (SEED + 2 and + 3) are pegged,
-         * held, in doubt and owe a purchase in the month the loop's year ends.
-         */
-        /*
-         * ...ON TODAY'S DEATHS (R0b call 7). The candidates are played with the causes of 1900 held off, from their first month, and the
-         * city loaded from the one that qualifies is held too (the hold is not saved). The year's search needs a month with all four, and
-         * the first purchase owed is a month of this young town's trade, sized on today's deaths; on 1900's causes no candidate of the six
-         * was pegged, held, in doubt and owing a purchase in the twelve months it was played.
-         */
-        Game live = null;
-        for (int attempt = 0; attempt < 6 && live == null; attempt++) {
-            Game candidate = doubtTown("xr2-save-" + attempt, attempt == 0 ? 0 : SEED + attempt, false, true);
-            FloatLinkCheck.worldWantsPaper(candidate);
-            ForeignAccounts fx = candidate.getForeignAccounts();
-            for (int m = 0; m < 12 && live == null && !fx.brokeThisMonth(); m++) {
-                play(candidate, 1);
-                if (fx.getRegime() == PEG && fx.getEdgeOwedLocal() > 0 && fx.getDoubtShare() > 0 && fx.isHeld()) live = candidate;
-            }
+        // CAUSED (FS10), where this section once played six candidate towns up to a year for a month with all four. The doubt town (causedDoubtTown()) is built with the causes of
+        // 1900 held off, as the city loaded from it is (the hold is not saved). Its first month is the revaluation's sale: it strikes a doubt at the gap and builds the hold's
+        // support. The peg is then moved to a chosen rate, half the support's fading under the shadow, so the next month the hold buys back part of what it sold: a purchase
+        // owed, the shadow still over the peg (the doubt struck), the rate held away from it.
+        Game live = causedDoubtTown("xr2-save", true);
+        ForeignAccounts lfx = live.getForeignAccounts();
+        play(live, 1);
+        double fading = faded(lfx);
+        quietly(() -> live.repeg(lfx.getShadowRate() * Math.exp(fading / 2)));
+        play(live, 1);
+        assertTrue("fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow",
+                lfx.getRegime() == PEG && !lfx.brokeThisMonth() && lfx.getEdgeOwedLocal() > 0 && lfx.getDoubtShare() > 0 && lfx.isHeld());
+        final Game saved = live;
+        ForeignAccounts fx = live.getForeignAccounts();
+        out.printf("   saved at month %d: owed %,.1fk, doubt %.2f%%, the shadow %.4f over a peg of %.4f%n", live.getMonth(), fx.getEdgeOwedLocal(),
+                fx.getDoubtShare() * 100, fx.getShadowRate(), fx.getPegRate());
+        assertTrue("saved to its scratch folder", live.saveGame(2, "mid-peg").ok);
+        Game loaded = new Game(live.getGameFiles());
+        loaded.holdCausesOfDeathOff();   // R0b call 7: as the candidates; the hold is not saved
+        quietly(() -> loaded.loadGameSave(2));
+        ForeignAccounts bfx = loaded.getForeignAccounts();
+        assertTrue("the loaded city keeps the regime, the payer, the peg, the shadow, the doubt, what is owed and who owes it, to the bit",
+                sameBits(regimeFields(fx), regimeFields(bfx)));
+        assertTrue("...and the hot money's doubt, the vault and the dial", Double.compare(loaded.getCapitalFlows().getDoubtDepartedLifetime(),
+                live.getCapitalFlows().getDoubtDepartedLifetime()) == 0 && Double.compare(bfx.getReservesUsd(), fx.getReservesUsd()) == 0
+                && Double.compare(loaded.getDebtManager().getPegSpread(), live.getDebtManager().getPegSpread()) == 0
+                && loaded.getDebtManager().getAim() == live.getDebtManager().getAim());
+        int monthsApart = 0, firstApart = 0, regimeApart = 0;
+        double worst = 0;
+        boolean broke = false;
+        for (int m = 1; m <= 12; m++) {
+            quietly(() -> {
+                saved.simulateMonths(1);
+                loaded.simulateMonths(1);
+            });
+            double[] a = figures(saved), b = figures(loaded);
+            for (int k = 0; k < a.length; k++) worst = Math.max(worst, Math.abs(a[k] - b[k]) / Math.max(1, Math.abs(a[k])));
+            if (!sameBits(a, b)) { monthsApart++; if (firstApart == 0) firstApart = m; }
+            if (fx.getRegime() != bfx.getRegime()) regimeApart++;
+            broke |= fx.brokeThisMonth();
         }
-        assertTrue("fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow", live != null);
-        if (live != null) {
-            final Game saved = live;
-            ForeignAccounts fx = live.getForeignAccounts();
-            out.printf("   saved at month %d: owed %,.1fk, doubt %.2f%%, the shadow %.4f over a peg of %.4f%n", live.getMonth(), fx.getEdgeOwedLocal(),
-                    fx.getDoubtShare() * 100, fx.getShadowRate(), fx.getPegRate());
-            assertTrue("saved to its scratch folder", live.saveGame(2, "mid-peg").ok);
-            Game back = new Game(live.getGameFiles());
-            back.holdCausesOfDeathOff();   // R0b call 7: as the candidates; the hold is not saved
-            quietly(() -> back.loadGameSave(2));
-            ForeignAccounts bfx = back.getForeignAccounts();
-            assertTrue("the loaded city keeps the regime, the payer, the peg, the shadow, the doubt, what is owed and who owes it, to the bit",
-                    sameBits(regimeFields(fx), regimeFields(bfx)));
-            assertTrue("...and the hot money's doubt, the vault and the dial", Double.compare(back.getCapitalFlows().getDoubtDepartedLifetime(),
-                    live.getCapitalFlows().getDoubtDepartedLifetime()) == 0 && Double.compare(bfx.getReservesUsd(), fx.getReservesUsd()) == 0
-                    && Double.compare(back.getDebtManager().getPegSpread(), live.getDebtManager().getPegSpread()) == 0
-                    && back.getDebtManager().getAim() == live.getDebtManager().getAim());
-            int apart = 0, firstApart = 0, regimeApart = 0;
-            double worst = 0;
-            boolean broke = false;
-            for (int m = 1; m <= 12; m++) {
-                quietly(() -> {
-                    saved.simulateMonths(1);
-                    back.simulateMonths(1);
-                });
-                double[] a = figures(saved), b = figures(back);
-                for (int k = 0; k < a.length; k++) worst = Math.max(worst, Math.abs(a[k] - b[k]) / Math.max(1, Math.abs(a[k])));
-                if (!sameBits(a, b)) { apart++; if (firstApart == 0) firstApart = m; }
-                if (fx.getRegime() != bfx.getRegime()) regimeApart++;
-                broke |= fx.brokeThisMonth();
-            }
-            out.printf("   12 months on: %d differ in the rate, vault, M0, cash or credibility to the bit; the largest relative gap %.2e; the peg %s%n", apart, worst,
-                    broke ? "broke in the run" : "held");
-            assertTrue("the next 12 months of rate, vault, M0, cash and credibility equal the twin that never saved (within SaveFileCheck's replay tolerance, 1e-9)", worst < 1e-9);
-            assertTrue("...and the regime is the same every month, the break (if any) in the same month", regimeApart == 0 && fx.getBreaks() == bfx.getBreaks());
-            assertTrue("...to the bit" + (apart == 0 ? "" : " (first apart: month " + firstApart + ")"), apart == 0);
-        }
+        out.printf("   12 months on: %d differ in the rate, vault, M0, cash or credibility to the bit; the largest relative gap %.2e; the peg %s%n", monthsApart, worst,
+                broke ? "broke in the run" : "held");
+        assertTrue("the next 12 months of rate, vault, M0, cash and credibility equal the twin that never saved (within SaveFileCheck's replay tolerance, 1e-9)", worst < 1e-9);
+        assertTrue("...and the regime is the same every month, the break (if any) in the same month", regimeApart == 0 && fx.getBreaks() == bfx.getBreaks());
+        assertTrue("...to the bit" + (monthsApart == 0 ? "" : " (first monthsApart: month " + firstApart + ")"), monthsApart == 0);
 
         // A bare currency with every regime field set: a band mid-crawl with a purchase owed by the treasury, and a peg already broken.
         ForeignAccounts band = book(TRADE, TRADE, DEEP, SEED, BAND);
@@ -1806,8 +1695,8 @@ public class CurrencyRegimeCheck {
         close("...and the vault is the saved vault, in dollars", Math.abs(old.getReservesUsd() - band.getReservesUsd()), 0, 1e-6 * band.getReservesUsd());
 
         // The hold's support is slot 147, the last (XR5): a band whose edges dealt carries one, and an array cut before it restores a hold with none.
-        assertTrue("fixture: the band's edges have dealt and it carries a support (getHoldFelt() " + String.format("%.4f", band.getHoldFelt()) + "), the array 156 slots long, gold's three (149-151, GD2) and the mint's four (152-155, GD3) after the peg's anchor (slot 148, WN4b)",
-                band.getHoldFelt() != 0 && full.length == 156);
+        assertTrue("fixture: the band's edges have dealt and it carries a support (getHoldFelt() " + String.format("%.4f", band.getHoldFelt()) + "), the array ForeignAccounts.SAVE_SLOTS long, gold's three (149-151, GD2) and the mint's four (152-155, GD3) after the peg's anchor (slot 148, WN4b)",
+                band.getHoldFelt() != 0 && full.length == ForeignAccounts.SAVE_SLOTS);
         same("slot 147 is the hold's support, and restore() reads it back to the bit", full[147], band.getHoldFelt());
         ForeignAccounts cut = new ForeignAccounts();
         cut.restore(Arrays.copyOf(full, 147));
@@ -1897,24 +1786,16 @@ public class CurrencyRegimeCheck {
     static void theHotMoneysMonthCrossesASave() {
         out.println("\n--- 12. the hot money's month crosses a save ---");
 
-        // A pegged city a fifth under its shadow: a doubt struck by one reprice acts the next month, so two months from the repeg.
-        Game live = null;
-        int tried = 0;
-        for (int attempt = 0; attempt < 6 && live == null; attempt++) {
-            tried++;
-            Game candidate = doubtTown("fx8-hot-" + attempt, attempt == 0 ? 0 : SEED + attempt);
-            play(candidate, 2);
-            ForeignAccounts fx = candidate.getForeignAccounts();
-            CapitalFlows hot = candidate.getCapitalFlows();
-            if (fx.getRegime() == PEG && !fx.brokeThisMonth() && fx.getDoubtShare() > 0 && hot.getDoubtDeparted() > 0) live = candidate;
-        }
-        assertTrue("fixture: a pegged city held two months past its repeg, hot money leaving on doubt this month and a doubt struck for the next (attempt " + tried + ")",
-                live != null);
-        if (live == null) return;
-        doubtCitySaved = live;
-        final Game saved = live;
+        // A pegged city a fifth under its shadow: a doubt struck by one reprice acts the next month, so two months from the repeg. CAUSED (FS10), where this section once
+        // played six seeds of a doubt town for it: the hot money is placed, the market quiet, the revaluation DOUBT_GAP under the shadow (causedDoubtTown()).
+        Game live = causedDoubtTown("fx8-hot", false);
+        play(live, 2);
         ForeignAccounts fx = live.getForeignAccounts();
         CapitalFlows hot = live.getCapitalFlows();
+        assertTrue("fixture: a pegged city held two months past its repeg, hot money leaving on doubt this month and a doubt struck for the next",
+                fx.getRegime() == PEG && !fx.brokeThisMonth() && fx.getDoubtShare() > 0 && hot.getDoubtDeparted() > 0);
+        doubtCitySaved = live;
+        final Game saved = live;
         out.printf("   saved at month %d: hot money arrived %,.1fk, departed %,.1fk of which %,.1fk on doubt (%.2f%% of the stock), the stock %,.0fk%n", live.getMonth(),
                 hot.getArrived(), hot.getDeparted(), hot.getDoubtDeparted(), fx.getDoubtShare() * 100, hot.getStock());
         assertTrue("fixture: the month it is saved in had hot money arrive, depart, and leave on doubt, and the doubt left is part of what departed",
@@ -1986,6 +1867,7 @@ public class CurrencyRegimeCheck {
                 back.getRegime() == PEG && back.getDoubtShare() == 0 && Double.compare(back.getPegRate(), back.getRate()) == 0);
 
         // In a city: two copies of section 12's save, the month the hot money left on doubt. One leaves the peg between two presses.
+        // CAUSED (FS10): section 12's city is built the caused way (causedDoubtTown()) every run, so the twins always have a save to load.
         Game source = doubtCitySaved;
         assertTrue("fixture: section 12 left a saved city to load twins from", source != null);
         if (source == null) return;
@@ -2527,6 +2409,98 @@ public class CurrencyRegimeCheck {
                 exactMonths >= lower);
         assertTrue("...and the projection is not the whole story for a vault that falls under THIN_COVER: it held fewer months than projected (" + held + " against " + String.format("%.2f", atEntry) + ")",
                 held < Math.floor(atEntry));
+    }
+
+    /** XR7/XR8: force the exponential inverse, rather than wait for a player to choose a deep repeg. */
+    static void aDeepRepegsPurchaseIsBounded() {
+        out.println("\n--- 19. a deep repeg cannot buy years of output in a month (XR7) ---");
+        for (double multiple : new double[] { 3, 5 }) {
+            ForeignAccounts fx = book(TRADE, TRADE, DEEP, 0, PEG);
+            fx.repeg(fx.getRate() * multiple);
+            double annual = 12 * fx.getGdpTrailing(), before = fx.getReservesUsd();
+            month(fx, TRADE, TRADE);
+            double gap = Math.log(fx.getLastBreakShadow() / fx.getPegRate());
+            double unbounded = ForeignAccounts.interventionLocalFor(Math.log(multiple), annual);
+            out.printf("   %sx: inverse %,f, audit tolerance %.12f (cent %.12f)%n", multiple, unbounded, MoneyAudit.tolerance(unbounded), MoneyAudit.CENT);
+            same("the audit's tolerance at the old exponential bill is still its cent floor", MoneyAudit.tolerance(unbounded), MoneyAudit.CENT);
+            assertTrue("fixture: holding " + multiple + " times the shadow costs more than HOLD_PURCHASE_YEARS of output (" + unbounded / annual + " years)",
+                    unbounded > ForeignAccounts.HOLD_PURCHASE_YEARS * annual);
+            assertTrue("the deep repeg breaks at the purchase limit before buying or owing anything", fx.getRegime() == FLOAT
+                    && fx.getLastBreakCause() == ForeignAccounts.BreakCause.PURCHASE_LIMIT && fx.getEdgeBoughtLocal() == 0 && fx.getEdgeOwedLocal() == 0);
+            same("the purchase-limit break leaves the dollar vault whole", fx.getReservesUsd(), before);
+            ForeignAccounts restored = new ForeignAccounts();
+            restored.restore(fx.toSaveArray());
+            assertTrue("the appended purchase-limit cause crosses a save without moving prior cause ordinals", restored.getLastBreakCause() == ForeignAccounts.BreakCause.PURCHASE_LIMIT
+                    && Arrays.equals(restored.toSaveArray(), fx.toSaveArray()));
+            close("its strong-side landing uses the same signed overshoot", Math.log(fx.getRate() / fx.getLastBreakShadow()), ForeignAccounts.OVERSHOOT * gap, 1e-12);
+        }
+        for (double share : new double[] { .99, 1.01 }) {
+            ForeignAccounts fx = book(TRADE, TRADE, DEEP, 0, PEG);
+            double annual = 12 * fx.getGdpTrailing();
+            double lift = ForeignAccounts.interventionMove(share * ForeignAccounts.HOLD_PURCHASE_YEARS * annual, annual);
+            fx.repeg(fx.getRate() * Math.exp(lift));
+            month(fx, TRADE, TRADE);
+            assertTrue("the purchase bound brackets the inverse at " + share + " of HOLD_PURCHASE_YEARS", share < 1
+                    ? fx.getRegime() == PEG && fx.getEdgeBoughtLocal() > 0 && fx.getEdgeBoughtLocal() <= ForeignAccounts.HOLD_PURCHASE_YEARS * annual
+                    : fx.getLastBreakCause() == ForeignAccounts.BreakCause.PURCHASE_LIMIT && fx.getEdgeBoughtLocal() == 0);
+        }
+        ForeignAccounts band = book(TRADE, TRADE, DEEP, 0, BAND);
+        band.setBand(band.getRate() * 5, 0, ForeignAccounts.BAND_WIDTH);
+        month(band, TRADE, TRADE);
+        assertTrue("a band beyond the purchase limit gives way for the month without a purchase", band.getRegime() == BAND && band.getEdgeBoughtLocal() == 0
+                && band.getHoldFelt() == 0 && band.getRate() < band.bandStrongEdge());
+    }
+
+    /** A real player-chosen peg carrying nonzero support and a large unpaid purchase, for save/read checks (XR7). */
+    static Game supportedTown(String label) {
+        if (quiet == null) quiet = new PrintStream(OutputStream.nullOutputStream());
+        Game city = town(label, Founding.defaults(), 2);
+        play(city, 60);
+        ForeignAccounts fx = city.getForeignAccounts();
+        double annual = 12 * fx.getGdpTrailing();
+        quietly(() -> {
+            city.setCurrencyRegime(PEG);
+            city.repeg(fx.getRate() * Math.exp(ForeignAccounts.interventionMove(.35 * ForeignAccounts.HOLD_PURCHASE_YEARS * annual, annual)));
+        });
+        play(city, 1);
+        return city;
+    }
+
+    /** The actual DataSave JSON and Game loader must carry support already paid for, and the next bill must only replace its fade. */
+    static boolean savedHoldSupportChecks() {
+        Game live = supportedTown("xr7-save-support");
+        ForeignAccounts fx = live.getForeignAccounts();
+        double annual = 12 * fx.getGdpTrailing(), owed = fx.getEdgeOwedLocal();
+        if (fx.getRegime() != PEG || !(fx.getHoldFelt() > 0) || !(owed > ForeignAccounts.INTERVENTION_LINEAR * annual)) return false;
+        if (!live.saveGame(2, "supported peg").ok) return false;
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        DataSave json = gson.fromJson(gson.toJson(live.liveSaveForChecks()), DataSave.class);
+        if (Double.compare(json.getForeignAccounts()[147], fx.getHoldFelt()) != 0) return false;
+        Game back = new Game(live.getGameFiles());
+        quietly(() -> back.loadGameSave(2));
+        ForeignAccounts restored = back.getForeignAccounts();
+        if (!Arrays.equals(fx.toSaveArray(), restored.toSaveArray()) || restored.getHoldFelt() == 0) return false;
+
+        // Counterfactual: the same saved state with only its support erased pays the whole gap again.
+        ForeignAccounts paid = new ForeignAccounts(), erased = new ForeignAccounts();
+        paid.restore(restored.toSaveArray());
+        double[] missing = restored.toSaveArray();
+        missing[147] = 0;
+        erased.restore(missing);
+        Held paidMonth = heldMonth(paid, TRADE, TRADE, Double.NaN);
+        Held erasedMonth = heldMonth(erased, TRADE, TRADE, Double.NaN);
+        double paidNeed = paidMonth.deal * paidMonth.rateBefore, erasedNeed = erasedMonth.deal * erasedMonth.rateBefore;
+        System.out.printf("   saved support %.9f, next controlled need %.9f, erased-support need %.9f%n", restored.getHoldFelt(), paidNeed, erasedNeed);
+        if (!(paidNeed > 0 && erasedNeed > 2 * paidNeed)) return false;
+        play(live, 1);
+        play(back, 1);
+        System.out.printf("   paid large saved bill %.9f (%.4f years), audit residual %.12f, tolerance %.12f%n", owed, owed / annual,
+                live.getLastMoneyAudit().residual, MoneyAudit.tolerance(annual * ForeignAccounts.HOLD_PURCHASE_YEARS));
+        return Math.abs(live.getCentralBank().getDollarsBought() - owed) <= MoneyAudit.CENT
+                && Math.abs(fx.getHoldFelt() - restored.getHoldFelt()) <= 1e-9
+                && Math.abs(fx.getEdgeOwedLocal() - restored.getEdgeOwedLocal()) <= MoneyAudit.tolerance(fx.getEdgeOwedLocal())
+                && ExchangeRateCheck.auditCloses(live) && ExchangeRateCheck.auditCloses(back)
+                && Math.abs(live.getLastMoneyAudit().residual) <= MoneyAudit.CENT;
     }
 
     /** 21 as "21st", for a printed line. */

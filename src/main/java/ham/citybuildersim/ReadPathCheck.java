@@ -44,6 +44,14 @@ import java.util.Map;
  * The repetition is the point. A read path that mutates ONCE and then settles
  * would pass a before/after comparison; one that accumulates shows up as a field
  * that drifts further the more the screens are opened.
+ *
+ * FS17 (the flaky-suite sweep): "a city worth reading" is caused, not waited
+ * for. After its two played years the businesses' bond is issued by the bond
+ * desk's own call, the fund's hand buys half of what its biggest holder has of
+ * it and a share the world sells it, and an ask rests on the bond's book - so the
+ * fund's bond, its shares and the resting orders are not whatever the played
+ * months let the fund's rule and the holders reach. The reads' identities
+ * below are untouched.
  */
 public class ReadPathCheck {
 
@@ -889,6 +897,7 @@ public class ReadPathCheck {
         g.getForeignAccounts().getPegAnchor();
         g.getForeignAccounts().getPegPerAnchor();
         g.getForeignAccounts().getPegRate();
+        g.getForeignAccounts().getHoldFelt();
         g.getForeignAccounts().regimeWords();
         g.getDebtManager().tieRate();
         g.getDebtManager().tieMoney();
@@ -1260,7 +1269,7 @@ public class ReadPathCheck {
         g.getConstructionOutput();
         g.quoteBuild(template(g, "House"), 1);
         // ...and an order bar's several at once, its Build button's total (0.7.34)
-        BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3, template(g, "Water Treatment Plant"), 1));
+        BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3L, template(g, "Water Treatment Plant"), 1L));
         // ...and the overview's suggestions added up (0.7.38)
         BuildAdvice.quoteTotal(BuildAdvice.suggest(g));
         // ...and every gauge as served, with its one verdict (0.7.41): the owners' getters, each row's,
@@ -1301,9 +1310,9 @@ public class ReadPathCheck {
         g.buildFundingGap(template(g, "House"), 1);
         g.buildFundingGap(template(g, "Water Treatment Plant"), 1_000);
         // ...and a run of orders, which its funding page is sized to since 0.7.40
-        Map<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(template(g, "House"), 3);
-        run.put(template(g, "Water Treatment Plant"), 1_000);
+        Map<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(template(g, "House"), 3L);
+        run.put(template(g, "Water Treatment Plant"), 1_000L);
         g.buildRunInvoice(run);
         g.buildFundingGap(run);
         g.buildRunAhead(run);
@@ -1561,6 +1570,11 @@ public class ReadPathCheck {
             causeBook.getLastDeaths(cause); causeBook.getYearDeaths(cause); causeBook.getTotalDeaths(cause);
         }
         g.getHealth().getInfluenzaRate();
+        g.getHealth().getSickRateWithoutInfluenza();
+        g.getSickness().getAcuteShares();
+        g.getSickness().peopleSick(g.getCohorts());
+        g.getSickness().peoplePastTwoMonths(g.getCohorts());
+        for (AgeBand band : AgeBand.values()) g.getSickness().share(band);
         HouseholdBalance people = g.getHouseholdBalance();
         people.getHungryAtFullShelves(); people.getHungryPeople(); people.getDeliveredShare(); people.toSaveArray();
         for (int r = 0; r < Household.ROWS; r++) { people.getDisposable(r); people.getFixedCosts(r); }
@@ -1575,9 +1589,23 @@ public class ReadPathCheck {
     }
 
     public static void main(String[] args) throws Exception {
-
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        out.println("--- XR7: reads keep the support already bought under a peg ---");
+        Game supported = CurrencyRegimeCheck.supportedTown("xr7-read-support");
+        ForeignAccounts supportedFx = supported.getForeignAccounts();
+        assertTrue("fixture: a chosen peg has nonzero support and an unpaid nonlinear purchase", supportedFx.getRegime() == ForeignAccounts.Regime.PEG
+                && supportedFx.getHoldFelt() > 0 && supportedFx.getEdgeOwedLocal() > ForeignAccounts.INTERVENTION_LINEAR * 12 * supportedFx.getGdpTrailing());
+        double[] supportBefore = supportedFx.toSaveArray();
+        for (int i = 0; i < 10; i++) readEverything(supported);
+        assertTrue("reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit", java.util.Arrays.equals(supportBefore, supportedFx.toSaveArray()));
+        out.println("--- R2c: IP service flows and planner reads ---");
+        assertTrue("reading paid IP charges and net planner gains keeps the money still", LicenceFeesCheck.readChecks());
+        assertTrue("reading the public works' licence and its planners keeps the money still", PublicLicenceCheck.readChecks());
+        assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
+
+        out.println("--- R0f: the dated Money readers keep the saved rule still ---");
+        assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 
         Path root = TempDirs.create("readpath");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
@@ -1589,12 +1617,11 @@ public class ReadPathCheck {
         System.setOut(quiet);
         try {
             g.run();
-            // THE TAXES OPENED IN THE FIXTURE (R0): this section was written for a city that taxes from its first month, and "doubling the
-            // rate" below is a question about the profit tax's mechanics. A 1900 city has no profit tax until 1916 (the lever is held at zero,
-            // its setter refuses), so doubling the rate would double nothing. Every lever is opened here and the defaults put back, before
-            // a month has run, so the city is the one the section meant.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): this section was written for a city that taxes from its first month, and "doubling
+            // the rate" below is a question about the profit tax's mechanics. Until OP1 a 1900 city had no profit tax until 1916 (the lever was
+            // held at zero, its setter refused), so doubling the rate would double nothing. Since OP1 every lever is open from the founding, and
+            // the defaults are put back before a month has run, so the city is the one the section meant.
             g.getEconomyManager().getTaxPolicy().reset();
-            g.getEconomyManager().getTaxPolicy().openAll();
 
             BuildingManager b = g.getBuildingManager();
             LandManager land = g.getLandManager();
@@ -1637,40 +1664,70 @@ public class ReadPathCheck {
             g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, -5_000 * PriceLevel.FACTOR);
             g.simulateMonths(2);
             /*
-             * ...AND PLAYED ON UNTIL THE FUND HOLDS A BOND (0.7.18, re-caused).
-             * The fund buys bonds only on the book, at fair value, from a
-             * holder who offers one - never at an issue - so the month it
-             * first holds one is whenever a holder first sells at its bid.
-             * On 0.7.17 that was month 27, this fixture's last, and $4.0k of
-             * bonds; in 0.7.18's city (planners that wait for staff, workers
-             * that take the best-paid job) it is month 29. A history, not a
-             * cause: so the city is played on, a month at a time and bounded
-             * at a year, until its fund holds a bond. RE-CAUSED (revised
-             * 0.7.19): with the charter branch exempt from its operating cost
-             * it is month 74, past the year, so the bound is five years.
+             * FS17: THE FUND'S BOND, ITS SHARES AND THE ORDERS ON THE BOOKS ARE
+             * SEEDED BY HAND. This section used to play the city on, a month at
+             * a time and bounded at five years, until its fund held a bond (the
+             * fund buys one only on the book, from a holder who offers it at
+             * its bid, so the month it first held one was a history: month 27
+             * on 0.7.17, 29 on 0.7.18, 74 on 0.7.19), then caused it by hand
+             * only if none had by then; and it read the shares the fund's rule
+             * happened to have bought and the orders the month happened to
+             * leave resting. Now, at the month the two played years end: a bond
+             * issued by the bond desk's own call (BondMarket.plan() prices it,
+             * issue() sells it, its proceeds handed the issuer as Game hands
+             * them), half of what its biggest holder has sold to the fund's
+             * hand (FundLedgerCheck 3's trade), a share of a company the world
+             * holds sold to the fund the same way, and an ask the holder
+             * stands on the bond's book at twice its value, which no bid
+             * reaches. What stays played is the two years and the builders'
+             * borrowing, the breadth the reads are taken over; past them
+             * nothing is waited for.
              */
-            for (int more = 0; more < 60 && !(g.fundBondsValue() > 0); more++) g.simulateMonths(1);
-            /*
-             * ...AND IF NO HOLDER HAS SOLD IT ONE BY THEN, ONE ABROAD DOES, AT
-             * THE BOND'S VALUE (0.7.120, batch I3). In 0.7.120's city - its
-             * furnace on scrap at steel's world price, its mine bigger and
-             * dearer - none had by the five years' end (month 87), nor by
-             * month 147. So the fixture causes it as FundLedgerCheck 3 does,
-             * between months: the world sells half its holding of the bond it
-             * holds most of on its book, and the fund's hand buys it.
-             */
-            if (!(g.fundBondsValue() > 0)) {
-                BondMarket bonds = g.getBondMarket();
-                CorporateBond most = null;
-                for (CorporateBond bond : bonds.getBonds()) if (most == null || bond.world() > most.world()) most = bond;
-                if (most != null && most.world() > 0) {
-                    double p = bonds.modelPrice(most, g.getMonth()), q = most.world() / 2;
-                    // ...its book cleared of the month's resting orders first, as SaveFileCheck clears a share's, so the two meet.
-                    if (bonds.bookOf(most) != null) bonds.bookOf(most).withdrawAll();
-                    bonds.tradeForCheck(most, BondMarket.WORLD, OrderBook.Side.SELL, p, q);
-                    bonds.tradeForCheck(most, BondMarket.FUND_HAND, OrderBook.Side.BUY, p, q);
+            BondMarket bonds = g.getBondMarket();
+            EconomyManager econ0 = g.getEconomyManager();
+            String borrower = Sectors.CONSTRUCTION;
+            double ask = 20_000 * PriceLevel.FACTOR;
+            BusinessDebtManager.Plan plan = bonds.plan(borrower, ask, lender.projectRate(borrower, ask), ask, ask, ask, g.getMonth());
+            assertTrue("fixture: the bond desk prices a bond for the builders", plan != null && plan.hasBond());
+            if (plan != null && plan.hasBond()) {
+                double proceeds = bonds.issue(plan, g.getMonth());
+                econ0.setSectorCash(borrower, econ0.getSectorCash(borrower) + proceeds);
+            }
+            CorporateBond seeded = bonds.getBonds().isEmpty() ? null : bonds.getBonds().get(bonds.getBonds().size() - 1);
+            // ...whoever holds most of it sells half of that to the fund's hand: the world, the bank or the household cell the bond desk sold it to
+            // (FundLedgerCheck 3 sells the fund the bank's shares so).
+            String seller = null;
+            double held = 0;
+            if (seeded != null) {
+                if (seeded.world() > held) { seller = BondMarket.WORLD; held = seeded.world(); }
+                if (seeded.bank() > held) { seller = BondMarket.BANK; held = seeded.bank(); }
+                for (Household cell : g.getHouseholdBalance().cells()) {
+                    double cellHolds = Math.min(seeded.households(), cell.bondFace(seeded.id()) * cell.households());
+                    if (cellHolds > held) { seller = BondMarket.CELL + cell.key(); held = cellHolds; }
                 }
             }
+            assertTrue("fixture: the issue is on the books, and somebody other than the fund holds part of it", held > 0);
+            if (held > 0) {
+                out.printf("   the issue: face %,.2fk, sold to the fund's hand by %s: %,.2fk of it%n", seeded.face(), seller, held / 2);
+                double p = bonds.modelPrice(seeded, g.getMonth()), q = held / 2;
+                g.fundPayIn(2 * p * q);
+                bonds.tradeForCheck(seeded, seller, OrderBook.Side.SELL, p, q);
+                bonds.tradeForCheck(seeded, BondMarket.FUND_HAND, OrderBook.Side.BUY, p, q);
+                // ...and a resting ask: the same holder's, at twice the bond's value, which no bid reaches.
+                bonds.tradeForCheck(seeded, seller, OrderBook.Side.SELL, 2 * p, held / 4);
+                assertTrue("fixture: the fund's hand holds part of the issue, and the ask rests on its book",
+                        seeded.city() > 0 && !bonds.bookOf(seeded).asks().isEmpty());
+            }
+            Exchange market = g.getExchange();
+            int shareCo = -1;
+            for (int c = 0; c < Equity.COMPANIES.length && shareCo < 0; c++) {
+                if (c == Equity.BANK || !(g.getEquity().getForeignShares(c) > 1) || !(market.fair(c) > 0)) continue;
+                double p = market.price(c), q = Math.min(1, g.getEquity().getForeignShares(c) / 2);
+                g.fundPayIn(2 * p * q);
+                market.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);
+                if (!market.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, p, q).isEmpty()) shareCo = c;
+            }
+            assertTrue("fixture: the fund holds a share of a company the world sold it", shareCo >= 0);
         } finally {
             System.setOut(out);
         }
@@ -1923,11 +1980,39 @@ public class ReadPathCheck {
 
         onEarth(files);
         onTheWorldMarket(root);
+        acuteSicknessReads();
 
         cleanUp(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** R0h: cause acute sickness before exercising its readers; empty 1900 shares cannot catch a mutating read. */
+    static void acuteSicknessReads() {
+        out.println("\n--- reading acute influenza shares leaves them and the ring alone (R0h) ---");
+        Game city = new Game(GameFiles.scratch("readpath-acute"));
+        System.setOut(quiet);
+        try { city.run(); } finally { System.setOut(out); }
+        Health health = city.getHealth();
+        health.advanceMonth(0, 1000, CausesOfDeath.INFLUENZA_FIRST);
+        Sickness sickness = city.getSickness();
+        sickness.seed(health.getSickRate(), health.getSickRateWithoutInfluenza(), 0, .25, .75);
+        double[] acute = sickness.getAcuteShares(), ring = sickness.getState(), healthState = health.getState();
+        assertTrue("fixture: influenza acute shares and chronic sickness are both present",
+                java.util.Arrays.stream(acute).allMatch(v -> v > 0) && sickness.pastTwoMonths(AgeBand.ADULT) > 0);
+        for (int n = 0; n < 50; n++) {
+            health.getSickRateWithoutInfluenza();
+            sickness.getAcuteShares()[0] = 0; // a reader must not hand out the mutable saved state
+            sickness.peopleSick(city.getCohorts());
+            sickness.peoplePastTwoMonths(city.getCohorts());
+            sickness.deathRates();
+            for (int k = 0; k < Sickness.RING; k++) sickness.peopleInSlot(city.getCohorts(), k);
+            for (AgeBand band : AgeBand.values()) { sickness.share(band); sickness.pastTwoMonths(band); }
+        }
+        assertTrue("fifty reads leave every acute share, ring slot and Health component unchanged",
+                java.util.Arrays.equals(acute, sickness.getAcuteShares()) && java.util.Arrays.equals(ring, sickness.getState())
+                && java.util.Arrays.equals(healthState, health.getState()));
     }
 
     /** The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. */
@@ -1987,8 +2072,8 @@ public class ReadPathCheck {
      * saved and loaded into another game as on the city that played.
      */
     static void afterALoad(Game g, GameFiles files) {
-        // The fixture's buildings were stood up by fiat and took no ground; a load allocates the city's
-        // footprint (Game's load path), so the city is given it first, as a load would.
+        // The fixture's buildings were stood up by fiat and took no ground; give its ledger that footprint.
+        // AW2 saves this allocation explicitly; the fixture still accounts for all the ground it stands on.
         g.getLandManager().setAllocatedSqFt(g.getBuildingManager().getTotalLandFootprint());
         // ...and a dig by type (0.7.110), so the save carries E by type: the fixture's ore is by fiat, the first type's.
         double dug = g.getLandManager().extract(Resource.IRON, Deposit.FieldType.HEMATITE, 1_000.5);

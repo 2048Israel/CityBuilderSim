@@ -1,6 +1,6 @@
-# RefineryFlow.java - 372 lines · 29 methods · 5 constants · sectors
+# RefineryFlow.java - 431 lines · 38 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/RefineryFlow.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/RefineryFlow.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The refinery as a campus of units, and a month's flow through them (0.7.80,
 > batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into its
@@ -60,16 +60,16 @@
 > residue's RESIDUE_LITRES_PER_TONNE): the crude's tonnes are turned into
 > litres at Refining.CRUDE_LITRES_PER_TONNE, as the slate turns them.
 
-**Uses:** [Good](Good.md) (52), [Refining](Refining.md) (12), [Deposit](Deposit.md) (3)
+**Uses:** [Good](Good.md) (56), [Refining](Refining.md) (12), [Deposit](Deposit.md) (3)
 
-**Used by (16):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (23):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [ReadPathCheck](ReadPathCheck.md), [RecipeChanges](RecipeChanges.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 193 | · what a litre is worth (spec-oil 2.4's arithmetic, pure) |
-| 227 | · the flow |
+| 231 | · what a litre is worth (spec-oil 2.4's arithmetic, pure) |
+| 275 | · the flow |
 
 ## Enum constants
 
@@ -100,7 +100,8 @@
 | 80 | `RefineryFlow.HYDROGEN_USED` | `1850` | ...and a barrel of gas oil a hydrocracker uses [R7]. |
 | 83 | `RefineryFlow.RESIDUE_LITRES_PER_TONNE` | `1010` | Litres in a tonne of residue: fuel oil's [P35] (Good.FUEL_OIL), what the coke's and the bitumen's weights are struck at. |
 | 86 | `RefineryFlow.LITRES_A_MONTH_PER_BARREL_A_DAY` | `30.44 * 158.987` | A litre a month of a barrel a day: 30.44 days of 158.987 L - how the units' sizes in barrels a day become their feed in litres (spec-oil 2.3). |
-| 191 | `RefineryFlow.FLOW_ORDER` | `{ Stream.GAS_OIL, Stream.RESIDUE, Stream.HEAVY_NAPHTHA, Stream.CRACKED_GAS }` | The streams in the order they are solved (3 in the header). |
+| 200 | `RefineryFlow.MODERN_PROCESS` | `new Process(0.55)` | The modern conversion process, shared by standalone definitions and default cities. |
+| 229 | `RefineryFlow.FLOW_ORDER` | `{ Stream.GAS_OIL, Stream.RESIDUE, Stream.HEAVY_NAPHTHA, Stream.CRACKED_GAS }` | The streams in the order they are solved (3 in the header). |
 
 ## Fields (state)
 
@@ -111,16 +112,17 @@
 | 167 | `private final String unitName` |  |
 | 168 | `private final Stream feed` |  |
 | 169 | `private final List<Yield> yields` |  |
-| 231 | `private final double crude` |  |
-| 232 | `private final double[] cuts, runs, spreads, spare` |  |
-| 233 | `private final double hydrogen, spareHydrogen` |  |
-| 234 | `private final Refining.Slate slate` |  |
+| 279 | `private final double crude` |  |
+| 280 | `private final double[] cuts, runs, spreads, spare` |  |
+| 281 | `private final double hydrogen, spareHydrogen` |  |
+| 282 | `private final Refining.Slate slate` |  |
+| 283 | `private final Process process` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 301 | **type** `public final class RefineryFlow` | The refinery as a campus of units, and a month's flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into its streams, the conversion units taking their feed stream by stream, ... |
+| 72 | 360 | **type** `public final class RefineryFlow` | The refinery as a campus of units, and a month's flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into its streams, the conversion units taking their feed stream by stream, ... |
 | 74 | 1 | `private RefineryFlow()` |  |
 | 96 | 28 | **type** `public enum Stream` | The streams a crude unit's run is cut into and the units pass between them. |
 | 110 | 4 | `Stream(String words, Good leftover)` _(in RefineryFlow.Stream)_ |  |
@@ -137,31 +139,42 @@
 | 181 | 1 | `public Stream feed()` _(in RefineryFlow.Kind)_ | The stream it is fed from. |
 | 184 | 1 | `public List<Yield> yields()` _(in RefineryFlow.Kind)_ | What it makes of a litre of its feed, in the research's order. |
 | 187 | 1 | `public Stream solvedIn()` _(in RefineryFlow.Kind)_ | The stream it is solved in: the residue's for the coker and the asphalt unit alike (★ O4-2). |
+| 192 | 6 | `private static List<Yield> yields(Kind k, double crackerPetrol)` | Thermal cracking leaves the petrol not converted as fuel oil (R2d estimate). |
+| 203 | 19 | **type** `public record Process(double crackerPetrol)` | An immutable resolved process: cards, margins and ribbons read these same yields. |
+| 204 | 4 | `{ ... }` _(in RefineryFlow.Process)_ |  |
+| 210 | 1 | `public List<Yield> yields(Kind kind)` _(in RefineryFlow.Process)_ | This process's physical yields, including thermal cracking. |
+| 213 | 3 | `public Map<Good, Double> madeAlone(Kind kind, double litres)` _(in RefineryFlow.Process)_ | Products from this process's feed, with nothing downstream. |
+| 218 | 3 | `public double spread(Kind kind, double[] values)` _(in RefineryFlow.Process)_ | This process's margin at the stated valuation prices. |
+| 224 | 3 | `public static Process process(double crackerPetrol)` | Resolves the chosen process once, retaining the exact modern definition. |
 
-### what a litre is worth (spec-oil 2.4's arithmetic, pure) (lines 193-226)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 196 | 5 | `public static double[] values(ToDoubleFunction<Good> price)` | Each product's value, by Good's ordinal, from a price for each: what the flow and the spread are struck at. |
-| 208 | 4 | `public static double feedValue(Stream s, double[] value)` | What a litre of a stream is worth with no unit to take it: the product its leftover is sold as, and residue (4 x fuel oil - diesel) / 3 - the fuel oil three litres of it make with a litre of diesel, less that litre (s... |
-| 214 | 5 | `public static double spread(Kind k, double[] value)` | A unit's spread a litre of its feed: what it makes of the litre at the values, less what the litre is worth with no unit (the prototype's spread()). |
-| 221 | 5 | `public static Map<Good, Double> madeAlone(Kind k, double litres)` | What `litres` of a kind's feed make with nothing downstream to take any of it, by product (litres; tonnes of coke and bitumen): a unit's card. |
-
-### the flow (lines 227-372)
+### what a litre is worth (spec-oil 2.4's arithmetic, pure) (lines 231-274)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 230 | 48 | **type** `public static final class Flow` | One month's flow: the crude's litres, the cuts, each kind's run and spread, the streams left, the hydrogen, and the products. |
-| 236 | 11 | `Flow(double crude, double[] cuts, double[] runs, double[] spreads, double[] spare, double hydrogen, double spareHydrogen, Refin...` _(in RefineryFlow.Flow)_ |  |
-| 249 | 1 | `public double crude()` _(in RefineryFlow.Flow)_ | The crude run, in litres. |
-| 252 | 1 | `public double cut(Stream s)` _(in RefineryFlow.Flow)_ | A straight-run cut of the crude, before any unit: litres (CRACKED_GAS none). |
-| 255 | 1 | `public double run(Kind k)` _(in RefineryFlow.Flow)_ | Litres of feed a kind of unit took. |
-| 258 | 1 | `public double spread(Kind k)` _(in RefineryFlow.Flow)_ | A kind's spread a litre of its feed, at the flow's values. |
-| 261 | 1 | `public double spare(Stream s)` _(in RefineryFlow.Flow)_ | What was left of a stream after the units, before it went to its product. |
-| 264 | 1 | `public double hydrogen()` _(in RefineryFlow.Flow)_ | Hydrogen the reformers made for the hydrocrackers, standard cubic feet. |
-| 267 | 1 | `public double spareHydrogen()` _(in RefineryFlow.Flow)_ | ...and what the hydrocrackers left of it. |
-| 270 | 1 | `public Refining.Slate slate()` _(in RefineryFlow.Flow)_ | The products and the residue burned, as the slate reads them. |
-| 273 | 1 | `public double of(Good g)` _(in RefineryFlow.Flow)_ | A product made: litres, or tonnes of coke and bitumen. |
-| 276 | 1 | `public double burned()` _(in RefineryFlow.Flow)_ | Residue burned for want of diesel to cut it, litres. |
-| 285 | 87 | `public static Flow solve(double[] feed, double crudeTonnes, double[] mix, double[] value)` | One month's flow (pure): `crudeTonnes` of crude at `mix` (each grade's share of the run in Deposit.Grade's order) through units able to take `feed` litres a month of each Kind (by its ordinal), their spreads struck at... |
+| 234 | 5 | `public static double[] values(ToDoubleFunction<Good> price)` | Each product's value, by Good's ordinal, from a price for each: what the flow and the spread are struck at. |
+| 246 | 4 | `public static double feedValue(Stream s, double[] value)` | What a litre of a stream is worth with no unit to take it: the product its leftover is sold as, and residue (4 x fuel oil - diesel) / 3 - the fuel oil three litres of it make with a litre of diesel, less that litre (s... |
+| 252 | 3 | `public static double spread(Kind k, double[] value)` | A unit's spread a litre of its feed: what it makes of the litre at the values, less what the litre is worth with no unit (the prototype's spread()). |
+| 257 | 5 | `public static double spread(Kind k, double[] value, double crackerPetrol)` | Spread of the thermal or catalytic cracking process; other units are unchanged. |
+| 264 | 3 | `public static Map<Good, Double> madeAlone(Kind k, double litres)` | What `litres` of a kind's feed make with nothing downstream to take any of it, by product (litres; tonnes of coke and bitumen): a unit's card. |
+| 269 | 5 | `public static Map<Good, Double> madeAlone(Kind k, double litres, double crackerPetrol)` | Products of the actual cracking process; modern callers retain the original list. |
+
+### the flow (lines 275-431)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 278 | 53 | **type** `public static final class Flow` | One month's flow: the crude's litres, the cuts, each kind's run and spread, the streams left, the hydrogen, and the products. |
+| 285 | 12 | `Flow(double crude, double[] cuts, double[] runs, double[] spreads, double[] spare, double hydrogen, double spareHydrogen, Refin...` _(in RefineryFlow.Flow)_ |  |
+| 299 | 1 | `public Process process()` _(in RefineryFlow.Flow)_ | The immutable process that produced this solved flow, also read by its views. |
+| 302 | 1 | `public double crude()` _(in RefineryFlow.Flow)_ | The crude run, in litres. |
+| 305 | 1 | `public double cut(Stream s)` _(in RefineryFlow.Flow)_ | A straight-run cut of the crude, before any unit: litres (CRACKED_GAS none). |
+| 308 | 1 | `public double run(Kind k)` _(in RefineryFlow.Flow)_ | Litres of feed a kind of unit took. |
+| 311 | 1 | `public double spread(Kind k)` _(in RefineryFlow.Flow)_ | A kind's spread a litre of its feed, at the flow's values. |
+| 314 | 1 | `public double spare(Stream s)` _(in RefineryFlow.Flow)_ | What was left of a stream after the units, before it went to its product. |
+| 317 | 1 | `public double hydrogen()` _(in RefineryFlow.Flow)_ | Hydrogen the reformers made for the hydrocrackers, standard cubic feet. |
+| 320 | 1 | `public double spareHydrogen()` _(in RefineryFlow.Flow)_ | ...and what the hydrocrackers left of it. |
+| 323 | 1 | `public Refining.Slate slate()` _(in RefineryFlow.Flow)_ | The products and the residue burned, as the slate reads them. |
+| 326 | 1 | `public double of(Good g)` _(in RefineryFlow.Flow)_ | A product made: litres, or tonnes of coke and bitumen. |
+| 329 | 1 | `public double burned()` _(in RefineryFlow.Flow)_ | Residue burned for want of diesel to cut it, litres. |
+| 338 | 3 | `public static Flow solve(double[] feed, double crudeTonnes, double[] mix, double[] value)` | One month's flow (pure): `crudeTonnes` of crude at `mix` (each grade's share of the run in Deposit.Grade's order) through units able to take `feed` litres a month of each Kind (by its ordinal), their spreads struck at... |
+| 343 | 88 | `public static Flow solve(double[] feed, double crudeTonnes, double[] mix, double[] value, double crackerPetrol)` | The same flow with the cracking process actually known and chosen here. |
 

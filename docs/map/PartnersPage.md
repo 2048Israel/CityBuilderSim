@@ -1,6 +1,6 @@
-# PartnersPage.java - 1,182 lines · 59 methods · 13 constants · interface
+# PartnersPage.java - 1,184 lines · 59 methods · 13 constants · interface
 
-`ham/citybuildersim/ui/PartnersPage.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PartnersPage.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a
 > chosen good, where the next unit goes and what it nets there; the good's band this month and what moves it; and, for one nation, its figures, our trade
@@ -14,9 +14,9 @@
 > WHAT SURVIVES THE REDRAW. TradeScreen redraws every month; the nation shown, the span, the good and the goods' fold are fields here (and the folds
 > TradeScreen's openLines), so a month landing leaves the page where the player left it.
 
-**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (81), [PartnersView](PartnersView.md) (58), [Good](Good.md) (18), [WorldMarket](WorldMarket.md) (15), [Icons](Icons.md) (13), [TradeScreen](TradeScreen.md) (9), [Pieces](Pieces.md) (9), [Money](Money.md) (8), [Nations](Nations.md) (7), [NationsMap](NationsMap.md) (6), [PartnerTrade](PartnerTrade.md) (5), [UserInterface](UserInterface.md) (2), [WorldData](WorldData.md) (2), [Game](Game.md) (1)
+**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (88), [PartnersView](PartnersView.md) (58), [Good](Good.md) (18), [WorldMarket](WorldMarket.md) (15), [Icons](Icons.md) (13), [Pieces](Pieces.md) (10), [TradeScreen](TradeScreen.md) (9), [Money](Money.md) (8), [Nations](Nations.md) (7), [NationsMap](NationsMap.md) (6), [PartnerTrade](PartnerTrade.md) (5), [UserInterface](UserInterface.md) (2), [WorldData](WorldData.md) (2), [Game](Game.md) (1)
 
-**Used by (1):** [TradeScreen](TradeScreen.md)
+**Used by (2):** [KeptBench](KeptBench.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 70 | 1113 | **type** `final class PartnersPage` | Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a chosen good, where the next unit goes and what it nets there; the goo... |
+| 70 | 1115 | **type** `final class PartnersPage` | Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a chosen good, where the next unit goes and what it nets there; the goo... |
 | 88 | 4 | `PartnersPage(UserInterface ui, TradeScreen trade)` |  |
 | 93 | 1 | `private Game game()` |  |
 
@@ -168,23 +168,23 @@
 | 890 | 9 | `private VBox besideCard(PartnersView.Page p)` | THE CITY BESIDE IT: the city's GDP in real 2015 US$ a year beside its output, and the share. |
 | 901 | 8 | `static String sharePercent(double share)` | A small share of an output: "0.04%", "12%", "<0.001%". |
 
-### THE CHART - drawn as shapes in a Pane (lines 910-1182)
+### THE CHART - drawn as shapes in a Pane (lines 910-1184)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 923 | 259 | **type** `static final class CurveChart extends Pane` | What the next unit nets (up, D$ a unit) against how much the city sells (across, the share of the world's use a year, on a log scale): the month's line solid in the export violet, the world's dashed, a dot where the c... |
+| 923 | 261 | **type** `static final class CurveChart extends Pane` | What the next unit nets (up, D$ a unit) against how much the city sells (across, the share of the world's use a year, on a log scale): the month's line solid in the export violet, the world's dashed, a dot where the c... |
 | 925 | 1 | **type** `record Dot(double share, double value, String words)` _(in PartnersPage.CurveChart)_ | The dot: where the city sold, its share of the world's use, what the next one nets there, its words. |
 | 928 | 1 | **type** `record Join(double share, String name)` _(in PartnersPage.CurveChart)_ | A tick: where a buyer joins (a share of the world's use) and its name. |
 | 950 | 25 | `CurveChart()` _(in PartnersPage.CurveChart)_ | The lines, the dot and the captions, made once in its life; the gridlines, ticks and joins come with set(). |
 | 977 | 34 | `void set(double[] xs, double[] net, double[] world, Dot dot, List<Join> joins, DoubleFunction<String> money, DoubleFunction<Str...` _(in PartnersPage.CurveChart)_ | What the chart draws now: the line's points, the dot (null: none), the buyers that join, and how its two axes write their ticks. |
 | 1013 | 3 | `private String shapeOf()` _(in PartnersPage.CurveChart)_ | What the parts depend on: how many gridlines, ticks and joins there are, and whether there is a dot. |
 | 1018 | 9 | `private String layoutKey()` _(in PartnersPage.CurveChart)_ | Every figure and word the layout reads, in one string: laid out again only when it differs. |
-| 1029 | 44 | `private void build()` _(in PartnersPage.CurveChart)_ | The parts made afresh, in the order they are drawn. |
-| 1075 | 6 | `private void fill(DoubleFunction<String> money, DoubleFunction<String> share)` _(in PartnersPage.CurveChart)_ | What the labels say now: the axes' ticks, the first three joins' names and the dot's words. |
-| 1082 | 5 | `private static Label small()` _(in PartnersPage.CurveChart)_ |  |
-| 1089 | 5 | `static double niceStep(double v)` _(in PartnersPage.CurveChart)_ | A step of 1, 2, 2.5 or 5 times a power of ten that is at least v (nothing: 1). |
-| 1095 | 4 | `private double px(double share, double plotL, double plotW)` _(in PartnersPage.CurveChart)_ |  |
-| 1100 | 3 | `private double py(double v, double plotT, double plotH)` _(in PartnersPage.CurveChart)_ |  |
-| 1104 | 4 | `private static void place(Label l, double x, double y)` _(in PartnersPage.CurveChart)_ |  |
-| 1109 | 72 | `protected void layoutChildren()` _(in PartnersPage.CurveChart)_ |  |
+| 1029 | 45 | `private void build()` _(in PartnersPage.CurveChart)_ | The parts made afresh, in the order they are drawn. |
+| 1076 | 6 | `private void fill(DoubleFunction<String> money, DoubleFunction<String> share)` _(in PartnersPage.CurveChart)_ | What the labels say now: the axes' ticks, the first three joins' names and the dot's words. |
+| 1083 | 5 | `private static Label small()` _(in PartnersPage.CurveChart)_ |  |
+| 1090 | 5 | `static double niceStep(double v)` _(in PartnersPage.CurveChart)_ | A step of 1, 2, 2.5 or 5 times a power of ten that is at least v (nothing: 1). |
+| 1096 | 4 | `private double px(double share, double plotL, double plotW)` _(in PartnersPage.CurveChart)_ |  |
+| 1101 | 3 | `private double py(double v, double plotT, double plotH)` _(in PartnersPage.CurveChart)_ |  |
+| 1105 | 4 | `private static void place(Label l, double x, double y)` _(in PartnersPage.CurveChart)_ |  |
+| 1110 | 73 | `protected void layoutChildren()` _(in PartnersPage.CurveChart)_ |  |
 

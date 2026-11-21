@@ -80,6 +80,24 @@ import java.util.Map;
  *      till ending at or above nothing; nothing is forgiven off the
  *      backstop's path; the month closes.
  *
+ * HOW THE PLAYED SECTIONS GET THEIRS (FS14). None reads what a played city
+ * happens to do; each sets its condition, then asserts it as a fixture:
+ *   2  the policy rate at its neutral level and prime struck off the bank at
+ *      it in the same step, where the section once stepped months to a
+ *      month the bank's two prices agreed;
+ *   7a the issuer's till set five million short, between months, so its
+ *      bond is sold in the month (1b, 4, 5b, 5c, 6, 8 and 1c read that bond);
+ *   7  the bank handed what it lacks of its capital target, so it buys;
+ *   7c a city that owes nothing (the lender's clear, an empty bond market),
+ *      two sectors given a loan by hand, three given an idle till;
+ *   5b the issuer's claim of 1.2 times its assets, whose month's share of
+ *      its loans and bonds defaults by the model's own hazard;
+ *   5c the over-ceiling sector by its claim, the borrower the desk lends to
+ *      by a till set short by a hundredth of its assets and a quarter of
+ *      its room on top, which no month refills;
+ *   5d the shops' till set to a month's bills and four months of shelf for
+ *      the whole order, and to half a month of bills for the partial one.
+ *
  * Every fixture causes its condition.
  */
 public class BondCheck {
@@ -92,6 +110,12 @@ public class BondCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-92s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    /** A premise the fixture itself set up, asserted: a failure is counted, and the caller stops its section where it could not go on (FS14). */
+    static boolean fixture(String label, boolean ok) {
+        assertTrue(label, ok);
+        return ok;
     }
 
     static void close(String label, double actual, double expected, double tol) {
@@ -121,11 +145,6 @@ public class BondCheck {
 
     /** A city with households who save, a bank, sectors that owe it and sectors that do not: founded, built, played two years. */
     static Game city(Path root, String name, int months) {
-        return city(root, name, months, false);
-    }
-
-    /** The same city; holdIssuer keeps ISSUER from ordering a building in it, so it owes nothing (7c). */
-    static Game city(Path root, String name, int months, boolean holdIssuer) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
         // The world this fixture is written against: the constant world rate (XR4). Under the US's rate (3.25% at m25 on the
@@ -134,14 +153,13 @@ public class BondCheck {
         g.quietTheWorldForTheD();
         quietly(() -> {
             g.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): every section reads the sectors' credit in the town this was written
-            // against, which taxes from month 1 (5c: the sector it lends a working-capital line to owes under the shortfall desk's ceiling; 5d: the
-            // shops are short of what their order costs; 1c: a bond is outstanding that the fund holds none of). A 1900 town has no income tax
-            // to 1916-17 and no sales tax to 1920, and its sectors keep another profit and owe another share: Restaurants was the one picked
-            // and owed $151.6k against the ceiling, the shops could pay for $13.2k of a $12.0k order. Every lever opened and the defaults
-            // put back, before a month has run.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, a fixture condition; OP1): every section reads the sectors' credit in the town this was
+            // written against, which taxes from month 1 (5c: the sector it lends a working-capital line to owes under the shortfall desk's
+            // ceiling; 5d: the shops are short of what their order costs; 1c: a bond is outstanding that the fund holds none of). From R0 to OP1
+            // a 1900 town had no income tax to 1916-17 and no sales tax to 1920, and its sectors kept another profit and owed another share:
+            // Restaurants was the one picked and owed $151.6k against the ceiling, the shops could pay for $13.2k of a $12.0k order. Since OP1
+            // every lever is open from the founding, and the defaults are put back before a month has run.
             g.getEconomyManager().getTaxPolicy().reset();
-            g.getEconomyManager().getTaxPolicy().openAll();
             // The treasury this fixture is written against: the Wealthy preset's.
             g.setCashForTest(Founding.WEALTHY_CASH);
             BuildingManager b = g.getBuildingManager();
@@ -154,7 +172,6 @@ public class BondCheck {
             LongPlaytest.build(g, "Commercial Bank", 1);
             // The food plants the fixture keeps, as ConservationCheck's does.
             g.setAutoSubsidised(Sectors.INDUSTRY, true);
-            if (holdIssuer) g.getBusinessInvestment().holdSector(ISSUER);
             g.simulateMonths(months);
         });
         return g;
@@ -190,31 +207,27 @@ public class BondCheck {
         Game g = city(root, "market", 24);
         bookbuilding(g);
         theChoice(g);
-        /* 7c in a city of its own, Construction held (GW1). Since the staffing gate counts the workers an order's own posts would draw
-           (Sector.GATE_DRAW_MONTHS), Construction orders in the young town and borrows for it: at m24 it held cash 199 and owed 111 (Retail 212 and
-           36), so "idle cash and owes nothing" was gone - a fact of the city's path, not of the bond market's rule. Held from the start it
-           owes nothing, as on the path this was written against. The market city above is not held: 5c and 5d are on the path they were
-           re-caused on (held there, Manufacturing has an order on site and the second branch's fixture fails). */
-        companies(city(root, "companies", 24, true));
+        /* 7c in a city of its own. GW1 had Construction borrowing there in the young town (owing 111 at m24), so "idle cash and owes nothing" was
+           gone on a played reading; since FS14 7c sets the loans, the bonds and the tills itself, and what the months did to them does not matter. */
+        companies(city(root, "companies", 24));
         CorporateBond bond = issuedInTheMonth(g);
-        if (bond == null) {
-            out.println("\nno bond was issued in the fixture's month: the rest cannot run");
-            out.println("\n" + (fails + 1) + " FAILED");
-            System.exit(1);
-        }
-        theBankHoldsSome(g);
-        theBookInPlay(g);
-        participants(g, bond);
+        // FS14: the bond is the one 7a caused (the issuer's till set five million short, between months); a bond that is not there stops the
+        // sections that read it, and the failure is counted.
+        boolean paperIssued = fixture("fixture: the played city issued a corporate bond", bond != null);
+        if (paperIssued) theBankHoldsSome(g);
+        if (paperIssued) theBookInPlay(g);
+        if (paperIssued) participants(g, bond);
         seniorityOnTheLender();
-        seniorityInPlay(g);
-        cantPayInPlay(g);
+        if (paperIssued) seniorityInPlay(g);
+        if (paperIssued) cantPayInPlay(g);
         buyOnlyWhatItCanPayFor(root);
-        theBankHoldsSome(g);        // ...again: by this section the sections between have played on and the bank holds none of them (measured)
-        coupons(g);
-        concentration(g);
+        if (paperIssued) theBankHoldsSome(g);        // ...again: by this section the sections between have played on and the bank holds none of them (measured)
+        if (paperIssued) coupons(g);
+        if (paperIssued) concentration(g);
         eachTypeTrades();
-        saveAndLoad(g, root);
-        maturity(g);
+        priceTick();
+        if (paperIssued) saveAndLoad(g, root);
+        if (paperIssued) maturity(g);
 
         assertTrue("every month this harness played closed the audit (" + closedMonths + ")", brokenMonths == 0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -269,25 +282,23 @@ public class BondCheck {
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         double amount = 5_000;
         /*
-         * ...IN A MONTH THE BANK'S PRICES AGREE WITH EACH OTHER (0.7.17). The
-         * bank would take the bond only at its loan-equivalent yield, read
-         * off the policy rate as it stands, and the loan is priced off the
-         * prime the bank struck at the top of the month. In a month the rate
-         * moved between the two they part: this city's month twenty-five,
-         * since every building gets the crew it can use (BuildingManager,
-         * EVERY BUILDING GETS THE CREW IT CAN USE), is one - the policy rate
-         * cut after prime was struck, the bank's yield read 5.15% against the
-         * loan's 5.44%, and the bank took the whole bond - where the months
-         * either side of it read as the fixture describes. So the section
-         * steps on, a month at a time and a year at most, to a month that
-         * does; the premise is the bank's two prices, not which month.
+         * ...THE BANK'S TWO PRICES STRUCK TOGETHER (0.7.17; FS14). The bank
+         * would take the bond only at its loan-equivalent yield, read off the
+         * policy rate as it stands, and the loan is priced off the prime the
+         * bank struck at the top of the month. In a month the rate moved
+         * between the two they part (this city's month twenty-five was one:
+         * the policy rate cut after prime was struck, the bank's yield read
+         * 5.15% against the loan's 5.44%, and the bank took the whole bond),
+         * and this section used to step on, a month at a time and a year at
+         * most, to a month where they did not. It sets them itself, in the
+         * month it stands in, as Game strikes them together at the top of a
+         * month: the policy rate at its neutral level, and prime off the bank
+         * as it stands at that rate (Bank.prime()). What is left between the
+         * two prices is the bond's own: its term and its loss given default.
          */
-        for (int wait = 0; wait < 12; wait++) {
-            double lr0 = credit.projectRate(ISSUER, amount);
-            BusinessDebtManager.Plan p0 = bm.plan(ISSUER, amount, lr0, amount, amount, amount, g.getMonth());
-            if (bm.new Demand(ISSUER, p0.bondFace(), p0.offered(), p0.dealDebt(), p0.extraAssets()).bankYield > p0.loanAllIn()) break;
-            play(g);
-        }
+        DebtManager dial = g.getDebtManager();
+        dial.setPolicyRate(DebtManager.NEUTRAL_RATE);
+        credit.setPrimeRate(g.getBank().prime(dial.getPolicyRate()));
         int m = g.getMonth();
         double lr = credit.projectRate(ISSUER, amount);
         BusinessDebtManager.Plan p = bm.plan(ISSUER, amount, lr, amount, amount, amount, m);
@@ -303,6 +314,9 @@ public class BondCheck {
         assertTrue("fixture: the bank would take it only at its loan-equivalent yield, over the loan's price",
                 dm.bankYield > p.loanAllIn());
         assertTrue("fixture: so the book does not take all of it at a price no dearer than the loan", p.bondFace() < amount);
+        double threshold = p.loanAllIn() - bm.issueCost(p.bondFace()) / p.bondFace() / BondMarket.TERM_YEARS;
+        close("the partial issue reaches its size fixed point within ISSUE_ROUNDING",
+                dm.total(threshold) / p.bondFace(), 1, BondMarket.ISSUE_ROUNDING * 2);
         close("...and the rest is a bank loan", p.loan(), amount - p.bondFace(), 1e-9);
         assertTrue("...the two raising it all", p.covers());
         close("...at the leverage the whole deal leaves, which every bid read", p.dealDebt(), amount, 0);
@@ -496,6 +510,15 @@ public class BondCheck {
         BondMarket bm = g.getBondMarket();
         Bank bank = g.getBank();
         double size = 1_000;
+        /*
+         * THE BANK HANDED ITS CAPITAL (FS14): the bank bids only over its target (BondMarket.bankBuys()), up to its spare capital, and what
+         * the played months have left it is not this section's premise. Between months, as 5c takes it down, what it lacks of room for
+         * twice this issue over its target is put in its till (Bank.setCash: equity is its assets less what it owes, so the cash is
+         * capital) - nothing when it has that, as it has in this city. Its spare capital on the leverage measure grows with the cash by
+         * (1 - Bank.leverageTarget()) of it, so what is put in is grossed up.
+         */
+        double lacking = 2 * size * bank.capitalPerDollar(Bank.RISK_BUSINESS, ISSUER) - bank.spareCapital();
+        if (lacking > 0) bank.setCash(bank.getCash() + lacking / (1 - bank.leverageTarget()));
         BondMarket.Demand dm = bm.new Demand(ISSUER, size, size, size, 0);
 
         // The households: the city's paper's rule on the expected return.
@@ -550,15 +573,34 @@ public class BondCheck {
         shortOfMoney(g, bond);
     }
 
-    /** The companies, on the fixture's month before anything borrows: the one that owes nothing bids for another's bonds and never its own. */
+    /**
+     * The companies, in a city of their own before anything borrows: the one that owes nothing bids for another's bonds and never its own.
+     * FS14: the premises are set, not found at month 24 - see the setting below.
+     */
     static void companies(Game g) {
         out.println("\n--- 7c. a company with idle cash bids for other sectors' bonds, never its own, and only while it owes nothing ---");
         BondMarket bm = g.getBondMarket();
-        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+        EconomyManager em = g.getEconomyManager();
+        BusinessDebtManager credit = em.getBusinessDebtManager();
         String other = Sectors.RETAIL;
-        assertTrue("fixture: " + ISSUER + " has idle cash and owes nothing; " + other + " owes the bank",
-                g.getEconomyManager().getSectorCash(ISSUER) > 0 && credit.getPrincipal(ISSUER) == 0
-                        && credit.getPrincipal(other) > 0);
+        String indebted = Sectors.REAL_ESTATE;
+        /*
+         * THE SECTORS SET (FS14), as 7a sets a till: this city owes nothing - no loan, no bond - which the lender's own clear and an empty
+         * bond market make so whatever the 24 months did (GW1 had Construction borrowing in this young town, DQ1 released it, and a
+         * month-24 reading was all that kept it so); then two sectors owe the bank, a claim taken on by the lender's own
+         * issueLoan() with no money moved, and the three sectors that matter hold an idle till: the issuer's, the one whose bond is
+         * bid for, and the indebted one's, which is idle cash that must still bid nothing.
+         */
+        credit.clearLoans();
+        bm.restore(new BondMarket.State());
+        double owed = 1_000 * PriceLevel.FACTOR;
+        credit.issueLoan(other, owed, g.getMonth());
+        credit.issueLoan(indebted, owed, g.getMonth());
+        for (String s : new String[] { ISSUER, other, indebted }) em.setSectorCash(s, 1_000 * PriceLevel.FACTOR);
+        if (!fixture("fixture: " + ISSUER + " has idle cash and owes nothing; " + other + " owes the bank",
+                em.getSectorCash(ISSUER) > 0 && credit.getPrincipal(ISSUER) == 0 && credit.getPrincipal(other) > 0)) return;
+        assertTrue("fixture: " + indebted + " owes the bank and has idle cash too",
+                credit.getPrincipal(indebted) > 0 && em.getSectorCash(indebted) > 0);
         BondMarket.Demand theirs = bm.new Demand(other, 1_000, 1_000, 1_000, 0);
         BondMarket.Demand own = bm.new Demand(ISSUER, 1_000, 1_000, 1_000, 0);
         int at = -1;
@@ -572,7 +614,7 @@ public class BondCheck {
         close("...and for its own bond nothing, at any yield", own.company(at, .30), 0, 0);
         boolean oweNothing = true;
         for (int i = 0; i < theirs.companies.length; i++) {
-            if (theirs.company(i, .30) > 0 && credit.getPrincipal(theirs.companies[i]) > 0) oweNothing = false;
+            if (theirs.company(i, y) > 0 && credit.getPrincipal(theirs.companies[i]) > 0) oweNothing = false;
         }
         assertTrue("...and no company that owes anything bids at all", oweNothing);
     }
@@ -752,16 +794,8 @@ public class BondCheck {
             g.getBusinessInvestment().holdSector(w0);
             for (int wait = 0; wait < 60 && g.getBuildingManager().getUnderConstructionBySector(w0) > 0; wait++) play(g);
         }
-        // The company holding the most of the other sectors' bonds (Retail
-        // if none does), handed half the world's holding between months - a
-        // claim, no money moved.
-        //
-        // HANDED IT WHETHER OR NOT IT HELD ANY, SINCE 0.7.43 (the fixture
-        // re-caused): the sale this section asserts needs a bid resting at
-        // the settle that is not the bank's - a rationing bank buys nothing
-        // (BondMarket.bankBuys()) - and the world under its target is that
-        // bidder. By 0.7.43 this city's world held its target on every bond,
-        // so only the bank bid, and the shops sold no bond at all.
+        // The company holding the most of the other sectors' bonds (Retail if none does), handed half the
+        // world's holding between months - a claim, no money moved.
         String y = heaviestHolder(credit, bm);
         {
             if (y == null) y = Sectors.RETAIL;
@@ -798,8 +832,13 @@ public class BondCheck {
         // ...and a sector over the shortfall desk's ceiling and under the
         // line: 1.2 times what it owns, the same way.
         final String W = widestUnderTheCeiling(credit, Y);
-        g.getBusinessInvestment().holdSector(W);
-        credit.issueLoan(W, Math.max(0, 1.2 * credit.getAssets(W) - credit.getPrincipal(W)), g.getMonth());
+        // FS14: the sector is over the ceiling by the claim taken on here, not by what the months did to it: asserted once taken on.
+        if (W != null) {
+            g.getBusinessInvestment().holdSector(W);
+            credit.issueLoan(W, Math.max(0, 1.2 * credit.getAssets(W) - credit.getPrincipal(W)), g.getMonth());
+        }
+        if (!fixture("fixture: the played city has a sector over the shortfall ceiling",
+                W != null && credit.getPrincipal(W) > credit.getAssets(W) * BusinessDebtManager.MAX_LOAN_TO_ASSETS)) return;
         // A month for the bank to book the two claims on its book and its
         // requirement - the capital rule reads them at the top of a month.
         assertTrue("fixture: the month the bank books the claims closes", closes(play(g)));
@@ -820,20 +859,23 @@ public class BondCheck {
         // ...and a sector the desk will lend to: the least levered of the
         // rest - one owing nothing if there is one - short a hundredth of what it owns.
         //
-        // ...ONE WHOSE MONTH DOES NOT PAY IT (WN3): the desk lends the till's shortfall at the month's end, and a sector earning in
+        // ...ONE WHOSE MONTH DOES NOT PAY IT (WN3; FS14): the desk lends the till's shortfall at the month's end, and a sector earning in
         // the month is less short at the end than it was set (the assertion reads "lent at least what it was set short"). On the
         // world's band the least levered sector here was Industry, with a profit of $232k a month against a short of $464k: it
-        // was lent $266k, the month having paid the rest. So the sector short is the least levered of those that lost money last
-        // month, and its month does not refill the till.
+        // was lent $266k, the month having paid the rest. Until FS14 the sector short was the least levered of those that had lost
+        // money last month, a reading of the played months. Now it is the least levered of those the desk may lend to, and its
+        // till is set short by a hundredth of what it owns (what the assertion reads) and a quarter of its room under the ceiling
+        // on top of it, which no month's takings refill: the month does not pay the short, by the size of the short.
         String z = null;
         for (String s : Sectors.KEYS) {
             if (s.equals(Y) || s.equals(W) || s.equals(ISSUER) || !(credit.getAssets(s) > 0) || credit.isBorrowingBlocked(s)) continue;
-            if (!(g.getSectors().byKey(s).getNetIncome() < 0)) continue;
             if (z == null || credit.getPrincipal(s) / credit.getAssets(s) < credit.getPrincipal(z) / credit.getAssets(z)) z = s;
         }
+        if (!fixture("fixture: the played city has a healthy loss-making shortfall borrower", z != null)) return;
         final String Z = z;
         double zShort = .01 * credit.getAssets(Z);
-        em.setSectorCash(Z, -zShort);
+        double zCover = .25 * Math.max(0, credit.getAssets(Z) * BusinessDebtManager.MAX_LOAN_TO_ASSETS - credit.getPrincipal(Z) - zShort);
+        em.setSectorCash(Z, -(zShort + zCover));
         // The bank short of capital: its equity taken, between months, to
         // halfway between its minimum and its target - rationing.
         double taken = bank.equity() - (bank.minimumEquity() + bank.targetEquity()) / 2;
@@ -844,7 +886,7 @@ public class BondCheck {
                 credit.getPrincipal(W) > credit.getAssets(W) * BusinessDebtManager.MAX_LOAN_TO_ASSETS
                         && credit.getQuarterLeverage(W) < T);
         assertTrue("fixture: " + Z + " owes under the shortfall desk's ceiling, and the bank is open",
-                credit.getPrincipal(Z) + zShort < credit.getAssets(Z) * BusinessDebtManager.MAX_LOAN_TO_ASSETS
+                credit.getPrincipal(Z) + zShort + zCover < credit.getAssets(Z) * BusinessDebtManager.MAX_LOAN_TO_ASSETS
                         && credit.isLendingOpen());
         assertTrue("fixture: the bank is between its minimum and its target, and rations growth",
                 taken > 0 && !Double.isInfinite(bank.lendingGrowthLimit()) && !bank.lendsOnlyToKeepBorrowersGoing());
@@ -938,17 +980,25 @@ public class BondCheck {
         // order is most of its cover.
         long sells = Math.max(1, shops.getProductsSold());
         shops.setStoreInventory((int) Math.ceil(1.2 * sells));
+        /*
+         * ...AND A TILL THAT PAYS FOR IT (FS14): the month's running costs and four times what the shelf was last ordered for - set,
+         * between months, as the section sets the till below - so that what the shops can pay for is not what the played months left
+         * in it. Under the ceiling the lender's working-capital line stands behind the till besides.
+         */
+        Sector.Statement billed = shops.statement();
+        double bills = billed.payroll + billed.electricity + billed.water + billed.maintenance + billed.propertyTax + billed.interest;
+        em.setSectorCash(R, bills + 4 * shops.getOrderValue());
         assertTrue("fixture: the shops owe under the shortfall desk's ceiling",
                 credit.getPrincipal(R) < credit.getAssets(R) * BusinessDebtManager.MAX_LOAN_TO_ASSETS);
         assertTrue("the month closes", closes(play(g)));
         double[] under = stockBought(shops);
         out.printf("   under the ceiling: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk%n",
                 shops.getOrderValue(), shops.getPurchaseBudget(), under[0]);
-        assertTrue("fixture: it ordered stock, and could pay for all of it", shops.getOrderValue() > 0
-                && shops.getPurchaseBudget() >= shops.getOrderValue());
-        assertTrue("a sector under its ceiling buys as before: every order placed whole",
+        boolean wholeOrder = fixture("fixture: it ordered stock, and could pay for all of it",
+                shops.getOrderValue() > 0 && shops.getPurchaseBudget() >= shops.getOrderValue());
+        if (wholeOrder) assertTrue("a sector under its ceiling buys as before: every order placed whole",
                 !shops.wasPurchaseLimited() && shops.getPurchasesForgone() == 0);
-        close("...and filled whole", under[1], under[2], 1e-9);
+        if (wholeOrder) close("...and filled whole", under[1], under[2], 1e-9);
 
         // OVER ITS CEILING AND SHORT: owing 1.2 times what it owns - a claim
         // taken on between months, the quarter the bank reads with it - and
@@ -986,10 +1036,11 @@ public class BondCheck {
         double budget = shops.getPurchaseBudget(), ordered = shops.getOrderValue();
         out.printf("   over the ceiling, half a month's running costs in the till: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk,"
                 + " did not buy $%,.1fk%n", ordered, budget, over[0], shops.getPurchasesForgone());
-        assertTrue("fixture: it could pay for some of its order and not all of it", budget > 0 && budget < ordered);
-        assertTrue("a sector over its ceiling and short buys only what its cash and the credit it can get cover",
+        // FS14: the till was set, between months, to half a month of the bills above; this is the relation that till makes with the order.
+        boolean partialOrder = fixture("fixture: it could pay for some of its order and not all of it", budget > 0 && budget < ordered);
+        if (partialOrder) assertTrue("a sector over its ceiling and short buys only what its cash and the credit it can get cover",
                 over[0] > 0 && over[0] <= budget * (1 + 1e-9));
-        assertTrue("...and does not order the rest", shops.wasPurchaseLimited() && shops.getPurchasesForgone() > 0);
+        if (partialOrder) assertTrue("...and does not order the rest", shops.wasPurchaseLimited() && shops.getPurchasesForgone() > 0);
         /*
          * ...AND A MONTH'S RUNNING COSTS IN THE TILL AGAIN FOR THE SETTLE
          * (0.7.55), between months, as before the month it bought short: the
@@ -1205,8 +1256,10 @@ public class BondCheck {
         credit.issueLoan(ISSUER, claim, g.getMonth());
         MoneyAudit.Result r = play(g);
         double loanLoss = credit.getWrittenOffThisMonth(ISSUER), bondLoss = credit.getBondWrittenOffThisMonth(ISSUER);
-        assertTrue("fixture: " + ISSUER + "'s firms defaulted a slice, its bonds among it", bondLoss > 0 && loanLoss > 0
-                && !credit.wasRestructuredThisMonth(ISSUER));
+        // FS14: the default is the claim's, taken on above: owing 1.2 times its assets, a month's share of its debt falls through the
+        // default point (monthlyDefaultShare of any positive leverage), its bonds from 7a's issue among it; the backstop is for a sector with no assets.
+        if (!fixture("fixture: " + ISSUER + "'s firms defaulted a slice, its bonds among it",
+                bondLoss > 0 && loanLoss > 0 && !credit.wasRestructuredThisMonth(ISSUER))) return;
         double loansDefaulted = credit.getLoansDefaultedThisMonth(ISSUER), bondsDefaulted = credit.getBondsDefaultedThisMonth(ISSUER);
         close("the loans lost (1 - LOAN_RECOVERY) of what of them defaulted", loanLoss,
                 loansDefaulted * (1 - BusinessDebtManager.LOAN_RECOVERY), 1e-9);
@@ -1597,6 +1650,28 @@ public class BondCheck {
             bond = bm.getBonds().get(0);
             poor.setBondFace(1, poorHolds / 100);
         }
+    }
+
+    static void priceTick() {
+        out.println("\n--- 9a. equal bond bids keep arrival priority at the price tick ---");
+        TwoCells f = new TwoCells(10_000, 0);
+        f.bond.world = f.bond.bank;
+        f.bond.bank = 0;
+        f.poor.savings = 100;
+        String first = BondMarket.CELL + f.rich.key(), second = BondMarket.CELL + f.poor.key();
+        double price = 1 + BondMarket.PRICE_TICK * .1;
+        f.bm.tradeForCheck(f.bond, first, OrderBook.Side.BUY, price, 10);
+        f.bm.tradeForCheck(f.bond, second, OrderBook.Side.BUY, Math.nextUp(price), 10);
+        List<OrderBook.Order> bids = f.bm.bookOf(f.bond).bids();
+        assertTrue("both bids rest at one tick, in their arrival order", bids.size() == 2
+                && bids.get(0).price() == bids.get(1).price() && bids.get(0).who().equals(first));
+        f.bm.tradeForCheck(f.bond, BondMarket.WORLD, OrderBook.Side.SELL, 1, 10);
+        close("the first arrival bought the face", f.rich.bondFace(1) * f.rich.households(), 10, 1e-12);
+        close("the second bid still waits", f.bm.bookOf(f.bond).resting(second, OrderBook.Side.BUY), 10, 1e-12);
+        int waiting = f.bm.bookOf(f.bond).bids().size();
+        assertTrue("a positive bid below half a tick is refused before settlement",
+                f.bm.tradeForCheck(f.bond, first, OrderBook.Side.BUY, BondMarket.PRICE_TICK / 4, 10).isEmpty()
+                        && f.bm.bookOf(f.bond).bids().size() == waiting);
     }
 
     static void eachTypeTrades() {

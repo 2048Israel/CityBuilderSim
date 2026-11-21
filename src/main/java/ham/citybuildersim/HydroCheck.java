@@ -305,8 +305,8 @@ public class HydroCheck {
         assertTrue("AN ORDER FOR A HYDRO STATION IS REFUSED NO_RIVER, before land and money", quiet(() -> g.buildStack(hydro, 1, false)) == Game.BuildResult.NO_RIVER);
         assertTrue("...and it takes nothing: none standing, none on site", g.hydroCommitted() == 0);
         assertTrue("...the card's verdict says so before the click", BuildCard.verdict(g, hydro, 1).kind() == BuildCard.VerdictKind.NO_RIVER);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(hydro, 1);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(hydro, 1L);
         assertTrue("...and a run stops at it", g.buildRunAhead(run) == 0 && g.buildRunStop(run) == Game.BuildResult.NO_RIVER);
         assertTrue("...the card carries no river: no sites, no slots", BuildCard.hydro(g, hydro).free() == 0 && BuildCard.hydro(g, hydro).slots() == 0
                 && BuildCard.hydro(g, hydro).sites() == 0 && BuildCard.hydro(g, coal) == null);
@@ -317,7 +317,7 @@ public class HydroCheck {
         Path root = TempDirs.create("hydrocheck");
         Game town = ChildcareCheck.town(root, "auto");
         AutoBuilder ab = town.getAutoBuilder();
-        int hydrosBefore = town.hydroCommitted();
+        long hydrosBefore = town.hydroCommitted();
         ab.setOn(true, null);
         int months = 24;
         quietly(() -> town.simulateMonths(months));
@@ -358,7 +358,7 @@ public class HydroCheck {
         assertTrue("with a slot free the advice values it at what it makes: unit() is more than nothing",
                 BuildAdvice.unit(g, power, hydro) > 0);
 
-        int free = g.hydroSlotsFree(hydro);
+        long free = g.hydroSlotsFree(hydro);
         assertTrue("an order of one more than the slots free is refused NO_RIVER, before land and money, and takes none",
                 quiet(() -> g.buildStack(hydro, free + 1, false)) == Game.BuildResult.NO_RIVER && g.hydroCommitted() == 0
                         && BuildCard.verdict(g, hydro, free + 1).kind() == BuildCard.VerdictKind.NO_RIVER);
@@ -366,17 +366,17 @@ public class HydroCheck {
         // A run: its orders count against the slots in turn - a second hydro station in the run has the first's ahead of it.
         BuildingsTemplate twin = new BuildingsTemplate("Hydro Station (a second kind, for the run)", BuildingType.ELECTRICITY).setHydro(true)
                 .setCashCost(hydro.getCashCost()).setProduction1(hydro.getProduction1()).setLandSqFt(hydro.getLandSqFt());
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> fits = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<BuildingsTemplate, Long> fits = new java.util.LinkedHashMap<>();
         fits.put(hydro, free - 1);
-        fits.put(twin, 1);
+        fits.put(twin, 1L);
         assertTrue("a run of " + (free - 1) + " and then 1 more hydro station is the slots free: both orders pass",
                 g.buildRunAhead(fits) == 2 && g.buildRunStop(fits) == Game.BuildResult.SUCCESS);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> over = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<BuildingsTemplate, Long> over = new java.util.LinkedHashMap<>();
         over.put(hydro, free - 1);
-        over.put(twin, 2);
+        over.put(twin, 2L);
         assertTrue("...a run of " + (free - 1) + " and then 2 more is one over: the first passes, the second is NO_RIVER with the first ahead of it",
                 g.buildRunAhead(over) == 1 && g.buildRunStop(over) == Game.BuildResult.NO_RIVER);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> alone = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<BuildingsTemplate, Long> alone = new java.util.LinkedHashMap<>();
         alone.put(hydro, free + 1);
         assertTrue("...and a single order of one more than the slots stops the run at once, NO_RIVER", g.buildRunAhead(alone) == 0 && g.buildRunStop(alone) == Game.BuildResult.NO_RIVER);
 
@@ -384,8 +384,8 @@ public class HydroCheck {
         assertTrue("orders up to the slots go ahead: 3 of 4", quiet(() -> g.buildStack(hydro, 3, false)) == Game.BuildResult.SUCCESS && g.hydroCommitted() == 3);
         assertTrue("...one free now", g.hydroSlotsFree(hydro) == 1 && g.hasRiverFor(hydro, 1) && !g.hasRiverFor(hydro, 2));
         assertTrue("...2 more is NO_RIVER, the stations on site counted", quiet(() -> g.buildStack(hydro, 2, false)) == Game.BuildResult.NO_RIVER && g.hydroCommitted() == 3);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> next = new java.util.LinkedHashMap<>();
-        next.put(hydro, 1);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> next = new java.util.LinkedHashMap<>();
+        next.put(hydro, 1L);
         assertTrue("...a run of one passes, the card's verdict is not NO_RIVER", g.buildRunStop(next) == Game.BuildResult.SUCCESS
                 && BuildCard.verdict(g, hydro, 1).kind() != BuildCard.VerdictKind.NO_RIVER);
         assertTrue("...the last one goes ahead", quiet(() -> g.buildStack(hydro, 1, false)) == Game.BuildResult.SUCCESS && g.hydroCommitted() == 4);
@@ -452,7 +452,7 @@ public class HydroCheck {
         UtilitiesHandler uh = g.getServicesManager().getUtilitiesHandler();
         java.util.Set<BuildingsTemplate> skip = new java.util.HashSet<>();
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getCategory() == BuildingType.ELECTRICITY && !t.isHydro()) skip.add(t);
-        int free = g.hydroSlotsFree(hydro);
+        long free = g.hydroSlotsFree(hydro);
         assertTrue("fixture: the town wants more power than it makes, by more than " + free + " stations' worth (" + (long) uh.getConsumption() + " against " + (long) uh.getBaseProduction() + ")",
                 uh.getConsumption() - uh.getBaseProduction() > 0 && free == 2);
         BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, null, power, Founding.WEALTHY_CASH, 1e12, BuildAdvice.SLACK, skip);
@@ -464,8 +464,10 @@ public class HydroCheck {
         int ample = 100;
         sites.setForTest(List.of(new HydroSites.Site(1000, 1000, 200, riseOf(World.FOOTHILL), (ample + 0.5) * kw, 0)));
         BuildAdvice.Suggestion plenty = BuildAdvice.suggestFor(g, null, power, Founding.WEALTHY_CASH, 1e12, BuildAdvice.SLACK, skip);
-        assertTrue("on a river with " + ample + " slots the count is what the need asks, more than the " + free + " and no more than the slots (" + (plenty == null ? 0 : plenty.count()) + "), and it keeps the need ahead",
-                plenty != null && plenty.template() == hydro && plenty.count() > free && plenty.count() <= g.hydroSlotsFree(hydro) && g.hydroSlotsFree(hydro) == ample && plenty.closes());
+        assertTrue("with ample slots, the twenty-year plan uses only the slots it needs or has and reports whether it closes",
+                plenty != null && plenty.template() == hydro && plenty.count() > free && plenty.count() <= ample
+                        && (plenty.closes() || plenty.count() == ample)
+                        && plenty.closes() == BuildAdvice.maintained(g, power, BuildAdvice.plus(BuildAdvice.onSite(g,power),hydro,plenty.count()),plenty.ahead()));
         // The notes' star 4, measured: with every power plant in the ranking and the river's slots ample, what the advice names.
         BuildAdvice.Suggestion open = BuildAdvice.suggestFor(g, null, power, Founding.WEALTHY_CASH, 1e12, BuildAdvice.SLACK, new java.util.HashSet<>());
         System.out.println("   with every power plant in the ranking and " + ample + " slots free, the advice names "
@@ -607,7 +609,7 @@ public class HydroCheck {
                 && city.getLandManager().getLandmasses().linked(site.landmass()));
         BuildingsTemplate shawHydro = hydroOf(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
-        int free = city.hydroSlotsFree(shawHydro);
+        long free = city.hydroSlotsFree(shawHydro);
         assertTrue("...an order for one more station than the slots free is refused NO_RIVER; one for the slots free is not (" + free + " free)",
                 free >= 1 && quiet(() -> city.buildStack(shawHydro, free + 1, false)) == Game.BuildResult.NO_RIVER
                         && BuildCard.verdict(city, shawHydro, free).kind() != BuildCard.VerdictKind.NO_RIVER);

@@ -738,9 +738,9 @@ final class GovernmentScreen {
         CentralBank cb = ui.game.getCentralBank();
         if (cb.getAdvancesToTreasury() > 0 || cb.getPrintedLifetime() > 0 || ui.game.hasArrears()) {
             // ...and the pair side by side, for the month the central bank's card comes or goes.
-            page.getChildren().add(Kept.scope("beside", () -> {
+            page.getChildren().add(Kept.parkedScope("beside", () -> {
                 javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
-                VBox bank = Kept.scope("central bank", () -> centralBankCard(cb));
+                VBox bank = Kept.parkedScope("central bank", () -> centralBankCard(cb));
                 javafx.scene.layout.GridPane.setFillHeight(bank, true);
                 javafx.scene.layout.GridPane.setFillHeight(economy, true);
                 two.add(bank, 0, 0);
@@ -758,7 +758,7 @@ final class GovernmentScreen {
     VBox wealthCard() {
         GovernmentView view = GovernmentView.of(ui.game);
         String info = "Net financial wealth is treasury cash + fund cash + the fund's holdings at market value + "
-                + "the vault's reserves in local money, less the city's debt. It is compared with the last twelve "
+                + "the vault's reserves in local money, less the city's debt (its paper at face, the central bank's advances and the linked bonds' indexation). It is compared with the last twelve "
                 + "months of revenue once a full year has been recorded.\n\nTreasury: " + m(view.treasury())
                 + "\nFund cash: " + m(view.fundCash()) + "\nFund holdings: " + m(view.fundHoldings())
                 + "\nVault: " + m(view.vault()) + "\nDebt: " + m(view.debt())
@@ -774,7 +774,7 @@ final class GovernmentScreen {
                 m(view.buybackMonthlySaving()) + " a month in coupons", buyback ? "Open buyback" : null,
                 buyback ? () -> ui.financesScreen.openClose(view.buybackDebt()) : null,
                 buyback ? "The coupon stopped by the quoted buyback. A discount bill has no coupon; its saving is the price below its maturity payment. Open the ticket and ladder to review the price."
-                        : view.debt() <= 0 ? "There is no paper to buy back."
+                        : view.paper() <= 0 ? "There is no paper to buy back."
                         : "Needs treasury cash above the city's debt and paper with a positive yield. Cash earns nothing."));
 
         String tax = view.largestTaxName();
@@ -903,7 +903,7 @@ final class GovernmentScreen {
                 final String name = names.get(i);
                 final double amount = amounts.get(i);
                 // Kept (KP6): a netted line is a scope keyed by the line it names.
-                out.add(Kept.scope(name, () -> words("less " + name.toLowerCase() + " " + s(amount),
+                out.add(Kept.parkedScope(name, () -> words("less " + name.toLowerCase() + " " + s(amount),
                         Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
             }
         }
@@ -952,7 +952,7 @@ final class GovernmentScreen {
             block.getChildren().add(Kept.scope("kept", () -> {
                 Region swatch = Kept.region();
                 swatch.setMinSize(12, 8);
-                swatch.setPrefSize(12, 8);
+                Pieces.prefSize(swatch, 12, 8);
                 swatch.setMaxSize(12, 8);
                 swatch.setStyle("-fx-border-color: " + tone + "; -fx-border-width: 1.5; -fx-border-radius: 2;");
                 Label kept = words((balance >= 0 ? "kept " : "short ") + m(Math.abs(balance)), Palette.SIZE_LABEL, tone);
@@ -1052,7 +1052,7 @@ final class GovernmentScreen {
         double over = Math.max(0, value - Math.max(0, other)) * unit;
         javafx.scene.layout.Pane bar = Kept.plain();
         bar.setMinSize(w, h);
-        bar.setPrefSize(w, h);
+        Pieces.prefSize(bar, w, h);
         bar.setMaxSize(w, h);
         Region track = Kept.region();
         track.setStyle("-fx-background-color: " + Palette.EDGE + "; -fx-background-radius: 3;");
@@ -1085,7 +1085,7 @@ final class GovernmentScreen {
     /** A region held at a size, at x along a plain Pane (which sizes its children to their preferred size). */
     static void place(Region r, double x, double w, double h) {
         r.setMinSize(w, h);
-        r.setPrefSize(w, h);
+        Pieces.prefSize(r, w, h);
         r.setMaxSize(w, h);
         r.relocate(x, 0);
     }
@@ -1177,11 +1177,11 @@ final class GovernmentScreen {
         if (banked) {
             BridgeStep most = mostly(balance);
             // Kept (KP6): a chip that comes or goes is a scope of its own.
-            if (most != null) chips.add(Kept.scope("mostly", () ->
+            if (most != null) chips.add(Kept.parkedScope("mostly", () ->
                     chip("mostly: " + most.label() + " " + s(most.amount()), Palette.TEXT_LABEL)));
             double printed = ui.game.getCentralBank().getAdvancedToTreasury();
             if (printed > 0) {
-                chips.add(Kept.scope("printed", () -> {
+                chips.add(Kept.parkedScope("printed", () -> {
                     // ...handed its icon where it is made, so a kept chip is not stripped of it and given it back.
                     Label p = chip("printed " + m(printed), Palette.MONEY, icon(Icons.BANK, Palette.MONEY, 11));
                     p.setGraphicTextGap(4);
@@ -1372,7 +1372,7 @@ final class GovernmentScreen {
     /** One row of the fold's grid: a movement, signed, and a zero written as one. */
     static int moved(javafx.scene.layout.GridPane grid, int row, String label, double amount, boolean under) {
         // Kept (KP6): a row of the grid, two cells, is a scope keyed by its words, for the rows that come and go.
-        Kept.scope("moved:" + label, () -> {
+        Kept.parkedScope("moved:" + label, () -> {
             Label what = gridCell(label, under ? Palette.TEXT_MUTED : Palette.TEXT_BODY, Palette.SIZE_CAPTION, false);
             // (A style is set whole, never built on getStyle(): the cell's own, with the indent.)
             if (under) what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 0 0 0 16;");
@@ -1425,7 +1425,7 @@ final class GovernmentScreen {
         java.util.Map<TreasuryLine, Double> owed = ui.game.getArrearsByLine();
         if (!owed.isEmpty()) {
             // Kept (KP6): the arrears, a caption and a line each, are a scope of their own (cardLine() keys a line by its words).
-            List<Node> lines = Kept.scope("arrears", () -> {
+            List<Node> lines = Kept.parkedScope("arrears", () -> {
                 List<Node> made = new ArrayList<>();
                 made.add(caption("OWED AND UNPAID, BY LINE", ARREARS_INFO));
                 for (java.util.Map.Entry<TreasuryLine, Double> line : owed.entrySet()) {
@@ -1585,6 +1585,8 @@ final class GovernmentScreen {
                 "Transit", "Repairs", "Arrears paid down", "Crude for the reserve",
                 // ...and the linked bonds' indexation (CD5), on the end for the same reason: in getTotalExpenses() beside the interest.
                 "Inflation uplift on linked bonds",
+                // ...and the licence the city's own patented works paid abroad (R2c-P), in getTotalExpenses() beside the research bill; Research stays last.
+                "Patent licences",
                 // ...and the research grants' posts and laboratories (R3b), the bill NationalAccounts.getTotalExpenses() has carried since R3 and no line named.
                 "Research");
     }
@@ -1624,6 +1626,8 @@ final class GovernmentScreen {
                 na.getReserveCrudeBought(),
                 // ...and the month's indexation of the linked bonds (CD5, spec-city-debt.md 5.4): in getTotalExpenses() at its end.
                 na.getInflationUplift(),
+                // ...and the licence the city's own patented works paid abroad (R2c-P), in getTotalExpenses() beside the research bill; Research stays last.
+                na.getPublicIpCharges(),
                 // ...and the research grants' posts and laboratories (R3), in getTotalExpenses() beside the safety bill.
                 na.getResearchSpending());
     }
@@ -2146,7 +2150,7 @@ final class GovernmentScreen {
                 payerRow("Principal repaid — not an expense", repaid, 0, "left the treasury")));
         double foreignInterest = ui.game.getForeignInterestPaidThisMonth();
         if (foreignInterest > 0) box.getChildren().add(Kept.scope("abroad", () ->
-                payerRow("...of which paid abroad", foreignInterest, total, "in dollars")));
+                payerRow("...of which paid abroad", foreignInterest, total, ForeignCouponView.note(ui.game.getDebtManager()))));
         return box;
     }
 
@@ -2664,14 +2668,14 @@ final class GovernmentScreen {
         if (recorded < 12) return "real growth from the second year";
         if (Double.isNaN(grew)) return "real growth from month 24";
         if (Math.abs(grew) < .0005) return "flat, real, 12 mo";
-        return String.format("%s %.1f%% real, 12 mo", grew > 0 ? "▲" : "▼", Math.abs(grew) * 100);
+        return (grew > 0 ? "▲ " : "▼ ") + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", "") + " real, 12 mo";
     }
 
     /** One of the four parts' cards: its name, its figure, and its lines. */
     static VBox partCard(String name, String colour, String amount, String info, Node... lines) {
         Region swatch = Kept.region();
         swatch.setMinSize(10, 10);
-        swatch.setPrefSize(10, 10);
+        Pieces.prefSize(swatch, 10, 10);
         swatch.setMaxSize(10, 10);
         swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 3;");
         HBox head = Kept.row(6, swatch, caption(name, info));
@@ -2692,9 +2696,13 @@ final class GovernmentScreen {
             + "the month it was produced rather than the month it clears.";
 
     VBox investmentCard(NationalAccounts na) {
-        return partCard("INVESTMENT", Palette.GDP_LAYERS[1], m(na.getInvestment()), STOCK_INFO,
+        VBox card = partCard("INVESTMENT", Palette.GDP_LAYERS[1], m(na.getInvestment()), STOCK_INFO,
                 cardLine("construction put up", m(na.getInvestmentConstruction()), null),
                 cardLine("change in stock", s(na.getInvestmentInventories()), null));
+        if (na.getInvestmentValuables() != 0) {
+            card.getChildren().add(cardLine("new gold acquired by the mint", m(na.getInvestmentValuables()), null));
+        }
+        return card;
     }
 
     /** P35, rewritten (B5): what G is, as the model counts it. */
@@ -2712,7 +2720,8 @@ final class GovernmentScreen {
      * on one scale - exports in the business violet, imports in its darker
      * step in three parts - with the parts named for what they are (B5:
      * "Steel exported" was every sector's exports, "Scrap imported" every
-     * sector's imports but the shops' food and the builders' materials).
+     * sector's imports but the shops' food and the builders' materials). Since HL1 (2026-11-11) the rest also
+     * leaves out what Business Services buys abroad for the bank: the bank's output is in no term of GDP.
      */
     VBox tradeCard(NationalAccounts na) {
         double exports = na.getExports();
@@ -2756,14 +2765,14 @@ final class GovernmentScreen {
         VBox trend = Kept.scope("trend", () -> limitCell("TREND", m(na.getTrendGdp()), "a month, twelve-month average", Palette.TEXT_HEAD));
         VBox head = Kept.scope("head", () -> limitCell("PER HEAD", heads > 0 ? moneyFull(annual / heads) : "—", "a year", Palette.TEXT_HEAD));
         VBox yoy = Kept.scope("yoy", () -> {
-            VBox cell = limitCell("YEAR ON YEAR", recorded >= 13 ? minus(String.format("%+.1f%%", na.getYearOnYearGrowth() * 100))
+            VBox cell = limitCell("YEAR ON YEAR", recorded >= 13 ? minus(Formats.INSTANCE.change(na.getYearOnYearGrowth(), 0, "%+.1f%%"))
                     : "—", recorded >= 13 ? "nominal, this month on a year ago" : "needs " + (13 - recorded) + " more months",
                     Palette.TEXT_HEAD);
             withInfo(cell, YOY_INFO);
             return cell;
         });
         VBox mom = Kept.scope("mom", () -> {
-            VBox cell = limitCell("MONTH ON MONTH", minus(String.format("%+.0f%%", na.getMonthlyGrowthAnnualised() * 100)),
+            VBox cell = limitCell("MONTH ON MONTH", minus(Formats.INSTANCE.change(na.getMonthlyGrowthAnnualised(), 0, "%+.0f%%")),
                     "annualised", Palette.TEXT_HEAD);
             withInfo(cell, MOM_INFO);
             return cell;

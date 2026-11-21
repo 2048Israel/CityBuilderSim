@@ -12,6 +12,12 @@ import java.util.Locale;
  * of the answers that can be caused and measured, each with the cause set
  * by the fixture rather than stood next to. See
  * claude/the-people-the-books-left-out.md.
+ *
+ * The two city sections CAUSE their conditions (FS16) where they once read
+ * them off a town played for sixty and a hundred and eighty months: the EI
+ * city is handed adults over its posts (OVERSUPPLY) and has a closing done by
+ * hand, and the college town is put through a university with its students
+ * seeded (EducationCheck.seeded()) for a few months.
  */
 public class OutsideCheck {
 
@@ -40,6 +46,24 @@ public class OutsideCheck {
         }
         throw new IllegalArgumentException("no template " + name);
     }
+
+    /** The university students put into the college town with their whole course before them (FS16): the ones who stay in the students' cell and borrow at the dial's shortfall. */
+    static final double COLLEGE_STAYERS = EducationCheck.LOAN_STAYING_STUDENTS;
+
+    /** The university students put into the college town in their last month (FS16): more than the hundred graduates the section asks for, who finish in its first month and carry their loans to the working families in its second. */
+    static final double COLLEGE_FIRST_FINISHERS = 2 * EducationCheck.LOAN_FINISHING_STUDENTS;
+
+    /** The university students put into the college town to finish in the last month it is read at (FS16), so somebody finished that month. */
+    static final double COLLEGE_LAST_FINISHERS = EducationCheck.LOAN_FINISHING_STUDENTS;
+
+    /** Months the college town is read over once its students are put in (FS16): the first finishers graduate in the first, are carried to the working families in the second and repay from the third, and the last finish in the fifth. */
+    static final int COLLEGE_MONTHS = 5;
+
+    /** Months the EI city is lived before its adults are handed over (FS16): enough for the buildings put up at once to be crewed, where it was played fifty-nine. */
+    static final int CITY_MONTHS = 6;
+
+    /** The adults the EI city is handed, as a multiple of the posts it offers (FS16): half as many again, so every post is filled and a pool is left over. */
+    static final double OVERSUPPLY = 1.5;
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.CANADA);
@@ -441,10 +465,10 @@ public class OutsideCheck {
             Game g = new Game(GameFiles.scratch("outsidecheck"));
             quietly(() -> {
                 g.run();
-                // THE LEVERS OPENED IN THE FIXTURE (R0): EI, the premium and the books are this section's subject, and on history's dates
-                // they are shut until 1940. Every lever opened and the defaults put back, before a month has run.
+                // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): EI, the premium and the books are this section's subject, and until OP1 on
+                // history's dates they were shut until 1940. Since OP1 every lever is open from the founding, and the defaults are put back
+                // before a month has run.
                 g.getEconomyManager().getTaxPolicy().reset();
-                g.getEconomyManager().getTaxPolicy().openAll();
                 // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
                 // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
                 // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -452,8 +476,8 @@ public class OutsideCheck {
                 g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 100_000_000L);
                 // More homes than posts, so the city has people out of work,
                 // and one mill whose closing takes posts that are filled.
-                g.buildStack(t(g, "House"), 400, false);
-                g.buildStack(t(g, "Small Grocery Store"), 2, false);
+                g.buildStack(t(g, "House"), 400, true);
+                g.buildStack(t(g, "Small Grocery Store"), 2, true);
                 /*
                  * THE MILLS STAND FROM THE START (0.7.17). The closing below is
                  * of the business with the most filled posts, meant to be a
@@ -466,11 +490,11 @@ public class OutsideCheck {
                  * describes; the houses, the shops and the works are still built.
                  */
                 g.buildStack(t(g, "Industrial Bakery"), 2, true);
-                g.buildStack(t(g, "Coal Power Plant"), 1, false);
-                g.buildStack(t(g, "Water Treatment Plant"), 1, false);
-                g.buildStack(t(g, "Paved Road"), 4, false);
-                g.buildStack(t(g, "Walk-in Clinic"), 1, false);
-                g.simulateMonths(59);
+                g.buildStack(t(g, "Coal Power Plant"), 1, true);
+                g.buildStack(t(g, "Water Treatment Plant"), 1, true);
+                g.buildStack(t(g, "Paved Road"), 4, true);
+                g.buildStack(t(g, "Walk-in Clinic"), 1, true);
+                g.simulateMonths(CITY_MONTHS);
             });
             EconomyManager e = g.getEconomyManager();
             Unemployment u = g.getUnemployment();
@@ -492,34 +516,33 @@ public class OutsideCheck {
                     adults + f.getOutsideAdults(), g.getCohorts().get(AgeBand.ADULT), 1e-6);
 
             /*
-             * THE CAUSE, in two steps. A founding city has more posts than
-             * people, so nobody is out of work and no closing can put anybody
-             * on EI. So: half as many adults again arrive at once, which fills
-             * every post and leaves a pool; then the business with the most
-             * filled posts closes, and its posts go with it.
+             * THE CAUSE, in two steps, and CAUSED (FS16). A founding city has
+             * more posts than people, so nobody is out of work and no closing
+             * can put anybody on EI. So: the adults are set at OVERSUPPLY times
+             * the posts the city offers, which fills every post and leaves a
+             * pool; then the business with the most filled posts closes, and its
+             * posts go with it. The adults were once added half as many again
+             * "as many times as it takes, up to four" to a city played for sixty
+             * months (0.7.7: once was barely enough, and a 0.7.7 city of 2,051
+             * posts had nobody over): the pool was found on the sixtieth month's
+             * town, and is set now. The pyramid is handed back named:
+             * this array is as wide as THIS build's band list, and the nameless
+             * path is five bands for ever - handed over unnamed it was refused
+             * whole and the adults never arrived.
              */
-            /*
-             * ...AS MANY TIMES AS IT TAKES, up to four (0.7.7). Once was
-             * always barely enough - 26 out of work on 0.7.6's city - and the
-             * 0.7.7 city, whose sixty months had gone a little differently,
-             * filled 1,946 of 2,051 posts after it and had nobody over. The
-             * condition is a pool; the fixture adds adults until there is one.
-             */
-            for (int wave = 0; wave < 4 && u.getPool() <= 0; wave++) {
-                double[] pyramid = g.getCohorts().toSaveArray();
-                pyramid[AgeBand.ADULT.ordinal()] *= 1.5;
-                // Named: this array is as wide as THIS build's band list, and the
-                // nameless path is five bands for ever. Handed over unnamed it was
-                // refused whole, the adults never arrived, and the fixture stopped
-                // causing the condition it exists to cause.
-                g.getCohorts().restore(PopulationCohorts.saveBands(), pyramid);
-                quietly(() -> g.simulateMonths(2));
-            }
+            double[] pyramid = g.getCohorts().toSaveArray();
+            pyramid[AgeBand.ADULT.ordinal()] = OVERSUPPLY * g.getPopulationManager().getTotalJobs();
+            g.getCohorts().restore(PopulationCohorts.saveBands(), pyramid);
+            quietly(() -> g.simulateMonths(2));
             BuildingsTemplate biggest = null;
-            int biggestJobs = 0;
+            long biggestJobs = 0;
             for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
                 if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
-                int jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
+                // Not the builders (HS1): a depot's posts are offered only while it has work
+                // (BuildingManager.getTotalJobs(), THE POSTS A SECTOR OFFERS), so closing idle
+                // depots cost no filled post - HS1's city had twelve, its biggest employer on paper.
+                if (Sectors.CONSTRUCTION.equals(b.getSector())) continue;
+                long jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
                 if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
             }
             final BuildingsTemplate closing = biggest;
@@ -529,10 +552,28 @@ public class OutsideCheck {
                     closing == null ? "-" : closing.getName(), biggestJobs);
             assertTrue("fixture: the city has more workers than posts", u.getPool() > 0 && closing != null);
             double beforeClosing = u.getBenefitsPaid();
+            /*
+             * EVERY STACK OF IT, AND THE DEPOTS WITH IT (HS1). BuildingManager.retire()
+             * scraps from the first stack of the template it finds and returns, even an
+             * empty one, so a template built in several stacks would be only partly
+             * closed: the fixture closes every stack of it by hand. And the depots go
+             * too: their posts are withheld while they have no work, and offered the
+             * month a building wave gives them some - on HS1's city 344 more posts in
+             * the closing month than before it, which no closing of one works outran.
+             */
+            long[] scrappedAll = new long[1];
             quietly(() -> {
-                if (closing != null) g.getBuildingManager().retire(closing, g.getBuildingManager().getQuantity(closing.getId()));
+                if (closing != null) {
+                    for (BuildingsStacks stack : g.getBuildingManager().getStacksView()) {
+                        boolean depot = Sectors.CONSTRUCTION.equals(stack.getBuilding().getSector());
+                        if ((stack.getBuilding().getId() != closing.getId() && !depot) || stack.getQuantity() <= 0) continue;
+                        if (!depot) scrappedAll[0] += stack.getQuantity();
+                        stack.removeQuantity(stack.getQuantity());
+                    }
+                }
                 g.simulateMonths(1);
             });
+            System.out.printf("   closed %,d of them%n", scrappedAll[0]);
             System.out.printf("   after: %,d posts, %,d filled, %,.0f out of work, %,.0f jobs lost, %,.0f on EI%n",
                     g.getPopulationManager().getTotalJobs(), g.getPopulationManager().getJobsFilled(), u.getPool(),
                     u.getJobsLost(), u.onEi());
@@ -587,10 +628,10 @@ public class OutsideCheck {
             double[] grantStudents = new double[1], grantWage = new double[1], grantIndex = new double[1];
             quietly(() -> {
                 g.newGame();
-                // THE LEVERS OPENED IN THE FIXTURE (R0): the students' grant and loans are this section's subject, shut until 1939 on
-                // history's dates. Every lever opened and the defaults put back, before a month has run.
+                // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): the students' grant and loans are this section's subject, and until OP1 they
+                // were shut until 1939 on history's dates. Since OP1 every lever is open from the founding, and the defaults are put back before
+                // a month has run.
                 g.getEconomyManager().getTaxPolicy().reset();
-                g.getEconomyManager().getTaxPolicy().openAll();
                 g.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
                 g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
                 String[][] plan = {
@@ -621,7 +662,26 @@ public class OutsideCheck {
                    tuition assertions below compare against figures computed
                    from the dial, so they move with it and keep their meaning. */
                 g.getEducation().setTuitionSubsidy(.15);
-                for (int m = 0; m < 180; m++) {
+                /*
+                 * ...AND THE STUDENTS PUT IN (FS16, caused). The town was played
+                 * 180 months until the college had students, people had graduated
+                 * and the loans had been lent and repaid: three conditions found
+                 * on how a played town's schools filled. It is lived for
+                 * EducationCheck.TOWN_MONTHS now, which staffs its schools, and
+                 * three cohorts are put into the university with EducationCheck.
+                 * seeded(): the stayers with their whole course before them,
+                 * who borrow at the dial's shortfall; the first finishers, in
+                 * their last month, who graduate in the first and carry their
+                 * share of the students' loans to the working families in the
+                 * second; and the last finishers, who finish in the last month
+                 * the section reads.
+                 */
+                g.simulateMonths(EducationCheck.TOWN_MONTHS);
+                assertTrue("fixture: the stayers, the first finishers and the last finishers went into the university's courses",
+                        EducationCheck.seeded(g, EducationType.UNIVERSITY, COLLEGE_STAYERS, EducationType.UNIVERSITY.months())
+                                && EducationCheck.seeded(g, EducationType.UNIVERSITY, COLLEGE_FIRST_FINISHERS, 1)
+                                && EducationCheck.seeded(g, EducationType.UNIVERSITY, COLLEGE_LAST_FINISHERS, COLLEGE_MONTHS));
+                for (int m = 0; m < COLLEGE_MONTHS; m++) {
                     // The households are struck at the top of the month and the
                     // schools run in the middle of it, so the census carries out
                     // the ones who finished the month before last: the count the
@@ -651,9 +711,9 @@ public class OutsideCheck {
             double students = f.getSeekers(FamilyModel.Seeker.STUDENT);
             HouseholdBalance hb = g.getHouseholdBalance();
             double onStudents = hb.students().studentDebt() * hb.students().households();
-            System.out.printf("   %,.0f students, %,.0f graduated; lent %,.0f, repaid %,.0f over fifteen years;"
+            System.out.printf("   %,.0f students, %,.0f graduated; lent %,.0f, repaid %,.0f over %d months;"
                             + " %,.0f owed now, %,.0f of it by the working families%n",
-                    students, graduatedEver[0], lentEver[0], repaidEver[0], hb.totalStudentDebt(),
+                    students, graduatedEver[0], lentEver[0], repaidEver[0], COLLEGE_MONTHS, hb.totalStudentDebt(),
                     hb.totalStudentDebt() - onStudents);
             assertTrue("fixture: the college has students", students > 10);
             // ...every student the month opened with, at the wage it opened on:

@@ -1,6 +1,6 @@
 # Bridges.java - 321 lines · 31 methods · 4 constants · model
 
-`ham/citybuildersim/Bridges.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Bridges.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the
 > landmass at each end, its length, the depth of the water under it, the chain of plots it runs along as its corner plots,
@@ -21,7 +21,7 @@
 
 **Uses:** [BridgeWorks](BridgeWorks.md) (3), [Landmasses](Landmasses.md) (1), [BridgeSurvey](BridgeSurvey.md) (1)
 
-**Used by (10):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [DataSave](DataSave.md), [Game](Game.md), [IslandLinkCheck](IslandLinkCheck.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (11):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [DataSave](DataSave.md), [FB13Check](FB13Check.md), [Game](Game.md), [IslandLinkCheck](IslandLinkCheck.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 
@@ -65,9 +65,9 @@
 | 26 | 296 | **type** `public final class Bridges implements Landmasses.Joins` | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its length, the depth of the water under it, the chain of plots it runs a... |
 | 38 | 13 | **type** `public interface Stock` | What Bridges reads of the buildings: Game wires it; a bare one has none and no bridge is fitted to a count. |
 | 40 | 1 | `boolean known(int template)` _(in Bridges.Stock)_ | Whether the template is one of the bridges'. |
-| 43 | 1 | `int standing(int template)` _(in Bridges.Stock)_ | The finished bridges of a template. |
-| 46 | 1 | `int onSite(int template)` _(in Bridges.Stock)_ | ...those under construction. |
-| 49 | 1 | `int shell(int template)` _(in Bridges.Stock)_ | ...those a stopped order left standing as a shell. |
+| 43 | 1 | `long standing(int template)` _(in Bridges.Stock)_ | The finished bridges of a template. |
+| 46 | 1 | `long onSite(int template)` _(in Bridges.Stock)_ | ...those under construction. |
+| 49 | 1 | `long shell(int template)` _(in Bridges.Stock)_ | ...those a stopped order left standing as a shell. |
 | 57 | 40 | **type** `public static final class Row` | One bridge, as saved and as read: its template, kind, state, landings (the near on the landmass the city has linked, the far across the water) with the landmass at each, length and depths (metres) and the chain's corn... |
 | 66 | 1 | `public Row()` _(in Bridges.Row)_ |  |
 | 69 | 7 | `public BridgeWorks.Kind kind()` _(in Bridges.Row)_ | Its kind. |
@@ -83,11 +83,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 133 | 20 | `void ordered(int template, BridgeWorks.Kind kind, BridgeSurvey.Result survey, int n, boolean instant)` | An order of n bridges of a template was placed on a surveyed crossing, after the stack took it: n records on the same survey, on site - standing at once for an order built at once (`instant`). |
+| 133 | 20 | `void ordered(int template, BridgeWorks.Kind kind, BridgeSurvey.Result survey, long n, boolean instant)` | An order of n bridges of a template was placed on a surveyed crossing, after the stack took it: n records on the same survey, on site - standing at once for an order built at once (`instant`). |
 | 161 | 9 | `void reconcile()` | Fits every template's records to the buildings' own counts (at the month's settle and at a load): a completion has taken the oldest bridge on site to standing, a stop the newest to the shell, a restart the shell back ... |
 | 171 | 5 | `private List<Row> of(int template, int state)` |  |
 | 177 | 30 | `private void fit(int template)` |  |
-| 208 | 3 | `private void drop(List<Row> list, int count)` |  |
+| 208 | 3 | `private void drop(List<Row> list, long count)` |  |
 | 213 | 4 | `void settle()` | The month's settle (Game.settleConstructionControl()): the choices are forgotten (one order's), the records fitted. |
 
 ### THE LINKS - what a standing bridge joins (lines 218-237)

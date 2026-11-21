@@ -907,6 +907,19 @@ public final class CityRuns {
     public long highwayUndrawn() { return highwayShort + (highways.started && !highwaysReach() ? highways.plots : 0); }
     /** The track plots the model has that the railway's ways do not use and the map does not draw (FR7): the model's less the main line's, the sidings' and the branches' - the legend's "plots of track more than the line uses". */
     public long trackSurplus() { return trackSurplus; }
+
+    /**
+     * (HL1-M) The railway's plots past the model's `track` plots (the Rail Spurs', Freight Lines' and so on, BuildingVisual.cells()): a STATION'S OWN main line, laid
+     * to the city's edge whatever track the model has (layRail(); FX5, Jerus 2026-10-20: "there is a railwawy depot but no rails" - a yard is no track, and a depot
+     * alone is how the model rails freight). It is the other half of trackSurplus() - the model's track the railway cannot hold, which is 0 whenever the line is
+     * longer - so a drawn railway is the model's track less the one plus the other: laid = track - trackSurplus() + stationLine(track). The quay's spurs are neither
+     * (quayPlots()). With the yards gone and the idle yards taken up the line is trimmed to the track and this is 0; the sidings and the branches are laid out of what
+     * the track leaves past the line, so with the line longer than the track there are none (MapCheck's section 25 asserts both).
+     * WHY: MapCheck's section 1 held "the plots the map draws as track + what the runs could not lay = the model's track" and so called a city with one Rail Depot and
+     * no Rail Spur wrong (HL1's 120-month town, m121: 83 plots drawn, no model track, trackSurplus() 0). The map was right: it drew the line the runs lay for the depot.
+     */
+    public long stationLine(long track) { return Math.max(0, rail.plots - quayPlots() - track); }
+
     public int yardsShort() { return yardsShort; }
     public long version() { return version; }
 
@@ -2762,7 +2775,7 @@ public final class CityRuns {
      * Pure in its inputs; skipped when the
      * stamp of them is the last run's.
      */
-    private void layRail(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry,
+    private void layRail(long trackPlots, List<int[]> sizes, long spurs, Ground g, long rx, long ry,
                          List<long[]> mines, List<long[]> works, Pieces pieces) {
         long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works, pieces);
         // (MF1) An idle yard whose time is up is taken up this month, though nothing the stamp holds has moved.
@@ -2962,7 +2975,7 @@ public final class CityRuns {
      * (RI1) With the railway started and islandRail on also the city's pieces: their count and which have weight - not the weights, which drift every month and would lay the ways afresh every month - and the railway's own pieces' hubs.
      * (HB2) And the quay ends, only while there are any, so a city with no harbour keeps the stamp it has.
      */
-    private long railStampOf(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[]> works, Pieces pieces) {
+    private long railStampOf(long trackPlots, List<int[]> sizes, long spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[]> works, Pieces pieces) {
         long h = World.mix(0x5241494CL ^ trackPlots);
         h = World.mix(h ^ spurs ^ ((long) gateway << 32) ^ g.version() * 31 ^ rx * 0x9E3779B97F4A7C15L ^ ry);
         for (int[] s : sizes) h = World.mix(h ^ ((long) s[0] << 20) ^ s[1]);
@@ -3316,7 +3329,7 @@ public final class CityRuns {
      * passed over too. A spur with no works to serve lays nothing. At most
      * SIDING_TRIES works are tried.
      */
-    private void laySidings(int wanted, Ctx ctx, Ground g, long[] budget) {
+    private void laySidings(long wanted, Ctx ctx, Ground g, long[] budget) {
         List<long[]> works = ctx.bulk();
         if (wanted <= 0 || works.isEmpty() || !rail.started) return;
         List<long[]> line = ctx.line();
@@ -4206,7 +4219,7 @@ public final class CityRuns {
      * a siding into a bulk works, and the bulk works' boxes `works`, each {x0,
      * y0, x1, y1} inclusive (FR7 slice 3).
      */
-    public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g,
+    public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, long spurs, Ground g,
                          long fx, long fy, long rx, long ry, List<long[]> mines, List<long[]> works) {
         return layTo(highwayPlots, trackPlots, yardSizes, spurs, g, fx, fy, rx, ry, mines, works, ONE_PIECE);
     }
@@ -4221,7 +4234,7 @@ public final class CityRuns {
      * same weights, and its own yard where the model asks for one (layRail());
      * the freight station and the trains' ways stay with the home piece.
      */
-    public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g,
+    public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, long spurs, Ground g,
                          long fx, long fy, long rx, long ry, List<long[]> mines, List<long[]> works, Pieces pieces) {
         long v0 = signature();
         layHighways(highwayPlots, g, fx, fy, pieces);

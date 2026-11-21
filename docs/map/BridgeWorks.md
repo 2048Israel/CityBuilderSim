@@ -1,6 +1,6 @@
 # BridgeWorks.java - 126 lines · 7 methods · 12 constants · model
 
-`ham/citybuildersim/BridgeWorks.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeWorks.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the
 > construction points those dollars are at the bridge's own founding price a point. Pure arithmetic: Game.quoteBuild()
@@ -23,7 +23,7 @@
 
 **Uses:** [RunWorks](RunWorks.md) (2), [PriceLevel](PriceLevel.md) (1), [BridgeSurvey](BridgeSurvey.md) (1)
 
-**Used by (12):** [BridgeCheck](BridgeCheck.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Game](Game.md), [PriceLevelCheck](PriceLevelCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (14):** [BridgeCheck](BridgeCheck.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [FB13Check](FB13Check.md), [Game](Game.md), [LandmassView](LandmassView.md), [PriceLevelCheck](PriceLevelCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Enum constants
 

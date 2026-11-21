@@ -87,7 +87,7 @@ public final class OilView {
      * @param oldest   its oldest well's age in months; -1 with none
      * @param lifted   tonnes of the month's offshore lift credited to it: its wells' nameplate share; NaN not counted
      */
-    public record Platform(String name, double depth, int km, int wells, int slots, int oldest, double lifted) { }
+    public record Platform(String name, double depth, int km, long wells, int slots, int oldest, double lifted) { }
 
     /**
      * A series of the wells' chart: the land wells, a platform, or the
@@ -118,7 +118,7 @@ public final class OilView {
      *                   makes (Refining.Outlook.room()); NaN for a conversion unit
      * @param months     months its site would take at today's queue (Game.onSiteMonths()); 0 with none on site
      */
-    public record UnitRow(Kind kind, int standing, int onSite, double feed, double run, double share, double citySpread,
+    public record UnitRow(Kind kind, long standing, long onSite, double feed, double run, double share, double citySpread,
                           SpreadPlanner.Candidate gate, double spare, double fuelShort, double months) {
         public boolean crude() { return kind == null; }
     }
@@ -162,7 +162,7 @@ public final class OilView {
      * @param paid        what the last strike paid for crude bought
      * @param took        ...and took in for crude sold
      */
-    public record Reserve(int standing, double room, double held, double book, double fill, double release, double fillMost,
+    public record Reserve(long standing, double room, double held, double book, double fill, double release, double fillMost,
                           double importPrice, double localPrice, double bought, double sold, double paid, double took) {
         /** Tonnes of room the tanks have left. */
         public double roomLeft() { return Math.max(0, room - held); }
@@ -210,10 +210,10 @@ public final class OilView {
      * @param ordering     the refiners' investors' word for the month
      * @param refinery     the refinery's picture's month, which the units and products are read off
      */
-    public record View(boolean counted, int month, double rate, int landWells, int platformWells, List<Platform> platforms,
-                       int pipeKm, int pipesWhole, double shuttle, double deepWater, double groundLeft, double seaLeft, int groundFields,
-                       int seaFields, int shallowSites, int drilledYear, int wearYear, int landOnSite, int jacketsOnSite,
-                       int seaWellsOnSite, List<Series> series,
+    public record View(boolean counted, int month, double rate, long landWells, long platformWells, List<Platform> platforms,
+                       long pipeKm, int pipesWhole, double shuttle, double deepWater, double groundLeft, double seaLeft, int groundFields,
+                       int seaFields, int shallowSites, long drilledYear, long wearYear, long landOnSite, long jacketsOnSite,
+                       long seaWellsOnSite, List<Series> series,
                        double crudeImported, double crudeImportBill, double refinersCrude, double soldAbroad,
                        double boughtAbroad, List<UnitRow> units, List<Product> products, Reserve reserve, String drilling,
                        String atSea, String ordering, RefineryView.View refinery) {
@@ -309,7 +309,7 @@ public final class OilView {
         }
         if (platforms.size() > PLATFORMS_LISTED) series.add(new Series("Other platforms", OTHER_PLATFORMS, restNow, rest));
 
-        int drilled = 0, wear = 0;
+        long drilled = 0, wear = 0;
         for (Vintage v : vintages) {
             if (v.kind() != WellKind.LAND) continue;
             int age = month - v.month();
@@ -385,7 +385,7 @@ public final class OilView {
 
         /* ----- the reserve ----- */
         StrategicReserve res = game.getReserve();
-        int reserves = 0;
+        long reserves = 0;
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (StrategicReserve.isReserve(t)) reserves += game.getBuildingManager().getQuantity(t.getId());
         }
@@ -537,12 +537,12 @@ public final class OilView {
         BuildingManager b = game.getBuildingManager();
         Map<Kind, List<BuildingsTemplate>> templates = new EnumMap<>(Kind.class);
         List<BuildingsTemplate> crudeUnits = new ArrayList<>();
-        int crudeOnSite = 0;
+        long crudeOnSite = 0;
         BuildingsTemplate crudeSite = null;
         Map<Kind, BuildingsTemplate> sites = new EnumMap<>(Kind.class);
         for (BuildingsTemplate t : b.getTemplatesBySector(Sectors.REFINING)) {
             BuildingsStacks stack = b.getStack(t);
-            int site = stack == null ? 0 : stack.getUnderConstruction();
+            long site = stack == null ? 0 : stack.getUnderConstruction();
             if (Refining.isCrudeUnit(t)) {
                 crudeUnits.add(t);
                 crudeOnSite += site;
@@ -554,13 +554,13 @@ public final class OilView {
         }
         BusinessInvestment plans = game.getBusinessInvestment();
         Refining.Outlook o = plans == null ? null : r.outlook(plans);
-        RefineryFlow.Flow weighed = o == null ? null : RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
+        RefineryFlow.Flow weighed = o == null ? null : RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values(), o.crackerPetrol());
         double[] values = r.cityValues();
         double[] feed = r.unitFeed(false);
 
         List<UnitRow> rows = new ArrayList<>();
         // The crude units: their crude as litres, the month's rate, one more of the size that passes and earns most.
-        int crudeStanding = refinery.crudeUnits();
+        long crudeStanding = refinery.crudeUnits();
         double crudeFeed = refinery.flow().crude();
         double crudeRun = refinery.counted() ? crudeFeed * refinery.rate() : Double.NaN;
         rows.add(new UnitRow(null, crudeStanding, crudeOnSite, crudeFeed, crudeRun,
@@ -574,11 +574,11 @@ public final class OilView {
             List<BuildingsTemplate> sizes = templates.get(k);
             SpreadPlanner.Candidate gate = u != null ? u.gate() : RefineryView.oneMore(r, game, sizes);
             double spare = weighed == null ? Double.NaN : Math.max(0, Refining.spareFeed(weighed, k));
-            int on = u == null ? 0 : u.standing(), site = u == null ? 0 : u.onSite();
+            long on = u == null ? 0 : u.standing(), site = u == null ? 0 : u.onSite();
             double run = u == null ? (refinery.counted() ? 0 : Double.NaN) : u.run();
             double share = u == null ? Double.NaN : u.share();
             double months = sites.containsKey(k) ? game.onSiteMonths(sites.get(k)) : 0;
-            UnitRow row = new UnitRow(k, on, site, feed[k.ordinal()], run, share, RefineryFlow.spread(k, values), gate, spare,
+            UnitRow row = new UnitRow(k, on, site, feed[k.ordinal()], run, share, refinery.flow().process().spread(k, values), gate, spare,
                     Double.NaN, months);
             (on > 0 ? standing : site > 0 ? building : rest).add(row);
         }
@@ -838,7 +838,7 @@ public final class OilView {
     /** LIFTED HERE, RESERVES LEFT, CRUDE IMPORTED, PRODUCTS ACROSS THE EDGE. */
     public static List<Figure> figures(View v) {
         List<Figure> f = new ArrayList<>();
-        int wells = v.landWells() + v.platformWells();
+        long wells = v.landWells() + v.platformWells();
         String count = wells == 0 ? "no well stands" : countWords(v.landWells(), "well") + (v.platforms().isEmpty() ? ""
                 : ", " + countWords(v.platforms().size(), "platform"));
         f.add(new Figure("LIFTED HERE", v.counted() ? barrelsWords(v.lifted()) : "—",
@@ -875,7 +875,7 @@ public final class OilView {
     }
 
     /** "160 wells", "1 well". */
-    static String countWords(int n, String noun) {
+    static String countWords(long n, String noun) {
         return String.format("%,d %s%s", n, noun, n == 1 ? "" : "s");
     }
 
@@ -908,7 +908,7 @@ public final class OilView {
     public static List<PlatformLine> platformLines(View v) {
         List<PlatformLine> out = new ArrayList<>();
         double restLift = 0;
-        int restWells = 0, rest = 0;
+        long restWells = 0, rest = 0;
         for (int i = 0; i < v.platforms().size(); i++) {
             Platform p = v.platforms().get(i);
             if (i >= PLATFORMS_LISTED) {
@@ -1038,7 +1038,8 @@ public final class OilView {
     static UnitLine unitLine(View v, UnitRow u) {
         String name = u.crude() ? "Crude units" : u.kind().unitName();
         String count = u.standing() > 0 ? "×" + u.standing() : "—";
-        String what = u.crude() ? "crude → its " + RefineryView.COLUMN.length + " cuts" : whatWords(u.kind());
+        String what = u.crude() ? "crude → its " + RefineryView.COLUMN.length + " cuts" : whatWords(u.kind(),
+                v.refinery() == null ? RefineryFlow.MODERN_PROCESS : v.refinery().flow().process());
         double feed = u.standing() > 0 ? u.feed() : u.gate() == null ? Double.NaN
                 : u.crude() ? u.gate().template().uses(Good.CRUDE) * Refining.CRUDE_LITRES_PER_TONNE : u.gate().template().feedPerMonth();
         String barrels = Double.isFinite(feed) ? barrelsFigure(feed) : "—";
@@ -1058,8 +1059,13 @@ public final class OilView {
      * item's words joined by NO_BREAK, so a line wraps only between items.
      */
     public static String whatWords(Kind k) {
+        return whatWords(k, RefineryFlow.MODERN_PROCESS);
+    }
+
+    /** The yields of the process actually shown, rather than the standalone modern definition. */
+    public static String whatWords(Kind k, RefineryFlow.Process process) {
         List<RefineryFlow.Yield> litres = new ArrayList<>(), tonnes = new ArrayList<>();
-        for (RefineryFlow.Yield y : k.yields()) (Double.isFinite(y.product().litresPerTonne()) ? litres : tonnes).add(y);
+        for (RefineryFlow.Yield y : process.yields(k)) (Double.isFinite(y.product().litresPerTonne()) ? litres : tonnes).add(y);
         litres.sort((a, b) -> Double.compare(b.perLitre(), a.perLitre()));
         StringBuilder s = new StringBuilder(k.feed().words().replace(' ', NO_BREAK)).append(NO_BREAK).append('→');
         boolean first = true;

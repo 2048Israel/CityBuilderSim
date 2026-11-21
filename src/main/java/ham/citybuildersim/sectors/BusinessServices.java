@@ -67,6 +67,12 @@ import java.util.List;
  * $8.50-10.50 an hour where one steelworker went from $16 to $8.75, and then
  * shedding two thousand jobs to the Philippines and India inside a decade.
  * Boom and bleed, documented. See claude/business-services.md.
+ *
+ * AND THE CITY'S OWN UPKEEP IS BOUGHT OF IT (HL1, 2026-11-11): the treasury's
+ * care, school, research, safety and transit upkeep and the bank's operating
+ * cost are work billed to this sector, which imports the share of it a sector
+ * of its kind imports (sellUpkeep() for the services', sellBankUpkeep() for
+ * the bank's, on a line of its own; UPKEEP_IMPORTED).
  */
 public final class BusinessServices extends Sector {
 
@@ -149,7 +155,6 @@ public final class BusinessServices extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         boolean sawLicenceWall = false;
         JobType wanted = null;
         double shortBy = 0;
@@ -177,10 +182,7 @@ public final class BusinessServices extends Sector {
             Staffing staffing = staffing(t);
             double staffable = staffing.share;
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -202,7 +204,7 @@ public final class BusinessServices extends Sector {
                         Math.ceil(shortBy), licenceLabel(wanted)));
             }
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             return BusinessInvestment.Decision.no(sector,
                     "the wage bill is above what the world pays for the work");
@@ -221,6 +223,15 @@ public final class BusinessServices extends Sector {
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) { return null; }
+
+    /**
+     * "Twenty-four months of losses sheds plant", as the header says, and it
+     * did not (AQ1): the shortfall desk lent the losses and nothing closed
+     * until it refused, then everything closed in a year. Past one hundred
+     * per cent of its billing the offices close while it is still lent.
+     */
+    @Override
+    public boolean bleedsWhileLent() { return true; }
 
     /**
      * The licences of one kind this sector's practices on site will ask for
@@ -245,6 +256,105 @@ public final class BusinessServices extends Sector {
             case UNIV_FINANCE      -> "finance licences";
             default                -> "licences";
         };
+    }
+
+    /* ===== THE CITY'S UPKEEP (HL1, 2026-11-11) =====================================
+
+       What the treasury pays for care, schools, research, safety and the
+       transit system's upkeep, and what the bank pays to run, left the audited
+       pools and reached nobody: 0.4-4.4% of GDP a year vanishing from the
+       households' books' other side, a bill with no seller. It is bought of
+       this sector now. The buyer pays exactly what it paid and when it paid it;
+       the whole bill is this sector's other revenue the moment it is paid (as
+       the old steel is the mills', sellOldMetal()), struck and banked at its
+       next strike like any revenue, and the share of it a sector of its kind
+       buys abroad (UPKEEP_IMPORTED) is booked as an imported service, so the
+       audit's imports, the national accounts and the balance of payments see
+       it with no line of their own. No extra payroll, no good, no market: it
+       is work billed.
+
+       THE SHARE IT KEEPS FOLLOWS THE SEATS (HL1-R, 2026-11-19). HL1 kept a
+       quarter of the city's whole upkeep the moment one seat stood and none
+       before: a cliff, a margin with no payroll or capacity behind it (the
+       review's low). What this sector keeps is now what its seats can serve:
+       a month of every seat at what the world pays for it (upkeepCapacity(),
+       the figure the screen shows as price x seats), the bank's bill and the
+       services' sharing it, up to the quarter the dial leaves it. Nobody
+       here: all of it is bought abroad, as before. Seats for the whole
+       quarter: the same quarter, to the bit. In between the kept share rises
+       with the seats, and the rest of the bill is imported.
+
+       That is true of the five services' upkeep, which is in G (the care,
+       safety and schools' gross cost, the research and transit bills), so
+       taking its imported share off GDP is right. The bank's share the money
+       audit and the balance of payments see, the national accounts do not
+       (HL1, 2026-11-11, the review's finding): the bank is not the government,
+       so its operating cost is in no G, and nobody buys its output over a
+       counter, so it is in no C; an import whose output is in no final term
+       must not be taken off GDP, as the drivers' fuel is not (the accounts
+       keep "the world's part of their fuel in neither C nor the imports").
+       The bank's part is therefore booked on an input line of its own,
+       BANK_UPKEEP_SUPPLIES, which EconomyManager.updateNationalAccounts()
+       leaves out of its imports.
+       ------------------------------------------------------------------- */
+
+    /**
+     * The share of the upkeep it sells the city's services and the bank that it buys abroad when its seats can serve all the rest, the kept
+     * share being one less this and no more than what its seats can serve (HL1, HL1-R; measured 2026-11-11 on seeds 0 and 1, months 240-900:
+     * the grocers import 0.75-0.78 of their inputs, the restaurants 0.73-0.77, the builders 0.62-0.80).
+     */
+    public static final double UPKEEP_IMPORTED = 0.75;
+
+    /** The upkeep's name on its input line. */
+    public static final String UPKEEP_SUPPLIES = "Upkeep supplies";
+
+    /**
+     * The bank's part of the upkeep on an input line of its own, because the national accounts keep it out of their imports: the bank's
+     * output is in no term of GDP (HL1, 2026-11-11, the review's finding).
+     */
+    public static final String BANK_UPKEEP_SUPPLIES = "Bank upkeep supplies";
+
+    /** Upkeep the city's five services have paid (care, schools, research, safety, transit), billed to this sector this month: other revenue now, the imported share its input. */
+    public void sellUpkeep(double bill) {
+        sellUpkeepOn(UPKEEP_SUPPLIES, bill);
+    }
+
+    /** What the bank paid to run this month, billed to this sector: other revenue now, the imported share its input on BANK_UPKEEP_SUPPLIES. */
+    public void sellBankUpkeep(double bill) {
+        sellUpkeepOn(BANK_UPKEEP_SUPPLIES, bill);
+    }
+
+    /**
+     * What a month of its seats could bill at capacity, in the city's own money: every kind's seats at what the world pays for a seat-month
+     * (priceOfSeat(), the price the screen shows). The most upkeep the sector can serve in a month, the bank's and the services' together
+     * (HL1-R); nothing with no seats, and nothing while a strong currency leaves the work no price.
+     */
+    public double upkeepCapacity() {
+        return getCapacity(Good.SUPPORT_WORK) * priceOfSeat(Good.SUPPORT_WORK)
+                + getCapacity(Good.BACK_OFFICE_WORK) * priceOfSeat(Good.BACK_OFFICE_WORK)
+                + getCapacity(Good.ENGINEERING_WORK) * priceOfSeat(Good.ENGINEERING_WORK);
+    }
+
+    /**
+     * What of the upkeep billed since the last strike it has kept, read off the pending ledger it was booked on: the whole sold less the imported
+     * lines (HL1-R). A save keeps both, so the month's share of its capacity already served is not a field of its own.
+     */
+    public double upkeepKept() {
+        double imported = pending().otherInputs.getOrDefault(UPKEEP_SUPPLIES, 0.0)
+                + pending().otherInputs.getOrDefault(BANK_UPKEEP_SUPPLIES, 0.0);
+        return Math.max(0, pending().upkeepSold - imported);
+    }
+
+    /**
+     * The one body of both: the whole bill is other revenue, and of it the share the seats cannot serve (or the dial's, if more) is booked as
+     * an imported service on the line called {@code line}. What it keeps is the dial's quarter of the bill, no more than the room its capacity
+     * has left this month (HL1-R; was: the whole quarter from one seat). The services' bill is paid first in the month and the bank's after.
+     */
+    private void sellUpkeepOn(String line, double bill) {
+        if (!(bill > 0) || !Double.isFinite(bill)) return;
+        double room = Math.max(0, upkeepCapacity() - upkeepKept());
+        bookUpkeepSold(bill);
+        bookImportedService(line, Math.max(bill * UPKEEP_IMPORTED, bill - room));
     }
 
     /* ------------------------------------------------------------ the screen */

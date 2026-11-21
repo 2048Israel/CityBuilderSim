@@ -1,6 +1,6 @@
-# Retail.java - 1,411 lines · 105 methods · 17 constants · sectors
+# Retail.java - 1,409 lines · 105 methods · 17 constants · sectors
 
-`ham/citybuildersim/sectors/Retail.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Retail.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The shops. Buy food on the food market, keep it on a shelf, sell it to the
 > households as groceries at a price they strike themselves.
@@ -41,224 +41,224 @@
 > sold here, drawn at wholesale and sold at the pump, and the Filling
 > Stations are what the forecourts can sell. See THE FORECOURTS.
 
-**Uses:** [Good](Good.md) (44), [BusinessInvestment](BusinessInvestment.md) (21), [Trade](Trade.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (12), [Game](Game.md) (11), [Markets](Markets.md) (4), [SupplierCredit](SupplierCredit.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GoodsMarket](GoodsMarket.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [PriceLevel](PriceLevel.md) (1), [BuildingType](BuildingType.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Good](Good.md) (44), [BusinessInvestment](BusinessInvestment.md) (21), [Trade](Trade.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (12), [Game](Game.md) (11), [Markets](Markets.md) (4), [SupplierCredit](SupplierCredit.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GoodsMarket](GoodsMarket.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [PriceLevel](PriceLevel.md) (1), [BuildingType](BuildingType.md) (1), [NewUnit](NewUnit.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
-**Used by (41):** [BasketYearCheck](BasketYearCheck.md), [BondCheck](BondCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CarCheck](CarCheck.md), [EconomyManager](EconomyManager.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HomeFuel](HomeFuel.md), [HouseholdBalance](HouseholdBalance.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [MonetaryCheck](MonetaryCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TradeScreen](TradeScreen.md), [WaterCheck](WaterCheck.md)
+**Used by (43):** [BasketYearCheck](BasketYearCheck.md), [BondCheck](BondCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CarCheck](CarCheck.md), [EconomyManager](EconomyManager.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HomeFuel](HomeFuel.md), [HouseholdBalance](HouseholdBalance.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [MonetaryCheck](MonetaryCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [PassThroughCheck](PassThroughCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TradeScreen](TradeScreen.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 70 | · the price that clears (0.7.43) |
-| 108 | · its suppliers' credit (0.7.44) |
-| 163 | THE THIRTEEN THINGS ON THE SHELF |
-| 235 | INPUTS FROM THE CITY |
-| 281 | · the sale, read for the screens (0.7.45) |
-| 448 | THE SALE, at the bottom of the month |
-| 676 | PLANNING - baskets wanted against baskets the shops can hand over |
-| 825 | THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's |
-| 1169 | THE SCREEN |
-| 1285 | SAVE, RESET, THE REFORM |
+| 71 | · the price that clears (0.7.43) |
+| 109 | · its suppliers' credit (0.7.44) |
+| 164 | THE THIRTEEN THINGS ON THE SHELF |
+| 236 | INPUTS FROM THE CITY |
+| 282 | · the sale, read for the screens (0.7.45) |
+| 449 | THE SALE, at the bottom of the month |
+| 677 | PLANNING - baskets wanted against baskets the shops can hand over |
+| 823 | THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's |
+| 1167 | THE SCREEN |
+| 1283 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 62 | `Retail.STORE_COVER_MONTHS` | `2.5` | Months of recent sales a store tries to keep on the shelf. |
-| 65 | `Retail.RETAIL_MARKUP` | `1.50` | What the shops add to what their stock cost them. |
-| 68 | `Retail.OPENING_SELL_PRICE` | `.3 * PriceLevel.FACTOR` | The price the game opened at, and the floor it will not go below - struck at the expected price level since 0.7.42 (seedConstants()). |
-| 83 | `Retail.SATIATION_MULTIPLE` | `1.5` | How far over the opening floor a full basket is still wanted: 1.5x. |
-| 91 | `Retail.GROCERY_ELASTICITY` | `.4` | How far a household's baskets fall with their price above satiation, an elasticity: .4, the middle of the measured food-at-home range (USDA ERS -0.3 to -0.6; Andreyeva et al. |
-| 94 | `Retail.CLEARING_CAP` | `1.5` | The most the shelf's target goes over its floor however short the shops are: half again. |
-| 97 | `Retail.CLEAR_SPEED` | `1.0 / 6` | The share of the way to its target, in logs, the shelf moves in a month: a sixth - about six months to clear, slower than the old quarter. |
-| 100 | `Retail.FLOOR_CATCH_UP` | `.5` | How much of the gap to its floor a shelf under the floor closes in a month: half. |
-| 103 | `Retail.CLEARING_BAND` | `50` | The clearing price is looked for between the shelf price over this and the shelf price times it. |
-| 106 | `Retail.CLEARING_STEPS` | `50` | Halvings (in logs) of that band the search takes: fifty, far finer than a cent's grain. |
-| 122 | `Retail.SUPPLIER_CREDIT_MONTHS` | `1` | How much the shops' suppliers will wait for, in months of the stock for the sale the shops expect, at what it costs to bring in: one - a month's terms, repaid at the next strike out of the sale the stock went to. |
-| 180 | `Retail.SHELF` | `{ Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT, Good...` |  |
-| 884 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US 35-43 c/gal, 16-19% ... |
-| 892 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
-| 985 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
-| 1035 | `Retail.HomeFuelSale.NONE` | `new HomeFuelSale(0, 0, 0, 0, 0)` | No sale: nothing asked, or no market or city to sell through. |
-| 1336 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
+| 63 | `Retail.STORE_COVER_MONTHS` | `2.5` | Months of recent sales a store tries to keep on the shelf. |
+| 66 | `Retail.RETAIL_MARKUP` | `1.50` | What the shops add to what their stock cost them. |
+| 69 | `Retail.OPENING_SELL_PRICE` | `.3 * PriceLevel.FACTOR` | The price the game opened at, and the floor it will not go below - struck at the expected price level since 0.7.42 (seedConstants()). |
+| 84 | `Retail.SATIATION_MULTIPLE` | `1.5` | How far over the opening floor a full basket is still wanted: 1.5x. |
+| 92 | `Retail.GROCERY_ELASTICITY` | `.4` | How far a household's baskets fall with their price above satiation, an elasticity: .4, the middle of the measured food-at-home range (USDA ERS -0.3 to -0.6; Andreyeva et al. |
+| 95 | `Retail.CLEARING_CAP` | `1.5` | The most the shelf's target goes over its floor however short the shops are: half again. |
+| 98 | `Retail.CLEAR_SPEED` | `1.0 / 6` | The share of the way to its target, in logs, the shelf moves in a month: a sixth - about six months to clear, slower than the old quarter. |
+| 101 | `Retail.FLOOR_CATCH_UP` | `.5` | How much of the gap to its floor a shelf under the floor closes in a month: half. |
+| 104 | `Retail.CLEARING_BAND` | `50` | The clearing price is looked for between the shelf price over this and the shelf price times it. |
+| 107 | `Retail.CLEARING_STEPS` | `50` | Halvings (in logs) of that band the search takes: fifty, far finer than a cent's grain. |
+| 123 | `Retail.SUPPLIER_CREDIT_MONTHS` | `1` | How much the shops' suppliers will wait for, in months of the stock for the sale the shops expect, at what it costs to bring in: one - a month's terms, repaid at the next strike out of the sale the stock went to. |
+| 181 | `Retail.SHELF` | `{ Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT, Good...` |  |
+| 882 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US 35-43 c/gal, 16-19% ... |
+| 890 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
+| 983 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
+| 1033 | `Retail.HomeFuelSale.NONE` | `new HomeFuelSale(0, 0, 0, 0, 0)` | No sale: nothing asked, or no market or city to sell through. |
+| 1334 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 125 | `private final SupplierCredit supplierCredit` | What the shops owe their suppliers for the shelf's stock, struck and repaid a month at a time (0.7.44). |
-| 128 | `private double openingSellPrice` | OPENING_SELL_PRICE, the opening floor, in TODAY's money - seeded from the founding value on a reform, and struck at the expected price level every month since 0.7.42 (seedConstants()). |
-| 130 | `private double storeSellPrice` |  |
-| 132 | `private double lastScarcityMultiple` |  |
-| 133 | `private double lastDeliveredShare` |  |
-| 136 | `private double clearingPrice, demandAtPrice, supplyBaskets, floorPrice, rNeeded` | The month's sale at a price (0.7.43): the clearing price, the baskets demanded at the shelf price, what the shops could hand over, and the floor the last reprice stood on. |
-| 145 | `private double handOver` | ...and, recorded at the sale for the screens (0.7.45), what the shops' buildings could hand over at the operating rate - coverage times the rate, before the shelf - and the price a basket was charged. |
-| 148 | `private double expectedLevel` | The expected price level Game hands on after the anchor's month - the level the next month's constants are struck at - and expected inflation a month: what the shelf drifts at. |
-| 151 | `private long lastMonthSales` | Units the shops sold last month. |
-| 154 | `private long population` | Who could shop, and what they could pay - set each month by Game from the households' ledger. |
-| 155 | `private double spendingCapacity` |  |
-| 156 | `private double wantedSpend` |  |
-| 159 | `private long rWantedDemand` | the month's sale, for the screens |
-| 160 | `private long rDemand` |  |
-| 161 | `private long rProductsSold` |  |
-| 193 | `private final Map<Good, Double> basket` | Kilograms of each good in one person-month, set by Game from Consumption. |
-| 384 | `private double rHouseholdWant` |  |
-| 895 | `private double rPumpLitres, rQueueLitres, rPumpCapacity, rPumpPrice` | The month's forecourts, struck at the sale (sellFuel()) and saved for the screens and the planner: the litres sold at the pump and past the stations, what the stations could sell, the prices (the sign's, the fuel duty... |
+| 126 | `private final SupplierCredit supplierCredit` | What the shops owe their suppliers for the shelf's stock, struck and repaid a month at a time (0.7.44). |
+| 129 | `private double openingSellPrice` | OPENING_SELL_PRICE, the opening floor, in TODAY's money - seeded from the founding value on a reform, and struck at the expected price level every month since 0.7.42 (seedConstants()). |
+| 131 | `private double storeSellPrice` |  |
+| 133 | `private double lastScarcityMultiple` |  |
+| 134 | `private double lastDeliveredShare` |  |
+| 137 | `private double clearingPrice, demandAtPrice, supplyBaskets, floorPrice, rNeeded` | The month's sale at a price (0.7.43): the clearing price, the baskets demanded at the shelf price, what the shops could hand over, and the floor the last reprice stood on. |
+| 146 | `private double handOver` | ...and, recorded at the sale for the screens (0.7.45), what the shops' buildings could hand over at the operating rate - coverage times the rate, before the shelf - and the price a basket was charged. |
+| 149 | `private double expectedLevel` | The expected price level Game hands on after the anchor's month - the level the next month's constants are struck at - and expected inflation a month: what the shelf drifts at. |
+| 152 | `private long lastMonthSales` | Units the shops sold last month. |
+| 155 | `private long population` | Who could shop, and what they could pay - set each month by Game from the households' ledger. |
+| 156 | `private double spendingCapacity` |  |
+| 157 | `private double wantedSpend` |  |
+| 160 | `private long rWantedDemand` | the month's sale, for the screens |
+| 161 | `private long rDemand` |  |
+| 162 | `private long rProductsSold` |  |
+| 194 | `private final Map<Good, Double> basket` | Kilograms of each good in one person-month, set by Game from Consumption. |
+| 385 | `private double rHouseholdWant` |  |
+| 893 | `private double rPumpLitres, rQueueLitres, rPumpCapacity, rPumpPrice` | The month's forecourts, struck at the sale (sellFuel()) and saved for the screens and the planner: the litres sold at the pump and past the stations, what the stations could sell, the prices (the sign's, the fuel duty... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 1353 | **type** `public final class Retail extends Sector` | The shops. |
+| 60 | 1350 | **type** `public final class Retail extends Sector` | The shops. |
 
-### the price that clears (0.7.43) (lines 70-107)
+### the price that clears (0.7.43) (lines 71-108)
 
-### its suppliers' credit (0.7.44) (lines 108-162)
+### its suppliers' credit (0.7.44) (lines 109-163)
 
-### THE THIRTEEN THINGS ON THE SHELF (lines 163-234)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 195 | 8 | `public Retail()` |  |
-| 205 | 9 | `public void setBasket(Map<Good, Double> kgPerHead)` | What one person-month costs in kilograms, by good. |
-| 216 | 1 | `public double kgPerHead(Good g)` | Kilograms of one good in one person-month; 0 for anything not on the shelf. |
-| 218 | 1 | `public Map<Good, Double> getBasket()` |  |
-| 226 | 8 | `private double basketsOnShelf()` | Person-months the shelf can cover: the good that runs out first. |
-
-### INPUTS FROM THE CITY (lines 235-280)
+### THE THIRTEEN THINGS ON THE SHELF (lines 164-235)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 239 | 1 | `public void setPopulation(long population)` |  |
-| 246 | 1 | `public void setSpendingCapacity(double money)` | The households' plan, in money: what they could spend and what they would like to. |
-| 247 | 1 | `public void setWantedSpend(double money)` |  |
-| 258 | 4 | `public void setExpected(double level, double monthly)` | The expected price level (Expectations.getExpectedLevel(), handed on after the anchor's month: the level the next month's money constants are struck at, and inside that month the one they are struck at) and expected i... |
-| 263 | 1 | `public double getExpectedLevel()` |  |
-| 264 | 1 | `public double getExpectedMonthly()` |  |
-| 267 | 1 | `public double getSatiationPrice()` | The price a full basket is still wanted at: SATIATION_MULTIPLE over the opening floor, in today's money at the expected level. |
-| 270 | 1 | `public double getClearingPrice()` | The price at which what the households want met what the shops could hand over, at the last sale - looked for within CLEARING_BAND of the shelf price. |
-| 273 | 1 | `public double getDemandAtPrice()` | The baskets the households asked for at the shelf price, at the last sale. |
-| 276 | 1 | `public double getSupplyBaskets()` | The baskets the shops could hand over at the last sale: coverage times the operating rate, or the shelf if it ran out first. |
-| 279 | 1 | `public double getFloorPrice()` | The floor the shelf stood on at the last reprice: the opening price at the expected level, or the stock's cost plus RETAIL_MARKUP if more. |
+| 196 | 8 | `public Retail()` |  |
+| 206 | 9 | `public void setBasket(Map<Good, Double> kgPerHead)` | What one person-month costs in kilograms, by good. |
+| 217 | 1 | `public double kgPerHead(Good g)` | Kilograms of one good in one person-month; 0 for anything not on the shelf. |
+| 219 | 1 | `public Map<Good, Double> getBasket()` |  |
+| 227 | 8 | `private double basketsOnShelf()` | Person-months the shelf can cover: the good that runs out first. |
 
-### the sale, read for the screens (0.7.45) (lines 281-447)
+### INPUTS FROM THE CITY (lines 236-281)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 286 | 3 | `public double getHandOver()` | The baskets the shops' buildings could hand over at the last sale: coverage times the operating rate, before the shelf - recorded at the sale; on a save from before 0.7.45, today's coverage at today's rate. |
-| 291 | 4 | `public boolean isShelfBound()` | True when the shelf ran out before the buildings did at the last sale: what limited it was the stock its cash and credit bought. |
-| 297 | 1 | `public double shelfOverFloor()` | The shelf price over its floor: 1 on the floor. |
-| 300 | 1 | `public double getCapPrice()` | The most the shelf's target goes to: CLEARING_CAP over the floor. |
-| 303 | 1 | `public boolean clearsPastTheCap()` | True when even the cap left more asked for than the shops could hand over at the last sale: a price cannot clear it. |
-| 306 | 1 | `public boolean isSlack()` | True when the shops could hand over more than is asked for at the floor at the last sale: the clearing price is under the floor, and not a price anybody would charge (the bisection's band bottom when the slack is wide). |
-| 309 | 1 | `public boolean isSaleCounted()` | True once a sale has been counted at a price: a save from before 0.7.43 has none until its first month. |
-| 312 | 1 | `public double getChargedPrice()` | The price a basket was charged at the last sale: the shelf price before the bottom of the month repriced it - today's shelf price on a save from before 0.7.45. |
-| 320 | 3 | `public double expectedBaskets()` | The baskets the shops expect to sell next month, as the last sale reads it: what the households asked for at the shelf price, up to what the shops can hand over - coverage times the operating rate, the shelf not count... |
-| 335 | 4 | `public double supplierCreditLimit()` | WHAT THE SHOPS' SUPPLIERS WILL WAIT FOR (0.7.44; SupplierCredit): the stock for the sale the shops expect - the expected baskets, at what a basket costs to bring in - for SUPPLIER_CREDIT_MONTHS. |
-| 341 | 9 | `public double basketLandedCost()` | What one basket costs the shops to bring in now, at the price their orders are budgeted at (GoodsMarket.landedPrice()). |
-| 352 | 1 | `public SupplierCredit supplierCredit()` |  |
-| 354 | 1 | `public long getPopulation()` |  |
-| 355 | 1 | `public double getSpendingCapacity()` |  |
-| 356 | 1 | `public double getWantedSpend()` |  |
-| 359 | 3 | `public long getStoreCoverage()` | People the shops can serve a month, off their buildings. |
-| 364 | 3 | `public long getStoreCapacity()` | Shelf room, off their buildings. |
-| 369 | 1 | `public long getStoreInventory()` | What is on the shelf now, counted in person-months rather than kilograms. |
-| 371 | 1 | `public double getStoreSellPrice()` |  |
-| 372 | 1 | `public double getOpeningSellPrice()` |  |
-| 374 | 1 | `public double getScarcityMultiple()` | The shelf's target over its floor at the last reprice: the clearing price held between 1 and CLEARING_CAP (0.7.43; the scarcity mark-up until then). |
-| 375 | 1 | `public double getDeliveredShare()` |  |
-| 376 | 1 | `public long getLastMonthSales()` |  |
-| 377 | 1 | `public long getWantedDemand()` |  |
-| 378 | 1 | `public long getDemand()` |  |
-| 380 | 1 | `public long getUnaffordableDemand()` | Baskets the households needed and did not ask for at the shelf price - priced out, by their money or by the price (0.7.43; the want past what they could afford until then). |
-| 382 | 1 | `public double getBasketsNeeded()` | The baskets the households needed at the last sale, one a head. |
-| 383 | 1 | `public long getProductsSold()` |  |
-| 387 | 8 | `public double getFoodPrice()` | What the shops paid for one person-month of food this month: the basket, at the market's prices. |
-| 397 | 9 | `public double getImportPrice()` | ...and what the world charges for one. |
-| 419 | 3 | `public double getSupplyRatio()` | Sold over demand - what left the shelf against what people came for and could afford. |
-| 424 | 1 | `public double getHouseholdWant()` | What the households asked for this month, in baskets, before any cap. |
-| 435 | 4 | `public double getHouseholdShare()` | ...and the share of it they actually got. |
-| 440 | 1 | `public void setStoreSellPrice(double price)` |  |
-| 441 | 1 | `public void setLastMonthSales(long units)` |  |
-| 443 | 4 | `public void setStoreInventory(int units)` | Puts N person-months on the shelf, in the kilograms that makes - the save's way back in. |
+| 240 | 1 | `public void setPopulation(long population)` |  |
+| 247 | 1 | `public void setSpendingCapacity(double money)` | The households' plan, in money: what they could spend and what they would like to. |
+| 248 | 1 | `public void setWantedSpend(double money)` |  |
+| 259 | 4 | `public void setExpected(double level, double monthly)` | The expected price level (Expectations.getExpectedLevel(), handed on after the anchor's month: the level the next month's money constants are struck at, and inside that month the one they are struck at) and expected i... |
+| 264 | 1 | `public double getExpectedLevel()` |  |
+| 265 | 1 | `public double getExpectedMonthly()` |  |
+| 268 | 1 | `public double getSatiationPrice()` | The price a full basket is still wanted at: SATIATION_MULTIPLE over the opening floor, in today's money at the expected level. |
+| 271 | 1 | `public double getClearingPrice()` | The price at which what the households want met what the shops could hand over, at the last sale - looked for within CLEARING_BAND of the shelf price. |
+| 274 | 1 | `public double getDemandAtPrice()` | The baskets the households asked for at the shelf price, at the last sale. |
+| 277 | 1 | `public double getSupplyBaskets()` | The baskets the shops could hand over at the last sale: coverage times the operating rate, or the shelf if it ran out first. |
+| 280 | 1 | `public double getFloorPrice()` | The floor the shelf stood on at the last reprice: the opening price at the expected level, or the stock's cost plus RETAIL_MARKUP if more. |
 
-### THE SALE, at the bottom of the month (lines 448-675)
+### the sale, read for the screens (0.7.45) (lines 282-448)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 453 | 77 | `public void sellOwnPriced(Markets markets, Game game)` |  |
-| 537 | 4 | `private double demandAt(ham.citybuildersim.HouseholdBalance households, double price)` | The baskets the city asks for at a price: the households' own curve, or - with no households to ask, a harness's bare market - a basket for every person the shops could serve, at any price, which is what this sector s... |
-| 548 | 3 | `private double clearingPriceFor(ham.citybuildersim.HouseholdBalance households, double price, double supply)` | The price at which the city's demand meets a supply, by bisection in logs on [price / CLEARING_BAND, price x CLEARING_BAND]: the top of the band when even it leaves more wanted than there is (or there is nothing), the... |
-| 557 | 11 | `public static double clearingPriceOf(java.util.function.DoubleUnaryOperator demandAt, double price, double supply)` | ...the rule alone, on any demand curve that falls in the price: the smallest price in the band, to CLEARING_STEPS halvings in logs, at which no more is wanted than the supply. |
-| 575 | 6 | `protected double recentUse(Good g)` | What the shops sell, the month-one fallback included: with no sales to go on, they stock for every customer they could serve, and after that for what they actually sold - see the old handler's restockTarget(). |
-| 593 | 15 | `public void endOfMonth(Game game)` | ...and the shelf follows THIRTEEN invoices now. |
-| 639 | 3 | `public void repriceShelf(double blendedCost)` | What the shops charge, and this is where prices learned to ration. |
-| 647 | 14 | `public void repriceShelf(double blendedCost, double clearing)` | ...told the clearing price, rather than reading the last sale's: the rule alone, for a harness that causes a clearing price without a city. |
-| 670 | 5 | `public static double stickyPrice(double price, double target, double expectedMonthly, double speed)` | ONE FORM FOR EVERY SELLER (0.7.43, spec-inflation.md 2.7): a price that keeps last month's level grown at expected inflation, and moves a share `speed` of the way to its target in logs. |
+| 287 | 3 | `public double getHandOver()` | The baskets the shops' buildings could hand over at the last sale: coverage times the operating rate, before the shelf - recorded at the sale; on a save from before 0.7.45, today's coverage at today's rate. |
+| 292 | 4 | `public boolean isShelfBound()` | True when the shelf ran out before the buildings did at the last sale: what limited it was the stock its cash and credit bought. |
+| 298 | 1 | `public double shelfOverFloor()` | The shelf price over its floor: 1 on the floor. |
+| 301 | 1 | `public double getCapPrice()` | The most the shelf's target goes to: CLEARING_CAP over the floor. |
+| 304 | 1 | `public boolean clearsPastTheCap()` | True when even the cap left more asked for than the shops could hand over at the last sale: a price cannot clear it. |
+| 307 | 1 | `public boolean isSlack()` | True when the shops could hand over more than is asked for at the floor at the last sale: the clearing price is under the floor, and not a price anybody would charge (the bisection's band bottom when the slack is wide). |
+| 310 | 1 | `public boolean isSaleCounted()` | True once a sale has been counted at a price: a save from before 0.7.43 has none until its first month. |
+| 313 | 1 | `public double getChargedPrice()` | The price a basket was charged at the last sale: the shelf price before the bottom of the month repriced it - today's shelf price on a save from before 0.7.45. |
+| 321 | 3 | `public double expectedBaskets()` | The baskets the shops expect to sell next month, as the last sale reads it: what the households asked for at the shelf price, up to what the shops can hand over - coverage times the operating rate, the shelf not count... |
+| 336 | 4 | `public double supplierCreditLimit()` | WHAT THE SHOPS' SUPPLIERS WILL WAIT FOR (0.7.44; SupplierCredit): the stock for the sale the shops expect - the expected baskets, at what a basket costs to bring in - for SUPPLIER_CREDIT_MONTHS. |
+| 342 | 9 | `public double basketLandedCost()` | What one basket costs the shops to bring in now, at the price their orders are budgeted at (GoodsMarket.landedPrice()). |
+| 353 | 1 | `public SupplierCredit supplierCredit()` |  |
+| 355 | 1 | `public long getPopulation()` |  |
+| 356 | 1 | `public double getSpendingCapacity()` |  |
+| 357 | 1 | `public double getWantedSpend()` |  |
+| 360 | 3 | `public long getStoreCoverage()` | People the shops can serve a month, off their buildings. |
+| 365 | 3 | `public long getStoreCapacity()` | Shelf room, off their buildings. |
+| 370 | 1 | `public long getStoreInventory()` | What is on the shelf now, counted in person-months rather than kilograms. |
+| 372 | 1 | `public double getStoreSellPrice()` |  |
+| 373 | 1 | `public double getOpeningSellPrice()` |  |
+| 375 | 1 | `public double getScarcityMultiple()` | The shelf's target over its floor at the last reprice: the clearing price held between 1 and CLEARING_CAP (0.7.43; the scarcity mark-up until then). |
+| 376 | 1 | `public double getDeliveredShare()` |  |
+| 377 | 1 | `public long getLastMonthSales()` |  |
+| 378 | 1 | `public long getWantedDemand()` |  |
+| 379 | 1 | `public long getDemand()` |  |
+| 381 | 1 | `public long getUnaffordableDemand()` | Baskets the households needed and did not ask for at the shelf price - priced out, by their money or by the price (0.7.43; the want past what they could afford until then). |
+| 383 | 1 | `public double getBasketsNeeded()` | The baskets the households needed at the last sale, one a head. |
+| 384 | 1 | `public long getProductsSold()` |  |
+| 388 | 8 | `public double getFoodPrice()` | What the shops paid for one person-month of food this month: the basket, at the market's prices. |
+| 398 | 9 | `public double getImportPrice()` | ...and what the world charges for one. |
+| 420 | 3 | `public double getSupplyRatio()` | Sold over demand - what left the shelf against what people came for and could afford. |
+| 425 | 1 | `public double getHouseholdWant()` | What the households asked for this month, in baskets, before any cap. |
+| 436 | 4 | `public double getHouseholdShare()` | ...and the share of it they actually got. |
+| 441 | 1 | `public void setStoreSellPrice(double price)` |  |
+| 442 | 1 | `public void setLastMonthSales(long units)` |  |
+| 444 | 4 | `public void setStoreInventory(int units)` | Puts N person-months on the shelf, in the kilograms that makes - the save's way back in. |
 
-### PLANNING - baskets wanted against baskets the shops can hand over (lines 676-824)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 703 | 61 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE SUPPLY ANSWER TO A SHORTAGE (0.7.43; spec-inflation.md 4.3). |
-| 766 | 4 | `private double handOverRate()` | The operating rate a new shop is planned at: the sector's own, or full with none yet (see the note above plan()). |
-| 792 | 5 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Fil... |
-| 800 | 3 | `public boolean mayRetire(BuildingsTemplate t)` | A Filling Station is not sold by the shops' rules (0.7.83, star O6): it serves the drivers' litres, not the baskets they measure. |
-| 814 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | ...AND SELLS SHOPS BY THE SAME MEASURE (0.7.43): the baskets wanted at the floor against the baskets the shops can hand over, each shop its coverage times the operating rate - the planner's own. |
-| 821 | 3 | `public double unitsOf(BuildingsTemplate t)` | A shop's worth of what retirement counts: the baskets it can hand over (0.7.43; its coverage until then). |
-
-### THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's (lines 825-1168)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 899 | 3 | `public static boolean isStation(BuildingsTemplate t)` | Whether a building is a Filling Station: it sells litres at the pump. |
-| 904 | 3 | `public int stationsStanding()` | Filling Stations standing. |
-| 909 | 3 | `public int stationsOnSite()` | ...and on site. |
-| 914 | 3 | `public double stationLitresOnSite()` | Litres a month the stations on site will sell at nameplate once they open (BA1, 2026-11-02; planStations()). |
-| 919 | 3 | `public double storeCoverageOnSite()` | Baskets the shops on site will cover at nameplate once they open, the stations' none (BA1, 2026-11-02; plan()). |
-| 924 | 3 | `public double stationLitres()` | Litres a month the standing stations sell at their typical throughput, at nameplate. |
-| 929 | 4 | `public double stationCapacity()` | ...and at the operating rate: what the forecourts can sell this month. |
-| 935 | 3 | `public static double pumpPrice(double wholesale, double salesRate)` | The pump price of a litre bought at `wholesale`, with the sales tax at `salesRate` passed on: wholesale x (1 + PUMP_MARGIN) / (1 - rate). |
-| 940 | 3 | `public static double queuePrice(double wholesale, double salesRate)` | ...and past the stations' capacity: QUEUE_MARGIN in place of PUMP_MARGIN. |
-| 945 | 3 | `public static double pumpPrice(double wholesale, double salesRate, double duty)` | The price on the sign with the city's fuel duty a litre on top (0.7.103): pumpPrice() + the duty, the price rising by exactly it. |
-| 950 | 3 | `public static double queuePrice(double wholesale, double salesRate, double duty)` | ...and past the stations' capacity. |
-| 955 | 4 | `private static double dutyIn(Game game)` | The fuel duty a litre the city charges today (TaxPolicy.chargedFuelDuty()); nothing without a city. |
-| 960 | 3 | `private static double clampRate(double r)` |  |
-| 965 | 3 | `private double salesRate(Game game)` | Retail's own sales tax rate in a city, nothing without one. |
-| 976 | 5 | `public double pumpPriceToday(Game game)` | What a litre costs the drivers at the pump today, before any is drawn (Motoring.journeyFuel(): what the owners weigh a ride against): what a litre of petrol costs to bring in (GoodsMarket.landedPrice() - the refiners'... |
-| 983 | 4 | **type** `public record FuelSale(double litres, double queued, double wholesale, double imported, double bill, double...` | A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, what the households paid, and of that the fuel duty, the treasury's (0.7.103). |
-| 999 | 32 | `public FuelSale sellFuel(double litres, Game game)` | The drivers' month at the pump (0.7.83): `litres` drawn at wholesale on Retail's books, the refiners' tanks first (Markets.draw()), and sold to the households - what the stations can sell at the pump price, the rest a... |
-| 1033 | 4 | **type** `public record HomeFuelSale(double litres, double tonnes, double bill, double cost, double imported)` | A month's sale of the homes' lamp oil and coal (sellHomeFuel()): the litres of JET and tonnes of THERMAL_COAL, the bill the households are charged (the two sales' values), what Retail paid for them at wholesale and of... |
-| 1048 | 29 | `public HomeFuelSale sellHomeFuel(double litresJet, double tonnesCoal, Game game)` | The homes' lamp oil and coal (R0c, the home form; HomeFuel): `litresJet` of JET and `tonnesCoal` of THERMAL_COAL drawn at wholesale on Retail's books, the city's refiners' and mines' stock first and the world for the ... |
-| 1079 | 1 | `public double getPumpLitres()` | The month's litres sold at the pump price, and past the stations at the queue's. |
-| 1080 | 1 | `public double getQueueLitres()` |  |
-| 1083 | 1 | `public double getPumpCapacity()` | ...what the stations could sell this month, at the operating rate. |
-| 1086 | 1 | `public double getPumpPrice()` | ...the two prices a litre on the sign (the fuel duty in them since 0.7.103), and the wholesale Retail paid a litre: NaN before a month's sale. |
-| 1087 | 1 | `public double getQueuePrice()` |  |
-| 1088 | 1 | `public double getWholesaleLitre()` |  |
-| 1091 | 1 | `public double getFuelBill()` | ...what the households paid for their petrol, the duty in it, and what of the wholesale bill Retail paid the world. |
-| 1092 | 1 | `public double getFuelImported()` |  |
-| 1095 | 1 | `public double getFuelDuty()` | ...and the fuel duty the drivers paid on their litres this month, the treasury's (0.7.103; EconomyManager.getFuelDuty()). |
-| 1107 | 8 | `public double stationEarns(BuildingsTemplate t, BusinessInvestment plans)` | A station's earnings a month, for the interest test (0.7.83): the litres it would sell - its typical throughput at the operating rate (handOverRate(), full with no rate yet), or the forecast's litres the stations stan... |
-| 1122 | 9 | `public double litresForecast(BuildingsTemplate station, BusinessInvestment plans)` | The drivers' litres a month the planner sees ahead (0.7.83): last month's at the pump and past it, grown as the shops' baskets are - as the people are, over a station's lead time and the planning horizon, to what the ... |
-| 1143 | 25 | `public BusinessInvestment.Decision planStations(BusinessInvestment plans, Game game)` | Retail's other question each month (0.7.83): a Filling Station when the drivers' litres outrun what its stations can sell. |
-
-### THE SCREEN (lines 1169-1284)
+### THE SALE, at the bottom of the month (lines 449-676)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1175 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin on the stock it sells. |
-| 1178 | 1 | `public String inputLabel()` |  |
-| 1181 | 1 | `public boolean hasPlantBlock()` |  |
-| 1184 | 100 | `public List<Line> ownLines(Game game)` |  |
+| 454 | 77 | `public void sellOwnPriced(Markets markets, Game game)` |  |
+| 538 | 4 | `private double demandAt(ham.citybuildersim.HouseholdBalance households, double price)` | The baskets the city asks for at a price: the households' own curve, or - with no households to ask, a harness's bare market - a basket for every person the shops could serve, at any price, which is what this sector s... |
+| 549 | 3 | `private double clearingPriceFor(ham.citybuildersim.HouseholdBalance households, double price, double supply)` | The price at which the city's demand meets a supply, by bisection in logs on [price / CLEARING_BAND, price x CLEARING_BAND]: the top of the band when even it leaves more wanted than there is (or there is nothing), the... |
+| 558 | 11 | `public static double clearingPriceOf(java.util.function.DoubleUnaryOperator demandAt, double price, double supply)` | ...the rule alone, on any demand curve that falls in the price: the smallest price in the band, to CLEARING_STEPS halvings in logs, at which no more is wanted than the supply. |
+| 576 | 6 | `protected double recentUse(Good g)` | What the shops sell, the month-one fallback included: with no sales to go on, they stock for every customer they could serve, and after that for what they actually sold - see the old handler's restockTarget(). |
+| 594 | 15 | `public void endOfMonth(Game game)` | ...and the shelf follows THIRTEEN invoices now. |
+| 640 | 3 | `public void repriceShelf(double blendedCost)` | What the shops charge, and this is where prices learned to ration. |
+| 648 | 14 | `public void repriceShelf(double blendedCost, double clearing)` | ...told the clearing price, rather than reading the last sale's: the rule alone, for a harness that causes a clearing price without a city. |
+| 671 | 5 | `public static double stickyPrice(double price, double target, double expectedMonthly, double speed)` | ONE FORM FOR EVERY SELLER (0.7.43, spec-inflation.md 2.7): a price that keeps last month's level grown at expected inflation, and moves a share `speed` of the way to its target in logs. |
 
-### SAVE, RESET, THE REFORM (lines 1285-1411)
+### PLANNING - baskets wanted against baskets the shops can hand over (lines 677-822)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1290 | 44 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 1339 | 31 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 1372 | 16 | `protected void resetExtras()` |  |
-| 1390 | 16 | `protected void redenominateExtras(double scale)` |  |
-| 1408 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
+| 704 | 57 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE SUPPLY ANSWER TO A SHORTAGE (0.7.43; spec-inflation.md 4.3). |
+| 763 | 4 | `private double handOverRate()` | The operating rate a new shop is planned at: the sector's own, or full with none yet (see the note above plan()). |
+| 789 | 6 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Fil... |
+| 798 | 3 | `public boolean mayRetire(BuildingsTemplate t)` | A Filling Station is not sold by the shops' rules (0.7.83, star O6): it serves the drivers' litres, not the baskets they measure. |
+| 812 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | ...AND SELLS SHOPS BY THE SAME MEASURE (0.7.43): the baskets wanted at the floor against the baskets the shops can hand over, each shop its coverage times the operating rate - the planner's own. |
+| 819 | 3 | `public double unitsOf(BuildingsTemplate t)` | A shop's worth of what retirement counts: the baskets it can hand over (0.7.43; its coverage until then). |
+
+### THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's (lines 823-1166)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 897 | 3 | `public static boolean isStation(BuildingsTemplate t)` | Whether a building is a Filling Station: it sells litres at the pump. |
+| 902 | 3 | `public int stationsStanding()` | Filling Stations standing. |
+| 907 | 3 | `public int stationsOnSite()` | ...and on site. |
+| 912 | 3 | `public double stationLitresOnSite()` | Litres a month the stations on site will sell at nameplate once they open (BA1, 2026-11-02; planStations()). |
+| 917 | 3 | `public double storeCoverageOnSite()` | Baskets the shops on site will cover at nameplate once they open, the stations' none (BA1, 2026-11-02; plan()). |
+| 922 | 3 | `public double stationLitres()` | Litres a month the standing stations sell at their typical throughput, at nameplate. |
+| 927 | 4 | `public double stationCapacity()` | ...and at the operating rate: what the forecourts can sell this month. |
+| 933 | 3 | `public static double pumpPrice(double wholesale, double salesRate)` | The pump price of a litre bought at `wholesale`, with the sales tax at `salesRate` passed on: wholesale x (1 + PUMP_MARGIN) / (1 - rate). |
+| 938 | 3 | `public static double queuePrice(double wholesale, double salesRate)` | ...and past the stations' capacity: QUEUE_MARGIN in place of PUMP_MARGIN. |
+| 943 | 3 | `public static double pumpPrice(double wholesale, double salesRate, double duty)` | The price on the sign with the city's fuel duty a litre on top (0.7.103): pumpPrice() + the duty, the price rising by exactly it. |
+| 948 | 3 | `public static double queuePrice(double wholesale, double salesRate, double duty)` | ...and past the stations' capacity. |
+| 953 | 4 | `private static double dutyIn(Game game)` | The fuel duty a litre the city charges today (TaxPolicy.chargedFuelDuty()); nothing without a city. |
+| 958 | 3 | `private static double clampRate(double r)` |  |
+| 963 | 3 | `private double salesRate(Game game)` | Retail's own sales tax rate in a city, nothing without one. |
+| 974 | 5 | `public double pumpPriceToday(Game game)` | What a litre costs the drivers at the pump today, before any is drawn (Motoring.journeyFuel(): what the owners weigh a ride against): what a litre of petrol costs to bring in (GoodsMarket.landedPrice() - the refiners'... |
+| 981 | 4 | **type** `public record FuelSale(double litres, double queued, double wholesale, double imported, double bill, double...` | A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, what the households paid, and of that the fuel duty, the treasury's (0.7.103). |
+| 997 | 32 | `public FuelSale sellFuel(double litres, Game game)` | The drivers' month at the pump (0.7.83): `litres` drawn at wholesale on Retail's books, the refiners' tanks first (Markets.draw()), and sold to the households - what the stations can sell at the pump price, the rest a... |
+| 1031 | 4 | **type** `public record HomeFuelSale(double litres, double tonnes, double bill, double cost, double imported)` | A month's sale of the homes' lamp oil and coal (sellHomeFuel()): the litres of JET and tonnes of THERMAL_COAL, the bill the households are charged (the two sales' values), what Retail paid for them at wholesale and of... |
+| 1046 | 29 | `public HomeFuelSale sellHomeFuel(double litresJet, double tonnesCoal, Game game)` | The homes' lamp oil and coal (R0c, the home form; HomeFuel): `litresJet` of JET and `tonnesCoal` of THERMAL_COAL drawn at wholesale on Retail's books, the city's refiners' and mines' stock first and the world for the ... |
+| 1077 | 1 | `public double getPumpLitres()` | The month's litres sold at the pump price, and past the stations at the queue's. |
+| 1078 | 1 | `public double getQueueLitres()` |  |
+| 1081 | 1 | `public double getPumpCapacity()` | ...what the stations could sell this month, at the operating rate. |
+| 1084 | 1 | `public double getPumpPrice()` | ...the two prices a litre on the sign (the fuel duty in them since 0.7.103), and the wholesale Retail paid a litre: NaN before a month's sale. |
+| 1085 | 1 | `public double getQueuePrice()` |  |
+| 1086 | 1 | `public double getWholesaleLitre()` |  |
+| 1089 | 1 | `public double getFuelBill()` | ...what the households paid for their petrol, the duty in it, and what of the wholesale bill Retail paid the world. |
+| 1090 | 1 | `public double getFuelImported()` |  |
+| 1093 | 1 | `public double getFuelDuty()` | ...and the fuel duty the drivers paid on their litres this month, the treasury's (0.7.103; EconomyManager.getFuelDuty()). |
+| 1105 | 8 | `public double stationEarns(BuildingsTemplate t, BusinessInvestment plans)` | A station's earnings a month, for the interest test (0.7.83): the litres it would sell - its typical throughput at the operating rate (handOverRate(), full with no rate yet), or the forecast's litres the stations stan... |
+| 1120 | 9 | `public double litresForecast(BuildingsTemplate station, BusinessInvestment plans)` | The drivers' litres a month the planner sees ahead (0.7.83): last month's at the pump and past it, grown as the shops' baskets are - as the people are, over a station's lead time and the planning horizon, to what the ... |
+| 1141 | 25 | `public BusinessInvestment.Decision planStations(BusinessInvestment plans, Game game)` | Retail's other question each month (0.7.83): a Filling Station when the drivers' litres outrun what its stations can sell. |
+
+### THE SCREEN (lines 1167-1282)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1173 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin on the stock it sells. |
+| 1176 | 1 | `public String inputLabel()` |  |
+| 1179 | 1 | `public boolean hasPlantBlock()` |  |
+| 1182 | 100 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET, THE REFORM (lines 1283-1409)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1288 | 44 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 1337 | 31 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 1370 | 16 | `protected void resetExtras()` |  |
+| 1388 | 16 | `protected void redenominateExtras(double scale)` |  |
+| 1406 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
 

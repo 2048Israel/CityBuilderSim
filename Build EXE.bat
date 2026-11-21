@@ -15,9 +15,20 @@ rem  app-image also avoids needing the WiX toolset, which the installer types
 rem  require and which is not installed here.
 rem
 rem  Run this after a Clean and Build. It reads target\ and writes dist\.
+rem
+rem  "Build EXE.bat nopause" is for a script: no pause, and no test launch at
+rem  the end (CR1-J: a session proving the build must not start the game on
+rem  your saves). A double-click pauses and launches as it always did.
 rem ===========================================================================
 
 cd /d "%~dp0"
+
+set "PAUSE=pause"
+set "LAUNCH=1"
+if /i "%~1"=="nopause" (
+    set "PAUSE=rem"
+    set "LAUNCH="
+)
 
 set "APPNAME=CityBuilderSim"
 rem  THE VERSION IS READ OUT OF GameVersion.java, not written here.
@@ -38,7 +49,7 @@ if not defined APPVER (
     echo   Could not read VERSION out of GameVersion.java - stopping rather
     echo   than stamping this build with the wrong number.
     echo.
-    pause
+    %PAUSE%
     exit /b 1
 )
 set "JARNAME=CityBuilderSim-1.0-SNAPSHOT-executable.jar"
@@ -55,22 +66,53 @@ echo.
 echo  ===  Building %APPNAME% %APPVER%  ===
 echo.
 
-rem --------------------------- find jpackage ---------------------------
-set "JPACKAGE=jpackage"
-where jpackage >nul 2>nul || set "JPACKAGE=C:\Program Files\Java\jdk-21\bin\jpackage.exe"
-
-if not "%JPACKAGE%"=="jpackage" if not exist "%JPACKAGE%" (
-    echo   Could not find jpackage.
-    echo   Looked on PATH and at: %JPACKAGE%
+rem --------------------------- the packaging JDK ---------------------------
+rem  CR1-J (Jerus, 2026-11-17): the sold game's runtime is Eclipse Temurin 21,
+rem  an OpenJDK build under the GPL with the Classpath Exception. Until then
+rem  this took jpackage from PATH or else Oracle's JDK in Program Files, and
+rem  Oracle's runtime comes under its No-Fee Terms, which bar fees for a
+rem  product bundled with it. So the JDK is named, never searched for: its
+rem  release file must say Eclipse Adoptium and Java 21, and its own jlink and
+rem  jpackage are the only ones run. CBS_PACKAGING_JDK names another folder;
+rem  the same checks apply, and Packaging jdk below holds it to the version
+rem  whose source ships (tools\credits\source-archives.properties).
+set "JDK=%USERPROFILE%\Tools\jdk-21-temurin"
+if defined CBS_PACKAGING_JDK set "JDK=%CBS_PACKAGING_JDK%"
+if not exist "%JDK%\release" (
+    echo   No JDK at %JDK%
     echo.
-    echo   jpackage comes with JDK 14 and later. If your JDK lives elsewhere,
-    echo   edit the JPACKAGE line in this file.
+    echo   The game is packaged with Eclipse Temurin 21 and nothing else. Unzip
+    echo   it there from https://adoptium.net/temurin/releases/?version=21 , or
+    echo   set CBS_PACKAGING_JDK to the folder it is in.
     echo.
-    pause
+    %PAUSE%
+    exit /b 1
+)
+findstr /b /c:"IMPLEMENTOR=\"Eclipse Adoptium\"" "%JDK%\release" >nul
+if not "%ERRORLEVEL%"=="0" (
+    echo   %JDK% is not Eclipse Temurin: its release file does not say
+    echo   IMPLEMENTOR="Eclipse Adoptium". A sold build carries Temurin's runtime
+    echo   and no other, so no build.
+    echo.
+    %PAUSE%
+    exit /b 1
+)
+findstr /b /r /c:"JAVA_VERSION=.21\." "%JDK%\release" >nul
+if not "%ERRORLEVEL%"=="0" (
+    echo   %JDK% is not Java 21: its release file's JAVA_VERSION is another,
+    echo   so no build.
+    echo.
+    %PAUSE%
+    exit /b 1
+)
+for %%t in (java jlink jpackage) do if not exist "%JDK%\bin\%%t.exe" (
+    echo   %JDK%\bin has no %%t.exe - is it a whole JDK? No build.
+    echo.
+    %PAUSE%
     exit /b 1
 )
 
-echo  jpackage:  %JPACKAGE%
+echo  JDK:       %JDK%
 
 rem ----------------------------- find the jar -----------------------------
 if not exist "%JARPATH%" (
@@ -80,7 +122,7 @@ if not exist "%JARPATH%" (
     echo   Build the project first - in NetBeans, right-click the project
     echo   and choose Clean and Build. That writes both jars into target\.
     echo.
-    pause
+    %PAUSE%
     exit /b 1
 )
 
@@ -88,17 +130,28 @@ echo  jar:       %JARPATH%
 echo  modules:   %MODULES%
 echo.
 
+rem  The JDK against the pins: the exact Temurin whose source archive ships.
+"%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging jdk "%JDK%"
+if not "%ERRORLEVEL%"=="0" (
+    echo.
+    echo   This JDK is not the one whose source ships with the game - the
+    echo   reason is above - so no build.
+    echo.
+    %PAUSE%
+    exit /b 1
+)
+
 rem ------------------------------ the Earth ------------------------------
 rem  The real Earth, data\earth-2.bin (about 282 MB), is not in git. A build
 rem  must carry it, so this fetches it when this PC lacks it or holds a bad
 rem  copy, and stops before jpackage when it cannot be had.
 call "tools\earth\get-earth.bat" nopause
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   No good data\earth-2.bin, so no build: without it the game would
     echo   offer only the generated world. The reason is above.
     echo.
-    pause
+    %PAUSE%
     exit /b 1
 )
 echo.
@@ -109,12 +162,33 @@ rem  Since LC3 (2026-11-02) it holds no figure a sold game may not ship, so a
 rem  build carries it: without it the game has no nations, no world market
 rem  and no partners (IR1: 0.9.0 went out so). Fetched as the Earth is.
 call "tools\earth\get-earth.bat" nopause world-1
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   No good data\world-1.bin, so no build: without it the game would
     echo   have no nations. The reason is above.
     echo.
-    pause
+    %PAUSE%
+    exit /b 1
+)
+echo.
+
+rem --------------------------- the source archives ---------------------------
+rem  CR1-J (Jerus, 2026-11-17): the complete corresponding source of OpenJFX
+rem  and of the Java runtime ships beside the exe, as section 3 of their GPL
+rem  asks - the publishers' own archives, pinned by version and SHA-256 in
+rem  tools\credits\source-archives.properties. They are fetched once into a
+rem  cache outside git (about 175 MB; CBS_SOURCE_CACHE names another folder)
+rem  and checked every build. One missing or changed and there is no build.
+set "SOURCES=%USERPROFILE%\Tools\CityBuilderSim-sources"
+if defined CBS_SOURCE_CACHE set "SOURCES=%CBS_SOURCE_CACHE%"
+"%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging fetch "%SOURCES%"
+if not "%ERRORLEVEL%"=="0" (
+    echo.
+    echo   No good copy of every source archive, so no build: a sold build
+    echo   carries the complete source of OpenJFX and of its Java runtime.
+    echo   The reason is above.
+    echo.
+    %PAUSE%
     exit /b 1
 )
 echo.
@@ -136,13 +210,33 @@ if exist "dist\%APPNAME%" (
     echo   dist\%APPNAME% exists but does not look like a previous build.
     echo   Move or rename it, then run this again.
     echo.
-    pause
+    %PAUSE%
     exit /b 1
 )
 
+rem ------------------------------ the runtime ------------------------------
+rem  Temurin's own jlink makes the runtime, with the options jpackage would
+rem  have used itself, and jpackage takes it as it is. Temurin's NOTICE, its
+rem  distribution's notice, goes beside the runtime's release file and legal
+rem  folder, where the Credits page reads them.
+if exist "build\runtime" rmdir /s /q "build\runtime"
+rem  source\README.txt gives this command as runtime.jlink in the pins, and
+rem  PackagingCheck holds the two the same: change one, change the other.
+"%JDK%\bin\jlink.exe" --add-modules %MODULES% --strip-native-commands --strip-debug --no-man-pages --no-header-files --output "build\runtime"
+if not "%ERRORLEVEL%"=="0" (
+    echo.
+    echo   jlink failed - the reason is above.
+    goto unfit
+)
+copy /y "%JDK%\NOTICE" "build\runtime\NOTICE" >nul
+if not "%ERRORLEVEL%"=="0" (
+    echo.
+    echo   Could not copy the JDK's NOTICE into the runtime.
+    goto unfit
+)
+
 rem ------------------------------- build -------------------------------
-echo  Running jpackage. This takes a minute - it is assembling a Java
-echo  runtime, not just copying files.
+echo  Running jpackage. This takes a minute.
 echo.
 
 rem  --icon is the game's icon (BR1, 2026-10-27), which tools\branding\make_icons.py
@@ -152,25 +246,24 @@ rem  itself keeps APPNAME, CityBuilderSim.exe: a player's shortcut, the itch.io
 rem  app's launch and a Steam launch option all point at that file, and a new
 rem  name would strand each of them at the first update.
 
-"%JPACKAGE%" ^
+"%JDK%\bin\jpackage.exe" ^
   --type app-image ^
   --name "%APPNAME%" ^
   --app-version %APPVER% ^
   --input "build\jpackage-input" ^
   --main-jar "%JARNAME%" ^
   --main-class ham.citybuildersim.CityBuilderSim ^
-  --add-modules %MODULES% ^
+  --runtime-image "build\runtime" ^
   --dest "dist" ^
   --vendor "Jerus" ^
+  --copyright "Copyright (c) 2026 Jerus" ^
   --icon "src\main\resources\icons\icon.ico" ^
   --description "Civic Ledger"
 
 if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   jpackage failed with code %ERRORLEVEL% - the reason is above.
-    echo.
-    pause
-    exit /b 1
+    goto unfit
 )
 
 rem ------------------- put the balance file where it is editable -------------------
@@ -200,29 +293,38 @@ if not exist "dist\%APPNAME%\data\earth-2.bin" (
     echo.
     echo   Could not copy data\earth-2.bin into dist\%APPNAME%\data - stopping
     echo   rather than leave a build without the Earth.
-    echo.
-    pause
-    exit /b 1
+    goto unfit
 )
 if not exist "dist\%APPNAME%\data\world-1.bin" (
     echo.
     echo   Could not copy data\world-1.bin into dist\%APPNAME%\data - stopping
     echo   rather than leave a build without the nations.
-    echo.
-    pause
-    exit /b 1
+    goto unfit
 )
 echo  Copied data\earth-2.bin and data\world-1.bin next to the exe, with their credits.
 
+rem ----------------------- the source and the notices beside the exe -----------------------
+rem  CR1-J: the source archives and their README go in source\, the
+rem  libraries' and Microsoft's texts (the jar's credits) in legal\. Then the
+rem  whole image is checked before anything is zipped - Temurin's runtime and
+rem  its legal folder, every notice and terms file, every archive against its
+rem  pin - and an image that fails is removed, so nothing unfit is shipped.
+echo  Staging the source archives and the notices...
+"%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging stage "%SOURCES%" "dist\%APPNAME%"
+if not "%ERRORLEVEL%"=="0" goto unfit
+"%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging verify "dist\%APPNAME%"
+if not "%ERRORLEVEL%"=="0" goto unfit
+
 rem ------------------------------- the zip -------------------------------
 rem  What goes up as the release: the whole folder under its own name, as
-rem  dist\CityBuilderSim-<version>.zip, the Earth inside it. Made before the
-rem  test launch below, so nothing the game writes as it runs gets into it.
+rem  dist\CityBuilderSim-<version>.zip, the Earth and the source inside it.
+rem  Made before the test launch below, so nothing the game writes as it runs
+rem  gets into it.
 set "ZIP=dist\%APPNAME%-%APPVER%.zip"
 if exist "%ZIP%" del /q "%ZIP%"
 echo  Zipping it as %ZIP% ...
 tar -a -c -f "%ZIP%" -C dist "%APPNAME%" 2>nul
-if errorlevel 1 if exist "%ZIP%" del /q "%ZIP%"
+if not "%ERRORLEVEL%"=="0" if exist "%ZIP%" del /q "%ZIP%"
 if not exist "%ZIP%" powershell -NoProfile -Command "Compress-Archive -Path 'dist\%APPNAME%' -DestinationPath '%ZIP%'"
 
 echo.
@@ -236,9 +338,11 @@ if exist "%ZIP%" (
 )
 echo.
 echo  That whole dist\%APPNAME% folder is the game. It carries its own Java
-echo  runtime and the real Earth, so it will run on a machine with no Java on
-echo  it. The zip is that folder; point Steam at the exe inside it.
+echo  runtime, the real Earth and the source code its licences ask for, so it
+echo  will run on a machine with no Java on it. The zip is that folder; point
+echo  Steam at the exe inside it.
 echo.
+if not defined LAUNCH exit /b 0
 echo  Starting it now so you can see whether it works...
 echo.
 
@@ -249,3 +353,18 @@ rem  so launching without it would test a setup no player will ever have.
 start "" /D "dist\%APPNAME%" "%APPNAME%.exe"
 
 pause
+exit /b 0
+
+rem  Every stop after the previous build is cleared comes here (the CR1-J
+rem  review): a half-built image, an exe without its source or notices, is
+rem  removed with this version's zip, so nothing unfit is left to upload.
+:unfit
+echo.
+echo   The build stopped - the reason is above - or the image lacks what a
+echo   sold build must carry, so dist\%APPNAME% and this version's zip are
+echo   removed: nothing is published.
+echo.
+if exist "dist\%APPNAME%" rmdir /s /q "dist\%APPNAME%"
+if exist "dist\%APPNAME%-%APPVER%.zip" del /q "dist\%APPNAME%-%APPVER%.zip"
+%PAUSE%
+exit /b 1

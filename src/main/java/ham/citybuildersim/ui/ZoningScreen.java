@@ -166,7 +166,7 @@ final class ZoningScreen {
             w.setMinWidth(Region.USE_PREF_SIZE);
             return w;
         });
-        back.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, THE_GROUND));
+        Kept.give(back.onMouseClickedProperty(), e -> policy.open(PolicyScreen.ZONING, THE_GROUND));
         titled.getChildren().set(2, back);
         titled.getChildren().addAll(3, Kept.scope("zone", () -> {
             Label sep = Kept.label("›");
@@ -334,9 +334,6 @@ final class ZoningScreen {
         LandManager land = g.getLandManager();
         List<ZoningView.Part> parts = ZoningView.ground(g);
 
-        // Zoning opens on history's date (R0: 1924): until then no zone can be drawn, and the zones' controls are shut. The forest law is open.
-        boolean shut = policy.isShut(PolicyDates.Lever.ZONING);
-        policy.addShutCard(page, PolicyDates.Lever.ZONING);
         page.getChildren().add(sectionHead("THE CITY'S GROUND", GROUND_INFO,
                 PolicyScreen.quiet(LandManager.areaWords(land.getLinkedOwnedSqFt()) + " dry")));
         // Kept (KP6): what comes and goes (the closer bar, the picker, the zones' list or its note) is a scope each, and a zone a row keyed by its sector.
@@ -359,10 +356,9 @@ final class ZoningScreen {
                     });
             zone.setMinWidth(250);
             zone.setMaxWidth(Region.USE_PREF_SIZE);
-            zone.setDisable(shut);
             return zone;
         })));
-        if (!shut && policy.openLines.contains(PICK)) page.getChildren().add(Kept.scope("picker", this::picker));
+        if (policy.openLines.contains(PICK)) page.getChildren().add(Kept.scope("picker", this::picker));
         if (rows.isEmpty()) {
             page.getChildren().add(Kept.scope("none", () -> PolicyScreen.muted("No zone yet: every square metre the city has not built on is free "
                     + "for anyone, at the going price.")));
@@ -371,7 +367,6 @@ final class ZoningScreen {
                 VBox list = PolicyScreen.card();
                 list.setSpacing(2);
                 for (ZoningView.Row r : rows) list.getChildren().add(Kept.scope("zone:" + r.sector(), () -> zoneRow(r)));
-                list.setDisable(shut);
                 return list;
             }));
         }
@@ -476,9 +471,9 @@ final class ZoningScreen {
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
         String lit = rest + " -fx-background-color: " + Palette.CONTROL + ";";
         row.setStyle(row.isHover() ? lit : rest);
-        row.setOnMouseEntered(e -> row.setStyle(lit));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, zonePage(r.sector())));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(lit));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> policy.open(PolicyScreen.ZONING, zonePage(r.sector())));
         return row;
     }
 
@@ -755,7 +750,6 @@ final class ZoningScreen {
         boolean off = policy.isStaged(offKey(s));
         ZoningView.Row row = ZoningView.row(g, s);
 
-        policy.addShutCard(page, PolicyDates.Lever.ZONING);
         String line = !zoned ? name + " has no zone: its buildings take the ground free for anyone, at the going price."
                 : name + "'s zone holds " + LandManager.areaWords(row.heldSqFt()) + " for it; it has built on "
                         + LandManager.areaWords(row.usedSqFt()) + " in it" + (row.isShort() ? " - short of what it wants." : ".");
@@ -802,11 +796,9 @@ final class ZoningScreen {
         policy.policyLevers.put(unit.key(), unit);
         Lever lever = new Lever(sizeKey(s), possessive(name) + " zone" + (share ? ", of the dry ground" : ""), current, 0, top, step,
                 read, v -> applyZone(s));
-        boolean shut = policy.isShut(PolicyDates.Lever.ZONING);
-        Ladder ladder = policy.ladderOf(lever).greyed(shut);
+        Ladder ladder = policy.ladderOf(lever);
         HBox units = Kept.row(6, unitChip(s, "A share of the dry ground", Zoning.Size.SHARE, kind),
                 unitChip(s, "km²", Zoning.Size.KM2, kind));
-        units.setDisable(shut);
         ZoningView.Page now = ZoningView.page(ui.game, ui.game.getZoning(), s);
         String status = now.plot() == null ? "Its sector has no building that stands on ground."
                 : "Measured in " + Formats.plural(now.plot().getName()) + ", "
@@ -861,7 +853,7 @@ final class ZoningScreen {
         double current = priceNow(s);
         Lever lever = new Lever(priceKey(s), possessive(name) + " zone, of the going price", current, 0, Zoning.MAX_PRICE_SHARE,
                 PRICE_STEP, PolicyScreen::pct0, v -> applyZone(s));
-        Ladder ladder = policy.ladderOf(lever).greyed(policy.isShut(PolicyDates.Lever.ZONING));
+        Ladder ladder = policy.ladderOf(lever);
         double going = ui.game.getLandManager().getPricePerSqFt();
         String status = "The going business price is " + money(LandManager.perM2(going)) + " a m².";
         ZoningView.Page now = ZoningView.page(ui.game, ui.game.getZoning(), s);
@@ -987,13 +979,8 @@ final class ZoningScreen {
             Lever lever = new Lever(taxKey(t, s), name + names[i], offset[i], -max, max,
                     property ? PolicyScreen.STEP_PROPERTY : PolicyScreen.STEP_INCOME, property ? propPts : Money::pts,
                     v -> ui.game.setZoneTax(s, t, v));
-            // A zone's tax row is the sector's own offset, held by its tax's own lever (profit 1916, sales 1920; property is open): greyed while that one is shut.
-            PolicyDates.Lever taxLever = switch (t) {
-                case PROFIT -> PolicyDates.Lever.PROFIT_TAX;
-                case SALES -> PolicyDates.Lever.SALES_TAX;
-                default -> null;
-            };
-            Ladder ladder = policy.ladderOf(lever).stepReads(PolicyScreen::stepWord).greyed(policy.isShut(taxLever));
+            // A zone's tax row is the sector's own offset, held by its tax's own lever.
+            Ladder ladder = policy.ladderOf(lever).stepReads(PolicyScreen::stepWord);
             dials.add(new Dial(PolicyScreen.words(taxWords(t, city[i], offset[i], ui.game.zoneTaxRate(s, t), then[i], paid[i]),
                     Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL), lever.key(), ladder, policy.staged(lever.key(), offset[i])));
         }

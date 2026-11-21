@@ -40,13 +40,13 @@ public final class Bridges implements Landmasses.Joins {
         boolean known(int template);
 
         /** The finished bridges of a template. */
-        int standing(int template);
+        long standing(int template);
 
         /** ...those under construction. */
-        int onSite(int template);
+        long onSite(int template);
 
         /** ...those a stopped order left standing as a shell. */
-        int shell(int template);
+        long shell(int template);
     }
 
     /**
@@ -130,9 +130,9 @@ public final class Bridges implements Landmasses.Joins {
      * An order of n bridges of a template was placed on a surveyed crossing, after the stack took it: n records on the same
      * survey, on site - standing at once for an order built at once (`instant`).
      */
-    void ordered(int template, BridgeWorks.Kind kind, BridgeSurvey.Result survey, int n, boolean instant) {
+    void ordered(int template, BridgeWorks.Kind kind, BridgeSurvey.Result survey, long n, boolean instant) {
         if (survey == null || !survey.found()) return;
-        for (int k = 0; k < n; k++) {
+        for (long k = 0; k < n; k++) {
             Row r = new Row();
             r.template = template;
             r.kind = kind.name();
@@ -175,24 +175,24 @@ public final class Bridges implements Landmasses.Joins {
     }
 
     private void fit(int template) {
-        int standing = Math.max(0, stock.standing(template)), onSite = Math.max(0, stock.onSite(template)), shell = Math.max(0, stock.shell(template));
+        long standing = Math.max(0, stock.standing(template)), onSite = Math.max(0, stock.onSite(template)), shell = Math.max(0, stock.shell(template));
         List<Row> s = of(template, STANDING), o = of(template, ON_SITE), h = of(template, SHELL);
         // The completions: the oldest bridges on site have finished.
-        int done = Math.min(Math.max(0, standing - s.size()), o.size());
+        long done = Math.min(Math.max(0, standing - s.size()), o.size());
         for (int k = 0; k < done; k++) {
             Row r = o.remove(0);
             r.state = STANDING;
             s.add(r);
         }
         // The stops: the newest bridges on site past the count have been stopped, to the shell.
-        int stopped = Math.min(Math.max(0, o.size() - onSite), Math.max(0, shell - h.size()));
+        long stopped = Math.min(Math.max(0, o.size() - onSite), Math.max(0, shell - h.size()));
         for (int k = 0; k < stopped; k++) {
             Row r = o.remove(o.size() - 1);
             r.state = SHELL;
             h.add(r);
         }
         // The restarts: a shell the buildings no longer hold, with bridges missing on site, is back on site.
-        int restarted = Math.min(Math.max(0, h.size() - shell), Math.max(0, onSite - o.size()));
+        long restarted = Math.min(Math.max(0, h.size() - shell), Math.max(0, onSite - o.size()));
         for (int k = 0; k < restarted; k++) {
             Row r = h.remove(0);
             r.state = ON_SITE;
@@ -205,7 +205,7 @@ public final class Bridges implements Landmasses.Joins {
         drop(h, shell);
     }
 
-    private void drop(List<Row> list, int count) {
+    private void drop(List<Row> list, long count) {
         while (list.size() > count) rows.remove(list.remove(list.size() - 1));
     }
 

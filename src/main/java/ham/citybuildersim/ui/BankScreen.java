@@ -734,14 +734,15 @@ final class BankScreen {
                                 + "Trade tab is where that is priced.", m(bank.getForeignDeposits()), hot * 100), null);
             }));
         }
-        if (bank.knowsEquitySplit() && Math.abs(bank.equitySplitResidual()) > .005) {
+        // BI1: the model's verdict (MoneyAudit.tolerance of the book's size), not an absolute $5 that float dust passes on a big city's books.
+        if (!bank.equitySplitAddsUp()) {
             out.add(Kept.scope("split", () -> actionCard(Icons.ALERT, Palette.BAD, "Its two parts do not add up to its equity",
                     String.format("%s of its equity is neither paid in nor retained.", m(Math.abs(bank.equitySplitResidual()))),
                     String.format("%s of its equity is neither paid in nor retained. That should be impossible - worth "
                             + "reporting.", m(Math.abs(bank.equitySplitResidual()))), null)));
         }
         double off = bank.sheetResidual(), offThen = bank.yearAgoResidual();
-        if (Math.abs(off) > .005 || (bank.knowsYearAgo() && Math.abs(offThen) > .005)) {
+        if (!bank.sheetAddsUp() || !bank.yearAgoSheetAddsUp()) {
             out.add(Kept.scope("residual", () -> actionCard(Icons.ALERT, Palette.BAD, "Its lines do not add up",
                     String.format("Not accounted for: %s now, %s a year ago.", mFull(off), mFull(offThen)),
                     "Something on its books is not on this page, or is on it twice. That should be impossible - worth "
@@ -843,9 +844,9 @@ final class BankScreen {
         String rest = cardStyle(Palette.EDGE) + " -fx-cursor: hand;";
         String over = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? over : rest);
-        c.setOnMouseEntered(e -> c.setStyle(over));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(over));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         return c;
     }
 
@@ -2347,7 +2348,7 @@ final class BankScreen {
         double now = bank.sheet(p.line()), then = bank.yearAgo(p.line());
         Region sw = Kept.region();
         sw.setMinSize(10, 10);
-        sw.setPrefSize(10, 10);
+        Pieces.prefSize(sw, 10, 10);
         sw.setMaxSize(10, 10);
         sw.setStyle(p.ghost() ? "-fx-background-color: " + p.colour() + "33; -fx-border-color: " + p.colour() + "; -fx-border-width: 1;"
                 : "-fx-background-color: " + p.colour() + "; -fx-background-radius: 2;");
@@ -2359,7 +2360,7 @@ final class BankScreen {
         Label name = words((opens ? (open ? "▾ " : "▸ ") : "") + p.name(), Palette.SIZE_LABEL + 1,
                 opens ? Palette.ACCENT : Palette.TEXT_LABEL, opens);
         if (opens) {
-            name.setOnMouseClicked(e -> {
+            Kept.give(name.onMouseClickedProperty(), e -> {
                 if (!openLines.remove(key)) openLines.add(key);
                 showBankMenu();
             });
@@ -2549,7 +2550,7 @@ final class BankScreen {
         b.setHgrow(Priority.ALWAYS);
         javafx.scene.layout.ColumnConstraints f = new javafx.scene.layout.ColumnConstraints();
         f.setMinWidth(Region.USE_PREF_SIZE);
-        g.getColumnConstraints().addAll(a, b, f);
+        Kept.columns(g).addAll(a, b, f);
         for (int i = 0; i < parts.length; i++) {
             final int at = i, r = known ? 2 * i : i;
             // Kept (KP5): a part is a scope keyed by its sheet line, its year-ago row a scope inside it (a city lives a year of months and gains the row).
@@ -2660,7 +2661,7 @@ final class BankScreen {
                     + "shown whole, what it owns less what it owes."));
         }
         double off = bank.sheetResidual(), offThen = bank.yearAgoResidual();
-        boolean unexplained = Math.abs(off) > .005 || (known && Math.abs(offThen) > .005);
+        boolean unexplained = !bank.sheetAddsUp() || !bank.yearAgoSheetAddsUp();   // BI1: the model's verdict, as the card's
         if (unexplained) {
             column.getChildren().add(bookLine("Not accounted for", off, offThen, known, Palette.BAD));
         }
@@ -3678,7 +3679,7 @@ final class BankScreen {
      */
     VBox branchesCard(Bank bank) {
         BuildingsTemplate branch = ui.game.getBuildingManager().getTemplateByName("Commercial Bank");
-        int standing = ui.game.getBuildingManager().countByName("Commercial Bank");
+        long standing = ui.game.getBuildingManager().countByName("Commercial Bank");
         double per = bank.customersPerBranch();
         double share = per / Bank.CUSTOMERS_PER_BRANCH;
         Region ring = ring(Math.min(1, share), Palette.MONEY, 72, 8,
@@ -3842,7 +3843,7 @@ final class BankScreen {
 
         /* ---------------------------- its branches ---------------------------- */
         BuildingsTemplate branch = ui.game.getBuildingManager().getTemplateByName("Commercial Bank");
-        int standing = ui.game.getBuildingManager().countByName("Commercial Bank");
+        long standing = ui.game.getBuildingManager().countByName("Commercial Bank");
         column.getChildren().add(statementHead("Its branches"));
         column.getChildren().add(statementLine("Standing", formatter.format(standing)));
         column.getChildren().add(statementLine("Its customers, the households paying its fee",
@@ -4052,7 +4053,7 @@ final class BankScreen {
             steps.add(Step.of((String) c[0], a, a < 0 ? Palette.MONEY_DARK : Palette.MONEY));
         }
         double residual = mv.residual();
-        steps.add(Step.of("Not accounted for", residual, Math.abs(residual) > .005 ? Palette.BAD : Palette.TEXT_SPENT)
+        steps.add(Step.of("Not accounted for", residual, mv.addsUp() ? Palette.TEXT_SPENT : Palette.BAD)
                 .tip("Not accounted for\n" + mv(residual) + "\n\n" + MOVED_INFO));
         return steps;
     }
@@ -4067,7 +4068,7 @@ final class BankScreen {
         Bank.EquityMovement mv = bank.equityMovement();
         c.getChildren().add(Kept.scope("opened", () -> line("opened the month at " + m(mv.opening()) + " · closed it at " + m(mv.closing()))));
         c.getChildren().add(Kept.scope("fall", () -> waterfall(equitySteps(), v -> (v < 0 ? "−" : "") + money(Math.abs(v)), 0, 170)));
-        if (Math.abs(mv.residual()) > .005) {
+        if (!mv.addsUp()) {
             c.getChildren().add(Kept.scope("residual", () -> noteLine("Something moved its equity without telling it",
                     String.format("%s of the month's change in its equity is none of the causes above. That should be "
                             + "impossible - worth reporting.", m(Math.abs(mv.residual()))), 560)));
@@ -4221,7 +4222,7 @@ final class BankScreen {
             moved(column, "A reopened line's discount, re-struck", m.discountRestruck());
             moved(column, "Set aside when this older save was opened", -m.allowanceOpened());
             double residual = m.residual();
-            boolean off = Math.abs(residual) > .005;
+            boolean off = !m.addsUp();
             column.getChildren().add(statementLine("Not accounted for", signed(residual, false),
                     off ? Palette.BAD : Palette.TEXT_SPENT));
             column.getChildren().add(statementTotal("At the end of it", moneyFull(m.closing()),
@@ -4322,11 +4323,11 @@ final class BankScreen {
                 ui.game.bankResolutionAdvance() > 0 ? Palette.WARN : Palette.TEXT_HEAD), 3, 0);
         Button rescue = Kept.of(Button.class, Button::new);
         rescue.setText("Resolve the bank for its shares – " + money(needed));
-        rescue.setDisable(!can);
+        Kept.give(rescue.disableProperty(), !can);
         // Kept (KP5): set on both sides - a button kept from a draw that could resolve the bank is not left in the green.
         rescue.setStyle(can ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                 + " -fx-padding: 8 18 8 18;" : "");
-        rescue.setOnAction(e -> {
+        Kept.give(rescue.onActionProperty(), e -> {
             if (!ui.game.canResolveBank()) return;
             ui.game.resolveBank();
             ui.innerScrollAt.remove("showBankMenu:body");
@@ -4396,8 +4397,8 @@ final class BankScreen {
         if (shortBy > 0) {
             Kept.scope("short", () -> {
                 c.getChildren().add(cardLine("Funding required", marked(here, money(shortBy)), Palette.BAD));
-                DebtQuote bond = game.quoteLongBondForCash(shortBy, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-                DebtQuote note = game.quoteTBill(shortBy, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+                DebtQuote bond = game.quoteLongBondForCash(shortBy, Game.BUILD_BOND_YEARS, game.issueLot("Term"));
+                DebtQuote note = game.quoteTBill(shortBy, Game.BUILD_NOTE_MONTHS, game.issueLot("Note"));
                 DebtManager market = game.getDebtManager();
                 VBox bondCard = coverCash(offerCard(Game.BUILD_BOND_YEARS + "-year bond", null, bond,
                         pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
@@ -4407,7 +4408,7 @@ final class BankScreen {
                         "Issue the " + Game.BUILD_BOND_YEARS + "-year bond and accept",
                         () -> {
                             game.handleLongBondForCash(game.preferredOfferShortBy(), Game.BUILD_BOND_YEARS,
-                                    Game.BUILD_BOND_GRANULE);
+                                    game.issueLot("Term"));
                             game.acceptPreferredOffer();
                             showBankMenu();
                         }, written), bond);
@@ -4420,7 +4421,7 @@ final class BankScreen {
                         "Issue the " + Game.BUILD_NOTE_MONTHS + "-month bill and accept",
                         () -> {
                             game.handleTBillLogic(game.preferredOfferShortBy(), Game.BUILD_NOTE_MONTHS,
-                                    Game.BUILD_NOTE_GRANULE);
+                                    game.issueLot("Note"));
                             game.acceptPreferredOffer();
                             showBankMenu();
                         }, written), note);
@@ -4436,14 +4437,14 @@ final class BankScreen {
         HBox act = Kept.scope("act", () -> {
             Button accept = Kept.of(Button.class, Button::new);
             accept.setText("Accept – buy " + marked(here, money(size)));
-            accept.setDisable(shortBy > 0);
+            Kept.give(accept.disableProperty(), shortBy > 0);
             // Set on both sides (KP5): a button kept from a draw with the treasury short is not left grey of its green.
             accept.setStyle(shortBy > 0 ? "" : "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                     + " -fx-padding: 8 18 8 18;");
-            accept.setOnAction(e -> { game.acceptPreferredOffer(); showBankMenu(); });
+            Kept.give(accept.onActionProperty(), e -> { game.acceptPreferredOffer(); showBankMenu(); });
             Button decline = Kept.of(Button.class, Button::new);
             decline.setText("Decline");
-            decline.setOnAction(e -> { game.declinePreferredOffer(); showBankMenu(); });
+            Kept.give(decline.onActionProperty(), e -> { game.declinePreferredOffer(); showBankMenu(); });
             HBox row = Kept.row(8, accept, decline);
             row.setAlignment(Pos.CENTER_LEFT);
             return row;

@@ -1,6 +1,6 @@
-# Healthcare.java - 968 lines · 55 methods · 18 constants · model
+# Healthcare.java - 997 lines · 57 methods · 18 constants · model
 
-`ham/citybuildersim/Healthcare.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Healthcare.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's healthcare service: what it costs, what it collects, and what it
 > does with the dead.
@@ -37,9 +37,9 @@
 > three fees from nothing to fifteen times them, so the deficit is the DEFAULT
 > rather than the design - see the banner WHAT PATIENTS PAY.
 
-**Uses:** [CareType](CareType.md) (48), [AgeBand](AgeBand.md) (14), [PriceLevel](PriceLevel.md) (5), [PopulationCohorts](PopulationCohorts.md) (4), [TaxPolicy](TaxPolicy.md) (2)
+**Uses:** [CareType](CareType.md) (64), [AgeBand](AgeBand.md) (14), [PriceLevel](PriceLevel.md) (5), [PopulationCohorts](PopulationCohorts.md) (4), [TaxPolicy](TaxPolicy.md) (2)
 
-**Used by (26):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [SafetyType](SafetyType.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md)
+**Used by (27):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [SafetyType](SafetyType.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 
@@ -74,9 +74,9 @@
 | 371 | `Healthcare.CHILDCARE_BIRTH_BONUS` | `1.0` | How much more a city with childcare gives birth. |
 | 834 | `Healthcare.STRAINED` | `.90` | Past this share of the ovens' throughput, say so. |
 | 837 | `Healthcare.PLOT_WARNING_MONTHS` | `60` | Warn once the ground will not last this long at the current rate. |
-| 895 | `Healthcare.STATE_BEFORE_FULL_BILL` | `12` | How many figures the state carried before the full-service bill was appended (2026-09-19). |
-| 898 | `Healthcare.STATE_BEFORE_COVERAGE` | `13` | ...and before the three coverages were, the same day. |
-| 901 | `Healthcare.STATE_BEFORE_SERVED` | `16` | ...and before the three kinds' served counts were (A3, 2026-10). |
+| 924 | `Healthcare.STATE_BEFORE_FULL_BILL` | `12` | How many figures the state carried before the full-service bill was appended (2026-09-19). |
+| 927 | `Healthcare.STATE_BEFORE_COVERAGE` | `13` | ...and before the three coverages were, the same day. |
+| 930 | `Healthcare.STATE_BEFORE_SERVED` | `16` | ...and before the three kinds' served counts were (A3, 2026-10). |
 
 ## Fields (state)
 
@@ -101,7 +101,7 @@
 | 461 | `private double plotsUsed` | Plots used, ever. |
 | 470 | `private double unburied` | The dead nobody could deal with, accumulated. |
 | 610 | `private final double[] served` | People treated this month, by kind of care. |
-| 613 | `private final double[] offered` | People the staffed beds could have treated this month, before the fee turned anybody away. |
+| 613 | `private final double[] offered` | People the staffed beds could have treated this month, before the fee turned anybody away; the builder reads the shortfall next month. |
 | 616 | `private final double[] affordable` | Of the people each kind of care would serve, the share whose household could pay its fee. |
 | 642 | `private final double[] coverage` | The coverage the month's population step READ for each kind of care, by CareType.ordinal(): the staffed beds over the people, clamped, less the share of those people the fee turned away - the figure the mortality swin... |
 | 696 | `private double treatmentFeesAtOne` | What the three care fees would raise at 1x on everybody the beds could take, in today's money. |
@@ -110,7 +110,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 930 | **type** `public class Healthcare` | The city's healthcare service: what it costs, what it collects, and what it does with the dead. |
+| 39 | 959 | **type** `public class Healthcare` | The city's healthcare service: what it costs, what it collects, and what it does with the dead. |
 
 ### WHAT THE CITY WAS FOUNDED WITH (lines 41-108)
 
@@ -202,12 +202,14 @@
 | 840 | 6 | `public String getStatus()` | One line for the panel, in the grid's own vocabulary. |
 | 853 | 4 | `public double monthsOfPlotsLeft(double plotsBuilt)` | Months of burials the city's remaining plots will take at this rate. |
 
-### saving (lines 858-968)
+### saving (lines 858-997)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 870 | 23 | `public double[] getState()` | The state, in order. |
-| 911 | 34 | `public boolean restore(double[] state)` | Refused whole on a length mismatch, per the standing rule - the shapes from before the full-service bill and before the coverages (both 2026-09-19) and before the served counts (0.7.46) are the exceptions, and each re... |
-| 947 | 10 | `public void redenominate(double scale)` | The healthcare fees and this month's bill, in the new unit. |
-| 960 | 7 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
+| 867 | 10 | `public double[] getAccessState()` | The month's access to care, offered then affordable for each kind of living care. |
+| 879 | 9 | `public boolean restoreAccessState(double[] state)` | Restore the carried access figures whole; absent or malformed data leaves them alone. |
+| 899 | 23 | `public double[] getState()` | The state, in order. |
+| 940 | 34 | `public boolean restore(double[] state)` | Refused whole on a length mismatch, per the standing rule - the shapes from before the full-service bill and before the coverages (both 2026-09-19) and before the served counts (0.7.46) are the exceptions, and each re... |
+| 976 | 10 | `public void redenominate(double scale)` | The healthcare fees and this month's bill, in the new unit. |
+| 989 | 7 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
 

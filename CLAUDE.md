@@ -1,7 +1,9 @@
 # CityBuilderSim - read this first
 
-For an AI session picking up the game: where things are, the standing rules,
-and how a batch is done. `README.md` is the human introduction; read it too.
+For an AI session picking up the game: where things are and the tools to find
+them. **The rules are `docs/contract.md`**, Jerus's standing rules and how a
+batch is built, checked and shipped, which Claude and Codex builders both
+read: read it first. `README.md` is the human introduction; read it too.
 
 A macroeconomic city simulator in Java 21 and JavaFX, one Maven project, one
 flat package `ham.citybuildersim` plus `sectors/`, `ui/` and `tools/`. The
@@ -20,9 +22,10 @@ every call after it.
 
 - **Checks:** `./batch-check.sh [harness names]` - compile, suite, maps,
   Stale, tree, in about ten lines (`--fast` skips the suite, `--timing`
-  runs the timing harnesses alone and hard, `--pick` runs the harnesses that
+  runs the timing harnesses alone and hard, judged nightly on the gate box by `tools/nightly.sh`, `--pick` runs the harnesses that
   read what the diff changed, `tools/pick.sh`). Exit 3 means the only reds
-  are main's recorded ones (`docs/notes/gate.txt`). Logs go to
+  are exact lines in `docs/notes/gate.txt` or harness-scoped parts in
+  `docs/notes/known-reds.txt` (GR2, the approvals left in temp scripts). Logs go to
   `target/checks/`; grep them, never cat them. On the PC: the same script in
   Git Bash; `Batch check.bat`, Jerus's double-click, has no `--pick` and no
   exit 3.
@@ -31,31 +34,20 @@ every call after it.
   `docs/notes/gate.txt`) or `[NEW]`; `-q` says `known red` or `NEW red`
   for a red harness (FW7). Run it in the background and wait for it; never
   poll it, and never rerun a red harness in full to find its assertion.
-- **Ship:** `./ship.sh batch/<id>` is the orchestrator's merge, checks,
-  timing harnesses hard, tag and push (`--dry-run` gates alone). Since BP1
-  it also writes the batch's records and sets the version, both from the
+- **Ship:** `sh tools/gate.sh <id>` is the orchestrator's merge, checks, tag
+  and push: `ship.sh` in a fresh clone with its logs kept (`--dry-run` gates
+  alone), on the gate box (`tools/gate-box.sh`; here when it is down). It writes the batch's records and sets the version, both from the
   branch's ship file, `docs/queue/<id>-ship.md`.
 - **Source:** `Where Name -print` prints one method. Never open `Game.java`
   or a large screen whole.
 - **The big indexes:** `docs/harnesses.md` (800 KB) and `docs/dials.md`
   (500 KB) are for grep, never for reading.
 - **Sessions:** each call re-sends all of the session so far: a fresh session
-  or agent per task (a batch, a review), a brief to the point, a report of 15
-  lines. Opus compacts at 300k and never loads the tools no session here has
-  called (`.claude/settings.json`; CX2: past step 150 a batch session re-sent
-  31% of the week's batch tokens), so what must survive goes in the notes file
-  when it is decided. Independent reads go in one step (88% of an Opus batch
-  step made one call), a wide search to an `Explore` agent on Sonnet.
-- **Coding goes to Sonnet** (Jerus, 2026-10-20): a batch hands each slice a
-  brief can pin down to an Agent subagent of type `slice`
-  (`.claude/agents/slice.md`: Sonnet 5.5 at xhigh, six tools, no `CLAUDE.md`;
-  CX1), which edits the worktree and commits nothing; Opus writes the brief,
-  reviews the diff as a stranger's and commits. `docs/deepseek.md` says what
-  to hand over, how, what a slice costs and what to review (DeepSeek, billed
-  on top, and the cloud's depth 1 too); `docs/batch.md`, 3, how large a slice
-  is and when Sonnet is the whole session. **Every session and agent runs at
-  xhigh or max** (Jerus, 2026-10-24: "anything on high effort or lower is
-  banned").
+  or agent per task, a brief to the point, a report of 15 lines. Opus compacts
+  at 300k and never loads the tools no session here has called
+  (`.claude/settings.json`; CX2: past step 150 a batch session re-sent 31% of
+  the week's batch tokens), so what must survive goes in the notes file when
+  it is decided. Slices, models and effort: `docs/contract.md`, sections 2 and 4.
 
 ## Open these before reading source
 
@@ -70,8 +62,8 @@ interface is fifty-one files, the largest about 7,400.
 | `docs/month-order.md` | the month as numbered statements with line numbers: where "after wages, before the shops buy" goes |
 | `docs/harnesses.md` | what every harness asserts, and which harnesses mention which class |
 | `docs/tree.md` | each part of the tree and how it came to be, the long form (moved out of this file 2026-10-13) |
-| `docs/deepseek.md` | handing a slice to Sonnet or DeepSeek: what to hand over, the brief, the run, the review, the cost |
-| `docs/batch.md`, `docs/orchestrator.md` | how a batch is done: a batch session's checklist; the orchestrator's day, gate and the rest |
+| `docs/contract.md` | the rules: the standing rules, who builds, starting, building, ready, the gate |
+| `docs/orchestrator.md`, `docs/deepseek.md` | the orchestrator's own day and gate; a slice handed to DeepSeek |
 
 The first five are generated by `ham.citybuildersim.tools.Maps`
 (`Regenerate maps.bat`, or `java -cp target/classes
@@ -112,83 +104,6 @@ with it. The look-up tools:
 - **`docs/notes/`** holds the record that left the project: the changelog's
   blocks before 2026-09-11 and the todo's finished items, verbatim.
 
-## The standing rules
-
-These are Jerus's, and they do not move.
-
-- **Save slots 1-9 are his cities. Never write them.** Slot 10 is the
-  assistant's playtest slot. Since BP1 one session may also write slots 7-9:
-  the screen-check session, even over a city of his there (Jerus,
-  2026-10-23: "it can do whatever it wants with slots 7-9 even if i have a
-  city save there"); slots 1-6 nobody writes, and every other session and
-  harness keeps off 1-9 as before.
-  A harness city uses `GameFiles.scratch(label)` or
-  a folder from `TempDirs.create(prefix)`, never `new Game()`, which points at
-  the real save folder. Never `Files.createTempDirectory` either: nothing
-  deleted its folders, and they held 37 GB of the PC's disk by 2026-10-21
-  (TD1); `TempDirs` deletes its own when the JVM exits.
-- **Ship fixes without asking** ("yes, always"), through GitHub, the one
-  source of truth (`2048Israel/CityBuilderSim`): a batch is done in a
-  worktree and a branch of its own, the orchestrator alone merges it into
-  `main`, tags it and pushes, and the PC pulls `main` every ten minutes.
-  Nothing is written to the PC by hand. Ask as many questions as you like; do
-  not wait on answers to ship what is already decided.
-- **Each batch is told once** (2026-10-12, on usage). The changelog gets one
-  paragraph per version, at most 12 lines; the todo only what is still open.
-  A write-up goes to the project as `claude/<title>.md`, in prose, with what
-  was found and what was decided, only for a batch that changes how the game
-  plays or leaves calls for Jerus. The
-  README's counts are not the record - the changelog is. The project's
-  `git-workflow.md`, "Keeping usage down", has the rest: the orchestrator as
-  a dispatcher, 15-line reports, a todo under 100 KB.
-- **A batch that is decided goes in `QUEUE.md` the same turn** (2026-10-11),
-  added by whoever takes the decision: the orchestrator, a study whose
-  batches he takes, any session that takes a request of his. A decision only
-  in a note, a todo line or a chat is not queued. A shipped batch's row is
-  deleted in its merge; what it left undone goes under Pending, and only
-  Jerus's review moves a row out of there. Since BP1 the orchestrator may
-  also settle a Pending row that waits only on calls with a recommendation,
-  taking the recommended way and saying which and why in the notes (Jerus,
-  2026-10-23: "dont most end up being rec? its only a few that arent"); he
-  can overturn one later. A batch's name is never reused
-  (childcare is CC1, because C1 became the build card's).
-- **One in, one out** (Jerus, 2026-10-27: "the beaurcracy has grown way too
-  much"; in four days the rules a session reads went from 309 to 724 lines
-  and the scripts in `tools/` from 342 to 1,784). A batch that changes the
-  process (the scripts, the checks' machinery, the rules a session reads)
-  removes about as many lines as it adds, and its notes give the count:
-  `git diff --numstat origin/main` over those files, its own notes and ship
-  file left out. A rule it adds keeps a one-line WHY naming its incident, the
-  long history going to `docs/notes/batch-history.md`.
-- **A harness is the finding.** `README.md`, *The checks*: a fixture must
-  cause the condition; assert against the model's own constants; count how
-  often a mechanic fires in a real run; never move a harness's premise to let
-  a change through.
-- **`Sectors.KEYS` order is load-bearing** (equity index, household share
-  arrays, audit pools). New sector at the end. Same for `BuildingType` and
-  for ids in `buildings.json`, which saves are keyed by: take the next id,
-  never renumber.
-- **A flow cannot be reconstructed from the state a month ended in.** If a
-  screen or a check needs it next month, save it (`DataSave`, `HistorySave`,
-  and the load path; `ReadPathCheck` and `SaveFileCheck` catch a field in one
-  and not the other).
-- **The month is a sequence, not a set.** `Game.nextMonth()` and
-  `SimulationEngine.simulateMonth()` hold it; `docs/month-order.md` lists it.
-  A line that lands in one phase and not the other is the classic bug here.
-- **Old saves need not load until the game is published** (2026-10-10). Write
-  no conversion code. If a change would make an old save load *wrongly* - not
-  merely incompletely; Gson leaves a missing key alone - bump `SAVE_FORMAT`
-  *and* raise `GameVersion.OLDEST_LOADABLE_FORMAT` to it in the same batch,
-  and say so in its notes: the loader then refuses the save
-  (`isNoLongerReadable()`), as it refuses one from a newer build, loading
-  nothing and naming the build that still opens it. When the game is
-  published this rule ends. Being on itch.io is not that yet (Jerus,
-  2026-10-27: "Not yet"); he says when.
-- **Every `println` is the log.** There is no separate logging call.
-- **Line endings: the repository stores LF** (`.gitattributes`), the `.bat`
-  files CRLF. Never convert a file wholesale; `git ls-files --eol` shows no
-  `w/crlf` but the `.bat` files.
-
 ## The shape of the tree
 
     src/main/java/ham/citybuildersim/
@@ -228,15 +143,6 @@ Conventions the code is written to, which the indexes rely on:
   through a `static void helper(String label, ...)`; a failing one says
   `FAIL` on its line. `fails` is the exit code.
 
-## How a batch is done
-
-`docs/batch.md` is a batch session's checklist, from its row in `QUEUE.md` to
-a pushed branch with its ship file last; `docs/orchestrator.md` the
-orchestrator's: the day, the gate, the screen-check session, the PC (BM1,
-split by reader; a slice reads neither). Each rule has a one-line WHY naming
-its incident, the longer story in `docs/notes/batch-history.md`; the standing
-rules above bind both.
-
 ## Adding things - where the shape already is
 
 - **A sector:** one class in `sectors/` (a mine on `ExtractionSector`, a
@@ -247,7 +153,8 @@ rules above bind both.
   line in `AllChecks`; its line in `docs/tree.md`.
 - **A saved field:** the field, `DataSave` out and in, `HistorySave` if it is
   a series, and the reader in `Game`'s load path; then `SaveFileCheck`. A
-  format bump only if an old save would now read wrongly (the rule above).
+  format bump only if an old save would now read wrongly (the old-saves rule,
+  `docs/contract.md`).
 - **A screen section:** a banner in the tab's own class in `ui/`
   (`UserInterface` is the window), drawn through `Kept` (`ui/Kept.java`'s
   rules), so the clock's redraw sets the month on the nodes on show and the

@@ -356,8 +356,8 @@ public class PowerDispatchCheck {
         h.setWattsProduction(coal.getProduction1());
         h.setWattsConsumption(draw);
         h.setWorksPower(works);
-        Map<BuildingsTemplate, Integer> standing = new LinkedHashMap<>();
-        standing.put(coal, 1);
+        Map<BuildingsTemplate, Long> standing = new LinkedHashMap<>();
+        standing.put(coal, 1L);
         h.setPlants(standing);
         h.setBilledElectricityDraw(draw);
         h.updateEnergyRatio();

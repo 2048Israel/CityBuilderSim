@@ -6,6 +6,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.PriceLevel;
@@ -709,7 +710,6 @@ public final class Retail extends Sector {
         double atTheFloor = demandAt(game == null ? null : game.getHouseholdBalance(), getFloorPrice());
         double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         BuildingsTemplate best = null;
         double bestScore = 0, demandAtOpening = 0;
 
@@ -729,10 +729,7 @@ public final class Retail extends Sector {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
@@ -747,7 +744,7 @@ public final class Retail extends Sector {
 
         if (best == null) {
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             return BusinessInvestment.Decision.no(sector, "what the shops can hand over is ahead of what is wanted");
         }
@@ -787,10 +784,11 @@ public final class Retail extends Sector {
      * ITS WHOLE COST).
      */
 
-    /** What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Filling Station's margin on the litres it can sell (0.7.83; stationEarns()) less its staff. The investment test's figure. */
+    /** What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Filling Station's margin on the litres it can sell (0.7.83; stationEarns()) less its staff. The investment test's figure. ...for one new building already resolved (QN1): its own posts are the staff. */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        double staff = plans == null ? 0 : plans.wageBillFor(t);
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
+        double staff = plans == null ? 0 : plans.wageBillFor(u);
         if (isStation(t)) return stationEarns(t, plans) - staff;
         return t.getCoverage() * handOverRate() * (storeSellPrice - getFoodPrice()) - staff;
     }

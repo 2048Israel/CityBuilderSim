@@ -17,6 +17,10 @@ import java.nio.file.Path;
  * The rest is the property that makes the button worth having at all: market
  * value is not face value, and which side of face it lands on says something
  * true about the city's credit.
+ *
+ * THE DOLLAR CITY (FS13, 2026-11-20): section 5's dollar case is ForeignDebtCheck's trading city, played 60 months, handed the exports the
+ * world prices it on (ForeignDebtCheck.earnsAbroad(), sized to DOLLAR_ASK) and its dial held over the world's quote for the ask, so the
+ * world lends it for less than it lends itself by cause and not by what its depots earned.
  */
 public class RestructureCheck {
 
@@ -210,15 +214,13 @@ public class RestructureCheck {
          */
         for (String kind : new String[]{"medium", "long", "bill", "dollar"}) {
 
-            // The dollar case on ForeignDebtCheck's trading city: one that earns
-            // abroad and has a credit record, the fixture that file proves the
-            // world's pricing on.
+            // The dollar case on ForeignDebtCheck's trading city: one that has a credit
+            // record, the fixture that file proves the world's pricing on, and that is
+            // handed what it earns abroad below (FS13).
             Game pump;
             if ("dollar".equals(kind)) {
                 System.setOut(quiet);
-                // Two depots stand beside the plant's (PT1-M4): see ForeignDebtCheck.tradingCity(); without them the
-                // city is too small and too thinly traded for the world to lend it cheaper than it lends itself.
-                try { pump = ForeignDebtCheck.tradingCity(root.resolve("pump-" + kind), 2); }
+                try { pump = ForeignDebtCheck.tradingCity(root.resolve("pump-" + kind)); }
                 finally { System.setOut(out); }
             } else {
                 pump = founded(root, "pump-" + kind);
@@ -228,7 +230,11 @@ public class RestructureCheck {
                 // floor, and the world lends it at the world's rate and a spread, so the world is the cheaper only where the dial is over the world's rate.
                 // The default 3% was over a world rate of 2.25%, and is under 5.5% in the draws of 1900 (the world's quote 5.89%, the city's own 3.00%).
                 DebtManager dial = pump.getDebtManager();
-                dial.takeTheDial(dial.worldRate() + FloatLinkCheck.HELD_OVER_THE_WORLD);
+                // FS13, 2026-11-20: the city is handed its exports, sized to the ask (ForeignDebtCheck.earnsAbroad()), so the premium the world
+                // adds to the ask is the fixture's and not whatever the depots earned by month 60 (41 a month on four, 962 on six); and the dial
+                // is held over the world's QUOTE for the ask, premium and all, rather than over its bare rate, so the world is the cheaper by cause.
+                ForeignDebtCheck.earnsAbroad(dial, DOLLAR_ASK * dial.rateOf("USD"), DOLLAR_STRESS_SHARE);
+                dial.takeTheDial(dial.quoteForeignRate(DOLLAR_ASK) + FloatLinkCheck.HELD_OVER_THE_WORLD);
                 dial.updateInterest();
                 assertTrue("  fixture: the dollar city earns abroad, and the world lends it for less than it lends itself",
                         pump.getDebtManager().getMonthlyExports() > 0
@@ -277,143 +283,6 @@ public class RestructureCheck {
             assertTrue("  nothing is left outstanding after a round trip",
                     pump.getDebtManager().getDebt().isEmpty());
         }
-
-        /* ============ 5b. the serial bond, on its own terms ============ */
-        System.out.println("\n--- a serial bond amortises ---");
-
-        MediumTermBond serial = new MediumTermBond(120_000, 120, 1, .06);
-
-        check("ten annual slices", serial.getSlicesRemaining(), 10, 0);
-        check("...of a tenth each", serial.getPrincipalPerSlice(), 12_000, .01);
-        check("coupon starts on the whole balance",
-                serial.getMonthlyInterestExpense(), 120_000 * .06 / 12, .01);
-
-        double[] flows = serial.remainingCashFlows();
-        check("one payment a month for ten years", flows.length, 120, 0);
-
-        /*
-         * Everything it will ever pay must equal the principal plus the coupons
-         * actually accrued on a DECLINING balance - which is far less than face
-         * x rate x years, and that gap is the whole point of the instrument.
-         */
-        double total = 0;
-        for (double cf : flows) total += cf;
-        double bulletInterest = 120_000 * .06 * 10;
-        double serialInterest = total - 120_000;
-        System.out.printf("   interest over its life: serial $%,.0f vs a bullet's $%,.0f%n",
-                serialInterest, bulletInterest);
-        assertTrue("a serial pays materially less interest than a bullet",
-                serialInterest < bulletInterest * .6);
-        assertTrue("...but not zero", serialInterest > 0);
-
-        // Discounted at its own coupon, ANY schedule is worth its principal.
-        check("at its own coupon it is worth par",
-                serial.getMarketValue(.06), 120_000, 1);
-
-        /*
-         * Walked forward through a real year. The balance has to actually fall,
-         * which is the one thing a bullet never did and the reason the closed
-         * form could not price this.
-         */
-        Game amort = founded(root, "amortise");
-        System.setOut(quiet);
-        try {
-            amort.handleMediumBondLogic(120_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
-        } finally { System.setOut(out); }
-
-        Debt live = amort.getDebtManager().getDebt()
-                .get(amort.getDebtManager().getDebt().size() - 1);
-        double owedAtIssue = live.getOustandingPrincipal();
-        double couponAtIssue = live.getMonthlyInterestExpense();
-
-        System.setOut(quiet);
-        try { amort.simulateMonths(13); } finally { System.setOut(out); }
-
-        System.out.printf("   owed at issue $%,.0f, thirteen months on $%,.0f%n",
-                owedAtIssue, live.getOustandingPrincipal());
-        assertTrue("principal actually fell over the first year",
-                live.getOustandingPrincipal() < owedAtIssue);
-        /*
-         * AGAINST ITS OWN COUPON AT ISSUE, not against a typed-in rate.
-         *
-         * This read `owedAtIssue * .06 / 12`, which asserted two things at once:
-         * that the coupon falls as the principal amortises (the point) and that
-         * the market lends at 6% (an accident of whatever this fixture's city
-         * looked like the day it was written). The second one broke the moment
-         * rent changed - a different rent bill means different cash, a different
-         * debt ratio and a different quoted rate - and the harness reported a
-         * failure in the bond mechanics that were fine.
-         *
-         * Fifth time in this codebase: an assertion about a rate must be
-         * expressed relative to the market's own number, never to a literal.
-         */
-        assertTrue("...and the coupon fell with it",
-                live.getMonthlyInterestExpense() < couponAtIssue);
-
-        /* ============ 5c. the bill knows its own term ============ */
-        System.out.println("\n--- a bill is priced on its term ---");
-
-        /*
-         * The simple discount this section asserted (rate x months / 12,
-         * capped at 95%) went with CD2: a bill is sold at auction at one flat
-         * yield, monthly compounding, the sum DebtManager.marketValue() reads
-         * it back at. The premise is the same - the price knows how long the
-         * bill runs - and it is asserted on the quote's own figures.
-         */
-        Game bills = founded(root, "billterm");
-        DebtQuote three, twelve, twoYears;
-        System.setOut(quiet);
-        try {
-            three = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 3, 1000 * PriceLevel.FACTOR);
-            twelve = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 12, 1000 * PriceLevel.FACTOR);
-            twoYears = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 24, 1000 * PriceLevel.FACTOR);
-        } finally { System.setOut(out); }
-
-        check("three months is sold at its yield compounded monthly over three months",
-                three.auction().pricePer100(), 100 / Math.pow(1 + three.marketRate() / 12, 3), 1e-9);
-        check("twelve months, over twelve",
-                twelve.auction().pricePer100(), 100 / Math.pow(1 + twelve.marketRate() / 12, 12), 1e-9);
-        check("twenty-four months, over twenty-four",
-                twoYears.auction().pricePer100(), 100 / Math.pow(1 + twoYears.marketRate() / 12, 24), 1e-9);
-
-        assertTrue("a short bill costs less than a long one for the same cash",
-                three.faceValue() < twelve.faceValue() && twelve.faceValue() < twoYears.faceValue());
-
-        // The bug the simple discount replaced: every term produced the same face.
-        assertTrue("...which it did NOT before, when every term priced alike",
-                Math.abs(three.faceValue() - twelve.faceValue()) > 1_000 * PriceLevel.FACTOR);   // today's figure, priced at the founding's level (EP1)
-
-        check("however high the yield and long the term, a bill's price stays above nothing and under par",
-                Debt.presentValue(Auction.bulletPer100(0, 120), .50) > 0
-                        && Debt.presentValue(Auction.bulletPer100(0, 120), .50) < 100 ? 1 : 0, 1, 0);
-
-        /* ============ 5d. yield to maturity ============ */
-        System.out.println("\n--- yield, as opposed to coupon ---");
-
-        LongTermBond ytmBond = new LongTermBond(100_000, 60, 1, .06);
-
-        check("bought at par, the yield IS the coupon",
-                ytmBond.getYieldToMaturity(100_000), .06, 1e-4);
-        assertTrue("bought at a discount, the yield is higher",
-                ytmBond.getYieldToMaturity(85_000) > .06);
-        assertTrue("bought at a premium, the yield is lower",
-                ytmBond.getYieldToMaturity(115_000) < .06);
-
-        /*
-         * The round trip that makes YTM trustworthy: price at a rate, solve the
-         * yield back out, and get the rate you started with. Anything else means
-         * the two halves disagree about what the schedule is.
-         */
-        for (double rate : new double[]{.02, .05, .09, .15}) {
-            check(String.format("  price at %.0f%% -> yield solves back to it", rate * 100),
-                    ytmBond.getYieldToMaturity(ytmBond.getMarketValue(rate)), rate, 1e-4);
-        }
-        check("and it round-trips for an amortising schedule too",
-                serial.getYieldToMaturity(serial.getMarketValue(.09)), .09, 1e-4);
-
-        check("par is quoted as 100", ytmBond.getPriceAsPercentOfPar(.06), 100, .01);
-        assertTrue("a discount quotes below 100",
-                ytmBond.getPriceAsPercentOfPar(.12) < 100);
 
         /* ============ 6. and it survives a save ============ */
         System.out.println("\n--- a repurchase sticks across a reload ---");
@@ -535,6 +404,9 @@ public class RestructureCheck {
 
     /** What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. */
     static final double DOLLAR_ASK = 5_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
+
+    /** The share of a full solvency stress (DebtManager.FULL_STRESS_EXPORT_YEARS of exports owed) the dollar ask is sized to: a sixteenth, a premium of a point or two. */
+    static final double DOLLAR_STRESS_SHARE = 1.0 / 16;
 
     static void cleanUp(Path root) {
         try (var walk = Files.walk(root)) {

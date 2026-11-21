@@ -361,8 +361,10 @@ public abstract class Sector {
         // template, how many of it, and the posts and the spare workers per band.
         private final Sector owner;
         private final BuildingsTemplate template;
-        private final int count;
+        private final long count;
         private final double[] wantedCopy, spareCopy, drawnCopy;
+        // The refusals tied with this one at its share, in the order the planner met them (TQ1; held()); empty for none.
+        private final List<Staffing> tiedWith;
 
         /** Always staffable: a building with no posts, or nobody to ask. */
         static final Staffing ANY = new Staffing(1, 1, new double[0], new double[0], new double[0], new boolean[0],
@@ -383,7 +385,7 @@ public abstract class Sector {
          * @param drawn    the workers per band migration would bring for the order within GATE_DRAW_MONTHS
          */
         Staffing(double share, double shareNow, double[] wanted, double[] spare, double[] above, boolean[] comeFor,
-                 double[] drawn, Sector owner, BuildingsTemplate template, int count) {
+                 double[] drawn, Sector owner, BuildingsTemplate template, long count) {
             this.owner = owner;
             this.template = template;
             this.count = count;
@@ -397,6 +399,23 @@ public abstract class Sector {
                 if (wanted[b] > 0 && nobodyCanFill(spare[b], above[b], comeFor[b])) none = WageBand.values()[b];
             }
             this.unfillable = none;
+            this.tiedWith = List.of();
+        }
+
+        /** This refusal again, with {@code tied} met at the same share added to the refusals tied with it (TQ1; held()). */
+        private Staffing(Staffing kept, Staffing tied) {
+            this.owner = kept.owner;
+            this.template = kept.template;
+            this.count = kept.count;
+            this.wantedCopy = kept.wantedCopy;
+            this.spareCopy = kept.spareCopy;
+            this.drawnCopy = kept.drawnCopy;
+            this.share = kept.share;
+            this.shareNow = kept.shareNow;
+            this.unfillable = kept.unfillable;
+            List<Staffing> all = new ArrayList<>(kept.tiedWith);
+            all.addAll(tied.alike());
+            this.tiedWith = List.copyOf(all);
         }
 
         /** The sector that asked, or null for the always-staffable answer. */
@@ -406,7 +425,7 @@ public abstract class Sector {
         public BuildingsTemplate template() { return template; }
 
         /** How many of it were asked about at once (0 for the always-staffable answer). */
-        public int count() { return count; }
+        public long count() { return count; }
 
         /** The posts the order has per band (a copy). */
         public double[] wanted() { return wantedCopy.clone(); }
@@ -453,6 +472,50 @@ public abstract class Sector {
                             shareNow * 100, a, building, share * 100, arrivalsWords(), MIN_STAFFABLE_TO_ORDER * 100)
                     : String.format("the city could staff %.0f%% of %s %s, now or with %s; it wants %.0f%%",
                             share * 100, a, building, arrivalsWords(), MIN_STAFFABLE_TO_ORDER * 100);
+        }
+
+        /** Why not, for the building it was asked about (TQ1: a hold names its own template). */
+        public String why() {
+            return why(template == null ? null : template.getName());
+        }
+
+        /* ----- A TIE AT THE GATE IS SHARED (TQ1, 2026-11-16) -----
+         * A planner whose buildings the gate refused all hands one hold to WantedPosts (LD1), the refusal nearest to
+         * passing: the larger share. Refusals at the same share are tied, and the tie is shared: the hold keeps every
+         * one of them (alike()), Game.noteStaffingHold() notes each, and each asks for its part of its posts, one of
+         * as many as tied (WantedPosts.Ask.part()). The words name the first the planner met; nothing priced does.
+         *
+         * WHY. In a city with no spare, every template at or below the diploma band shares drawn/posts, snapped to
+         * DRAWN_SHARE_GRID (GW1), so the refused templates tie exactly, and the strict > the thirteen planners each
+         * wrote gave every hold to the template listed first. Measured on main 0.9.129's default playtest: a tie
+         * decided 638 of its 3,502 holds, 278 of Construction's 305 (a Builders' Yard's 20 posts priced, never the
+         * Construction Depot's 50), 226 of Restaurants' 467, 103 of Manufacturing's 522, and in 636 of the 638 the
+         * first listed was the smallest, so the founding's wage was bid on the smallest building of each tie. Before
+         * the snap, float noise broke the tie as it fell, and GW1's run that way (c3ca14fb) had none of the costs its
+         * snapped run had: H2 vacuous, a deflating founding, A2's longer spells (docs/queue/GW1-notes.md, 5).
+         * Shared is that noise's expectation, every month, and the order a sector lists its buildings in decides
+         * nothing. docs/queue/TQ1-notes.md has the other ways (the fewest posts, the most, the planner's own score).
+         */
+
+        /**
+         * Of the refusals a planner has met so far and the one it meets now, the one it keeps as its hold: the
+         * larger share, and at the same share both, tied (above). The thirteen planners that hand a hold to
+         * WantedPosts (LD1) all keep it here. Null for none so far.
+         */
+        public static Staffing held(Staffing kept, Staffing refused) {
+            if (kept == null) return refused;
+            if (refused == null) return kept;
+            if (refused.share > kept.share) return refused;
+            return refused.share == kept.share ? new Staffing(kept, refused) : kept;
+        }
+
+        /** This refusal and those tied with it at its share (held()), this one first: a list of one for no tie. */
+        public List<Staffing> alike() {
+            if (tiedWith.isEmpty()) return List.of(this);
+            List<Staffing> all = new ArrayList<>(tiedWith.size() + 1);
+            all.add(this);
+            all.addAll(tiedWith);
+            return Collections.unmodifiableList(all);
         }
 
         /** The window the gate counts, in words: "a year's arrivals" at GATE_DRAW_MONTHS of 12 (GW1). */
@@ -512,7 +575,7 @@ public abstract class Sector {
 
     /** The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. */
     public Staffing staffing(BuildingsTemplate t) {
-        return staffing(t, 1);
+        return staffing(newUnit(t), 1, true, false);
     }
 
     /**
@@ -525,11 +588,18 @@ public abstract class Sector {
      * depend on it, so the answer is found by halving.
      */
     public int staffableCount(BuildingsTemplate t, int wanted) {
-        if (wanted <= 0 || !staffing(t, 1).passes()) return 0;
-        int lo = 1, hi = wanted;
+        // never more than wanted, so it fits the int it came in as
+        return (int) staffableCount(t, (long) wanted);
+    }
+
+    /** ...for an order or a stack that may pass 2^31 (SQ1). */
+    public long staffableCount(BuildingsTemplate t, long wanted) {
+        NewUnit u = wanted <= 0 ? null : newUnit(t);
+        if (wanted <= 0 || !staffing(u, 1, true, false).passes()) return 0;
+        long lo = 1, hi = wanted;
         while (lo < hi) {
-            int mid = (lo + hi + 1) >>> 1;
-            if (staffing(t, mid).passes()) lo = mid; else hi = mid - 1;
+            long mid = (lo + hi + 1) >>> 1;
+            if (staffing(u, mid, true, false).passes()) lo = mid; else hi = mid - 1;
         }
         return lo;
     }
@@ -554,8 +624,13 @@ public abstract class Sector {
     static final double DRAWN_SHARE_GRID = 1e-9;
 
     /** The same test for {@code count} of these at once. */
-    public Staffing staffing(BuildingsTemplate t, int count) {
-        return staffing(t, count, true, false);
+    public Staffing staffing(BuildingsTemplate t, long count) {
+        return staffing(newUnit(t), count, true, false);
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts, the template it is of in the answer. */
+    public Staffing staffing(NewUnit u, long count) {
+        return staffing(u, count, true, false);
     }
 
     /**
@@ -566,8 +641,8 @@ public abstract class Sector {
      * in months 8 to 10 of FoundingYardCheck's village, 0.46 to 0.76 before BA1), the builders-first rule stayed off and
      * the village's depot opened in month 49 against main's 22.
      */
-    public Staffing staffingWithOwnSites(BuildingsTemplate t, int count) {
-        return staffing(t, count, true, true);
+    public Staffing staffingWithOwnSites(BuildingsTemplate t, long count) {
+        return staffing(newUnit(t), count, true, true);
     }
 
     /**
@@ -581,11 +656,15 @@ public abstract class Sector {
      * test passes is one a working builder's crews, or another sector's
      * withheld posts, caused.
      */
-    public Staffing staffingWithCrewsSpare(BuildingsTemplate t, int count) {
-        return staffing(t, count, false, false);
+    public Staffing staffingWithCrewsSpare(BuildingsTemplate t, long count) {
+        return staffing(newUnit(t), count, false, false);
     }
 
-    private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor, boolean ownSitesInCount) {
+    /** One new building of `t` as it would open now (QN1, NewUnit.of()): what this sector's estimates and gates read of it. */
+    protected NewUnit newUnit(BuildingsTemplate t) { return NewUnit.of(game, t); }
+
+    private Staffing staffing(NewUnit u, long count, boolean crewsSpokenFor, boolean ownSitesInCount) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || game == null) return Staffing.ANY;
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
@@ -622,9 +701,9 @@ public abstract class Sector {
             double[] withSites = posts.clone();
             // ...less t's own on site where they are among the count asked (staffingWithOwnSites()).
             BuildingsStacks own = ownSitesInCount ? bm.getStack(t) : null;
-            int ownOnSite = own == null ? 0 : Math.max(0, own.getUnderConstruction());
+            long ownOnSite = own == null ? 0 : Math.max(0, own.getUnderConstruction());
             for (JobType job : JobType.values()) {
-                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job) - (double) t.getJobs(job) * ownOnSite;
+                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job) - (double) u.getJobs(job) * ownOnSite;
             }
             posts = withSites;
         }
@@ -634,7 +713,7 @@ public abstract class Sector {
         double[] wanted = new double[WageBand.values().length];
         double total = 0;
         for (JobType job : JobType.values()) {
-            double n = t.getJobs(job) * (double) Math.max(1, count);
+            double n = u.getJobs(job) * (double) Math.max(1, count);
             if (n <= 0) continue;
             wanted[WageBand.of(job).ordinal()] += n;
             total += n;
@@ -825,18 +904,39 @@ public abstract class Sector {
     public double getHealthRatio()  { return healthRatio; }
 
     /** How many of its buildings stand, finished (0.7.30): none is "no plant standing" on its pages, not a rate. */
-    public int buildingsStanding() {
-        return buildings == null ? 0 : (int) Math.round(buildings.totalBySector(key, t -> 1));
+    public long buildingsStanding() {
+        return buildings == null ? 0 : Math.round(buildings.totalBySector(key, t -> 1));
     }
 
     /** ...and how many are on site, for anyone's order (0.7.30). */
-    public int buildingsOnSite() {
+    public long buildingsOnSite() {
         return buildings == null ? 0 : buildings.getUnderConstructionBySector(key);
     }
 
     /** How much of nameplate actually runs: staffing times the five ratios, the fifth being its freight (getFreightRatio()). */
     public double getOperatingRate() {
-        return averageFill * energyRatio * waterRatio * roadRatio * healthRatio * getFreightRatio();
+        return averageFill * getPowerRatio() * waterRatio * roadRatio * healthRatio * getFreightRatio();
+    }
+
+    /**
+     * The share of the plant its power lets run (R1d, R0c star 8): the grid's ratio on the electric share, and the steam share whole, since a
+     * boiler burning its own coal does not wait on the grid. getEnergyRatio() with no steam, to the bit.
+     */
+    public double getPowerRatio() {
+        return steamShare > 0 ? steamShare + (1 - steamShare) * energyRatio : energyRatio;
+    }
+
+    /** The share of the plant on the grid, 1 - getSteamShare(): what a point more of the grid's ratio adds to getPowerRatio() (R1d; WorksValue's power). */
+    public double getElectricShare() { return steamShare > 0 ? 1 - steamShare : 1; }
+
+    /**
+     * What the plant's value added would be at a whole grid, per point of the grid's ratio (R1d): value added over the power ratio, times the
+     * electric share; valueAdded / getEnergyRatio() with no steam, to the bit. 0 when the plant runs on no power at all.
+     */
+    public double perPointOfGrid(double valueAdded) {
+        double power = getPowerRatio();
+        if (!(power > 0)) return 0;
+        return steamShare > 0 ? valueAdded * (1 - steamShare) / power : valueAdded / power;
     }
 
     /** Charged for what was DELIVERED, not asked for - the utility books the same slice. */
@@ -1482,14 +1582,15 @@ public abstract class Sector {
 
     /**
      * What a unit of an input costs it to bring in when the month's inputs are costed (inputCostAtRate()): the local price where somebody here
-     * offers it, the import price where nobody does (GoodsMarket.landedPrice()) - not the price struck on a month nobody bid (WN3, THE ORDER: a
+     * offers it, the import price where nobody does (GoodsMarket.currentLandedPrice()) - not the price struck on a month nobody bid (WN3, THE ORDER: a
      * works that stopped ordering an input would find it cheap, ordering again would make it dear, and the works would run every other month on a
-     * price its own order set). The same figure whenever somebody offers the input or the works bids for it, as it always did.
+     * price its own order set). GDP1: price that last clearing's supply and demand on the current band, so FL1 and the stockable forecast do not
+     * make their run decision on last month's world, exchange or freight prices. The recorded clearing price is left alone.
      */
     protected double inputPrice(Good g) {
         if (markets == null) return 0;
         GoodsMarket m = markets.get(g);
-        return m == null ? 0 : m.landedPrice();
+        return m == null ? 0 : m.currentLandedPrice();
     }
 
     /**
@@ -1541,7 +1642,8 @@ public abstract class Sector {
 
     /** ...and what is on site, which counts as supply for the planner. */
     public double getPipeline(Good g) {
-        return buildings == null ? 0 : buildings.underConstructionBySector(key, t -> t.makes(g));
+        // ...each on its new buildings' own output (QN1): a site opens on the recipe a new building would run.
+        return buildings == null ? 0 : buildings.underConstructionOfNew(key, u -> u.makes(g));
     }
 
     /** Input a good needs a month at nameplate, across its buildings. */
@@ -1851,6 +1953,11 @@ public abstract class Sector {
         /** The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.123, batch I4; sellOldMetal()), named apart at the strike. */
         public double oldMetalSold;
         /**
+         * The part of otherRevenue that is upkeep sold to the city's services and the bank (HL1; sellUpkeep()), named apart at the strike;
+         * its cash left the buyer's pool when it was booked and reaches this till at bank(), and MoneyAudit.pools() counts it in between.
+         */
+        public double upkeepSold;
+        /**
          * What it pays the city this month for a service the city sells and
          * no business does (FR3, payTheCity()): the port dues. In inputs and
          * named in otherInputs, so the opened cost line adds up; in no
@@ -1870,6 +1977,7 @@ public abstract class Sector {
         void clear() {
             localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
             oldMetalSold = 0;
+            upkeepSold = 0;
             paidToCity = 0;
             purchasesBySupplier.clear();
             capitalBySupplier.clear();
@@ -1890,6 +1998,7 @@ public abstract class Sector {
             localSales *= s; exports *= s; otherRevenue *= s; imports *= s; salesToHouseholds *= s;
             paidEarlier *= s;
             oldMetalSold *= s;
+            upkeepSold *= s;
             paidToCity *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             capitalBySupplier.replaceAll((k, v) -> v * s);
@@ -2192,6 +2301,22 @@ public abstract class Sector {
         pending.oldMetalSold += amount;
     }
 
+    /** The name of the upkeep sold, in a statement's otherParts (HL1). */
+    public static final String UPKEEP_SOLD = "Upkeep work";
+
+    /**
+     * ...and upkeep sold (HL1; BusinessServices.sellUpkeep()): other revenue
+     * like any, named apart on the income statement as UPKEEP_SOLD whatever
+     * the sector calls the rest of its other revenue (strike()). The buyer's
+     * cash has already left its pool; this till gets it at bank(), and the
+     * audit counts it in between (MoneyAudit.pools()).
+     */
+    protected final void bookUpkeepSold(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.otherRevenue += amount;
+        pending.upkeepSold += amount;
+    }
+
     /**
      * ...and a price given back (0.7.19): the builders' refund of material
      * escalation to an owner whose material cost less when it was drawn than
@@ -2285,6 +2410,11 @@ public abstract class Sector {
      * bought on an ordinary market and the call would go away; it went in
      * 0.7.62 (batch K), when the railway began drawing FUEL (Freight.haul()).
      */
+
+    /** Imported patent rent, banked with this month's other service inputs (R2c). */
+    public final void bookLicenceFee(double amount) {
+        bookImportedService(LicenceFees.IP_CHARGES, amount);
+    }
 
     /**
      * ...AND ONE AGAIN SINCE 0.7.91 (batch O10; spec-oil 2.7): the shuttle
@@ -2422,13 +2552,14 @@ public abstract class Sector {
         // ...and what it paid the city (FR3), added only when there is some: a zero added is not always nothing.
         if (pending.paidToCity != 0) s.inputs += pending.paidToCity;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
-        if (pending.oldMetalSold != 0) {
-            // ...its old steel sold named apart (0.7.123, sellOldMetal()): the
-            // sector names the rest, then the whole is put back.
-            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold;
+        if (pending.oldMetalSold != 0 || pending.upkeepSold != 0) {
+            // ...its old steel sold named apart (0.7.123, sellOldMetal()) and its upkeep sold (HL1,
+            // sellUpkeep()): the sector names the rest, then the whole is put back.
+            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold - pending.upkeepSold;
             s.otherParts = nameOtherRevenue();
             s.otherRevenue = pending.otherRevenue;
-            s.otherParts.merge(OldMetal.SOLD, pending.oldMetalSold, Double::sum);
+            if (pending.oldMetalSold != 0) s.otherParts.merge(OldMetal.SOLD, pending.oldMetalSold, Double::sum);
+            if (pending.upkeepSold != 0) s.otherParts.merge(UPKEEP_SOLD, pending.upkeepSold, Double::sum);
         } else {
             s.otherParts = nameOtherRevenue();
         }
@@ -2579,7 +2710,8 @@ public abstract class Sector {
      * against demand that does not depend on what it did last month, or a
      * throttle driven off its own sales deadlocks - zero output makes zero
      * purchases makes zero output. Nobody has told a new market anything, so
-     * a maker with no signal fills its shed to the dump line and stops.
+     * a maker with no signal fills its shed to the dump line only when its
+     * output can sell for at least the inputs it costs, then stops (CPB1).
      */
     protected double plannedDemand(Good g) {
         GoodsMarket m = markets == null ? null : markets.get(g);
@@ -2598,10 +2730,35 @@ public abstract class Sector {
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         if (!g.stockable()) return nameplate;
         double demand = plannedDemand(g);
+        // CPB1: an undemanded buffer must cover its feed at the price it can
+        // sell for. Use the recipe's current input cost, including captive
+        // inputs and co-products; actual home and captive demand keep running.
+        // CPB2: a NaN price never authorises the feed (bufferSalePrice()).
+        if (!(demand > 0) && markets != null) {
+            GoodsMarket market = markets.get(g);
+            if (market != null && bufferSalePrice(market) < flowCostPerUnit(g)) return 0;
+        }
         double target = demand > 0
                 ? demand * STOCK_MONTHS
                 : getStockCapacity(g) * DUMP_THRESHOLD;
         return Math.max(0, Math.min(nameplate, target - getStock(g)));
+    }
+
+    /**
+     * What a unit of an undemanded buffer can sell for, for the buffer gate in
+     * getPlannedOutput() (CPB2): its net export price where the world buys the
+     * good, and nothing where it does not. WHY: VANS, TRUCKS, ROLLING_STOCK and
+     * LUXURIES have no world buyer, so their net export price is NaN, and
+     * `NaN < cost` is false: the gate never refused, and a van plant nobody had
+     * asked for filled its shed toward the dump line on imported machinery, for
+     * a good whose only outlet is a home demand the market had not shown. A city
+     * that does ask for vans is served by the demand branch, at STOCK_MONTHS of
+     * cover, from the next strike (★ CPB2: nothing, not the local price, which
+     * with no demand is a price nobody paid).
+     */
+    static double bufferSalePrice(GoodsMarket market) {
+        double net = market.netExportPrice();
+        return Double.isFinite(net) ? net : 0;
     }
 
     /**
@@ -2628,7 +2785,22 @@ public abstract class Sector {
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         double spare = Math.max(0, nameplate - getPlannedOutput(g));
         if (spare <= 0) return 0;
-        return markets.get(g).netExportPrice() >= getMarginalCostPerUnit(g) ? spare : 0;
+        double net = markets.get(g).netExportPrice();
+        /*
+         * CPB2: WHILE THE MONTH'S FEED IS ORDERED (planOrders()), the ship's
+         * line must also cover its recipe's inputs - flowCostPerUnit(), the
+         * cost the buffer gate in getPlannedOutput() reads - and not only its
+         * share of the joint bill by sales value (costShareOf()). That share
+         * charged cathode beside a rod mill less than its own anode, so the
+         * buffer the gate refused came back here as export spare, forecastOrder()
+         * saw a full run, and the anode was imported to ship cathode below its
+         * cost. Once the feed is in (committed, or bought for a forecast that
+         * ran high) it is sunk, and the line ships at the marginal cost as
+         * before; a sector that does not order for what it makes (the refiners'
+         * crude is the run's) never reaches this.
+         */
+        if (deciding && !(net >= flowCostPerUnit(g))) return 0;
+        return net >= getMarginalCostPerUnit(g) ? spare : 0;
     }
 
     /**
@@ -2822,7 +2994,7 @@ public abstract class Sector {
     }
 
     /**
-     * The share of its nameplate a flow good is made at this month (THE ORDER, FL1): the share of the run of the buildings that make it, nameplate-weighted -
+     * The share of its nameplate a good is made at this month (THE ORDER, FL1; stock too since CPB1): the share of the run of the buildings that make it, nameplate-weighted -
      * what buildingOrder() orders their inputs for - and not the good's own share, because a by-product comes out of the run whatever it fetches. WHY: the
      * Copper Smelter orders its concentrate for the whole run when its acid has a home buyer, but made 17% of its anode when the anode sold under its
      * inputs, and the rest of the concentrate was lost. Exactly 1 where every building's order is 1 (x * 1.0 is x, so the two sums are one sum); the good's own
@@ -2899,7 +3071,8 @@ public abstract class Sector {
        A stockable good's order share is what the month will make of it for the
        home market and the ship (getPlannedOutput() + getExportBoundOutput(),
        asked at the stock it expects to hold once the shed has sold what the
-       market will take of it) over its nameplate past what its own works use;
+       market will take of it), plus its own works' captive need, over its
+       whole nameplate (CPB1: the captive part must still order its feed);
        a building's is the greatest of its traded goods', flow or stockable
        (1 when it makes nothing traded; a flow good's is FL1's, below).
        planOrders() fixes the shares once, at the top of the market
@@ -3026,13 +3199,57 @@ public abstract class Sector {
      * to make for the market.
      */
     private double forecastOrder(Good g) {
-        double market = madeAtRate(g) - (captive(g) ? captiveUnits(g) : 0);
+        double nameplate = madeAtRate(g);
+        double own = captive(g) ? captiveUnits(g) : 0;
+        double market = nameplate - own;
         GoodsMarket m = markets.get(g);
         if (!(market > 0) || m == null) return 1;
         double held = getStock(g);
         double offered = m.getLocalPrice() >= getMarginalCostPerUnit(g) ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
         double made = whenHolding(g, held - Math.min(offered, plannedDemand(g)), () -> getPlannedOutput(g) + getExportBoundOutput(g));
-        return made >= 0 ? Math.min(1, made / market) : 1;
+        return made >= 0 ? (made >= market ? 1 : shareAboveFloors(g, (own + made) / nameplate)) : 1;
+    }
+
+    /**
+     * The order share at which the buildings that make a stockable good, each at the greater of the share and its committed floor
+     * (buildingOrder(), committedFloor()), make `fraction` of the good's nameplate (CPB2): exactly `fraction` where no building of it has a floor.
+     * WHY: forecastOrder() divided what the month will make by the whole nameplate, as if every building ran at that share; but a scrap refinery
+     * whose recovered copper is committed runs at its floor whatever the share, so beside a rod mill the anode refinery was still ordered for its
+     * nameplate's part of the rod mill's cathode, and the cathode the committed scrap made past it shipped on imported anode below its cost.
+     */
+    private double shareAboveFloors(Good g, double fraction) {
+        if (buildings == null) return fraction;
+        // ...and nothing to solve for a sector with no committed feed this month, which is every sector but Copper Refining with recovered copper.
+        boolean committed = false;
+        for (Good u : uses) committed |= committedInput(u) > 0;
+        if (!committed) return fraction;
+        java.util.TreeSet<Double> floors = new java.util.TreeSet<>();
+        double all = buildings.totalBySector(key, t -> {
+            if (!(t.makes(g) > 0)) return 0;
+            floors.add(committedFloor(t));
+            return t.makes(g);
+        });
+        if (!(all > 0) || !(floors.last() > 0)) return fraction;
+        // The share's curve, Σ weight * max(share, floor), is flat to the lowest floor, then each group joins the share at its own floor.
+        double fixed = 0;
+        double[] f = new double[floors.size()], w = new double[floors.size()];
+        int i = 0;
+        for (double floor : floors) {
+            f[i] = floor;
+            w[i] = buildings.totalBySector(key, t -> t.makes(g) > 0 && committedFloor(t) == floor ? t.makes(g) : 0) / all;
+            fixed += w[i] * f[i];
+            i++;
+        }
+        if (fraction <= fixed) return 0;
+        double running = 0;
+        for (i = 0; i < f.length; i++) {
+            running += w[i];
+            fixed -= w[i] * f[i];
+            if (!(running > 0)) continue;
+            double share = (fraction - fixed) / running;
+            if (i + 1 == f.length || share <= f[i + 1]) return Math.max(f[i], Math.min(1, share));
+        }
+        return 1;
     }
 
     /**
@@ -3169,14 +3386,61 @@ public abstract class Sector {
             traded = true;
             most = Math.max(most, orderShare(e.getKey()));
         }
+        // CPB1: a feed already committed outside the goods market must be
+        // transformed too. Apply its floor only to buildings that use it.
+        most = Math.max(most, committedFloor(t));
         return traded ? most : 1;
     }
 
-    /** Units of an input its buildings use a month at the shares they run at (THE ORDER): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass. */
+    /** The least share of its nameplate a building runs at whatever is ordered (CPB1): what its part of a feed committed outside the goods market needs, to no more than 1; 0 for one that uses none. */
+    private double committedFloor(BuildingsTemplate t) {
+        double most = 0;
+        for (Good g : t.goodsUsed().keySet()) {
+            double committed = committedInput(g);
+            if (!(committed > 0)) continue;
+            double need = getInputAtCapacity(g) * getOperatingRate();
+            if (need > 0) most = Math.max(most, Math.min(1, committed / need));
+        }
+        return most;
+    }
+
+    /** Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. */
+    protected double committedInput(Good g) { return 0; }
+
+    /* ----- THE GROUND'S SHARE OF THE ORDER (NG1, 2026-11-20) -----
+       A works the ground limits orders its inputs for what the ground gives
+       it this month, not for its plant. WHY: an Iron Mine on a worked-out
+       field still bid the diesel of a whole month's ore after groundLimit()
+       had dug it none, and a Surface Coal Mine's diesel, a leach plant's acid
+       and a gold mill's acid and diesel went the same way, their lift the
+       nameplate the order was struck on (an empty lift reads order share 1)
+       while inputToMake() asked the whole plant's recipe. What nothing made
+       was bought, landed in the imports and became nothing: no output, no
+       stock, a fall in GDP of its value with nothing on the other side. The
+       ground is known before the inputs clear (a flow good's dig comes out
+       of produceFlow(), ahead of the market; a stockable good's lift is
+       madeAtRate()), so the order follows it, and no input is bought that
+       the month's run does not use (★ NG1: not held as stock: acid is a flow
+       good nothing holds, and diesel kept by a worked-out mine would never
+       be burned). Consumables and the fleet's diesel are not in it: they are
+       the plant's standing bills at its rate, as an idle plant's are (THE
+       ORDER leaves them out for the same reason). */
+
+    /**
+     * The share of a building's run at the rate that its ground lets it make this month (NG1): exactly 1 for a building no ground
+     * limits and wherever the ground holds its whole ask, so the order is what it was to the bit; under 1 only where the ground ran short.
+     * The ground-limited sectors say it (ExtractionSector's dig, Coal Mining's lift, Copper Mining's leach, Gold Mining's ore).
+     */
+    protected double groundShare(BuildingsTemplate t) { return 1; }
+
+    /**
+     * Units of an input its buildings use a month at the shares they run at (THE ORDER), each held to what its ground gives it
+     * (groundShare(), NG1): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass.
+     */
     protected double inputToMake(Good g) {
         if (!ordering) return getInputAtCapacity(g);
         if (buildings == null) return 0;
-        double base = buildings.totalBySector(key, t -> t.uses(g) * buildingOrder(t));
+        double base = buildings.totalBySector(key, t -> t.uses(g) * buildingOrder(t) * groundShare(t));
         // ...and a form's use of it past its buildings (R0c): this branch does not go through getInputAtCapacity(), so it adds the form itself.
         double form = formInput(g, true);
         return form > 0 ? base + form : base;
@@ -3220,6 +3484,28 @@ public abstract class Sector {
         }
     }
 
+    /** A processor's wholesale shed can ship after local fills (BF1); other sectors keep their own selling rules. */
+    public void shipUnsoldStock(Good g, GoodsMarket market) { }
+
+    /**
+     * Losing a warehouse loses the stock it cannot hold before any sale or
+     * credit reading can use it (BF1). Keep the existing write-off flow for
+     * the next accounts strike; subsequent production may lose more.
+     */
+    public void writeOffUnhousedStock() {
+        for (Good g : makes) {
+            if (!g.stockable()) continue;
+            double held = getStock(g), room = getStockCapacity(g);
+            if (held > room) {
+                output(g).writtenOff += held - room;
+                stock.put(g, room);
+            }
+        }
+    }
+
+    /** Liquid stock carried after the last plant closes: a recovery floor at realizable proceeds, otherwise zero. */
+    public double retirementRecovery() { return 0; }
+
     /**
      * Runs the month's production of a stockable good into the warehouse,
      * after the market has taken what it wanted from last month's stock.
@@ -3251,7 +3537,10 @@ public abstract class Sector {
         double rest = 0;
         Double share = ordering ? orderShares.get(g) : null;
         if (share != null) {
-            double ordered = nameplate * share;
+            // The order covers the whole run, including the captive output
+            // already counted above (CPB1); only the rest can enter the shed.
+            // A building using committed feed runs even if the buffer is cut.
+            double ordered = Math.max(0, madeAtRate(g) * flowRunShare(g) - o.captive);
             planned = Math.min(planned, ordered);
             direct = Math.min(direct, ordered - planned);
             rest = ordered - planned - direct;
@@ -3264,17 +3553,21 @@ public abstract class Sector {
         double held = getStock(g) + planned + rest;
         double room = getStockCapacity(g);
         double capped = Math.min(held, room);
-        o.writtenOff = Math.max(0, held - capped);
+        o.writtenOff += Math.max(0, held - capped);
         stock.put(g, capped);
 
         if (direct > 0 && g.exportable() && market != null) {
-            Trade t = market.record(key, Trade.WORLD, direct, market.exportPrice());
-            bookSale(t);
+            sellDirectOutput(g, market, direct);
         }
     }
 
+    /** Sells the line's surplus. Gold Mining offers it to the mint under Gold (GD4). */
+    protected void sellDirectOutput(Good g, GoodsMarket market, double units) {
+        bookSale(market.record(key, Trade.WORLD, units, market.exportPrice()));
+    }
+
     /** Units of a good taken out of stock by a local sale or an export from the shed. */
-    void takeFromStock(Good g, double units) {
+    protected void takeFromStock(Good g, double units) {
         if (!g.stockable()) return;
         stock.put(g, Math.max(0, getStock(g) - units));
     }
@@ -3364,7 +3657,15 @@ public abstract class Sector {
     public double visibleDemandOver(double months, EconomyManager economy) { return Double.MAX_VALUE; }
 
     /** What one of its templates would clear a month, for the interest test. See BusinessInvestment. */
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public final double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        return estimatedMonthlyProfit(plans != null ? plans.newUnit(t) : newUnit(t), plans);
+    }
+
+    /**
+     * ...for one new building already resolved (QN1; NewUnit): every sector's estimate reads its figures off the unit
+     * and its identity off the template the unit is of. LicenceFees prices a new building's rent on the same unit.
+     */
+    public double estimatedMonthlyProfit(NewUnit t, BusinessInvestment plans) {
         double maker = plans.estimatedMakerProfit(this, t);
         /*
          * ...WEIGHED WITH ITS FREIGHT (FR2, 2026-10-19): its BULK legs at the
@@ -3412,6 +3713,15 @@ public abstract class Sector {
 
     /** Whether a holding of this template may be sold back this month. The landlords say no to a door somebody wants. */
     public boolean mayRetire(BuildingsTemplate t) { return true; }
+
+    /**
+     * Whether this sector sells plant it is using while a lender still covers its losses (AQ1): a price taker with no
+     * demand reading, whose only shrink is the distress rule (BusinessInvestment.BLEED_MONTHS). Its own override says why.
+     */
+    public boolean bleedsWhileLent() { return false; }
+
+    /** Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. */
+    public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast) { return quantity; }
 
     /** Why nothing could be sold, when mayRetire() refused everything. */
     public String noRetirementReason(boolean distress) {

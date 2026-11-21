@@ -492,7 +492,7 @@ public class UtilitiesHandler {
     private double voll = PowerDispatch.VOLL_A_KWH, transmission = PowerDispatch.TRANSMISSION_A_KWH, distribution = PowerDispatch.DISTRIBUTION_A_KWH;
 
     /** The power plants standing and how many of each (ServicesManager); null until handed in. */
-    private Map<BuildingsTemplate, Integer> plants;
+    private Map<BuildingsTemplate, Long> plants;
 
     /** Where the month's fuel price, the exchange rate and the calendar month come from; null for a bare fixture (the world's price, at par, no season). */
     private ToDoubleFunction<Good> fuelPriceSource;
@@ -513,7 +513,7 @@ public class UtilitiesHandler {
     private Map<String, Double> fuelImportedByGood = new LinkedHashMap<>();
 
     /** The power plants standing and how many of each. */
-    public void setPlants(Map<BuildingsTemplate, Integer> standing) {
+    public void setPlants(Map<BuildingsTemplate, Long> standing) {
         this.plants = standing == null ? null : new LinkedHashMap<>(standing);
     }
 
@@ -779,9 +779,9 @@ public class UtilitiesHandler {
             double watts = (baseProduction - baseGrid()) * fill;
             if (watts > 0) rows.add(PowerDispatch.Row.fuelled("plants", watts, 0, null, 0, 0));
         } else {
-            for (Map.Entry<BuildingsTemplate, Integer> e : plants.entrySet()) {
+            for (Map.Entry<BuildingsTemplate, Long> e : plants.entrySet()) {
                 BuildingsTemplate t = e.getKey();
-                int n = e.getValue() == null ? 0 : e.getValue();
+                long n = e.getValue() == null ? 0 : e.getValue();
                 if (n <= 0) continue;
                 // The upkeep is US$ a MWh at today's level (buildings.json): over 1e6 thousands a kWh, times FACTOR the founding's dollars, as
                 // a good's world price is struck; the exchange rate (the world's price level in it) then makes it the month's city money, as it

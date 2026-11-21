@@ -1,6 +1,6 @@
-# TilePainter.java - 920 lines · 44 methods · 51 constants · model
+# TilePainter.java - 950 lines · 45 methods · 51 constants · model
 
-`ham/citybuildersim/TilePainter.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TilePainter.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway through it and the resource sites under it, what each plot is - the same picture from the same inputs, on any machine.
 > 
@@ -55,7 +55,7 @@
 > Pure: no state between calls, nothing read from the game. MapCheck holds
 > what it draws, on the drawn plots themselves.
 
-**Uses:** [BuildingVisual](BuildingVisual.md) (11), [TrackCurves](TrackCurves.md) (8), [DistrictPlan](DistrictPlan.md) (8), [World](World.md) (7), [CityRuns](CityRuns.md) (1), [CityMap](CityMap.md) (1)
+**Uses:** [BuildingVisual](BuildingVisual.md) (11), [DistrictPlan](DistrictPlan.md) (9), [TrackCurves](TrackCurves.md) (8), [World](World.md) (7), [CityRuns](CityRuns.md) (1), [CityMap](CityMap.md) (1)
 
 **Used by (26):** [BridgeMapCheck](BridgeMapCheck.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [HarbourRenders](HarbourRenders.md), [IslandRailRenders](IslandRailRenders.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [QuayRailCheck](QuayRailCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -71,8 +71,8 @@
 | 206 | · the crossings' ring (MF1, slice C) |
 | 233 | THE INPUTS AND THE PICTURE |
 | 727 | THE PAINT |
-| 824 | AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's |
-| 897 | · the mines on their sites |
+| 830 | AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's |
+| 903 | · the mines on their sites |
 
 ## Constants
 
@@ -206,7 +206,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 862 | **type** `public final class TilePainter` | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway... |
+| 59 | 892 | **type** `public final class TilePainter` | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway... |
 | 61 | 1 | `private TilePainter()` |  |
 
 ### what a plot is (lines 69-97)
@@ -272,23 +272,24 @@
 | 710 | 10 | `public static int kindOf(int code)` | A street code's painted kind: GRAVEL, PAVED, HIGHWAY (a highway's plots laid as a street) or TRACK - a seam no district surfaced is a track - and 0 for none or a street beneath a highway. |
 | 722 | 4 | `public static byte roleOf(int code)` | A street code's role as painted: STREET, ARTERIAL or BOULEVARD. |
 
-### THE PAINT (lines 727-823)
+### THE PAINT (lines 727-829)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 732 | 91 | `public static void paint(Input in, Painted p)` | Paints a tile from its inputs into p. |
+| 732 | 97 | `public static void paint(Input in, Painted p)` | Paints a tile from its inputs into p. |
 
-### AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's (lines 824-896)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 840 | 34 | `static void atSea(Input in, Painted p)` | The works at sea on the tile, into p.sea and its counts. |
-| 876 | 5 | `public static boolean ringCrosses(double cx, double cy, double x, double y)` | Whether a ring of RING_PLOTS about (cx, cy) crosses the plot whose corner is (x, y): it passes between the plot's nearest point and its farthest corner. |
-| 883 | 13 | `public static boolean segmentCrosses(double ax, double ay, double bx, double by, double x, double y)` | Whether the segment from (ax, ay) to (bx, by) runs through the plot whose corner is (x, y): some length of it inside the plot (Liang-Barsky). |
-
-### the mines on their sites (lines 897-920)
+### AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the research's (lines 830-902)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 900 | 20 | `private static void standMines(Input in, Painted p)` | Each site with a mine or well on it: the mine on the whole of the site's plots here, whoever owns the ground and whatever it is - the field is the city's (0.7.64: an offshore well stands on its water, and a site of a ... |
+| 846 | 34 | `static void atSea(Input in, Painted p)` | The works at sea on the tile, into p.sea and its counts. |
+| 882 | 5 | `public static boolean ringCrosses(double cx, double cy, double x, double y)` | Whether a ring of RING_PLOTS about (cx, cy) crosses the plot whose corner is (x, y): it passes between the plot's nearest point and its farthest corner. |
+| 889 | 13 | `public static boolean segmentCrosses(double ax, double ay, double bx, double by, double x, double y)` | Whether the segment from (ax, ay) to (bx, by) runs through the plot whose corner is (x, y): some length of it inside the plot (Liang-Barsky). |
+
+### the mines on their sites (lines 903-950)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 924 | 4 | `static boolean acrossMine(Input in, Painted p, int i, int code)` | Whether plot i, a mine's, carries the plan's street `code` across it: a mine stands there (Painted.bsite), no run lies on it, and the street is one the loop paints (kindOf()), not one passing under a highway. |
+| 930 | 20 | `private static void standMines(Input in, Painted p)` | Each site with a mine or well on it: the mine on the whole of the site's plots here, whoever owns the ground and whatever it is - the field is the city's (0.7.64: an offshore well stands on its water, and a site of a ... |
 

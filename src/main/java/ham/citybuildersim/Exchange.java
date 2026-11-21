@@ -124,10 +124,10 @@ import java.util.List;
  * was raised: an ask resting on the book would fill later, or never, and
  * the building would be half-financed by a sale that had not happened.
  *
- * A SHARE THAT GETS TOO DEAR IS SPLIT, a hundred for one, and one that gets
- * too cheap is consolidated, one for a hundred, so that a count of shares
- * stays a number a person can read after three centuries of buybacks and
- * offerings. Every holder's count, every resting order and the last trade
+ * A SHARE THAT GETS TOO DEAR IS SPLIT, and one that gets too cheap is
+ * consolidated, by powers of ten within a band of the average monthly wage
+ * (SX1), so a share costs comparable hours of work over centuries.
+ * Every holder's count, every resting order and the last trade
  * move by the factor; nothing anybody owns changes in value.
  */
 public class Exchange {
@@ -347,8 +347,11 @@ public class Exchange {
      */
     public static final double BOOK_LIMIT = .50;
 
-    /** A share priced at this many times its founding price is split; at one over it, consolidated. */
-    public static final double SPLIT_AT = 100;
+    /** A share costing more than this share of the city's average monthly wage splits (SX1). */
+    public static final double SPLIT_AT = .25;
+
+    /** A share costing less than this fraction of the average monthly wage consolidates (SX1). */
+    public static final double CONSOLIDATE_BELOW = .0025;
 
     /**
      * The least a share may be worth before the market treats the company as
@@ -358,9 +361,9 @@ public class Exchange {
      * DenominationCheck's long section, a seven per cent gap on one month's
      * dealing, 2026-09-12.
      */
-    public static final double MIN_FAIR = 1e-9;
+    public static final double MIN_FAIR = PriceLevel.atFounding(1e-9);
 
-    /** The same floor in today's money. See MIN_FAIR. */
+    /** The founding-money floor in the current unit. See MIN_FAIR. */
     private double minFair = MIN_FAIR;
 
     /* =======================================================================
@@ -460,6 +463,7 @@ public class Exchange {
     private final double[] split = new double[n];                 // this month's split factor, 0 if none
     private final int[] betweenHouseholdsTrades = new int[n];
     private double ownBoughtThisMonth, ownSoldThisMonth;          // the bank's own shares, for the pace
+    private double fundLimitAsked;                                // the shares the rule asked this month past its limit (RB1), a month's figure, not saved
 
     /* ---- the shorts (EM2): the world's position in each company, the account behind it, and who lends it ---- */
     /** Whether the world sells short at all: on, the default; the checks and -Dplaytest.shorts=off switch it off to see the market without it. */
@@ -474,6 +478,14 @@ public class Exchange {
     private final double[] quoteBefore = new double[n];
     /** The month's lending fee, money, by who was paid: this month's, cleared by startMonth(). */
     private final double[] feeToCells = new double[n], feeToFund = new double[n];
+    /**
+     * What a company with no shares in issue took away from the world this month (LF1c), money at the month-end quote, for MoneyAudit: the world's own
+     * shares in it, wiped for nothing ("+ desk WorldSharesWiped", a valuation in the city's favour, as the bank resolution's owners wiped abroad),
+     * and the short it had open there, closed for nothing, the world keeping what it was paid ("- desk ShortClosedForNothing", a valuation
+     * against the city: its holders' claim on the world's short is gone). Cleared by startMonth(); not saved, as the resolution's figure is not:
+     * the audit that reads it is struck in the month that made it.
+     */
+    private double worldSharesWiped, shortClosedForNothing;
     /** What a load read of the short's dividends over the city's life, per company, until attach() hands it to the register (EM2). Null when nothing waits. */
     private double[] restoredShortPays;
     /** Over the city's life: shares sold short and their value, covered and their value, company-months an ask was posted and a short was open, margin calls and recalls, fees paid. */
@@ -526,6 +538,7 @@ public class Exchange {
             betweenHouseholdsTrades[c] = 0;
             feeToCells[c] = 0; feeToFund[c] = 0;
         }
+        worldSharesWiped = shortClosedForNothing = 0;
         ownBoughtThisMonth = 0;
         ownSoldThisMonth = 0;
     }
@@ -707,6 +720,8 @@ public class Exchange {
 
     /** What the month's trading needs to know about a company that is not on the register. */
     public interface Companies {
+        /** The city's average monthly wage, in the quote's money unit; no paid jobs means no wage band yet. */
+        default double averageMonthlyWage() { return 0; }
         /** Cash in the company's till, after anything it can bring home for this. */
         double cashAvailable(int company, double wanted);
         /** ...and what is in its till now, bringing nothing home: what a resting buyback bid may still pay. */
@@ -1180,9 +1195,16 @@ public class Exchange {
     /**
      * A company with no shares in issue and a short open: every share still held is one the world sold short and nobody issued, so
      * the cells', the desk's, the world's and the fund's market book go for nothing (Equity.cancelHeld()), the fund's cost written
-     * off in its ledger. No money moves: the buyers lose a valuation, and the world keeps what it was paid.
+     * off in its ledger. No money moves: the buyers lose a valuation, and the world keeps what it was paid. Two valuations cross the border
+     * and are declared to the audit (LF1c), at the quote the month ended at - quoteBefore, struck before the step withdrew the books, the one the
+     * position carried the world's shares at, not the last trade the empty book falls back to: the world's own shares in it, which the position
+     * counted as what the world holds here and are gone without a dollar, and the short the world had open there, closed for nothing - what it
+     * owed the buyers, which the position never held.
      */
     private void cancelShortHeld(int c) {
+        double q = quoteBefore[c] > 0 ? quoteBefore[c] : price(c);
+        worldSharesWiped += register.getForeignShares(c) * q;
+        shortClosedForNothing += shortShares[c] * q;
         if (households != null) households.surrenderShares(c);
         double fundHeld = register.cancelHeld(c);
         if (fund != null && fundHeld > OrderBook.DUST) fund.getLedger().sharesGone(Equity.COMPANIES[c], month);
@@ -1598,15 +1620,22 @@ public class Exchange {
      * withdrawal's and the price-driven sales beside it.
      */
     private void postFundOverLimit() {
+        fundLimitAsked = 0;
         if (fund == null || register == null) return;
         for (int c = 0; c < n; c++) {
             double mine = register.getCityMarketShares(c);
             double inIssue = register.getShares(c);
             if (!(mine > 0) || !(inIssue > 0) || fair[c] <= minFair) continue;
             double q = Math.min(mine, TreasuryFund.limitSale(mine, inIssue));
-            if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
+            if (q > OrderBook.DUST) {
+                submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
+                fundLimitAsked += q;
+            }
         }
     }
+
+    /** The shares the rule asked this month past OWNERSHIP_LIMIT (postFundOverLimit(), RB1): 0 in a month no holding was over it. A month's figure, not saved. */
+    public double getFundLimitAsked() { return fundLimitAsked; }
 
     /**
      * THE CITY'S FUND, BY ITS RULE AND THEN BY THE PLAYER'S HAND
@@ -2183,20 +2212,23 @@ public class Exchange {
        ===================================================================== */
 
     /**
-     * A split or a consolidation, by a power of ten, for any share priced a
-     * hundred times its founding price or a hundredth of it. Every count on
+     * A split or a consolidation, by a power of ten, outside the wage band.
+     * Its geometric middle is the price yardstick. Every count on
      * the register, in every household, on the desk and on the book moves by
      * the factor; every price by its inverse. Value is untouched.
      */
     private void splitWhatNeedsIt() {
+        double wage = companies == null ? 0 : companies.averageMonthlyWage();
+        if (!(wage > 0) || !Double.isFinite(wage)) return;
+        double target = wage * Math.sqrt(SPLIT_AT * CONSOLIDATE_BELOW);
         for (int c = 0; c < n; c++) {
             if (register.getShares(c) <= 0) continue;
             // A company worth nothing is not consolidated into nothing.
             if (fair[c] <= minFair) continue;
-            double ratio = price(c) / register.foundingPrice();
-            if (ratio < SPLIT_AT && ratio > 1 / SPLIT_AT) continue;
-            double k = Math.pow(10, Math.floor(Math.log10(ratio)));
-            if (!(k > 0) || k == 1) continue;
+            double quote = price(c);
+            if (quote <= wage * SPLIT_AT && quote >= wage * CONSOLIDATE_BELOW) continue;
+            double k = Math.pow(10, Math.floor(Math.log10(quote / target)));
+            if (!(k > 0) || !Double.isFinite(k) || k == 1) continue;
             register.split(c, k);
             if (households != null) households.splitShares(c, k);
             books[c].split(k);
@@ -2223,7 +2255,7 @@ public class Exchange {
     public double getBuybackToHouseholds(int c)  { return buybackToHouseholds[c]; }
     public double getBuybackToDesk(int c)        { return buybackToDesk[c]; }
     public double getBuybackAbroad(int c)        { return buybackAbroad[c]; }
-    /** The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow. */
+    /** The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow (MoneyAudit's pair since LF1b). */
     public double getHouseholdsBoughtAbroad(int c) { return householdsBoughtAbroad[c]; }
     /** ...and sold to the world: a financial inflow into their savings. */
     public double getHouseholdsSoldAbroad(int c) { return householdsSoldAbroad[c]; }
@@ -2343,6 +2375,9 @@ public class Exchange {
     /** ...and in all companies, for MoneyAudit: the fund's part is cash in a pool, the cells' goes to their savings. */
     public double getLendingFeeToFund()              { return sum(feeToFund); }
     public double getLendingFeeToCells()             { return sum(feeToCells); }
+    /** What a company with no shares in issue wiped of the world's shares this month, and the short it closed there for nothing, money at the quote: MoneyAudit's two valuation lines (LF1c). */
+    public double getWorldSharesWiped()              { return worldSharesWiped; }
+    public double getShortClosedForNothing()         { return shortClosedForNothing; }
     /** Over the city's life: shares sold short and what they fetched, shares covered and what that cost, company-months an ask was posted and a short stood open, margin calls and recalls, and the fees paid. */
     public double getLifeShortSold()                 { return lifeShortSold; }
     public double getLifeShortSoldValue()            { return lifeShortSoldValue; }
@@ -2613,6 +2648,7 @@ public class Exchange {
             shortCollateral[c] *= scale; quoteBefore[c] *= scale;
             feeToCells[c] *= scale; feeToFund[c] *= scale;
         }
+        worldSharesWiped *= scale; shortClosedForNothing *= scale;
         fundBondsValue *= scale;
         lastPostedSellValue *= scale; lastFilledValue *= scale;
         lifePostedSellValue *= scale; lifeFilledValue *= scale; lifeBetweenHouseholds *= scale; lifeTurnover *= scale;

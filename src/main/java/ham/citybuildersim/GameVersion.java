@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.94";
+    public static final String VERSION = "0.9.173";
 
     /**
      * The save shape.
@@ -8263,8 +8263,98 @@ public final class GameVersion {
      *     and its accretion income stop for the life of every line it holds.
      *     It is refused, naming the build that still opens it. No conversion
      *     is written.
+     *
+     * 54 - WORLD PRICES CHAINED (batch CU2; docs/studies/spec-world-prices.md
+     *     9): the world market's January solves the goods inputs first, a made
+     *     good priced off what its inputs cost each nation plus its own part,
+     *     a root anchored so the reference city's band stands on its path
+     *     (WorldChain, WorldMarket). No field is added.
+     *
+     *     THE FLOOR RISES TO 54 WITH IT (the rule): a save of format 53 or
+     *     older would load WRONGLY. Its saved world prices and supply scales
+     *     are the unchained solve's: a made good's price is its own path's,
+     *     not its inputs' cost, and a root's lambda is not the anchored one, so
+     *     the restored market (restore, no re-solve) prices rod, wire, steel
+     *     and fuels apart from what they are made of until the next January,
+     *     and that January starts from a state the chained solve never left.
+     *     It is refused, naming the build that still opens it. No conversion
+     *     is written.
+     *
+     *     THE HISTORY FILE'S FORM (REV-CU2-1; no bump, 54 is this batch's
+     *     own): the eight prices HistorySave.roundSig records (the wage, the
+     *     rent, food, materials, ore, ground, and each company's share price
+     *     and value) are written at today's prices to six figures,
+     *     {"todays":[...]}, and multiplied by PriceLevel.FACTOR on load, bit
+     *     for bit; the product itself would take seventeen digits, FACTOR
+     *     being a long decimal. A series a reform or a fold moved off that
+     *     grid stays a plain array. Memory holds the same values as before.
+     *
+     * 55 - THE DRIVERLESS TRUCK (batch R6b, FE1; REV-R6b-1): the Truck
+     *     Depot holds a driverless kit, an equipment piece whose unfitted
+     *     count a 1900 city saves per stack, and Haulage's share of trucks
+     *     still driven (EquipmentForms.setDriven) is read from it. No field
+     *     is added; the piece is new.
+     *
+     *     THE FLOOR RISES TO 55 WITH IT (the rule): a save of format 54 or
+     *     older would load WRONGLY. It holds no unfitted count for the kit,
+     *     and the load path reads a missing count as fitted, so a 1900 city's
+     *     depots would run driverless from its first month on, in 1930 as in
+     *     2030: twice the tonnes a truck, its drivers laid off, no kit bought
+     *     and no fee paid. It is refused, naming the build that still opens
+     *     it. No conversion is written.
+     *
+     * 56 - THE SPECULATIVE ROWS (batch R6d, FE8 and FE10): the Mixed Farm and
+     *     the Grain Farm hold an autonomy kit and the Hydrogen Steel Works an
+     *     electrolyser, equipment pieces whose unfitted counts a 1900 city
+     *     saves per stack; Agriculture's operated share and Heavy Industry's
+     *     count of works with the electrolyser (EquipmentForms.setOperated()
+     *     and setElectrolysers()) are read from them. No field is added; the
+     *     pieces are new.
+     *
+     *     THE FLOOR RISES TO 56 WITH IT (the rule): a save of format 55 or
+     *     older would load WRONGLY. It holds no unfitted count for either
+     *     piece, and the load path reads a missing count as fitted, so from
+     *     the month FE8 or FE10 is known (2033, 2034) every farm of a 1900
+     *     city would run its machines with no operator, and every works would
+     *     draw less power, with no kit or electrolyser bought and no fee paid.
+     *     It is refused, naming the build that still opens it. No conversion
+     *     is written.
+     *
+     * 57 - MONEY FOLLOWS PEOPLE (batch HS1): the retired keep the tier they
+     *     retired from, so each of the four retired shapes is six cells, one
+     *     a former tier, keyed "SENIOR_ALONE:PROFESSIONAL" and the like
+     *     (RetiredHousehold.key()); and the month's flows wait in the save
+     *     for the next census (DataSave.householdFlows), as the graduates do.
+     *
+     *     THE FLOOR RISES TO 57 WITH IT (the rule): a save of format 56 or
+     *     older would load WRONGLY. Its retired cells are keyed by shape
+     *     alone, which names no cell of this build, and restoreCells() skips
+     *     a key it has no cell for, so every retired household's savings,
+     *     debt, shares, bonds and cars would load into no cell: the city's
+     *     pensioners penniless from the first month, and that money gone from
+     *     the households' books with no line to say so. It is refused, naming
+     *     the build that still opens it. No conversion is written.
+     *
+     * 58 - TWO ADULT STAGES (batch HS2): the pyramid's adults are the young,
+     *     18-34, and the established, 35-69 (AdultStage). The cohorts' array
+     *     carries the young after its seven scalars, the families' array the
+     *     young part of its matrix and of its record after the kin block
+     *     (FamilyModel.toSaveArray()), and the households' books 42 young
+     *     working cells keyed "COUPLE:SKILLED:YOUNG" and the like
+     *     (WorkingHousehold.key()); the month's flows carry the established's
+     *     retiring share and the young's moving up (DataSave.householdFlows,
+     *     nine slots).
+     *
+     *     THE FLOOR RISES TO 58 WITH IT (the rule): a save of format 57 or
+     *     older would load WRONGLY. Its pyramid and its families hold no
+     *     stage, so all of its working households would load as established
+     *     and its flows would wait with no retiring share for the
+     *     established: nobody would retire out of a working household the
+     *     first month back, and the young cells would fill from the pool's
+     *     strangers' money rather than their own. It is refused, naming the
+     *     build that still opens it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 51;
+    public static final int SAVE_FORMAT = 58;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8274,8 +8364,17 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 51 since batch BK2 (EACH HOLDER'S OWN DISCOUNT above: a save's pieces
-     * carry one pool of discount, and every holder would read none of it).
+     * 58 since batch HS2 (TWO ADULT STAGES above: a save's households hold
+     * no adult stage, and its working cells' money would load all into the
+     * established). 57 from batch HS1 (MONEY FOLLOWS PEOPLE above: a save's retired cells
+     * are keyed by shape alone and would load into no cell). 56 from batch R6d (THE SPECULATIVE ROWS above: a save holds no count
+     * of the farms' kit or the works' electrolyser unfitted, which reads as
+     * fitted). 55 from batch R6b (THE DRIVERLESS TRUCK above: a save holds no count
+     * of the depots' kit unfitted, which reads as fitted). 54 from batch CU2
+     * (WORLD PRICES CHAINED above: a save's world prices
+     * and scales are the unchained solve's). 51 from batch BK2 (EACH HOLDER'S
+     * OWN DISCOUNT above: a save's pieces carry one pool of discount, and
+     * every holder would read none of it).
      * 50 from batch EP1 (THE GAME STARTS IN 1900 above: a save's calendar
      * years would read a century ahead and its dollars 38 times its world's).
      * 49 from batch WN4 (THE WORLD'S MONEYS above: a save's dollar walked
@@ -8313,7 +8412,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 51;
+    public static final int OLDEST_LOADABLE_FORMAT = 58;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

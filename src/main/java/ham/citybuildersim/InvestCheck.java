@@ -1180,11 +1180,11 @@ public class InvestCheck {
            struck at the next strike, and an order booked with it. */
         System.out.println("\n--- the builders' price: labour at today's wages, the tax passed on, material at the price it is drawn (0.7.19) ---");
         Game priced19 = city(root, "builders-price");
-        // THE LEVERS OPENED IN THE FIXTURE (R0): this section's premise is the sales tax the builders quote and the rebates that tax pays
-        // the landlords, and a city founded in 1900 charges no sales tax until 1920 (and no wage floor, no profit or wage tax, before
-        // 1916-1918), so its builders quote none and the rebate is nothing. Every lever opened and the defaults put back, before a month.
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): this section's premise is the sales tax the builders quote and the rebates that tax
+        // pays the landlords, and until OP1 a city founded in 1900 charged no sales tax until 1920 (and no wage floor, no profit or wage tax,
+        // before 1916-1918), so its builders quoted none and the rebate was nothing. Since OP1 every lever is open from the founding, and the
+        // defaults are put back before a month.
         priced19.getEconomyManager().getTaxPolicy().reset();
-        priced19.getEconomyManager().getTaxPolicy().openAll();
         // WN3: this town (and its two reloads below) stand on the goods' literals: the rule an older save's contract is read by has a
         // House's value (structure and land over its dwellings) falling to nothing at 450 founding dollars (NRRP_NONE_FROM), and on the
         // world's band the town's materials come cheap enough (1.8 a unit) that a House stands at 44.6 against the line's 45.0:
@@ -1321,7 +1321,7 @@ public class InvestCheck {
 
         // (e) The repair bill, the bank's branches for one: the labour at today's wages and the tax passed on.
         BuildingsTemplate branch19 = template(priced19, "Commercial Bank");
-        int branches19 = pb.getQuantity(branch19.getId());
+        long branches19 = pb.getQuantity(branch19.getId());
         double price19 = pb.getConstructionMaterialPrice();
         double branchLabour19 = Math.min(branch19.getCashCost(), branch19.getConstructionPoints() * then19
                 / depot19.makes(Good.BUILDING_WORK));
@@ -1409,6 +1409,25 @@ public class InvestCheck {
         check("...with an allowance of what is left past the work still owed at its cash cost",
                 inferred19.getAllowance(), Math.max(0, site19.getContractValue()
                         - template(older19, "House").getCashCost() * owed19 / house19.getConstructionPoints()), 1e-9);
+        // FB3 (RT2-L): THE REBATE'S LINE BETWEEN THE TWO LABOURS. A load read this contract before its rebuild struck the builders'
+        // wages, so at the founding ladder's labour (the index 1), and the loaded city's rule reads it at today's: this town's House
+        // stands either side of the line at the two, so the two parted (main 0.9.134: .0000625068 read, nothing by the rule). The
+        // founding ladder put on the reloaded city last, through the model's own rule (nothing below reads older19).
+        BuildingManager ob19 = older19.getBuildingManager();
+        BuildingsTemplate houseOlder19 = template(older19, "House");
+        double olderIndex19 = ob19.buildersWageIndex(), atFounding19 = ob19.buildersWagePerPoint() / olderIndex19;
+        ob19.setBuildersWages(new BuildingManager.BuildersWages() {
+            @Override public double perPointToday()      { return atFounding19; }
+            @Override public double perPointAtFounding() { return atFounding19; }
+        });
+        double ladderBefore19 = ob19.nonMaterialCost(houseOlder19)
+                + houseOlder19.getConstructionMaterials() * Math.max(0, ob19.getConstructionMaterialPrice());
+        double ladderShare19 = older19.getEconomyManager().taxRecoveredShare(landlords19, houseOlder19,
+                older19.getEconomyManager().withBuildersTax(ladderBefore19) - ladderBefore19);
+        System.out.printf("   ...at the founding ladder's labour (index %.6f today): %.16f%n", olderIndex19, ladderShare19);
+        assertTrue("fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older"
+                        + " save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them",
+                olderIndex19 != 1 && ob19.buildersWageIndex() == 1 && ladderShare19 != olderShare19);
 
         // (i) The rebates on a new rental home (revised; EconomyManager, THE REBATES ON A NEW HOME, AND THE CITY'S).
         System.out.println("\n--- the rebates on a new rental home (0.7.19, revised) ---");
@@ -1716,7 +1735,7 @@ public class InvestCheck {
         assertTrue("fixture: the shops are short by several stores, with nothing of theirs on site: they order", empty.build
                 && empty.quantity >= 3 && bm.getUnderConstructionBySector(shops.key()) == 0);
         BuildingsTemplate ordered = empty.template;
-        int wanted = empty.quantity;
+        long wanted = empty.quantity;
 
         // Two short of what the shortage needs are on site (one short is covered by the margin the plan sizes with): the next order
         // is the ones that are missing.
@@ -2017,14 +2036,14 @@ public class InvestCheck {
     static final class AheadWatch implements BusinessInvestment.OrderWatch {
         final Game g;
         int judged, cleared, clearedAhead;
-        int largestCleared;
+        long largestCleared;
         String largestSector = "";
         final java.util.Set<Integer> monthsJudged = new java.util.TreeSet<>(), monthsDear = new java.util.TreeSet<>();
         final java.util.Map<String, Integer> aheadBySector = new java.util.TreeMap<>();
 
         AheadWatch(Game g) { this.g = g; }
 
-        void saw(String sector, int quantity, int built, boolean mortgage) {
+        void saw(String sector, long quantity, long built, boolean mortgage) {
             judged++;
             int month = g.getMonth();
             monthsJudged.add(month);
@@ -2047,7 +2066,7 @@ public class InvestCheck {
         }
 
         @Override
-        public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit,
+        public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit,
                               double annualRate, Mortgage.Decision found) {
             saw(Sectors.REAL_ESTATE, asked, found.quantity(), true);
         }

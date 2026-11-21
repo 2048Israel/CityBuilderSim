@@ -347,7 +347,7 @@ public class MortgageCheck {
         out.println("\n--- 3. the down payment: short of it on one, the landlord holds, and says so ---");
 
         double one = 300;
-        java.util.function.IntToDoubleFunction costOf = n -> one * n;
+        java.util.function.LongToDoubleFunction costOf = n -> one * n;
         double need = Mortgage.ownFundsFor(one);
         Mortgage.Decision shortOne = Mortgage.decide(5, costOf, need - .01, 1_000, .04);
         assertTrue("a till a cent short of the down payment on one buys none", shortOne.quantity() == 0 && shortOne.shortOfDown());
@@ -409,7 +409,7 @@ public class MortgageCheck {
         out.println("\n--- 4. the lender's test at its line: MORTGAGE_DEBT_COVERAGE passes, a hair under does not ---");
 
         double one = 300, rate = .05;
-        java.util.function.IntToDoubleFunction costOf = n -> one * n;
+        java.util.function.LongToDoubleFunction costOf = n -> one * n;
         double till = Mortgage.ownFundsFor(one);
         double payment = level(Mortgage.loanFor(one - till) * (1 + scheduleRate()), rate,
                 Mortgage.MORTGAGE_AMORTIZATION_MONTHS);
@@ -1073,17 +1073,17 @@ public class MortgageCheck {
             g.getLandManager().allocate(branch.getLandSqFt() * 6);
         });
         Bank bank = g.getBank();
-        int closedAt = -1, before = -1, after = -1, firstCostKnown = -1, closedIn = -1;
+        int closedAt = -1, firstCostKnown = -1, closedIn = -1; long before = -1, after = -1;
         double equityResidual = Double.NaN, audit = Double.NaN, capitalisedBefore = 0, capitalisedAfter = 0;
         String said = null;
         for (int m = 0; m < 90 && closedAt < 0; m++) {
-            int standing = g.getBuildingManager().countByName("Commercial Bank");
+            long standing = g.getBuildingManager().countByName("Commercial Bank");
             double capitalised = bank.getBranchesCapitalised();
             // The rule reads what a branch cost the month before; a bank that
             // has closed no month with its branches standing has none to read.
             if (firstCostKnown < 0 && bank.runningCostPerBranch() > 0) firstCostKnown = m;
             quietly(() -> g.simulateMonths(1));
-            int now = g.getBuildingManager().countByName("Commercial Bank");
+            long now = g.getBuildingManager().countByName("Commercial Bank");
             if (now < standing) {
                 closedIn = m;
                 closedAt = g.getMonth();
@@ -1154,13 +1154,13 @@ public class MortgageCheck {
         // 112 people, 0 homes, no month the other way); with one the landlords lose money until month 35; with two they
         // beat it in all sixty; with three, the first months beat it and the months of the town's growth do not.
         Game g = landlordCity(root, "payout", true, 3);
-        // THE LEVERS OPENED IN THE FIXTURE (BA1 on R0, 2026-11-05): this section needs a month the mortgages' principal beat the landlords'
-        // income as well as one it did not. The 1900 town (R0) has no income tax or wage floor to 1916-18, and with BA1's uncapped orders
-        // and its builders' queue its landlords out-earned their principal in all sixty months (net 1.77 against 0.36 in month 2, and on
-        // up; 0.57 against 0.82 never came). The town this was written against taxes from month 1, as main's R0 fixtures open it
-        // (RailDepotCheck, HaulageCheck): the levers reset and opened before a month has run, then the lean month the premise needs comes.
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1 on R0, 2026-11-05; OP1): this section needs a month the mortgages' principal beat the
+        // landlords' income as well as one it did not. The 1900 town (R0) had no income tax or wage floor to 1916-18 until OP1, and with BA1's
+        // uncapped orders and its builders' queue its landlords out-earned their principal in all sixty months (net 1.77 against 0.36 in month 2,
+        // and on up; 0.57 against 0.82 never came). The town this was written against taxes from month 1, as main's R0 fixtures had it
+        // (RailDepotCheck, HaulageCheck): the defaults are put back before a month has run (every lever is open from the founding since OP1),
+        // then the lean month the premise needs comes.
         g.getEconomyManager().getTaxPolicy().reset();
-        g.getEconomyManager().getTaxPolicy().openAll();
         long[] homesAfterFirstMonth = { -1 };
         Equity register = g.getEquity();
         int landlords = Equity.indexOf(RE);

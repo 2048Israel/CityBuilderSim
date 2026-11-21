@@ -1,10 +1,12 @@
 # For any AI agent
 
-Read `CLAUDE.md`. It is written for every assistant, not only Claude: where
-the indexes are (`docs/map`, `docs/dials.md`, `docs/month-order.md`,
-`docs/harnesses.md`) and the standing rules. How a batch is done and
-verified here is `docs/batch.md` (a batch session) and `docs/orchestrator.md`
-(the orchestrator); `CLAUDE.md` says who reads which.
+Read `docs/contract.md` first: Jerus's standing rules and how a batch is
+built, checked and shipped, the one contract Claude and Codex builders share.
+Then `CLAUDE.md`, the map and the tools (`docs/map`, `docs/dials.md`,
+`docs/month-order.md`, `docs/harnesses.md`); it is written for every
+assistant, not only Claude.
 
-ChatGPT and Gemini have a brief of their own: `openai-dontread.md` and
-`gemini-notes.md`. Their work goes on a branch of their own, never `main`.
+Codex (OpenAI's coding agent, in its app or through `codex exec`) builds,
+checks and pushes `batch/<id>` branches as the contract says.
+`openai-dontread.md` binds the ChatGPT connector alone, and Gemini reads
+`gemini-notes.md`. WHY (GF1): the connector's brief told Codex it could not build.

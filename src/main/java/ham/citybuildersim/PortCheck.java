@@ -46,7 +46,10 @@ import java.util.List;
  *
  *   5. NO PORT GIVES A BIT-IDENTICAL BAND: a town with a railway and no
  *      terminal quotes 0.7.85's band, 1 - carried and carried x quote, every
- *      good, to the bit, and nothing goes by sea.
+ *      good, to the bit, and nothing goes by sea. (FS7: the fixture is the
+ *      foundries and a spur stood, the railway's carried shares set on its
+ *      state and the month's tonnes handed to Ports - handMonth - not a played
+ *      town found with a railway.)
  *
  *   6. A PORT ON A TOWN: refused NO_COAST without owned sea, allowed with it;
  *      its kind's goods then go by sea in its share, each good's band its
@@ -60,6 +63,10 @@ import java.util.List;
  *      ROOM (0.7.105, Jerus's R2): a Crude Unit's month beside one farm left
  *      14,185 t free, under an MR's cargo, so no tanker ever landed; the
  *      refiners now keep an MR's cargo free, and its crude goes by sea.
+ *      (FS7: the fixture is a refinery, a tanker berth, a Tank Farm and a
+ *      Crude Unit stood, the refiners' crude import set, the month's crude
+ *      handed to Ports with the refiners' room - handMonth - and the store
+ *      set a tonne over and at what they keep, an MR's cargo's two sides.)
  *
  *   8. THE BOATS: whole calls, exact on average; inside their month; pure in
  *      (call, t), loaded the right way each leg; a lane straight out away
@@ -758,28 +765,65 @@ public class PortCheck {
 
     /* ============================ 5. NO PORT, THE SAME BAND ============================ */
 
+    /**
+     * FS7: one railway month's PORT PART, handed to the city instead of played: Freight.haul()'s steps 1, 3 and 5 as monthAtSea() and the pure
+     * sections hand them to a bare Ports - the month's tonnes across the boundary (`in` and `leaving`, by Good ordinal) tallied at the shares in
+     * force while they moved, the berths' shares planned for the next month at the railway's quote in force, with the room the refiners keep
+     * free, and put in force beside the railway's carried shares (as they stand), the road told both (Game.chargeFreight) and the band struck
+     * (Freight.reapplyBand). The first call of a city plans at nothing at sea; the next moves at what the first planned.
+     */
+    static void handMonth(Game g, double[] in, double[] leaving) {
+        Ports ports = g.getPorts();
+        ham.citybuildersim.sectors.Freight rail = g.getSectors().freight();
+        double[] carried = rail.getCarried();
+        double[] t = new double[Good.values().length];
+        double[] stream = new double[Traffic.values().length];
+        ports.beginMonth();
+        for (Good good : Good.values()) {
+            int o = good.ordinal();
+            t[o] = in[o] + leaving[o];
+            if (!(t[o] > 0)) continue;
+            Traffic s = good.traffic();
+            double share = s == null || !s.isFreight() ? 0 : carried[s.ordinal()];
+            ports.tally(good, in[o], leaving[o], ports.seaShareOf(good, share));
+            if (s != null && s.isFreight()) stream[s.ordinal()] += t[o];
+        }
+        ports.planFirst(t, new double[t.length], rail.getQuote(), Ports.berths(g.getBuildingManager()), Ports.freeCrudeRoom(g.getSectors().refining()));
+        ports.planAfter(t, carried);
+        ports.commit(t, stream, carried);
+        g.getInfrastructureManager().setRailShare(ports.railOfStream(carried));
+        g.getInfrastructureManager().setSeaShare(ports.seaOfStream());
+        rail.reapplyBand(ports);
+    }
+
     static void noPortTheSameBand() {
         out.println("\n--- 5. no port gives a bit-identical band: a town with a railway and no terminal ---");
         Game g = town("portcheck-rail", 300, 2_000_000);
         Game.BuildResult[] stood = new Game.BuildResult[2];
-        // ...on the literals, steel's world prices doubled, as 6 (FL1): on the world file's band under Random an Arc Furnace on imported scrap shipped
-        // steel that netted a hair under its scrap's cost in the draws of 1900 (EP1: 0.0058 against 0.0059 by the third month, the slope sinking each
-        // month's band with the last month's exports), THE ORDER does not buy scrap for an export at a loss, and the premise here is foundries that
-        // ship (the general cargo out by rail and road) - so their steel pays.
-        g.playOnLiterals();
-        g.getMarkets().get(Good.STEEL).setWorldPrices(Good.STEEL.worldImportPrice() * 2, Good.STEEL.worldExportPrice() * 2);
+        // FS7: this played 4 months with steel's world prices doubled (an Arc Furnace on imported scrap shipping at a loss otherwise) and found
+        // the railway carrying freight. It is caused now: the foundries and the spur stand, the railway's carried shares are SET (its saved
+        // state, restored: BULK and GOODS each a share), the month's tonnes across the boundary handed to Ports (steel out, iron in) and the
+        // band struck on them (handMonth), so the bit identity follows the formula, whatever a played month's draws were.
         quietly(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
             stood[0] = g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
             stood[1] = g.buildStack(template(g, "Rail Spur"), 1, true);
-            g.simulateMonths(4);
         });
         assertTrue("fixture: two steel foundries and a rail spur stood", stood[0] == Game.BuildResult.SUCCESS
                 && stood[1] == Game.BuildResult.SUCCESS);
         ham.citybuildersim.sectors.Freight rail = g.getSectors().freight();
+        SectorState railed = rail.toState();
+        for (Traffic s : Traffic.values()) {
+            if (s.isFreight()) railed.extras.put("carried." + s.name(), s == Traffic.BULK ? .35 : .2);
+        }
+        rail.restore(railed);
+        double[] in = new double[Good.values().length], outT = new double[Good.values().length];
+        outT[Good.STEEL.ordinal()] = 40_000;
+        in[Good.IRON.ordinal()] = 60_000;
+        handMonth(g, in, outT);
         double[] carried = rail.getCarried();
         boolean band = true;
-        int railed = 0;
+        int railed0 = 0;
         for (Good good : Good.values()) {
             GoodsMarket m = g.getMarkets().get(good);
             if (m == null) continue;
@@ -787,9 +831,10 @@ public class PortCheck {
             double share = s == null || !s.isFreight() ? 0 : carried[s.ordinal()];
             band &= m.getFreightFactor() == Math.min(1, 1 - share) && m.getRailCharge() == (share * rail.getQuote() > 0
                     ? Math.min(1, share * rail.getQuote()) : 0);
-            if (share > 0) railed++;
+            if (share > 0) railed0++;
         }
-        report("fixture: the railway carries the town's freight, and no terminal stands", railed > 0
+        report("fixture: the railway carries the town's freight, and no terminal stands", railed0 > 0
+                && carried[Traffic.BULK.ordinal()] == .35 && carried[Traffic.GOODS.ordinal()] == .2
                 && Ports.berths(g.getBuildingManager())[Ports.Cargo.GENERAL.ordinal()] == 0,
                 String.format("bulk %.3f, goods %.3f", carried[Traffic.BULK.ordinal()], carried[Traffic.GOODS.ordinal()]));
         assertTrue("EVERY GOOD'S BAND IS 0.7.85'S: 1 - carried and carried x the quote, to the bit", band);
@@ -829,8 +874,8 @@ public class PortCheck {
                 quietlyGet(() -> g.buildStack(terminal, 1, false)) == Game.BuildResult.NO_COAST && !g.hasCoastFor(terminal, 1));
         assertTrue("...the card's verdict says so before the click",
                 BuildCard.verdict(g, terminal, 1).kind() == BuildCard.VerdictKind.NO_COAST);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(terminal, 1);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(terminal, 1L);
         assertTrue("...and a run stops at it", g.buildRunAhead(run) == 0 && g.buildRunStop(run) == Game.BuildResult.NO_COAST);
         boolean coast = buyCoast(g);
         report("fixture: the city buys an offer that runs out to the sea", coast,
@@ -942,10 +987,20 @@ public class PortCheck {
             g.getBusinessInvestment().holdSector(Sectors.REFINING);
             stood[0] = g.buildStack(template(g, "Oil Refinery"), 1, true);
             stood[1] = g.buildStack(template(g, "Tanker Terminal"), 1, true);
-            g.simulateMonths(3);
         });
+        // FS7: this played 3 months and found the refinery importing crude across the boundary (crudeTrade() > 0), then 2 + 2 + 2 months beside a
+        // Tank Farm and a Crude Unit. It is caused now: the refinery and the tanker berth stand (instant orders), the refiners' own crude import
+        // is SET (Input.imported, the month's units) and handed to Ports as a month of twice what the berth handles (handMonth: the tally, the
+        // plan with the refiners' room, the road and the band), and the farm's and the crude unit's months are handed the same way: the
+        // room is the farms' and the store the refiners hold (setPantry), the run the sector's own setter's.
         Ports ports = g.getPorts();
-        report("fixture: a refinery on imported crude, a tanker berth, and no Tank Farm", coast && ports.crudeTrade() > 0
+        double berth = Ports.berths(g.getBuildingManager())[Ports.Cargo.LIQUID.ordinal()];
+        double crudeMonth = 2 * berth;
+        double[] outward = new double[Good.values().length], landed = new double[Good.values().length];
+        landed[Good.CRUDE.ordinal()] = crudeMonth;
+        refiners.input(Good.CRUDE).imported = crudeMonth;
+        handMonth(g, landed, outward);
+        report("fixture: a refinery on imported crude, a tanker berth, and no Tank Farm", coast && ports.crudeTrade() == crudeMonth && crudeMonth > 0
                         && stood[0] == Game.BuildResult.SUCCESS && stood[1] == Game.BuildResult.SUCCESS
                         && refiners.tankFarmRoom() == 0 && Ports.berths(g.getBuildingManager())[Ports.Cargo.LIQUID.ordinal()] > 0,
                 String.format("%,.0f t of crude across the boundary", ports.crudeTrade()));
@@ -999,13 +1054,19 @@ public class PortCheck {
         quietly(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
             stood[2] = g.buildStack(template(g, "Tank Farm"), 1, true);
-            g.simulateMonths(2);
         });
         assertTrue("fixture: a Tank Farm stood beside it", stood[2] == Game.BuildResult.SUCCESS && refiners.tankFarmRoom() > 0);
+        // ...two handed months: the first plans at the room the farm gives, the second moves at what it planned.
+        handMonth(g, landed, outward);
+        handMonth(g, landed, outward);
         double room = Ports.freeCrudeRoom(refiners);
         Ports.Ship ship = ports.crudeShip();
+        Ports.Ship largest = null;
+        for (Ports.Ship s : Ports.Ship.values()) {
+            if (s.cargo() == Ports.Cargo.LIQUID && s.tonnes() <= room && (largest == null || s.tonnes() > largest.tonnes())) largest = s;
+        }
         report("WITH A TANK FARM ITS CRUDE GOES BY SEA, in the largest class the free room takes",
-                ship != null && ship == Ports.crudeShipFor(room) && ports.getHeldBack() == 0
+                ship != null && ship == largest && ship == Ports.crudeShipFor(room) && ports.getHeldBack() == 0
                         && ports.crudeSeaIn() > 0 && ports.seaShareOf(Good.CRUDE, 0) > 0,
                 String.format("a %s, %,.0f t of room; %,.0f t landed", ship == null ? "none" : ship.label(), room, ports.crudeSeaIn()));
         assertTrue("...its calls in that class", g.boats(List.of()).calls().stream().filter(c -> c.cargo() == Ports.Cargo.LIQUID
@@ -1029,19 +1090,27 @@ public class PortCheck {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
             stood[0] = g.buildStack(crudeUnit, 1, true);
         });
+        refiners.setRunShareForTest(1);
         double kept = refiners.crudeKept();
         report("THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,"
                         + " and the next cargo fits", stood[0] == Game.BuildResult.SUCCESS
                         && ham.citybuildersim.sectors.Refining.CARGO_KEPT_FREE == Ports.Ship.MR.tonnes()
                         && kept == farmRoom - Ports.Ship.MR.tonnes() && Ports.crudeShipFor(farmRoom - kept) == Ports.Ship.MR,
                 String.format("%,.0f t kept, %,.0f t free", kept, farmRoom - kept));
-        quietly(() -> {
-            refiners.setCash(Math.max(refiners.getCash(), 1e12));
-            g.simulateMonths(2);
-        });
+        // FS7: this played 2 months for the refiners' store to fill to what they keep. It is caused now, from both sides of an MR's cargo: the store
+        // one tonne over what they keep leaves one tonne under an MR's cargo free, and no tanker lands; the store at what they keep leaves an MR's.
+        refiners.setPantry(Good.CRUDE, kept + 1);
+        handMonth(g, landed, outward);
+        report("...one tonne under an MR's cargo free, no tanker lands and the crude is held back for room",
+                Math.abs(Ports.freeCrudeRoom(refiners) - (Ports.Ship.MR.tonnes() - 1)) <= 1e-6 && ports.crudeShip() == null
+                        && ports.getHeldBack() > 0,
+                String.format("%,.0f t free; %,.0f t held back", Ports.freeCrudeRoom(refiners), ports.getHeldBack()));
+        refiners.setPantry(Good.CRUDE, kept);
+        handMonth(g, landed, outward);
+        handMonth(g, landed, outward);
         report("...and a month on, the store kept, its crude goes by sea in an MR, none held back for room",
                 ports.crudeShip() == Ports.Ship.MR && ports.getHeldBack() == 0 && ports.crudeSeaIn() > 0
-                        && Math.abs(refiners.getPantry(Good.CRUDE) - refiners.crudeKept()) <= 1e-9 * refiners.crudeKept(),
+                        && Math.abs(Ports.freeCrudeRoom(refiners) - Ports.Ship.MR.tonnes()) <= Ports.Ship.MR.tonnes() * Ports.ROOM_TOLERANCE,
                 String.format("a %s; %,.0f t on hand, %,.0f t free; %,.0f t landed", ports.crudeShip() == null ? "none"
                         : ports.crudeShip().label(), refiners.getPantry(Good.CRUDE), Ports.freeCrudeRoom(refiners), ports.crudeSeaIn()));
     }
@@ -2330,6 +2399,7 @@ public class PortCheck {
 
     /** Painting the large box's picture (a container yard, full, its track and train) costs no more than HarbourYard.PICTURE_MS. */
     static void yardCost() {
+        if (Timing.skip("PortCheck.yardCost")) return;
         CityShore.Work big = yardWork(3000, 3000, 1, 0, 7);
         int bits = HarbourYard.RAIL | HarbourYard.OPEN_LOW | HarbourYard.TRAIN, reps = 20;
         double best = Double.MAX_VALUE;

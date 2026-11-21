@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry, fresh, sea and forest, counted plot by plot, and the sites and amounts of the seven resources.
+ * The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry, fresh, sea and forest, counted plot by plot, and the sites and amounts of the eight resources.
  *
  * WHY THIS EXISTS (0.7.57, batch J1b; the project's spec-land.md 2.2). Until
  * then the city's land was one number, the square feet it owned, and the land
@@ -19,8 +19,8 @@ import java.util.Map;
  *
  * ON THE BLOCK GRID SINCE 0.7.67 (batch M3; the project's spec-grid.md). From
  * 0.7.57 to 0.7.66 the land was a square centre and forty lanes of wedges
- * pushed out band by band (LegacyLand keeps that geometry, read-only, to put
- * a saved city on the grid). Jerus, 2026-10-07: the block grid, six offers a
+ * pushed out band by band. HA1 removes those obsolete converters: the save
+ * floor already refuses the formats they served. Jerus, 2026-10-07: the block grid, six offers a
  * side, never rerolled; "the generation should only put what the city has,
  * not more not less". The ground is now whole blocks of LandGrid - squares of
  * 2^k plots lined up with the world's tiles and districts - held as a region
@@ -38,7 +38,7 @@ import java.util.Map;
  * forest's timber is its forest's area x World.FOREST_M3_PER_KM2. Since
  * 0.7.127 (batch E7) the Earth's ground has two classes more, and the five
  * areas stay five: the desert is dry ground and counts with the grass, and
- * ice, never dry, counts in the whole area only (GridConversion.km2Of()).
+ * ice, never dry, counts in the whole area only (LandDrawing.km2Of()).
  *
  * A FIELD GOES WHOLE WITH ITS CENTRE (spec-land star 12). Jerus, 2026-10-07:
  * "Yes whole iron fields as one offer, yes that means significant
@@ -48,7 +48,7 @@ import java.util.Map;
  * one holding's ground or none, and the world's totals are kept to the tonne.
  * A city converted from a save written by 0.7.58 to 0.7.63 (which held a
  * field site by site) keeps exactly the sites it held of a field it held
- * only part of (a PART FIELD, GridConversion.PartField); that field's other
+ * only part of (a PART FIELD, PartField); that field's other
  * sites go a site at a time to the holding whose ground holds each site's
  * plot (siteHolding()).
  *
@@ -68,16 +68,16 @@ import java.util.Map;
  * NOTHING ROLLS INTO THE CENTRE. The centre is the land the city was founded
  * or converted with, fixed; the purchases are kept in the order they were
  * made, which is the order the ground is worked out in (LandManager's
- * depletion). Only a restatement (LandConversion.restate()) - a harness's
+ * depletion). Only a restatement (LandDrawing.restate()) - a harness's
  * ground by fiat - draws the centre again, and folds everything into it.
  */
 public final class CityLand {
 
-    /** Sides of the city, seen from the founding site: north, east, south and west, in that order - LegacyLand.SIDES (spec-land star 1). */
-    public static final int SIDES = LegacyLand.SIDES;
+    /** Sides of the city, seen from the founding site: north, east, south and west, in that order (spec-land star 1). */
+    public static final int SIDES = 4;
 
-    /** The sides' names, in their order: LegacyLand's. */
-    static final String[] SIDE_NAMES = LegacyLand.SIDE_NAMES;
+    /** The sides' names, in their order. */
+    static final String[] SIDE_NAMES = new String[] { "North", "East", "South", "West" };
 
     /** Where a record keeps its whole area, in square kilometres - its ice (0.7.127) counted here and nowhere else. */
     public static final int TOTAL = 0;
@@ -142,8 +142,11 @@ public final class CityLand {
     private long legacyX = -1, legacyY = -1;
     private int legacySites;
     private final List<Purchase> purchases = new ArrayList<>();
-    private final List<GridConversion.PartField> parts = new ArrayList<>();
-    private final Map<FieldKey, GridConversion.PartField> partIndex = new HashMap<>();
+    /** A saved field held site by site: its resource, world cell, field index and owned site indices. */
+    public record PartField(Resource kind, int cell, int index, int[] owned) { }
+
+    private final List<PartField> parts = new ArrayList<>();
+    private final Map<FieldKey, PartField> partIndex = new HashMap<>();
     private double[][] converted;
     /** How many holdings, the centre and the purchases after it in order, hold the old world's fields (0.7.99): see oldWorldHoldings(). */
     private int oldWorldHoldings;
@@ -184,7 +187,8 @@ public final class CityLand {
      * than asked: the default city 315 plots for 309.7 (+1.7%), 21 blocks of
      * 120 m, 0.3024 km2. These are the rings alone; since 0.7.106 a new
      * city's founding takes its water after them, since LM1 as one patch of
-     * blocks within FRESH_PATCH of the one it starts from (the next found()).
+     * blocks within FRESH_PATCH of the one it starts from, widened to
+     * FRESH_PATCH_MOST where that is too little (the next found()).
      */
     public static CityLand found(World world, long x, long y, double dryKm2) {
         return found(world, x, y, dryKm2, 0);
@@ -230,9 +234,14 @@ public final class CityLand {
      * block. The first seed whose patch reaches freshKm2 is taken (the
      * default world's 33 blocks of lake are the same, from its first seed;
      * the Stockholm city takes a lake of 36 to 41 blocks); where none
-     * does, the patch holding the most fresh plots, the earliest seed on a
-     * tie - a city on a river alone, Rome, founds with 0.14 km2 of the 0.49
-     * and buys the rest.
+     * does, the square widens a block at a time, to FRESH_PATCH_MOST
+     * (freshWater()): A24 is Jerus's own word, and a river 1 to 5 plots wide
+     * holds 0.14 to 0.18 km2 in 3 blocks of its seed, a plant's water a
+     * third full. Where none does at FRESH_PATCH_MOST either, the patch
+     * holding the most fresh plots there, the earliest seed on a tie: a
+     * city on a river alone founds short and buys the rest (Paris 0.33 km2
+     * of the 0.49, Rome 0.25, the full file; they would hold it at 10 and
+     * 14 blocks).
      */
 
     /** How far the founding takes blocks for its fresh water, in plots from the site, L-infinity: the founding lake's far shore at the most (World.RIVER_LAKE_NEAR + RIVER_LAKE_SPAN + LAKE_R_MIN + LAKE_R_SPAN, 107 plots, 3.2 km). */
@@ -242,19 +251,22 @@ public final class CityLand {
     /** The founding's water is one patch within this many blocks of the block it starts from, L-infinity (a 7 x 7 square, 840 m at the default level), so it is never a strip along a river (LM1, Jerus's Stockholm city). */
     static final int FRESH_PATCH = 3;
 
+    /** Where no patch within FRESH_PATCH holds one plant's water, the square widens a block at a time up to this many blocks (a 13 x 13 square, 1.56 km at the default level), so a city on a river alone founds with A24's water where the river holds it that near (LM1; A24 is Jerus's own word). */
+    static final int FRESH_PATCH_MOST = 6;
+
     /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the water as one patch (LM1) - see above. freshKm2 0 is the rings alone. */
     public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2) {
         CityLand land = new CityLand(world.key(), x, y);
         int level = LandGrid.levelFor(dryKm2 / World.KM2_PER_PLOT);
         long b = 1L << level;
-        long target = (long) Math.ceil(dryKm2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long target = (long) Math.ceil(dryKm2 / World.KM2_PER_PLOT - LandDrawing.WHOLE_PLOT);
         long cbx = Math.floorDiv(x, b), cby = Math.floorDiv(y, b), last = World.SIDE / b - 1;
         long dry = 0;
         byte[] t = new byte[World.TILE * World.TILE];
         outer:
         for (int ring = 0; target > 0; ring++) {
             if (ring > World.SIDE / b) throw new IllegalStateException("the world holds less dry ground than " + dryKm2 + " km2");
-            for (long[] p : GridConversion.ringOf(cbx, cby, ring)) {
+            for (long[] p : LandDrawing.ringOf(cbx, cby, ring)) {
                 if (p[0] < 0 || p[1] < 0 || p[0] > last || p[1] > last) continue;
                 dry += dryPlots(world, t, p[0] * b, p[1] * b, b);
                 LandGrid.Fill f = new LandGrid.Fill(p[0] * b, p[1] * b, p[0] * b + b, p[1] * b + b, CENTRE);
@@ -271,19 +283,39 @@ public final class CityLand {
     /** The founding's water (0.7.106, one patch since LM1): blocks of `level` added to the centre from the founding lake until its fresh plots reach freshKm2 rounded up to a whole plot - see ...AND THE FRESH WATER ONE PLANT NEEDS. */
     private void takeFresh(World world, int level, long x, long y, double freshKm2) {
         long b = 1L << level, last = World.SIDE / b - 1;
-        long target = (long) Math.ceil(freshKm2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long target = (long) Math.ceil(freshKm2 / World.KM2_PER_PLOT - LandDrawing.WHOLE_PLOT);
         long sbx = Math.floorDiv(x, b), sby = Math.floorDiv(y, b), reach = (FRESH_REACH + b - 1) / b;
         World.River river = world.river();
         Map<Long, byte[]> tiles = new HashMap<>();
         Map<Long, Long> fresh = new HashMap<>();
         java.util.Set<Long> owned = new java.util.HashSet<>();
         for (LandGrid.Fill f : centreRects) owned.add(blockKey(f.x0() >> level, f.y0() >> level));
-        for (long k : freshPatch((bx, by) -> freshPlots(world, tiles, fresh, blockKey(bx, by), b), owned, sbx, sby, reach, last,
-                river.lakeX(), river.lakeY(), b, target, FRESH_PATCH)) {
+        for (long k : freshWater((bx, by) -> freshPlots(world, tiles, fresh, blockKey(bx, by), b), owned, sbx, sby, reach, last,
+                river.lakeX(), river.lakeY(), b, target)) {
             long bx = k >> 32, by = (int) k;
             grid.fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE);
             centreRects.add(new LandGrid.Fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE));
         }
+    }
+
+    /**
+     * The founding's water, widened where it must be (LM1): freshPatch() within FRESH_PATCH of its seed, and where no
+     * patch that near brings the owned blocks' fresh plots to `target`, within one block more at a time up to
+     * FRESH_PATCH_MOST - the first square whose patch reaches it, else the widest square's best patch. The arguments are
+     * freshPatch()'s.
+     */
+    static List<Long> freshWater(java.util.function.LongBinaryOperator freshOf, java.util.Set<Long> owned, long sbx, long sby,
+            long reach, long last, double lx, double ly, long b, long target) {
+        long have = 0;
+        for (long k : owned) have += freshOf.applyAsLong(k >> 32, (int) k);
+        List<Long> taken = List.of();
+        for (int patch = FRESH_PATCH; patch <= FRESH_PATCH_MOST; patch++) {
+            taken = freshPatch(freshOf, owned, sbx, sby, reach, last, lx, ly, b, target, patch);
+            long held = have;
+            for (long k : taken) held += freshOf.applyAsLong(k >> 32, (int) k);
+            if (held >= target) return taken;
+        }
+        return taken;
     }
 
     /** A block with its distance from the lake's centre and its fresh plots, for freshPatch(). */
@@ -404,10 +436,10 @@ public final class CityLand {
         return n;
     }
 
-    /** The centre's books from its plots drawn (GridConversion.drawnClasses()), and every field whose centre plot is on it, whole. */
+    /** The centre's books from its plots drawn (LandDrawing.drawnClasses()), and every field whose centre plot is on it, whole. */
     private void drawnBooks(World world) {
         long[] relief = new long[RELIEF_AREAS];
-        double[] k = GridConversion.km2Of(GridConversion.drawnClasses(world, grid, relief));
+        double[] k = LandDrawing.km2Of(LandDrawing.drawnClasses(world, grid, relief));
         System.arraycopy(k, 0, centreKm2, 0, AREAS);
         for (int i = 0; i < RELIEF_AREAS; i++) centreRelief[i] = relief[i] * World.KM2_PER_PLOT;
         Arrays.fill(centreSites, 0);
@@ -427,26 +459,16 @@ public final class CityLand {
     }
 
     /* =====================================================================
-       A CENTRE CONVERTED OR DRAWN AGAIN (LandConversion, GridConversion)
+       A CENTRE DRAWN AGAIN FOR A HAND-SET AREA
        ===================================================================== */
 
-    /** A city's land whose centre is a converted holding (spec-grid 2.6): its blocks, books, sites, amounts, legacy field and part fields; nothing bought since; `history` the save's purchase records, kept as they were. */
-    static CityLand converted(long seed, GridConversion.Result r, double[][] history) {
-        CityLand land = new CityLand(World.Key.generated(seed), r.siteX(), r.siteY());
-        land.take(r);
-        land.converted = history == null ? new double[0][] : deepCopy(history);
-        // An older save's centre, drawn on the old world's fields (GridConversion.fromLanes(), fromFigure()): the old world's ground (0.7.99).
-        land.oldWorldHoldings = 1;
-        return land;
-    }
-
     /** Draws the centre again from a conversion's result round the same site - a restatement - and folds every purchase into it: the same object, so the map and the office bound to it see the land drawn again (centreStamp()). */
-    void redraw(GridConversion.Result r) {
+    void redraw(LandDrawing.Result r) {
         if (r.siteX() != siteX || r.siteY() != siteY) throw new IllegalArgumentException("a restatement keeps the site");
         take(r);
     }
 
-    private void take(GridConversion.Result r) {
+    private void take(LandDrawing.Result r) {
         grid = LandGrid.replay(r.fills());
         centreRects.clear();
         centreRects.addAll(r.fills());
@@ -462,13 +484,12 @@ public final class CityLand {
         purchases.clear();
         parts.clear();
         partIndex.clear();
-        for (GridConversion.PartField p : r.parts()) addPart(p);
-        // Everything is the centre now: on the old world's fields when the centre was (GridConversion.fromFigure()'s `legacy`).
+        // Everything is the centre now: on the old world's fields when the centre was (LandDrawing.fromFigure()'s `legacy`).
         oldWorldHoldings = Math.min(oldWorldHoldings, 1);
         recount();
     }
 
-    private void addPart(GridConversion.PartField p) {
+    private void addPart(PartField p) {
         parts.add(p);
         partIndex.put(new FieldKey(p.kind().ordinal(), p.cell(), p.index()), p);
     }
@@ -575,7 +596,7 @@ public final class CityLand {
     public List<Purchase> purchases()   { return Collections.unmodifiableList(purchases); }
 
     /** The fields the city holds only part of, a converted 0.7.58-0.7.63 save's (spec-grid 2.6). */
-    public List<GridConversion.PartField> partFields() { return Collections.unmodifiableList(parts); }
+    public List<PartField> partFields() { return Collections.unmodifiableList(parts); }
 
     /**
      * THE OLD WORLD'S GROUND (0.7.99, batch W1): how many holdings - the
@@ -599,7 +620,7 @@ public final class CityLand {
     /** The first save format whose land says which holdings hold the old world's fields (oldWorldHoldings()): 36. An older save's are all of them. */
     public static final int NEW_FIELDS_FORMAT = 36;
 
-    /** A converted city's purchase records as its save had them (LegacyLand's 28-wide rows), kept as history; null for a city founded on the grid. */
+    /** A converted city's purchase records as its save had them (the old 28-wide rows), kept as history; null for a city founded on the grid. */
     public double[][] convertedHistory() { return converted == null ? null : deepCopy(converted); }
 
     /** One of the whole city's areas, centre and purchases, in square kilometres. */
@@ -682,7 +703,7 @@ public final class CityLand {
     public boolean isPart(Deposit d) { return d.cell() >= 0 && partIndex.containsKey(new FieldKey(d.kind().ordinal(), d.cell(), d.index())); }
 
     /** The part field record of a field, or null when the city does not hold it in part. */
-    GridConversion.PartField partOf(Deposit d) {
+    PartField partOf(Deposit d) {
         return d.cell() < 0 ? null : partIndex.get(new FieldKey(d.kind().ordinal(), d.cell(), d.index()));
     }
 
@@ -690,15 +711,15 @@ public final class CityLand {
      * The holding a field's k-th site is the city's by, or -1: a whole
      * field's holding is the one whose ground holds its centre plot; a part
      * field's site is the converted centre's when the save held it, else
-     * the holding whose ground holds the site's plot (GridConversion.sitePlot()).
+     * the holding whose ground holds the site's plot (LandDrawing.sitePlot()).
      * A converted centre's legacy field (cell -1) is the centre's.
      */
     public int siteHolding(Deposit d, int k) {
         if (d.cell() < 0) return CENTRE;
-        GridConversion.PartField p = partOf(d);
+        PartField p = partOf(d);
         if (p == null) return grid.owner(d.x(), d.y());
         for (int s : p.owned()) if (s == k) return CENTRE;
-        long[] at = GridConversion.sitePlot(d, k);
+        long[] at = LandDrawing.sitePlot(d, k);
         int h = grid.owner(at[0], at[1]);
         return h > CENTRE ? h : -1;
     }
@@ -740,14 +761,14 @@ public final class CityLand {
                 }
             }
         }
-        for (GridConversion.PartField p : parts) {
+        for (PartField p : parts) {
             Deposit d = fieldOf(world, p);
             if (d == null) continue;
             boolean[] mine = new boolean[d.sites()];
             for (int s : p.owned()) if (s >= 0 && s < mine.length) mine[s] = true;
             for (int k = 0; k < d.sites(); k++) {
                 if (mine[k]) continue;
-                long[] at = GridConversion.sitePlot(d, k);
+                long[] at = LandDrawing.sitePlot(d, k);
                 if (at[0] < x0 || at[0] >= x1 || at[1] < y0 || at[1] >= y1 || grid.owner(at[0], at[1]) >= 0 || !keep.passes(at[0], at[1])) continue;
                 sites[p.kind().ordinal()]++;
                 amounts[p.kind().ordinal()] += d.siteAmount(k);
@@ -778,7 +799,7 @@ public final class CityLand {
                 amounts[t] += d.amount();
             }
         }
-        for (GridConversion.PartField p : parts) {
+        for (PartField p : parts) {
             if (p.kind() != r) continue;
             Deposit d = fieldOf(world, p);
             if (d == null) continue;
@@ -787,7 +808,7 @@ public final class CityLand {
             for (int s : p.owned()) if (s >= 0 && s < mine.length) mine[s] = true;
             for (int k = 0; k < d.sites(); k++) {
                 if (mine[k]) continue;
-                long[] at = GridConversion.sitePlot(d, k);
+                long[] at = LandDrawing.sitePlot(d, k);
                 if (at[0] < x0 || at[0] >= x1 || at[1] < y0 || at[1] >= y1 || grid.owner(at[0], at[1]) >= 0) continue;
                 sites[t]++;
                 amounts[t] += d.siteAmount(k);
@@ -816,7 +837,7 @@ public final class CityLand {
                 out.add(new int[] { Math.max(0, types.indexOf(d.type())), d.sites() });
             }
         }
-        for (GridConversion.PartField pf : parts) {
+        for (PartField pf : parts) {
             if (pf.kind() != r) continue;
             Deposit d = fieldOf(world, pf);
             if (d == null) continue;
@@ -825,7 +846,7 @@ public final class CityLand {
             int n = 0;
             for (int k = 0; k < d.sites(); k++) {
                 if (mine[k]) continue;
-                long[] at = GridConversion.sitePlot(d, k);
+                long[] at = LandDrawing.sitePlot(d, k);
                 if (at[0] < x0 || at[0] >= x1 || at[1] < y0 || at[1] >= y1 || grid.owner(at[0], at[1]) >= 0) continue;
                 n++;
             }
@@ -877,7 +898,7 @@ public final class CityLand {
                 if (h >= 0 && h < n) out.get(h).add(new Held(d, d.sites(), d.amount()));
             }
         }
-        for (GridConversion.PartField p : parts) {
+        for (PartField p : parts) {
             if (p.kind() != r) continue;
             Deposit d = fieldOf(world, p);
             if (d == null) continue;
@@ -949,7 +970,7 @@ public final class CityLand {
     }
 
     /** The world's field a part field record names, or null: the old world's (a part field is a 0.7.58-0.7.63 save's, converted). */
-    static Deposit fieldOf(World world, GridConversion.PartField p) {
+    static Deposit fieldOf(World world, PartField p) {
         for (Deposit d : legacyFields(world, p.cell(), p.kind())) if (d.index() == p.index()) return d;
         return null;
     }
@@ -1040,6 +1061,22 @@ public final class CityLand {
     /** A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). */
     static final int PARALLEL_TILES = 2_048;
 
+    /** Low-priority ground counts use two workers, preserving room for FX and the month (WN5d). */
+    static final int QUOTE_COUNT_WORKERS = 2;
+
+    private static final java.util.concurrent.ForkJoinPool QUOTE_COUNTS = new java.util.concurrent.ForkJoinPool(
+            QUOTE_COUNT_WORKERS, pool -> {
+                java.util.concurrent.ForkJoinWorkerThread t = java.util.concurrent.ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+                t.setName("land-quote-count-" + t.threadId());
+                t.setPriority(Thread.MIN_PRIORITY);
+                return t;
+            }, null, false);
+
+    /** A superseded background measurement stops between tiles or seller rows. */
+    static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) throw new java.util.concurrent.CancellationException();
+    }
+
     private record TileKey(World.Key world, long tx, long ty) { }
 
     private static final Map<TileKey, long[]> TILE_COUNTS = new LinkedHashMap<>(1024, 0.75f, true) {
@@ -1084,7 +1121,7 @@ public final class CityLand {
 
     /** The five areas, in square kilometres, of the plots of [x0, x1) x [y0, y1) no holding owns, each counted by its class. */
     public double[] groundOf(long x0, long y0, long x1, long y1) {
-        return GridConversion.km2Of(unownedClasses(x0, y0, x1, y1));
+        return LandDrawing.km2Of(unownedClasses(x0, y0, x1, y1));
     }
 
     /** What a rectangle's unowned plots hold: the five areas (groundOf()) and the dry ground by relief with the shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), in square kilometres, counted plot by plot in one pass. */
@@ -1093,7 +1130,7 @@ public final class CityLand {
     /** The five areas and the relief of the plots of [x0, x1) x [y0, y1) no holding owns (ET1, spec-earth2-terrain 3.3): groundOf() and what it splits, from the same plots. */
     public Ground groundWithRelief(long x0, long y0, long x1, long y1) {
         long[] wide = unownedCounts(x0, y0, x1, y1);
-        return new Ground(GridConversion.km2Of(Arrays.copyOf(wide, World.CLASSES)), reliefKm2(wide, World.CLASSES));
+        return new Ground(LandDrawing.km2Of(Arrays.copyOf(wide, World.CLASSES)), reliefKm2(wide, World.CLASSES));
     }
 
     /** A count's relief plots from index `from` on (RELIEF_AREAS of them), in square kilometres. */
@@ -1110,6 +1147,7 @@ public final class CityLand {
 
     /** ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). */
     long[] unownedCounts(long x0, long y0, long x1, long y1) {
+        checkInterrupted();
         long[] cls = new long[WIDE];
         x0 = Math.max(0, x0);
         y0 = Math.max(0, y0);
@@ -1124,12 +1162,25 @@ public final class CityLand {
         final long fx0 = x0, fy0 = y0, fx1 = x1, fy1 = y1;
         if (tiles >= PARALLEL_TILES) {
             long[][] byRow = new long[(int) rows][];
-            java.util.stream.IntStream.range(0, (int) rows).parallel()
-                    .forEach(j -> byRow[j] = rowClasses(world, ty0 + j, tx0, tx1, fx0, fy0, fx1, fy1));
+            java.util.concurrent.atomic.AtomicBoolean stopped = new java.util.concurrent.atomic.AtomicBoolean();
+            Runnable count = () -> java.util.stream.IntStream.range(0, (int) rows).parallel()
+                    .forEach(j -> byRow[j] = rowClasses(world, ty0 + j, tx0, tx1, fx0, fy0, fx1, fy1, stopped));
+            if (Thread.currentThread().getPriority() < Thread.NORM_PRIORITY) {
+                java.util.concurrent.ForkJoinTask<?> task = QUOTE_COUNTS.submit(count);
+                try { task.get(); }
+                catch (InterruptedException e) {
+                    stopped.set(true);
+                    task.cancel(false);
+                    Thread.currentThread().interrupt();
+                    throw new java.util.concurrent.CancellationException();
+                } catch (java.util.concurrent.ExecutionException e) {
+                    throw new IllegalStateException("The ground count failed", e.getCause());
+                }
+            } else count.run();
             for (long[] r : byRow) for (int c = 0; c < WIDE; c++) cls[c] += r[c];
         } else {
             for (long ty = ty0; ty <= ty1; ty++) {
-                long[] r = rowClasses(world, ty, tx0, tx1, x0, y0, x1, y1);
+                long[] r = rowClasses(world, ty, tx0, tx1, x0, y0, x1, y1, null);
                 for (int c = 0; c < WIDE; c++) cls[c] += r[c];
             }
         }
@@ -1137,12 +1188,15 @@ public final class CityLand {
     }
 
     /** One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). */
-    private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1) {
+    private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1,
+                              java.util.concurrent.atomic.AtomicBoolean stopped) {
         long[] cls = new long[WIDE];
         byte[] t = null, rel = null;
         boolean[] owned = null;
         int n = World.TILE;
         for (long tx = tx0; tx <= tx1; tx++) {
+            checkInterrupted();
+            if (stopped != null && stopped.get()) throw new java.util.concurrent.CancellationException();
             int cov = grid.cover(5, tx, ty);
             if (cov == LandGrid.ALL) continue;
             long px0 = tx * n, py0 = ty * n;
@@ -1238,7 +1292,7 @@ public final class CityLand {
     public double[][] partFieldsState() {
         double[][] rows = new double[parts.size()][];
         for (int i = 0; i < rows.length; i++) {
-            GridConversion.PartField p = parts.get(i);
+            PartField p = parts.get(i);
             double[] r = new double[3 + p.owned().length];
             r[0] = p.kind().ordinal();
             r[1] = p.cell();
@@ -1265,6 +1319,11 @@ public final class CityLand {
         return restore(World.Key.generated(seed), centre, rects, holdings, partRows, history);
     }
 
+    /** Whether the saved centre has the shape restore() can read (HA1). */
+    static boolean hasSavedCentre(double[] centre) {
+        return centre != null && centre.length == CENTRE_FIELDS;
+    }
+
     /** ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). Its ground by relief reads all flat (restore() with no relief rows). */
     public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
                                    double[][] history) {
@@ -1279,7 +1338,7 @@ public final class CityLand {
      */
     public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
                                    double[][] history, double[] centreRelief, double[][] holdingsRelief) {
-        if (centre == null || centre.length != CENTRE_FIELDS) return null;
+        if (!hasSavedCentre(centre)) return null;
         CityLand land = new CityLand(key, (long) centre[CENTRE_FIELDS - 2], (long) centre[CENTRE_FIELDS - 1]);
         int i = 0;
         for (int a = 0; a < AREAS; a++) land.centreKm2[a] = centre[i++];
@@ -1312,7 +1371,7 @@ public final class CityLand {
                 if (r == null || r.length < 3 || r[0] < 0 || r[0] >= KINDS) continue;
                 int[] owned = new int[r.length - 3];
                 for (int k = 0; k < owned.length; k++) owned[k] = (int) r[3 + k];
-                land.addPart(new GridConversion.PartField(Resource.values()[(int) r[0]], (int) r[1], (int) r[2], owned));
+                land.addPart(new PartField(Resource.values()[(int) r[0]], (int) r[1], (int) r[2], owned));
             }
         }
         land.converted = history == null ? null : deepCopy(history);

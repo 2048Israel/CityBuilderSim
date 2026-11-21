@@ -31,6 +31,11 @@ public class DeathRecordCheck {
 
     /** Section 3's city: a founding with its houses, shops, mill and works stood free, 48 months played; a second one is its twin (same months, same path). */
     static Game town(java.nio.file.Path root, String data, String legacy) {
+        return town(root, data, legacy, 48);
+    }
+
+    /** The same founding at a named month, keeping the buildings and the layoff unchanged (LD3). */
+    static Game town(java.nio.file.Path root, String data, String legacy, int month) {
         Game g = new Game(new GameFiles(root.resolve(data), root.resolve(legacy)));
         quietly(() -> {
             g.run();
@@ -41,7 +46,7 @@ public class DeathRecordCheck {
             b.addStack(b.getTemplateByName("Industrial Bakery"), 6, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
-            g.simulateMonths(48);
+            g.simulateMonths(month);
         });
         return g;
     }
@@ -51,15 +56,163 @@ public class DeathRecordCheck {
         return s == null || s.isEmpty() ? Double.NaN : s.get(s.size() - 1).doubleValue();
     }
 
-    public static void main(String[] args) throws Exception {
+    /** LD3 measures the twins in the same month, across the whole two-year layoff window. */
+    static void layoffsBesideTwin(java.nio.file.Path root) {
+        System.out.println("--- the layoff beside its twin, each month of two years ---");
+        // Month 60 keeps the original wave and one-orphan allowance. Month 48's rehire
+        // spike stays under its original hard law in section 3, owned by OX1.
+        Game closed = town(root, "layoff-data", "layoff-no-legacy", 60);
+        Game open = town(root, "layoff-open-data", "layoff-open-no-legacy", 60);
+        double orphansBefore = closed.getFamilies().getOrphansTotal();
+        double atHomeBefore = closed.getFamilies().getAtHomeAdults();
+        /*
+         * CU2: THE WAVE AGAINST THE TWIN, as the orphans are. The out of work at home is read over the open twin's in the same month, not over
+         * the closed town's own count at the closing: on the chained world prices this town stands 351 out of work at month 60, and the twin's
+         * count moves as far as the closed one's in the months after (420 against 221 in the first, 143 against 209 in the second), so the
+         * town's own count at the closing says nothing of what the closing did. The twin is the same city to the month with the mill standing.
+         */
+        double[] peakExcess = { 0 }, peakAtHome = { atHomeBefore }, childrenAtPeak = { 0 }, oldRuleOrphans = { 0 }, mostAdded = { 0 };
+        StringBuilder trace = new StringBuilder("   orphans by month, the closed town / its open twin (out of work at home, closed / open)"
+                + " [children back with their adults / placed with them, closed; open]:");
+        quietly(() -> {
+            BuildingsTemplate mill = closed.getBuildingManager().getTemplateByName("Industrial Bakery");
+            closed.getBuildingManager().retire(mill, closed.getBuildingManager().getQuantity(mill.getId()));
+            for (int m = 0; m < 24; m++) {
+                closed.simulateMonths(1);
+                open.simulateMonths(1);
+                FamilyModel families = closed.getFamilies();
+                mostAdded[0] = Math.max(mostAdded[0], families.getOrphansTotal() - open.getFamilies().getOrphansTotal());
+                trace.append(String.format(" %.1f/%.1f(%.0f/%.0f)", families.getOrphansTotal(), open.getFamilies().getOrphansTotal(),
+                        families.getAtHomeAdults(), open.getFamilies().getAtHomeAdults()));
+                FamilyModel twin = open.getFamilies();
+                if (families.getLastBackChildren() > 0 || twin.getLastBackChildren() > 0)
+                    trace.append(String.format("[%.2f/%.2f; %.2f/%.2f]", families.getLastBackChildren(), families.getLastBackChildrenHome(),
+                            twin.getLastBackChildren(), twin.getLastBackChildrenHome()));
+                double excess = families.getAtHomeAdults() - open.getFamilies().getAtHomeAdults();
+                if (excess > peakExcess[0]) {
+                    peakExcess[0] = excess;
+                    peakAtHome[0] = families.getAtHomeAdults();
+                    childrenAtPeak[0] = families.getOutsideDependantsTotal();
+                    oldRuleOrphans[0] = excess * families.dependantsPerOutsideHousehold();
+                }
+            }
+        });
+        System.out.printf("   out of work at home %.0f at the closing, %.0f at the widest over the twin (%.0f more than it), children with them %.3f, old rule %.3f against %.3f orphans; greatest same-month excess %.3f%n",
+                atHomeBefore, peakAtHome[0], peakExcess[0], childrenAtPeak[0], oldRuleOrphans[0], orphansBefore, mostAdded[0]);
+        System.out.println(trace);
+        assertTrue("fixture: the paired city's closing put adults out of work: more at home than its twin in the same month", peakExcess[0] > 0);
+        assertTrue("...and the old rule would have at least doubled its orphans", oldRuleOrphans[0] > orphansBefore);
+        assertTrue("the children went with the laid-off parents", childrenAtPeak[0] > 0);
+        assertTrue("the layoff adds at most one orphan against its twin in every month of the two years", mostAdded[0] <= 1);
+    }
 
-        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6). Section 3 compares the peak of the
-        // closed town's orphans with its open twin's, plus one, and both towns' orphans spike every few months by 13 to 16
-        // and decay, the closed town's a month or two sooner: the peaks are two spikes' heights. On LD2's path the closed
-        // town's is 17.97 (17.77 with LD2 off) and the twin's 15.53 (19.07), the closing adding nothing before the spikes
-        // (gaps of -0.5 to +0.8 to month 13). A measure inside the section's own noise, not the wave; queued (LD3) to
-        // measure the closing apart from the spikes and turn LD2 back on here.
-        WantedPosts.carryKeptOut = false;
+    /*
+     * 4. A WAVE OF THE OUT OF WORK THAT ENDS AT ONCE (OX1, 2026-11-17). The played town of section 3 took its 319 out of work back in one
+     * month and its orphans peaked at 27.7 against its open twin's 21.5: the children who had gone out with their parents came back to the
+     * builder together, its half a shape left part of them over, and the households' memory, which already held every adult, kept them
+     * waiting for months. A bare model with the memory on, as Game has it, on one pyramid that never moves, so nothing but the wave can
+     * part the twins: a fifth of the adults out of work for six months, then all of them back in one month, against a twin that never laid
+     * anybody off. The allowance is section 3's, one orphan.
+     */
+    static void waveEndsAtOnce() {
+        System.out.println("\n--- a wave of the out of work that ends at once: the children go home with their parents ---");
+        double[] jobs = new double[PayTier.values().length];
+        jobs[PayTier.UNSKILLED.ordinal()] = 600;
+        jobs[PayTier.SKILLED.ordinal()] = 300;
+        jobs[PayTier.values().length - 1] = 100;
+        double babies = 800, children = 900, teens = 650, adults = 6000;
+        PopulationCohorts city = new PopulationCohorts();
+        city.restore(new double[] {babies, children, teens, adults, 1700, 0, 0, 0});
+        double outOfWork = adults / 5;
+        FamilyModel closed = new FamilyModel(), open = new FamilyModel();
+        closed.rememberHouseholds(true);
+        open.rememberHouseholds(true);
+        for (int m = 0; m < 36; m++) {
+            closed.rebuild(city, jobs, 0, 0);
+            open.rebuild(city, jobs, 0, 0);
+        }
+        double before = closed.getOrphansTotal();
+        double mostDuring = 0, mostAfter = 0, atTheEnd = 0, backAdults = 0, backChildren = 0, backHome = 0;
+        boolean nobodyOutAfter = false;
+        for (int m = 0; m < 6; m++) {
+            closed.rebuild(city, jobs, 0, outOfWork);
+            open.rebuild(city, jobs, 0, 0);
+            mostDuring = Math.max(mostDuring, closed.getOrphansTotal() - open.getOrphansTotal());
+        }
+        double childrenOut = closed.getOutsideDependantsTotal();
+        check("fixture: a fifth of the adults went out of work, and their children with them at the city's own rate",
+                childrenOut, (babies + children + teens) * outOfWork / adults, 1e-9);
+        StringBuilder trace = new StringBuilder("   orphans by month after the wave ends, the laid-off model / its twin:");
+        for (int m = 0; m < 12; m++) {
+            closed.rebuild(city, jobs, 0, 0);
+            open.rebuild(city, jobs, 0, 0);
+            double excess = closed.getOrphansTotal() - open.getOrphansTotal();
+            if (m == 0) {
+                nobodyOutAfter = closed.getAtHomeAdults() == 0 && closed.getOutsideDependantsTotal() == 0;
+                atTheEnd = excess;
+                backAdults = closed.getLastBackAdults();
+                backChildren = closed.getLastBackChildren();
+                backHome = closed.getLastBackChildrenHome();
+            }
+            mostAfter = Math.max(mostAfter, excess);
+            trace.append(String.format(" %.2f/%.2f", closed.getOrphansTotal(), open.getOrphansTotal()));
+        }
+        System.out.printf("   orphans %.2f before the wave; %.2f children went out with %.0f adults; over the twin %.3f at most during it, %.3f the month it ended, %.3f at most in the year after%n",
+                before, childrenOut, outOfWork, mostDuring, atTheEnd, mostAfter);
+        System.out.println(trace);
+        assertTrue("fixture: the wave ended at once: the month after, the model has nobody out of work at home and no child out with them",
+                nobodyOutAfter);
+        check("the month it ends, every adult who was out of work is back in the families", backAdults, outOfWork, 1e-9);
+        check("...and every child who went out with them came back with them", backChildren, childrenOut, 1e-9);
+        check("...and is placed in a household with them", backHome, backChildren, 1e-9);
+        assertTrue("the wave adds at most one orphan against its twin in any month of it", mostDuring <= 1);
+        assertTrue("the month it ends adds at most one orphan against the twin: the children went home with their parents", atTheEnd <= 1);
+        assertTrue("...and so does every month of the year after it", mostAfter <= 1);
+    }
+
+    /*
+     * 4b. THE AT-HOME COUNT FALLS WITH NOBODY COMING HOME (REV-OX1-1, 2026-11-17). Section 4's wave, but it ends without a job: its out
+     * of work go to prison (away, still in the pyramid), or leave the city with the children who were out with them. The adults at home
+     * fall by the whole wave, as they do when it ends in work, and the families do not grow by one adult; nobody may be brought home, or
+     * the pool's children are placed with the pool's adults as if they were the ones who came back.
+     */
+    static void nobodyComesHome() {
+        System.out.println("\n--- the adults at home fall and nobody comes home: prison, and the jobless leaving ---");
+        double[] jobs = new double[PayTier.values().length];
+        jobs[PayTier.UNSKILLED.ordinal()] = 600;
+        jobs[PayTier.SKILLED.ordinal()] = 300;
+        jobs[PayTier.values().length - 1] = 100;
+        double babies = 800, children = 900, teens = 650, adults = 6000;
+        double outOfWork = adults / 5, rate = outOfWork / adults;
+        PopulationCohorts city = new PopulationCohorts();
+        city.restore(new double[] {babies, children, teens, adults, 1700, 0, 0, 0});
+        // the jobless gone, and the children who were out with them
+        PopulationCohorts left = new PopulationCohorts();
+        left.restore(new double[] {babies * (1 - rate), children * (1 - rate), teens * (1 - rate), adults - outOfWork, 1700, 0, 0, 0});
+        FamilyModel jailed = new FamilyModel(), gone = new FamilyModel();
+        jailed.rememberHouseholds(true);
+        gone.rememberHouseholds(true);
+        for (int m = 0; m < 36; m++) {
+            jailed.rebuild(city, jobs, 0, 0);
+            gone.rebuild(city, jobs, 0, 0);
+        }
+        for (int m = 0; m < 6; m++) {
+            jailed.rebuild(city, jobs, 0, outOfWork);
+            gone.rebuild(city, jobs, 0, outOfWork);
+        }
+        double hadJailed = jailed.getAtHomeAdults(), hadGone = gone.getAtHomeAdults();
+        jailed.rebuild(city, jobs, outOfWork, 0);
+        gone.rebuild(left, jobs, 0, 0);
+        System.out.printf("   adults at home %.0f then %.0f (prison), %.0f then %.0f (leaving); brought home %.6f adults with %.6f children (prison), %.6f with %.6f (leaving)%n",
+                hadJailed, jailed.getAtHomeAdults(), hadGone, gone.getAtHomeAdults(), jailed.getLastBackAdults(), jailed.getLastBackChildren(),
+                gone.getLastBackAdults(), gone.getLastBackChildren());
+        check("fixture: the wave went to prison, and the adults at home fell by all of it", hadJailed - jailed.getAtHomeAdults(), outOfWork, 1e-9);
+        check("...and the wave that left the city took the adults at home down by all of it", hadGone - gone.getAtHomeAdults(), outOfWork, 1e-9);
+        assertTrue("nobody is brought home when the out of work go to prison", jailed.getLastBackAdults() <= 1e-6 && jailed.getLastBackChildren() <= 1e-6);
+        assertTrue("...nor when they leave the city", gone.getLastBackAdults() <= 1e-6 && gone.getLastBackChildren() <= 1e-6);
+    }
+
+    public static void main(String[] args) throws Exception {
 
         /* ============ 1. who among the dead ============ */
         System.out.println("--- who among the month's dead were orphans, and who had no home ---");
@@ -267,6 +420,10 @@ public class DeathRecordCheck {
         double[] orphanTotal = HistorySave.runningTotal(h.aligned("deathsOrphans"));
         assertTrue("...and its running total grew with them",
                 orphanTotal[orphanTotal.length - 1] >= Math.round(orphanDeathsEver[0] * 100) / 100.0 - .1);
+
+        layoffsBesideTwin(root);
+        waveEndsAtOnce();
+        nobodyComesHome();
 
         System.out.println();
         System.out.println(fails == 0 ? "The dead are counted." : fails + " FAILED");

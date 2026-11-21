@@ -35,7 +35,11 @@ public class BuildingManager {
      * holds one.
      */
     private long foundingEndowments = 1;
-    private int constructionMaterials;
+    /**
+     * The yard's stock, in units: a long since SQ1b, as every figure a draw reads or reduces is (takeFromYard()), so that a
+     * month's draw past 2^31 units takes its share of it without a narrowing on the way.
+     */
+    private long constructionMaterials;
     /**
      * What a unit of construction material costs, in the city's money.
      *
@@ -159,7 +163,18 @@ public class BuildingManager {
      * PRICE KEEPS UP WITH WAGES.
      */
     public double nonMaterialCost(BuildingsTemplate t) {
-        double cash = t.getCashCost();
+        return nonMaterialCost(t.getCashCost(), t.getConstructionPoints());
+    }
+
+    /**
+     * ...for one building of an order's fitout (R1e): the same arithmetic on its own cash cost and points, the template's
+     * shell and the pieces it comes with (Fitout); the template's own figures, to the bit, for the whole template.
+     */
+    public double nonMaterialCost(Fitout fit) {
+        return nonMaterialCost(fit.cashCost(), fit.points());
+    }
+
+    private double nonMaterialCost(double cash, double points) {
         if (buildersWages == null) return cash;
         double then = buildersWages.perPointAtFounding();
         if (!(then > 0)) return cash;
@@ -167,7 +182,7 @@ public class BuildingManager {
         // founding labour is the cash over that level, taken out at the level
         // and put back at today's wages - see THE CASH IS STRUCK AT THE
         // EXPECTED LEVEL.
-        double labourThen = Math.min(cash / expectedLevel, t.getConstructionPoints() * then);
+        double labourThen = Math.min(cash / expectedLevel, points * then);
         return cash - labourThen * expectedLevel + labourThen * buildersWageIndex();
     }
 
@@ -225,7 +240,7 @@ public class BuildingManager {
             BuildingsTemplate t = stack.getBuilding();
             int per = t.getConstructionPoints();
             if (stack.getUnderConstruction() <= 0 || per <= 0) continue;
-            double owed = stack.getUnderConstruction() * (double) per - stack.getConstructionProgress();
+            double owed = stack.pointsOnSite() - stack.getConstructionProgress();
             if (owed <= 0) continue;
             value += owed * nonMaterialCost(t) / per;
             points += owed;
@@ -1711,16 +1726,22 @@ public class BuildingManager {
            See Good.LUXURY_TRADE and LuxuryRetail.
 
            COVERAGE PER DOLLAR IS DELIBERATELY WORSE THAN A GROCER'S. A
-           Convenience Store covers 480 people for $442k; a Boutique covers 320
-           for $1,180k, which is eight times the money a head. Selling somebody
-           a watch takes more floor, more staff and more of both per customer
-           than selling them bread, and a city that wants to spend its money
-           has to build for it rather than have it happen.
+           Convenience Store covers 480 people for $442k; a Boutique covers 7
+           pieces for $1,180k. Selling somebody a watch takes more floor, more
+           staff and more of both per customer than selling them bread, and a
+           city that wants to spend its money has to build for it rather than
+           have it happen.
+
+           ...AND A POST SELLS ABOUT ONE PIECE A MONTH (LX1, 2026-11-17). Until
+           LX1 a Boutique covered 320 pieces with seven posts, so its payroll
+           was 1-2% of its margin where BEA's other retail pays 41.7%; the
+           coverage is what eight staff sell and the building is held
+           (LuxuryRetail, WHAT A POST SELLS).
            =================================================================== */
         BuildingsTemplate boutique = new BuildingsTemplate("Boutique", BuildingType.LUXURY)
                 .setSector("Luxury Retail")
-                .makes(Good.LUXURY_TRADE, 320)          // customers served a month
-                .uses(Good.LUXURIES, 320)               // one piece each, bought in
+                .makes(Good.LUXURY_TRADE, 7)            // customers served a month
+                .uses(Good.LUXURIES, 7)                 // one piece each, bought in
                 .setCashCost(1180)
                 .setConstructionPoints(190)
                 .setConstructionMaterials(26)
@@ -1728,24 +1749,29 @@ public class BuildingManager {
                 .setWaterConsumption(1)
                 .setLandSqFt(6000)
                 .setRoadLoad(8)
-                .setStock(960)                          // three months on the shelf
+                .setStock(21)                           // three months on the shelf
                 .setJobs(JobType.NO_DIPLOMA, 2)
-                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.DIPLOMA, 5)
                 .setJobs(JobType.COLLEGE_BUSINESS, 1)
                 .setId(69);
-        boutique.setCoverage(320);
+        boutique.setCoverage(7);
         templates.add(boutique);
 
         /*
-         * ...AND THE BIG ONE, which is where a large city actually spends.
-         * Thirteen times the customers on eighteen times the money, so it is
-         * the worse buy per head until the city is big enough to fill it -
-         * which is the same shape every other big building in this game has.
+         * ...AND THE BIG ONE. Eleven times the customers on eighteen times
+         * the money, so it is the worse buy per dollar at every size: the
+         * planner scores coverage x margin over cost (LuxuryRetail.plan()),
+         * 80 over $21,600 against the Boutique's 7 over $1,180 (0.0037 a
+         * dollar against 0.0059; 0.19 against 0.27 before LX1), and reads no
+         * city size, so it never chooses one while a Boutique can be staffed;
+         * one stands only where something else places it (LX1's notes, a call).
+         * Its 91 posts cover 80 pieces a month since LX1, the Boutique's 0.88
+         * a post, where they covered 4,200.
          */
         BuildingsTemplate departmentStore = new BuildingsTemplate("Department Store", BuildingType.LUXURY)
                 .setSector("Luxury Retail")
-                .makes(Good.LUXURY_TRADE, 4200)
-                .uses(Good.LUXURIES, 4200)
+                .makes(Good.LUXURY_TRADE, 80)
+                .uses(Good.LUXURIES, 80)
                 .setCashCost(21600)
                 .setConstructionPoints(2900)
                 .setConstructionMaterials(560)
@@ -1753,13 +1779,13 @@ public class BuildingManager {
                 .setWaterConsumption(18)
                 .setLandSqFt(90000)
                 .setRoadLoad(70)
-                .setStock(12600)
+                .setStock(240)
                 .setJobs(JobType.NO_DIPLOMA, 34)
                 .setJobs(JobType.DIPLOMA, 46)
                 .setJobs(JobType.COLLEGE_BUSINESS, 9)
                 .setJobs(JobType.UNIV_FINANCE, 2)
                 .setId(70);
-        departmentStore.setCoverage(4200);
+        departmentStore.setCoverage(80);
         templates.add(departmentStore);
 
 
@@ -3460,8 +3486,8 @@ public class BuildingManager {
            output; consumables the study's running cost less wages, the power
            bought and water - and the paper mill's fuel at the middle of fuel
            oil's band, the study naming no price. "since": 1900 but the Panel
-           Mill, about 1980, and the Wood Pellet Mill, the 1970s (research-1900.md
-           1.2, both unverified).
+           Mill, E19 at 1981 (FPL-GTR-59), and Wood Pellet Mill, E20 at retained
+           1970 (FPL-RP-656 dates only the decade; R2e).
            ------------------------------------------------------------------------------ */
         templates.add(new BuildingsTemplate("Sawmill", BuildingType.HEAVY_INDUSTRY)   // sawlogs into lumber, chips and sawdust
                 .setCashCost(11544)
@@ -3503,7 +3529,7 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_SCIENCE, 3)
                 .setSince(1900)
                 .setId(134));
-        templates.add(new BuildingsTemplate("Panel Mill", BuildingType.HEAVY_INDUSTRY)   // pulpwood pressed into OSB, 1980
+        templates.add(new BuildingsTemplate("Panel Mill", BuildingType.HEAVY_INDUSTRY)   // OSB, commercial 1981 (FPL-GTR-59, E19)
                 .setCashCost(107690)
                 .setConstructionPoints(53845)
                 .setConstructionMaterials(1795)
@@ -3520,7 +3546,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 35)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 9)
                 .setJobs(JobType.UNIV_SCIENCE, 2)
-                .setSince(1980)
+                .setSince("E19")
                 .setId(135));
         templates.add(new BuildingsTemplate("Pulp Mill", BuildingType.HEAVY_INDUSTRY)   // pulpwood and residues cooked into pulp; its liquor and bark its own power
                 .setCashCost(200006)
@@ -3580,7 +3606,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 10)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 3)
                 .setJobs(JobType.UNIV_SCIENCE, 1)
-                .setSince(1970)
+                .setSince("E20")
                 .setId(138));
 
         /* ----------------------- HAULAGE (FR2, 2026-10-18) -----------------------
@@ -4966,7 +4992,77 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_LAW, 50)
                 .setJobs(JobType.UNIV_POLICY, 50)
                 .setId(151));
-        //add more buildings; next Building ID is 62
+        /* ---------------- GOLD MINE AND MILL (GD4, next permanent id after R4) ---------------- */
+        templates.add(new BuildingsTemplate("Gold Mine & Mill", BuildingType.MINING)
+                .setSector("Gold Mining")
+                .setCashCost(123082)
+                .setConstructionPoints(61541)
+                .setConstructionMaterials(2051)
+                .makes(Good.GOLD, 300000 / GoldPrice.GRAMS_PER_TROY_OUNCE)
+                .uses(Good.ACID, 30)
+                .uses(Good.DIESEL, 90000)
+                .setElectricityConsumption(5500)
+                .setWaterConsumption(476)
+                .setConsumables(1720)
+                .setLandSqFt(1076391)
+                .setRoadLoad(40)
+                .setJobs(JobType.NO_DIPLOMA, 90)
+                .setJobs(JobType.DIPLOMA, 24)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setSite(Resource.GOLD, Deposit.FieldType.NONE, 1, 1)
+                .setSince(1900)
+                .setId(152));
+        /* ---------------- THE NEAR FUTURE (R6b, 2026-11-16; docs/studies/research-near-future.md 3, docs/queue/R6b-notes.md)
+
+           Two works a near-future row opens, which a city founded the default way never knows (ResearchCatalog.NEAR_FUTURE; Game.knows()).
+           The SULPHIDE LEACH & SX-EW PLANT (FE2, Nov 2025, Johnson Camp): the Leach & SX-EW Plant's figures on one sulphide site, its dig the
+           builder's "recovery rates of up to 85% from primary sulphides" (Rio Tinto, 4 Dec 2025: CopperMining.SULPHIDE_LEACH_RECOVERY) and its
+           water the builder's "71 litres per kilogram copper", 71,000 m3 a month for 1,000 t in units of 10,000 US gallons (est. else: the
+           oxide plant's acid, power, staff and cost; no figure for them is published). The HYDROGEN STEEL WORKS (FE4, projected 2028, Boden):
+           electrolysers, a shaft furnace and its arc furnaces in one, pellets and power into steel; 100,000 t a month, LKAB's HYBRIT value
+           chain of 1.2 Mt of crude steel a year; 3.48 MWh a tonne of liquid steel (Vogl, Ahman and Nilsson 2018), in units of 720 kWh;
+           pellets at 1/0.65 a tonne (E4's 65% Fe); its cost, staff, ground, roads, consumables and water composed as 0.4 of a Blast Furnace
+           (the shaft furnace and electrolysers in its place, for 100,000 t of iron) and 0.8 of a Large Mini-Mill (its arc furnaces), plus
+           electrolysis water at 9 kg a kg of 54 kg of hydrogen a tonne (all est.: no builder has published these). */
+        templates.add(new BuildingsTemplate("Sulphide Leach & SX-EW Plant", BuildingType.MINING)   // one sulphide site: ore heap-leached to cathode, no smelter, 2025
+                .setCashCost(192310)
+                .setConstructionPoints(96155)
+                .setConstructionMaterials(3205)
+                .setSector("Copper Mining")
+                .makes(Good.COPPER, 1000)
+                .uses(Good.ACID, 3500)
+                .setElectricityConsumption(6000)
+                .setWaterConsumption(1876)          // 71 L a kg: 71,000,000 L over 37,854 L a unit
+                .setConsumables(1025.35)
+                .setLandSqFt(5381955)               // one copper site
+                .setRoadLoad(756)
+                .setStock(3000)
+                .setJobs(JobType.NO_DIPLOMA, 90)
+                .setJobs(JobType.DIPLOMA, 41)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 15)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setSite(Resource.COPPER, Deposit.FieldType.SULPHIDE, 1, ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH_DIG)
+                .setSince("FE2")
+                .setId(153));
+        templates.add(new BuildingsTemplate("Hydrogen Steel Works", BuildingType.HEAVY_INDUSTRY)   // pellets and power into steel, no coke, projected 2028
+                .setCashCost(1153838)
+                .setConstructionPoints(576919)
+                .setConstructionMaterials(19231)
+                .setSector("Heavy Industry")
+                .makes(Good.STEEL, 100000)
+                .uses(Good.PELLETS, 153846)          // 1/0.65 t of 65% Fe pellets a tonne
+                .setElectricityConsumption(483333)   // 3.48 MWh a tonne over 720 kWh a unit
+                .setWaterConsumption(8389)
+                .setConsumables(4506.82)
+                .setLandSqFt(6544457)
+                .setRoadLoad(11080)
+                .setJobs(JobType.NO_DIPLOMA, 432)
+                .setJobs(JobType.DIPLOMA, 280)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 72)
+                .setJobs(JobType.UNIV_SCIENCE, 16)
+                .setSince("FE4")
+                .setId(154));
+        //add more buildings; next Building ID is 155
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 
@@ -5007,7 +5103,24 @@ public class BuildingManager {
         stacks.addAll(ordered);
     }
 
-    public void addStack(BuildingsTemplate template, int quantity, boolean noConstruction) {
+    private java.util.function.Consumer<BuildingsStacks> onScrap = s -> { };
+
+    /** The fitting queue follows every stack's removals, told the stack after its counts fell; installed again by Game when its world is rebuilt (R1d). */
+    public void setOnScrap(java.util.function.Consumer<BuildingsStacks> listener) {
+        onScrap = listener;
+        for (BuildingsStacks stack : stacks) stack.setOnScrap(s -> onScrap.accept(s));
+    }
+
+    public void addStack(BuildingsTemplate template, long quantity, boolean noConstruction) {
+        addStack(template, quantity, noConstruction, null);
+    }
+
+    /**
+     * ...with the order's fitout (R1e; Fitout): a fitout the order chose goes on site as the stack's newest lot (BuildingsStacks,
+     * THE ORDERS' EQUIPMENT ON SITE), which keeps its set and owes its points until it finishes. None, or one no one chose, puts
+     * the buildings up as before. An instant build ignores it: it comes as placed.
+     */
+    public void addStack(BuildingsTemplate template, long quantity, boolean noConstruction, Fitout fit) {
 
         if (template.getName() == null) {
             System.out.println("error");
@@ -5024,7 +5137,7 @@ public class BuildingManager {
                 if (noConstruction) {
                     stack.addQuantity(quantity);
                 } else {
-                    stack.startConstruction(quantity);
+                    stack.startConstruction(quantity, fit);
                 }
                 return;
             }
@@ -5032,12 +5145,13 @@ public class BuildingManager {
 
         // Stack does not exist
         BuildingsStacks newStack = new BuildingsStacks(template, 0);
+        newStack.setOnScrap(s -> onScrap.accept(s));
         stacks.add(newStack);
 
         if (noConstruction) {
             newStack.addQuantity(quantity);
         } else {
-            newStack.startConstruction(quantity);
+            newStack.startConstruction(quantity, fit);
         }
     }
 
@@ -5057,11 +5171,29 @@ public class BuildingManager {
         return templates;
     }
 
+    /** The city's live knowledge (R2b); a standalone catalogue keeps every template available. */
+    private java.util.function.Predicate<BuildingsTemplate> templateKnown = t -> true;
+
+    /** Supplied by Game once, reading the current month and local discoveries on every query. */
+    public void setTemplateKnown(java.util.function.Predicate<BuildingsTemplate> known) {
+        templateKnown = java.util.Objects.requireNonNull(known);
+    }
+
+    /** One rule for candidate lists and orders; the complete catalogue remains available for saves and accounting. */
+    public boolean isTemplateKnown(BuildingsTemplate t) { return templateKnown.test(t); }
+
+    /** Every building the city knows how to build now, in catalogue order (R2b). */
+    public List<BuildingsTemplate> getKnownTemplates() {
+        List<BuildingsTemplate> result = new ArrayList<>();
+        for (BuildingsTemplate t : templates) if (isTemplateKnown(t)) result.add(t);
+        return result;
+    }
+
     public List<BuildingsTemplate> getTemplatesByCategory(EnumSet<BuildingType> categories) {
         List<BuildingsTemplate> result = new ArrayList<>();
 
         for (BuildingsTemplate t : templates) {
-            if (categories.contains(t.getCategory())) {
+            if (categories.contains(t.getCategory()) && isTemplateKnown(t)) {
                 result.add(t);
             }
         }
@@ -5197,7 +5329,7 @@ public class BuildingManager {
         double[] owed = new double[n + 1 + d];
         for (int k = 0; k < n; k++) {
             BuildingsStacks s = stacks.get(k);
-            int building = s.getUnderConstruction();
+            long building = s.getUnderConstruction();
             double points = s.getBuilding().getConstructionPoints();
             if (extra != null && extraCount > 0 && s.getBuilding() == extra) {
                 extraHasStack = true;
@@ -5205,7 +5337,7 @@ public class BuildingManager {
                 owed[k] = extraCount * points;
             }
             if (building <= 0) continue;
-            owed[k] += Math.max(0, s.getUnderConstruction() * points - s.getConstructionProgress());
+            owed[k] += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             weight[k] = weightOf(s.getBuilding(), building);
         }
         if (extra != null && extraCount > 0 && !extraHasStack) {
@@ -5285,14 +5417,14 @@ public class BuildingManager {
      * size (BusinessInvestment.leadTime(), orderSize()) and the build quote
      * (Game.quoteMonths()). MAX_VALUE with no output.
      */
-    public double waitFor(BuildingsTemplate t, int quantity, double siteOutput) {
+    public double waitFor(BuildingsTemplate t, long quantity, double siteOutput) {
         return waitFor(t, quantity, 0, siteOutput);
     }
 
     /** ...with `extraPoints` more owed on the order's site than its buildings' own (ET2: a foothill pad's preparation, SitePreparation); waitFor() exactly for none. */
-    public double waitFor(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    public double waitFor(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (t == null || quantity < 1) return 0;
-        return waitWith(t, quantity, extraPoints, siteOutput);
+        return priorityWait(waitWith(t, quantity, extraPoints, siteOutput), siteOutput);
     }
 
     /**
@@ -5305,11 +5437,11 @@ public class BuildingManager {
      */
     public double waitOnSite(BuildingsTemplate t, double siteOutput) {
         if (t == null) return 0;
-        return waitWith(t, 0, 0, siteOutput);
+        return priorityWait(waitWith(t, 0, 0, siteOutput), siteOutput);
     }
 
     /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2). */
-    private double waitWith(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    private double waitWith(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         // ...the first group's, with a depot served first on site or a depot
         // weighed that would be (0.7.130).
@@ -5322,23 +5454,27 @@ public class BuildingManager {
         return ruleWait(t, quantity, extraPoints, siteOutput);
     }
 
-    /** The points an order of `quantity` owes: its buildings' own, and `extraPoints` more on its site (ET2) - the buildings' alone, to the bit, for none. */
-    private static double orderPoints(BuildingsTemplate t, int quantity, double extraPoints) {
+    /**
+     * The points an order of `quantity` owes: its buildings' own, and `extraPoints` more on its site (ET2) - the buildings' alone, to the
+     * bit, for none. A negative extra is the work of the pieces the order leaves off (R1e, Game.quoteBuild()), never below nothing.
+     */
+    private static double orderPoints(BuildingsTemplate t, long quantity, double extraPoints) {
         double points = quantity * (double) t.getConstructionPoints();
-        return extraPoints > 0 ? points + extraPoints : points;
+        if (extraPoints > 0) return points + extraPoints;
+        return extraPoints < 0 ? Math.max(0, points + extraPoints) : points;
     }
 
     /** The crews' rule's own wait, held steady, for an order of `quantity` - none, for what is on site alone: waitWith() before 0.7.130, and still, with no depot served first - and `extraPoints` more owed on its site (ET2). */
-    private double ruleWait(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    private double ruleWait(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double others = 0, aheadOwed = 0;
-        int aheadUnits = 0;
+        long aheadUnits = 0;
         for (BuildingsStacks s : stacks) {
-            int on = s.getUnderConstruction();
+            long on = s.getUnderConstruction();
             if (on <= 0) continue;
             if (s.getBuilding() == t) {
                 aheadUnits = on;
-                aheadOwed = Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress());
+                aheadOwed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             } else {
                 others += weightOf(s.getBuilding(), on);
             }
@@ -5390,7 +5526,7 @@ public class BuildingManager {
         double total = 0;
         for (BuildingsStacks s : stacks) {
             if (s.getUnderConstruction() <= 0 || !sector.equals(s.getBuilding().getSector())) continue;
-            total += Math.max(0, s.getUnderConstruction() * (double) s.getBuilding().getConstructionPoints()
+            total += Math.max(0, s.pointsOnSite()
                     - s.getConstructionProgress());
         }
         return total;
@@ -5405,7 +5541,7 @@ public class BuildingManager {
      */
     public double monthsLeft(BuildingsStacks site, double perSiteOutput) {
         if (perSiteOutput <= 0 || site.getUnderConstruction() <= 0) return Double.NaN;
-        double owed = site.getUnderConstruction() * (double) site.getBuilding().getConstructionPoints()
+        double owed = site.pointsOnSite()
                 - site.getConstructionProgress();
         return Math.ceil(Math.max(0, owed) / perSiteOutput);
     }
@@ -5469,8 +5605,9 @@ public class BuildingManager {
                 revenueDue += stack.getRevenueDue();
                 contractsDue.addAll(stack.getDues());
                 if (stack.getLastFinished() > 0) {
-                    finished.add(new Completion(
-                            stack.getBuilding().getName(), stack.getLastFinished()));
+                    // ...with what each order's buildings come without, as their lots froze it (R1e), and those no order fitted out.
+                    finished.add(new Completion(stack.getBuilding().getName(), stack.getLastFinished(),
+                            stack.getLastFinishedLoose(), stack.getLastFinishedWithout()));
                 }
                 // ...and the gravel roads whose paving opened with them (0.7.70).
                 retirePaved(stack);
@@ -5587,11 +5724,11 @@ public class BuildingManager {
         /** The builders' own sites served off the top of the month (0.7.130), in the stacks' order; empty when none is on site. */
         public final java.util.List<String> buildersFirst;
         /** ...and the buildings on them: the depots the line counts. */
-        public final int buildersOnSite;
+        public final long buildersOnSite;
         Plan(java.util.List<String> keys, double output, double[] owed, double[] rule, double[] share, double[] work,
              java.util.List<ConstructionControl.Overtime> overtime, double overtimePoints,
              java.util.List<String> deathCareFirst, double unburied,
-             java.util.List<String> buildersFirst, int buildersOnSite) {
+             java.util.List<String> buildersFirst, long buildersOnSite) {
             this.keys = keys; this.output = output; this.owed = owed; this.rule = rule; this.share = share;
             this.work = work; this.overtime = overtime; this.overtimePoints = overtimePoints;
             this.deathCareFirst = java.util.Collections.unmodifiableList(deathCareFirst);
@@ -5661,7 +5798,7 @@ public class BuildingManager {
             BuildingsStacks s = stacks.get(k);
             keys.add(ConstructionControl.keyOf(s.getBuilding()));
             if (s.getUnderConstruction() > 0) {
-                owed[k] = Math.max(0, s.getUnderConstruction() * (double) s.getBuilding().getConstructionPoints()
+                owed[k] = Math.max(0, s.pointsOnSite()
                         - s.getConstructionProgress());
             }
         }
@@ -5687,7 +5824,7 @@ public class BuildingManager {
         // site by the rule, and the city's part of it in the player's order.
         java.util.List<String> first = firstGroup();
         java.util.List<String> builders = new java.util.ArrayList<>();
-        int buildersOn = 0;
+        long buildersOn = 0;
         if (!first.isEmpty()) {
             share = firstOffTheTop(siteOutput, weight, owed, keys, first);
             if (control.isPrioritySet()) {
@@ -6033,10 +6170,10 @@ public class BuildingManager {
     }
 
     /** Whether the city could staff n of the builders' depots, by their own plan's test (Sector.staffing(), MIN_STAFFABLE_TO_ORDER), as Game hands it; null - a bare manager - says yes. */
-    private java.util.function.BiPredicate<BuildingsTemplate, Integer> buildersCouldStaff;
+    private java.util.function.BiPredicate<BuildingsTemplate, Long> buildersCouldStaff;
 
     /** Told by Game: how the builders' planner tests a depot's posts against the city's workers (0.7.130). */
-    public void setBuildersCouldStaff(java.util.function.BiPredicate<BuildingsTemplate, Integer> couldStaff) {
+    public void setBuildersCouldStaff(java.util.function.BiPredicate<BuildingsTemplate, Long> couldStaff) {
         this.buildersCouldStaff = couldStaff;
     }
 
@@ -6045,6 +6182,24 @@ public class BuildingManager {
 
     /** Told by Game: where the builders' month for the sites, every post offered, is read from (0.7.130). */
     public void setSitesAtEveryPost(java.util.function.DoubleSupplier sites) { this.sitesAtEveryPost = sites; }
+
+    /** Finite work done ahead of sites, rather than a permanent reduction in throughput (R1d review). */
+    private java.util.function.DoubleSupplier priorityWork = () -> 0;
+
+    public void setPriorityWork(java.util.function.DoubleSupplier points) { priorityWork = points; }
+
+    private double priorityPoints() { return Math.max(0, priorityWork.getAsDouble()); }
+
+    /** The local crews alone fit equipment; a foreign contractor cannot work this delay off. */
+    private double priorityWait(double wait, double siteOutput) {
+        double points = priorityPoints();
+        if (!(points > 0) || !(wait > 0) || wait == Double.MAX_VALUE) return wait;
+        double local = Math.min(siteOutput, Math.max(0, sitesAtEveryPost == null ? siteOutput : sitesAtEveryPost.getAsDouble()));
+        if (!(local > 0)) return wait; // foreign crews keep building while local crews cannot fit anything
+        double foreign = Math.max(0, siteOutput - local);
+        double delay = foreign > 0 ? Math.min(points / siteOutput, wait * local / foreign) : points / local;
+        return Math.min(Double.MAX_VALUE, wait + delay);
+    }
 
     /** The builders' whole month with every post offered, before the repairs, as Game hands it (Game.getConstructionOutputAtEveryPost(), FC1); null - a bare manager - reads none, and the premium and the foreign contractor are off. */
     private java.util.function.DoubleSupplier outputAtEveryPost;
@@ -6068,7 +6223,7 @@ public class BuildingManager {
     /** The months of work queued at the pace the builders leave the sites (BuildersShort.monthsQueued(): the queue as it stands over the sites' month, every post offered); 0 with no month to read. */
     public double monthsQueued() {
         if (!buildersMonthKnown()) return 0;
-        return BuildersShort.monthsQueued(getRemainingConstructionPoints(), sitesAtEveryPost.getAsDouble());
+        return BuildersShort.monthsQueued(getRemainingConstructionPoints() + priorityPoints(), sitesAtEveryPost.getAsDouble());
     }
 
     /**
@@ -6104,7 +6259,7 @@ public class BuildingManager {
         double sites = sitesAtEveryPost.getAsDouble(), output = outputAtEveryPost.getAsDouble();
         if (!(output > 0)) return 1;
         boolean foreign = BuildersShort.foreignTakesOrders(sites, output);
-        double queue = getRemainingConstructionPoints() + Math.max(0, pointsAhead);
+        double queue = getRemainingConstructionPoints() + priorityPoints() + Math.max(0, pointsAhead);
         // (Not foreign, the sites have at least FOREIGN_FLOOR of the month: a step in months is a finite number.)
         return BuildersShort.multiplier(foreign ? 0 : BuildersShort.monthsQueued(queue, sites),
                 foreign ? 0 : Math.max(0, pointsEach) / sites, n, foreign);
@@ -6117,7 +6272,7 @@ public class BuildingManager {
         for (BuildingsStacks s : stacks) {
             int per = s.getBuilding().getConstructionPoints();
             if (s.getUnderConstruction() <= 0 || per <= 0 || !goesFirst(s.getBuilding(), 0)) continue;
-            owed += Math.max(0, s.getUnderConstruction() * (double) per - s.getConstructionProgress());
+            owed += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
         }
         return owed;
     }
@@ -6139,15 +6294,28 @@ public class BuildingManager {
      * expand at (ruleWait() past BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING,
      * at their month for the sites with every post offered). Never anything else.
      */
-    public boolean goesFirst(BuildingsTemplate t, int extra) {
+    public boolean goesFirst(BuildingsTemplate t, long extra) {
+        return goesFirst(t, extra, null);
+    }
+
+    /** The same eligibility and starvation test on a quoted queue, before first-unit progress replaces full-site points. */
+    private boolean goesFirst(BuildingsTemplate t, long extra, java.util.Map<String, double[]> projected) {
         if (!buildersFirstOn || !addsToTheBuilders(t)) return false;
         BuildingsStacks s = getStack(t);
-        int n = Math.max(0, extra) + (s == null ? 0 : Math.max(0, s.getUnderConstruction()));
+        long n = Math.max(0, extra) + (s == null ? 0 : Math.max(0, s.getUnderConstruction()));
         if (n < 1) return false;
         if (buildersCouldStaff != null && !buildersCouldStaff.test(t, n)) return false;
         if (sitesAtEveryPost == null) return true;
         double sites = sitesAtEveryPost.getAsDouble();
-        return !(sites > 0) || ruleWait(t, Math.max(0, extra), 0, sites) > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
+        if (!(sites > 0)) return true;
+        if (projected == null)
+            return ruleWait(t, Math.max(0, extra), 0, sites) > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
+        double[] mine = projected.get(ConstructionControl.keyOf(t));
+        if (mine == null || !(mine[0] > 0)) return false;
+        double others = 0;
+        for (double[] site : projected.values()) if (site != mine) others += site[0];
+        double wait = mine[1] * (others + mine[0]) / (sites * mine[0]);
+        return wait > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
     }
 
     /** The builders' own sites served first, in the stacks' order: every stack that adds to their capacity with buildings on site, whoever paid for them, while the city could staff them (goesFirst()). */
@@ -6265,13 +6433,15 @@ public class BuildingManager {
             BuildingsTemplate t = s.getBuilding();
             // A Paved Road site that paves is not stopped (0.7.70; Game.cancelSite() refuses it).
             if (control.paving() > 0 && ConstructionControl.PAVE_TO.equals(t.getName())) continue;
-            double pointsLeft = Math.max(0, s.getUnderConstruction() * (double) t.getConstructionPoints()
+            double pointsLeft = Math.max(0, s.pointsOnSite()
                     - s.getConstructionProgress());
             // ...read while it is still on site: a depot served first was never on the contractor's book (FC1b).
             boolean servedFirst = goesFirst(t, 0);
+            // ...and the equipment its orders froze (R1e), before the stop clears it.
+            List<BuildingsStacks.Lot> lots = s.getLots();
             double[] stopped = s.stopForShell();
             control.endRun(t.getId());
-            ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0);
+            ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0, lots);
             controlEvents.refunds.add(new ConstructionControl.Refund(t.getId(), t.getName(), (int) stopped[0],
                     stopped[3], stopped[4], pointsLeft, shell, servedFirst));
         }
@@ -6291,10 +6461,10 @@ public class BuildingManager {
     private void retirePaved(BuildingsStacks stack) {
         if (stack.getLastFinished() <= 0 || control.paving() <= 0
                 || !ConstructionControl.PAVE_TO.equals(stack.getBuilding().getName())) return;
-        int paved = control.pavedOf(stack.getLastFinished());
+        long paved = control.pavedOf(stack.getLastFinished());
         if (paved <= 0) return;
         BuildingsTemplate gravel = getTemplateByName(ConstructionControl.PAVE_FROM);
-        int retired = retire(gravel, paved);
+        long retired = retire(gravel, paved);
         double freed = (gravel == null ? 0 : gravel.getLandSqFt() * (double) retired)
                 - stack.getBuilding().getLandSqFt() * (double) paved;
         controlEvents.paved.add(new ConstructionControl.Paved(retired, freed));
@@ -6309,7 +6479,7 @@ public class BuildingManager {
             addStack(t, 0, true);
             s = getStack(t);
         }
-        s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed);
+        s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed, shell.lots);
         control.removeShell(shell);
     }
 
@@ -6363,10 +6533,63 @@ public class BuildingManager {
         BuildingsStacks s = d == null ? stackOfKey(key) : null;
         if (d == null && (s == null || s.getUnderConstruction() <= 0)) return 0;
         // ...the first group's, with a depot on site (0.7.130).
-        if (firstOn(null, 0)) return firstWait(key, null, false, false, siteOutput);
+        if (firstOn(null, 0)) return priorityWait(firstWait(key, null, false, false, siteOutput), siteOutput);
         // The rule's wait, to the bit, with the player's hand off the site.
-        if (s != null && !handOn(key)) return waitWith(s.getBuilding(), 0, 0, siteOutput);
-        return handWait(key, null, false, siteOutput);
+        if (s != null && !handOn(key)) return priorityWait(waitWith(s.getBuilding(), 0, 0, siteOutput), siteOutput);
+        return priorityWait(handWait(key, null, false, siteOutput), siteOutput);
+    }
+
+    /**
+     * The quoted opening of the nth unit already on a site. Earlier priority
+     * work keeps its whole wait, and this site's existing crew weight stays
+     * with it. Reads the same first-group, priority and overtime arithmetic
+     * as siteMonths(), with only the target's points changed (HW1).
+     */
+    public double siteUnitMonths(BuildingsTemplate t, long units, double siteOutput) {
+        BuildingsStacks s = t == null ? null : getStack(t);
+        if (s == null || s.getUnderConstruction() <= 0 || units <= 0) return 0;
+        if (!(siteOutput > 0)) return Double.NaN;
+        long on = s.getUnderConstruction();
+        double owed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+        double points = Math.max(0, s.pointsOfFirst(Math.min(units, on))
+                - s.getConstructionProgress());
+        if (!(points > 0) || !(owed > 0)) return 0;
+        String key = ConstructionControl.keyOf(t);
+        double[] mine = {weightOf(t, on), points};
+        double wait;
+        if (firstOn(null, 0)) wait = firstWait(key, mine, false, false, siteOutput);
+        else if (handOn(key)) wait = handWait(key, mine, false, siteOutput);
+        else wait = waitWith(t, 0, 0, siteOutput) * points / owed;
+        return wait == Double.MAX_VALUE ? Double.NaN : priorityWait(wait, siteOutput);
+    }
+
+    /** Completion of currently pending units after one additional city order, with its full preparation points. */
+    public double siteUnitMonthsAfter(BuildingsTemplate t, long units, double siteOutput,
+                                      BuildingsTemplate additional, long quantity, double additionalPoints) {
+        if (additional == null || quantity <= 0) return siteUnitMonths(t, units, siteOutput);
+        BuildingsStacks stack = t == null ? null : getStack(t);
+        if (stack == null || stack.getUnderConstruction() <= 0 || units <= 0) return 0;
+        if (!(siteOutput > 0)) return Double.NaN;
+        long on = stack.getUnderConstruction();
+        double firstPoints = stack.pointsOfFirst(Math.min(units, on)) - stack.getConstructionProgress();
+        if (additional == t) firstPoints += additionalPoints - quantity * (double) t.getConstructionPoints();
+        firstPoints = Math.max(0, firstPoints);
+        if (!(firstPoints > 0)) return 0;
+        long after = (long) on + (additional == t ? quantity : 0);
+        double[] mine = {weightOf(t, after), firstPoints};
+        String key = ConstructionControl.keyOf(t);
+        double wait;
+        java.util.Map<String, double[]> projected = quotedSites(additional, quantity, additionalPoints);
+        if (!buildersFirstAfter(projected, additional, quantity).isEmpty())
+            wait = firstWait(key, mine, false, false, siteOutput, additional, quantity, additionalPoints);
+        else if (handOn(key) || unburiedNow() > 0 && servesTheDead(additional))
+            wait = handWait(key, mine, false, siteOutput, additional, quantity, additionalPoints);
+        else {
+            double totalWeight = 0;
+            for (double[] site : projected.values()) totalWeight += site[0];
+            wait = mine[0] > 0 ? firstPoints * totalWeight / (siteOutput * mine[0]) : Double.NaN;
+        }
+        return wait == Double.MAX_VALUE ? Double.NaN : priorityWait(wait, siteOutput);
     }
 
     /**
@@ -6376,24 +6599,24 @@ public class BuildingManager {
      * t's site where it stands, or a new city site at the bottom of the
      * order. MAX_VALUE with no output.
      */
-    public double cityOrderWait(BuildingsTemplate t, int quantity, double siteOutput) {
+    public double cityOrderWait(BuildingsTemplate t, long quantity, double siteOutput) {
         return cityOrderWait(t, quantity, 0, siteOutput);
     }
 
     /** ...with `extraPoints` more owed on its site than its buildings' own (ET2: a foothill pad's preparation, SitePreparation); cityOrderWait() exactly for none. */
-    public double cityOrderWait(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    public double cityOrderWait(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (t == null || quantity < 1) return 0;
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double points = orderPoints(t, quantity, extraPoints);
         // ...the first group's, with a depot served first on site or a depot
         // quoted that would be (0.7.130).
         if (firstOn(t, quantity)) {
-            return firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, points),
-                    !isOnSite(t), true, siteOutput);
+            return priorityWait(firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, points),
+                    !isOnSite(t), true, siteOutput), siteOutput);
         }
         double[] mine = joined(t, quantity, points);
         if (mine == null) return waitFor(t, quantity, extraPoints, siteOutput);
-        return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
+        return priorityWait(handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput), siteOutput);
     }
 
     /**
@@ -6402,13 +6625,13 @@ public class BuildingManager {
      * the rule as waitFor() times an order, or as the hand times it, as
      * cityOrderWait(). MAX_VALUE with no output.
      */
-    public double restartWait(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+    public double restartWait(BuildingsTemplate t, long n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
-        if (firstOn(t, n)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput);
+        if (firstOn(t, n)) return priorityWait(firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput), siteOutput);
         double[] mine = joined(t, n, owedPoints);
         if (mine == null) return siteMonthsWith(t, n, owedPoints, siteOutput);
-        return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
+        return priorityWait(handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput), siteOutput);
     }
 
     private boolean isOnSite(BuildingsTemplate t) {
@@ -6424,7 +6647,7 @@ public class BuildingManager {
      * serves them or waits behind the death care on site (0.7.129). Null
      * when the rule times it.
      */
-    private double[] joined(BuildingsTemplate t, int n, double owed) {
+    private double[] joined(BuildingsTemplate t, long n, double owed) {
         BuildingsStacks s = getStack(t);
         boolean onSite = s != null && s.getUnderConstruction() > 0;
         if (onSite && !s.isCitysOwn()) return null;
@@ -6432,14 +6655,14 @@ public class BuildingManager {
         // ...or the dead wait, and it serves them or waits behind the death care on site (0.7.129).
         boolean deadFirst = unburiedNow() > 0 && (servesTheDead(t) || !deathCareFirst().isEmpty());
         if (!control.isPrioritySet() && !(onSite && control.isRushed(key)) && !deadFirst) return null;
-        int on = onSite ? s.getUnderConstruction() : 0;
+        long on = onSite ? s.getUnderConstruction() : 0;
         double aheadOwed = onSite
-                ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
+                ? Math.max(0, s.pointsOnSite() - s.getConstructionProgress()) : 0;
         return new double[] { weightOf(t, on + n), aheadOwed + owed };
     }
 
     /** Points owed on every site, demolitions included: everything owed. */
-    public double pointsOwedOnSite() { return getRemainingConstructionPoints(); }
+    public double pointsOwedOnSite() { return getRemainingConstructionPoints() + priorityPoints(); }
 
     /**
      * Months a demolition of `points` over n buildings would take if ordered
@@ -6448,15 +6671,15 @@ public class BuildingManager {
      * everything the city has on site, since a new site of the city's joins
      * the bottom of its order (handWait()). MAX_VALUE with no output.
      */
-    public double waitForDemolition(int n, double points, double siteOutput) {
+    public double waitForDemolition(long n, double points, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (!(points > 0) || n < 1) return 0;
         ConstructionControl.Demolition probe = new ConstructionControl.Demolition();
         probe.buildings = n;
         probe.points = points;
         double[] mine = { demolitionWeight(probe), points };
-        if (firstOn(null, 0)) return firstWait("D?", mine, true, true, siteOutput);
-        return handWait("D?", mine, true, siteOutput);
+        if (firstOn(null, 0)) return priorityWait(firstWait("D?", mine, true, true, siteOutput), siteOutput);
+        return priorityWait(handWait("D?", mine, true, siteOutput), siteOutput);
     }
 
     /**
@@ -6465,14 +6688,18 @@ public class BuildingManager {
      * already, as waitFor() times an order. The rule's arithmetic; the
      * hand's is restartWait(). MAX_VALUE with no output.
      */
-    public double siteMonthsWith(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+    public double siteMonthsWith(BuildingsTemplate t, long n, double owedPoints, double siteOutput) {
+        return priorityWait(siteMonthsWithRaw(t, n, owedPoints, siteOutput), siteOutput);
+    }
+
+    private double siteMonthsWithRaw(BuildingsTemplate t, long n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
         if (firstOn(t, n)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), false, siteOutput);
         BuildingsStacks s = getStack(t);
-        int ahead = s == null ? 0 : s.getUnderConstruction();
+        long ahead = s == null ? 0 : s.getUnderConstruction();
         double aheadOwed = s == null || ahead <= 0 ? 0
-                : Math.max(0, ahead * (double) t.getConstructionPoints() - s.getConstructionProgress());
+                : Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
         double others = 0;
         for (BuildingsStacks st : stacks) {
             if (st == s || st.getUnderConstruction() <= 0) continue;
@@ -6484,6 +6711,28 @@ public class BuildingManager {
         double mine = weightOf(t, ahead + n);
         if (!(mine > 0)) return 0;
         return (aheadOwed + owedPoints) * (others + mine) / (siteOutput * mine);
+    }
+
+    /** Full pending crew weights and points after one quoted additional city order. */
+    private java.util.Map<String, double[]> quotedSites(BuildingsTemplate additional, long quantity, double points) {
+        java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
+        for (BuildingsStacks s : stacks) {
+            long on = s.getUnderConstruction();
+            if (on <= 0) continue;
+            double o = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+            by.put(ConstructionControl.keyOf(s.getBuilding()), new double[] { weightOf(s.getBuilding(), on), o });
+        }
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
+        }
+        if (additional != null && quantity > 0) {
+            String extraKey = ConstructionControl.keyOf(additional);
+            BuildingsStacks stack = getStack(additional);
+            long on = stack == null ? 0 : Math.max(0, stack.getUnderConstruction());
+            double owed = by.containsKey(extraKey) ? by.get(extraKey)[1] : 0;
+            by.put(extraKey, new double[] {weightOf(additional, (long) on + quantity), owed + Math.max(0, points)});
+        }
+        return by;
     }
 
     /**
@@ -6500,16 +6749,12 @@ public class BuildingManager {
      * NaN when its pace is nothing; MAX_VALUE past a hundred years.
      */
     private double handWait(String key, double[] mine, boolean isNew, double siteOutput) {
-        java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
-        for (BuildingsStacks s : stacks) {
-            int on = s.getUnderConstruction();
-            if (on <= 0) continue;
-            double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
-            by.put(ConstructionControl.keyOf(s.getBuilding()), new double[] { weightOf(s.getBuilding(), on), o });
-        }
-        for (ConstructionControl.Demolition site : control.demolitions()) {
-            by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
-        }
+        return handWait(key, mine, isNew, siteOutput, null, 0, 0);
+    }
+
+    private double handWait(String key, double[] mine, boolean isNew, double siteOutput,
+                            BuildingsTemplate additional, long quantity, double points) {
+        java.util.Map<String, double[]> by = quotedSites(additional, quantity, points);
         if (mine != null) by.put(key, mine);
         double[] me = by.get(key);
         if (me == null || !(me[1] > 0)) return 0;
@@ -6517,6 +6762,8 @@ public class BuildingManager {
         for (double[] v : by.values()) total += v[0];
         java.util.List<String> city = citySiteKeys();
         if (isNew && !city.contains(key)) city.add(key);
+        if (additional != null && quantity > 0 && !city.contains(ConstructionControl.keyOf(additional)))
+            city.add(ConstructionControl.keyOf(additional));
         // While the dead wait, the city's death care heads its order (0.7.129).
         java.util.List<String> dead = deathCareAmong(city);
         double months;
@@ -6562,17 +6809,29 @@ public class BuildingManager {
     }
 
     /** Whether a wait is the first group's (0.7.130): a depot of the builders' on site served first, or `quantity` more of `t` that would be. */
-    private boolean firstOn(BuildingsTemplate t, int quantity) {
+    private boolean firstOn(BuildingsTemplate t, long quantity) {
         if (!buildersFirstOn) return false;
         if (!buildersOwnOnSite().isEmpty()) return true;
         return quantity > 0 && goesFirst(t, quantity);
     }
 
+    /** Builders promoted by the complete prospective queue, including depots starved only by the additional reserve. */
+    private java.util.Set<String> buildersFirstAfter(java.util.Map<String, double[]> projected,
+                                                    BuildingsTemplate additional, long quantity) {
+        java.util.Set<String> group = new java.util.HashSet<>();
+        for (String key : projected.keySet()) {
+            int id = ConstructionControl.templateIdOf(key);
+            BuildingsTemplate t = id < 0 ? null : getTemplate(id);
+            if (goesFirst(t, t == additional ? quantity : 0, projected)) group.add(key);
+        }
+        return group;
+    }
+
     /** t's site with n more of it owing `owed` more points on it: {its crew's weight, its points owed}. */
-    private double[] withMore(BuildingsTemplate t, int n, double owed) {
+    private double[] withMore(BuildingsTemplate t, long n, double owed) {
         BuildingsStacks s = getStack(t);
-        int on = s == null ? 0 : Math.max(0, s.getUnderConstruction());
-        double aheadOwed = on > 0 ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
+        long on = s == null ? 0 : Math.max(0, s.getUnderConstruction());
+        double aheadOwed = on > 0 ? Math.max(0, s.pointsOnSite() - s.getConstructionProgress()) : 0;
         return new double[] { weightOf(t, (long) on + n), aheadOwed + owed };
     }
 
@@ -6591,35 +6850,37 @@ public class BuildingManager {
      * factor. NaN when its pace is nothing; MAX_VALUE past a hundred years.
      */
     private double firstWait(String key, double[] mine, boolean isNew, boolean cityOrder, double siteOutput) {
+        return firstWait(key, mine, isNew, cityOrder, siteOutput, null, 0, 0);
+    }
+
+    private double firstWait(String key, double[] mine, boolean isNew, boolean cityOrder, double siteOutput,
+                             BuildingsTemplate additional, long quantity, double points) {
         if (!(siteOutput > 0)) return Double.NaN;
-        java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
-        java.util.Set<String> group = new java.util.HashSet<>();
-        for (BuildingsStacks s : stacks) {
-            int on = s.getUnderConstruction();
-            if (on <= 0) continue;
-            double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
-            String k = ConstructionControl.keyOf(s.getBuilding());
-            by.put(k, new double[] { weightOf(s.getBuilding(), on), o });
-            if (goesFirst(s.getBuilding(), 0)) group.add(k);
-        }
-        for (ConstructionControl.Demolition site : control.demolitions()) {
-            by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
-        }
+        java.util.Map<String, double[]> by = quotedSites(additional, quantity, points);
+        boolean prospective = additional != null && quantity > 0;
+        java.util.Set<String> group = prospective ? buildersFirstAfter(by, additional, quantity) : new java.util.HashSet<>();
+        if (!prospective) for (BuildingsStacks stack : stacks)
+            if (stack.getUnderConstruction() > 0 && goesFirst(stack.getBuilding(), 0))
+                group.add(ConstructionControl.keyOf(stack.getBuilding()));
         if (mine != null) {
             by.put(key, mine);
-            // ...a depot among them when the city could staff all of it: its
-            // buildings, read back off its crew's weight (weightOf()).
-            int id = ConstructionControl.templateIdOf(key);
-            BuildingsTemplate t = id < 0 ? null : getTemplate(id);
-            BuildingsStacks st = t == null ? null : getStack(t);
-            int n = t == null ? 0 : (int) Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
-            group.remove(key);
-            if (goesFirst(t, n - (st == null ? 0 : Math.max(0, st.getUnderConstruction())))) group.add(key);
+            if (!prospective) {
+                // ...a depot among them when the city could staff all of it: its
+                // buildings, read back off its crew's weight (weightOf()).
+                int id = ConstructionControl.templateIdOf(key);
+                BuildingsTemplate t = id < 0 ? null : getTemplate(id);
+                BuildingsStacks st = t == null ? null : getStack(t);
+                long n = t == null ? 0 : Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
+                group.remove(key);
+                if (goesFirst(t, n - (st == null ? 0 : Math.max(0, st.getUnderConstruction())))) group.add(key);
+            }
         }
         double[] me = by.get(key);
         if (me == null || !(me[1] > 0)) return 0;
         java.util.List<String> city = citySiteKeys();
         if (isNew && cityOrder && !city.contains(key)) city.add(key);
+        if (additional != null && quantity > 0 && !city.contains(ConstructionControl.keyOf(additional)))
+            city.add(ConstructionControl.keyOf(additional));
         group.addAll(deathCareAmong(city));
         double groupWeight = 0, groupOwed = 0, restWeight = 0;
         for (java.util.Map.Entry<String, double[]> e : by.entrySet()) {
@@ -6754,11 +7015,23 @@ public class BuildingManager {
     public static final class Completion {
 
         public final String building;
-        public final int quantity;
+        public final long quantity;
+        /** Of those, the ones no order fitted out (loose on site, BuildingsStacks): what they come with is decided at the finish (R1e). */
+        public final long loose;
+        /** ...and of the rest, how many came without each piece, by id, as their orders froze them: unmodifiable (R1e). */
+        public final java.util.Map<String, Long> without;
 
-        Completion(String building, int quantity) {
+        /** `quantity` opened, every one loose: a finish decided at the finish, as before R1e. */
+        Completion(String building, long quantity) {
+            this(building, quantity, quantity, java.util.Map.of());
+        }
+
+        Completion(String building, long quantity, long loose, java.util.Map<String, Long> without) {
             this.building = building;
             this.quantity = quantity;
+            this.loose = Math.max(0, Math.min(quantity, loose));
+            this.without = without == null || without.isEmpty() ? java.util.Map.of()
+                    : java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(without));
         }
     }
 
@@ -6772,8 +7045,8 @@ public class BuildingManager {
     //getters
 
     /** How many finished buildings of this name the city has. */
-    public int countByName(String name) {
-        int total = 0;
+    public long countByName(String name) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getName().equals(name)) total += stack.getQuantity();
         }
@@ -6790,8 +7063,8 @@ public class BuildingManager {
      * and no bank at all came to sit at the punitive rate for four thousand
      * months without ever ordering the building that would fix it.
      */
-    public int underConstructionByName(String name) {
-        int total = 0;
+    public long underConstructionByName(String name) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getName().equals(name)) total += stack.getUnderConstruction();
         }
@@ -6846,12 +7119,11 @@ public class BuildingManager {
     public double getRemainingConstructionPoints() {
         double total = 0;
         for (BuildingsStacks stack : stacks) {
-            int building = stack.getUnderConstruction();
+            long building = stack.getUnderConstruction();
             if (building <= 0) continue;
 
-            double perUnit = stack.getBuilding().getConstructionPoints();
             // progress is against the current unit only; the rest are untouched.
-            total += perUnit * building - stack.getConstructionProgress();
+            total += stack.pointsOnSite() - stack.getConstructionProgress();
         }
         // ...and the city's demolitions on site (0.7.22), work like any other.
         for (ConstructionControl.Demolition site : control.demolitions()) total += site.owed();
@@ -6938,7 +7210,7 @@ public class BuildingManager {
     public long getJobsUnderConstruction() {
         long jobs = 0;
         for (BuildingsStacks stack : getStacksUnderConstruction()) {
-            jobs += (long) stack.getUnderConstruction() * stack.getBuilding().getTotalJobs();
+            jobs += (long) stack.getUnderConstruction() * newUnit(stack.getBuilding()).getTotalJobs();
         }
         return jobs;
     }
@@ -7260,8 +7532,8 @@ public class BuildingManager {
      * How many finished buildings, in every sector, have a template this accepts
      * (FR7): Freight counts the bulk works a spur could be laid into.
      */
-    public int standingWhere(java.util.function.Predicate<BuildingsTemplate> which) {
-        int total = 0;
+    public long standingWhere(java.util.function.Predicate<BuildingsTemplate> which) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (which.test(stack.getBuilding())) total += stack.getQuantity();
         }
@@ -7279,9 +7551,37 @@ public class BuildingManager {
         return total;
     }
 
+    /*
+     * WHAT IS ON SITE, AS IT WILL OPEN (QN1, 2026-11-19). A building under construction opens on the recipe and the
+     * pieces a new building gets (Game.fitWhatFinished(), the saved process), not on the standing fleet's mix: its
+     * posts, output and input ahead are a new building's (NewUnit), resolved by Game (setNewUnits()) for each stack
+     * with buildings on site. The stack, its template and what it is keyed by are untouched; what is standing keeps
+     * the installed figures (totalBySector()).
+     */
+    private java.util.function.Function<BuildingsTemplate, NewUnit> newUnits = NewUnit::standing;
+
+    /** Game hands in how a new building of a template is resolved (NewUnit.of()); null puts back the template as it stands. */
+    public void setNewUnits(java.util.function.Function<BuildingsTemplate, NewUnit> resolve) {
+        newUnits = resolve == null ? NewUnit::standing : resolve;
+    }
+
+    /** One new building of `t` as it would open now (NewUnit.of()); null for none. */
+    public NewUnit newUnit(BuildingsTemplate t) { return t == null ? null : newUnits.apply(t); }
+
+    /** Buildings on site only, each read as the new building it will open as (QN1): a sector's posts, output and input to come. */
+    public double underConstructionOfNew(String sector, java.util.function.ToDoubleFunction<NewUnit> getter) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector) || stack.getUnderConstruction() == 0) continue;
+            total += stack.getUnderConstruction() * getter.applyAsDouble(newUnit(t));
+        }
+        return total;
+    }
+
     /** Orders on site for a sector, in buildings. */
-    public int getUnderConstructionBySector(String sector) {
-        int total = 0;
+    public long getUnderConstructionBySector(String sector) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getSector().equals(sector)) total += stack.getUnderConstruction();
         }
@@ -7290,11 +7590,11 @@ public class BuildingManager {
 
     /**
      * The posts of one tier that a sector's buildings under construction will offer when they open: buildings on site
-     * times the template's jobs of that tier (BA1). Sector.staffing() counts them as spoken for, since with more than
+     * times the jobs of that tier each will open with (BA1; QN1, newUnit()). Sector.staffing() counts them as spoken for, since with more than
      * one order on site two of them must not be staffed from the same spare workers.
      */
     public double postsOnSite(String sector, JobType job) {
-        return underConstructionBySector(sector, t -> t.getJobs(job));
+        return underConstructionOfNew(sector, u -> u.getJobs(job));
     }
 
     /**
@@ -7411,10 +7711,10 @@ public class BuildingManager {
         return total;
     }
 
-    /** Every template a sector may build. */
+    /** Every template a sector may build now: unknown buildings never reach any sector's planner (R2b). */
     public List<BuildingsTemplate> getTemplatesBySector(String sector) {
         List<BuildingsTemplate> out = new ArrayList<>();
-        for (BuildingsTemplate t : templates) if (t.getSector().equals(sector)) out.add(t);
+        for (BuildingsTemplate t : templates) if (t.getSector().equals(sector) && isTemplateKnown(t)) out.add(t);
         return out;
     }
 
@@ -7943,7 +8243,7 @@ public class BuildingManager {
     /*
     ---------------------------------------------------------------------------
      */
-    public int getConstructionMaterials() {
+    public long getConstructionMaterials() {
         return constructionMaterials;
     }
 
@@ -7962,7 +8262,7 @@ public class BuildingManager {
     }
 
     /** How many of template id {@code i} are finished and standing. */
-    public int getQuantity(int i) {
+    public long getQuantity(int i) {
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == i) {
                 return stack.getQuantity();
@@ -7989,10 +8289,9 @@ public class BuildingManager {
      * Every square foot the city has committed to buildings - standing and on
      * site both, since a half-built plant is occupying its plot.
      *
-     * This is what a load recomputes the land ledger from, rather than trusting
-     * a saved figure: the buildings ARE the allocation, so deriving it means a
-     * save written before land existed still loads a correct city, and any
-     * drift between the two heals itself the next time the game is loaded.
+     * A load uses this as the allocation for a save without that key, or as
+     * the footprint delta since a new save was written (AW2). New saves keep
+     * the ledger's gap: fixture stacks may have been injected without taking ground.
      */
     public double getTotalLandFootprint() {
         double total = 0;
@@ -8063,7 +8362,7 @@ public class BuildingManager {
      *
      * @return how many were actually scrapped, which may be fewer than asked
      */
-    public int retire(BuildingsTemplate template, int quantity) {
+    public long retire(BuildingsTemplate template, long quantity) {
 
         if (template == null || quantity <= 0) {
             return 0;
@@ -8072,7 +8371,7 @@ public class BuildingManager {
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == template.getId()) {
 
-                int scrapped = Math.min(quantity, stack.getQuantity());
+                long scrapped = Math.min(quantity, stack.getQuantity());
                 if (scrapped > 0) {
                     stack.removeQuantity(scrapped);
                 }
@@ -8100,8 +8399,8 @@ public class BuildingManager {
      * unfitted counts): only the templates with any, so a city with none unfitted writes none and an old save, which has none, reads as every
      * building fitted. A fresh map, not the stacks' own.
      */
-    public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
-        java.util.Map<Integer, java.util.Map<String, Integer>> out = new java.util.TreeMap<>();
+    public java.util.Map<Integer, java.util.Map<String, Long>> getUnfittedById() {
+        java.util.Map<Integer, java.util.Map<String, Long>> out = new java.util.TreeMap<>();
         for (BuildingsStacks stack : stacks) {
             if (stack.hasUnfitted()) out.put(stack.getBuilding().getId(), new java.util.TreeMap<>(stack.getUnfittedView()));
         }
@@ -8113,22 +8412,51 @@ public class BuildingManager {
      * longer has, a stack the save did not put up and a piece the template no longer carries are skipped: a count for a piece nobody can fit
      * would hold a form's share up for ever. Null restores nothing.
      */
-    public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Integer>> byId) {
+    public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Long>> byId) {
         if (byId == null) return;
-        for (java.util.Map.Entry<Integer, java.util.Map<String, Integer>> e : byId.entrySet()) {
+        for (java.util.Map.Entry<Integer, java.util.Map<String, Long>> e : byId.entrySet()) {
             if (e.getKey() == null || e.getValue() == null) continue;
             BuildingsTemplate t = getTemplate(e.getKey());
             BuildingsStacks stack = t == null ? null : getStack(t);
             if (stack == null) continue;
-            for (java.util.Map.Entry<String, Integer> piece : e.getValue().entrySet()) {
+            for (java.util.Map.Entry<String, Long> piece : e.getValue().entrySet()) {
                 if (piece.getKey() == null || piece.getValue() == null || t.getEquipment(piece.getKey()) == null) continue;
                 stack.setUnfitted(piece.getKey(), piece.getValue());
             }
         }
     }
 
-    public int[] getUnderConstructionArray() {
-        int[] progress = new int[stacks.size()];
+    /**
+     * The equipment each site's orders froze, by template id (R1e; BuildingsStacks' lots), for the save: only the sites with a lot, so a
+     * city founded the default way writes none and an old save, which has none, reads every building on site as loose - the whole
+     * template, its pieces decided at the finish, as it was ordered. Copies, not the stacks' own.
+     */
+    public java.util.Map<Integer, List<BuildingsStacks.Lot>> getLotsById() {
+        java.util.Map<Integer, List<BuildingsStacks.Lot>> out = new java.util.TreeMap<>();
+        for (BuildingsStacks stack : stacks) {
+            List<BuildingsStacks.Lot> lots = stack.getLots();
+            if (!lots.isEmpty()) out.put(stack.getBuilding().getId(), lots);
+        }
+        return out;
+    }
+
+    /**
+     * ...and back onto the sites the load path has put up (R1e), after their counts (restoreConstruction()): each lot clamped to what is
+     * on site, a piece the template no longer carries dropped (Fitout.without()); a template this catalogue no longer has and a stack the
+     * save did not put up are skipped. Null restores nothing.
+     */
+    public void restoreLots(java.util.Map<Integer, List<BuildingsStacks.Lot>> byId) {
+        if (byId == null) return;
+        for (java.util.Map.Entry<Integer, List<BuildingsStacks.Lot>> e : byId.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null) continue;
+            BuildingsTemplate t = getTemplate(e.getKey());
+            BuildingsStacks stack = t == null ? null : getStack(t);
+            if (stack != null) stack.restoreLots(e.getValue());
+        }
+    }
+
+    public long[] getUnderConstructionArray() {
+        long[] progress = new long[stacks.size()];
 
         for (int i = 0; i < stacks.size(); i++) {
             progress[i] = stacks.get(i).getUnderConstruction();
@@ -8180,8 +8508,8 @@ public class BuildingManager {
         return out;
     }
 
-    public int[] getUnderConstructionById() {
-        int[] out = new int[getMaxTemplateId() + 1];
+    public long[] getUnderConstructionById() {
+        long[] out = new long[getMaxTemplateId() + 1];
         for (BuildingsStacks stack : stacks) {
             int id = stack.getBuilding().getId();
             if (id >= 0 && id < out.length) {
@@ -8282,7 +8610,7 @@ public class BuildingManager {
             if (left <= 0 && units <= 0) continue;
             BuildingsTemplate t = stack.getBuilding();
             int per = t.getConstructionPoints();
-            double owed = stack.getUnderConstruction() * (double) per - stack.getConstructionProgress();
+            double owed = stack.pointsOnSite() - stack.getConstructionProgress();
             double work = per > 0 ? t.getCashCost() * Math.max(0, owed) / per : 0;
             String payer = payerOf.apply(t);
             stack.restoreContract(payer, recovers.applyAsDouble(payer, t), left, units, Math.max(0, left - work));
@@ -8295,7 +8623,7 @@ public class BuildingManager {
         double owed = getRemainingConstructionPoints();
         if (owed <= 0) return;
         for (BuildingsStacks stack : stacks) {
-            double points = stack.getUnderConstruction() * (double) stack.getBuilding().getConstructionPoints()
+            double points = stack.pointsOnSite()
                     - stack.getConstructionProgress();
             if (points > 0) stack.setContractValue(unearned * points / owed);
         }
@@ -8327,7 +8655,7 @@ public class BuildingManager {
      * and a restore that quietly conjures a stack for an id the save no longer
      * recognises would hide a real problem. Returns false in that case instead.
      */
-    public boolean restoreConstruction(int templateId, int underConstruction,
+    public boolean restoreConstruction(int templateId, long underConstruction,
                                        double progress, double materialsOwed, double contractValue) {
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == templateId) {
@@ -8361,7 +8689,7 @@ public class BuildingManager {
         }
     }
 
-    public void setConstructionMaterials(int constructionMaterials) {
+    public void setConstructionMaterials(long constructionMaterials) {
         this.constructionMaterials = constructionMaterials;
     }
 
@@ -8394,7 +8722,7 @@ public class BuildingManager {
      * So the field is gone rather than patched. The yard is stock, the bill is
      * the caller's, and a quote is a quote.
      */
-    public void handleConstructionMaterials(int required) {
+    public void handleConstructionMaterials(long required) {
         takeFromYard(required);
     }
 
@@ -8405,8 +8733,8 @@ public class BuildingManager {
      *
      * @return units actually taken from the yard
      */
-    public int takeFromYard(int required) {
-        int taken = Math.max(0, Math.min(required, constructionMaterials));
+    public long takeFromYard(long required) {
+        long taken = Math.max(0L, Math.min(required, constructionMaterials));
         constructionMaterials -= taken;
         return taken;
     }

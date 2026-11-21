@@ -104,6 +104,30 @@ import java.util.Locale;
  *      Rotterdam city played a thousand months the rule cuts an order, no
  *      month's GDP is negative, and every curve reproduces the band it was
  *      set at.
+ *
+ *  10. A MINE AND A SMELTER ON THE WORLD MARKET (CU2): the chain the literals
+ *      mean to pay pays, and the copper charge's cycle is seen. No seed's
+ *      playtest builds a mine (spec-world-prices.md 5), so nothing there tests
+ *      the chain a mine feeds: a Large Copper Mine, a smelter and a refinery
+ *      in a town that is NOT on the literals, played from its founding through
+ *      WORLD_YEARS Januaries (four of the charge's large peaks, Nations.CHARGE_YEARS
+ *      apart), each year's mine, smelter and refinery making something and
+ *      the January's solve read (the market's solved year the year played).
+ *      (a) Copper Refining's own result from its books (revenue less inputs)
+ *      is above 0 in every year played after the founding year (the works'
+ *      ramp, printed), and the smelter's margin a tonne of
+ *      anode at the export side - anode's price less concentrate's over the
+ *      anode a tonne of it yields - is above 0 every January. (b) The charge's
+ *      cycle is seen: that margin over cathode's price follows the year's
+ *      treatment part (concentrate's charge less anode's) over cathode's
+ *      price, their correlation at least CYCLE_SEEN, and its range keeps
+ *      RANGE_KEPT of the treatment part's.
+ *
+ *  11. SEED 1'S ROD MILLS, PLAYED (CU2): the playtest's seed 1 played 2,400
+ *      months (LongPlaytest in a child JVM) stands at most ROD_MILLS_STANDING
+ *      Rod Mill; main's stood 363 on rod priced apart from its cathode. It
+ *      takes minutes: -DcopperRefining.played=false skips it (the suite never
+ *      sets it).
  */
 public class CopperRefiningCheck {
 
@@ -140,6 +164,8 @@ public class CopperRefiningCheck {
         wireWorksEstimate();
         idleWorks();
         flowGoods();
+        mineOnTheWorld();
+        if (PLAYED) rodMillsPlayed();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -182,14 +208,14 @@ public class CopperRefiningCheck {
             makers.put(g, m);
         }
         report("the buyers (spec 2.12): concentrate the smelters', cathode the mines' leach plants' and the refineries', the rod mills'"
-                        + " own; acid the smelters' to the leach plants; scrap the scrap refineries'; rod to the wire works; wire and cable to"
+                        + " own; acid the smelters' to the leach plants and gold mill; scrap the scrap refineries'; rod to the wire works; wire and cable to"
                         + " nobody here - it ships until the construction upgrade",
                 makers.get(Good.COPPER_CONC).equals(java.util.List.of(Sectors.COPPER_MINING))
                         && users.get(Good.COPPER_CONC).equals(java.util.List.of(Sectors.COPPER_REFINING))
                         && makers.get(Good.COPPER).equals(java.util.List.of(Sectors.COPPER_MINING, Sectors.COPPER_REFINING))
                         && users.get(Good.COPPER).equals(java.util.List.of(Sectors.COPPER_REFINING))
                         && makers.get(Good.ACID).equals(java.util.List.of(Sectors.COPPER_REFINING))
-                        && users.get(Good.ACID).equals(java.util.List.of(Sectors.COPPER_MINING))
+                        && users.get(Good.ACID).equals(java.util.List.of(Sectors.COPPER_MINING, Sectors.GOLD_MINING))
                         && makers.get(Good.COPPER_SCRAP).isEmpty() && users.get(Good.COPPER_SCRAP).equals(java.util.List.of(Sectors.COPPER_REFINING))
                         && users.get(Good.COPPER_ROD).equals(java.util.List.of(Sectors.MANUFACTURING))
                         && makers.get(Good.WIRE_CABLE).equals(java.util.List.of(Sectors.MANUFACTURING)) && users.get(Good.WIRE_CABLE).isEmpty()
@@ -378,12 +404,12 @@ public class CopperRefiningCheck {
     static void acid() {
         out.println("\n--- 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped ---");
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-acid", 0);
-        // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the books line below needs the leach plant to buy its acid at home
-        // alone, in the third month of a city that taxes and pays its wage floor from its first; a 1900 city on history's dates has neither until
-        // 1916-1918, and in the suite's first read of it every clause the line prints held (D$0.7k bought at home, D$0.7k sold at home, D$5.0k abroad)
-        // and the one it does not print, nothing bought abroad, did not. Every lever opened and the defaults put back, before a month.
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, diagnostic - see the batch notes; OP1): the books line below needs the leach plant to buy its
+        // acid at home alone, in the third month of a city that taxes and pays its wage floor from its first; until OP1 a 1900 city on history's
+        // dates had neither until 1916-1918, and in the suite's first read of it every clause the line prints held (D$0.7k bought at home, D$0.7k
+        // sold at home, D$5.0k abroad) and the one it does not print, nothing bought abroad, did not. Since OP1 every lever is open from the
+        // founding, and the defaults are put back (reset()) before a month.
         g.getEconomyManager().getTaxPolicy().reset();
-        g.getEconomyManager().getTaxPolicy().openAll();
         // ...on the goods' literals, as 3: on the world file's band under Random the smelter alone on landed concentrate nets less for its anode than
         // the concentrate costs it less the acid (EP1, the draws of 1900: 0.0610 against 0.0670, the study's case A), and a works orders nothing it
         // loses on (THE ORDER, FL1), so it made no acid for the leach plant to buy.
@@ -485,17 +511,53 @@ public class CopperRefiningCheck {
                         + " sector's sale its other revenue",
                 line > 0 && households > 0 && sold > 0 && Math.abs(line - households - sold) < .01,
                 String.format("D$%,.1fk: households D$%,.1fk, Manufacturing D$%,.1fk", line, households, sold));
-        // ...and a month with less old copper than it takes: all of it bought, the rest of its need bid on the market.
+        // ...and less old copper than its intake: retain the no-demand,
+        // loss-making imported-scrap premise (CPB1), and use the paid feed.
         g.getOldMetal().carsScrapped(500 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
         quietly(() -> g.simulateMonths(1));
         Sector.Input scrap2 = cr.input(Good.COPPER_SCRAP);
-        report("with less old copper than its intake it buys all of it, nothing to landfill, and bids for the rest of its scrap",
-                cu.lastLandfill() == 0 && cu.lastBought() == cu.lastArisen() && cu.lastArisen() < scrap2.needed
-                        && Math.abs(scrap2.bid - (scrap2.needed - cu.lastBought())) < 1e-6,
-                String.format("%,.1f t bought, %,.1f t bid of %,.1f needed", cu.lastBought(), scrap2.bid, scrap2.needed));
+        Sector.Output recycled = cr.outputRow(Good.COPPER);
+        BuildingsTemplate scrapWorks = b.getTemplate(CopperRefining.SCRAP_REFINERY);
+        double used = (recycled.produced + recycled.exportBound + recycled.captive)
+                * scrapWorks.uses(Good.COPPER_SCRAP) / scrapWorks.makes(Good.COPPER);
+        report("with less old copper than its intake it buys and makes all of it, nothing to landfill or loss-making imported scrap",
+                cu.lastLandfill() == 0 && near(cu.lastBought(), cu.lastArisen()) && cu.lastArisen() < scrap2.needed
+                        && cr.flowCostPerUnit(Good.COPPER) > g.getMarkets().get(Good.COPPER).netExportPrice()
+                        && g.getMarkets().get(Good.COPPER).getDemand() == 0 && near(scrap2.bid, 0) && near(used, cu.lastBought()),
+                String.format("%,.9f t bought of %,.9f arose, %,.9f landfill; %,.9f used; %,.1f bid of %,.1f needed; demand %.9f, cost %.9f, sale %.9f",
+                        cu.lastBought(), cu.lastArisen(), cu.lastLandfill(), used, scrap2.bid, scrap2.needed,
+                        g.getMarkets().get(Good.COPPER).getDemand(), cr.flowCostPerUnit(Good.COPPER), g.getMarkets().get(Good.COPPER).netExportPrice()));
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes (MoneyCheck holds its old-metal lines over two years)", audit != null && audit.relative() < 1e-4,
                 audit == null ? "none" : String.format("residual %.3g of what moved", audit.relative()));
+        // REV-CPB1-1: retain the loss case above, then cause a positive market
+        // remainder in the same town. On a fixed profitable band, 500 t of
+        // recovered copper covers only part of the run: bid() must buy the rest.
+        g.playOnLiterals();
+        GoodsMarket cathode = g.getMarkets().get(Good.COPPER);
+        double sale = 2 * cr.flowCostPerUnit(Good.COPPER);
+        cathode.setWorldPrices(sale * 2, sale);
+        g.getOldMetal().carsScrapped(500 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
+        quietly(() -> g.simulateMonths(1));
+        Sector.Input remainder = cr.inputRow(Good.COPPER_SCRAP);
+        Sector.Output paying = cr.outputRow(Good.COPPER);
+        double marketNeed = remainder.needed - cu.lastBought();
+        report("the same town on profitable cathode has a positive scrap remainder after 500 t of recovered copper",
+                near(cu.lastBought(), 500) && marketNeed > 0
+                        && cr.flowCostPerUnit(Good.COPPER) < cathode.netExportPrice(),
+                String.format("old %.1f t; remainder %.1f t; cost %.6f, sale %.6f", cu.lastBought(), marketNeed,
+                        cr.flowCostPerUnit(Good.COPPER), cathode.netExportPrice()));
+        report("...it bids and buys its full positive market remainder, not just the recovered copper",
+                remainder.bid > 0 && near(remainder.bid, marketNeed)
+                        && near(remainder.boughtLocal + remainder.imported, marketNeed),
+                String.format("needed %.9f, old %.9f, bid %.9f, bought %.9f", remainder.needed, cu.lastBought(), remainder.bid,
+                        remainder.boughtLocal + remainder.imported));
+        double payingUsed = (paying.produced + paying.exportBound + paying.captive)
+                * scrapWorks.uses(Good.COPPER_SCRAP) / scrapWorks.makes(Good.COPPER);
+        report("...the actual cathode uses the recovered copper and the market remainder at the same recipe ratio",
+                near(payingUsed, cu.lastBought() + remainder.boughtLocal + remainder.imported)
+                        && near(payingUsed, remainder.needed),
+                String.format("used %.9f t; needed %.9f t", payingUsed, remainder.needed));
         // With no refinery standing it all goes to landfill.
         Game none = CopperMiningCheck.copperTown("copperrefiningcheck-landfill", 0);
         none.getOldMetal().carsScrapped(1_000 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
@@ -700,17 +762,19 @@ public class CopperRefiningCheck {
                 pin != null && near(pbought, pused),
                 String.format("bought %,.1f t; used %,.1f t", pbought, pused));
 
-        // (c) a month that makes its whole rate is unchanged: the order is nameplate at the rate, less what is captive.
+        // (c) retain WN3's original empty-yard fixture. It has no local
+        // demand and imported anode loses money: CPB1 now idles this buffer.
+        // CopperBufferCheck separately causes and checks a profitable full run.
         Game full = copperWorks("copperrefiningcheck-whole", 0, 1, 0, Double.NaN);
         CopperRefining fr = full.getSectors().copperRefining();
         quietly(() -> full.simulateMonths(1));
         Sector.Output fcu = fr.outputRow(Good.COPPER);
         Sector.Input fin = fr.inputRow(Good.ANODE);
         double nameplate = fr.getCapacity(Good.COPPER) * fr.getOperatingRate();
-        report("(c) a refinery that makes its whole rate (a yard with room) orders exactly its need at the rate: getInputAtCapacity() times"
-                        + " the operating rate, to the bit",
-                fcu != null && fin != null && fr.getOperatingRate() > 0 && fcu.produced == nameplate
-                        && fin.bid == fr.getInputAtCapacity(Good.ANODE) * fr.getOperatingRate(),
+        report("(c) the original empty-yard refinery has no cathode demand and a negative feed spread: no speculative production or anode",
+                fcu != null && fin != null && fr.getOperatingRate() > 0 && fcu.produced == 0 && fcu.exportBound == 0 && fin.bid == 0
+                        && full.getMarkets().get(Good.COPPER).getDemand() == 0
+                        && fr.flowCostPerUnit(Good.COPPER) > full.getMarkets().get(Good.COPPER).netExportPrice(),
                 fin == null || fcu == null ? "none" : String.format("made %,.1f of %,.1f t; ordered %,.1f t of anode", fcu.produced, nameplate, fin.bid));
         Game chain = copperWorks("copperrefiningcheck-wholechain", 1, 1, 1, Double.NaN);
         // ...its rod's world prices doubled before its third month: this premise is a chain whose month makes its whole rate, and a Rod Mill's rod on
@@ -1128,5 +1192,265 @@ public class CopperRefiningCheck {
         }
         report("...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is"
                         + " the month's, to the bit", curves && (!world || traded > 0), traded + " goods" + (bad.length() > 0 ? "; not " + bad : ""));
+    }
+
+    /* ============================ 10. a mine and a smelter on the world market (CU2) ============================ */
+
+    /** The years section 10 plays: four of the charge's large peaks (Nations.CHARGE_YEARS apart) and a year over, about what a minute of the section holds. */
+    static final int WORLD_YEARS = 40;
+
+    /** The large peaks of the charge the years played must hold: three, so the cycle is seen more than once. */
+    static final int PEAKS_HELD = 3;
+
+    /** The least correlation of the smelter's margin over cathode with the treatment part over cathode, over the solves played: .98 measured (.9818 over the 41 solves of 1900-1940, 2026-11-16), this a little below it. */
+    static final double CYCLE_SEEN = .95;
+
+    /** The share of the treatment part's range the margin's range must keep: half, so the market does not damp the swing away (1.28 of it measured, over the same 41 solves). */
+    static final double RANGE_KEPT = .5;
+
+    /** Pearson's correlation of two series; NaN where either does not vary. */
+    static double correlation(double[] a, double[] b) {
+        int n = a.length;
+        double ma = 0, mb = 0;
+        for (int i = 0; i < n; i++) {
+            ma += a[i];
+            mb += b[i];
+        }
+        ma /= n;
+        mb /= n;
+        double cov = 0, va = 0, vb = 0;
+        for (int i = 0; i < n; i++) {
+            cov += (a[i] - ma) * (b[i] - mb);
+            va += (a[i] - ma) * (a[i] - ma);
+            vb += (b[i] - mb) * (b[i] - mb);
+        }
+        return va > 0 && vb > 0 ? cov / Math.sqrt(va * vb) : Double.NaN;
+    }
+
+    /** The largest less the smallest of a series. */
+    static double range(double[] a) {
+        double lo = Double.POSITIVE_INFINITY, hi = Double.NEGATIVE_INFINITY;
+        for (double v : a) {
+            lo = Math.min(lo, v);
+            hi = Math.max(hi, v);
+        }
+        return hi - lo;
+    }
+
+    /**
+     * 10. A Large Copper Mine, a smelter and a refinery in a town that plays on the world market, from its founding through WORLD_YEARS Januaries: the chain pays
+     * (Copper Refining's revenue over its inputs in every year, the smelter's margin above 0 every January) and the charge's cycle is seen in that margin.
+     */
+    static void mineOnTheWorld() {
+        out.println("\n--- 10. a mine and a smelter on the world market: the chain the literals mean to pay pays, and the copper charge's cycle is seen ---");
+        if (WorldData.locate() == null) {
+            out.println("the world file is not named: no world market and no charge; section 10 was not played");
+            return;
+        }
+        long started = System.currentTimeMillis();
+        BuildingManager tb = new BuildingManager();
+        tb.initializeTemplates();
+        BuildingsTemplate large = tb.getTemplate(CopperMining.LARGE_MINE), smelter = tb.getTemplate(CopperRefining.SMELTER),
+                refinery = tb.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY);
+        // ...the anode a tonne of concentrate yields: the smelter's recipe (concentrate is 30% copper, anode nearly all of it), so the two prices compare on a tonne of anode.
+        double yield = smelter.makes(Good.ANODE) / smelter.uses(Good.COPPER_CONC);
+        int months = WORLD_YEARS * 12;
+        // ...ground for the mine at its whole rate through every month played, and a site over.
+        int sites = (int) Math.ceil(months * large.makes(Good.COPPER_CONC) * CopperMining.CONC_DIG / Resource.COPPER.amountPerSite()) + 1;
+        Game g = CopperMiningCheck.copperTown("copperrefiningcheck-world", sites);
+        BuildingManager b = g.getBuildingManager();
+        quietly(() -> {
+            b.addStack(b.getTemplate(CopperMining.LARGE_MINE), 1, true);
+            b.addStack(b.getTemplate(CopperRefining.SMELTER), 1, true);
+            b.addStack(b.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY), 1, true);
+        });
+        MaterialsCheck.handWorkers(g);
+        // ...the two sectors out of the planner's hands: the works ramp up for most of a year on a town of a few hundred workers, losing, and the planner sells spare capacity
+        // after BusinessInvestment.RETIREMENT_LOSS_MONTHS months of loss (it did, in the ninth month); the subject here is the chain's prices, not the planner's retiring.
+        g.getBusinessInvestment().holdSector(Sectors.COPPER_MINING);
+        g.getBusinessInvestment().holdSector(Sectors.COPPER_REFINING);
+        CopperMining cm = g.getSectors().copperMining();
+        CopperRefining cr = g.getSectors().copperRefining();
+        LandManager land = g.getLandManager();
+        int sulphide = land.getSites(Resource.COPPER, Deposit.FieldType.SULPHIDE);
+        report("fixture: a town not on the literals with a Large Copper Mine, a smelter and a refinery standing, and sulphide ground for the mine's whole run",
+                !g.isOnLiterals() && cm.getCapacity(Good.COPPER_CONC) == large.makes(Good.COPPER_CONC)
+                        && cr.getCapacity(Good.ANODE) == smelter.makes(Good.ANODE) && cr.getCapacity(Good.COPPER) == refinery.makes(Good.COPPER)
+                        && sulphide == sites,
+                String.format("%,.0f t of concentrate a month, %,.0f of anode, %,.0f of cathode; %d sulphide sites (%s)", cm.getCapacity(Good.COPPER_CONC),
+                        cr.getCapacity(Good.ANODE), cr.getCapacity(Good.COPPER), sulphide, CopperMiningCheck.lastSearch));
+        double[] conc = new double[WORLD_YEARS + 2], anode = new double[WORLD_YEARS + 2], cathode = new double[WORLD_YEARS + 2];
+        double[] revenue = new double[WORLD_YEARS + 2], inputs = new double[WORLD_YEARS + 2];
+        // ...each solve of the market, read at the month it struck: the first is the founding's (the first month played strikes at the second game month), the rest the Januaries (the twelfth month played strikes January 1901): year,
+        // the concentrate's and the anode's charge, the export and import prices of concentrate, anode and cathode, the city's exchange rate. A year's flows are those of the months its solve struck; the last solve strikes one month.
+        java.util.List<double[]> januaries = new java.util.ArrayList<>();
+        int first = -1, last = -1, gaps = 0;
+        boolean market = true;
+        for (int i = 0; i < months; i++) {
+            quietly(() -> g.simulateMonths(1));
+            WorldMarket wm = g.getWorldMarket();
+            if (wm == null) {
+                market = false;
+                break;
+            }
+            int solved = wm.solvedYear();
+            if (first < 0) first = solved;
+            int y = solved - first;
+            if (y < 0 || y >= conc.length) break;
+            Sector.Output mined = cm.outputRow(Good.COPPER_CONC), smelted = cr.outputRow(Good.ANODE), refined = cr.outputRow(Good.COPPER);
+            conc[y] += mined == null ? 0 : mined.produced;
+            anode[y] += smelted == null ? 0 : smelted.produced + smelted.captive;
+            cathode[y] += refined == null ? 0 : refined.produced;
+            revenue[y] += cr.statement().revenue;
+            inputs[y] += cr.statement().inputs;
+            if (solved != last) {
+                if (last >= 0 && solved != last + 1) gaps++;
+                last = solved;
+                GoodsMarket mc = g.getMarkets().get(Good.COPPER_CONC), ma = g.getMarkets().get(Good.ANODE), mk = g.getMarkets().get(Good.COPPER);
+                januaries.add(new double[] { solved, wm.charge(Good.COPPER_CONC), wm.charge(Good.ANODE), mc.exportPrice(), mc.importPrice(), ma.exportPrice(),
+                        ma.importPrice(), mk.exportPrice(), mk.importPrice(), mk.getExchangeRate() });
+            }
+        }
+        int n = januaries.size();
+        double[] margin = new double[n], treatment = new double[n];
+        out.printf("      year  charge conc/anode   conc export/import   anode export/import   cathode export/import   margin  treatment  made: conc, anode, cathode;  result%n");
+        for (int k = 0; k < n; k++) {
+            double[] j = januaries.get(k);
+            // The smelter's margin a tonne of anode at the export side, over cathode's: anode's price less its concentrate's (a tonne of anode takes 1 / yield of it).
+            margin[k] = (j[5] - j[3] / yield) / j[7];
+            // The treatment part (concentrate's charge less anode's: the smelter's fee, in the copper's price at the literals) over cathode's price, in the city's money.
+            treatment[k] = (j[1] - j[2]) * Good.COPPER.worldExportPrice() * j[9] / j[7];
+            out.printf("      %d  %.4f/%.4f  %.3f/%.3f  %.3f/%.3f  %.3f/%.3f  %.4f  %.4f  %,.0f %,.0f %,.0f  %,.0f%n", (int) j[0], j[1], j[2], j[3], j[4], j[5], j[6],
+                    j[7], j[8], margin[k], treatment[k], conc[k], anode[k], cathode[k], revenue[k] - inputs[k]);
+        }
+        if (!market) {
+            report("the city has a world market in every month played", false, "none after " + n + " solves");
+            return;
+        }
+        long seconds = (System.currentTimeMillis() - started) / 1000;
+        report("the world market solved the founding year and every January after it, WORLD_YEARS (" + WORLD_YEARS + ") of them, one a year in turn", n == WORLD_YEARS + 1 && gaps == 0 && first >= 0 && last == first + WORLD_YEARS,
+                String.format("%d solves, %d to %d, %d s", n, first, last, seconds));
+        StringBuilder idle = new StringBuilder();
+        for (int y = 0; y < WORLD_YEARS; y++) {
+            if (!(conc[y] > 0 && anode[y] > 0 && cathode[y] > 0)) idle.append(first + y).append(' ');
+        }
+        report("...and in every year played the mine dug concentrate, the smelter made anode and the refinery cathode", idle.length() == 0,
+                idle.length() == 0 ? WORLD_YEARS + " years" : "not in " + idle);
+        Nations nations = g.getNations();
+        int peaks = 0;
+        StringBuilder peakYears = new StringBuilder();
+        for (int y = first + 1; y < last; y++) {
+            double s = nations.copperChargeSwing(y);
+            if (s > nations.copperChargeSwing(y - 1) && s > nations.copperChargeSwing(y + 1) && s > Nations.CHARGE_MID) {
+                peaks++;
+                peakYears.append(y).append(' ');
+            }
+        }
+        report("...the years played hold at least PEAKS_HELD (" + PEAKS_HELD + ") of the charge's large peaks, " + (int) Nations.CHARGE_YEARS + " years apart",
+                peaks >= PEAKS_HELD && WORLD_YEARS >= PEAKS_HELD * Nations.CHARGE_YEARS, peaks + " peaks: " + peakYears);
+
+        // (a) the chain pays: from the first full year at rate. The founding year is the works' ramp (most of a year on a town of a few hundred workers,
+        // the note at holdSector above), what a works costs while it starts and not what the prices pay; its result is printed, not held.
+        StringBuilder lost = new StringBuilder(), thin = new StringBuilder();
+        double worst = Double.POSITIVE_INFINITY, thinnest = Double.POSITIVE_INFINITY;
+        out.printf("      the founding year %d, the works ramping: Copper Refining's revenue less its inputs D$%,.0f%n", first, revenue[0] - inputs[0]);
+        for (int y = 1; y < WORLD_YEARS; y++) {
+            double result = revenue[y] - inputs[y];
+            worst = Math.min(worst, result);
+            if (!(result > 0)) lost.append(first + y).append(String.format(" (D$%,.0f) ", result));
+        }
+        for (int k = 0; k < n; k++) {
+            thinnest = Math.min(thinnest, margin[k]);
+            if (!(margin[k] > 0)) thin.append((int) januaries.get(k)[0]).append(String.format(" (%.4f) ", margin[k]));
+        }
+        report("(a) Copper Refining's own result, its revenue less its inputs, is above 0 in every year played after the founding year's ramp", lost.length() == 0,
+                lost.length() == 0 ? String.format("%d years, the least D$%,.0f", WORLD_YEARS - 1, worst) : "not in " + lost);
+        report("(a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January", thin.length() == 0,
+                thin.length() == 0 ? String.format("%d solves, the least %.4f of cathode's price", n, thinnest) : "not in " + thin);
+
+        // (b) the cycle is seen.
+        double r = correlation(margin, treatment), got = range(margin), charge = range(treatment);
+        report("(b) the smelter's margin over cathode follows the year's treatment part over cathode: the correlation is at least CYCLE_SEEN (" + CYCLE_SEEN + ")",
+                r >= CYCLE_SEEN, String.format("%.4f over %d solves", r, n));
+        report("(b) ...and the margin's range is at least RANGE_KEPT (" + RANGE_KEPT + ") of the treatment part's: the swing is not damped away", got >= RANGE_KEPT * charge,
+                String.format("margin's range %.4f, treatment part's %.4f: %.2f of it", got, charge, got / charge));
+        out.printf("      section 10: %d months in %d s%n", months, seconds);
+    }
+
+    /* ============================ 11. seed 1's Rod Mills, played (CU2) ============================ */
+
+    /** Whether section 11 plays: -DcopperRefining.played=false skips it while section 10 is iterated on; the suite never sets it. */
+    static final boolean PLAYED = !"false".equalsIgnoreCase(System.getProperty("copperRefining.played"));
+
+    /** The minutes the child may take before it is ended and the section fails: the 12 to 14 the playtest took under the suite's load, doubled. */
+    static final int ROD_CHILD_MINUTES = 28;
+
+    /** The Rod Mills seed 1's 2,400 months may leave standing: one, as the study's chained seed 1 stood one, losing; main's 363 fails it (spec-world-prices.md 5). */
+    static final int ROD_MILLS_STANDING = 1;
+
+    /** The playtest's own line of the copper works it ended with. */
+    static final String WORKS_LINE = "copper works at the end:";
+
+    /**
+     * 11. The playtest's seed 1, 2,400 months, in a child JVM started as DeterminismCheck starts its children (a file for its output, a limit on the wait):
+     * the Rod Mills it ends with.
+     */
+    static void rodMillsPlayed() throws Exception {
+        out.println("\n--- 11. seed 1's Rod Mills, played: the playtest's seed 1 for 2,400 months stands no Rod Mill that lives ---");
+        if (WorldData.locate() == null) {
+            // ...with no world file the child would play on the literals, where rod is priced apart from its cathode and the mills stand (main's 363): not this check's subject.
+            out.println("the world file is not named: the playtest would play on the literals; section 11 was not played");
+            return;
+        }
+        String javaExe = System.getProperty("java.home") + java.io.File.separator + "bin" + java.io.File.separator + "java";
+        java.util.List<String> cmd = new java.util.ArrayList<>(java.util.List.of(javaExe, "-Xmx" + AllChecks.HEAP_MB + "m"));
+        for (String key : new String[] { "cbs.earth", WorldData.PROPERTY }) {
+            String v = System.getProperty(key);
+            if (v != null) cmd.add("-D" + key + "=" + v);
+        }
+        cmd.addAll(java.util.List.of("-Dplaytest.seed=1", "-Dplaytest.months=2400", "-Dstdout.encoding=UTF-8", "-cp", System.getProperty("java.class.path"),
+                "ham.citybuildersim.LongPlaytest"));
+        java.nio.file.Path dir = TempDirs.create("copperrefiningcheck-rodmills");
+        java.nio.file.Path log = dir.resolve("seed1.log");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.redirectErrorStream(true);
+        // The child's output goes to a file, not through a pipe read to the end: that read returns only when the child exits, so the wait could never time out.
+        pb.redirectOutput(log.toFile());
+        long started = System.nanoTime();
+        Process p = pb.start();
+        boolean done = p.waitFor(ROD_CHILD_MINUTES, java.util.concurrent.TimeUnit.MINUTES);
+        double minutes = (System.nanoTime() - started) / 6e10;
+        if (!done) {
+            p.destroyForcibly();
+            p.waitFor(1, java.util.concurrent.TimeUnit.MINUTES);
+            report("the playtest's seed 1 finishes in " + ROD_CHILD_MINUTES + " minutes (it was ended; its output so far: " + log + ")", false, String.format("%.1f minutes", minutes));
+            return;
+        }
+        int exit = p.exitValue();
+        java.util.List<String> lines = java.nio.file.Files.readAllLines(log, java.nio.charset.StandardCharsets.UTF_8);
+        String works = null;
+        int findings = -1;
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i).trim();
+            if (line.startsWith(WORKS_LINE)) works = line;
+            if (line.equals("--- findings ---")) findings = i;
+        }
+        if (exit != 0 && findings >= 0) {
+            int shown = 0;
+            for (int i = findings + 1; i < lines.size() && shown < 6; i++) {
+                if (lines.get(i).isBlank()) continue;
+                // The child's FAIL token (HS1) is its own; echoed here it would be a red line of this harness.
+                out.println("      the playtest's finding: " + lines.get(i).trim().replaceFirst("^FAIL ", ""));
+                shown++;
+            }
+        }
+        report("the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line", exit == 0 && works != null,
+                String.format("exit %d, %.1f minutes; %s", exit, minutes, works == null ? "no line; its output: " + log : "its output: " + log));
+        if (works == null) return;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("Rod Mill (\\d+)").matcher(works);
+        int mills = m.find() ? Integer.parseInt(m.group(1)) : -1;
+        out.println("      seed 1 at month 2400: " + works.substring(WORKS_LINE.length()).trim() + " (main's seeds 1-3 stood 363, 397 and 446 Rod Mills, 53-81 Wire & Cable Works; spec-world-prices.md 5)");
+        report("seed 1's 2,400 months stand at most ROD_MILLS_STANDING (" + ROD_MILLS_STANDING + ") Rod Mill", mills >= 0 && mills <= ROD_MILLS_STANDING,
+                mills + " Rod Mills, " + String.format("%.1f minutes", minutes));
     }
 }
