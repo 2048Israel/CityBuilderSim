@@ -116,8 +116,12 @@ arithmetic was untouched. No unchanged named replay was used to claim new covera
 
 ## Review and ordering
 
-Fresh stranger review is owed for save/load and UI scope. `AllChecks` append and shared
-game classes make the final pick ALL, so a dry run is owed, only on orchestrator GO.
+Fresh stranger review is owed for saved model state, monetary load continuation and
+Services UI scope. The actual `tools/pick.sh origin/main HEAD` result is `ALL 238
+harnesses` (AllChecks append, 34 changed files from base 9d4467e8). Its exact review line:
+`review    needed - saves: HistorySave.java`. That is a floor; the new pending model
+state/monetary continuation and Services rendering also need review. A dry run is owed,
+only on orchestrator GO, after the final-model ensemble and review ordering.
 No full pick, LongPlaytest, ensemble, dry run, full Kept sweep or readiness/publication
 has been started. This is a domain projection and its harness, not check machinery;
 one-in/one-out does not apply. No publisher-owned records were edited.
