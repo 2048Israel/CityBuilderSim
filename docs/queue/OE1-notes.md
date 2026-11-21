@@ -375,3 +375,24 @@ is expected from it.
 
 **The rerun** (OE1e on 398057923, §8): F1 0 of 16 in every policy, against both baselines. AUTO2 6 and its
 ZERO_SLACK twin no longer flag m655.
+
+## 12. The third dry run (0e9403389, main 1d8a1f243)
+
+On the box (the kept run: `Temp/cbs-gate-OE1-EUyvBc8g`), the suite exit 4, one NEW red: **PassThroughCheck §3**,
+FS10's new fixture line (d8c1e97d6, shipped that evening), "fixture: the imported cost sets the shelf in both twins
+in each of the 12 months: the floor over the opening price and the clearing price not over the floor (11 of 12)".
+CarCheck and OutsideCheck stayed red, by name (§10).
+
+**The trace** (a probe printing each twin's shelf in the twelve months, removed). The twins are struck from the
+saved city at m241. In months 1-11 the clearing price is 0.0003-0.0096 against floors of 0.0173-0.0179. In month
+12, m253, the turn of the year, Retail's operating rate falls from 0.2907 to 0.2660 in both twins (coverage
+14,240 throughout). Supply drops to 3,776 baskets against 3,986 demanded at the price, and the clearing price
+goes to 0.0201 over floors of 0.0190 and 0.0193. Month 6 nearly does the same: supply 4,124 against the
+households' need of 4,127, the clearing price 0.008. The same run with the car mend's call reverted gives the same
+figures, so this is the first-plant path to the saved city (investment is held in the twins), not the car mend.
+The fixture's condition holds only while the shops hand over the households' need, which nothing in it causes;
+`DEAR` raises the floor, not the supply.
+
+The orchestrator's call: an OE1-path premise, not OE1's code. It passes by name to a new queued row, PT2 (the
+fixture causes the shops' hand-over in its twelve months), in the ship file's `## queued` and `## known-reds`.
+Then main merged again (ac224abf3, FS17) and the dry run again.
