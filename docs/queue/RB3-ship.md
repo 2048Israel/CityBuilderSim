@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — RB3, the fund's over-limit sale and the fixed point — 2026-11-20, ready, see docs/queue/RB3-notes.md
 FS13 found FundCheck 9e's town holding 11.17% of Construction against the fixed point of 10.92%. The book had last traded under fair value,
