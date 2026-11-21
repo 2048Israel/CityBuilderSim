@@ -1591,3 +1591,135 @@ further seed-length run. No additional execution or production mend was
 started after this capture. Source, reviews, saved proofs, failed full
 baseline and provisional marker remain frozen; F1 stays hard and R1g
 Pending unchanged. No dry/ready/reclassification action was taken.
+
+## 17. Static repair quote/payment trace; one short fixture proposed
+
+The 15:27 GO authorizes this static trace only. No compiler, JVM, new
+monthly run or box job was started. Source remains frozen 627174320;
+the sidecar's measured distinction is preserved: m1135 capital parts zero,
+repair receipts 1064.4066729404876, imported MATERIALS 3474.9581216832403
+for 203 units. Their subtraction is not an omitted flow, and those 203
+units are not automatically all allocated to repairs.
+
+### Source-linked formulas and phase ownership
+
+Let r_i be the template's annual repair share: its own
+repairsPerYearAt(street utilisation), or RealEstate.MAINTENANCE_PER_YEAR
+where it has none. For owner o, define L_o = sum of standing quantities
+times r_i/12 times BuildingManager.nonMaterialCost(template), and M_o
+the same weighted sum of template construction-material units. These are
+definitions of the production sums, not a fixture implementation/oracle.
+
+| item | actual formula/binding | owner and phase |
+|---|---|---|
+| Template labour/cash part | [BuildingManager.nonMaterialCost:165][r1g-repair-labour] uses template cash and construction points, replacing the founding labour share with today's builders' wage index. Upkeep is not read by this repair formula. | Templates/BuildingManager own the inputs. Template upkeep is a separate operating-cost input; it must not be conflated with repair bills. |
+| Repair quantity | [EconomyManager.repaired/maintenanceBillFor:932][r1g-repair-formula] computes L_o and M_o, using own shares/traffic where declared. maintenanceMaterialsTotal/PointsTotal similarly sum all buildings' materials/points. | chargeMaintenance overwrites totals/maps before the draw. Material need is fractional; the later draw rounds units. |
+| Repair quote price | [BuildingManager:269][r1g-repair-price] sets p_quote = Good.MATERIALS.worldImportPrice() * e. The getter at 5077 returns this stored materialsCost. | It is an anchored world-price constant times the struck conversion, **not the current local price or market import band**. Game passes this getter to chargeMaintenance at 8668. |
+| Shared currency/world factor | [EconomyManager:286/338][r1g-repair-exchange] sets e = struckRate * worldLevel; struckRate follows spot via PASS_THROUGH. It supplies e to both Markets and BuildingManager. Game calls strikeExchangeRate before the repair charge. | The factor is synchronized at this phase. The remaining quote-vs-draw difference can come from the market band/freight/local mix, not an assumed separate spot-vs-smoothed FX binding. |
+| Billed amount | B_o = (L_o + M_o * max(0,p_quote)) / (1 - buildersSalesRate). The rate is clamped to TaxPolicy.MAX_INCOME_TAX by the production accessor. B = sum sector bills + city-owned-category bills + bank-branch bill. | [chargeMaintenance:1175][r1g-maint] clears and sets the owner totals and each sector's maintenanceExpense. The bank's branch repairs are separate from its operating upkeep. |
+| Actual material draw | [drawMaterials:9706][r1g-draw] requests round(M_total), takes yard, salvage at its prior cost basis, local maker stock, then the world. [Markets.draw:483][r1g-market] prices the domestic fills at localPrice and imported fills at importPrice. | The draw happens in full before the city payment decision. Its ledger costs/quantities are the actual purchases, not M_total*p_quote. Yard/salvage and rounding also prevent receipt/import subtraction from identifying a missing amount. |
+| Actual import price | [GoodsMarket.importPrice:324][r1g-repair-import] is (worldImportNow + freightChange) * e. netImportPrice adds domestic haulage; ordinary draw records the boundary importPrice and the haulage is billed separately. | The market owns the current band/freight and actual fill split. landedPrice is a quote selector; draw follows actual held stock. These amounts were not captured as repair-specific prices at m1135. |
+| Private owner and bank payment | Private maintenanceExpense enters Sector.strike's operating income and settles through bank(). The bank's own bankMaintenanceDue is paid by bank.payRunning at Game:14111, then cleared at 14117. | There is no private unpaid-share subtraction from the builder's repair receipts in this path. A private negative till/credit problem is handled elsewhere. The bank payment happens after the GDP strike. |
+| City paid/unpaid split | [treasuryPays/discretionaryRoom:20038][r1g-repair-pay] pays P = min(B_city,room), with room=max(0,cash) if ceilingBound or existing arrears, otherwise max(0,cash+headroom). CITY_REPAIRS is discretionary/nonpurchase, so U=B_city-P accrues arrears. | [chargeBuildingMaintenance:8695-8743][r1g-charge] has already consumed material when it computes U, records cityMaintenancePaid=P and calls receiveMaintenance(B-U). A ceiling dial of zero gives no headroom; the fixture must assert actual room rather than assume ceilingBound when advances are zero. |
+| Builder receipt/struck part | [receiveMaintenance:505][r1g-repairs] resets repairsThisMonth and books R=B-U if positive. Sector.strike freezes "Repairs billed" from it. | A nonpositive full bill returns before this call; no reset is implied on that early-return path. For the positive-bill channel under discussion, the receipt is full private+bank bills plus paid city share. |
+| Later arrear payment | [payDownArrears:20075][r1g-repair-arrears] transfers cash directly to the payee's till, records arrearsPaidTo and reduces the claim. CITY_REPAIRS resolves to Construction. | It is a later cash transfer/arrears report, not another receiveMaintenance call or new capital output. Its budget line is separate from the original repair period. |
+| GDP/budget read | [Game:14877/14921][r1g-na-read] takes recognized+fitting for Iconst and service costs for G; [EconomyManager:2344][r1g-na-import] supplies all Construction imports to NX. Repair receipts are neither a separate I nor C term. cityRepairs/arrearsPaid are stored on the [government budget block][r1g-budget], not added by that G expression. | The struck import is included regardless of the city's payment. The NA material-inventory term measures producer stock, not repair material already consumed. C/G, capital output, inventories and the cash budget remain distinct. |
+
+The two candidate mechanisms are therefore different. A market import
+band/freight above the anchored quote can make actual purchase cost exceed
+the material part of the bill; a cheaper domestic fill can reverse the
+direction. The same gross draw can also coexist with a smaller R when U
+is positive. Either can produce a receipt/import disparity in this source.
+Neither, by itself, establishes this seed's inputs or explains why all
+capital parts became zero. Holding physical purchases and all other
+struck inputs fixed, changing the quote or paid/unpaid receipt alone does
+not add a GDP term: changing an actual import price changes NX, while
+changing R alone does not. Adding the measured 2410.55145 difference to
+GDP would therefore have no demonstrated accounting basis.
+
+At m1135 we lack p_quote/e at the charge, full B and B_city, actual P/U,
+repair-specific material need, yard/salvage contribution and the split of
+the 203 units between possible uses. The retained avg paid 17.1180203 is
+an aggregate observed ratio, not p_quote or a repair-only rate. The seven
+supporting end-state zeros supply none of those missing phase inputs.
+The source has no explicit public-repair addition to G, but the captured
+data still does not measure that category's contribution to the seed's
+negative GDP or authorize reclassification/a waiver.
+
+### R1g versus inherited .180
+
+The static comparison now covers the quote/exchange/market/payment chain:
+BuildingManager, EconomyManager, GoodsMarket, Markets, TreasuryLine,
+Construction and NationalAccounts match .180 whole-file; fifteen selected
+Game/Sector/template method names and their overloads also match, including
+treasuryPays, discretionaryRoom, owe/payDownArrears, chargeBuildingMaintenance,
+strike/bank and repair-rate accessors. Evidence is
+`target/r1g/repair-static-compare.py` and `.json`, the latter SHA-256
+`01baeef6ecbab390289bfb0fef58eadd3c505eeea13f7c2294be4e22f6d52c3c`.
+Prior comparison artifacts were not rewritten.
+
+R1g.dateHomes changes residential template cash/upkeep/materials/points
+from the saved pay mean before this machinery reads templates. Cash/points
+therefore change L, materials change M, and points change repair crew
+need; dated upkeep is a separate input, not a new maintenance-bill term.
+R1g does not change the anchored p_quote, market draw prices, unpaid-city
+deduction or GDP argument wiring. This is a mechanical comparison, not
+proof of latent ownership from unchanged source or a changed population.
+
+### One proposed short causing fixture: paid versus unpaid public repairs
+
+Propose one ignored diagnostic fixture against frozen 627, with **two
+scratch cities and one actual simulateMonths(1) press each**, one JVM on
+a future released box slot, 30 seconds total/no retry. No seed-length
+run, diagnostic or fixture code is prepared/executed by this static GO.
+
+Use GameFiles.scratch, the existing explicit LongPlaytest.played(null)
+founding and Game.run. Arrange the same minimal standing public-road
+stock in both through BuildingManager.clearStacks and
+addStack(pavedRoad,N,true), with the template selected from the catalogue.
+Use N=ceil(12/pavedRoad.repairsPerYear()) so the model's annual share
+produces whole material units rather than a deliberately fractional
+rounding case; assert the actual maintenance quantity is positive and
+rounds to itself. Zero the yard with setConstructionMaterials(0); assert
+salvage and local MATERIALS stock zero, no site contracts/fitting jobs,
+no private/bank premises, and no other goods/imported-service purchases.
+Hold every sector with holdSector, holdBranches, and setOn(false,
+g.getDecisions()) on the auto-builder. Those are existing fixture/model
+APIs, not hooks or substitute formulas.
+
+Set both advances ceilings to zero through setAdvancesCeilingMonths(0).
+Use the existing package fixture API setCashForTest: Founding.WEALTHY_CASH
+in the paid arm and zero in the unpaid arm. Assert the paid arm's actual
+discretionaryRoom covers the city repair bill, the unpaid arm's room is
+zero, and neither has pre-existing arrears. The real monthly path must
+compute the quote, perform the draw, pay/refuse the city share, freeze the
+statement and pass the actual G/I/NX arguments. No fixture copy of the
+GDP formula or Game's government-cost expression is allowed.
+
+Hard premises after the press: equal standing templates/rates, stored
+quote/struck exchange binding and physical repair need across arms;
+positive equal retained MATERIALS units/cost, no capital parts, no other
+purchase route, full paid city share versus zero paid share, and exact
+refused CITY_REPAIRS arrears in the unpaid arm. Reconcile struck repair
+receipts with actual B-U in each arm and their difference with the city
+share. Keep these measured payment semantics separate from the production
+law assertion **NationalAccounts.getGdp() >= 0** in each arm, using the
+existing zero bound. Read/compare the actual NA components; do not require
+today's G=0 as a premise, so a legitimate future G-wiring mend can pass.
+Equal physical repairs should not acquire different output merely from
+which arm can pay. A failure establishes only this controlled channel;
+the original seed's earlier point/credit cause remains separate. If the
+premises fail or the law does not fail, report the fixture as not causing
+the targeted red, without retuning, weakening or claiming root cause.
+
+This is the sole proposed next execution. Source, reviews, prior proofs,
+failed full baseline and marker remain frozen. R1g stays Pending; no
+model mend, waiver, reclassification, dry or ready action is authorized.
+
+[r1g-repair-labour]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingManager.java#L165
+[r1g-repair-formula]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L932
+[r1g-repair-price]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingManager.java#L269
+[r1g-repair-exchange]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L286
+[r1g-repair-import]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/GoodsMarket.java#L324
+[r1g-repair-pay]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L20038
+[r1g-repair-arrears]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L20075
