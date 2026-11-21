@@ -372,3 +372,58 @@ The merged model includes FB15's trace changes, so MC2m is historical evidence.
 A final ensemble must compare the merged final model with the newest baseline,
 currently `docs/ensemble/0.9.177.md`, on the orchestrator's GO. No ensemble or
 dry run has been started during recovery.
+
+
+### Recovery checks and handoff
+
+Merge commit: `f77e36309`, parents `3599c9d15` and `cdd4a2a09`. No new money
+rule was introduced by integration: the only source difference from the
+reviewed pre-merge MC2 files is FB15's separate refusal-mark overload, already
+published on main. The recovery did not reopen REV-MC2-2's settled review.
+
+On that merged model, using the contract's C:/ Earth/world data paths, one
+named harness per call, with no other JVM owned by this session:
+
+- `./batch-check.sh --fast`: exit 0, compile and regenerated maps green,
+  Stale 0 firm findings (194 soft). `target/MC2c2-fast.txt`.
+- `BankFailureCheck`: green, 1/1 harness passed; all 23 section 9 lines pass,
+  including the margin either side of the minimum, and all 2,880 months of
+  its 24 Random cities audit. `target/MC2c2-BankFailureCheck-suite.txt`.
+- `MortgageCheck`: known-red-only, its two section 12 lean-month fixture
+  lines, exactly those in main's `docs/notes/gate.txt` and FS9 rows of
+  `docs/notes/known-reds.txt` (the HN1-A path no longer supplies a lean month
+  within sixty). No new red. `target/MC2c2-MortgageCheck-suite.txt`.
+- `CreditCrunchCheck`: known-red-only, its two section 2 held-bank fixture
+  premises, exactly those in main's gate record. No new red. Section 4's
+  FB15 door-price and refusal-mark/trimmed-order assertions all pass. Its
+  played crunch now reports owners putting in 999, homes 264 to 439 and no
+  household left with no home; these figures supersede the earlier .174
+  crunch above for the merged model. `target/MC2c2-CreditCrunchCheck-suite.txt`.
+- Every focused call also compiled, regenerated maps and reported Stale
+  0 firm; no source changes followed the checks.
+
+`sh tools/pick.sh origin/main HEAD`: **51 of 235, not ALL**, against
+`cdd4a2a09`; the old pick was 50, with `OrderDoorCheck` newly included.
+Review line: **needed - money: Bank.java**. Saves and threading do not change;
+REV-MC2-2's SHIP remains applicable. The exact picked harnesses are:
+
+```
+AuctionCheck BankCheck BankFailureCheck BondCheck BooksCheck BuildCardCheck
+BuybackCheck CallCheck CapitalFlowCheck CarCheck CentralBankCheck CoalMiningCheck
+CopperMiningCheck CreditCheck CreditCrunchCheck DistressBleedCheck EquityCheck
+ExchangeCheck ExpectationsCheck FittingCheck FloatLinkCheck ForestryCheck FundCheck
+FundLedgerCheck HistoryCheck HoldersCheck InterestAbroadCheck InvestCheck KeptCheck
+LongPlaytest MarketCheck MonetaryCheck MortgageCheck NewGameCheck NewUnitCheck
+OrderDoorCheck OrderSearchCheck PolicyPreviewCheck QuarryingCheck ReadPathCheck
+RefineryCheck SaveFileCheck SaveSlotCheck ScaleCheck SectorStatementCheck
+ShortSellingCheck SupplierCreditCheck TimingCheck WantedPostsCheck WoodProductsCheck
+YoungBankCheck
+```
+
+The orchestrator authorized only `--fast` and sequential focused checks while
+TN1's full gate runs on the gate box. No full pick, LongPlaytest, ensemble or
+dry run was run during recovery; the historical full pick is not presented
+as a fresh verdict on .177. The current pick is not ALL and MC2 changes no
+publisher file relative to main, so contract 5.5 requires no dry run. The
+provisional marker remains; final ensemble GO and then readiness GO are
+requested from the orchestrator, with TN1's gate first.
