@@ -751,7 +751,7 @@ public class TimingCheck {
         System.out.println("--- 10. the display harnesses start the toolkit in one place, and where a display is named none skips (GB5) ---");
         List<String> starts = new ArrayList<>(), asksAwt = new ArrayList<>(), display = new ArrayList<>();
         try (Stream<Path> s = Files.walk(SOURCES)) {
-            for (Path p : s.filter(f -> f.toString().endsWith(".java")).sorted().toList()) {
+            for (Path p : s.filter(f -> f.toString().endsWith(".java") && !f.endsWith("TimingCheck.java")).sorted().toList()) {   // its labels name the calls
                 String text = readSource(p), file = SOURCES.relativize(p).toString().replace(File.separatorChar, '/');
                 if (text.contains("Platform.startup(") && !file.equals("ui/FollowBench.java") && !file.equals("tools/ChipRender.java")) starts.add(file);
                 if (text.contains("isHeadless()") && !file.equals("ui/FollowBench.java")) asksAwt.add(file);
