@@ -1,6 +1,6 @@
 # MedicineCheck.java - 605 lines · 34 methods · 3 constants · harnesses
 
-`ham/citybuildersim/MedicineCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MedicineCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Proves the research catalogue's medical rows (R2f) move the constants they map to: a medical row a 1900 city finds ahead of the world brings
 > its step on a cause of death forward, and a row it lacks leaves its constant undone until the month history had it or the month the city found
