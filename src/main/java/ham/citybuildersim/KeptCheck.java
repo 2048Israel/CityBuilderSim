@@ -818,25 +818,28 @@ public class KeptCheck {
         System.out.println("  " + panelMonths.quietLine());
         check("each month hands back nine in ten of the nodes it draws again, or more (" + panelMonths.counts() + ")", panelMonths.holds(HANDED_BACK));
         // FS4: a log gains a row when a building opens and the inbox one when a notice is raised. Each caused here with no month landing,
-        // by the model's own calls: the redraw makes the row, and hands back nine in ten of what it draws again (the read of a played
-        // stretch's openings, "few" against the first draw, went with it).
+        // by the model's own calls: the redraw shows the row, its words on the panels that were not there before, and hands back nine in
+        // ten of what it draws again (the read of a played stretch's openings, "few" against the first draw, went with it). Shown, not
+        // made: a build log at its forty rows drops its oldest as it gains one, and its kept scopes hand every node back, rightly.
         Notice raised = new Notice("keptcheck-p-row", "Kept check panels row", List.of("a row"), g.getMonth());
-        String[][] rows = {{"a building's opening recorded in the build log", "log"}, {"a notice raised", "notice"}};
+        String[][] rows = {{"a building's opening recorded in the build log", "log", "Kept Row Works"}, {"a notice raised", "notice", raised.getTitle()}};
         for (String[] row : rows) {
             int[] c = fx(() -> {
                 int[] was = bench.panelCounts();
                 int before = was[0] + was[1] + was[2] + was[3] + was[4] + was[5];
-                if (row[1].equals("log")) g.getBuildLog().record("Kept Row Works", 1, g.getMonth());
+                boolean there = bench.panelSignature().stream().anyMatch(line -> line.contains(row[2]));
+                if (row[1].equals("log")) g.getBuildLog().record(row[2], 1, g.getMonth());
                 else g.getInbox().all().add(raised);
                 bench.drawPanelsKept();
                 bench.panelPasses();
                 int[] now = bench.panelCounts();
-                return new int[]{before, now[0] + now[2] + now[4], now[1] + now[3] + now[5]};
+                boolean shown = bench.panelSignature().stream().anyMatch(line -> line.contains(row[2]));
+                return new int[]{before, now[0] + now[2] + now[4], now[1] + now[3] + now[5], !there && shown ? 1 : 0};
             });
             Redraws one = new Redraws(c[0]);
             one.add(c[1], c[2]);
-            check(row[0] + ": the redraw makes its row (" + c[1] + " made) and hands back nine in ten of the nodes it draws again (" + one.counts() + ")",
-                    c[1] > 0 && one.holds(HANDED_BACK));
+            check(row[0] + ": the redraw shows its row (\"" + row[2] + "\", " + c[1] + " made) and hands back nine in ten of the nodes it draws again ("
+                    + one.counts() + ")", c[3] == 1 && one.holds(HANDED_BACK));
         }
         fx(() -> g.getInbox().all().remove(raised));
 

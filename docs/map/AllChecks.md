@@ -1,6 +1,6 @@
 # AllChecks.java - 583 lines · 28 methods · 24 constants · harnesses
 
-`ham/citybuildersim/AllChecks.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AllChecks.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Runs every harness, one JVM each, and says which failed.
 > 
@@ -28,7 +28,7 @@
 | 79 | `AllChecks.CPU_PCT` | `80` | Start beside another harness below 80% CPU, leaving room before MG1's measured 85â€“94% contention. |
 | 82 | `AllChecks.RESOURCE_SECONDS` | `2` | Sample every two seconds so held starts can resume without busy waiting (MG1). |
 | 85 | `AllChecks.CPU_SAMPLES` | `3` | Average three CPU samples, covering six seconds between starts (MG1). |
-| 88 | `AllChecks.LONGEST_FIRST` | `List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSell...` | Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). |
+| 88 | `AllChecks.LONGEST_FIRST` | `List.of("KeptCheck", "KeptTimingCheck", "CentralBankCheck", "MapCheck", "Glob...` | Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). |
 | 91 | `AllChecks.NIGHTLY` | `List.of("KeptCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "Edu...` | Runs nightly, and at the gate only when a direct pick names it (HA1). |
 | 97 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -q and -f keep each harness's whole output. |
 | 100 | `AllChecks.TIMES` | `LOGS.resolve("times.tsv")` | Where -q and -f write each harness's seconds and exit, a line each, longest first (GT1: no gate said where its forty minutes went). |

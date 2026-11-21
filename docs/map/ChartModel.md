@@ -1,6 +1,6 @@
 # ChartModel.java - 735 lines · 50 methods · 11 constants · model
 
-`ham/citybuildersim/ChartModel.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartModel.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > What a time chart shows, as numbers: the window of months it looks at and
 > how a drag, a wheel, a range button and the overview move it; the ticks on
@@ -30,7 +30,7 @@
 
 **Uses:** [DecisionLog](DecisionLog.md) (20), [CityCalendar](CityCalendar.md) (9), [PriceIndex](PriceIndex.md) (9), [YearBook](YearBook.md) (6), [HistorySave](HistorySave.md) (4)
 
-**Used by (22):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [OilView](OilView.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchViewCheck](ResearchViewCheck.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [VaultTable](VaultTable.md)
+**Used by (23):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [KeptTimingCheck](KeptTimingCheck.md), [OilView](OilView.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchViewCheck](ResearchViewCheck.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [VaultTable](VaultTable.md)
 
 ## Sections
 
