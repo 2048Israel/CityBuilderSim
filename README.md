@@ -128,12 +128,12 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   reports every miss with the intervening merges. A miss is informational.
 - The exit status is the number of harnesses that failed, so a build script can
   read it.
-- `BuildMenuCheck` and `KeptCheck` need JavaFX on the classpath and are skipped
-  without it. They are the only harnesses that touch the interface: `KeptCheck`
-  lays the kept People page out on a scene of its own (no window) and compares
-  it with a page built new, and says so in one line and passes where the
-  toolkit cannot start, as in the cloud. Everything else on the screen is
-  checked by opening the game.
+- The display harnesses (`AllChecks.DISPLAY`: `KeptCheck` and eight more) start
+  the JavaFX toolkit through `ui.FollowBench.startJavaFx` and lay pages out on
+  scenes of their own. Where it cannot start, as in the cloud, each says so in one
+  line and passes; on the gate box, which has no screen, they draw on Monocle and
+  one that cannot start fails (GB5). Everything else on the screen is checked by
+  opening the game.
 
 **Run `AllChecks` on the tree as it landed - after a pull or a merge - not
 before.** A batch has more than once landed in the Java and not in

@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GB5 (untagged) — the gate box runs the harnesses that need a display — 2026-11-21, ready, see docs/queue/GB5-notes.md
+The gate box has no screen, so since GB1 every gate skipped the nine harnesses that start the JavaFX toolkit, KeptCheck and KeptTimingCheck among them.
+Its gates and nights now draw them on JavaFX's Monocle, headless and in software (pom.xml, test scope), which tools/gate-box.sh names to every JVM they
+start; Linux lays text out through Pango (libpangoft2-1.0-0, which Jerus installed), and a box without it says so in one line.
+Every display harness starts the toolkit through ui.FollowBench.startJavaFx. With no display named it skips as it did, on the PC and in the cloud;
+with one named (-Dcbs.display) a toolkit that cannot start is a FAIL and exit 1, never a skip. The summary's display line lists those a run started
+(AllChecks.DISPLAY), and TimingCheck 10 guards the one start, the list and the skip. On the box KeptCheck prints the PC's 4,034 lines but its heap
+line, and KeptTimingCheck meets all 29 budgets, the worst at 0.42 of its own. The PC's runs are as they were.
+
 ### OB1 — live provider budget and orchestration reserve — 2026-11-21, ready, see docs/queue/OB1-notes.md
 The orchestrator reads live usage and warnings every turn and before dispatch, reserves its cost through reset plus running and pending commitments,
 and targets projected subscription use of 98-99% at reset without intentionally exhausting a plan. Stale readings forbid uncertain-provider launches;
