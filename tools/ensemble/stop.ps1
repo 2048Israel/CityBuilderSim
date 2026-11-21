@@ -1,14 +1,14 @@
 # Stops one ensemble run on Windows: its shell, its xargs, the runs' shells and their JVMs.
-# Called by `tools/ensemble/ensemble.sh --stop <label>` with ENS_LABEL (the label) and ENS_B (the run's folder,
-# C:/...). A process is the run's when its command line holds that folder as Java or Git Bash (/c/...) writes it,
-# or `ensemble.sh <label>`, or, for a run on the gate box, `--ensemble <label>` and `--serve ensemble <label>`
-# (GB3); nothing else on the machine, the suite and other runs included, matches. The shells and xargs go
-# first, twice, for the one starting while the first pass looked; then a last look names what is left, exit 1.
+# Called by `tools/ensemble/ensemble.sh --stop <label>` with ENS_LABEL and ENS_B, the run's folder: C:/.../target/
+# ensemble/<label>, or it stops nothing, exit 2 (REV-FB15). A process is the run's when its command line holds that
+# folder as Java or Git Bash (/c/...) writes it, or `ensemble.sh <label>`, or, for a run on the gate box, `--ensemble
+# <label>` and `--serve ensemble <label>` (GB3); nothing else on the machine, the suite included, matches. The shells
+# and xargs go first, twice, for one starting while the first pass looked; a last look names what is left, exit 1.
 # WHY (HN1-C): Git Bash hands a Windows program /c/... as C:/..., so no shell or xargs matched, and HN1's xargs
 # outlived the stop and started five runs unsaid. tools/ensemble/stop-selftest.sh tests it.
 $label = $env:ENS_LABEL
-# An empty folder or label would match every command line on the machine (REV-FB15): refuse it, exit 2.
-if (-not $label -or $env:ENS_B -notmatch '^[A-Za-z]:[\\/]\S') { "stop.ps1: no ENS_LABEL or no ENS_B (C:/...): nothing stopped"; exit 2 }
+# An empty folder matches every command line on the machine, an ancestor (--stop .) every run or all of target/: refuse
+if (-not $label -or $label -match '^\.{1,2}$|[\\/]' -or $env:ENS_B -notmatch ('^[A-Za-z]:[\\/].*[\\/]target[\\/]ensemble[\\/]' + [regex]::Escape($label) + '[\\/]?$')) { "stop.ps1: no ENS_LABEL, or no ENS_B C:/.../target/ensemble/<label>: nothing stopped"; exit 2 }
 $w = $env:ENS_B -replace '\\', '/'
 $bash = if ($w -match '^([A-Za-z]):(/.*)$') { '/' + $matches[1].ToLower() + $matches[2] } else { $w }
 $pats = @($w, $bash) | ForEach-Object { [regex]::Escape($_) + '(?=[/\\\s"]|$)' }

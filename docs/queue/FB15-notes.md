@@ -62,6 +62,12 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
     (`refusedProjectAtDefaultPoint`, read by `LongPlaytest.java:698`) is never left beside a part built. A
     ban is tested before the default point. A capital no means the default point passed, and a smaller try
     reads the same till against it (`buildFor()` asks the lender before it spends).
+  - Left as it is (REV-FB15-2, P3). `projectRefusal()` reads the lender's marks, and they last the month
+    (`BusinessDebtManager.java:2629-2631`). So after an earlier order's capital no in the same sector, a
+    later order refused at the debt line is asked again of half too. The lender tests the line on each
+    half, so nothing is built that its tests refuse. Mending it means taking each try's own reason from
+    `canFundProject()`, and the review asked for that only with the default trace shown byte-identical. That
+    takes a 2,400-month run on each side, so the gap is noted rather than mended.
   - The line says why the order was trimmed (`projectDoorTrimmed()`, `:8020`), as `doorTrimmed()` does
     for the landlord.
 - **The fixture**, OrderDoorCheck 3. The bank's capital rule is at 0% growth, and the shopkeeper's till at
@@ -98,17 +104,30 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
     again before a resume", exit 1.
 
   `ensemble.sh --stop` passes the exit through, and the README says so.
-- **Guarded (REV-FB15, mend 2).** Main's script with `ENS_A` empty matched every command line on the PC: in
-  PowerShell 5.1, `[regex]::Escape($null)` is the empty pattern. `stop.ps1` now refuses an empty `ENS_LABEL`
-  or an `ENS_B` that is not `C:/...`: it stops nothing and exits 2. The selftest sets `ENS_A` as main's
-  caller does, and it reads the empty case on a copy whose `Stop-Process` only prints what it would stop.
-- **The fixture**, `sh tools/ensemble/stop-selftest.sh`. A `tail -f` in a run folder under `target/` (a
-  /tmp folder shows as /tmp) must be stopped and the stop must say nothing is left. A parent outside the
-  folder that restarts it must leave a survivor that is named, exit 1. An empty run folder must stop
-  nothing, exit 2. Main's `stop.ps1` gives four FAILs, the new one none.
-- **One in, one out.** `git diff --numstat origin/main -- tools/ensemble/`: +66 -15. The two headers are
-  back to their old length. The 38 lines of `stop-selftest.sh` are HN1-C's fixture (a harness is the
-  finding), and nothing in the ensemble's tools was stale to take out against them.
+- **Guarded (REV-FB15, mend 2; REV-FB15-2, 3).** With `ENS_A` empty, main's script matched every command line
+  on the PC, because in PowerShell 5.1 `[regex]::Escape($null)` is the empty pattern. And on main
+  `ensemble.sh --stop .` (or `..`) passed an ancestor of the runs as `ENS_B`, which matched every run or all
+  of `target/`. Now `ensemble.sh --stop` refuses a label that is `.`, `..` or holds a slash, and `stop.ps1`
+  refuses an empty `ENS_LABEL` or an `ENS_B` that is not `C:/.../target/ensemble/<label>`. Both stop
+  nothing and exit 2.
+- **The fixture**, `sh tools/ensemble/stop-selftest.sh`, ten checks:
+  - A `tail -f` in a run folder under `target/ensemble/` (a /tmp folder shows as /tmp) must be stopped,
+    and the stop must say nothing is left.
+  - A parent outside the folder that restarts it must leave a survivor that is named, exit 1.
+  - An empty label and folder, `.` with `target/ensemble`, and the label with `target` must stop nothing,
+    exit 2. These are read on a copy whose `Stop-Process` only prints what it would stop. They run only
+    where `stop.ps1` holds its refusal; otherwise they FAIL and are not run, so the empty case never runs
+    against main's script.
+  - `ensemble.sh --stop` with `.`, `..` and `a/b` is refused, exit 2. It runs with `PATH=/usr/bin`, so
+    it could stop nothing anyway.
+
+  On main, the three live checks fail, as they did in the first form of the self-test (no Git Bash form,
+  so the `tail -f` is never matched). The refusal cases are read on main and not run: main has no
+  refusal, and its `--stop .` hands `stop.ps1` all of `target/ensemble` as `ENS_B`.
+- **One in, one out.** `git diff --numstat origin/main -- tools/ensemble/`: +84 -16. The two headers are
+  back to their old length. The 52 lines of `stop-selftest.sh` are HN1-C's fixture and the review's
+  refusal cases (a harness is the finding), and nothing in the ensemble's tools was stale to take out
+  against them.
 
 ## 4. Harnesses the change moved
 
@@ -138,9 +157,13 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
   m191, m217), were orders of 2, 6 and 5 blocks of about 600 each, whose issue (243, 149, 882) covered a
   fraction of the cost.
 
-  Section 4 (`theShortIssue()`, `CreditCrunchCheck.java:381`) now causes the case at the crunch's end, at
+  Section 4 (`theShortIssue()`, `CreditCrunchCheck.java:386`) now causes the case at the crunch's end, at
   m270 with the bank still in its band: an order of six blocks, a till of 1.5 blocks, and ground for six.
-  - The owners were asked for 2,222.7 and put in 211.4.
+  - The door's price of the six is 2,807.5 against the plan's 2,791.8 (+0.56%, the yard short).
+  - It watches what `consider()` did (REV-FB15-2, mend 1). The lender read the order at 2,807.5, the door's
+    price. The owners were offered the 2,222.7 the till lacked at that price, and put in 211.4. On main's
+    classes this line is red: the lender read the plan's price, and the offer was 5,116.6 of the 5,190.1 the
+    till lacked at the door's (`target/fb15/ccc-main2.txt`). Main's city at m270 also has no ground for six.
   - The door's first no was for the bank's capital. It built 1 outright, "(trimmed from 6 - the bank is
     short of capital for a mortgage, so what its own funds buy outright)", and left it unmarked.
 

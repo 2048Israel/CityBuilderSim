@@ -28,6 +28,8 @@ native() {
 # so another run (or the suite) on the machine is left alone. Resume with the same command as before.
 if [ "${1:-}" = "--stop" ]; then
     LABEL=${2:?usage: tools/ensemble/ensemble.sh --stop <label>}
+    # ., .. or a path name the runs' ancestor, which holds every run or all of target/ (REV-FB15-2): refused.
+    case "$LABEL" in .|..|*/*|*\\*) echo "ensemble.sh --stop: not a run's label: $LABEL" >&2; exit 2 ;; esac
     cd "$(dirname "$SELF")/../.." || exit 1
     RUN="${ENSEMBLE_OUT:-target/ensemble}/$LABEL"
     [ -d "$RUN" ] || { echo "no such run: $RUN" >&2; exit 1; }

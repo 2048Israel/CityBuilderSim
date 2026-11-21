@@ -80,6 +80,7 @@ Run time depends on the model and data, and times.txt records each run's seconds
 Stop with `tools/ensemble/ensemble.sh --stop <label>`. It ends that run's
 shells, xargs and JVMs by its folder, preserving other runs; for a run on the
 box it ends the connection, and the box stops its runs. On Windows it names
-what outlived it and exits 1 (`sh tools/ensemble/stop-selftest.sh` tests it).
-Resume with the same label. Keep the script fixed while a run is active because Bash reads
-it during execution.
+what outlived it and exits 1; a label that is `.`, `..` or a path, or no run's
+folder, stops nothing, exit 2 (`sh tools/ensemble/stop-selftest.sh` tests it).
+Resume with the same label. Keep the script fixed while a run is active
+because Bash reads it during execution.
