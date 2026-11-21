@@ -2472,3 +2472,94 @@ Only notes change; source/classes/registry/ship/old evidence remain intact.
 No model/helper JVM, dump, version probe, wrapper/fast/pick/rejudge/ensemble/
 dry/gate/readiness/waiver/publication run. Notes-only provisional checkpoint;
 no owned job. Await separate root runtime/disk/deadline review/GO.
+
+
+## Root c12e: final static foreground controllers and copy proposal
+
+Root independently accepted the ONE89ae compile:29 copied hashes,
+archive7f198b2c18608a6e1d1cb34d75b1c3ff3ba6d463d38c68d338313d84a2fa2893,
+19 allowed output classes/exact two-unit argv and identical base/environment
+before-after. Root receipt is main target/FS5-compile-89ae-root-verification.json.
+That remains compilation only, not model/heap/path/native/lifetime evidence.
+Current work was STATIC ONLY: no BOX access/poll, controller rehearsal,
+child process launched by synthetic checks, Java/model/helper JVM, signal,
+typecheck/compile, dump, gate/readiness or changed source/registry/ship.
+
+Final canonical ignored proposal: target/fs5c2-c12e-final-runtime-v4.
+It supersedes preserved earlier controller drafts. local.py is the complete
+foreground local/copy driver; remote.py is the remote owner; recover.py is
+nonce/identity-limited terminal recovery; fs5_logic.py has pure timing,
+framing and validation policy. Final relocated plan.json, exact argv/nonce,
+private paths/0700, ownership/receipt/template, native/JDK/deps/data/base/
+overlay/source pins and fresh>=12GiB both-end plan are present. No capture
+directory or runtime space receipt was created. Both root review templates
+remain runtime_authorized=false. No model execution is authorized.
+
+Final plan SHA256:
+35d339fea0f2722e0372fb3ec8351ead22075187b7a098a1c26d0482f348a366.
+Local controller SHA256:
+0ecc3245fead1e15518e3f6987d26bcf3a1f530a637a92b71c2578a0b654b656.
+Remote owner SHA256:
+9d8c86209ccb224cdd32d309016a4cb0424de892fd7682d4376d92314ae4f32c.
+Recovery SHA256:
+30f46d3645cf045276bc7818ba1e51c154623625c68eef46f6bf9008a1198deb.
+Pure logic SHA256:
+16a8fb5d9cfedf96303434b6b6128e1ef176b5217931ff7d8493407f36556ad7.
+
+One LOCAL-entry1800s budget now starts before file preflight/clock/upload.
+Immutable absolute cutoff plus local monotonic guard reaches remote owner;
+<=2s clock/skew premise and3s remote safety are explicit. Remote workload
+reserves600 copy+45 cleanup+15 final WITHIN total. Checks surround chunked
+hash/I/O and stage starts; no fresh1800/no copy extension. Post-dump180s
+ends on valid actual call-return/error, not section103 completion. Both
+controllers are source proposals, not proof latency fits those ceilings.
+
+Split-safe complete-line parser retains pending bytes; BEGIN lower-bound/
+observed times and valid native-return/overlay-error indications are
+separate. Partial JSON, HPROF existence/size cannot stop the timer. Frozen
+helper has no internal nanosecond timestamp; unobserved/delayed return
+receipt can lead to a conservative stop, not an assertion of native hang.
+
+Leader exit does not skip remaining group cleanup. PID/start/pgrp/session/
+UID plus append-only membership and pidfd checks precede signals. Unknown
+identities are never guessed; retain foreground ownership for root review.
+Heavy BOX lock releases only after actual model/group terminal/post-seals;
+private output lease persists through verified copy or explicit failed
+handoff. SSH-loss recovery is only this exact nonce/recorded identities,
+with durable cancel fence against late start. Persistent unique directory/
+lease is never reused. Kernel/process/network failure limits are explicit.
+
+Stopped/error paths record per-input post-seal observation/unavailable/error;
+priority deferral does no large post-seal I/O. Streamed copy keeps NEW
+archive partial and extracted files, verifies exact member set/hashes/sizes
+against remote streamed footer and snapshot, and retains both ends without
+overwrite/delete/retry. Copy failure writes incomplete status and failed
+handoff; unavailable receipt writes are reported rather than hidden.
+Raw-copy verification, remote handoff, model exit/full103/summary, post-seals
+and total-ceiling status are separate. Complete normal control returns the
+original JVM exit; incomplete/uncertain returns75, never an inner wrong0.
+
+Deadline exhaustion starts no new workload/hash/copy stage. If OS/network
+prevents real cleanup confirmation, only own-stop/terminal/handoff cleanup
+continues, explicitly not an execution extension or a ceiling-met claim.
+Cannot end/push with an owned survivor. Any late/unproved/incomplete result
+stays incomplete. HPROFfalse/unreachable/VM effects/debug footprint remain
+NEW diagnostic evidence, never pcPZSnVc root/byte attribution. Actual hard
+heapPASS=>NOT_TRIGGERED/no retry/fishing/waiver; hardFAIL staysFAIL with dump.
+
+Allowed static evidence:8 pure synthetic policy checks, Python AST syntax
+inspection of four modules plus embedded bootstrap/transfer source.
+No controller imported/invoked, process/SSH/native syscall/BOX/JVM or extra
+Java compile used by those checks. These do not prove end-to-end transport,
+PID/path/cleanup/native dump behavior. REVIEW.md and final-artifact-manifest.json
+give exact final source/plan and limits for separate root review BEFORE
+filling a runtime token. The earlier one compile remains the only new JVM.
+
+Reviewed Java overlaya1fd6e15334e6a4d842f3dcf0be9c4106cd1bdaef4e49fd852ce4258677af5cb,
+helper8d901ec8c78d10cbd1f2b7ae016aa2a2a0142bde64f16383700ab655c680f22e,
+manifestfc825bfa7b455685076e6d51ad4c4223da0bd53fe9a4c33f48fc52341670ff10
+and19 compiled outputs/29 copied artifact hashes still match. All old
+proofs preserved; source/classes/registry/ship/marker/four vetoes/KHL1Pending
+unchanged. Process counts819/809(registry819/829) unchanged. Only notes
+are pushed. FS5 blocked/Pending, no owned job; awaiting separate root
+runtime/disk/deadline review/GO.
