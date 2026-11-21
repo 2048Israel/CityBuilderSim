@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
@@ -81,21 +80,6 @@ public class MoneyWordsCheck {
         FutureTask<T> t = new FutureTask<>(c);
         Platform.runLater(t);
         return t.get(10, TimeUnit.MINUTES);
-    }
-
-    /** The toolkit started, or why not (then this harness has nothing to run on). */
-    static String startJavaFx() {
-        try {
-            if (java.awt.GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
-            Platform.setImplicitExit(false);
-            CountDownLatch up = new CountDownLatch(1);
-            Platform.startup(up::countDown);
-            if (!up.await(60, TimeUnit.SECONDS)) return "the toolkit did not come up in 60 s";
-            return null;
-        } catch (Throwable t) {
-            String why = t.getMessage() == null ? "" : ": " + t.getMessage().replaceAll("\\s+", " ").trim();
-            return t.getClass().getSimpleName() + why;
-        }
     }
 
     /** The Krona: the money of section 2's city, written "2.6M kr". */
@@ -284,7 +268,7 @@ public class MoneyWordsCheck {
     public static void main(String[] args) throws Exception {
         System.out.println("=== MoneyWordsCheck: every word of every page, in a city whose money is written \"2.6M kr\" (FM1) ===");
         long started = System.currentTimeMillis();
-        String down = startJavaFx();
+        String down = KeptCheck.startJavaFx();
         if (down != null) {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the pages need it to be drawn");
             System.exit(0);
