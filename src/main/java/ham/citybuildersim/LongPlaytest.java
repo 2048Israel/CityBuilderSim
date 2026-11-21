@@ -3717,22 +3717,44 @@ public class LongPlaytest {
              * POWER, AND BOTH OF IT, for exactly the reason the roads below are
              * offered three ways. This rule only ever built Coal Power Plants,
              * which was fine while a coal plant was the only generator in the game
-             * and stopped being fine on 2026-09-09 when the Wind Farm arrived.
+             * and stopped being fine on 2026-09-09 when the Wind Farm arrived: a
+             * Wind Farm is $31.8M and 1,800 construction points against a coal
+             * plant's $1.43B and 120,000, so it is the only power a young city can
+             * actually reach, and the two were costed so each won a band of LAND
+             * prices. It offered both by the same throttle, gdp x (1 - the month's
+             * energy ratio), at the same value and separated by the nudge in listing
+             * order - and the Wind Farm was listed first, so it always won, and the
+             * band was never offered.
              *
-             * The two are costed so each wins a band of LAND prices - wind is about
-             * a quarter cheaper per unit of energy delivered and sits on thirty
-             * times the ground, so it wins on cheap land and loses on dear. A rule
-             * that names one of them decides that question in advance and the band
-             * may as well not exist; offering both lets the price of land pick, and
-             * that is the whole point of having two.
-             *
-             * It also matters more than the roads did: a Wind Farm is $31.8M and
-             * 1,800 construction points against a coal plant's $1.43B and 120,000,
-             * so it is the only power a young city can actually reach.
+             * ...AND BY THE ADVICE, SINCE PW1 (2026-11-11). The dispatch gives a
+             * Wind Farm its half-block's share, about a third of its average in the
+             * calm halves (PowerDispatch.WIND_FIRM), and a half-block short clears at
+             * the cap. Measured on this player's own city over 2,400 months: it never
+             * built a Coal Power Plant, only Wind Farms (16 at month 700, 103 at
+             * 2,400), and from month 960 it was short in two or three of the six
+             * half-blocks in 164 of 240 sampled months, its energy price the cap's,
+             * while the advice's own figure (1.07 at month 605, 9.1 at 2,405) said
+             * to order coal, whose firm kW is cheaper than wind's. It buys power as
+             * it buys roads (powerByNeed(), the roads' way since 0.7.103): the
+             * advice's card for power and then the next in its ranking, each a move
+             * of its own, nothing when what is on site keeps power ahead. The value is
+             * the output at risk: the month's ratio short, or the share of the calm
+             * peak's draw the firm supply leaves uncovered at the advice's own yellow
+             * line (1 - BuildAdvice.served() x CityNeeds.NETWORK_YELLOW), whichever
+             * is larger - so it orders when the advice does, a coal plant's build
+             * ahead of the shortage. Valued at the shortage alone (1 - served), it
+             * ordered only once a block was short: 66 of 240 sampled months short,
+             * the energy at $3,530 a MWh at month 1,803.
              */
-            double powerGain = gdp * (1 - g.getEnergyRatio());
-            addThrottle(moves, g, "Wind Farm", "wind farm", powerGain);
-            addThrottle(moves, g, "Coal Power Plant", "power plant", powerGain);
+            BuildAdvice.Measure powerM = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+            double powerGain = gdp * Math.max(1 - g.getEnergyRatio(),
+                    1 - BuildAdvice.served(g, powerM, java.util.Map.of()) * CityNeeds.NETWORK_YELLOW);
+            for (BuildAdvice.Suggestion s : powerByNeed(g, powerM, g.getLandManager().getAvailableSqFt())) {
+                String name = s.template().getName();
+                long n = s.count();
+                moves.add(new Move(name.equals("Wind Farm") ? "wind farm" : name.equals("Coal Power Plant") ? "power plant" : name,
+                        powerGain * (1 - moves.size() * 1e-6), () -> build(g, name, n)));
+            }
             addWater(moves, g, gdp * (1 - g.getWaterRatio()));
 
             /*
@@ -5447,6 +5469,32 @@ public class LongPlaytest {
             out.add(s);
             if (s.paving()) noPaving = true;
             else skip.add(s.template());
+        }
+        return out;
+    }
+
+    /**
+     * The power by need (PW1, 2026-11-11): the build advice's card for power
+     * (BuildAdvice.suggestFor(), no NEEDS YOU row, the cash and the free ground
+     * as they stand, its own slack) among the generators, every other building
+     * left out, and after it the next in its ranking, each template once: for
+     * when the money or the ground will not run to the one before. Empty when
+     * what is on site keeps power ahead at its projection.
+     */
+    static java.util.List<BuildAdvice.Suggestion> powerByNeed(Game g, BuildAdvice.Measure powerM, double free) {
+        java.util.Set<BuildingsTemplate> skip = new java.util.HashSet<>();
+        int plants = 0;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (t.getCategory() != BuildingType.ELECTRICITY) skip.add(t);
+            else plants++;
+        }
+        java.util.List<BuildAdvice.Suggestion> out = new java.util.ArrayList<>();
+        for (int i = 0; i < plants; i++) {
+            BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, null, powerM, g.getCash(), free, BuildAdvice.SLACK,
+                    skip, false);
+            if (s == null || s.count() < 1) break;
+            out.add(s);
+            skip.add(s.template());
         }
         return out;
     }
@@ -9202,6 +9250,9 @@ public class LongPlaytest {
             big.setConsumables(.001 * big.getCashCost());
             works.setCashForTest(Founding.WEALTHY_CASH);
             works.getLandManager().setOwnedSqFt(works.getLandManager().getOwnedSqFt() + 400_000_000L);
+            // THE FIXTURE CAUSES IT (PW1): the merit order pays the works what their kWh clear at, and the founding grid (10,000 kW, free)
+            // clears a town of 400 homes at nothing. The homes draw 50 kW each, so the town outruns the grid and the coal plant is the margin.
+            t(works, "House").setElectricityConsumption(50);
             // ...standing from the first month (no builders in this town to put them up).
             quietly(() -> {
                 works.buildStack(t(works, "House"), 400, true);

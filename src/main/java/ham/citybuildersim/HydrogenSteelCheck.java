@@ -391,7 +391,8 @@ public class HydrogenSteelCheck {
         assertTrue("...and the pellets the works took cost it nothing at the market: what it bought is the rest, " + "none where the plants cover the works",
                 po.captive < pi.needed - 1e-6 || bought == null || (bought.atHome == 0 && bought.abroad == 0));
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
-        double bill = heavy.getElectricityCost(), tariff = g.getEconomyManager().getPricePerWatt();
+        // ...its tariff the industry price (PW1: Heavy Industry takes its power at high voltage, the energy and transmission; ProcessingSector.tariff()).
+        double bill = heavy.getElectricityCost(), tariff = heavy.tariff();
         double drawn = gb.totalBySector(Sectors.HEAVY_INDUSTRY, x -> x.powerBought());
         out.printf("    the grid: %,.0f units drawn by the city, %,.0f made (utilities' fill %.3f), delivering %.3f of it; Iron & Steel draws %,.0f%n",
                 u.getConsumption(), u.getProduction(), u.getAverageUtilityFill(), heavy.getEnergyRatio(), drawn);

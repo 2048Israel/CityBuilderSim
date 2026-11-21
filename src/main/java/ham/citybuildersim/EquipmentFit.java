@@ -190,7 +190,7 @@ public final class EquipmentFit {
 
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
-     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks, the driverless kit's from the drivers and trucks it saves (R6b), the autonomy kit's from the operators it strikes (R6d, FE8) and the 46 kWh electrolyser's from the grid units it saves (R6d, FE10). The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
+     * sectors are billed, EconomyManager.getPowerPriceFor(t)), the motor truck's from Haulage's teams and trucks, the driverless kit's from the drivers and trucks it saves (R6b), the autonomy kit's from the operators it strikes (R6d, FE8) and the 46 kWh electrolyser's from the grid units it saves (R6d, FE10). The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
      * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
@@ -218,7 +218,7 @@ public final class EquipmentFit {
                     t.getEquipment().stream().map(Equipment::getId).collect(java.util.stream.Collectors.toSet()));
         if (piece.getEnds() == null) {
             if (!piece.getId().equals(t.recipePieceId())) return 0;
-            Recipes.Prices p = Recipes.pricesOf(game);
+            Recipes.Prices p = Recipes.pricesOf(game, t);
             Recipe fitted = game.foundedUnfitted() ? Recipes.best(t, true, game.getMonth(), p, game.getResearch())
                     : Recipes.bestGross(t, true, game.getMonth(), p, game.getResearch());
             Recipe without = game.foundedUnfitted() ? Recipes.best(t, false, game.getMonth(), p, game.getResearch())
@@ -227,7 +227,7 @@ public final class EquipmentFit {
         }
         switch (piece.getEnds()) {
             case STEAM:
-                return steamGain(t, cityPrice(game, Good.THERMAL_COAL), game.getEconomyManager().getPricePerWatt());
+                return steamGain(t, cityPrice(game, Good.THERMAL_COAL), game.getEconomyManager().getPowerPriceFor(t));
             case CART_HORSES: {
                 Haulage haulage = game.getSectors().freight().haulage();
                 return cartGain(t.getTruckRoom(), haulage.horseEstimate(), haulage.truckRunningEstimate());
@@ -241,7 +241,7 @@ public final class EquipmentFit {
                 return operatorGain(Agriculture.machinesOf(t), wages[JobType.NO_DIPLOMA.ordinal()], wages[JobType.DIPLOMA.ordinal()]);
             }
             case ELECTROLYSERS:
-                return electrolyserGain(HeavyIndustry.unitsSavedAWorks(t), game.getEconomyManager().getPricePerWatt());
+                return electrolyserGain(HeavyIndustry.unitsSavedAWorks(t), game.getEconomyManager().getPowerPriceFor(t));
             default:
                 return Double.NaN;
         }

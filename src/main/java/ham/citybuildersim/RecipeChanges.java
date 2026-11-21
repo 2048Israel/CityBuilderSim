@@ -168,7 +168,7 @@ public final class RecipeChanges {
 
     /** The actual process with this entry present minus the process without it. */
     static double gainOf(Game game, BuildingsTemplate t, RecipeChange entry) {
-        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipes.Prices prices = Recipes.pricesOf(game, t);
         return gain(t, entry, absences(game, t, false), missing -> running(game, t, missing),
                 recipe -> Recipes.value(recipe, prices), c -> extraValue(t, c, prices, t.feedPerMonth()));
     }
@@ -188,7 +188,7 @@ public final class RecipeChanges {
         if (stack == null || stack.getQuantity() <= 0 || stack.getUnfitted(piece.getId()) <= 0) return 0;
         Map<String, Long> before = new TreeMap<>(stack.getUnfittedView()), after = new TreeMap<>(before);
         after.put(piece.getId(), stack.getUnfitted(piece.getId()) - 1);
-        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipes.Prices prices = Recipes.pricesOf(game, t);
         String[] ids = t.hasRunningRecipes() ? t.runningRecipeIds() : newChoices(game, t, prices);
         return net ? netDifferenceAt(game, t, after, before, stack.getQuantity(), ids, prices)
                 : differenceAt(game, t, after, before, stack.getQuantity(), ids, prices);
@@ -200,7 +200,7 @@ public final class RecipeChanges {
         if (stack == null || stack.getQuantity() <= 0) return 0;
         Map<String, Long> with = new TreeMap<>(stack.getUnfittedView()), without = new TreeMap<>(with);
         without.put(piece.getId(), stack.getQuantity());
-        return differenceAt(game, t, with, without, stack.getQuantity(), t.runningRecipeIds(), Recipes.pricesOf(game));
+        return differenceAt(game, t, with, without, stack.getQuantity(), t.runningRecipeIds(), Recipes.pricesOf(game, t));
     }
 
     /** One proposed building, with exactly the chosen pieces, compared with the same set lacking this piece. */
@@ -216,7 +216,7 @@ public final class RecipeChanges {
         java.util.Set<String> with = new java.util.HashSet<>(fitted), without = new java.util.HashSet<>(fitted);
         with.add(piece.getId());
         without.remove(piece.getId());
-        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipes.Prices prices = Recipes.pricesOf(game, t);
         String[] ids = newChoices(game, t, prices);
         return net ? netDifferenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices, true)
                 : differenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices, true);
@@ -244,7 +244,7 @@ public final class RecipeChanges {
     }
 
     static Recipe recipeForNew(Game game, BuildingsTemplate t, java.util.Set<String> fitted) {
-        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipes.Prices prices = Recipes.pricesOf(game, t);
         String[] ids = newChoices(game, t, prices);
         String selected = t.recipePieceId() == null || fitted.contains(t.recipePieceId()) ? ids[0] : ids[1];
         return decode(t, selected);
@@ -269,7 +269,7 @@ public final class RecipeChanges {
      * piece is not among `fitted` (recipeForNew()'s choice).
      */
     static NewUnit newUnit(Game game, BuildingsTemplate t, java.util.Set<String> fitted) {
-        String[] ids = newChoices(game, t, Recipes.pricesOf(game));
+        String[] ids = newChoices(game, t, Recipes.pricesOf(game, t));
         if (t.getRecipeChanges().isEmpty()) {
             String selected = t.recipePieceId() == null || fitted.contains(t.recipePieceId()) ? ids[0] : ids[1];
             Recipe chosen = selected == null ? null : t.getRecipe(selected);
@@ -386,7 +386,7 @@ public final class RecipeChanges {
         }
         java.util.Set<String> charged = new java.util.HashSet<>();
         double bill = 0;
-        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipes.Prices prices = Recipes.pricesOf(game, t);
         long unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0L));
         for (int part = 0; part < 2; part++) {
             Recipe recipe = base(t, ids[part]);
@@ -425,8 +425,8 @@ public final class RecipeChanges {
         long unfitted = stack == null || t.recipePieceId() == null ? 0 : Math.min(quantity, stack.getUnfitted(t.recipePieceId()));
         String[] ids = t.runningRecipeIds();
         if (newBuilding) {
-            String selected = Recipes.best(t, true, game.getMonth(), Recipes.pricesOf(game), game.getResearch()).getId();
-            selected = choose(t, selected, game.getMonth(), game.getResearch(), Recipes.pricesOf(game));
+            String selected = Recipes.best(t, true, game.getMonth(), Recipes.pricesOf(game, t), game.getResearch()).getId();
+            selected = choose(t, selected, game.getMonth(), game.getResearch(), Recipes.pricesOf(game, t));
             ids = new String[] {selected, selected};
         }
         Map<String, Double> absent = new TreeMap<>();
@@ -493,7 +493,7 @@ public final class RecipeChanges {
     static double recipeFee(Game game, BuildingsTemplate t, Sector owner, Recipe recipe,
                             boolean standing, double rate, java.util.Set<String> charged, java.util.Set<String> proposed) {
         if (recipe == null || !(rate > 0)) return 0;
-        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipes.Prices prices = Recipes.pricesOf(game, t);
         Map<String, Double> absent = absences(game, t, !standing);
         if (proposed != null) for (RecipeChange c : t.getRecipeChanges()) if (c.piece() != null)
             absent.put(c.code(), proposed.contains(c.piece()) ? 0.0 : 1.0);

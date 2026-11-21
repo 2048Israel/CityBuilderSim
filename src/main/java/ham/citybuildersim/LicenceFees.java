@@ -99,8 +99,8 @@ public final class LicenceFees {
         }
     }
 
-    /** Every installed kind uses removal/standing values, never an additional-building appraisal. */
-    private static double installedBuildingGain(Game game, BuildingsTemplate t, Sector owner, double rate) {
+    /** Every installed kind uses removal/standing values, never an additional-building appraisal. Package-private: LicenceFeesCheck asserts its power price (REV-PW1c). */
+    static double installedBuildingGain(Game game, BuildingsTemplate t, Sector owner, double rate) {
         if (owner instanceof Refining ref && t.refineryUnit() != null) return installedUnitGain(game, t, ref);
         if (!(rate > 0)) return 0;
         if (owner instanceof ProcessingSector works) return works.lastEarnsAt(t, rate);
@@ -109,8 +109,9 @@ public final class LicenceFees {
         double gross = ProcessingSector.grossStanding(t, values, rate);
         double freight = owner instanceof ExtractionSector mine ? mine.freightRunning(t, rate)
                 : ProcessingSector.cityLegs(t, rate, owner.legPrice());
+        // The works' power at what their class is billed (PW1, REV-PW1c): Heavy Industry and Mining the energy and transmission.
         return gross - plans.standingRunningCostOf(t) - plans.standingCostOf(owner, t)
-                - SpreadPlanner.ownCosts(t, rate, game.getMarkets().getExchangeRate(), game.getEconomyManager().getPricePerWatt()) - freight;
+                - SpreadPlanner.ownCosts(t, rate, game.getMarkets().getExchangeRate(), owner.powerPriceFor(t)) - freight;
     }
 
     /** The common dispatch share of these outputs, including direct exports and captive production. */
@@ -172,7 +173,7 @@ public final class LicenceFees {
     private static double one(Game game, BuildingsTemplate t, NewUnit unit, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, double dispatchRate, Set<String> charged) {
         double bill = buildingFee(game, t, unit, owner, standing, dispatchRate);
         charged.add(t.getSinceText());
-        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipes.Prices prices = Recipes.pricesOf(game, t);
         int accrualMonth = game.getMonth();
         double rate = Math.max(0, Math.min(1, standing ? dispatchRate : owner.getOperatingRate()));
         if (recipe != null && charged.add(recipe.getSince()) && recipe.knownAt(game.getMonth(), game.getResearch())) {
@@ -529,7 +530,7 @@ public final class LicenceFees {
     public static double forNewWork(Game game, BuildingsTemplate t, double running) {
         if (pricing.get() || !utilityWork(game, t)) return 0;
         Fitting one = Fitting.added(RecipeChanges.counts(t, EquipmentFit.fittedForNew(game, t)), 1,
-                RecipeChanges.newChoices(game, t, Recipes.pricesOf(game)));
+                RecipeChanges.newChoices(game, t, Recipes.pricesOf(game, t)));
         double bill = billOf(game, t, one, running, game.getMonth(), true);
         return Double.isFinite(bill) ? bill : 0;
     }
@@ -542,7 +543,7 @@ public final class LicenceFees {
     public static double forNewWork(Game game, BuildingsTemplate t, double running, long units, int monthsAhead) {
         if (pricing.get() || !utilityWork(game, t)) return 0;
         Fitting order = Fitting.added(RecipeChanges.counts(t, EquipmentFit.fittedForNew(game, t)), units,
-                RecipeChanges.newChoices(game, t, Recipes.pricesOf(game)));
+                RecipeChanges.newChoices(game, t, Recipes.pricesOf(game, t)));
         double bill = billOf(game, t, order, running, game.getMonth() + monthsAhead, false);
         return Double.isFinite(bill) ? bill : 0;
     }
@@ -578,7 +579,7 @@ public final class LicenceFees {
             Recipe recipe = RecipeChanges.recipeForNew(game, t, fitted);
             bill = one(game, t, unit.proposed() ? unit : null, owner, recipe, fitted, false, 0, charged);
         } else if (utilityWork(game, t)) {
-            Fitting one = Fitting.added(RecipeChanges.counts(t, EquipmentFit.fittedForNew(game, t)), 1, RecipeChanges.newChoices(game, t, Recipes.pricesOf(game)));
+            Fitting one = Fitting.added(RecipeChanges.counts(t, EquipmentFit.fittedForNew(game, t)), 1, RecipeChanges.newChoices(game, t, Recipes.pricesOf(game, t)));
             bill = billOf(game, t, one, BuildAdvice.rawRunningCostAt(game, t, 0), game.getMonth(), false, charged);
         } else return Rent.NONE;
         List<Patent> due = new ArrayList<>();

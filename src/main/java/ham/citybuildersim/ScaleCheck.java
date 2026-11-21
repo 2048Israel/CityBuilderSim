@@ -1609,7 +1609,10 @@ public class ScaleCheck {
             // three the drivers' - until 0.7.62 the load derived it from the drivers, which the cells scale.
             "householdFuel",
             // ...and the graduates waiting for the next census and the last census's (0.7.63): people.
-            "householdGraduates" };
+            "householdGraduates",
+            // ...and the power plants' struck book and the fuel they paid (PW1, 2026-11-11): its load, its kWh, its fuel and its
+            // upkeep are the city's size, its prices and its ratio the pattern leaves; unscaled, the copy bought one city's coal.
+            "powerBooks" };
 
     /** The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. */
     static final java.util.Set<String> NAMED = java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks",
