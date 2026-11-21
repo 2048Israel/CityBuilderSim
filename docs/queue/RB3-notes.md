@@ -114,7 +114,20 @@ fixture month by month). On 60 months of founding, Construction, m138 to m171:
   never fires, so nothing posts where the order moved. On this branch (its final model, the same JVM line)
   all eight CSVs are byte-identical to main's, and the logs differ only in their run times (595 s, 640 s)
   and the clock stamps of two lines. No ensemble (the contract, 4).
-- `./batch-check.sh --fast`: PICK_AND_FAST
+- `./batch-check.sh --fast`: compile OK, maps regenerated, Stale 0 firm findings, tree clean but for the
+  generated docs.
+- **The pick** (`sh tools/pick.sh origin/main HEAD`): 38 of 233 harnesses for the 12 files changed. Every one
+  ran on the branch. Its reds are main's, as known-reds.txt or gate.txt records them:
+  - BankCheck: "it pays its savers something" (FS9).
+  - CopperRefiningCheck: "the rule cut an order in at least one month of the run".
+  - YoungBankCheck: "a spell under Bank.CAPITAL_RATIO begins" (FS9).
+  - KeptCheck: its four.
+  TimingCheck's timing lines are soft. The run of all 38 at once hit its two-hour limit with 36 logs
+  written. BankFailureCheck, GovernmentPlayerCheck, OwnerCheck and PrizeCheck then ran one at a time, each
+  exiting 0. In the run of all 38, KeptCheck also failed section 103's Partners line ("the same picture as one
+  built new, to the pixel", pixels that differ 0 4 0 0 0). That line is pixel- and path-sensitive (its
+  comment; WG1-R's floor change moved it by 3) and cannot be reached from the fund's cap sale. Rerun alone
+  it passed (0 0 0 0 0), with only the four known reds, so it has no known-reds row.
 
 ## The process
 
