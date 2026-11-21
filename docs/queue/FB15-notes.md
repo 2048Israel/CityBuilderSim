@@ -232,6 +232,8 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
   OrderDoorCheck green.
 - The first dry run, at 56cec48d3 on the box (cbs-gate-FB15-M0OYuc8i, the suite in 690 s): one red not named,
   ForeignDebtCheck 7, mended in section 4. ForeignDebtCheck is green on the mend.
+- No second dry run, and no gate-run line in the ship file: the mend after it, and main's move (RB3,
+  0.9.176), leave that run's suite stale, so the gate runs the suite fresh (the orchestrator, 2026-11-21).
 - `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed). Review: needed - money (the brief).
 - The second ensemble and the dry run: below, when run.
 
