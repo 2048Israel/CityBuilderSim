@@ -33,8 +33,9 @@ if [ "${1:-}" = "--stop" ]; then
     [ -d "$RUN" ] || { echo "no such run: $RUN" >&2; exit 1; }
     RUN=$(cd "$RUN" && pwd); RUNW=$(native "$RUN")
     if [ "$WINDOWS" = 1 ]; then
-        ENS_LABEL="$LABEL" ENS_A="$RUN" ENS_B="$RUNW" \
+        ENS_LABEL="$LABEL" ENS_B="$RUNW" \
             powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(native tools/ensemble/stop.ps1)" | tr -d '\r'
+        exit "${PIPESTATUS[0]}"   # 1: what outlived the stop is named above (HN1-C)
     else
         pkill -f -- "ensemble.sh $LABEL( |\$)"
         pkill -f -- "$RUN( |/|\$)"
