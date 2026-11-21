@@ -8,6 +8,8 @@ The subsequent parent-edge-only accounting mend at 4e65bd86b passed --fast
 and one bounded production-helper proof. No subsequent full measurement
 is authorized; the 53.6 MiB residual remains unattributed. No readiness
 is claimed, and bounds and vetoes remain unchanged.
+The later bounded Healthcare diagnostic has two hard failures and fixture
+age/expansion premise limits, recorded below; it establishes no source mend.
 
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
@@ -1091,3 +1093,118 @@ or threading in the FS5 diff. Exact process counts remain Java +653/-607,
 registry inclusive +653/-627, generated/notes/ship excluded. No suite or
 bounded parent replay ran. The marker stays provisional and the four vetoes,
 unattributed 53.6 MiB residual and unknown cache-array root stay unchanged.
+
+## Fixture-age correction and bounded Healthcare diagnostic
+
+Source audit after the Healthcare run found a real scope/reporting error:
+LongPlaytest.probeCity calls probeRun(3), (4), (5), (6), and probeRun counts
+months rather than ending at the argument's month. That is 18 advancing
+months and the city was observed at month 19, not a six-month fixture.
+The earlier six-month descriptions of the parent proof, completeness
+diagnostic and any other artifact using this helper are incorrect. Their
+raw source, logs and measured array facts remain preserved, but six-month
+scope compliance is not claimed. This was reported to the orchestrator;
+no corrected run was presumed authorized or attempted. The parent helper
+source remains byte-identical across .180 and was not replayed for the merge.
+
+The static audit explicitly covers recovery FixtureProbe, heap/root probes
+1--5 including preserved v1/v2 sources, GovernmentMendProof,
+HeapCompletenessProbe, ParentMendProof and HealthcareAccess/Diagnostic:
+ACTUAL 18 advances/endmonth19 for each helper-based fixture, not six.
+probeCity and probeRun hashes are identical at all five inspected source
+checkpoints 76ec61a65, 068f3ab57, 0446cec5e, 4e65bd86b and 5bfa3783b.
+target/FS5c2-fixture-age-audit.md and its JSON enumerate source artifacts
+and hashes. Historical recovered notes and raw evidence are retained;
+current reports carry the correction. A helper call in the recovered
+KeptCheck source snapshot does not reclassify its full played-city builder.
+The orchestrator acknowledged this in 20261121-135459-668-orchestrator-77cd:
+the month-independent controlled parent evidence stands with its fixture
+limit; no repeat just to fix wording and no retroactive scope compliance.
+
+GO `20261121-133923-158-orchestrator-4a09` authorized one Healthcare causal
+diagnostic after .180 integration/final fast. The target-only diagnostic
+ran on frozen 5bfa3783b, actual WinApplication/SW, Xmx768m. It completed all
+eight fresh comparisons and exited 1 in 7.018 s monotonic, wrapper
+13:50:17--13:50:25. The 45-second total guard did not fire. Exactly one
+transparent native Stage, opacity 0, nonmaximized and not always on top,
+was reused for two native controls with no requestFocus call and closed
+in finally. No full builder or replay ran; no owned JVM remains. Month 19
+and the city's cash were hard-asserted unchanged during all comparisons.
+
+Artifacts are `target/FS5c2HealthcareDiagnostic.java`, the target-only
+root-package access bridge, `target/fs5c2-healthcare-diagnostic.sh`, compile
+evidence and `target/FS5c2-healthcare-diagnostic.log`. All sixteen complete
+unmodified signatures are in target/FS5c2-healthcare-signatures. The read-only
+audit JSON holds differing rows, endpoints and SHA256 hashes. Its report
+is target/FS5c2-healthcare-result.md. Compilation access errors were corrected
+before the one diagnostic JVM; those compile logs remain. No source change
+or second diagnostic followed the result.
+
+| Comparison | Full signature | Exact disposition |
+|---|---|---|
+| Natural Healthcare unstaged | equal | Content 1454x374, viewport 1454x696, no bar, both sides |
+| Natural held comparison | equal | Clock/model unchanged and no intervening redraw |
+| Controlled ordinary wrap positive | equal | Both narrow: content 1446x850, viewport 1446x841, bar 8 |
+| Controlled held comparison | equal | Both narrow states remain stable |
+| Taller negative | equal | Both wide: content 1454x833, viewport 1454x891, no bar |
+| Fresh wide-seeded, final AS_NEEDED | HARD FAIL, 4 rows | Kept narrow 1446x850/bar 8; fresh wide 1454x833/no bar; both held stable |
+| Controlled native pulses | equal | Both content 1446.4x850.4, viewport 1446.4x840.8, bar 8 |
+| Natural Healthcare native pulses | HARD FAIL, 4 rows | Both content 1454.4x375.2 and viewport 1454.4x694.4/no bar; four icon Stack geometries differ |
+
+The natural premise was not caused. Its only Healthcare text is in the
+"nothing this month" list, and there is no "by kind of care" detail in its
+signature. Government.listPage leaves Money.nothing amounts out of the
+expandable rows. Setting the open-state key therefore did not cause the
+actual Healthcare detail expansion that fails on the full city. The natural
+equalities cannot be offered as a passing check of that premise.
+
+The controlled frame used the real Government.frameOver and UI.scrolled
+paths. Its threshold came from actual 1454/1446 page widths, 8-pixel bar,
+IBM Plex Sans Regular 12 font, 275 characters, measured label preferred
+heights 17/34, viewport height 841, wrapper padding 24 and filler 791.5.
+The taller increment 49.6 was derived from those font/heights. No full-run
+684/700 constants were used. The ordinary anticipated positive ended narrow
+on both sides. Fresh-only wide seeding instead caused a different stable
+geometry under the same final AS_NEEDED policy; it remains a hard failed
+negative, not a passing negative or authority for a fresh-only source mend.
+
+The native natural failure is separate from the full run's scrollbar fault:
+one Stack kept 13x13 at 6,6 versus fresh 13.6x13.6 at 5.6,5.6; three kept
+15x15 at 7,7 versus fresh 15.2x15.2 at 6.4,6.4. Both whole pages agree in
+geometry. The kept graph was first constructed unstaged and then migrated
+to the Stage; fresh construction happened under that Stage. This history
+limits actual-UI attribution. Pixel snapping/scale initialization is only
+a hypothesis; native output scale was not measured. No cause or exemption
+is adopted from those four differences.
+
+There were 54 hard checks, 2 failures and 377 geometry events. Every held
+public-pass initial-signature assertion and every exact restore assertion
+passed. Production settle ran unmodified, with geometry events and before/
+after endpoints recorded; subsequent held public passes were numbered.
+Native pre/post layout pulses were recorded. Quiet internal settle passes
+that changed no observed property were not individually numbered, so event
+counts are not production-pass counts. NeedsLayout often stayed true even
+when signatures stayed equal; this observation alone establishes no owner.
+
+Recommendation: no source MEND on this result. Keep KHL1 provisional, four
+own vetoes, the full run's four Healthcare held-still looks and its 53.6 MiB
+residual; no cache-root/lifetime attribution. A proposed next causing proof
+is target/FS5c2-healthcare-next-scope.md: explicitly counted six monthly
+advances, real standing care and positive actual spending, hard actual
+Healthcare expansion premise, native attachment before first CSS/layout,
+actual-page threshold and taller negative. It needs a new scoped GO and
+has not executed. No preferred-width stripping, tolerance change, redraw
+to heal, model/UI source mend, full SW, ensemble, dryrun or readiness check
+followed. Process counts remain +653/-607 Java and +653/-627 with registry,
+generated/notes/ship excluded. The provisional marker remains.
+
+Static refinement of that proposal: General Hospital is the actual template
+used by HealthCheck; Game.buildStack(template,quantity,true) is the standing
+building API. Six Game.simulateMonths(1) calls, the API used by LongPlaytest.run,
+would each require delta1 and total delta6; a refused month stops as LIMIT
+without fallback or extra month. Game.nextMonth is private. No proposed
+direct NationalAccounts write or fake expansion is allowed. The native
+scene would precede first kept CSS/layout, with output scale recorded to
+remove the migration confound. This is a proposal only. The laptop slot
+was released to WG3 by the orchestrator; FS5 requires a new slot GO for any
+future JVM. No source mend is recommended from the current evidence.
