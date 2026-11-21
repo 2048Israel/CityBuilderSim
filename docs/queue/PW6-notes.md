@@ -367,3 +367,58 @@ is terminal, and no local model was run. Pick remains ALL 238, review floor
 `review    needed - saves: HistorySave.java`, covered by the recorded whole/scoped SHIP
 reviews. Ask root for ALL-238 dry ordering next; no dry, screen, readiness or publication
 is authorized by this ensemble GO. Provisional marker retained.
+
+## Narrow Services attribution and UI checkpoint — verification still open
+
+Root held the dry for SCREEN-PW6c1's immutable `72fa` finding. Its original
+pixels/logs remain untouched. Our own full production `drawPage` graph reproduced
+Scene 480×900/body 470 expanding to 584, including after removing only the new
+power card. The unchanged main capacity row imposes 220 + 254 side minima, 36 gaps,
+8 middle minimum, 30 card and 36 page padding: 584. The new card inherits this
+constraint. Inspection of production `UserInterface.start` found maximized startup
+and fullscreen/fold controls, without an explicit minimum stage width or resizing
+restriction; 480 was not dismissed as unsupported. Full window/DPI was not executed.
+
+Only `ui/ServicesScreen.java` changes: local utility/road columns wrap at their
+existing readable widths, both Utilities/power hints wrap, and Works' surplus uses
+BUSINESS purple. No model/save/history/Game phase, tariff, costs, producer identity,
+order or supply definition changed. Overall `moves_playtest=yes` remains for the
+previously proved load-continuation fix; this UI delta leaves that model untouched.
+The completed .180 80/80 ensemble/hard 10/10 remains retained, without replay.
+
+One `--fast` exited 0 (compile 38s; maps 4.3s; Stale 0 firm/194 soft). Afterward two
+bound preferred-width setters were replaced with comments to permit retained redraw;
+the actual then-final Services source was directly compiled with the target-only post
+driver. Exactly two short sequential native Oracle 21.0.4/JavaFX 21 render JVMs ran,
+four plus one advances, scratch only, both PIDs terminal. Post exit 0 is captured;
+pre numeric exit was blank, so only completed log/no exception is claimed there.
+No named/full/Kept/UiProbe/playtest/ensemble/dry execution was added.
+
+The post full graph fits body/content 470 at hvalue 0 (minimum 310); six tick extents
+337–339, 393–395 and 436–438, each twice, lie inside viewport 1–471. Wide body/content
+1170 likewise fits all ticks. Capacity prose, rows, prices and dates are readable.
+May→June advances dispatch April→May, tariff May→June, bill June→July and paid fuel
+March→April; actual facts/labels are retained. Scroller/content identities and scroll
+0.53 survive redraw (212 kept/0 new). The actual mixed rows keep order and colours
+after redraw: Works purple `#a78bfa`, Wind pink `#f9bcd7`, Hydro teal `#2ec4b6`, grid
+blue `#a9d1ff`, coal light teal `#93e2da`; labels match all six stacks. This is a
+direct native mixed utility fixture, not an advanced mixed city/all-catalogue proof.
+
+Visual review caught an own regression before push: Roads' route label had zero
+width because its preferred width was sampled before CSS. The final static correction
+keeps that label's natural computed width and derives middle space from its live
+natural width. **That last correction has not been compiled or rendered; generated
+maps still describe the earlier rendered source.** The two-render cap was reached,
+so no extra JVM was started. This is a provisional checkpoint, not completed UI mends.
+Root was notified; final compile/maps and focused narrow/wide visible-link geometry
+need separate ordering, followed by independent eyes. Dry/readiness remain held.
+
+Evidence: `target/PW6-ui-mend/report.txt`, `manifest.json`, raw pre/post logs/classes,
+source snapshots, facts/labels and scratch JSON. Inspect `post/02-post-full-content.png`,
+`post/03-post-wide-content.png`, `post/06-post-mixed-full-content.png`; the missing Roads
+label is visible in those historical rendered bytes. Exact rendered Services SHA256
+`796aaf1946457727d82ea8d676e9dce417ed824edc37290f9c4443c51f476e1e` versus final checkpoint
+`294e75e5987e2536ba73a8cf939c5f488003e15d98e3dd0237e519ee544aeb67` are distinguished.
+All 70 original PW6 proof files and all 44 original screen-worker manifest entries
+verify unchanged. Marker retained; no owned process remains running. Pick stays
+ALL 238; save review floor and completed pre-UI reviews remain as recorded above.

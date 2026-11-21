@@ -2487,7 +2487,7 @@ final class ServicesScreen {
         }
         eventLines(page, "Utilities", events);
         page.getChildren().add(Kept.scope("enough head", () -> sectionHead("IS THERE ENOUGH FOR WHAT THE CITY DRAWS", null,
-                hint("the bar: now solid, at full staff light, the city's ask the white tick"))));
+                words("the bar: now solid, at full staff light, the city's ask the white tick", Palette.SIZE_LABEL, Palette.TEXT_MUTED))));
         // Kept (KP2): each capacity row a scope keyed by what it is (UtilityRow.key(): power, water).
         for (UtilityRow r : utilityRows(all)) {
             page.getChildren().add(Kept.scope(r.key(), () -> utilityCard(r)));
@@ -2499,7 +2499,8 @@ final class ServicesScreen {
     /** The retained dispatch's six supply stacks and its matching prices; the capacity card above remains today's plant. */
     VBox powerMarket(PowerView.View v) {
         VBox body = Kept.column(12);
-        body.getChildren().add(sectionHead("HOW THE POWER RAN", null, hint("generation and load; clearing prices per MWh generated")));
+        body.getChildren().add(sectionHead("HOW THE POWER RAN", null,
+                words("generation and load; clearing prices per MWh generated", Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
         if (!v.cleared()) {
             body.getChildren().add(words("No month has cleared yet. Businesses still use the founding tariff.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
             return card(body);
@@ -2578,8 +2579,35 @@ final class ServicesScreen {
     static String powerEnergy(double kwh) { return String.format("%,.1f MWh", kwh / 1000); }
     static String powerPrice(double thousandsPerKwh) { return tightMoney(toDollars(thousandsPerKwh * 1000)) + "/MWh"; }
     static String powerColour(int id) {
+        if (id == UtilitiesHandler.WORKS_ID) return Palette.BUSINESS;
         String[] tones = {Palette.PEOPLE, Palette.MONEY, Palette.BUILDING, Palette.PEOPLE_LIGHT, Palette.MONEY_LIGHT, Palette.BUILDING_LIGHT};
         return tones[Math.floorMod(id, tones.length)];
+    }
+
+    /** The utility columns wrap when their readable side widths leave no room for the middle, without widening the scrolled page. */
+    static javafx.scene.layout.FlowPane utilityColumns(Region left, Region middle, Region right, double leftWidth, double rightWidth) {
+        javafx.scene.layout.FlowPane row = Kept.flow(18, 12);
+        row.setAlignment(Pos.TOP_LEFT);
+        row.setMinWidth(0);
+        row.getChildren().addAll(left, middle, right);
+        Region[] columns = {left, middle, right};
+        double[] widths = {leftWidth, 0, rightWidth};
+        for (int i = 0; i < columns.length; i++) {
+            Region column = columns[i];
+            column.setMinWidth(0);
+            if (i == 2 && rightWidth < 0) continue; // The road door keeps its natural width after CSS.
+            if (column.getProperties().get("services.utility.columns") == row) continue;
+            final int index = i;
+            column.prefWidthProperty().unbind();
+            column.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(() -> {
+                double available = Math.max(0, row.getWidth());
+                double endWidth = rightWidth < 0 ? right.prefWidth(-1) : rightWidth;
+                double between = available - leftWidth - endWidth - 2 * row.getHgap();
+                return index == 1 ? (between >= leftWidth ? between : available) : Math.min(widths[index], available);
+            }, row.widthProperty(), row.hgapProperty(), right.widthProperty()));
+            column.getProperties().put("services.utility.columns", row);
+        }
+        return row;
     }
 
     /**
@@ -2612,9 +2640,8 @@ final class ServicesScreen {
         HBox.setHgrow(says, Priority.ALWAYS);
         says.setMaxWidth(Double.MAX_VALUE);
         Label go = door("Infrastructure › Roads", Palette.PEOPLE, () -> ui.infrastructureScreen.open("Roads"));
-        HBox row = Kept.row(18, left, says, go);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return card(() -> ui.infrastructureScreen.open("Roads"), "Infrastructure › Roads", row);
+        return card(() -> ui.infrastructureScreen.open("Roads"), "Infrastructure › Roads",
+                utilityColumns(left, says, go, 220, Region.USE_COMPUTED_SIZE));
     }
 
     /**
@@ -2698,7 +2725,7 @@ final class ServicesScreen {
         reading.setAlignment(Pos.BASELINE_LEFT);
         VBox left = Kept.column(4, titled, reading);
         left.setMinWidth(220);
-        left.setPrefWidth(220);
+        // utilityColumns owns the preferred width, including retained redraws.
         left.setMaxWidth(220);
 
         double scale = Math.max(r.asked(), r.could()) * 1.05;
@@ -2720,12 +2747,10 @@ final class ServicesScreen {
         Label shortLine = words(r.shortWords(), Palette.SIZE_BODY, Palette.TEXT_HEAD);
         VBox right = Kept.column(8, shortLine, doorPill(r.goWords(), Icons.BUILD, Palette.BUILDING, r.go()));
         right.setMinWidth(254);
-        right.setPrefWidth(254);
+        // utilityColumns owns the preferred width, including retained redraws.
         right.setMaxWidth(254);
 
-        HBox row = Kept.row(18, left, middle, right);
-        row.setAlignment(Pos.TOP_LEFT);
-        return card(row, details("utilities:" + r.key(), "price, billed, unbilled and staff turnout",
+        return card(utilityColumns(left, middle, right, 220, 254), details("utilities:" + r.key(), "price, billed, unbilled and staff turnout",
                 () -> new Node[] {utilityStatement(r.key())}));
     }
 
