@@ -1,24 +1,35 @@
 # Stops one ensemble run on Windows: its shell, its xargs, the runs' shells and their JVMs.
-# Called by `tools/ensemble/ensemble.sh --stop <label>` with ENS_LABEL (the label) and ENS_A, ENS_B
-# (the run's folder as Git Bash and as Java write it) in the environment. A process is the run's when
-# its command line holds the run's folder (the JVMs, the runs' shells, xargs) or `ensemble.sh <label>`
-# (the script's own shell), or, for a run on the gate box, `--ensemble <label>` and `--serve ensemble <label>`
-# (its half here and the ssh, whose end stops the box's runs; GB3); nothing else on the machine, the suite and
-# other runs included, matches.
-# The shells and xargs go first so that no run starts after the JVMs are gone; twice, for the one
-# that was starting while the first pass looked.
+# Called by `tools/ensemble/ensemble.sh --stop <label>` with ENS_LABEL and ENS_B, the run's folder: C:/.../target/
+# ensemble/<label>, or it stops nothing, exit 2 (REV-FB15). A process is the run's when its command line holds that
+# folder as Java or Git Bash (/c/...) writes it, or `ensemble.sh <label>`, or, for a run on the gate box, `--ensemble
+# <label>` and `--serve ensemble <label>` (GB3); nothing else on the machine, the suite included, matches. The shells
+# and xargs go first, twice, for one starting while the first pass looked; a last look names what is left, exit 1.
+# WHY (HN1-C): Git Bash hands a Windows program /c/... as C:/..., so no shell or xargs matched, and HN1's xargs
+# outlived the stop and started five runs unsaid. tools/ensemble/stop-selftest.sh tests it.
 $label = $env:ENS_LABEL
-$pats = @($env:ENS_A, $env:ENS_B) | ForEach-Object { [regex]::Escape($_) + '(?=[/\\\s"]|$)' }
+# An empty folder matches every command line on the machine, an ancestor (--stop .) every run or all of target/: refuse
+if (-not $label -or $label -match '^\.{1,2}$|[\\/]' -or $env:ENS_B -notmatch ('^[A-Za-z]:[\\/].*[\\/]target[\\/]ensemble[\\/]' + [regex]::Escape($label) + '[\\/]?$')) { "stop.ps1: no ENS_LABEL, or no ENS_B C:/.../target/ensemble/<label>: nothing stopped"; exit 2 }
+$w = $env:ENS_B -replace '\\', '/'
+$bash = if ($w -match '^([A-Za-z]):(/.*)$') { '/' + $matches[1].ToLower() + $matches[2] } else { $w }
+$pats = @($w, $bash) | ForEach-Object { [regex]::Escape($_) + '(?=[/\\\s"]|$)' }
 $pats += '(ensemble\.sh|--ensemble|--serve ensemble) ' + [regex]::Escape($label) + '(?=[\s"]|$)'
-$n = 0
-foreach ($pass in 1..2) {
-    $hit = @(Get-CimInstance Win32_Process | Where-Object {
+function Find-Run {
+    @(Get-CimInstance Win32_Process | Where-Object {
         $c = $_.CommandLine
         $_.ProcessId -ne $PID -and $c -and ($pats | Where-Object { $c -match $_ })
     })
+}
+$n = 0
+foreach ($pass in 1..2) {
+    $hit = @(Find-Run)
     $n += $hit.Count
     $hit | Where-Object { $_.Name -ne 'java.exe' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
     $hit | Where-Object { $_.Name -eq 'java.exe' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
     Start-Sleep -Seconds 1
 }
 "stopped $n processes of run $label"
+$left = @(Find-Run)
+if ($left.Count -eq 0) { "nothing of run $label is left"; exit 0 }
+$left | ForEach-Object { "left: $($_.ProcessId) $($_.Name) $($_.CommandLine)" }
+"$($left.Count) of run $label outlived the stop: stop it again before a resume"
+exit 1
