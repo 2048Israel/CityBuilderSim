@@ -45,7 +45,10 @@ import java.util.Locale;
  *      holding one at the door's price but not six, is built in part: the
  *      halving's largest the till buys outright, paid at the door's price, in
  *      the advisor's words, and not left marked as refused for capital; from
- *      the other side, a till short of one is held whole, in the bank's words.
+ *      the other side, a till short of one is held whole, in the bank's words;
+ *      and with the bank shut, as past the default point, the order is held
+ *      whole with the till holding one, as on main (REV-FB15: there the till is
+ *      the sector's last money).
  */
 public class OrderDoorCheck {
 
@@ -264,11 +267,24 @@ public class OrderDoorCheck {
         check("...paid from the till at the door's price, with no loan", near(paid, doors[(int) expect]));
         check("...and the shopkeeper is not left marked as refused for capital, which the playtest counts",
                 !credit.wasRefusedForCapital(shop) && !credit.wasProjectRefusedForCapital(shop));
+        // REV-FB15: with the bank shut, as past the default point, the till is the sector's last money: held as on main.
+        buyGround(g, store, SIX);
+        em.setSectorCash(shop, Math.max(0, TILL * door(g, store, 1) - shopBrings(g, store)));
+        boolean groundAgain = ground(g, store, SIX);
+        credit.setLendingOpen(false);
+        tillAtProject = -1;
+        consider(g, new BusinessInvestment.Decision(shop, store, SIX, "FB15's order of " + SIX, true));
+        credit.setLendingOpen(true);
+        line = g.getLastInvestment(shop);
+        double held = tillAtProject;
+        out.printf("  the bank shut, with %.4f in the till at the door: \"%s\"%n", held, line);
+        check("with the bank shut, the order is held whole, the till that holds one untouched, as on main (REV-FB15)",
+                groundAgain && held >= door(g, store, 1) && !line.startsWith("Built") && near(em.getSectorCash(shop), held));
         em.setSectorCash(shop, Math.max(0, SHORT_TILL * door(g, store, 1) - shopBrings(g, store)));
         tillAtProject = -1;
         consider(g, new BusinessInvestment.Decision(shop, store, SIX, "FB15's order of " + SIX, true));
         line = g.getLastInvestment(shop);
-        double held = tillAtProject;
+        held = tillAtProject;
         out.printf("  with %.4f in the till at the door: \"%s\"%n", held, line);
         check("from the other side, a till short of one at the door is held whole, in the bank's words",
                 held >= 0 && held < door(g, store, 1) && line.startsWith("Holding: the bank is rebuilding its capital")

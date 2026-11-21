@@ -7180,14 +7180,19 @@ public class Game {
          * NO IS TO THE ORDER). FB15's fixture (OrderDoorCheck 3): six
          * Convenience Stores held whole for the bank's capital ("lets a
          * borrower's debt grow 0.00% this month") with the till holding one.
-         * So a no from the lender is asked again of half the order, down to
-         * one: a smaller order needs a smaller loan, and one the till covers
-         * needs none, which is what a banned sector may build too (above). A
-         * failed buildFor() changes nothing before canBorrow() says no
-         * (financeProject() only prices the plan); a no for the ground is not
-         * the lender's and is not asked again. An order the door trimmed was
-         * not held, so the capital marks the larger try left are taken back,
-         * as REV-HN1-1 took the landlords' back.
+         * So a no for the bank's capital or a ban is asked again of half the
+         * order, down to one: a smaller order needs a smaller loan, and one
+         * the till covers needs none, which is what a banned sector may build
+         * too (above). Past the default point or with the bank shut it holds,
+         * as before (REV-FB15): there the till is the last money between the
+         * sector and the shortfall desk, which lends nothing then either, and
+         * an order in flight blocks the distress sale. A failed buildFor()
+         * changes nothing before canBorrow() says no (financeProject() only
+         * prices the plan); a no for the ground is not the lender's and is not
+         * asked again. An order the door trimmed was not held, so the capital
+         * marks the larger try left are taken back, as REV-HN1-1 took the
+         * landlords' back; the default point's mark is never left by a part
+         * built, since a smaller try reads the same till against it.
          */
         boolean[] door = { false, false };   // the lender said no; the build borrowed
         Investor asking = lenderWatched(payer, door);
@@ -7195,12 +7200,13 @@ public class Game {
                 projectCapitalBefore = credit.wasProjectRefusedForCapital(decision.sector);
         long tried = quantity;
         boolean built = buildFor(asking, decision.template, quantity);
-        String doorNo = door[0] ? projectRefusal(credit, decision.sector) : null;
-        while (!built && quantity > 1 && door[0]) {
+        String doorNo = door[0] ? projectRefusal(credit, decision.sector) : null, no = doorNo;
+        while (!built && quantity > 1 && halfMayPass(no)) {
             quantity /= 2;
             door[0] = false;
             projectFinancing.remove(decision.sector);
             built = buildFor(asking, decision.template, quantity);
+            no = door[0] ? projectRefusal(credit, decision.sector) : null;
         }
         if (built && quantity < tried) {
             credit.takeBackCapitalRefusal(decision.sector, capitalBefore, true, projectCapitalBefore);
@@ -7248,7 +7254,7 @@ public class Game {
             String sector = decision.template.getSector();
             double others = landManager.heldByZones() - landManager.heldBy(sector);
             String needs = String.format("needs %s, %s free%s%s",
-                    LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
+                    LandManager.areaWords(decision.template.getLandSqFt() * (double) tried),
                     LandManager.areaWords(landManager.freeFor(sector, groundUse(decision.template))),
                     others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "", unlinkedClause());
             blockOnLand(decision.sector, needs);
@@ -8008,25 +8014,25 @@ public class Game {
         };
     }
 
-    /** Which of canFundProject()'s refusals the lender's first no to a project's order was, for projectDoorTrimmed(). */
+    /** Which of canFundProject()'s refusals the lender's no to a project's order was, in its own order: the default point is read before the capital rule. */
     private static String projectRefusal(BusinessDebtManager credit, String sector) {
         if (!credit.isLendingOpen()) return BusinessDebtManager.MORTGAGE_BANK_SHUT;
         if (credit.isBorrowingBlocked(sector)) return BusinessDebtManager.MORTGAGE_BANNED;
+        if (credit.wasRefusedAtDefaultPoint(sector)) return BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT;
         if (credit.wasProjectRefusedForCapital(sector)) return BusinessDebtManager.MORTGAGE_CAPITAL;
-        return BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT;   // the default point, or the line the loan would cross
+        return BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT;   // the line the loan would cross
     }
 
-    /** The advisor's words for a project's order the door cut down (HN1-B): by the lender's first no, on a smaller loan or bought outright. */
+    /** Whether the lender's no lets half the order be asked again (REV-FB15): a ban, as a banned sector builds what its till buys, and the bank's capital rule; never the default point or a shut bank. */
+    private static boolean halfMayPass(String refusal) {
+        return BusinessDebtManager.MORTGAGE_BANNED.equals(refusal) || BusinessDebtManager.MORTGAGE_CAPITAL.equals(refusal);
+    }
+
+    /** The advisor's words for a project's order the door cut down (HN1-B): for the bank's capital, on a smaller loan or bought outright, or for a ban, bought outright. */
     private static String projectDoorTrimmed(String refusal, long asked, boolean borrowed) {
-        String past = String.format("would leave it owing past %.2f times what it owns", BusinessDebtManager.INSOLVENCY_TRIGGER);
-        if (borrowed) return String.format(" (trimmed from %,d - %s)", asked,
-                BusinessDebtManager.MORTGAGE_CAPITAL.equals(refusal) ? "the bank is short of capital for more" : "more " + past);
-        return String.format(" (trimmed from %,d - %s, so what its own funds buy outright)", asked, switch (refusal) {
-            case BusinessDebtManager.MORTGAGE_CAPITAL -> "the bank is short of capital for a loan";
-            case BusinessDebtManager.MORTGAGE_BANNED -> "it may not borrow";
-            case BusinessDebtManager.MORTGAGE_BANK_SHUT -> "the bank has failed";
-            default -> "a loan " + past;
-        });
+        if (borrowed) return String.format(" (trimmed from %,d - the bank is short of capital for more)", asked);
+        return String.format(" (trimmed from %,d - %s, so what its own funds buy outright)", asked,
+                BusinessDebtManager.MORTGAGE_BANNED.equals(refusal) ? "it may not borrow" : "the bank is short of capital for a loan");
     }
 
     /**
