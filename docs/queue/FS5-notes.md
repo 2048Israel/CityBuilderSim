@@ -1312,3 +1312,97 @@ nativeWin/SW Xmx768m expected20s/hard45s TOTAL. The laptop is unallocated.
 Four vetoes, full four Healthcare looks, 53.6 MiB residual, cache-root
 uncertainty and provisional marker remain unchanged. Production and process
 counts are unchanged; this is records/preparation only.
+
+## Valid six-month care fixture; calibration LIMIT before comparisons
+
+GO `20261121-143852-464-orchestrator-2620` authorized the exact Centre+40 Houses
+fixture and one diagnostic. Target-only compilation passed. The one foreground
+JVM used frozen c4a642bb4/main .180, actual WinApplication/SW, Xmx768m and main
+data paths. Java and Bash exited 2 LIMIT, agreeing with the corrected inner
+exit2; PowerShell surfaced a generic failed-native-command exit1, recorded
+separately. Monotonic elapsed 4.105 s, wrapper 14:41:25--14:41:30; the 45-second
+guard did not fire. No owned JVM remains. No duplicate run followed.
+
+Actual initial cash2588.3463842978417, Centre247.6788655134605 and
+House6.885001382232259 made the actual standing bill523.0789208027509.
+Both builds succeeded, GENERAL capacity increment12000 and doors0->40 passed.
+No changed founding or injected cash, capacity, ledger, residents, skills or
+fill rates. Six and only six simulateMonths(1) calls, every delta1/returned1,
+advanced month1->7, passing the corrected age premise:
+
+| Call | Before | After | Returned | Population | Workforce |
+|---|---:|---:|---:|---:|---:|
+| 1 | 1 | 2 | 1 | 38 | 0 |
+| 2 | 2 | 3 | 1 | 74 | 22 |
+| 3 | 3 | 4 | 1 | 76 | 44 |
+| 4 | 4 | 5 | 1 | 94 | 45 |
+| 5 | 5 | 6 | 1 | 110 | 56 |
+| 6 | 6 | 7 | 1 | 130 | 66 |
+
+Actual care payroll6.091950603069947, upkeep4.917858130165899 and NA health
+spending11.009808733235847 passed all positive guards. Visible Healthcare,
+real visible "by kind of care" detail and closed/open full-signature change
+also passed. The sole opacity0/nonmax/non-always-on-top native Stage preceded
+first kept draw/CSS/layout, had output/render scale1.25 on both axes, never
+requested focus and closed in finally. The FX cause/default-exit fix handled
+the actual later Limit correctly; the old wrong inner0/raw receipt and all
+five hashes remain unchanged.
+
+The separate calibration had viewport1454.4x694.4 and content1454.4x502.4
+under NEVER; under ALWAYS viewport1446.4x694.4 and content1446.4x502.4.
+The8px bar was measured, but content heights were equal: no wrap threshold
+was caused. It then stopped LIMIT at its selector for the supposedly visible
+"discounted by how many" paragraph. Source Government.payers/notes (1771--1778)
+and noteLine (592) put that prose behind the information icon. The saved
+opened signature has actual care detail but no "discounted" text. This was
+a wrong target-calibrator assumption, not a missing care premise or UI fault.
+There were 65 geometry events and ZERO fresh comparisons. Positive, taller
+negative, held equality/restore and the final post-comparison model-held
+assertion were unreached; none is claimed passing. The scratch calibration
+policy was still ALWAYS at the stop, before the comparison's AS_NEEDED
+reset; the Stage and process ended. No persistent player UI was touched.
+
+Raw source, compile, classes, log and two full calibration signatures remain.
+target/FS5c2-healthcare-centre-result.md reports actuals; its audit JSON has
+all six calls, exact figures and hashes, plus the separate PowerShell receipt.
+Log decoding is cp1252, signatures UTF-8, with raw bytes unchanged.
+
+On follow-up records/read-only GO `20261121-144530-648-orchestrator-5127`,
+the exact actual visible wrapping candidate was identified from saved
+signature row133 and source Government.listPage (1705): the Label beginning
+"nothing this month: Pensions ...", actual347-character model-produced text,
+font IBM Plex Sans11, wrapText true, minWidth0, width1417.6/height32 at
+18.4,243.2 in actual page1454.4. Its exact entire text/signature is saved in
+target/FS5c2-healthcare-visible-node.json. It is the direct child of the
+wide page in retained scope Spending/page/nothing, inside UI.scrolled's
+content; frameOver binds that page's preferred width to the body's viewport.
+
+The corrected READ-ONLY design in target/FS5c2-healthcare-calibration-next.md
+uses that existing node's prefHeight over actual widths, with no replacement
+text, new Text/Label, tooltip opening or synthetic node. It would require
+actual responsive label widths and actual total-content height delta before
+constructing a midpoint viewport positive and a measured taller negative.
+No delta means STOP LIMIT. It also uses the captured no-bar chrome1.6 rather
+than the live ALWAYS width's9.6, which includes the8px bar; this corrects an
+unreached candidate-width expression, not an observed full-fault cause.
+No target Java source was changed or rerun in this static follow-up.
+
+Relevance remains bounded: this is an actual visible Spending node governed
+by the same page/scroller binding as the original full Healthcare-open red.
+Opening the detail can change the content-height relation without changing
+zero-lines text. But full6's four held looks (2551--2578) and failing report
+(2579--2586) identify only signature rows59/60, the containing Columns,
+1454x684/1446x700 and inner1454x660/1446x676. They do not identify the leaf
+that grew. "The next60" is a signature-row index, not sixty printed leaves.
+This candidate's presence/text in that failed full city is unproved from
+those reports. A16px change is compatible with wrapping but establishes no
+owner. A corrected small proof could show an actual-page mechanism only;
+it would not alone attribute the retained four-look failure or justify a
+production mend. No new JVM is requested on an original-owner claim.
+
+No new rows, production/source mend, full SW, heap/cache measure, ensemble,
+dryrun or readiness action followed. Four vetoes, full four hard Healthcare
+looks, 1536MiB bound,53.6MiB residual and cache-root uncertainty stay hard.
+Process counts +653/-607 Java, +653/-627 registry-inclusive, pick24/237 and
+review line are unchanged. The provisional marker stays; awaiting the
+orchestrator's decision and any NEW scoped/slot GO.
