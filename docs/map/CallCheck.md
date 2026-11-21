@@ -1,6 +1,6 @@
 # CallCheck.java - 839 lines · 31 methods · 5 constants · harnesses
 
-`ham/citybuildersim/CallCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CallCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Callable bonds, the call and "worth calling" (CD4, spec-city-debt.md
 > sections 2.6 and 6.4; D22, D23, D24): a bond of ten years or more may be

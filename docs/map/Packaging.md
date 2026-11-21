@@ -1,6 +1,6 @@
 # Packaging.java - 454 lines · 21 methods · 7 constants · tools
 
-`ham/citybuildersim/tools/Packaging.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/Packaging.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Build EXE.bat's source archives and its check of the built image (CR1-J): the packaging JDK
 > checked against the pins, the complete corresponding sources fetched once into a cache outside

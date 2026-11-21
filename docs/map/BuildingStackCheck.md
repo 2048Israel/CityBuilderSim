@@ -1,6 +1,6 @@
 # BuildingStackCheck.java - 668 lines · 14 methods · 5 constants · harnesses
 
-`ham/citybuildersim/BuildingStackCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingStackCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through
 > the save and the load, through ScaleCheck's scaler, and in the sums a city is read by.

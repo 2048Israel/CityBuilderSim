@@ -1,6 +1,6 @@
 # PolicyPreviewCheck.java - 1,406 lines · 28 methods · 11 constants · harnesses
 
-`ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made
 > of, held to the month's own books in a played city.
