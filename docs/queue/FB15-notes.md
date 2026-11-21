@@ -183,6 +183,15 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
   - MortgageCheck 12's two;
   - CreditCrunchCheck 2's two. The bank rations in 111 of the 120 crunch months, against main's 120, and
     stands in its band in 119.
+- **ForeignDebtCheck 7** (the first dry run's one new red). "A reloaded city does not book its whole history
+  as one month" allowed the first month after a reload up to 5% of the foreign principal. FB15's played city
+  books 35.58 of 704.90 (5.05%), and main's books 27.97 of 613.58. A probe ran the twin, the city saved and not
+  reloaded, through the same month: it books 35.5801, the same as the reload to the fourth place, and 27.9749
+  on main. So there is no phantom, only a month's move over the proxy, as WN3 found (the comment above the
+  fixture). The line now asserts the thing itself: the reload books its twin's month, within .005, with a
+  fixture line that the history since founding (374.52) is more than twice the month, so booking it shows.
+  Green on the branch and on main's model. Red on a hand break that reloads each piece at 1.00: it books
+  513.75 against the twin's 35.58.
 
 ## 5. The calls
 
@@ -221,6 +230,8 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
 - On REV-FB15-2's mends: `--fast` exit 0; CreditCrunchCheck red on the two FS9 rows only, section 4 green.
 - On the merge of AP1 (0.9.175, "the playtest unmoved", so the ensemble at 7c355a19f stands): `--fast` exit 0,
   OrderDoorCheck green.
+- The first dry run, at 56cec48d3 on the box (cbs-gate-FB15-M0OYuc8i, the suite in 690 s): one red not named,
+  ForeignDebtCheck 7, mended in section 4. ForeignDebtCheck is green on the mend.
 - `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed). Review: needed - money (the brief).
 - The second ensemble and the dry run: below, when run.
 

@@ -12,7 +12,8 @@ looks once more and names what outlived the stop, exit 1; with no folder or labe
 its selftest). The new OrderDoorCheck causes HN1-A and HN1-B, eight lines red on main. HousingDoorCheck names the
 landlords' homes by the door's price too (68 orders with the segment short, none cut for the down payment), and
 CreditCrunchCheck 4 causes an order the owners' issue falls short of. The played cities of MortgageCheck 12 and
-CreditCrunchCheck 2 moved, their fixtures known reds under FS9.
+CreditCrunchCheck 2 moved, their fixtures known reds under FS9. ForeignDebtCheck 7 asserts a reloaded city's first
+month against its twin's, not 5% of the principal, which a month's own move crossed in the moved city.
 ## known-reds
 MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not | FS9 | 2026-11-21 | Section 12's landlord town (landlordCity, 60 months) orders at the door's price since HN1-A (red with HN1-B's halving off too), and its lean month, the principal past the income, no longer comes in the sixty
 MortgageCheck | ...and a month that earned | FS9 | 2026-11-21 | Follows the line above: with no lean month found the line reads 0.00 against 0.00
