@@ -2,10 +2,22 @@ package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.HeavyIndustry;
 
-/** Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them). */
+/**
+ * Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them).
+ *
+ * FS17: the three city fixtures that took a held good out of a played town (the railway's fleet, the copper refinery's yard, the bakeries'
+ * and plants' sheds) used to rest on the town a played 36 months left: that the good was worth more than the town makes in a month was a
+ * fact of that played town, so another batch moving it could turn them red. Each now reads the town's last month's GDP and CAUSES the
+ * ratio - the spurs laid, the refineries, bakeries and plants stood are as many as hold MONTHS_OF_OUTPUT months of it, counted from the
+ * model's own sizes (Freight.TONNES_PER_SET and the spur's rail capacity, the template's stock, the good's price) - and the premise is
+ * still asserted on the month that reads it.
+ */
 public class GdpCheck {
 
     static int fails = 0;
+
+    /** FS17: how many months of the town's last GDP a fixture's fleet, yard or shed is sized to be worth, so the month that loses it reads negative if the accounts book the loss as a fall. */
+    static final double MONTHS_OF_OUTPUT = 3;
 
     static void check(String label, double actual, double expected) {
         boolean ok = Math.abs(actual - expected) < 1e-6;
@@ -17,6 +29,12 @@ public class GdpCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-50s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    /** FS17: how many of a thing worth `each` hold MONTHS_OF_OUTPUT months of `gdp`, the last month's: at least one, and one when the thing has no worth to count by. */
+    static int asManyAsWorth(double gdp, double each) {
+        double n = each > 0 && Double.isFinite(each) ? Math.ceil(MONTHS_OF_OUTPUT * Math.max(gdp, 0) / each) : 1;
+        return (int) Math.max(1, n);
     }
 
     /** Where a good stands in NationalAccounts.HELD. */
@@ -663,17 +681,26 @@ public class GdpCheck {
          * ...AND IN A CITY: a railway that buys its fleet abroad. RailCheck's
          * trading town - nine hundred houses and thirty foundries, its railway
          * held so what stands is what the fixture laid - played three years;
-         * two spurs laid on their ground, and the month the trains it bought
+         * spurs laid on their ground, and the month the trains it bought
          * land: the fleet's import is more than the town makes in a month, so
          * with nothing against it the month would read negative. The fleet is
          * in the held term, matched against its import to within its first
          * month's wear and the move in the price a set lands at (the railway
          * carrying its own freight takes the haulage out of that price), and
          * the month is not negative.
+         *
+         * FS17: this read whatever the played town's month happened to make
+         * against a fleet of two spurs' sets - that the fleet cost more than
+         * the town makes was a fact of the town. It is caused: the spurs laid
+         * are as many as buy MONTHS_OF_OUTPUT months of the last month's GDP
+         * of sets, a spur's sets being its rail capacity over
+         * Freight.TONNES_PER_SET at the price a set lands at.
          */
         System.out.println("\n--- a city whose railway buys its fleet abroad ---");
         GameFiles railFiles = GameFiles.scratch("gdpcheck-rail");
         Game railTown = new Game(railFiles);
+        double railGdpThen = 0, spurWorth = 0;
+        int spurs = 0;
         System.setOut(quiet);
         try {
             railTown.newGame();
@@ -690,7 +717,12 @@ public class GdpCheck {
             railTown.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
             railTown.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 30, true);
             railTown.simulateMonths(36);
-            RailCheck.lay(railTown, "Rail Spur", 2);
+            BuildingsTemplate spur = b.getTemplateByName("Rail Spur");
+            railGdpThen = railTown.getEconomyManager().getNationalAccounts().getGdp();
+            spurWorth = spur.getRailCapacity() / ham.citybuildersim.sectors.Freight.TONNES_PER_SET
+                    * EconomyManager.heldPrice(railTown.getMarkets().get(Good.ROLLING_STOCK));
+            spurs = asManyAsWorth(railGdpThen, spurWorth);
+            RailCheck.lay(railTown, "Rail Spur", spurs);
             railTown.simulateMonths(1);
         } finally { System.setOut(out); }
         ham.citybuildersim.sectors.Freight rail = railTown.getSectors().freight();
@@ -709,6 +741,9 @@ public class GdpCheck {
         double slack = (bought / ham.citybuildersim.sectors.Freight.SET_LIFE_MONTHS) * landedNow + bought * Math.abs(landedNow - landedThen);
         System.out.printf("   %.1f sets bought abroad for %,.2f; held %,.2f at %,.2f a set; GDP %,.2f (held stock %,.2f, NX %,.2f)%n",
                 bought, imported, held, landedNow, town.getGdp(), town.getInventoryHeld(), town.getNetExports());
+        System.out.printf("   %d Rail Spurs of %,.2f of sets each, against GDP %,.2f a month%n", spurs, spurWorth, railGdpThen);
+        assertTrue("fixture: the spurs laid buy more sets than the town's last month made", spurWorth > 0
+                && spurs * spurWorth >= MONTHS_OF_OUTPUT * railGdpThen);
         assertTrue("fixture: the railway bought its fleet abroad", bought > 0 && imported > 0);
         double without = town.getGdp() - town.getInventoryHeld();
         System.out.printf("   without the held term the month would read %,.2f%n", without);
@@ -731,13 +766,20 @@ public class GdpCheck {
          * struck after it are handed them: the month is not negative, though
          * the yard is worth more than the town makes, so booked as a fall in
          * stock it would be.
+         *
+         * FS17: one refinery's yard was worth more than the played town's
+         * month only by what that town made. It is caused: as many refineries
+         * stand as hold MONTHS_OF_OUTPUT months of the last month's GDP in
+         * cathode (a refinery's stock at the price the accounts hold copper
+         * at), the yards filled to their room, and every one retired.
          */
         System.out.println("\n--- a city whose copper refinery goes with its yard full ---");
         GameFiles cuFiles = GameFiles.scratch("gdpcheck-copper");
         Game cuTown = new Game(cuFiles);
         BuildingsTemplate refinery;
         ham.citybuildersim.sectors.CopperRefining refiners;
-        double room, kept, lost = 0;
+        double room, kept, lost = 0, cuGdpThen = 0, yardWorth = 0;
+        int refineries = 0;
         boolean cuSaved;
         Game cuBack = new Game(cuFiles);
         System.setOut(quiet);
@@ -756,13 +798,18 @@ public class GdpCheck {
             cuTown.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             cuTown.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
             cuTown.simulateMonths(36);
-            cuTown.buildStack(refinery, 1, true);
+            cuGdpThen = cuTown.getEconomyManager().getNationalAccounts().getGdp();
+            yardWorth = refinery.stocks(Good.COPPER) * EconomyManager.heldPrice(cuTown.getMarkets().get(Good.COPPER));
+            refineries = asManyAsWorth(cuGdpThen, yardWorth);
+            // The treasury handed back what the works cost, as the sheds' fixture sets it (GW1): the works are the fixture's, their price is not what it tests.
+            cuTown.setCashForTest(Founding.WEALTHY_CASH);
+            cuTown.buildStack(refinery, refineries, true);
             refiners = cuTown.getSectors().copperRefining();
             room = refiners.getStockCapacity(Good.COPPER);
             refiners.setStock(Good.COPPER, room);
             cuTown.simulateMonths(1);
             kept = refiners.getStock(Good.COPPER);
-            cuTown.getBuildingManager().retire(refinery, 1);
+            cuTown.getBuildingManager().retire(refinery, refineries);
             cuTown.simulateMonths(1);
             for (Sector s : cuTown.getSectors().all()) {
                 Sector.Output row = s.outputRow(Good.COPPER);
@@ -779,6 +826,9 @@ public class GdpCheck {
         System.out.printf("   a yard of %,.0f t, %,.0f t of it kept a month; %,.0f t written off at %,.2f a tonne;"
                         + " GDP %,.2f (held stock %,.2f) - booked as a fall in stock it would read %,.2f%n",
                 room, kept, lost, cuLanded, cuAcc.getGdp(), cuAcc.getInventoryHeld(), booked);
+        System.out.printf("   %d refineries' yards of %,.2f each, against GDP %,.2f a month%n", refineries, yardWorth, cuGdpThen);
+        assertTrue("fixture: the refineries' yards hold more cathode than the town's last month made", yardWorth > 0
+                && refineries * yardWorth >= MONTHS_OF_OUTPUT * cuGdpThen);
         assertTrue("fixture: the refinery went with cathode in its yard, and the yard was written off",
                 room > 0 && kept > 0 && lost > 0 && refiners.getStock(Good.COPPER) == 0);
         check("the strike kept the units its rows wrote off", refiners.writtenOffStruck(Good.COPPER), lost);
@@ -1003,14 +1053,14 @@ public class GdpCheck {
             bakers = town.getSectors().industry();
             makers = town.getSectors().materials();
             gdpThen = town.getEconomyManager().getNationalAccounts().getGdp();
-            // A shed's worth at the city's prices, and as many as hold twice the month's GDP.
+            // A shed's worth at the city's prices, and as many as hold MONTHS_OF_OUTPUT months of the last month's GDP (FS17: the one count, asManyAsWorth).
             double bakeryWorth = 0;
             for (Good g : shelf) {
                 if (bakery.makes(g) > 0) bakeryWorth += bakery.stocks(g) * town.getMarkets().get(g).getLocalPrice();
             }
             double plantWorth = plant.stocks(Good.MATERIALS) * town.getMarkets().get(Good.MATERIALS).getLocalPrice();
-            bakeries = (int) Math.ceil(2 * Math.max(gdpThen, 0) / bakeryWorth);
-            plants = (int) Math.ceil(2 * Math.max(gdpThen, 0) / plantWorth);
+            bakeries = asManyAsWorth(gdpThen, bakeryWorth);
+            plants = asManyAsWorth(gdpThen, plantWorth);
             /* The treasury handed back what the sheds cost (GW1). The 36 months leave it at 18,575 where the fixture was written against more:
                the 14 bakeries ask 6,884 and the 10 plants 11,797, 18,681 in all, so the plants came back NEEDS_FUNDING, none stood, their sheds held
                0 units of material and nothing was written off. The ground and the buildings are the fixture's; the money they cost is not what it tests. */
