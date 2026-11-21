@@ -87,9 +87,16 @@ import java.util.function.Function;
  * its last checkpoint) has, by hand, a market's tally set (GoodsMarket.restoreTally), the good the hand order draws re-priced
  * (setLocalPrice), a build order placed (Game.buildStack, so the crews draw materials in the month on), the sudden stop started
  * and the carry placed every time (not only when no checkpoint had one); and a "by hand" fixture line asserts that the caused
- * point's OWN city showed each of the causes it set, whatever the checkpoints showed. What stays played, and is found in the
- * checkpoints (the shares, the index's weights, the notes, the skips' outbreaks and months sick, the hot money's peaks, the
- * seller-priced markets' sales): no model setter puts them there between the presses.
+ * point's OWN city showed each of the causes it set, whatever the checkpoints showed. FS17, second slice: the caused point has too,
+ * by hand, an outbreak in force on both twins before the skips (Health.restore, the severity between OUTBREAK_MIN_PEAK and
+ * OUTBREAK_MAX_PEAK and so far over OUTBREAK_FLOOR that it outlives both skips: 3f, and a fixture line that the caused point's own
+ * skips had an outbreak and months sick), one sector's shares for this month and last month put on the books (SectorBooks.restoreShares,
+ * every slot of the record a figure of its own: 3d), and a trade placed on every seller-priced market's list after the first month on,
+ * on both twins (GoodsMarket.record: 3j, so the month that must clear it has one to clear, building work's market included). The
+ * investment notes (3c) are read on the caused point's own month on: the investors decide in every month (Game.runPrivateInvestment()),
+ * with the tally set by hand on a market. The index's weights (3e) are no longer found: every point is asserted past
+ * PriceIndex.SETTLING_MONTHS and its index based. What stays played, and is found in the checkpoints (the hot money's peaks, the
+ * seller-priced markets' sales that the played months made): no model setter puts the peaks there between the presses.
  *
  * @author Jerus
  */
@@ -135,6 +142,18 @@ public class ReloadCheck {
 
     /** A time skip of section 3f: two months, so it is a skip (the game autosaves before one), and two are run on each city. */
     static final int SKIP_MONTHS = 2;
+
+    /** The outbreak the harness puts in force on both twins of the caused point before their skips (FS17): the middle of the model's peaks, which Health's decay leaves over its floor through both skips, so every skipped month is one in outbreak. */
+    static final double CAUSED_OUTBREAK = (Health.OUTBREAK_MIN_PEAK + Health.OUTBREAK_MAX_PEAK) / 2;
+
+    /** The shares the harness puts on one sector's book of the caused point for this month (FS17): each slot of SectorBooks.SHARES_SLOTS a figure of its own (shares, outstanding, price, fair value, traded, dividend, dividend a year), so a load that crossed two of them shows. */
+    static final double[] CAUSED_SHARES = { 1200, 480, 13.5, 15.25, 1, .75, 3.25 };
+
+    /** ...and for last month, every slot different from this month's, and not traded (FS17). */
+    static final double[] CAUSED_SHARES_BEFORE = { 1100, 450, 12.5, 14.25, 0, .5, 3 };
+
+    /** The units and the price of the trade the harness places by hand on each seller-priced market's list after the first month on (FS17), so the second month has a trade of the first to clear. */
+    static final double CAUSED_TRADE_UNITS = 1, CAUSED_TRADE_PRICE = 1;
 
     /** Two numbers are the same when they differ by no more than a cent... */
     static final double CENT = 0.005;
@@ -343,6 +362,13 @@ public class ReloadCheck {
             System.setOut(QUIET);
             try { g.buildStack(house, CAUSED_ORDER, false); } finally { System.setOut(real); }
         }
+        // FS17: ...and one sector's shares, this month's and last month's, put on the books by the model's own restore (SectorBooks.restoreShares,
+        // the load's path), the others as they stand: the shares of a played month are found in the checkpoints only where a company happened to be listed.
+        Sector sharer = g.getSectors().all().get(0);
+        Map<String, double[]> sharesNow = g.getSectorBooks().sharesToSave(true), sharesBefore = g.getSectorBooks().sharesToSave(false);
+        sharesNow.put(sharer.key(), CAUSED_SHARES.clone());
+        sharesBefore.put(sharer.key(), CAUSED_SHARES_BEFORE.clone());
+        g.getSectorBooks().restoreShares(sharesNow, sharesBefore);
         if (most == null) return null;
         GoodsMarket market = g.getMarkets().get(most);
         int before = market.monthsDraws().size();
@@ -380,6 +406,7 @@ public class ReloadCheck {
             Compared[] monthOn = saveAndCompare(files, g, back, "a month on");
             p.history1 = monthOn[0];
             p.save1 = monthOn[1];
+            placeATradeByHand(p, g, back, firstMonthsTrades);   // FS17
             g.simulateMonths(1);
             back.simulateMonths(1);
             tradesOfTheFirstMonthGone(p, g, firstMonthsTrades);
@@ -446,10 +473,15 @@ public class ReloadCheck {
             String key = s.key();
             p.shares.saw("sectors with shares this month", g.getSectorBooks().shares(key) != null ? 1 : 0);
             p.shares.saw("sectors with shares last month", g.getSectorBooks().sharesBefore(key) != null ? 1 : 0);
+            // FS17: ...and the sector that carries the record the harness put on the caused point's books, this month and last, which no played month holds.
+            p.shares.saw("sectors carrying the shares the harness set, this month", shareRecord(CAUSED_SHARES).equals(g.getSectorBooks().shares(key)) ? 1 : 0);
+            p.shares.saw("sectors carrying the shares the harness set, last month", shareRecord(CAUSED_SHARES_BEFORE).equals(g.getSectorBooks().sharesBefore(key)) ? 1 : 0);
             compareShares(p.shares, key + " this month", g.getSectorBooks().shares(key), back.getSectorBooks().shares(key));
             compareShares(p.shares, key + " last month", g.getSectorBooks().sharesBefore(key), back.getSectorBooks().sharesBefore(key));
         }
         p.weights.saw("weights above zero", g.getPriceIndex().getRentWeight() > 0 && g.getPriceIndex().getFoodWeight() > 0 ? 1 : 0);
+        // FS17: ...and whether the index is based, which section 3 asserts of every point against PriceIndex.SETTLING_MONTHS (the weights of a based basket are the spending's, not the .5 and .5 a new one starts on).
+        p.weights.saw("indexes based", g.getPriceIndex().isBased() ? 1 : 0);
         p.weights.compare("the price index: rent weight", g.getPriceIndex().getRentWeight(), back.getPriceIndex().getRentWeight());
         p.weights.compare("the price index: food weight", g.getPriceIndex().getFoodWeight(), back.getPriceIndex().getFoodWeight());
     }
@@ -466,6 +498,11 @@ public class ReloadCheck {
             c.compare(row + ", units", a.units(), b.units());
             c.compare(row + ", price", a.price(), b.price());
         }
+    }
+
+    /** FS17: a record of the books' shares as SectorBooks.sharesToSave() lays it out in its slots. */
+    private static SectorBooks.Shares shareRecord(double[] a) {
+        return new SectorBooks.Shares(a[0], a[1], a[2], a[3], a[4] != 0, a[5], a[6]);
     }
 
     private static void compareShares(Cause c, String what, SectorBooks.Shares live, SectorBooks.Shares re) {
@@ -545,6 +582,26 @@ public class ReloadCheck {
         return month;
     }
 
+    /**
+     * FS17: on the caused point, after the first month on's saves are compared and before the second month, a trade placed by hand on every seller-priced
+     * market's list, on both twins (GoodsMarket.record, the model's own fill), and kept with the first month's trades: so the month that must clear them
+     * has one on each, building work's market (which no sector fills) too. The played month's trades are counted as they were, above.
+     */
+    private static void placeATradeByHand(Point p, Game g, Game back, Map<Good, Set<Trade>> firstMonth) {
+        if (!CAUSED_CITY.equals(p.city)) return;
+        String seller = g.getSectors().construction().key();
+        for (Map.Entry<Good, Set<Trade>> e : firstMonth.entrySet()) {
+            GoodsMarket m = g.getMarkets().get(e.getKey());
+            Trade mine = m.record(seller, Trade.HOUSEHOLDS, CAUSED_TRADE_UNITS, CAUSED_TRADE_PRICE);
+            back.getMarkets().get(e.getKey()).record(seller, Trade.HOUSEHOLDS, CAUSED_TRADE_UNITS, CAUSED_TRADE_PRICE);
+            if (mine != null) e.getValue().add(mine);
+            p.sellerPriced.saw(handTradeSaw(e.getKey()), mine != null && m.getTrades().contains(mine) ? 1 : 0);
+        }
+    }
+
+    /** FS17: what a seller-priced market's fixture counts of the trade the harness placed on its list. */
+    static String handTradeSaw(Good good) { return good + " markets with the trade the harness placed on the list"; }
+
     /** ...and a month later none of those trades is on its market's list: a seller-priced good's month begins as a traded good's does (Markets.startSellerPricedMonth()). */
     private static void tradesOfTheFirstMonthGone(Point p, Game g, Map<Good, Set<Trade>> firstMonth) {
         for (Map.Entry<Good, Set<Trade>> e : firstMonth.entrySet()) {
@@ -562,6 +619,11 @@ public class ReloadCheck {
      * zero (a report that starts afresh). Equal counts are read as none.
      */
     private static void skips(Point p, Game g, Game back) {
+        // FS17: the caused point's twins have an outbreak in force before their skips (an outbreak in a skip is a one in OUTBREAK_CHANCE (1/60) chance a month, so the played checkpoints rarely showed one).
+        if (CAUSED_CITY.equals(p.city)) {
+            startOutbreak(g);
+            startOutbreak(back);
+        }
         g.simulateMonths(SKIP_MONTHS);
         back.simulateMonths(SKIP_MONTHS);
         int first = outbreakMonths(back.getSkipReport()), firstSick = back.getSkipReport().getMonthsSick();
@@ -581,6 +643,19 @@ public class ReloadCheck {
     }
 
     private static int outbreakMonths(TimeSkipReport report) { return report.getOutbreaks() + report.getMonthsInOutbreak(); }
+
+    /**
+     * FS17: an outbreak put in force by Health's own restore, in the order getState() lays it out: the severity (CAUSED_OUTBREAK), the month
+     * it began (this one) and a sick rate with the outbreak on top of what the city had (to the model's MAX_SICK_RATE), the rest of the
+     * city's own state kept. Called on both twins, each with its own state, so the skips compare like with like.
+     */
+    private static void startOutbreak(Game game) {
+        double[] state = game.getHealth().getState();
+        state[0] = CAUSED_OUTBREAK;
+        state[1] = game.getMonth();
+        state[2] = Math.min(Health.MAX_SICK_RATE, state[2] + CAUSED_OUTBREAK);
+        game.getHealth().restore(state);
+    }
 
     /* ----------------------------------- the report ----------------------------------- */
 
@@ -663,13 +738,37 @@ public class ReloadCheck {
         onCausedPoint(caused, "3c, the tally", p -> p.tally, "markets that imported", "markets that exported", "markets with units drawn since the strike",
                 "markets carrying the tally the harness set");
         cause(points, p -> p.notes, "3c, the notes", "a month on", "each sector's lastInvestment note is the live city's");
+        // FS17: the investors decide in every month (Game.runPrivateInvestment(), once a month, each business noting its decision), so the caused point's own month on leaves notes, with the tally set by hand on a market.
+        onCausedPoint(caused, "3c, the notes", p -> p.notes, "investment notes the live city left");
         cause(points, p -> p.shares, "3d", "right after the load", "each sector book's shares month, this and last, is the live city's");
+        // FS17: the caused point's books carry the shares the harness put there (SectorBooks.restoreShares), this month's and last month's.
+        onCausedPoint(caused, "3d", p -> p.shares, "sectors with shares this month", "sectors with shares last month",
+                "sectors carrying the shares the harness set, this month", "sectors carrying the shares the harness set, last month");
         cause(points, p -> p.weights, "3e", "right after the load", "the price index's rent and food weights are the live city's");
+        // FS17: the weights are structural once the basket is based, so the premise is asserted against the model's constant and not found: every point stands past PriceIndex.SETTLING_MONTHS, and its index is based.
+        int youngest = Integer.MAX_VALUE, based = 0, counted = 0;
+        for (Point p : points) {
+            if (p.problem != null) continue;
+            youngest = Math.min(youngest, p.month);
+            counted++;
+            based += p.weights.saw.getOrDefault("indexes based", 0);
+        }
+        check("fixture 3e, by the constant: every point stands past PriceIndex.SETTLING_MONTHS, and its price index is based, so the weights are the spending's and not the .5 and .5 a new basket starts on",
+                counted > 0 && youngest > PriceIndex.SETTLING_MONTHS && based == counted,
+                "the youngest point is at month " + youngest + " (SETTLING_MONTHS " + PriceIndex.SETTLING_MONTHS + "), " + based + " of " + counted + " indexes based");
         int skips = 0, withOutbreak = 0, sick = 0;
         for (Point p : points) if (p.problem == null) { skips += p.skips; withOutbreak += p.skipsWithOutbreak; sick += p.skipsSick; }
         check("fixture 3f: time skips were run on both cities from the same month, one with an outbreak and one with months sick",
                 skips > 0 && withOutbreak > 0 && sick > 0,
                 skips + " skips, " + withOutbreak + " with an outbreak, " + sick + " with months sick (read off the reloaded city's reports)");
+        // FS17: ...and the caused point's own skips had both, by the outbreak put in force on its twins (Health.restore): the severity within the model's peaks and so far over the floor that it outlives both skips.
+        boolean outlives = CAUSED_OUTBREAK >= Health.OUTBREAK_MIN_PEAK && CAUSED_OUTBREAK <= Health.OUTBREAK_MAX_PEAK
+                && CAUSED_OUTBREAK * Math.pow(Health.OUTBREAK_DECAY, 2 * SKIP_MONTHS) > Health.OUTBREAK_FLOOR;
+        check("fixture 3f, by hand: the caused point's own skips had an outbreak and months sick, from the outbreak put in force on both twins",
+                caused != null && outlives && caused.skips > 0 && caused.skipsWithOutbreak > 0 && caused.skipsSick > 0,
+                caused == null ? "(no caused point)" : caused.skips + " skips, " + caused.skipsWithOutbreak + " with an outbreak, " + caused.skipsSick + " with months sick; the outbreak "
+                        + CAUSED_OUTBREAK + " (peaks " + Health.OUTBREAK_MIN_PEAK + " to " + Health.OUTBREAK_MAX_PEAK + ", floor " + Health.OUTBREAK_FLOOR + ")"
+                        + (outlives ? " outlives both skips" : " does not outlive both skips"));
         for (Point p : points) {
             if (p.problem != null) continue;
             String over = p.skipsWithOutbreak == 0 ? "no outbreak in either of the " + p.skips + " skips, so only the sick months and the ratios were tried"
@@ -688,6 +787,10 @@ public class ReloadCheck {
         onCausedPoint(caused, "3i", p -> p.draws, "markets with draws since the month closed", "hand-ordered seller rows that hold the order a month on");
         cause(points, p -> p.sellerPriced, "3j", "two months on",
                 "a seller-priced market's trades of the first month on are off its list a month later, as a traded good's are");
+        // FS17: the caused point's twins each had a trade placed by hand on every seller-priced market's list (building work's too), which the month on cleared.
+        List<String> handTrades = new ArrayList<>();
+        for (Good good : Good.values()) if (!good.traded()) handTrades.add(handTradeSaw(good));
+        onCausedPoint(caused, "3j", p -> p.sellerPriced, handTrades.toArray(new String[0]));
     }
 
     /** The caused point (FS17): the city after its last checkpoint, with the causes set by hand, or null. */
@@ -852,11 +955,12 @@ public class ReloadCheck {
         }
         // FB3 (FW6-C): the live city as it stands, with the three conditions no checkpoint's save had caused: a sudden stop, a hand order between the
         // presses and, only if no checkpoint carried limestone, a carry; reloaded through the same path, and counted with the rest.
-        // FS17: and a carry every time, a market's tally, a price moved and a build order (causeTheConditions).
+        // FS17: and a carry every time, a market's tally, a price moved and a build order (causeTheConditions); one sector's shares on the books (causeTheConditions);
+        // an outbreak on both twins before their skips (skips()); and a trade on each seller-priced market's list after the first month on (placeATradeByHand()).
         long c0 = System.nanoTime();
         HandOrder order = causeTheConditions(g, true);
         points.add(reload(files, g, CAUSED_CITY, order));
-        System.out.printf("  caused (a sudden stop, a hand order, a carry, a tally, a price moved, a build order), saved, reloaded and compared at month %d (%.0f s)%n", points.get(points.size() - 1).month, (System.nanoTime() - c0) / 1e9);
+        System.out.printf("  caused (a sudden stop, a hand order, a carry, a tally, a price moved, a build order, shares, an outbreak, a trade on each seller-priced list), saved, reloaded and compared at month %d (%.0f s)%n", points.get(points.size() - 1).month, (System.nanoTime() - c0) / 1e9);
         // FB3 (REV-FB3-1): the live city on to its own autosave, written by the game at the month's end, and loaded from that slot.
         long a0 = System.nanoTime();
         Autosaved autosaved = autosaveAndReload(files, g);
