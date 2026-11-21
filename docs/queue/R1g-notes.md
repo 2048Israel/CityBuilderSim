@@ -883,3 +883,31 @@ and dry run remain held for the orchestrator's current-main/model ordering
 GO after that trace, avoiding a duplicate ensemble if MC2 can ship through
 records-only reuse. No extra long check or foreground wait is started,
 and Jerus's accepted pace/design decisions remain settled.
+
+
+## 9. Main 0.9.179 merged; final ensemble held for PW1
+
+On the orchestrator's 12:08 go, merged main
+`2b049188bcc8ba1b693beef9303409826936487e` (MC2, 0.9.179) at
+`6368efd5118040b5904c3a8f23d059f8ed0894d0` in the same batch/R1g worktree. Only dials,
+harnesses and map README indexes conflicted; all were regenerated.
+All 17 R1g source files, seven saved proof files and the ship file match
+their pre-merge SHA-256 manifest byte for byte; the d5eb review records
+were preserved and the provisional marker remains. The incoming source
+is Bank, BusinessDebtManager, BankFailureCheck and the published version.
+There is no source overlap with the approved R1g changes.
+
+MC2's reviewed lending/mortgage allowance inside the bank's band, including
+after settlement, is inherited through the existing funding APIs. No
+manual money/save/thread integration edits or save-format change were
+needed. `./batch-check.sh --fast` exited 0: compile 55 seconds,
+indexes regenerated, Stale zero firm findings. Evidence:
+`target/r1g/main179-fast.txt`, `main179-fast.exit` and
+`main179-preserve.json`; data paths used the main worktree's C:/ files.
+No standalone Village/Reload or other check was replayed.
+
+The current baseline is `docs/ensemble/0.9.179.md`. PW1 is the next model
+mover and has its ensemble go on that baseline. R1g's final ensemble stays
+held until PW1 publishes; then merge its new main and compare the newest
+baseline on the orchestrator's explicit ordering go. Dry run, full pick,
+playtest and other long JVMs remain held. No foreground wait is started.
