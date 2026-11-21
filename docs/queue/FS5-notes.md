@@ -11,6 +11,11 @@ is claimed, and bounds and vetoes remain unchanged.
 The later bounded Healthcare diagnostic has two hard failures and fixture
 age/expansion premise limits, recorded below; it establishes no source mend.
 
+GO2c73 adds an optional, default-off Healthcare signature observer in
+KeptCheck only, for a separately authorized future full software/heap run.
+Its --fast is green; capture has NOT executed and supplies no new layout or
+heap result. The marker remains provisional pending the orchestrator's review.
+
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
 origin/main 4f1056f11 (0.9.174) and merged with 70af30dcc (AP1, 0.9.175). The brief
@@ -1529,3 +1534,102 @@ source/model provenance, not automatic attribution of an identical old leaf.
 All prior raw hashes were rechecked unchanged. Four vetoes, full53.6MiB
 residual/1536MiB bound, cache-root uncertainty, source and marker stay hard.
 No new row, waiver, readiness or execution request. Waiting for next explicit GO.
+
+## FS5c2 GO2c73: optional original-choice observer, preparation only
+
+Authorized scope: implementation in KeptCheck and required --fast only,
+piggybacking a future independently required final-source software/heap
+measurement. This is not a historical replay or execution GO. The branch
+retains the parent walk and .180 model merge; neither has a later full
+software result. No model, screen, dial, publisher or registry changed here.
+
+Enable only when separately authorized, with
+`-Dkeptcheck.capture.healthcare=UNIQUE_TARGET_DIRECTORY`. Only the first
+`governmentChoices(false)` section71 call opts into the observer, and only
+the exact `Spending: Healthcare opened` choice consumes it. That selection
+is consumed even if its premise refuses; other choices and the later
+same-label debt list cannot retry capture. Default operation writes nothing.
+
+The existing primaryA/primaryB calls and their existing held looks are
+unchanged. After each existing restoreKeptPage, the observer writes the
+already-created full kept/fresh List<String> arrays as UTF-8 JSON; zero-based
+array indices are the original logical rows and embedded newlines stay
+inside their unmodified strings. Files are primaryA-primary.json,
+primaryA-held1.json, primaryA-held2.json and the corresponding primaryB
+names, only when those comparisons actually occur. CREATE_NEW refuses
+overwriting evidence. It adds no signature, comparison, retry, draw,
+layout, settle, pulse, snapshot, month, Stage or asynchronous work.
+
+Metadata is narrowly allowlisted: configured source/base and earth/world
+hash receipts (`keptcheck.capture.source`, `.base`, `.earth.sha256`,
+`.world.sha256`), actual compiled KeptCheck/KeptBench class SHA256, version,
+Java/OS identities, prism/Glass/Monocle flags, configured absolute data
+paths with actual file sizes/modified times, loaded Glass/pipeline classes,
+and actual month/population. Source/base/input hashes are explicitly
+labelled configured receipts, not independently verified source/data
+fingerprints. A future launcher must seal those against its frozen inputs.
+Restored-kept metadata includes govPage/sorted open keys, scene/root/window
+dimensions, output scale if there is a window, body/content/viewport bounds,
+scrollbar policies/values and actual bar visibility/geometry. Fresh geometry
+remains in the full original fresh signature, not inferred from restored
+state. Reflection/lookup only reads; existing unstaged display stays unchanged.
+
+Data lifetime argument (static review, NOT a runtime weak-release proof):
+the sole active static reference holds only directory/phase Strings,
+month/look integers, population long and disabled boolean. It is armed only
+around one original againstNewHeld chain, and cleared in finally after
+primaryA and again after primaryB, including exceptions. It is inactive
+between those calls and after the exact choice. Signature arrays, JSON map,
+copied string metadata, class bytes, reflection receivers and writer/Gson
+are local to one synchronous capture call. No fresh Node or Game is stored
+in a capture field or payload; each writer closes before return. Nothing
+archives signature history for heap102. Class/library initialization may
+have its ordinary runtime footprint; that has not been measured or subtracted.
+An observer Exception disables further writes for this choice and prints
+the error while the original hard verdict/held looks/restoration/full
+continuation/exit remain unchanged. There is no prefix stop or heap skip.
+
+One-in/one-out: 32 repeated section narrations were condensed, removing
+172 net comment lines; target/FS5c2-observer-comment-audit.json preserves
+their old/new text. All original WHY lines, prints and assertion tokens
+remain. target/fs5c2-observer-static-audit.py reverses only the allowlisted
+observer edits and verifies the remaining Java token stream equals 0c94a0b
+exactly after comments; it also rejects extra UI/month/thread operations
+inside the observer and confirms scalar/String context fields. This is
+static correspondence, not an executed observer/JSON/reflection fixture.
+The actual incremental KeptCheck diff is +171/-207; it does not claim
+fabricated code removals. Against origin/main da43868f (same .180 source
+base d1d70f0a), process counts excluding generated maps/notes/ship are:
+
+| file | added | removed |
+|---|---:|---:|
+| KeptCheck.java | 613 | 761 |
+| Observation.java | 1 | 1 |
+| ui/KeptBench.java | 205 | 47 |
+| Java machinery total | 819 | 809 |
+| docs/notes/known-reds.txt | 0 | 20 |
+| Including registry | 819 | 829 |
+
+Validation: target/FS5c2-observer-fast.log, foreground-owned through exit0,
+2026-11-21 15:49:30-15:50:29 Atlantic; compile41s, regenerated maps,
+Stale0 firm/193 soft. Prior target/checks copied first to
+target/fs5c2-before-observer-checks. git diff --check is clean. No UI probe,
+full KeptCheck, heap test, ensemble, dry run or readiness check was run.
+All26 hash receipts across the hospital/2620/db9d audit files still match,
+including the old inner-exit0 defect and outer receipt. The registry is
+byte-identical to 0c94 after newline normalization, with all four vetoes kept.
+
+Pick remains24/237: AutoBuildCheck BankCheck BuildAdviceCheck
+CapitalFlowCheck ChartFitCheck ConstructionControlCheck FittingCheck
+HealthCheck HousingCheck KeptCheck KeptTimingCheck MapCheck MoneyWordsCheck
+NewUnitCheck ObservationCheck PriceLevelCheck PrizeCheck ResearchViewCheck
+SaveFileCheck ScaleCheck ShortSellingCheck StepsCheck TimingCheck ToastCheck.
+Review line: not needed - no money, saves or threading in the diff. The
+orchestrator's explicit observer review is still required before execution.
+
+No newly captured pair or new green is claimed. Historical full6 still has
+Healthcare's four hard held looks and objects1589.6MiB >1536 by53.6MiB;
+the1832->0 Government hard release regression and68 reshape-call exclusions
+remain its actual results. Parent/cache/original-leaf causality limits and
+all raw probes/history stay intact. Provisional checkpoint for review;
+waiting for a separate explicit full-software slot/execution GO.

@@ -10,9 +10,13 @@ import javafx.scene.layout.Pane;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -244,11 +248,7 @@ public class KeptCheck {
     static final String[] CHROME_SCREENS = {"showPopulationInfoMenu", "showLandMenu", "showSectorMenu", "showBankMenu",
             "showHistoryMenu", "showPolicyMenu", "showMainMenu"};
 
-    /**
-     * Sections 6 to 10: the header and the tab rail kept (UP2). The same city, played on; the bench
-     * draws the real refreshHeader() and refreshTabRail() on scenes of their own, kept and with every
-     * node new, beside the page.
-     */
+    /** Sections 6 to 10 (UP2): real refreshHeader/refreshTabRail, kept and fresh on their own scenes. */
     static void chrome(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 6: the chrome is kept ---");
         fx(() -> {
@@ -998,12 +998,7 @@ public class KeptCheck {
         return refusal == null ? null : "the " + what + " scale is refused: " + refusal;
     }
 
-    /**
-     * Section 18: what a page built new loses and a kept one keeps. The window is the screen's (the
-     * ChartModel), so the charts' own state is what a month could take: the crosshair under the pointer
-     * (a chart clears it when its scene goes null, and a page built new takes the chart off the scene) and
-     * a legend chip under it.
-     */
+    /** Section 18: ChartModel owns the window; kept charts retain the crosshair and hovered legend chip that fresh detachment clears. */
     static void crosshair(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 18: the crosshair and the window survive a month ---");
         int range = ham.citybuildersim.ChartModel.DEFAULT_RANGE;
@@ -1082,12 +1077,7 @@ public class KeptCheck {
         check("...and a page built new has a chip of its own, with no pointer on it", (boolean) chip[2]);
     }
 
-    /**
-     * Section 19: the count-up is for a clock that can be followed. A month that lands on a page watched
-     * starts the figure's count-up when UserInterface.countsUp() allows - paused, or no faster than
-     * COUNT_UP_TOP - and sets it at once above. The real show methods are driven (People's and City
-     * History's), the clock's rung set on the window as the speed arrows set it, the page redrawn kept.
-     */
+    /** Section 19: real People/History show methods count up paused or through COUNT_UP_TOP, and set figures immediately above it. */
     static void countUp(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 19: the count-up only at 1x-10x ---");
         double[] ladder = KeptBench.speedLadder();
@@ -1242,6 +1232,127 @@ public class KeptCheck {
     /** The differences that did not repeat held still, with their content the same: a reading, printed, not failed (KRT1). */
     static int heldReadings;
 
+    // WHY (FS5): clipped Healthcare reports lost the leaf; observe existing pairs without another UI operation.
+    private static final class HealthcareCapture {
+        final String directory;
+        String phase;
+        int month, look;
+        long population;
+        boolean disabled;
+        HealthcareCapture(String directory) { this.directory = directory; }
+    }
+    private static HealthcareCapture healthcareCapture; // FX-only scope; never holds signatures, Game or Nodes.
+
+    private static String observedAgainstNewHeld(Game g, KeptBench bench, KeptBench.Page page, boolean pixels,
+                                                HealthcareCapture capture, String phase) throws Exception {
+        if (capture == null || capture.disabled) return againstNewHeld(bench, page, pixels);
+        capture.phase = phase;
+        capture.month = g.getMonth();
+        capture.population = g.getPopulationManager().getPopulation();
+        capture.look = 0;
+        healthcareCapture = capture;
+        try { return againstNewHeld(bench, page, pixels); }
+        finally { healthcareCapture = null; }
+    }
+
+    private static Object healthcareField(Object owner, String name) throws ReflectiveOperationException {
+        java.lang.reflect.Field field = owner.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        return field.get(owner);
+    }
+
+    private static String healthcareDimensions(javafx.scene.Node node) {
+        return node == null ? null : node.getLayoutBounds().toString();
+    }
+
+    /** After restore only: local JSON data contains strings/primitives and the two existing string lists, never Nodes. */
+    private static void captureHealthcarePair(KeptBench bench, List<String> kept, List<String> fresh) {
+        HealthcareCapture capture = healthcareCapture;
+        if (capture == null || capture.disabled) return;
+        String look = capture.look++ == 0 ? "primary" : "held" + (capture.look - 1);
+        try {
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("choice", "first governmentChoices(false)/71/Spending: Healthcare opened");
+            data.put("phase", capture.phase);
+            data.put("look", look);
+            data.put("month", capture.month);
+            data.put("population", capture.population);
+            data.put("version", GameVersion.VERSION);
+            data.put("rowIndices", "zero-based JSON array indices; embedded newlines belong to their original row");
+            data.put("kept", kept);
+            data.put("fresh", fresh);
+            for (String key : List.of("keptcheck.capture.source", "keptcheck.capture.base", "java.version", "java.vm.name",
+                    "os.name", "os.arch", "prism.order", "glass.platform", "monocle.platform", "cbs.earth", "cbs.world",
+                    "keptcheck.capture.earth.sha256", "keptcheck.capture.world.sha256")) {
+                data.put("configured." + key, System.getProperty(key));
+            }
+            for (Class<?> type : List.of(KeptCheck.class, KeptBench.class)) {
+                try (var in = type.getResourceAsStream(type.getSimpleName() + ".class")) {
+                    data.put(type.getSimpleName() + ".class.sha256", java.util.HexFormat.of().formatHex(
+                            java.security.MessageDigest.getInstance("SHA-256").digest(in.readAllBytes())));
+                }
+            }
+            for (String key : List.of("cbs.earth", "cbs.world")) {
+                String file = System.getProperty(key);
+                if (file != null) {
+                    Path path = Path.of(file);
+                    data.put(key + ".bytes", Files.size(path));
+                    data.put(key + ".modified", Files.getLastModifiedTime(path).toString());
+                }
+            }
+            Object glass = Class.forName("com.sun.glass.ui.Application").getMethod("GetApplication").invoke(null);
+            Object pipeline = Class.forName("com.sun.prism.GraphicsPipeline").getMethod("getPipeline").invoke(null);
+            data.put("actualGlass", glass.getClass().getName());
+            data.put("actualPipeline", pipeline.getClass().getName());
+            Object ui = healthcareField(bench, "ui"), government = healthcareField(ui, "governmentScreen");
+            data.put("metadataState", "restored kept page after this pair; fresh dimensions remain in full fresh signature");
+            data.put("govPage", (String) healthcareField(government, "govPage"));
+            List<String> keys = new ArrayList<>();
+            for (Object key : (java.util.Set<?>) healthcareField(government, "open")) keys.add((String) key);
+            Collections.sort(keys);
+            data.put("openKeys", keys);
+            var scene = (javafx.scene.Scene) healthcareField(bench, "scene");
+            data.put("sceneWidth", scene.getWidth());
+            data.put("sceneHeight", scene.getHeight());
+            data.put("sceneRoot", healthcareDimensions(scene.getRoot()));
+            var window = scene.getWindow();
+            data.put("window", window == null ? null : window.getClass().getName());
+            if (window != null) {
+                data.put("windowWidth", window.getWidth());
+                data.put("windowHeight", window.getHeight());
+                data.put("outputScaleX", window.getOutputScaleX());
+                data.put("outputScaleY", window.getOutputScaleY());
+            }
+            var body = (javafx.scene.control.ScrollPane) healthcareField(government, "body");
+            data.put("body", healthcareDimensions(body));
+            data.put("content", healthcareDimensions(body.getContent()));
+            data.put("viewport", body.getViewportBounds().toString());
+            data.put("vbarPolicy", body.getVbarPolicy().name());
+            data.put("hbarPolicy", body.getHbarPolicy().name());
+            data.put("vvalue", body.getVvalue());
+            data.put("hvalue", body.getHvalue());
+            List<String> bars = new ArrayList<>();
+            for (var node : body.lookupAll(".scroll-bar")) {
+                if (node instanceof javafx.scene.control.ScrollBar bar) bars.add(bar.getOrientation() + " visible="
+                        + bar.isVisible() + " managed=" + bar.isManaged() + " " + healthcareDimensions(bar)
+                        + " min=" + bar.getMin() + " max=" + bar.getMax() + " value=" + bar.getValue());
+            }
+            Collections.sort(bars);
+            data.put("scrollbars", bars);
+            Path directory = Path.of(capture.directory);
+            Files.createDirectories(directory);
+            Path file = directory.resolve(capture.phase + "-" + look + ".json");
+            try (var out = Files.newBufferedWriter(file, java.nio.charset.StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE_NEW, java.nio.file.StandardOpenOption.WRITE)) {
+                new com.google.gson.GsonBuilder().serializeNulls().disableHtmlEscaping().setPrettyPrinting().create().toJson(data, out);
+            }
+            System.out.println("  Healthcare observer wrote " + file + " (existing pair, verdict unchanged)");
+        } catch (Exception failure) {
+            capture.disabled = true;
+            System.out.println("  Healthcare observer disabled: " + failure + " (original comparisons continue)");
+        }
+    }
+
     /** A signature line without where layout put it: its class, words, style, values, handlers and tooltip (KRT1). */
     static List<String> unplaced(List<String> lines) {
         List<String> out = new ArrayList<>(lines.size());
@@ -1266,6 +1377,7 @@ public class KeptCheck {
         List<String> fresh = bench.signature();
         int[] freshPx = pixels ? bench.canvasPixels() : null;
         bench.restoreKeptPage();
+        captureHealthcarePair(bench, kept, fresh);
         String d = firstDifference(kept, fresh);
         if (d == null && pixels && !alike(keptPx, freshPx)) d = "the pixels differ: " + pixelDifference(keptPx, freshPx);
         if (d == null) return null;
@@ -1314,6 +1426,7 @@ public class KeptCheck {
         List<String> fresh = bench.signature();
         int[] freshPx = pixels ? bench.canvasPixels() : null;
         bench.restoreKeptPage();
+        captureHealthcarePair(bench, kept, fresh);
         String d = firstDifference(kept, fresh);
         if (d == null && pixels && !alike(keptPx, freshPx)) d = "the pixels differ: " + pixelDifference(keptPx, freshPx);
         return d;
@@ -1490,6 +1603,11 @@ public class KeptCheck {
 
     /** ...and, with `pixels`, each redraw's picture against the page built new's as well (KP7: the Rankings table is painted, and no signature holds it). */
     static void pageReshapedCaused(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, boolean pixels) throws Exception {
+        pageReshapedCaused(g, bench, page, n, choices, pixels, false);
+    }
+
+    private static void pageReshapedCaused(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices,
+                                          boolean pixels, boolean captureHealthcare) throws Exception {
         System.out.println("\n--- " + n + ": what reshapes " + page.name() + (pixels ? ", to the pixel" : "") + " ---");
         sectionBlocks = 0;
         int size = fx(() -> {
@@ -1503,12 +1621,16 @@ public class KeptCheck {
         String worstAt = "";
         int worstMade = 0, worstKept = 0, repeated = 0, counted = 0, readings = 0, acted = 0, refused = 0;
         for (Choice c : choices) {
+            boolean captureChoice = captureHealthcare && n == 71 && c.name().equals("Spending: Healthcare opened");
+            if (captureChoice) captureHealthcare = false;
+            String directory = captureChoice ? System.getProperty("keptcheck.capture.healthcare") : null;
+            HealthcareCapture capture = directory == null || directory.isBlank() ? null : new HealthcareCapture(directory);
             Object[] r = fx(() -> {
                 String premise = c.hand().on(bench);
                 if (premise != null) return new Object[]{"the choice could not be made: " + premise, 0, Double.NaN, 0, 0, false, false};
                 bench.drawKept(page);
                 int[] chosen = bench.counts(page);
-                String a = againstNewHeld(bench, page, pixels);
+                String a = observedAgainstNewHeld(g, bench, page, pixels, capture, "primaryA");
                 int grown = bench.signature().size();
                 java.util.Set<javafx.scene.Node> nodesBefore = bench.nodesOnPage();
                 month(g);
@@ -1517,7 +1639,7 @@ public class KeptCheck {
                 long drawnAgain = Math.max(1, Math.min(chosen[0] + (long) chosen[1], counts[0] + (long) counts[1]));
                 double handedBack = counts[1] / (double) drawnAgain;
                 boolean block = !c.acts() && handedBack < HANDED_BACK, again = block && blockHeldStill(bench, page, nodesBefore, counts[0], drawnAgain);
-                String b = againstNewHeld(bench, page, pixels);
+                String b = observedAgainstNewHeld(g, bench, page, pixels, capture, "primaryB");
                 return new Object[]{a != null ? a : b, grown, handedBack, counts[0], counts[1], again, block && !again};
             });
             String d = (String) r[0];
@@ -1784,12 +1906,7 @@ public class KeptCheck {
         }
     }
 
-    /**
-     * Section 34: a control keeps the player's hand. Transit's fare dial, through the screen's real show method: pressed, a
-     * slider is held and a month landing under it leaves its thumb, its reading and its ladder's shown value where the player
-     * put them; released, it stages the thumb and the page is a page built new; a value set outside any draw reaches the
-     * reading of the latest draw. And City History's filter box keeps its text, its caret and its focus.
-     */
+    /** Section 34: Transit fare holds node/thumb/reading/ladder through a month, commits on release, follows external changes; History filter retains text/caret/focus. */
     static void controls(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 34: a control keeps the player's hand ---");
         KeptBench.Page page = fx(bench::infrastructure);
@@ -2277,14 +2394,7 @@ public class KeptCheck {
     /** How many times over the funding page's run is short of what the market lends: each offer's bids reach at most this part of the gap (KBF1). */
     static final double FUNDING_SHORT_BY = 4;
 
-    /**
-     * Section 44: the pages a build is stopped on and the run's funding and fell-short pages, each caused where the model can
-     * cause it (a count Game.buildRunStop() refuses for the reason; a run larger than the cash, and FUNDING_SHORT_BY times larger
-     * than the market lends, so its shortfall and cap chips are on the page throughout; and the usual funding page, a run larger than
-     * the cash that the market would lend for FUNDING_SHORT_BY times over, so neither comes onto it) and each drawn as an arrival,
-     * then a month later again, equal to a page built new. The line says which were caused and which were drawn for a building
-     * that merely names the page.
-     */
+    /** Section 44: caused buildRunStop, funding and shortfall/cap states (FUNDING_SHORT_BY); arrival and next month equal fresh. Print uncauseable named pages. */
     static void stopped(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 44: the pages a build is stopped on, and the funding and fell-short pages ---");
         List<KeptBench.Page> pages = new ArrayList<>();
@@ -2414,13 +2524,7 @@ public class KeptCheck {
         return false;
     }
 
-    /**
-     * Section 45: a control keeps the player's hand. Automatic building's dial (the first slider on the Overview, through the
-     * screen's real show method): pressed it is held, a month leaves its node, thumb and reading; released, the margin is set at
-     * the thumb and the page equals one built new. The auto cap chips' yield box, with the focus, keeps its node, text, caret and
-     * focus across a month; so does the construction page's find box. A stepper pressed between draws refills the order bar in
-     * place and the next kept draw equals a page built new.
-     */
+    /** Section 45: auto-build slider holds/commits; cap-yield and construction-find boxes retain node/text/caret/focus; a stepper refills the order bar in place. */
     static void buildControls(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 45: a control keeps the player's hand ---");
         AutoBuilder auto = g.getAutoBuilder();
@@ -2762,11 +2866,7 @@ public class KeptCheck {
         return n;
     }
 
-    /**
-     * Sections 96 and 97: a sector's Investors page with its equipment, and the Build tab's NEW, each drawn kept over last month's nodes and built new in
-     * a city founded the 1900 way (ResearchViewCheck.researchTown(): the fixture the research screens share), and in the played city, which has
-     * nothing of either to draw.
-     */
+    /** Sections 96/97: Investors equipment and Build NEW in ResearchViewCheck.researchTown() (1900) and the played city without either. */
     static void researchScreens(Game g, KeptBench played) throws Exception {
         System.out.println("\n=== The research screens on Sectors and Build (R5, slice B2): a city founded the 1900 way ===");
         long t = System.nanoTime();
@@ -2778,13 +2878,7 @@ public class KeptCheck {
         tookWith("the build cards' NEW (97)", t, c);
     }
 
-    /**
-     * Section 96: a sector's Investors page with its equipment, kept. The sector of the fixture's unfitted stack has ITS EQUIPMENT on its page - the
-     * piece's card with the stack's row, how many carry it and the model's verdict, in the words the model's figures give - and the page drawn kept over
-     * last month's nodes is the page built new, month after month; the farms' page keeps its known binder while the tractor is unknown, then adds the tractor's card with
-     * its origin, what it does and "its gain cannot be had yet", and comes and goes with the find as a page built new does; and a city founded
-     * the default way has no ITS EQUIPMENT on any Investors page.
-     */
+    /** Section 96: equipment cards match model rows/verdicts; binder stays while tractor is unknown, then found card follows search. Default cities have none. */
     static void researchEquipment(Game g, KeptBench played) throws Exception {
         System.out.println("\n--- 96: a sector's Investors page with its equipment, kept ---");
         Game town = ResearchViewCheck.researchTown();
@@ -2910,15 +3004,7 @@ public class KeptCheck {
         check("...and no ITS EQUIPMENT on an Investors page (" + shops.name() + ")", !String.join("\n", fx(played::signature)).contains("\"ITS EQUIPMENT\""));
     }
 
-    /**
-     * Section 97: a NEW build card, kept. The category page holding the fixture's new template (the Electric Arc Furnace, found here, Iron & Steel's)
-     * shows NEW on its card - the chip in the head, the violet edge - and where it came from, the strip under the page's head says what is new and the
-     * category's chip carries a dot, on its own page and on every other; and the page kept over last month's nodes is the page built new. The seen
-     * rule from both sides: NEW the month the card is first drawn (a redraw in that month too), and not the month after while the model alone still says
-     * NEW - the find put back to month 9, so that the fixture's furnace is five months old when first drawn and six the month after, and the model's
-     * rule (a year) has nothing to do with it - and the dot follows the one helper. The lab's card says what a lab is for, a played city's pages have
-     * no NEW at all.
-     */
+    /** Section 97: Electric Arc Furnace NEW chip/edge/origin/strip/dots follow seen-month, not model age (find restored to month9); lab purpose and played-city absence. */
     static void researchBuild(Game g, KeptBench played) throws Exception {
         System.out.println("\n--- 97: a NEW build card, kept ---");
         Game town = ResearchViewCheck.researchTown();
@@ -3155,12 +3241,7 @@ public class KeptCheck {
         sectorsHover(g, bench, plain);
     }
 
-    /**
-     * Section 50: the pictures a business's page holds are kept. A materials industry's picture (IndustryPane) and the leg bars
-     * (LegBar) of the city's own, and the refinery's (RefineryPicture) in a town that has one: each stays the node it was from
-     * month to month, repaints only where the month's view moved, keeps the shapes it paints (nine in ten), is not painted again by
-     * a redraw in the same month, and equals the picture a page built new paints.
-     */
+    /** Section 50: IndustryPane, LegBar and RefineryPicture retain identity/nine-in-ten shapes, repaint only changed views and equal fresh without same-month repaint. */
     static void sectorsPictures(Game g, KeptBench bench, String works, String worksName) throws Exception {
         System.out.println("\n--- 50: the pictures on a business's page are kept ---");
         final String ops = KeptBench.sectorPages().get(0);
@@ -3189,12 +3270,7 @@ public class KeptCheck {
                 b -> b.refineryPicture() == null ? List.of() : List.of(b.refineryPicture()), true);
     }
 
-    /**
-     * What a month does to the pictures a page holds (`find` takes them off the page; `paints` for a picture that is told the
-     * month's view and paints it, as the refinery's and a materials industry's are, and not for a bar that keeps its parts). The
-     * pictures are paired by identity: a page can gain a picture between two months (a leg's bar for a leg that begins), and the
-     * ones after it move up the list.
-     */
+    /** Picture months: find may remove nodes; paints marks view-driven pictures, not retained bar parts. Pair by identity when new legs shift list positions. */
     static void picturesKept(Game g, KeptBench bench, KeptBench.Page page, String what,
                              java.util.function.Function<KeptBench, List<javafx.scene.layout.Pane>> find, boolean paints) throws Exception {
         arrive(bench, page);
@@ -3447,13 +3523,7 @@ public class KeptCheck {
         return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on " + (key == null ? "the list" : page) + ": " + bad;
     }
 
-    /**
-     * Section 51: the count-up only at 1x-10x, on the list's KEPT figure and its cards', a business's KEPT, the Income page's waterfall
-     * and the Operations page's ring. With the clock at each rung of the speed ladder a month that lands starts a count on every figure
-     * that moved exactly at the rungs UserInterface.countsUp() allows (COUNT_UP_TOP) and when the clock is paused; past it nothing counts
-     * and the page is the page a month's figures draw; a count still running when a month lands past it is stopped. The business's month is
-     * made to move (businessMoving, KS2), so every rung has a month to read.
-     */
+    /** Section 51: Sectors counts/waterfall/ring at each clock rung and paused obey COUNT_UP_TOP, stop past it and read current words; businessMoving (KS2) causes movement. */
     static void sectorsCountUp(Game g, KeptBench bench, String plain) throws Exception {
         System.out.println("\n--- 51: the count-up only at 1x-10x (Sectors) ---");
         double[] ladder = KeptBench.speedLadder();
@@ -3545,12 +3615,7 @@ public class KeptCheck {
         }
     }
 
-    /**
-     * Section 53: a control keeps the player's hand. The oil reserve's two dials (FILL, then RELEASE: sliders on Levers.dialCard's
-     * ladders), through the screen's real show method, in the sea town: pressed, a slider is held and a month landing under it leaves
-     * the same node, its thumb, its reading and its ladder's shown value where the player put them; released, it stages the thumb and
-     * the page equals a page built new; a value set outside any draw reaches the reading of the latest draw.
-     */
+    /** Section 53: real sea-town oil FILL/RELEASE dials retain held node/thumb/reading/ladder, commit on release, follow external changes and equal fresh. */
     static void sectorsControls() throws Exception {
         System.out.println("\n--- 53: a control keeps the player's hand (the oil reserve's dials) ---");
         Game sea = seaTown();
@@ -3799,12 +3864,7 @@ public class KeptCheck {
         };
     }
 
-    /**
-     * Section 57's last part: a chip picked lands at the top of its page (BankScreen.toTop). A kept page keeps its scroller, so a
-     * pick of the page already on show - whose scope, and scroller, are the same - has to put it back to the top; another page, or the
-     * other view, is a scope of its own with a scroller of its own, which opens there. The pages are the Overview and the Profit page
-     * with its statement opened: long enough that the scroller has somewhere to go (the premise, asserted).
-     */
+    /** Section 57: Bank Overview/open Profit have asserted scrolling room; picking same scope resets scroll to top, while another page/view opens its own scroller there. */
     static void bankPicks(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 57: a chip picked lands at the top of its page ---");
         KeptBench.Page overview = fx(bench::bank);
@@ -4988,12 +5048,7 @@ public class KeptCheck {
         return spots;
     }
 
-    /**
-     * Section 64: the pictures the money screens hold are kept. Each kind is found on the pages of this city (the census, printed), and on
-     * each of the first two it is found on: it stays the node it was from month to month (nine in ten handed back), draws itself again only
-     * where the month's figures moved (never when what it draws is the same), draws nothing on a second redraw in the same month, and the page
-     * is equal to a page built new at every month.
-     */
+    /** Section 64: census money pictures on their first two pages retain nodes/nine-in-ten parts, repaint only changed figures, never repaint an unchanged draw, and equal fresh. */
     static void moneyPictures(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 64: the pictures on the money screens are kept ---");
         Debt piece = paperLasting(g, bench, "64's census of the pictures");
@@ -5292,12 +5347,7 @@ public class KeptCheck {
         return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on the fund: " + bad;
     }
 
-    /**
-     * Section 65: the count-up only at 1x-10x, on the Bank (the PROFIT figure's pop on the Overview and on a page's status strip, the capital
-     * gauge's growth) and the fund (the worth's count and a payment's pop). With the clock at each rung of the speed ladder and paused, a month
-     * that lands starts them exactly at the rungs UserInterface.countsUp() allows (COUNT_UP_TOP); past it nothing animates, the page is the
-     * month's, and an animation still running from the month before is stopped.
-     */
+    /** Section 65: Bank profit/capital and Fund worth/payment animations obey paused/COUNT_UP_TOP at every rung, stop above it and show current figures. */
     static void moneyCountUp(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 65: the count-up only at 1x-10x (Bank and the fund) ---");
         double[] ladder = KeptBench.speedLadder();
@@ -5453,12 +5503,7 @@ public class KeptCheck {
         if (r[8] != null) System.out.println("  " + r[8]);
     }
 
-    /**
-     * Section 66's Enter (KP2b, for KP5's mend in CapChips): a yield box given the focus, "4.5" typed and Enter fired on it. Enter sets the cap and draws the
-     * page at once, and the box - the same node, kept - has to show what a page built new shows ("4.500", the cap's own yieldText), its caret at the end
-     * and the focus still on it; a kept draw never sets a field under the player's typing, so it is CapChips that sets this one, because it differs from
-     * what the page shows. `putBack` returns the cap Enter set to what the page opens with, before and after.
-     */
+    /** Section 66 Enter (KP2b/KP5): focused yield "4.5" commits and redraws as "4.500" on the same node/caret/focus; putBack restores the cap around the test. */
     static void boxEnter(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show,
                          java.util.function.Supplier<javafx.scene.control.TextField> find, java.util.function.Supplier<Auction.Cap> capNow,
                          Runnable putBack, String typed) throws Exception {
@@ -5673,11 +5718,7 @@ public class KeptCheck {
         return n;
     }
 
-    /**
-     * The choices made to act (see Choice.acts): for a page whose content is the model's ranking or the sign of its budget, where a month that moves
-     * a row in or out, or turns a surplus into a deficit, makes the nodes of the cards it swaps - a share of the page that says nothing of what is
-     * kept. Each redraw is still compared with a page built new; the share handed back is printed and not asserted.
-     */
+    /** Acting choices (Choice.acts): model ranking/budget changes may replace cards; print their share without asserting retention, but still require every redraw equal fresh. */
     static List<Choice> asActing(List<Choice> choices) {
         List<Choice> out = new ArrayList<>();
         for (Choice c : choices) out.add(new Choice(c.name(), c.hand(), c.opens(), true));
@@ -5785,7 +5826,7 @@ public class KeptCheck {
             check(page + ": the lines that open into who pays add to the page when opened (" + r[0] + " of " + r[1] + ")", r[0] >= 1);
             if (page.equals("Spending")) governmentComparisonsReleased(bench);
         }
-        pageReshapedCaused(g, bench, tab, 71, governmentChoices(false));
+        pageReshapedCaused(g, bench, tab, 71, governmentChoices(false), false, true);
         List<Choice> doors = new ArrayList<>();
         doors.add(choice("shown through showGovernmentMenu()", b -> { b.governmentOpen("Overview"); b.forgetGovernment(); b.showGovernment(); return null; }));
         for (String p : KeptBench.governmentPages()) doors.add(choice("the chip " + p + " picked", b -> { b.governmentPick(p); return null; }));
@@ -6497,14 +6538,7 @@ public class KeptCheck {
         Double stagedAt;
     }
 
-    /**
-     * Section 78: a dial of Policy keeps the player's hand, through the screen's real show method. A draw with nothing changed first leaves the reading's
-     * text and style alone (KP2b: it was set to nothing and then to its words, twice a draw). The slider is pressed and dragged two steps and a month
-     * lands: the same slider node, still held, the thumb where the hand left it, the reading and the dial card's effects (the arrows of what moves) at the
-     * thumb. Released, the change is staged at the thumb, the tray shows it (a dial with its own Apply has none) and the page equals a page built new; then
-     * dropped, and the page is equal again. A dial that applies at once (`atOnce`) is released into the model instead and the model put back; a line
-     * under the dial that says something about its step (`says`: HOW STRICT's) says it for the held step, not the city's (KP2b).
-     */
+    /** Section 78: Policy dials write unchanged readings once, retain held identity/thumb/reading/effects through months, then stage/apply/drop and equal fresh (KP2b). */
     static void holdDial(Game g, KeptBench bench, String what, String area, String page,
                          java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> pick,
                          String key, boolean trayShows, boolean cardEffects, AtOnce atOnce,
@@ -6642,12 +6676,7 @@ public class KeptCheck {
         holdDial(g, bench, what, area, page, all -> all.isEmpty() ? null : all.get(0), key, trayShows, true, null, null);
     }
 
-    /**
-     * Section 78's last part: a card comes in front of a dial the player holds. Every dial card is a scope keyed by what it is for (a payer, a
-     * course), so the cards after the new one keep their nodes: the held slider is the same node, at the same thumb, with its own reading and its own
-     * ladder, and cards kept by order alone would hand its node to the card in front (the page then shows the held thumb on another lever's dial).
-     * `setup` puts the page as it is before the hold; `front` is what puts a card in front of the last dial, with a month landing as it does.
-     */
+    /** Section 78: setup then front inserts a keyed card before a held dial; the original node/thumb/reading/ladder stay with their payer/course, not list position. */
     static void heldWithCardInFront(Game g, KeptBench bench, String what, KeptBench.Page p, Hand setup, Hand front) throws Exception {
         Object[] r = fx(() -> {
             bench.home(p);
@@ -6866,13 +6895,7 @@ public class KeptCheck {
         return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on " + page.name() + ": " + bad;
     }
 
-    /**
-     * Section 79: the count-up only at 1x-10x. Trade's strip counts SOLD ABROAD and BOUGHT ABROAD up from last month's and its bars (the Overview's
-     * and What we trade's) grow out of their axis when a month lands: with the clock at each rung of the speed ladder, and paused, exactly at the
-     * rungs UserInterface.countsUp() allows (COUNT_UP_TOP); past it nothing animates, each figure reads this month's words and the page is the
-     * page built new; a count still running when a month lands past it is stopped. The Government tab and Policy have no month animation: none
-     * starts at any rung.
-     */
+    /** Section 79: Trade SOLD/BOUGHT counts and Overview/What-we-trade bars obey paused/COUNT_UP_TOP, stop past it and show current words; Government/Policy never animate. */
     static void kp6CountUp(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 79: the count-up only at 1x-10x (Trade; Government and Policy have none) ---");
         double[] ladder = KeptBench.speedLadder();
@@ -7001,12 +7024,7 @@ public class KeptCheck {
         }
     }
 
-    /**
-     * Section 80: the hover. On the Government tab a door, a status cell, a key row of the split ring, a bridge row and a ranked bar's row; on Trade a
-     * door card, a mirror row's ground and a status cell; on Policy an area card and the tall rows of a payer, a course and a zone: a pointer put over
-     * the node and the page drawn kept again leave the same node in the look its own mouse-entered gives it, and with the pointer off, the look its
-     * mouse-exited gives it.
-     */
+    /** Section 80: Government/Trade/Policy doors, cells and rows retain node and mouse-entered look under a still pointer; mouse-exited restores their rest look. */
     static void kp6Hover(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 80: the hover is kept (Government, Trade, Policy) ---");
         java.util.Map<String, Boolean> found = new java.util.LinkedHashMap<>();
@@ -7042,11 +7060,7 @@ public class KeptCheck {
         }
     }
 
-    /**
-     * Section 80's last part: the tooltips are kept. A node a kept draw hands back keeps its own Tooltip (Kept.tip tells it this month's words and delay);
-     * a tooltip made new by Tooltip.install on every draw would replace the one the player may be reading when a month lands. So across a month's
-     * redraw, every node that had a tooltip and still has one has the same Tooltip object, on every page of the three screens (Trade's river too).
-     */
+    /** Section 80: surviving nodes on all three screens (including Trade river) keep the same Tooltip across a month; Kept.tip updates its words/delay. */
     static void kp6Tips(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 80: the tooltips are kept (Government, Trade, Policy) ---");
         record Where(String screen, String name, KeptBench.Page page, Hand setup) { }
@@ -7252,11 +7266,7 @@ public class KeptCheck {
         check(what + ": each month hands back nine in ten of the nodes, or more", handed / months >= HANDED_BACK);
     }
 
-    /**
-     * Sections 99 to 101: Policy > Research's Overview and Funding pages (R3b, slice B), in a city founded the default way (one quiet card; Funding says
-     * there is nothing to find) and in a city founded the 1900 way with schools, grants and a lab, each page drawn kept over last month's nodes against a
-     * page built new, month after month; what each shows held against the model's reads; the dials staged, held through a month and applied.
-     */
+    /** Sections 99-101 (R3b): Research Overview/Funding in default and funded 1900 cities equal fresh; model reads, staged/held/applied dials are checked. */
     static void researchFunding(Game g, KeptBench defaultBench) throws Exception {
         System.out.printf("%n=== Policy > Research's Overview and Funding (R3b): the default city at month %d, and a city founded the 1900 way with schools, grants and a lab ===%n", g.getMonth());
         long t = System.nanoTime();
@@ -7714,14 +7724,7 @@ public class KeptCheck {
         return "Label \"" + text + "\"";
     }
 
-    /**
-     * Section 95: Policy > Research > Found, the sixth Policy area's page, kept (R5, slice B1). In a city founded the default way it is one quiet card;
-     * on ResearchViewCheck.researchTown() (a find here, two from abroad, an unfitted known piece, a new template, a recipe in use) the page drawn kept
-     * over last month's nodes is the page built new, month after month and after what reshapes it, and it shows the lead, a FOUND HERE row, a recipe's
-     * row, a piece's row (a door to its sector's Investors page) and four charts. Then the pure helpers its timeline and City History's flags are made
-     * of: two dots a pixel apart stack and two far apart do not, the year ticks, the flag's counts, the discovery's own colour and the lists of
-     * decisions that leave the discoveries out.
-     */
+    /** Section 95 (R5): default quiet Found card versus researchTown finds/recipe/equipment/template/charts, kept and reshaped; pure timeline stacking/ticks/flags/colours/decisions. */
     static void researchFound(Game g, KeptBench defaultBench) throws Exception {
         System.out.printf("%n=== The Research area's Found page (R5): the default city at month %d and a city founded the 1900 way ===%n", g.getMonth());
         long t = System.nanoTime();
@@ -7923,14 +7926,7 @@ public class KeptCheck {
     /** The months landed, each followed by the clock's redraw, on every screen in section 88. */
     static final int CLOCK_MONTHS = 3;
 
-    /**
-     * Section 88: the clock never rebuilds a rail screen. UserInterface.rebuiltInPlace counts the draws that rebuilt the screen on show in place - the
-     * page emptied, the height held and the scroll settled, as every redraw was before the screens were kept. The fixture that causes it: a page drawn
-     * the old way twice under one name moves the count by one, and the next screen shown, an arrival, by none. Then every tab of the rail (and the
-     * Build tab's construction page, and the city's fund on Finances) is shown through its real show method, and CLOCK_MONTHS months land, each followed
-     * by what the clock does (the screen's own redraw): the count has not moved, the page's top nodes are the same nodes, the screen on show is the
-     * same screen, and the redraw ran over the screen's own nodes (it handed some back - without that the others would hold for a redraw that did nothing).
-     */
+    /** Section 88: prove rebuiltInPlace counts old redraws but not arrivals; all real rail screens retain tops, screen name and handed-back nodes through CLOCK_MONTHS. */
     static void kp7Clock(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 88: the clock never rebuilds a rail screen ---");
         fx(() -> {
@@ -8236,13 +8232,7 @@ public class KeptCheck {
         });
     }
 
-    /**
-     * Section 89: the hover and the tooltips. On Household money a vitals cell that is a door and the crumb door; on the Rankings tab a measure line
-     * and the table's rows: a pointer put over the node and the page drawn kept again leave the same node in the look its own mouse-entered gives it,
-     * and the pointer gone, the look its mouse-exited gives it (the table, whose rows are painted, lights the row under a pointer that has not moved,
-     * and none when it has gone). And the tooltips are kept: a node a month's redraw keeps keeps its own Tooltip (Kept.tip) on both pages, with a
-     * cell open, with a place's drawer open and with every measure unfolded.
-     */
+    /** Section 89: Household doors/cells and Rankings rows retain identity/hover while still and clear on exit; surviving tooltips keep identity across open cells/drawers/measures. */
     static void kp7Hover(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 89: the hover is kept (Household money, the Rankings tab) ---");
         java.util.Map<String, Boolean> found = new java.util.LinkedHashMap<>();
@@ -8339,13 +8329,7 @@ public class KeptCheck {
         double value, want, back, city;
     }
 
-    /**
-     * Section 91 (KP2b/KP2c): a slider released elsewhere while greyed lets go. A disabled node hears no mouse event, so its scene must hear the release:
-     * otherwise its held flag (and a drag's valueChanging) stays set and the thumb stops following the city for good. The fixture causes the release
-     * twice on the policy rate's dial: pressed, and pressed and dragged a step (the value changing), greyed by hand and released at the scene.
-     * It is then not held; ungreyed, a draw with another value staged under it puts the thumb on that value (and the
-     * reading with it), the page equal to a page built new, and the staged value dropped, the thumb is back at the city's.
-     */
+    /** Section 91 (KP2b/KP2c): disabled policy-rate dial releases at scene (pressed/dragged), clears held/valueChanging, follows a new staged value and returns when dropped. */
     static void greyedWhileHeld(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 91: a slider greyed while held lets go ---");
         KeptBench.Page p = fx(() -> bench.policy("Policy, Money's policy rate page", "Money", "The policy rate"));
@@ -8408,11 +8392,7 @@ public class KeptCheck {
         }
     }
 
-    /**
-     * Section 91's door cards (KP2b): a door card's hand style is set once a draw, whole. It was set to the plain card's and then to the door's (built on
-     * what getStyle() said), so every card asked the CSS twice a month. The fixture: on the Policy hub (the area cards) and on the Taxes page (a tax's
-     * card), a draw with nothing changed hears no change of any door card's style; and the counter hears a style set by hand.
-     */
+    /** Section 91 (KP2b): Policy hub/tax door cards set whole hand style once per draw; unchanged redraw fires no style changes, manual mutation proves the counter. */
     static void doorsStyledOnce(Game g, KeptBench bench) throws Exception {
         for (Object[] where : new Object[][]{{"the Policy hub's area cards", null, null}, {"the Taxes page's tax cards (Everything)", "Taxes", "Everything"}}) {
             String name = (String) where[0];
@@ -8840,12 +8820,7 @@ public class KeptCheck {
         return g.getGameFiles().getDirectory().toAbsolutePath().normalize().startsWith(base);
     }
 
-    /**
-     * Section 94: the drawer's pinned bar and the construction tab, two boxes made once and drawn kept (UP7). The real refreshDrawerBar() and
-     * refreshConstructionTab(inCity, open) on scenes of their own, kept and with every node new, through every state - pinned and not, the panel
-     * open and folded, a city on show and a game menu, no site, one and three - and the hands on them: a figure made wrong, a second draw, the
-     * pointer, the tooltips and the clicks.
-     */
+    /** Section 94 (UP7): real drawer bar/construction tab kept and fresh across pin/fold/screen/site states, with spoil/redraw/hover/tooltips/clicks. */
     static void up7Frame(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The drawer's bar, the construction tab and the speed's reading (UP7) ===");
         System.out.println("\n--- 94: the drawer's bar and the construction tab are kept ---");
@@ -9092,11 +9067,7 @@ public class KeptCheck {
         bench.chromePasses();
     }
 
-    /**
-     * Section 98: the speed's reading (UP7). The header's pace swapped for ones on a clock moved by hand, at pace and short of the rung, at every rung,
-     * through the real refreshHeader() and paintSpeed(): the reading is the speed reached alone in amber when short and the rung in the header's colour
-     * otherwise, one width for ever, never clipped, the tiles beside it never moving, and written once when it changes.
-     */
+    /** Section 98 (UP7): real header pace at/short of every rung uses speed-only amber or rung colour, fixed unclipped width, stationary neighbours and one changed write. */
     static void up7Speed(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 98: the speed's reading is the speed reached, alone and in amber, in one width ---");
         double[] rungs = KeptBench.speedRungs();
@@ -9292,14 +9263,7 @@ public class KeptCheck {
         return s.count() == 2 && words && style;
     }
 
-    /**
-     * Section 103 (FB2): the kept screens' geometry and retention, each repair caused on its own. A kept screen was found equal to a page
-     * built new only on the path of the city it was found on (GW1's, KS1's, HW1's, BF1's: the header's 18 states, Wood Products' month 1868,
-     * the Government Overview's 47 of 378), and the cities' paths move; so each repair is caused here by the states that need it, in a
-     * picture of its own, whatever the played city does: KL1 (the ladder's quote moved where nothing is drawn), KS1-UI (a header wording and
-     * a sparkline hidden, a bar's name emptied), BF1-K (the triangles of Partners' chart and Search's empty price and held), KS1-Gov (the
-     * lines of the Government Overview that leave and come back).
-     */
+    /** Section 103 (FB2): cause KL1 quote, KS1-UI header/bar, BF1-K Partners/Search and KS1-Gov recurring-line regressions independently of the played city path. */
     static void fb2Repairs(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 103: the geometry and retention repairs of FB2, each caused on its own ---");
 
