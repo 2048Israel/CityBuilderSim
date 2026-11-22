@@ -1156,7 +1156,9 @@ public class HistorySave {
      * Harnesses only (0.7.55): one more month on every series this history
      * has, each value asked of `value` by the series' name, then the fold
      * recordMonth() ends with - so a history can be grown past MONTHLY_KEPT
-     * without a city behind it. A Long series takes the value rounded.
+     * without a city behind it. A Long series takes the value rounded. A
+     * year's debt survey repeats its last groups on the added year axis,
+     * just as each monthly series repeats its last value in a padded history.
      */
     @SuppressWarnings("unchecked")
     void appendMonth(int m, java.util.function.ToDoubleFunction<String> value) {
@@ -1167,6 +1169,10 @@ public class HistorySave {
             double v = value.applyAsDouble(e.getKey());
             boolean whole = !list.isEmpty() ? list.get(0) instanceof Long : LONG_SERIES.contains(e.getKey());
             list.add(whole ? (Number) Math.round(v) : (Number) v);
+        }
+        if (m % 12 == 0 && !debtSurveys.isEmpty()) {
+            DebtStatistics.Survey last = debtSurveys.get(debtSurveys.size() - 1);
+            debtSurveys.add(new DebtStatistics.Survey(m, last.groups()));
         }
         foldOldYears();
     }

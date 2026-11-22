@@ -503,3 +503,74 @@ are unchanged; all 286 assertions pass.
 The complete GoldStandardCheck passes on the broker mend (38.4s), including
 the two lines red in the stopped dry run. Those lines will not be entered
 as known reds. Fast compilation and stale checking pass (0 firm findings).
+
+The broker mend also clears CreditCheck's cash-funded banned retailer
+(1 judged order, standing/on-site shops 1 to 3), CreditCrunchCheck's entire
+120-month in-band premise, and FundCheck's pro-rata withdrawal: both
+holdings sell/ask 0.6945 of their units. FundCheck's sole remaining red is
+the already recorded `a limit posts at its limit`, owned by HT1-H. The m48
+DeathRecordCheck peak comparison also passes again (closed peak5.04,
+open4.33); only the already named OX2 m60 arrivals/wave-end class remains.
+None of these cleared lines gets a new known-red row.
+
+Remaining played-city premises, with no assertion, bound or model rule
+changed (owners follow the orchestrator's 2026-11-22 14:23 instruction):
+
+- **HoldersCheck, HT1-H (sweep FS14 shipped).** The issue is at m62:
+  household face842.56, bank591.09 of1433.94. In m63/64/65 the households sell
+  the desk0.0192076244907/0.0180655548265/0.0104836902922 of paper and departures
+  take0.0134858057490/0.0117305865189/0.00608432876162. In m66 departures still
+  take0.000894270969785. The bank retains face0.0163088514814 at m64 and
+  0.00946825577805 at m65; the central bank reaches100% at m66. Thus the
+  quiet-desk, clear-bank-before-all-paper, next-household-step and
+  middle-with-household-paper premises all fail together. The pre-window
+  `lastDecliningShare==0` and mean cash cushion do not pin later card-driven
+  departures or the lognormal buffer tail. Bank-first ordering, exact
+  holder transfers, the two books and every money audit pass. The sweep
+  must cause a quiet desk; the four assertions stand unchanged.
+- **CurrencyCheck, HT1-H (FS10 shipped).** At m41 the stores have supplied
+  only13 indexed months; `hasRate=false`, `monthsUntilRate=1`. The annual
+  inflation function correctly returns0 until its window is ready. Replacing
+  one price with `now/1.45` does not create a year, so the fixture's45%, the
+  next rate0 and past25% expectations are not caused. The city retains its
+  3% rate while no annual rate is available. The pure unrestricted advice
+  rule passes. The three original assertions remain.
+- **EducationCheck, HT1-H (FS16 shipped).** At m301 there are7717 college
+  jobs,1258 own diploma workers and8767 in the qualification queue. The
+  opportunity read is0.90, correctly nearer the queue's reading. The two
+  hypothetical readings differ by about0.10, below the fixture's required
+  0.15; its queue>1.5*own premise and the actual queue-read law pass. The
+  equilibrium post count is a played-city premise, as the section's own
+  history explains; no posts, queue or threshold were changed.
+- **HealthCheck, FS11 (still queued).** In its96-month fee twins ending
+  m145, care served99.999778% at x1 versus99.983661% at x15, a0.016117
+  percentage-point gap rather than the required five points. The end lift
+  is14.8% of people in each twin; both have12 clinics and every month has
+  enough beds. The actual high-fee-lower-service, care-book and mortality
+  rules pass. Its between-month `shutOut=1` and mean savings lift no longer
+  guarantee the whole native month is closed to credit: chargeOff releases
+  a twelfth of the excluded share before the next plan, and the within-cell
+  buffer is spread. This is the fee fixture's failed native cash-room
+  premise, left to its queued affordability sweep; the material-turnaway
+  assertion is retained, not relabelled as a passing observation.
+
+★ The synthetic 7c history-size fixture must grow its new yearly payload
+along with its monthly payload. `HistorySave.appendMonth` is expressly
+harness-only; on each added year it now repeats the last debt survey's
+immutable groups at that year, as the fixture already repeats each
+monthly series' last value. SaveSlotCheck asserts the exact added survey
+count. No native recording, saved schema, old-save refusal, clock limit
+or original file-size ratio is changed. This mends the 7x-versus-33x
+fixture rather than approving that failed size assertion. Checks are in
+progress on this last fixture mend.
+
+The padded-history count and original file-size bound now pass:62.3MB
+versus1.89MB, both file and axis33x. The direct 2GiB run's only remaining
+SaveSlotCheck red is timing (due-month median86.2ms, ordinary-month24.3ms).
+The stopped gate measured28.0ms due versus8.7ms ordinary and, through the
+repository's normal `-Dcbs.timing=soft` mode, reported this existing25ms
+budget as SOFT. It was not a NEW gate red. The normal named batch run is
+still owed here; no known-red approval or budget change substitutes for it.
+All snapshot, whole-file, atomicity, history-load and failed-write checks
+pass. SaveFileCheck passes again on the final monetary model, including
+the native60/61 refusals and exact next-month continuation.
