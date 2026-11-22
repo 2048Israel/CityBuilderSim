@@ -29,7 +29,8 @@ import java.util.Set;
  * 5. Current saved choices restore immediately and across the next month;
  *    an exact .181-shaped missing-flag record must be correct or refused.
  * <p>
- * The village factory advances no month (unlike LongPlaytest.probeCity).
+ * The established licence-fixture factory plays three startup months; its
+ * actual returned clock and advance count are recorded, never a probeCity age.
  * Every subsequent normal player-month advance is counted from its actual
  * before/after clock, separately from explicit date jumps. Nothing here is
  * an observation waiver: a missing positive dispatch or transition fails.
@@ -78,17 +79,19 @@ public final class ModernEngineeringCheck {
         final Game game;
         final String label;
         final int factoryMonth;
+        final int factoryAdvances;
         int advances, oldActive, crossings, adoptedActive;
         double oldUnits, adoptedUnits;
         boolean previousOldPositive;
 
         Fixture(String label, boolean historical) {
             this.label = label;
-            game = RecipeCheck.town(label, historical);
+            game = HistoricalLicenceCheck.town(label, historical);
             factoryMonth = game.getMonth();
-            check(label + " factory returns without a simulation advance",
-                    factoryMonth == PolicyDates.monthOf(1900, 1), factoryMonth);
-            OUT.println("  factory " + label + " returnedMonth=" + factoryMonth + " advances=0 (village, not probeCity)");
+            factoryAdvances = factoryMonth - PolicyDates.monthOf(1900, 1);
+            check(label + " existing licence factory actually plays its three startup months",
+                    factoryAdvances == 3, factoryMonth);
+            OUT.println("  factory " + label + " returnedMonth=" + factoryMonth + " actualAdvances=" + factoryAdvances);
         }
 
         void jump(int month) throws Exception { HistoricalRecipeCheck.at(game, month); }
@@ -101,7 +104,9 @@ public final class ModernEngineeringCheck {
             advances += actual;
             check(label + " player month actually advances once", actual == 1, actual);
             Sector.Output row = game.getSectors().agriculture().output(Good.CROPS);
-            double units = row.produced + row.exportBound + row.captive;
+            // produceStock assigns this month's warehouse production directly.
+            // Do not count a retained earlier captive-flow field as a fresh firing.
+            double units = row.produced;
             boolean absentNow = missing(game, farm);
             if (units > 0 && absentNow) {
                 oldActive++;
@@ -116,7 +121,7 @@ public final class ModernEngineeringCheck {
             previousOldPositive = units > 0 && absentNow;
             OUT.println("  firing " + label + " month=" + game.getMonth() + " quantity="
                     + game.getBuildingManager().getStack(farm).getQuantity() + " missingE21=" + absentNow
-                    + " cropUnits=" + units + " advances=" + advances);
+                    + " cropStockProduced=" + units + " measuredAdvances=" + advances + " totalAdvances=" + (factoryAdvances + advances));
         }
     }
 
@@ -212,7 +217,8 @@ public final class ModernEngineeringCheck {
         for (String name : FARMS) {
             Fixture f = new Fixture("R6e-compose-" + name, true);
             BuildingsTemplate t = isolate(f, name, 1);
-            f.jump(date() - 1);
+            int earliest = Math.min(date(), Math.min(ResearchCatalog.knownFrom("PE20"), ResearchCatalog.knownFrom("E10")));
+            f.jump(earliest - 1);
             double anchor = t.defaultRecipe().makes().get(Good.CROPS);
             knowledge(f.game, Set.of());
             apply(f.game);
@@ -223,6 +229,8 @@ public final class ModernEngineeringCheck {
             for (int i = 0; i < absent.size(); i++) {
                 knowledge(f.game, absent.get(i));
                 apply(f.game);
+                for (String code : absent.get(i)) check(name + " missing-stage premise really withholds " + code,
+                        !f.game.getResearch().known(code, f.game.getMonth()), f.game.getMonth());
                 near(name + " fixed-anchor stage " + absent.get(i), t.makes(Good.CROPS), expected[i]);
                 check(name + " stage changes no non-crop figure", nonCrop(t).equals(other), absent.get(i));
                 check(name + " even all missing leaves positive output", t.makes(Good.CROPS) > 0, t.makes(Good.CROPS));
@@ -280,7 +288,8 @@ public final class ModernEngineeringCheck {
                     f.advances == 2 && f.oldActive == 1 && f.crossings == 1 && f.adoptedActive == 1 && f.adoptedUnits > 0,
                     "advances=" + f.advances + " old=" + f.oldActive + " crossings=" + f.crossings + " adopted=" + f.adoptedActive);
             OUT.println("  totals " + name + " old-active=" + f.oldActive + " crossing=" + f.crossings
-                    + " adopted-active=" + f.adoptedActive + " actualAdvances=" + f.advances);
+                    + " adopted-active=" + f.adoptedActive + " measuredAdvances=" + f.advances
+                    + " factoryAdvances=" + f.factoryAdvances + " totalAdvances=" + (f.factoryAdvances + f.advances));
         }
     }
 
@@ -334,16 +343,24 @@ public final class ModernEngineeringCheck {
             near(name + " new-unit rent uses the native patent share and live quote price", LicenceFees.forNew(f.game, t), quoteExpected);
             double before = owner.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
             LicenceFees.Production capture = new LicenceFees.Production(f.game);
+            double stockBefore = owner.getStock(Good.CROPS);
+            double exportedBefore = owner.output(Good.CROPS).exported;
+            double captiveBefore = owner.output(Good.CROPS).captive;
+            check(name + " fitted tractor fixture has no current horse-feed production", !owner.captive(Good.CROPS), owner.captive(Good.CROPS));
             owner.produceStock(Good.CROPS, f.game.getMarkets().get(Good.CROPS));
             Sector.Output crops = owner.output(Good.CROPS);
-            double made = crops.produced + crops.exportBound + crops.captive;
+            double made = owner.getStock(Good.CROPS) - stockBefore + crops.exported - exportedBefore;
             check(name + " fee fixture dispatches positive crops below its real capacity",
                     crops.capacity > 0 && made > 0 && made < crops.capacity && owner.getOperatingRate() > 0 && owner.getOperatingRate() < 1,
                     "made=" + made + " plate=" + crops.capacity + " rate=" + owner.getOperatingRate());
-            double usedShare = made / crops.capacity;
+            near(name + " an earlier captive field contributes no fresh production to this capture", crops.captive, captiveBefore);
             SpreadPlanner.Values values = SpreadPlanner.values(f.game.getMarkets());
-            double expected = LicenceFees.SHARE * (values.in(Good.CROPS, anchor * usedShare)
-                    - values.in(Good.CROPS, anchor / GM_FACTOR * usedShare));
+            double expected = LicenceFees.SHARE * (values.in(Good.CROPS, made)
+                    - values.in(Good.CROPS, made / GM_FACTOR));
+            OUT.println("  fee premises " + name + " rate=" + owner.getOperatingRate() + " freshCropUnits=" + made
+                    + " produced=" + crops.produced + " exportBound=" + crops.exportBound + " captive=" + crops.captive
+                    + " recipe=" + java.util.Arrays.toString(t.runningRecipeIds()) + " pendingBefore=" + before
+                    + " expected=" + expected);
             capture.made(owner, true);
             capture.finish();
             double captured = owner.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) - before;

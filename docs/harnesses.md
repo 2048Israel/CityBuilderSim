@@ -22016,19 +22016,19 @@ _(this harness does not label its checks through a helper - it prints its findin
 >    one and mixed quantities, with no per-building output rounding.
 > ...
 
-- **L171 1. E21 data, approved source arithmetic and modern/default guard**
-  - L173 E21 is the independent 1996 recipe, June placeholder, native work and patent estimate
-  - L178 engineering keeps its existing seven-year lag
-  - L198 only the two released farms carry E21
-  - L199 Mixed Farm's immutable modern anchor remains69
-  - L200 Grain Farm's immutable modern anchor remains500
-  - L207 default founding saves no historical recipe choices
-- **L211 2. independent PE20/E10/E21 stages, quantities and discovery order**
-  - L258 mixed standing quantities sum the two historical farm outputs
-- **L262 3. both isolated farms dispatch across the real player-month boundary**
-- **L288 4. native work finds E21 after its science boundary, before history**
-- **L316 5. native prices, partial actual production, captured rent and exemptions**
-- **L367 6. immediate native load, next month, and the pre-R6e missing-flag record**
+- **L176 1. E21 data, approved source arithmetic and modern/default guard**
+  - L178 E21 is the independent 1996 recipe, June placeholder, native work and patent estimate
+  - L183 engineering keeps its existing seven-year lag
+  - L203 only the two released farms carry E21
+  - L204 Mixed Farm's immutable modern anchor remains69
+  - L205 Grain Farm's immutable modern anchor remains500
+  - L212 default founding saves no historical recipe choices
+- **L216 2. independent PE20/E10/E21 stages, quantities and discovery order**
+  - L266 mixed standing quantities sum the two historical farm outputs
+- **L270 3. both isolated farms dispatch across the real player-month boundary**
+- **L297 4. native work finds E21 after its science boundary, before history**
+- **L325 5. native prices, partial actual production, captured rent and exemptions**
+- **L384 6. immediate native load, next month, and the pre-R6e missing-flag record**
 
 ## MonetaryCheck.java - 116 labelled assertions
 
@@ -25569,7 +25569,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 > fails on the earlier calibration (rotary without PE4 at 6,160 t, PE4 a loss).
 
 - **L43 1. every postwar undo on its standing template crosses its own month**
-  - L85 all 27 postwar template changes were exercised
+  - L85 all 29 template changes were exercised (27 retained postwar rows plus both E21 farms)
 - **L121 3. zeolite affects catalytic cracking and leaves thermal cracking at 0.24**
   - L134 thermal before both discoveries stays at 0.24, order
   - L138 first discovery has only its process-scoped yield, order

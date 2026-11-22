@@ -2,6 +2,109 @@
 
 <!-- readiness: provisional -->
 
+## Native focused milestone (root e7fc, 2938 and 00d4)
+
+The E21 implementation remains provisional. HT1 directly released the
+laptop named slot in9d40; the admitted focused work below is terminal.
+The slot was handed directly to real-estate-study, then HT1, in bus6e84,
+b3b1 and cc65. No R6e JVM remains and no further one is started this turn.
+The confirmed dependency is HT1 publication before the coordinated format
+change, not another edit/check permission cycle or a new Pending move.
+
+**ModernEngineeringCheck:151/153 pass.** Its only two remaining failures
+are the actual accepted .181/format58 immediate-load laws: at May1996 a
+fitted Mixed Farm loads69 instead of56.55737704918033 CROPS, a fitted Grain
+Farm500 instead of409.8360655737705. Current present-flag records load
+correctly immediately; loaded/unbroken twins select the same modern
+coefficients and saved choices at the next month. The older accepted
+record also selects correctly next month; that does not excuse its wrong
+immediate physical state. Raw modern-1 through modern-4 wrapper/native
+exits and harness output are retained in target/R6e-evidence/stage2.
+No converter, flag cleanup, prefix padding or production/save owner edit
+has been made. After HT1 publishes, merge that actual predecessor and
+apply root's conditional format/floor release from its shipped value;
+retain the .181 control and prove any intervening pre-E21 save semantics
+rather than assume HT1's format59 alone settles this feature.
+
+The first run exposed new-fixture setup faults, all preserved: local
+absence did not withhold PE20/E10 after their world dates; the unplayed
+village had zero operating production in its first normal month. The
+composition fixture now uses the earliest target date minus one, derived
+from the catalogue, and explicitly asserts that each missing code is
+actually unknown. The existing HistoricalLicenceCheck.town factory plays
+three startup months; its native returned clock is recorded (month4,
+three actual advances), followed by two measured player-month advances.
+No economic dial, source coefficient, tolerance or positive-throughput law
+was changed. Normal-month firing counts use freshly assigned warehouse
+production, excluding a retained captive-flow field from an earlier pass.
+
+| Caused clock fixture | May1157 old crop stock produced | June1158 adopted crop stock produced | old-active / crossing / adopted-active | native advances |
+|---|---:|---:|---|---|
+| Mixed Farm only, quantity1 | 21.99749460695315 | 36.97827835242679 | 1 / 1 / 1 | factory3 + measured2 =5 |
+| Grain Farm only, quantity1 | 193.4082782806171 | 301.96468223332465 | 1 / 1 / 1 | factory3 + measured2 =5 |
+
+These are bounded normal-player-path fixtures with explicit date jumps,
+not a claim to have simulated96 years or measured a22% whole-city output
+jump. Staffing/rationing differ between months; the separate hard laws
+pin the exact per-building coefficients and every non-crop field.
+Native local research finding, no pre-science effect, each/all missing
+stages, both discovery orders, zero/three/mixed quantities, immutable
+modern/default snapshots and dairy/meat/input invariants all pass.
+
+The fee fixtures cause a half-supplied grid at the native operating
+rate0.24259994905089333, with fresh crop units16.73939648451164 (Mixed)
+and121.29997452544666 (Grain). Captured incremental native patent rent is
+0.00859444282014371 and0.062278571160461565 in model money, matching
+LicenceFees.SHARE times the standing value difference of fresh output
+and fresh output/1.22. The earlier oracle wrongly included retained
+captive5.444138974213473 from a prior production pass. Its mend measures
+fresh stock/export movement and explicitly proves no current horse feed;
+it does not derive an expectation from the observed bill. New-unit quote,
+actual partial dispatch/capture, local exemption, native term boundaries
+and preservation of the captured liability after knowledge/expiry pass.
+
+All affected regression **laws** pass: ResearchCheck, DiscoveryCheck,
+RecipeCheck, HistoricalRecipeCheck, PostwarRecipeCheck, EquipmentCheck,
+FittingCheck, NewUnitCheck, LicenceFeesCheck, HistoricalLicenceCheck and
+AgricultureCheck. The native serial-wrapper exit table is readers.exits.tsv:
+nine wrappers exit0; RecipeCheck's substring wrapper also selected
+HistoricalRecipe/Postwar and exited4 only for the Postwar count, and the
+specific initial Postwar wrapper likewise exited4. All original per-row
+laws and both new E21 rows already passed. Root00d4 released exactly the
+PostwarRecipeCheck.transitions count/label27->29, explicitly27 retained
+plus BOTH E21 farms, with predicate/laws/precision unchanged. Its specific
+changed-source wrapper passes230/230, native exit0, compile43s and
+Stale0firm. Recipe/Historical greens are reused as explicitly ordered;
+there is no broad substring replay after the mend. Wrapper commands,
+native exits and raw per-reader output remain retained, not overwritten.
+
+Self-review confirms the resource scope, original96 entries/relative
+order, exact modern anchors and all non-E21 building fields are unchanged.
+Only approved data, the new/necessary harness expectations and credits
+change; the Postwar mechanical count owner is the explicit00d4 extension.
+No production model Java, format constants, HT1 core, publisher records,
+IDs/enums or power/haulage owner changed. The remaining two laws are
+R6e's real compatibility dependency, not main known reds or a borrowed pass.
+The pristine before-physical resource is retained but was **not run**;
+no main baseline, ensemble, ALL suite, dry run, readiness or publication.
+Fresh money/save review and final trace/ensemble duty remain owed on the
+post-HT1 final model. The provisional marker remains, and the whole
+queued R6e remit is not completed by E21.
+
+The final static selector still selects ALL239, native exit0. Its lexical
+review line remains `not needed - no money, saves or threading in the diff`;
+root's fresh money and saves review remain required for the resource-driven
+patent flow and the demonstrated accepted-load fault. No ALL suite ran.
+The exact source owners are research.json, buildings.json52/53,
+ResearchCheck, ModernEngineeringCheck, AllChecks and root00d4's one-line
+PostwarRecipeCheck count; credits and generated indexes accompany them.
+Next: merge HT1's actual published main, then use the already conditional
+GameVersion format/floor and SaveFileCheck/ReadPathCheck control release.
+ModernEngineeringCheck.savedStates must cover both .181/58 and any
+intervening accepted pre-E21 missing-flag state, alongside current saves.
+That work, its ordered focused runs, fresh reviews and final ensemble/dry
+gates remain ahead; this checkpoint neither executes nor passes them.
+
 ## E21 implementation checkpoint (root mail 20261121-223202-617)
 
 R6e remains **Queued/building**, in the same worker/worktree. The first
@@ -21,7 +124,8 @@ the existing shipped credit location. ResearchCheck extends only necessary
 catalogue/date/work/fee/order/count/range expectations. No production Java
 owner, save/format owner or publisher record changes.
 
-ModernEngineeringCheck is prepared, **not run**: exact recipient/field
+At this earlier source checkpoint ModernEngineeringCheck was prepared,
+**not yet run** (superseded by the native milestone above): exact recipient/field
 checks, both isolated farms' positive dispatch across date-1/date, native
 early research finding at its science boundary, PE20/E10/E21 each/all
 absent and both discovery orders, zero/three/mixed quantities, full modern
@@ -31,7 +135,7 @@ actual before/after simulation advances, old-active/crossing/adopted-active
 months and actual positive crop units. It uses the village factory (zero
 advances), not an assumed probeCity age. No observation waiver is added.
 
-**Save finding to prove, not a run result:** .181/format58 at May1996,
+**Earlier static save hypothesis, now confirmed above:** .181/format58 at May1996,
 tractor/tractor choices on a fitted farm, PE20/E10 known and no E21 missing
 flag. Recipes.restore preserves the two strings; decode composes only
 flags present. Static reading predicts an accepted immediate load gives
