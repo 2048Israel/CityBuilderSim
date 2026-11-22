@@ -1807,7 +1807,7 @@ public class KeptCheck {
             return;
         }
         pathCheck(observeRetention, "pageReshaped " + n + " " + page.name() + " retention",
-                "a month's redraw after each choice hands back " + (share == HANDED_BACK ? "nine in ten" : String.format("%.0f%%", share * 100)) + " of the page's nodes, or more",
+                page.name() + ": a month's redraw after each choice hands back " + (share == HANDED_BACK ? "nine in ten" : String.format("%.0f%%", share * 100)) + " of the page's nodes, or more",
                 worst >= share);
     }
 

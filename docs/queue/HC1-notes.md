@@ -574,3 +574,48 @@ still owed here; no known-red approval or budget change substitutes for it.
 All snapshot, whole-file, atomicity, history-load and failed-write checks
 pass. SaveFileCheck passes again on the final monetary model, including
 the native60/61 refusals and exact next-month continuation.
+
+Final named validation of the delta:
+
+- `./batch-check.sh SaveSlotCheck`: exit0, all save assertions pass; one
+  existing timing assertion SOFT (83.3ms median versus25ms budget). The
+  survey-count and33x byte-growth assertions both pass. No timing budget
+  changed and no timing row was added to known-reds.
+- `./batch-check.sh HistoryCheck`: exit0, the history/fold/snapshot checks
+  pass after the harness-only annual-padding addition.
+- Exact-class named runs, one JVM at a time, pass CardCheck,
+  PriceLevelCheck, EquityCheck, OutsideCheck, OwnerCheck,
+  SectorStatementCheck, PrizeCheck, GoldStandardCheck, CreditCheck,
+  CreditCrunchCheck, DenominationCheck, BusinessServicesCheck, BankCheck,
+  HouseholdFlowCheck, DebtStatisticsCheck, SaveFileCheck and ReadPathCheck.
+  The repeated HoldersCheck/EducationCheck/HealthCheck runs retain only
+  the4/1/1 native-premise lines traced above; CurrencyCheck retains its
+  three missing-index-year lines. FundCheck and DeathRecordCheck retain
+  only their main-recorded HT1-H and OX2 lines respectively. The common
+  judge will use narrow rows, never a whole-harness approval.
+- The full named KeptCheck, a final fast check and the final pick are in
+  progress before the provisional review record is pushed.
+
+KeptCheck's full current-model run finds another FS5 retention line in
+section63, the city's fund. After opening the closed-lots fold the month
+creates315 nodes and retains1776,84.9% rather than90%; every choice's
+comparison to a fresh page passes. Added labels include closed lots2277,
+2278,2293,2300,2303,2305,2307,2308,2311,2313,2315,2316. Its window starts
+with Portfolio retained at m2130. The failing redraw is m2190, derived
+from that printed start plus25 retained months,25 fresh-page comparison
+months and the10 choice-months through the closed-fold opening. `arrive`
+and `fundHeld` advance no month. The live closed-lot composition changes
+the allocations; the fund renderer is unchanged in HC1. FS5, still
+pending/queued, owns this retained-page class under the orchestrator's
+pin instruction; no financial law, fresh-page equality or90% bound is
+relaxed. The old generic Bank Overview known-red fragment happens to
+match the old wording here too. To keep this finding distinct, the
+diagnostic label now prefixes `page.name()` (no predicate or timing
+change), with a fund-specific ship row. That label-only change is compiled
+in the last fast check; the complete ongoing UI run exercised the same
+predicate and data before that diagnostic prefix was added.
+
+The stopped run's Policy/Taxes Profit retention line clears on the broker
+mend: the full current run retains193 of194 nodes, versus195 of224 in the
+stopped run. The original90% requirement passes; no known-red row is added
+for it. This is further trace evidence of the phantom company's effect.
