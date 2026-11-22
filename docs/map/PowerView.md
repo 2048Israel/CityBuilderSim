@@ -9,7 +9,7 @@
 
 **Uses:** [UtilitiesHandler](UtilitiesHandler.md) (9), [PowerDispatch](PowerDispatch.md) (5), [Game](Game.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (4):** [HistorySave](HistorySave.md), [PowerViewCheck](PowerViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md)
+**Used by (5):** [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [PowerViewCheck](PowerViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md)
 
 ## Methods, in file order
 

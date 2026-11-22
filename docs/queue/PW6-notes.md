@@ -498,3 +498,66 @@ hard 10/10 ensemble remain valid. This is provisional UI mends for separately or
 independent image eyes and ALL-238 dry, not readiness. Pick ALL 238; review floor
 `review    needed - saves: HistorySave.java`; original save reviews retained and marker
 unchanged. No new source design, model/save change, extra fast or suite was performed.
+
+## Failed full dry and bounded HistoryCheck mend — provisional
+
+The one ordered normal BOX-only dry of `7f13c4c1c220ffc2f151387f500080c5f434d594`
+against main `6b52db7a2d1ef6bb6e3856b843d571a3f71b3882` stopped at
+`/home/jerus/cbs/runs/cbs-gate-PW6-WFrYyVkw`: gate/client exit 1, suite exit 4/704s.
+Its ALL-238 selection executed 225 harnesses (212 passed, 13 failed): 12 main-known
+only and new `HistoryCheck`. Exactly 41 unnamed lines were its exit, 39 power-key
+full-axis length assertions and failure footer. No power line was waived or classified
+as borrowed. Original gate/guardian/serve and owned JVMs were gone, inactive and not
+cancelled, with `checks.complete`; all 861 sealed checks hashes and 16 remote auxiliary
+hashes matched the homecopy. Root independently verified this in its stopped-history
+receipt. This remains a **failed** run, never a pass/reuse verdict; no success
+`gate-run` comment was added. Raw copies/control receipt/report are in `target/pw6-dry/`.
+
+Root then authorized only a harness mend under the existing shorter-series contract.
+`HistoryCheck` now gives suffix checks only to the exact keys emitted by the actual
+native `PowerView.series` projection; an unknown power name fails. All always-recorded
+non-power full-axis checks, share rules, original 30-month fixture and other assertions
+remain unchanged. For actual power keys it prints axis/stored lengths and offset,
+then proves nonempty/non-overlong finite observations, no missing tail, front NaNs in
+`raw`/`aligned`/`alignedTail`, full/short tail alignment and the latest native value.
+The 30-month fixture actually reported axis 30, stored 29, offset 1, last month 31.
+No zero tariff/unknown observation, conversion, adapter or folding policy was added.
+
+A separate existing native coal-town fixture takes four fixed advances. It captured
+month 2 unrecorded with no emitted keys, then first recorded month 3 and months 4/5
+with 42 emitted keys each: one unobserved axis entry, three observations, first index
+1. Each key's actual first emission and captured monthly values match the readers;
+axis 4/stored 3/offset 1. Hard nonzero coal generation, fuel and receipts caused the
+native premise. Ordinary scratch save/load preserves the actual axis, all 42 raw
+lists, retained model projection, NaN prefix and latest values. These are actual
+observed months/firing counts, not assumed lengths or a search. No new late-id or
+partial-year proof is claimed; existing native departure/three-gap/rejoin/FLOW/yearly/
+global-RATE sources and immutable proofs remain untouched.
+
+The sole normal `batch-check.sh HistoryCheck` wrapper passed on its first authorized
+run: compile 39s, one harness passed in 9s, maps regenerated, Stale 0 firm/194 soft.
+No separate fast or other named/full/probe/Kept/playtest/ensemble/dry replay occurred.
+Direct acquired process handles recorded wrapper 33604, relay 43588, actual native
+child 22216 and AllChecks native 28056/launcher 28424 all exiting 0; all are terminal.
+Native Oracle 21.0.4+8-LTS-274 used exact main `C:/` earth-2/world-1 paths. Source SHA256
+`407f04859b3b9ef25e2d27426427de88378eb84365cd4ed6316d7f2a1b6e7fc4`; compiled and
+actually loaded class `a6c28d27b685effd3bd8be369a363de6208a684dc7c73310baf94a1499761d1f`.
+
+Evidence is `target/PW6-history-suffix-20261121-2053/`: frozen `7f13` source tar,
+pre-source/class/checks, exact final source/diff, raw wrapper/child/suite/compile/maps/
+Stale, direct process exits, data/baseline provenance and verification/manifest files.
+All 837 other frozen production/record entries stayed identical through terminal;
+notes advance afterward. All 70 original proof, 44 screen, 57 earlier UI, 20 failed
+helper, 46 final-render entries and the failed dry's 861 hashes/34 controls remain
+unchanged. Source delta is only `HistoryCheck.java` (+125/-0) and generated indices:
+domain/native reader proof, not shared check-machinery or process changes; no
+artificial removal. Model/save/UI source and the default trace remain unchanged.
+Generated index bytes are retained exactly; `git diff --check` reports the generator's
+trailing spaces on empty-label L-number rows in `docs/harnesses.md`, with no source
+whitespace finding or manual generator/index change.
+
+Original whole/scoped SHIP8541, .180 ensemble 80/80 hard 10/10 and SCREENae95 PASS
+remain retained with their limits. This new harness delta/native suffix premise needs
+independent review; a final ALL-238 dry and readiness need separate GO. Pick remains
+ALL 238; review floor `review    needed - saves: HistorySave.java`. Provisional marker
+retained, no success gate-run comment, no owned helper live; local named slot released.

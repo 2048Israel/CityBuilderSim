@@ -7055,7 +7055,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 59 | `HistoryCheck.OUT` | `System.out` | The game narrates every month to stdout; the findings are the output here. |
 | 60 | `HistoryCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
-| 936 | `HistoryCheck.PRICES` | `{ "minimumWage", "landPrice", "foodPrice", "materialsPrice", "orePrice", "rentPrice" }` |  |
+| 1061 | `HistoryCheck.PRICES` | `{ "minimumWage", "landPrice", "foodPrice", "materialsPrice", "orePrice", "rentPrice" }` |  |
 
 ### HoldersCheck.java ([map](map/HoldersCheck.md))
 
