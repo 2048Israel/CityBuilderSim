@@ -22,6 +22,24 @@ public final class SubstationCheck {
     static boolean near(double a, double b) { return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b))); }
     static void quietly(Runnable work) { System.setOut(QUIET); try { work.run(); } finally { System.setOut(OUT); } }
 
+    /** Physical wires for fixtures isolating generation, prices or fitting rather than grid scarcity. */
+    static void wiresFor(Game g, double peakKw) {
+        if (!Double.isFinite(peakKw) || peakKw < 0) throw new IllegalArgumentException("fixture peak " + peakKw);
+        BuildingManager b = g.getBuildingManager();
+        long wanted = Math.max(1, (long) Math.ceil(peakKw / 100_000)); // the study's 100 MW district
+        long standing = b.getQuantity(Substations.ID);
+        if (wanted > standing) b.addStack(b.getTemplate(Substations.ID), wanted - standing, true);
+    }
+
+    /** Enough wires for every standing generator's nameplate, including the founding grid. */
+    static void generationWires(Game g) {
+        BuildingManager b = g.getBuildingManager();
+        double kw = g.getServicesManager().getUtilitiesHandler().getFoundingGridKw();
+        for (BuildingsTemplate t : b.getTemplates())
+            if (t.getCategory() == BuildingType.ELECTRICITY) kw += b.getQuantity(t.getId()) * t.getProduction1();
+        wiresFor(g, kw);
+    }
+
     static Game city(String label, int substations) {
         Game g = new Game(GameFiles.scratch("substation-" + label));
         quietly(() -> {

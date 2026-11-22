@@ -291,3 +291,131 @@ The final pre-request fetch still has main at 7e484c4da/0.9.189, shipped format6
 The branch keeps one shared format60 pair plus the distinct real format61 pair,
 and floor62. The orchestrator's separate dry-run slot is requested next; no dry
 run has started. Re-fetch main on that reply before starting the ALL gate.
+
+### Stopped first dry run and the harness mends
+
+The orchestrator granted the box slot in mail 20261122-131650-449-orchestrator-53fd.
+The pre-launch fetch still had main at 7e484c4da. The launcher waited for HC1's
+ensemble, then ran ALL 243 harnesses on the box, from branch
+a26a8ec58bfe2ca8c77922040a0ee1f334f83ebd against main
+7e484c4da555ac6492a6e55d6101e1a5976de65f. Compilation passed; the gate stopped
+with exit1 and 53 unnamed lines. Kept run:
+/home/jerus/cbs/runs/cbs-gate-PW5-qJ4M44lT; its sealed ship.log, unnamed.txt and
+checks are copied to C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW5-qJ4M44lT.
+Launcher: target/PW5-dry.txt. This is failed evidence, never a passing gate-run
+reference. Nothing in the kept run is changed. SubstationCheck, PowerPriceCheck
+and SaveFileCheck passed in it, but that did not make the other new reds acceptable.
+
+Mend the fixtures that must now provide physical wires for the generation or
+price they isolate. SubstationCheck's shared fixture helper adds standing
+districts from a literal 100,000 kW carry; its generation variant covers the
+standing nameplate and the founding supply. It never forces a ratio, a tariff,
+a dispatch result, or a money-audit answer. The existing carry-edge and tariff
+oracles remain unchanged.
+
+- BuildAdviceCheck reads GRID independently from the catalogue's capacity and
+  the literal carry, the season and peak draw. Its new row previously fell through
+  to NaN. The existing advice comparison is retained.
+- EssentialWorksCheck gives its isolated orders wires for their forecast. Their
+  real repairs initially exhausted the old town's narrow site output: add actual
+  Construction Depots until the fixture retains its previous site output, and
+  assert both premises. Its original cash, priority, forecast and exact-card
+  assertions now all pass. No builder rule is bypassed.
+- ElectrolyserCheck gives the generation comparison wires for the unfitted peak;
+  the original exact served/asked assertions pass, with a new carry precondition.
+- EquipmentCheck gives its steam-price fixture wires, then plays dispatch and
+  settlement (two months): one month still read the starter grid's previous
+  zero-cost bill. The positive-price and every fitting/break-even assertion stay.
+- HistoricalLicenceCheck and LicenceFeesCheck provide wires before their normal
+  setup months. That also repairs PublicLicenceCheck's new zero-gross turbine
+  line. Their money and saved-dispatch comparisons stay exact.
+- CopperRefiningCheck's forty-year price-chain town gets wires for its standing
+  generation. With them its original annual production and positive-result
+  assertions pass again: all 39 post-founding results are positive, least D$99.
+- IndustryViewCheck's first wire-only recheck still failed its three lines.
+  Funding and holding its operators changed none of them; remove that trial.
+  Diagnostics show Coal Mining bids zero diesel, yet the pooled-capacity reading
+  is 20,506.5168 litres plus 34.6410 fleet litres, all it actually buys. Its
+  unprofitable mines correctly fail THE ORDER, make no product roof, and sell no
+  local coking coal. The fixture must cause a working chain for these cases.
+  ★ Use the literals, as the adjacent copper fixture already does, then raise
+  thermal coal, coking coal, coke, pig iron, steel and lime's world quotes together by
+  100 in this fixture, retaining their relative goods prices while
+  covering fixed costs at the new tariff. Keep every feed, captive-flow, roof,
+  money and save assertion. New failure diagnostics report the bid and the
+  unroofed industry instead of merely the aggregate mismatch. Setting quotes
+  on the world-market path alone has no effect: its cached quotes replace them.
+  Lime is included because its kiln also burns the repriced thermal coal: leaving
+  its sale price behind caused its own loss hold and stock write-off, outside
+  the working-chain premise. No inventory or ribbon equality is relaxed.
+
+The four moved-city pins below belong to queued HT1-H, assigned by the
+orchestrator's mail 20261122-135841-230-orchestrator-a442 and main db9b1fd99.
+Merge that main change (QUEUE.md only); the shipped format remains61, PW5's
+format/floor62, and the model is unchanged. FS7 and FS9 have shipped and are
+not used as queued fixes. No own QUEUE.md edit and no new pin bundle is made.
+
+A detached current-main worktree at db9b1fd99 independently passes
+IndustryViewCheck, RailCheck, RailDepotCheck, HomeRailCheck and OrderDoorCheck.
+Logs: target/PW5-main-pin-results/. RailCheck's name also matched three other
+rail harnesses; its call ran four and passed all four. Subsequent calls explicitly
+set cbs.parallel=1; this builder starts no other workload alongside a harness. The
+temporary main worktree was removed after its checks and log copies completed.
+
+| Pin and month | Current main versus PW5's sealed first dry run | Why it is a premise, not a broken law |
+| --- | --- | --- |
+| RailCheck, m37 | 48,543 t / 218k lorry bill becomes 15,327 t / 78k. | The played steel town no longer fills the fixture's minimum railway threshold. |
+| RailCheck, m67 | Main bills 252k against 244k allowed, target83.9%; PW5 bills86k against253k, target clipped at100%. | The supposed sized railway is overbuilt for the moved trade. Its boundary discount no longer covers the additional home leg. |
+| RailCheck's three-way line, m67 | Main:291k=252k+0+39k kept; PW5:86k=86k+0+0 at printed precision. | Freight.java's pre-existing getPaidAbroad/getKept TODO says FR6's home bill is outside the cross-border truck bill; the comparison needs enough boundary discount to cover it. At the ceiling it clips kept to zero. All actual shipper-cost, railway revenue, fuel/import and input-sum comparisons still pass; the model's money flow was not changed here. |
+| RailDepotCheck, m18 then m21 | Main offers122,791 t bulk, lays1 spur and deals50,000 t; PW5 offers61,825 t, so floor(bulk/50,000)-1 is0, then offers48,341 t with no sidings. | The played town no longer offers two spurs' bulk. It orders zero spurs; it does not lose access to a laid one. |
+| HomeRailCheck tight town, m23 | Main boundary199,167/199,167 t, home37,811 t, share0; PW5 boundary130,442/199,167 t, home23,054 t, share1. | The boundary no longer fills the railway. All the home offer fits legitimately. |
+| HomeRailCheck fractional town, m78 after its60-month guard | Main finds share0.9790:35,377 t room for36,137 t home; PW5 ends with53,687 t room for25,373 t home, share1. | The old search never finds the strict interior share, including the later landed-ore fixture gate. Randomized dealing bounds and the actual leg/bill identities still pass. |
+| OrderDoorCheck seed12, m200 | Main planner683.3898, door689.4086, lender passes one and two; PW5 planner545.3506, door551.0154, both lender-pass flags false. | All other printed conditions hold: ground, listing/regime, no raise, quote support, no foreign assets, open credit, door above planner, bank capital, shopkeeper ready. It stops at this fixture gate before attempting an order. |
+
+The four pin counterfactuals use identical harness sources and seed: only PW5's model
+changes between these runs. The wires' physical constraint, new construction
+and posted costs change the towns' trade, population, output and financial path;
+the rail dealing, mortgage test and order-door implementations are unchanged.
+This is why the old played figures move. HT1-H will cause those conditions
+directly. The ship file names only the nine failed assertions, not broad harness
+waivers. The fresh reviewer is to check this classification as well as the mends.
+
+All mends above are in harnesses. No production money, save, building or dispatch
+line changes after the final 80-run ensemble; its exact model and M1/F1 PASS
+remain the final-model evidence. A new ALL dry run is still owed after review
+SHIP and a new box-slot grant.
+
+The final IndustryViewCheck is green: all nine feed equalities, 3,641 tonnes of
+coke made with 614 captive and coking coal bought locally, and nine roofs on nine
+pictures. All original inventory, mass, input, layout, read-purity and save
+assertions remain. Its controlled prices change this fixture alone.
+
+Final mends verification (one named call at a time, no laptop full pick):
+
+| Check | Final result |
+| --- | --- |
+| EssentialWorksCheck | 0; every original assertion and the new wires/repair-output premises pass |
+| BuildAdviceCheck | 3; only main's existing streets-card red (FS12), GRID is green |
+| ElectrolyserCheck | 0; all 72 assertions |
+| EquipmentCheck | 0; positive tariff and all fitting/continuation comparisons |
+| HistoricalLicenceCheck | 0 |
+| LicenceFeesCheck | 0; both new Mining-price lines green and every money comparison kept |
+| PublicLicenceCheck | 3; only the four existing desalination lines (PW1-W) |
+| IndustryViewCheck | 0 |
+| SubstationCheck | 0; independent worked tariff, reform, carry, order, saved dispatch, real 60/61 refusals |
+| CopperRefiningCheck | 3; only the existing FS8 played-cut line; its seed 1 child finishes 2400 months with zero findings (10.0 min on this laptop) |
+| RailCheck selection, including HomeRailCheck | 3; only the six HT1-H rail/home assertions; other matched rail harnesses pass, run serially with cbs.parallel=1 |
+| RailDepotCheck | 3; only the two HT1-H premises |
+| OrderDoorCheck | 3; only the HT1-H edge premise |
+| final --fast | 0; zero firm Stale findings, 196 soft |
+
+Logs: target/PW5-dry-mends-EssentialWorksCheck.txt,
+target/PW5-dry-mends-results/ and target/PW5-dry-mends-final/.
+The last directory retains the final pin suite logs and final fast result.
+The shared known-reds parser exits 0 with the nine specific ship rows; no broad
+harness exit is waived. The first ALL gate's BuildingDataCheck, PowerPriceCheck (77)
+and SaveFileCheck passes remain for the identical production model. A source
+comparison to ensemble 069504753 finds changes only in *Check.java, plus the
+documentation/ownership records. Main's latest pre-mends fetch is still db9b1fd99.
+The provisional marker stays: send mends for the requested fresh review, then
+ask for the next dry-run slot on its SHIP. No own check or gate process remains.

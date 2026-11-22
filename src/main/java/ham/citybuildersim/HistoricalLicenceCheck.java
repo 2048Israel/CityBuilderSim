@@ -23,6 +23,8 @@ public final class HistoricalLicenceCheck {
     }
     static Game town(String label, boolean historical) {
         Game g = RecipeCheck.town(label, historical);
+        SubstationCheck.generationWires(g); // PW5: public power gains need the wires' real, positive tariff.
+        MaterialsCheck.handWorkers(g);
         HistoricalRecipeCheck.silent(() -> g.simulateMonths(3));
         return g;
     }
@@ -31,6 +33,7 @@ public final class HistoricalLicenceCheck {
         HistoricalRecipeCheck.silent(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
             RecipeCheck.stand(g, t, count, new int[1]);
+            SubstationCheck.generationWires(g);
             MaterialsCheck.handWorkers(g);
         });
         HistoricalRecipeCheck.fitted(t, g.getBuildingManager().getStack(t));

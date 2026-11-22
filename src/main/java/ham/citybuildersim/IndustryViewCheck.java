@@ -178,6 +178,7 @@ public class IndustryViewCheck {
         LandManager land = g.getLandManager();
         BuildingManager b = g.getBuildingManager();
         quietly(() -> {
+            g.playOnLiterals(); // Keep this flow fixture's controlled quotes, as the copper town does.
             land.restoreSites(Resource.IRON, land.getSites(Resource.IRON) + 1,
                     land.getOwnedAmount(Resource.IRON) + Resource.IRON.amountPerSite());
             land.restoreSites(Resource.STONE, land.getSites(Resource.STONE) + 2,
@@ -187,6 +188,11 @@ public class IndustryViewCheck {
                     HeavyIndustry.MINI_BLAST_FURNACE, HeavyIndustry.SCRAP_YARD, HeavyIndustry.ARC_FURNACE, CementConcrete.LIME_KILN }) {
                 b.addStack(b.getTemplate(id), 1, true);
             }
+            // PW5: cause a working coal/coke chain at the new tariff. THE ORDER correctly skips losing mines;
+            // a skipped mine bids no diesel and makes no product, so it cannot exercise the feeds/chain/roof cases.
+            // Raise the chain's goods together, retaining their relative goods margins while covering its fixed costs.
+            for (Good good : new Good[] { Good.THERMAL_COAL, Good.COKING_COAL, Good.MET_COKE, Good.PIG_IRON, Good.STEEL, Good.LIME })
+                g.getMarkets().get(good).setWorldPrices(100 * good.worldImportPrice(), 100 * good.worldExportPrice());
         });
         return play("the works town", g, () -> g.getOldMetal().arise(OldMetal.Source.DEMOLITIONS, Sectors.REAL_ESTATE, OLD_STEEL));
     }
@@ -231,6 +237,7 @@ public class IndustryViewCheck {
 
     /** Hands a town its workers, plays SETTLE_MONTHS, notes every industry's stock, and plays the month it is read on - `each` before every month. */
     static Town play(String name, Game g, Runnable each) {
+        SubstationCheck.generationWires(g); // PW5: these views isolate the works' flows, with physical wires for their generation.
         MaterialsCheck.handWorkers(g);
         for (int m = 0; m < SETTLE_MONTHS; m++) {
             if (each != null) each.run();
@@ -418,8 +425,8 @@ public class IndustryViewCheck {
                     feeds++;
                     if (!near(f.received(), wanted)) {
                         unfed++;
-                        short_.append(String.format(" %s %s: received %.4f, needed %.4f;", v.sector().label(), f.good(),
-                                f.received(), wanted));
+                        short_.append(String.format(" %s %s: received %.4f, needed %.4f (works %.4f, lorries %.4f, bid %.4f);", v.sector().label(), f.good(),
+                                f.received(), wanted, f.needed(), f.lorries(), v.sector().inputRow(f.good()).bid));
                     }
                 }
             }
@@ -975,6 +982,7 @@ public class IndustryViewCheck {
         int pictures = 0, ribbons = 0, nodes = 0, labels = 0, roofs = 0, passes = 0, hatched = 0, vessels = 0, ranked = 0;
         List<String> loose = new ArrayList<>(), unscaled = new ArrayList<>(), figures = new ArrayList<>(), off = new ArrayList<>();
         Set<IndustryView.Roof> roofed = EnumSet.noneOf(IndustryView.Roof.class);
+        List<String> unroofed = new ArrayList<>();
         for (Town t : towns) {
             Game g = t.game();
             for (IndustryView.View v : IndustryView.all(g)) {
@@ -1183,7 +1191,7 @@ public class IndustryViewCheck {
                 if (!p.outlines().isEmpty()) {
                     roofs++;
                     roofed.add(v.roof());
-                }
+                } else unroofed.add(t.name() + ": " + v.sector().label());
             }
         }
         report("every ribbon leaves one node's right edge and reaches another's left, inside each", loose.isEmpty() && ribbons > 0,
@@ -1202,7 +1210,8 @@ public class IndustryViewCheck {
                 + " fields as vessels", ranked > 0 && passes > 0 && hatched > 0 && vessels > 0,
                 String.format("%d pictures ranked, %d bands through, %d hatched ribbons, %d vessels", ranked, passes, hatched, vessels));
         report("each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)", roofs == pictures
-                && shapes.size() == IndustryView.Roof.values().length && roofed.contains(IndustryView.Roof.CAMP), roofed.toString());
+                && shapes.size() == IndustryView.Roof.values().length && roofed.contains(IndustryView.Roof.CAMP),
+                roofed + "; " + roofs + " roofs / " + pictures + " pictures; unroofed " + unroofed);
         Game g = towns.get(0).game();
         IndustryView.View none = IndustryView.of(g, g.getSectors().byKey(Sectors.FORESTRY));
         report("fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so",

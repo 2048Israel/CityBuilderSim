@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**243 harness files, 27,845 labelled assertions.** AllChecks runs 243 of them.
+**243 harness files, 27,848 labelled assertions.** AllChecks runs 243 of them.
 
 ## Which harnesses read which class
 
@@ -39,7 +39,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PowerDispatchCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck, WorldMarketCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, UndemandedFeedCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HousingInventoryCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
+| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HousingInventoryCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SubstationCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, MedicineCheck, ModernEngineeringCheck, NewUnitCheck, OutsideCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
@@ -64,7 +64,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChipRender](map/ChipRender.md) | **none** |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, MedicineCheck, MonetaryCheck, OilViewCheck, PolicyOpenCheck, PowerViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SubstationCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, BuildAdviceCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, MedicineCheck, MonetaryCheck, OilViewCheck, PolicyOpenCheck, PowerViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SubstationCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
@@ -342,7 +342,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StrategicReserve](map/StrategicReserve.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, SaveFileCheck |
 | [StreetCurves](map/StreetCurves.md) | MapCheck, PlanCheck |
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
-| [Substations](map/Substations.md) | BuildingDataCheck, PowerPriceCheck, SubstationCheck |
+| [Substations](map/Substations.md) | BuildAdviceCheck, BuildingDataCheck, ElectrolyserCheck, PowerPriceCheck, SubstationCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CapitalGainsCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandlordPortCheck, LongPlaytest, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
@@ -2547,115 +2547,115 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L493 fixture: at least one suggestion counted what is on site
   - L497 fixture: more than one suggestion to add up
   - L498 the suggestions' quotes, added, are each one's Game.quoteBuild() in their order
-  - L570 fixture: more than one suggestion (
-  - L575 with the cash for the first and half the second, every card is the same building and count as with plenty
-  - L577 fixture: so the first is not on credit and the second is
-  - L587 ...a card is on credit exactly when its quote is more than the cash the ones before left
-  - L588 ...and what is on credit is its quote less that cash, to the bit
-  - L595 with no cash, every card is on credit for its whole quote, its count unchanged
-- **L736 4. before and after: the order built in a twin, the figure the model reads**
-  - L740 fixture: the twin stands where the city does for
-- **L750 4b. every measure: an order of its first building, the twin's figure**
-  - L771 Healthcare, burial plots: 3 Memorial Cemetery - the months of plots left are the model's
-- **L783 5. the staffing weighting: short of a job, the building with fewer of those posts**
-  - L810 fixture: the two have the same posts in all
-  - L811 fixture: and the same price
-  - L832 the one with fewer of the short posts serves more at today's staffing
-  - L834 general care is suggested
-  - L845 ...and its whole plan costs no more than any alternative, including either staffing mix
-- **L875 6. nothing needed, nothing suggested**
-  - L886 fixture: NEEDS YOU lists no need a city-built building answers
-  - L887 ...and the advice suggests nothing
-  - L958 fixture: cards at nothing, as the listing stands and at ten times
-  - L959 every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit
-  - L960 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
-  - L1024 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
-  - L1028 the streets' card has the least complete maintained-service plan at every price of ground
-  - L1120 fixture: the slack and projection add buildings to a listed or fallback card in the same city
-  - L1150 fixture: with no university and its fees paid, more would come than a first one wants
-  - L1151 fixture: ...and its graduates' posts would not fill one
-  - L1153 no UNIVERSITY row
-  - L1154 ...and no university card
-  - L1166 fixture: the offices' posts bring the hires to a first university's
-  - L1168 ...and the UNIVERSITY row is there
-  - L1170 fixture: the rows above held a school with seats and one with none
-  - L1184 fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university
-  - L1187 no university row there
-  - L1188 ...and no university card
-- **L1213 9b. the 1900 city: no university advice ahead of its class**
-  - L1220 fixture: the historical founding has no first university class
-  - L1227 fixture: degree jobs alone would fill a first university, isolating the missing class
-  - L1230 the 1900 pipeline offers no university row before its class
-  - L1231 the 1900 pipeline offers no university card before its class
-- **L1296 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
-  - L1310 fixture: the rising history is a trend the businesses read
-  - L1348 the run is the cards' orders in their order, two of one building added together
-  - L1352 fixture: the short city has the ground for every card
-  - L1353 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
-  - L1366 fixture: the run placed in turn in a twin
-  - L1367 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
-  - L1379 fixture: with the ground for the first card alone, a card after it is short of land
-  - L1380 fixture: ...and no two cards are one building, so the run's orders are the cards
-  - L1381 ...and the run stops at the first short card, for land
-- **L1399 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
-  - L1422 fixture: the fee turned away half of those the beds could take
-  - L1427 fixture: NEEDS YOU has its row
-  - L1429 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
-  - L1430 ...and reads them served over its people
-  - L1432 ...lower than the beds alone read
-  - L1434 ...the share the month itself applies with the beds short: their cover times the share who could pay
-  - L1436 BUILD'S RING READS THE SAME
-  - L1441 AN ORDER'S AFTER: its staffed places added, the month's priced out held
-  - L1447 NOBODY PRICED OUT, THE BEDS, AS BEFORE
-- **L1463 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
-  - L1476 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
-  - L1479 fixture: no berth stands or is on site, and the dues dial is at its default
-  - L1485 fixture: the city owns no sea
-  - L1486 fixture: the uncovered dry bulk is the tonnes told
-  - L1488 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
-  - L1493 fixture: the city buys an offer that runs out to the sea
-  - L1499 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
-  - L1501 ...its card reads the uncovered tonnes now
-  - L1502 ...and the tonnes left with the berth standing
-  - L1503 ...at the price the Build button charges
-  - L1506 JUST UNDER IT: no berth is advised
-  - L1509 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
-  - L1513 ...a hair under it, the Bulk Berth again
-  - L1515 ...with the Bulk Terminal passed over, the Bulk Berth
-  - L1521 fixture: half the threshold is no berth's worth at the default dial
-  - L1524 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
-  - L1526 ...a hair under half, none
-  - L1529 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
-  - L1532 ...and back at the default the same tonnes advise the Bulk Terminal
-  - L1537 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
-  - L1539 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
-  - L1541 ...at the price the Build button charges for the three
-  - L1542 ...the tonnes left with the three standing, none
-  - L1543 ...the order closes the measure and its ground is the three terminals'
-  - L1551 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
-  - L1555 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
-  - L1558 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
-  - L1562 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
-- **L1567 14. power is planned for the calm peak (PW1): a wind farm adds its firm kW, the figure is the peak's draw over the firm supply**
-  - L1577 fixture: the Wind Farm is wind and the Coal Power Plant is not; both can be staffed; six of the one and a plant of the other stand
-  - L1584 (a) a Wind Farm's power unit per kW of its average is WIND_FIRM of a Coal Power Plant's, staffing aside
-  - L1586 ...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed
-  - L1588 ...a Coal Power Plant's built() is its whole average
-  - L1596 (b) power's figure is the draw x PLAN_PEAK over the firm supply (the base less the wind's non-firm part, at the utilities' fill)
-  - L1598 ...which is more than the average's draw over its production, the wind standing counted at its average
-  - L1601 ...and supplyDemand() is the firm supply against the peak's draw
-  - L1602 ...the draw the peak's, losses in
-  - L1613 fixture: the homes added leave power short of at least five Wind Farms' average
-- **L1641 15. the NEEDS YOU power row is read on the calm peak (PW1): wind farms that cover the average and not the peak are listed and advised**
-  - L1673 fixture: wind farms stand (
-  - L1675 fixture: ...and the CALM PEAK does not: the advice's power figure
-  - L1682 (a) NEEDS YOU lists the POWER row, though the average is clear
-  - L1683 ...on the firm supply against the peak's draw (supplyDemand()), not production against consumption
-  - L1685 ...read as served at the calm peak: \"
-  - L1690 (b) the advice offers a power card:
-  - L1701 fixture: the Coal Power Plants (
-  - L1705 (c) with the figure clear the POWER row is not listed
-  - L1707 ...and the advice offers no power card
+  - L572 fixture: more than one suggestion (
+  - L577 with the cash for the first and half the second, every card is the same building and count as with plenty
+  - L579 fixture: so the first is not on credit and the second is
+  - L589 ...a card is on credit exactly when its quote is more than the cash the ones before left
+  - L590 ...and what is on credit is its quote less that cash, to the bit
+  - L597 with no cash, every card is on credit for its whole quote, its count unchanged
+- **L744 4. before and after: the order built in a twin, the figure the model reads**
+  - L748 fixture: the twin stands where the city does for
+- **L758 4b. every measure: an order of its first building, the twin's figure**
+  - L779 Healthcare, burial plots: 3 Memorial Cemetery - the months of plots left are the model's
+- **L791 5. the staffing weighting: short of a job, the building with fewer of those posts**
+  - L818 fixture: the two have the same posts in all
+  - L819 fixture: and the same price
+  - L840 the one with fewer of the short posts serves more at today's staffing
+  - L842 general care is suggested
+  - L853 ...and its whole plan costs no more than any alternative, including either staffing mix
+- **L883 6. nothing needed, nothing suggested**
+  - L894 fixture: NEEDS YOU lists no need a city-built building answers
+  - L895 ...and the advice suggests nothing
+  - L966 fixture: cards at nothing, as the listing stands and at ten times
+  - L967 every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit
+  - L968 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
+  - L1032 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
+  - L1036 the streets' card has the least complete maintained-service plan at every price of ground
+  - L1128 fixture: the slack and projection add buildings to a listed or fallback card in the same city
+  - L1158 fixture: with no university and its fees paid, more would come than a first one wants
+  - L1159 fixture: ...and its graduates' posts would not fill one
+  - L1161 no UNIVERSITY row
+  - L1162 ...and no university card
+  - L1174 fixture: the offices' posts bring the hires to a first university's
+  - L1176 ...and the UNIVERSITY row is there
+  - L1178 fixture: the rows above held a school with seats and one with none
+  - L1192 fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university
+  - L1195 no university row there
+  - L1196 ...and no university card
+- **L1221 9b. the 1900 city: no university advice ahead of its class**
+  - L1228 fixture: the historical founding has no first university class
+  - L1235 fixture: degree jobs alone would fill a first university, isolating the missing class
+  - L1238 the 1900 pipeline offers no university row before its class
+  - L1239 the 1900 pipeline offers no university card before its class
+- **L1304 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
+  - L1318 fixture: the rising history is a trend the businesses read
+  - L1356 the run is the cards' orders in their order, two of one building added together
+  - L1360 fixture: the short city has the ground for every card
+  - L1361 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
+  - L1374 fixture: the run placed in turn in a twin
+  - L1375 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
+  - L1387 fixture: with the ground for the first card alone, a card after it is short of land
+  - L1388 fixture: ...and no two cards are one building, so the run's orders are the cards
+  - L1389 ...and the run stops at the first short card, for land
+- **L1407 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
+  - L1430 fixture: the fee turned away half of those the beds could take
+  - L1435 fixture: NEEDS YOU has its row
+  - L1437 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
+  - L1438 ...and reads them served over its people
+  - L1440 ...lower than the beds alone read
+  - L1442 ...the share the month itself applies with the beds short: their cover times the share who could pay
+  - L1444 BUILD'S RING READS THE SAME
+  - L1449 AN ORDER'S AFTER: its staffed places added, the month's priced out held
+  - L1455 NOBODY PRICED OUT, THE BEDS, AS BEFORE
+- **L1471 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
+  - L1484 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
+  - L1487 fixture: no berth stands or is on site, and the dues dial is at its default
+  - L1493 fixture: the city owns no sea
+  - L1494 fixture: the uncovered dry bulk is the tonnes told
+  - L1496 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
+  - L1501 fixture: the city buys an offer that runs out to the sea
+  - L1507 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
+  - L1509 ...its card reads the uncovered tonnes now
+  - L1510 ...and the tonnes left with the berth standing
+  - L1511 ...at the price the Build button charges
+  - L1514 JUST UNDER IT: no berth is advised
+  - L1517 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
+  - L1521 ...a hair under it, the Bulk Berth again
+  - L1523 ...with the Bulk Terminal passed over, the Bulk Berth
+  - L1529 fixture: half the threshold is no berth's worth at the default dial
+  - L1532 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
+  - L1534 ...a hair under half, none
+  - L1537 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
+  - L1540 ...and back at the default the same tonnes advise the Bulk Terminal
+  - L1545 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
+  - L1547 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
+  - L1549 ...at the price the Build button charges for the three
+  - L1550 ...the tonnes left with the three standing, none
+  - L1551 ...the order closes the measure and its ground is the three terminals'
+  - L1559 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
+  - L1563 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
+  - L1566 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
+  - L1570 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
+- **L1575 14. power is planned for the calm peak (PW1): a wind farm adds its firm kW, the figure is the peak's draw over the firm supply**
+  - L1585 fixture: the Wind Farm is wind and the Coal Power Plant is not; both can be staffed; six of the one and a plant of the other stand
+  - L1592 (a) a Wind Farm's power unit per kW of its average is WIND_FIRM of a Coal Power Plant's, staffing aside
+  - L1594 ...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed
+  - L1596 ...a Coal Power Plant's built() is its whole average
+  - L1604 (b) power's figure is the draw x PLAN_PEAK over the firm supply (the base less the wind's non-firm part, at the utilities' fill)
+  - L1606 ...which is more than the average's draw over its production, the wind standing counted at its average
+  - L1609 ...and supplyDemand() is the firm supply against the peak's draw
+  - L1610 ...the draw the peak's, losses in
+  - L1621 fixture: the homes added leave power short of at least five Wind Farms' average
+- **L1649 15. the NEEDS YOU power row is read on the calm peak (PW1): wind farms that cover the average and not the peak are listed and advised**
+  - L1681 fixture: wind farms stand (
+  - L1683 fixture: ...and the CALM PEAK does not: the advice's power figure
+  - L1690 (a) NEEDS YOU lists the POWER row, though the average is clear
+  - L1691 ...on the firm supply against the peak's draw (supplyDemand()), not production against consumption
+  - L1693 ...read as served at the calm peak: \"
+  - L1698 (b) the advice offers a power card:
+  - L1709 fixture: the Coal Power Plants (
+  - L1713 (c) with the figure clear the POWER row is not listed
+  - L1715 ...and the advice offers no power card
 
 ## BuildCardCheck.java - 213 labelled assertions
 
@@ -6218,19 +6218,19 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1176 ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under
   - L1193 ...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is
 - **L1245 10. a mine and a smelter on the world market: the chain the literals mean to pay pays, and the copper charge's cycle is seen**
-  - L1276 fixture: a town not on the literals with a Large Copper Mine, a smelter and a refinery standing, and sulphide ground for the mine's whole run
-  - L1327 the city has a world market in every month played
-  - L1331 the world market solved the founding year and every January after it, WORLD_YEARS (
-  - L1337 ...and in every year played the mine dug concentrate, the smelter made anode and the refinery cathode
-  - L1349 ...the years played hold at least PEAKS_HELD (
-  - L1366 (a) Copper Refining's own result, its revenue less its inputs, is above 0 in every year played after the founding year's ramp
-  - L1368 (a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January
-  - L1373 (b) the smelter's margin over cathode follows the year's treatment part over cathode: the correlation is at least CYCLE_SEEN (
-  - L1375 (b) ...and the margin's range is at least RANGE_KEPT (
-- **L1399 11. seed 1's Rod Mills, played: the playtest's seed 1 for 2,400 months stands no Rod Mill that lives**
-  - L1426 the playtest's seed 1 finishes in
-  - L1447 the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line
-  - L1453 seed 1's 2,400 months stand at most ROD_MILLS_STANDING (
+  - L1277 fixture: a town not on the literals with a Large Copper Mine, a smelter and a refinery standing, and sulphide ground for the mine's whole run
+  - L1328 the city has a world market in every month played
+  - L1332 the world market solved the founding year and every January after it, WORLD_YEARS (
+  - L1338 ...and in every year played the mine dug concentrate, the smelter made anode and the refinery cathode
+  - L1350 ...the years played hold at least PEAKS_HELD (
+  - L1367 (a) Copper Refining's own result, its revenue less its inputs, is above 0 in every year played after the founding year's ramp
+  - L1369 (a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January
+  - L1374 (b) the smelter's margin over cathode follows the year's treatment part over cathode: the correlation is at least CYCLE_SEEN (
+  - L1376 (b) ...and the margin's range is at least RANGE_KEPT (
+- **L1400 11. seed 1's Rod Mills, played: the playtest's seed 1 for 2,400 months stands no Rod Mill that lives**
+  - L1427 the playtest's seed 1 finishes in
+  - L1448 the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line
+  - L1454 seed 1's 2,400 months stand at most ROD_MILLS_STANDING (
 
 ## CreditCheck.java - 271 labelled assertions
 
@@ -9516,7 +9516,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1781 ...and the load path told the schools the nine, not the one
   - L1786 ...and the month by kind came back with the save, not zero
 
-## ElectrolyserCheck.java - 71 labelled assertions
+## ElectrolyserCheck.java - 72 labelled assertions
 
 > Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen
 > Steel Works' piece of equipment, the 46 kWh electrolyser, and what a works that has it draws from the grid.
@@ -9585,31 +9585,32 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L326 the gain between the two tariffs differs by the units saved at the difference of the prices, net of the rent
   - L329 at no price for power the piece saves nothing and is not fitted: NOT_YET
 - **L378 7. the grid is sized on what is drawn: the utility's demand and invoiced draw fall with the works' bill, and the ratio follows**
-  - L385 every works fitted, the city's demand falls by the saving of every one (ServicesManager reads what the sector is billed)
-  - L386 ...and so does the draw the utility invoices
-  - L387 ...the same units the sector's own bill falls by
-  - L388 ...which the services manager holds as the saving it was handed
-  - L390 half of them fitted, half the saving comes off the demand
-  - L392 fixture: the utility has staff, so its supply scales with its fill and can be written to a number
-  - L398 a grid sized between the two demands' peak blocks serves the city whose works have the piece in full: the energy ratio is 1
-  - L399 ...and rations the same city with the piece off its works: the ratio is under 1, the supply under the peak block it has
-  - L407 ...at exactly what the supply serves of the half-blocks' loads (the merit order's served over asked)
-  - L409 the count that comes back takes the saving off the demand again
-  - L411 ...and the count taken off hands the grid none: the demand is the buildings' own, to the bit, and the saving 0
-- **L418 6. a city founded before the window, and one founded today's way, are untouched**
-  - L425 a 1900 city a month before the window opens draws the buildings' figure, to the bit
-  - L426 ...with no works carrying the piece, and the grid handed no saving
-  - L428 ...three months played, the buildings' sum to the bit
-  - L429 ...and none carries the piece
-  - L438 fixture: a 1900 city with
-  - L439 the month before FE10 no count-less works is counted with a piece nobody knows, and the draw is the buildings' own, to the bit
-  - L443 ...and at FE10's month the same stack, lacking nothing by its counts, is counted with it, all of them
-  - L457 fixture: founded today's way, a year past FE10's month,
-  - L460 the works draw the buildings' figure, to the bit: no saving in a city that never knows FE10
-  - L461 ...and none is counted with the piece, every count there reading fitted, and the grid is handed no saving
-  - L467 a count of the piece put on the stack by hand, and taken off, moves nothing: the buildings' figure still
-  - L468 ...no works carries the piece
-  - L470 two months played, the buildings' sum to the bit
+  - L386 fixture: substations carry the unfitted peak, so only generation can ration this comparison
+  - L388 every works fitted, the city's demand falls by the saving of every one (ServicesManager reads what the sector is billed)
+  - L389 ...and so does the draw the utility invoices
+  - L390 ...the same units the sector's own bill falls by
+  - L391 ...which the services manager holds as the saving it was handed
+  - L393 half of them fitted, half the saving comes off the demand
+  - L395 fixture: the utility has staff, so its supply scales with its fill and can be written to a number
+  - L401 a grid sized between the two demands' peak blocks serves the city whose works have the piece in full: the energy ratio is 1
+  - L402 ...and rations the same city with the piece off its works: the ratio is under 1, the supply under the peak block it has
+  - L410 ...at exactly what the supply serves of the half-blocks' loads (the merit order's served over asked)
+  - L412 the count that comes back takes the saving off the demand again
+  - L414 ...and the count taken off hands the grid none: the demand is the buildings' own, to the bit, and the saving 0
+- **L421 6. a city founded before the window, and one founded today's way, are untouched**
+  - L428 a 1900 city a month before the window opens draws the buildings' figure, to the bit
+  - L429 ...with no works carrying the piece, and the grid handed no saving
+  - L431 ...three months played, the buildings' sum to the bit
+  - L432 ...and none carries the piece
+  - L441 fixture: a 1900 city with
+  - L442 the month before FE10 no count-less works is counted with a piece nobody knows, and the draw is the buildings' own, to the bit
+  - L446 ...and at FE10's month the same stack, lacking nothing by its counts, is counted with it, all of them
+  - L460 fixture: founded today's way, a year past FE10's month,
+  - L463 the works draw the buildings' figure, to the bit: no saving in a city that never knows FE10
+  - L464 ...and none is counted with the piece, every count there reading fitted, and the grid is handed no saving
+  - L470 a count of the piece put on the stack by hand, and taken off, moves nothing: the buildings' figure still
+  - L471 ...no works carries the piece
+  - L473 two months played, the buildings' sum to the bit
 
 ## EnsembleCheck.java - 41 labelled assertions
 
@@ -9792,66 +9793,66 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L812 ...a building no utility bills (a House) burns no coal and draws no billed power: it adds nothing at any price
   - L817 the carts' gain is the room's tonnes a month at the teams' price a tonne less the trucks' running price
   - L819 ...less than nothing where the trucks cost more to run than the teams
-- **L857 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that ...**
-  - L865 fixture: a Bakery is unfitted, a month is played, and it is 1900
-  - L869 fixture: the prices are real (coal, power, machinery and a building point all more than nothing)
-  - L871 the verdict is for this building and this piece, with the piece's life, and is priced (PAYS or NOT_YET)
-  - L874 its gain is steamGain() at the city's coal price and the grid's price a unit, to the bit
-  - L877 ...which is the coal its engine would burn at nameplate at the coal price less the power it would draw instead
-  - L885 its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, grossed up at the builders' sales tax, to the bit
-  - L887 ...and the same written out here
-  - L888 fixture: the fitting buys machinery and has work, so both halves of the cost are in it
-  - L895 fixture: the gate tests the whole cost, whatever the sector holds
-  - L896 the rate is the real rate of what a loan of the whole cost is written at for the sector, to the bit
-  - L898 the factor is the annuity of the life at that rate
-  - L899 the hurdle is the investment's on the whole cost at that loan rate, and PROFIT_OVER_INTEREST times a month's interest at the real rate
-  - L902 ...and the same hurdle SpreadPlanner strikes for an order of that cost by that sector
-  - L905 the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)
-  - L907 ...and judge() on them says the same verdict
-  - L919 steamCoalTonnes() added over Industry's stacks is the coal Industry's own steam form buys at a share of 1
-  - L920 fixture: that share was put back, and the form buys some coal
-  - L924 fixture: the break-even price of coal is a price
-  - L927 in the pure core a coal price a thousandth above the break-even pays
-  - L928 ...and one a thousandth below does not
-  - L929 ...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle
-  - L937 fixture: the city's price of coal moves to a hundredth above and then below the break-even
-  - L939 in the city, coal a hundredth above the break-even pays, and the gain is that price's
-  - L942 ...and a hundredth below it does not, and its cost, rate and hurdle are the same as before (they do not read the coal)
-- **L964 10. the truck's, the tractor's and the rank: the carts' gain from the teams less the trucks, NOT_KNOWN for a tractor, FITTED for none unf...**
-  - L971 fixture: two depots stand, one lacks its trucks, a month is played
-  - L973 the depot's verdict is priced (PAYS or NOT_YET) with finite figures
-  - L981 a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries
-  - L982 ...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries
-  - L987 ...and with the horse form off, Haulage's whole estimate() is that plus the trucks' wear and return on their price over the tonnes a truck carries
-  - L991 fixture: the teams cost more a tonne than the trucks to run, so the gain is above nothing
-  - L993 the depot's gain is the truck room's tonnes a month at the teams' price less the trucks', to the bit
-  - L995 ...which is the room x the tonnes a truck carries x (teams - trucks) written out
-  - L997 the motor truck buys the depot's truck room in TRUCKS and has no work
-  - L1000 the depot's cost is its trucks at the city's price of TRUCKS grossed up at the builders' sales tax (OP1), to the bit, and nothing for work
-  - L1002 its life is the truck's and its rate is struck for Freight on the whole cost
-  - L1006 ...and the kind follows the four steps
-  - L1012 an unfitted Grain Farm's tractor is NOT_KNOWN in 1900: it is not known before PE14's June 1917, and nothing is priced
-  - L1016 a stack with none unfitted is FITTED, for a tractor and for a drive
-  - L1030 fixture: two drives are unfitted in Industry, and the two stacks need different coal prices to pay
-  - L1036 fixture: the city's price of coal moves
-  - L1037 coal under both break-evens: both drives are NOT_YET and the rank is empty
-  - L1041 coal between them: only the drive that pays is ranked, the other (NOT_YET) is left out
-  - L1047 coal over both: both are ranked, the same pieces as the verdicts that pay
-  - L1048 ...best earnings on cost first, as sorted here from the verdicts alone
-  - L1050 ...each entry is a PAYS verdict whose gain x factor covers its cost and whose gain clears its hurdle
-  - L1052 a sector with nothing unfitted ranks none, and so does one whose only unfitted piece is NOT_KNOWN (Agriculture's tractor)
-  - L1056 the depot's truck is ranked when it pays and not when it does not, alone in the cart town's Freight
-  - L1058 ...and nothing else in the cart town is ranked
-  - L1060 with the depots' count at 0 the piece is FITTED and Freight ranks none
-  - L1074 the ranking is best earnings on cost first, equal earnings by template id and then piece id, whatever order they come in (all 120 orders)
-  - L1077 ...and an unbounded earning (a free piece) is first
-- **L1155 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit**
-  - L1162 fixture: the twins start equal, with the same counts and nothing asked
-  - L1172 six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal
-  - L1174 ...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both after the first
-  - L1181 fixture: the cart twins start equal with a depot unfitted
-  - L1183 ...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included
-  - L1184 ...with the carts' horse share up in both
+- **L859 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that ...**
+  - L867 fixture: a Bakery is unfitted, a month is played, and it is 1900
+  - L871 fixture: the prices are real (coal, power, machinery and a building point all more than nothing)
+  - L873 the verdict is for this building and this piece, with the piece's life, and is priced (PAYS or NOT_YET)
+  - L876 its gain is steamGain() at the city's coal price and the grid's price a unit, to the bit
+  - L879 ...which is the coal its engine would burn at nameplate at the coal price less the power it would draw instead
+  - L887 its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, grossed up at the builders' sales tax, to the bit
+  - L889 ...and the same written out here
+  - L890 fixture: the fitting buys machinery and has work, so both halves of the cost are in it
+  - L897 fixture: the gate tests the whole cost, whatever the sector holds
+  - L898 the rate is the real rate of what a loan of the whole cost is written at for the sector, to the bit
+  - L900 the factor is the annuity of the life at that rate
+  - L901 the hurdle is the investment's on the whole cost at that loan rate, and PROFIT_OVER_INTEREST times a month's interest at the real rate
+  - L904 ...and the same hurdle SpreadPlanner strikes for an order of that cost by that sector
+  - L907 the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)
+  - L909 ...and judge() on them says the same verdict
+  - L921 steamCoalTonnes() added over Industry's stacks is the coal Industry's own steam form buys at a share of 1
+  - L922 fixture: that share was put back, and the form buys some coal
+  - L926 fixture: the break-even price of coal is a price
+  - L929 in the pure core a coal price a thousandth above the break-even pays
+  - L930 ...and one a thousandth below does not
+  - L931 ...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle
+  - L939 fixture: the city's price of coal moves to a hundredth above and then below the break-even
+  - L941 in the city, coal a hundredth above the break-even pays, and the gain is that price's
+  - L944 ...and a hundredth below it does not, and its cost, rate and hurdle are the same as before (they do not read the coal)
+- **L966 10. the truck's, the tractor's and the rank: the carts' gain from the teams less the trucks, NOT_KNOWN for a tractor, FITTED for none unf...**
+  - L973 fixture: two depots stand, one lacks its trucks, a month is played
+  - L975 the depot's verdict is priced (PAYS or NOT_YET) with finite figures
+  - L983 a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries
+  - L984 ...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries
+  - L989 ...and with the horse form off, Haulage's whole estimate() is that plus the trucks' wear and return on their price over the tonnes a truck carries
+  - L993 fixture: the teams cost more a tonne than the trucks to run, so the gain is above nothing
+  - L995 the depot's gain is the truck room's tonnes a month at the teams' price less the trucks', to the bit
+  - L997 ...which is the room x the tonnes a truck carries x (teams - trucks) written out
+  - L999 the motor truck buys the depot's truck room in TRUCKS and has no work
+  - L1002 the depot's cost is its trucks at the city's price of TRUCKS grossed up at the builders' sales tax (OP1), to the bit, and nothing for work
+  - L1004 its life is the truck's and its rate is struck for Freight on the whole cost
+  - L1008 ...and the kind follows the four steps
+  - L1014 an unfitted Grain Farm's tractor is NOT_KNOWN in 1900: it is not known before PE14's June 1917, and nothing is priced
+  - L1018 a stack with none unfitted is FITTED, for a tractor and for a drive
+  - L1032 fixture: two drives are unfitted in Industry, and the two stacks need different coal prices to pay
+  - L1038 fixture: the city's price of coal moves
+  - L1039 coal under both break-evens: both drives are NOT_YET and the rank is empty
+  - L1043 coal between them: only the drive that pays is ranked, the other (NOT_YET) is left out
+  - L1049 coal over both: both are ranked, the same pieces as the verdicts that pay
+  - L1050 ...best earnings on cost first, as sorted here from the verdicts alone
+  - L1052 ...each entry is a PAYS verdict whose gain x factor covers its cost and whose gain clears its hurdle
+  - L1054 a sector with nothing unfitted ranks none, and so does one whose only unfitted piece is NOT_KNOWN (Agriculture's tractor)
+  - L1058 the depot's truck is ranked when it pays and not when it does not, alone in the cart town's Freight
+  - L1060 ...and nothing else in the cart town is ranked
+  - L1062 with the depots' count at 0 the piece is FITTED and Freight ranks none
+  - L1076 the ranking is best earnings on cost first, equal earnings by template id and then piece id, whatever order they come in (all 120 orders)
+  - L1079 ...and an unbounded earning (a free piece) is first
+- **L1157 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit**
+  - L1164 fixture: the twins start equal, with the same counts and nothing asked
+  - L1174 six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal
+  - L1176 ...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both after the first
+  - L1183 fixture: the cart twins start equal with a depot unfitted
+  - L1185 ...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included
+  - L1186 ...with the carts' horse share up in both
 
 ## EquityCheck.java - 63 labelled assertions
 
@@ -9942,7 +9943,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L383 ...and every month of it is conserved
   - L392 ...with the register and the households agreeing on every company
 
-## EssentialWorksCheck.java - 89 labelled assertions
+## EssentialWorksCheck.java - 91 labelled assertions
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
@@ -9959,111 +9960,113 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L63 fixture: highways are under-served, cash can buy one and its ground, debt limit forbids borrowing
   - L73 the short highway is ordered despite the street on site
   - L74 its own land is bought where needed, with no new debt
-- **L147 a growing highway is ordered before its construction lead consumes the reserve**
-  - L153 fixture: unrelated essential services already have their operating capacity
-  - L179 fixture: operating streets carry the calibrated highway forecast's traffic
-  - L184 fixture: today's highway and six-month reserve are covered, but demand outgrows them before a new highway opens
-  - L189 the highway card's projection uses the quoted opening of its entire final order
-  - L196 the card and automatic path both order a highway before the six-month reserve is used
-- **L202 schools and police serve people without a payback veto**
-- **L236 prevented losses use the service the economy actually loses**
-  - L246 fixture: the grid is rationing and the city's books contain output to restore
-  - L251 a plant that relieves rationing prevents a positive output loss
-  - L253 a plant beyond all the horizon's demand claims no prevented rationing loss
-  - L254 the card exposes the same component sum, including land, prevented output and payroll
-  - L264 fixture: physical power is sufficient, fifteen-percent reserve is not, and the projection has no growth
-  - L267 a reserve-only plant claims zero physical relief and zero prevented output
-  - L281 fixture: streets already serve their full demand before the power allocation
-- **L286 an unaffordable full power order takes the cash-funded step that can raise service**
-  - L299 fixture has a plant that can raise power service
-  - L310 the affordable step orders one
-- **L316 professional eligibility on both sides of the useful-demand threshold**
-  - L338 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
-  - L343 below thirty percent the professional school is unwarranted and omitted
-  - L350 above thirty percent, with no school, the professional service is warranted and not maintained
-- **L357 a known industrial opening needs its power ahead**
-  - L362 fixture: unrelated essential services already have their operating capacity
-  - L377 fixture: a paid mill opens within the planning horizon while current power has its reserve
-  - L385 the forecast adds the mill's physical electrical draw only once it opens
-  - L390 the power card anticipates the ordered industrial load before it is operating
-  - L395 the automatic path orders power before that industrial completion
-- **L400 a slow hospital cannot hold faster care**
-  - L424 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
-  - L430 the care card offers an earlier useful order while the hospital is pending
-  - L435 the automatic path places that service's interim order
-- **L440 maintained service prices later works and their borrowing**
-  - L459 fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms
-  - L461 the comparison includes the future service additions and their capital
-  - L463 the comparison includes the new debt's issue and coupon costs
-  - L468 cash that covers the complete sequence has no new financing charge
-  - L469 valuation places no order and moves no cash or debt
-- **L474 complete fleets charge their actual traffic wear and shared fares**
-  - L481 fixture: two lines share the same riders and the fare is positive
-  - L486 two lines collect the full network's fares once
-  - L493 the whole two-road order pays wear at its own relieved traffic
-  - L508 fixture: existing gravel roads cost less to repair with the new paved road
-  - L512 the new work includes the changed repair bill of the existing gravel stock
-- **L531 the higher monetary service loss gets the scarce cash first**
-  - L556 fixture: streets lose more output although power has the greater missing share
-  - L560 the monetary loss puts streets before power in the actual remit
-  - L565 the higher-loss street work uses the cash first and power waits for funding
-  - L642 fixture: the school is useful and entirely unserved, and the care plan is cheaper
-  - L645 fixture: current care is on the intended side of full service
-  - L648 fixture: the available cash funds care, with the intended school funding gap
-  - L655 the school remains a hard cash or debt hold and the spare-care order preserves its funds
-  - L659 the same care card labels the automatic funding hold
-  - L667 a real scratch save and load keeps the same funding reason on the care card
-  - L673 switching automatic building off clears the funding hold on both cards
-  - L677 switching it back on before a new pass restores no stale funding hold
-  - L682 the fully unserved school is ordered before the partly served capped-care work
-- **L688 staff-short works pay only the posts filled in the utility books**
-  - L700 fixture: the plant has paid staff and unfilled posts
-  - L702 the card's running bill charges upkeep and filled-post payroll
-  - L712 the plan's running cost and payroll use the same filled-post basis
-- **L718 care prevents only the sickness the model can reduce**
-  - L732 fixture: only founding care remains short of the city, and the order restores full coverage
-  - L739 fixture: sickness is capped before and after the care improvement
-  - L742 care that leaves sickness capped claims zero prevented output
-  - L746 fixture: uncapped care comparison has the same other causes and no outbreak
-  - L758 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
-- **L763 the Build advice and automatic order use the same plan**
-  - L775 overview cards require the NEEDS YOU row their screen reads
-  - L780 fixture: the power card leads the automatic remit and its full order is fundable
-  - L785 the power plan is sized to its whole order's actual opening and planning horizon
-  - L792 the card uses the player's automatic reserve and full-service target
-  - L794 the automatic path orders the card's exact building and count
-  - L796 the automatic path records the exact whole-plan valuation displayed by the card
-- **L802 pending coal does not hide an earlier forecast power loss**
-  - L817 fixture: unrelated essential services already have their operating capacity
-  - L829 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
-  - L834 wind prevents positive physical output loss before the pending coal opens
-  - L843 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
-  - L852 the automatic path orders earlier wind before the forecast shortage becomes physical
-  - L860 the faster wind brings the saved first-completion deadline forward from the coal quote
-- **L865 pending fresh water at its cap cannot be called a closing plan**
-  - L885 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
-  - L892 the fresh-only path offers no zero-help order
-  - L895 the normal water card chooses desalination and its count closes the demand
-- **L901 priority work waits in front of the first pending plant**
-  - L929 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
-  - L932 the first coal quote retains the entire earlier priority delay
-  - L935 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
-- **L940 power delivered for fewer than six months still prevents lost work**
-  - L966 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
-  - L973 the sub-six-month service window has positive relief and avoided output loss
-- **L978 paving is sized to the final order's own opening**
-  - L1009 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
-  - L1013 the paving quote and projection both use the final count's complete opening
-- **L1019 pending capacity keeps its deadline through a real mid-construction save and load**
-  - L1035 fixture: operating power is short, pending wind covers it, and the first completion is quoted within three years
-  - L1042 pending capacity covers the shortage before its quoted deadline
-  - L1048 the unbroken city reaches the mid-construction save month
-  - L1082 the mid-construction scratch save loaded through DataSave with its original pending date
-  - L1092 both scratch timelines advance every compared month
-  - L1095 fixture: later priority work kept operating power short throughout the original deadline
-  - L1096 monthly passes respect the original pending deadline before it expires
-  - L1097 past that deadline the automatic path orders more power despite the pending wind
-  - L1098 the real loaded city and its unbroken twin place the same later automatic orders, one by one
+  - L106 fixture: standing substations carry the isolated order's entire forecast
+  - L108 fixture: the wired town retains its construction output after the substations' repairs
+- **L163 a growing highway is ordered before its construction lead consumes the reserve**
+  - L169 fixture: unrelated essential services already have their operating capacity
+  - L195 fixture: operating streets carry the calibrated highway forecast's traffic
+  - L200 fixture: today's highway and six-month reserve are covered, but demand outgrows them before a new highway opens
+  - L205 the highway card's projection uses the quoted opening of its entire final order
+  - L212 the card and automatic path both order a highway before the six-month reserve is used
+- **L218 schools and police serve people without a payback veto**
+- **L252 prevented losses use the service the economy actually loses**
+  - L262 fixture: the grid is rationing and the city's books contain output to restore
+  - L267 a plant that relieves rationing prevents a positive output loss
+  - L269 a plant beyond all the horizon's demand claims no prevented rationing loss
+  - L270 the card exposes the same component sum, including land, prevented output and payroll
+  - L280 fixture: physical power is sufficient, fifteen-percent reserve is not, and the projection has no growth
+  - L283 a reserve-only plant claims zero physical relief and zero prevented output
+  - L297 fixture: streets already serve their full demand before the power allocation
+- **L302 an unaffordable full power order takes the cash-funded step that can raise service**
+  - L316 fixture has a plant that can raise power service
+  - L327 the affordable step orders one
+- **L333 professional eligibility on both sides of the useful-demand threshold**
+  - L355 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
+  - L360 below thirty percent the professional school is unwarranted and omitted
+  - L367 above thirty percent, with no school, the professional service is warranted and not maintained
+- **L374 a known industrial opening needs its power ahead**
+  - L379 fixture: unrelated essential services already have their operating capacity
+  - L395 fixture: a paid mill opens within the planning horizon while current power has its reserve
+  - L403 the forecast adds the mill's physical electrical draw only once it opens
+  - L408 the power card anticipates the ordered industrial load before it is operating
+  - L413 the automatic path orders power before that industrial completion
+- **L418 a slow hospital cannot hold faster care**
+  - L442 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
+  - L448 the care card offers an earlier useful order while the hospital is pending
+  - L453 the automatic path places that service's interim order
+- **L458 maintained service prices later works and their borrowing**
+  - L477 fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms
+  - L479 the comparison includes the future service additions and their capital
+  - L481 the comparison includes the new debt's issue and coupon costs
+  - L486 cash that covers the complete sequence has no new financing charge
+  - L487 valuation places no order and moves no cash or debt
+- **L492 complete fleets charge their actual traffic wear and shared fares**
+  - L499 fixture: two lines share the same riders and the fare is positive
+  - L504 two lines collect the full network's fares once
+  - L511 the whole two-road order pays wear at its own relieved traffic
+  - L526 fixture: existing gravel roads cost less to repair with the new paved road
+  - L530 the new work includes the changed repair bill of the existing gravel stock
+- **L549 the higher monetary service loss gets the scarce cash first**
+  - L574 fixture: streets lose more output although power has the greater missing share
+  - L578 the monetary loss puts streets before power in the actual remit
+  - L583 the higher-loss street work uses the cash first and power waits for funding
+  - L661 fixture: the school is useful and entirely unserved, and the care plan is cheaper
+  - L664 fixture: current care is on the intended side of full service
+  - L667 fixture: the available cash funds care, with the intended school funding gap
+  - L674 the school remains a hard cash or debt hold and the spare-care order preserves its funds
+  - L678 the same care card labels the automatic funding hold
+  - L686 a real scratch save and load keeps the same funding reason on the care card
+  - L692 switching automatic building off clears the funding hold on both cards
+  - L696 switching it back on before a new pass restores no stale funding hold
+  - L701 the fully unserved school is ordered before the partly served capped-care work
+- **L707 staff-short works pay only the posts filled in the utility books**
+  - L719 fixture: the plant has paid staff and unfilled posts
+  - L721 the card's running bill charges upkeep and filled-post payroll
+  - L731 the plan's running cost and payroll use the same filled-post basis
+- **L737 care prevents only the sickness the model can reduce**
+  - L751 fixture: only founding care remains short of the city, and the order restores full coverage
+  - L758 fixture: sickness is capped before and after the care improvement
+  - L761 care that leaves sickness capped claims zero prevented output
+  - L765 fixture: uncapped care comparison has the same other causes and no outbreak
+  - L777 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
+- **L782 the Build advice and automatic order use the same plan**
+  - L795 overview cards require the NEEDS YOU row their screen reads
+  - L800 fixture: the power card leads the automatic remit and its full order is fundable
+  - L805 the power plan is sized to its whole order's actual opening and planning horizon
+  - L812 the card uses the player's automatic reserve and full-service target
+  - L814 the automatic path orders the card's exact building and count
+  - L816 the automatic path records the exact whole-plan valuation displayed by the card
+- **L822 pending coal does not hide an earlier forecast power loss**
+  - L837 fixture: unrelated essential services already have their operating capacity
+  - L849 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
+  - L854 wind prevents positive physical output loss before the pending coal opens
+  - L864 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
+  - L873 the automatic path orders earlier wind before the forecast shortage becomes physical
+  - L881 the faster wind brings the saved first-completion deadline forward from the coal quote
+- **L886 pending fresh water at its cap cannot be called a closing plan**
+  - L906 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
+  - L913 the fresh-only path offers no zero-help order
+  - L916 the normal water card chooses desalination and its count closes the demand
+- **L922 priority work waits in front of the first pending plant**
+  - L950 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
+  - L953 the first coal quote retains the entire earlier priority delay
+  - L956 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
+- **L961 power delivered for fewer than six months still prevents lost work**
+  - L987 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
+  - L994 the sub-six-month service window has positive relief and avoided output loss
+- **L999 paving is sized to the final order's own opening**
+  - L1030 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
+  - L1034 the paving quote and projection both use the final count's complete opening
+- **L1040 pending capacity keeps its deadline through a real mid-construction save and load**
+  - L1056 fixture: operating power is short, pending wind covers it, and the first completion is quoted within three years
+  - L1063 pending capacity covers the shortage before its quoted deadline
+  - L1069 the unbroken city reaches the mid-construction save month
+  - L1103 the mid-construction scratch save loaded through DataSave with its original pending date
+  - L1113 both scratch timelines advance every compared month
+  - L1116 fixture: later priority work kept operating power short throughout the original deadline
+  - L1117 monthly passes respect the original pending deadline before it expires
+  - L1118 past that deadline the automatic path orders more power despite the pending wind
+  - L1119 the real loaded city and its unbroken twin place the same later automatic orders, one by one
 
 ## ExchangeCheck.java - 266 labelled assertions
 
@@ -14855,63 +14858,63 @@ _(this harness does not label its checks through a helper - it prints its findin
 > production bill stayed zero. Staffed works and rail invoices must pay,
 > preserve their captured bills, and close the same month's money audit.
 
-- **L40 independent cutting equipment: gross and net**
-  - L49 fixture: a standing machine works has a positive independent carbide gain in its patent term
-  - L52 the equipment's gross gain is its own undo, beside its process
-  - L53 the fitting verdict loses exactly the imported patent share
-  - L58 the fitted independent carbide piece pays on real machine-works production
-  - L61 a local carbide find keeps the whole gain
-  - L64 expiry restores the whole equipment gain
-- **L67 independent flotation recipe: real production and settlement**
-  - L80 fixture: a standing flotation mill really produces concentrate during PE7's patent
-  - L83 the independent flotation recipe pays a positive captured service
-  - L84 that payment is in the same month's named audit and current account, which close
-  - L88 history records the same positive paid flow
-  - L90 the same independent recipe contributes a positive new-building licence estimate
-  - L96 a local flotation find stops new accrual and pays no fee after the old bill settles
-  - L101 the same real flotation production is exempt after its patent expires
-  - L144 fixture:
-  - L147 fixture: known catalytic cracking is rejected while thermal cracking still produces
-- **L158 public patent estimates net the city's own licence and carry no firm royalty (R2c-P)**
-  - L166 fixture:
-  - L180 the public fitting estimate nets exactly the bill the capture would strike on the new building's piece for
-  - L184 the public
-- **L190 demolition preserves the invoice's cached engine share (REV-R2d-4)**
-  - L204 the private PE21 fitting still nets exactly the patent share of its own positive estimate
-  - L219 fixture: a real ordered demolition closes the unfitted one of two depots while the invoice retains its half-steam cache
-  - L231 the demolition fixture's real haul draws exactly half diesel at its cached share
-  - L233 its royalty uses that same drawn diesel share, rather than the new all-fitted count
-  - L236 later goods capture retains the demolition invoice's exact standing bill
-- **L241 the last depot closes before its final real invoice**
-  - L252 the fitted service period saves a valid zero steam snapshot
-  - L268 fixture: the last real depot closes, but Freight still invoices its positive prior-month haul
-  - L271 that final real service still owes its exact positive patent bill
-  - L274 goods capture preserves that pending final bill without assigning cost to an absent depot
-- **L280 the final unfitted depot's service stays steam across closure and load (REV-R2d-5)**
-  - L295 fixture: the unfitted depot really serves a period with a captured all-steam mix, load
-  - L312 legacy absence keeps the old modern rail meaning, while JSON restores the captured steam period
-  - L322 fixture: normal month closure removes the unfitted final depot before its positive haul invoice, load
-  - L325 the unfitted final depot's real invoice burns coal and no diesel, load
-  - L327 equipment never fitted creates no PE21 royalty after final demolition, load
-  - L329 that actual steam-service month closes its audit and current account, load
-- **L336 PE21 liability belongs to its production month, not its later invoice**
-  - L355 fixture: a local find after production leaves the imported period's frozen eligibility
-  - L360 actual disk load keeps earned eligibility despite the now-local patent
-  - L364 fixture: the last patent month really produces a fitted diesel period with eligibility
-  - L371 the last period's real haul is invoiced after patent expiry
-  - L374 the already-produced
-  - L377 the following
-- **L391 the PE21 private rail service, on both month routes**
-  - L411 fixture: real diesel rail service earns haul revenue, route
-  - L415 PE21's captured bill is positive and paid exactly once, route
-  - L417 the rail IP service is in the same closed audit and current account, route
-  - L422 goods production retains the rail service's saved standing memo, route
-  - L430 a new goods capture cannot revalue or erase the last rail invoice, route
-  - L464 fixture: the no-port haul overload invoices both boundary and city tonnes with a genuinely mixed fleet
-  - L467 actual diesel and its city component exclude the steam share
-  - L470 PE21 bills exactly a quarter of the fitted share's actual boundary and city fuel saving
-  - L472 the partial line's saved bill divides its fitted capacity share across the whole stack
-  - L484 the actual rail pending bill and standing memo survive the normal sector and DataSave JSON fields
+- **L43 independent cutting equipment: gross and net**
+  - L52 fixture: a standing machine works has a positive independent carbide gain in its patent term
+  - L55 the equipment's gross gain is its own undo, beside its process
+  - L56 the fitting verdict loses exactly the imported patent share
+  - L61 the fitted independent carbide piece pays on real machine-works production
+  - L64 a local carbide find keeps the whole gain
+  - L67 expiry restores the whole equipment gain
+- **L70 independent flotation recipe: real production and settlement**
+  - L83 fixture: a standing flotation mill really produces concentrate during PE7's patent
+  - L86 the independent flotation recipe pays a positive captured service
+  - L87 that payment is in the same month's named audit and current account, which close
+  - L91 history records the same positive paid flow
+  - L93 the same independent recipe contributes a positive new-building licence estimate
+  - L99 a local flotation find stops new accrual and pays no fee after the old bill settles
+  - L104 the same real flotation production is exempt after its patent expires
+  - L147 fixture:
+  - L150 fixture: known catalytic cracking is rejected while thermal cracking still produces
+- **L161 public patent estimates net the city's own licence and carry no firm royalty (R2c-P)**
+  - L169 fixture:
+  - L183 the public fitting estimate nets exactly the bill the capture would strike on the new building's piece for
+  - L187 the public
+- **L193 demolition preserves the invoice's cached engine share (REV-R2d-4)**
+  - L207 the private PE21 fitting still nets exactly the patent share of its own positive estimate
+  - L222 fixture: a real ordered demolition closes the unfitted one of two depots while the invoice retains its half-steam cache
+  - L234 the demolition fixture's real haul draws exactly half diesel at its cached share
+  - L236 its royalty uses that same drawn diesel share, rather than the new all-fitted count
+  - L239 later goods capture retains the demolition invoice's exact standing bill
+- **L244 the last depot closes before its final real invoice**
+  - L255 the fitted service period saves a valid zero steam snapshot
+  - L271 fixture: the last real depot closes, but Freight still invoices its positive prior-month haul
+  - L274 that final real service still owes its exact positive patent bill
+  - L277 goods capture preserves that pending final bill without assigning cost to an absent depot
+- **L283 the final unfitted depot's service stays steam across closure and load (REV-R2d-5)**
+  - L298 fixture: the unfitted depot really serves a period with a captured all-steam mix, load
+  - L315 legacy absence keeps the old modern rail meaning, while JSON restores the captured steam period
+  - L325 fixture: normal month closure removes the unfitted final depot before its positive haul invoice, load
+  - L328 the unfitted final depot's real invoice burns coal and no diesel, load
+  - L330 equipment never fitted creates no PE21 royalty after final demolition, load
+  - L332 that actual steam-service month closes its audit and current account, load
+- **L339 PE21 liability belongs to its production month, not its later invoice**
+  - L358 fixture: a local find after production leaves the imported period's frozen eligibility
+  - L363 actual disk load keeps earned eligibility despite the now-local patent
+  - L367 fixture: the last patent month really produces a fitted diesel period with eligibility
+  - L374 the last period's real haul is invoiced after patent expiry
+  - L377 the already-produced
+  - L380 the following
+- **L394 the PE21 private rail service, on both month routes**
+  - L414 fixture: real diesel rail service earns haul revenue, route
+  - L418 PE21's captured bill is positive and paid exactly once, route
+  - L420 the rail IP service is in the same closed audit and current account, route
+  - L425 goods production retains the rail service's saved standing memo, route
+  - L433 a new goods capture cannot revalue or erase the last rail invoice, route
+  - L467 fixture: the no-port haul overload invoices both boundary and city tonnes with a genuinely mixed fleet
+  - L470 actual diesel and its city component exclude the steam share
+  - L473 PE21 bills exactly a quarter of the fitted share's actual boundary and city fuel saving
+  - L475 the partial line's saved bill divides its fitted capacity share across the whole stack
+  - L487 the actual rail pending bill and standing memo survive the normal sector and DataSave JSON fields
 
 ## HistoricalRecipeCheck.java - 54 labelled assertions
 
@@ -16920,73 +16923,73 @@ _(this harness does not label its checks through a helper - it prints its findin
 > nothing, a product whose parts do not add to what was made, a gate in
 > ...
 
-- **L268 1. the nine industries, each under its roof, and no other**
-  - L277 it covers the nine materials industries of Sectors.KEYS, and reads no other sector (null for each)
-  - L279 ...each under its roof: the four that dig a pit, Forestry its camp, the smelters a furnace, the kilns a kiln,
-  - L303 every town reads all nine, counted, each its sector's own and its buildings standing
-- **L310 2. the fields by type, each a vessel filled to what remains**
-  - L352 fixture: the works town's Surface Coal Mine works a thermal site and its Underground Coal Mine a coking one, each
-  - L360 ...and its Iron Mine a hematite site
-  - L365 ...and its two Quarries, which stand on ANY stone, on its two limestone sites by fiat, where the packing put them
-  - L371 the forest town's forest is one vessel: its full stock, and what stands of it
-  - L377 a works has no fields
-- **L383 3. every good balances: made = kept + sold + shipped + carried + lost + what the warehouse moved**
-  - L407 ...and each industry's tonnes made to its tonnes out, the warehouse's move in them
-- **L436 4. every figure is the model's: rows, fills, counts, appraisals and the plan's order**
-  - L501 ...its buyers and sellers are the month's fills, by party, adding to what the rows sold and bought at home
-  - L504 ...one more of each is its sector's own appraisal - a works' from the plan's list, a mine's the plan's
-  - L506 ...a works' last earnings and idle months are the idle book's
-  - L507 ...and the book counted each kind standing idle this month exactly where the view's last one loses money
-  - L509 ...and the kind the view would order is the one each sector's plan orders, or none where it orders none
-  - L513 ...and its power and lorries are its sector's reads
-- **L598 5. from where: imported feed, captive chains, old metal, sold across industries, carried**
-  - L602 a works on imported feed: the copper smelter takes far more concentrate than the town's one mine digs, the rest
-  - L611 a captive chain: the smelter's anode to the refinery, the refinery's cathode to the rod mill, each its own works'
-  - L621 old metal bought: the scrap refinery takes the city's old copper first, its feed's old-metal part the pool's
-  - L630 sold at home across industries: the leach plant's acid bought from Copper Refining's smelter
-  - L641 the works town's chain: coking coal bought from Coal Mining, its ovens' coke to the blast furnace first, captive
-  - L646 ...the blast furnace's ore from Iron Mining at home, the rest landed, and its limestone from Quarrying
-  - L656 ...old steel bought at the yard: the pool's month the view's, the yard's scrap to the arc furnace first, captive,
-  - L666 ...the limestone no buyer took carried into aggregate: out of the one, into the other, the quarry's carry
-  - L675 ...the coking mine's raw coal through the wash plant: the view's wash the sector's lift, the plant run on what it
-  - L683 ...and its coking coal the month's: what the rows made and idled is the lift's, the ground holding plenty
-  - L692 the wood town: the sawmill's residues to the pellet and pulp mills first, captive, the rest of their need landed;
-- **L704 6. the power: made less drawn is sold less bought**
-  - L712 in every industry of every town, the power its works make less what they draw is what they sell the grid less
-  - L717 fixture: the works town's Coke Ovens make 8,000 kW of their gas: Iron & Steel makes them, and sells their surplus
-  - L724 ...and the wood town's Pulp Mill its 13,500 kW, all of it sold, the sawmill's and the pellet mill's draws bought
-- **L732 7. the forest: what stands, the cut, the planting line, where it settles**
-  - L738 fixture: the forest town's Logging Camp cut this month
-  - L741 its figures are the forest's own reads: full, standing, protected, cuttable, cleared
-  - L745 ...and Forestry's: the crews with those on site, the salvage, the stands, the planting word
-  - L750 the planting line is the regrowth Forestry's planting weighs the cut against, its stands on site counted as
-  - L754 it settles where Forestry.settlesAt() says, and with no law at the regrowth rule's depletion - the same here, the
-  - L761 the camp's run is the forest's cut over the crews' ask at the rate
-  - L766 with 40% of the forest protected, it settles at no less than 40% - Forestry.settlesAt() under the law - and with no
-- **L777 8. the words and the colours**
-  - L793 every good the nine make or use has a colour of its own
-  - L799 ...and every origin and every field type, the world's hatched
-  - L834 every headline, kind, gate, vessel, part, power line and forest line has its words
-  - L835 ...a good's figure in its own unit: tonnes, cubic metres, litres
-  - L843 ...and a gate one more fails, in the plan's words: its first refusal
-- **L850 9. pure**
-  - L852 read twice, the same views, figure for figure and word for word
-  - L856 ...and reading them makes no production row (asked of a sector that buys and makes none of the goods)
-  - L861 the city saved before the nine are read and after is the same save, byte for byte but its time stamp
-- **L901 11. the plan's order, in towns at their founding where kinds pass**
-  - L929 fixture: in each town the plan orders the kind the view would - the best that passes every gate, Coal Mining's
-- **L937 10. after a load**
-  - L945 the loaded twin reads its month as not counted, drawing nothing, its rows not saved
-  - L948 ...and its picture is empty, saying a month must run
-  - L952 ...and a month on, it is counted and drawn again
-- **L974 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868**
-  - L1189 every ribbon leaves one node's right edge and reaches another's left, inside each
-  - L1191 ribbons to scale: each pair's ribbons are its flows' quantity times the picture's one scale, and each node's
-  - L1194 every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells
-  - L1196 nothing off the frame at the 1,389 x 868 window's
-  - L1201 fixture: the towns draw works in two ranks or more, a flow in a band through a works' column, imports hatched, and
-  - L1204 each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)
-  - L1208 fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so
+- **L275 1. the nine industries, each under its roof, and no other**
+  - L284 it covers the nine materials industries of Sectors.KEYS, and reads no other sector (null for each)
+  - L286 ...each under its roof: the four that dig a pit, Forestry its camp, the smelters a furnace, the kilns a kiln,
+  - L310 every town reads all nine, counted, each its sector's own and its buildings standing
+- **L317 2. the fields by type, each a vessel filled to what remains**
+  - L359 fixture: the works town's Surface Coal Mine works a thermal site and its Underground Coal Mine a coking one, each
+  - L367 ...and its Iron Mine a hematite site
+  - L372 ...and its two Quarries, which stand on ANY stone, on its two limestone sites by fiat, where the packing put them
+  - L378 the forest town's forest is one vessel: its full stock, and what stands of it
+  - L384 a works has no fields
+- **L390 3. every good balances: made = kept + sold + shipped + carried + lost + what the warehouse moved**
+  - L414 ...and each industry's tonnes made to its tonnes out, the warehouse's move in them
+- **L443 4. every figure is the model's: rows, fills, counts, appraisals and the plan's order**
+  - L508 ...its buyers and sellers are the month's fills, by party, adding to what the rows sold and bought at home
+  - L511 ...one more of each is its sector's own appraisal - a works' from the plan's list, a mine's the plan's
+  - L513 ...a works' last earnings and idle months are the idle book's
+  - L514 ...and the book counted each kind standing idle this month exactly where the view's last one loses money
+  - L516 ...and the kind the view would order is the one each sector's plan orders, or none where it orders none
+  - L520 ...and its power and lorries are its sector's reads
+- **L605 5. from where: imported feed, captive chains, old metal, sold across industries, carried**
+  - L609 a works on imported feed: the copper smelter takes far more concentrate than the town's one mine digs, the rest
+  - L618 a captive chain: the smelter's anode to the refinery, the refinery's cathode to the rod mill, each its own works'
+  - L628 old metal bought: the scrap refinery takes the city's old copper first, its feed's old-metal part the pool's
+  - L637 sold at home across industries: the leach plant's acid bought from Copper Refining's smelter
+  - L648 the works town's chain: coking coal bought from Coal Mining, its ovens' coke to the blast furnace first, captive
+  - L653 ...the blast furnace's ore from Iron Mining at home, the rest landed, and its limestone from Quarrying
+  - L663 ...old steel bought at the yard: the pool's month the view's, the yard's scrap to the arc furnace first, captive,
+  - L673 ...the limestone no buyer took carried into aggregate: out of the one, into the other, the quarry's carry
+  - L682 ...the coking mine's raw coal through the wash plant: the view's wash the sector's lift, the plant run on what it
+  - L690 ...and its coking coal the month's: what the rows made and idled is the lift's, the ground holding plenty
+  - L699 the wood town: the sawmill's residues to the pellet and pulp mills first, captive, the rest of their need landed;
+- **L711 6. the power: made less drawn is sold less bought**
+  - L719 in every industry of every town, the power its works make less what they draw is what they sell the grid less
+  - L724 fixture: the works town's Coke Ovens make 8,000 kW of their gas: Iron & Steel makes them, and sells their surplus
+  - L731 ...and the wood town's Pulp Mill its 13,500 kW, all of it sold, the sawmill's and the pellet mill's draws bought
+- **L739 7. the forest: what stands, the cut, the planting line, where it settles**
+  - L745 fixture: the forest town's Logging Camp cut this month
+  - L748 its figures are the forest's own reads: full, standing, protected, cuttable, cleared
+  - L752 ...and Forestry's: the crews with those on site, the salvage, the stands, the planting word
+  - L757 the planting line is the regrowth Forestry's planting weighs the cut against, its stands on site counted as
+  - L761 it settles where Forestry.settlesAt() says, and with no law at the regrowth rule's depletion - the same here, the
+  - L768 the camp's run is the forest's cut over the crews' ask at the rate
+  - L773 with 40% of the forest protected, it settles at no less than 40% - Forestry.settlesAt() under the law - and with no
+- **L784 8. the words and the colours**
+  - L800 every good the nine make or use has a colour of its own
+  - L806 ...and every origin and every field type, the world's hatched
+  - L841 every headline, kind, gate, vessel, part, power line and forest line has its words
+  - L842 ...a good's figure in its own unit: tonnes, cubic metres, litres
+  - L850 ...and a gate one more fails, in the plan's words: its first refusal
+- **L857 9. pure**
+  - L859 read twice, the same views, figure for figure and word for word
+  - L863 ...and reading them makes no production row (asked of a sector that buys and makes none of the goods)
+  - L868 the city saved before the nine are read and after is the same save, byte for byte but its time stamp
+- **L908 11. the plan's order, in towns at their founding where kinds pass**
+  - L936 fixture: in each town the plan orders the kind the view would - the best that passes every gate, Coal Mining's
+- **L944 10. after a load**
+  - L952 the loaded twin reads its month as not counted, drawing nothing, its rows not saved
+  - L955 ...and its picture is empty, saying a month must run
+  - L959 ...and a month on, it is counted and drawn again
+- **L981 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868**
+  - L1197 every ribbon leaves one node's right edge and reaches another's left, inside each
+  - L1199 ribbons to scale: each pair's ribbons are its flows' quantity times the picture's one scale, and each node's
+  - L1202 every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells
+  - L1204 nothing off the frame at the 1,389 x 868 window's
+  - L1209 fixture: the towns draw works in two ranks or more, a flow in a band through a works' column, imports hatched, and
+  - L1212 each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)
+  - L1217 fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so
 
 ## InfrastructureCheck.java - 101 labelled assertions
 
@@ -20778,59 +20781,59 @@ _(this harness does not label its checks through a helper - it prints its findin
 > gross alternatives cause the planner and the recipe selector to rank net
 > gains. Nonzero flows cross JSON and the sector restore used by Game's loader.
 
-- **L71 1. a running patented entry pays an imported service in the audit's month**
-  - L73 fixture: a PE1 Electric Arc Furnace really stands in a city founded unfitted
-  - L78 the firm actually paid positive IP charges
-  - L79 the named imported service is in the same month's audit
-  - L81 its money audit closes with that payment
-  - L82 the foreign account takes exactly that audit's current account, including the service import
-  - L84 history records the paid flow
-- **L89 2. expiry, unpatented and local discoveries, and the default founding**
-  - L101 production in the last patent month accrues a positive bill
-  - L103 the strike after expiry pays that last bill exactly, while expired production accrues nothing
-  - L106 the following strike has no post-expiry royalty to pay
-  - L116 the same running entry costs nothing when the city discovered it itself
-  - L125 the identical plant under an unpatented entry pays nothing
-  - L130 a default-founded city running the patented furnace pays nothing
-- **L134 5. a run cut after production cannot erase its saved royalty (REV-R2c-2)**
-  - L153 fixture: an unheld refinery really produced on its crackers, then cut its next run to zero
-  - L156 the completed production leaves a positive pending royalty despite the new zero run
-  - L167 a save between production and settlement retains that exact pending bill and the zero run
-  - L172 the next strike pays the saved dispatch, with a named service import and closed money/foreign accounts
-- **L180 6. an installed furnace earns at home while another would lose (REV-R2c-3)**
-  - L205 fixture: the installed patented furnace really supplies local steel at a positive standing gain, while one more loses
-  - L207 the installed furnace accrues positive royalties on that standing gain despite the losing additional-unit appraisal
-  - L217 the standing planner nets a positive standing royalty while the prospective extra unit still loses
-  - L223 its saved standing-value bill is paid exactly as a service import and both accounts close
-- **L231 3. equal gross alternatives are ranked after the patent rent**
-  - L238 fixture: the furnace has positive gross monthly earnings
-  - L239 the planner's patented earnings are gross less SHARE of that gain
-  - L243 offered the patented option first at equal gross gain and cost, the spread planner prefers the unpatented option
-  - L256 fixture: both equal-gross recipes can actually run
-  - L259 the recipe selector also prefers the unpatented equal-gross option
-  - L273 fixture: the caster's enabling recipe adds positive output
-  - L274 fitting counts its gain less exactly one licence fee
-- **L279 8. a patented mine's profitable final dispatch still owes its royalty (REV-R2c-4)**
-  - L327 fixture: the patented magnetite mine actually dispatches its last ore profitably and exhausts its typed field
-  - L328 that final positive dispatch accrues a royalty despite no ore remaining at capture
-  - L336 fixture: after a struck month Mining is billed below commerce, and the mine runs (its rate over 0)
-  - L338 a mine's licence gain prices its own generation at what its owner is billed (PW1: Mining the energy and transmission, not both wires)
-  - L362 the final dispatch's saved bill pays next month and both accounts close
-  - L365 unpatented hematite really produces next month without a new royalty on the exhausted magnetite works
-- **L375 4. standing refinery gains and default-city fitting reads (REV-R2c-1)**
-  - L391 fixture: the installed patented crackers run and consume all their spare feed
-  - L394 fixture: another cracker would lose money because the standing units already take its feed
-  - L399 the profitable standing crackers pay positive IP charges even with no spare feed for another unit
-  - L400 that installed-unit payment is the same month's service import and its audit closes
-  - L418 fixture: E1 is under patent and its oxygen recipe has a positive gain to license
-  - L421 E1 supersedes the hearth in the real catalogue: either fitted status runs oxygen, so the piece's gain is zero
-  - L438 synthetic fixture: the required patented process has positive gross gain and a positive imported fee
-  - L441 a default city's fitting estimate during the patent term keeps the whole gross gain
-  - L442 its game-layer recipe gain also carries no royalty
-  - L444 its fitting estimate is identical before and after expiry at identical prices
-- **L539 7. the nonzero flow survives saves and reads**
-  - L540 DataSave and HistorySave JSON and the load restorers keep the paid flow
-  - L541 repeated screen and planner reads keep the paid flow and every money pool still
+- **L72 1. a running patented entry pays an imported service in the audit's month**
+  - L74 fixture: a PE1 Electric Arc Furnace really stands in a city founded unfitted
+  - L79 the firm actually paid positive IP charges
+  - L80 the named imported service is in the same month's audit
+  - L82 its money audit closes with that payment
+  - L83 the foreign account takes exactly that audit's current account, including the service import
+  - L85 history records the paid flow
+- **L90 2. expiry, unpatented and local discoveries, and the default founding**
+  - L102 production in the last patent month accrues a positive bill
+  - L104 the strike after expiry pays that last bill exactly, while expired production accrues nothing
+  - L107 the following strike has no post-expiry royalty to pay
+  - L117 the same running entry costs nothing when the city discovered it itself
+  - L126 the identical plant under an unpatented entry pays nothing
+  - L131 a default-founded city running the patented furnace pays nothing
+- **L135 5. a run cut after production cannot erase its saved royalty (REV-R2c-2)**
+  - L154 fixture: an unheld refinery really produced on its crackers, then cut its next run to zero
+  - L157 the completed production leaves a positive pending royalty despite the new zero run
+  - L168 a save between production and settlement retains that exact pending bill and the zero run
+  - L173 the next strike pays the saved dispatch, with a named service import and closed money/foreign accounts
+- **L181 6. an installed furnace earns at home while another would lose (REV-R2c-3)**
+  - L206 fixture: the installed patented furnace really supplies local steel at a positive standing gain, while one more loses
+  - L208 the installed furnace accrues positive royalties on that standing gain despite the losing additional-unit appraisal
+  - L218 the standing planner nets a positive standing royalty while the prospective extra unit still loses
+  - L224 its saved standing-value bill is paid exactly as a service import and both accounts close
+- **L232 3. equal gross alternatives are ranked after the patent rent**
+  - L239 fixture: the furnace has positive gross monthly earnings
+  - L240 the planner's patented earnings are gross less SHARE of that gain
+  - L244 offered the patented option first at equal gross gain and cost, the spread planner prefers the unpatented option
+  - L257 fixture: both equal-gross recipes can actually run
+  - L260 the recipe selector also prefers the unpatented equal-gross option
+  - L274 fixture: the caster's enabling recipe adds positive output
+  - L275 fitting counts its gain less exactly one licence fee
+- **L280 8. a patented mine's profitable final dispatch still owes its royalty (REV-R2c-4)**
+  - L328 fixture: the patented magnetite mine actually dispatches its last ore profitably and exhausts its typed field
+  - L329 that final positive dispatch accrues a royalty despite no ore remaining at capture
+  - L337 fixture: after a struck month Mining is billed below commerce, and the mine runs (its rate over 0)
+  - L339 a mine's licence gain prices its own generation at what its owner is billed (PW1: Mining the energy and transmission, not both wires)
+  - L363 the final dispatch's saved bill pays next month and both accounts close
+  - L366 unpatented hematite really produces next month without a new royalty on the exhausted magnetite works
+- **L376 4. standing refinery gains and default-city fitting reads (REV-R2c-1)**
+  - L392 fixture: the installed patented crackers run and consume all their spare feed
+  - L395 fixture: another cracker would lose money because the standing units already take its feed
+  - L400 the profitable standing crackers pay positive IP charges even with no spare feed for another unit
+  - L401 that installed-unit payment is the same month's service import and its audit closes
+  - L419 fixture: E1 is under patent and its oxygen recipe has a positive gain to license
+  - L422 E1 supersedes the hearth in the real catalogue: either fitted status runs oxygen, so the piece's gain is zero
+  - L439 synthetic fixture: the required patented process has positive gross gain and a positive imported fee
+  - L442 a default city's fitting estimate during the patent term keeps the whole gross gain
+  - L443 its game-layer recipe gain also carries no royalty
+  - L445 its fitting estimate is identical before and after expiry at identical prices
+- **L540 7. the nonzero flow survives saves and reads**
+  - L541 DataSave and HistorySave JSON and the load restorers keep the paid flow
+  - L542 repeated screen and planner reads keep the paid flow and every money pool still
 
 ## LongPlaytest.java - 77 labelled assertions
 
@@ -32071,26 +32074,26 @@ _(this harness does not label its checks through a helper - it prints its findin
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
 > the dispatch's demand input, and automation's demand input; each rule also fails against the pre-PW5 model.
 
-- **L60 the carry's two edges and the shared shortfall**
-  - L67 a peak below one substation is served; above it only the two peak halves brown out at its carry
-  - L74 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
-  - L78 a city without substations carries only its existing free 10 MW starter grid
-- **L89 the substations' own costs, struck once**
-  - L102 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
-  - L110 changing the substation's cost changes the next bill; the previously struck book keeps its price
-- **L115 currency reform preserves the wires' breakdown**
-  - L131 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
-- **L137 independent worked study tariff**
-  - L150 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
-  - L157 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
-- **L163 the same order machinery as the roads**
-  - L168 peak growth orders the missing substation, counts its site once, and does not order below the edge
-  - L181 peak growth orders the missing substation, counts its site once, and does not order below the edge
-- **L186 closing costs survive the load rebuild**
-  - L193 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
-  - L196 the first post-load strike bills exactly the same grid costs as the uninterrupted city
-  - L197 a native format-60 city and history are refused without changing either file or a running twin
-  - L198 a native format-61 city and history are refused without changing either file or a running twin
+- **L78 the carry's two edges and the shared shortfall**
+  - L85 a peak below one substation is served; above it only the two peak halves brown out at its carry
+  - L92 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
+  - L96 a city without substations carries only its existing free 10 MW starter grid
+- **L107 the substations' own costs, struck once**
+  - L120 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
+  - L128 changing the substation's cost changes the next bill; the previously struck book keeps its price
+- **L133 currency reform preserves the wires' breakdown**
+  - L149 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
+- **L155 independent worked study tariff**
+  - L168 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
+  - L175 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
+- **L181 the same order machinery as the roads**
+  - L186 peak growth orders the missing substation, counts its site once, and does not order below the edge
+  - L199 peak growth orders the missing substation, counts its site once, and does not order below the edge
+- **L204 closing costs survive the load rebuild**
+  - L211 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
+  - L214 the first post-load strike bills exactly the same grid costs as the uninterrupted city
+  - L215 a native format-60 city and history are refused without changing either file or a running twin
+  - L216 a native format-61 city and history are refused without changing either file or a running twin
 
 ## SulphideLeachCheck.java - 32 labelled assertions
 

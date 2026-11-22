@@ -1,4 +1,4 @@
-# LicenceFeesCheck.java - 545 lines · 15 methods · 0 constants · harnesses
+# LicenceFeesCheck.java - 546 lines · 15 methods · 0 constants · harnesses
 
 `ham/citybuildersim/LicenceFeesCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -10,7 +10,7 @@
 > gross alternatives cause the planner and the recipe selector to rank net
 > gains. Nonzero flows cross JSON and the sector restore used by Game's loader.
 
-**Uses:** [LicenceFees](LicenceFees.md) (42), [Good](Good.md) (39), [Recipes](Recipes.md) (20), [Game](Game.md) (19), [ResearchCatalog](ResearchCatalog.md) (17), [ResearchCheck](ResearchCheck.md) (13), [Recipe](Recipe.md) (12), [MoneyAudit](MoneyAudit.md) (11), [Sectors](Sectors.md) (11), [Resource](Resource.md) (11), [MaterialsCheck](MaterialsCheck.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Deposit](Deposit.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Refining](Refining.md) (4), [GoodsMarket](GoodsMarket.md) (4), [RefineryFlow](RefineryFlow.md) (4), [DataSave](DataSave.md) (4), [JobType](JobType.md) (4), [EquipmentFit](EquipmentFit.md) (4), [Mining](Mining.md) (4), [Sector](Sector.md) (4), [HistorySave](HistorySave.md) (4), [Equipment](Equipment.md) (3), [SectorState](SectorState.md) (2), [LandParcel](LandParcel.md) (2), [LandCheck](LandCheck.md) (2), [MiningCheck](MiningCheck.md) (2), [NewGameCheck](NewGameCheck.md) (2), [BuildingManager](BuildingManager.md) (1)... and 6 more
+**Uses:** [LicenceFees](LicenceFees.md) (42), [Good](Good.md) (39), [Recipes](Recipes.md) (20), [Game](Game.md) (19), [ResearchCatalog](ResearchCatalog.md) (17), [ResearchCheck](ResearchCheck.md) (13), [Recipe](Recipe.md) (12), [MoneyAudit](MoneyAudit.md) (11), [Sectors](Sectors.md) (11), [Resource](Resource.md) (11), [MaterialsCheck](MaterialsCheck.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Deposit](Deposit.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Refining](Refining.md) (4), [GoodsMarket](GoodsMarket.md) (4), [RefineryFlow](RefineryFlow.md) (4), [DataSave](DataSave.md) (4), [JobType](JobType.md) (4), [EquipmentFit](EquipmentFit.md) (4), [Mining](Mining.md) (4), [Sector](Sector.md) (4), [HistorySave](HistorySave.md) (4), [Equipment](Equipment.md) (3), [SectorState](SectorState.md) (2), [LandParcel](LandParcel.md) (2), [LandCheck](LandCheck.md) (2), [MiningCheck](MiningCheck.md) (2), [NewGameCheck](NewGameCheck.md) (2), [BuildingManager](BuildingManager.md) (1)... and 7 more
 
 **Used by (4):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -24,20 +24,20 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 524 | **type** `public final class LicenceFeesCheck` | Licence fees leave a running firm's money and enter this month's current account. |
+| 22 | 525 | **type** `public final class LicenceFeesCheck` | Licence fees leave a running firm's money and enter this month's current account. |
 | 25 | 4 | `static void check(String label, boolean ok)` |  |
 | 30 | 3 | `static boolean near(double a, double b)` |  |
 | 34 | 7 | `static void quietly(Runnable action)` |  |
-| 43 | 26 | `static Game town(String label, boolean historical) throws Exception` | Actual patented catalogue building, actual private firm, real filled posts. |
-| 70 | 17 | `static void payment() throws Exception` |  |
-| 88 | 44 | `static void exemptions() throws Exception` |  |
-| 133 | 45 | `static void dispatchedGain() throws Exception` |  |
-| 179 | 50 | `static void standingValue() throws Exception` |  |
-| 230 | 47 | `static void planners() throws Exception` |  |
-| 278 | 95 | `static void exhaustedDispatch() throws Exception` |  |
-| 374 | 73 | `static void reviewRegressions() throws Exception` |  |
-| 449 | 14 | `private static boolean standingRoundTrip(Game g)` | A full normal save/load between capture and a standing read; only scratch slot 10. |
-| 465 | 35 | `static boolean saveChecks() throws Exception` | Nonzero statement and history through JSON and scratch slot 10's normal load path. |
-| 502 | 18 | `static boolean readChecks() throws Exception` | Repeated pricing and saved-flow reads leave every fingerprinted money pool unchanged. |
-| 521 | 24 | `public static void main(String[] args) throws Exception` |  |
+| 43 | 27 | `static Game town(String label, boolean historical) throws Exception` | Actual patented catalogue building, actual private firm, real filled posts. |
+| 71 | 17 | `static void payment() throws Exception` |  |
+| 89 | 44 | `static void exemptions() throws Exception` |  |
+| 134 | 45 | `static void dispatchedGain() throws Exception` |  |
+| 180 | 50 | `static void standingValue() throws Exception` |  |
+| 231 | 47 | `static void planners() throws Exception` |  |
+| 279 | 95 | `static void exhaustedDispatch() throws Exception` |  |
+| 375 | 73 | `static void reviewRegressions() throws Exception` |  |
+| 450 | 14 | `private static boolean standingRoundTrip(Game g)` | A full normal save/load between capture and a standing read; only scratch slot 10. |
+| 466 | 35 | `static boolean saveChecks() throws Exception` | Nonzero statement and history through JSON and scratch slot 10's normal load path. |
+| 503 | 18 | `static boolean readChecks() throws Exception` | Repeated pricing and saved-flow reads leave every fingerprinted money pool unchanged. |
+| 522 | 24 | `public static void main(String[] args) throws Exception` |  |
 

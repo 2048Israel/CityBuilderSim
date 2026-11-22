@@ -854,12 +854,14 @@ public class EquipmentCheck {
 
     static void sectionNine(Game g) {
         FittingCheck.holdAll(g); // the priced verdicts must not become orders during their setup month
+        SubstationCheck.generationWires(g); // PW5: strike a real wires bill before pricing the steam fitting.
+        MaterialsCheck.handWorkers(g);
         out.println("\n--- 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that pays ---");
         Sector industry = g.getSectors().industry();
         BuildingsStacks bakery = stack(g, "Bakery");
         BuildingsTemplate t = bakery.getBuilding();
         Equipment drive = t.getEquipment(DRIVE);
-        play(g, 1);
+        play(g, 2); // PW5: dispatch the substations' costs, then strike that saved month into the tariff.
         bakery.setUnfitted(DRIVE, 1);
         g.getEquipmentForms().apply(g);
         check("fixture: a Bakery is unfitted, a month is played, and it is 1900", bakery.getUnfitted(DRIVE) == 1 && yearOf(g) == 1900 && drive.knownAt(g.getMonth()), "year " + yearOf(g));
