@@ -845,11 +845,6 @@ public final class PostwarRecipeCheck {
         });
         BuildingsStacks stack = game.getBuildingManager().getStack(cement);
         Equipment longKiln = cement.getEquipment("long-kiln");
-        int needed = (int) Math.ceil(longKiln.getWork() / 120.0);
-        SubstationCheck.buildersForSite(game, needed);
-        check("fixture: the wired town's real depots leave the site's monthly share of the long kiln's work within the existing guard",
-                game.getBuildingOutputAtEveryPost() >= needed && needed > 0,
-                "site output " + game.getBuildingOutputAtEveryPost() + " for " + longKiln.getWork() + " points in 120 months");
         // A plant finished before June 1902 has its rotary kiln and neither later piece.
         stack.setUnfitted("long-kiln", stack.getQuantity());
         stack.setUnfitted("preheater", stack.getQuantity());
@@ -878,13 +873,7 @@ public final class PostwarRecipeCheck {
         check("...the order is taken, and one long kiln is on site for the plant",
                 refused == null && game.getFittings().onSite(cement.getId(), "long-kiln") == 1, refused + " " + game.getFittings().view());
         int pressed = 0;
-        for (; pressed < 120 && stack.getUnfitted("long-kiln") > 0; pressed++) {
-            if (pressed % 20 == 0) out.printf("REFIT m%d builders=%d potential=%d repairs=%.6f site=%d potentialSite=%d fill=%.6f cash=%.6f pending=%s%n",
-                    game.getMonth(), game.getConstructionOutput(), game.getConstructionOutputAtEveryPost(), game.getMaintenancePoints(),
-                    game.getBuildingOutput(), game.getBuildingOutputAtEveryPost(), game.getSectors().construction().getAverageFill(),
-                    game.getSectors().construction().getCash(), game.getFittings().view());
-            FittingCheck.step(game, 1);
-        }
+        for (; pressed < 120 && stack.getUnfitted("long-kiln") > 0; pressed++) FittingCheck.step(game, 1);
         run(game);
         check("the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form",
                 stack.getUnfitted("long-kiln") == 0 && Math.abs(cement.uses(Good.THERMAL_COAL) - 3350 * 7 / 3.3) < 1e-9,

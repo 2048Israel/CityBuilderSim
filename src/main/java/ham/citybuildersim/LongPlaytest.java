@@ -6008,6 +6008,9 @@ public class LongPlaytest {
         run(g, months, true);
     }
 
+    /** Harness-only first-district census, enabled with -Dcbs.pw5.firstDistrict=true. */
+    private static boolean pw5DistrictReported;
+
     private static void run(Game g, int months, boolean playGovernmentPolicy) {
         for (int i = 0; i < months; i++) {
 
@@ -6031,6 +6034,16 @@ public class LongPlaytest {
             g.simulateMonths(1);
             // The player's annual move sees every completed January, including one crossed inside a long skip (GV1/GV2).
             if (playGovernmentPolicy && g.getMonth() > before) GovernmentPlayer.step(g);
+            if (Boolean.getBoolean("cbs.pw5.firstDistrict") && !pw5DistrictReported
+                    && g.getBuildingManager().getQuantity(Substations.ID) > 0) {
+                pw5DistrictReported = true;
+                BuildingsTemplate wire = g.getBuildingManager().getTemplate(Substations.ID);
+                out.printf("FIRST_DISTRICT seed=%d pathSeed=%d before=%d month=%d districts=%d builders=%d potentialBuilders=%d repairsStanding=%.6f repairsCharged=%.6f wireRepairsEach=%.6f site=%d potentialSite=%d%n",
+                        Integer.getInteger("playtest.seed", 0), PATH_SEED, before, g.getMonth(),
+                        g.getBuildingManager().getQuantity(Substations.ID), g.getConstructionOutput(), g.getConstructionOutputAtEveryPost(),
+                        g.getMaintenancePoints(), g.getEconomyManager().getMaintenancePointsTotal(),
+                        wire.getConstructionPoints() * wire.repairsPerYear() / 12, g.getBuildingOutput(), g.getBuildingOutputAtEveryPost());
+            }
             if (g.hasCityMap()) {
                 mapMonths++;
                 /*

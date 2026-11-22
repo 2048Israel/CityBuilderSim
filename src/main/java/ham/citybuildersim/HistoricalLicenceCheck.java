@@ -22,8 +22,16 @@ public final class HistoricalLicenceCheck {
         return Math.abs(a - b) <= 1e-8 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
     }
     static Game town(String label, boolean historical) {
+        return town(label, historical, false);
+    }
+    /** A licence-value fixture with an explicitly owned district, so even a town below the free founding carry has a real wires price. */
+    static Game pricedTown(String label, boolean historical) {
+        return town(label, historical, true);
+    }
+    private static Game town(String label, boolean historical, boolean priced) {
         Game g = RecipeCheck.town(label, historical);
-        SubstationCheck.generationWires(g); // PW5: public power gains need the wires' real, positive tariff.
+        SubstationCheck.peakWires(g);
+        if (priced) SubstationCheck.wiresFor(g, Substations.SUBSTATION_MW * 1000);
         MaterialsCheck.handWorkers(g);
         HistoricalRecipeCheck.silent(() -> g.simulateMonths(3));
         return g;
@@ -33,7 +41,7 @@ public final class HistoricalLicenceCheck {
         HistoricalRecipeCheck.silent(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
             RecipeCheck.stand(g, t, count, new int[1]);
-            SubstationCheck.generationWires(g);
+            SubstationCheck.peakWires(g);
             MaterialsCheck.handWorkers(g);
         });
         HistoricalRecipeCheck.fitted(t, g.getBuildingManager().getStack(t));
@@ -160,7 +168,8 @@ public final class HistoricalLicenceCheck {
     static void publicPieces() throws Exception {
         System.out.println("--- public patent estimates net the city's own licence and carry no firm royalty (R2c-P) ---");
         for (String code : new String[] { "PE5", "PE6", "PE16" }) {
-            Game g = town("R2d-public-" + code, true);
+            Game g = code.equals("PE6") || code.equals("PE16")
+                    ? pricedTown("R2d-public-" + code, true) : town("R2d-public-" + code, true);
             HistoricalRecipeCheck.allExcept(g, code);
             ResearchCheck.atMonth(g, ResearchCatalog.knownFrom(code));
             BuildingsTemplate t = stand(g, code.equals("PE5") ? "Water Treatment Plant" : "Coal Power Plant", 1);

@@ -47,25 +47,6 @@ public final class SubstationCheck {
         if (peak > g.getServicesManager().getUtilitiesHandler().getFoundingGridKw()) wiresFor(g, peak);
     }
 
-    /** Real depots restoring the site budget consumed by standing wire repairs, with the fixture's own minimum too. */
-    static void buildersForSite(Game g, int requested) {
-        if (requested <= 0) throw new IllegalArgumentException("fixture site output " + requested);
-        BuildingManager b = g.getBuildingManager();
-        BuildingsTemplate wire = b.getTemplate(Substations.ID);
-        double wireRepairs = b.getQuantity(Substations.ID) * wire.getConstructionPoints() * wire.repairsPerYear() / 12;
-        int minimum = Math.max(requested, (int) Math.round(g.getConstructionOutputAtEveryPost() - g.getMaintenancePoints() + wireRepairs));
-        int added = 0;
-        while (g.getBuildingOutputAtEveryPost() < minimum && added < 64) {
-            b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
-            MaterialsCheck.handWorkers(g);
-            added++;
-        }
-        System.out.printf("SITE m%d districts=%d extraDepots=%d builders=%d repairs=%.6f wireRepairs=%.6f site=%d required=%d%n",
-                g.getMonth(), b.getQuantity(Substations.ID), added, g.getConstructionOutputAtEveryPost(),
-                g.getMaintenancePoints(), wireRepairs, g.getBuildingOutputAtEveryPost(), minimum);
-        if (g.getBuildingOutputAtEveryPost() < minimum) throw new AssertionError("fixture depots did not restore the site budget");
-    }
-
     static Game city(String label, int substations) {
         Game g = new Game(GameFiles.scratch("substation-" + label));
         quietly(() -> {
@@ -351,8 +332,34 @@ public final class SubstationCheck {
                 b.ratio, bid, home, local[0], local[1], c, g.isOnLiterals());
     }
 
+    static void historicalTownFinding() {
+        RecipeCheck.out = FittingCheck.out = OUT;
+        RecipeCheck.quiet = FittingCheck.quiet = QUIET;
+        Game ordinary = HistoricalLicenceCheck.town("pw5-historical-free", true);
+        UtilitiesHandler u = ordinary.getServicesManager().getUtilitiesHandler();
+        double peak = Substations.peak(ordinary.getBuildingManager().getTotalDouble(BuildingsTemplate::powerBought),
+                Arrays.stream(PowerDispatch.SEASON).max().orElseThrow());
+        double[] grid = BuildAdvice.supplyDemand(ordinary, BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), Map.of(), BuildAdvice.NOW);
+        OUT.printf("HISTORICAL ordinary grossSeasonalPeak=%.6f foundingCarry=%.6f adviceCarry=%.6f advicePeak=%.6f %s%n",
+                peak, u.getFoundingGridKw(), grid[0], grid[1], gridReading(ordinary));
+        check("the shared historical town's measured peak fits its free founding wires and GRID needs no district",
+                peak <= u.getFoundingGridKw() && grid[0] >= grid[1]
+                        && ordinary.getBuildingManager().getQuantity(Substations.ID) == 0
+                        && u.getStruckBook().energyPrice == 0 && u.getStruckBook().transmissionPrice == 0
+                        && u.getStruckBook().distributionPrice == 0);
+        Game priced = HistoricalLicenceCheck.pricedTown("pw5-historical-priced", true);
+        UtilitiesHandler p = priced.getServicesManager().getUtilitiesHandler();
+        double extra = priced.getMaintenancePoints() - ordinary.getMaintenancePoints();
+        OUT.printf("HISTORICAL priced extraRepairPoints=%.6f %s%n", extra, gridReading(priced));
+        check("PW5-F1: the explicitly priced district adds the study's whole 110 repair points and a wires price to a town below its carry",
+                priced.getBuildingManager().getQuantity(Substations.ID) == 1
+                        && p.getStruckBook().transmissionPrice + p.getStruckBook().distributionPrice > 0
+                        && near(extra, 110));
+    }
+
     public static void main(String[] args) throws Exception {
         carry(); tariff(); workedTariff(); order(); reform(); smallTownFinding();
+        historicalTownFinding();
         if (args.length == 0) saved();
         OUT.println("SubstationCheck: " + fails + " failures");
         if (fails > 0) System.exit(1);

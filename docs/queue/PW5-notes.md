@@ -927,3 +927,75 @@ kept ALL run's BuildingDataCheck remains green for the identical building
 data and production code. git diff --check and LF checks pass. No own job
 remains; the marker is still provisional, awaiting this delta's review and
 a newly granted dry-run slot.
+
+### REV-PW5-2: remove the shared town's unnecessary district
+
+Mail 20261122-183124-896-orchestrator-09f1 correctly identifies the deeper
+cause. The previous depot mends treated the upkeep of an unnecessary district
+as a fixture requirement. That decision is withdrawn. HistoricalLicenceCheck
+was sizing every town and newly standing building from generation nameplate,
+including a district when demand fit the free founding network. This repeats
+the IndustryView fixture's earlier error. A construction fixture needs its
+real peak covered; a positive wires price belongs only to the licence case
+that explicitly needs one.
+
+The shared town and stand now use peakWires. The measured ordinary town's
+conservative gross peak at the highest season is 3,050.061474 kW, below the
+10,000 kW founding carry. At m4 its actual closing peak is 2,107.553684 kW,
+its billed peak 2,105.159 kW, both fully served. GRID's current supply/demand
+is 10,000 / 2,107.553684 kW: no district is needed. It owns none, and both
+energy and wires prices are zero. SubstationCheck asserts this through the
+actual stock, dispatch book and advice readings, not a zero assigned by a
+fixture.
+
+★ Isolate the priced premise. HistoricalLicenceCheck.pricedTown explicitly
+stands one district before the existing three-month warmup. Only PE6/PE16
+in publicPieces and PublicLicenceCheck.noGain use it. The latter retains
+its strict positive gross turbine value while its surplus stack and new
+plant royalties must remain zero. PE5 and ordinary construction/recipe/saves
+borrowers use the peak-sized town. No price, energy ratio or repair is set.
+The paired priced town has the identical measured load and one district;
+its actual wires price is 231.269707 cents/kWh, energy zero. Its whole-district
+maintenance increment is exactly 110 points, asserted independently against
+the study's worked figure in SubstationCheck.
+
+The buildersForSite helper and its added depots are removed. PostwarRecipeCheck
+and FitoutCheck return to their original four- and two-depot preparations,
+their original 120-month guard and all original 230 and 66 assertions. The
+extra fixture assertions and diagnostic refit loop from the rejected mend
+are removed with that premise. NewUnitCheck retains its original four depots,
+all 83 assertions, and its original priority setup; the extra builders-first
+override is removed. Its original separate builders-first cache-stamp test
+is retained. All three normal named runs pass with no extra depots or switch.
+HistoricalLicenceCheck passes; PublicLicenceCheck has only its four existing
+PW1-W lines.
+
+**PW5-F1 also consumes builder points.** The catalogue's whole district has
+132,000 construction points at 1% repairs a year: 110 points every month,
+even at a sliver of its carry. This is the same utilization lump as the
+11.38-cent wires charge of the 45 MW works town. The earlier 87-point
+"pre-wire budget" was arithmetic in the *wired* NewUnit snapshot:
+355 - (377.904670 - 110), rounded. It was not a replayed no-district town.
+The honest peak-sized fixture now measures 384 potential builder points,
+263.795795 total repairs and **120** spare site points, with zero districts.
+Removing the district also changes jobs, bills and the subsequent town;
+the measured state must not be replaced with the old arithmetic figure.
+NewUnit prints that construction reading beside its unchanged positive-site
+assertion. A default-seed city's first district and its real builder budget
+are measured separately below.
+
+The additional SubstationCheck measurement initially found an uninitialized
+FittingCheck output stream when called outside the licence harness. Wiring
+its existing output streams fixes that harness setup; the normal rerun passes
+both new historical-town lines and every existing substation/save assertion.
+Logs: target/PW5-peak-mends/. Earlier preliminary exits are retained there,
+not counted as final passes.
+
+LongPlaytest has an opt-in harness-only census under
+-Dcbs.pw5.firstDistrict=true. It observes the first completed district on
+its ordinary monthly loop, printing the month, district count, actual and
+potential builder output, charged and standing repairs, and spare site
+points. It changes no simulation input or saved field and prints nothing
+when the option is unset; the default trace remains unchanged beyond runtime.
+The separate named run uses playtest.seed=0, its default, with the normal
+world-path seed. This observation is not another ensemble or a model change.
