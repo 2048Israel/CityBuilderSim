@@ -70,3 +70,18 @@ PowerPriceCheck now passes all 77 checks, including filled grid payroll, actual 
 the treasury's margin, fuel sellers and all fixture-month money audits. BuildingDataCheck's
 first pass identified its exact dated-id map needed the appended 1900 Substation entry;
 the map was extended, preserving all earlier dates and the exact equality check.
+
+SaveFileCheck's 150-month city exposed a residual FS17 premise, rather than a failed save
+comparison: its poorest cell had zero income and negative money after fixed bills, yet
+the first struck month still bought every basket. Emptying savings, foreign cash and
+city paper left shares/corporate bonds for the normal liquidity waterfall to sell. A
+diagnostic showed first-month food money 0.0569964 and 2 of 2 baskets asked; the second
+month had only 0.00000194776 and asked 0.000208009 of 2, one strike too late for the
+hunger-at-full-shelves reading. A credit lockout experiment changed neither result and
+was removed. Removing securities outright caused fourteen issuer/holder/debt save
+comparisons to fail: the load correctly recounted the missing bonds. The fixture instead
+gives those securities to another populated cell, with the proportional acquisition/tax
+stocks and bond faces, preserving issuer debt and holder totals. Its chosen cell is
+without means before both strikes. Every nonzero hunger assertion and every
+save/continuation comparison remains. Kept diagnostic:
+target/PW5-results/SaveFileCheck-premise.txt. No production household rule changes.

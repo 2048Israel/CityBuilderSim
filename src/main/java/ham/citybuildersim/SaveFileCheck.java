@@ -1518,6 +1518,29 @@ public class SaveFileCheck {
                 withoutMeans.savings = 0;
                 withoutMeans.abroad = 0;
                 withoutMeans.paper = 0;
+                // PW5: the waterfall can still sell this cell's securities. Give them to another populated cell,
+                // preserving every issuer's shares, debt, holder totals and acquisition/tax stocks for the save checks.
+                Household receiver = null;
+                for (Household c : full.getHouseholdBalance().cells()) {
+                    if (c != withoutMeans && !c.isEmpty() && (receiver == null || c.households() > receiver.households())) receiver = c;
+                }
+                assertTrue("fixture: another household cell receives the poor cell's securities", receiver != null);
+                if (receiver != null) {
+                    double per = withoutMeans.households() / receiver.households();
+                    for (int company = 0; company < withoutMeans.shares.length; company++) {
+                        receiver.shares[company] += withoutMeans.shares[company] * per;
+                        receiver.basis[company] += withoutMeans.basis[company] * per;
+                        receiver.taxShares[company] += withoutMeans.taxShares[company] * per;
+                        receiver.taxClaim[company] += withoutMeans.taxClaim[company] * per;
+                        withoutMeans.shares[company] = withoutMeans.basis[company] = 0;
+                        withoutMeans.taxShares[company] = withoutMeans.taxClaim[company] = 0;
+                    }
+                    for (var bond : withoutMeans.bondFace.entrySet())
+                        receiver.putBondFace(bond.getKey(), receiver.bondFace(bond.getKey()) + bond.getValue() * per);
+                    receiver.recountBonds();
+                    withoutMeans.bondFace.clear();
+                    withoutMeans.recountBonds();
+                }
                 withoutMeans.debt += withoutMeans.creditRoom(withoutMeans.disposable());
             }
             full.simulateMonths(1);
