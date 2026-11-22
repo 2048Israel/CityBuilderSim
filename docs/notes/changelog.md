@@ -18,6 +18,45 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.184 — HT1, household basis and investment taxes — 2026-11-22, ready, see docs/queue/HT1-notes.md
+Household stock purchases and founders carry average acquisition cost with the people; sales release it and carry unused losses. Real sale and integrated dividend taxes transfer cash to two named treasury revenues, with an adjustable inclusion dial. Cash-first secured deferral, estate step-up, survivor rollover and passive unclaimed-property custody preserve the actual stocks and payments. The incompatible save format carries basis, claims, policy and struck flows. Genuine bond extinction closes every household position without inventing cash. Independent whole and scoped reviews have cleared the money/save changes; integrated .183 custody, monetary, save and scaling checks pass. The final model ensemble passes every money audit; its exact seed14 land-funding finding passes by name with FB11H queued. The versioned ALL dry completes all234 selected harnesses and its retained-run record gate passes, with remaining assertions traced and named with queued owners. L7 retains its separate Pending account-design disposition.
+
+### 0.9.183 — OG1, a planner orders to the gap — 2026-11-22, ready, see docs/queue/OG1-notes.md
+Past a nine-month backlog the builders no longer order one depot a month. They order the gap between their
+sites' month and the work a typical month sends them, plus the queue past the knee over two years, never more
+than 1.8 times that month. The typical month is a saved median of a year, their own depots left out. Each
+batch takes at most the premium's share of a month of the sites. Food Processing orders as many plants as the
+city already eats. On the 2,424-month playtest the months past the knee fell from 685 to 438 (470 to 224 with
+over 100,000 people), and the city reached 629,000 people to main's 531,000. A first cut sized to the queue
+ran to 7,771 depots to main's 299 and was dropped. His own city (slot 10) plays as main and gains nothing
+from this batch: its builders' order is refused at the staffing gate (0.57 of a depot's posts staffable
+against 0.80, with 0.0% out of work) before OG1 sizes it. GapOrderCheck holds it.
+
+### 0.9.182 — FB16, OE1's four follow-ups — 2026-11-22, ready, see docs/queue/FB16-notes.md
+OE1's four follow-ups, one commit each, every line causing its condition. AS1: AuctionCheck §11 sells a bill at
+its 1,200-month run's end and counts exactly that one sale more than the run booked. CI1: Motoring strikes the
+households' car imports as the spend's import share, so paid and imported are one number; a CarCheck section walks
+the import price a bit at a time until the two roundings part. PT2: PassThroughCheck §3 stands grocery stores and
+stocks the shelf at the DEAR pin before the step, so the shops hand over the households' need in all 12 months. RN2:
+RealEstate saves the count its closed homes' share moves against, put back after the load's rebuild, so a reload's
+first month moves the share as the live city does (ReloadCheck 3k, HousingCheck); an old save loads as before, no
+format bump. The playtest trace is unchanged; four known reds leave.
+
+### SD1 — Correct scrapping wording — 2026-11-22, ready, see docs/queue/SD1-notes.md
+Physically retired buildings now say Scrapped, with the same quantities,
+plot-return and recovered-material details. Genuine compulsory purchases
+still say Sold. Build cards keep their existing classification and compact
+wording. This untagged wording correction changes no economic decisions or flows.
+
+### RES1 — Real Estate study and HO1 implementation contract — 2026-11-22, ready, see docs/queue/RES1-notes.md
+Finalized the aggregate housing design and HO1 contract after Jerus's review:
+fourteen initial building forms and 32 dwelling classes, complete numerical
+cost/rent/parking/fee tables, measured compute and executable underwriting/cash
+fixtures. Recorded tenant retention, persistent common-cost pools, real funded
+sales and the immediate financial-demolition guard; supplied RES2-RES5 and
+HO1/REU1 briefs. The study-review hold is closed; actual model calibration and
+code dependencies remain the named implementation gates. Documentation only.
+
 ### 0.9.181 — PW6, the recorded power month — 2026-11-21, ready, see docs/queue/PW6-notes.md
 Services › Utilities shows the recorded month's six supply stacks, each plant's run,
 fuel and clearing receipts, clearing prices and bill parts, firm capacity against

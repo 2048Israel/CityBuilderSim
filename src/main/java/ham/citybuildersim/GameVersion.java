@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.181";
+    public static final String VERSION = "0.9.184";
 
     /**
      * The save shape.
@@ -8354,7 +8354,7 @@ public final class GameVersion {
      *     strangers' money rather than their own. It is refused, naming the
      *     build that still opens it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 58;
+    public static final int SAVE_FORMAT = 59;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8412,7 +8412,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 58;
+    public static final int OLDEST_LOADABLE_FORMAT = 59;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

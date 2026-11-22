@@ -235,7 +235,7 @@
 | 730 | 8 | `static String kindColour(BuildCard.WordKind k)` | The kind's colour: its edge and its icon. |
 | 740 | 16 | `static String kindWord(BuildCard.WordKind k)` | ...and its word, before the sector's. |
 | 758 | 6 | `String sectorWords(BuildCard.SectorInvestors si)` | The words after the kind: what is on site of theirs, the build card's "nothing recorded" before a month has run, or the word with "Holding: " gone. |
-| 766 | 5 | `static String shortWord(String words)` | A word's short form for a card: a "Built" or "Sold" word up to its " - " (the frame's line and the tooltip have the rest). |
+| 766 | 5 | `static String shortWord(String words)` | A word's short form for a card: a "Built", "Sold" or "Scrapped" word up to its " - " (the frame's line and the tooltip have the rest). |
 | 773 | 10 | `static String builtTag(String word)` | "+2 Industrial Bakery": what a "Built" word built, for the month's flash; null for any other word. |
 | 788 | 31 | `Node investorsMini(BuildCard.SectorInvestors si, boolean blank)` | The word on a card: the kind's icon at 12, its word, the sector's - wrapping, never cut; a click opens the Investors page. |
 | 821 | 4 | `static String textColour(BuildCard.WordKind k)` | A kind's word in a colour that reads as text: the grey kinds' edge is too faint for words. |

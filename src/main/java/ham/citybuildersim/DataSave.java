@@ -2469,6 +2469,22 @@ public class DataSave implements Cloneable {
      * scales none of it.
      */
     private double[] householdFlows;
+    /** HT1's struck investment-tax transfers and actual assessment counts. */
+    private double[] householdInvestmentTaxes;
+    private double[] securedHouseholdTaxes, securedForeignTaxes;
+    private EstateCustody.State estateCustody;
+    private double unbackedCustodyPaper;
+    public void setEstateCustody(EstateCustody.State state) { estateCustody = state == null ? null : state.copy(); }
+    public EstateCustody.State getEstateCustody() { return estateCustody == null ? null : estateCustody.copy(); }
+    public void setUnbackedCustodyPaper(double face) { unbackedCustodyPaper = face; }
+    public double getUnbackedCustodyPaper() { return unbackedCustodyPaper; }
+    public void setSecuredHouseholdTaxes(double[] state) { securedHouseholdTaxes = state == null ? null : state.clone(); }
+    public double[] getSecuredHouseholdTaxes() { return securedHouseholdTaxes == null ? null : securedHouseholdTaxes.clone(); }
+    public void setSecuredForeignTaxes(double[] state) { securedForeignTaxes = state == null ? null : state.clone(); }
+    public double[] getSecuredForeignTaxes() { return securedForeignTaxes == null ? null : securedForeignTaxes.clone(); }
+    public void setHouseholdInvestmentTaxes(double[] state) { householdInvestmentTaxes = state == null ? null : state.clone(); }
+    public double[] getHouseholdInvestmentTaxes() { return householdInvestmentTaxes == null ? null : householdInvestmentTaxes.clone(); }
+
 
     public void setHouseholdFlows(double[] v) { this.householdFlows = v == null ? null : v.clone(); }
     public double[] getHouseholdFlows()       { return householdFlows == null ? null : householdFlows.clone(); }
@@ -2810,6 +2826,20 @@ public class DataSave implements Cloneable {
     public java.util.Map<String, Integer> getSectorOperatingLossMonths(){ return sectorOperatingLossMonths; }
     public void setPopulationTrend(java.util.List<Long> l){ this.populationTrend = l; }
     public java.util.List<Long> getPopulationTrend(){ return populationTrend; }
+
+    /*
+     * The work each recent month ordered of the builders, their own depots left out, and what everyone else's sites
+     * owed when the last advance ended (OG1; BusinessInvestment, THE WORK THE CITY SENDS THE BUILDERS): what the
+     * builders' next depot order is sized to. A save from before OG1 has neither, and the record starts again: one
+     * depot an order until it has MIN_MONTHS_OF_SITE_WORK.
+     */
+    private java.util.List<Double> buildersWork;
+    private Double buildersOwedAfterAdvance;
+
+    public void setBuildersWork(java.util.List<Double> l){ this.buildersWork = l; }
+    public java.util.List<Double> getBuildersWork(){ return buildersWork; }
+    public void setBuildersOwedAfterAdvance(Double v){ this.buildersOwedAfterAdvance = v; }
+    public Double getBuildersOwedAfterAdvance(){ return buildersOwedAfterAdvance; }
     public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }
     public double getCityCapitalSpending(){ return cityCapitalSpending; }
 

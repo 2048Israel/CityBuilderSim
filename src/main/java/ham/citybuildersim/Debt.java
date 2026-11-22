@@ -179,8 +179,28 @@ public abstract class Debt {
      */
     protected double bankDiscount, householdDiscount, centralBankDiscount, firmDiscount, worldDiscount;
     protected double unsettledDiscount;
+    // HT1: reserved actual household property; a subset of raw household face/discount.
+    private double custodyReservedFace, custodyReservedDiscount;
+    private transient boolean retiringCustody;
+    public double custodyReservedFace() { return custodyReservedFace; }
+    public double custodyReservedBook() { return custodyReservedFace - custodyReservedDiscount; }
+    double reserveCustody(double face) {
+        if (!(face >= 0) || face > householdPrincipal()) throw new IllegalStateException("Unbacked estate city paper");
+        double discount = unaccretedOn(Holder.HOUSEHOLDS, face);
+        custodyReservedFace += face; custodyReservedDiscount += discount;
+        return face - discount;
+    }
+    double consolidateCustody() {
+        if (!(custodyReservedFace > 0) || unsettledFace > 0 || settleDue > 0) return 0;
+        double book = custodyReservedBook(), before = getCarryingValue();
+        retiringCustody = true;
+        try { retirePart(0, custodyReservedFace, 0, 0); }
+        finally { retiringCustody = false; }
+        custodyReservedFace = custodyReservedDiscount = 0;
+        return before - getCarryingValue() - book;
+    }
 
-    public double householdPrincipal()   { return foreign ? 0 : householdPrincipal; }
+    public double householdPrincipal()   { return foreign ? 0 : householdPrincipal - custodyReservedFace; }
     public double centralBankPrincipal() { return foreign ? 0 : centralBankPrincipal; }
     public double firmPrincipal()        { return foreign ? 0 : firmPrincipal; }
     public double worldPrincipal()       { return foreign ? 0 : worldPrincipal; }
@@ -207,7 +227,7 @@ public abstract class Debt {
         if (foreign || h == null) return 0;
         return switch (h) {
             case BANK -> bankDiscount;
-            case HOUSEHOLDS -> householdDiscount;
+            case HOUSEHOLDS -> householdDiscount - custodyReservedDiscount;
             case CENTRAL_BANK -> centralBankDiscount;
             case FIRMS -> firmDiscount;
             case WORLD -> worldDiscount;
@@ -467,7 +487,7 @@ public abstract class Debt {
 
     private double principalField(Holder h) {
         return switch (h) {
-            case HOUSEHOLDS -> householdPrincipal;
+            case HOUSEHOLDS -> householdPrincipal();
             case CENTRAL_BANK -> centralBankPrincipal;
             case FIRMS -> firmPrincipal;
             case WORLD -> worldPrincipal;
@@ -477,7 +497,7 @@ public abstract class Debt {
 
     private void setPrincipal(Holder h, double value) {
         switch (h) {
-            case HOUSEHOLDS -> householdPrincipal = value;
+            case HOUSEHOLDS -> householdPrincipal = value + custodyReservedFace;
             case CENTRAL_BANK -> centralBankPrincipal = value;
             case FIRMS -> firmPrincipal = value;
             case WORLD -> worldPrincipal = value;
@@ -489,7 +509,7 @@ public abstract class Debt {
         double v = Math.max(0, value);
         switch (h) {
             case BANK -> bankDiscount = v;
-            case HOUSEHOLDS -> householdDiscount = v;
+            case HOUSEHOLDS -> householdDiscount = v + custodyReservedDiscount;
             case CENTRAL_BANK -> centralBankDiscount = v;
             case FIRMS -> firmDiscount = v;
             case WORLD -> worldDiscount = v;
@@ -564,6 +584,7 @@ public abstract class Debt {
      */
     public double unaccretedOn(Holder h, double face) {
         if (foreign || h == null || !(face > 0)) return 0;
+        if (h == Holder.HOUSEHOLDS && retiringCustody) return custodyReservedDiscount;
         double held = heldBy(h);
         if (!(held > 0)) return 0;
         double share = Math.min(1, face / held);
@@ -581,6 +602,8 @@ public abstract class Debt {
         if (foreign) return 0;
         double bankStep = accretionOf(bankDiscount);
         bankDiscount = Math.max(0, bankDiscount - bankStep);
+        double reservedStep = accretionOf(custodyReservedDiscount);
+        custodyReservedDiscount = Math.max(0, custodyReservedDiscount - reservedStep);
         householdDiscount = Math.max(0, householdDiscount - accretionOf(householdDiscount));
         centralBankDiscount = Math.max(0, centralBankDiscount - accretionOf(centralBankDiscount));
         firmDiscount = Math.max(0, firmDiscount - accretionOf(firmDiscount));
@@ -1322,6 +1345,7 @@ public abstract class Debt {
             // Who holds it, and what is still owed for it, in the new unit;
             // the yield is a rate and does not move.
             householdPrincipal *= scale;
+            custodyReservedFace *= scale; custodyReservedDiscount *= scale;
             centralBankPrincipal *= scale;
             firmPrincipal *= scale;
             worldPrincipal *= scale;

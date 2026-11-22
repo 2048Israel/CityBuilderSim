@@ -1,0 +1,981 @@
+# HT1 — household basis and investment taxes
+
+**Current named F1 disposition, 2026-11-22:** root b856 authorized diagnosis and, for a demonstrated untouched-main class, acceptance by name with a new queued causing fixture under Jerus's 2026-11-04 rule. The snapshot replay is byte-identical to the ensemble through456; the sole main827 comparison and a second snapshot-only land observer establish FB11's cash-share/whole-offer land-funding class, not an HT1 financial or bank-capital defect. New checked-free row FB11H records the exact seed14/m456 fixture, coordinated with existing FB11. The raw ensemble remains native4/hard6/10; only its four exact pre-switch F1 twins pass by name under the orchestrator's delegated call. M1 remains numerically PASS for all policies. No scoring threshold/CSV/model source changed or reran. The authorized next step is versioned BOX ALLdry; marker remains.
+
+**Historical raw ensemble hard block, 2026-11-22:** the authorized BOX ensemble of pushed integrated `b56fa666b0693a866f80aaccdbbc497706835985`/source `cb68fde200797e8db284a6c108698524f1fcb561` against .181 is terminal native4, batch FAIL (hard6/10). All80 runs completed with no missing or short runs and every policy's MoneyAudit M1 passed. F1 fails in AUTO2/ZERO_SLACK/SHOCK/HIGH: each seed14 first reports ?households with no home? at month456, before those policy switches. This is a hard stop under root229e; no waiver, follow-up model, ALLdry, marker removal or readiness occurred. All owned jobs are terminal, remote owned process matches0 and local JVM0. Full failed baseline is committed as docs/ensemble/HT1.md; raw evidence remains under target/ensemble/HT1-final181-20261122-0115. The scoped review SHIP remains accurately recorded, but the batch is not ready. L7 stays separate Pending.
+
+**Historical final-verification launch stage, 2026-11-22:** root229e records REV-HT1c1-1's scoped follow-up SHIP at `b499ee747`: P2 closed, no new finding. Authorized end-to-end verification now incorporates origin/main `827bc03f7a3694e2b62ffb0eaa6d2a9e11ad3a94`, including published SD1 wording and later records. Source merged without conflict; two generated indexes were regenerated. The integrated fast checkpoint passed compile/maps/Stale0firm/194soft. The BOX ensemble against `docs/ensemble/0.9.181.md`, then versioned ALLdry on hard PASS, are now ordered; no verdict is claimed yet. Marker remains until all verification finishes. L7 remains separate Pending.
+
+**Current provisional P2 mends, 2026-11-22:** independent WHOLE review REV-HT1c1-1 of `1c776986ef12705bac2d6fae8cf2d317dcf90d13` found one P2 and returned NOT SHIP. The cancellation path now nets positive lost basis through the existing active-month gain/loss/refund calculation and credits the signed tax refund to household savings; closed windows carry the loss without touching stale taxed gains. Source `bafcc534a01b23705e06d3c08315f5b3806431c9`, tree `f96a052b38f69703c7181289561cb1294bd48c84`, contains that production mend and its native proofs. Changed-source fast0, CapitalGainsCheck5280OK/0FAIL, BankFailureCheck0, ShortSellingCheck0 after one preserved own fixture red/mend, and TreasuryCheck0 are terminal. Scoped stranger follow-up review remains owed; this is provisional, not self-SHIP/readiness. Main advanced to SD1 `545f8c5b79fd6448e598f021860654a38c19ec55` during the frozen proof; this target still has the reviewed .181 base `a9ffdac8`, and no further integration was attempted. Newest-main integration/final model ensemble/ALLdry stay root-ordered. L7 remains separate Pending.
+
+**Historical pre-review provisional-mends status, 2026-11-22:** final integrated production remains main.181 plus the accepted HT1 core. All19distinct final focused harnesses passed with native wrapper/child0 (table below), alongside the separately preserved integrated CapitalGainsCheck5201OK/eight full-State loads/120monthly audits. Routine fixture mends are FundLedgerCheck.bonds and one ExchangeCheck waterfall case only; no production edit since the .181 integration. Rootea0a explicitly authorized controlled OPENING issuer cash for the isolated ledger fixture; both earlier natural-cash failures remain honest historical evidence. Final source commit8151eec2e7380437789deed6fae7c86217e4c345, source7b4622260a5ccbb886b4fc5c139c9a6e8008eb99. All owned jobs are terminal and the ordered named handoff went ONLY to study/root under9cfa, then SD1. Marker remains; this is for fresh WHOLE money/save stranger review, not self-SHIP/readiness. Final newest-baseline ensemble/ALLdry remain root-controlled and owed. L7 stays separatePending.
+
+**Historical native-payer stop, 2026-11-21 22:55 Atlantic:** integrated-stop0bfd20f29 was already pushed before root4273. FundLedgerCheck.bonds now has an actual-payer/clearing/cash-counterpart correction source at `72e8447dd76f496e0b7d3e95c718d1354c601ec8`, source `64b91641950ec09af8913cef5fb41c84f836acd8`. ONE wrapper is terminal native4/child1/relay4:52OK lines, then the native payer premise fails with Mining cash0.0 versus bill50 and an explicit IllegalStateException. No debit/charge/bank booking/payment occurs; all later payment/default/maturity/duplicate assertions are unrun, not passed. Root2203 subsequently superseded micro-GOs with routine owned-mend authority, but retains an actual premise-change stop. Fixed Mining cash cannot pay50, and native primary issuance changes the fixed24-month term; any different issuer/funding premise needs that exception resolved. No such change or extra model occurred. Named slot RELEASED directly to R6ecodex1 with no owned JVM; no own job remains. Marker and all previous receipts remain; this is no SHIP/mends claim.
+
+**Prior integrated four-red status, 2026-11-21 22:38 Atlantic:** root7ae6 released newest-main integration and a bounded ordered focused stage. Normal merge `f3a8f65bbedd9c8e54c36fc1e0dd3d1471eb08f6` incorporates main `a9ffdac8315f7e4e16b92e2a240814a8d6645d29` (.181); source `6668d458cd7782971ce87b50807dfb61e5cbd274`. No source conflicts/manual semantic change;11generated conflicts regenerated. ONE fast passed; integrated CapitalGainsCheck passed5201OK/0FAIL; next FundLedgerCheck is the first NEW hard red (native wrapper4/child1/relay4,4actual assertions). The sequence stopped; HouseholdFlow/Equity/SaveFile/ReadPath/History/YearBook have NOT run in this integrated stage. No mend/retry occurred. A source-proven unpaid coupon fixture phase and smallest FundLedgerCheck-only proposal are below. Provisional marker and all earlier evidence stay; remaining checks, fresh whole money/save review, newest-baseline ensemble/ALLdry/readiness/publication are not released or claimed.
+
+**Prior pre-integration focused status, 2026-11-21 22:20 Atlantic:** rootba2b released a CapitalGainsCheck-only native-premise correction and ONE normal wrapper. It is terminal **PASS for that focused wrapper**, native wrapper0/child0/PowerShell relay0,5201OK assertion lines/0FAIL. Both loaders measured the closed-window pending/current loss and foreign cash/ledger counterparts and their native once-only promotion. Both exchange steps independently recorded their automatic split factors. All coupon/save/issuer/bank/negative controls, genuine market cash edges and120-month audits stayed hard and passed. No production owner, getter, timing, guard, precision or claim formula changed. This remains a provisional checkpoint: other focused harnesses, newest-main integration, fresh whole-money/save stranger review, final ensemble and ALL dry remain owed under separate root ordering. All earlier red receipts stay immutable and distinct.
+
+**Prior six-red fixture status, 2026-11-21 22:05 Atlantic:** root9af4 released the fixture-only correction and ONE normal CapitalGainsCheck wrapper. It is terminal **NEW RED**, native wrapper4/child6/PowerShell relay4, with5090OK assertion lines and6hard failures, no exception. The four corrected coupon phases/eight full-State loader equalities and both real-market cash-edge cases passed; the full120-month money/household/budget/claim audits passed. Six newly reached assertions remain ordinary own-mend work, not a waiver or SHIP claim. No retry or post-result source mend occurred. Provisional marker, fresh whole-money/save review and newest-main integration/ensemble/ALL dry remain owed. Exact receipt and bounded next proposal are below.
+
+**Prior target-only diagnostic status, 2026-11-21:** root134b released exactly one v2 evidence attempt. It is terminal with `EXPECTED_HARD_REDS_REPRODUCED_NOT_A_PASS`: one isolated compiler exit0 and one model exit1,8loads/70frames/20preserved hard failures, normal cleanup and all pre/post pins verified. The observations identify an inconsistent seeded issuer/holder fixture before any load, and the loaders' exact reconciliation; they do not waive the failures or establish a whole HT1 pass. A notes-only receipt is below. No model/harness/source mend or further runtime was made; ordinary own-mend work awaits root ordering.
+
+**Prior ordinary own-mend status, 2026-11-21 20:50 Atlantic:** the first new-source CapitalGainsCheck is a hard own red (native wrapper4 / child1 / PowerShell relay1, 21 failed assertions and an exception; 200 other OK lines do not make the harness green). Root 657f/314c released STATIC tracing and target-only diagnostic preparation only. That preparation is now present, uncompiled/unrun, for root review; no production/harness mend or new model was made. The earlier compiled-only checkpoint below is historical. This is ordinary engineering own-mend work, not a new policy hold; L7 retains its separate Pending owner disposition.
+
+**Custody source checkpoint, 2026-11-21:** root accepted and released the separate passive receiver/issuer extension in mail c483, with coupon-pool requirements in bdeb and five exact array-shape fixture edits in 2794. Custody source and causing fixture source are now authored on the same branch. Named runtime proofs and fresh money/save review remain owed; this is provisional and is not a source-complete mends/readiness claim. The prior tagged-core/static paragraphs below are historical checkpoints, superseded on custody authorization and implementation status by the current checkpoint at the end. L7 retains its separate Pending owner disposition.
+
+**Collection decision, 2026-11-21 18:35 Atlantic:** Jerus reviewed the liquidity block and
+delegated acquisition of a rule in mail `20261121-182152-415-jerus-422e`.
+The orchestrator chose [cash-first secured deferral](HT1-collection.md): assess
+once, collect available cash after existing estate debt settlement, carry the
+shortfall with affected assets, and book revenue only when cash is collected.
+The earlier blocked-call paragraphs below remain the historical checkpoint;
+they are superseded on this policy question. The earlier static proposal below records the approved core design; the implementation checkpoint above supersedes its implementation status. The escheat ownership gap remains. L7 remains a
+separate owner item; its disposition is not reopened.
+
+2026-11-21. HT1codex1, gpt-6.1-sol/xhigh, Codex. New isolated batch/HT1 at launch base f2dba24270a0ba34bd08f3214285d9e98c1bb942; origin/main later advanced only QUEUE to 9d4467e8ae610a777f7ce445702c205f3984042c; orchestrator explicitly said not to merge that records-only update to rerun checks. This is a provisional, incomplete checkpoint, **not ready for publication**.
+
+## Accepted scope and what is implemented
+
+QUEUE HT1 and spec-households sections 3.1-3.6, 4, 5, 7 and 8 remain the design. No alternate capital-gains tax or dividend design was substituted. No stage/cell ordering, sector/company IDs or enums changed. moves_playtest=yes.
+
+Average acquisition cost is one per-household stock per company. FundLedger's existing proportional release was extracted and used by its original sale path and HouseholdBalance. Purchases add actual money paid; founders add the actual founding book/price. Exchange fills and spending-waterfall sales release average basis; a split preserves total cost. Losses offset same-month gains in either fill order and carry unused balances to later gains. Basis and loss carry enter stocks(), including stage moves, survivors, the pool, owner-line count changes and empty-cell folding. Folded basis uses its associated share distribution, rather than distributing by historic costs. Surrendered shares move their remaining basis into loss carry.
+
+Sales collect the accepted 50% inclusion at the holder's banded wage rate; nonworking holders use the wage base. The inclusion dial clamps to 0-100%, is copied/staged/saved, and appears on Policy > Taxes > Wage. Integration leaves dividends untaxed at default wage/profit rates and nets the actual tax from savings/investmentIncome when a wage band is raised. The bank credits the Retail profit-tax rate it actually pays. Gross dividends remain gross on the share register, so the foreign dividend is not inflated by domestic tax.
+
+Game receives actual tax cash immediately; MoneyAudit names both household-to-treasury transfers. NationalAccounts and GovernmentScreen have two named revenue lines. TreasuryJournal saves the actual receipts but excludes these already-budgeted revenues from cash-bridge adjustments. YearBook declares both new history series FLOW; no GDP definition/identity/classification was changed.
+
+## Saves
+
+SAVE_FORMAT and OLDEST_LOADABLE_FORMAT both rise 58 -> 59. A zero missing basis would tax the whole first sale, so the accepted incompatible-save refusal is required. No conversion code was added. CELL_SLOTS_BEFORE_BASIS pins the old end and appends company basis, loss carry and current-month taxable gains. DataSave also carries struck tax transfers and actual call counts. Both Game load routes restore these; HistorySave records/copies/scales the two money flows. The named save proof uses nonzero distinct values, compares every cell slot through both real load routes, preserves nonzero histories, and actually refuses the previous format. It writes only scratch slot 10.
+
+## Historical design holds (superseded as recorded above)
+
+1. **Estate/departure tax collection is not implemented yet.** Section 3.6 requires tax before heirs or departing savings leave. Section 3.3 requires the estate's rest to pass in kind, explicitly no stock-market moves. An appreciated portfolio can owe more tax than its savings. There is no accepted rule for unpaid tax, tax priority versus revolving debt, a tax liability stock, forced sales, or a cash cap. Forced sales would change that accepted in-kind rule; forgiving/capping tax would change the accepted tax design; negative savings would violate stock clamping/conservation. Sent exact issue to orchestrator at 17:02, clarified 17:06, 17:11, 17:13 and 17:16 Halifax time. At 17:23 orchestrator explicitly HELD this phase for Jerus and moved HT1 Queued -> Pending on main9d4467e8. An explicit owner decision is needed before completing the deemed-disposition/step-up and departure flows and their conservation tests. Survivors/stage/pool transfers already carry basis/loss with shares untaxed. No estate/departure proof is claimed.
+
+2. **R6-G-P's L7 TFSA needs an account design.** research-1996-2024 sections 3/8.2 and R6-G records give Jan 2009, $5,000 annual room, untaxed gains/withdrawals, work 4,210 and a Policy lever. They do not specify eligible holders, account/allocation stocks, contribution allocation, withdrawal/recontribution room, treatment at death/departure, or how a player opens/uses it. No existing shelter/account handle was found. A gains tax exists in this patch, but the shelter mechanic does not. An inert catalogue row or a $5,000 gains deduction would invent the effect. research.json is deliberately unchanged, with this scoped owner item explicitly blocked. Sent to orchestrator at 17:01 and 17:02; decision outstanding.
+
+## Checks and evidence
+
+- --fast: compile/maps/Stale passed, 0 firm findings.
+- CapitalGainsCheck: first completed run passed; actual two-price fills, partial/full releases, gain-before-loss/refund, carry, founders, offerings, actual split trigger, integration and stage/pool conservation. In 120 real months: 8,233 gain assessments, 17,451 dividend assessments, 64.20752381053605 actual gain-tax transfers; every monthly pool/household/treasury identity held. Final expanded run also passed (0 failures): spending-waterfall net cash conservation, losses before gains, bank integration at Retail's effective profit rate, inclusion endpoints/copy, all appended save fields/history through both loaders, and actual format-58 refusal.
+- FundLedgerCheck: passed, proving the existing fund average-cost behavior after extraction.
+- HouseholdFlowCheck: passed; EquityCheck: passed.
+- SaveFileCheck: passed, including nonzero HT1 fields/history through both load routes and actual incompatible-format refusal.
+- ReadPathCheck: first attempt failed in the new assertion because it preceded the harness's out initialization. This was HT1's own harness placement error, mended by moving it after initialization; rerun passed. The HT1 saved-field assertions themselves had passed before that failure.
+- The initial CapitalGains wrapper selected zero harnesses because its registry append followed that javac snapshot; recorded incomplete, never called green. The subsequent registered run above passed.
+
+Each named wrapper supplies compile/maps/Stale; no immediate unchanged fast replay. Full pick suite, LongPlaytest, ensemble and dry run have not run. All worktree JVMs use main's C:/ earth-2.bin/world-1.bin. No user slots 1-9 writes. No remote job or retained gate evidence touched. Individual output remains under target/checks/NAME.log.
+
+## Review/publication floor and next work
+
+Money and saves require a fresh stranger review; this builder does not self-certify it. Pick/review output will be appended after the checkpoint is committed. Final diff inspection restored 12 untouched original Unicode comment lines in Game after a shell encoding read had altered them; indexes were regenerated after that comment-only correction, with no model change or unchanged suite replay. All six required named wrappers exited 0; the final wrapper regenerated maps and found 0 firm Stale findings. The earlier ReadPath placement failure was mended, with no known-red row or waiver. The default trace moves, so the **final** model owes the gate-box-first ensemble on the newest committed baseline, and explicit orchestrator GO/heavy ordering; the model is not final while the above calls remain unresolved. No ensemble, dry-run, publication or marker removal is authorized by this checkpoint.
+
+Actual sources: Household, HouseholdBalance, FundLedger, Exchange, Equity, TaxPolicy, Game, DataSave, HistorySave, GameVersion (save constants only), MoneyAudit, TreasuryJournal, NationalAccounts, YearBook, ui/GovernmentScreen, ui/PolicyScreen, CapitalGainsCheck, AllChecks registry, SaveFileCheck and ReadPathCheck, plus generated indexes. Orchestrator accepted NationalAccounts/GovernmentScreen on 17:05; YearBook's two flow declarations were explained before editing at 17:17. No other lane's dated-home, apprentice, ladder or housing fixture sections were edited. Publisher VERSION/QUEUE/changelog/gate records unchanged. No process/test machinery changed; no one-in/one-out removal is invented.
+
+Eye check once the mechanic is complete: Policy > Taxes > Wage inclusion endpoints/default and staged apply; Government revenues show the two receipts and their histories; the budget-to-cash bridge counts each receipt once.
+
+## Checkpoint pick (classification only; no full suite launched)
+
+Source checkpoint 5c29f8dcd. `sh tools/pick.sh origin/main HEAD` against records-only main9d4467e8 printed:
+
+```
+ALL
+pick      ALL 238 harnesses - src/main/java/ham/citybuildersim/AllChecks.java runs the suite (59 files changed since f2dba242)
+review    needed - money: FundLedger.java, TreasuryJournal.java; saves: DataSave.java, HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT
+```
+
+This is a blocked checkpoint, not complete mends, a readiness claim, or a review/ship request. The provisional marker stays. No owned job remains running. Independent checks are green, but the held tax-collection phase, L7 account design, fresh review, final ensemble and any ordered full gate remain unfulfilled.
+
+## Static integration proposal - 2026-11-21
+
+Authority: orchestrator mail `20261121-183754-663-orchestrator-5198`, following the acquired rule in [HT1-collection.md](HT1-collection.md). This section is a proposal, not implementation or a new runtime verdict. This turn read local maps and selected methods only: no source edit, merge, compile, JVM, harness, ensemble, dry run, gate or readiness action. The six green harness results above belong to the earlier checkpoint. Main's records-only return to Queued is not a reason to repeat them.
+
+### 1. Smallest collateral representation
+
+HT1 currently taxes gains on company shares only. Secure the unpaid share-gain assessment on the assessed equity, not on unrelated bonds, city paper, cars, dollars abroad or wages. A later receipt from that equity includes its sale/buyback, redemption and dividend, and the existing actual lending fee on it. This needs no TFSA, mortgage, bond-market redesign or generic creditor ledger.
+
+For C existing cells and N existing companies, add exactly:
+
+| owner | stock | unit / role |
+|---|---|---|
+| Household | `taxShares[N]` (T), `taxClaim[N]` (L) | Per household: the subset of S shares encumbered, and its unpaid nominal-money claim. Existing `shares` (S) and `basis` (B) stay authoritative. |
+| Equity | `foreignTaxShares[N]` (F), `foreignTaxClaim[N]` (D) | Persistent subset of `foreignShares`, and unpaid claims on that subset. These are never overwritten by Exchange's monthly emigrant field. |
+| HouseholdBalance tax book | `governmentClaim[N]` (G) | Saved matching government receivable, not spendable cash or tax revenue. |
+| HouseholdBalance departing-flow record | `departingTaxShares[N]`, `departingTaxClaim[N]`, `handedOff` | Struck outgoing quantities/claims and a consumed flag. They remain available to distinguish this month's ordinary emigrants, while transfer into Equity happens once. Unhanded claims are an explicit transit stock. |
+
+Thus the core adds 2*C*N + 5*N doubles and one handoff flag, plus fixed-size flow/count snapshots. Also persist the already-existing gross `lastSharesTakenAway[N]` alongside the new departing vectors (not another ownership stock): it is needed to resume the handoff and calculate the ordinary monthly emigrant remainder. No person/estate list, repeated basis ledger, new cell, enum reorder or security ID is needed. DataSave keys will be new/appended and company names use the existing saved company keys. A claim is not revolving bank debt, a lending-cap input or permission to make savings negative.
+
+Invariants: 0 <= T <= S; 0 <= F <= foreignShares, allowing the register's existing issued-plus-short convention; claims nonnegative; L>0 requires affected T>0 outside a disposal operation. G equals domestic claims weighted by households, plus D, plus unhanded departing claims. Stock transfers leave G unchanged. Assessment adds to G; actual collection, genuine extinguishment and treasury consolidation reduce it through distinct counters. No tolerance clamp may erase a positive claim merely because an order/share count is small.
+
+**Declared averaging:** within one cell/company, all encumbered units form one collateral pool; same for one foreign/company pool. A new *encumbered* assessed transfer joins that pool by adding its units and claim. Previously unencumbered purchases/leavers/world holdings do not join it. On a sale of q out of S domestic units, q*T/S is the attributed tagged portion; an after-current-tax receipt uses that same fraction. Old collection is min(pool claim, attributable actual net receipt), not min(claim, all of the cell's cash), and not a copied fraction of claim treated as revenue. A dividend/fee uses the tagged holding directly. The remaining claim stays on remaining tagged collateral; only a final disposal/extinguishment can lose an uncovered remainder. Once the pool claim is fully paid, remaining units are released to ordinary holdings before a future unrelated claim can arrive. This is the acquired rule's bounded averaging within affected holdings, not per-person lien tracking; exact individual cohorts with different claims would require an unbounded history and are deliberately not represented. Ordinary WORLD/new unencumbered EMIGRANTS receipts contribute zero to these pools.
+
+### 2. Assessment and existing stock phases
+
+| existing seam | bounded change |
+|---|---|
+| `HouseholdBalance.carryTheFlows`, `m.to >= 0` | Retirement/stage/survivor transfers move S/B/T/L together with existing weights. Survivor rollover does not assess, step up or collect anything. |
+| `carryTheFlows`, estate branch | Build the departing fraction's temporary stock vector. Perform existing min(savings, revolving debt) repayment, debt shortfall and student-loan write-off first. Before pooling estates, assess its net share gain once using that fraction's basis/loss carry and holder rate; update only the transferred fraction's loss balance. Collect min(new assessment, remaining estate cash). Add the shortfall to claims, allocating it across companies in proportion to their positive pre-offset gains; tag those companies' assessed units. Existing claims remain attached. Reset transferred share basis to the assessed quote value (including a loss disposition); pass cash, S/B/T/L and remaining loss carry together. Surviving source households retain their original average. |
+| `passOn` | Use the existing tier/stage/heir passes and exactly the same recipient allocation for each security bundle. Assessment happens before different deceased cells are mixed; do not assess the heirs' combined portfolio. The no-heir branch has the separate ownership gap below. |
+| `carryTheFlows`, OUT_OF_THE_CITY | Assess that outgoing fraction once before savings leave, without inventing debt settlement the leaver does not currently perform. Cash first, then secured claim. Record net savings in LeftWith and outgoing tagged shares/claims in the struck handoff record. No exchange fill is presumed. |
+| `followThePeople` / `moveStock` | The anonymous pool can also leave unmatched stocks outside the city. Its unmatched *source* fractions must be assessed at their own wage rate/basis/loss before they lose attribution; never assess the aggregated `left[]` at a guessed rate. Extract/reuse the existing row/city allocation coefficients to transfer S/B/T/L atomically, rather than running a second tax-only census. Split the stock result into matched arrivals and assessed departures without changing the census arithmetic or stage ordering. |
+| owner line / empty-cell fold | Extend the existing beforeShares retention to B/T/L when a failed owner's family leaves but its other stakes stay. For a fold, capture one share-allocation map and move the entire security bundle by it; do not spread a claim by preexisting claim balances or tag a recipient independently of its shares. No assessment/receipt on a mere fold. |
+
+Cash tax assessment is not an estate expense paid before the existing revolving-debt rule. The quote is the live `Exchange.price` already wired into the balance at that phase; no future closing price or reconstructed end-of-month flow. The existing consumed population-flow state plus one consumed foreign handoff prevents a reload/repeated reader from reassessing an event.
+
+A departure's existing paper-to-desk sale is not collateral for a share claim under this allocation. Its proceeds continue through the existing paper/LeftWith path. Neither another capital instrument's coupon nor an unrelated heir's wage pays this equity-secured liability. If review requires cross-asset security instead, that would require additional instrument-level attribution and must be scoped before editing BondMarket/DebtManager; the proposed core does not pretend the current issuer-total interfaces provide it.
+
+### 3. Actual settlement hooks, including old foreign holdings
+
+- `HouseholdBalance.sellShares`, called by `Exchange.Settle.settle` for both normal cell sales and `selling` waterfall sales: capture S/T before mutation; run existing FundLedger average-basis/current-gain tax once; allocate the resulting actual net proceeds to tagged units; collect the capped old claim; return the final net cash to savings or `raised`. A partial sale retains its unpaid claim on unsold tagged units. Full tagged disposal collects what it can then explicitly writes off only the uncovered residual. The buyer receives clean units at actual paid basis. No claim jumps to the buyer or to that seller's future unrelated purchases.
+- `creditDividend`: compute the accepted current integration tax once, then collect old capital-tax claims only from tagged units' after-current-tax dividend. Savings/dividends/investmentIncome receive final net cash; return value remains the gross household dividend used by Equity's distribution identity. Current dividend tax and old capital-tax collection remain separate revenue types. `creditLendingFee` similarly collects from the tagged units' actual fee; its existing returned gross fee stays gross for the payer/audit.
+- `Equity.followEmigrants`, in `Game.payDividends` **before the dividend loop**, merges gross departing shares into foreignShares as today and transfers the tagged handoff once into F/D. The consumed flag guards the whole gross-register plus tagged-claim handoff, not just the claim addition, and is saved while gross and tagged departing counts remain readable for this month's ordinary EMIGRANTS quantity. A new census may not overwrite an unhanded prior snapshot: complete that snapshot through this same handoff first, without reassessment or a receipt. A full normal month still hands off at its existing payDividends phase. Do not wait until `Exchange.takeMonth`: that would miss the dividend paid earlier in the same month.
+- Add one fixed seller name, e.g. `TAX_EMIGRANTS`, to Exchange's existing participant-string protocol. It maps to the existing BY_EMIGRANTS counter class; preserve all six numeric class values and their gross offer/fill conventions. No OrderBook redesign or new enum ordinal is needed. It can sell only F, cannot buy, and posts the existing emigrant ask without forcing any bid/fill. Last month's unfilled F/D survive withdrawn/reposted orders. The normal reset becomes **this month's gross departures minus this month's tagged departures**, bounded by remaining untagged foreign holdings; it never replaces F.
+- `worldHolding` subtracts both ordinary monthly emigrants and F; WORLD capacity cannot sell encumbered units. `Settle` recognizes the separate seller as abroad, reduces foreignShares/F by actual q, collects min(D, actual received cash), and preserves gross `emigrantsPaid`, lifetime emigrant payment, native buyer/outflow, volume and class counters. Add separate collected/net-paid figures; never quietly redefine the old gross counters. A WORLD or WORLD_SHORT buyer is still an actual settlement under the existing model: no domestic gross payer flow is invented, but the retained claim cash really enters the treasury.
+- `Equity.payDividend`: after perShare and gross foreign distribution are known, F*perShare is the attributable receipt. Collect capped D from it through the same cash sink; the native foreign/current-tax rule is unchanged (no new foreign wage-rate tax). Keep `dividendAbroad` gross for its existing income/payer identity and expose the retained old-claim collection separately. Claim collections are capital-gains-tax receipts, not a second current dividend tax. Fully paid foreign collateral releases to ordinary WORLD holdings; no future new leaver's cash refills a paid or extinct claim.
+
+The current Exchange participant string is sufficient to distinguish each tagged fill, unlike reusing EMIGRANTS with a hidden mixed order. Both old unsold holdings and old tax therefore remain attributable through the exact reset at takeMonth lines 827-828.
+
+### 4. Shorts, retirement of shares and treasury ownership
+
+Domestic share lending does not transfer beneficial S/T/L; collect a real manufactured dividend or lending fee through the existing actual holder receipt, once. Foreign tagged holdings do not become a new lender class: the world currently lends nothing. Preserve existing WORLD_SHORT capacities, collateral and self-trade policy; classify the tagged foreign seller like today's EMIGRANTS, not like an unrelated WORLD seller. Existing total ownership is issued shares plus short copies; do not clamp F to shares in issue alone.
+
+`Exchange.splitWhatNeedsIt` / `HouseholdBalance.splitShares` / `Equity.split`: scale S/T/F and resting unit quantities together; preserve total B/L/D/G. Money/currency reforms scale B/L/D/G and all money flows, not unit tags. Share-buyback fills pay and release security via the normal actual-sale hook; `Equity.retire` alone is not another receipt or assessment. A floor quote, empty order book or absent buyer is not insolvency.
+
+`Game.resolveBank` -> `HouseholdBalance.surrenderShares` / `Equity.takeAllForCity`, and `Exchange.cancelShortHeld` -> `Equity.cancelHeld`, are genuine old-common extinguishments under their existing semantics. Collect only any actual consideration first; currently the old common is surrendered for nothing. Then clear its tags and book uncovered L/D as noncash claim loss, with matching reduction in G. Do not attach the old tax to the city's replacement rescue stake or a future relisting, and do not count the treasury's recapitalization as tax money. Escheat of a continuing asset is different: that self-claim consolidates, rather than being an insolvency loss or cash collection.
+
+### 5. Exact escheat gap to review before broadening
+
+Current `HouseholdBalance.passOn` ends with `for (...) left[s] += e[s]` when no heir exists (line 2464); `followThePeople` then treats the cash as LeftWith and shares/bonds as foreign. Targeted symbol lookups find no `estatesEscheated` or escheat implementation in HouseholdBalance/Game. Thus the study/rule's assumed existing unclaimed-property owner/classification is not actually an available transfer API. Calling that path treasury escheat, deleting its assets, or cancelling its tax without a receiving owner would be false conservation.
+
+The tax portion is representable: after normal debt settlement and assessment, a *real* treasury escheat must retain the assets, receive its cash as unclaimed property, and consolidate its own G/L without creating tax revenue. Recommended minimal ownership extension for overlap review: one bounded treasury unclaimed-asset stock capsule using the existing stock/security keys (company shares/basis, existing live bond IDs, paper, foreign currency and cars), no households/person/estate list, no market orders or automatic liquidation. Cash and noncash unclaimed property must be recorded separately. Equity ownership must add those shares to the existing city total, not foreign; any use of the fund must have a true in-kind entry in its existing average-cost FundLedger with zero cash-purchase counter, not a fictitious purchase/receipt. Treasury-owned own paper also needs an actual issuer/holder consolidation at DebtManager's existing holder/retirement seam; moving a bare face number is insufficient.
+
+This is the one genuine broader-system engineering gap: the general no-heir asset custodian and own-paper/bond ownership counterpart are absent from the tax-only interfaces. Do **not** edit TreasuryFund/FundLedger/BondMarket/DebtManager or invent an unclaimed-property budget classification before the owner/file-overlap review scopes that custody seam. It is not a renewed question about the acquired collection policy. The core tagged equity design above can be reviewed independently; escheat must not be claimed complete while the no-heir branch still means emigration.
+
+### 6. Accounting, lifecycle and verification boundaries
+
+The government-claim identity is opening G + assessed - actual collected - genuine written off - own-treasury consolidated = closing G (including transit). Current cash sale taxes may assess and collect at once; old collections never assess again. Use fixed pending/in-progress and struck flow/count vectors, like the existing pending/closed journal pattern, because a manual bank resolution can extinguish collateral between presses. Open the tax window once at Game's existing audit/month boundary; do not reset its ledger inside `advanceMonth` after an earlier event. Close at the existing treasury/history boundary, after all receipts; save both vectors. No JVM ordering change, thread or background worker is proposed.
+
+`Game.receiveInvestmentTax` remains the one actual cash sink. Keep the two actual cash revenue lines in NationalAccounts/GovernmentScreen and journal; add assessed/outstanding/written-off/consolidated **disclosures**, not fabricated cash revenues. In MoneyAudit, split actual capital-tax collection into domestic household collections (DOMESTIC, affects the household identity) and retained foreign old-claim cash (FINANCIAL claim settlement, not a charge to domestic households). Existing gross sale and foreign-dividend edges remain gross; the retained receipt is declared once as its own inflow. Noncash assessments, basis resets, loss carry, write-offs and consolidation never add spendable pools. No GDP equation, reserve stock or ForeignAccounts.netForeignPosition definition is changed; that existing treasury reserve-minus-debt measure is not a general receivables registry.
+
+Lifecycle: append domestic T/L to cell slots, and save G, departure handoff/flag, foreign F/D and struck/pending accounting under explicit keys. Both actual Game read routes, DataSave snapshot/copy, Equity snapshots/reset, new-city reset, replay/history copies and money redenomination must preserve the same stocks. Order withdrawal/monthly exchange reset must not reset claim ownership. Restore saved counterpart stocks; do not reconstruct assessed/collected flows from closing balances or silently erase a mismatch. The existing HT1 58 -> 59 incompatible basis-format bump stands; no further bump/conversion is proposed just for absent zero claims in an unpublished checkpoint that never assessed them. History: assessed/collected/write-off/consolidation are FLOW, outstanding is LEVEL, each money series scales. Append YearBook rules beside HT1's two existing rows; leave PW6 power rows intact.
+
+Causing fixtures, after implementation GO: (1) accepted 1000/400/10 -> assessed45, collected10, claim35, actual receipt20 -> collected20, remaining15; sufficient cash and debt-first cash-short estate; (2) survivor unchanged basis/claim, partial estate source unaffected, heirs stepped basis and old claim, later unchanged-price sale no repeated original gain; (3) pool/stage/owner/fold conservation of S/B/T/L and G; (4) departure with no bids, save/load/month reset then partial/full tagged fills and capped receipts; (5) unrelated heir wages/purchases/WORLD/ordinary new emigrants cannot pay old tax, while new *encumbered* pooling follows the declared average; (6) real net dividends, lending fees and waterfall proceeds after exactly one current tax; (7) shorts, manufactured dividends, split/consolidation, buyback, genuine cancellation/resolution and zero-priced unfilled collateral; (8) escheat receiving actual assets and self-claim consolidation, never tax revenue; (9) currency twins, both load continuations with the saved gross/tagged handoff guard and after partial collection, plus counterparty identity and actual-money audits in a real run. Expected values come from the rule's concrete example/model constants and actual fills, not a copied oracle. No premise deletion or audit waiver.
+
+### 7. Proposed source boundary for the next review
+
+Core: Household (stocks/lifecycle), HouseholdBalance (flow bundles/assessment/collector/tax book/save slots), Equity (foreign tags/dividend/extinction/save API), Exchange (named tagged seller, step reset, capacities/fills/counts/splits), Game (wire handoff/collector and audit-window/budget/load/resolveBank seams), DataSave, HistorySave, NationalAccounts, MoneyAudit, TreasuryJournal only if required for new disclosures, YearBook, ui/GovernmentScreen and the existing CapitalGains/HouseholdFlow/Equity/Exchange/FundLedger/SaveFile/ReadPath checks as warranted; PolicyScreen only its already-owned tax wording. No new process machinery. Generated indexes follow implementation, not this static checkpoint. The general escheat custody owners listed above are a separately flagged proposed extension, not yet an edit authorization or an existing API claim.
+
+PW6 overlap review: Game's named tax/month/resolve/load seams only, HistorySave tax series/copy/scale, YearBook tax rules. No Services source; no PW6 power fields, dispatch, prices, fixtures or model assumptions. No FS5 Kept/controller or FS6 Map changes. Source implementation and named verification wait for orchestrator's exact file-overlap/implementation release; local named slot remains PW6's and no BOX/model work is requested by this note. L7 retains its separate Pending owner disposition, with no research.json row/effect invented or reopened.
+
+## Tagged-equity source checkpoint details
+
+Released by root mail `20261121-185710-327-orchestrator-90cd`, on the same branch/worktree, without merging records-only main. Implemented per-household/company tagged units and limited claim, persistent per-company foreign tags/claims, matching saved government claim, and saved gross/tagged outgoing handoff with a consumed flag. New claims use a union of existing tagged units and affected assessed holdings; paid pools release their tags. Household security pool/fold moves now share one allocation for S/B/T/L, and owner-line share retention covers the whole bundle. The anonymous pool assesses actual unmatched source fractions at the source's wage rate; cash payment is capped by cash actually leaving from that same source, including the owner-retention case where cash/security pools differ. New assessments create only unpaid receivables; actual collectors alone call the Game cash sink.
+
+Estate source fractions settle existing revolving debt first, then assess, pay available cash, step the transferred basis, update only transferred loss carry, and allocate unpaid claims. Survivors do none of those tax operations. Current-sale tax precedes old-claim collection in both normal/waterfall settlements; current dividend integration precedes tagged net-dividend collection, and lending fees are attributed by tagged units. The native gross payer/recipient counters remain gross. Equity merges gross departures and claim attribution once before dividends; distinct TAX_EMIGRANTS orders retain old foreign holdings/claims across monthly resets and are excluded from ordinary WORLD/new-emigrant capacity. Actual foreign retention is a separate FINANCIAL audit edge; household capital-tax cash is total minus that foreign amount. Genuine old-common extinction clears domestic, unhanded and foreign security with an explicit noncash claim loss, including a between-press pending flow, without attaching it to rescue equity.
+
+Appended cell slots and new DataSave secured-state keys save ownership/counterpart/handoff. The original four tax-flow slots retain their meanings as the prefix; absent appended fields stay zero, with no conversion or extra format bump. Pending/struck tax snapshots, Exchange gross/retained receipts and Equity foreign stocks are cloned/saved/restored, reset and redenominated. NationalAccounts/HistorySave/YearBook/GovernmentScreen distinguish assessed, actual cash, outstanding, written-off and consolidation disclosures without changing GDP or reserve definitions. Consolidation remains zero/unimplemented until the actual custody owner exists; the slot is not a claim that escheat works.
+
+Causing fixture source added: acquired 45/10/35 estate and actual twenty dividend collection; sufficient cash; debt priority; inherited basis/loss and untaxed survivor; persistent unfilled foreign orders through an actual monthly step, unrelated WORLD purchase/new-emigrant receipt isolation, partial tagged fills with distinct gross/retained/net amounts, currency/splits and old-common extinction; saved pending noncash losses; nonzero domestic and foreign secured snapshots through both real Game loaders; actual claim-counterpart checks in the existing real-run harness. These new assertions have not executed under this turn's release. Their verdict and any mends are owed when root releases a named slot; the prior six green results are not a verdict on this new source.
+
+Validation in this turn: first authorized --fast compiled in 40s and regenerated maps, but exited 1 on a single own orphan javadoc at Exchange434. Mended the comment delimiter without line/runtime changes. Static inspection then preserved the original four saved tax-flow prefix slots and strengthened the nonzero foreign/pending/counterpart fixture source. Root mail `20261121-192629-016-orchestrator-90de` released ONE final changed-source --fast-only mend verification; it exited 0: compile OK (39s), maps regenerated, Stale 0 firm / 194 soft. This final compile includes the appended-prefix restore and strengthened nonzero foreign/pending/counterpart fixture source. No source was changed after that verification. No named/model/display harness, ensemble, BOX job, dry run, readiness or publication was run or implied.
+
+Actual source files in this turn: Household.java, HouseholdBalance.java, Equity.java, Exchange.java, Game.java, DataSave.java, HistorySave.java, MoneyAudit.java, NationalAccounts.java, YearBook.java, ui/GovernmentScreen.java, CapitalGainsCheck.java. FundLedger and all extra custody owners were not edited this turn. Game edits are the tax-register attachment, audit-window opening/close, tax disclosures and two load/capture paths; no power, Services, dated-home, ladder, Kept or Map section changed. Generated maps/dials/month-order/harnesses follow the source checkpoint. No process/check machinery changed; no fabricated one-in/one-out removal is claimed.
+
+The next custody extension has not been authorized or implemented. Its exact stock/coupon/issuer/cash map and 5-6 additional-builder-unit conservative planning allowance are in HT1-custody-proposal.md; the existing reserved fresh review is separate. No extra allocation or model slot is assumed. Core source plus this static proposal is a provisional checkpoint, not complete mends/SHIP/readiness. Named verification and its ensuing model mends, no-heir custody, stranger money/saves review, final-model ensemble and any ordered full gate remain owed. No owned job remains running.
+
+## Prior tagged-core source/pick floor (historical)
+
+Source checkpoint `1c0b5324a028e415cf70b1128f0f0fbaa19958fa`, source subtree `54e70a0bb693f2c27497b3cc93231cfb805d69db`, after final --fast exit 0. Classification only (`tools/pick.sh`, no picked suite run):
+
+```
+ALL
+pick      ALL 238 harnesses - src/main/java/ham/citybuildersim/AllChecks.java runs the suite (61 files changed since f2dba242)
+review    needed - money: FundLedger.java, TreasuryJournal.java; saves: DataSave.java, HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT
+```
+
+That review line is a floor; the new limited-claim, foreign attribution, issuer and cash-flow wiring also needs the fresh stranger review. No old green named result is borrowed for the new source. The no-heir custody receiver is not implemented. Provisional marker stays and the batch is not complete mends or ready to ship.
+
+
+## Current passive-custody source checkpoint
+
+Authorization: root c483 released the exact receiver/issuer owners; bdeb required explicit real coupon cash and phase/negative fixtures; 2794 released only the five existing pool-count/name assertions. This is the same batch/HT1/worktree, with no main integration, power/controller/resource owner changes or publication. moves_playtest=yes. Source commit `cef7ad9ec9e7d364d3c238e9615a3a0837628962`; source subtree `729f7739167ac77340b6de529097f1cd7ea0f504`. This supersedes the prior statement that no-heir custody is unimplemented or unauthorized. It does not supersede the unrun-proof/review boundary.
+
+One Game-owned EstateCustody now receives actual savings after the original revolving repayment, fixed company quantities and stepped basis, live corporate-bond face, USD, cars and the post-assessment loss memo. No per-person/estate list and no ordinary fund/rescue lot receives this property. The native heir weights/counts are checked before collecting estate cash: an actual no-heir estate assesses once but defers its new tax, receives the actual collateral, then cancels matching old/new self-claims as noncash consolidation. Ordinary real heirs keep debt-first/cash-first collection and stepped basis; survivors retain their original untaxed bundle.
+
+Actual local cash has one sink (`Game.receiveUnclaimedCash`) and one named **Unclaimed estates and receipts** budget/journal line. It includes actual issuer dividends, coupons and principal receipts. MoneyAudit adds one DOMESTIC household-cash edge and one INCOME foreign-coupon edge; it does not copy the outside-household banked-interest debit. No no-heir cash enters either LeftWith leg. In-kind acquisition, self-claims, losses and own-paper book differences are separate from cash revenue. USD principal remains USD and cars remain idle physical units. The former proposal/getter's rolled-coupon wording was obsolete: native HouseholdBalance.investAbroad pays the coupon HOME. Both households and custody now call the same unchanged arithmetic helper; no reserve equation or invented yield was added.
+
+Equity has a distinct saved custody quantity/struck-dividend tail; domestic private ownership excludes it. Real dividends subtract its actual receipt before the foreign residual, with the original issued-plus-short denominator and gross counters retained. Splits move issuer/capsule quantities together and preserve basis. Native old-common cancellation/resolution extinguishes the actual custody lot as a noncash asset loss before replacement rescue shares; no floor quote/order expiry liquidates it. CorporateBond has a separate custody holder in complete held()/issuer summaries, default and currency operations. BondMarket's real issuer coupon/maturity routes pay this holder once and leave ordinary city/fund semantics intact. FundLedger receives actual in-kind basis/face without purchases or proceeds fiction; later genuine income/maturity/loss uses its original methods.
+
+City paper: each existing Debt saves its reserved household face and the exact holder discount. Available household face/discount and trading/book helpers exclude this subset; raw issuer/bank residuals still retain the actual gross ownership. DebtManager allocates once across available real private face and keeps an explicit saved unmatched entitlement/finding rather than clipping or borrowing another holder's assets. The capsule's pending face matches these saved counterparts. `Game.householdsTakeTheirShare` settles actual allotments; immediately afterward and before processAllDebts, consolidation calls the existing guarded `Debt.retirePart(0, householdFace, 0, 0)`. Its schedule, carrying and discount operations remain native. The holder's reserved discount is used exactly even if new private face settles first. Zero redemption cash is created; the issuer carrying less inherited holder-book difference is disclosed separately and included once in the existing noncash treasury bridge.
+
+Static finding boundary: native buyAtIssue credits Household.paper immediately before the same actual takeAtSettle call; an unpaid auction allotment alone is not an already-owned household paper stock. The causing reopened-line fixture includes an unpaid household allotment alongside old settled property, reserves only the actual old property and asserts the missing-counterpart finding stays zero. If a real run instead exposes genuinely unavailable pooled paper, the positive entitlement remains in explicit saved `unbackedCustodyPaper`/capsule pending face and is logged as a FINDING, with no guessed issuer/reconstruction/automatic claim on later unrelated holdings. That would require an exact finding report before any broader resolution; it is not a missing-asset waiver or a proved runtime outcome.
+
+Corporate coupons: strikeCoupons saves the original record-date cell snapshot and all holder/issuer maps. Only the deceased source fraction's original dueCells entitlement transfers; current holdings never reconstruct it. The saved `couponCash` is an explicit actual issuer-charge-minus-actual-payments balance, not a MoneyAudit residual or a promise's mark. Game records its issuer charge at the actual native finance/bank-interest handoff, then separately books the native bank coupon payment. A charge and a bank booking have separate once-only flags; bank cash already credited is excluded from remaining clearing. The nonbank receiver queue cannot discharge before both actual phases. Payment subtracts actual recorded holder payments and clears the record; it never charges the issuer again. MoneyAudit appends **bond coupon clearing** after every prior city/sector/order-book/bank/fund index. Inspection found only five hardcoded pool-count contracts; root released those precise assertions to +5 plus the appended name, preserving every sector/name/order assertion. No audit tolerance or financial premise changed.
+
+Lifecycle: DataSave clones the capsule State, BondMarket clones every record-date map/flag/cash balance and CorporateBond holder, and existing saved Debt records carry reservations/discounts. Both Game read routes restore the explicit capsule and unmatched counterpart, including the final restored-flow phase after rebuild. No read/reset reruns receipt, assessment, handoff, coupon charge or retirement. New-city reset clears owner and issuer records; currency scales local cash/book/face/memos/flows, preserving shares/USD/cars. HistorySave copies/scales named cash/noncash flows and ownership levels; YearBook declares their FLOW/LEVEL meanings. GovernmentScreen shows separate cash receipts and stock/noncash disclosures. SAVE_FORMAT=59 and OLDEST_LOADABLE_FORMAT=59 remain unchanged; no new conversion or prototype bump.
+
+### Causing fixture source (compiled, NOT executed)
+
+CapitalGainsCheck now authors real no-heir census death with no eligible working heir, all positive asset classes, revolving/student debt, old/new tax claims, post-assessment loss stock, already-recorded coupon and real own-paper holder discount during an unsettled reopening/allotment. It asserts each receiver, complete issuer/capsule holder sums, debt priority, self-claim consolidation and exact cash/stock conservation without an assumed sale. A separate loss-only estate retains a positive inherited loss memo. The existing accepted 45/10/35 real-heir and survivor controls remain.
+
+The source saves nonempty pending custody through both actual Game loaders, invokes the production household settlement method, preserves the native unsettled-retirement exception, then continues actual coupon/dividend/maturity/default/split/currency/extinction APIs and saves post-settlement state through both readers again. Linked, floating and serial retirement schedules/carrying are compared against a separately copied instrument using the existing native retirePart operation, not a copied formula.
+
+A separate coupon fixture authors before-charge, issuer-charged/unpaid, after-bank-booking, partial source-fraction transfer and post-payment snapshots, each through both readers. It matches actual issuer cash debit, native bank credit, remaining entitlement/clearing and final household/treasury/world payments. Its negative control removes a real issuer debit while retaining clearing and requires the unchanged pool identity to expose the invented cash. Uncharged promises cannot pay, and discharged records cannot credit twice. These are source coverage statements only: no new assertion has a passed behavioral verdict.
+
+### Exact owners, checks and review floor
+
+22 Java owners this turn: EstateCustody (new), FundLedger, CorporateBond, BondMarket, Debt, DebtManager, HouseholdBalance, Equity, Game, DataSave, HistorySave, YearBook, MoneyAudit, NationalAccounts, TreasuryJournal, ui/GovernmentScreen, CapitalGainsCheck; plus CoalMiningCheck, CopperMiningCheck, ForestryCheck, QuarryingCheck, WoodProductsCheck, ONLY their released pool count/tail-name contracts. Generated maps/dials/month-order/harnesses follow these sources. No TreasuryFund controller, Services, Motoring, ForeignAccounts reserve, research.json, IDs/enums, publisher, test/process machinery, VERSION/QUEUE/changelog/gate record was edited. One-in/one-out process removal does not apply; no removal was invented.
+
+ONE authorized changed-source --fast is terminal, exit **0**: compile OK **38s**, maps regenerated, Stale **0 firm / 194 soft**. Raw receipt: `target/ht1-custody-fast-2014.txt`, SHA256 `8eee96607a754338a0fc824f5be7cf0c36b7c48d4e327ee0c71badb21c567117`; component receipts remain `target/checks/compile.txt`, `maps.txt`, `stale.txt`. The previous raw checkpoint directory was copied intact to `target/ht1-custody-pre-fast-2016` before this wrapper. No source edit followed this successful checkpoint. No named/model/display JVM, ALL/picked suite, ensemble, BOX, dry, gate, readiness or publication ran. The older six named greens remain strictly on the older initial source. No owned foreground/background job remains active.
+
+Classification only after the source commit (not a suite run):
+
+```
+ALL
+pick      ALL 238 harnesses - src/main/java/ham/citybuildersim/AllChecks.java runs the suite (87 files changed since f2dba242)
+review    needed - money: BondMarket.java, Debt.java, DebtManager.java, FundLedger.java, TreasuryJournal.java; saves: DataSave.java, HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT
+```
+
+This exact review line is a floor: fresh stranger money/save review must inspect EstateCustody, issuer/capsule identities, native tax/coupon cash edges, actual clearing charge/book/payment phases, reservations/native retirement and both-loader/copy/reset/currency snapshots, as well as the original household tax/foreign-tagged core. I do not self-certify that review. Runtime mends, focused named proofs (including the new phase/negative/save continuations), later published-main integration, final-model ensemble and any ALL gate/dry remain owed under root ordering. Request the focused named slot after this pushed checkpoint; PW6's released work retains priority and no laptop/BOX/model slot is assumed available. The scoped custody6 allowance includes later focused mends; remaining dispatch still needs root's measured-usage/reforecast check, not a new builder allowance inferred here. Provisional marker stays. HT1-L7 remains the separately Pending account-design owner; no inert research entry or new shelter was invented.
+
+
+## STATIC coupon diagnostic preparation after first own red
+
+Frozen production/harness source remains `63c6bcb5c9303c39e8c1ced038938a5d31dcd3d3`, source tree `729f7739167ac77340b6de529097f1cd7ea0f504`. Root 657f and warmup clarification 314c authorize this preparation, not a compiler/runtime invocation or source mend. The prior raw4n/pre-checks/run-checks/source/class/data/native-runtime archive remains intact under `target/ht1-capital-gains-20261121-2023`. That run's actual judge result is wrapper native4 NEW / child1 / outer relay1, 21 FAIL + uncaught exception; no known-red borrowing or waiver. Eight whole-State comparisons and six private-payment household/cash cases remain unresolved hard own reds. The full-market isolated-coupon oracle is incomplete, and its later bank0 payment is a confirmed fixture LIMIT; neither excuses the six/eight failures.
+
+Source trace, without a new model: `CapitalGainsCheck.custodyCouponPhases` replaces BondMarket with issuer ID1 / face100 / household40 / bank30 / world30, updates one selected cell's ID1 face, then later transfers10 face and a quarter of that source's recorded coupon. It does not clear other cells' existing bondFace maps. The unchanged native probe factory has already played a city: Game.buildWorld starts month1; probeRun arguments3,4,5,6 each request that many one-step run calls, not six total advances. Its actual return month/calls are not newly measured. Old other-cell ID1 holdings are therefore a source-proven *premise seam*, not a demonstrated cause of .0169431754275. The prepared observer preserves and reports them; it does not clear, renumber, tune or normalize them.
+
+Exact save/copy/restore path: BondMarket.toState2124 builds lists plus new maps/arrays; DataSave.setBondMarket2349 invokes State.copy2100, which deep-copies bonds/books and coupon arrays/maps. DataSave.snapshot1112 is shallow on this already-detached state. Game.fillSave17735-17737 saves cell keys/stock arrays;17956-17958 saves bond State and every keyed per-cell holding. On read, DataSave.getBondMarket2350 returns its stored State; BondMarket.restore2162 directly adopts each saved CorporateBond object, then restores all due maps, totals, flags and couponCash at2213-2222. Game22227 installs it,22231 restores keyed household holdings and calls recountHouseholds. After rebuildSimulationState22407, final cell counts/stocks are restored22648-22650; custody/tax state22651-22656; keyed bonds plus another recount22662. There is no second BondMarket.State restore at that final phase. Source-proven write/alias: recountHouseholds1905-1906 overwrites issue household face and total face from actual current cell holdings, and adopted bond objects alias the loaded DataSave State. Whether this causes any of the eight observed field differences remains unmeasured; saved on-disk JSON is distinct and the planned observer compares it directly.
+
+Exact credit path: strikeCoupons1093 obtains dueCells from every live cell's holdings and dueHouseholds separately from each issuer's household face; transferRecordedCouponToCustody uses the source's original recordDueCells fraction. payCoupons1198 credits the dueCells map through HouseholdBalance.creditBondCoupons4873, which resolves each key against the live cell cache, divides by its current count, credits savings/investmentIncome/bondIncome, and redistributes missing-cell entitlements once. Clearing is reduced from holder due totals independently; orphanedToHouseholds records dueHouseholds minus actual credited. Private payment clears the record afterward; no source-proven repeated credit was identified. The .16694317542751946 versus .15 cannot honestly be assigned to a specific map/count/binding from the prior log, which omitted field deltas and whose scratch payloads were TempDirs-cleaned. This is why a narrowly instrumented diagnostic, rather than a guessed mend, is proposed.
+
+Prepared target-only owner directory: `target/ht1-coupon-trace-20261121-2040`. Java overlay `src/ham/citybuildersim/HT1CouponTrace.java`, 252 lines, SHA256 `1b6884bb59836d9a450d27b3b556eba4ab96b92e103e7ee18cbfa554e59c6746`; full added-file diff `driver-source.diff` SHA256 `76d44af6e1d7b7a418f4536437c9e6056bcb01c737b78442afe5524085ddf38f`; original-method observer-insertion diff SHA256 `1cf653760b8759861ec505ef095185ac37d626a115ef1ca3e3d4d25e99785397`. No production/harness source is copied into the overlay class destination. `pins.json` SHA256 `fa8f51740240f1a69170aa2948c2235e82ac41b58c372ecc76b008f470b15bc1`; original absolute classpath file SHA256 `a1c113c24021c77a6a7679e5b11f902bbd1fe1ff1e2f20a34189bcfc7d0339be`; reviewed one-shot launcher SHA256 `8b06cbb9c346241ddbd95cfc13094ccfd51ccd44b5cc38cf3d1f38abc320962e`. These are local preparation artifacts, not newly executed proof or a checked-in alternate model.
+
+Future diagnostic proposal, only after separate root GO: ONE compiler phase compiles only the overlay/nestmates using native JDK21 javac, `-proc:none -implicit:none` and an empty sourcepath, with original compiled classes/dependencies as classpath. ONE foreground native model JVM uses the overlay first, then the frozen original classes/dependencies, 2048m/64m, original soft timing/observation/UTF8 options and exact main `C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin` / `world-1.bin`. Native java SHA256 `6f792b96630815e9349602c379960c46460065b17432c719902439f9a147064a`; javac `ec2f616fc8ee013f79138f18e76398fd257629c4bd4efe48dfb54a9450333055`; Earth `c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b`; world `fbd11a6a3b880ffeeae4e5c07e7a9d950b3d28f17f7c77656aea7a1071a6fcc1`. Exact original full compiled-class manifest/hash is referenced by pins. No Maven/model compile/maps/Stale/check wrapper is proposed.
+
+The four *unchanged compiled* probeCity(files,null) factories, including their original native initialization/warmup/trading before fixture installation, are explicitly permitted by314c. The driver records source start1, actual returned month and existing read-only probe timing memo changes, without adding callbacks or calling month6 six advances. Original default locale, CapitalGainsCheck static out/quiet streams, native factory PROBE_QUIET initialization and GameFiles.scratch/slot10/TempDirs lifetime are preserved. No LongPlaytest.main or extra stepping is called. After setup it executes only the exact original four coupon phases/eight readers/charge-book-private-pay sequence; no takeMonth, simulateMonth, all-stock continuation or full CapitalGainsCheck. Raw saved bytes are copied before scratch shutdown cleanup, not reconstructed from balances or written to user slots.
+
+Read-only frames cover before alteration, installed/struck/partial states, pre-save, exact serialized payload with decoded key/count/face view, immediate post-load, and pre/post **every** private payment including uncharged/duplicate controls. They capture dueCells/recordDueCells/totals/flags/cash; all issue/capsule holdings; every live cell index/key/count/per-household and total savings/face; source and every coupon-key cache binding versus current matching cells; all native cash pools/names and existing bond foreign edges; every actual cell savings delta. Observers read cellIndex reflectively rather than initializing it via cellByKey; they do not recalculate/write production inputs. Structural per-field/primitive-lexeme diffs and the original exact String equalities coexist; no global JSON normalization or tolerance change. All original assertions remain hard. Missing source/pins/premises or non-reproduction of the original eight snapshot + six .16694317542751946/.15 + six conservation failures yields STOP/LIMIT, no tuning/retry. The overlay class folder is presently empty: no javac or Java invocation occurred.
+
+Model proposal is capped at60s, including all four native warmups, setup, eight loads, reads, awaitSaves and native cleanup: wait55s, then end only the exact owned native process tree within remaining5s on timeout, record LIMIT and do not retry. The one-shot launcher preflights immutable source/class/data/native pins and absence of another local JVM, and records unique compile/model logs/classes/PID under this target owner. Instrumented duration/compilation/observer overhead are UNMEASURED; the prior entire one-harness9s receipt is not proof this plan fits60s. New compile/runtime requires root review/release; no runtime is requested as implicitly granted by the prepared file.
+
+Minimal causing correction proposal for the proven continuation defects (NOT implemented): future owner only `CapitalGainsCheck.custodyContinuation`. Use the existing bookFixtureBankCoupon(g) native bank credit plus recordCouponBankPayment(actual newly struck due) guard, rather than hardcoding0 after real trading. Isolate the coupon-only assertion with the existing private payment helper; retain a **distinct** later real takeMonth integration assertion with nonzero fills and all native MoneyAudit bond edges/counter deltas: household bought/sold, world bought/sold, coupons/principal to households/world, and both paired household/world legs (MoneyAudit958-962,1418-1427). Do not disable orders, substitute zero activity, omit real cash edges or relax the production debit/record guard. The unresolved six/eight need measured diagnostics first; no additional production owner is proposed now.
+
+This turn changed only these truthful notes and target-only preparation artifacts. No compiler, model/JVM, harness/check, BOX, display, ensemble, dry, gate, main integration, readiness/publication, model/harness mend, conversion, known-red row or waived assertion. Provisional marker remains; whole HT1 fresh stranger money/save review and later .180-or-newest integrated ensemble remain owed. Existing core/custody allowance only; no new allocation/lane. No owned job remains live. Await root's concrete evidence-plan review/runtime or demonstrated-mend order.
+
+
+## STATIC supervisor/pin revision (d2a6; execution remains held)
+
+Only ignored target supervisor/pin artifacts and these notes changed. The reviewed 252-line Java observer remains exactly SHA256 `1b6884bb59836d9a450d27b3b556eba4ab96b92e103e7ee18cbfa554e59c6746`; frozen production tree `729f7739167ac77340b6de529097f1cd7ea0f504`, original assertions and unresolved save/cash failures remain untouched. No new model/source owner, allocation or lane. PW6turn10 retains the named laptop slot; root must separately release any compiler/model attempt on a clear slot.
+
+Before revision, all original launcher/pins/diffs/classpath/method/driver/preparation files were snapshotted read-only under `target/ht1-coupon-trace-20261121-2040/originals-20261121-2101`; manifest SHA256 `4aad2a7671b8817246c02b854f545688ecda0fff30a95eaeee002cee514dfbd8`. Legacy launcher remains `8b06cbb9c346241ddbd95cfc13094ccfd51ccd44b5cc38cf3d1f38abc320962e`, legacy pins `fa8f51740240f1a69170aa2948c2235e82ac41b58c372ecc76b008f470b15bc1`, byte-identical at both original paths and snapshot. Prior raw4n/pre/run-checks/source/provenance archive was neither altered nor deleted.
+
+Revised candidate in the same target owner: `launch-once-v2.py` SHA256 `51abe734aab38f55602096555828c2d60d26d7ab76d0710e6d5b341e53c24d2f`; exact `launcher-v2.diff` SHA256 `b99bd2148390dc112cb099c7965e6327fb3fd35a073c4a590e2f662b9b4d627e`. `pins-v2.json` SHA256 `6f170d2a43dff55fb52c9e31d61b1c3a48c9bf84c43153f7116fcda09db2c2d9`; exact pins diff SHA256 `b5c730e82d0b958f27dc2c9adc3f6e63b2faa004a5d3478a13a749a287fbe1fc`. New preparation instructions explicitly select v2 and preserve the old proposal as history, not a runnable authorization.
+
+All ten actual classpath JARs are now mandatory/nonempty pins, not an optional loop. Selected JDK release file identifies Oracle `21.0.4+8-LTS-274`, SHA256 `91bd038c494770379f8f0e5e81d6c52108f48ff6ce2b4ed6723673c86a49a5a5`; selected `bin/server/jvm.dll` SHA256 `2ea52695dd8c186dbda86b9b038a489d4d2d6185542d625cfbfd3430c3b54c70`. These and all JAR hashes are newly measured in this static preparation: retained named-run evidence has no earlier byte hashes for them, so retrospective equality is not claimed. Current java bytes match the named-run binary pin; javac matches the earlier preparation pin. Old model/class/reproduction anchors continue to govern comparability, with that explicit limit.
+
+Ownership correction: evidence/log handles open before spawning; a direct native JDK child starts suspended, is assigned to one private Windows Job Object with kill-on-close before its initial thread resumes, and retains the Popen/job handles. Every post-spawn state/assignment/resume/wait action is inside finally; no PID/evidence disk write can strand a live child because those writes occur after verified termination. Cleanup requires both exact Popen wait/exit and job active-process count0. Model stop trigger55s/intended total60s remain; if cleanup is delayed/fails, it remains foreground INCOMPLETE with ownership retained for root assistance, not a completed run or a deadline-based abandonment. Eventual termination beyond the intended bound still invalidates the diagnostic verdict. This lifecycle setup changes no Java driver/model behavior and invokes no extra model; its Windows job/thread API/ABI/runtime behavior is **unexecuted**, not a tested claim.
+
+Terminal behavior: every setup/compile/observer exit keeps actual child exits, partial raw output and stage; compile-only failure cannot start model. Unique CREATE_NEW token/logs/receipts, empty classes/evidence/sourcepath before token/compile and again at token boundary, no deletion/repair of a missing premise. Both compiler/model use the same protected ownership path. A terminal receipt outside the initially empty evidence folder is attempted even on failure, with a separate unique fallback and stderr report if I/O prevents persistence; that is INCOMPLETE evidence, never an expected-red success. No return with a live/unknown exact owned tree. Expected-red reproduction (not a harness pass) requires compiler0, model1,8loads/20hard failures/completion marker, no supervisor/setup/cleanup/output errors, intended bounds met and complete post-verification.
+
+Post-termination verification now repeats source tree plus source-worktree cleanliness, driver bytes, classpath bytes/value, candidate/pin bytes, native java/javac/release/VM bytes, datasets/size, mandatory JAR10, original exact compiled-class set/hashes, and exact emitted overlay set/hashes. Partial compiler output is recorded on failure; successful output must be exactly HT1CouponTrace plus Frame and Limit nestmates, with no implicit production compilation. No mismatched inputs or unexpected output can be normalized into the expected-red verdict.
+
+Static validation receipt `supervisor-v2-static-review.json` SHA256 `699c38e6a2c78a55817cba3ff544a2747d2c2cc13433355f1ff9928219c24603`: Python AST parse plus in-memory syntax compilation only, no import/exec/main/preflight call;267candidate lines, one protected Popen call site used sequentially for compiler/model; paths/arguments and guard/spawn/assignment/resume/wait/timeout/interruption/cleanup/output/post-pin/fallback branches reviewed. All ten JAR paths, native binary/release/VM and main data paths exist. Original snapshots match/read-only; driver unchanged; classes0/evidence0/empty-sourcepath0/token absent. No javac/Java/model/check/supervisor-model test/smoke helper or native job API was executed. Runtime cleanup, ABI setup, durations and failure-path behavior remain unmeasured. Execution is still held; provisional marker, fresh whole-money/save stranger review and later integrated ensemble remain owed.
+
+
+## ONE v2 evidence attempt134b: actual terminal receipt
+
+Executed exactly the reviewed v2 command on this worktree, source tree `729f7739167ac77340b6de529097f1cd7ea0f504`, unchanged observer1b6884 and supervisor51abe734/pins6f170d. Native supervisor outer exit1 is the explicitly expected-red evidence result, **not a harness pass**. Receipt `target/ht1-coupon-trace-20261121-2040/supervisor-v2-terminal-d9e9515f0d18499c88d191bf2fe538d8.json`, SHA256 `5e9a296e8a2135c7277f1d965678783391d07eee13247f0b763915deb2758d45`, says `EXPECTED_HARD_REDS_REPRODUCED_NOT_A_PASS`, no errors/timeouts. Native compiler PID25276 exit0 in0.9100618s; native model PID11820 exit1 in8.767663s. Both exact Popen waits/cleanup verified and Job active0, intended bounds met. Supervisor start01:30:37.153579Z/end01:30:51.267675Z (14.114096s including pre/post seals). Exactly one compiler and one model spawned; only HT1CouponTrace/Frame/Limit emitted. Normal job creation/assignment/resume/query/close paths executed; timeout/kill/error branches were **not** exercised and are not newly claimed tested.
+
+Both pre-verification and post-verification are true with no error: frozen source/worktree, driver, classpath, supervisor/pins, native bins/release/VM, main datasets,10 JARs, all2403 original class files/set, and exact three emitted overlay classes/hash. No production compile or input drift. JAR/release/VM pins remain this attempt's newly measured provenance, not retrospective original named-run byte equality. Saved startup records the original model/harness class origins, native JDK and unchanged locale; the model's log header names the required main C:/Earth/world. No helper/version JVM, model replay, source patch, token reset, tuning or retry occurred.
+
+Four original compiled factory calls completed. Each returned month19; the existing probe timing memo recorded months1 through18 in each call. This agrees with constructor source start1 and18 requested one-step warmup calls, not a claim of six total advances. Factory wall times were2.4382885s,1.3357137s,0.7770829s,0.6911286s. The driver then completed four exact coupon phases/eight loaders,70read-only frames,20hard FAIL and82OK assertion lines. Removed-real-issuer-debit negative control fired3times;4uncharged and8duplicate-payment controls were observed. No post-setup takeMonth/simulateMonth/all-stock/full CapitalGainsCheck ran.
+
+Actual structural result: all4 original pre-save-to-serialized State comparisons have zero field differences. All8 serialized-to-post-load comparisons have exactly TWO differences: `bonds[0].households`30 ->33.38863508550163 and `bonds[0].face`100 ->103.38863508550163. The source fixture's actual private face is33.38863508550163, so this is the previously traced native holder recount, not JSON ordering or rounding speculation. Due maps/record maps/flags/couponCash and the other market fields are unchanged across those comparisons. All8 saved-cell comparisons show zero count/per-household-savings/present-bond-map changes. Observed cache bindings match current keys, with no count changes during private payment.
+
+Measured setup cause: the original warmed book contains IDs1/2/3/4 (Retail/Industry/Retail/Retail), with nextId5. Selected source is `COUPLE:UNSKILLED`, index6,4.005651431526914 households, already holding all four bonds. The fixture replaces the issuer book with a new ID1/face100/coupon.06 and overwrites only this cell's ID1 position. It leaves31other ID1 recipients with3.3886350855016287 actual face, and leaves cells' IDs2-4 while omitting their issuer records. Therefore before strike, the new issuer says household face40 while actual cell face is43.38863508550161. This is an observed inconsistent opening fixture, including replaced security terms and missing legacy issuer counterparts; simply deleting those old holdings or recounting them into the replacement issue would not be a conservation proof.
+
+The cash contradiction is present BEFORE SAVE/LOAD: struck dueHouseholds0.2 versus sum(dueCells)0.21694317542750816. After the source quarter transfer, dueHouseholds0.15000000000000002 versus sum(dueCells)0.16694317542750817. The source's actual cash credit is0.1499999999999999 (its expected0.15);31other cells receive0.016943175427512298, matching their recorded extra coupons0.016943175427508145 to ordinary double arithmetic. OWNER/index140 alone has3.228764004176411 ID1 face and recorded coupon0.016143820020882056. The citywide totalSavings delta, incorrectly labelled only the live source by the fixture, is the preserved0.16694317542751946 anchor. Phase3 charged private payment produces that SAME excess before any load. The six failures therefore cannot be attributed to a loader replay or duplicated credit to the source. The issuer/cell queue is already underfunded by the seeded holder contradiction. Changing the global expected0.15 to the observed total alone would hide that funding failure and is not proposed.
+
+Actual coupon cash edges (representative phase0 after bank booking): treasury+0.049999999999954525, coupon-clearing pool-0.35000000000000003, every other audited pool unchanged, foreign coupon+0.15, actual household+0.16694317542751946. The excess0.0169431754275 is unpaid funding in that invalid opening record; orphanedToHouseholds becomes-0.016943175427508145, naming the discrepancy. No source-count/cache rebinding or repeated payment was observed. This is measured attribution of the reproduced hard failures, **not a waiver/reclassification into a passing harness**; original named21FAIL+exception remains retained and unmended.
+
+Evidence is preserved read-only in independent `target/ht1-coupon-trace-20261121-2040/run-20261121-0130Z` (156actual output/class/token files; manifest SHA256 `15a9a9df20d841832d8a14a422ede73d1771aa0d76a61c57dbe04102aaaa3528`). Original live evidence/terminal/token also remain; token is spent and will not be recreated. Model log SHA256 `cde5389f872326d7378f0da4d23472b5b2478f20c9ef6c615413191300689a23`. Pure saved-output analysis is separately under `analysis-20261121-0130Z`: observed-summary,32-recipient CSV, all-eight-loads summary SHA256 `0f3e85d2fdc76bd5fe84fe244feb080b6079383c00d0145e79bba4d9bd38eed3`, saved-cell-continuation and a proposal-only text SHA256 `28c774e9a8111cce406da7484351e035c2b44c441a2f807372cf9c7418a7dd50`. No retained raw record or legacy preparation was modified.
+
+Smallest proposed next source owner is **CapitalGainsCheck.java only**, not production tax/loader/debit-guard code: preserve the complete warmed issuer register/holdings/terms, append the explicit test issue at actual unused nextId (5 here), and add its opening40 household face without replacing legacy positions. Hard-assert every actual issuer/private/custody counterpart and record-entitlement sum before save/payment. Because the native coupon recorder is per source cell across its bonds, move the quarter of that source's actual complete bond bundle with its quarter recorded entitlement. Fund each actual recorded issuer (including Industry) once, then book the actual native bank entitlement. Retain explicit NEW-issue.5/.2/.05 contributions alongside separately recorded legacy obligations and full cash/state equalities. Do not clear live legacy maps, silently reconstruct/recount a replacement issue, normalize JSON, tune fixtures, relax tolerances or merely change the expected excess. Separately mend the already-proven continuation bank0 and incomplete full-market oracle using actual bank payment and an isolated coupon assertion plus a distinct later full-market/all-native-bond-edges assertion. This is a proposal, **not an implemented repair**; root must release exact source/mend/verification scope.
+
+No further compiler/model/check/helper/display/BOX/ensemble/dry, main integration, source/harness/driver change, known-red waiver, readiness or publication under this turn. All owned compiler/model/supervisor processes are terminal/post-sealed. Provisional marker remains; full CapitalGainsCheck still needs a genuine mend and complete run, other ordered named checks, fresh whole money/save stranger review and newest integrated ensemble/ALL dry remain owed. Existing allocation only; no new lane/allowance assumed.
+
+
+## Fixture-only9af4 correction and one terminal named wrapper
+
+Scope and delta: **CapitalGainsCheck.java only**,118added/20removed lines; generated docs/harnesses.md60/36, docs/map/CapitalGainsCheck.md12/10 and docs/map/README.md2/2 follow the wrapper. Earlier bus progress estimated122additions;118 is the final exact source numstat. No production/tax/loader/owner/debit guard/MoneyAudit/tolerance/registry change. Source subtree is `350d07392438f97ec45c42928190ace65cd9ec59`; CapitalGainsCheck source SHA256 `3094dc517bd108245a528e4bb4eae3d5f66333a3e51e6239410ff358ba5c4972`. The previous production source tree729f remains otherwise unchanged; original diagnostic and raw4n/21FAIL+exception evidence stay immutable. No main/.181 integration.
+
+The corrected four-phase fixture keeps the entire warmed issuer book, security terms, holdings, cash and assets, then appends the new issue at native unused nextId5 and advances it to6. No legacy position is deleted, overwritten, renumbered or recounted into a replacement. It asserts each issuer's complete ownership, actual private/custody positions and live-ID counterparts before strike/save/after transfer/load. The actual source's quarter of its complete five-security bundle moves with its aggregate record-date entitlement; bank/world/ordinary-fund/company positions remain individually checked. The explicit new issue still contributes coupon.5/private.2/inherited.05 and custody face10, separately from preserved baseline obligations. Whole recorded bill is0.7553098514012548; inherited complete source coupon0.05027434864006084. Both Retail and Industry are charged their actual recorded bills once through real sector cash; the aggregate enters native clearing, and actual bank credit leaves it using existing guards. No extra cash funds the fixture. The negative control still removes the real new Retail.5 debit three times and restores it. Full-State String equalities and all original precisions remain hard.
+
+The continuation now pays saved coupons alone before a distinct actual takeMonth. Both market steps cause nonzero native cash fills and reconcile the native MoneyAudit bond trading/coupon/principal and paired-world counter deltas: pool change-40.05460754810201 versus declared-40.054607548102, with no orphaned household cash. A later strike causes nonzero bank due.2, books its actual guarded cash payment and pays a genuine custody coupon.5. No trading is disabled, no custom residual allowance is introduced, and later native unsettled-paper/discount/schedule, maturity/default/identity/currency/extinction/load and120-month checks remain present.
+
+Runtime receipt: ONE standard `batch-check.sh CapitalGainsCheck`, main C:/earth-2.bin/world-1.bin, scratch/TempDirs and slots10/11 only. Start2026-11-22T02:02:16.7616013Z/end02:03:31.2070489Z,74.445s whole wrapper; compile37s, harness16.6s. Native wrapper exit4, child exit6, explicit PowerShell relay4; the printed NativeCommandError is PowerShell's formatting of the JDK option note and does not replace the measured native exit. Maps regenerated; Stale0firm/194soft.5090OK assertion lines (including repeated per-holding counterpart checks) and6FAIL; no uncaught exception. Wrapper/JVMs were foreground through terminal, post-run java/javaw/javac/bash/sh inventory empty. Archive copy Python was separately waited to actual exit, then inventory empty. No timeout/forced-kill lifecycle was exercised or claimed tested.
+
+Actually green in this run: all4phases/8exact full-State comparisons;3removed-debit,4uncharged and8duplicate-payment controls;8actual bank bookings with strict pool counterparts;2nonzero-fill whole-market/native-cash cases. Both loaders continued real all-stock no-heir estates through own-paper settlement, coupon/dividend/maturity, holder sums, default face35, currency USD/cars and common extinction, and their post-event saves; real-heir/loss controls and linked/floating/serial/discounted retirement assertions also ran. The full120native months observed14582gain assessments,17561dividend assessments and68.88898682710449actual gain-tax cash. All120pool audits, household identities, budget/journal transfers and matching government-claim identities passed. Those passes do not waive the following six hard assertions.
+
+New hard failures retained verbatim:
+
+- `loader true default records a noncash asset loss FAIL`
+- `loader true the existing foreign coupon really pays home FAIL`
+- `loader false default records a noncash asset loss FAIL`
+- `loader false the existing foreign coupon really pays home FAIL`
+- `the actual monthly reset preserves the unfilled tagged holding (10000.0 / 100.0) FAIL`
+- `split multiplies foreign tagged units (999800.0 / 800.0) FAIL`
+
+Smallest next proposed source owner remains **CapitalGainsCheck.java**, custodyContinuation and securedDepartures; no implementation/retry under the completed scope. Source-backed timing finding: EstateCustody.flow writes pending when saved window=false; assetLoss()/foreignCoupon() read current flows only. The direct continuation calls run outside a new monthly window. Proposed causing correction checks native pending/current deltas plus real FundLedger loss and actual treasury/USD cash counterpart, then native beginMonth promotion and public disclosures exactly once. Pending values and foreign coupon cash delta at those two assertion sites were not printed by this run, so this is not claimed to establish actual payment/loss correctness. Source-backed units finding: ExchangeCheck.step executes Exchange.splitWhatNeedsIt, which scales register/household/book counts and records getSplit/getSplitFactor. Proposed correction captures the native factors across both full steps, asserts the old holdings at that unit conversion with the unchanged claim and actual twenty-unit fill, then asserts the explicit ten-for-one split against the actual remaining units. Keep the original hundred-unit acquisition, attribution/no-fill/unrelated-world/new-leaver/debit/extinction tests; do not substitute10000/999800, tune wages or disable split. The raw failed quantities were measured; native split factors were not logged, so their exact values are not newly claimed observed.
+
+Evidence: `target/ht1-capital-gains-mend-20261121-2200` contains pre-checks and prior fast, before/after provenance, exact source/diff, complete run-checks, all2403compiled classes, wrapper/terminal, result-summary and proposal. Main data/JDK java+javac/release/VM and10JARs matched all pre-run hashes post-run. Only CapitalGainsCheck.class changed from the original2403class manifest; production class bytes stayed identical. Child log SHA256 `dcf236d98b65c4484aeb490bfd6faf9c0f9bc85889fa6a72509b89be565c15de`; suite `98dd7eeee6856bb0beb102d65a5f5e9414f47199546b63ced86b7a85b58f93a0`; wrapper `d1a11095a5efef0ff01267fab88236b79ed9a406a4dc1b87d158e0695a630c93`; next-mend proposal `4f7449613bc01bd0f2e2e355dedc13f4b8c7e8cf7327b407aae3f04e8ad5c09b`. Every prior red and diagnostic receipt remains distinct. No known-red class, tolerance waiver, borrowed pass, source mends/SHIP or readiness claim.
+
+Review/pick remains ALL238. Fresh money/save review floor: BondMarket,Debt,DebtManager,FundLedger,TreasuryJournal; DataSave,HistorySave,SAVE_FORMAT,OLDEST_LOADABLE_FORMAT. Core household/tax/tagged foreign/custody phases and actual transfer edges also require whole-branch review. Remaining focused harnesses, .181-or-newest integration, fresh review, final newest-baseline ensemble and ALL dry each require root ordering. L7 remains separately Pending for the absent account design. No owned background/runtime remains; checkpoint is provisional and the new six-red ordinary own mend is stopped for root review.
+
+
+## Native-premise ba2b correction and one green focused wrapper
+
+Released source owner remained **CapitalGainsCheck.java only**, custodyContinuation/securedDepartures and the strictly local read-only custodySlot assertion helper. Exact source delta99added/5removed; generated docs/harnesses.md119/108, docs/map/CapitalGainsCheck.md18/17, docs/map/FundLedger.md1/1 and docs/map/README.md3/3. No production, flow timing, public getter, split rule, tax/claim arithmetic, guard, precision, fixture factory or registry change. Source subtree `a3157a9dfd1104971cbfc794cd3a3d93e1abcb25`; CapitalGainsCheck source SHA256 `978c147e98fc5cf37d9521f36ea1348e6660f69419c7b99a707ec80a02889ab5`. The previous six-red and original21FAIL+exception/diagnostic20hard-red archives were not modified.
+
+Actual closed-window premise was checked before both direct events on both loaders; an absent closed window/positive acquired cost aborts with the real premise failure. Native slot indices are read from the owner's named private constants, not copied to a parallel layout. Snapshots record every current/pending slot without mutating it. Both loaders measured the same default: windowclosed=true; current/pendingLOSS0/0 ->0/35.113469529570644; actual bond lot cost70.22693905914129 ->35.113469529570644; realized0 ->-35.113469529570644; treasury cash delta0. Actual remaining custody face35 and complete issuer holders stay hard. The default's actual cost decrease equals half the acquired lot cost, released aggregate ACB, realized loss, cost out and exact pendingLOSSdelta; proceeds/current disclosures/unrelated pending slots/treasury/pool cash remain unchanged. This establishes the earlier getter mismatch as closed-window reporting, with actual economic and ledger counterparts measured rather than presumed.
+
+Both loaders measured foreign coupon windowclosed=true; current/pendingFOREIGN0/0 ->0/0.05123493354773942. The existing HouseholdBalance.foreignCouponUsd API earned0.06666666666666667USD at the existing.02annual rate; actual FX0.7685240032160913; treasury cash delta0.05123493354767561 under the unchanged tolerance; USD principal40. The actual pooled-cash edge and pending foreign-income counterpart match the native earning rule; dividing the latter by native FX returns the earnedUSD. ReserveUSD, principalUSD, current disclosures and unrelated pending slots stay unchanged. No invented yield, reserve conversion, mark-to-cash, cash injection or getter/production timing change.
+
+Then native beginMonth was called after the direct events: all actual pending slots promoted verbatim to current, every pending slot cleared, the original positive public assetLoss/foreignCoupon assertions passed, and their exact amounts matched the saved pending slots. Treasury/pool cash, USD, custody bond position and complete serialized FundLedger remained unchanged by promotion. A repeated native beginMonth preserved the entire owner snapshot and cash, proving no disclosure/cash/loss replay. Native promotion and both post-event save/load routes ran with this state; no zeroing or early opening bypassed deferred coverage.
+
+Actual independent split observations: first exchange step cumulative factor10 ->1000, native step split100, tagged units10000; second cumulative factor1000 ->10000, native step split10, tagged units100000. Both automatic split premises fired. Each cumulative factor equalled its previous native factor times the native step factor, and original100tagged units matched the recorded coordinate conversion without deriving a factor from observed holdings. The unrelated new departure added no old tagged units; old35claim stayed unchanged. A real20unit native fill still collected20/leaving15 and preserved separate gross/retained/net amounts; current tagged units then equalled the converted original units minus that actual20fill. Before explicit10x, actual remaining tagged units were captured; the resulting count was exactly10times that stock, with unchanged claim and native complete stock identity before/after. No10000/999800 oracle substitution, split suppression, wage retuning or unrelated cash/ownership relaxation.
+
+ONE `batch-check.sh CapitalGainsCheck` ran from this worktree, main C:/earth-2.bin/world-1.bin, scratch/TempDirs/slots10and11. Start2026-11-22T02:18:49.7320923Z/end02:20:05.4671991Z;75.735s whole wrapper, compile40s, harness16.2s. Native wrapper0/child0/explicit PowerShellrelay0. PowerShell still formats the JDK option note as NativeCommandError, but the measured wrapper/child/relay exits are all0.5201OK assertion lines/0FAIL/no exception, maps regenerated and Stale0firm/194soft. All owned wrapper/child processes reached actual terminal; post-run java/javaw/javac/bash/sh inventory empty. Archive copying/hashing also remained foreground until actual exit. Timeout/forced-kill paths were not exercised or claimed tested.
+
+All prior causing controls remained reached and green in this run:4couponphases/8full-State loader equalities,3removed-debit negatives,4uncharged and8duplicate-payment controls,8actual bank bookings with strict whole-cash/issuer counterparts, both Retail/Industry issuer bills. Both genuine takeMonth cases filled real trades and reconciled complete native trading/coupon/principal/paired-world cash edges with no household orphan. Both all-stock no-heir loader continuations reached native unsettled-paper reservation/settlement, exact face/book/schedules, dividend/coupon/maturity/default/ownership/currency/extinction and further both-loader saves; unrelated real-heir/loss controls remained. The full120monthly calls observed14582gain assessments,17561dividend assessments and68.88898682710449actual gain-tax cash. All120pool/household/budget/journal/government-claim audits passed. These actual focused results replace no separately owed harness, final integrated model verdict or stranger review.
+
+Unique archive `target/ht1-native-premises-20261121-2220` contains pre/run checks, exact source/diff, before/after provenance, all2403compiled classes, wrapper/terminal/runtime observations and result-summary. All native JDK java/javac/release/VM/main data/10JAR pins matched pre-run hashes post-run. Exactly CapitalGainsCheck.class changed; all production class bytes matched the preceding six-red source. Child log SHA256 `5352189ecfc828601fab9aa491bf7846ed3fffc5ab0470403dad131fb34d0cc1`; suite `10c4ca691813c8199187f6e4fe0a311f611916c1d6c98ef6d49ad749d97bcc1d`; wrapper `f74820b977552a80c8f466091b5c34a9475a2ed4cf09f2da26d71ee1797a8258`; result-summary `f31b08176d362650224fe54093a4b538466c20ff12e0c25df348b5aec6473db7`. Original immutable receipts remain unaltered; this is not a retroactive claim that any earlier failed run passed.
+
+Pick remains ALL238. Fresh review line: money BondMarket,Debt,DebtManager,FundLedger,TreasuryJournal; saves DataSave,HistorySave,+SAVE_FORMAT,+OLDEST_LOADABLE_FORMAT. Whole household/tax/foreign-tag/custody transfer and saved pending/struck phases belong in that review. No money/save self-certification, source-complete mends/ready/SHIP claim, .181integration, separate fast, other named, full suite, old diagnostic replay, model retry, ensemble/dry or production publication was performed. Ask root for separately ordered remaining focused checks/review and newest-main integration; marker stays, L7 separatelyPending. End with no owned job.
+
+
+## Newest-main7ae6 integration and first-new-red stop
+
+Fetched/reconciled origin/main at `a9ffdac8315f7e4e16b92e2a240814a8d6645d29`, PW6/.181. Normal merge commit `f3a8f65bbedd9c8e54c36fc1e0dd3d1471eb08f6` has parents affbdf912 and a9ffdac831, source subtree `6668d458cd7782971ce87b50807dfb61e5cbd274`. All source merged automatically: **zero source conflicts and zero manual source resolutions/semantic changes**. Eleven generated conflicts in docs/dials.md,harnesses.md,month-order.md and8map pages were temporarily resolved for regeneration, then the ONE authorized fast regenerated them before the merge commit. No shared class was replaced wholesale. All earlier HT1 fixture/production mends remain. Main's publisher records/VERSION were inherited through the normal merge, not edited; own GameVersion difference against .181 is still only SAVE_FORMAT58->59/OLDEST58->59, with no conversion code.
+
+Exact shared source deltas from the prior HT1 source are main's3Game lines (power observation binding and restorePendingPower immediately before native power tariff restoration),18HistorySave lines (optional power series record/copy/sparse drop/getSeries/currency scale),4YearBook power prefix rules and the appended PowerViewCheck registry entry. HT1 tax/tag/custody/issuer-clearing load/capture/copy/reset ordering is retained. PowerDispatch/PowerView/UtilitiesHandler/ServicesScreen match origin/main byte-for-byte. No PW6 pending dispatch, tariffs/closing-flow restoration, sparse-history zero alignment, optional history or Services UI behavior was edited. Full integration source patch and generated-conflict list are saved in the stage archive. Pick now correctly includes main's additional harness: ALL239, superseding pre-integration ALL238.
+
+Local preflight found no JVM or gate/dry/nightly conflicts; each named launch independently checked native process ownership and frozen source. Native main C:/earth-2.bin/world-1.bin options, scratch/TempDirs and original format59 rule were used. Source stayed exactly6668d458 for all runs. All wrappers were foreground through actual exit and each terminal receipt records no remaining Java process/source drift. No foreign process was stopped, no baseline-main replay, extra guard probe, separate named JVM, automatic retry, fullpick/LongPlaytest/Kept/ensemble/BOX/dry or readiness/publication occurred.
+
+Executed exact bounded order:
+
+- `--fast`: native wrapper/relay0; no harness invoked. Compile38s, maps/Stale0firm/194soft. Start02:29:10.9514633Z/end02:30:07.0493283Z.
+- `CapitalGainsCheck`: native wrapper/child/relay0, compile3s, harness16.2s;5201OK/0FAIL/no exception. Start02:31:58.7813559Z/end02:32:38.4079786Z. The four coupon phases/eight full-State loaders, all debit/bank/issuer/duplicate/native nonzero-fill cash controls and newly measured pending/split causes remained reached and green. It again played120monthly calls with14582gain/17561dividend assessments and68.88898682710449actual gain-tax cash; all120pool/household/budget/claim audits passed on integrated .181 source. This is an actual new run on merged Game/save wiring, not reuse of the identical deterministic prior log bytes.
+- `FundLedgerCheck`: native wrapper4/child1/relay4, compile3s, harness10.0s;133OK assertion lines and4actual failed assertions, no exception. Start02:32:46.2358151Z/end02:33:21.4162829Z. The extra summary `4 FAILED` is also a judge red line; together with exit1 the judge shows6lines, not six failed assertions. Maps/Stale again0firm/194soft.
+- **NOT RUN after that first NEW red:** HouseholdFlowCheck,EquityCheck,SaveFileCheck,ReadPathCheck,HistoryCheck,YearBookCheck. None gets an integrated pass or inherited prior pass.
+
+FundLedgerCheck's four hard assertion failures, retained without known-red row/waiver:
+
+- `a month's coupon is the lot's income`:0 !=10.
+- `...its income in the last month that paid any, the month of the coupon's row`.
+- `...and the fund's, to the cent`:0 !=10.
+- `...and closes the lot, with its record` (compound predicate includes lot.income()>0).
+
+Read-only source trace: FundLedgerCheck.bonds401-452 makes a standalone BondMarket with null economy/bank/households, actual face10000/coupon.06 and two real1000face buys at.98/1.02, then strikes and immediately calls takeMonth. No actual issuer charge or bank-booking API is called. Native BondMarket.payCoupons1199 correctly refuses an open record until couponsCharged and bankCouponsBooked; the current production guard must remain. The real fund2000face/2000ACB acquisition, default/maturity/proceeds assertions ran and passed, while all measured coupon income is zero. The final compound close predicate necessarily fails on its required positive income; the raw output does not separately print isClosed/ACB at that exact site, so no extra claim about those individual booleans is invented. This identifies an own legacy fixture's missing actual funding phase, not a main-known red, production replay or permission to weaken the guard/expectations. It remains a hard red until an authorized causing correction genuinely runs.
+
+Smallest STATIC next proposal: **FundLedgerCheck.java,bonds() only**. Retain issue10000/.06, exact trades/prices/cost, fund cash/mix, native takeMonth, default/maturity/closing/precision. Reuse an existing harness scratch-city copy's real Mining sector as the actual payer without adding cash or changing standalone participants. Assert actual native bill50, recorded fund10/world40/bank0 and complete issued-holder/record counterparts, debit that actual issuer50 once through existing sector cash, record the identical actual debit in native clearing, and book the actual native zero bank entitlement through its unchanged guard. Prove actual issuer/clearing/fund/world cash conservation and no duplicate booking/payment while retaining all original income/last-income/close assertions. No record-only cash, fictional issuer, coupon-income injection, disabled trading, guard bypass, lower expectation or unrelated asset clearing. Sectors.MINING is the actual shipped "Mining" key and EconomyManager's real cash APIs operate it; a missing real-payer premise must stop, not invent funding. This proposal is not implemented or permission to broaden an owner; root must release exact source/runtime ordering.
+
+Proportional evidence at `target/ht1-integrated-focus-20261121-2227`: original pre-checks; source/main/merge pins and integration patch; fast, integrated CapitalGains and FundLedger full raw logs/commands/native terminal receipts; complete integrated2412class snapshot/manifest; before/after data/nativeJDK/10JAR pins, summary and proposal. Fast folder's preserved old suite/named logs are explicitly labelled **preexisting leftovers, not executions** in scope.json; its only new results are compile/maps/Stale. Named folders contain only their own selected named log/current suite and actual time/exit row. All2412class names/bytes remain equal to the post-fast integrated manifest; all16data/native/JAR pins unchanged; source drift empty. No retrospective old-byte proof is invented. Prior raw4n/21FAIL+exception, diagnostic20hard reds, six-red fixture and5201green archives remain immutable.
+
+New hashes: integrated CapitalGains log `5352189ecfc828601fab9aa491bf7846ed3fffc5ab0470403dad131fb34d0cc1`, suite `10c4ca691813c8199187f6e4fe0a311f611916c1d6c98ef6d49ad749d97bcc1d`, wrapper `87de141b8a7aeedb96a99fd782e0e61bef70e2e5ae9b6cf6fb4e8839737c3e33`. New FundLedger log `46acdd1eb65c37b656acab2673dcef4970c1e887e91b7bc2979622f708580e4c`, suite `0a494cd1d6ddfdb0aeceea0d940e3a390bda484aa757aaaf29ae0d66bcc41bd9`, wrapper `4ab5f8fc4c168c3e168612305a7415d281a5fc78dbe26a6d25b80c72b1738474`. Proposal SHA256 `81e46076b31b685f26d31dbdc4de22b8e84b6f6a5ee31dc8e24806ead776a19e`.
+
+Final stage remains provisional and incomplete. Pick ALL239; exact fresh review floor: money BondMarket,Debt,DebtManager,FundLedger,TreasuryJournal; saves DataSave,HistorySave,+SAVE_FORMAT,+OLDEST_LOADABLE_FORMAT, with whole household/tag/custody/native actual transfer and pending/struck state review. Root will order that fresh stranger review on an immutable final integrated target; no self-certification. Six unrun focused checks and the new FundLedger own mend, newest-baseline final ensemble/ALLdry/readiness/publication each remain separately ordered. L7 retains its separate Pending account-design disposition. Stop with every owned process terminal; push truthful provisional integration/records only, no source-complete mends claim.
+
+
+## Actual native-payer4273 finding and simplification2203 boundary
+
+The required previous integration/notes/evidence checkpoint was already pushed and origin-verified at0bfd20f298c9ad3a2b04bbb0ed830382e1fb8d99 before this source edit. Source-only candidate72e8447dd76f496e0b7d3e95c718d1354c601ec8 changes FundLedgerCheck.java,bonds() only,62added/0removed lines; no original assertion or tolerance was edited or removed. Source subtree64b91641950ec09af8913cef5fb41c84f836acd8, FundLedgerCheck source SHA256 `f94198c8736c33b0038fba5151fb7754a2a0bfc211d5762223e5b6e34d34a851`. Generated harnesses141/110,map/FundLedgerCheck27/27,map/EconomyManager1/1,map/README3/3 reflect the new calls/lines. No production/tax/save/guard/registry/format, primary-issue rule or actor stock changed. Exact10000face/.06/24month issue, both1000face real buys at.98/1.02,2000ACB, original fund cash/mix/native takeMonth and coupon10/current-row/default/maturity/close/proceeds laws remain in source.
+
+Authored new assertions measure complete issued-holder/record counterparts, bill50/fund10/world40/bank0, a real scratch copy's actual Mining payer, its finite/read-write/available cash, observed native debit into clearing, guarded actual zero bank booking, detached issuer/clearing/fund/world/trading cash conservation, once-only records and isolated repeated guarded payment. They never claim a whole Game MoneyAudit for the detached component. The duplicate private-method invocation executes native guarded payCoupons without editing flags or posting extra trades. These later payment controls are **compiled but UNREACHED in this run**, not behavioral passes.
+
+Actually reached: original leading fund ledger sections/two real bond buys, all newly fixed bill50/fund10/world40/bank0/private+custody0/empty cell+company entitlements/whole-holder/open-unpaid record/zero-clearing premises. Then actual Mining cash read0.0 and the existing finite/registered/cash>=bill combined predicate failed. The candidate deliberately throws before any payer setter, actual debit, recordCouponIssuerCharge, bank booking or coupon takeMonth. It does not inject funds, permit an unbacked negative balance, lower50/10/40, substitute observed income or bypass a guard. Source Sectors149 registers Mining unconditionally; getSectorCash is a real native sector getter. The combined runtime presence predicate was not printed separately, and the setter/read-back portion was not reached, so no separate runtime presence/read-write proof is invented. The actual observation is cash0.0 plus the failed support predicate.
+
+ONE standard FundLedgerCheck wrapper, start2026-11-22T02:45:47.5153374Z/end02:46:56.7506408Z,69.235s whole wrapper; compile38s, child6.3s. Native wrapper4/child1/PowerShell explicitrelay4.52OK assertion lines,1actual failed payer assertion and an uncaught IllegalStateException naming cash0.0; judge3lines (exit1, assertion, exception). Maps regenerated/Stale0firm194soft. Original four coupon-income/close assertions and later main sections are not newly reached; their older red evidence remains unresolved and immutable. HouseholdFlowCheck,EquityCheck,SaveFileCheck,ReadPathCheck,HistoryCheck,YearBookCheck were NOT launched after this red. Integrated CapitalGains5201green/120audits remains its separately recorded preceding run; no unchanged CGC replay or new audit claim was made.
+
+Source/data remained frozen, native main C:/earth-2/world-1/scratch rules held, and all own wrapper/compiler/child processes are terminal. Terminal inventory also records two **foreign codex-R6e Maven compile** JVMs, which were permitted changed-fast work and were never stopped; it does not falsely claim all machine JVMs were absent. Subsequent visible main NetBeans/CityBuilderSim UI processes belong to Jerus/another owner and were untouched. A JS-only orchestration-template lookup failed before any nested tool/native call; it launched no compiler/JVM and did not consume an attempt. Exactly one actual wrapper/model was dispatched; there was no model retry.
+
+Archive `target/ht1-fund-coupon-20261121-2245` preserves pre-checks, exact source/diff, actual selected log/suite/wrapper/terminal,2412compiled classes and before/after provenance. Data/nativeJDK/release/VM/10JAR inputs unchanged, source drift empty; only FundLedgerCheck.class and its shifted-line Snap nestmate changed versus the integrated snapshot, all production class bytes unchanged. This full class preservation was initiated under4273 before2203 arrived; no repeated thousand-file seals or parallel proof package is added under the simplification. Log SHA256 `8f0e522c88b26bb310b7662a4009536e8c337131ad0d3488de2756d6f1e83e88`, suite `313cc94aeac02da38a01b63525b6d9d9a59ae427919e92d5f6dd26242549b6dd`, wrapper `8a57368d83d67ef5edc3d2ecb2f6b36572c359214d3c3ce4a64f219384b7e7a9`. Earlier raw4n/21FAIL+exception, diagnostic20hard red,6red,5201green and integrated4red archives remain unmodified.
+
+Root2203, received after this actual failure, supersedes recovery edit/check micro-GOs: routine owned implementation/fixture mends and necessary reruns no longer need a cycle. It explicitly retains a stop for actual owner/scope/premise changes. This specific fixed-payer premise is unsupported by actual cash. Read-only native primary-issue exploration also found BondMarket.issue always uses CorporateBond.TERM_MONTHS (the model's ten-year tenor), while this unchanged fixture is24months; silently replacing those terms is not a permitted routine funding correction. No native primary issue, extra trade/month, other-payer debit or production finance change was made.
+
+Smallest recommended root engineering disposition remains FundLedgerCheck.bonds only: obtain the existing copy before the test issue, use its **existing heldCompany structural largest-listed-company selector** as the actual issuer/payer key, and use that same key for the unchanged10000/.06/24month issue and native default calls. All amounts, participant configuration, two actual fills/prices/cost, available-cash check, expected50/10/40/0, original laws and precision stay hard. No search by successful cash, city tuning or observed-value oracle; STOP if that structurally selected real issuer also cannot fund. This changes the fixed Mining identity and is proposed, not implemented; the alternative issuer/cash is unmeasured. If fixed Mining must remain, a genuine funding/liquid-asset counterparty under native rules must instead be specified/proved; no fictitious proceeds are proposed. Proposal hash `bda4abe9221895ac791cff38f29cad84c1261d8fc005eb3d3caad3ded916994e`. No new batch, Queue/Pending decision or preference question to Jerus was created.
+
+At this actual idle premise block, sent R6ecodex1 direct slot RELEASED/no owned JVM mail9d40, as2203 requires, and root7d2a reports it. R6e separately acknowledged it was awaiting this release for its admitted E21 sequence. HT1 does not retain the named slot while waiting; later model work must coordinate its return. Fresh whole money/save stranger review, remaining focused checks, final newest-baseline ensemble/ALLdry/readiness/publication remain owed. Pick ALL239, review floor money BondMarket,Debt,DebtManager,FundLedger,TreasuryJournal; saves DataSave,HistorySave,+SAVE_FORMAT,+OLDEST_LOADABLE_FORMAT. L7 separatePending, marker retained, no own job or self-SHIP/source-ready claim.
+
+
+## Coherent2203 final focused milestone: ordinary fixture mends, all latest green
+
+Root2203 replaced recovery micro-GOs with autonomous ordinary owned mends/affected checks; ac52 accepted the existing deterministic heldCompany(copy) selector and ea0a explicitly corrected the unnecessary copied-city liquidity constraint. There is no new tax/credit/account policy. The economic laws are the original coupon income/ACB/default/maturity and native buyback price/quantity/retirement laws, all retained. Only FundLedgerCheck.bonds/local fixture declarations and the relevant ExchangeCheck.main waterfall setup/assertions changed after the normal .181 mergef3a8f65. No core/guard/precision/registry/source-owner expansion occurred. Final code8151eec2e7380437789deed6fae7c86217e4c345/source7b4622260a5ccbb886b4fc5c139c9a6e8008eb99; basea9ffdac8315f7e4e16b92e2a240814a8d6645d29. Exact whole-batch source file list is actual-source-files.txt in the focused log directory; moves_playtest=yes. Source diff against the integration is only the two harness files.
+
+FundLedger final setup: declared native issuer OPENING cash20000 before the market/trade/payment interval, exactly as the original fund declares5000. It is logged as a controlled test input, never revenue/borrowing/played-city wealth. It is not a top-up after an in-flight shortfall. Native issuer is the existing deterministic Construction company, with no scan/tuning. Exact10000face/.06/24months, two actual1000face buys at.98/1.02,2000ACB, original fund cash use/mix and all income/current-row/cost/default/maturity/close/proceeds checks remain. The old3000external fund cash use is measured and hard-asserted, not an unexplained allowance. Native actual issuer20000->19950 debit50 funds clearing50; guarded actual bank0; fund cash0->10/ledger income10 and world coupon40 discharge clearing0. Full maturing face is also actually debited from the native payer before detached native redemption. Opening-through-closing issuer/fund/clearing/native world receipts plus the original external3000 use conserve exactly the declared25000cash; duplicate record/payment and maturity create no extra debit/cash/income/principal. This is a detached component proof, not a whole-Game MoneyAudit. All179OK assertions ran. The proposed USD recall was uncommitted/uncompiled/unexecuted and was fully removed when ea0a supplied the correct opening-input rule.
+
+Exchange final setup: the old waterfall oracle equated the seller's after-tax receipt with the buyer's gross spend. One actual filled buyback showed gross83.333333333 versus net82.765151515, so five price/till/retirement/gross-counter/resting-bid assertions failed; no production tax fault was inferred. The fixture now retains default tax, installs the native named receipt callback, independently causes requested net cash above the whole preexisting bid budget with enough shares to fill it, and asserts positive tax/one assessment/one transfer. Native net receipt plus actual collected tax must equal the independently predetermined full bid budget. Gross price?sold quantity, company spend, retired units, native gross counter and exhausted bid all retain their original laws/tolerances; no observed-excess oracle, formula-copy tax calculation, lower tax, zeroed premise or production edit. The affected rerun has248OK/0FAIL. CapitalGainsCheck's exact tax calculations/negative controls remain its separate prior integrated proof.
+
+The standard ExchangeCheck name selector also matches DebtExchangeCheck. The first red wrapper used the runner's default parallel3, unpinned; actual overlap cannot be established from retained data, and no measured-serial claim is made for that attempt. Both children actually terminated (Exchange1,DebtExchange0); both logs were preserved. Every invocation from its affected rerun onward explicitly sets cbs.parallel=1, so the two selected children ran serially. No process machinery/registry was changed. The standard affected rerun necessarily reselected DebtExchange (also passed0). Earlier single-selection wrappers each selected one child. All final latest results below are sequential; no other owner's JVM was stopped.
+
+All latest native results (wrapper/child), each standard wrapper compiling/maps/Stale; no ceremonial fast/unchanged-CGC replay:
+
+| Harness | Native exits | Child time |
+|---|---:|---:|
+| FundLedgerCheck | 0/0 | 11.1s |
+| HouseholdFlowCheck | 0/0 | 3.7s |
+| EquityCheck | 0/0 | 10.2s |
+| SaveFileCheck | 0/0 | 60.4s |
+| ReadPathCheck | 0/0 | 43.4s |
+| HistoryCheck | 0/0 | 8.6s |
+| YearBookCheck | 0/0 | 6.2s |
+| BondCheck | 0/0 | 7.8s |
+| HoldersCheck | 0/0 | 20.0s |
+| TreasuryCheck | 0/0 | 17.9s |
+| ExchangeCheck | 0/0 | 9.7s |
+| DebtExchangeCheck | 0/0 | 4.3s |
+| CoalMiningCheck | 0/0 | 2.4s |
+| CopperMiningCheck | 0/0 | 2.4s |
+| ForestryCheck | 0/0 | 12.5s |
+| QuarryingCheck | 0/0 | 2.9s |
+| WoodProductsCheck | 0/0 | 6.3s |
+| PolicyCheck | 0/0 | 3.6s |
+| PolicyOpenCheck | 0/0 | 4.2s |
+
+All final wrappers are0 with Stale0firm/194soft. The required seven all passed before the genuine direct regressions: Bond/Holders/Treasury/Exchange and the five changed pool-count contracts; Policy/PolicyOpen cover the saved/defaulted dial owner. Integrated CapitalGainsCheck is reused exactly as2203 instructed: sourcef3a8f65,5201OK,4couponphases/8full-State loads,3removed-debit/4uncharged/8duplicate controls, actual native nonzero-fill market edges and120monthly pool/household/budget/claim audits with14582gain/17561dividend assessments and68.88898682710449actual gain-tax cash. Production source is unchanged since that integration; subsequent edits change only these harness cases, not CGC-used helper behavior. No19/20-class summary means ALL239 ran.
+
+Every failed attempt remains separate: original21FAIL+exception/raw4n, target-only20hard-red diagnostic, six-red pending/split case, integrated FundLedger four-red case, Mining cash0 then Construction8.302366416104322 funding-premise failures, and Exchange's five gross/net failures. The two natural-cash attempts aborted before any debit/charge/payment and do not establish their later controls. Their assumptions were superseded explicitly by ea0a, not waived into passes. The final controlled-input and net/gross cases genuinely ran green. No new known-red row, borrowed class or weakened guard/precision/economic law was used.
+
+Concise source/base/commands/results and complete selected raw logs are in target/ht1-fund-coupon-20261121-2245, numbered01..21. final-focused-results.json SHA256a89d3af0f3fde4b141a74f0ba7a88c566e4ad03bbfb88478ad442cfb48c137be records all attempts/latest19children; selected Exchange wrappers include both actual child logs/time rows. Earlier class/data/provenance archives remain intact. No repeated thousand-file seals or new parallel proof package after2203. Midnight Maps regeneration updated generated date headings across623docs; these are generated-source maps, not new owner edits. Main data C:/earth-2.bin/world-1.bin and scratch/TempDirs rules remained; no user city or UI was operated. Jerus's main NetBeans/game JVMs were identified as other owner and untouched.
+
+Self-review checked common S/B/T/L and loss stock transfer/step-up, average-basis primitive usage, current-vs-old actual tax cash and fully paid tag release, persistent foreign attribution/once-only handoff, distinct cancellation/consolidation/collection, passive custody versus fund/rescue, actual recorded coupon/issuer/bank edges, native own-paper reservations/discount/settlement guards, saved pending/current flows/deep copies, currency physical units, treasury journal revenue exclusion from bridge adjustments and unchanged GDP/reserve equations. No additional production correction was found in that review; it is not a substitute for the mandatory fresh stranger review. Controlled fixture balances and gross-versus-net expectations were the two actual review/mend findings. No per-person estate list, per-title basis ledger, inert research row or conversion code was added.
+
+At final PolicyOpen actual terminal2026-11-22T04:01:40.0608712Z, verified no owned wrapper/compiler/model JVM remained. Direct ordered handoff1f5e went ONLY to real-estate-study/root02f8 under9cfa: study's admitted supplement/docs-fast then SD1; no generic simultaneous admission and no slot retained during notes/review. SD1/R6e know that chain. Any later HT1 affected rerun must coordinate slot return. No owned job remains. Root will arrange fresh WHOLE money/save review on the pushed immutable target. Exact floor remains money BondMarket,Debt,DebtManager,FundLedger,TreasuryJournal; saves DataSave,HistorySave,+SAVE_FORMAT,+OLDEST_LOADABLE_FORMAT, including all household/tag/custody/recorded/pending phase edges. Pick ALL239. Final .181-or-newest ensemble/ALLdry, readiness marker removal and publication remain separately admitted contract gates. L7 remains separatePending for missing account design; this checkpoint makes no human/backlog decision.
+
+## Whole-review P2 follow-up and native handoff fixture mend, 2026-11-22
+
+Reviewer REV-HT1c1-1 read the whole32-owner batch at `1c776986`/source `7b462226` against main `a9ffdac8` and found one P2 in `HouseholdBalance.surrenderShares`: adding all cancelled basis straight to carry left earlier same-month gains taxed. Root cb80/8640 authorized the owned correction, related native proofs and sequential laptop checks; no BOX/runtime gate was used.
+
+Production commit `212a5de0aff996960b483014767c88824e4ba8c0` changes only the cancellation loss handling. Positive basis in an open window uses `realizeGain(c, -basis)` and subtracts its signed return from savings. That existing API sends the same signed amount, multiplied by household count, to Game's real treasury cash/journal callback. It nets only `taxedGains` from actual taxable sales; deemed unpaid assessment/secured-claim state is separate. Existing claim write-off remains separate and cancellation creates zero sale proceeds. Closed-window cancellation carries basis without calling the stale-month refund machinery. No policy, tax formula, claim math, loader/stock slot, format59/oldest59 or audit definition changed.
+
+CapitalGainsCheck adds79 assertions: three fresh markets each make two real100-unit purchases and an actual profitable100-unit fill. Gain-first and loss-first native surrender/takeover both close with tax0, net assessment0, savings20000, carry0 and taxed gains0. Gain-first refunds the actual7.50. Cancellation does not change the market's gross sale counter; savings plus the fixture's signed treasury-receipt counterpart conserves the opening money. The closed-window control keeps tax7.50/savings19992.50/carry100/stale gains100, saves no pending refund/assessment and cannot replay a refund on opening. Repeated surrender removes0 shares and creates no further cash, assessment or call. Existing claim-extinction, four coupon phases/eight full-State loader identities, removed-debit negatives and120-month audits remain hard and passed.
+
+The first newly ordered ShortSellingCheck completed with one hard fixture failure, native wrapper4/child1/tool PowerShell relay1, no exception: its legacy handoff expected10000 but received0. Source-proven cause: edge2 sent ONE departure batch to `regKnown`, marking it handed off, then tried to send the same batch to a second register. HT1's once-only guard correctly rejected the second transfer. Commit `bafcc534a01b23705e06d3c08315f5b3806431c9` gives each existing overload law its own identical native13000-share departure batch. Both original13000 known-short and10000 legacy-cap assertions remain; added assertions verify each batch is initially unhanded, consumed once and cannot add shares twice. No guard reset, quantity/tolerance change or production mend was used. This strictly local native-proof correction is the only source change after the successful CapitalGains/BankFailure runs; their production source and relevant fixture methods are unchanged. The final ShortSelling wrapper reran its complete existing fixtures and both1000-month runtime controls and passed; Treasury then passed.
+
+| actual stage | native wrapper exit | native child time / class / exit |
+|---|---:|---|
+| 01-fast | 0 | compile/maps/Stale only |
+| 02-CapitalGainsCheck | 0 | 16.2	CapitalGainsCheck	0 |
+| 03-BankFailureCheck | 0 | 45.2	BankFailureCheck	0 |
+| 04-ShortSellingCheck | 4 | 464.5	ShortSellingCheck	1 |
+| 05-ShortSellingCheck | 0 | 451.3	ShortSellingCheck	0 |
+| 06-TreasuryCheck | 0 | 18.2	TreasuryCheck	0 |
+
+All successful wrappers regenerated maps and reported Stale0firm/194soft. Every owned compiler/model/wrapper reached actual terminal; saved terminal receipts show local JVM0 and source drift0. Main C:/earth-2/world-1 options and `cbs.parallel=1` applied throughout; scratch/TempDirs only. The failed ShortSelling archive and all previous red/green/diagnostic archives remain immutable. Complete selected raw logs, commands, source/base pins and terminal receipts are under `target/ht1-cancellation-p2-20261122-0037`; `final-results.json` and `final-source-delta.diff` describe this follow-up. No repeated thousand-file seal or old-byte proof was invented.
+
+Exact source delta from reviewed `1c776986`: HouseholdBalance +7/-4, CapitalGainsCheck +75/-0, ShortSellingCheck +25/-16 (total +107/-20). Generated maps/dials/harness index and these provisional records follow the source. No process/check-runner machinery changed, so one-in/one-out does not apply. Pick remains ALL239; the money/save review floor remains BondMarket, Debt, DebtManager, FundLedger, TreasuryJournal; DataSave, HistorySave, SAVE_FORMAT and OLDEST_LOADABLE_FORMAT. Whole review is recorded, but this three-owner delta needs the ordered independent follow-up. The provisional marker remains. Latest-main integration, final newest-baseline ensemble, ALLdry/readiness/publication have not run or been claimed; root owns their order. L7's separate Pending disposition is unchanged.
+
+## Scoped review clearance and final main merge, 2026-11-22
+
+Root229e relayed the independent scoped follow-up verdict SHIP at `b499ee747`, P2 closed and no new finding. Normal merge of main `827bc03f7` preserves all HT1 tax/custody/clearing/save state and PW6 hooks, adding only main's already-published SD1 scrapping wording and records. There were no source conflicts; docs/harnesses.md and docs/map/README.md conflicts were regenerated by the changed-source fast checkpoint. Native fast0, compile47s, maps regenerated, Stale0firm/194soft. No model or baseline-main replay occurred locally.
+
+Root released the BOX ensemble against .181, then a versioned BOX ALLdry on hard PASS, autonomous owned mends and exact queued sweep attribution for moved-city reds. Local fallback is blocked by ignored operational java/javac/mvn guards; no tracked runner/process machinery changed. The model snapshot will be the pushed integrated commit; the box retains priority for gates and the02:30 nightly. Results will be recorded below.
+
+## Final BOX ensemble: hard FAIL, 2026-11-22
+
+Label `HT1-final181-20261122-0115` ran the exact pushed integrated commit `b56fa666b0693a866f80aaccdbbc497706835985`, source `cb68fde200797e8db284a6c108698524f1fcb561`, against `docs/ensemble/0.9.181.md`. Main merge is `a7bf0ae7a66f893280a4a466b8cd1cb63950e01f`, incorporating published main `827bc03f7a3694e2b62ffb0eaa6d2a9e11ad3a94`. BOX native OpenJDK21.0.13, earth-2/world-1 in `/home/jerus/cbs/main/data`, eight at once. Eighty of80 runs finished, none missing/short;14.6 wall minutes,114.4 summed run minutes. Home scoring returned native4,19/26 scored criteria passed, hard6/10, batch FAIL. Snapshot/provenance,80 CSVs/80 run logs, native terminal receipt and exact failed score are preserved; score SHA256 `14204fed1f783fb28bb548722e788240cd04f8be782599698d2f88dadc2ce570`. The copied baseline in docs/ensemble/HT1.md retains the full figures and comparison; only its version heading/introduction use the publication token. It is a failed checkpoint, not an accepted replacement baseline.
+
+All five M1 criteria pass, failed/unread audit months0/0 each. F1 changes PASS?FAIL for AUTO2, ZERO_SLACK, SHOCK and HIGH, each1/16 runs against baseline0. ZERO_HOT F1 remains0/16 PASS. The saved CSV finding is exactly ?households with no home? for seed14 at month456 in all four affected policies; population16631 in that shared pre-switch city. `LongPlaytest` reads `g.getFamilies().getStillUnplaced()` and flags this when greater than1 (current lines1733-1738). The CSVs record the finding, not that native unplaced quantity or housing stock detail, so no cause, rounding explanation, prior ownership or unrelated-sweep classification is inferred. No premise/threshold/precision changed and no diagnostic/replay was launched. A bounded future investigation can target AUTO2 seed14 immediately before/at456 and observe the native placement/stock/household paths, subject to root ordering.
+
+Informational changes are also retained: AUTO2 final population median1746350 versus baseline2532050.5, ZERO_SLACK1053974 versus1841309; both T2 PASS?FAIL. ZERO_HOT/HIGH/SHOCK T2 remain PASS; other verdict changes are none beyond the four hard F1 changes and those two informational T2 changes. Informational scores are not used to waive the hard failure.
+
+The ensemble controller, remote serve/model trees and local scorer all reached actual terminal, followed by read-only remote label-specific process verification (no matches) and local JVM0. No gate clone/evidence was altered and no laptop model fallback occurred. Because the hard criteria failed, the authorized conditional versioned ALLdry was not started. Marker remains; no ready/publication claim. Root receives the exact ensemble verdict and real block. The next source diagnosis/mend or further runtime needs root's response to this hard ensemble finding; no new Pending/queued decision is manufactured here.
+
+## F1 diagnosis and orchestrator's named call, 2026-11-22
+
+Root b856 required CU2/MC1-style attribution and allowed one main827 diagnostic comparison. Original compiled ensemble classes/dependencies were retained untouched. An isolated test-driver overlay preserves the native founding, quiet output initialization, advice rhythm, policy and CSV writer, adding only native OrderWatch callbacks and pre/post read observations. It never calls RealEstate.plan or the passed costOf function again. The first snapshot replay AUTO2 seed14 to456 exactly matches the ensemble prefix:456 lines, both SHA256 `383ae98d28046d5980be68b461375815dd411f29380994c195a6d0f8bca0cfbe`. Exactly one main827 comparison then ran. A second snapshot-only overlay adds selected offer/budget/counters and observes the existing advisor calls, making no extra advisor call; it also matches the same prefix byte for byte. Three diagnostic models total, all native0 and actually terminal; native compiler/setup also0. Snapshot classes/data pins remain unchanged. No main ensemble, baseline rerun, production edit, threshold change, cash injection or model input normalization occurred.
+
+The original trace, every native mortgage request/answer, complete month2?456 housing/finance readings and native refusal words are preserved under `target/ht1-housing-diagnostic-20261122-0145`, including both driver sources/diffs, plan/pins, csv-match.json, ht1/main.jsonl, monthly-housing.csv and land-v2. Main comparison source is exactly827bc03f7. Native untouched owners versus that main include LongPlaytest, RealEstate, BusinessInvestment, BusinessDebtManager and Bank; HT1's Game seams do not alter their land/mortgage decisions. No diagnostic JVM remains; unrelated OG1 laptop JVMs were observed and not touched.
+
+At the actual m404 advisor visit, used ground .997402 exceeds the .952381 native target. The first selected linked whole offer costs1679.80 and is affordable by the city; opening cash6249.19 makes the10% ground-ahead cash budget AT MOST624.92. The advisor may buy reserves before keepGroundAhead, so that is an upper bound, not an invented exact entry budget. Native groundAheadShort increments3?4 and groundAheadBought stays21. After all of that advisor visit, used share .986246 still exceeds the target. There is no further advisor visit through456. At456 the read-only current first offer is6682.44, linked/affordable, versus27063.53 cash and2706.35 cash-share allowance; no hypothetical purchase/visit was executed. These figures and the native short counter identify FB11's ER1-F class: cash-share-only funding meets whole listed offers, and the shortage is carried across the long skip. This is not MC1's already-shipped capital rule.
+
+Every RealEstate decision406?456 says no land. The last63 homes open407;2496 homes and zero homes on site then persist through456. Households4232.172?4812.528, doubled-up1829.003?2407.264; unplaced is .808100 at455 and4.37495381227609 at456, where74m? free is below the5570m? selected home's need. No mortgage request reaches financing in that interval. Bank equity32453.50 exceeds target22176.37, minimum10752.18, project room62285.69 and unrestricted per-sector capital growth; landlords have2585.35 cash and536.48 after-profit-tax monthly income. Builders have no home to work on. Capital/down-payment/coverage refusals occur on earlier months and remain individually logged; they are not the binding refusal here.
+
+The sole main827 path has3299 homes plus63 on site at456,3975.432 households,1378.557 doubled and0 unplaced; bank equity1931.94 against2086.52 target and landlords298.76 cash/100.47 monthly after-tax income. The HT1 path collected actual gain/dividend cash4260.150665/4132.405456 to456; the first tiny gain-tax receipt is at13. At120, household savings are4575.53 versus4941.24 main. By456 they are205838.34 versus100950.12; the observed savings+shares+bonds+paper+abroad market values less debt total887016.69 versus323162.23 (physical cars excluded). These are measurements of the whole accepted HT1 path and its altered growth/returns, not an isolated tax-elasticity or invented counterfactual claim. The binding land-refusal code remains main's unchanged code, reached on this path.
+
+**The orchestrator's call, b856, executed under Jerus's 2026-11-04 rule:** this demonstrated untouched-main class passes F1 BY NAME for AUTO2 seed14/m456 and its ZERO_SLACK/SHOCK/HIGH pre-switch twins. New checked-free queued ID FB11H carries the exact causing fixture and coordinates the bounded land-office funding repair with existing FB11; it does not duplicate FB11's existing queue row, reuse merged MC1 or waive another seed/condition. Full raw scores remain FAIL6/10; no scorer or policy change turns them into a numeric10/10. M1 stays0 failed/unread in every policy. Conditional authority now proceeds to versioned BOX ALLdry without an unchanged ensemble/model replay. No FB11 implementation is folded into HT1. The provisional marker remains until that gate is complete.
+
+## First versioned ALL dry and native extinction mend, 2026-11-22
+
+The versioned BOX dry on cb96679a9 is genuinely terminal, native gate1/suite4,
+233 normally selected harnesses of ALL239 (six nightly checks are left to the
+normal runner). Complete retained run is
+`/home/jerus/cbs/runs/cbs-gate-HT1-AnHRdJzp`, copied home to the matching
+Temp directory. Compile9s, suite941s;47 unnamed lines were retained, not
+waived. Root received the dry result. No retained clone or evidence was
+edited. The provisional marker stays. All subsequent mends are under b856's
+autonomous own-mend direction; this is not a new policy or account design.
+
+FundCheck's uncaught estate exception is an own production defect. An
+original-class observer preserves the actual run: at m265 tiny live issues
+have positive household positions; at266 native BondMarket.takeMonth deletes
+issues6/7/10 at its existing face cutoff, but TEEN retains their IDs. By305
+all issues have disappeared while household maps retain1..16. The actual
+estate at306 correctly fails the strict missing-issuer transfer guard.
+There was no legacy book clearing or missing fixture issuer to forgive.
+
+The four-line BondMarket correction closes household positions and records
+their actual remaining asset loss at that same genuine issuer extinction,
+before removing the issuer. It changes no cutoff, guard, cash or tax rule.
+The new CapitalGainsCheck case executes actual20-face purchase, native
+partial default leaving positive household/custody positions below the
+existing cutoff, native extinction of both issues, zero remaining household
+IDs/custody counterparts, positive actual added loss and zero savings,
+treasury or pooled cash movement, then no duplicate loss. Its first native
+full wrapper passes. A subsequent stricter ULP-based conservation assertion
+has been added and compiled, but is not yet claimed executed at this
+checkpoint. Existing coupon/debit negatives, eight whole-State phase loads
+and120 monthly audits remain in that same reached green run.
+
+Other owned fixture updates: FundCheck's declared opening cap holding now
+moves actual acquisition basis in kind with its shares and proves unchanged
+household cash; a hard unencumbered-stock premise rejects any attempt to
+put an assessed holding in the ordinary fund. BusinessServicesCheck counts
+the appended basis/loss/tag/claim slots explicitly. PriceLevelCheck classes
+custodyUsd with its existing USD-money history series, preserving local
+redenomination's distinct treatment. ScaleCheck scales complete aggregate
+tag/custody/coupon clearing/record maps and own-paper reservations, leaving
+per-cell amounts, prices, rates, flags and call counts in their native units.
+The average-cost ledger scaler is shared by the fund and passive custody.
+Native ScaleCheck passes, with its two existing path observations separately
+reported as OBSERVED. These are fixture/state-layout changes, not runner
+machinery; one-in/one-out does not apply.
+
+All work/evidence is under `target/ht1-dry-mends-20261122-0220`:
+changed-fast first preserves a real compiler failure (Household[] has no
+stream), changed-fast2 native0/compile39s/maps/Stale0firm; focused CGC0;
+FundCheck finishes but exposes one later cap-premise red; ScaleCheck0.
+Every wrapper has full source diff/pins, pre/run checks, class hashes,
+native exit and terminal. No earlier21-red, six-red or diagnostic archive
+has been changed. Source currently includes the additional CentralBankCheck
+fixture owner explained below; its full wrapper is RUNNING, not passed.
+
+## Exact dry-run attribution and remaining fixture work
+
+Native observers run against copied original dry-run production classes,
+outside the retained clone. Their Windows JDK21.0.4, ten Windows dependency
+JARs, release/VM/java/javac bytes and main C:/earth-2/world-1 bytes are newly
+pinned. They do not claim retrospective runtime equality with Linux
+OpenJDK21.0.13. Original class bytes remain pinned. One initial isolated
+observer compile failed because preparation removed the unused shape20
+helper; it started no model and is retained. Corrected r2 compiler0 then
+Denomination1/31.75s (all9 reds), selected original CentralBank sections1/
+13.97s (all13 reds,72 audited months), original Fund hand1/6.02s. r3 adds
+earlier read observations and existing plan-result observations only:
+compiler0, Denomination1/36.63s and selected CentralBank1/12.85s. Every owned
+native Job reports active0/cleanup verified, within its bound, all post-pins
+unchanged. These reproduce reds and measure causes; they are not passes.
+
+Fund hand: the native m76 ledger explicitly lapses its111.11111111111116
+Retail-share limit order for `no room under the 10% cap`. Actual holdings
+453.0628287024921/4530.628287024921 are exactly0.1; posted orders are empty.
+Split factor1 before/after disproves the candidate split explanation; that
+candidate fixture change was removed. No controller/postFund cap algorithm
+changed. New checked-free FS13H queues the missing room cause and retains a
+distinct correct rejection control; the exact original limit assertion stays.
+
+Central-bank section19: at69, actual term20000.152037220538 and held
+8000.060841492224 are2.660400878e-5 above the0.4 closing ratio. Actual
+inherited own-paper face6.65100243641608e-5 was consolidated after the
+holdings step;0.4 of it exactly explains the excess. At72 the actual native
+over-dial amount2.54120595855e-5 reduces rolled par1600.0121525758193 to
+1600.0121271637597 correctly. The fixture now reconciles the real retired
+face, then explicitly causes its intended at-dial state using the existing
+public dial, as its held-line section already does; it does not alter any
+holding or cash. Its subsequent capitalization law includes the actual
+face retired during the roll. Original par/payment/holder/M0 assertions
+remain hard, with unchanged tolerances. This source is compiled; the full
+named native proof is still running at this checkpoint.
+
+The separate original section22 first issue has face20000.152511469427
+versus central-bank held20000.15251146943. Both real native plan results
+have cash0/netted0/no issues, but centralBankNetted3.637978807091713e-12.
+There is no custody reservation/retirement in those branches. This is the
+untouched main rollover/holder floating-point boundary, not a missing cash
+payment or an HT1 tax claim. New checked-free FS10H names just the two exact
+zero-netting predicates and queues a causing stock/payment proof; no
+tolerance or rollover production change is made.
+
+Denomination's initial, next-month and year comparisons all pass. Existing
+DK1's full-desk numeric class reaches a quantum trade on this path at183:
+book8's actual volume6.746766826432446e-9/turnover1.7323708605198633e-11 in
+the plain city, zero in its reformed twin (last trade171). The native last
+price becomes0.00256770525065842 instead of the twin's0.014112229710257654
+in original units. Other fills, the bank's next capital/real housing orders
+and eventually population part. Existing eight DK1 nominal rows already
+name this class; the ninth, population, is added by exact name. Small prior
+floating-point differences are preserved, not declared a missing tax/FX
+field or a harmless JSON effect. The share desk's cancellation/room
+arithmetic is untouched. All9 original hard decade failures stay in raw logs.
+
+Kept's native Lending blank label150x20 kept/150x13 fresh is in unchanged
+Lending/Kept code. Government Overview's45 new nodes of379,11 quiet of25,
+retains380/379 with every monthly fresh-page equality green: main's FB2
+section103 already describes the same allocation class (47/378). Fresh
+FS5H queues only these two exact states without reopening FS5's separate
+Pending heap finding. Existing FS5 rows already name the settled0/null-lot
+premises. No memory, geometry, page-equality or retention threshold changes.
+
+CreditCrunch's existing FS9 band premises fail on33/120 rationed and36/120
+in-band months;32 asks,25 capital-short. Its late explicit six-block order
+has till1273.6 versus a negative453.0 owners' ask and is correctly trimmed
+by the lender's test to4, not a capital-short issue. Original native records
+also retain its new no-home finding; the native planner reason at those
+months is being traced before a final attribution. OrderDoor's seed12
+does not reach its initial edge by420; YoungBank's unchanged first-plant
+write-off reaches ratio.0727 in Freight at115. The queued FS9 sweep owns
+these played-bank fixture premises, not an exemption for a new cash error.
+
+Rootd3ab reports published main de51e413b/.182: FB16's RN2 owned-capacity
+restore follows updateEcon in Game.rebuildSimulationState. Main will be
+merged normally after the current native run terminates, preserving HT1's
+tax/custody/clearing restore and PW6 fields. No other batch branch is merged.
+The new monetary extinction delta still needs a fresh stranger follow-up;
+the prior b499 SHIP does not certify it. Final-model BOX ensemble and a new
+versioned ALL dry remain owed after this source and integration are final.
+Pick stays ALL239; whole money/save review floor remains BondMarket, Debt,
+DebtManager, FundLedger, TreasuryJournal, DataSave, HistorySave and both
+save-format constants (59/oldest59). L7 remains separate Pending.
+
+The full CentralBankCheck wrapper subsequently terminated: wrapper4, native
+child3, PowerShell relay1, one new own fixture failure plus the two precisely named FS10H
+predicates, no exception. All119 recorded audit months close and M0 moves
+by actual money made; the existing long policy comparisons completed too.
+Its complete source/raw/classes/terminal are preserved. The own failure
+uses fresh closing face and subtracts the total retirement, double-counting
+the part of that retirement already removed from the new issue. The next
+candidate takes actual gross face from the native market/add-on Sale
+records, requires positive real old/new inherited retirement, and adds the
+full term-face issue/maturity/retirement conservation identity. The
+unchanged capitalization/payment/holder laws and tolerances remain. That
+candidate is authored, not yet compiled or behaviorally claimed here.
+
+## Published .182 integration and recorded-principal proof
+
+Normal merge bb336a70b64ed7eb348d3f7092861056bf9f0543 incorporates published
+main de51e413b/.182. Source tree cdb1488d2612caeeb90bc0fefb01e0f6b4d249dd
+at that merge; no source conflict. Five generated-index conflicts were
+regenerated by native changed-source fast0/compile59s/maps/Stale0firm.
+PW6's fields and HT1 tax/custody/clearing/load hooks remain; RN2's
+restoreLoadedCapacity is exactly after updateEcon. Published VERSION is
+0.9.182, HT1 format/oldest both59; no conversion or prototype bump.
+
+The first native component attempt then correctly failed three new own
+premises: my candidate incorrectly assumed newly issued paper shared the
+retirement, and subtracted the previewed slice instead of actual principal.
+Native consolidation precedes principal processing and shrinks the old
+serial's schedule. Its source/raw/compiler/active0 terminal are retained;
+the original Crunch observer was not launched after that failure. No
+production model or tolerance was changed to fit it.
+
+The final fixture uses the native gross Sale records and the actual
+getCityPrincipalRepaidThisMonth flow. It proves positive inherited
+retirement, a smaller real principal payment, the new issue whole, old
+serial loss = cash principal + noncash retired face, and complete term
+stock conservation. Native values: forecast slice4000.03036873, actual
+cash principal4000.03035446, inherited face7.13847963273e-5, gross new
+issue4005.77853522. This corrects the fixture's phase accounting while
+retaining its real cash, par, price, holder and M0 laws.
+
+Normal integrated CapitalGainsCheck wrapper0/compile41s/maps/Stale0firm
+executes the stricter positive tiny-loss conservation assertion and all
+previous coupon/negative/save/120-month audit controls. No separate fast
+was repeated. Corrected native components: isolated compiler0, changed
+rollover cases child2/14.24s with exactly the two FS10H rows and zero own
+failures,72 audit months/broken0; original-class Crunch observer child1/
+25.84s reproduces7 original reds and120 immutable native Month records.
+All three native jobs are verified active0, no timeout/errors, post-pins
+unchanged. Complete evidence: native-components182 (failed candidate) and
+native-components182-r2 (corrected cases), plus the integrated CGC archive.
+The component proof is explicitly not a second complete CentralBankCheck
+run; the new final ALL dry must run that complete harness.
+
+The exact Crunch housing cause is now measured:28 months unplaced>1;
+27 native decisions refuse land (5570 square metres needed,1600/1800 free)
+and one has just ordered3 apartments. At197 there are635.911388 households,
+316 homes,318.955694 doubled,1.155694 unplaced; at224,652.823024 households,
+316 homes,327.411512 doubled,9.411512 unplaced. Neither refused month
+asks the mortgage desk. These are the original fixture's own saved monthly
+decisions, printed after its unchanged run, not new plan/cost/advice calls.
+The missing land premise joins the already named sustained-bank-premise
+failures under queued FS9. This does not claim FB11's specific cash-share
+land-funding cause for this different fixture. Redirected native Windows
+Crunch stdout is CP1252 (observed squared-metre byte0xb2); the reader uses
+that encoding without modifying any raw bytes or rerunning the model.
+
+Fresh monetary review and the final-model ensemble/dry remain owed. Price,
+layout and both-loader verification on this integrated tree are in progress.
+
+## Final .183 source checkpoint, 2026-11-22
+
+Root107a published main2149ca45c/.183 (OG1) and requires its ensemble as the
+new baseline. Normal merge d92ad9e847dbdf8b525b9139c180d89a29275283 has
+source dd6d53436dddd65815ba0dcb7f0207ea5adebe0b. No source conflict;
+ten generated-index conflicts were regenerated. OG1's nullable buildersWork
+and buildersOwedAfterAdvance, both capture/restore hooks and both sites-
+advance hooks remain. The two aggregate quantities join ScaleCheck's
+existing TOP list; no production OG1 logic is modified. Published VERSION
+is0.9.183; SAVE_FORMAT/OLDEST remain59. Native changed-source fast0,
+compile42s, maps/Stale0firm/194soft. Pick is now ALL240, including main's
+new GapOrderCheck; money/save review floor is unchanged.
+
+On this frozen source, normal CapitalGainsCheck wrapper0:5402 OK lines,
+0 FAIL, including all eight exact serialized coupon record-map/flag/cash
+phase-load equalities and the reached120-month audits. The stricter tiny
+extinction-loss accumulator check passes. Sequential normal wrappers then
+pass0: BusinessServicesCheck, SaveFileCheck, ReadPathCheck, ScaleCheck,
+BuildingStackCheck and OrderSearchCheck. Scale's two established path
+observations remain separately OBSERVED. Every wrapper regenerated maps
+and reports Stale0firm/194soft; every owned process is actually terminal.
+Source stayed unchanged during these runs, with main C:/earth-2/world-1
+and scratch/TempDirs. All complete raw/pre-check/source/class/exit/terminal
+receipts are retained under the focused-merged183-* archives. Earlier
+PriceLevelCheck passes its complete371.9s native run on integrated .182;
+the final .183 ALL dry still owes its complete replay.
+
+No new own hard red remains in the completed affected checks. The full
+CentralBankCheck after its final fixture-only correction still belongs to
+the final ALL dry; only its actual changed native cases were rerun locally,
+with72 closed audit months and the two named main rounding predicates.
+No old red or component diagnostic is reclassified as a full green run.
+
+The new four-line monetary production delta is BondMarket.takeMonth's
+actual household-position extinction and noncash loss. The independently
+cleared b499 target did not contain it; a fresh stranger follow-up is
+required before ready. Remaining source changes since that clearance are
+causing fixture/scaling/layout corrections described above and published
+main integration. This checkpoint retains the provisional marker and makes
+no source-SHIP/readiness claim. Final ensemble must use the pushed final
+source against docs/ensemble/0.9.183.md, followed by the versioned ALL dry;
+old .181 ensemble evidence cannot certify this model. L7 remains Pending.
+
+
+## Independent clearance and final .183 ensemble
+
+Root45f6 relays REV-HT1c1-2 SHIP on b499ee747..71af5eea2. The new native
+extinction removes every household issuer ID and records actual noncash
+face loss without changing savings or the share-tax loss carry. The loss
+survives a save without replay; format59 and published hooks remain, fixture
+tolerances stay, and both zero-cash predicates are main's code. This meets
+the required follow-up condition. Any further money/save source change
+requires another scoped review; none was made afterward.
+
+Final label HT1-final183-20261122-0407 runs pushed71af5eea2, source
+dd6d53436dddd65815ba0dcb7f0207ea5adebe0b, base2149ca45c, against the
+published docs/ensemble/0.9.183.md baseline. All80/80 finish, none missing
+or short,15.9 wall/125.4 summed minutes; BOX OpenJDK21.0.13 with native
+main earth-2/world-1. Native controller4, PowerShell relay1; raw score
+21/26 overall and6/10 hard FAIL. All five M1 criteria pass, failed/unread0/0
+in every policy. F1 is1/16 AUTO2/ZERO_SLACK/SHOCK/HIGH,0/16 ZERO_HOT;
+the sole distinct finding is seed14, m456, households with no home,
+population16631. Informational AUTO2 T2 now PASS, median3958776 versus
+baseline1818590; other verdict changes are the four F1 rows. The complete
+raw scores, baseline, logs, CSVs, native exits and snapshot remain unchanged.
+docs/ensemble/HT1.md copies the whole new baseline with a truthful named
+preface. No old .181 verdict is reused to certify this model.
+
+The final CSV prefix is not byte-equal to the old .181 prefix, so I did not
+infer the old private figures from that match. One new snapshot-only
+in-process replay uses the unchanged accepted HT1LandTrace driver against
+the final ensemble's exact original classes, no implicit/production compile
+and no new main comparison. Native compiler0/.36s, model0/11.98s; both
+owned groups verified gone, post class/JAR/data pins unchanged. Its456-line
+CSV equals this ensemble's prefix byte for byte, SHA256
+70f1e3b9a3d32b6b863b516e21510b013fa87b6909e49b8fa7c7bde3fd1871c0.
+Complete source/pins/observations/terminal are retained in
+target/ht1-housing-183-20261122-0427 and the corresponding BOX diagnostic
+directory, outside the retained ensemble clone.
+
+Actual final-model figures confirm FB11H again: at the m404 advisor visit,
+used ground.9974023085 exceeds.9523809524; offer1679.800015 is affordable,
+but starting cash6249.185859 makes the10% growth-land budget at most624.92.
+Growth-land short counter3->4, bought count stays21; after the visit used
+share.9862464631 still exceeds target. No more advisor visit through456.
+All51 native housing decisions406..456 refuse land, zero mortgage events;
+last63 homes open407, then2496 homes and no sites persist. At455 unplaced
+.8080997702, at4564.374953812222884; households4812.528356 and doubled
+2407.264178. Native planner needs5570 square metres versus74 free. At456
+bank equity32453.503077 exceeds target22176.365052, minimum10752.176995;
+project room62285.685004 and capital growth unrestricted. Landlord cash
+2585.349310/monthly after-profit-tax536.475113; city cash27063.534290 versus
+offer6682.439460/10% allowance2706.35, observed without an extra visit.
+Earlier down-payment refusals remain logged and are not the binding stage.
+
+Under the already delegated b856/107a call, those four exact F1 recurrences
+pass BY NAME with FB11H's current fixture appended. Raw hard6/10 remains
+FAIL; no scorer/premise/precision/threshold or tax/land/bank model changed.
+The source is independently cleared, all owned ensemble/diagnostic trees
+actually terminal/home-copied, and final versioned ALL dry proceeds under
+the standing GO. Provisional marker stays until that verdict is complete.
+
+## Final versioned ALL dry and retained-run attribution
+
+BOX run `/home/jerus/cbs/runs/cbs-gate-HT1-rNY0fHHw` tests pushed
+e8f739b840d7138bbf4ffc06ae7d8c79771e2679, unchanged reviewed source
+dd6d53436dddd65815ba0dcb7f0207ea5adebe0b, against main2149ca45c/.183.
+The native versioned merge is.184; SAVE_FORMAT/OLDEST both59. Compile8s,
+234 harnesses run1092s (216 passed/18 failed), wrapper suite1109s/native4,
+gate1/controller1/PowerShell relay1. The standard ALL240 selection excludes
+six nightly-only harnesses and explicitly includes the nine nightly picks
+the source diff requires; all234 selected harnesses finish. Monocle starts
+all9 display harnesses without a display skip. Maps regenerate, Stale0firm/
+194soft; one timing assertion stays SOFT and seven path assertions remain
+OBSERVED, not promoted to passed proofs. Complete raw79 red lines include
+44 assertion lines; the original gate reports7 unnamed lines, consisting
+of3 actual assertions and their4 exit/summary lines.
+
+CapitalGainsCheck passes in this complete run (0 failures), as do the
+affected FundLedger/HouseholdFlow/Equity/Exchange/SaveFile/ReadPath/History/
+YearBook and stock-count/currency/scaling checks. The full CentralBankCheck
+reaches119 closed audit months with only the two exact FS10H zero-cash
+rounding predicates; its corrected native retirement/principal assertions
+pass. FundCheck finishes the formerly throwing long run, retaining only the
+exact FS13H cap-premise failure. All raw named assertions were inspected,
+including the unchanged DK1 nine-decade, FS9 housing/bank and other main
+registry predicates; no new monetary/audit/loader assertion is hidden by an
+exit label. ShortSellingCheck finishes, including its real-world exchange
+cash edges, every-month audit and issued-plus-short ownership identities.
+
+Every owned suite child/controller/guardian is actually terminal, the
+remote active marker is absent, and no process command names this retained
+run. The native gate finishes08:52:05UTC and homecopy/controller finishes
+08:52:11UTC. All920 archived output/metadata/generated files are retained
+at `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HT1-rNY0fHHw`; every emitted
+check/generated hash agrees with checks.sha256. The local immutable index
+and native receipt are
+`target/ht1-final-20261122-0407/dry-original-receipt.json`. No original raw
+log, retained clone, seal or earlier diagnostic/red/green archive was
+changed. No source/record was edited while the gate was active.
+
+### FS17H hand-order premise
+
+This is a fresh companion to shipped FS17, checked unused after fetching
+origin/main. It is not RN3's exact-one homes-share rounding predicate.
+Final ReloadCheck's hand-caused city is saved at1208, and its own month on
+reports0 crews that drew materials. All338 history series and all save
+figures agree in both continuations, as do Construction's isDrawnKnown,
+home/imported draws, the market seller rows and every other native restore
+comparison. The one failing assertion is the cause's positive-draw premise.
+
+Main's unchanged ReloadCheck.causeTheConditions finds House and calls
+`g.buildStack(house, CAUSED_ORDER, false)` with CAUSED_ORDER5, silencing the
+reply and discarding its BuildResult. Native Game.buildStack may return
+NOT_KNOWN/NO_LAND/NEEDS_FUNDING (or another real gate) without ordering
+anything; an accepted order alone also does not prove when its crew draws.
+The fixture asserts neither the actual result nor that its next month
+contains positive work/materials. The exact result/refusal is not exposed
+by this raw log and is not invented here. The proven finding is that the
+unchanged hand cause does not establish the condition its assertion needs.
+HT1 changes neither this fixture, the build acceptance route nor the native
+material-draw rule. The nonzero played-checkpoint draw premise still passes.
+
+Queued FS17H must cause an actual accepted five-House order, capture its
+native funding/land/build/work/material counterparts and prove a positive
+draw in the month being saved/compared, retaining the hard missing-cause
+negative control. Keep all live/load save/history equality checks, closed
+homes RN2/RN3 controls, native refusals and monetary conservation. Do not
+inject free cash/land, waive a missing draw or use a different checkpoint's
+draw to satisfy this cause. Under root229e's moved-city sweep direction,
+this exact main fixture assertion passes by name with FS17H queued.
+
+### FS5H final page states
+
+The final run adds two exact states to the already queued FS5H companion;
+FS5's Pending heap scope stays separate. SectorScreen, StatementView,
+Kept, KeptCheck, FamilyModel and the grid's rendering code have no HT1 diff.
+
+Construction's Cash & debt statement has a native signature difference at
+line261: a row at17,52 is836x24 kept and836x16 fresh. Two more lines differ,
+the next268 is the same empty IBM Plex Mono figure label; the difference
+repeats on two held-still redraws. Its summary page passes, every other
+sector statement passes. This is the existing blank-label geometry class
+in the unchanged cashStatementView -> StatementView.table/schedule/debt
+scopes, not a missing cash posting or an HT1 tax statement. The exact
+kept/fresh equality remains hard; queue this specific state with FS5H.
+
+Rankings' city-drawer tooltip watch reports2 grid cells closed after the
+month, and the month alone closes the same2. Native tipsAcrossMonth holds
+FamilyModel's save array and owner-adult count, but lets the real month/job
+binding run, then asks KeptBench.householdCells again; its own comment
+describes the half-household threshold. The unchanged fixture does not hold
+the complete cell-count premise on this path. All60 before/after tooltips
+remain the same60 objects and none is lost. Main already records this
+KHT1 class for the every-measure-open state; this exact city-drawer state is
+named separately with FS5H, keeping all tooltip and grid thresholds.
+
+Government Overview now starts401 nodes, makes45 at most and is quiet11 of
+25 months. All25 kept/fresh page comparisons and380-of401 retention pass;
+the one-tenth allocation predicate remains red in the same previously
+traced unchanged scope class (old dry45/379, main FB2 previously47/378).
+The actual tax disclosures stay. The final heap is1881.8MiB/2048, with the
+existing software-rendered FS5 heap row; it is not called a new heap proof,
+reopened design or a memory waiver. No screenshot/signature normalization,
+threshold, geometry, household count or renderer was changed.
+
+Only this notes file and the ship file change after the dry. The first-line
+gate-run pointer names its exact retained run; its original raw hard reds
+remain immutable. The next step is the standard judge/retained-run reuse,
+with no unchanged full-suite or model replay and no new production edit.
+
+The standard local `batch-check.sh --judge target/checks/suite.txt`, with
+CBS_REJUDGE=rejudge, returns native3: known red only,18 harnesses. This
+judges a copied original suite in our own target; it runs no harness or
+model and changes no retained evidence. The local capture wrapper then
+returns1 trying to copy a nonexistent verdict.txt after the actual judge
+has ended. The raw native3/log/used-reds are present; the postprocessing
+limit is recorded in rejudge-terminal.json, with no judge/model retry.
+The versioned BOX gate reuse is still required to certify the final record
+merge; its run pointer retains the original complete234-harness evidence.
+
+## Final retained verdict and ready handoff
+
+Pushed records c4ed957d9 change only this notes file and the ship file from
+the completed dry. Standard versioned BOX dry reuse
+`/home/jerus/cbs/runs/cbs-gate-HT1-MUAPeyHl` accepts the original sealed
+`cbs-gate-HT1-rNY0fHHw` evidence. It runs the common judge only: native
+suite3, known red only18 harnesses; native gate/controller/relay0. No
+compiler, harness, simulator or unchanged suite is replayed. It would
+publish.184 with one Pending/five Queued rows and preserves the actual
+format59. Nothing is published by a dry run. Original hard raw79 lines
+and44 assertion lines stay hard evidence, with all unrelated assertions
+named individually by their queued owners; no red-ok waiver is used.
+
+The green gate ends08:57:33UTC, homecopy/controller ends08:57:39UTC.
+Both retained runs have no active marker and no remaining process naming
+their run. The green run's saved logs/seals/generated/check files are home
+at `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HT1-MUAPeyHl`. Ship's first
+line now names this green reusable run. Only notes/ship changes follow it.
+Source remains dd6d53436dddd65815ba0dcb7f0207ea5adebe0b, baseline
+2149ca45c93b6343c3bd5b9728d131c9d0eed982, origin/main unchanged.
+
+Final pick is ALL240. Exact review floor: money BondMarket.java, Debt.java,
+DebtManager.java, FundLedger.java, TreasuryJournal.java; saves DataSave.java,
+HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT. Whole-batch
+REV-HT1c1-1 plus the closed P2 follow-up and REV-HT1c1-2's final scoped
+SHIP cover the complete reviewed source, including the native extinction
+mend. No later money/save source edit exists. Main PW6/FB16/OG1 hooks and
+aggregate fields remain intact. The final .183 ensemble's exact F1
+recurrence passes by the delegated FB11H call; all five money criteria
+are numeric PASS0failed/0unread. New queued FS17H and FS5H states are the
+untouched fixture/UI findings above. L7 remains separately Pending with no
+invented account or research effect. Process machinery did not change,
+so the process one-in/one-out rule is not invoked.
+
+All authorized implementation, independent review, final-model evidence
+and versioned ALL dry work is complete. The provisional marker is removed
+last in its own pushed commit, under root229e's end-to-end GO. Publication
+of main/tag/version belongs to the orchestrator; this branch only hands
+off the ready source, exact records and reusable evidence. No owned job
+remains running.

@@ -413,6 +413,16 @@ public final class FundLedger {
         worth(l, a, q, value);
     }
 
+    /** Property received without cash: the transferred average basis, never a purchase/proceeds fiction (HT1). */
+    void receivedShareInKind(String company, double quantity, double basis, int month) {
+        if (!(quantity > 0) && basis == 0) return;
+        Lot l = shareLot(company, false, month); reopen(l, month); l.acb += basis;
+    }
+    void receivedBondInKind(CorporateBond bond, double face, double basis, int month) {
+        if (!(face > 0)) return;
+        Lot l = bondLot(bond, month); reopen(l, month); l.acb += basis;
+    }
+
     /** A buy's units at the step's value, on its lot and its row; nothing where the value is not known. */
     private static void worth(Lot l, Activity a, double q, double value) {
         if (!(value > 0) || !Double.isFinite(value)) return;
@@ -425,6 +435,12 @@ public final class FundLedger {
         l.income += amount;
         if (l.lastIncomeMonth != month) { l.lastIncomeMonth = month; l.lastIncome = 0; }
         l.lastIncome += amount;
+    }
+
+    /** Average-cost stock released by a sale; a final fill releases the remaining rounding too (HT1). */
+    static double basisReleased(double basis, double sold, double held) {
+        if (!(sold > 0)) return 0;
+        return held <= DUST || held - sold <= DUST ? basis : basis * Math.min(1, sold / held);
     }
 
     /**
@@ -442,8 +458,7 @@ public final class FundLedger {
         Activity a = fillRow(month, shareKey(company), hand, false);
         if (fromMarket > 0) {
             Lot l = shareLot(company, false, month);
-            double out = marketBefore > DUST ? l.acb * Math.min(1, fromMarket / marketBefore) : l.acb;
-            if (marketBefore - fromMarket <= DUST) out = l.acb;
+            double out = basisReleased(l.acb, fromMarket, marketBefore);
             double cash = fromMarket * price;
             l.acb -= out;
             l.acbOut += out;

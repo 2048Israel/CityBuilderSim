@@ -1,10 +1,10 @@
-# DataSave.java - 2,995 lines · 465 methods · 1 constants · model
+# DataSave.java - 3,025 lines · 479 methods · 1 constants · model
 
 `ham/citybuildersim/DataSave.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
-**Uses:** [Founding](Founding.md) (7), [SectorBooks](SectorBooks.md) (6), [World](World.md) (5), [Nations](Nations.md) (5), [DebtManager](DebtManager.md) (5), [Rollover](Rollover.md) (5), [Notice](Notice.md) (4), [BuildLog](BuildLog.md) (4), [Currency](Currency.md) (4), [GameFiles](GameFiles.md) (4), [Bank](Bank.md) (4), [CapSetting](CapSetting.md) (4), [BuildingManager](BuildingManager.md) (3), [ConstructionControl](ConstructionControl.md) (3), [DecisionLog](DecisionLog.md) (3), [AutoBuilder](AutoBuilder.md) (3), [StrategicReserve](StrategicReserve.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [Ports](Ports.md) (3), [Zoning](Zoning.md) (3), [Landmasses](Landmasses.md) (3), [Bridges](Bridges.md) (3), [PartnerTrade](PartnerTrade.md) (3), [SectorState](SectorState.md) (3), [Markets](Markets.md) (3), [OldMetal](OldMetal.md) (3), [DemolitionLog](DemolitionLog.md) (3), [SaveCopy](SaveCopy.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [Fittings](Fittings.md) (3)... and 10 more
+**Uses:** [Founding](Founding.md) (7), [SectorBooks](SectorBooks.md) (6), [World](World.md) (5), [Nations](Nations.md) (5), [DebtManager](DebtManager.md) (5), [Rollover](Rollover.md) (5), [Notice](Notice.md) (4), [BuildLog](BuildLog.md) (4), [Currency](Currency.md) (4), [GameFiles](GameFiles.md) (4), [Bank](Bank.md) (4), [CapSetting](CapSetting.md) (4), [BuildingManager](BuildingManager.md) (3), [ConstructionControl](ConstructionControl.md) (3), [DecisionLog](DecisionLog.md) (3), [AutoBuilder](AutoBuilder.md) (3), [StrategicReserve](StrategicReserve.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [Ports](Ports.md) (3), [Zoning](Zoning.md) (3), [Landmasses](Landmasses.md) (3), [Bridges](Bridges.md) (3), [PartnerTrade](PartnerTrade.md) (3), [SectorState](SectorState.md) (3), [Markets](Markets.md) (3), [OldMetal](OldMetal.md) (3), [DemolitionLog](DemolitionLog.md) (3), [SaveCopy](SaveCopy.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [Fittings](Fittings.md) (3)... and 11 more
 
 **Used by (23):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FittingCheck](FittingCheck.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [GoldMiningCheck](GoldMiningCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LandmassCheck](LandmassCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MapCheck](MapCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [MoneySignCheck](MoneySignCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PopulationCheck](PopulationCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Recording](Recording.md), [ReplayCheck](ReplayCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SaveWriter](SaveWriter.md)
 
@@ -266,44 +266,50 @@
 | 2445 | `private double[] homeFuelSale` | ...and the homes' lamp oil and coal as 6d struck them for the households' next bill (R0e): {homes, litres, tonnes, bill, cost, imported} (HomeFuel.heldSale()) - a sale off the refiners' and mines' shelves is a month p... |
 | 2458 | `private double[] householdGraduates` | ...and the students who finished a course and wait for the next census to carry their loans to the working families, beside the ones who carried theirs at this month's (0.7.63; HouseholdBalance.graduatesToSave()). |
 | 2471 | `private double[] householdFlows` | ...and the month's flows waiting for the next census (HS1, HouseholdBalance.flowsToSave()): the shares of each band who retired, aged on, died and left, which carry their own money at the census before the pool. |
-| 2488 | `private double costOfLiving` | How far wages have chased the cost of living. |
-| 2502 | `private double bankTaxCharged` | The tax the city actually took off the bank this month. |
-| 2528 | `private double rentWeightStudio` | The studio half of that weight, added 2026-09-09 with the segment split. |
-| 2561 | `private double[] cohorts` | The demographics. |
-| 2585 | `private String[] bandNames` | THE AGE BANDS THIS WHOLE SAVE WAS WRITTEN WITH (2026-09-15). |
-| 2587 | `private double[] families` |  |
-| 2588 | `private double[] migration` |  |
-| 2598 | `private double[] unemployment` | The people out of work: the EI claims by the month they began, who is past EI, who has been evicted, and the month the flows were struck against (2026-09-11). |
-| 2607 | `private double[] sickness` | Who has been sick how long: five rings of thirteen monthly shares, the last month's deaths from sickness by band, the recovery and whether the ring has been seeded (2026-09-11). |
-| 2610 | `private double[] sicknessAcute` | Acute influenza shares by saved age band, beside the mortality ring (R0h); null means none. |
-| 2620 | `private double[] crime` | Crime and the prisons (2026-09-11): six monthly cohorts of prisoners, the month as it was struck - the rate next month's migration reads, the killings next month's pyramid reads - and the running totals. |
-| 2633 | `private double[] health` | The month's sickness: the outbreak still decaying, and the rate the sectors were throttled by. |
-| 2644 | `private double[] causesOfDeath` | The causes of death of 1900 (R0b; CausesOfDeath.getState()): last month's dead of each of the seven, the dead of each since the city began, the last twelve months' dead of each, one slot to a month, and the people sic... |
-| 2657 | `private double[] healthcare` | The health service: plots used, the unburied backlog, and the month's bill. |
-| 2660 | `private double[] healthcareAccess` | SZ1: the month's offered care and shares who could pay it; null when the save did not carry access. |
-| 2676 | `private double[] labour` | The minimum wage, then the eleven wages the city is actually paying. |
-| 2690 | `private double[] wantedPosts` | The posts per wage band the staffing gate refused this month that the labour market prices as if they were offered (LD1; WantedPosts). |
-| 2702 | `private double[] skilledWorkforce` | How many skilled workers the city has, by band. |
-| 2719 | `private double[] licences` | Who is licensed to practise what, and the schools' running total. |
-| 2720 | `private double[] education` |  |
-| 2753 | `private String[] shapeNames` | The household shapes this save was written with. |
-| 2793 | `private java.util.Map<String, Integer> sectorLossMonths` | The private sector's memory, and the player's own turn. |
-| 2794 | `private java.util.Map<String, Integer> sectorOperatingLossMonths` |  |
-| 2795 | `private java.util.List<Long> populationTrend` |  |
-| 2796 | `private double cityCapitalSpending` |  |
-| 2797 | `private double monthlyMaterialImports` |  |
-| 2804 | `private double monthlyMaterialImportBill` | The same imports in money, at the price each was charged at - the builders' materials expense and the accounts' import line. |
-| 2805 | `private long materialsConsumed` |  |
-| 2830 | `private double cityMaintenancePaid` | What the treasury paid the builders to keep the city's own buildings up. |
-| 2847 | `private java.util.Map<String, String> lastInvestment` | THE INVESTORS' LAST WORD ON EACH SECTOR (0.7.102, Jerus's A22): what the month's investment pass decided for it and why - "Built 2 ...", "Holding: ...", a refusal - as Game.getLastInvestment() reads it, the Sectors sc... |
-| 2864 | `private java.util.Map<String, Double> subsidyPaid` | What each protected sector was paid last month. |
-| 2875 | `private double[] householdStatement` | The residents' month: twelve scalars and eleven per-tier arrays. |
+| 2473 | `private double[] householdInvestmentTaxes` | HT1's struck investment-tax transfers and actual assessment counts. |
+| 2474 | `private double[] securedHouseholdTaxes, securedForeignTaxes` |  |
+| 2475 | `private EstateCustody.State estateCustody` |  |
+| 2476 | `private double unbackedCustodyPaper` |  |
+| 2504 | `private double costOfLiving` | How far wages have chased the cost of living. |
+| 2518 | `private double bankTaxCharged` | The tax the city actually took off the bank this month. |
+| 2544 | `private double rentWeightStudio` | The studio half of that weight, added 2026-09-09 with the segment split. |
+| 2577 | `private double[] cohorts` | The demographics. |
+| 2601 | `private String[] bandNames` | THE AGE BANDS THIS WHOLE SAVE WAS WRITTEN WITH (2026-09-15). |
+| 2603 | `private double[] families` |  |
+| 2604 | `private double[] migration` |  |
+| 2614 | `private double[] unemployment` | The people out of work: the EI claims by the month they began, who is past EI, who has been evicted, and the month the flows were struck against (2026-09-11). |
+| 2623 | `private double[] sickness` | Who has been sick how long: five rings of thirteen monthly shares, the last month's deaths from sickness by band, the recovery and whether the ring has been seeded (2026-09-11). |
+| 2626 | `private double[] sicknessAcute` | Acute influenza shares by saved age band, beside the mortality ring (R0h); null means none. |
+| 2636 | `private double[] crime` | Crime and the prisons (2026-09-11): six monthly cohorts of prisoners, the month as it was struck - the rate next month's migration reads, the killings next month's pyramid reads - and the running totals. |
+| 2649 | `private double[] health` | The month's sickness: the outbreak still decaying, and the rate the sectors were throttled by. |
+| 2660 | `private double[] causesOfDeath` | The causes of death of 1900 (R0b; CausesOfDeath.getState()): last month's dead of each of the seven, the dead of each since the city began, the last twelve months' dead of each, one slot to a month, and the people sic... |
+| 2673 | `private double[] healthcare` | The health service: plots used, the unburied backlog, and the month's bill. |
+| 2676 | `private double[] healthcareAccess` | SZ1: the month's offered care and shares who could pay it; null when the save did not carry access. |
+| 2692 | `private double[] labour` | The minimum wage, then the eleven wages the city is actually paying. |
+| 2706 | `private double[] wantedPosts` | The posts per wage band the staffing gate refused this month that the labour market prices as if they were offered (LD1; WantedPosts). |
+| 2718 | `private double[] skilledWorkforce` | How many skilled workers the city has, by band. |
+| 2735 | `private double[] licences` | Who is licensed to practise what, and the schools' running total. |
+| 2736 | `private double[] education` |  |
+| 2769 | `private String[] shapeNames` | The household shapes this save was written with. |
+| 2809 | `private java.util.Map<String, Integer> sectorLossMonths` | The private sector's memory, and the player's own turn. |
+| 2810 | `private java.util.Map<String, Integer> sectorOperatingLossMonths` |  |
+| 2811 | `private java.util.List<Long> populationTrend` |  |
+| 2812 | `private double cityCapitalSpending` |  |
+| 2813 | `private double monthlyMaterialImports` |  |
+| 2820 | `private double monthlyMaterialImportBill` | The same imports in money, at the price each was charged at - the builders' materials expense and the accounts' import line. |
+| 2821 | `private long materialsConsumed` |  |
+| 2836 | `private java.util.List<Double> buildersWork` | The work each recent month ordered of the builders, their own depots left out, and what everyone else's sites owed when the last advance ended (OG1; BusinessInvestment, THE WORK THE CITY SENDS THE BUILDERS): what the ... |
+| 2837 | `private Double buildersOwedAfterAdvance` |  |
+| 2860 | `private double cityMaintenancePaid` | What the treasury paid the builders to keep the city's own buildings up. |
+| 2877 | `private java.util.Map<String, String> lastInvestment` | THE INVESTORS' LAST WORD ON EACH SECTOR (0.7.102, Jerus's A22): what the month's investment pass decided for it and why - "Built 2 ...", "Holding: ...", a refusal - as Game.getLastInvestment() reads it, the Sectors sc... |
+| 2894 | `private java.util.Map<String, Double> subsidyPaid` | What each protected sector was paid last month. |
+| 2905 | `private double[] householdStatement` | The residents' month: twelve scalars and eleven per-tier arrays. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 2984 | **type** `public class DataSave implements Cloneable` |  |
+| 12 | 3014 | **type** `public class DataSave implements Cloneable` |  |
 | 310 | 1 | `public void setSectors(java.util.List<SectorState> s)` |  |
 | 311 | 1 | `public java.util.List<SectorState> getSectors()` |  |
 | 312 | 1 | `public void setMarkets(java.util.List<Markets.State> m)` |  |
@@ -528,7 +534,7 @@
 | 1584 | 1 | `public int getIronDeposits()` | An older save's pool of iron sites, 0 when it carries none: kept only as an obsolete save key. |
 | 1586 | 1 | `public double getIronReserveTonnes()` | ...and its tonnes. |
 
-### policy (lines 1589-2995)
+### policy (lines 1589-3025)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -684,117 +690,131 @@
 | 2448 | 1 | `public double[] getHomeFuelSale()` |  |
 | 2460 | 1 | `public void setHouseholdGraduates(double[] v)` |  |
 | 2461 | 1 | `public double[] getHouseholdGraduates()` |  |
-| 2473 | 1 | `public void setHouseholdFlows(double[] v)` |  |
-| 2474 | 1 | `public double[] getHouseholdFlows()` |  |
-| 2476 | 1 | `public void setRememberedCommute(double v)` |  |
-| 2477 | 3 | `public double getRememberedCommute()` |  |
-| 2490 | 1 | `public void setCostOfLiving(double v)` |  |
-| 2491 | 1 | `public double getCostOfLiving()` |  |
-| 2504 | 1 | `public void setBankTaxCharged(double v)` |  |
-| 2505 | 1 | `public double getBankTaxCharged()` |  |
-| 2509 | 1 | `public void setRentWeight(double weight)` | What the landlords billed this month - see FamilyModel.setRentWeight(). |
-| 2510 | 1 | `public double getRentWeight()` |  |
-| 2530 | 1 | `public void setRentWeightStudio(double weight)` |  |
-| 2531 | 1 | `public double getRentWeightStudio()` |  |
-| 2533 | 4 | `public void setConstructionShedding(int month, double points)` |  |
-| 2537 | 1 | `public int getConstructionShedMonth()` |  |
-| 2538 | 1 | `public double getConstructionShedPoints()` |  |
-| 2540 | 3 | `public void setDemolitions(java.util.List<DemolitionLog.Entry> entries)` |  |
-| 2543 | 1 | `public java.util.List<DemolitionLog.Entry> getDemolitions()` |  |
-| 2723 | 1 | `public void setLicences(double[] a)` | UP1: a copy, not the live head counts - PopulationManager hands out its own arrays. |
-| 2724 | 1 | `public double[] getLicences()` |  |
-| 2725 | 1 | `public void setEducation(double[] a)` |  |
-| 2726 | 1 | `public double[] getEducation()` |  |
-| 2728 | 1 | `public void setLabour(double[] a)` |  |
-| 2729 | 1 | `public double[] getLabour()` |  |
-| 2730 | 1 | `public void setWantedPosts(double[] a)` |  |
-| 2731 | 1 | `public double[] getWantedPosts()` |  |
-| 2733 | 1 | `public void setSkilledWorkforce(double[] a)` | UP1: a copy, not the live head counts. |
-| 2734 | 1 | `public double[] getSkilledWorkforce()` |  |
-| 2736 | 1 | `public void setCohorts(double[] a)` |  |
-| 2737 | 1 | `public double[] getCohorts()` |  |
-| 2740 | 1 | `public void setBandNames(String[] names)` |  |
-| 2742 | 1 | `public String[] getBandNames()` | Null on a save from before the names travelled: read it as LEGACY_BANDS. |
-| 2756 | 1 | `public void setShapeNames(String[] names)` |  |
-| 2757 | 1 | `public String[] getShapeNames()` |  |
-| 2758 | 1 | `public void setFamilies(double[] a)` |  |
-| 2759 | 1 | `public double[] getFamilies()` |  |
-| 2760 | 1 | `public void setMigration(double[] a)` |  |
-| 2761 | 1 | `public double[] getMigration()` |  |
-| 2762 | 1 | `public void setUnemployment(double[] a)` |  |
-| 2763 | 1 | `public double[] getUnemployment()` |  |
-| 2764 | 1 | `public void setSickness(double[] a)` |  |
-| 2765 | 1 | `public double[] getSickness()` |  |
-| 2766 | 1 | `public void setSicknessAcute(double[] a)` |  |
-| 2767 | 1 | `public double[] getSicknessAcute()` |  |
-| 2768 | 1 | `public void setCrime(double[] a)` |  |
-| 2769 | 1 | `public double[] getCrime()` |  |
-| 2770 | 1 | `public void setHealth(double[] a)` |  |
-| 2771 | 1 | `public double[] getHealth()` |  |
-| 2772 | 1 | `public void setCausesOfDeath(double[] a)` |  |
-| 2773 | 1 | `public double[] getCausesOfDeath()` |  |
-| 2774 | 1 | `public void setHealthcare(double[] a)` |  |
-| 2775 | 1 | `public double[] getHealthcare()` |  |
-| 2776 | 1 | `public void setHealthcareAccess(double[] a)` |  |
-| 2777 | 1 | `public double[] getHealthcareAccess()` |  |
-| 2807 | 1 | `public void setSectorLossMonths(java.util.Map<String, Integer> m)` |  |
-| 2808 | 1 | `public java.util.Map<String, Integer> getSectorLossMonths()` |  |
-| 2809 | 1 | `public void setSectorOperatingLossMonths(java.util.Map<String, Integer> m)` |  |
-| 2810 | 1 | `public java.util.Map<String, Integer> getSectorOperatingLossMonths()` |  |
-| 2811 | 1 | `public void setPopulationTrend(java.util.List<Long> l)` |  |
-| 2812 | 1 | `public java.util.List<Long> getPopulationTrend()` |  |
-| 2813 | 1 | `public void setCityCapitalSpending(double v)` |  |
-| 2814 | 1 | `public double getCityCapitalSpending()` |  |
-| 2832 | 1 | `public void setCityMaintenancePaid(double v)` |  |
-| 2833 | 1 | `public double getCityMaintenancePaid()` |  |
-| 2849 | 1 | `public void setLastInvestment(java.util.Map<String, String> m)` |  |
-| 2850 | 1 | `public java.util.Map<String, String> getLastInvestment()` |  |
-| 2851 | 1 | `public void setMonthlyMaterialImports(double v)` |  |
-| 2852 | 1 | `public double getMonthlyMaterialImports()` |  |
-| 2853 | 1 | `public void setMonthlyMaterialImportBill(double v)` |  |
-| 2854 | 1 | `public double getMonthlyMaterialImportBill()` |  |
-| 2855 | 1 | `public void setMaterialsConsumed(long v)` |  |
-| 2856 | 1 | `public long getMaterialsConsumed()` |  |
-| 2865 | 1 | `public void setSubsidyPaid(java.util.Map<String, Double> v)` |  |
-| 2866 | 1 | `public java.util.Map<String, Double> getSubsidyPaid()` |  |
-| 2876 | 1 | `public void setHouseholdStatement(double[] v)` |  |
-| 2877 | 1 | `public double[] getHouseholdStatement()` |  |
-| 2879 | 4 | `public void setBuilds(java.util.List<BuildLog.Entry> entries)` |  |
-| 2883 | 1 | `public java.util.List<BuildLog.Entry> getBuilds()` |  |
-| 2885 | 3 | `public void setWriteOffTotals(java.util.Map<String, Double> totals)` |  |
-| 2888 | 1 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
-| 2890 | 3 | `public void setRestructureCounts(java.util.Map<String, Integer> counts)` |  |
-| 2893 | 1 | `public java.util.Map<String, Integer> getRestructureCounts()` |  |
-| 2895 | 3 | `public void setBlockedMonths(java.util.Map<String, Integer> months)` |  |
-| 2898 | 1 | `public java.util.Map<String, Integer> getBlockedMonths()` |  |
-| 2900 | 3 | `public void setCreditStatements(java.util.Map<String, double[]> statements)` |  |
-| 2903 | 1 | `public java.util.Map<String, double[]> getCreditStatements()` |  |
-| 2905 | 1 | `public void setMortgageRepaid(java.util.Map<String, Double> repaid)` |  |
-| 2906 | 1 | `public java.util.Map<String, Double> getMortgageRepaid()` |  |
-| 2908 | 1 | `public void setInsuranceClaims(java.util.Map<String, Double> claims)` |  |
-| 2909 | 1 | `public java.util.Map<String, Double> getInsuranceClaims()` |  |
-| 2911 | 1 | `public void setInsurancePremiums(double premiums)` |  |
-| 2912 | 1 | `public double getInsurancePremiums()` |  |
-| 2914 | 1 | `public void setNationalAccounts(double[] state)` |  |
-| 2915 | 1 | `public double[] getNationalAccounts()` |  |
-| 2917 | 1 | `public void setGdpRolling(List<Double> months)` |  |
-| 2918 | 1 | `public List<Double> getGdpRolling()` |  |
-| 2928 | 3 | `public int getUnderConstructionLength()` | Null-safe, because new saves no longer write the legacy arrays at all. |
-| 2931 | 3 | `public int getUnderConstruction(int index)` |  |
-| 2934 | 3 | `public double getCash()` |  |
-| 2938 | 3 | `public int getMonth()` |  |
-| 2942 | 3 | `public long getBuildingQuantity(int index)` |  |
-| 2946 | 3 | `public int getBuildingsLength()` |  |
-| 2950 | 3 | `public JsonArray getDebt()` |  |
-| 2955 | 3 | `public void setBusinessDebt(List<BusinessDebt> loans)` | All instrument fields, including BF1 retirementClaim, go out and back through the loan JSON. |
-| 2959 | 3 | `public JsonArray getBusinessDebt()` |  |
-| 2963 | 3 | `public int getProgressLength()` |  |
-| 2967 | 3 | `public double getProgress(int index)` |  |
-| 2971 | 3 | `public long getConstructionMaterials()` |  |
-| 2975 | 3 | `public long getPopulation()` |  |
-| 2978 | 3 | `public boolean getReports()` |  |
-| 2981 | 3 | `public java.util.List<Notice> getNotices()` |  |
-| 2984 | 3 | `public boolean getGraphs()` |  |
-| 2988 | 3 | `public String getRecordingId()` | The recording's id, or null in a city never recorded and in a save from before TR1. |
-| 2992 | 3 | `public boolean isRecording()` | Whether the city was recording when it was saved; false in a save from before TR1. |
+| 2477 | 1 | `public void setEstateCustody(EstateCustody.State state)` |  |
+| 2478 | 1 | `public EstateCustody.State getEstateCustody()` |  |
+| 2479 | 1 | `public void setUnbackedCustodyPaper(double face)` |  |
+| 2480 | 1 | `public double getUnbackedCustodyPaper()` |  |
+| 2481 | 1 | `public void setSecuredHouseholdTaxes(double[] state)` |  |
+| 2482 | 1 | `public double[] getSecuredHouseholdTaxes()` |  |
+| 2483 | 1 | `public void setSecuredForeignTaxes(double[] state)` |  |
+| 2484 | 1 | `public double[] getSecuredForeignTaxes()` |  |
+| 2485 | 1 | `public void setHouseholdInvestmentTaxes(double[] state)` |  |
+| 2486 | 1 | `public double[] getHouseholdInvestmentTaxes()` |  |
+| 2489 | 1 | `public void setHouseholdFlows(double[] v)` |  |
+| 2490 | 1 | `public double[] getHouseholdFlows()` |  |
+| 2492 | 1 | `public void setRememberedCommute(double v)` |  |
+| 2493 | 3 | `public double getRememberedCommute()` |  |
+| 2506 | 1 | `public void setCostOfLiving(double v)` |  |
+| 2507 | 1 | `public double getCostOfLiving()` |  |
+| 2520 | 1 | `public void setBankTaxCharged(double v)` |  |
+| 2521 | 1 | `public double getBankTaxCharged()` |  |
+| 2525 | 1 | `public void setRentWeight(double weight)` | What the landlords billed this month - see FamilyModel.setRentWeight(). |
+| 2526 | 1 | `public double getRentWeight()` |  |
+| 2546 | 1 | `public void setRentWeightStudio(double weight)` |  |
+| 2547 | 1 | `public double getRentWeightStudio()` |  |
+| 2549 | 4 | `public void setConstructionShedding(int month, double points)` |  |
+| 2553 | 1 | `public int getConstructionShedMonth()` |  |
+| 2554 | 1 | `public double getConstructionShedPoints()` |  |
+| 2556 | 3 | `public void setDemolitions(java.util.List<DemolitionLog.Entry> entries)` |  |
+| 2559 | 1 | `public java.util.List<DemolitionLog.Entry> getDemolitions()` |  |
+| 2739 | 1 | `public void setLicences(double[] a)` | UP1: a copy, not the live head counts - PopulationManager hands out its own arrays. |
+| 2740 | 1 | `public double[] getLicences()` |  |
+| 2741 | 1 | `public void setEducation(double[] a)` |  |
+| 2742 | 1 | `public double[] getEducation()` |  |
+| 2744 | 1 | `public void setLabour(double[] a)` |  |
+| 2745 | 1 | `public double[] getLabour()` |  |
+| 2746 | 1 | `public void setWantedPosts(double[] a)` |  |
+| 2747 | 1 | `public double[] getWantedPosts()` |  |
+| 2749 | 1 | `public void setSkilledWorkforce(double[] a)` | UP1: a copy, not the live head counts. |
+| 2750 | 1 | `public double[] getSkilledWorkforce()` |  |
+| 2752 | 1 | `public void setCohorts(double[] a)` |  |
+| 2753 | 1 | `public double[] getCohorts()` |  |
+| 2756 | 1 | `public void setBandNames(String[] names)` |  |
+| 2758 | 1 | `public String[] getBandNames()` | Null on a save from before the names travelled: read it as LEGACY_BANDS. |
+| 2772 | 1 | `public void setShapeNames(String[] names)` |  |
+| 2773 | 1 | `public String[] getShapeNames()` |  |
+| 2774 | 1 | `public void setFamilies(double[] a)` |  |
+| 2775 | 1 | `public double[] getFamilies()` |  |
+| 2776 | 1 | `public void setMigration(double[] a)` |  |
+| 2777 | 1 | `public double[] getMigration()` |  |
+| 2778 | 1 | `public void setUnemployment(double[] a)` |  |
+| 2779 | 1 | `public double[] getUnemployment()` |  |
+| 2780 | 1 | `public void setSickness(double[] a)` |  |
+| 2781 | 1 | `public double[] getSickness()` |  |
+| 2782 | 1 | `public void setSicknessAcute(double[] a)` |  |
+| 2783 | 1 | `public double[] getSicknessAcute()` |  |
+| 2784 | 1 | `public void setCrime(double[] a)` |  |
+| 2785 | 1 | `public double[] getCrime()` |  |
+| 2786 | 1 | `public void setHealth(double[] a)` |  |
+| 2787 | 1 | `public double[] getHealth()` |  |
+| 2788 | 1 | `public void setCausesOfDeath(double[] a)` |  |
+| 2789 | 1 | `public double[] getCausesOfDeath()` |  |
+| 2790 | 1 | `public void setHealthcare(double[] a)` |  |
+| 2791 | 1 | `public double[] getHealthcare()` |  |
+| 2792 | 1 | `public void setHealthcareAccess(double[] a)` |  |
+| 2793 | 1 | `public double[] getHealthcareAccess()` |  |
+| 2823 | 1 | `public void setSectorLossMonths(java.util.Map<String, Integer> m)` |  |
+| 2824 | 1 | `public java.util.Map<String, Integer> getSectorLossMonths()` |  |
+| 2825 | 1 | `public void setSectorOperatingLossMonths(java.util.Map<String, Integer> m)` |  |
+| 2826 | 1 | `public java.util.Map<String, Integer> getSectorOperatingLossMonths()` |  |
+| 2827 | 1 | `public void setPopulationTrend(java.util.List<Long> l)` |  |
+| 2828 | 1 | `public java.util.List<Long> getPopulationTrend()` |  |
+| 2839 | 1 | `public void setBuildersWork(java.util.List<Double> l)` |  |
+| 2840 | 1 | `public java.util.List<Double> getBuildersWork()` |  |
+| 2841 | 1 | `public void setBuildersOwedAfterAdvance(Double v)` |  |
+| 2842 | 1 | `public Double getBuildersOwedAfterAdvance()` |  |
+| 2843 | 1 | `public void setCityCapitalSpending(double v)` |  |
+| 2844 | 1 | `public double getCityCapitalSpending()` |  |
+| 2862 | 1 | `public void setCityMaintenancePaid(double v)` |  |
+| 2863 | 1 | `public double getCityMaintenancePaid()` |  |
+| 2879 | 1 | `public void setLastInvestment(java.util.Map<String, String> m)` |  |
+| 2880 | 1 | `public java.util.Map<String, String> getLastInvestment()` |  |
+| 2881 | 1 | `public void setMonthlyMaterialImports(double v)` |  |
+| 2882 | 1 | `public double getMonthlyMaterialImports()` |  |
+| 2883 | 1 | `public void setMonthlyMaterialImportBill(double v)` |  |
+| 2884 | 1 | `public double getMonthlyMaterialImportBill()` |  |
+| 2885 | 1 | `public void setMaterialsConsumed(long v)` |  |
+| 2886 | 1 | `public long getMaterialsConsumed()` |  |
+| 2895 | 1 | `public void setSubsidyPaid(java.util.Map<String, Double> v)` |  |
+| 2896 | 1 | `public java.util.Map<String, Double> getSubsidyPaid()` |  |
+| 2906 | 1 | `public void setHouseholdStatement(double[] v)` |  |
+| 2907 | 1 | `public double[] getHouseholdStatement()` |  |
+| 2909 | 4 | `public void setBuilds(java.util.List<BuildLog.Entry> entries)` |  |
+| 2913 | 1 | `public java.util.List<BuildLog.Entry> getBuilds()` |  |
+| 2915 | 3 | `public void setWriteOffTotals(java.util.Map<String, Double> totals)` |  |
+| 2918 | 1 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
+| 2920 | 3 | `public void setRestructureCounts(java.util.Map<String, Integer> counts)` |  |
+| 2923 | 1 | `public java.util.Map<String, Integer> getRestructureCounts()` |  |
+| 2925 | 3 | `public void setBlockedMonths(java.util.Map<String, Integer> months)` |  |
+| 2928 | 1 | `public java.util.Map<String, Integer> getBlockedMonths()` |  |
+| 2930 | 3 | `public void setCreditStatements(java.util.Map<String, double[]> statements)` |  |
+| 2933 | 1 | `public java.util.Map<String, double[]> getCreditStatements()` |  |
+| 2935 | 1 | `public void setMortgageRepaid(java.util.Map<String, Double> repaid)` |  |
+| 2936 | 1 | `public java.util.Map<String, Double> getMortgageRepaid()` |  |
+| 2938 | 1 | `public void setInsuranceClaims(java.util.Map<String, Double> claims)` |  |
+| 2939 | 1 | `public java.util.Map<String, Double> getInsuranceClaims()` |  |
+| 2941 | 1 | `public void setInsurancePremiums(double premiums)` |  |
+| 2942 | 1 | `public double getInsurancePremiums()` |  |
+| 2944 | 1 | `public void setNationalAccounts(double[] state)` |  |
+| 2945 | 1 | `public double[] getNationalAccounts()` |  |
+| 2947 | 1 | `public void setGdpRolling(List<Double> months)` |  |
+| 2948 | 1 | `public List<Double> getGdpRolling()` |  |
+| 2958 | 3 | `public int getUnderConstructionLength()` | Null-safe, because new saves no longer write the legacy arrays at all. |
+| 2961 | 3 | `public int getUnderConstruction(int index)` |  |
+| 2964 | 3 | `public double getCash()` |  |
+| 2968 | 3 | `public int getMonth()` |  |
+| 2972 | 3 | `public long getBuildingQuantity(int index)` |  |
+| 2976 | 3 | `public int getBuildingsLength()` |  |
+| 2980 | 3 | `public JsonArray getDebt()` |  |
+| 2985 | 3 | `public void setBusinessDebt(List<BusinessDebt> loans)` | All instrument fields, including BF1 retirementClaim, go out and back through the loan JSON. |
+| 2989 | 3 | `public JsonArray getBusinessDebt()` |  |
+| 2993 | 3 | `public int getProgressLength()` |  |
+| 2997 | 3 | `public double getProgress(int index)` |  |
+| 3001 | 3 | `public long getConstructionMaterials()` |  |
+| 3005 | 3 | `public long getPopulation()` |  |
+| 3008 | 3 | `public boolean getReports()` |  |
+| 3011 | 3 | `public java.util.List<Notice> getNotices()` |  |
+| 3014 | 3 | `public boolean getGraphs()` |  |
+| 3018 | 3 | `public String getRecordingId()` | The recording's id, or null in a city never recorded and in a save from before TR1. |
+| 3022 | 3 | `public boolean isRecording()` | Whether the city was recording when it was saved; false in a save from before TR1. |
 

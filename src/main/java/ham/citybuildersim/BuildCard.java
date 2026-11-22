@@ -1810,7 +1810,7 @@ public final class BuildCard {
 
     /**
      * What a sector's word is about. BUILDING: investors have an order on
-     * site, or the word says it built; SELLING: it sold buildings back;
+     * site, or the word says it built; SELLING: it sold or scrapped buildings;
      * LAND: no ground, or the month's land-blocked list has it; STAFF: the
      * staffing test; LICENCE: licences; ORE: a deposit, the ore or (0.7.138)
      * the forest Forestry may cut; SUPPLY:
@@ -1857,7 +1857,7 @@ public final class BuildCard {
         String w = word == null ? "" : word;
         String lower = w.toLowerCase(java.util.Locale.ROOT);
         if (building || w.startsWith("Built")) return WordKind.BUILDING;
-        if (w.startsWith("Sold")) return WordKind.SELLING;
+        if (w.startsWith("Sold") || w.startsWith("Scrapped")) return WordKind.SELLING;
         if (landBlocked || w.startsWith("Could not build") || says(lower, LAND_WORDS)) return WordKind.LAND;
         if (says(lower, STAFF_WORDS)) return WordKind.STAFF;
         if (says(lower, LICENCE_WORDS)) return WordKind.LICENCE;

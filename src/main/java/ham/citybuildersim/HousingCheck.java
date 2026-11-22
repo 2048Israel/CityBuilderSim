@@ -1012,7 +1012,9 @@ public class HousingCheck {
      * RN1, 2026-11-09. Of the debt, the share whose homes are closed is not
      * carried by the homes left: capacity down raises the share by the places
      * that went, capacity up dilutes it by places, and a count from nothing
-     * (a load, before the month's first count) leaves it as saved.
+     * (a city's first) leaves it. Since RN2 (2026-11-22) the count is saved
+     * with the share, so a loaded landlord's first count moves the share as
+     * the live one's does.
      */
     static void aClosedHomesDebtIsTheLandlordsLoss() {
         System.out.println("\n--- a closed home's debt is the landlord's loss ---");
@@ -1037,16 +1039,43 @@ public class HousingCheck {
                         < MAINTENANCE + TAX + INTEREST + re.getPayroll() - TOLERANCE);
         assertTrue("the company still pays all its interest: the line is untouched", re.getInterestExpense() == INTEREST);
 
-        // A load: ownedCapacity is not saved, so the restored landlord counts from nothing and keeps the share.
+        // A load (RN2): the count is saved with the share. The load's rebuild counts from nothing (here 1250, the portfolio as loaded),
+        // then the saved count goes back (Game.rebuildSimulationState()), so the loaded landlord's first month's count is a move from 1200.
         ham.citybuildersim.sectors.RealEstate loaded = new ham.citybuildersim.sectors.RealEstate();
         loaded.restore(re.toState());
         isNear("a saved landlord, loaded: the share is back", loaded.strandedDebtShare(), .2);
-        loaded.setOwnedHousingCapacity(1200);
-        isNear("...and the month's first count, from nothing, leaves it as saved", loaded.strandedDebtShare(), .2);
+        loaded.setOwnedHousingCapacity(1250);
+        isNear("...the load's rebuild counts from nothing, and leaves it as saved", loaded.strandedDebtShare(), .2);
+        loaded.restoreLoadedCapacity();
+        isNear("...and the count it moves against is put back after it, 1200 places (RN2)", loaded.getOwnedHousingCapacity(), 1200);
+        loaded.setOwnedHousingCapacity(1500);
+        isNear("...so the month's first count, 1200 up to 1500, dilutes it as the live landlord's does: .2 x 1200 / 1500",
+                loaded.strandedDebtShare(), .2 * 1200 / 1500);
+        // ...and a save from before RN2, no count in it, loads as one from nothing did: the share kept as saved.
+        SectorState before = re.toState();
+        before.extras.remove("ownedCapacity");
+        ham.citybuildersim.sectors.RealEstate older = new ham.citybuildersim.sectors.RealEstate();
+        older.restore(before);
+        isNear("a save from before RN2, loaded: the share is back", older.strandedDebtShare(), .2);
+        older.setOwnedHousingCapacity(1250);
+        older.restoreLoadedCapacity();
+        isNear("...the rebuild's count from nothing leaves it as saved, and stands: no count was saved to put back", older.strandedDebtShare(), .2);
+        isNear("...its count the rebuild's", older.getOwnedHousingCapacity(), 1250);
 
         // Every place closed: every debt is a closed home's.
         re.setOwnedHousingCapacity(0);
         isNear("1200 places down to none: the whole debt is a closed home's", re.strandedDebtShare(), 1);
+        // REV-FB16: ...and saved so, a count of none is a count: put back after the rebuild's (1200, the portfolio grown between the presses),
+        // so the next month's count, 1300, is one from nothing and leaves the share whole, as the live landlord's does.
+        ham.citybuildersim.sectors.RealEstate closed = new ham.citybuildersim.sectors.RealEstate();
+        closed.restore(re.toState());
+        closed.setOwnedHousingCapacity(1200);
+        closed.restoreLoadedCapacity();
+        isNear("a landlord saved with every place closed, loaded: its count of none is put back after the rebuild's (REV-FB16)",
+                closed.getOwnedHousingCapacity(), 0);
+        closed.setOwnedHousingCapacity(1300);
+        isNear("...so its first month's count is from nothing, and the whole debt stays a closed home's, as the live landlord's",
+                closed.strandedDebtShare(), 1);
         re.setOwnedHousingCapacity(1200);
         isNear("...and a count from nothing leaves it", re.strandedDebtShare(), 1);
     }

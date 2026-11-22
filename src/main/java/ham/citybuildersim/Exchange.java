@@ -431,7 +431,13 @@ public class Exchange {
      * so a step is not a function of the state it ends in without them.
      */
     private final double[] spare = new double[n], earnings = new double[n], moneyIncome = new double[n];
-    /** This month's leavers' shares still offered: held abroad by the register, sold by EMIGRANTS. */
+    /* This month's leavers' shares still offered: held abroad by the register, sold by EMIGRANTS. */
+    /** Persistent secured departures use a distinct fill identity, with the existing emigrant counter class (HT1). */
+    public static final String TAX_EMIGRANTS = "tax-emigrants";
+    private final double[] taxEmigrantsGross = new double[n], taxEmigrantsRetained = new double[n];
+    public double getTaxEmigrantsGross(int c) { return taxEmigrantsGross[c]; }
+    public double getTaxEmigrantsRetained(int c) { return taxEmigrantsRetained[c]; }
+    public double getTaxEmigrantsNet(int c) { return taxEmigrantsGross[c] - taxEmigrantsRetained[c]; }
     private final double[] emigrantShares = new double[n];
     /** What each company's buyback bid may still spend, money; the rest of its month's programme. */
     private final double[] buybackBudget = new double[n];
@@ -532,6 +538,7 @@ public class Exchange {
         for (int c = 0; c < n; c++) {
             soldToHouseholds[c] = 0; boughtFromHouseholds[c] = 0;
             soldAbroad[c] = 0; boughtFromAbroad[c] = 0; emigrantsPaid[c] = 0;
+            taxEmigrantsGross[c] = taxEmigrantsRetained[c] = 0;
             buybackToHouseholds[c] = 0; buybackToDesk[c] = 0; buybackAbroad[c] = 0;
             householdsBoughtAbroad[c] = 0; householdsSoldAbroad[c] = 0; betweenHouseholds[c] = 0;
             fundBoughtFromHouseholds[c] = 0; fundBoughtAbroad[c] = 0; fundSoldToHouseholds[c] = 0; fundSoldAbroad[c] = 0;
@@ -825,7 +832,8 @@ public class Exchange {
             moneyIncome[c] = holdsMoney ? this.companies.moneyIncome(c) : 0;
             fair[c] = Math.max(minFair, register.fairValue(c, book[c], spare[c], worldRate));
             emigrantShares[c] = households == null ? 0
-                    : Math.max(0, Math.min(households.getSharesTakenAway(c), register.getForeignShares(c)));
+                    : Math.max(0, Math.min(households.getSharesTakenAway(c) - households.departingTaxShares(c),
+                            register.getForeignShares(c) - register.foreignTaxShares(c)));
         }
         deskOpen = hasDealerCapital(bank);
         // ...the lending book struck and its fee paid on the shares as the last step left them (EM2), before anybody posts.
@@ -1062,6 +1070,13 @@ public class Exchange {
             lifeEmigrantsOffered += emigrantShares[c] * ask;
             post(c, EMIGRANTS, OrderBook.Side.SELL, ask, emigrantShares[c]);
         }
+        for (int c = 0; c < n; c++) {
+            double tagged = register.foreignTaxShares(c);
+            if (!(tagged > 0) || fair[c] <= minFair) continue;
+            double ask = fair[c] * (1 - SPREAD / 2);
+            lifeEmigrantsOffered += tagged * ask;
+            post(c, TAX_EMIGRANTS, OrderBook.Side.SELL, ask, tagged);
+        }
     }
 
     /* ---------------------------------- the world ---------------------------------- */
@@ -1124,7 +1139,7 @@ public class Exchange {
 
     /** What the world holds that it can sell: what is held abroad less this month's leavers' shares, which are theirs to sell. */
     private double worldHolding(int c) {
-        return Math.max(0, register.getForeignShares(c) - emigrantShares[c]);
+        return Math.max(0, register.getForeignShares(c) - emigrantShares[c] - register.foreignTaxShares(c));
     }
 
     /* ---------------------------------- the shorts (EM2) ---------------------------------- */
@@ -2036,7 +2051,7 @@ public class Exchange {
     private static int classOf(String who) {
         if (DESK.equals(who)) return BY_DESK;
         if (WORLD.equals(who) || WORLD_SHORT.equals(who)) return BY_WORLD;
-        if (EMIGRANTS.equals(who)) return BY_EMIGRANTS;
+        if (EMIGRANTS.equals(who) || TAX_EMIGRANTS.equals(who)) return BY_EMIGRANTS;
         if (isFund(who)) return BY_FUND;
         if ((CELL + OwnerHousehold.KEY).equals(who)) return BY_OWNERS;
         return BY_HOUSEHOLDS;
@@ -2072,7 +2087,7 @@ public class Exchange {
                 if (WORLD.equals(who)) return Double.POSITIVE_INFINITY;
                 // ...the short only buys to cover what it is short (EM2).
                 if (WORLD_SHORT.equals(who)) return shortShares[c];
-                if (EMIGRANTS.equals(who)) return 0;
+                if (EMIGRANTS.equals(who) || TAX_EMIGRANTS.equals(who)) return 0;
                 if (who.startsWith(CELL)) {
                     Household h = cellOf(who);
                     if (h == null) return 0;
@@ -2091,7 +2106,8 @@ public class Exchange {
             if (WORLD.equals(who)) return worldHolding(c);
             // ...and sells what the lenders still have to lend and the cap leaves, read now (EM2).
             if (WORLD_SHORT.equals(who)) return shortRoom(c);
-            if (EMIGRANTS.equals(who)) return Math.max(0, Math.min(emigrantShares[c], register.getForeignShares(c)));
+            if (EMIGRANTS.equals(who)) return Math.max(0, Math.min(emigrantShares[c], register.getForeignShares(c) - register.foreignTaxShares(c)));
+            if (TAX_EMIGRANTS.equals(who)) return register.foreignTaxShares(c);
             if (who.startsWith(CELL)) {
                 Household h = cellOf(who);
                 return h == null ? 0 : Math.max(0, h.shares[c] * h.households());
@@ -2123,7 +2139,7 @@ public class Exchange {
             // ...the world's short sells abroad and buys from the world, as its long does (EM2): what crosses the pools' edge is the same.
             boolean shortSells = WORLD_SHORT.equals(seller), shortBuys = WORLD_SHORT.equals(buyer);
             boolean worldBuys = WORLD.equals(buyer) || shortBuys;
-            boolean abroadSells = WORLD.equals(seller) || EMIGRANTS.equals(seller) || shortSells;
+            boolean abroadSells = WORLD.equals(seller) || EMIGRANTS.equals(seller) || TAX_EMIGRANTS.equals(seller) || shortSells;
             boolean deskSells = DESK.equals(seller), deskBuys = DESK.equals(buyer);
             boolean companyBuys = companies != null && buyer.equals(Equity.COMPANIES[c]) && c != Equity.BANK;
             boolean fundBuys = isFund(buyer) && fund != null, fundSells = isFund(seller) && fund != null;
@@ -2148,6 +2164,11 @@ public class Exchange {
                 shortCollateral[c] += INITIAL_MARGIN * cash;
                 lifeShortSold += q;
                 lifeShortSoldValue += cash;
+            } else if (TAX_EMIGRANTS.equals(seller)) {
+                register.moveForeign(c, -q);
+                double retained = register.sellForeignTaxShares(c, q, cash);
+                taxEmigrantsGross[c] += cash; taxEmigrantsRetained[c] += retained;
+                emigrantsPaid[c] += cash; lifeEmigrantsPaid += cash;
             } else if (EMIGRANTS.equals(seller)) {
                 register.moveForeign(c, -q);
                 emigrantShares[c] = Math.max(0, emigrantShares[c] - q);
@@ -2155,11 +2176,11 @@ public class Exchange {
                 lifeEmigrantsPaid += cash;
             } else if (cellSells) {
                 Household h = cellOf(seller);
-                h.shares[c] = Math.max(0, h.shares[c] - q / h.households());
+                double net = households.sellShares(h, c, q / h.households(), price) * h.households();
                 if (h == selling) {
-                    raised += cash;
+                    raised += net;
                 } else {
-                    h.savings += cash / h.households();
+                    h.savings += net / h.households();
                 }
             } else if (FUND.equals(seller)) {
                 double marketBefore = register.getCityMarketShares(c);
@@ -2203,6 +2224,7 @@ public class Exchange {
             } else if (cellBuys) {
                 Household h = cellOf(buyer);
                 h.shares[c] += q / h.households();
+                h.basis[c] += cash / h.households();
                 h.savings -= cash / h.households();
                 if (h == buying) buyingBudget -= cash;
             } else if (companyBuys) {
@@ -2451,6 +2473,7 @@ public class Exchange {
         String[] keys;
         List<OrderBook> books;
         double[] fair, splitFactor, emigrantShares, buybackBudget;
+        double[] taxEmigrantsGross, taxEmigrantsRetained;
         /** What fair value was struck on (EM1): each company's spare money, its net income over the last year and what its money earns it, totals. Null in a save from before them: the next step strikes them. */
         double[] spare, earnings, moneyIncome;
         /**
@@ -2481,6 +2504,8 @@ public class Exchange {
                 c.fair = fair == null ? null : fair.clone();
                 c.splitFactor = splitFactor == null ? null : splitFactor.clone();
                 c.emigrantShares = emigrantShares == null ? null : emigrantShares.clone();
+                c.taxEmigrantsGross = taxEmigrantsGross == null ? null : taxEmigrantsGross.clone();
+                c.taxEmigrantsRetained = taxEmigrantsRetained == null ? null : taxEmigrantsRetained.clone();
                 c.buybackBudget = buybackBudget == null ? null : buybackBudget.clone();
                 c.spare = spare == null ? null : spare.clone();
                 c.earnings = earnings == null ? null : earnings.clone();
@@ -2508,6 +2533,7 @@ public class Exchange {
         s.fair = fair.clone();
         s.splitFactor = splitFactor.clone();
         s.emigrantShares = emigrantShares.clone();
+        s.taxEmigrantsGross = taxEmigrantsGross.clone(); s.taxEmigrantsRetained = taxEmigrantsRetained.clone();
         s.buybackBudget = buybackBudget.clone();
         s.spare = spare.clone();
         s.earnings = earnings.clone();
@@ -2559,6 +2585,8 @@ public class Exchange {
             fair[c] = s.fair[i];
             splitFactor[c] = Math.max(1e-12, s.splitFactor[i]);
             if (s.emigrantShares != null && i < s.emigrantShares.length) emigrantShares[c] = s.emigrantShares[i];
+            if (s.taxEmigrantsGross != null && i < s.taxEmigrantsGross.length) taxEmigrantsGross[c] = s.taxEmigrantsGross[i];
+            if (s.taxEmigrantsRetained != null && i < s.taxEmigrantsRetained.length) taxEmigrantsRetained[c] = s.taxEmigrantsRetained[i];
             if (s.buybackBudget != null && i < s.buybackBudget.length) buybackBudget[c] = s.buybackBudget[i];
             if (s.spare != null && i < s.spare.length) spare[c] = s.spare[i];
             if (s.earnings != null && i < s.earnings.length) earnings[c] = s.earnings[i];
@@ -2645,6 +2673,7 @@ public class Exchange {
         java.util.Arrays.fill(fair, Equity.FOUNDING_PRICE);
         java.util.Arrays.fill(splitFactor, 1);
         java.util.Arrays.fill(emigrantShares, 0);
+        java.util.Arrays.fill(taxEmigrantsGross, 0); java.util.Arrays.fill(taxEmigrantsRetained, 0);
         java.util.Arrays.fill(buybackBudget, 0);
         java.util.Arrays.fill(spare, 0);
         java.util.Arrays.fill(earnings, 0);
@@ -2684,6 +2713,7 @@ public class Exchange {
             spare[c] *= scale; earnings[c] *= scale; moneyIncome[c] *= scale;
             soldToHouseholds[c] *= scale; boughtFromHouseholds[c] *= scale;
             soldAbroad[c] *= scale; boughtFromAbroad[c] *= scale; emigrantsPaid[c] *= scale;
+            taxEmigrantsGross[c] *= scale; taxEmigrantsRetained[c] *= scale;
             buybackToHouseholds[c] *= scale; buybackToDesk[c] *= scale; buybackAbroad[c] *= scale;
             householdsBoughtAbroad[c] *= scale; householdsSoldAbroad[c] *= scale; betweenHouseholds[c] *= scale;
             fundBoughtFromHouseholds[c] *= scale; fundBoughtAbroad[c] *= scale;

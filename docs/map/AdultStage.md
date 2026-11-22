@@ -25,7 +25,7 @@
 
 **Uses:** [FamilyStructure](FamilyStructure.md) (1)
 
-**Used by (8):** [FamilyModel](FamilyModel.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCohorts](PopulationCohorts.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (9):** [CapitalGainsCheck](CapitalGainsCheck.md), [FamilyModel](FamilyModel.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCohorts](PopulationCohorts.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Enum constants
 

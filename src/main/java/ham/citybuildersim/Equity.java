@@ -258,6 +258,7 @@ public class Equity {
         double offered, raisedHome, raisedAbroad, dividendHome, dividendDesk, dividendAbroad;
         /** The city's fund's part of this month's dividend (0.7.14), and over its life. */
         double dividendCity, lifetimeDividendsCity;
+        double custodyShares, dividendCustody;
         /**
          * What the world paid on the shares it was short at this month's dividend (EM2), and over its life: the holders were paid on them and
          * the company was not, so it is the short's. The month's is not saved, like its siblings; the life is, with the exchange's state of the short
@@ -290,13 +291,13 @@ public class Equity {
         Listing(String name) { this.name = name; }
 
         /** Held by the city's households: what is neither abroad nor on the desk - nor, since 0.7.14, the city's fund's. */
-        double domesticShares() { return shares - foreignShares - dealerShares - cityShares; }
+        double domesticShares() { return shares - foreignShares - dealerShares - cityShares - custodyShares; }
         double raised()   { return raisedHome + raisedAbroad; }
         double dividend() { return dividendHome + dividendAbroad; }
 
         void clearMonth() {
             offered = 0; raisedHome = 0; raisedAbroad = 0;
-            dividendHome = 0; dividendDesk = 0; dividendAbroad = 0; dividendCity = 0;
+            dividendHome = 0; dividendDesk = 0; dividendAbroad = 0; dividendCity = 0; dividendCustody = 0;
             shortPays = 0;
             boughtBackThisMonth = 0;
             foundedThisMonth = 0;
@@ -326,6 +327,55 @@ public class Equity {
     }
 
     private final Listing[] listings = new Listing[COMPANIES.length];
+    private EstateCustody custody;
+    public void attachCustody(EstateCustody owner) { custody = owner; }
+    void receiveCustodyShares(int company, double units) { listings[company].custodyShares += units; }
+    public double getCustodyShares(int company) { return listings[company].custodyShares; }
+    private final double[] foreignTaxShares = new double[COMPANIES.length], foreignTaxClaim = new double[COMPANIES.length];
+    private HouseholdBalance taxBook;
+    void attachTaxBook(HouseholdBalance book) { taxBook = book; }
+    public double foreignTaxShares(int c) { return foreignTaxShares[c]; }
+    public double foreignTaxClaim(int c) { return foreignTaxClaim[c]; }
+    public double foreignTaxOutstanding() { return java.util.Arrays.stream(foreignTaxClaim).sum(); }
+    private double collectForeignClaim(int c, double receipt) {
+        double paid = Math.min(foreignTaxClaim[c], Math.max(0, receipt));
+        if (paid > 0) {
+            if (taxBook == null) throw new IllegalStateException("Secured foreign holding has no tax counterparty");
+            foreignTaxClaim[c] -= paid; taxBook.collectForeignTax(c, paid);
+        }
+        if (foreignTaxClaim[c] == 0) foreignTaxShares[c] = 0;
+        return paid;
+    }
+    private void extinguishForeignClaim(int c) {
+        if (foreignTaxClaim[c] > 0) {
+            if (taxBook == null) throw new IllegalStateException("Secured foreign holding has no tax counterparty");
+            taxBook.extinguishForeignTax(c, foreignTaxClaim[c]);
+        }
+        foreignTaxClaim[c] = foreignTaxShares[c] = 0;
+    }
+    /** Only a real fill can turn the old claim into tax cash. */
+    double sellForeignTaxShares(int c, double quantity, double cash) {
+        double was = foreignTaxShares[c];
+        double paid = collectForeignClaim(c, cash);
+        if (foreignTaxClaim[c] > 0) {
+            foreignTaxShares[c] = Math.max(0, was - quantity);
+            if (quantity == was) extinguishForeignClaim(c);
+        }
+        return paid;
+    }
+    public double[] foreignTaxesToSave() {
+        int n = COMPANIES.length; double[] state = new double[2*n];
+        System.arraycopy(foreignTaxShares, 0, state, 0, n); System.arraycopy(foreignTaxClaim, 0, state, n, n); return state;
+    }
+    public void restoreForeignTaxes(String[] keys, double[] state) {
+        java.util.Arrays.fill(foreignTaxShares, 0); java.util.Arrays.fill(foreignTaxClaim, 0);
+        int n = keys == null ? COMPANIES.length : keys.length;
+        if (state == null || state.length != 2*n) return;
+        for (int j = 0; j < n; j++) for (int c = 0; c < COMPANIES.length; c++)
+            if (COMPANIES[c].equals(keys == null ? COMPANIES[j] : keys[j])) {
+                foreignTaxShares[c] = state[j]; foreignTaxClaim[c] = state[n+j]; break;
+            }
+    }
 
     public Equity() {
         for (int i = 0; i < COMPANIES.length; i++) listings[i] = new Listing(COMPANIES[i]);
@@ -503,7 +553,7 @@ public class Equity {
             double founders = bookEquity / foundingPrice;
             // BO1: with no owner family yet, nothing is raised this month: the company waits for
             // its family (the census forms it). Only while the owner cell is empty: the first listings.
-            if (!households.grantFounders(company, founders)) return 0;
+            if (!households.grantFounders(company, founders, foundingPrice)) return 0;
             l.shares += founders;
             founded(l, bookEquity);
         }
@@ -610,7 +660,7 @@ public class Equity {
         double founders = bookEquity / foundingPrice;
         // BO1: with no owner family yet the company stays unlisted and waits for its family (the census
         // forms it); the grant has reserved it. Only while the owner cell is empty: the first listings.
-        if (!households.grantFounders(company, founders)) return false;
+        if (!households.grantFounders(company, founders, foundingPrice)) return false;
         l.shares += founders;
         l.lastPrice = foundingPrice;
         founded(l, bookEquity);
@@ -723,14 +773,17 @@ public class Equity {
      * company whose other holders hold less than what is short had their shares dropped, and the register was not whole.
      */
     public void followEmigrants(HouseholdBalance households, java.util.function.IntToDoubleFunction shortOf) {
-        if (households == null) return;
+        if (households == null || households.departuresHandedOff()) return;
         for (int c = 0; c < listings.length; c++) {
             double gone = households.getSharesTakenAway(c);
             if (gone > 0) {
                 Listing l = listings[c];
                 l.foreignShares = Math.min(l.shares + Math.max(0, shortOf.applyAsDouble(c)), l.foreignShares + gone);
+                foreignTaxShares[c] += households.departingTaxShares(c);
+                foreignTaxClaim[c] += households.departingTaxClaim(c);
             }
         }
+        households.departuresHandedOff(true);
     }
 
     /**
@@ -773,7 +826,7 @@ public class Equity {
          * is open (the register and the cells are moved separately).
          */
         double held = households == null ? 0 : households.sharesHeld(company);
-        double perShare = paid / Math.max(l.shares, held + l.dealerShares + l.foreignShares + l.cityShares - shorted);
+        double perShare = paid / Math.max(l.shares, held + l.dealerShares + l.foreignShares + l.cityShares + l.custodyShares - shorted);
         double home = households == null ? 0 : households.creditDividend(company, perShare);
         // The desk is paid on what it holds - and PAYS on what it is short,
         // like any short seller: the holders of the shares it sold and does
@@ -784,13 +837,17 @@ public class Equity {
         double city = l.cityShares * perShare;
         // ...the short pays on what it is short, and the world is paid on what it holds: the difference is what crossed abroad.
         double shortPays = perShare * shorted;
-        double abroad = Math.max(0, paid + shortPays - home - desk - city);
+        double unclaimed = l.custodyShares * perShare;
+        if (custody != null && unclaimed != 0) custody.receiveDividend(company, unclaimed);
+        l.dividendCustody += unclaimed;
+        double abroad = Math.max(0, paid + shortPays - home - desk - city - unclaimed);
         l.shortPays += shortPays;
         l.lifetimeShortPays += shortPays;
         l.dividendHome += home;
         l.dividendDesk += desk;
         l.dividendCity += city;
         l.lifetimeDividendsCity += city;
+        collectForeignClaim(company, Math.min(abroad, foreignTaxShares[company] * perShare));
         l.dividendAbroad += abroad;
         l.lifetimeDividendsHome += home;
         l.lifetimeDividendsAbroad += abroad;
@@ -891,7 +948,10 @@ public class Equity {
      * @return {the world's shares, the fund's market book's} before
      */
     double[] takeAllForCity(int company, double ifNone) {
+        extinguishForeignClaim(company);
         Listing l = listings[company];
+        if (custody != null && l.custodyShares != 0) custody.extinguishShares(company);
+        l.custodyShares = 0;
         double world = l.foreignShares, market = Math.max(0, l.cityShares - l.cityRescue);
         if (!(l.shares > 0) && ifNone > 0) l.shares = ifNone;
         l.foreignShares = 0;
@@ -910,7 +970,10 @@ public class Equity {
      * @return the fund's market book's shares before
      */
     double cancelHeld(int company) {
+        extinguishForeignClaim(company);
         Listing l = listings[company];
+        if (custody != null && l.custodyShares != 0) custody.extinguishShares(company);
+        l.custodyShares = 0;
         double market = Math.max(0, l.cityShares - l.cityRescue);
         l.dealerShares = 0;
         l.foreignShares = 0;
@@ -976,9 +1039,12 @@ public class Equity {
         Listing l = listings[company];
         l.shares *= k;
         l.foreignShares *= k;
+        foreignTaxShares[company] *= k;
         l.dealerShares *= k;
         l.cityShares *= k;
         l.cityRescue *= k;
+        l.custodyShares *= k;
+        if (custody != null) custody.split(company, k);
         l.lastPrice /= k;
         l.boughtBackThisMonth *= k;
         l.lifetimeBoughtBack *= k;
@@ -1153,7 +1219,8 @@ public class Equity {
     public static final int SLOTS_BEFORE_PAID_IN = SLOTS_BEFORE_CITY + 3;
 
     /** Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). */
-    public static final int SLOTS = SLOTS_BEFORE_PAID_IN + 3;
+    public static final int SLOTS_BEFORE_CUSTODY = SLOTS_BEFORE_PAID_IN + 3;
+    public static final int SLOTS = SLOTS_BEFORE_CUSTODY + 2;
 
     /** The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). */
     public static final int PAID_IN_FORMAT = 33;
@@ -1186,6 +1253,7 @@ public class Equity {
             out[i++] = l.foundersBook;
             out[i++] = l.boughtBackPaid;
             out[i++] = l.paidInDerived ? 1 : 0;
+            out[i++] = l.custodyShares; out[i++] = l.dividendCustody;
         }
         return out;
     }
@@ -1195,7 +1263,7 @@ public class Equity {
         if (keys == null || saved == null || keys.length == 0) return false;
         int slots = saved.length / keys.length;
         if (saved.length != keys.length * slots
-                || (slots != SLOTS && slots != SLOTS_BEFORE_PAID_IN && slots != SLOTS_BEFORE_CITY
+                || (slots != SLOTS && slots != SLOTS_BEFORE_CUSTODY && slots != SLOTS_BEFORE_PAID_IN && slots != SLOTS_BEFORE_CITY
                     && slots != SLOTS_BEFORE_PAID && slots != SLOTS_BEFORE_DESK)) return false;
         int i = 0;
         for (String key : keys) {
@@ -1257,7 +1325,7 @@ public class Equity {
              * bought back; a company that never listed has nothing to derive,
              * and keeps its paid-in from nothing.
              */
-            if (slots >= SLOTS) {
+            if (slots >= SLOTS_BEFORE_CUSTODY) {
                 l.foundersBook   = saved[i++];
                 l.boughtBackPaid = saved[i++];
                 l.paidInDerived  = saved[i++] != 0;
@@ -1267,12 +1335,15 @@ public class Equity {
                 l.paidInDerived = l.shares > 0 || l.lifetimeRaisedHome + l.lifetimeRaisedAbroad > 0
                         || l.lifetimeBoughtBack > 0;
             }
+            if (slots >= SLOTS) { l.custodyShares = saved[i++]; l.dividendCustody = saved[i++]; }
+            else { l.custodyShares = l.dividendCustody = 0; }
             l.regime = regimeOf(l);
         }
         return true;
     }
 
     public void reset() {
+        java.util.Arrays.fill(foreignTaxShares, 0); java.util.Arrays.fill(foreignTaxClaim, 0);
         for (int i = 0; i < listings.length; i++) listings[i] = new Listing(COMPANIES[i]);
     }
 
@@ -1282,6 +1353,7 @@ public class Equity {
      */
     public void redenominate(double scale) {
         foundingPrice *= scale;
+        for (int c = 0; c < foreignTaxClaim.length; c++) foreignTaxClaim[c] *= scale;
         for (Listing l : listings) {
             for (int k = 0; k < RECORD_MONTHS; k++) { l.income[k] *= scale; l.spent[k] *= scale; l.paid[k] *= scale; }
             l.paidThisMonth *= scale;
@@ -1290,7 +1362,7 @@ public class Equity {
             l.lifetimeDividendsHome *= scale;   l.lifetimeDividendsAbroad *= scale;
             l.offered *= scale;  l.raisedHome *= scale;  l.raisedAbroad *= scale;
             l.dividendHome *= scale;  l.dividendDesk *= scale;  l.dividendAbroad *= scale;
-            l.dividendCity *= scale;  l.lifetimeDividendsCity *= scale;
+            l.dividendCustody *= scale; l.dividendCity *= scale;  l.lifetimeDividendsCity *= scale;
             l.shortPays *= scale;  l.lifetimeShortPays *= scale;
             l.foundersBook *= scale;  l.boughtBackPaid *= scale;  l.foundedThisMonth *= scale;
         }

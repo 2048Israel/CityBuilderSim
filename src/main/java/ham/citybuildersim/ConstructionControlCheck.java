@@ -604,6 +604,12 @@ public class ConstructionControlCheck {
                 households0 > homes0,
                 "next-month household retention");
         double[] moved = handMoves(g, () -> g.buyOutAndDemolish(t, k));
+        String word = g.getLastInvestment(RE);
+        out.println("      compulsory-purchase word: " + word);
+        assertTrue("the actual compulsory purchase still says Sold with its quantity and compensation",
+                word.startsWith("Sold " + k + " " + t.getName() + " to the city by compulsory purchase, for "));
+        assertTrue("...and still reads as SELLING ahead of land",
+                BuildCard.wordKind(word, false, true) == BuildCard.WordKind.SELLING);
         close("the buy-out moves money between the pools only", moved[1], moved[0], 1e-9);
         close("the owner's cash rose by exactly the compensation", owner.getCash() - till0, q.compensation(), 1e-9);
         close("the treasury paid it and the demolition", cash0 - g.getCash(), q.total(), 1e-9);

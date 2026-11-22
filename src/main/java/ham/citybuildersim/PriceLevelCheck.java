@@ -1442,14 +1442,14 @@ public class PriceLevelCheck {
         /**
          * The history the game keeps, every series of it, classified by the model's own definition of money: the series HistorySave.redenominate()
          * divides are money, but for the four rates it divides by the unit (the D$ per US$ is a ratio of two moneys and a price level moves neither);
-         * and the three it leaves because they are in US dollars (the vault, the foreign debt and the ground's price) are money in the world's.
+         * and the US-dollar series it leaves (the vault, foreign debt, ground price and passive custody) are money in the world's.
          */
         void history(Game g) throws Exception {
             HistorySave h = g.getHistorySave();
             HistorySave probe = h.snapshot();
             probe.redenominate(.5);
             java.util.Set<String> rates = java.util.Set.of("fxRate", "fxParity", "fxFair", "fxShadow");
-            java.util.Set<String> usd = java.util.Set.of("reservesUsd", "foreignDebtUsd", "landPrice");
+            java.util.Set<String> usd = java.util.Set.of("reservesUsd", "foreignDebtUsd", "landPrice", "custodyUsd");
             for (Field f : HistorySave.class.getDeclaredFields()) {
                 if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
                 f.setAccessible(true);

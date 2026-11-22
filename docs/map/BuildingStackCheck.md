@@ -1,4 +1,4 @@
-# BuildingStackCheck.java - 668 lines · 14 methods · 5 constants · harnesses
+# BuildingStackCheck.java - 678 lines · 14 methods · 5 constants · harnesses
 
 `ham/citybuildersim/BuildingStackCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 > The orders here are int-sized, as the game's are; a stack passes the ceiling by two of them, or by the
 > scaler. Written so that it compiles against main's int stack, where it is red: the sums wrap.
 
-**Uses:** [Game](Game.md) (39), [BuildingsStacks](BuildingsStacks.md) (17), [BuildingManager](BuildingManager.md) (14), [GameFiles](GameFiles.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (13), [LongPlaytest](LongPlaytest.md) (12), [ScaleCheck](ScaleCheck.md) (7), [JobType](JobType.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [Markets](Markets.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [BuildCardCheck](BuildCardCheck.md) (2), [OldMetal](OldMetal.md) (2), [DemolitionLog](DemolitionLog.md) (1), [TempDirs](TempDirs.md) (1), [Landmasses](Landmasses.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Good](Good.md) (1), [Investor](Investor.md) (1), [ConstructionControl](ConstructionControl.md) (1)
+**Uses:** [Game](Game.md) (39), [BuildingsStacks](BuildingsStacks.md) (17), [BuildingManager](BuildingManager.md) (14), [GameFiles](GameFiles.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (13), [LongPlaytest](LongPlaytest.md) (12), [ScaleCheck](ScaleCheck.md) (7), [JobType](JobType.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [Markets](Markets.md) (4), [BuildCard](BuildCard.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [BuildCardCheck](BuildCardCheck.md) (2), [OldMetal](OldMetal.md) (2), [DemolitionLog](DemolitionLog.md) (1), [TempDirs](TempDirs.md) (1), [Landmasses](Landmasses.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Good](Good.md) (1), [Investor](Investor.md) (1), [ConstructionControl](ConstructionControl.md) (1)
 
 ## Sections
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 61 | 608 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
+| 61 | 618 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
 | 76 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 82 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 88 | 5 | `static void near(String label, double actual, double expected, double tolerance)` | A figure read against the one it should be, relative to the larger of the two or to one; both printed (SB1). |
@@ -101,7 +101,7 @@
 | 105 | 13 | `public static void main(String[] args) throws Exception` |  |
 | 119 | 324 | `static void run(Path root) throws Exception` |  |
 
-### 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) (lines 444-668)
+### 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) (lines 444-678)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -110,6 +110,6 @@
 | 471 | 5 | `static long postsOf(BuildingManager bm)` | Every post the buildings offer, over every kind of job (BuildingManager.getTotalJobs(JobType)). |
 | 478 | 5 | `static Game cityOn(Path root, String label)` | A fixture city on a folder of its own, founded the way the playtest's is. |
 | 485 | 11 | `static long shed(Game g, java.lang.reflect.Method retire, java.lang.reflect.Method investor, BuildingsTemplate t, long count) t...` | Game's own shedding path, called as Game calls it: a decision of the sector's template and a count, the sector's investor selling, the distress rule not the one deciding. |
-| 497 | 164 | `static void oneStackPerTemplate(Path root) throws Exception` |  |
-| 663 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
+| 497 | 174 | `static void oneStackPerTemplate(Path root) throws Exception` |  |
+| 673 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
 

@@ -1,8 +1,8 @@
-# gate of Merge batch/PW6: Recorded power dispatch and retained tariffs, 0.9.181
+# gate of Merge batch/HT1: gains and dividends taxed (Jerus: "are realized gains taxed?"): a cost basis per cell and company carried with the people; a taxable share of a realised gain (a dial, default 50%) at the holder's wage rate, at a sale, at death and on leaving; dividends by integration (zero at the defaults); after HS1; SAVE_FORMAT + 1; cash-first secured deferral acquired under Jerus's 2026-11-21 delegation, 0.9.184
 # date: 2026-11-22
 # earth-2.bin: named
-# nightly: 2026-11-21 03:01 0.9.174 4f1056f11 4,000 months: RED, exit 1 in 682 s: FAIL a building on the map moved 1 time(s), months 3992-3992; nightly tier OK; observations: 7 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-21-4f1056f11-99PEFqiX
-# suite: 225 harnesses run in 689s: 213 passed, 12 failed
+# nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
+# suite: 234 harnesses run in 1092s: 216 passed, 18 failed
 MortgageCheck | exit 1
 MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not FAIL
 MortgageCheck | ...and a month that earned 0.00 against 0.00 of principal pays nothing, where the old rule paid 0.00 FAIL
@@ -10,11 +10,15 @@ MortgageCheck | 2 FAILED
 CreditCrunchCheck | exit 1
 CreditCrunchCheck | FAIL fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
 CreditCrunchCheck | FAIL fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
+CreditCrunchCheck | FAIL no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
 CreditCrunchCheck | FAIL fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
 CreditCrunchCheck | FAIL the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
 CreditCrunchCheck | FAIL fixture: ...and their issue fell short of it
 CreditCrunchCheck | FAIL the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
-CreditCrunchCheck | CreditCrunchCheck: 6 FAILED
+CreditCrunchCheck | CreditCrunchCheck: 7 FAILED
+OrderDoorCheck | exit 1
+OrderDoorCheck | FAIL the ensemble's seed 12 reaches the edge between m200 and m420 (at m420)
+OrderDoorCheck | OrderDoorCheck: 1 FAILED
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -22,19 +26,45 @@ RoadCheck | exit 1
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
 RoadCheck | 2 FAILED
+AutoBuildCheck | exit 1
+AutoBuildCheck | fixture: ...and it placed orders in those months (0)                                                           FAIL
+AutoBuildCheck | 1 FAILED
 BankCheck | exit 1
 BankCheck | it pays its savers something                               FAIL
 BankCheck | 1 FAILED
-PassThroughCheck | exit 1
-PassThroughCheck | fixture: the imported cost sets the shelf in both twins in each of the 12 months: the floor over the opening price and the clearing price not over the floor (0 of 12) FAIL
-PassThroughCheck | 1 FAILED
+CentralBankCheck | exit 2
+CentralBankCheck | fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing FAIL
+CentralBankCheck | fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more FAIL
+CentralBankCheck | 2 FAILED
+FundCheck | exit 1
+FundCheck | a limit posts at its limit                                                                       FAIL
+FundCheck | 1 FAILED
 DenominationCheck | exit 1
-DenominationCheck | the same shops' till                                           FAIL  0.1783334236 != 0.1783334232  (2.42e-09 apart)
-DenominationCheck | 1 FAILED
+DenominationCheck | the same people live there, to the person                      FAIL
+DenominationCheck | the same output                                                FAIL  66.4706256575 != 72.5040434719  (0.0832 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  778.7084916052 != 836.4362375551  (0.0690 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0006929928 != 0.0007030209  (0.0143 apart)
+DenominationCheck | the same price level                                           FAIL  15.8054269667 != 16.0346889349  (0.0143 apart)
+DenominationCheck | the same currency                                              FAIL  0.0765603858 != 0.0783526617  (0.0229 apart)
+DenominationCheck | the same treasury                                              FAIL  1,982.6711188837 != 2,142.7196798421  (0.0747 apart)
+DenominationCheck | the same shops' till                                           FAIL  0.1039799572 != 0.0000000000  (1.04e+11 apart)
+DenominationCheck | the same bank                                                  FAIL  945.7897508795 != 1,094.5197031491  (0.136 apart)
+DenominationCheck | 9 FAILED
 ReloadCheck | exit 1
-ReloadCheck | Danzik, caused month 1211, reloaded and a month on: every figure in the save is the live city's, to the cent     FAIL  1 differ, in 1 kind: .sectors[*].extras.strandedDebtShare x1
-ReloadCheck | Danzik, caused month 1211, reloaded and two months on: every figure in the save is the live city's, to the cent  FAIL  1 differ, in 1 kind: .sectors[*].extras.strandedDebtShare x1
-ReloadCheck | 2 FAILED
+ReloadCheck | fixture 3b, by hand: the caused point's own city exercised it                                                    FAIL  0 crews that drew materials
+ReloadCheck | 1 FAILED
+MapCheck | exit 1
+MapCheck | ...and every building drawn, one for one                                       FAIL
+MapCheck | 1 FAILED
+KeptCheck | exit 4
+KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 45 of 401; 11 of 25 months made none) FAIL
+KeptCheck | fixture: the Rankings tab with the city's drawer open: every cell the household grid opens before the month it opens after, the families held (2 closed; the month alone would have closed 2) FAIL
+KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
+KeptCheck | 4 FAILED
+DistressBleedCheck | exit 2
+DistressBleedCheck | fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in FAIL
+DistressBleedCheck | ...and the rule is not dead: the centres go when the operating streak reaches the dial FAIL
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
 CopperRefiningCheck | 1 FAILED
@@ -49,13 +79,6 @@ PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant a
 PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -26.933215529045174 pending 0.0 then gain -12.14647318415844 pending 0.0
 PublicLicenceCheck | 64 passed, 4 FAILED
 YoungBankCheck | exit 2
+YoungBankCheck | FAIL no spell under Bank.CAPITAL_RATIO begins with the write-off of a sector of one plant
 YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | FAIL no first plant is weighed further from the rate it ran at than its sector's own rate
 YoungBankCheck | YoungBankCheck: 2 FAILED
-KeptCheck | exit 2
-KeptCheck | fixture: the fund holds a bond, null, that runs 0 months, past the 2 months its pages are watched FAIL
-KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 2 FAILED
-PrizeCheck | exit 1
-PrizeCheck | FAIL ...and its till (at most 151) never stood above the six months of costs it keeps (at least 133), so there was no money for a buyback to take past the cushion even had it qualified
-PrizeCheck | PrizeCheck: 1 FAILED of 286

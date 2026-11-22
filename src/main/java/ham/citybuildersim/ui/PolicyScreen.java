@@ -705,6 +705,7 @@ final class PolicyScreen {
             case "foodAssistance" -> p.setFoodAssistance(v);
             case FUEL_DUTY       -> p.setFuelDuty(v);
             case PORT_DUES       -> p.setPortDues(v);
+            case "gainsInclusion" -> p.setCapitalGainsInclusion(v);
             case "healthFee"     -> p.setHealthFeeScale(v);
             case "healthPremium" -> p.setHealthPremiumRate(v);
             default -> { }
@@ -1984,12 +1985,29 @@ final class PolicyScreen {
             default -> "WHO PAYS";
         }, info, quiet("click a row for its own move")));
         page.getChildren().add(Kept.scope("payers", () -> payers(which, live)));
-        if ("Wage".equals(which)) page.getChildren().add(Kept.scope("payslip", () -> payslipCard(live)));
+        if ("Wage".equals(which)) {
+            page.getChildren().add(Kept.scope("payslip", () -> payslipCard(live)));
+            page.getChildren().add(Kept.scope("gainsInclusion", () -> gainsInclusionCard(live)));
+        }
         if ("Property".equals(which)) {
             VBox farm = Kept.scope("farmland", () -> farmlandCard(live));
             if (farm != null) page.getChildren().add(farm);
         }
         page.getChildren().add(fold("table:" + which, "the table, as it was", () -> taxTable(which, live)));
+    }
+
+    /** The accepted inclusion dial: the fraction of a net gain, at the holder's wage-tax rate. */
+    VBox gainsInclusionCard(TaxPolicy live) {
+        double current = live.getCapitalGainsInclusion();
+        Lever lever = new Lever("gainsInclusion", "Capital gains inclusion", current, 0, 1, .05,
+                PolicyScreen::pct0, live::setCapitalGainsInclusion);
+        Ladder ladder = ladderOf(lever).marks(new double[] {TaxPolicy.DEFAULT_CAPITAL_GAINS_INCLUSION}, new String[] {"the default"});
+        String info = "This share of realised net gains is taxed at the holder's wage-tax rate. Unused losses carry forward. "
+                + "Acquisition cost follows the holder when a household changes shape. "
+                + "Dividends credit the company's profit tax by integration.";
+        return dialCard(new DialCard(Icons.STAFF, Palette.MONEY, "CAPITAL GAINS", info,
+                pct0(current) + " included", "Collected when shares are sold.", null, ladder,
+                staged("gainsInclusion", current), v -> List.of(), "Applied to future realisations.", info, null), 520, false);
     }
 
     /** P9, the offsets' note. */

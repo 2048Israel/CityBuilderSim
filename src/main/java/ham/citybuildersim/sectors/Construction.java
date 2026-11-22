@@ -1,6 +1,7 @@
 package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingManager;
+import ham.citybuildersim.BuildersShort;
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessInvestment;
@@ -759,12 +760,33 @@ public final class Construction extends Sector {
      * and a copy of a city K times larger stopped tracking it (ScaleCheck: K
      * depots on site there against one here, and each ordered one more).
      * The depots' price is not the queue's to ration either: theirs go first.
+     *
+     * ONE ORDER AT A TIME, SIZED TO THE QUEUE (OG1, 2026-11-22). Jerus: "quite
+     * often construction has a huge backlog yet it doesnt expand its building
+     * capacity to tackle it", and "in big cities, even if building on depot
+     * every month its not enough". Measured on main's playtest: past the knee
+     * the plan ordered one 400-point depot in 205 months and held on its one on
+     * site in 203, while the sites did 15,000 to 28,000 points a month against
+     * queues of 20 to 31 months (89 months running from m1775). So the plan
+     * still holds while any depot of theirs is on site, but the order it then
+     * places is the gap (depotsForTheQueue()) between the sites' month and a
+     * target: the work a typical month orders of the builders
+     * (BusinessInvestment, THE WORK THE CITY SENDS THE BUILDERS) and the
+     * queue past the knee worked off over QUEUE_WORKED_OFF_MONTHS, never more
+     * than 1 + BuildersShort.CEILING of that typical month. What 0.7.130
+     * measured does not come back. The collapse was depots waiting months in
+     * the queue; a batch here takes at most the premium's share of one month
+     * of the sites (BuildersShort.premium(): the queue's own price for its
+     * wait), served first, so it opens inside the month. The runaway was
+     * builders growing to the queue; here they grow to the work coming in,
+     * and a spike is worked off by the margin, not built for: the first cut,
+     * sized to the queue, ran the playtest to 7,771 depots to main's 299.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        // One depot on site at a time (ONE DEPOT AT A TIME, above): the builders' own rule, not the cap on orders BA1 removed.
+        // One order of depots on site at a time (ONE DEPOT AT A TIME, above): the builders' own rule, not the cap on orders BA1 removed.
         if (buildings.getUnderConstructionBySector(sector) > 0) {
             return BusinessInvestment.Decision.no(sector, ONE_DEPOT_ON_SITE);
         }
@@ -825,9 +847,52 @@ public final class Construction extends Sector {
             return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         }
 
-        return new BusinessInvestment.Decision(sector, best, 1,
+        long depots = depotsForTheQueue(best, plans, forSites, remaining);
+        return new BusinessInvestment.Decision(sector, best, depots,
                 backlogMonths == Double.MAX_VALUE ? "the repairs take every crew it has"
                         : String.format("%.1f months of work queued", backlogMonths), true);
+    }
+
+    /**
+     * The months over which the depots an order adds work the queue past the knee off, beside keeping up with the work
+     * a typical month orders (OG1): two years, so a queue of 21 months at a pace the work coming in keeps up with is
+     * met by builders half again as large, and a longer one by at most 1 + BuildersShort.CEILING times.
+     */
+    public static final double QUEUE_WORKED_OFF_MONTHS = 24;
+
+    /**
+     * The sites' month the builders order towards (OG1; ONE ORDER AT A TIME, SIZED TO THE QUEUE, above), with
+     * {@code typical} points ordered of them in a typical month (BusinessInvestment.typicalMonthOfSiteWork()),
+     * {@code remaining} queued and {@code forSites} a month for the sites at every post: the typical month and the queue
+     * past the knee over QUEUE_WORKED_OFF_MONTHS, at most 1 + BuildersShort.CEILING of the typical month.
+     */
+    public static double sitesMonthWanted(double typical, double remaining, double forSites) {
+        double pastTheKnee = Math.max(0, remaining - BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING * forSites);
+        return Math.min(typical * (1 + BuildersShort.CEILING), typical + pastTheKnee / QUEUE_WORKED_OFF_MONTHS);
+    }
+
+    /**
+     * How many of {@code t} the plan orders with {@code remaining} points queued and {@code forSites} a month for the
+     * sites at every post (OG1). The gap between the sites' month and sitesMonthWanted(), in depots of t's nameplate
+     * points at the share of their posts the city could staff (under the roads' and the health's ratios a depot adds
+     * less, and the next order sees what it added: a target met in nameplate, so mended roads never turn the order
+     * into depots standing idle), at least one; and no more than take the premium's share of the sites' month
+     * (BuildersShort.premium(): what the queue already charges for its wait, a share of the month the depots, served
+     * first, take from everyone else's sites), the city could staff together (staffableCount()) or has plots for.
+     * One, as before OG1, while the city has not kept the months the typical one is read from, with no month for the
+     * sites at all (the repairs take every crew), or with the sites short of a depot's points on the premium's share
+     * of a month (BuildersFirstCheck's trap).
+     */
+    public long depotsForTheQueue(BuildingsTemplate t, BusinessInvestment plans, double forSites, double remaining) {
+        double typical = plans.typicalMonthOfSiteWork();
+        if (!(forSites > 0) || !(typical > 0)) return 1;
+        double gap = sitesMonthWanted(typical, remaining, forSites) - forSites;
+        double each = plans.newUnit(t).makes(Good.BUILDING_WORK) * Math.max(0, Math.min(1, staffing(t).share));
+        double wanted = each > 0 ? Math.ceil(gap / each) : 1;
+        double share = BuildersShort.premium(remaining / forSites) * forSites;
+        double batch = Math.floor(share / Math.max(1, t.getConstructionPoints()));
+        long n = (long) Math.max(1, Math.min(Math.min(wanted, batch), plans.plotsAvailableFor(t)));
+        return Math.max(1, staffableCount(t, n));
     }
 
     /**

@@ -762,9 +762,9 @@ final class SectorScreen {
         return si.word().startsWith("Holding: ") ? si.word().substring("Holding: ".length()) : si.word();
     }
 
-    /** A word's short form for a card: a "Built" or "Sold" word up to its " - " (the frame's line and the tooltip have the rest). */
+    /** A word's short form for a card: a "Built", "Sold" or "Scrapped" word up to its " - " (the frame's line and the tooltip have the rest). */
     static String shortWord(String words) {
-        if (!(words.startsWith("Built ") || words.startsWith("Sold "))) return words;
+        if (!(words.startsWith("Built ") || words.startsWith("Sold ") || words.startsWith("Scrapped "))) return words;
         int cut = words.indexOf(" - ");
         return cut > 0 ? words.substring(0, cut) : words;
     }
