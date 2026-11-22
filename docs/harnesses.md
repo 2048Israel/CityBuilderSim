@@ -22994,22 +22994,22 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L310 2**
   - L328 no string of any page holds a \"$\" that is not a foreign mark's
 - **L334 3. household money by stage, former tier, owners, estates and investment taxes (HS3)**
-  - L373 two former tiers survive the estate month
-  - L374 dying alone caused estate cash, repayment and write-off
-  - L392 the census supplied an investor at the elite tier
-  - L399 the investor actually buys the lot
-  - L402 the investor actually sells at a gain
-  - L404 the fills and dividend cause both tax lines
-  - L414 the page names
-  - L416 the stage has its own clickable cell:
-  - L419 opening the stage shows its own ledger
-  - L421 the stage's statement count is its model census
-  - L423 the stage's open ledger shows its own savings
-  - L426 both former tiers are named on the page
-  - L427 the owner family has its own line
-  - L438 the longest shape, tier and stage caption is shown in full with the books stacked
-  - L443 the open ledger shows the model's savings for
-  - L450 the page shows the model's
+  - L375 two former tiers survive the estate month
+  - L376 dying alone caused estate cash, repayment and write-off
+  - L394 the census supplied an investor at the elite tier
+  - L401 the investor actually buys the lot
+  - L404 the investor actually sells at a gain
+  - L406 the fills and dividend cause both tax lines
+  - L416 the page names
+  - L418 the stage has its own clickable cell:
+  - L421 opening the stage shows its own ledger
+  - L423 the stage's statement count is its model census
+  - L425 the stage's open ledger shows its own savings
+  - L428 both former tiers are named on the page
+  - L429 the owner family has its own line
+  - L440 the longest shape, tier and stage caption is shown in full with the books stacked
+  - L445 the open ledger shows the model's savings for
+  - L452 the page shows the model's
   - L454 the fixture records a yearly debt survey
   - L464 debt table names the kinds and the holder median,
   - L467 debt burden uses the selected tier and stage's model

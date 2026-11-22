@@ -338,6 +338,8 @@ public class MoneyWordsCheck {
         try {
             g = new Game(GameFiles.scratch("hs3-money"), LongPlaytest.founding());
             g.run();
+            // Close an actual year so the saved-survey view has a native observation.
+            g.simulateMonths(12 - Math.floorMod(g.getMonth(), 12));
         } finally { System.setOut(real); }
         Currency.use(g.getCurrency());
         HouseholdBalance bal = g.getHouseholdBalance();
@@ -449,8 +451,6 @@ public class MoneyWordsCheck {
             String amount = ham.citybuildersim.ui.Money.tightMoney(amounts[i] * 1000, false);
             check("the page shows the model's " + labels[i], lineShows(bench, labels[i], amount), amount);
         }
-        // Strike this founding-month survey through the history's normal recorder, before changing the opening card book.
-        g.getHistorySave().recordMonth(g);
         check("the fixture records a yearly debt survey", !g.getHistorySave().getDebtSurveys().isEmpty());
         // A partial opening card book: different household/adult weights and a real excluded share.
         holder.debt = 14; holder.revolving = .4; holder.lateDebt = 3; holder.lateShare = .1;
