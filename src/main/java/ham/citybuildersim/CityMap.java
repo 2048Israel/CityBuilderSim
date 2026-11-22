@@ -7644,6 +7644,11 @@ public final class CityMap {
 
     /** ...and (batch FR7) the frame's highway plots that carry a ramp into `ramp` (null to leave them): where an access road may end. */
     long runsInto(District d, byte[] fixed, boolean[] ramp) {
+        return runsInto(d, fixed, ramp, null);
+    }
+
+    /** ...and (RR1) the end ramps of the highways' arms that wait at the city's own water into `join` (null to leave them): where the plan lays a street beneath (CityRuns.waitingEnds()). */
+    long runsInto(District d, byte[] fixed, boolean[] ramp, boolean[] join) {
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
         int f = DistrictPlan.FRAME;
         byte[] marks = ramp == null ? null : new byte[f * f];
@@ -7654,6 +7659,11 @@ public final class CityMap {
             if (b == CityRuns.F_RAIL_OVER) fixed[i] = DistrictPlan.FIXED_HIGHWAY;
             else if (b == CityRuns.F_YARD) fixed[i] = DistrictPlan.FIXED_YARD;
             else if (b == CityRuns.F_RESERVE) fixed[i] = DistrictPlan.FIXED_RESERVE;
+        }
+        if (join != null && ramp != null) for (long[] e : runs.waitingEnds()) {
+            if (e[0] < x0 || e[1] < y0 || e[0] >= x0 + f || e[1] >= y0 + f) continue;
+            int i = (int) ((e[1] - y0) * f + e[0] - x0);
+            if (ramp[i]) join[i] = true;
         }
         return h;
     }
@@ -10869,8 +10879,11 @@ public final class CityMap {
         // The city's highways and railway through its frame (0.7.89: the city's runs; THE NETWORK's plan's until 0.7.88), its yards
         // among them. The model's Elevated Highways are the runs' plots, none a street's surface: what the runs could not lay the
         // map counts (THE RUNS).
-        if (runs.highways().started) in.ramp = new boolean[f * f];
-        runsInto(d, in.fixed, in.ramp);
+        if (runs.highways().started) {
+            in.ramp = new boolean[f * f];
+            in.rampJoin = new boolean[f * f];
+        }
+        runsInto(d, in.fixed, in.ramp, in.rampJoin);
         // The works that need an access road (batch FR7): its yards and sea terminals.
         worksInto(d, in);
         // ...and its share of the Rail Spurs the runs' sidings left: a siding to each of that many of the bulk works its plan places (batch FR7 slice 5, D14).

@@ -35,6 +35,8 @@ public class RR1Probe {
         info(g.getCityMap());
         for (int i = 3; i + 5 < a.length; i += 6) {
             if (a[i].equals("hww")) { hww(g.getCityMap()); i -= 5; continue; }
+            if (a[i].equals("joins")) { joins(g.getCityMap()); i -= 5; continue; }
+            if (a[i].equals("plot")) { plot(g.getCityMap(), Long.parseLong(a[i + 1]), Long.parseLong(a[i + 2])); i -= 3; continue; }
             if (a[i].equals("trucks")) { trucks(g); i -= 5; continue; }
             if (a[i].equals("why")) { why(g.getCityMap()); i -= 5; continue; }
             if (a[i].equals("dump")) { REAL.println("dump at m" + g.getMonth() + " routes " + g.getCityMap().trainRoutes().size()); sidings(g.getCityMap()); i -= 5; continue; }
@@ -168,6 +170,37 @@ public class RR1Probe {
         List<TrainSchedule.Route> routes = m.trainRoutes();
         for (TrainSchedule.Route r : routes)
             REAL.printf("  route yard %d station %s siding %d works %s holds %.1f length %.1f%n", r.yard(), r.station(), r.siding(), r.works(), r.holds(), r.length());
+    }
+
+    /** RR1-A: each waiting highway end, its district's plan's ramp joins. */
+    static void joins(CityMap m) {
+        for (long[] e : m.runs().waitingEnds()) {
+            CityMap.District d = m.district((int) (Math.floorDiv(e[0], (long) CityMap.DISTRICT) - m.baseDX()), (int) (Math.floorDiv(e[1], (long) CityMap.DISTRICT) - m.baseDY()));
+            if (d == null) { REAL.printf("waiting end %d,%d arm %d: no district%n", e[0], e[1], e[2]); continue; }
+            DistrictPlan.Input in = m.planInput(d);
+            int n = 0;
+            if (in.rampJoin != null) for (boolean j : in.rampJoin) if (j) n++;
+            DistrictPlan p = DistrictPlan.make(in);
+            StringBuilder sb = new StringBuilder();
+            for (int[] r : p.rampJoins) sb.append(' ').append(java.util.Arrays.toString(r));
+            REAL.printf("waiting end %d,%d arm %d: district %d,%d, input ramps to join %d, plan joined%s%n", e[0], e[1], e[2], d.dx, d.dy, n, sb);
+        }
+    }
+
+    /** RR1-A: what the painter reads and makes of plot (x, y) and its four neighbours. */
+    static void plot(CityMap m, long x, long y) {
+        TilePainter.Input in = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted();
+        long tx = Math.floorDiv(x, (long) World.TILE), ty = Math.floorDiv(y, (long) World.TILE);
+        m.tileInput(tx, ty, in);
+        TilePainter.paint(in, p);
+        long[][] at = { { x, y }, { x - 1, y }, { x + 1, y }, { x, y - 1 }, { x, y + 1 } };
+        for (long[] q : at) {
+            int lx = (int) (q[0] - tx * World.TILE), ly = (int) (q[1] - ty * World.TILE);
+            if (lx < 0 || ly < 0 || lx >= World.TILE || ly >= World.TILE) { REAL.printf("plot %d,%d off the tile%n", q[0], q[1]); continue; }
+            int i = ly * World.TILE + lx;
+            REAL.printf("plot %d,%d fixed %d marks %d street %d use %d road %d beneath %s%n", q[0], q[1], in.fixed[i], in.marks[i], in.street[i], p.use[i], p.road[i], p.beneath[i]);
+        }
     }
 
     static Game load(Path saves) throws Exception {

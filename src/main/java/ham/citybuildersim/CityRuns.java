@@ -4352,6 +4352,20 @@ public final class CityRuns {
         return out;
     }
 
+    /**
+     * (RR1) The ramps among highwayRamps() at the ends of arms that wait at
+     * the city's own water (stoppedBy SEA: the sea, or water wider than the
+     * net bridges), {x, y, the arm's index}: such an arm grows on only if the
+     * ground moves, so the plan lays a street beneath its ramp, joined to its
+     * streets (DistrictPlan's rampJoins()), and its end is a junction, not
+     * JunctionCheck 4's open end narrowing for an arm still to grow.
+     */
+    public List<long[]> waitingEnds() {
+        List<long[]> out = new ArrayList<>();
+        for (long[] r : highwayRamps()) if (highways.arms.get((int) r[2]).stoppedBy == SEA) out.add(r);
+        return out;
+    }
+
     /** Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. */
     static void armPoints(Arm a, int from, int to, List<long[]> out) {
         out.add(plotAt(a, from));
@@ -4590,7 +4604,8 @@ public final class CityRuns {
         long h = World.mix(0x52554E53L ^ gateway);
         for (Net n : new Net[] { highways, rail }) {
             h = World.mix(h ^ n.plots ^ (n.started ? n.hubX * 31 + n.hubY : 7) ^ (n.hubLaid ? 1L << 62 : 0));
-            for (Arm a : n.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y);
+            // (RR1) ...and whether a highway's arm waits at the city's own water, which its frame's plan reads (waitingEnds()).
+            for (Arm a : n.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y ^ (n.kind == HIGHWAYS && a.stoppedBy == SEA ? 1L << 61 : 0));
             h = World.mix(h ^ n.corridors.size());
             for (int j = 1; j < n.pieceHubs.size(); j++) h = World.mix(h ^ n.pieceHubs.get(j)[0] * 0x9E3779B97F4A7C15L ^ n.pieceHubs.get(j)[1] ^ ((long) j << 56));
         }
@@ -4941,11 +4956,14 @@ public final class CityRuns {
                     }
                 }
             }
-            if (marks != null && n.kind == HIGHWAYS) {
-                // A ramp at each arm's end.
+            if (n.kind == HIGHWAYS) {
+                // A ramp at each arm's end; (RR1) one where the arm waits at the city's own water (waitingEnds()) is joined to
+                // a street, which the frame's hash carries, marks or none, so its plan is made again when the arm comes to wait.
                 for (Arm a : n.arms) {
                     if (a.steps == 0 || a.x < x0 || a.y < y0 || a.x >= x0 + w || a.y >= y0 + h) continue;
-                    marks[(int) ((a.y - y0) * w + (a.x - x0))] |= M_RAMP;
+                    int i = (int) ((a.y - y0) * w + (a.x - x0));
+                    if (a.stoppedBy == SEA) hash = World.mix(hash ^ i ^ 0x5741495453L << 24);
+                    if (marks != null) marks[i] |= M_RAMP;
                 }
             }
         }

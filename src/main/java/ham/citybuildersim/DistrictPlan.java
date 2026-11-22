@@ -531,6 +531,8 @@ public final class DistrictPlan {
 
     /** How far from the work it serves a highway ramp may lie, in districts, for its access road to go there and not to the arterial grid: 2 (spec-freight 4.5: "the nearest highway ramp if one lies within two districts"). A plan reads its own frame alone, so in the map it is the frame's ramps that count; see access(). */
     public static final int ACCESS_RAMP_DISTRICTS = 2;
+    /** (RR1) How far, in plots each way, the street beneath a waiting arm's end ramp is laid to find a street of the plan: a cell's side, as far as the cells' own streets lie apart (rampJoins()). */
+    public static final int RAMP_JOIN_REACH = CELL;
 
     /** A plot of a siding the plan laid (batch FR7 slice 5, D14), by plot in DistrictPlan.siding... */
     public static final byte SIDING_PLOT = TilePainter.SIDING_PLOT;
@@ -630,6 +632,8 @@ public final class DistrictPlan {
         public final List<int[]> works = new ArrayList<>();
         /** A highway's plot of the frame that carries a ramp (CityRuns.M_RAMP), by plot; null for none: where a street beneath it makes a ramp an access road can end at. */
         public boolean[] ramp;
+        /** ...and (RR1) the end ramps among them of the arms that wait at the city's own water (CityRuns.waitingEnds()), by plot; null for none: where the plan lays a street beneath, joined to its streets (rampJoins()). */
+        public boolean[] rampJoin;
         /** How many sidings this district's share of the city's Rail Spurs lays (batch FR7 slice 5, D14; CityMap.sidingsOf()): the plan lays one to each of this many of the largest bulk works it placed, to the runs' railway in its frame (FIXED_RAIL). 0 for none. */
         public int sidings;
         /** ...and the plots one may have: a Rail Spur's own track (CityMap: the model's spur track over its spurs, 72), as the runs' sidings are paid for out of the spurs' plots - a works whose siding would be longer is passed over for the next largest. */
@@ -871,6 +875,9 @@ public final class DistrictPlan {
      */
     public final List<int[]> accessRoads = new ArrayList<>();
     public static final int ACCESS_RAMP = 1, ACCESS_ARTERIAL = 2, ACCESS_HAD = 3;
+
+    /** (RR1) The end ramps of waiting arms the plan laid a street beneath and joined to its streets (rampJoins()), each {rampX, rampY, plots}: the ramp's plot and how many plots the street took, the ramp's own among them, in the frame's plots. */
+    public final List<int[]> rampJoins = new ArrayList<>();
 
     /** The plots the access roads run over, by plot (a boulevard's among them, which keeps its own role); null when none was laid. */
     public boolean[] accessAt;
@@ -3559,6 +3566,8 @@ public final class DistrictPlan {
             out.mixedSlots = mixedSlots;
             avOutput(out);
             cvOutput(out);
+            // RAMP JOINS (RR1): a waiting arm's end ramp given a street beneath, joined to the plan's streets, before the access roads, which may end at it.
+            if (!initialLadder) rampJoins(out);
             // ACCESS ROADS (batch FR7): over what the plan has laid and left, after every building stands - none moves for one.
             if (!initialLadder) access(out, placed);
             // SIDINGS (batch FR7 slice 5): the same ground, the streets and the access roads as they stand, nothing taken from the plan.
@@ -6625,6 +6634,71 @@ public final class DistrictPlan {
             if (fx[a] == FIXED_HIGHWAY && !proto) under[a] = true;
             else setStr(a, true);
             if (role[a] == 0) role[a] = (byte) ROLE_JOIN;
+        }
+
+        /* ------------------------------------------------ ramp joins (RR1, 2026-11-22) */
+
+        /**
+         * RAMP JOINS (RR1, a call the orchestrator took as a star). An arm of
+         * the highways that waits at the city's own water (CityRuns.waitingEnds():
+         * stopped by the sea, or by water wider than the net bridges) does not
+         * grow on while the ground stands, yet its end ramp was drawn as
+         * JunctionCheck 4's open end, narrowing for an arm still to grow, beside
+         * the streets it never met (Jerus's fjord city, 0.9.181, shots 4 and
+         * 6). So the plan lays a street beneath that ramp and joins it to the
+         * nearest street of its own within RAMP_JOIN_REACH, by the shortest way
+         * over the ground a street may take (a turn costs half a plot, so it
+         * runs straight where it can), and the end is a junction. It is laid
+         * over what the plan has placed, as an access road is (no building
+         * moves for it), and before the access roads, which may then end at
+         * it. The highways keep every plot; an arm still to grow keeps its
+         * narrowing end. A ramp on the frame's edge row or column, which the
+         * districts share, or with no street in reach, is left as it was.
+         */
+        void rampJoins(DistrictPlan out) {
+            if (proto || in.rampJoin == null) return;
+            int reach = RAMP_JOIN_REACH, w = 2 * reach + 1;
+            for (int k = 0; k < nHighway; k++) {
+                int r = hwList[k], rx = r % FRAME, ry = r / FRAME;
+                if (!in.rampJoin[r] || under[r] || rx < 1 || ry < 1 || rx >= SIDE || ry >= SIDE) continue;
+                // States are (plot, the way it was entered) in the window round the ramp; cost 2 a plot and 1 a turn.
+                int[] dist = new int[w * w * 4], prev = new int[w * w * 4];
+                Arrays.fill(dist, Integer.MAX_VALUE);
+                java.util.PriorityQueue<Long> q = new java.util.PriorityQueue<>();
+                int found = -1;
+                for (int d = 0; d < 4; d++) rampJoinStep(r, rx, ry, reach, w, -1, 0, d, d, dist, prev, q);
+                while (!q.isEmpty() && found < 0) {
+                    long e = q.poll();
+                    int c = (int) (e >>> 32), s = (int) e;
+                    if (c > dist[s]) continue;
+                    int cell = s >> 2, d = s & 3, a = (ry - reach + cell / w) * FRAME + rx - reach + cell % w;
+                    if (str[a]) { found = s; break; }
+                    for (int nd = 0; nd < 4; nd++) if (nd != (d ^ 2)) rampJoinStep(a, rx, ry, reach, w, s, c, d, nd, dist, prev, q);
+                }
+                if (found < 0) continue;
+                int plots = 1;
+                layJoin(r);
+                for (int s = prev[found]; s >= 0; s = prev[s]) {
+                    int cell = s >> 2, a = (ry - reach + cell / w) * FRAME + rx - reach + cell % w;
+                    layJoin(a);
+                    if (occ[a] == 0) occ[a] = -1;
+                    plots++;
+                }
+                out.rampJoins.add(new int[] { rx, ry, plots });
+            }
+        }
+
+        /** rampJoins()'s step from plot `from` (entered going `d`, state `s`, cost `c`; -1 for the ramp itself) going `nd` (0 east, 1 south, 2 west, 3 north), pushed if it may be taken and is cheaper so. */
+        void rampJoinStep(int from, int rx, int ry, int reach, int w, int s, int c, int d, int nd, int[] dist, int[] prev, java.util.PriorityQueue<Long> q) {
+            int x = from % FRAME + (nd == 0 ? 1 : nd == 2 ? -1 : 0), y = from / FRAME + (nd == 1 ? 1 : nd == 3 ? -1 : 0);
+            if (x < 1 || y < 1 || x >= SIDE || y >= SIDE || Math.abs(x - rx) > reach || Math.abs(y - ry) > reach) return;
+            int a = y * FRAME + x;
+            if (fx[a] == FIXED_HIGHWAY || (!str[a] && !groundJoinable(a, (nd & 1) == 0))) return;
+            int nc = c + 2 + (s >= 0 && nd != d ? 1 : 0), ns = (((y - ry + reach) * w) + x - rx + reach) << 2 | nd;
+            if (nc >= dist[ns]) return;
+            dist[ns] = nc;
+            prev[ns] = s;
+            q.add((long) nc << 32 | ns);
         }
 
         /* ------------------------------------------------ access roads (batch FR7, slice 4; spec-freight 4.5, D17) */

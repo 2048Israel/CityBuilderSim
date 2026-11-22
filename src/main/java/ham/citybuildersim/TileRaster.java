@@ -2664,6 +2664,9 @@ public final class TileRaster {
                 continue;
             }
             boolean ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
+            // (RR1) An end with a street beneath runs along the axis it opens on (highwayEnds()), whatever staircase is beside it.
+            int open = p.beneath[i] && (in.marks[i] & CityRuns.M_RAMP) != 0 ? beneathEndOpen(in, p, i) : -1;
+            if (open >= 0) ns = open == 0 || open == 2;
             if (ns) fillRect(img, w, x0 + mid, y0, x0 + mid + 1, y0 + dash, c);
             else fillRect(img, w, x0, y0 + mid, x0 + dash, y0 + mid + 1, c);
         }
@@ -3379,6 +3382,12 @@ public final class TileRaster {
      * (the highway on two sides along it) or at a crossing, is not the highway's end and stays the plain highway (FX2,
      * Jerus's eye check of 0.8.2). A 45-degree stretch's last step is not drawn so (FX5 slice D): the narrowing was across the
      * staircase, a notch and a stub on its diagonal, and the band ends squared across its heading instead (diagEndOpen()).
+     *
+     * (RR1) An end with a street beneath it that does not cross it (the plan's street row running on under the highway, or a
+     * street up to its end) narrows the same way, toward that street (beneathEndOpen()): it was drawn squared and flush against
+     * the street, a highway stopping among the houses (Jerus's fjord city, 0.9.181, shot 6). One a diamond meets (a street
+     * across) stays the diamond's. Where the arm runs on past the bend a link leaves it at, its last plot beyond a staircase's
+     * corner, the straight band is carried across that corner to it, not a dark square cut off by the corner's verge (shot 4).
      */
     private static void highwayEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, stride = tile * px;
@@ -3386,13 +3395,27 @@ public final class TileRaster {
         int full = fullCs[0], cas = fullCs[1];
         int paved = crossSection(BuildingVisual.PAVED, px)[0];
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || p.tunnel[i] || (in.marks[i] & CityRuns.M_RAMP) == 0 || p.beneath[i] || diagonal(in, i)) continue;
-            boolean n = runHighwayAt(in, p, i, 0), s = runHighwayAt(in, p, i, 2);
-            boolean e = runHighwayAt(in, p, i, 1), west = runHighwayAt(in, p, i, 3);
+            if (!isHighway(p, i) || p.tunnel[i] || (in.marks[i] & CityRuns.M_RAMP) == 0 || diagonal(in, i)) continue;
+            boolean n, s, e, west;
+            int open = -1;
+            if (p.beneath[i]) {
+                // (RR1) A street beneath: the end opens toward the one street beside it, the highway on the side across.
+                open = beneathEndOpen(in, p, i);
+                if (open < 0) continue;
+                n = open == 2;
+                s = open == 0;
+                e = open == 3;
+                west = open == 1;
+            } else {
+                n = runHighwayAt(in, p, i, 0);
+                s = runHighwayAt(in, p, i, 2);
+                e = runHighwayAt(in, p, i, 1);
+                west = runHighwayAt(in, p, i, 3);
+                // An end has the highway on exactly one side: a lone plot (none), a bend or crossing, and the middle of a straight
+                // highway (two sides, a ramp the plan laid no street beneath) are not ends and stay the plain highway.
+                if ((n ? 1 : 0) + (s ? 1 : 0) + (e ? 1 : 0) + (west ? 1 : 0) != 1) continue;
+            }
             boolean ns = n || s;
-            // An end has the highway on exactly one side: a lone plot (none), a bend or crossing, and the middle of a straight
-            // highway (two sides, a ramp the plan laid no street beneath) are not ends and stay the plain highway.
-            if ((n ? 1 : 0) + (s ? 1 : 0) + (e ? 1 : 0) + (west ? 1 : 0) != 1) continue;
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int ground = groundColour(in, p, i);
             fillRect(img, stride, x0, y0, x0 + px, y0 + px, ground);
@@ -3437,6 +3460,48 @@ public final class TileRaster {
                 int ax = fromLeft ? 1 : -1;
                 drawHighwayApron(in, p, px, img, i % tile + ax, i / tile, true, paved, apron);
             }
+            // (RR1) The arm run on past a link's bend: the straight band across the staircase's corner between it and the straight.
+            if (open >= 0) bandAcrossCorner(in, p, px, img, i, open ^ 2, full, cas, fill, caseC);
+        }
+    }
+
+    /**
+     * (RR1) The side an arm's end ramp with a street beneath opens to (0 north, 1 east, 2 south, 3 west), or -1: the one side a
+     * street lies on that is not a highway's, the highway on the side across from it, and no street on the other two - a street
+     * across the end is a diamond's (diamonds()), two streets beside it a crossing's, and the highway on both sides of the row
+     * the middle of a straight highway, none of them an end.
+     */
+    static int beneathEndOpen(TilePainter.Input in, TilePainter.Painted p, int i) {
+        int tile = TilePainter.TILE, x = i % tile, y = i / tile, open = -1;
+        for (int d = 0; d < 4; d++) {
+            int nx = x + TilePainter.DX[d], ny = y + TilePainter.DY[d];
+            if (!isStreetAt(in, p, nx, ny) || isRunHighway(in, p, nx, ny)) continue;
+            if (open >= 0) return -1;
+            open = d;
+        }
+        if (open < 0 || !runHighwayAt(in, p, i, open ^ 2)) return -1;
+        return open;
+    }
+
+    /**
+     * (RR1) The straight band, cased, across the plot beside end ramp i on side `dir` when that plot is a 45-degree stretch's
+     * (a link's staircase leaving the arm short of its end) and the plot past it the same way a straight highway's: the arm's
+     * band carried on to its end, which the corner's verge cut off.
+     */
+    private static void bandAcrossCorner(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int i, int dir, int full, int cas, int fill, int caseC) {
+        int tile = TilePainter.TILE, stride = tile * px;
+        int x = i % tile + TilePainter.DX[dir], y = i / tile + TilePainter.DY[dir];
+        if (x < 0 || y < 0 || x >= tile || y >= tile) return;
+        int j = y * tile + x;
+        if (!isHighway(p, j) || !diagonal(in, j) || !straightHighwayAt(in, p, j, dir)) return;
+        int x0 = x * px, y0 = y * px, a = (px - full) / 2;
+        boolean across = dir == 1 || dir == 3;
+        if (across) {
+            fillRect(img, stride, x0, y0 + a, x0 + px, y0 + a + full, caseC);
+            fillRect(img, stride, x0, y0 + a + cas, x0 + px, y0 + a + full - cas, fill);
+        } else {
+            fillRect(img, stride, x0 + a, y0, x0 + a + full, y0 + px, caseC);
+            fillRect(img, stride, x0 + a + cas, y0, x0 + a + full - cas, y0 + px, fill);
         }
     }
 
