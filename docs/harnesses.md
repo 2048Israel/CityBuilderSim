@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**239 harness files, 27,416 labelled assertions.** AllChecks runs 239 of them.
+**239 harness files, 27,447 labelled assertions.** AllChecks runs 239 of them.
 
 ## Which harnesses read which class
 
@@ -100,7 +100,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, FundLedgerCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ScaleCheck |
@@ -12668,7 +12668,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1902 nothing that is not a promise was spent past the room the month opened with
   - L1903 ...and it borrowed nothing: the land bond is still all it owes
 
-## FundLedgerCheck.java - 143 labelled assertions
+## FundLedgerCheck.java - 174 labelled assertions
 
 > Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's own counters tell one story over a played run. Not part of the game.
 > 
@@ -12728,113 +12728,144 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L420 fixture: the fund holds 2,000 of a bond's face, bought at .98 and 1.02
   - L422 ...which cost 2,000, 1.00 a unit of face
   - L424 ...and was worth its face at the bond's value at the step: a bargain's measure
-  - L430 a month's coupon is the lot's income
-  - L433 ...its income in the last month that paid any, the month of the coupon's row
-  - L435 ...and not its cost
-  - L436 ...and the fund's, to the cent
-  - L439 a default at the bonds' loss given default realizes that share of the cost
-  - L441 ...and leaves the rest on the face kept
-  - L444 a write-down that keeps the whole face realizes nothing
-  - L447 its maturity realizes the face less the cost
-  - L448 ...and closes the lot, with its record
-  - L449 ...the face is what the fund was paid
-  - L450 the ledger's proceeds are the counters' sales and principal
-- **L457 4. a split at SPLIT_AT and a currency reform**
-  - L475 fixture: a lot
-  - L482 fixture: the wage trigger split the company: the quote over SPLIT_AT of the wage before, under it after
-  - L484 a split leaves the lot's cost where it was
-  - L485 ...the register's count goes up by the factor
-  - L486 ...and the average a share falls by it
-  - L489 ...and a row says so
-  - L498 fixture: the currency reformed,
-  - L501 a reform scales the lot's cost
-  - L502 ...what it realized and what it was bought for
-  - L506 ...and every row's money
-  - L507 ...and not the shares it holds
-- **L513 5. through a save, and an older save's ledger seeded**
-  - L539 every lot comes back exactly: its cost, what it realized and paid, and since when
-  - L547 ...every row, an order still on the book among them
-  - L548 ...the hand's order on the book, and the month tracking began
-  - L555 an older save's fund has no ledger, and waits to have one seeded
-  - L559 ...seeded at the load's month
-  - L560 ...each market lot at its market value then, flagged so
-  - L562 ...with the dividends paid before it apart
-  - L563 ...and one row says what happened
-  - L567 a save from before the fund itself waits for a ledger too, which it seeds from nothing
-  - L601 fixture: somebody other than the city holds the bank's shares
-  - L610 fixture: the month resolved the failed bank for its shares
-  - L622 fixture: a city that resolved its bank, sold some of the rescue book and holds bank shares on its market book too
-  - L631 fixture: the save carries the ledger inside the fund
-  - L636 fixture: the save read, its ledger taken out and written as an older save (
-  - L641 a save with a rescue book and no ledger is seeded at its load: tracking from that month, one row to say so
-  - L646 fixture: its rescue book is worth something other than what the city paid for it
-  - L648 ...its rescue lot is there
-  - L649 ...its rescue lot costed at what the city paid for the shares it still holds, exactly, not at their market value
-  - L651 ...and not tagged as counted at market value, its cost dated from the rescue
-  - L653 ...what the hand's sales of it brought, as the city that tracked it all along has it
-  - L655 ...the cost those sales took out: what the rescue paid, less what is left of it
-  - L657 ...and the gain they realized
-  - L658 ...its dividends since the rescue, the rescue book's own
-  - L669 its market lots, the bank's among them, at their market value at the load, each tagged with the month
-  - L672 ...the bank's market lot with the dividends before it apart from the rescue book's
-  - L675 ...and the row counts every holding, the rescue lot among them
-- **L699 6. the identity over a played run, and 7. since it began, by kind**
-  - L729 fixture: the rule bought something over the run
-  - L730 realized + the change in unrealized = the change in value + proceeds - purchases - rescues, every month
-  - L732 ...and the ledger's purchases and proceeds are the fund's own counters'
-  - L733 the whole run, end to end, the same
-  - L737 fixture: a company the fund holds, to lend
-  - L740 ...the fee is the fund's income this month and its life's
-  - L744 since it began, the gain by kind adds up to the fund's: worth + taken out - put in
-  - L746 ...whose put in is the pay-ins, the rescues and the preferred
-  - L752 ...because its cash is what came in less what went out, to the cent
-  - L758 every holding of a city founded with the ledger has a cost, none counted at market value
-- **L764 8. the hand: its cap, its cash held from the rule, its order on the record**
-  - L769 fixture: the desk holds nothing of the company and the households hold the holding they were handed
-  - L779 a buy waiting for the step holds its money from the rule
-  - L780 ...which bids with the rest
-  - L781 ...and a second order can take no more than the rest
-  - L784 fixture: the order was posted at the step and rests on the book
-  - L787 the hand's buy is posted no further than the room under the 10% cap the rule keeps
-  - L789 ...and what it still holds of the cash is its units still to fill at its price
-  - L793 ...and the rule's bid on the same book rests on no more than what the hand leaves
-  - L797 the order is a row from the step that posted it, open while it rests
-  - L800 the next step closes it: off the book and off the cash
-  - L801 ...its row says what it filled and what lapsed
-  - L807 fixture: a buy far past the cap is queued at the free cash
-  - L811 fixture: a company whose step leaves a fund at its cap at the cap
-  - L821 a buy in a company the fund already holds 10% of is not posted, and its row says why
-  - L904 fixture: the rule given the money bids for the company at the step, with the desk holding none
-  - L939 fixture: the rule bids for the company at the step - resting, or taken at the desk's ask - and both orders were posted beside it
-  - L946 fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%
-  - L950 the rule's bid makes way for the orders waiting: it rests on no more than the room they leave
-  - L952 ...and both orders are posted whole
-  - L954 ...so the fund's market book and every bid of its on the book come to no more than the cap
-  - L956 fixture: every bid of the fund's on the book filled - the rule's and both orders'
-  - L957 ...and the fund holds no more than the cap of the company: nothing for the rule to ask back at fair value
-  - L973 fixture: two orders for 6% of the company each, both posted
-  - L976 ...together past the room the market book leaves
-  - L977 orders past the room on their own leave the rule's bid nothing in the company
-  - L979 ...and the step posts the first whole and the second only to the room the first leaves
-  - L982 ...so the market book and every bid of the fund's come to the cap and no more
-  - L984 fixture: both orders filled
-  - L985 ...and the fund holds the cap of the company and no more
-  - L1000 fixture: a fund whose rule bids for the whole room in the company
-  - L1004 the ticket offers an order the room all the same: the rule's bid makes way for it
-  - L1014 fixture: two orders placed after it, for 4% of the company each or two-fifths of the room left
-  - L1016 ...everything the fund could hold of it, every buy filled, the rule's as far as it may, is still the cap
-  - L1021 a seller hitting the rule's bid fills it no further than the room the two orders leave
-  - L1027 at the step both orders post, and the market book and every bid of the fund's come to no more than the cap
-  - L1030 fixture: every bid filled
-  - L1031 ...and the fund holds no more than the cap of the company
-  - L1054 fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left
-  - L1057 ...the ticket quotes a buy
-  - L1058 the ticket's room is the cap less what the fund holds and the order waiting
-  - L1060 ...the model's own reckoning, which the step trims the order with and the rule's bid fills by
-  - L1062 ...and a ticket for the whole cap is capped at it, and says so
-  - L1064 ...the market book against the cap after: every one of them filled, the cap itself
-  - L1066 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
-  - L1068 ...and the rule's bid makes way for as much of the order as it would otherwise take
+  - L430 fixture: all actual bond holders add to issued face
+  - L431 fixture: the recorded issuer bill is fifty
+  - L432 fixture: the actual Mining issuer owes that whole bill
+  - L433 fixture: only the actual issuer has a recorded bill
+  - L434 fixture: the recorded fund entitlement is ten
+  - L435 fixture: the recorded world entitlement is forty
+  - L436 fixture: there is no actual bank entitlement
+  - L437 fixture: there is no private or custody entitlement
+  - L438 fixture: no cell or company entitlement is hidden
+  - L439 fixture: every recorded holder is funded by the issuer bill
+  - L440 fixture: the native record is open and still unpaid
+  - L441 fixture: an uncharged promise contains no cash
+  - L446 fixture: the existing native Mining sector can actually fund its recorded bill
+  - L449 fixture: the native payer cash API reads back the unchanged stock
+  - L456 the actual native issuer cash debit is its fifty-dollar bill
+  - L458 the actual issuer debit is the cash entering native clearing
+  - L459 issuer and clearing conserve the detached fixture's real cash
+  - L461 guarded zero bank booking moves no clearing cash
+  - L463 the native record pays exactly forty across the world edge
+  - L464 the fund's actual cash includes its coupon and native trading edges
+  - L466 issuer, clearing, fund and native world edges conserve detached fixture cash
+  - L469 the actual fund coupon counter receives ten once
+  - L470 the standalone book pays no household or bank coupons
+  - L471 the native cash record is discharged
+  - L472 the native record closes and removes all unpaid entitlement
+  - L476 native recording refuses a second positive issuer charge
+  - L482 repeated guarded recording/payment creates no issuer debit
+  - L483 repeated guarded recording/payment creates no fund cash
+  - L484 repeated guarded payment creates no ledger income
+  - L485 repeated guarded payment creates no world coupon
+  - L486 repeated guarded payment creates no clearing cash
+  - L491 a month's coupon is the lot's income
+  - L494 ...its income in the last month that paid any, the month of the coupon's row
+  - L496 ...and not its cost
+  - L497 ...and the fund's, to the cent
+  - L500 a default at the bonds' loss given default realizes that share of the cost
+  - L502 ...and leaves the rest on the face kept
+  - L505 a write-down that keeps the whole face realizes nothing
+  - L508 its maturity realizes the face less the cost
+  - L509 ...and closes the lot, with its record
+  - L510 ...the face is what the fund was paid
+  - L511 the ledger's proceeds are the counters' sales and principal
+- **L519 4. a split at SPLIT_AT and a currency reform**
+  - L537 fixture: a lot
+  - L544 fixture: the wage trigger split the company: the quote over SPLIT_AT of the wage before, under it after
+  - L546 a split leaves the lot's cost where it was
+  - L547 ...the register's count goes up by the factor
+  - L548 ...and the average a share falls by it
+  - L551 ...and a row says so
+  - L560 fixture: the currency reformed,
+  - L563 a reform scales the lot's cost
+  - L564 ...what it realized and what it was bought for
+  - L568 ...and every row's money
+  - L569 ...and not the shares it holds
+- **L575 5. through a save, and an older save's ledger seeded**
+  - L601 every lot comes back exactly: its cost, what it realized and paid, and since when
+  - L609 ...every row, an order still on the book among them
+  - L610 ...the hand's order on the book, and the month tracking began
+  - L617 an older save's fund has no ledger, and waits to have one seeded
+  - L621 ...seeded at the load's month
+  - L622 ...each market lot at its market value then, flagged so
+  - L624 ...with the dividends paid before it apart
+  - L625 ...and one row says what happened
+  - L629 a save from before the fund itself waits for a ledger too, which it seeds from nothing
+  - L663 fixture: somebody other than the city holds the bank's shares
+  - L672 fixture: the month resolved the failed bank for its shares
+  - L684 fixture: a city that resolved its bank, sold some of the rescue book and holds bank shares on its market book too
+  - L693 fixture: the save carries the ledger inside the fund
+  - L698 fixture: the save read, its ledger taken out and written as an older save (
+  - L703 a save with a rescue book and no ledger is seeded at its load: tracking from that month, one row to say so
+  - L708 fixture: its rescue book is worth something other than what the city paid for it
+  - L710 ...its rescue lot is there
+  - L711 ...its rescue lot costed at what the city paid for the shares it still holds, exactly, not at their market value
+  - L713 ...and not tagged as counted at market value, its cost dated from the rescue
+  - L715 ...what the hand's sales of it brought, as the city that tracked it all along has it
+  - L717 ...the cost those sales took out: what the rescue paid, less what is left of it
+  - L719 ...and the gain they realized
+  - L720 ...its dividends since the rescue, the rescue book's own
+  - L731 its market lots, the bank's among them, at their market value at the load, each tagged with the month
+  - L734 ...the bank's market lot with the dividends before it apart from the rescue book's
+  - L737 ...and the row counts every holding, the rescue lot among them
+- **L761 6. the identity over a played run, and 7. since it began, by kind**
+  - L791 fixture: the rule bought something over the run
+  - L792 realized + the change in unrealized = the change in value + proceeds - purchases - rescues, every month
+  - L794 ...and the ledger's purchases and proceeds are the fund's own counters'
+  - L795 the whole run, end to end, the same
+  - L799 fixture: a company the fund holds, to lend
+  - L802 ...the fee is the fund's income this month and its life's
+  - L806 since it began, the gain by kind adds up to the fund's: worth + taken out - put in
+  - L808 ...whose put in is the pay-ins, the rescues and the preferred
+  - L814 ...because its cash is what came in less what went out, to the cent
+  - L820 every holding of a city founded with the ledger has a cost, none counted at market value
+- **L826 8. the hand: its cap, its cash held from the rule, its order on the record**
+  - L831 fixture: the desk holds nothing of the company and the households hold the holding they were handed
+  - L841 a buy waiting for the step holds its money from the rule
+  - L842 ...which bids with the rest
+  - L843 ...and a second order can take no more than the rest
+  - L846 fixture: the order was posted at the step and rests on the book
+  - L849 the hand's buy is posted no further than the room under the 10% cap the rule keeps
+  - L851 ...and what it still holds of the cash is its units still to fill at its price
+  - L855 ...and the rule's bid on the same book rests on no more than what the hand leaves
+  - L859 the order is a row from the step that posted it, open while it rests
+  - L862 the next step closes it: off the book and off the cash
+  - L863 ...its row says what it filled and what lapsed
+  - L869 fixture: a buy far past the cap is queued at the free cash
+  - L873 fixture: a company whose step leaves a fund at its cap at the cap
+  - L883 a buy in a company the fund already holds 10% of is not posted, and its row says why
+  - L966 fixture: the rule given the money bids for the company at the step, with the desk holding none
+  - L1001 fixture: the rule bids for the company at the step - resting, or taken at the desk's ask - and both orders were posted beside it
+  - L1008 fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%
+  - L1012 the rule's bid makes way for the orders waiting: it rests on no more than the room they leave
+  - L1014 ...and both orders are posted whole
+  - L1016 ...so the fund's market book and every bid of its on the book come to no more than the cap
+  - L1018 fixture: every bid of the fund's on the book filled - the rule's and both orders'
+  - L1019 ...and the fund holds no more than the cap of the company: nothing for the rule to ask back at fair value
+  - L1035 fixture: two orders for 6% of the company each, both posted
+  - L1038 ...together past the room the market book leaves
+  - L1039 orders past the room on their own leave the rule's bid nothing in the company
+  - L1041 ...and the step posts the first whole and the second only to the room the first leaves
+  - L1044 ...so the market book and every bid of the fund's come to the cap and no more
+  - L1046 fixture: both orders filled
+  - L1047 ...and the fund holds the cap of the company and no more
+  - L1062 fixture: a fund whose rule bids for the whole room in the company
+  - L1066 the ticket offers an order the room all the same: the rule's bid makes way for it
+  - L1076 fixture: two orders placed after it, for 4% of the company each or two-fifths of the room left
+  - L1078 ...everything the fund could hold of it, every buy filled, the rule's as far as it may, is still the cap
+  - L1083 a seller hitting the rule's bid fills it no further than the room the two orders leave
+  - L1089 at the step both orders post, and the market book and every bid of the fund's come to no more than the cap
+  - L1092 fixture: every bid filled
+  - L1093 ...and the fund holds no more than the cap of the company
+  - L1116 fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left
+  - L1119 ...the ticket quotes a buy
+  - L1120 the ticket's room is the cap less what the fund holds and the order waiting
+  - L1122 ...the model's own reckoning, which the step trims the order with and the rule's bid fills by
+  - L1124 ...and a ticket for the whole cap is capped at it, and says so
+  - L1126 ...the market book against the cap after: every one of them filled, the cap itself
+  - L1128 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
+  - L1130 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
 ## GatewayCheck.java - 145 labelled assertions
 
