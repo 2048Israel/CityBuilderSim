@@ -5129,6 +5129,15 @@ public final class KeptBench {
         fold(ui.peopleScreen.detailsOpen, "statement", open);
     }
 
+    /** HC2's visible debt-survey filters, with its comparison opened as its details chip does. */
+    public void householdDebt(String tier, String stage, boolean adult, boolean annual) {
+        ui.peopleScreen.debtPanel.tier = tier;
+        ui.peopleScreen.debtPanel.stage = stage;
+        ui.peopleScreen.debtPanel.adult = adult;
+        ui.peopleScreen.debtPanel.annual = annual;
+        fold(ui.peopleScreen.detailsOpen, "debt", true);
+    }
+
     /**
      * The menu column laid out `width` wide (its side padding takes the rest of WIDTH) or, for 0 or less, at WIDTH again: the books
      * sit beside the grid from PeopleScreen.BESIDE and stack under it below that. The next pass lays the page out at it.

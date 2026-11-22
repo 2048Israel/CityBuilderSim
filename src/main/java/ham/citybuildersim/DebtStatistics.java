@@ -174,6 +174,11 @@ public final class DebtStatistics {
                 ratio(highAdults, adults), ratio(highAdults, totalAdultHolders), bankrupt, bankruptAdults, 0);
     }
 
+    /** Students and other households without a pay tier, on the same stage axis. */
+    public static Snapshot untiered(HouseholdBalance balance, Stage stage) {
+        return of(balance, null, stage, true);
+    }
+
     public static Survey survey(HouseholdBalance balance, int month) {
         Map<String, Snapshot> groups = new LinkedHashMap<>();
         groups.put("All", of(balance, null, null));

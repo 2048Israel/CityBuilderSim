@@ -1,4 +1,4 @@
-# DebtStatistics.java - 191 lines · 14 methods · 2 constants · model
+# DebtStatistics.java - 196 lines · 15 methods · 2 constants · model
 
 `ham/citybuildersim/DebtStatistics.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -7,9 +7,9 @@
 > Amounts per adult split a household's debts evenly between its grown-ups.
 > Total holders assume independent kinds; their total is the SCF-shaped approximation.
 
-**Uses:** [Household](Household.md) (6), [CellSpread](CellSpread.md) (6), [PayTier](PayTier.md) (4), [HouseholdBalance](HouseholdBalance.md) (3), [FamilyStructure](FamilyStructure.md) (2), [Bank](Bank.md) (2), [WorkingHousehold](WorkingHousehold.md) (1), [AdultStage](AdultStage.md) (1)
+**Uses:** [Household](Household.md) (6), [CellSpread](CellSpread.md) (6), [HouseholdBalance](HouseholdBalance.md) (4), [PayTier](PayTier.md) (4), [FamilyStructure](FamilyStructure.md) (2), [Bank](Bank.md) (2), [WorkingHousehold](WorkingHousehold.md) (1), [AdultStage](AdultStage.md) (1)
 
-**Used by (5):** [CardCheck](CardCheck.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (7):** [CardCheck](CardCheck.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdDebtPanel](HouseholdDebtPanel.md), [MoneyWordsCheck](MoneyWordsCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Enum constants
 
@@ -37,7 +37,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 177 | **type** `public final class DebtStatistics` | Household debt as the statistics offices print it, read from the cells (HC2). |
+| 15 | 182 | **type** `public final class DebtStatistics` | Household debt as the statistics offices print it, read from the cells (HC2). |
 | 16 | 1 | `private DebtStatistics()` |  |
 | 17 | 1 | **type** `public enum Kind` |  |
 | 18 | 1 | **type** `public enum Stage` |  |
@@ -58,6 +58,7 @@
 | 99 | 20 | `static double median(List<Component> components)` | Locate on the log grid, then refine only that interval; no household is sampled. |
 | 120 | 3 | `public static Snapshot of(HouseholdBalance balance, PayTier tier, Stage stage)` |  |
 | 124 | 52 | `private static Snapshot of(HouseholdBalance balance, PayTier tier, Stage stage, boolean untiered)` |  |
-| 177 | 12 | `public static Survey survey(HouseholdBalance balance, int month)` |  |
-| 190 | 1 | `private static double ratio(double a, double b)` |  |
+| 178 | 3 | `public static Snapshot untiered(HouseholdBalance balance, Stage stage)` | Students and other households without a pay tier, on the same stage axis. |
+| 182 | 12 | `public static Survey survey(HouseholdBalance balance, int month)` |  |
+| 195 | 1 | `private static double ratio(double a, double b)` |  |
 

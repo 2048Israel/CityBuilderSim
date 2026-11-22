@@ -1,4 +1,4 @@
-# AdultStage.java - 86 lines · 9 methods · 0 constants · model
+# AdultStage.java - 88 lines · 10 methods · 0 constants · model
 
 `ham/citybuildersim/AdultStage.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -25,7 +25,7 @@
 
 **Uses:** [FamilyStructure](FamilyStructure.md) (1)
 
-**Used by (11):** [CapitalGainsCheck](CapitalGainsCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [FamilyModel](FamilyModel.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCohorts](PopulationCohorts.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (14):** [CapitalGainsCheck](CapitalGainsCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [FamilyModel](FamilyModel.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [KeptBench](KeptBench.md), [MoneyWordsCheck](MoneyWordsCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCohorts](PopulationCohorts.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Enum constants
 
@@ -46,14 +46,15 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 62 | **type** `public enum AdultStage` | The two stages of an adult life inside AgeBand.ADULT: the young, 18-34, and the established, 35-69. |
+| 25 | 64 | **type** `public enum AdultStage` | The two stages of an adult life inside AgeBand.ADULT: the young, 18-34, and the established, 35-69. |
 | 34 | 5 | `AdultStage(String label, int fromAge, int toAge)` |  |
 | 40 | 1 | `public String getLabel()` |  |
 | 41 | 1 | `public int getFromAge()` |  |
 | 42 | 1 | `public int getToAge()` |  |
-| 45 | 3 | `public int spanMonths()` | How many months an adult spends in the stage, on average: 204 young, 420 established. |
-| 55 | 3 | `public double monthlyOutflowRate()` | The fraction that moves on each month: the young to the established, the established to the seniors. |
-| 60 | 4 | `public AdultStage next()` | The stage after this one, or null for the established, who retire into AgeBand.SENIOR. |
-| 72 | 9 | `public boolean forms(FamilyStructure shape)` | Whether households of this stage take the shape. |
-| 83 | 3 | `public String keySuffix()` | The stage a household in this stage's place in the save is written as: "" for the established, whose keys are the ones from before the stages. |
+| 44 | 1 | `public String getAges()` | The inclusive ages the household money page names (HS3). |
+| 47 | 3 | `public int spanMonths()` | How many months an adult spends in the stage, on average: 204 young, 420 established. |
+| 57 | 3 | `public double monthlyOutflowRate()` | The fraction that moves on each month: the young to the established, the established to the seniors. |
+| 62 | 4 | `public AdultStage next()` | The stage after this one, or null for the established, who retire into AgeBand.SENIOR. |
+| 74 | 9 | `public boolean forms(FamilyStructure shape)` | Whether households of this stage take the shape. |
+| 85 | 3 | `public String keySuffix()` | The stage a household in this stage's place in the save is written as: "" for the established, whose keys are the ones from before the stages. |
 
