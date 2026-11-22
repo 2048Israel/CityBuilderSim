@@ -3,16 +3,18 @@
 The brief is `docs/studies/flaky-suite.md` 6.8 and its table rows. Ten
 harnesses (BankCheck, YoungBankCheck, MortgageCheck, SupplierCreditCheck,
 CreditCheck, CapitalFlowCheck, CarryTradeCheck, InvestCheck,
-DistressBleedCheck, BankFailureCheck) plus CreditCrunchCheck, the other
-harness with FS9 rows in `docs/notes/known-reds.txt`. Each stops reading what
+DistressBleedCheck, BankFailureCheck) plus the other harnesses with FS9 rows
+in `docs/notes/known-reds.txt`: CreditCrunchCheck, and OrderDoorCheck, whose
+row HT1 filed on FS9 when it shipped (section 1b). Each stops reading what
 a played city happens to hold and causes its premise through the model's
 inputs and restore setters, on both sides of each rule, by FS1's order (★2:
 setters, then a stood town, then a threshold from both sides against the
 model's constant, then a read at the caused month).
 
 The branch was cut from origin/main 827bc03f7 (0.9.181) and merged with main
-at 2149ca45c (0.9.183, OG1 and FB16). It is **harness-only**: the diff is the
-eleven harnesses and `Observation.java`'s registry, nothing in the model,
+at 2149ca45c (0.9.183, OG1 and FB16), then at 51e887638 (0.9.184, HT1). It is
+**harness-only**: the diff is the twelve harnesses and `Observation.java`'s
+registry, nothing in the model,
 the screens, the save or the trace, so `moves_playtest=no` and no ensemble is
 owed. The fixture builders other harnesses borrow (`LongPlaytest`,
 `ExchangeCheck.step`, `MortgageCheck.landlordCity`, BankCheck's town
@@ -99,11 +101,61 @@ builders) are unchanged (★1). Every fixture city comes from
   neither calls `Observation.reached(` now, and ObservationCheck compares the
   registry to the sources.
 
+## 1b. HT1's three rows (0.9.184)
+
+HT1 shipped while FS9 was being built and filed three new FS9 rows
+(known-reds 109-111). On the merge, CreditCrunchCheck and OrderDoorCheck went
+red; on 0.9.183 both had been green.
+
+- **CreditCrunchCheck 3**, "no month of the crunch leaves more than one
+  household with no home (LongPlaytest's watch)". On HT1's path seed 13's
+  landlords asked for nothing in m197-221, because the planner refused for
+  no land (a block takes 60,000 sq ft, about 5,570 m², against 1,600-1,800 m²
+  free), and the households with no home rose to 9.1 at m223. New
+  `standGround` buys the cheapest plots (`Game.buyLandBlock()`, the player's
+  purchase, at most `MAX_PLOTS` a month) before each crunch month, until the
+  landlords' zone holds `GROUND_BLOCKS` (section 4's `ORDER`, 6) blocks. A new
+  fixture line counts the months that had it. Run: 120 of 120 months, 21
+  plots, the landlords asking in all 120, the worst month 0.00 households
+  with no home; HT1's path, with no ground, is the law's red side.
+  - With the crunch building more (316 to 1,045 homes), section 4's fixture
+    "the door's price of the order is over the planner's" read 4.1% under.
+    The door buys the materials beyond the yard at the market's draw, the
+    planner at the yard's world price, and that market sat under the world.
+    The fixture now asserts that the two prices part, printing the side: ★,
+    section 3.
+- **OrderDoorCheck 1**, "the ensemble's seed 12 reaches the edge between
+  m200 and m420". It searched 220 months for a month at HN1-A's edge, and on
+  HT1's path none came. A probe of each condition over those months:
+  - the door at or under the planner in 170 months;
+  - the lender refusing in 161;
+  - the regime GOOD in 149;
+  - at m200 only the door's premium failed, the yard holding a whole block
+    (610 of 377).
+
+  Now the founding plays to `FROM` (200) and stops, the player acting on no
+  month past it, and the edge's two price conditions are set by hand:
+  - the yard left `YARD_SHARE` .5 of a block (main's own edge had 204 of 377);
+  - the market's materials, made here and landed, at `DEAR` .035 over the
+    planner's price, through `GoodsMarket.setLocalPrice()` and
+    `setWorldPrices()`, repeated to the landed freight's fixed point.
+
+  The planner's land is refreshed after the plots by reflection, as the
+  month's plan refreshes it before it asks, or the planner prices ground
+  already bought as ground still to buy (as CreditCrunchCheck 4 does). A
+  fixture line reads the market's two prices back. `edgeParts` prints each
+  condition, so a missed edge says which part failed. Run: door 689.41 against
+  the planner's 683.39 (+0.88%), and every HN1-A and HN1-B law passes.
+- **YoungBankCheck**, "no spell under Bank.CAPITAL_RATIO begins with the
+  write-off of a sector of one plant". This is the old harness's label, read
+  on HT1's path (Freight's write-off at m115, ratio .0727). The rewrite has no
+  such line: twin (b) causes the spell, and its line asserts that it begins.
+
 ## 2. The known-reds rows
 
-All 18 FS9 rows go green: DistressBleedCheck 4, CreditCheck 1, BankCheck 1,
-YoungBankCheck 4, MortgageCheck 2, CreditCrunchCheck 6. ship.sh's GR2 veto
-removes them at the merge; the ship file's `## known-reds` holds no row. Row
+All 21 FS9 rows go green: DistressBleedCheck 4, CreditCheck 1, BankCheck 1,
+YoungBankCheck 5, MortgageCheck 2, CreditCrunchCheck 7, OrderDoorCheck 1
+(rows 109-111 HT1's). ship.sh's GR2 veto removes them at the merge; the ship file's `## known-reds` holds no row. Row
 75's fragment ("a spell under Bank.CAPITAL_RATIO begins with the write-off of
 a sector of one plant") did not match the old label word for word; twin (b)'s
 line now contains it and passes. The `docs/notes/gate.txt` lines that go
@@ -131,9 +183,26 @@ green are not this batch's to edit: MortgageCheck 6-9, CreditCrunchCheck
   month"); section 6 stays played (★4) for its identities.
 - ★ **InvestCheck's 360-month counts are printed**, two identities asserted in
   their place.
+- ★ **`GROUND_BLOCKS`** (CreditCrunchCheck): section 4's order of 6 blocks of
+  ground stood before every crunch month, so the landlords never wait on
+  land; the ground is bought by the player's own purchase, at most
+  `MAX_PLOTS` a month, and the city pays for it.
+- ★ **CreditCrunchCheck 4's door fixture reads either side.** Its own javadoc
+  already said the emptied yard makes "the door's price not the planner's".
+  HN1-A's law (the lender reads `lenderCost == whole` to 1e-9) fails on a
+  planner-priced read whichever side the door is on, so "over" was a sign the
+  played market gave, not the law's premise. Recommended as is; OrderDoorCheck
+  keeps "over", which HN1-A's own symptom needs, and causes it.
+- ★ **`YARD_SHARE` .5 and `DEAR` .035** (OrderDoorCheck): a yard short of a
+  block as main's edge was, and a premium inside HN1-A's measured 2-5%.
+- **OrderDoorCheck's other edge conditions are read at the caused month**
+  (★2's fourth step): the regime, the raise, the lender's test, the bank's
+  capital, the shopkeeper. No setter reaches the regime (`Equity.regimeOf()`
+  reads twelve months of income) or the lender's rent, and at m200 every one
+  holds; `edgeParts` names any that later moves.
 - **BankCheck 13b's labels** say "to 1e-12 of it" where they said "to the
-  bit": the parts' arithmetic can part from the pricing's by an ulp on another path (its javadoc). No known-reds row
-  matches them.
+  bit": the parts' arithmetic can part from the pricing's by an ulp on another
+  path (its javadoc). No known-reds row matches them.
 - **No fee setter exists** for BankCheck 19's charter; the template's upkeep
   is set instead.
 
@@ -152,6 +221,9 @@ The slices ran on Sonnet under `target/slice/RULES.md`; I read every diff.
   own process id. The rules now forbid naming harnesses to batch-check in a
   slice.
 - The other slices stood as written.
+- Section 1b's two mends (CreditCrunchCheck's ground, OrderDoorCheck's edge)
+  were written in this session after HT1's merge, not sliced; each was
+  probed before it was mended, and the probes were removed.
 
 ## 5. Observed, not shown to be faults (nothing queued)
 
@@ -166,32 +238,37 @@ The slices ran on Sonnet under `target/slice/RULES.md`; I read every diff.
 
 ## 6. The checks
 
-On the merge with main 2149ca45c (0.9.183), 2026-11-22:
+On the merge with main 51e887638 (0.9.184, HT1), 2026-11-22:
 
 - `./batch-check.sh --fast`: compile OK, maps regenerated, Stale 0 firm
   findings, the tree's changes the generated docs.
-- The pick (`sh tools/pick.sh origin/main HEAD`): 44 of 239 harnesses for 12
-  files, "review not needed - no money, saves or threading in the diff"; not
-  ALL, so no dry run is owed. All 44 ran one at a time (hard timing, no
-  `cbs.timing=soft`):
+- The pick (`sh tools/pick.sh origin/main HEAD`): 44 of 240 harnesses,
+  "review not needed - no money, saves or threading in the diff"; not ALL, so
+  no dry run is owed. All 44 ran one at a time with `cbs.timing=soft`, as the
+  suite runs them:
   - green, exit 0: every harness of the batch (BankCheck, YoungBankCheck,
     MortgageCheck, CreditCrunchCheck, SupplierCreditCheck, CreditCheck,
     CapitalFlowCheck, CarryTradeCheck, InvestCheck, DistressBleedCheck,
-    BankFailureCheck), ObservationCheck, LongPlaytest (381 s) and 28 more;
-  - red, main's only: BuildAdviceCheck (gate.txt 18-20, FS12's row),
-    DenominationCheck (gate.txt 28-30, DK1's), KeptCheck (five lines, FS5's
-    rows 47-50 and 62/72) and MapCheck (FS6's rows 21-23, and three clock
-    misses, SIDECAR_MS twice and SCREEN_MS on Rotterdam, under load on the PC:
-    `Timing.within` verdicts, SOFT and uncounted in the suite's soft run; the
-    batch touches no map code).
-- Each of the 18 FS9 rows' label passes in the fresh run, and
-  `sh tools/known-reds.sh FS9 docs/queue/FS9-ship.md` exits 0 with the 18
-  rows vetoed.
-- Before the merge, on 827bc03f7, the batch's harnesses' baseline was
-  YoungBankCheck exit 2, CreditCrunchCheck 1, MortgageCheck 1, BankCheck 1;
-  the rest exit 0.
+    BankFailureCheck, OrderDoorCheck), ObservationCheck, LongPlaytest (282 s)
+    and 25 more;
+  - red, main's only, every FAIL line an exact line of `docs/notes/gate.txt`:
+    AutoBuildCheck and BuildAdviceCheck (FS12's rows), DenominationCheck
+    (DK1's), FundCheck (FS13H's), KeptCheck (three lines, FS5H's) and
+    MapCheck ("...and every building drawn, one for one", FS6's; its clock
+    misses SOFT).
+- Each of the 21 FS9 rows' label passes in that run, or names a line the
+  rewrite no longer prints (YoungBankCheck's tally and "no spell under...",
+  OrderDoorCheck's search). `sh tools/known-reds.sh FS9
+  docs/queue/FS9-ship.md` exits 0 with the 21 rows vetoed.
+- On 0.9.183 (2149ca45c) the same pick, run with hard timing, was green but
+  for main's reds and clock misses under load; CreditCrunchCheck 3 and
+  OrderDoorCheck 1 went red only on HT1's merge (section 1b).
+- Before the batch, on 827bc03f7, the baseline was YoungBankCheck exit 2,
+  CreditCrunchCheck 1, MortgageCheck 1 and BankCheck 1, the rest exit 0.
 - Each rewritten law is asserted on both sides of its rule within the
   harness, so a fixture that misses its side reads FAIL on a line of its own:
   `DISTRESS` - 1 and `DISTRESS` (DistressBleedCheck), the three twins'
   losses (YoungBankCheck), in band and out (CreditCrunchCheck), the held
-  retailer's till under and over a shop (CreditCheck).
+  retailer's till under and over a shop (CreditCheck). For the two section 1b
+  mends, HT1's own path is the red side: no ground (9.1 households with no
+  home) and no premium (the door equal to the planner at m200).
