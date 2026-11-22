@@ -61,8 +61,19 @@ Jerus: "whoever does it comes up with the numbers".
 1. **x and its index.** Index it to the world's price level, so that domestic
    inflation does not shrink it to nothing. Set its value from evidence on
    foreign contractors' margins over local builders.
-2. **The weak currency.** When E x / p passes `CEILING`, either keep FC1's
-   floor rescue, or let the foreign offer cap the queue premium.
+2. **The weak currency: settled by Jerus.** Jerus, 2026-11-22 (desk chat):
+   "also, it should be such that at a certain premium they do go for it, we
+   dont want a case where its available but the premium makes it so that they
+   never go for it cause contstruction never reaches that premium if you get
+   what i mean". So the threshold is always reachable:
+   - E x, the foreign crews' excess in the city's money, is capped at
+     p x premium(knee + N months).
+   - N is a new dial in `BuildersShort`: the months of backlog past
+     `KNEE_MONTHS` at which the overflow goes abroad whatever the currency,
+     as a foreign firm trims its markup to win the work. Set it and say why.
+   - The cap sits well below `CEILING` (0.8), not near it. The premium only
+     approaches the ceiling, so a threshold close to it would need a backlog
+     of years.
 3. **The contractor's capacity.** Keep `FOREIGN_CAPACITY_SHARE`, or replace it
    with a price that rises with its volume.
 4. **The export half Jerus names.** The city's builders sell their spare
@@ -80,7 +91,9 @@ Jerus: "whoever does it comes up with the numbers".
   - under the knee, at a strong currency, no order goes abroad;
   - past the knee, an order goes abroad exactly when the premium passes
     E x / p, at two exchange rates;
-  - the weak-currency case as settled;
+  - at the weakest exchange rate the game can reach, an order goes abroad
+    at knee + N months of backlog and not before; at a strong rate it goes
+    sooner, but never before the knee;
   - domestic inflation leaves x's foreign value unchanged;
   - an export sells only spare points under the knee.
 - Every import and export is paid by a real payer to a real payee, and booked
