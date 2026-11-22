@@ -138,5 +138,10 @@ only changes from the traced base are `QUEUE.md` and
 `docs/notes/known-reds.txt`, Jerus's Pending cleanup. No production or harness
 source changed, so the source tested and traced above remains the same.
 The cleanup folded FS10H into HT1-H and FS5H into FS5; the notes use their
-current owners. The batch merges this publisher commit and rejudges the saved
-pick against its record, rather than replaying the unchanged model.
+current owners. Merge `7e20cae` integrated it. The saved pick rejudged against
+that record exits 3 (`target/HS3-pick-judge-integrated.txt`), and the integrated
+`--fast` exits 0 with Stale 0 firm findings (`target/HS3-fast-integrated.txt`).
+The final pick still names the same 21 harnesses and says
+`review not needed - no money, saves or threading in the diff`.
+
+The provisional ship file retains GG1's marker for the orchestrator's go.
