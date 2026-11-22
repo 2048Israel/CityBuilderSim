@@ -20,6 +20,14 @@ import java.nio.file.Path;
  * with instant builds, asked what it would do. The arithmetic the old
  * fixture pinned - the trend, the lead time, the order size, the brake, the
  * costing, the land cap - is still asked of BusinessInvestment directly.
+ *
+ * FIXTURES (FS9). Each section stands its own town or city, put into its stated shape by the model's own doors. The builders' price (0.7.19)
+ * is read once the town has stood twelve months, with the wage schedule set by EconomyManager.updateWages() - the founding ladder over
+ * what it was by a stated rise - so the builders' index is the rise that was set, not the labour market's draw. The run of the
+ * playtest's city (section h, AHEAD_MONTHS) is PLAYED and COUNTED: how often a business built ahead in it is printed, and what is
+ * asserted is the identities over the run (the tally is consistent; no order clears for more than was asked), because that a
+ * business may build ahead is caused in its own section. WHY: the played city moved under both - its wages at month twelve, and the
+ * orders it judged in 360 months.
  */
 public class InvestCheck {
 
@@ -1212,8 +1220,20 @@ public class InvestCheck {
         }
 
         // (a) The labour index: a depot's posts at today's wages over the same posts at the founding ladder.
-        double[] rates19 = pe.getWageRates();
         double unit19 = priced19.getDenomination().getUnit();
+        // FS9: THE WAGES ARE SET, NOT WAITED FOR. The twelve months above stand the town (the builders and their depots, the shops and the
+        // plant), and the labour market's wages at the end of them were whatever the played city's market had drawn - the premise that the
+        // builders' wages had "moved off the founding ladder" was read off that. The wage schedule is handed in as the monthly path hands it
+        // (EconomyManager.updateWages(), the call Game makes with the labour market's wages): the founding ladder, every post, over what
+        // it was by the rise set here, so the builders' index is the rise and no market need have moved it. The next month played hands the
+        // market's own wages back in, and every reading below that follows a month is read fresh.
+        double wageRise19 = 1.25;
+        double[] set19 = new double[pe.getWageRates().length];
+        for (JobType post19 : JobType.values()) {
+            if (post19.ordinal() < set19.length) set19[post19.ordinal()] = PayTier.wageOf(post19) / unit19 * wageRise19;
+        }
+        pe.updateWages(set19, pb.getJobArrayByName("Commercial Bank"));
+        double[] rates19 = pe.getWageRates();
         double today19 = 0, then19 = 0;
         for (JobType post19 : JobType.values()) {
             today19 += depot19.getJobs(post19) * rates19[post19.ordinal()];
@@ -1227,6 +1247,7 @@ public class InvestCheck {
                 today19 / depot19.makes(Good.BUILDING_WORK), then19 / depot19.makes(Good.BUILDING_WORK), index19,
                 labourThen19, house19.getCashCost());
         assertTrue("fixture: the builders' wages have moved off the founding ladder", Math.abs(index19 - 1) > 1e-3);
+        check("...by the rise that was set", index19, wageRise19, 1e-9);
         check("the builders' index is their depot's wage bill today over at the founding ladder",
                 pb.buildersWageIndex(), index19, 1e-12);
         check("...and a House's work is its cash cost with only its labour moved by it",
@@ -2035,7 +2056,7 @@ public class InvestCheck {
 
     static final class AheadWatch implements BusinessInvestment.OrderWatch {
         final Game g;
-        int judged, cleared, clearedAhead;
+        int judged, cleared, clearedAhead, overAsked;
         long largestCleared;
         String largestSector = "";
         final java.util.Set<Integer> monthsJudged = new java.util.TreeSet<>(), monthsDear = new java.util.TreeSet<>();
@@ -2048,6 +2069,7 @@ public class InvestCheck {
             int month = g.getMonth();
             monthsJudged.add(month);
             if (g.getBuildingManager().scarcityPremium() > 0) monthsDear.add(month);
+            if (built > quantity) overAsked++;
             if (built < 1) return;
             cleared++;
             if (built > largestCleared) {
@@ -2084,9 +2106,13 @@ public class InvestCheck {
                 w.largestCleared, w.largestSector, w.clearedAhead);
         System.out.printf("   by sector: %s%n", w.aheadBySector);
         System.out.printf("   the builders' premium was above nothing in %d of the %d months an order was judged%n", w.monthsDear.size(), w.monthsJudged.size());
-        assertTrue("fixture: the run judged orders", w.judged > 0 && w.cleared > 0);
-        assertTrue("A BUSINESS ORDERED WHILE ITS OWN SECTOR ALREADY HAD AN ORDER ON SITE in the run (the cap would have said \"already building\")",
-                w.clearedAhead > 0);
-        assertTrue("...and the largest order cleared is more than one building", w.largestCleared > 1);
+        // FS9: THE RUN IS COUNTED, NOT ASKED. That a business builds ahead of its own order on site, and the size an order is given, are
+        // caused above ("every business may build ahead", the order sizes); how often the playtest's city did either in these
+        // months is the line printed above and asserted of nothing. What is asserted is what holds of any run: the tally is consistent,
+        // and the search never clears an order for more than the business asked.
+        assertTrue("the run's tally is consistent: no more orders cleared than judged, none cleared ahead that was not cleared",
+                w.cleared <= w.judged && w.clearedAhead <= w.cleared && w.monthsDear.size() <= w.monthsJudged.size()
+                        && w.aheadBySector.values().stream().mapToInt(Integer::intValue).sum() == w.clearedAhead);
+        assertTrue("...and no order is cleared for more than the business asked", w.overAsked == 0);
     }
 }

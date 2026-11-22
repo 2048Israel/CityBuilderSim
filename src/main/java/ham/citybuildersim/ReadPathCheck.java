@@ -1605,7 +1605,7 @@ public class ReadPathCheck {
         assertTrue("reading paid IP charges and net planner gains keeps the money still", LicenceFeesCheck.readChecks());
         assertTrue("reading the public works' licence and its planners keeps the money still", PublicLicenceCheck.readChecks());
         assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
-
+        assertTrue("R6e current E21 loads keep physical choices through real reads; formats58/59 are refused without changing a running city", ModernEngineeringCheck.readChecks());
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
         assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 

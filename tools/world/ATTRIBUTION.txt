@@ -261,3 +261,19 @@ Geological settings informed by Cox and Singer, Mineral Deposit Models,
 USGS Bulletin 1693 (1986), USGS-authored descriptions, public domain.
 https://pubs.usgs.gov/bul/1693/report.pdf
 Field densities, grades, recovery and building coefficients are game estimates.
+
+
+GM crop proxy (R6e)
+  Credit:  Klümper, W. and Qaim, M. (2014), A Meta-Analysis of the Impacts of Genetically Modified Crops.
+           PLOS ONE 9(11): e111629. https://doi.org/10.1371/journal.pone.0111629
+  Licence: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ (article copyright notice).
+  Changed mapping: the game's estimate applies the abstract's rounded 22% yield gain to all CROPS at Grain Farm
+           and Mixed Farm. The body reports21%; the evidence combines different crops, traits and countries.
+           This is not a universal measured trait effect. Modern anchors500/69 t/month stay unchanged; pre-GM
+           output is anchor/1.22, a fixed additive undo beside PE20/E10, not compounded yield ratios.
+           No article, table or image is copied. No livestock, seed/pesticide/input, job or land change.
+  Source:  https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0111629 (read 2026-11-21).
+  Date:    USDA ERS, Recent Trends in GE Adoption: commercial introduction in1996; date fact only.
+           https://www.ers.usda.gov/data-products/adoption-of-genetically-engineered-crops-in-the-united-states/recent-trends-in-ge-adoption
+           June is a model placeholder, monthKnown=false. Patentability is the native catalogue estimate,
+           not a measured seed royalty; no extra seed invoice is inferred.

@@ -18,6 +18,27 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS9 (untagged) — the bank's harnesses cause what they read — 2026-11-22, ready, see docs/queue/FS9-notes.md
+The bank and its borrowers' twelve harnesses (Bank, YoungBank, Mortgage, CreditCrunch, SupplierCredit, Credit, CapitalFlow, CarryTrade, Invest, DistressBleed, BankFailure, OrderDoor) cause their premises, not what a played city happens to hold.
+DistressBleedCheck sets the loss and operating streaks, the desk's loan and the till, and reads planDistressRetirement at DISTRESS - 1 and DISTRESS: no LIFT_AT.
+YoungBankCheck lends a lone Lime Kiln twice the young bank's equity on four twins and writes off a loss under the cushion, between cushion and equity, and past equity: resolution only past it.
+MortgageCheck issues its mortgages by hand and causes the lean month; CreditCrunchCheck holds the bank where leverage binds (holdInBand), stands its landlords' ground each crunch month, and strikes the desk's rule before its caused order.
+OrderDoorCheck plays seed 12 to m200 and sets HN1-A's edge by hand: the yard short of a block, the market's materials 3.5% over the planner's price.
+BankCheck's nine played sections set the loan, the carry, the savers' book, the desk's trades, the allowance, the slices, the distress sale and the tab's events by hand.
+CapitalFlowCheck causes its carry and its twin's profit; with BankCheck it leaves Observation.HARNESSES. BankFailureCheck and InvestCheck keep their played runs as identities, their counts printed.
+The 21 FS9 known reds retire, none a fault (three of them HT1's). The batch is harness-only: the model, the screens and the trace do not move.
+
+### 0.9.186 — R6e, GM crop history — 2026-11-22, ready, see docs/queue/R6e-notes.md
+GM crops enter farm history in 1996. Before E21 is known, output is the unchanged
+modern 500/69 divided by 1.22: an approximate crop-mix estimate with source limits
+and CC BY 4.0 credit disclosed. PE20/E10/E21 add fixed-anchor differences; livestock,
+land, jobs and inputs stay unchanged. Patentability uses the native estimate.
+Captured fees now follow each farm's actual credited output, so an idle farm
+cannot pay for another farm's coproducts; this also mends main's combine/milking fees.
+SAVE_FORMAT and its floor rise to 60: format-59 pre-E21 choices load wrong crop
+figures immediately, so older saves are refused without conversion. Other rows
+retain their figures and explicit conditions below; E24 waits for PW3, E27 for E18.
+
 ### 0.9.185 — RR1, the map's roads and rails — 2026-11-22, ready, see docs/queue/RR1-notes.md
 Jerus's city drawn as he saw it (slot 10's copy, months 1,204 to 1,208). A works siding drawn square from the first draw after
 a month keeps its arcs (`CityMap.planSidingsRoutable()`, RailDrawCheck 31). A highway S-bend's straights stop where the next

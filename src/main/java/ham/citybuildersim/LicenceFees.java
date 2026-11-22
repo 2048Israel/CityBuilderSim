@@ -114,38 +114,46 @@ public final class LicenceFees {
                 - SpreadPlanner.ownCosts(t, rate, game.getMarkets().getExchangeRate(), owner.powerPriceFor(t)) - freight;
     }
 
-    /** The common dispatch share of these outputs, including direct exports and captive production. */
+    /** This template's actual run, not another template's co-produced share of the same sector good. */
     private static double productionRate(BuildingsTemplate t, Sector owner) {
         if (owner instanceof Refining) return owner.getOperatingRate();
         double rate = 0;
-        for (var e : t.goodsMade().entrySet()) {
-            Sector.Output row = owner.output(e.getKey());
-            if (row.capacity > 0) rate = Math.max(rate, (row.produced + row.exportBound + row.captive) / row.capacity);
-        }
-        return Math.min(owner.getOperatingRate(), rate);
+        for (Good good : t.goodsMade().keySet()) rate = Math.max(rate, creditedOutputRate(t, owner, good, owner.getOperatingRate()));
+        return rate;
+    }
+
+    /** Actual units credited to one template's output, at the producer's native order weights; the captured typed-flow/refinery rate stays authoritative. */
+    static double creditedOutputRate(BuildingsTemplate t, Sector owner, Good good, double runRate) {
+        if (owner instanceof Refining || owner instanceof ExtractionSector && !good.stockable() || !(t.makes(good) > 0)) return runRate;
+        Sector.Output row = owner.output(good);
+        if (!(row.capacity > 0)) return 0;
+        // A previous horse/feed pass's field is not fresh captive production
+        // once this producer no longer consumes its own good.
+        double made = row.produced + row.exportBound + (owner.captive(good) ? row.captive : 0);
+        return Math.max(0, Math.min(runRate, made / row.capacity * owner.productionWeight(t, good)));
     }
 
     /** A running recipe's value under the standing output/input price roles. */
-    private static double standingRecipeValue(Recipe recipe, Recipes.Prices p, SpreadPlanner.Values values, double rate) {
+    private static double standingRecipeValue(BuildingsTemplate t, Sector owner, Recipe recipe, Recipes.Prices p, SpreadPlanner.Values values, double rate) {
         double value = 0;
-        for (var e : recipe.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * rate);
+        for (var e : recipe.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * creditedOutputRate(t, owner, e.getKey(), rate));
         for (var e : recipe.uses().entrySet()) value -= values.out(e.getKey(), e.getValue() * rate);
         for (JobType type : JobType.values()) value -= recipe.getJobs(type) * p.wages()[type.ordinal()];
         return value - (recipe.getElectricity() - recipe.getGen()) * p.pricePerWatt()
                 - recipe.getWater() * p.pricePerWaterUnit() - recipe.getConsumables() * p.exchange() * rate;
     }
 
-    private static double standingRecipeFee(Game game, BuildingsTemplate t, Recipe recipe, Recipes.Prices p, double rate) {
+    private static double standingRecipeFee(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Recipes.Prices p, double rate) {
         if (!payable(recipe.getSince(), game.getMonth(), game.getResearch())) return 0;
         SpreadPlanner.Values values = SpreadPlanner.values(game.getMarkets());
         double before = Double.NEGATIVE_INFINITY;
         int date = ResearchCatalog.knownFrom(recipe.getSince());
         for (Recipe old : t.getRecipes()) {
             if (ResearchCatalog.knownFrom(old.getSince()) >= date || !old.knownAt(game.getMonth(), game.getResearch())) continue;
-            before = Math.max(before, standingRecipeValue(old, p, values, rate));
+            before = Math.max(before, standingRecipeValue(t, owner, old, p, values, rate));
         }
         if (before == Double.NEGATIVE_INFINITY) before = 0;
-        return onGain(recipe.getSince(), game.getMonth(), game.getResearch(), standingRecipeValue(recipe, p, values, rate) - before);
+        return onGain(recipe.getSince(), game.getMonth(), game.getResearch(), standingRecipeValue(t, owner, recipe, p, values, rate) - before);
     }
 
     /**
@@ -177,7 +185,7 @@ public final class LicenceFees {
         int accrualMonth = game.getMonth();
         double rate = Math.max(0, Math.min(1, standing ? dispatchRate : owner.getOperatingRate()));
         if (recipe != null && charged.add(recipe.getSince()) && recipe.knownAt(game.getMonth(), game.getResearch())) {
-            bill += standing ? standingRecipeFee(game, t, recipe, prices, rate)
+            bill += standing ? standingRecipeFee(game, t, owner, recipe, prices, rate)
                     : recipeFee(t, recipe, accrualMonth, prices, game.getResearch()) * rate;
         }
         bill += RecipeChanges.recipeFee(game, t, owner, recipe, standing, rate, charged, standing ? null : fitted);
@@ -286,6 +294,7 @@ public final class LicenceFees {
                 BuildingsTemplate t = stack.getBuilding();
                 if (stockPhase(t) != stock || !(owner.getOperatingRate() > 0)) continue;
                 double rate = !stock && owner instanceof ExtractionSector mine ? flowExtractionRate(mine, t) : productionRate(t, owner);
+                if (!(rate > 0)) continue;
                 double bill = stackBill(game, stack, owner, rate);
                 if (bill > 0) bills.add(new Bill(owner, t.getId(), stack.getQuantity(), bill));
             }

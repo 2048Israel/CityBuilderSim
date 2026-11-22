@@ -1,6 +1,20 @@
 package ham.citybuildersim;
 
-/** Verifies private-sector credit: pricing, origination, rollover, cash conservation. */
+/**
+ * Verifies private-sector credit: pricing, origination, rollover, cash conservation.
+ *
+ * FIXTURES (FS9). The ban's town (section 10): a retailer held at a till of nought - below
+ * what any shop costs - so what the law reads, that a banned retailer builds nothing on credit
+ * it did not have, is a law about credit and not about a till the path happened to leave; its
+ * shop's cost is read from the model (BusinessInvestment.getCostOf()) and the orders the advisor
+ * judges are watched (Game.watchOrders()), and the other side is shown: with the ban re-armed
+ * and a till that covers two shops it builds from the till and borrows nothing. The past-the-line
+ * city (section 12): stood at once, no month played before the claims - the builders' plant
+ * (buildStack), the bank's branch counted and capitalised through its own door (Bank.openBranches
+ * and injectCapital), the builders' till set (setSectorCash) and a due claim set above the till by
+ * more than the builders take in in a month. WHY: the played cities moved under the numbers the
+ * old fixtures were sized on, which a path gave and a path took away.
+ */
 public class CreditCheck {
 
     static int fails = 0;
@@ -1017,11 +1031,23 @@ public class CreditCheck {
         ledger.setAssets(sector, -1);
         ledger.restructure(sector);
 
+        /*
+         * HELD AT NOUGHT, NOT AT $10 (FS9). The till the retailer is held at is
+         * below the cheapest thing it could build whatever that costs: nought
+         * is, in any town, and ten was only while a shop cost twenty-two (in the
+         * town the study moved, ten was no bar to one: the banned retailer
+         * built a Convenience Store from the takings of a month it began with
+         * ten, no loan, no interim, no offering - BO1-S). What the law below
+         * is about is credit, and this is the till that leaves it nothing else
+         * to be about; the other side, a till that covers a shop, is shown
+         * after the passes.
+         */
+        final double HELD_AT = 0;
         // ...and then held broke and banned for thirty months while the city
         // grows into its housing, so coverage cannot follow demand.
         // One month held broke and banned (the body of the thirty below, and of the wait after them).
         Runnable heldBroke = () -> {
-            econ.setSectorCash(sector, 10);
+            econ.setSectorCash(sector, HELD_AT);
             ledger.setAssets(sector, -1);
             /*
              * THE BAN IS RENEWED BY OWING, NOT BY ASKING (FR2, 2026-10-19).
@@ -1046,7 +1072,7 @@ public class CreditCheck {
             if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
             ledger.restructure(sector);
             banned.simulateMonths(1);
-            econ.setSectorCash(sector, 10);
+            econ.setSectorCash(sector, HELD_AT);
         };
         quietly(() -> {
             for (int mm = 0; mm < 30; mm++) heldBroke.run();
@@ -1092,7 +1118,9 @@ public class CreditCheck {
          * and the assertion failed. A fixture has to CAUSE the condition under
          * test, not stand next to it: retail is now poorer than the cheapest
          * thing it could want, every month, so the only way it builds is credit
-         * and the only reason it cannot is the ban.
+         * and the only reason it cannot is the ban. (Nought since FS9: ten
+         * was poorer than a shop in one town and not in another; the shop's
+         * cost is read from the model below and asserted over the till.)
          */
         /*
          * ...AND SHORT OF SHOPS, caused the same way. Between the bans the
@@ -1125,8 +1153,35 @@ public class CreditCheck {
          * or a refusal in the ban's own words. What it can never be is a loan.
          */
         boolean refusedForCredit = false;
+        /*
+         * WHAT THE ADVISOR JUDGED ORDERS ON (FS9). consider() turns a banned
+         * sector away before it asks for anything when one shop costs more than
+         * its till; an order that reaches the judgement was judged on a till
+         * that covers a shop, and one that did not is a ban let through to
+         * credit. The watch records which: a shop built from the takings of
+         * the month (a till that rose to a shop's cost) is no credit, and a
+         * shop built on a till under it is.
+         */
+        final double shopCost = banned.getBusinessInvestment().getCostOf(shop, 1);
+        final boolean[] judgedUnderAShop = { false };
+        final int[] judgedOrders = { 0 };
+        // The order's cost at the door, as Game.consider() reads it against the ban (orderCostOf(), private: by reflection, as
+        // CreditCrunchCheck calls consider()), not the planner's getCostOf(): the two part when the yard is short of materials.
+        final java.lang.reflect.Method doorCost = Game.class.getDeclaredMethod("orderCostOf", BusinessInvestment.Decision.class, long.class);
+        doorCost.setAccessible(true);
+        banned.watchOrders(new BusinessInvestment.OrderWatch() {
+            @Override public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
+                if (!sector.equals(d.sector)) return;
+                judgedOrders[0]++;
+                double cost;
+                try { cost = (double) doorCost.invoke(banned, d, 1L); } catch (ReflectiveOperationException e) { throw new IllegalStateException(e); }
+                if (cash < cost) judgedUnderAShop[0] = true;
+            }
+        });
+        System.out.printf("   a shop costs $%,.2f; the retailer is held at $%,.2f%n", shopCost, HELD_AT);
+        assertTrue("fixture: the till the retailer is held at is under what the cheapest shop costs", HELD_AT < shopCost);
         for (int pass = 0; pass < passes; pass++) {
-            econ.setSectorCash(sector, 10);
+            econ.setSectorCash(sector, HELD_AT);
             quietly(() -> banned.simulateMonths(1));
             if (banned.getLastInvestment(sector).contains("borrowing ban")) refusedForCredit = true;
         }
@@ -1151,8 +1206,42 @@ public class CreditCheck {
                 raised > 0 || refusedForCredit);
         // Retiring idle shops is allowed (that is what a broke sector does);
         // opening new ones on credit is not.
+        System.out.printf("   ...%d order(s) judged, shops covered %d -> %d%n", judgedOrders[0], shopsBefore,
+                banned.getBuildingManager().getTotalStoreCoverage());
         assertTrue("...and nothing was built on credit it did not have",
-                raised > 0 || banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore);
+                raised > 0 || banned.getBuildingManager().getTotalStoreCoverage() <= shopsBefore || !judgedUnderAShop[0]);
+        assertTrue("...no order of the banned retailer was judged on a till under a shop: the ban turns it away before it asks for credit",
+                !judgedUnderAShop[0]);
+
+        /*
+         * THE OTHER SIDE (FS9): the ban is on credit, not on shops. The same
+         * retailer, the ban re-armed for the month, its till set to cover two
+         * shops at the model's price (set between months; nothing moves inside
+         * the window): it builds from its till and borrows nothing, and the
+         * advisor does not say the ban.
+         */
+        ledger.setAssets(sector, -1);
+        if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
+        ledger.restructure(sector);
+        assertTrue("fixture: the ban is live for the month the till covers a shop", ledger.getBlockedMonths(sector) > 1);
+        int loansThen = ledger.getLoanCount(sector) - ledger.getInterimCount(sector);
+        double principalThen = ledger.getPrincipal(sector) - ledger.getInterimPrincipal(sector);
+        long orderedThen = banned.getBuildingManager().getQuantity(shop.getId())
+                + banned.getBuildingManager().getUnderConstructionById()[shop.getId()];
+        judgedOrders[0] = 0;
+        econ.setSectorCash(sector, 2 * shopCost);
+        quietly(() -> banned.simulateMonths(1));
+        long orderedNow = banned.getBuildingManager().getQuantity(shop.getId())
+                + banned.getBuildingManager().getUnderConstructionById()[shop.getId()];
+        System.out.println("   with a till of two shops, retail's advisor says: " + banned.getLastInvestment(sector));
+        System.out.printf("   ...%d order(s) judged, shops standing or on site %d -> %d%n", judgedOrders[0], orderedThen, orderedNow);
+        assertTrue("a banned retailer whose till covers a shop is judged on that order and builds it from the till",
+                judgedOrders[0] > 0 && orderedNow > orderedThen);
+        assertTrue("...which is no credit: it took no new loan, no interim, and was not turned away in the ban's words",
+                ledger.getLoanCount(sector) - ledger.getInterimCount(sector) <= loansThen
+                        && ledger.getPrincipal(sector) - ledger.getInterimPrincipal(sector) <= principalThen + 1e-6
+                        && !banned.getLastInvestment(sector).contains("borrowing ban"));
+        banned.watchOrders(null);
 
         theCurve(city);
         nothingPastTheDefaultPoint();
@@ -1785,10 +1874,24 @@ public class CreditCheck {
 
         /* ---- ...and in a played city: what the firm does instead ---- */
         System.out.println("\n--- 12. ...what a sector past the line does instead, in a played city ---");
+        /*
+         * THE BUILDERS' PLANT, THE TILLS AND THE BANK, SET BY HAND (FS9). This
+         * city was played twenty-four months (auto-subsidised Industry) for
+         * the builders to have plant and a till and the bank a branch standing
+         * - three things the played town gave or did not, and the town moved
+         * under them (the builders reached month twenty-five idle, one depot
+         * lighter, with a small till). Now the plant is stood at once
+         * (buildStack, no construction), the bank's branch is counted and
+         * capitalised through its own door (Bank.openBranches(), the capital
+         * the branch is founded with), and the tills are set below with
+         * setSectorCash(): what the claims are sized on is caused, not found.
+         * No month is played before the claims.
+         */
         Game g = new Game(GameFiles.scratch("creditcheck"));
         quietly(() -> {
             g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
+            g.getLandManager().setOwnedSqFt(30_000_000);
             g.buildStack(template(g, "House"), 300, true);
             g.buildStack(template(g, "Convenience Store"), 12, true);
             g.buildStack(template(g, "Bakery"), 3, true);
@@ -1796,8 +1899,11 @@ public class CreditCheck {
             g.buildStack(template(g, "Coal Power Plant"), 2, true);
             g.buildStack(template(g, "Water Treatment Plant"), 1, true);
             g.buildStack(template(g, "Commercial Bank"), 1, true);
-            g.setAutoSubsidised(Sectors.INDUSTRY, true);
-            g.simulateMonths(24);
+            long standing = g.getBuildingManager().countByName("Commercial Bank");
+            g.getBank().refresh(standing, 0, 0, 0, 0, 0);
+            g.getBank().injectCapital(g.getBank().openBranches(standing));
+            g.getEconomyManager().pushBalanceSheetInputs();
+            g.getEconomyManager().refreshCreditAssets();
         });
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         String X = Sectors.CONSTRUCTION;
@@ -1806,29 +1912,30 @@ public class CreditCheck {
          * the builders' till and plant, and the section was written against
          * builders who reached month twenty-five with a till of about two
          * fifths of their plant. Since the builders read repairs and staffing
-         * and lay idle crews off (sectors.Construction), this city's builders
-         * reach it idle, one depot lighter and with a small till against
-         * their plant - so the claim that falls due is nearly all plant, the
-         * month's cash-flow slice writes off most of what they owe, and the
-         * interim lender reads them back under the line: the interim loan's
-         * case, which section 13 proves, and not the backstop's, which this
-         * one does (measured again on the rule as shipped: still so). Set
-         * between months, before the claims, so the month the audit reads
-         * opens with it: no money moves inside the window.
+         * and lay idle crews off (sectors.Construction), the played city's
+         * builders reached it idle, one depot lighter and with a small till
+         * against their plant - so the claim that fell due was nearly all
+         * plant, the month's cash-flow slice wrote off most of what they owed,
+         * and the interim lender read them back under the line: the interim
+         * loan's case, which section 13 proves, and not the backstop's, which
+         * this one does. Set between months, before the claims, so the month
+         * the audit reads opens with it: no money moves inside the window.
          */
         g.getEconomyManager().setSectorCash(X, credit.getAssets(X) - credit.getCash(X));
         double till0 = g.getEconomyManager().getSectorCash(X);
         double plant = credit.getAssets(X) - credit.getCash(X);
-        assertTrue("fixture: the city's builders have plant and a till, and a standing bank",
+        assertTrue("fixture: the builders' plant is stood and their till set, and the bank's branch is counted and capitalised",
                 plant > 0 && till0 > 0 && !g.getBank().isInsolvent() && g.getBank().getBranches() > 0);
         // Taken on between months, a claim, no money moved: a long loan of
-        // 1.25 times its plant, and one of its till and a fifth of its plant
-        // more that falls due at the next settle. The refresh reads it under
-        // the line; paying what fell due takes it past. And its quarter
+        // 1.25 times its plant, and one of its till and half its plant more
+        // that falls due at the next settle - it outruns the till by more than
+        // the builders take in in a month (asserted below), so the month's
+        // takings do not pay it and the desk is asked. The refresh reads it
+        // under the line; paying what fell due takes it past. And its quarter
         // (round 3), filed between months as the bank's month-end reading
         // files it: three month-ends at what it owes now, 1.6 times what it
         // owned - past the line.
-        double longClaim = 1.25 * plant, dueClaim = till0 + .2 * plant;
+        double longClaim = 1.25 * plant, dueClaim = till0 + .5 * plant;
         credit.issueLoan(X, longClaim, g.getMonth());
         credit.getLoans().add(new BusinessLoan(X, dueClaim, 1, g.getMonth(), .06));
         for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) {
@@ -1844,7 +1951,9 @@ public class CreditCheck {
                 credit.getInterimLentThisMonth(X), credit.getInterimRefusal(X), credit.wasRestructuredThisMonth(X), s1.cash());
         assertTrue("the shortfall desk refused the builders once paying what fell due took them past the line",
                 credit.getRefusedAtDefaultPoint(X) > 0 && s1.borrowed() == 0 && s1.repaid() >= dueClaim - 1e-6);
-        assertTrue("...so their till went short: the overdraft", s1.openingCash() - s1.repaid() < 0);
+        assertTrue("fixture: what fell due outran the till by more than the builders took in this month, so the takings could not pay it",
+                dueClaim - till0 > s1.revenue());
+        assertTrue("...so their till went short: the overdraft", till0 - s1.repaid() < 0);
         assertTrue("...and the month's slice wrote their debt down: at the curve's rate for its leverage, or since round 4 the part that could not pay, whichever is larger",
                 credit.getDefaultedThisMonth(X) > 0);
         assertTrue("...what it could not pay defaulted that month, and the till ends it at nothing (round 4)",
