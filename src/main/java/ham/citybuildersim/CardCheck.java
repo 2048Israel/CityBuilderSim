@@ -42,6 +42,11 @@ public final class CardCheck {
         close("no bill borrows nothing", CellSpread.shortfall(0, 3, 1.5), 0, 0);
         close("a point amount below the line is counted", CellSpread.below(4, 4, 0), 1, 0);
         close("a point amount above the line is excluded", CellSpread.below(3, 4, 0), 0, 0);
+        double sigma = CellSpread.CARD_SIGMA;
+        double farLine = 4 * Math.exp(9 * sigma - sigma * sigma / 2);
+        double tail = CellSpread.above(farLine, 4, sigma);
+        check("a nine-sigma holding tail stays positive beside its balance tail", tail > 0);
+        close("the holding tail is the model's direct normal tail", tail, BusinessDebtManager.normalCdf(-9), 1e-30);
     }
     static void month() {
         System.out.println("--- Thin buffers borrow; fixed minimum and all the cash have a recipient ---");
@@ -60,6 +65,10 @@ public final class CardCheck {
         owe.settle(4, 1, 0, 1, .2, .04);
         check("a current debtor pays minimum principal before the food", owe.minimumPaid > 0 && owe.afterFixed < 4 - 1 - owe.interest);
         check("extra paydown reaches the bank with the minimum", owe.repaid >= owe.minimumPaid);
+        WorkingHousehold priority = cell(1, 0, 2, .5);
+        priority.settle(1, .6, 0, .4, .2, .04);
+        check("cash pays the fixed minimum before a food shortfall draws credit",
+                priority.minimumPaid > 0 && priority.afterFixed < .4 && priority.borrowed > 0);
         WorkingHousehold poor = cell(1, 0, 2, .5), comfortable = cell(100, 0, 2, .5);
         poor.settle(1, 1, 0, .2, .2, .04);
         comfortable.settle(100, 1, 0, .2, .2, .04);
@@ -119,8 +128,12 @@ public final class CardCheck {
             ham.citybuildersim.sectors.BusinessServices seller = new ham.citybuildersim.sectors.BusinessServices();
             seller.sellHouseholdEmergencies(10, tax);
             close("emergency receipt has one household buyer at tax " + tax, seller.pending().salesToHouseholds, 10, 0);
+            close("emergency receipt is named without inventing a seat-service good", seller.pending().householdServices, 10, 0);
+            close("emergencies produce no domestic seat-service units", seller.pending().unitsSold.getOrDefault(Good.SUPPORT_WORK, 0.0), 0, 0);
             close("emergency receipt pays its imports and its sales tax at " + tax,
                     seller.pending().imports + seller.pending().salesToHouseholds * tax, 10, 1e-12);
+            seller.redenominate(.01);
+            close("the pending named receipt follows a currency reform", seller.pending().householdServices, .1, 1e-12);
         }
     }
     static void save() {
@@ -141,6 +154,38 @@ public final class CardCheck {
         close("late balance follows the money", d.lateDebt, c.lateDebt * .01, 0);
         close("holder share survives a currency reform", d.revolving, c.revolving, 0);
         check("old saves are refused at the new format", GameVersion.SAVE_FORMAT == GameVersion.OLDEST_LOADABLE_FORMAT);
+    }
+    static void neighbours() {
+        System.out.println("--- A cardholder does not bar its debt-free neighbours from investing ---");
+        HouseholdBalance b = new HouseholdBalance();
+        Household c = b.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        c.households = 1000; c.disposable = 4; c.savings = 100; c.debt = 2; c.revolving = .2;
+        close("the paper budget belongs to the debt-free share", b.spareForPaper(),
+                (100 - HouseholdBalance.SHARE_CUSHION_MONTHS * 4) * 1000 * .8, 1e-8);
+        check("debt-free neighbours can subscribe to shares", b.subscribe(0, 1000, 1) > 0);
+        c.shutOut = .3;
+        close("exclusion removes only its own share", b.debtFreeShare(c), .5, 1e-12);
+        c.shutOut = 0; c.revolving = 1;
+        close("a wholly indebted cell has no paper budget", b.spareForPaper(), 0, 0);
+        c.revolving = 0;
+        close("raw debt without a supplied distribution is conservatively ineligible", b.debtFreeShare(c), 0, 0);
+    }
+    static void census() {
+        System.out.println("--- All four card stocks follow the same families across a birthday ---");
+        HouseholdBalance b = new HouseholdBalance();
+        Household child = b.cell(FamilyStructure.COUPLE_CHILD, PayTier.UNSKILLED);
+        child.households = 100; child.debt = 1; child.revolving = .4;
+        child.lateDebt = .2; child.lateShare = .05; child.shutOut = .1;
+        b.censusOnly((shape, tier) -> shape == FamilyStructure.COUPLE_CHILD && tier == PayTier.UNSKILLED ? 100 : 0);
+        close("unchanged census keeps the holder share", child.revolving, .4, 1e-12);
+        b.censusOnly((shape, tier) -> shape == FamilyStructure.COUPLE_TEEN && tier == PayTier.UNSKILLED ? 100 : 0);
+        Household teen = b.cell(FamilyStructure.COUPLE_TEEN, PayTier.UNSKILLED);
+        close("birthday carries the card balance", teen.debt, 1, 1e-12);
+        close("birthday carries holders", teen.revolving, .4, 1e-12);
+        close("birthday carries late balances", teen.lateDebt, .2, 1e-12);
+        close("birthday carries late holders", teen.lateShare, .05, 1e-12);
+        close("birthday carries exclusion", teen.shutOut, .1, 1e-12);
+        close("a birthday writes off no loan", b.getWrittenOff(), 0, 0);
     }
     static void city() {
         System.out.println("--- Real city money, annual surveys, saved reads and continuation ---");
@@ -194,6 +239,12 @@ public final class CardCheck {
         }
         check("all card stocks and settled statistics survive the game loader", sameCards);
         check("annual surveys survive the history loader", g.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
+        double pendingServices = g.getSectors().businessServices().pending().householdServices;
+        check("a positive pending emergency receipt survives its ledger save", pendingServices > 0
+                && pendingServices == back.getSectors().businessServices().pending().householdServices);
+        double closedServices = g.getSectors().businessServices().statement().otherParts.getOrDefault(Sector.HOUSEHOLD_SERVICES, 0.0);
+        check("a positive struck emergency receipt survives in its named statement", closedServices > 0
+                && closedServices == back.getSectors().businessServices().statement().otherParts.getOrDefault(Sector.HOUSEHOLD_SERVICES, 0.0));
         DebtStatistics.Snapshot live = g.getHouseholdBalance().debtStatistics();
         DebtStatistics.Snapshot loaded = back.getHouseholdBalance().debtStatistics();
         if (!live.equals(loaded)) {
@@ -219,7 +270,7 @@ public final class CardCheck {
         check("replay history excludes later surveys", g.getHistorySave().cutAt(cutMonth).getDebtSurveys().stream().allMatch(s -> s.month() <= cutMonth));
     }
     public static void main(String[] args) {
-        spread(); month(); chargeOff(); save(); city();
+        spread(); month(); chargeOff(); save(); neighbours(); census(); city();
         System.out.println("CardCheck: " + fails + " failures");
         System.exit(fails == 0 ? 0 : 1);
     }

@@ -1,4 +1,4 @@
-# CarCheck.java - 1,405 lines · 12 methods · 2 constants · harnesses
+# CarCheck.java - 1,408 lines · 12 methods · 2 constants · harnesses
 
 `ham/citybuildersim/CarCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -79,19 +79,19 @@
 | 336 | · 4, 5, 6. IN A CITY |
 | 501 | · WHY THE BAR IS 95% AND NOT 100%, and why it is not the plateau this |
 | 546 | · THE DEPOSIT AND THE LOAN (2026-09-17) |
-| 650 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
-| 863 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
-| 933 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
-| 1088 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
-| 1203 | A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) |
-| 1348 | THE IMPORTS DECLARED ARE WHAT THE HOUSEHOLDS PAID (CI1, 2026-11-22) |
+| 653 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
+| 866 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
+| 936 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
+| 1091 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
+| 1206 | A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) |
+| 1351 | THE IMPORTS DECLARED ARE WHAT THE HOUSEHOLDS PAID (CI1, 2026-11-22) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 132 | `CarCheck.CARS_WAS_IN` | `44 * PriceLevel.FACTOR, CARS_WAS_OUT = 36 * PriceLevel.FACTOR, VANS_WAS_IN = ...` | The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. |
-| 1351 | `CarCheck.IMPORT_BITS_TRIED` | `256` | How many steps of the import price, a bit each, importsArePaid() walks for a month whose two roundings part (CI1). |
+| 1354 | `CarCheck.IMPORT_BITS_TRIED` | `256` | How many steps of the import price, a bit each, importsArePaid() walks for a month whose two roundings part (CI1). |
 
 ## Fields (state)
 
@@ -103,32 +103,32 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 1325 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 81 | 1328 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 85 | 7 | `static void quietly(Runnable r)` |  |
 | 93 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 98 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 104 | 3 | `static boolean same(double a, double b)` | Bitwise. |
 | 108 | 8 | `static InfrastructureManager network()` |  |
 
-### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 117-1202)
+### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 117-1205)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 136 | 4 | `static double marginOf(BuildingsTemplate t, Good vehicle, double price, double fab, double mach)` | What a plant makes of one vehicle over the parts in it (pure): the vehicle at `price`, its fabricated steel at `fab` and its machinery at `mach`, a vehicle's worth of each off its template. |
 | 142 | 19 | `static boolean marginsHeld(BuildingManager bm, Good vehicle, double wasIn, double wasOut, java.util.List<String> lines)` | The section's assertions for one vehicle and its plants, at the ends the world quotes (CarCheck, VanCheck and RailCheck call it). |
-| 162 | 1040 | `public static void main(String[] args)` |  |
+| 162 | 1043 | `public static void main(String[] args)` |  |
 
-### A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) (lines 1203-1347)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1217 | 108 | `static void drawnIsPaid(Game game, HouseholdBalance homes, GoodsMarket carMarket)` | Causes a draw the take refuses: one household's money on the whole-car edge, a car within it at the price the draw is sized at and not at the price it is struck at, and the car market's month read once. |
-| 1327 | 8 | `static double firstPriceWithout(HouseholdBalance homes, double ceiling, double lo, double hi)` | The cheapest price, to the bit, at which the households want no car, given one they want a car at (lo) and one they want none at (hi). |
-| 1337 | 10 | `static boolean importAt(GoodsMarket m, double p)` | Sets the world's price of a car so the city's import price is p to the bit, if its exchange rate and freight let it be; true when it is. |
-
-### THE IMPORTS DECLARED ARE WHAT THE HOUSEHOLDS PAID (CI1, 2026-11-22) (lines 1348-1405)
+### A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) (lines 1206-1350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1365 | 40 | `static void importsArePaid(Game game, HouseholdBalance homes, GoodsMarket carMarket)` | Causes a month of cars all off a ship in which the two roundings of its one sum part, and reads what the month declares. |
+| 1220 | 108 | `static void drawnIsPaid(Game game, HouseholdBalance homes, GoodsMarket carMarket)` | Causes a draw the take refuses: one household's money on the whole-car edge, a car within it at the price the draw is sized at and not at the price it is struck at, and the car market's month read once. |
+| 1330 | 8 | `static double firstPriceWithout(HouseholdBalance homes, double ceiling, double lo, double hi)` | The cheapest price, to the bit, at which the households want no car, given one they want a car at (lo) and one they want none at (hi). |
+| 1340 | 10 | `static boolean importAt(GoodsMarket m, double p)` | Sets the world's price of a car so the city's import price is p to the bit, if its exchange rate and freight let it be; true when it is. |
+
+### THE IMPORTS DECLARED ARE WHAT THE HOUSEHOLDS PAID (CI1, 2026-11-22) (lines 1351-1408)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1368 | 40 | `static void importsArePaid(Game game, HouseholdBalance homes, GoodsMarket carMarket)` | Causes a month of cars all off a ship in which the two roundings of its one sum part, and reads what the month declares. |
 

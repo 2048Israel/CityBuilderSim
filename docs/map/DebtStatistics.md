@@ -1,4 +1,4 @@
-# DebtStatistics.java - 185 lines · 14 methods · 2 constants · model
+# DebtStatistics.java - 191 lines · 14 methods · 2 constants · model
 
 `ham/citybuildersim/DebtStatistics.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -37,27 +37,27 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 171 | **type** `public final class DebtStatistics` | Household debt as the statistics offices print it, read from the cells (HC2). |
+| 15 | 177 | **type** `public final class DebtStatistics` | Household debt as the statistics offices print it, read from the cells (HC2). |
 | 16 | 1 | `private DebtStatistics()` |  |
 | 17 | 1 | **type** `public enum Kind` |  |
 | 18 | 1 | **type** `public enum Stage` |  |
 | 24 | 2 | **type** `public record Measure(double shareHolding, double meanAmongHolders, double medianAmongHolders, double lateS...` |  |
-| 26 | 12 | **type** `public record Snapshot(double households, double adults, Map<Kind, Measure> perHousehold, Map<Kind, Measure...` |  |
-| 30 | 3 | `{ ... }` _(in DebtStatistics.Snapshot)_ |  |
-| 33 | 4 | `Snapshot scaled(double scale)` _(in DebtStatistics.Snapshot)_ |  |
-| 39 | 8 | **type** `public record Survey(int month, Map<String, Snapshot> groups)` | Yearly surveys have their own year axis; they must not be folded as monthly series. |
-| 40 | 1 | `{ ... }` _(in DebtStatistics.Survey)_ |  |
-| 41 | 5 | `public Survey scaled(double scale)` _(in DebtStatistics.Survey)_ |  |
-| 48 | 6 | `private static Map<Kind, Measure> scaledMeasures(Map<Kind, Measure> measures, double scale)` |  |
-| 54 | 1 | **type** `record Component(double weight, double share, double mean, double sigma)` |  |
-| 56 | 6 | `public static Stage stage(Household c)` |  |
-| 64 | 8 | `static double amount(Household c, Kind kind)` | Cars remain financed on the card; owner mortgages arrive with HO1, so those books are zero. |
-| 73 | 8 | `static double holding(Household c, Kind kind)` |  |
-| 82 | 4 | `static double sigma(Kind kind)` |  |
-| 87 | 8 | `static double cdf(List<Component> components, double x)` |  |
-| 97 | 20 | `static double median(List<Component> components)` | Locate on the log grid, then refine only that interval; no household is sampled. |
-| 118 | 3 | `public static Snapshot of(HouseholdBalance balance, PayTier tier, Stage stage)` |  |
-| 122 | 48 | `private static Snapshot of(HouseholdBalance balance, PayTier tier, Stage stage, boolean untiered)` |  |
-| 171 | 12 | `public static Survey survey(HouseholdBalance balance, int month)` |  |
-| 184 | 1 | `private static double ratio(double a, double b)` |  |
+| 26 | 14 | **type** `public record Snapshot(double households, double adults, Map<Kind, Measure> perHousehold, Map<Kind, Measure...` |  |
+| 31 | 3 | `{ ... }` _(in DebtStatistics.Snapshot)_ |  |
+| 34 | 5 | `Snapshot scaled(double scale)` _(in DebtStatistics.Snapshot)_ |  |
+| 41 | 8 | **type** `public record Survey(int month, Map<String, Snapshot> groups)` | Yearly surveys have their own year axis; they must not be folded as monthly series. |
+| 42 | 1 | `{ ... }` _(in DebtStatistics.Survey)_ |  |
+| 43 | 5 | `public Survey scaled(double scale)` _(in DebtStatistics.Survey)_ |  |
+| 50 | 6 | `private static Map<Kind, Measure> scaledMeasures(Map<Kind, Measure> measures, double scale)` |  |
+| 56 | 1 | **type** `record Component(double weight, double share, double mean, double sigma)` |  |
+| 58 | 6 | `public static Stage stage(Household c)` |  |
+| 66 | 8 | `static double amount(Household c, Kind kind)` | Cars remain financed on the card; owner mortgages arrive with HO1, so those books are zero. |
+| 75 | 8 | `static double holding(Household c, Kind kind)` |  |
+| 84 | 4 | `static double sigma(Kind kind)` |  |
+| 89 | 8 | `static double cdf(List<Component> components, double x)` |  |
+| 99 | 20 | `static double median(List<Component> components)` | Locate on the log grid, then refine only that interval; no household is sampled. |
+| 120 | 3 | `public static Snapshot of(HouseholdBalance balance, PayTier tier, Stage stage)` |  |
+| 124 | 52 | `private static Snapshot of(HouseholdBalance balance, PayTier tier, Stage stage, boolean untiered)` |  |
+| 177 | 12 | `public static Survey survey(HouseholdBalance balance, int month)` |  |
+| 190 | 1 | `private static double ratio(double a, double b)` |  |
 

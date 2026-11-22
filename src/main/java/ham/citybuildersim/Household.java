@@ -196,7 +196,7 @@ public abstract class Household {
         double line = Math.max(0, spare) / Math.max(Bank.CARD_MINIMUM, rate / 12 + Bank.CARD_MIN_PRINCIPAL);
         double mean = currentDebt / currentShare;
         lateDebt += currentShare * CellSpread.aboveMean(line, mean, CellSpread.CARD_SIGMA) / 12;
-        lateShare += currentShare * (1 - CellSpread.below(line, mean, CellSpread.CARD_SIGMA)) / 12;
+        lateShare += currentShare * CellSpread.above(line, mean, CellSpread.CARD_SIGMA) / 12;
     }
 
     /** Reassert subset bounds after a census pools wallets from different shapes. */
@@ -964,10 +964,10 @@ public abstract class Household {
         /* ---------------- settle what they actually spent ---------------- */
         emergencyBill = minimumPaid = cardWrittenOff = 0;
         double duePrincipal = minimumPrincipal();
+        double beforeMinimum = afterFixed + duePrincipal;
         // The risk line is income after non-card fixed bills and a full food basket.
         cardArrears(afterFixed + duePrincipal + interest - subsistence);
-        minimumPaid = Math.min(duePrincipal, Math.max(0, afterFixed + duePrincipal - spentPer)
-                + Math.max(0, savings));
+        minimumPaid = Math.min(duePrincipal, Math.max(0, beforeMinimum + Math.max(0, savings)));
         afterFixed += duePrincipal - minimumPaid;
         double gap = spentPer - afterFixed;
 
@@ -986,7 +986,7 @@ public abstract class Household {
         if (gap > 0) {
             // Minimum principal is reserved from the cell's cash; the remaining
             // shopping gap uses the buffer spread, so some borrow while others save.
-            double fixedDraw = Math.min(gap, minimumPaid);
+            double fixedDraw = Math.min(gap, Math.max(0, minimumPaid - Math.max(0, beforeMinimum)));
             fixedDraw = Math.min(fixedDraw, Math.max(0, savings));
             double otherGap = Math.max(0, gap - fixedDraw);
             double buffer = Math.max(0, savings - fixedDraw);
@@ -1080,8 +1080,8 @@ public abstract class Household {
             double extra = currentShare > 0 ? currentShare * CellSpread.cappedMean(payment,
                     currentDebt / currentShare, CellSpread.CARD_SIGMA) : 0;
             extra = Math.min(surplus, Math.min(currentDebt, extra));
-            if (currentShare > 0 && currentDebt > 0) revolving -= currentShare
-                    * CellSpread.below(payment, currentDebt / currentShare, CellSpread.CARD_SIGMA);
+            if (currentShare > 0 && currentDebt > 0) revolving = lateShare + currentShare
+                    * CellSpread.above(payment, currentDebt / currentShare, CellSpread.CARD_SIGMA);
             repaid += extra;
             /*
              * CLAMPED, LIKE EVERY OTHER WRITE TO A POSITION (2026-09-16).

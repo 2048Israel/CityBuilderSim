@@ -20,6 +20,9 @@ the late stock cures at 15% a month or charges off with the Fed ratio's hazard.
 - ★ The charge-off hazard is the exact sourced `12 × 2.85 / 3.82`, rather than its
   rounded nine-month description. Exclusion decays by `1 / LOCKOUT_MONTHS`, as the
   study's one-stock approximation requires.
+- ★ The bank's rate ladder and motoring's credit-cost quote use its card APR.
+  Settlement continues to receive the bank's underlying household funding price
+  and adds the card spread once, then the holders' own risk and the cap.
 - ★ Four new position slots are followed by nine settled figures (minimum paid,
   emergency spending, net write-off, disposable income, bankruptcies, minimum due,
   deposit interest, student principal repaid and student interest). The contract
@@ -29,6 +32,10 @@ the late stock cures at 15% a month or charges off with the Fed ratio's hazard.
   invented domestic capacity or operating margin. Imported VAT is charged and credited
   through the existing ledger. The pending sale is carried in the household transit
   adjustment, as cars, luxuries and meals already are.
+  A named `householdServices` receipt is saved in `SectorState`'s pending ledger and
+  struck into the statement's saved `otherParts`. It sells no physical seat-service
+  good; the three established service goods remain export-only. Its pending counter
+  clears and redenominates with its ledger.
 - ★ Cars still borrow on the card. Car debt is therefore not added as a second debt book;
   separate car loans and owner mortgages report zero until their mechanics exist (HO1
   owns household mortgages). Student living loans retain their treasury channel;
@@ -52,6 +59,16 @@ the late stock cures at 15% a month or charges off with the Fed ratio's hazard.
   an allocation reconstructed from closing savings would change it after a payment.
   Assets include marked financial holdings and cars at the used market's price, or its
   own floor against the new-car quote while none has traded. Homes await HO1.
+- ★ The over-40 burden shares have household and adult population denominators,
+  and household-debtor and adult-debtor denominators separately. Bankruptcy counts
+  also expose the grown-ups affected; a two-adult household contributes two adults.
+  Aggregate debt/income, debt/assets and debt-service ratios are unchanged by splitting
+  each household's dollars evenly among its grown-ups.
+- ★ Shares, paper, bonds and money abroad use the debt-free, unexcluded share's
+  cash budget. Keeping their former whole-cell “any debt” gate would bar every
+  neighbour once even a tiny tail carried a card. The existing relative debt floor
+  still ignores arithmetic dust. A raw indebted fixture without a supplied holder
+  share is conservatively ineligible; no saved position is converted or invented.
 
 ## Findings mended while checking
 
@@ -59,6 +76,18 @@ The emergency draw and the existing waterfall originally each reused the bank's
 interest exception to its capital rule. `BankCheck` caught the doubled allowance;
 the ceiling now applies to cumulative debt, and `CardCheck` causes both the zero-growth
 and positive-growth edges with both draws in the same settlement.
+
+The minimum's priority edge reserves available cash before food; food may then
+draw the card. A repayment and an advance can now occur in the same month.
+The existing bank growth test therefore measures net advances, includes the loan
+fee, and excludes recoveries seized later in the month from recyclable principal.
+Its bound is the exact growth allowance plus interest, and a new exact loan-book
+identity checks every lending, fee, repayment and loss on both constrained books.
+
+The probability above a line is evaluated through the normal's direct tail, as
+the partial balance tail already is. Subtracting a CDF rounded to one could erase
+holders while a small balance tail remained. `CardCheck` holds a nine-sigma tail
+positive and checks it against the model's direct normal tail.
 
 The first emergency-services pass imported the whole receipt and then remitted sales
 tax as well, losing that tax without a margin. `BankCheck`'s slice town caught Business
@@ -86,6 +115,12 @@ bring no debt, departures still take exactly their prior savings and leave exact
 their prior debt, and five singles still bring five wallets. The cent-level checks
 are unchanged. Its old “nobody borrows while the cell has savings” and whole-rich-cell
 “owes nothing” premises are replaced by the holding-share outcomes HC1 requires.
+
+The populated save's short-sale premise found that remaining whole-cell investment
+gate: its played city had no eligible buyer, even though only a share of each cell
+held cards. The gate and cash budgets now apply to the free share. `CardCheck`
+causes partial debt, complete debt, partial exclusion and raw debt without a
+distribution on the same cash budget; it preserves the no-borrowed-cash rule.
 
 ## Saves
 

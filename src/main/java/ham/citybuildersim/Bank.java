@@ -6559,7 +6559,7 @@ public class Bank {
                 fundingPosition(), depositPayoutHeld,
                 fundsTransferPrice(policyAnnual, term), runningCostRate(), expectedLossRate(),
                 capitalCharge(policyAnnual, term, RISK_BUSINESS), prime(policyAnnual),
-                householdRate(policyAnnual), carryRate(policyAnnual),
+                cardRate(policyAnnual), carryRate(policyAnnual),
                 Math.max(0, policyAnnual) + CentralBank.WINDOW_PENALTY,
                 fundsTransferPrice(policyAnnual, Mortgage.MORTGAGE_TERM_MONTHS),
                 insuredMortgageRate(policyAnnual),

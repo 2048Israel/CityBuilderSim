@@ -4371,6 +4371,14 @@ public class HouseholdBalance {
      */
     boolean owes(Household c) { return c.debt > minMove; }
 
+    /** Share whose cash may buy investments: cards/exclusion belong to their holders, not every neighbour (HC1). */
+    public double debtFreeShare(Household c) {
+        // A raw indebted fixture without a supplied holder distribution is
+        // conservatively ineligible; this does not invent or convert holders.
+        if (owes(c) && !(c.revolving > 0)) return 0;
+        return Math.max(0, Math.min(1, 1 - (owes(c) ? c.revolving : 0) - c.shutOut));
+    }
+
     /** Local currency per dollar, this month: what the paper abroad is worth here. Set by Game before the strike. */
     private double localPerUsd = ForeignAccounts.OPENING_RATE;
 
@@ -4389,8 +4397,8 @@ public class HouseholdBalance {
     /**
      * Every household decides where to keep its idle money: what is past the
      * cushion goes abroad towards the target share, a little a month; what
-     * is abroad comes home when the target falls. A household in debt, locked
-     * out or going short holds nothing abroad. The coupon is paid home; the
+     * is abroad comes home when the target falls. HC1 uses the debt-free,
+     * unexcluded share's cash budget, and none while going short. The coupon is paid home; the
      * USD principal stays abroad. Called once a month, after the shares have traded and before
      * the audit strikes.
      *
@@ -4448,11 +4456,12 @@ public class HouseholdBalance {
             if (!c.canInvest()) continue;
 
             double held = c.abroad * rate;
-            boolean eligible = !owes(c) && c.shutOut < 1 && !c.isGoingShort();
+            double freeShare = debtFreeShare(c);
+            boolean eligible = freeShare > 0 && !c.isGoingShort();
 
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double spare = c.savings - cushion;
-            double target = eligible && spare + held > 0 ? (spare + held) * targetShare : 0;
+            double target = eligible && spare + held > 0 ? (spare + held) * targetShare * freeShare : 0;
             double gap = target - held;
             double move;
             if (gap > 0) {
@@ -4623,11 +4632,11 @@ public class HouseholdBalance {
     }
 
     private boolean mayBuyPaper(Household c) {
-        return !c.isEmpty() && c.canInvest() && !owes(c) && c.shutOut < 1 && !c.isGoingShort();
+        return !c.isEmpty() && c.canInvest() && debtFreeShare(c) > 0 && !c.isGoingShort();
     }
 
     private double spareFor(Household c) {
-        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * debtFreeShare(c);
     }
 
     /** What every eligible household could put into paper: savings past the cushion, in total. */
@@ -5446,13 +5455,13 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.isEmpty() || !c.canInvest() || owes(c) || c.shutOut >= 1 || c.isGoingShort()) continue;
+            if (c.isEmpty() || !c.canInvest() || debtFreeShare(c) <= 0 || c.isGoingShort()) continue;
             // The owner line takes no offering (BO1): its stakes dilute.
             if (!c.tradesShares()) continue;
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double excess = c.savings - cushion;
             if (excess <= 0) continue;
-            want[i] = excess * SHARE_OF_EXCESS * c.households;
+            want[i] = excess * SHARE_OF_EXCESS * c.households * debtFreeShare(c);
             total += want[i];
         }
         if (total <= 0) return 0;

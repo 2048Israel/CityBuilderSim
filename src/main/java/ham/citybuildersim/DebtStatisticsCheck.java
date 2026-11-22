@@ -83,6 +83,12 @@ public final class DebtStatisticsCheck {
         poor.disposable = .01;
         check("income below the service line raises the over-40 share", b.debtStatistics().payingOver40() > s.payingOver40());
         check("debtor burden uses holders as its denominator", s.debtorsPayingOver40() >= s.payingOver40());
+        poor.disposable = 3;
+        double youngBurden = DebtStatistics.of(b, PayTier.UNSKILLED, DebtStatistics.Stage.YOUNG).payingOver40();
+        close("over-40 per adult weights each household's grown-ups", s.adultsPayingOver40(),
+                (100 * youngBurden + 400 * couple.payingOver40()) / 500, 1e-12);
+        close("over-40 among debtor adults uses actual holder adults", s.adultDebtorsPayingOver40(),
+                s.adultsPayingOver40() * 500 / 450, 1e-12);
         b.setCarAssetPrice(() -> 10);
         poor.cars = .5;
         close("debt over assets includes the cars as well as financial holdings", b.debtStatistics().debtToAssets(), 1400.0 / 4900, 1e-12);
@@ -102,6 +108,9 @@ public final class DebtStatisticsCheck {
         for (PayTier tier : PayTier.values()) byTier += withStudents.groups().get(tier.name()).households();
         close("tier groups plus the explicitly untiered residents foot to the city", byTier,
                 withStudents.groups().get("All").households(), 0);
+        b.students().disposable = -.2;
+        close("aggregate disposable income keeps a negative cell's actual contribution", b.debtStatistics().debtToDisposableIncome(),
+                1410.0 / (12 * 2018), 1e-12);
     }
     public static void main(String[] args) {
         quantiles(); figures();

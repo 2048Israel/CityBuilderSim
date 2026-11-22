@@ -26,13 +26,15 @@ public final class DebtStatistics {
     public record Snapshot(double households, double adults, Map<Kind, Measure> perHousehold,
                            Map<Kind, Measure> perAdult, double debtToDisposableIncome,
                            double debtToAssets, double debtServiceRatio, double payingOver40,
-                           double debtorsPayingOver40, double bankruptcies, double forcedSales) {
+                           double debtorsPayingOver40, double adultsPayingOver40,
+                           double adultDebtorsPayingOver40, double bankruptcies, double bankruptAdults, double forcedSales) {
         public Snapshot {
             perHousehold = Map.copyOf(perHousehold); perAdult = Map.copyOf(perAdult);
         }
         Snapshot scaled(double scale) {
             return new Snapshot(households, adults, scaledMeasures(perHousehold, scale), scaledMeasures(perAdult, scale),
-                    debtToDisposableIncome, debtToAssets, debtServiceRatio, payingOver40, debtorsPayingOver40, bankruptcies, forcedSales);
+                    debtToDisposableIncome, debtToAssets, debtServiceRatio, payingOver40, debtorsPayingOver40,
+                    adultsPayingOver40, adultDebtorsPayingOver40, bankruptcies, bankruptAdults, forcedSales);
         }
     }
     /** Yearly surveys have their own year axis; they must not be folded as monthly series. */
@@ -122,24 +124,27 @@ public final class DebtStatistics {
     private static Snapshot of(HouseholdBalance balance, PayTier tier, Stage stage, boolean untiered) {
         List<Household> cells = new ArrayList<>();
         double homes = 0, adults = 0, income = 0, assets = 0, service = 0, high = 0, bankrupt = 0;
+        double highAdults = 0, bankruptAdults = 0;
         for (Household c : balance.cells()) {
             if (c.grownUps() <= 0 || !(c.households > 0)
                     || tier != null && c.tier() != tier || stage != null && stage(c) != stage) continue;
             if (untiered && c.tier() != null) continue;
             cells.add(c); homes += c.households; adults += c.households * c.grownUps();
-            double disposable = Math.max(0, c.disposable + c.investmentIncome + c.depositIncome);
+            double disposable = c.disposable + c.investmentIncome + c.depositIncome;
             income += disposable * c.households;
             assets += balance.assets(c) * c.households;
             double due = c.minimumDue + c.studentRepaid + c.studentInterest;
             service += due * c.households;
             double p = holding(c, Kind.TOTAL);
-            double over = due > 0 && p > 0 ? p * (1 - CellSpread.below(
-                    HIGH_SERVICE * disposable, due / p, CellSpread.TOTAL_SIGMA)) : 0;
+            double over = due > 0 && p > 0 ? p * CellSpread.above(
+                    HIGH_SERVICE * Math.max(0, disposable), due / p, CellSpread.TOTAL_SIGMA) : 0;
             high += c.households * over;
+            highAdults += c.households * c.grownUps() * over;
             bankrupt += c.bankrupt;
+            bankruptAdults += c.bankrupt * c.grownUps();
         }
         Map<Kind, Measure> perHome = new EnumMap<>(Kind.class), perAdult = new EnumMap<>(Kind.class);
-        double total = 0, totalHolders = 0;
+        double total = 0, totalHolders = 0, totalAdultHolders = 0;
         for (Kind kind : Kind.values()) {
             List<Component> h = new ArrayList<>(), a = new ArrayList<>();
             double debt = 0, holders = 0, adultHolders = 0, lateH = 0, lateA = 0, lateDebt = 0, off = 0;
@@ -162,10 +167,11 @@ public final class DebtStatistics {
                     ratio(lateH, homes), ratio(lateH, homes) * late60, delinquency, chargeOff));
             perAdult.put(kind, new Measure(ratio(adultHolders, adults), ratio(debt, adultHolders), median(a),
                     ratio(lateA, adults), ratio(lateA, adults) * late60, delinquency, chargeOff));
-            if (kind == Kind.TOTAL) { total = debt; totalHolders = holders; }
+            if (kind == Kind.TOTAL) { total = debt; totalHolders = holders; totalAdultHolders = adultHolders; }
         }
         return new Snapshot(homes, adults, perHome, perAdult, ratio(total, 12 * income),
-                ratio(total, assets), ratio(service, income), ratio(high, homes), ratio(high, totalHolders), bankrupt, 0);
+                ratio(total, assets), ratio(service, income), ratio(high, homes), ratio(high, totalHolders),
+                ratio(highAdults, adults), ratio(highAdults, totalAdultHolders), bankrupt, bankruptAdults, 0);
     }
 
     public static Survey survey(HouseholdBalance balance, int month) {

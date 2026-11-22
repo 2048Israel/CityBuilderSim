@@ -1356,14 +1356,21 @@ public class Exchange {
     /* ---------------------------------- the households ---------------------------------- */
 
     /**
-     * Whether a cell may put money into shares at all: no debt, not locked out, not going short, investing at all. A debt is
+     * Whether a cell's debt-free, unexcluded share may invest, while the cell can invest and is not going short. Debt is
      * read as the households' balance reads it (HouseholdBalance.owes()): one no larger than its rounding floor is the
      * arithmetic's dust and not a debt (BA1, 2026-11-04). Read as any debt above nothing, a hair of 1e-16 left in one cell
      * at today's prices, and exactly nothing at the factor, kept that cell out of a share offering at one price level and
      * not the other (PriceLevelCheck 9's town parted at month 26, as it had at month 56 before FC1).
      */
     boolean mayBuy(Household c) {
-        return !c.isEmpty() && c.canInvest() && !owes(c) && c.shutOut < 1 && !c.isGoingShort();
+        return !c.isEmpty() && c.canInvest() && buyingShare(c) > 0 && !c.isGoingShort();
+    }
+
+    /** The eligible neighbours' cash, with the balance's existing rounding floor (HC1). */
+    private double buyingShare(Household c) {
+        if (households != null) return households.debtFreeShare(c);
+        if (owes(c) && !(c.revolving > 0)) return 0;
+        return Math.max(0, Math.min(1, 1 - (owes(c) ? c.revolving : 0) - c.shutOut));
     }
 
     /** Whether a cell owes anything (mayBuy()): past the households' rounding floor where the balance is attached, else anything above nothing. */
@@ -1388,7 +1395,7 @@ public class Exchange {
     double spareOf(Household c) {
         if (!mayBuy(c)) return 0;
         double excess = c.savings - HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
-        return excess > 0 ? excess * c.households : 0;
+        return excess > 0 ? excess * c.households * buyingShare(c) : 0;
     }
 
     /* ----- the owner families sell slowly (BO1) -----------------------------

@@ -293,7 +293,7 @@ public final class Motoring {
          * and a month of fuel - against a month's pass. See THE FUEL, AND THE
          * BUYER WEIGHS THE FARE.
          */
-        double fullCost = carPayment(asking, bank.householdRate(game.getDebtManager().getPolicyRate()))
+        double fullCost = carPayment(asking, bank.cardRate(game.getDebtManager().getPolicyRate()))
                 + TaxPolicy.JOURNEYS_A_MONTH * roads.getFuelPerJourney();
         double pass = game.getEconomyManager().getTaxPolicy().monthlyFare();
         prefersTransit = InfrastructureManager.transitChosen(fullCost, pass);

@@ -1357,7 +1357,7 @@ final class BankScreen {
                 .ticks(List.of(prime))
                 .info(anyFamily
                         ? String.format("%s on prime, on average: their line starts at %s and adds %.2f points for "
-                                + "every month of income a family owes.", points(l.overPrime(families)),
+                                + "every month of income a cardholder owes.", points(l.overPrime(families)),
                                 ratePerYear(l.household()), HouseholdBalance.RISK_SLOPE * 100)
                         : "What a family's credit line starts from - no family owes it anything, so the bar is "
                           + "outlined: a quote nobody pays.")

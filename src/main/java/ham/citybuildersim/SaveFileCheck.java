@@ -1919,6 +1919,8 @@ public class SaveFileCheck {
         assertTrue("HC1 card positions and settled flows cross the loader", cardsMatch);
         assertTrue("HC2 annual debt surveys cross the history loader",
                 full.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
+        assertTrue("HC2 current debt statistics cross the fully populated city loader exactly",
+                full.getHouseholdBalance().debtStatistics().equals(back.getHouseholdBalance().debtStatistics()));
         // ...each cell's own, bond by bond, by the cell's name (0.7.12 round 2).
         int cellsWithBonds = 0, cellsBack = 0;
         for (Household c : full.getHouseholdBalance().cells()) {

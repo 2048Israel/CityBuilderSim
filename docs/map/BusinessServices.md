@@ -1,4 +1,4 @@
-# BusinessServices.java - 416 lines · 17 methods · 3 constants · sectors
+# BusinessServices.java - 415 lines · 17 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > of its kind imports (sellUpkeep() for the services', sellBankUpkeep() for
 > ... (1 more lines in the source)
 
-**Uses:** [Good](Good.md) (19), [BusinessInvestment](BusinessInvestment.md) (7), [Game](Game.md) (4), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (7), [Game](Game.md) (4), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (9):** [BusinessServicesCheck](BusinessServicesCheck.md), [CardCheck](CardCheck.md), [DistressBleedCheck](DistressBleedCheck.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [LongPlaytest](LongPlaytest.md), [PrizeCheck](PrizeCheck.md), [Sectors](Sectors.md)
 
@@ -74,7 +74,7 @@
 |---:|---|
 | 125 | · plan |
 | 261 | THE CITY'S UPKEEP (HL1, 2026-11-11) |
-| 371 | · the screen |
+| 370 | · the screen |
 
 ## Constants
 
@@ -88,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 340 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
+| 77 | 339 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
 | 79 | 11 | `public BusinessServices()` |  |
 | 92 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
 | 105 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
@@ -104,21 +104,21 @@
 | 241 | 4 | `private double licencesOnSite(JobType licence, Game game)` | The licences of one kind this sector's practices on site will ask for when they open (BA1, 2026-11-02): each one's licensed posts at the share Game.licencesNeededFor() holds the first of a kind to. |
 | 250 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
 
-### THE CITY'S UPKEEP (HL1, 2026-11-11) (lines 261-370)
+### THE CITY'S UPKEEP (HL1, 2026-11-11) (lines 261-369)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 318 | 3 | `public void sellUpkeep(double bill)` | Upkeep the city's five services have paid (care, schools, research, safety, transit), billed to this sector this month: other revenue now, the imported share its input. |
 | 323 | 3 | `public void sellBankUpkeep(double bill)` | What the bank paid to run this month, billed to this sector: other revenue now, the imported share its input on BANK_UPKEEP_SUPPLIES. |
-| 328 | 9 | `public void sellHouseholdEmergencies(double bill, double salesTaxRate)` | Emergency repairs and replacement services brokered abroad for households (HC1). |
-| 343 | 5 | `public double upkeepCapacity()` | What a month of its seats could bill at capacity, in the city's own money: every kind's seats at what the world pays for a seat-month (priceOfSeat(), the price the screen shows). |
-| 353 | 5 | `public double upkeepKept()` | What of the upkeep billed since the last strike it has kept, read off the pending ledger it was booked on: the whole sold less the imported lines (HL1-R). |
-| 364 | 6 | `private void sellUpkeepOn(String line, double bill)` | The one body of both: the whole bill is other revenue, and of it the share the seats cannot serve (or the dial's, if more) is booked as an imported service on the line called {@code line}. |
+| 328 | 8 | `public void sellHouseholdEmergencies(double bill, double salesTaxRate)` | Emergency repairs and replacement services brokered abroad for households (HC1). |
+| 342 | 5 | `public double upkeepCapacity()` | What a month of its seats could bill at capacity, in the city's own money: every kind's seats at what the world pays for a seat-month (priceOfSeat(), the price the screen shows). |
+| 352 | 5 | `public double upkeepKept()` | What of the upkeep billed since the last strike it has kept, read off the pending ledger it was booked on: the whole sold less the imported lines (HL1-R). |
+| 363 | 6 | `private void sellUpkeepOn(String line, double bill)` | The one body of both: the whole bill is other revenue, and of it the share the seats cannot serve (or the dial's, if more) is booked as an imported service on the line called {@code line}. |
 
-### the screen (lines 371-416)
+### the screen (lines 370-415)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 374 | 38 | `public List<Line> ownLines(Game game)` |  |
-| 415 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
+| 373 | 38 | `public List<Line> ownLines(Game game)` |  |
+| 414 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
 

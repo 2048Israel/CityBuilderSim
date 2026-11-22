@@ -589,6 +589,9 @@ public class CarCheck {
         report("...and a lender found the difference, and said so",
                 borrowed > 0 && Math.abs(lender.getCarsFinanced() - borrowed) < 1e-6,
                 String.format("$%,.0f, reported as $%,.0f", borrowed, lender.getCarsFinanced()));
+        report("...and the financed car creates actual cardholders in the cell",
+                debtBefore == 0 && buyer.revolving() > 0 && buyer.revolving() <= buyer.cardAccess(buyer.disposable()),
+                String.format("%.3f%% carrying the card balance", 100 * buyer.revolving()));
         report("...and the two halves are the whole price",
                 Math.abs(cashPaid + borrowed - paidOut) < 1e-6, "");
         report("...and the bank's fee on the loan is added to what they owe, a share of it",
@@ -1034,11 +1037,11 @@ public class CarCheck {
 
         Game priced = towns[0];
         double carPrice = priced.getMarkets().get(Good.CARS).getLocalPrice();
-        double rate = priced.getBank().householdRate(priced.getDebtManager().getPolicyRate());
+        double rate = priced.getBank().cardRate(priced.getDebtManager().getPolicyRate());
         double perMonth = rate / 12, discounted = 0;
         for (int m = 1; m <= HouseholdBalance.CAR_LIFE_MONTHS; m++) discounted += Math.pow(1 + perMonth, -m);
         double byHand = carPrice / discounted;
-        report("the car's monthly cost is its payment over its life at the household rate",
+        report("the car's monthly cost is its payment over its life at the card rate",
                 carPrice > 0 && rate > 0 && Math.abs(Motoring.carPayment(carPrice, rate) - byHand) <= 1e-9 * byHand
                         && Motoring.carPayment(carPrice, 0) == carPrice / HouseholdBalance.CAR_LIFE_MONTHS,
                 String.format("$%,.2f a month for a $%,.0f car at %.2f%%",

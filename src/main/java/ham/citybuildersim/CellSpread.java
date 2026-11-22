@@ -26,6 +26,14 @@ public final class CellSpread {
         return BusinessDebtManager.normalCdf((Math.log(x / mean) + sigma * sigma / 2) / sigma);
     }
 
+    /** Probability above x, evaluated directly so a small holding tail is not rounded away by 1 - CDF. */
+    public static double above(double x, double mean, double sigma) {
+        if (!(mean > 0)) return x < 0 ? 1 : 0;
+        if (!(x > 0)) return 1;
+        if (!(sigma > 0)) return mean > x ? 1 : 0;
+        return BusinessDebtManager.normalCdf((Math.log(mean / x) - sigma * sigma / 2) / sigma);
+    }
+
     /** E[X; X > x], a part of the unconditional mean, never a conditional mean. */
     public static double aboveMean(double x, double mean, double sigma) {
         if (!(mean > 0)) return 0;
@@ -51,6 +59,6 @@ public final class CellSpread {
     public static double cappedMean(double payment, double mean, double sigma) {
         if (!(payment > 0)) return 0;
         return Math.max(0, belowMean(payment, mean, sigma)
-                + payment * (1 - below(payment, mean, sigma)));
+                + payment * above(payment, mean, sigma));
     }
 }

@@ -2099,6 +2099,8 @@ public abstract class Sector {
          * its cash left the buyer's pool when it was booked and reaches this till at bank(), and MoneyAudit.pools() counts it in between.
          */
         public double upkeepSold;
+        /** Household emergency-service receipts inside otherRevenue and salesToHouseholds (HC1). */
+        public double householdServices;
         /**
          * What it pays the city this month for a service the city sells and
          * no business does (FR3, payTheCity()): the port dues. In inputs and
@@ -2120,6 +2122,7 @@ public abstract class Sector {
             localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
             oldMetalSold = 0;
             upkeepSold = 0;
+            householdServices = 0;
             paidToCity = 0;
             purchasesBySupplier.clear();
             capitalBySupplier.clear();
@@ -2141,6 +2144,7 @@ public abstract class Sector {
             paidEarlier *= s;
             oldMetalSold *= s;
             upkeepSold *= s;
+            householdServices *= s;
             paidToCity *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             capitalBySupplier.replaceAll((k, v) -> v * s);
@@ -2446,6 +2450,17 @@ public abstract class Sector {
     /** The name of the upkeep sold, in a statement's otherParts (HL1). */
     public static final String UPKEEP_SOLD = "Upkeep work";
 
+    /** Named household service receipts, with no physical seat-service good sold (HC1). */
+    public static final String HOUSEHOLD_SERVICES = "Household emergency services";
+
+    /** Non-good household receipts: one revenue entry, tagged as consumption and named at the strike. */
+    protected final void bookHouseholdServices(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.otherRevenue += amount;
+        pending.salesToHouseholds += amount;
+        pending.householdServices += amount;
+    }
+
     /**
      * ...and upkeep sold (HL1; BusinessServices.sellUpkeep()): other revenue
      * like any, named apart on the income statement as UPKEEP_SOLD whatever
@@ -2694,14 +2709,15 @@ public abstract class Sector {
         // ...and what it paid the city (FR3), added only when there is some: a zero added is not always nothing.
         if (pending.paidToCity != 0) s.inputs += pending.paidToCity;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
-        if (pending.oldMetalSold != 0 || pending.upkeepSold != 0) {
+        if (pending.oldMetalSold != 0 || pending.upkeepSold != 0 || pending.householdServices != 0) {
             // ...its old steel sold named apart (0.7.123, sellOldMetal()) and its upkeep sold (HL1,
             // sellUpkeep()): the sector names the rest, then the whole is put back.
-            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold - pending.upkeepSold;
+            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold - pending.upkeepSold - pending.householdServices;
             s.otherParts = nameOtherRevenue();
             s.otherRevenue = pending.otherRevenue;
             if (pending.oldMetalSold != 0) s.otherParts.merge(OldMetal.SOLD, pending.oldMetalSold, Double::sum);
             if (pending.upkeepSold != 0) s.otherParts.merge(UPKEEP_SOLD, pending.upkeepSold, Double::sum);
+            if (pending.householdServices != 0) s.otherParts.merge(HOUSEHOLD_SERVICES, pending.householdServices, Double::sum);
         } else {
             s.otherParts = nameOtherRevenue();
         }

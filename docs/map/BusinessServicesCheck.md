@@ -1,4 +1,4 @@
-# BusinessServicesCheck.java - 526 lines · 6 methods · 3 constants · harnesses
+# BusinessServicesCheck.java - 528 lines · 6 methods · 3 constants · harnesses
 
 `ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -32,8 +32,8 @@
 | 141 | · · the trap this batch actually fell into, now a standing check |
 | 172 | · 3. the licence gate |
 | 212 | · 4/5. the wage bill and the currency are the brake |
-| 297 | · 6. the books, and a reload |
-| 386 | · 7. the upkeep it keeps follows its seats (HL1-R), no cliff at the first one |
+| 299 | · 6. the books, and a reload |
+| 388 | · 7. the upkeep it keeps follows its seats (HL1-R), no cliff at the first one |
 
 ## Constants
 
@@ -55,11 +55,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 498 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
+| 29 | 500 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
 | 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 40 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 50 | 5 | `static void quietly(Runnable r)` |  |
-| 61 | 453 | `public static void main(String[] args) throws Exception` |  |
-| 516 | 4 | `static double importedUpkeep(BusinessServices bs)` | What of the upkeep billed this month the sector imports: its two input lines (HL1-R). |
-| 521 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 61 | 455 | `public static void main(String[] args) throws Exception` |  |
+| 518 | 4 | `static double importedUpkeep(BusinessServices bs)` | What of the upkeep billed this month the sector imports: its two input lines (HL1-R). |
+| 523 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
 

@@ -1,4 +1,4 @@
-# BankCheck.java - 5,088 lines · 35 methods · 24 constants · harnesses
+# BankCheck.java - 5,097 lines · 35 methods · 24 constants · harnesses
 
 `ham/citybuildersim/BankCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      reload reads the same month.
 > ... (75 more lines in the source)
 
-**Uses:** [Bank](Bank.md) (393), [BusinessDebtManager](BusinessDebtManager.md) (124), [Sectors](Sectors.md) (46), [HouseholdBalance](HouseholdBalance.md) (45), [Game](Game.md) (44), [MoneyAudit](MoneyAudit.md) (44), [ExchangeCheck](ExchangeCheck.md) (33), [Equity](Equity.md) (25), [PriceLevel](PriceLevel.md) (20), [Exchange](Exchange.md) (19), [FamilyStructure](FamilyStructure.md) (19), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (15), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [TempDirs](TempDirs.md) (8), [Household](Household.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sector](Sector.md) (4), [BusinessLoan](BusinessLoan.md) (3), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3)... and 16 more
+**Uses:** [Bank](Bank.md) (394), [BusinessDebtManager](BusinessDebtManager.md) (124), [HouseholdBalance](HouseholdBalance.md) (47), [Sectors](Sectors.md) (46), [Game](Game.md) (44), [MoneyAudit](MoneyAudit.md) (44), [ExchangeCheck](ExchangeCheck.md) (33), [Equity](Equity.md) (25), [PriceLevel](PriceLevel.md) (20), [Exchange](Exchange.md) (19), [FamilyStructure](FamilyStructure.md) (19), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (15), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [TempDirs](TempDirs.md) (8), [Household](Household.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sector](Sector.md) (4), [BusinessLoan](BusinessLoan.md) (3), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3)... and 16 more
 
 **Used by (2):** [BondCheck](BondCheck.md), [YoungBankCheck](YoungBankCheck.md)
 
@@ -92,10 +92,10 @@
 | 3230 | 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) |
 | 3383 | 13. WHAT THE BANK TAB READS (0.7.9) |
 | 3987 | 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) |
-| 4356 | 10. the bank pays for the city's paper (2026-09-21) |
-| 4604 | 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) |
-| 4783 | THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) |
-| 4950 | THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) |
+| 4365 | 10. the bank pays for the city's paper (2026-09-21) |
+| 4613 | 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) |
+| 4792 | THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) |
+| 4959 | THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) |
 
 ## Constants
 
@@ -124,7 +124,7 @@
 | 212 | `BankCheck.TAB_RESCUE_MONTH` | `45` | The month of the tab city in which the city puts capital into the bank that stands, between two presses: its preferred, since 0.7.14. |
 | 215 | `BankCheck.TAB_PLAYED` | `TAB_RESCUE_MONTH + 1 + Bank.YEAR_MONTHS` | The months the tab city is played: through its last caused event, the rescue, and the year after it that a year ago on the Balance sheet page needs to read a sheet that has the rescue in it. |
 | 223 | `BankCheck.DESK_MONTHS` | `6` | The months the trading desk is stepped after the leavers sell it their shares, so it goes on to hold, re-mark and sell what it bought. |
-| 5001 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
+| 5010 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
 
 ## Fields (state)
 
@@ -138,7 +138,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 145 | 4944 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
+| 145 | 4953 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
 | 218 | 3 | `static boolean parted(double drawn, double priced)` | Whether a rate drawn in its parts is the rate priced, to 1e-12 of it: the parts' arithmetic can part from the pricing's by an ulp on another path. |
 | 225 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 231 | 5 | `static double[] sheetOf(Bank bank)` | The bank's balance sheet as it stands, every line of it (0.7.13). |
@@ -191,42 +191,42 @@
 |---:|---:|---|---|
 | 3399 | 587 | `static void whatTheBankTabReads() throws Exception` |  |
 
-### 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 3987-4355)
+### 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 3987-4364)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 4000 | 8 | `static Bank lentOut(double capital, double book)` | A bank with one branch, this much capital and this much lent - equity is the capital, its cash what it lent past it. |
 | 4010 | 5 | `static java.util.Map<String, double[]> owing(String sector, double principal, double assets)` | The sectors' positions as the bank's provide() reads them: one sector, owing this against these assets. |
-| 4016 | 339 | `static void theBankAsABusinessWithItsCapital()` |  |
+| 4016 | 348 | `static void theBankAsABusinessWithItsCapital()` |  |
 
-### 10. the bank pays for the city's paper (2026-09-21) (lines 4356-4603)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4410 | 193 | `static void theBankPaysForTheCitysPaper() throws Exception` |  |
-
-### 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) (lines 4604-4782)
+### 10. the bank pays for the city's paper (2026-09-21) (lines 4365-4612)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4622 | 160 | `static void theTabDrawsEachRateInItsParts() throws Exception` |  |
+| 4419 | 193 | `static void theBankPaysForTheCitysPaper() throws Exception` |  |
 
-### THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) (lines 4783-4949)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4803 | 12 | `static Bank bookOf(double scale, int k)` | A bank built by hand whose books are of this scale, k giving each figure its fraction so that their sums round (BI1): no city, no save. |
-| 4817 | 9 | `static void fileYearAgo(Bank bank, double off)` | Files the bank's own sheet as the one a year ago, its lines `off` more than its equity line (a residual of `off`): the save's own path (restoreSheetYear). |
-| 4828 | 4 | `static void splitEquity(Bank bank, double off)` | Splits the bank's equity into paid in and retained, `off` more than equity makes: what a save carries (restoreEquitySplit), the preferred being nothing here. |
-| 4834 | 7 | `static boolean aBankOfNoSplitOrYear()` | A bank that has kept no split (a save from before the bank kept it) and no year of sheets reads both as adding up. |
-| 4842 | 107 | `static void theIntegrityCardsReadTheBooksSize()` |  |
-
-### THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) (lines 4950-5088)
+### 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) (lines 4613-4791)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4971 | 22 | `static double[] movementFigures(double scale, int k, double out)` | The seventeen figures of a movement by hand, in the record's order (opening ... |
-| 4994 | 3 | `static Bank.EquityMovement movementFrom(double[] f)` |  |
-| 4998 | 1 | `static Bank.EquityMovement movementOf(double scale, int k, double out)` |  |
-| 5003 | 85 | `static void theEquityMovementAlertReadsTheMovementsSize()` |  |
+| 4631 | 160 | `static void theTabDrawsEachRateInItsParts() throws Exception` |  |
+
+### THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) (lines 4792-4958)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4812 | 12 | `static Bank bookOf(double scale, int k)` | A bank built by hand whose books are of this scale, k giving each figure its fraction so that their sums round (BI1): no city, no save. |
+| 4826 | 9 | `static void fileYearAgo(Bank bank, double off)` | Files the bank's own sheet as the one a year ago, its lines `off` more than its equity line (a residual of `off`): the save's own path (restoreSheetYear). |
+| 4837 | 4 | `static void splitEquity(Bank bank, double off)` | Splits the bank's equity into paid in and retained, `off` more than equity makes: what a save carries (restoreEquitySplit), the preferred being nothing here. |
+| 4843 | 7 | `static boolean aBankOfNoSplitOrYear()` | A bank that has kept no split (a save from before the bank kept it) and no year of sheets reads both as adding up. |
+| 4851 | 107 | `static void theIntegrityCardsReadTheBooksSize()` |  |
+
+### THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) (lines 4959-5097)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4980 | 22 | `static double[] movementFigures(double scale, int k, double out)` | The seventeen figures of a movement by hand, in the record's order (opening ... |
+| 5003 | 3 | `static Bank.EquityMovement movementFrom(double[] f)` |  |
+| 5007 | 1 | `static Bank.EquityMovement movementOf(double scale, int k, double out)` |  |
+| 5012 | 85 | `static void theEquityMovementAlertReadsTheMovementsSize()` |  |
 

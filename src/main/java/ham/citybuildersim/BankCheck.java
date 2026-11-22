@@ -3408,7 +3408,7 @@ public class BankCheck {
             Bank.Ladder l = priced.ladder(dial);
             worstParts = Math.max(worstParts, Math.abs(l.parts() - l.prime()));
             worstParts = Math.max(worstParts, Math.abs(l.prime() - priced.prime(dial)));
-            worstRungs = Math.max(worstRungs, Math.abs(l.household() - priced.householdRate(dial))
+            worstRungs = Math.max(worstRungs, Math.abs(l.household() - priced.cardRate(dial))
                     + Math.abs(l.carry() - priced.carryRate(dial))
                     + Math.abs(l.transfer() - priced.fundsTransferPrice(dial, Bank.PRIME_TERM_MONTHS))
                     + Math.abs(l.window() - (dial + CentralBank.WINDOW_PENALTY)));
@@ -4285,10 +4285,19 @@ public class BankCheck {
                 free.totalBorrowed(), rationed.totalBorrowed(), kept.totalBorrowed(), kept.totalInterest());
         assertTrue("fixture: free, it borrows more than its interest", free.totalBorrowed() > free.totalInterest() * 1.5);
         assertTrue("a family's debt may grow the month's share and its interest, and no more",
-                rationed.totalBorrowed() * (1 + Bank.LOAN_FEE) <= owedBefore * .005 + rationed.totalInterest() * (1 + Bank.LOAN_FEE) + 1e-6
+                rationed.totalBorrowed() * (1 + Bank.LOAN_FEE)
+                        - (rationed.totalRepaid() - rationed.getSeizedAtBankruptcy())
+                        <= owedBefore * .005 + rationed.totalInterest() + 1e-6
                         && rationed.totalBorrowed() < free.totalBorrowed());
-        assertTrue("...and under the minimum it may draw its interest and nothing else",
-                kept.totalBorrowed() <= kept.totalInterest() + 1e-9 && kept.totalBorrowed() > 0);
+        assertTrue("...and under the minimum net advances, including fees, are no more than its interest",
+                kept.totalBorrowed() * (1 + Bank.LOAN_FEE)
+                        - (kept.totalRepaid() - kept.getSeizedAtBankruptcy())
+                        <= kept.totalInterest() + 1e-9 && kept.totalBorrowed() > 0);
+        for (HouseholdBalance hb : new HouseholdBalance[]{rationed, kept}) {
+            close("the restricted book's movement is lending plus fees, less repayment and the net loss",
+                    hb.totalDebt() - owedBefore,
+                    hb.totalBorrowed() * (1 + Bank.LOAN_FEE) - hb.totalRepaid() - hb.getWrittenOff(), 1e-9);
+        }
 
         out.println("\n--- (10) inside its band it pays a share of its profit, over the top it returns the excess ---");
 
