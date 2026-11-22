@@ -1,6 +1,6 @@
 # ForeignCouponView.java - 49 lines · 3 methods · 0 constants · model
 
-`ham/citybuildersim/ForeignCouponView.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignCouponView.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > What the Government screen says of the coupons the city pays abroad: the note on its "...of which paid abroad" row, from the moneys the
 > city's foreign paper is written in (FB13, CD9-G).

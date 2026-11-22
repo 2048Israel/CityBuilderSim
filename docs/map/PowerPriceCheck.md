@@ -1,6 +1,6 @@
 # PowerPriceCheck.java - 616 lines · 27 methods · 9 constants · harnesses
 
-`ham/citybuildersim/PowerPriceCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerPriceCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck
 > book's prices, what each class is billed at them, the coal the plants burn bought from the market, the utility's margin and the
@@ -35,7 +35,7 @@
 
 **Uses:** [PowerDispatch](PowerDispatch.md) (31), [UtilitiesHandler](UtilitiesHandler.md) (16), [Game](Game.md) (16), [Sectors](Sectors.md) (16), [Good](Good.md) (9), [MoneyAudit](MoneyAudit.md) (7), [Sector](Sector.md) (6), [Resource](Resource.md) (4), [PriceLevel](PriceLevel.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Founding](Founding.md) (2), [LandManager](LandManager.md) (2), [BuildingManager](BuildingManager.md) (2), [Trade](Trade.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (1)
 
-**Used by (1):** [SaveFileCheck](SaveFileCheck.md)
+**Used by (3):** [HistoryCheck](HistoryCheck.md), [PowerViewCheck](PowerViewCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

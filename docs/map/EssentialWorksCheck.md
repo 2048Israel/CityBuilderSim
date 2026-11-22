@@ -1,6 +1,6 @@
 # EssentialWorksCheck.java - 1,151 lines · 34 methods · 4 constants · harnesses
 
-`ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools

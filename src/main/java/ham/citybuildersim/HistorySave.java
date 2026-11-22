@@ -593,6 +593,17 @@ public class HistorySave {
        ------------------------------------------------------------------ */
     private Map<String, List<Double>> researchSeries = new LinkedHashMap<>();
 
+    /** Struck power observations, at the strike month; source dispatch and paid dispatch months are separate series. */
+    private Map<String, List<Double>> powerSeries = new LinkedHashMap<>();
+
+    private void recordPower(Game game) {
+        Map<String, Double> values = PowerView.series(PowerView.of(game));
+        if (values.isEmpty()) return; // An older save carries no row observations: no reconstruction.
+        for (String key : values.keySet()) powerSeries.computeIfAbsent(key, k -> new ArrayList<>());
+        // A row that leaves the fleet ran zero, including a gap before it returns. Sparse tail alignment must not erase that gap.
+        for (Map.Entry<String, List<Double>> e : powerSeries.entrySet()) e.getValue().add(values.getOrDefault(e.getKey(), 0.0));
+    }
+
     /** The series of a field's researchers (the city's and the labs'): "researchersEngineering", "researchersMedicine", "researchersBusiness", "researchersLaw". */
     public static String researchersKey(ResearchCatalog.Field field) {
         return "researchers" + capitalised(field.name().toLowerCase(java.util.Locale.ROOT));
@@ -775,6 +786,7 @@ public class HistorySave {
         schoolBill.add(round2(schools.getNetCost()));
 
         energyRatio.add(round4(game.getEnergyRatio()));
+        recordPower(game);
         waterRatio.add(round4(game.getWaterRatio()));
         roadRatio.add(round4(game.getRoadRatio()));
         sickRate.add(round4(game.getHealth().getSickRate()));
@@ -1365,6 +1377,7 @@ public class HistorySave {
 
         worldMoney = copyMap(loaded.worldMoney);
         researchSeries = copyMap(loaded.researchSeries);
+        powerSeries = copyMap(loaded.powerSeries);
 
         // The trade by partner (WN3): each year's table rebuilt, so a table read by Gson (a list it made) is the immutable one the model keeps.
         tradeByPartner = new ArrayList<>();
@@ -1534,6 +1547,7 @@ public class HistorySave {
             dropEmpty(copy.sectorWorkers);
             dropEmpty(copy.worldMoney);
             dropEmpty(copy.researchSeries);
+            dropEmpty(copy.powerSeries);
         }
         if (dropped > 0 && copy.tradeByPartner != null) {
             int thisYear = CityCalendar.yearOf(lastMonth);
@@ -2011,6 +2025,7 @@ public class HistorySave {
         if (worldMoney != null) map.putAll(worldMoney);
         // ...and the research's, where the city is founded the 1900 way (R5).
         if (researchSeries != null) map.putAll(researchSeries);
+        if (powerSeries != null) map.putAll(powerSeries);
         return map;
     }
 
@@ -2089,6 +2104,9 @@ public class HistorySave {
         if (sectorNetIncome != null) for (List<Double> s : sectorNetIncome.values()) scaleAll(scale, s);
         // The research's spend (R5) is money; its researchers and the share of the equipment fitted are not.
         if (researchSeries != null && researchSeries.get(RESEARCH_SPEND) != null) scaleAll(scale, researchSeries.get(RESEARCH_SPEND));
+        if (powerSeries != null) for (Map.Entry<String, List<Double>> e : powerSeries.entrySet()) {
+            if (e.getKey().startsWith("powerMoney:") || e.getKey().startsWith("powerPrice:")) scaleAll(scale, e.getValue());
+        }
         // The trade by partner's finished years (DZ1): each cell's value out and in is money; the tables are immutable, so the list takes the scaled ones.
         if (tradeByPartner != null) tradeByPartner.replaceAll(t -> t.scaled(scale));
     }

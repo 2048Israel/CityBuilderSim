@@ -1,6 +1,6 @@
 # BuildingCatalog.java - 873 lines · 29 methods · 1 constants · model
 
-`ham/citybuildersim/BuildingCatalog.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingCatalog.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Reads the building definitions out of buildings.json.
 > 
@@ -30,7 +30,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (30), [Good](Good.md) (18), [Equipment](Equipment.md) (7), [JobType](JobType.md) (7), [Recipe](Recipe.md) (6), [ResearchCatalog](ResearchCatalog.md) (4), [Ports](Ports.md) (4), [RecipeChange](RecipeChange.md) (3), [BuildingType](BuildingType.md) (2), [Resource](Resource.md) (2), [Deposit](Deposit.md) (2), [BridgeWorks](BridgeWorks.md) (2), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [RefineryFlow](RefineryFlow.md) (1)
 
-**Used by (24):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CrossingCheck](CrossingCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EquipmentCheck](EquipmentCheck.md), [GatewayCheck](GatewayCheck.md), [HarbourRenders](HarbourRenders.md), [IslandNetCheck](IslandNetCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [RailDrawCheck](RailDrawCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [SlopeCheck](SlopeCheck.md), [WellCheck](WellCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
+**Used by (25):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CrossingCheck](CrossingCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EquipmentCheck](EquipmentCheck.md), [GatewayCheck](GatewayCheck.md), [HarbourRenders](HarbourRenders.md), [IslandNetCheck](IslandNetCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerViewCheck](PowerViewCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [RailDrawCheck](RailDrawCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [SlopeCheck](SlopeCheck.md), [WellCheck](WellCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
 
 ## Constants
 

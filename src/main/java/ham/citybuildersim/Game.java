@@ -488,6 +488,8 @@ public class Game {
         });
         servicesManager.setExchangeRate(() -> getMarkets() == null ? 1 : getMarkets().getExchangeRate());
         servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
+        servicesManager.getUtilitiesHandler().setPowerObservationSources(this::getMonth,
+                () -> BuildAdvice.supplyDemand(this, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of())[0]);
         // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).
         servicesManager.setSteamShareSource(key -> {
             Sector sector = economyManager.getSectors().byKey(key);
@@ -20995,6 +20997,7 @@ public class Game {
     servicesManager.updateServices();
 
     // ...at the struck book's three prices (PW1): the commerce, the industry and the works'.
+    servicesManager.getUtilitiesHandler().restorePendingPower();
     economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
             servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
     economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());

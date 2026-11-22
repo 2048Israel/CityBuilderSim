@@ -1,6 +1,6 @@
 # FamilyModel.java - 2,701 lines · 128 methods · 17 constants · model
 
-`ham/citybuildersim/FamilyModel.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FamilyModel.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > How the city's people are arranged into households, and what each earns.
 > 

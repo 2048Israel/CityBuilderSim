@@ -1,6 +1,6 @@
 # MoneyWordsCheck.java - 328 lines · 16 methods · 5 constants · harnesses
 
-`ham/citybuildersim/MoneyWordsCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyWordsCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). Not part of the game.
 > 

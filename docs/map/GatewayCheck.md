@@ -1,6 +1,6 @@
 # GatewayCheck.java - 1,294 lines · 41 methods · 12 constants · harnesses
 
-`ham/citybuildersim/GatewayCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GatewayCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > A city's gateway is the way the world is.
 > 

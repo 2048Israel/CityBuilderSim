@@ -18,6 +18,13 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.181 — PW6, the recorded power month — 2026-11-21, ready, see docs/queue/PW6-notes.md
+Services › Utilities shows the recorded month's six supply stacks, each plant's run,
+fuel and clearing receipts, clearing prices and bill parts, firm capacity against
+peak load, curtailed and unserved energy, with the dispatch and billing periods named.
+Power observations and history survive saves; the completed closing dispatch is retained
+for the following tariff instead of being rebuilt from ending fleet, draw or fuel prices.
+
 ### 0.9.180 — PW1, power by the merit order at the market's price — 2026-11-21, ready, see docs/queue/PW1-notes.md
 Power clears by the merit order at the market's price (Jerus: "Market price"): three load blocks, each a windy and calm half, with the works' surplus first, then wind, hydro and fuelled plants.
 Short half-blocks clear at the cap. Coal plants burn thermal coal bought from the market. Commerce pays energy and both wires; Heavy Industry and Mining pay energy and transmission.
