@@ -5,7 +5,7 @@ Named disposition (orchestrator b856 and107a, Jerus's 2026-11-04 rule): the full
 The ensemble on the model of **{next}**: classes snapshot of commit 71af5eea2 (2026-11-22T08:07Z), label HT1-final183-20261122-0407, 80 of 80 runs.
 Data files named for this snapshot — `-Dcbs.earth=/home/jerus/cbs/main/data/earth-2.bin -Dcbs.world=/home/jerus/cbs/main/data/world-1.bin`.
 Run on gatebox, openjdk version "21.0.13" 2026-10-20 LTS.
-Scored against `docs/ensemble/0.9.183.md` for T1, T2 and F1. 
+Scored against `docs/ensemble/0.9.183.md` for T1, T2 and F1.
 | policy | id | class | measure | median [min to max] | threshold | verdict | baseline value | baseline verdict |
 |---|---|---|---|---|---|---|---|---|
 | AUTO2 | A1 | info | inflation m240-end, a year | 2.71% [2.33% to 3.08%] | median 2.00%±1.00%, ≥12/16 in band* | PASS (15/16 in band) | 2.73% [2.37% to 3.12%] | PASS |
