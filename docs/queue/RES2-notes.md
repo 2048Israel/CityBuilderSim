@@ -1,44 +1,180 @@
-# RES2 ? aggregate housing inventory
+# RES2 — aggregate housing inventory
 
-Built on origin/main 52c79806b (0.9.187). Work in progress; checks and publication record below will be completed before mends.
+Built from 52c79806b (0.9.187), integrated with shipped RS1/main 01e6c2d4b
+(0.9.188) in model commit 32c81f469. Final model verification is against that
+newest main. No new design call remains for Jerus.
 
-## Model and choices
+## What changed and the calls
 
-- ? Physical authority remains BuildingManager/BuildingsStacks. HousingInventory reads their standing/site quantities; no saved parallel structure counter, no per-home/per-building records. Completion carries the immutable mix on the existing aggregate Completion event, once per completed stack advance; quotes and load emit none.
-- ? One equivalent service cohort per recipe, bounded by HousingRecipe.MAX_CLASSES (32), with at most four owner rows per class (RE, household, estate, outbound). Splits add quantities to the same keyed row and empty rows disappear. Future differing obligations need explicit bounded cohorts in HO1. No new household-cell axis.
-- ? The founding 100 places per founding endowment are named foundingCapacity(), with no saleable doors or transferable title. Existing size/door totals exclude them, capacity includes them.
-- ? Three shipped IDs/forms only: House (0), Studio Apartments (1), Low-Rise Apartments (6). Their current capacity/doors, materials, work, prices and era remain unchanged. Explicit immutable metadata supplies per-class area, bedrooms, quality, private/included/shared parking and fixed allocation weights. Compatibility area (20 square metres per capacity place), bedrooms (zero for studios, half capacity rounded up otherwise), quality 1 and area weights are disclosed initial metadata, with no new bills/preferences. Existing forms have no activated parking rights; RES3/RES4 calibrate and activate their richer catalogue. Built-in/mod fallback preserves former rounded sizes and declared capacity.
-- ? Titles and occupancy are distinct. Transfer validates all quantities before mutation, retains occupied quantities, clears transferred seller offer subsets, pays nobody and changes no structure/material/land. Listings are occupied/vacant subsets, never additional stock. Physical removals cannot destroy conveyed titles. Existing anonymous tenants are recounted by the legacy match after retirement; no new eviction policy is activated here.
-- ? allocate(key, owner, amount, structureBook, landBook, collateralBook) partitions the caller's actual recipe-project books by fixed title weights. Partial releases sum to whole-project books, including shared facility title shares through those weights. It quotes no sale price, transfers no debt/cash and does not reconstruct asset values from future rent. HO1/RES5 supply actual accepted consideration and settlement against these allocations.
-- ? RN2's last-counted owned capacity stays a saved accounting baseline in RealEstate extras, distinct from current stock. Each economy input derives its next count from HousingInventory. The load restores the saved last count after its derived rebuild as FB16 required. Its changed-capacity/zero-count tests remain; a new integrated title fixture also changes the baseline and compares the first month.
-- ? Old-saves rule: a format bump is owed. Missing title/occupancy/listing state cannot correctly represent this authoritative inventory; there is no conversion. SAVE_FORMAT and OLDEST_LOADABLE_FORMAT advance from shipped 60 to 61, to be refreshed after merging newest main (HC1 also changes the format).
+- ★ BuildingManager/BuildingsStacks remain physical authority. HousingInventory
+  projects standing structures and pipeline through immutable dwelling mixes;
+  there is no saved parallel structure counter. Existing aggregate Completion
+  carries its mix once; zero work, repeated work and loading add no event or homes.
+- ★ Keys identify recipe/class cohorts, never people, homes or individual
+  buildings. One equivalent service cohort per recipe suffices for the current
+  forms. HousingRecipe.MAX_CLASSES bounds physical class rows at 32; four owner
+  roles (RE, household, estate, outbound) bound saved rows at 128. Equivalent
+  quantity parts share one row, and empty rows disappear. Future distinct common
+  or loan obligations need explicit bounded cohorts in HO1, not building IDs.
+- ★ The founding 100 places per founding endowment have a named
+  foundingCapacity() getter and no saleable doors/title. Existing size and door
+  totals exclude them; capacity includes them. RE portfolio capacity excludes
+  the endowment and includes its actual sites.
+- ★ Only the three existing forms/IDs are supplied: House 0, Studio Apartments 1,
+  Low-Rise Apartments 6. Their capacity, doors, prices, work, materials, staffing,
+  utilities and era stay compatible. Immutable metadata supplies form/mix,
+  per-home capacity, area, bedrooms, quality, private/included/shared parking and
+  fixed cost weights. The compatibility metadata uses 20 square metres per
+  capacity place, zero studio bedrooms and half capacity rounded up otherwise,
+  quality 1 and area weights. These are disclosed initial metadata, not a claim
+  of completed RES3 calibration. Existing forms activate no new parking rights.
+  Built-in/mod fallback preserves former rounded sizes and declared capacity.
+- ★ Ownership, occupancy and listings are separate quantities. Transfers validate
+  the whole operation before mutation, retain the stated occupants and consume
+  accepted occupied/vacant offer quantities once. Listings remain subsets; they
+  create no homes or money. Conveyed titles prevent physical removal. Existing
+  anonymous tenants are recounted by the legacy match after its retirement
+  policy acts; no new sale or demolition policy is switched on here.
+- ★ allocate(key, owner, amount, structureBook, landBook, collateralBook) partitions
+  actual whole completed recipe-cohort bases by fixed title weights. Inputs are
+  the whole cohort across all titles, not an already reduced RE-only balance
+  scaled again. All title allocations reconcile to the project, including its
+  common facility share. Partial allocations sum. HO1/RES5 settle funded closes,
+  release debt/collateral and keep/derive the basis coherently; this interface
+  quotes no sale price and pays nobody. Pipeline books are separate.
+- ★ RN2's last-counted capacity remains a saved accounting baseline in RealEstate
+  extras, distinct from physical stock. Economy inputs derive each next count
+  from the inventory; the load restores the saved last count after its rebuild.
+  Both changed-capacity and zero-count findings remain. No RN2 premise or save
+  comparison was removed.
+- ★ New inventory state goes through DataSave and Game's load rebuild. Under the
+  old-saves rule a bump is owed: missing authoritative assignment/title/listing
+  state is not a correct inventory. SAVE_FORMAT and OLDEST_LOADABLE_FORMAT are
+  both 61, advancing from current shipped main's 60, with no conversion code.
+  If HC1 ships first during review, integrate it and advance again before gating.
 
-## Handoff APIs
+Own review mended two findings. A cold direct Game.loadGame skipped the physical
+catalogue, so strict inventory restore correctly refused unknown classes. It
+now routes an uninitialized game through loadGameSave's canonical initialization;
+HousingCheck's existing cold-load assertions remain unchanged. Also, merely
+clamping seller listings could retain accepted offers after a partial transfer;
+transfer now subtracts each accepted subset, proved explicitly. No conservation
+or save check was weakened.
 
-BuildingManager.getHousingInventory() is the entry point. RES3 reads stock() (recipe/form/mix, class metadata, standing and pipeline structures), homesBySize(), homes(), capacity(), pipelineHomes(), occupied(), vacant(), and match(double[] occupiedBySize). FamilyModel.occupiedBySize() supplies the actual current legacy match, without reconstructing occupancy from rent weights. RES4 reads the immutable privateParking/includedParking/sharedParking metadata through stock(). HO1 reads owned(), ownedCapacity(owner, includePipeline), listed(), vacant(), occupy(), list(), transfer() and allocate(); forSave()/restore() go through DataSave and Game's actual load rebuild. Keys identify recipe/class cohorts, not individual structures. RealEstate.getOwnedHousingCapacity() is explicitly the last-counted accounting baseline; use inventory.ownedCapacity for current titles and pipeline, with fractional precision. The older BuildingManager long getter truncates fractional capacity at its compatibility boundary.
+RS1 merged without a source conflict. Four generated-map conflicts kept RES2's
+side temporarily and were regenerated from the merged source by the checks.
+No sector, building ID, new activated form, UI or publisher record is added here.
 
-BO1-H remains its queued row: FamilyModel's seeker groups/match and rental bills own business-owner families. The new occupiedBySize()/HousingInventory.match seam consumes that match unchanged. RES3/BO1-H must add the missing owner-family seeker group there, without inventing stock or a new title-owner class.
+## Consumer contracts and BO1-H
 
-## Checks and trace
+BuildingManager.getHousingInventory() is the entry point.
 
-Pending final results. Baseline default LongPlaytest, compiled before model edits at 52c79806b, ran 2,400 months with all checks passed; eight trace CSVs kept under target/RES2-trace/base-*.csv. No baseline whole suite was run.
+| Consumer | Actual API |
+|---|---|
+| RES3 | stock(): recipe/form/mix, class metadata, standing and pipeline structures; homes(), capacity(), homesBySize(), pipelineHomes(), occupied(), vacant(); match(double[] occupiedBySize) accepts the legacy match |
+| RES4 | stock().recipe()/dwelling(): privateParking, includedParking, sharedParking, fixed area/cost weights |
+| HO1 / RES5 | owned(), ownedCapacity(owner, includePipeline), occupied(), vacant(), listed(), occupy(), list(), transfer(), allocate(); forSave()/restore() go through DataSave and the actual load path |
+| Legacy reports | BuildingManager door/size/capacity and RE portfolio getters project the registry. RealEstate.getOwnedHousingCapacity() explicitly remains the last-counted debt-allocation baseline; inventory.ownedCapacity() is the current fractional title/pipeline read. The old long portfolio getter truncates only at its compatibility boundary. |
 
-The first HousingCheck found a cold public load with no initialized catalogue: every physical ID was skipped, then strict title validation correctly refused it. Mended Game.loadGame to route an uninitialized instance through loadGameSave's canonical catalogue/world initialization. No harness premise, assertion, conservation or save check was relaxed. HousingCheck already exercises this direct cold-load path.
+FamilyModel.occupiedBySize() returns actual lets from its existing match, rather
+than reconstructing occupancy from rent weights. The live month passes that
+result to HousingInventory.match after the final housing pass. Construction
+still completes before demographics in SimulationEngine; loading restores
+quantities and no trade/price/month advances.
 
-HousingCheck is green after that mend. HousingDoorCheck is green: months 431?900 completed 960 size-2, 6,237 size-4 and 26 size-6 doors, with no household left without a door; all 899 played months closed the household cash identity. New HousingInventoryCheck's initial run is green; the final run will include the actual-match and excess-title save cases added during review.
+BO1-H remains its own queued row. Business-owner families belong in FamilyModel's
+seeker groups, matching and rental bills; they are not a new title-owner class.
+Its seam is FamilyModel.occupiedBySize()/HousingInventory.match. RES3/BO1-H must
+add the missing owner-family seeker group there while preserving stock counts.
+No takeover or additional household-cell axis is implied.
 
-SaveFileCheck passes, including exact serialized inventory parity after the actual load rebuild. ReadPathCheck passes with 3,154 fingerprinted fields and all new inventory reads exercised. ReloadCheck exits 3 (main's known red only): its caused 3b fixture reports zero material-drawing crews, already recorded against queued HT1-H in docs/notes/known-reds.txt. The unchanged fixture ignores the accepted/refused result of its five-House order; this batch does not touch that cause, funding, land or construction draw. All actual save/history/draw comparisons pass. Crucially every RN2 3k comparison and both its changed-capacity and zero-count by-hand premises pass, right after loading and a month on. No reload premise or tolerance was moved. The default trace comparison below will establish whether the play path moved.
+## Caused findings and checks
 
-Own review caught that merely clamping seller listings after a title transfer could leave an already accepted offered quantity listed. Mended transfer to subtract the transferred occupied and vacant quantities from their respective offered subsets, with explicit caused assertions. No trade/cash rule was added.
+HousingInventoryCheck causes the brief's acceptance through recipes, actual
+BuildingManager construction work, quantity APIs, DataSave and scratch Game
+inputs. The two completed mixed structures deliver 2 small and 4 family homes,
+20 capacity plus the named endowment, with one event and an emptied pipeline.
+Zero work/quantities create no event/row. Fractional title and occupant transfers
+conserve stock; offers are consumed as subsets. Split/merge removes empty estate
+rows; invalid quantities, excess offers, impossible removals and corrupt/excess
+saved titles are rejected atomically. Book allocations reconcile by partial
+quantity and across all titles. The 1000x represented stock retains 2 physical
+class rows / 2 saved cohorts. The current catalogue has 3 compatible classes.
 
-AutoBuildCheck exits 3 on its existing FS12 replay-order premise: section 4's debt limit leaves both twins at zero new orders. Its comparison does not drift; the OBSERVED funding-page-bond line remains observational as main declares it. This batch changes no debt limit, AutoBuilder order rule, fixture or comparison. ReplayCheck passes (0 failures).
+The actual scratch save uses slot 10 in GameFiles.scratch, retains a half title
+and quarter occupied home, changes RE's capacity baseline from 45 to 42.75 and
+saves a stranded share of .05. Reload restores those exact counts; both first
+months count 45 and dilute the share to .0475. Existing ReloadCheck 3k also
+retains its caused changed-capacity and zero-capacity first-month proofs.
 
-ScaleCheck, BuildingStackCheck and SaveSlotCheck pass. All named checks run sequentially, one name per batch-check invocation, with the required C:/ Earth/world paths. The final HousingInventoryCheck, --fast and 2,400-month trace run follow the final model commit. Pick is ALL (242 harnesses); the local-machine restriction forbids a local full --pick, so the complete picked suite belongs to the authorized gate-box dry run after review.
+| Check | Result |
+|---|---|
+| HousingInventoryCheck | green initially, final before integration, and on merged main |
+| HousingCheck | green, all door/household/rent and RN2 checks |
+| HousingDoorCheck | green: months 431–900 finish 960 size-2, 6,237 size-4 and 26 size-6 homes; no unplaced household; all 899 played months close household cash |
+| BuildingDataCheck | green: all 155 definitions compatible, housing mix metadata agrees with built-in fallback |
+| SaveFileCheck | green, with exact inventory serialization equality after actual rebuild |
+| ReadPathCheck | green: 3,154 fields fingerprinted, including new cohorts and pure inventory/quote reads |
+| ReloadCheck | exit 3, only main's HT1-H caused material-draw premise; every actual continuation comparison and every RN2 3k premise/comparison passes |
+| AutoBuildCheck | exit 3, only main's FS12 zero-new-orders replay premise; twins have no replay drift |
+| ReplayCheck, ScaleCheck, BuildingStackCheck, SaveSlotCheck | green |
+| --fast | green before and after merging RS1; generated maps refreshed; zero firm Stale findings |
+| Default LongPlaytest before integration | green; all eight CSVs observed byte-identical to fresh 52c79806b baseline |
+| Fresh main 01e6c2d4b and merged RES2 default LongPlaytests | both exit 3, sole identical CL7 industry/home ring finding at m2400; no new red |
 
-Allocation inputs are the whole completed recipe cohort's book/collateral bases across all its titles, not a remaining RE-only balance to be scaled again. Holding quantities select the owner's share. HO1 must keep/derive that basis coherently when it settles partial releases; pipeline books are separate.
+The named focused checks above ran before the RS1 integration; merged verification
+reran HousingInventoryCheck, --fast and the full default LongPlaytest. All runs
+were sequential, one name per batch-check call, with the required C:/ Earth/world
+paths. All fixture cities use scratch/TempDirs. Logs are target/RES2-checks/ and
+target/checks/; reference output also remains in target/RES2-main-reference/.
+The pick is ALL (242 harnesses), review needed for DataSave and both format
+constants. The laptop restriction forbids a local full --pick; the complete ALL
+suite is the gate-box dry run after the stranger's saves review grants SHIP.
 
-Final HousingInventoryCheck passes with the actual size-match, zero-let class, occupied/vacant listing consumption and invalid excess-title save cases. Its one integrated scratch-city month measured 361.770 ms (one observation of the whole first month, not isolated inventory overhead); actual city state was 1 physical class row and 2 saved owner/occupancy rows. The 1000x mixed fixture remained exactly 2 physical rows / 2 saved rows. --fast also passes, with zero firm Stale findings.
+Known reds are traced, not repaired by changing a fixture. ReloadCheck's native
+five-House order did not cause a material draw; main's cause ignores its accepted
+result (existing HT1-H). AutoBuildCheck's existing section 4 city remains above
+its debt limit and places zero new orders (FS12). Fresh main itself causes the
+CL7 map-ring finding at m2400 before any RES2 code is present; RES2 changes no
+map placement. All three are already recorded and queued. The ship file names
+their exact classes. No new queue row or approval is requested.
 
-Main advanced during final verification to RS1's 01e6c2d4b (0.9.188), without a save-format change. A detached reference checkout at target/RES2-main-reference will supply a fresh single named default LongPlaytest for the newest-main eight-CSV comparison; no whole baseline suite is run. Main is merged after the currently running pre-integration verification finishes, with generated maps refreshed afterwards.
+## Final trace and measured cost
 
-Pre-RS1 verification is complete: final LongPlaytest passes all checks for its 2,400-month default run. All eight CSVs are observed byte-identical to the freshly compiled 52c79806b baseline (target/RES2-trace/pre-RS1-comparison.json). This is an observed result for that common base, not a claim about the RS1-integrated model until the newest-main comparison completes.
+Fresh main 01e6c2d4b was compiled and ran only the named 2,400-month LongPlaytest
+in an isolated detached reference checkout. Merged model 32c81f469 ran the same
+default with the same JDK, seed/options and required Earth/world files. Every one
+of the eight complete CSVs is observed byte-identical, not merely rounded equal.
+The comparison and raw files are target/RES2-trace/comparison.json,
+main-01e6-*.csv and merged-*.csv. The earlier independent 52c79806b comparison
+is retained as pre-RS1-comparison.json, base-*.csv and final-*.csv.
+
+| CSV | bytes | identical main/RES2 SHA-256 |
+|---|---:|---|
+| bank.csv | 868250 | `937ad04184737e46e47be62badae881889a974153a90150973f563afb1b3065d` |
+| bonds.csv | 5076706 | `2a96689c8b5495a487be3390ff1ec853c3fcaa95a094bf909215b7c258d0fdc9` |
+| borrow.csv | 3274 | `01c98659ff1ba3e1f76a65e0a1f76e204929a7b7b8b9617965f34a8dae121362` |
+| build.csv | 606265 | `7e95cb28153b7052f830ac712e410547a3d3faecdbe04d32e5f27c1e51df13e0` |
+| house.csv | 769785 | `e4d6b6465c8726e8cf51fded6bfcb52f6af4d80c9ece2c243ccfac7b3d2d10ad` |
+| labour.csv | 730810 | `416106f0a25a89d9b8f84d06d412c029129abfde9fdddd17ef68ae87be3e4786` |
+| month.csv | 909444 | `01cdf5413fadd8ff2dd907cc315bcc9a4b551826e34a0c2fae17426b70561565` |
+| pop.csv | 413337 | `db1f72f012010d9b004f653955785f8d9d161a99db6493a6c302b2b8e07d3504` |
+
+The default trace is unchanged, so no ensemble is owed. RS1's inherited trace
+move and its already shipped ensemble are not attributed to RES2.
+
+Measured merged scratch-city first month: 320.581 ms for the whole integrated
+month, with 1 physical class row / 2 saved cohorts; the 1000x mixed fixture is
+still 2/2 rows. This one observation is not isolated inventory overhead or a
+whole-feature speed promise. Fresh-main and merged default harness elapsed times
+were 298.0 s and 294.4 s (including their additional checks, soft on this laptop).
+These observations do not replace nightly performance judgement. The study's
+0.864 ms synthetic kernel is not asserted as an integrated ceiling.
+
+## Review and gate handoff
+
+Model source is final at 32c81f469; the final records/maps commit changes prose
+only. A stranger's saves review is owed. No money transfer or new thread is
+activated by the batch; the allocation and quantity contracts remain reviewable.
+The provisional ship marker stays until that review's SHIP and the ALL dry run.
+No dry run has been run yet, so no retained run or two gate commits are claimed.
