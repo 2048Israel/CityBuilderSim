@@ -174,6 +174,17 @@ public final class HousingMarketCheck {
         near("the host retains its actual funded bill",market.rentFor(host,1),ask);
         near("the guest owes no invented rent or credit",market.rentFor(guest,1),0);
         near("emergency hosting has an explicit reason count",market.hosted(),1);
+        double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
+        g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
+        double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;g.getFamilies().rebuild(g.getCohorts(),jobs);
+        var single=g.getHouseholdBalance().cells().stream().filter(c->c instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT
+                &&g.getFamilies().get(w.shape(),w.tier(),w.stage())>=5).map(c->(WorkingHousehold)c).findFirst().orElseThrow();
+        market.reset();result=market.clear(g,List.of(new HousingChoice.Demand(host,1,2,0,false,0,false,2*ask),
+                new HousingChoice.Demand(single.key(),5,1,0,false,0,single.stage()==AdultStage.YOUNG,0)));
+        check("an emergency sharing group can join a funded host without a vacant door",market.sharingGroups()>0);
+        near("hosting a sharing group still earns just the one funded rent",market.receipts(),ask);
+        check("a sharing group consumes the host slot before further guests",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()
+                <=2*market.occupied()+FamilyModel.packingRounding(2*market.occupied()));
     }
     static void writeReport(StringBuilder report,Game g,String label,Map<Integer,Long> starts,Map<Integer,Long> completions,int months,double ms){
         var market=g.getSectors().realEstate().housingMarket();var bm=g.getBuildingManager();var em=g.getEconomyManager();

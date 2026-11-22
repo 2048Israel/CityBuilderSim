@@ -127,6 +127,7 @@ public final class HousingMarket {
             }
         }
         demand=List.copyOf(cells);offers=List.copyOf(supply);
+        hosted=0;
         List<HousingChoice.Offer> pending=new ArrayList<>();
         for(var s:inventory.stock())if(s.pipeline()>0){var d=s.dwelling();var f=HousingForms.of(s.key().recipe());
             pending.add(new HousingChoice.Offer(s.key(),s.pipeline(),d.capacity(),d.bedrooms(),d.area(),d.quality(),
@@ -168,18 +169,18 @@ public final class HousingMarket {
         Map<String,Integer> kinds=new HashMap<>();
         for(Household c:game.getHouseholdBalance().cells())kinds.put(c.key(),c instanceof StudentHousehold?1:c instanceof UnemployedHousehold?2:0);
         java.util.function.ToIntFunction<String> kind=key->kinds.getOrDefault(key.split("#",2)[0],0);
-        List<HousingChoice.Lease> all=new ArrayList<>(result.leases());double extra=0;hosted=0;
+        List<HousingChoice.Lease> all=new ArrayList<>(result.leases());double extra=0;
         List<HousingChoice.Demand> without=new ArrayList<>();
         for(var d:demand){double used=all.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double n=Math.max(0,d.count()-used);if(n>FamilyModel.packingRounding(d.count()))without.add(with(d,n,d.budget()));}
         List<HousingChoice.Offer> hostRooms=new ArrayList<>();
-        for(var o:offers){double n=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();
+        for(var o:offers){double n=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
             hostRooms.add(new HousingChoice.Offer(o.key(),n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0));}
         var shelter=HousingChoice.clear(without,hostRooms,List.of(),game.getMonth());
         for(var o:offers){double n=shelter.leases().stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();
-            double hosts=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();if(!(n>0))continue;
+            double hosts=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();if(!(n>0))continue;
             for(int i=0;i<all.size();i++){var l=all.get(i);if(l.home().equals(o.key()))
-                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()*(1-n/(2*hosts)),l.bill(),l.households()));}
+                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*hosts),l.bill(),l.households()));}
             for(var l:shelter.leases())if(l.home().equals(o.key()))all.add(new HousingChoice.Lease(l.cell(),l.home(),l.count()/2,0,l.count()));
             hosted+=n;extra+=n;
         }
@@ -238,12 +239,26 @@ public final class HousingMarket {
         List<HousingChoice.Offer> free=new ArrayList<>();
         for(var o:offers)free.add(new HousingChoice.Offer(o.key(),Math.max(0,o.count()-used.getOrDefault(o.key(),0.0)),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()));
         var placed=HousingChoice.clear(proposed,free,List.of(),game.getMonth());
-        List<HousingChoice.Lease> all=new ArrayList<>(result.leases());all.addAll(placed.leases());all=bounded(all);
+        List<HousingChoice.Lease> all=new ArrayList<>(result.leases());all.addAll(placed.leases());
+        List<HousingChoice.Demand> missing=new ArrayList<>();
+        for(var d:proposed){double n=d.count()-placed.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            if(n>FamilyModel.packingRounding(d.count()))missing.add(with(d,n,d.budget()));}
+        List<HousingChoice.Offer> hosts=new ArrayList<>();
+        for(var o:offers){double n=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
+            hosts.add(new HousingChoice.Offer(o.key(),n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0));}
+        var sheltered=HousingChoice.clear(missing,hosts,List.of(),game.getMonth());
+        for(var o:hosts){double n=sheltered.leases().stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::households).sum();if(!(n>0))continue;
+            for(int i=0;i<all.size();i++){var l=all.get(i);if(l.home().equals(o.key()))
+                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*o.count()),l.bill(),l.households()));}
+            for(var l:sheltered.leases())if(l.home().equals(o.key()))all.add(new HousingChoice.Lease(l.cell(),l.home(),l.count()/2,0,l.count()));
+            hosted+=n;
+        }
+        all=bounded(all);
         List<Sharing> transfers=new ArrayList<>();Map<String,Double> oldBudgets=new HashMap<>();
         double normal=result.suitable(),crowded=result.crowded();
         for(var entry:pools.entrySet()){
             String key=entry.getKey();Pool pool=entry.getValue();
-            double q=all.stream().filter(l->l.cell().equals(key)).mapToDouble(HousingChoice.Lease::count).sum();if(!(q>0))continue;
+            double q=all.stream().filter(l->l.cell().equals(key)).mapToDouble(HousingChoice.Lease::households).sum();if(!(q>0))continue;
             double actual=game.getFamilies().shareForTypedHousing(pool.source(),q);
             if(!(actual>0))continue;
             var from=cells.get(pool.original().key());var before=cells.getOrDefault(pool.target().key(),pool.target());
@@ -253,16 +268,16 @@ public final class HousingMarket {
             cells.put(before.key(),with(before,count,(before.budget()*before.count()+5*from.budget()*actual)/count));
             oldBudgets.put(before.key(),before.budget());
             for(int i=0;i<all.size();i++){var l=all.get(i);if(!l.cell().equals(key))continue;
-                double n=l.count()*actual/q;var o=offers.stream().filter(a->a.key().equals(l.home())).findFirst().orElseThrow();
-                if(o.capacity()>=pool.target().size())normal+=n;else crowded+=n;
-                all.set(i,new HousingChoice.Lease(before.key(),l.home(),n,l.bill()*actual/q));
+                double n=l.households()*actual/q;var o=offers.stream().filter(a->a.key().equals(l.home())).findFirst().orElseThrow();
+                if(o.capacity()>=pool.target().size()&&l.households()==l.count())normal+=n;else crowded+=n;
+                all.set(i,new HousingChoice.Lease(before.key(),l.home(),l.count()*actual/q,l.bill()*actual/q,n));
             }
         }
         // No proposed-but-unplaced group becomes a household or receives a rental bill.
         all.removeIf(l->pools.containsKey(l.cell()));
         Map<LeaseKey,HousingChoice.Lease> coalesced=new LinkedHashMap<>();
         for(var l:all){var key=new LeaseKey(l.cell(),l.home());var before=coalesced.get(key);
-            coalesced.put(key,before==null?l:new HousingChoice.Lease(l.cell(),l.home(),before.count()+l.count(),before.bill()+l.bill()));}
+            coalesced.put(key,before==null?l:new HousingChoice.Lease(l.cell(),l.home(),before.count()+l.count(),before.bill()+l.bill(),before.households()+l.households()));}
         all=bounded(new ArrayList<>(coalesced.values()));demand=List.copyOf(cells.values());sharing=List.copyOf(transfers);
         result=HousingChoice.summarize(demand,offers,all,result.kept(),normal,crowded,oldBudgets);
     }

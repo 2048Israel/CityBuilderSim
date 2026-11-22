@@ -178,3 +178,13 @@ units per occupied door. The primary funded tenant is retained next month from
 its actual class payment, rather than treating the emergency guest as a new
 normal incumbent. A caused funded-host check asserts zero guest resources, the
 host's unchanged bill, one physical home, one actual rent, and explicit hosting.
+
+The hosting run narrowed the lender finding to 230.452 household units at month
+810, almost entirely students, while every door and guest slot was used. The
+cause was a second omitted part of the original valve: sharing groups were
+formed only if a vacant door could be paid for. An unplaced sharing group can
+now occupy a real remaining guest slot in a funded home too. Its actual placed
+group count, not a proposal, changes the source census. Both emergency phases
+use the remaining capacity 2 x door-equivalents minus household units, so the
+later phase cannot add a third household unit to an already doubled home. The
+caused host fixture also covers this combination, one rent and the two-unit cap.
