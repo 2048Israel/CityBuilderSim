@@ -21035,6 +21035,9 @@ public class Game {
             buildingManager.getJobArrayByName("Commercial Bank"));
 
     economyManager.updateEcon();
+    // RN2: ...and the landlord's count of its places put back as the save held it, once the count above has run from nothing:
+    // the live city moves its closed homes' share at its next month's count, and so does this one (RealEstate.restoreLoadedCapacity()).
+    getSectors().realEstate().restoreLoadedCapacity();
 
     servicesManager.updateServices();
 
