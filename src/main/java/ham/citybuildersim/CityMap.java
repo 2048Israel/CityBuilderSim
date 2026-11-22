@@ -5259,12 +5259,37 @@ public final class CityMap {
     private long trainRoutesAt = Long.MIN_VALUE;
     private int trainRoutesWagons = -1;
     private long trainRoutesSidings = -1;
+    private long trainRoutesRoutable = -1;
 
     /** A district's plan's sidings' ways (Drawn.sidingWays) with the stamp of the link they came with (MF1): kept when its plan is adopted, so the trains' routes do not wait on a plan being kept drawn (PLANS_KEPT); valid while that link is. */
     private record PlanSidings(long stamp, int[][] ways) { }
     private final Map<Long, PlanSidings> planSidings = new HashMap<>();
     /** Moved whenever a plan adopted has other sidings than the ones kept: trainRoutes() is made again. */
     private long planSidingsVersion;
+
+    /**
+     * Which plans' sidings the trains' routes may run to now (RR1): a sum over the kept sidings whose district's link holds, with the
+     * stamp they came with, and whose band holds up to it - what planSidingRoutes() reads - so trainRoutes() is made again when one
+     * comes to hold or stops. WHY (RR1, Jerus 2026-11-20: "random 90 degree turns", his shot 5 at month 1,208): the routes were kept
+     * against the sidings' version alone, which moves only when a plan comes out with other sidings. Right after a month a band's
+     * links do not hold until its plans are drawn again; the screen asks for the routes first, they were made without the siding and
+     * kept, and the plan drawn again with the same sidings moved nothing: no train to the siding and no arc at its corners all month,
+     * its turns drawn as the plots' square L.
+     */
+    private long planSidingsRoutable() {
+        if (planSidings.isEmpty()) return 0;
+        long sum = 0;
+        for (Map.Entry<Long, PlanSidings> e : planSidings.entrySet()) {
+            District d = districtAt(e.getKey());
+            Link l = d == null ? null : links.get(d);
+            if (l == null || l.stamp() != e.getValue().stamp()) continue;
+            int b = band(d.chainIndex);
+            checkBand(b);
+            if (d.chainIndex >= bandValidTo[b]) continue;
+            sum += World.mix(e.getKey() ^ l.stamp());
+        }
+        return sum;
+    }
 
     /** A bend of the routes the tiles draw (FX5), with whether it lies on double track (its corner plot's M_DOUBLE). */
     private record DrawnBend(TrackCurves.Bend bend, boolean doubled) { }
@@ -5308,11 +5333,14 @@ public final class CityMap {
      * the ladder's end to the siding's far end, a works' siding its own length
      * from the main line) for TrainSchedule to seat only the trains it takes.
      * The map's alone: nothing in the model reads it.
-     * Kept against changes() and the wagon tracks the railway's picture gives.
+     * Kept against changes(), the wagon tracks the railway's picture gives and
+     * (RR1) which plans' sidings it may run to now (planSidingsRoutable()).
      */
     public List<TrainSchedule.Route> trainRoutes() {
         int wagons = wagonTracksOf(railPicture.wagonShare());
-        if (trainRoutesCache != null && trainRoutesAt == changes && trainRoutesWagons == wagons && trainRoutesSidings == planSidingsVersion) return trainRoutesCache;
+        long routable = planSidingsRoutable();
+        if (trainRoutesCache != null && trainRoutesAt == changes && trainRoutesWagons == wagons && trainRoutesSidings == planSidingsVersion
+                && trainRoutesRoutable == routable) return trainRoutesCache;
         long sidingsNow = planSidingsVersion;
         List<TrainSchedule.Route> out = new ArrayList<>();
         List<TrackCurves.Bend> found = new ArrayList<>();
@@ -5368,6 +5396,7 @@ public final class CityMap {
         trainRoutesAt = changes;
         trainRoutesWagons = wagons;
         trainRoutesSidings = sidingsNow;
+        trainRoutesRoutable = routable;
         return out;
     }
 
