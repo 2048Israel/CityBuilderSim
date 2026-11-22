@@ -191,7 +191,9 @@ import java.util.List;
  *      the avenue stands on both sides of the reserve and counts what it does not lay there (avenueBroken) as the same reserve
  *      from the start does; no building off the reserve moves; every check holds.
  *  20. frontage avenues beside a diagonal highway: MF2's original strip-use and verge-end fixture, plus the
- *      plan laws, both diagonal headings, dated arrival on built cells and deterministic replay.
+ *      plan laws, both diagonal headings, dated arrival on built cells and deterministic replay; and (RR1) the highway
+ *      turning at both ends of its diagonal: each frontage run ends where it last crosses a street, none a stair
+ *      step past it alongside that street, and no run's tip is a dead end.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -5398,6 +5400,83 @@ public class PlanCheck {
         check("the + floor also holds along each frontage arm with its own origin (" + frontageBad + ")", frontageBad == 0);
         out.printf("      plan laws: pieces %d closest + %d, reach %d, on street %d, highway verge %d, avenue floor %d%n", f.pieces, f.closestPlus, f.outOfReach, f.onStreet, f.besideHighway, f.avenueBad);
         check("the frontage district keeps every existing plan law", f.holds(p, in));
+        frontageTurns(types);
+    }
+
+    /**
+     * Section 20's turns (RR1): the diagonal highway turns at both ends of its run along a row - west at its north-west end,
+     * east at its south-east one, as Jerus's fjord city's (0.9.181, his shots 2 and 4) did where its link arm leaves the
+     * spine - its run RR1_TURN_NW to RR1_TURN_SE columns, FRONTAGE_OFFSET off the main diagonal as the section's own.
+     */
+    static final int RR1_TURN_NW = 100, RR1_TURN_SE = 200;
+
+    /** Section 20's turns: the district laid that Z highway, its frontage arms running on LATTICE steps past each turn (frontageArm()). */
+    static DistrictPlan.Input turnsInput(BuildingVisual.Type[] types) {
+        final int n = DistrictPlan.FRAME;
+        DistrictPlan.Input in = flatMix(types, FULL_FILL, true, false);
+        for (int x = 0; x < n; x++) {
+            if (x <= RR1_TURN_NW || x >= RR1_TURN_SE) {
+                int y = (x <= RR1_TURN_NW ? RR1_TURN_NW : RR1_TURN_SE) - FRONTAGE_OFFSET;
+                in.fixed[y * n + x] = DistrictPlan.FIXED_HIGHWAY;
+                continue;
+            }
+            for (int dy = 0; dy <= 1; dy++) in.fixed[(x - FRONTAGE_OFFSET - dy) * n + x] = DistrictPlan.FIXED_HIGHWAY;
+        }
+        return in;
+    }
+
+    /**
+     * Section 20 (RR1): a frontage arm ends where it last crosses a street, not a stair step past it. Its extent runs LATTICE
+     * steps past the highway's diagonal (FA1), so where the highway turns the run ended wherever the extent did: in Jerus's
+     * fjord city a step past the boulevard on each side of the highway, two plots alongside the street with junction marks to
+     * nowhere. Read on the plan's frontage bands, FRONTAGE_GAP off the diagonal's line each side: a run's tip (an avenue plot
+     * with one avenue plot of its band beside it, off the frame's edge) is a stub past its crossing when a plain street beside
+     * it is beside another avenue plot of its band - the run crossed that street and came back alongside it.
+     */
+    static void frontageTurns(BuildingVisual.Type[] types) {
+        final int n = DistrictPlan.FRAME;
+        DistrictPlan p = DistrictPlan.make(turnsInput(types));
+        int tips = 0, stubs = 0, deadTips = 0, past = 0;
+        for (int side = -1; side <= 1; side += 2) {
+            int band = FRONTAGE_OFFSET + side * DistrictPlan.FRONTAGE_GAP;
+            for (int q = 0; q < DistrictPlan.AREA; q++) {
+                int x = q % n, y = q / n;
+                if (!onBand(p, x, y, band)) continue;
+                if (x < RR1_TURN_NW - 1 || x > RR1_TURN_SE + 1) past++;
+                if (x == 0 || y == 0 || x == n - 1 || y == n - 1) continue;
+                int along = 0, streets = 0;
+                for (int d = 0; d < 4; d++) {
+                    int sx = x + TilePainter.DX[d], sy = y + TilePainter.DY[d], s = sy * n + sx;
+                    if (p.street[s] != 0) streets++;
+                    if (onBand(p, sx, sy, band)) along++;
+                }
+                if (along != 1) continue;
+                tips++;
+                if (streets < 2) deadTips++;
+                boolean stub = false;
+                for (int d = 0; d < 4 && !stub; d++) {
+                    int sx = x + TilePainter.DX[d], sy = y + TilePainter.DY[d], s = sy * n + sx;
+                    if (p.street[s] == 0 || p.avenue[s] != 0) continue;
+                    for (int e = 0; e < 4 && !stub; e++) {
+                        int ux = sx + TilePainter.DX[e], uy = sy + TilePainter.DY[e];
+                        stub = (ux != x || uy != y) && onBand(p, ux, uy, band);
+                    }
+                }
+                if (stub) stubs++;
+            }
+        }
+        out.printf("      (RR1) the highway turning at both ends of its diagonal: %d frontage plots past the turns, %d run tips, %d of them a stub past the street they crossed, %d dead ends%n",
+                past, tips, stubs, deadTips);
+        check("(RR1) fixture: the frontage arms run on past the highway's turns at both ends of its diagonal, and their runs end in the district", past > 0 && tips > 0);
+        check("(RR1) ...each run ends where it last crosses a street, none a stair step past it alongside that street (red before RR1: Jerus's boulevard)", stubs == 0);
+        check("(RR1) ...and no run's tip is a dead end", deadTips == 0);
+    }
+
+    /** Whether plot (x, y) of the plan is an avenue plot on the frontage band whose line (x - y) is `band` or one more: a staircase's two plots a column. */
+    static boolean onBand(DistrictPlan p, int x, int y, int band) {
+        int n = DistrictPlan.FRAME;
+        if (x < 0 || y < 0 || x >= n || y >= n || p.avenue == null || p.avenue[y * n + x] == 0) return false;
+        return x - y == band || x - y == band + 1;
     }
 
     /** Later arrivals open more frontage cells without disturbing the cells already built. */

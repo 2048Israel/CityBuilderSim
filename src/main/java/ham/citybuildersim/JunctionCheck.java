@@ -136,6 +136,15 @@ import java.util.Arrays;
  *      CLOVERLEAF'S LOOPS ARE JOINED TO THE LANES: at every pixel size they are drawn at (6 to 8 px a plot), two whole curves a quadrant, each with a
  *      pixel beside the east-west highway's carriageway and one beside the north-south one's, inside the reserve's box and on no highway plot - on a
  *      clean crossing and across one with a diagonal avenue and a street through the reserve, which they bridge instead of breaking off.
+ *  24. (RR1; Jerus's fjord city, 0.9.181, shot 2) an S of two 45-degree joints two steps apart is one carriageway: no notch outside
+ *      either joint, no ground inside, the centre line single.
+ *  25. (RR1, red before it; shots 4 and 6) AN ARM'S END WITH A STREET BENEATH THAT DOES NOT CROSS IT narrows toward that street, as an
+ *      open end does (4), not squared and flush against it: the plan's street row running on under the highway to a street past
+ *      its end; and where a link's staircase leaves the arm a plot short, the straight band is carried across the staircase's
+ *      corner to the arm's last plot, which narrows to the street beyond. A street across the end keeps the diamond's slips.
+ *  26. (RR1) AN ARM THAT WAITS AT THE CITY'S OWN WATER (stoppedBy SEA) has its end ramp listed (CityRuns.waitingEnds()), no arm
+ *      still to grow has; and the plan given that ramp, as the map gives it, lays a street beneath it joined to its streets
+ *      (DistrictPlan.rampJoins()), where without it - as before RR1 - the ramp had none and the end stood open in the houses.
  *
  * The ground and the access roads are held on the map's own cities by MapCheck
  * section 8 (its 8b), and the spurs dealt to the plans' sidings by its 8c.
@@ -264,6 +273,9 @@ public class JunctionCheck {
         wideRoad();
         bridgeDeck();
         loopsJoined();
+        sBend();
+        endBeneath();
+        waitingEnd();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -2362,6 +2374,176 @@ public class JunctionCheck {
         check("23b. " + name + ": each of them has a pixel beside the east-west carriageway and one beside the north-south one (" + loose + " that has not)", n > 0 && loose == 0);
         check("23c. " + name + ": the loops keep inside the reserve's box and off the highways' plots, and change no pixel outside the box (" + changedOutside + " changed)",
                 outside == 0 && onHighway == 0 && changedOutside == 0);
+    }
+
+    /* ================= 24. (RR1) an S of two 45-degree joints a short step apart is one carriageway ================= */
+
+    /** Section 24's S: the highway north up column SX_24 to row SY_24, two steps north-west, and north again up column SX_24 - 2 - his coastal highway's (arm 6, Jerus's shot 3). */
+    static final int SX_24 = 16, SY_24 = 17, STEPS_24 = 2;
+
+    /**
+     * Jerus, 2026-11-20 (his shot 3): the coastal highway's "jagged S-bend". Where the highway runs north, steps two plots north-west and
+     * runs north again, the two joints' arcs meet on the step between them: the one's tangent point is the other's. Each bend drew its
+     * legs' straights HIGHWAY_LEG plots on past its tangent points over every plot a bend replaces - the other bend's too - so the first
+     * bend's diagonal straight ran on past the second joint, off its arc, and the second's back past the first: a square notch outside each
+     * joint, its centre line doubled. The fixture lays his S as CityRuns lays a 45-degree stretch (stretchInto(): a step and the corner
+     * beside it, marked M_DIAG of the heading's code) with the bends the map gives it; the picture must be section 18's one carriageway.
+     */
+    static void sBend() {
+        System.out.println("--- 24. (RR1) an S of two 45-degree joints two steps apart is one carriageway: no notch outside either joint, no ground inside, the centre line single ---");
+        int px = 8, w = T * px, cx = SX_24, cy = SY_24, tx = cx - STEPS_24, ty = cy - STEPS_24;
+        int[] cs = TileRaster.crossSection(BuildingVisual.HIGHWAY, px);
+        double halfCase = cs[0] / 2.0, halfSurface = (cs[0] - 2 * cs[1]) / 2.0;
+        TilePainter.Input in = owned();
+        for (int y = cy; y < T; y++) in.fixed[y * T + cx] = BuildingVisual.HIGHWAY;
+        int diag = CityRuns.M_DIAG | (CityRuns.diagCode(5) << CityRuns.M_DIAG_SHIFT);
+        for (int k = 1; k <= STEPS_24; k++) {
+            int step = (cy - k) * T + cx - k, corner = (cy - k + 1) * T + cx - k;
+            in.fixed[step] = BuildingVisual.HIGHWAY;
+            in.marks[step] = (byte) diag;
+            in.fixed[corner] = BuildingVisual.HIGHWAY;
+            in.marks[corner] = (byte) (diag | CityRuns.M_CORNER);
+        }
+        for (int y = 0; y < ty; y++) in.fixed[y * T + tx] = BuildingVisual.HIGHWAY;
+        double[] xs = { cx + 0.5, cx + 0.5, tx + 0.5, tx + 0.5 }, ys = { T - 0.5, cy + 0.5, ty + 0.5, 0.5 };
+        for (TrackCurves.Bend b : TrackCurves.bends(xs, ys, TrackCurves.HIGHWAY_RADIUS, TrackCurves.HIGHWAY))
+            in.addBend(b.net(), b.x(), b.y(), b.ux(), b.uy(), b.vx(), b.vy(), b.r(), b.t(), false);
+        in.markCurved();
+        boolean shared = in.bends == 2 && Math.hypot(in.bendAt(0).endX() - in.bendAt(1).startX(), in.bendAt(0).endY() - in.bendAt(1).startY()) < 1e-6;
+        check("24-fixture. his S: two highway bends, the first's arc ending where the second's begins (the step between them no longer than their tangent lengths)", shared);
+        int[] img = raster(in, paint(in), px);
+        JPath path = new JPath(xs, ys, px);
+        double[] at = new double[1];
+        double lo = (ty - 3) * px, hi = (cy + 4) * px;
+        int ground = 0, stub = 0, groundX = -1, groundY = -1, stubX = -1, stubY = -1;
+        for (int Y = (int) lo; Y < hi; Y++)
+            for (int X = (tx - 4) * px; X < (cx + 5) * px; X++) {
+                double d = path.dist(X + 0.5, Y + 0.5, at);
+                int c = img[Y * w + X];
+                if (d <= halfSurface - 1 && c != TileRaster.ROAD[BuildingVisual.HIGHWAY] && c != TileRaster.CENTRE_LINE && ground++ == 0) { groundX = X; groundY = Y; }
+                if (d > halfCase + 1 && highwayColour(c) && stub++ == 0) { stubX = X; stubY = Y; }
+            }
+        check("24a. no highway-coloured pixel beyond the casing's half-width plus a pixel from the S's path (no notch outside either joint)", stub == 0);
+        System.out.println("  " + stub + " highway-coloured pixels beyond " + (halfCase + 1) + " px of the centre line" + (stub == 0 ? "" : ", the first at pixel (" + stubX + ", " + stubY + ")"));
+        check("24b. no ground pixel inside the carriageway's outline (the surface's half-width less a pixel)", ground == 0);
+        System.out.println("  " + ground + " ground pixels within " + (halfSurface - 1) + " px of the centre line" + (ground == 0 ? "" : ", the first at pixel (" + groundX + ", " + groundY + ")"));
+        // The centre line: every centre-line pixel lies on the path (within a pixel and a half), so it is not doubled.
+        int astray = 0, astrayX = -1, astrayY = -1;
+        for (int Y = (int) lo; Y < hi; Y++)
+            for (int X = (tx - 4) * px; X < (cx + 5) * px; X++)
+                if (img[Y * w + X] == TileRaster.CENTRE_LINE && path.dist(X + 0.5, Y + 0.5, at) > 1.5 && astray++ == 0) { astrayX = X; astrayY = Y; }
+        check("24c. ...and the centre line is single: no centre-line pixel more than a pixel and a half off the path", astray == 0);
+        System.out.println("  " + astray + " centre-line pixels off the path" + (astray == 0 ? "" : ", the first at pixel (" + astrayX + ", " + astrayY + ")"));
+    }
+
+    /* ================= 25. (RR1) an arm's end with a street beneath that does not cross it ================= */
+
+    /** Section 25's row and its arm's last plot: the row the highway runs along and the plot its ramp is on, about the tile's middle. */
+    static final int ROW_25 = 10, END_25 = 10;
+
+    static void endBeneath() {
+        System.out.println("--- 25. (RR1) an arm's end with a street beneath that does not cross it narrows toward that street; past a link's bend the straight band is carried to it ---");
+        int px = 8, w = T * px, y = ROW_25, endX = END_25, mid = px / 2;
+        int paved = crossSectionPaved(px), left = (px - paved) / 2, right = left + paved;
+        int surface = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        // Shot 6: the highway from the west to its end, the plan's street row beneath it all the way and on past it.
+        TilePainter.Input in = owned();
+        highwayRowTo(in, y, endX + 1);
+        in.marks[y * T + endX] = CityRuns.M_RAMP;
+        streetRow(in, y, STREET);
+        int[] img = raster(in, paint(in), px);
+        check("25a. the fixture: the end's plot has a street beneath it, and the street runs on past it", in.street[y * T + endX] == STREET && in.street[y * T + endX + 1] == STREET);
+        check("25b. at the end, toward the street, the band is no wider than the paved road's width (red before RR1: squared and flush, Jerus's shot 6)",
+                outsidePaved(img, w, endX, y, px - 1, left, right, px));
+        // Shot 4: the straight highway from the east, a link's staircase leaving it north-west a plot short of its end.
+        TilePainter.Input bend = owned();
+        for (int x = endX + 2; x < T; x++) bend.fixed[y * T + x] = BuildingVisual.HIGHWAY;
+        byte nw = (byte) (CityRuns.M_DIAG | (2 << CityRuns.M_DIAG_SHIFT));
+        for (int k = 1; endX + 2 - k >= 0 && y - k >= 0; k++) {
+            int cx = endX + 2 - k;
+            bend.fixed[(y - k + 1) * T + cx] = BuildingVisual.HIGHWAY;
+            bend.marks[(y - k + 1) * T + cx] = (byte) (nw | CityRuns.M_CORNER);
+            bend.fixed[(y - k) * T + cx] = BuildingVisual.HIGHWAY;
+            bend.marks[(y - k) * T + cx] = nw;
+        }
+        bend.fixed[y * T + endX] = BuildingVisual.HIGHWAY;
+        bend.marks[y * T + endX] = CityRuns.M_RAMP;
+        streetRow(bend, y, STREET);
+        int[] bendImg = raster(bend, paint(bend), px);
+        check("25c. the fixture: the plot between the arm's end and its straight is the staircase's corner, and so is the plot north of the end",
+                (bend.marks[y * T + endX + 1] & CityRuns.M_CORNER) != 0 && (bend.marks[(y - 1) * T + endX] & CityRuns.M_CORNER) != 0);
+        check("25d. the straight band is carried across the staircase's corner: the surface at both its edges on the band's middle row (red before RR1: the corner's verge, the end a dark square cut off, shot 4)",
+                pixel(bendImg, w, endX + 1, y, 0, mid, px) == surface && pixel(bendImg, w, endX + 1, y, px - 1, mid, px) == surface);
+        check("25e. ...and the arm's last plot narrows to the street west of it: no wider than the paved road at its west edge",
+                outsidePaved(bendImg, w, endX, y, 0, left, right, px));
+        // A street across the end: the diamond's, as section 3 has it, not an end that narrows.
+        TilePainter.Input cross = owned();
+        highwayRowTo(cross, y, endX + 1);
+        cross.marks[y * T + endX] = CityRuns.M_RAMP;
+        streetColumn(cross, endX, ARTERIAL);
+        int[] crossImg = raster(cross, paint(cross), px);
+        check("25f. a street across the end keeps the diamond's slip on the verge beside it, and the end's band its full width",
+                pixel(crossImg, w, endX - 1, y - 1, mid, mid - 1, px) == TileRaster.ROAD[BuildingVisual.PAVED] && !outsidePaved(crossImg, w, endX, y, mid, left, right, px));
+    }
+
+    /** Whether column `at` of plot (plotX, plotY) has no highway surface or casing outside the paved road's width, rows [left, right). */
+    static boolean outsidePaved(int[] img, int w, int plotX, int plotY, int at, int left, int right, int px) {
+        for (int d = 0; d < px; d++) {
+            if (d >= left && d < right) continue;
+            int c = pixel(img, w, plotX, plotY, at, d, px);
+            if (c == TileRaster.ROAD[BuildingVisual.HIGHWAY] || c == TileRaster.HIGHWAY_CASE) return false;
+        }
+        return true;
+    }
+
+    /* ================= 26. (RR1) an arm that waits at the city's own water ================= */
+
+    static void waitingEnd() {
+        System.out.println("--- 26. (RR1) an arm that waits at the city's own water: its end ramp listed, and the plan lays a street beneath it joined to its streets ---");
+        int f = DistrictPlan.FRAME, side = DistrictPlan.SIDE;
+        PatchGround g = new PatchGround(SITE - 150, SITE - 150, SITE + 150, SITE + 150);
+        CityRuns runs = highwayCity(g, 500);
+        check("26a. no arm still to grow, nor one stopped at the ground's edge, is listed as waiting", runs.waitingEnds().isEmpty());
+        // The arm whose end ramp the plan's frame holds with no street beneath it: it is made to wait at water.
+        DistrictPlan before = DistrictPlan.make(accessInput(runs));
+        CityRuns.Arm arm = null;
+        long[] end = null;
+        for (long[] r : runs.highwayRamps()) {
+            if (r[0] < 1 || r[1] < 1 || r[0] >= side || r[1] >= side) continue;
+            if (before.kindAt((int) (r[1] * f + r[0])) == DistrictPlan.UNDER) continue;
+            arm = runs.highways().arms.get((int) r[2]);
+            end = r;
+            break;
+        }
+        check("26b. the fixture: an arm's end ramp in the frame with no street beneath it (as before RR1: the end stood open in the houses)", arm != null);
+        if (arm == null) return;
+        int r = (int) (end[1] * f + end[0]);
+        arm.stoppedBy = CityRuns.SEA;
+        java.util.List<long[]> waiting = runs.waitingEnds();
+        check("26c. once it waits at the city's own water its end ramp is listed, and no other", waiting.size() == 1 && waiting.get(0)[0] == end[0] && waiting.get(0)[1] == end[1]);
+        // The plan's input as CityMap.runsInto() gives it: the waiting end among the ramps.
+        DistrictPlan.Input in = accessInput(runs);
+        in.rampJoin = new boolean[f * f];
+        in.rampJoin[r] = in.ramp[r];
+        DistrictPlan p = DistrictPlan.make(in);
+        check("26d. the plan lays a street beneath that ramp", p.kindAt(r) == DistrictPlan.UNDER);
+        int reached = 0;
+        boolean[] seen = new boolean[f * f];
+        java.util.ArrayDeque<Integer> q = new java.util.ArrayDeque<>();
+        q.add(r);
+        seen[r] = true;
+        while (!q.isEmpty()) {
+            int at = q.poll(), x = at % f, y = at / f;
+            reached++;
+            int[] nb = { x > 0 ? at - 1 : -1, x + 1 < f ? at + 1 : -1, y > 0 ? at - f : -1, y + 1 < f ? at + f : -1 };
+            for (int b : nb) if (b >= 0 && !seen[b] && p.isStreet(b)) { seen[b] = true; q.add(b); }
+        }
+        int laid = p.rampJoins.isEmpty() ? -1 : p.rampJoins.get(0)[2];
+        System.out.println("  arm end " + end[0] + "," + end[1] + ": the join took " + laid + " plots; " + reached + " street plots reached from the ramp");
+        check("26e. ...joined to the plan's streets: one join listed, no longer than RAMP_JOIN_REACH, and from the ramp the streets run on past it to the grid",
+                p.rampJoins.size() == 1 && laid >= 1 && laid <= DistrictPlan.RAMP_JOIN_REACH + 1 && reached > laid + DistrictPlan.LATTICE);
+        DistrictPlan again = DistrictPlan.make(accessInput(runs));
+        check("26f. ...where the same plan not given it, as before RR1, leaves the ramp with no street beneath and lists no join", again.kindAt(r) != DistrictPlan.UNDER && again.rampJoins.isEmpty());
     }
 
 }

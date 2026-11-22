@@ -1,4 +1,4 @@
-# GameVersion.java - 8,484 lines · 6 methods · 4 constants · model
+# GameVersion.java - 8,475 lines · 6 methods · 4 constants · model
 
 `ham/citybuildersim/GameVersion.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -40,26 +40,26 @@
 > earlier wording of this very comment was a second match, and survived only
 > because it happened to carry no equals sign.
 
-**Used by (27):** [BridgeCheck](BridgeCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
+**Used by (26):** [BridgeCheck](BridgeCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.184"` | Bump on release. |
-| 8364 | `GameVersion.SAVE_FORMAT` | `60` | R6e: PRE-GM CROP RECIPES (format 60). |
-| 8424 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `60` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
-| 8432 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 7372 | `GameVersion.VERSION` | `"0.9.185"` | Bump on release. |
+| 8357 | `GameVersion.SAVE_FORMAT` | `59` | The save shape. |
+| 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `59` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
+| 8423 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 8443 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 8434 | 1 | `private GameVersion()` |  |
-| 8437 | 3 | `public static String title()` | For the window title. |
-| 8447 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 8456 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
-| 8465 | 6 | `public static String fromNewerBuild(String savedBy)` | What the player is told about a save from a newer build (FW1): which build wrote it, so they know the build that opens it, as noLongerReadable() names the older one. |
-| 8478 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
+| 42 | 8434 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 8425 | 1 | `private GameVersion()` |  |
+| 8428 | 3 | `public static String title()` | For the window title. |
+| 8438 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 8447 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
+| 8456 | 6 | `public static String fromNewerBuild(String savedBy)` | What the player is told about a save from a newer build (FW1): which build wrote it, so they know the build that opens it, as noLongerReadable() names the older one. |
+| 8469 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
 
