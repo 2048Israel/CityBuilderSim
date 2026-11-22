@@ -1525,6 +1525,7 @@ public class FamilyModel implements HouseholdBalance.Census {
      * @return households with nowhere at all, which squeeze() then crowds
      */
     public double house(long[] homesBySize) {
+        occupiedBySize = new double[homesBySize == null ? 0 : homesBySize.length];
         rentWeight = 0;
         studioRentWeight = 0;
         familyRentWeight = 0;
@@ -1688,7 +1689,13 @@ public class FamilyModel implements HouseholdBalance.Census {
      * family price - which is also what makes the family segment's price the
      * thing that stops that happening, rather than a discount that hides it.
      */
+    private double[] occupiedBySize = new double[0];
+
+    /** Actual lets by door size; BO1-H's owner-family seekers belong in the match. */
+    public double[] occupiedBySize() { return occupiedBySize.clone(); }
+
     private void bill(int unitSize, double homes) {
+        occupiedBySize[unitSize] += homes;
         double weight = homes * rentWeightOf(unitSize);
         rentWeight += weight;
         if (unitSize <= STUDIO_MAX_SIZE) studioRentWeight += weight;

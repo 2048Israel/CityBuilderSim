@@ -16029,6 +16029,7 @@ public class Game {
         double unplaced = families.house(stock);
         families.squeezeUnplaced(unplaced);
         families.noteUnplaced(families.house(stock));
+        buildingManager.getHousingInventory().match(families.occupiedBySize());
 
         // What the landlords can bill, off the match rather than off an
         // average, and split by which segment the door was in. See
@@ -17657,6 +17658,7 @@ public class Game {
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
+        dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
         dataSave.setLicenceFees(licenceFeesForSave());
@@ -21853,6 +21855,7 @@ public class Game {
             // ...and the equipment each site's orders froze (R1e), after the sites' counts (restoreConstruction(), above): a save with none
             // reads every building on site as the whole template, its pieces decided at the finish, as it was ordered.
             buildingManager.restoreLots(loaded.getLotsById());
+            buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
             // ...and the city's research (R3): its grants, the posts the month struck, the work piled and the finds, with the bill that month paid.

@@ -77,6 +77,13 @@ public class ReadPathCheck {
      * move the price and nothing in the shared snapshot.
      */
     static void bankPrint(Game g, Map<String, Double> into) {
+        var housing = g.getBuildingManager().getHousingInventory();
+        into.put("housing.cohorts", (double) housing.forSave().size());
+        for (var row : housing.forSave()) {
+            String key = "housing." + row.recipe + "." + row.dwelling + "." + row.owner;
+            into.put(key + ".owned", row.owned); into.put(key + ".occupied", row.occupied);
+            into.put(key + ".listedVacant", row.listedVacant); into.put(key + ".listedOccupied", row.listedOccupied);
+        }
         Bank b = g.getBank();
         into.put("bank.cash", b.getCash());
         into.put("bank.depositRate", b.depositRate());
@@ -281,6 +288,13 @@ public class ReadPathCheck {
      * the same report fields these print.
      */
     static void readEverything(Game g) {
+        var housing = g.getBuildingManager().getHousingInventory();
+        housing.homes(); housing.pipelineHomes(); housing.capacity(); housing.foundingCapacity(); housing.homesBySize();
+        for (var row : housing.stock()) for (var owner : HousingInventory.Owner.values()) {
+            housing.owned(row.key(), owner); housing.occupied(row.key(), owner); housing.vacant(row.key(), owner);
+            housing.listed(row.key(), owner, false); housing.listed(row.key(), owner, true);
+            housing.allocate(row.key(), owner, 0, 100, 100, 100);
+        }
 
         EconomyManager e = g.getEconomyManager();
         ham.citybuildersim.sectors.Retail c = g.getSectors().retail();

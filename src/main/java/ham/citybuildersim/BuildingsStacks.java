@@ -480,10 +480,21 @@ public class BuildingsStacks {
     }
 
     // for immediate add
+    private java.util.function.LongPredicate mayRemove = n -> true;
+    private java.util.function.Consumer<BuildingsStacks> physicalChanged = s -> { };
+
+    /** Inventory hooks protect conveyed titles; stacks remain physical authority. */
+    void bindHousing(java.util.function.LongPredicate guard,
+                     java.util.function.Consumer<BuildingsStacks> changed) {
+        mayRemove = guard; physicalChanged = changed;
+    }
+
     public void addQuantity(long n) {
+        if (n < 0 && !mayRemove.test(-n)) throw new IllegalStateException("Housing titles prevent removal");
         long before = quantity;
         quantity += n;
         if (quantity < before) lowerUnfitted(before);
+        physicalChanged.accept(this);
     }
 
     public void advanceConstruction(double constructionOutput) {
@@ -546,6 +557,7 @@ public class BuildingsStacks {
 
         long startedConstruction = underConstruction + finished;
         quantity += finished;
+        if (finished > 0) physicalChanged.accept(this);
         constructionProgress = underConstruction > 0 ? remainingOutput : 0;
         lastFinished = finished;
 
@@ -638,9 +650,12 @@ public class BuildingsStacks {
 
     /** Scraps finished buildings. Floors at zero rather than going negative. The unfitted ones go first (see the unfitted counts). */
     public void removeQuantity(long amount) {
+        if (amount < 0) throw new IllegalArgumentException("Negative removal");
+        if (!mayRemove.test(Math.min(quantity, amount))) throw new IllegalStateException("Housing titles prevent removal");
         long before = quantity;
         quantity = Math.max(quantity - amount, 0);
         if (quantity < before) lowerUnfitted(before);
+        physicalChanged.accept(this);
     }
 
     public long getUnderConstruction() {

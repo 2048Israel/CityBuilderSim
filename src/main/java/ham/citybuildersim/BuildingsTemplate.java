@@ -1098,6 +1098,22 @@ public class BuildingsTemplate {
         return constructionPoints;
     }
 
+    private HousingRecipe housingRecipe;
+
+    /** Fixed dwelling/rights metadata, separate from the structure's physical recipe. */
+    public HousingRecipe getHousingRecipe() {
+        if (getCategory() != BuildingType.RESIDENTIAL) return null;
+        return housingRecipe == null ? HousingRecipe.compatible(this) : housingRecipe;
+    }
+
+    public BuildingsTemplate setHousingRecipe(HousingRecipe recipe) {
+        if (getCategory() != BuildingType.RESIDENTIAL || recipe == null
+                || recipe.doors() != getDwellings() || recipe.capacity() != getCapacity())
+            throw new IllegalArgumentException("Housing mix differs from physical template");
+        housingRecipe = recipe;
+        return this;
+    }
+
     public int getDwellings() {
         return dwellings;
     }

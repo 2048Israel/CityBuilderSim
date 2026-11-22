@@ -1,0 +1,24 @@
+# RES2 ? aggregate housing inventory
+
+Built on origin/main 52c79806b (0.9.187). Work in progress; checks and publication record below will be completed before mends.
+
+## Model and choices
+
+- ? Physical authority remains BuildingManager/BuildingsStacks. HousingInventory reads their standing/site quantities; no saved parallel structure counter, no per-home/per-building records. Completion carries the immutable mix on the existing aggregate Completion event, once per completed stack advance; quotes and load emit none.
+- ? One equivalent service cohort per recipe, bounded by HousingRecipe.MAX_CLASSES (32), with at most four owner rows per class (RE, household, estate, outbound). Splits add quantities to the same keyed row and empty rows disappear. Future differing obligations need explicit bounded cohorts in HO1. No new household-cell axis.
+- ? The founding 100 places per founding endowment are named foundingCapacity(), with no saleable doors or transferable title. Existing size/door totals exclude them, capacity includes them.
+- ? Three shipped IDs/forms only: House (0), Studio Apartments (1), Low-Rise Apartments (6). Their current capacity/doors, materials, work, prices and era remain unchanged. Explicit immutable metadata supplies per-class area, bedrooms, quality, private/included/shared parking and fixed allocation weights. Compatibility area (20 square metres per capacity place), bedrooms (zero for studios, half capacity rounded up otherwise), quality 1 and area weights are disclosed initial metadata, with no new bills/preferences. Existing forms have no activated parking rights; RES3/RES4 calibrate and activate their richer catalogue. Built-in/mod fallback preserves former rounded sizes and declared capacity.
+- ? Titles and occupancy are distinct. Transfer validates all quantities before mutation, retains occupied quantities, clears transferred seller offer subsets, pays nobody and changes no structure/material/land. Listings are occupied/vacant subsets, never additional stock. Physical removals cannot destroy conveyed titles. Existing anonymous tenants are recounted by the legacy match after retirement; no new eviction policy is activated here.
+- ? allocate(key, owner, amount, structureBook, landBook, collateralBook) partitions the caller's actual recipe-project books by fixed title weights. Partial releases sum to whole-project books, including shared facility title shares through those weights. It quotes no sale price, transfers no debt/cash and does not reconstruct asset values from future rent. HO1/RES5 supply actual accepted consideration and settlement against these allocations.
+- ? RN2's last-counted owned capacity stays a saved accounting baseline in RealEstate extras, distinct from current stock. Each economy input derives its next count from HousingInventory. The load restores the saved last count after its derived rebuild as FB16 required. Its changed-capacity/zero-count tests remain; a new integrated title fixture also changes the baseline and compares the first month.
+- ? Old-saves rule: a format bump is owed. Missing title/occupancy/listing state cannot correctly represent this authoritative inventory; there is no conversion. SAVE_FORMAT and OLDEST_LOADABLE_FORMAT advance from shipped 60 to 61, to be refreshed after merging newest main (HC1 also changes the format).
+
+## Handoff APIs
+
+BuildingManager.getHousingInventory() is the entry point. RES3 reads stock() (recipe/form/mix, class metadata, standing and pipeline structures), homesBySize(), homes(), capacity(), pipelineHomes(), occupied(), vacant(), and match(double[] occupiedBySize). FamilyModel.occupiedBySize() supplies the actual current legacy match, without reconstructing occupancy from rent weights. RES4 reads the immutable privateParking/includedParking/sharedParking metadata through stock(). HO1 reads owned(), ownedCapacity(owner, includePipeline), listed(), vacant(), occupy(), list(), transfer() and allocate(); forSave()/restore() go through DataSave and Game's actual load rebuild. Keys identify recipe/class cohorts, not individual structures. RealEstate.getOwnedHousingCapacity() is explicitly the last-counted accounting baseline; use inventory.ownedCapacity for current titles and pipeline, with fractional precision. The older BuildingManager long getter truncates fractional capacity at its compatibility boundary.
+
+BO1-H remains its queued row: FamilyModel's seeker groups/match and rental bills own business-owner families. The new occupiedBySize()/HousingInventory.match seam consumes that match unchanged. RES3/BO1-H must add the missing owner-family seeker group there, without inventing stock or a new title-owner class.
+
+## Checks and trace
+
+Pending final results. Baseline default LongPlaytest, compiled before model edits at 52c79806b, ran 2,400 months with all checks passed; eight trace CSVs kept under target/RES2-trace/base-*.csv. No baseline whole suite was run.

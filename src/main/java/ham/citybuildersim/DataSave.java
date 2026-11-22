@@ -96,6 +96,11 @@ public class DataSave implements Cloneable {
     //save variables
     private double cash;
     private long[] buildings;
+
+    /** RES2 bounded title/occupancy/listing cohorts; physical stock stays in buildings[]. */
+    private java.util.List<HousingInventory.Holding> housingInventory;
+    public void setHousingInventory(java.util.List<HousingInventory.Holding> holdings) { housingInventory = holdings; }
+    public java.util.List<HousingInventory.Holding> getHousingInventory() { return housingInventory; }
     private int month = 1;
     private JsonArray debts;
 

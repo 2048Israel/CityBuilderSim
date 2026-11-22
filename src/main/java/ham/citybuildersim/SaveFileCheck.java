@@ -617,6 +617,9 @@ public class SaveFileCheck {
         long peopleAfter = reloaded.getPopulationManager().getPopulation();
 
         BuildingManager after = reloaded.getBuildingManager();
+        assertTrue("RES2 inventory cohorts survive the actual load rebuild",
+                new com.google.gson.Gson().toJson(city.getBuildingManager().getHousingInventory().forSave())
+                        .equals(new com.google.gson.Gson().toJson(after.getHousingInventory().forSave())));
         assertEquals("depots still under construction",
                 after.getUnderConstructionById()[depot.getId()], depotsUnderWay);
         assertEquals("stores still under construction",
