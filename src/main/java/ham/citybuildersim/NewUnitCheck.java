@@ -656,6 +656,7 @@ public final class NewUnitCheck {
             MaterialsCheck.handWorkers(g);
             g.simulateMonths(1);
         });
+        SubstationCheck.buildersForSite(g, 1); // PW5: actual depots must cover the standing wires' repairs before a site can finish.
         HistoricalRecipeCheck.fitted(kiln, stack);
         priceForBothReaders(g, Good.MACHINERY, .01);
         run(g);
@@ -857,6 +858,8 @@ public final class NewUnitCheck {
         check("a rush inside a scope: the readings after it are the bare ones to the bit", sameBits(rushedInside, rushedBare)
                 && builtRush == 2, builtRush + " built");
         g.rushSite(key, false);
+        // PW5: isolate city priority from the independent builders-first rule; the depot must be allowed to follow the kilns.
+        bm.setBuildersFirstForTest(false);
         BuildingsTemplate depot = bm.getTemplateByName("Construction Depot");
         Game.BuildResult[] second = new Game.BuildResult[1];
         silent(() -> second[0] = g.buildStack(depot, 1, false));
@@ -876,6 +879,7 @@ public final class NewUnitCheck {
                 second[0] + ", kilns " + kilnAt + " depot " + depotAt + ": " + Arrays.toString(unordered) + " -> " + Arrays.toString(orderedBare));
         check("a priority inside a scope: the readings after it are the bare ones to the bit", sameBits(orderedInside, orderedBare)
                 && builtPriority == 2, builtPriority + " built");
+        bm.setBuildersFirstForTest(true);
 
         // Two stamped inputs moved inside a scope, by no order: the kilns' progress, and the builders-first switch (REV-AP1).
         BuildingsStacks kilns = bm.getStack(kiln);

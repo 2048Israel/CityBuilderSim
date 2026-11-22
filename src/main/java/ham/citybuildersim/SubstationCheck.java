@@ -47,6 +47,25 @@ public final class SubstationCheck {
         if (peak > g.getServicesManager().getUtilitiesHandler().getFoundingGridKw()) wiresFor(g, peak);
     }
 
+    /** Real depots restoring the site budget consumed by standing wire repairs, with the fixture's own minimum too. */
+    static void buildersForSite(Game g, int requested) {
+        if (requested <= 0) throw new IllegalArgumentException("fixture site output " + requested);
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate wire = b.getTemplate(Substations.ID);
+        double wireRepairs = b.getQuantity(Substations.ID) * wire.getConstructionPoints() * wire.repairsPerYear() / 12;
+        int minimum = Math.max(requested, (int) Math.round(g.getConstructionOutputAtEveryPost() - g.getMaintenancePoints() + wireRepairs));
+        int added = 0;
+        while (g.getBuildingOutputAtEveryPost() < minimum && added < 64) {
+            b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
+            MaterialsCheck.handWorkers(g);
+            added++;
+        }
+        System.out.printf("SITE m%d districts=%d extraDepots=%d builders=%d repairs=%.6f wireRepairs=%.6f site=%d required=%d%n",
+                g.getMonth(), b.getQuantity(Substations.ID), added, g.getConstructionOutputAtEveryPost(),
+                g.getMaintenancePoints(), wireRepairs, g.getBuildingOutputAtEveryPost(), minimum);
+        if (g.getBuildingOutputAtEveryPost() < minimum) throw new AssertionError("fixture depots did not restore the site budget");
+    }
+
     static Game city(String label, int substations) {
         Game g = new Game(GameFiles.scratch("substation-" + label));
         quietly(() -> {

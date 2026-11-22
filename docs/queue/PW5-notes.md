@@ -756,3 +756,72 @@ ensemble 069504753 still finds only *Check.java differences. Its completed
 80 runs, M1/F1 10/10 and 24/26 against 0.9.188, remain applicable; no model
 change calls for another ensemble. The slot is explicitly granted for the
 ALL dry run by the same SHIP mail.
+
+### Second ALL result: repair capacity in three construction fixtures
+
+The gate-box run /home/jerus/cbs/runs/cbs-gate-PW5-tm3677MG stops with exit 1.
+Its ALL 243 suite finishes in 908 seconds with 32 unnamed log lines, comprising
+26 actual failed assertions: PostwarRecipeCheck 3, NewUnitCheck 21 and
+FitoutCheck 2 (the other six lines are their exits and counts). It is of
+branch 2b0246ac8effcd1e930505d8388d8c175488376c and main
+7b60b9a8d3b0aa3cb2eea1421c99654bc54db8bc. The sealed copy is
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW5-tm3677MG; launcher output is
+target/PW5-dry-final.txt. No file in either kept run is changed, and neither
+stopped run is entered as a passing gate-run. The provisional marker stays.
+All the previous HomeRail mends pass; OrderDoor remains its accepted named red.
+
+These are PW5's fixture defects. HistoricalLicenceCheck.town and stand supply
+real wires, and all three tests borrow that town. One district adds 110 real
+repair points per month. Their old numbers of builders no longer guarantee
+site work after those repairs. NewUnit's first premise reads 355 builder
+points against 377.904670 of repairs, leaving no site output and hence NaN
+completion waits; its remaining schedule/cache assertions follow from that
+missing premise. Fitout's wait becomes NaN and its queue multiple cannot move.
+Postwar's refit remains unfinished at its original 120-month guard, so its
+three original fitting/royalty checks fail. No money or save bound is relaxed.
+
+★ Supply real depots for the lost site budget, in these three isolated
+fixtures only. SubstationCheck.buildersForSite reads the standing districts'
+construction points and their own repairsPerYear rate. The target is the
+current potential builder output less all repairs plus the wires' repair
+points, with the caller's positive minimum too: the site budget it would
+have before paying the wires' repairs. It adds whole depots one at a time,
+supplies the fixture's existing handWorkers input and rereads actual output
+after every addition. Its 64-depot bound throws if that target is not met.
+Every repair remains paid and consumes points; no ratio, bill, repair or
+completion reading is assigned. Shared HistoricalLicenceCheck preparation,
+production code and the default model remain unchanged in this mend.
+
+The first diagnostic minimum of one positive point removes most of NewUnit's
+cascade and fixes Fitout, but is insufficient for Postwar's played refit.
+At its start the potential site budget is 117, yet after twenty months
+builder output is 337 against 377.727326 of repairs. The refit then stalls
+near 4,499 points left for the rest of the guard. A trace every twenty months
+now makes that loss of capacity explicit. Restoring the pre-wire budget
+requires two extra real depots: 641 potential builder points, 324.256667 of
+repairs, and 317 site points against a target of 227 at the initial month.
+The site continues through its later hiring/health path and finishes within
+the unchanged 120-month guard. The exact wet-form coal figure and both real
+royalty comparisons pass. All original 230 assertions remain, plus one
+strict construction-premise assertion.
+
+NewUnit similarly adds two real depots after its original four-month warmup:
+516 potential builder points, 378.571337 repairs and 137 site points against
+the pre-wire target of 87. Its independent priority test also turns builders
+first off before moving a depot behind the kilns, then restores it before
+the separate builders-first stamp test. This isolates city priority from
+the independent depot-first rule; its actual power vectors must still move,
+and every held/bare/thread/second-city identity stays bitwise. All 83
+original assertions pass, including the previously hidden priority premise.
+
+Fitout's farm fixtures add two depots to the previous two: 441 potential
+builder points against 285.125000 repairs leave 156 site points, beyond the
+pre-wire target of 66. All original 66 assertions, including actual receipts,
+VAT, saved lots and work recognition, pass, plus seven strict positive-site
+premises on the separate farm fixtures. The finite waits and moving multiple
+are caused again through stock; their expected figures and bounds do not move.
+
+The initial post-mend normal runs of all three exit 0. The final serial
+fixture-caller sweep, including the helper's added failure bound, follows.
+Diagnostics and those first runs are in target/PW5-dry2-mends/; the final
+complete coverage logs are in target/PW5-fixture-coverage/.
