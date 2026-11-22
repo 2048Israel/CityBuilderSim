@@ -21235,6 +21235,12 @@ public class Game {
 
     // Load game
     public void loadGame(int slot) {
+        // A cold direct load needs the same physical catalogue as the menu load (RES2).
+        // Otherwise every building is skipped, so the restored titles have no physical stock.
+        if (!initialized) {
+            loadGameSave(slot);
+            return;
+        }
         // Every dial the load puts back goes through its setter, and none of
         // it is a decision (0.7.23): the log is held for the whole load.
         decisions.hold();

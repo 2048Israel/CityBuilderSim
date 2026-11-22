@@ -22,3 +22,7 @@ BO1-H remains its queued row: FamilyModel's seeker groups/match and rental bills
 ## Checks and trace
 
 Pending final results. Baseline default LongPlaytest, compiled before model edits at 52c79806b, ran 2,400 months with all checks passed; eight trace CSVs kept under target/RES2-trace/base-*.csv. No baseline whole suite was run.
+
+The first HousingCheck found a cold public load with no initialized catalogue: every physical ID was skipped, then strict title validation correctly refused it. Mended Game.loadGame to route an uninitialized instance through loadGameSave's canonical catalogue/world initialization. No harness premise, assertion, conservation or save check was relaxed. HousingCheck already exercises this direct cold-load path.
+
+HousingCheck is green after that mend. HousingDoorCheck is green: months 431?900 completed 960 size-2, 6,237 size-4 and 26 size-6 doors, with no household left without a door; all 899 played months closed the household cash identity. New HousingInventoryCheck's initial run is green; the final run will include the actual-match and excess-title save cases added during review.

@@ -177,7 +177,7 @@ public final class HousingInventory {
         a.occupied -= occupied; b.occupied += occupied;
         // Accepted quantities leave the seller's offered subset; a buyer does not inherit an offer.
         a.listedOccupied = Math.min(a.listedOccupied, a.occupied);
-        a.listedVacant = Math.min(a.listedVacant, source - amount - a.occupied);
+        a.listedVacant = Math.min(a.listedVacant, Math.max(0, source - amount - a.occupied));
         coalesce();
     }
 

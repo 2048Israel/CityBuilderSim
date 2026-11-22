@@ -88,7 +88,9 @@ public final class HousingInventoryCheck {
 
             out.println("--- fractional titles, occupancy, listings and split/merge ---");
             var k = key("family");
-            m.occupy(k, REAL_ESTATE, 2.5);
+            m.match(new double[] { 0, 0, 0, 0, 2.5 });
+            near("actual size match assigns fractional lets to the family class", m.occupied(k, REAL_ESTATE), 2.5);
+            near("zero class lets create no phantom occupants", m.occupied(key("small"), REAL_ESTATE), 0);
             m.list(k, REAL_ESTATE, 1, 1.25);
             m.transfer(k, REAL_ESTATE, HOUSEHOLD, .75, .5);
             near("fractional title arrives once", m.owned(k, HOUSEHOLD), .75);
@@ -157,6 +159,10 @@ public final class HousingInventoryCheck {
             var bad = decoded.getHousingInventory(); bad.get(0).occupied = 100;
             refused("invalid save cannot replace a valid matrix", () -> restored.restore(bad));
             check("failed restore is atomic", restoredBefore.equals(new com.google.gson.Gson().toJson(restored.forSave())));
+            var badTitles = m.forSave();
+            badTitles.stream().filter(x -> x.owner == HOUSEHOLD).findFirst().orElseThrow().owned = 100;
+            refused("save cannot claim more titles than physical homes", () -> restored.restore(badTitles));
+            check("refused excess titles preserve the old matrix", restoredBefore.equals(new com.google.gson.Gson().toJson(restored.forSave())));
 
             out.println("--- actual game save/rebuild preserves titles and RN2's debt baseline ---");
             GameFiles files = GameFiles.scratch("housing-inventory");
@@ -183,7 +189,12 @@ public final class HousingInventoryCheck {
             near("load rebuild restores listing subsets", bh.listed(home, REAL_ESTATE, true), ch.listed(home, REAL_ESTATE, true));
             near("RN2 load keeps the changed saved count", back.getSectors().realEstate().getOwnedHousingCapacity(), savedCount);
             near("RN2 load keeps the saved stranded share", back.getSectors().realEstate().strandedDebtShare(), savedShare);
-            city.simulateMonths(1); back.simulateMonths(1);
+            long monthStarted = System.nanoTime();
+            city.simulateMonths(1);
+            double monthMs = (System.nanoTime() - monthStarted) / 1e6;
+            back.simulateMonths(1);
+            out.printf(java.util.Locale.ROOT, "   integrated scratch month %.3f ms; %d physical class rows, %d saved cohorts; scaled fixture %d/%d rows%n",
+                    monthMs, ch.stock().size(), ch.forSave().size(), huge.stock().size(), huge.forSave().size());
             near("first month allocates debt from the same changed baseline", back.getSectors().realEstate().strandedDebtShare(), re.strandedDebtShare());
             near("first month counts the same RE-owned capacity", back.getSectors().realEstate().getOwnedHousingCapacity(), re.getOwnedHousingCapacity());
             near("first month retains the conveyed title", bh.owned(home, HOUSEHOLD), ch.owned(home, HOUSEHOLD));
