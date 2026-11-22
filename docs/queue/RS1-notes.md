@@ -196,3 +196,43 @@ byte-identical. RS1's three reviewed Java files remain byte-identical to
 this model. The two generated-index conflicts were regenerated, and the
 merged `--fast` is green (`target/RS1-HS3-fast.txt`). No new model change or
 second ensemble is needed for that trace-neutral integration.
+
+The ensemble completed on gatebox, OpenJDK 21.0.13, at snapshot
+`06ff846308e7218f4b3f3aacfdd1348a46484a86`, label
+`RS1-final-abc8-20261122`: 80/80 complete, none missing or short, exit 0.
+HS3's gate took priority before any runs started; active ensemble time was
+15.3 minutes. The box's files are kept locally at
+`target/ensemble/RS1-final-abc8-20261122/`, with the launcher receipt in
+`target/RS1-ensemble.txt`. The complete generated baseline, with only its
+publication version labels changed to `{next}`, is `docs/ensemble/RS1.md`.
+Its snapshot still names the actual tested commit and data files.
+
+| Score | RS1 | Baseline 0.9.184 |
+|---|---|---|
+| Counted criteria | 23/26 | 21/26 |
+| Hard M1/F1 | PASS, 10/10 | raw FAIL, 6/10; four F1 passed by name |
+| M1 failed/unread months, all five policies | 0/0 | 0/0 |
+| F1 runs, AUTO2 / ZERO_SLACK / ZERO_HOT / SHOCK / HIGH | 1 / 1 / 0 / 1 / 1 | 1 / 1 / 0 / 1 / 1 |
+| AUTO2 A1 inflation | 2.64%, PASS | 2.71%, PASS |
+| AUTO2 A2 longest high-inflation spell | median 12 months, FAIL | median 14 months, FAIL |
+| T1 reaching 40,000 | 16/16, PASS | 16/16, PASS |
+| AUTO2 T2 final population | 2,470,540, FAIL | 3,958,776, PASS |
+| ZERO_SLACK T2 final population | 1,277,612, FAIL | 2,180,779, PASS |
+| Pairing before the policy switch | 64/64, PASS | 64/64, PASS |
+
+The two changed informational T2 verdicts are real: the population medians
+are 62.4% and 58.6% of the baseline, below its 75% threshold. All other
+informational verdicts are unchanged; the full figures remain in the
+ensemble record. Only M1/F1 stop shipping under the contract, and all ten
+are green without an exception. The four F1 readings still name just seed
+14 at m456, "households with no home", once in each listed policy. This
+matches the baseline's already named FB11H land-funding finding, now owned
+by queued FB11. F1's FAIL-to-PASS comparison reflects the latest baseline's
+one-run counts; RS1 does not claim to have repaired that housing path. No
+new finding, threshold edit or score edit was used.
+
+Final main is `52c79806b`, merged as `4c79376dd`. The final pick names 42
+of 241 harnesses (`target/RS1-ready-pick.txt`), not ALL; no dry run is owed.
+`sh tools/known-reds.sh RS1 docs/queue/RS1-ship.md` exits 0. The ship file
+adds no known-reds rows and therefore names no removed queue owner. The
+ready marker is removed last, in its own commit after these records.
