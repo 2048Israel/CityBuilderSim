@@ -4,7 +4,7 @@ Started 2026-11-22 from `origin/main` 16ee7adde (0.9.186); HC2 is folded into th
 
 ## Built
 
-Work in progress. The card balance remains per household; `revolving` is its holder share,
+The card balance remains per household; `revolving` is its holder share,
 and `lateDebt` and `lateShare` are subsets of that balance and those holders. `shutOut`
 excludes only the share charged off. Closed forms use the model's existing normal CDF.
 
@@ -128,15 +128,80 @@ The shipped base uses format 60. HC1 raises `SAVE_FORMAT` and
 `OLDEST_LOADABLE_FORMAT` to 61 together: a balance without a holder share would read
 wrongly. The loader refuses old saves; no conversion is introduced.
 
+## Main and the household page
+
+Merged main's record-only `abc8fd4f5` in `eae43e9d7`, then HS3's shipped
+`52c79806b` (0.9.187) in `bc101892c`. The latter changes the household page
+and read-only stage getters; it changes no model trace. Generated-map conflicts
+were kept locally and regenerated from the merged source by the next fast check.
+
+Only after HS3 shipped, HC1 added the debt survey below the Household money page's
+existing sections. Its chips select household/adult, tier, stage, and current month
+or the latest saved yearly survey. Three cards lead with holding a card balance,
+required debt service, and late balances; details hold every kind's holding share,
+median, mean, late shares and net charge-offs, then the income/assets and burden
+ratios and bankruptcy/forced-sale counts. The captions name the approximations and
+the future books. The open household's own ledger shows its holding/late shares,
+minimum due, minimum principal paid, emergency bills and net loss. Credit exclusion
+is shown and counted as a share; a neighbour's charge-off no longer labels the
+whole cell unable to borrow. Bankruptcy counts are not displayed as lost dollars.
+
 ## Checks and remaining work
 
-Initial `./batch-check.sh --fast` passed on the base. `CardCheck` passed its closed
-forms, mechanisms and 24 real-city months; both pooled and household money residuals
-were below tolerance by more than eight orders of magnitude. Its scratch-slot-10
-save retained every card field, all current statistics and the annual history.
-`DebtStatisticsCheck` passed the grid/bisection/draw, weighted ratios and group checks.
-Existing harness checks are in progress. Save/read-path integration, old discharge premises, the full pick,
-the stranger's money/saves review, ensemble and ALL dry run remain.
+The model's `./batch-check.sh --fast` passed (53 s compile; Stale 0 firm,
+199 soft). Named checks ran one JVM at a time with the prescribed Earth/world
+files and `cbs.parallel=1`. Raw logs are `target/hc1-<Harness>-direct.log`.
 
-HS3 owns `ui/PeopleScreen` concurrently. Any card/debt section waits for HS3 to ship
-and a merge of main first; otherwise these notes will name that deferred page work.
+`CardCheck` passed the closed forms against seeded draws, the minimum's two
+branches and priority, both sides of the savings/access/capital edges, partial
+arrears, charge-offs, seizures and exclusion, census transport, named emergency
+receipts at zero and positive tax, and 24 real-city months. Emergency bills,
+card draws, minimums, late stock and charge-offs each fired in all 24 measured
+months. Worst pooled/household residuals were respectively 3.82e-9 and 1.67e-9
+of their existing tolerances. Its scratch-slot-10 save retained every card field,
+the pending and struck service receipts, exact current statistics and yearly history.
+Closing holders were 7.736% of households; late households 0.312%, late balances
+4.611%, and annualised net charge-offs 0.851%.
+
+`DebtStatisticsCheck`, `HouseholdCheck`, `BankCheck`, `CarCheck`,
+`HouseholdFlowCheck`, `HouseholdStageCheck`, `BusinessServicesCheck`,
+`SaveFileCheck` and `DenominationCheck` passed. The statistics checks compare
+mixture medians with bisection and draws, household/adult weights, tier/stage
+footings, signed disposable-income contributions and burden edges. SaveFileCheck
+retains exact statistics and all card stocks and flows including the applied APR.
+DenominationCheck retains the existing full-city money and view checks.
+
+The final integrated `--fast` passed (57 s compile; regenerated maps; Stale
+0 firm, 199 soft), in `target/hc1-fast-integrated.txt`. `MoneyWordsCheck` passed
+43 assertions in 18.5 s: actual household/adult holder medians, selected tier and
+stage ratios, untiered/outside-family populations, and the saved yearly view after
+the current book changes. It also retains HS3's stages, captions, estates and tax
+lines, identical kept/fresh pages, scroller position and retained disclosure nodes.
+Its fixture closes a real year through normal simulation before selecting that
+survey; two initial fixture attempts without a completed year were rejected,
+and their hung JavaFX process trees were ended by their own verified PIDs.
+
+For an eye check: People › Household money › Household debt, try a tier and
+stage in each counting unit, open details and compare current versus yearly.
+Opening a grid cell should show its own card minimum and the fraction excluded,
+while a partial exclusion still leaves a monetary credit-room figure.
+
+An early SaveFileCheck invocation with a mistyped world path is excluded from
+these results; the correct-path rerun passed. An incidental substring pick of
+`BankCheck` also started CentralBankCheck; that run was ended by its own verified
+process-tree PID, and is not a check result. The subsequently named direct BankCheck
+passed. No conservation or save tolerance was loosened.
+
+The final pick at model/page commit `dfbccb916` is `ALL 243 harnesses`, because
+`AllChecks.java` changes. The review line is `needed - money: Bank.java,
+DebtStatistics.java, ui/BankScreen.java; saves: HistorySave.java, +SAVE_FORMAT,
++OLDEST_LOADABLE_FORMAT`. Its raw output is `target/hc1-pick-final.txt`.
+The laptop ran only fast and the named harnesses; the ALL pick belongs to the
+gate box after review, as the batch's machine instructions require.
+
+The integrated `ReadPathCheck` passed: repeated city, tier, stage and survey
+statistics reads leave the city's saved state and existing read paths unchanged.
+The stranger's money/saves review, final-model ensemble and ALL dry run remain.
+The card changes alter the default trace by construction; the 80-run ensemble is
+owed after the review's go, on the gate box, followed by the ALL dry run there.
+No dry-run log or gate-run reuse is claimed yet.
