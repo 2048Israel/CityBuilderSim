@@ -1,4 +1,4 @@
-# CityMap.java - 11,509 lines · 563 methods · 77 constants · model
+# CityMap.java - 11,592 lines · 567 methods · 77 constants · model
 
 `ham/citybuildersim/CityMap.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > district is full at PLAN_FILL of its owned plots.
 > ... (62 more lines in the source)
 
-**Uses:** [World](World.md) (390), [DistrictPlan](DistrictPlan.md) (134), [CityShore](CityShore.md) (112), [TilePainter](TilePainter.md) (96), [BuildingVisual](BuildingVisual.md) (87), [CityRuns](CityRuns.md) (76), [Resource](Resource.md) (44), [TrackCurves](TrackCurves.md) (27), [CityLand](CityLand.md) (23), [TrainSchedule](TrainSchedule.md) (22), [Deposit](Deposit.md) (19), [TruckSchedule](TruckSchedule.md) (17), [SeaRoutes](SeaRoutes.md) (14), [LandGrid](LandGrid.md) (13), [DistrictPicture](DistrictPicture.md) (12), [TileRaster](TileRaster.md) (12), [Landmasses](Landmasses.md) (11), [BoatSchedule](BoatSchedule.md) (9), [InterchangeGround](InterchangeGround.md) (6), [QuayRail](QuayRail.md) (5), [SeaLanes](SeaLanes.md) (5), [LandParcel](LandParcel.md) (3), [MapSiteHistory](MapSiteHistory.md) (2), [Gateways](Gateways.md) (2), [BuildingType](BuildingType.md) (1), [Pieces](Pieces.md) (1)
+**Uses:** [World](World.md) (392), [DistrictPlan](DistrictPlan.md) (134), [CityShore](CityShore.md) (112), [TilePainter](TilePainter.md) (96), [BuildingVisual](BuildingVisual.md) (87), [CityRuns](CityRuns.md) (82), [Resource](Resource.md) (44), [TrackCurves](TrackCurves.md) (27), [CityLand](CityLand.md) (23), [TrainSchedule](TrainSchedule.md) (22), [Deposit](Deposit.md) (19), [TruckSchedule](TruckSchedule.md) (15), [SeaRoutes](SeaRoutes.md) (14), [LandGrid](LandGrid.md) (13), [DistrictPicture](DistrictPicture.md) (12), [TileRaster](TileRaster.md) (12), [Landmasses](Landmasses.md) (11), [BoatSchedule](BoatSchedule.md) (9), [InterchangeGround](InterchangeGround.md) (6), [QuayRail](QuayRail.md) (5), [SeaLanes](SeaLanes.md) (5), [LandParcel](LandParcel.md) (3), [MapSiteHistory](MapSiteHistory.md) (2), [Gateways](Gateways.md) (2), [BuildingType](BuildingType.md) (1), [Pieces](Pieces.md) (1)
 
 **Used by (35):** [BridgeCheck](BridgeCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [HarbourRenders](HarbourRenders.md), [IslandNetCheck](IslandNetCheck.md), [IslandRailCheck](IslandRailCheck.md), [IslandRailRenders](IslandRailRenders.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapSiteHistory](MapSiteHistory.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md), [TilePainter](TilePainter.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
 
@@ -89,25 +89,25 @@
 | 4916 | · UP9-B: the reserves' guard moves with the mines and the works (2026-11-09) |
 | 4959 | · UP9-C: the digest kept by district (2026-11-09) |
 | 5253 | THE TRAINS' ROUTES (0.8.2, batch FR1; spec-freight 4.4, D16) |
-| 5739 | · the plans' sidings' trains (MF1, 2026-10-28) |
-| 5784 | THE TRUCKS' ROUTES (0.8.8, batch FR5; spec-freight 4.7, D21) |
-| 5983 | · the trips (batch FR9) |
-| 6600 | THE CITY'S GROUND IN PIECES (batch CL5, slice B) |
-| 7484 | · the Rail Spurs the runs' sidings left: dealt to the plans' works (batch FR7 slice 5, D14) |
-| 7630 | THE SHORE: TERMINALS AND TANK FARMS AT THE WATER (0.7.97, batch O13; |
-| 8407 | · THE HARBOUR (MF1, 2026-10-28) |
-| 8774 | THE OIL AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the |
-| 8819 | THE ISLAND RULE ON THE MAP (ET5, 2026-10-25) |
-| 9061 | LONG BRIDGES ON THE MAP (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) |
-| 9171 | THE SEA ROUTES (0.7.97, batch O13; spec-roads-and-ports.md 4.1) |
-| 9329 | A TILE'S INPUTS FOR THE PAINTER |
-| 9997 | THE RUNS DATED (batch FX7, 0.8.24) |
-| 10238 | · THE RESERVES DATED (batch UP5, FX7's star 2) |
-| 10535 | THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's |
-| 10560 | · THE WALL WAYS DATED (DM2) |
-| 10840 | ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: |
-| 10911 | THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 |
-| 11043 | THE SIDECAR (spec-land 2.5) |
+| 5827 | · the plans' sidings' trains (MF1, 2026-10-28) |
+| 5872 | THE TRUCKS' ROUTES (0.8.8, batch FR5; spec-freight 4.7, D21) |
+| 6069 | · the trips (batch FR9) |
+| 6683 | THE CITY'S GROUND IN PIECES (batch CL5, slice B) |
+| 7567 | · the Rail Spurs the runs' sidings left: dealt to the plans' works (batch FR7 slice 5, D14) |
+| 7713 | THE SHORE: TERMINALS AND TANK FARMS AT THE WATER (0.7.97, batch O13; |
+| 8490 | · THE HARBOUR (MF1, 2026-10-28) |
+| 8857 | THE OIL AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the |
+| 8902 | THE ISLAND RULE ON THE MAP (ET5, 2026-10-25) |
+| 9144 | LONG BRIDGES ON THE MAP (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) |
+| 9254 | THE SEA ROUTES (0.7.97, batch O13; spec-roads-and-ports.md 4.1) |
+| 9412 | A TILE'S INPUTS FOR THE PAINTER |
+| 10080 | THE RUNS DATED (batch FX7, 0.8.24) |
+| 10321 | · THE RESERVES DATED (batch UP5, FX7's star 2) |
+| 10618 | THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's |
+| 10643 | · THE WALL WAYS DATED (DM2) |
+| 10923 | ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: |
+| 10994 | THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 |
+| 11126 | THE SIDECAR (spec-land 2.5) |
 
 ## Constants
 
@@ -157,39 +157,39 @@
 | 5117 | `CityMap.WORLD_GAP` | `2 * CityRuns.LOOK` | How far ahead of a track's end the city's edge may lie for its line to the world to start there, in plots: 12, twice CityRuns.LOOK - an arm waits LOOK short of the edge, a 45-degree arm sooner (FX2). |
 | 5120 | `CityMap.WORLD_REACH` | `4 * DISTRICT` | How far the world line is drawn at most, in plots: 1,024 (30.7 km), four districts; it stops sooner at the first plot that is not dry ground (FX2). |
 | 5123 | `CityMap.WORLD_STEP` | `0.25` | How finely a way out is read, in plots: a quarter, as MapCheck reads the trains' routes (FX2). |
-| 5375 | `CityMap.PORTAL_FADE` | `2` | How far a train fades in from the portal at the main line's end, where the railway has no line to the world (TN1), in plots: 2, about 60 m - a locomotive and a wagon or two out of the tunnel's mouth. |
-| 5811 | `CityMap.TRUCK_ROUTE_LEAST` | `4` | The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. |
-| 5814 | `CityMap.TRUCK_ROUTES_MOST` | `40` | The most highway routes kept, 40: one to each ramp, the arms' order, a city of many arms is cut here (a route is a lane of trucks, and the legend would not read more). |
-| 5817 | `CityMap.TRUCK_ACCESS_FADE` | `3` | How far an access road's trucks fade in off the street grid, in plots: 3. |
-| 5995 | `CityMap.TRIP_REACH` | `DISTRICT` | The plots about a district's frame, on every side, its trips look for a ramp over: DISTRICT (256), the three districts across about it. |
-| 5998 | `CityMap.TRIP_STREET_COST` | `3` | What a truck pays to cross a street plot that is not an arterial's, boulevard's or access road's (those cost 1) in the trips' street search: 3, so a truck takes the arterials unless the other way is under a third as l... |
-| 6001 | `CityMap.TRIP_BOX` | `DistrictPlan.FRAME + 2 * TRIP_REACH` | The side of the box a district's street search runs in, in plots: its frame grown by TRIP_REACH on every side. |
-| 6007 | `CityMap.NO_PLOT` | `Long.MIN_VALUE` |  |
-| 6439 | `CityMap.RUN_LINES_KEPT` | `4096` | Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. |
-| 6442 | `CityMap.RUN_TILES_KEPT` | `256` | ...whole tiles, for a 45-degree way: 256. |
-| 6639 | `CityMap.CHUNK_CACHE` | `256` | How many chunks of the pieces' tables are kept at hand (MapPieces.cacheChunk): 256 (a city of billions keeps about 250: its 4 MB of tables in chunks of 16 KB). |
-| 6642 | `CityMap.PIECE_CHUNK_SHIFT` | `6` | Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. |
-| 6644 | `CityMap.PIECE_CHUNK_MASK` | `(1L<<PIECE_CHUNK_SHIFT) - 1` |  |
-| 6647 | `CityMap.PIECE_SAMPLE_AT` | `8, PIECE_SAMPLE_EVERY = 16` | Where in a tile its four samples lie (CL5; IslandProbe's tile rule): the first 8 plots in and each of the others 16 further, the centres of its four quarters. |
-| 6650 | `CityMap.PIECE_HOME_REACH` | `8` | How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). |
-| 6656 | `CityMap.PIECE_PORT_REACH` | `2` | How many tiles round a sea terminal's box the piece it stands on is sought, ring by ring (RI1; ET5's "a linked island's hub at its port"): 2 - the box is blocked from the pieces with its clear verge and quay, so the n... |
-| 7205 | `CityMap.WAYS_WORKS_DISTRICTS` | `1000` | Up to this many districts the map weighs its mined sites each month for the railway's sidings and further yards: 1,000 (Jerus's city has 93). |
-| 7726 | `CityMap.SHORT_ANY` | `0x7fff_fffeL` | The landmass half of the key of a search that asked for no landmass: not any landmass's id (an int). |
-| 7931 | `CityMap.ANY_LANDMASS` | `Integer.MIN_VALUE` | ET5: no landmass asked for: the search runs as it always did, over the ground the runs can use. |
-| 8035 | `CityMap.SHUT_REACH` | `SeaRoutes.OPEN_M / World.PLOT_M / SeaRoutes.CELL` | The flood's reach in cells (SeaRoutes.opensToSea()): a water whose cells all lie within it of one another opens to nothing, whichever of them a flood starts from. |
-| 8883 | `CityMap.MASK_TILES_KEPT` | `1<<16` | The tiles whose masks are kept: 65,536 (a tile's mask is a reference, and a boolean array only for a tile holding masked ground). |
-| 9014 | `CityMap.AtSea.NONE` | `new AtSea(List.of(), List.of())` | None. |
-| 9108 | `CityMap.BridgeRun.ROAD` | `0` | A street-sized deck that belongs to no net... |
-| 9110 | `CityMap.BridgeRun.HIGHWAY` | `1` | ...a highway's, which joins the highways... |
-| 9112 | `CityMap.BridgeRun.RAIL` | `2` | ...and the railway's. |
-| 9134 | `CityMap.ROAD_BRIDGE_STREET` | `(byte)(DistrictPlan.PAVED \|(1<<TilePainter.S_WIDTH_SHIFT))` | A road bridge's plot as a plan's street code: paved, half a plot wide (a street's surface, so that its deck shows beside it), a cell's street, no bridge bit - the painter reads the water under it. |
-| 9408 | `CityMap.NO_PLAN` | `0x4E4F504C414EL` | tileKey()'s fixed mark for a district whose plan is not kept drawn. |
-| 10161 | `CityMap.KINDS_KEPT` | `16` | How many kinds arrays are kept: 16, eight districts' pair. |
-| 10263 | `CityMap.SITE_MARGIN` | `32` | How far a mine's site (a few plots across, centred in its district) can reach beyond its district's box: 32 plots. |
-| 10266 | `CityMap.RESERVE_PAD` | `InterchangeGround.REACH + 1` | How far a reserve's box can be from a plot that moves it: the longest reach of a box from its junction plot, and one for the highway beside the junction. |
-| 10916 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. |
-| 10919 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
-| 10922 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned buildable plots. |
+| 5404 | `CityMap.PORTAL_FADE` | `2` | How far a train fades in from the portal at the main line's end, where the railway has no line to the world (TN1), in plots: 2, about 60 m - a locomotive and a wagon or two out of the tunnel's mouth. |
+| 5899 | `CityMap.TRUCK_ROUTE_LEAST` | `4` | The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. |
+| 5902 | `CityMap.TRUCK_ROUTES_MOST` | `40` | The most highway routes kept, 40: one to each ramp, the arms' order, a city of many arms is cut here (a route is a lane of trucks, and the legend would not read more). |
+| 5905 | `CityMap.TRUCK_ACCESS_FADE` | `3` | How far an access road's trucks fade in off the street grid, in plots: 3. |
+| 6081 | `CityMap.TRIP_REACH` | `DISTRICT` | The plots about a district's frame, on every side, its trips look for a ramp over: DISTRICT (256), the three districts across about it. |
+| 6084 | `CityMap.TRIP_STREET_COST` | `3` | What a truck pays to cross a street plot that is not an arterial's, boulevard's or access road's (those cost 1) in the trips' street search: 3, so a truck takes the arterials unless the other way is under a third as l... |
+| 6087 | `CityMap.TRIP_BOX` | `DistrictPlan.FRAME + 2 * TRIP_REACH` | The side of the box a district's street search runs in, in plots: its frame grown by TRIP_REACH on every side. |
+| 6093 | `CityMap.NO_PLOT` | `Long.MIN_VALUE` |  |
+| 6522 | `CityMap.RUN_LINES_KEPT` | `4096` | Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. |
+| 6525 | `CityMap.RUN_TILES_KEPT` | `256` | ...whole tiles, for a 45-degree way: 256. |
+| 6722 | `CityMap.CHUNK_CACHE` | `256` | How many chunks of the pieces' tables are kept at hand (MapPieces.cacheChunk): 256 (a city of billions keeps about 250: its 4 MB of tables in chunks of 16 KB). |
+| 6725 | `CityMap.PIECE_CHUNK_SHIFT` | `6` | Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. |
+| 6727 | `CityMap.PIECE_CHUNK_MASK` | `(1L<<PIECE_CHUNK_SHIFT) - 1` |  |
+| 6730 | `CityMap.PIECE_SAMPLE_AT` | `8, PIECE_SAMPLE_EVERY = 16` | Where in a tile its four samples lie (CL5; IslandProbe's tile rule): the first 8 plots in and each of the others 16 further, the centres of its four quarters. |
+| 6733 | `CityMap.PIECE_HOME_REACH` | `8` | How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). |
+| 6739 | `CityMap.PIECE_PORT_REACH` | `2` | How many tiles round a sea terminal's box the piece it stands on is sought, ring by ring (RI1; ET5's "a linked island's hub at its port"): 2 - the box is blocked from the pieces with its clear verge and quay, so the n... |
+| 7288 | `CityMap.WAYS_WORKS_DISTRICTS` | `1000` | Up to this many districts the map weighs its mined sites each month for the railway's sidings and further yards: 1,000 (Jerus's city has 93). |
+| 7809 | `CityMap.SHORT_ANY` | `0x7fff_fffeL` | The landmass half of the key of a search that asked for no landmass: not any landmass's id (an int). |
+| 8014 | `CityMap.ANY_LANDMASS` | `Integer.MIN_VALUE` | ET5: no landmass asked for: the search runs as it always did, over the ground the runs can use. |
+| 8118 | `CityMap.SHUT_REACH` | `SeaRoutes.OPEN_M / World.PLOT_M / SeaRoutes.CELL` | The flood's reach in cells (SeaRoutes.opensToSea()): a water whose cells all lie within it of one another opens to nothing, whichever of them a flood starts from. |
+| 8966 | `CityMap.MASK_TILES_KEPT` | `1<<16` | The tiles whose masks are kept: 65,536 (a tile's mask is a reference, and a boolean array only for a tile holding masked ground). |
+| 9097 | `CityMap.AtSea.NONE` | `new AtSea(List.of(), List.of())` | None. |
+| 9191 | `CityMap.BridgeRun.ROAD` | `0` | A street-sized deck that belongs to no net... |
+| 9193 | `CityMap.BridgeRun.HIGHWAY` | `1` | ...a highway's, which joins the highways... |
+| 9195 | `CityMap.BridgeRun.RAIL` | `2` | ...and the railway's. |
+| 9217 | `CityMap.ROAD_BRIDGE_STREET` | `(byte)(DistrictPlan.PAVED \|(1<<TilePainter.S_WIDTH_SHIFT))` | A road bridge's plot as a plan's street code: paved, half a plot wide (a street's surface, so that its deck shows beside it), a cell's street, no bridge bit - the painter reads the water under it. |
+| 9491 | `CityMap.NO_PLAN` | `0x4E4F504C414EL` | tileKey()'s fixed mark for a district whose plan is not kept drawn. |
+| 10244 | `CityMap.KINDS_KEPT` | `16` | How many kinds arrays are kept: 16, eight districts' pair. |
+| 10346 | `CityMap.SITE_MARGIN` | `32` | How far a mine's site (a few plots across, centred in its district) can reach beyond its district's box: 32 plots. |
+| 10349 | `CityMap.RESERVE_PAD` | `InterchangeGround.REACH + 1` | How far a reserve's box can be from a plot that moves it: the longest reach of a box from its junction plot, and one for the highway beside the junction. |
+| 10999 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. |
+| 11002 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
+| 11005 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned buildable plots. |
 
 ## Fields (state)
 
@@ -423,200 +423,201 @@
 | 5259 | `private long trainRoutesAt` |  |
 | 5260 | `private int trainRoutesWagons` |  |
 | 5261 | `private long trainRoutesSidings` |  |
-| 5265 | `private final Map<Long, PlanSidings> planSidings` |  |
-| 5267 | `private long planSidingsVersion` | Moved whenever a plan adopted has other sidings than the ones kept: trainRoutes() is made again. |
-| 5273 | `private Map<Long, List<DrawnBend>> trainBends` | The railway's bends the tiles draw, by the tiles they reach (bendKey()), made with the routes and kept with them. |
-| 5441 | `private Map<Long, List<TrackCurves.Bend>> highwayBends` | The highways' bends the tiles draw (FX5 slice D), by the tiles they reach (bendKey()), kept against changes() and whether the highways reach a street. |
-| 5442 | `private long highwayBendsAt` |  |
-| 5443 | `private boolean highwayBendsReach` |  |
-| 5510 | `private volatile YardLayouts yardLayouts` |  |
-| 5820 | `private List<TruckSchedule.Route> truckRoutesCache` | truckRoutes()'s last answer, kept against the map's changes. |
-| 5821 | `private long truckRoutesAt` |  |
-| 5878 | `long stamp, x0, y0` |  |
-| 5879 | `DistrictRoutes routes` |  |
-| 5882 | `private final Map<Long, AccessRoutes> accessRoutesCache` |  |
-| 5980 | `private int accessRoadCountCache` | accessRoadCount()'s last answer, kept against the map's changes. |
-| 5981 | `private long accessRoadCountAt` |  |
-| 6014 | `final int[] way` |  |
-| 6015 | `final long ox, oy, end, gate` |  |
-| 6016 | `long ramp` |  |
-| 6017 | `long[] leg` |  |
-| 6031 | `long stamp, met, hash` |  |
-| 6032 | `int arm` |  |
-| 6033 | `final List<TripRoad> roads` |  |
-| 6039 | `private final Map<Long, TripLegs> tripLegs` |  |
-| 6041 | `private List<DistrictTrips> tripsCache` | tripsDrawn()'s last answer, kept against the map's changes and the plans kept (drawnMoves). |
-| 6042 | `private long tripsAt` |  |
-| 6044 | `private final Map<Long, Boolean> tripReach` | Whether the highways have a way to a ramp plot, by the plot, for the pass being made. |
-| 6155 | `private int[] tripSeen, tripDist, tripPrev` | The street search's scratch, kept and stamped (as DistrictPlan's accSeen) so none is cleared or allocated per search: made on the first search, TRIP_BOX squared a plot. |
-| 6156 | `private byte[] tripCost, tripEnd, tripFixed, tripMarks` |  |
-| 6157 | `private int tripStamp` |  |
-| 6158 | `private final int[][] tripQ` |  |
-| 6159 | `private final int[] tripN` |  |
-| 6161 | `private final Map<Long, Drawn> tripPlans` | The drawn plans the search box meets by district key, read by streetAt() without planning (its `plan` false): a district missing here has none. |
-| 6170 | `private int tripSearches` | How many street searches were made: a harness's, to tell legs kept from legs made again. |
-| 6452 | `private final Map<Long, byte[]> lines` |  |
-| 6455 | `private final Map<Long, byte[]> tiles` |  |
-| 6458 | `private final Map<Long, boolean[]> owned` |  |
-| 6462 | `private final Map<Long, boolean[]> rawOwned` | ET5: ownership with no mask (atRaw()), kept only while the city holds a picture of its landmasses; the same size and the same version as `owned`. |
-| 6465 | `private long rawAt` |  |
-| 6466 | `private boolean[] lastRaw` |  |
-| 6467 | `private long ownedAt` |  |
-| 6468 | `private byte[] lastLine` |  |
-| 6469 | `private boolean[] lastOwn` |  |
-| 6470 | `private int lastCover` |  |
-| 6471 | `private final boolean[] ALL_OWNED` |  |
-| 6595 | `private final RunGround runGround` |  |
-| 6665 | `private final Map<Long, byte[]> terrain` |  |
-| 6666 | `private final Map<Long, int[]> labels` |  |
-| 6667 | `private final HashSet<Long> blocked` |  |
-| 6668 | `private World world` |  |
-| 6669 | `private int[] lastChunk` |  |
-| 6670 | `private long lastKey` |  |
-| 6676 | `private final long[] cacheKey` | The chunks looked up lately, by a hash of their column and row (GT1): pieceOf() is asked of every net's hub a few times a month, and the one chunk remembered above holds for a run of neighbours only, so nearly every a... |
-| 6677 | `private final int[][] cacheChunk` |  |
-| 6678 | `private int[] parent` |  |
-| 6679 | `private long[] first` |  |
-| 6680 | `private int nLabels` |  |
-| 6682 | `private boolean built` |  |
-| 6683 | `private long builtVer` |  |
-| 6684 | `private CityLand seenLand` |  |
-| 6685 | `private CityShore seenShore` |  |
-| 6686 | `private long seenShoreVer, seenCentre` |  |
-| 6687 | `private int seenPurchases` |  |
-| 6689 | `private long seenLinks` | The picture's stamp the labels were read under (ET5; 0 for none): a purchase adds ground the labels can be extended by only under the same linked set, else they are read from the start. |
-| 6691 | `private int count` |  |
-| 6692 | `private int[] pieceOfLabel` |  |
-| 6693 | `private long[] tilesOf` |  |
-| 6694 | `private long[][] hubs` |  |
-| 6695 | `private boolean[] hubDone` |  |
-| 6697 | `private long[][] anchors` | (RI1) Each piece's port anchor {x, y}, the middle of the box of the first berthed terminal on its shore (null for none: the home piece's, any piece's with no port), worked out at the first ask after the pieces were. |
-| 6698 | `private boolean anchorsDone` |  |
-| 6699 | `private long buildId` |  |
-| 6701 | `private long weighedBuild` |  |
-| 6702 | `private long[] weights` |  |
-| 6703 | `private boolean weightsValid` |  |
-| 6704 | `private int[] undrawn, undrawnCells` |  |
-| 6707 | `int floods, updates` | How many times the whole ground was read (the first time, a restatement, a work on the shore), how many times only a purchase's was, and the last of either in ms: what a harness times. |
-| 6708 | `double lastMs` |  |
-| 7085 | `private long[] nearestKey` | Each piece's nearest tile's key, once found: nearest its reference tile first, then the northern, then the western; Long.MAX_VALUE for a piece with no tile. |
-| 7087 | `private long[] refTx, refTy` | Each piece's reference tile (RI1), found with nearestKey: its port's tile, else the founding site's. |
-| 7188 | `private final MapPieces pieces` |  |
-| 7301 | `private int[] yardSeqCache` | yardSequence() of a set of counts, the last kept against the terminal types' counts in it (a month and a tile ask for it again and again; a city of billions has thousands of yards). |
-| 7302 | `private long yardSeqKey` |  |
-| 7325 | `private int[][] footprints` |  |
-| 7383 | `private List<long[]> minesKept, worksKept` | layRuns()'s mined sites and bulk works, kept against a digest of the districts' mines (their site runs): a city of billions has some two hundred thousand sites, and walking every district's site list costs seconds the... |
-| 7384 | `private long minesKey` |  |
-| 7407 | `private Map<District, int[]> yardShare` | Each district's Rail Terminals and Depots the runs draw as yards, by its index and then the terminal type's place among the terminal types (terminalTypes()), so the rest are their plans' (kept against the runs' version). |
-| 7408 | `private long yardShareAt` |  |
-| 7422 | `private int[] terminalTypesKept` |  |
-| 7487 | `private int spurCount` | The Rail Spurs the model has and the track plots they are, as layRuns() last saw them: the runs lay a siding into a mined site for each spur they can; the rest are dealt (sidingsOf()). |
-| 7488 | `private long spurTrack` |  |
-| 7491 | `private int[] sidingShare` | Each district's share of the spurs, by its index, how many are dealt in all, and what they were kept against (the runs' version, the map's changes and the spurs). |
-| 7492 | `private long sidingsDealt` |  |
-| 7493 | `private long sidingShareAt` |  |
-| 7669 | `private CityShore shore` | The city's works on its shore. |
-| 7678 | `private QuayRailKept quayRailKept` | The quay rail last worked out: the screen's thread's alone, as trainRoutes()' cache is (the month that moves the shore and the runs is that thread's too). |
-| 7695 | `private int[] shoreTypes` | The shore's types, by id: worked out once a table. |
-| 7710 | `private int shoreShort` | How many works the model has that the shore holds no place for (drawn by their districts' plans). |
-| 7723 | `private final Map<Long, Long> shoreShortBy` | The searches that came up short, by template and landmass (ET5) - or by template alone, with SHORT_ANY (MF1) - with the ground's key they came up short at: none is made again until the ground moves (a purchase) or a w... |
-| 7974 | `int nearFrom, anyFrom` | The tiles before these (positions in the district's order) hold no near spot, no spot at all. |
-| 7976 | `int countedNear, countedAny` | The tiles the search counts (SEARCH_TILES_MOST) before those positions; once the position is TILES, the district's all. |
-| 7981 | `final CityShore shore` |  |
-| 7982 | `final long removals, stamp` |  |
-| 7983 | `final DTrack[] at` |  |
-| 7985 | `boolean used` | Whether a search has been through and left its marks. |
-| 7987 | `int from` | A harbour's search (MF1): the first of its tiles, in their order, that may hold a spot - the tiles before it held none and were not unsteady. |
-| 7989 | `java.util.BitSet empty` | A harbour's search with bundleHarbour (HB1): the positions, in harbourTiles()'s order, of the tiles found to hold no spot and not unsteady - every spot of them looked at, none passed over for being too far. |
-| 8000 | `private final Map<Long, ShoreTrack> shoreTracks` | The marks of the searches, by type and landmass. |
-| 8003 | `private long shoreLooked` | How many tiles the searches have looked at, ever (a tile with no salt water or no dry ground too): what the marks save, which MapCheck 9 counts. |
-| 8008 | `private long shoreTouched` | How many spots have been asked of a water as wide as the flood's reach that had been found shut, or shut it (ShutSet.touched): what the lagoons MapCheck 9 makes cause. |
-| 8021 | `private SeaRoutes.Grid shoreSea` | The routes' grid of the sea as the searches read it, kept: the terrain's cells never change, and a grid made for each search read the same cells again (half of a search with 300 terminals standing). |
-| 8042 | `final HashSet<Long> hot` |  |
-| 8044 | `boolean touched` | Whether the flood in hand put a hot water in the set or met one there. |
-| 8071 | `final int t, landmass, quay` |  |
-| 8073 | `final boolean harbour` | MF1: a harbour's search: the quay is the common one, and no work may stand on a spine arm's walk to the world (worldWalks()). |
-| 8074 | `final long[][] walks` |  |
-| 8075 | `final boolean island` |  |
-| 8076 | `final World world` |  |
-| 8077 | `final int tile` |  |
-| 8078 | `final int[] fp, tileLm, windowLm` |  |
-| 8079 | `final List<long[]> mines` |  |
-| 8080 | `final byte[] fixed` |  |
-| 8081 | `final int[] ground` |  |
-| 8084 | `final SeaRoutes.Grid sea` | A terminal's water must open to the sea (SeaRoutes.opensToSea(), star O13-5): the routes' own grid, and the water found shut, kept for the search. |
-| 8085 | `ShutSet shut` |  |
-| 8087 | `CityShore.Work near, far, first` | The tile last looked at: its first near spot, its first other spot, the first of either (stopAtAny), and whether an interchange's reserve lies inside it. |
-| 8088 | `boolean firstIsNear, unsteady` |  |
-| 8091 | `long ax, ay, reachSq` | MF1: the harbour the search is for, as its first work's shore plot and the reach about it; reachSq is MAX_VALUE for a search of the whole coast. |
-| 8098 | `long[] nearTo` | HB1: a harbour's search for the spot nearest its works (nearestTo()): their shore plots, flat {x, y, ...}; null for any other search. |
-| 8099 | `CityShore.Work pick` |  |
-| 8100 | `long pickSq` |  |
-| 8101 | `boolean pruned` |  |
-| 8422 | `static int harbourReachDefault` | The reach a new map starts with: CityShore.HARBOUR_REACH. |
-| 8425 | `private int harbourReach` | The harbour rule's reach in plots, 0 for the rule off (the whole coast is searched, as before MF1). |
-| 8652 | `static boolean keepWorldWalks` | MF1 test switch, true: a harbour's works keep off the spine arms' walks (worldWalks()). |
-| 8655 | `public static boolean bundleHarbour` | HB1 test switch (public for tools.HarbourRenders), true: a harbour's next work takes the spot nearest the harbour's works, so its quay grows along the shore; false: MF1's order (the tiles nearest its first work, the f... |
-| 8747 | `private Map<District, int[]> shoreShare` | Each district's works the shore holds, by its index and the shore's type: the works dealt to the districts holding their type in the map's order, so the rest are their plans' (kept against the shore and the counts). |
-| 8748 | `private long shoreShareAt` |  |
-| 8795 | `private RailPicture railPicture` |  |
-| 8886 | `private Landmasses.Picture landmasses` | The landmasses as the game last handed them, or null while the city owns nothing off its home landmass. |
-| 8889 | `private final LinkedMask mask` | Which plots of a tile the island rule masks, for the picture held. |
-| 8944 | `private Landmasses.Picture p` |  |
-| 8945 | `private final Map<Long, boolean[]> tiles` |  |
-| 8948 | `private final boolean[] NONE` |  |
-| 8949 | `private final int[] ids` |  |
-| 9017 | `private AtSea atSea` |  |
-| 9032 | `private long atSeaMoves` | How many times the oil at sea was handed over changed (atSea()): what a tile's key (tileKey(), batch UP5) holds the sea's plots, rings and pipes against. |
-| 9128 | `private List<BridgeRun> bridgeRuns` | The bridges as the game last handed them, in any order; empty while the city has none. |
-| 9131 | `private long bridgeStamp` | Their stamp (CityRuns.stampOf()), 0 for none: what a cache of anything the bridges touch keys on. |
-| 9196 | `private List<BoatSchedule.Route> routes` | The routes found, the lanes drawn of them, and the berths they were found for (the shore's, in the order laid). |
-| 9197 | `private SeaLanes lanes` |  |
-| 9198 | `private List<BoatSchedule.Berth> routesBerths` |  |
-| 9200 | `private long routesKey` | What they were found at: the world, the site and the radius's band (routesKeyNow()). |
-| 9202 | `private CityShore routesShore` | The shore and its version the berths were read from: while both hold, the berths are the same. |
-| 9203 | `private long routesShoreVersion` |  |
-| 9251 | `final long key, seed, siteX, siteY` |  |
-| 9253 | `final World.Key world` | The world the routes are found on (0.7.115). |
-| 9255 | `final CityShore shore` | The shore and its version the berths were read from: the routes are the city's only while they hold. |
-| 9256 | `final long shoreVersion` |  |
-| 9257 | `final List<BoatSchedule.Berth> berths` |  |
-| 9259 | `final List<BoatSchedule.Route> kept` | The routes of the berths' first ones that are kept (SeaRoutes.extend()). |
-| 9260 | `final double radius` |  |
-| 9261 | `private volatile SeaRoutes.Found found` |  |
-| 9262 | `private volatile SeaLanes lanes` |  |
-| 9411 | `private final boolean[] keyFlags` | The scratch flags tileKey() reads a part-owned tile's ownership into. |
-| 9877 | `private final Map<Long, List<DrawnSite>> siteLists` |  |
-| 9880 | `private final Map<Long, Long> siteListVersion` |  |
-| 9883 | `private long siteGen` | How many times the site lists were all let go because the holdings' states moved (reconcile(), forgetPainted()): a list is kept against its district's version and this, so is a stamp worked out from them (ownKey(), ba... |
-| 10089 | `private boolean journalling` | Whether the month's runs are being journalled: only inside reconcile()'s layRuns() and layShore(), never the canonical deal, a square city, a sidecar's read or a harness's own laying. |
-| 10092 | `private boolean reachAtStart` | highwaysReach() as the month began: the districts the month changes are read as the highways were drawn then. |
-| 10095 | `private final Map<Long, byte[]> journalWas` | The districts the month has read so far, by key: each one's kinds as they were before the month's first change to it. |
-| 10098 | `private long lastWitnessed` | The key of the district the witness was told of last: a stretch is told of one district plot by plot. |
-| 10101 | `private final CityRuns.Witness witness` | The witness set on the runs for the length of a month's laying. |
-| 10104 | `private long journalDropped` | How many plots' records a plan's input has left out because the journal did not end on the runs as they stand (rule (b) of fixedLogInto()): a journal that disagrees with today's runs is a bug, and MapCheck holds this ... |
-| 10147 | `private final java.util.ArrayDeque<byte[]> kindsPool` | The 64 KB arrays kindsOf() fills, kept from month to month (GT1): each month's journal made a pair for every district the runs changed, about half a megabyte a month at 10 billion people and all the garbage the month ... |
-| 10241 | `private final java.util.Set<Long> journalTouched` | The world districts the witness was told of this month that the map does not hold, as column << 32 ^ row: not journalled, but a reserve beside a district it holds may have moved. |
-| 10248 | `private List<long[]> reserveLaid` | The interchanges' reserves that were laid (Site.got()) as the last journalled month ended, each {x0, y0, w, h} in world plots, over the districts the highways lie in and the margin about them; null until first asked (... |
-| 10251 | `private CityRuns reserveRuns` | The runs (and their version) the reserves were last found against, and the purchases then: what the next month's changes are found against. |
-| 10252 | `private long reserveRunsAt` |  |
-| 10253 | `private int reservePurchasesSeen` |  |
-| 10260 | `private final java.util.Set<Long> minedTouched` | The world districts a mine or well came to or left since the last journalled month, as column << 32 ^ row (markRun(), relay()): where a mined site's box may have moved, which a reserve may not take (reserveBlocked()). |
-| 10409 | `private List<long[]> reservesMovedNow` | The reserves that came or went as the last month ended, when reservesEnded() knew them without comparing the whole sets; null when it did not. |
-| 10604 | `private final java.util.Set<District> planAllocationOwners` | Sites, yards and shore works take units out of the plan at the month they do so, and return them as arrivals at the month they stop. |
-| 10605 | `private final java.util.Set<District> siteExclusionDirty` |  |
-| 10931 | `private final CityMap map` |  |
-| 10932 | `private final int minX, minY` |  |
-| 10934 | `private final int[] widths, heights` | Each level's grid: its width, height and nodes (NODE_WIDTH numbers each, row by row). |
-| 10935 | `private final long[][] nodes` |  |
-| 10936 | `private final int count` |  |
-| 11198 | `private long lastStamp` |  |
+| 5262 | `private long trainRoutesRoutable` |  |
+| 5266 | `private final Map<Long, PlanSidings> planSidings` |  |
+| 5268 | `private long planSidingsVersion` | Moved whenever a plan adopted has other sidings than the ones kept: trainRoutes() is made again. |
+| 5298 | `private Map<Long, List<DrawnBend>> trainBends` | The railway's bends the tiles draw, by the tiles they reach (bendKey()), made with the routes and kept with them. |
+| 5529 | `private Map<Long, List<TrackCurves.Bend>> highwayBends` | The highways' bends the tiles draw (FX5 slice D), by the tiles they reach (bendKey()), kept against changes() and whether the highways reach a street. |
+| 5530 | `private long highwayBendsAt` |  |
+| 5531 | `private boolean highwayBendsReach` |  |
+| 5598 | `private volatile YardLayouts yardLayouts` |  |
+| 5908 | `private List<TruckSchedule.Route> truckRoutesCache` | truckRoutes()'s last answer, kept against the map's changes. |
+| 5909 | `private long truckRoutesAt` |  |
+| 5964 | `long stamp, x0, y0` |  |
+| 5965 | `DistrictRoutes routes` |  |
+| 5968 | `private final Map<Long, AccessRoutes> accessRoutesCache` |  |
+| 6066 | `private int accessRoadCountCache` | accessRoadCount()'s last answer, kept against the map's changes. |
+| 6067 | `private long accessRoadCountAt` |  |
+| 6100 | `final int[] way` |  |
+| 6101 | `final long ox, oy, end, gate` |  |
+| 6102 | `long ramp` |  |
+| 6103 | `long[] leg` |  |
+| 6117 | `long stamp, met, hash` |  |
+| 6118 | `int arm` |  |
+| 6119 | `final List<TripRoad> roads` |  |
+| 6125 | `private final Map<Long, TripLegs> tripLegs` |  |
+| 6127 | `private List<DistrictTrips> tripsCache` | tripsDrawn()'s last answer, kept against the map's changes and the plans kept (drawnMoves). |
+| 6128 | `private long tripsAt` |  |
+| 6130 | `private final Map<Long, Boolean> tripReach` | Whether the highways have a way to a ramp plot, by the plot, for the pass being made. |
+| 6242 | `private int[] tripSeen, tripDist, tripPrev` | The street search's scratch, kept and stamped (as DistrictPlan's accSeen) so none is cleared or allocated per search: made on the first search, TRIP_BOX squared a plot. |
+| 6243 | `private byte[] tripCost, tripEnd, tripFixed, tripMarks` |  |
+| 6244 | `private int tripStamp` |  |
+| 6245 | `private final int[][] tripQ` |  |
+| 6246 | `private final int[] tripN` |  |
+| 6248 | `private final Map<Long, Drawn> tripPlans` | The drawn plans the search box meets by district key, read by streetAt() without planning (its `plan` false): a district missing here has none. |
+| 6257 | `private int tripSearches` | How many street searches were made: a harness's, to tell legs kept from legs made again. |
+| 6535 | `private final Map<Long, byte[]> lines` |  |
+| 6538 | `private final Map<Long, byte[]> tiles` |  |
+| 6541 | `private final Map<Long, boolean[]> owned` |  |
+| 6545 | `private final Map<Long, boolean[]> rawOwned` | ET5: ownership with no mask (atRaw()), kept only while the city holds a picture of its landmasses; the same size and the same version as `owned`. |
+| 6548 | `private long rawAt` |  |
+| 6549 | `private boolean[] lastRaw` |  |
+| 6550 | `private long ownedAt` |  |
+| 6551 | `private byte[] lastLine` |  |
+| 6552 | `private boolean[] lastOwn` |  |
+| 6553 | `private int lastCover` |  |
+| 6554 | `private final boolean[] ALL_OWNED` |  |
+| 6678 | `private final RunGround runGround` |  |
+| 6748 | `private final Map<Long, byte[]> terrain` |  |
+| 6749 | `private final Map<Long, int[]> labels` |  |
+| 6750 | `private final HashSet<Long> blocked` |  |
+| 6751 | `private World world` |  |
+| 6752 | `private int[] lastChunk` |  |
+| 6753 | `private long lastKey` |  |
+| 6759 | `private final long[] cacheKey` | The chunks looked up lately, by a hash of their column and row (GT1): pieceOf() is asked of every net's hub a few times a month, and the one chunk remembered above holds for a run of neighbours only, so nearly every a... |
+| 6760 | `private final int[][] cacheChunk` |  |
+| 6761 | `private int[] parent` |  |
+| 6762 | `private long[] first` |  |
+| 6763 | `private int nLabels` |  |
+| 6765 | `private boolean built` |  |
+| 6766 | `private long builtVer` |  |
+| 6767 | `private CityLand seenLand` |  |
+| 6768 | `private CityShore seenShore` |  |
+| 6769 | `private long seenShoreVer, seenCentre` |  |
+| 6770 | `private int seenPurchases` |  |
+| 6772 | `private long seenLinks` | The picture's stamp the labels were read under (ET5; 0 for none): a purchase adds ground the labels can be extended by only under the same linked set, else they are read from the start. |
+| 6774 | `private int count` |  |
+| 6775 | `private int[] pieceOfLabel` |  |
+| 6776 | `private long[] tilesOf` |  |
+| 6777 | `private long[][] hubs` |  |
+| 6778 | `private boolean[] hubDone` |  |
+| 6780 | `private long[][] anchors` | (RI1) Each piece's port anchor {x, y}, the middle of the box of the first berthed terminal on its shore (null for none: the home piece's, any piece's with no port), worked out at the first ask after the pieces were. |
+| 6781 | `private boolean anchorsDone` |  |
+| 6782 | `private long buildId` |  |
+| 6784 | `private long weighedBuild` |  |
+| 6785 | `private long[] weights` |  |
+| 6786 | `private boolean weightsValid` |  |
+| 6787 | `private int[] undrawn, undrawnCells` |  |
+| 6790 | `int floods, updates` | How many times the whole ground was read (the first time, a restatement, a work on the shore), how many times only a purchase's was, and the last of either in ms: what a harness times. |
+| 6791 | `double lastMs` |  |
+| 7168 | `private long[] nearestKey` | Each piece's nearest tile's key, once found: nearest its reference tile first, then the northern, then the western; Long.MAX_VALUE for a piece with no tile. |
+| 7170 | `private long[] refTx, refTy` | Each piece's reference tile (RI1), found with nearestKey: its port's tile, else the founding site's. |
+| 7271 | `private final MapPieces pieces` |  |
+| 7384 | `private int[] yardSeqCache` | yardSequence() of a set of counts, the last kept against the terminal types' counts in it (a month and a tile ask for it again and again; a city of billions has thousands of yards). |
+| 7385 | `private long yardSeqKey` |  |
+| 7408 | `private int[][] footprints` |  |
+| 7466 | `private List<long[]> minesKept, worksKept` | layRuns()'s mined sites and bulk works, kept against a digest of the districts' mines (their site runs): a city of billions has some two hundred thousand sites, and walking every district's site list costs seconds the... |
+| 7467 | `private long minesKey` |  |
+| 7490 | `private Map<District, int[]> yardShare` | Each district's Rail Terminals and Depots the runs draw as yards, by its index and then the terminal type's place among the terminal types (terminalTypes()), so the rest are their plans' (kept against the runs' version). |
+| 7491 | `private long yardShareAt` |  |
+| 7505 | `private int[] terminalTypesKept` |  |
+| 7570 | `private int spurCount` | The Rail Spurs the model has and the track plots they are, as layRuns() last saw them: the runs lay a siding into a mined site for each spur they can; the rest are dealt (sidingsOf()). |
+| 7571 | `private long spurTrack` |  |
+| 7574 | `private int[] sidingShare` | Each district's share of the spurs, by its index, how many are dealt in all, and what they were kept against (the runs' version, the map's changes and the spurs). |
+| 7575 | `private long sidingsDealt` |  |
+| 7576 | `private long sidingShareAt` |  |
+| 7752 | `private CityShore shore` | The city's works on its shore. |
+| 7761 | `private QuayRailKept quayRailKept` | The quay rail last worked out: the screen's thread's alone, as trainRoutes()' cache is (the month that moves the shore and the runs is that thread's too). |
+| 7778 | `private int[] shoreTypes` | The shore's types, by id: worked out once a table. |
+| 7793 | `private int shoreShort` | How many works the model has that the shore holds no place for (drawn by their districts' plans). |
+| 7806 | `private final Map<Long, Long> shoreShortBy` | The searches that came up short, by template and landmass (ET5) - or by template alone, with SHORT_ANY (MF1) - with the ground's key they came up short at: none is made again until the ground moves (a purchase) or a w... |
+| 8057 | `int nearFrom, anyFrom` | The tiles before these (positions in the district's order) hold no near spot, no spot at all. |
+| 8059 | `int countedNear, countedAny` | The tiles the search counts (SEARCH_TILES_MOST) before those positions; once the position is TILES, the district's all. |
+| 8064 | `final CityShore shore` |  |
+| 8065 | `final long removals, stamp` |  |
+| 8066 | `final DTrack[] at` |  |
+| 8068 | `boolean used` | Whether a search has been through and left its marks. |
+| 8070 | `int from` | A harbour's search (MF1): the first of its tiles, in their order, that may hold a spot - the tiles before it held none and were not unsteady. |
+| 8072 | `java.util.BitSet empty` | A harbour's search with bundleHarbour (HB1): the positions, in harbourTiles()'s order, of the tiles found to hold no spot and not unsteady - every spot of them looked at, none passed over for being too far. |
+| 8083 | `private final Map<Long, ShoreTrack> shoreTracks` | The marks of the searches, by type and landmass. |
+| 8086 | `private long shoreLooked` | How many tiles the searches have looked at, ever (a tile with no salt water or no dry ground too): what the marks save, which MapCheck 9 counts. |
+| 8091 | `private long shoreTouched` | How many spots have been asked of a water as wide as the flood's reach that had been found shut, or shut it (ShutSet.touched): what the lagoons MapCheck 9 makes cause. |
+| 8104 | `private SeaRoutes.Grid shoreSea` | The routes' grid of the sea as the searches read it, kept: the terrain's cells never change, and a grid made for each search read the same cells again (half of a search with 300 terminals standing). |
+| 8125 | `final HashSet<Long> hot` |  |
+| 8127 | `boolean touched` | Whether the flood in hand put a hot water in the set or met one there. |
+| 8154 | `final int t, landmass, quay` |  |
+| 8156 | `final boolean harbour` | MF1: a harbour's search: the quay is the common one, and no work may stand on a spine arm's walk to the world (worldWalks()). |
+| 8157 | `final long[][] walks` |  |
+| 8158 | `final boolean island` |  |
+| 8159 | `final World world` |  |
+| 8160 | `final int tile` |  |
+| 8161 | `final int[] fp, tileLm, windowLm` |  |
+| 8162 | `final List<long[]> mines` |  |
+| 8163 | `final byte[] fixed` |  |
+| 8164 | `final int[] ground` |  |
+| 8167 | `final SeaRoutes.Grid sea` | A terminal's water must open to the sea (SeaRoutes.opensToSea(), star O13-5): the routes' own grid, and the water found shut, kept for the search. |
+| 8168 | `ShutSet shut` |  |
+| 8170 | `CityShore.Work near, far, first` | The tile last looked at: its first near spot, its first other spot, the first of either (stopAtAny), and whether an interchange's reserve lies inside it. |
+| 8171 | `boolean firstIsNear, unsteady` |  |
+| 8174 | `long ax, ay, reachSq` | MF1: the harbour the search is for, as its first work's shore plot and the reach about it; reachSq is MAX_VALUE for a search of the whole coast. |
+| 8181 | `long[] nearTo` | HB1: a harbour's search for the spot nearest its works (nearestTo()): their shore plots, flat {x, y, ...}; null for any other search. |
+| 8182 | `CityShore.Work pick` |  |
+| 8183 | `long pickSq` |  |
+| 8184 | `boolean pruned` |  |
+| 8505 | `static int harbourReachDefault` | The reach a new map starts with: CityShore.HARBOUR_REACH. |
+| 8508 | `private int harbourReach` | The harbour rule's reach in plots, 0 for the rule off (the whole coast is searched, as before MF1). |
+| 8735 | `static boolean keepWorldWalks` | MF1 test switch, true: a harbour's works keep off the spine arms' walks (worldWalks()). |
+| 8738 | `public static boolean bundleHarbour` | HB1 test switch (public for tools.HarbourRenders), true: a harbour's next work takes the spot nearest the harbour's works, so its quay grows along the shore; false: MF1's order (the tiles nearest its first work, the f... |
+| 8830 | `private Map<District, int[]> shoreShare` | Each district's works the shore holds, by its index and the shore's type: the works dealt to the districts holding their type in the map's order, so the rest are their plans' (kept against the shore and the counts). |
+| 8831 | `private long shoreShareAt` |  |
+| 8878 | `private RailPicture railPicture` |  |
+| 8969 | `private Landmasses.Picture landmasses` | The landmasses as the game last handed them, or null while the city owns nothing off its home landmass. |
+| 8972 | `private final LinkedMask mask` | Which plots of a tile the island rule masks, for the picture held. |
+| 9027 | `private Landmasses.Picture p` |  |
+| 9028 | `private final Map<Long, boolean[]> tiles` |  |
+| 9031 | `private final boolean[] NONE` |  |
+| 9032 | `private final int[] ids` |  |
+| 9100 | `private AtSea atSea` |  |
+| 9115 | `private long atSeaMoves` | How many times the oil at sea was handed over changed (atSea()): what a tile's key (tileKey(), batch UP5) holds the sea's plots, rings and pipes against. |
+| 9211 | `private List<BridgeRun> bridgeRuns` | The bridges as the game last handed them, in any order; empty while the city has none. |
+| 9214 | `private long bridgeStamp` | Their stamp (CityRuns.stampOf()), 0 for none: what a cache of anything the bridges touch keys on. |
+| 9279 | `private List<BoatSchedule.Route> routes` | The routes found, the lanes drawn of them, and the berths they were found for (the shore's, in the order laid). |
+| 9280 | `private SeaLanes lanes` |  |
+| 9281 | `private List<BoatSchedule.Berth> routesBerths` |  |
+| 9283 | `private long routesKey` | What they were found at: the world, the site and the radius's band (routesKeyNow()). |
+| 9285 | `private CityShore routesShore` | The shore and its version the berths were read from: while both hold, the berths are the same. |
+| 9286 | `private long routesShoreVersion` |  |
+| 9334 | `final long key, seed, siteX, siteY` |  |
+| 9336 | `final World.Key world` | The world the routes are found on (0.7.115). |
+| 9338 | `final CityShore shore` | The shore and its version the berths were read from: the routes are the city's only while they hold. |
+| 9339 | `final long shoreVersion` |  |
+| 9340 | `final List<BoatSchedule.Berth> berths` |  |
+| 9342 | `final List<BoatSchedule.Route> kept` | The routes of the berths' first ones that are kept (SeaRoutes.extend()). |
+| 9343 | `final double radius` |  |
+| 9344 | `private volatile SeaRoutes.Found found` |  |
+| 9345 | `private volatile SeaLanes lanes` |  |
+| 9494 | `private final boolean[] keyFlags` | The scratch flags tileKey() reads a part-owned tile's ownership into. |
+| 9960 | `private final Map<Long, List<DrawnSite>> siteLists` |  |
+| 9963 | `private final Map<Long, Long> siteListVersion` |  |
+| 9966 | `private long siteGen` | How many times the site lists were all let go because the holdings' states moved (reconcile(), forgetPainted()): a list is kept against its district's version and this, so is a stamp worked out from them (ownKey(), ba... |
+| 10172 | `private boolean journalling` | Whether the month's runs are being journalled: only inside reconcile()'s layRuns() and layShore(), never the canonical deal, a square city, a sidecar's read or a harness's own laying. |
+| 10175 | `private boolean reachAtStart` | highwaysReach() as the month began: the districts the month changes are read as the highways were drawn then. |
+| 10178 | `private final Map<Long, byte[]> journalWas` | The districts the month has read so far, by key: each one's kinds as they were before the month's first change to it. |
+| 10181 | `private long lastWitnessed` | The key of the district the witness was told of last: a stretch is told of one district plot by plot. |
+| 10184 | `private final CityRuns.Witness witness` | The witness set on the runs for the length of a month's laying. |
+| 10187 | `private long journalDropped` | How many plots' records a plan's input has left out because the journal did not end on the runs as they stand (rule (b) of fixedLogInto()): a journal that disagrees with today's runs is a bug, and MapCheck holds this ... |
+| 10230 | `private final java.util.ArrayDeque<byte[]> kindsPool` | The 64 KB arrays kindsOf() fills, kept from month to month (GT1): each month's journal made a pair for every district the runs changed, about half a megabyte a month at 10 billion people and all the garbage the month ... |
+| 10324 | `private final java.util.Set<Long> journalTouched` | The world districts the witness was told of this month that the map does not hold, as column << 32 ^ row: not journalled, but a reserve beside a district it holds may have moved. |
+| 10331 | `private List<long[]> reserveLaid` | The interchanges' reserves that were laid (Site.got()) as the last journalled month ended, each {x0, y0, w, h} in world plots, over the districts the highways lie in and the margin about them; null until first asked (... |
+| 10334 | `private CityRuns reserveRuns` | The runs (and their version) the reserves were last found against, and the purchases then: what the next month's changes are found against. |
+| 10335 | `private long reserveRunsAt` |  |
+| 10336 | `private int reservePurchasesSeen` |  |
+| 10343 | `private final java.util.Set<Long> minedTouched` | The world districts a mine or well came to or left since the last journalled month, as column << 32 ^ row (markRun(), relay()): where a mined site's box may have moved, which a reserve may not take (reserveBlocked()). |
+| 10492 | `private List<long[]> reservesMovedNow` | The reserves that came or went as the last month ended, when reservesEnded() knew them without comparing the whole sets; null when it did not. |
+| 10687 | `private final java.util.Set<District> planAllocationOwners` | Sites, yards and shore works take units out of the plan at the month they do so, and return them as arrivals at the month they stop. |
+| 10688 | `private final java.util.Set<District> siteExclusionDirty` |  |
+| 11014 | `private final CityMap map` |  |
+| 11015 | `private final int minX, minY` |  |
+| 11017 | `private final int[] widths, heights` | Each level's grid: its width, height and nodes (NODE_WIDTH numbers each, row by row). |
+| 11018 | `private final long[][] nodes` |  |
+| 11019 | `private final int count` |  |
+| 11281 | `private long lastStamp` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 146 | 11364 | **type** `public final class CityMap` | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot ... |
+| 146 | 11447 | **type** `public final class CityMap` | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot ... |
 
 ### THE GEOMETRY (lines 148-247)
 
@@ -999,410 +1000,415 @@
 | 5171 | 59 | `private WorldLine worldLine(CityRuns.Net n, int gateway, List<WorldLine> out)` | Adds net n's line to the world to out and returns it; null (none added) for a net that has not started, for the highways while they reach no street (CityRuns.highwaysReach(), FX2: they are not drawn), or that has no a... |
 | 5235 | 17 | `private static double dryRun(World w, double x, double y, int deg, double most, int fromStep)` | How far from (x, y) the way out along deg degrees runs over dry ground, in plots: the distance to the first point, read every WORLD_STEP, that lies on a plot that is not World.dry(); `most` where none does. |
 
-### THE TRAINS' ROUTES (0.8.2, batch FR1; spec-freight 4.4, D16) (lines 5253-5738)
+### THE TRAINS' ROUTES (0.8.2, batch FR1; spec-freight 4.4, D16) (lines 5253-5826)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5264 | 1 | **type** `private record PlanSidings(long stamp, int[][] ways)` | A district's plan's sidings' ways (Drawn.sidingWays) with the stamp of the link they came with (MF1): kept when its plan is adopted, so the trains' routes do not wait on a plan being kept drawn (PLANS_KEPT); valid whi... |
-| 5270 | 1 | **type** `private record DrawnBend(TrackCurves.Bend bend, boolean doubled)` | A bend of the routes the tiles draw (FX5), with whether it lies on double track (its corner plot's M_DOUBLE). |
-| 5276 | 1 | `private static long bendKey(long tx, long ty)` | A tile's key in trainBends. |
-| 5313 | 60 | `public List<TrainSchedule.Route> trainRoutes()` | The trains' routes (TrainSchedule.Route): for each yard the railway's way reaches, from TrainSchedule.WORLD_PLOTS out along the railway's world line (along line.way(), over dry ground: FX2), in to the main arm's end (... |
-| 5392 | 6 | `long[] portal()` | The portal (TN1): the plot where the main line ends - the main arm's end (CityRuns.mainArm(): the gate arm while no line leaves the city), where that arm has steps - which the trains come out of and go back into when ... |
-| 5400 | 4 | `private static TrainSchedule.Route fromPortal(TrainSchedule.Route r)` | A route from the portal (TN1): the route itself, faded in over PORTAL_FADE plots of its track (no more than its length) rather than over the first straight of its way. |
-| 5414 | 25 | `private Map<Long, List<DrawnBend>> drawnBends(List<TrackCurves.Bend> found, java.util.Set<Long> sidingPlots)` | The bends the routes make (TrackCurves.bends() of each route's points before it is rounded) that the tiles draw (FX5), by the tiles they reach: those whose corner and both tangent points lie on plots the runs lay trac... |
-| 5456 | 29 | `private List<TrackCurves.Bend> highwayBendsIn(long tx, long ty)` | The highways' bends that reach tile (tx, ty) (FX5 slice D): the turns of each arm's polyline (CityRuns.highwayPolylines()) rounded by TrackCurves.bends() at TrackCurves.HIGHWAY_RADIUS, of net HIGHWAY - a 45-degree str... |
-| 5487 | 4 | `private boolean highwayPlot(long x, long y)` | Whether the runs lay highway on plot (x, y): a highway, or a highway under the railway's bridge. |
-| 5493 | 13 | `private boolean railPlot(List<long[]> yards, boolean[][] yardRails, java.util.Set<Long> sidingPlots, long x, long y)` | Whether the runs lay track on plot (x, y): track, track bridging a highway, a plot of a district plan's siding (MF1; sidingPlots), or the track in a yard's box (yardRails caches each yard's, by index). |
-| 5508 | 1 | **type** `private record YardLayouts(long at, int[][] by)` | The yard layouts (TileRaster.yardLayout() of yardRail()) as the map's changes left them: valid at `at`, one per yard of the runs, made when first asked. |
-| 5517 | 15 | `int[] yardLayoutOf(int yi)` | Where yard yi's fan lies in its box (FX5 Y2): TileRaster.yardLayout() of the box's track as the runs lay it (yardRail()), the layout trainRoutesInto() lays the routes on and the tiles draw the yard from. |
-| 5534 | 8 | `static boolean[] yardRail(CityRuns runs, long[] yard)` | The track in a yard's box, plot by plot (row by row, yard[2] across and yard[3] down): where the runs lay the railway, as the tile the yard is drawn on carries it (TileRaster.yardLayout()'s input; FX3, 0.8.4). |
-| 5557 | 4 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | Adds one yard's routes to out: the world line's part (far end, then where it leaves the city's ground), the way to the box's edge, and the ladder onto each siding. |
-| 5563 | 4 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | ...with the yard's own number of sidings (TileRaster.tracksOf(): a Rail Depot's three, FR7 slice 3), one route to each. |
-| 5575 | 5 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | ...and (FX5) the bends of the routes' points before they are rounded (TrackCurves.bends()) added to bendsOut, where it is not null: the turns the tiles draw. |
-| 5585 | 112 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | ...and (FX5, slice T) with the yard's first `standing` sidings from the shed's side left without a route, the wagons standing on them (TileRaster.wagonTracksOn()): the routes are those of the sidings after, each with ... |
-| 5699 | 1 | **type** `private record Rounded(double[] xs, double[] ys, double fadeTo)` | A polyline's points rounded by TrackCurves (RADIUS), with the world line's part: how far along the rounded polyline its first straight lasts. |
-| 5709 | 10 | `private static Rounded rounded(List<double[]> pts, List<TrackCurves.Bend> bendsOut)` | The route's points rounded (FX5): every turn replaced by its arc of TrackCurves.RADIUS plots, less where the legs beside it are short; the turns found are added to bendsOut where it is not null. |
-| 5721 | 5 | `private static void addNew(List<double[]> pts, double x, double y)` | Adds the point (x, y) to pts unless the last one is there (no leg of no length). |
-| 5728 | 4 | `private static TrainSchedule.Route route(int yard, boolean station, int siding, List<double[]> pts, List<TrackCurves.Bend> bend...` | A route through points, rounded at every turn (FX5), the world line's part its first leg's straight. |
-| 5734 | 4 | `private static TrainSchedule.Route routeToWorks(List<double[]> pts, List<TrackCurves.Bend> bendsOut, double holds)` | ...to a works' siding (FR7 slice 3): through the points, rounded, the world line's part its first leg's straight, no yard; a bulk unit train's alone. |
+| 5265 | 1 | **type** `private record PlanSidings(long stamp, int[][] ways)` | A district's plan's sidings' ways (Drawn.sidingWays) with the stamp of the link they came with (MF1): kept when its plan is adopted, so the trains' routes do not wait on a plan being kept drawn (PLANS_KEPT); valid whi... |
+| 5279 | 14 | `private long planSidingsRoutable()` | Which plans' sidings the trains' routes may run to now (RR1): a sum over the kept sidings whose district's link holds, with the stamp they came with, and whose band holds up to it - what planSidingRoutes() reads - so ... |
+| 5295 | 1 | **type** `private record DrawnBend(TrackCurves.Bend bend, boolean doubled)` | A bend of the routes the tiles draw (FX5), with whether it lies on double track (its corner plot's M_DOUBLE). |
+| 5301 | 1 | `private static long bendKey(long tx, long ty)` | A tile's key in trainBends. |
+| 5339 | 63 | `public List<TrainSchedule.Route> trainRoutes()` | The trains' routes (TrainSchedule.Route): for each yard the railway's way reaches, from TrainSchedule.WORLD_PLOTS out along the railway's world line (along line.way(), over dry ground: FX2), in to the main arm's end (... |
+| 5421 | 6 | `long[] portal()` | The portal (TN1): the plot where the main line ends - the main arm's end (CityRuns.mainArm(): the gate arm while no line leaves the city), where that arm has steps - which the trains come out of and go back into when ... |
+| 5440 | 16 | `long[] highwayPortal()` | The highways' portal (HWW1), as the railway's (portal()): the plot where their gate arm ends (CityRuns.gateArm(): of the home piece's arms, the one heading nearest the gateway), which the world's trucks come out of an... |
+| 5463 | 9 | **type** `private record TruckGate(int arm, List<double[]> in, double fade, boolean portal)` | Where the world's trucks come in (HWW1): the highways' arm they come in at, the points they run before its end - the world line's far point, TruckSchedule.WORLD_PLOTS out along its way, and the point where it leaves t... |
+| 5465 | 6 | `double fadeOver(List<double[]> pts)` _(in CityMap.TruckGate)_ | How far a truck on the way through pts fades in: at the portal PORTAL_FADE plots, no more than the way's length. |
+| 5474 | 12 | `private TruckGate truckGate()` | The trucks' way in from the world: the highways' world line where they have one, their portal where they have none (HWW1), else null. |
+| 5488 | 4 | `private static TrainSchedule.Route fromPortal(TrainSchedule.Route r)` | A route from the portal (TN1): the route itself, faded in over PORTAL_FADE plots of its track (no more than its length) rather than over the first straight of its way. |
+| 5502 | 25 | `private Map<Long, List<DrawnBend>> drawnBends(List<TrackCurves.Bend> found, java.util.Set<Long> sidingPlots)` | The bends the routes make (TrackCurves.bends() of each route's points before it is rounded) that the tiles draw (FX5), by the tiles they reach: those whose corner and both tangent points lie on plots the runs lay trac... |
+| 5544 | 29 | `private List<TrackCurves.Bend> highwayBendsIn(long tx, long ty)` | The highways' bends that reach tile (tx, ty) (FX5 slice D): the turns of each arm's polyline (CityRuns.highwayPolylines()) rounded by TrackCurves.bends() at TrackCurves.HIGHWAY_RADIUS, of net HIGHWAY - a 45-degree str... |
+| 5575 | 4 | `private boolean highwayPlot(long x, long y)` | Whether the runs lay highway on plot (x, y): a highway, or a highway under the railway's bridge. |
+| 5581 | 13 | `private boolean railPlot(List<long[]> yards, boolean[][] yardRails, java.util.Set<Long> sidingPlots, long x, long y)` | Whether the runs lay track on plot (x, y): track, track bridging a highway, a plot of a district plan's siding (MF1; sidingPlots), or the track in a yard's box (yardRails caches each yard's, by index). |
+| 5596 | 1 | **type** `private record YardLayouts(long at, int[][] by)` | The yard layouts (TileRaster.yardLayout() of yardRail()) as the map's changes left them: valid at `at`, one per yard of the runs, made when first asked. |
+| 5605 | 15 | `int[] yardLayoutOf(int yi)` | Where yard yi's fan lies in its box (FX5 Y2): TileRaster.yardLayout() of the box's track as the runs lay it (yardRail()), the layout trainRoutesInto() lays the routes on and the tiles draw the yard from. |
+| 5622 | 8 | `static boolean[] yardRail(CityRuns runs, long[] yard)` | The track in a yard's box, plot by plot (row by row, yard[2] across and yard[3] down): where the runs lay the railway, as the tile the yard is drawn on carries it (TileRaster.yardLayout()'s input; FX3, 0.8.4). |
+| 5645 | 4 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | Adds one yard's routes to out: the world line's part (far end, then where it leaves the city's ground), the way to the box's edge, and the ladder onto each siding. |
+| 5651 | 4 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | ...with the yard's own number of sidings (TileRaster.tracksOf(): a Rail Depot's three, FR7 slice 3), one route to each. |
+| 5663 | 5 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | ...and (FX5) the bends of the routes' points before they are rounded (TrackCurves.bends()) added to bendsOut, where it is not null: the turns the tiles draw. |
+| 5673 | 112 | `static void trainRoutesInto(List<TrainSchedule.Route> out, int yardAt, boolean station, long[] yard, double[][] way, double fx,...` | ...and (FX5, slice T) with the yard's first `standing` sidings from the shed's side left without a route, the wagons standing on them (TileRaster.wagonTracksOn()): the routes are those of the sidings after, each with ... |
+| 5787 | 1 | **type** `private record Rounded(double[] xs, double[] ys, double fadeTo)` | A polyline's points rounded by TrackCurves (RADIUS), with the world line's part: how far along the rounded polyline its first straight lasts. |
+| 5797 | 10 | `private static Rounded rounded(List<double[]> pts, List<TrackCurves.Bend> bendsOut)` | The route's points rounded (FX5): every turn replaced by its arc of TrackCurves.RADIUS plots, less where the legs beside it are short; the turns found are added to bendsOut where it is not null. |
+| 5809 | 5 | `private static void addNew(List<double[]> pts, double x, double y)` | Adds the point (x, y) to pts unless the last one is there (no leg of no length); the first point of a way from the highways' portal (HWW1) to an empty pts. |
+| 5816 | 4 | `private static TrainSchedule.Route route(int yard, boolean station, int siding, List<double[]> pts, List<TrackCurves.Bend> bend...` | A route through points, rounded at every turn (FX5), the world line's part its first leg's straight. |
+| 5822 | 4 | `private static TrainSchedule.Route routeToWorks(List<double[]> pts, List<TrackCurves.Bend> bendsOut, double holds)` | ...to a works' siding (FR7 slice 3): through the points, rounded, the world line's part its first leg's straight, no yard; a bulk unit train's alone. |
 
-### the plans' sidings' trains (MF1, 2026-10-28) (lines 5739-5783)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5751 | 32 | `private void planSidingRoutes(List<TrainSchedule.Route> out, List<TrackCurves.Bend> found, java.util.Set<Long> sidingPlots, dou...` | Adds a route to every siding a district's plan laid (DistrictPlan.sidings(), kept at adopt() against its link): from the world line along the main line to the railway plot the siding meets, then through its corners to... |
-
-### THE TRUCKS' ROUTES (0.8.8, batch FR5; spec-freight 4.7, D21) (lines 5784-5982)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5838 | 27 | `public List<TruckSchedule.Route> truckRoutes()` | The trucks' highway routes (TruckSchedule.Route, world true): for each ramp the highways have (CityRuns.highwayRamps(): their arms' ends), from TruckSchedule.WORLD_PLOTS out along the highways' world line (along line.... |
-| 5867 | 5 | `private static TruckSchedule.Route truckRoute(boolean world, List<double[]> pts, double fadeTo)` | A truck route through points, fadeTo plots faded in. |
-| 5874 | 1 | **type** `public record DistrictRoutes(long key, List<TruckSchedule.Route> routes)` | One district's access roads' routes, with the stable key it is told apart by: the district's own, the same every call. |
-| 5877 | 4 | **type** `private static final class AccessRoutes` | A district's routes as last made, and what they were made against: its Drawn's stamp and its frame's origin in world plots. |
-| 5899 | 18 | `public List<DistrictRoutes> accessRoutesIn(long x0, long y0, long x1, long y1)` | The access roads' routes (TruckSchedule.Route, world false) of the districts already drawn whose frame meets the box (x0, y0) to (x1, y1), in world plots, the corners inclusive: for each district its roads, each from ... |
-| 5919 | 21 | `private void accessRoutesOf(District d, List<DistrictRoutes> out)` | Adds district d's access routes to out when its plan is drawn and current and it has any. |
-| 5942 | 14 | `private static void accessRouteInto(List<TruckSchedule.Route> out, int[] way, long ox, long oy)` | Adds the route of one access road (Drawn.access: frame indices, the end first) to out: its plots' middles in world plots from the frame's origin (ox, oy), a straight run kept to its two ends. |
-| 5966 | 12 | `public int accessRoadCount()` | How many works the city has that need an access road (batch FR7, D17): the railway's yards the runs draw, the shore's berthed works (sea terminals) and the Truck Depots among its buildings - read from what the map hol... |
-
-### the trips (batch FR9) (lines 5983-6599)
+### the plans' sidings' trains (MF1, 2026-10-28) (lines 5827-5871)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6004 | 1 | `private static long plot(long x, long y)` | A plot packed into a long (x high, y low), and none. |
-| 6005 | 1 | `private static long plotX(long p)` |  |
-| 6006 | 1 | `private static long plotY(long p)` |  |
-| 6010 | 1 | **type** `public record DistrictTrips(long key, District district, List<TruckSchedule.Route> trips)` | One district's trips (TruckSchedule.Route: each road's world trip, then its home trip, road by road) with the stable key it is told apart by, the district's own, and the district: the tonnes its trips carry are its ca... |
-| 6013 | 15 | **type** `private static final class TripRoad` | One access road as the trips see it: its way (Drawn.access, in its frame's plots, the end first and the gate last), where that frame starts, and, once the search settled it, the ramp its street leg comes from and the ... |
-| 6019 | 8 | `TripRoad(int[] way, long ox, long oy)` _(in CityMap.TripRoad)_ |  |
-| 6030 | 5 | **type** `private static final class TripLegs` | A district's street legs as last made, and what they were made against: its plan's stamp, the stamps of the drawn plans its box meets, the runs over the box, and the arm the highways' line leaves from. |
-| 6037 | 1 | **type** `private record TripPlan(District d, Drawn dr, long ox, long oy)` | A drawn, current plan and where its frame starts, in world plots. |
-| 6083 | 55 | `public List<DistrictTrips> tripsDrawn()` | The trucks' trips (FR9; TruckSchedule.Route) of the districts whose plan is drawn and current, by district key, those with a trip. |
-| 6140 | 8 | `private static long metStamps(List<TripPlan> plans, TripPlan p)` | A fold of the keys and stamps of the drawn plans whose frame meets p's search box, in key order: what its street legs were read from. |
-| 6150 | 3 | `private static boolean meetsBox(TripPlan q, long x0, long y0)` | Whether plan q's frame meets the search box starting at world plot (x0, y0). |
-| 6164 | 4 | `void forgetTrips()` | Forgets the street legs kept and the trips asked last, so the next tripsDrawn() makes them all again: a harness's, to time a warm remake. |
-| 6172 | 1 | `int tripSearches()` |  |
-| 6175 | 8 | `long tripScratchBytes()` | The bytes the street search's scratch holds (0 before the first search). |
-| 6188 | 81 | `private void tripSearch(TripPlan p, List<TripPlan> plans, WorldLine line, TripLegs legs)` | The street legs of one district's roads (legs.roads), settled from the ramps in its search box by a Dial's search over the drawn plans' streets; each road's ramp and leg are set when a ramp reached its end. |
-| 6274 | 11 | `private int tripCostOf(int i, long bx0, long by0, int bw)` | What it costs a truck to drive box plot i (the world plot (bx0 + i % bw, by0 + i / bw)): 1 on an arterial, a boulevard or an access road, TRIP_STREET_COST on any other street, 0 where no street is drawn. |
-| 6287 | 6 | `private void tripPush(int d, int a)` | Queues plot a at distance d in its bucket (d modulo the buckets: an edge costs at most TRIP_STREET_COST, one more buckets than that are Dial's whole circle). |
-| 6298 | 76 | `private void tripTrips(List<TripPlan> plans, Map<Long, TripLegs> kept, WorldLine line, List<DistrictTrips> out)` | The trips of every district in `plans` whose street legs are in `kept`, into out: the world trips, and the home trips among the roads whose legs come to one ramp. |
-| 6376 | 5 | `private static TruckSchedule.Route homeRoute(List<double[]> pts)` | A home trip through points, TRUCK_ACCESS_FADE faded in. |
-| 6383 | 3 | `private static void addLeg(List<double[]> pts, long[] leg, int from, int to, int step)` | Adds the middles of leg plots from index `from` to `to` (inclusive) stepping `step`, no point twice running. |
-| 6388 | 5 | `private static void addWay(List<double[]> pts, int[] way, long ox, long oy, boolean reversed, int from)` | Adds the middles of an access way's plots (Drawn.access: frame indices, the end first) in the world from frame origin (ox, oy): from index `from` to the gate, or, when `reversed`, the gate to the end. |
-| 6394 | 7 | `private static void addPoint(List<double[]> pts, double x, double y)` |  |
-| 6403 | 3 | `private static void appendStraight(List<double[]> out, List<double[]> piece)` | Adds the points of `piece` straightened (straight()) to out, none twice running. |
-| 6408 | 12 | `private static List<double[]> straight(List<double[]> pts)` | The points with those dropped that lie on the straight line between their neighbours, going on: a run along a row or a column is kept to its two ends. |
-| 6425 | 12 | `int[] tripRoadCounts()` | What the trips made of the roads of the districts last asked (tripsDrawn()): {roads, roads whose leg is a ramp alone (the road ends at one), roads with a street leg of more than a plot, roads no ramp reached}. |
-| 6451 | 143 | **type** `private final class RunGround implements CityRuns.Ground` | The ground the runs read (CityRuns.Ground): a plot's World class where the city owns it, -1 where it does not - the terrain a tile's row or column at a time (World.lineTerrain(), byte for byte the painter's tileTerrai... |
-| 6473 | 3 | `public int at(long x, long y, int dir)` _(in CityMap.RunGround)_ |  |
-| 6482 | 3 | `int atRaw(long x, long y, int dir)` _(in CityMap.RunGround)_ | ...with the ownership unmasked (ET5): a plot the city owns whatever landmass it lies on, as at() reads it where the city is on one landmass. |
-| 6486 | 35 | `private int read(long x, long y, int dir, boolean masked)` _(in CityMap.RunGround)_ |  |
-| 6523 | 32 | `private boolean ownedAt(long tx, long ty, int ix, int iy)` _(in CityMap.RunGround)_ | Whether the city owns plot (ix, iy) of tile (tx, ty): the grid's cover of the tile, its leaves where it owns some. |
-| 6557 | 23 | `private boolean rawOwnedAt(long tx, long ty, int ix, int iy)` _(in CityMap.RunGround)_ | Whether the city owns plot (ix, iy) of tile (tx, ty), whatever landmass it is on: ownedAt() without the island rule's mask (ET5; atRaw()). |
-| 6581 | 6 | `public long version()` _(in CityMap.RunGround)_ |  |
-| 6588 | 5 | `public long[] box()` _(in CityMap.RunGround)_ |  |
-| 6598 | 1 | `CityRuns.Ground runGround()` | The ground the runs read: a harness's, to lay runs of its own on the city's ground. |
+| 5839 | 32 | `private void planSidingRoutes(List<TrainSchedule.Route> out, List<TrackCurves.Bend> found, java.util.Set<Long> sidingPlots, dou...` | Adds a route to every siding a district's plan laid (DistrictPlan.sidings(), kept at adopt() against its link): from the world line along the main line to the railway plot the siding meets, then through its corners to... |
 
-### THE CITY'S GROUND IN PIECES (batch CL5, slice B) (lines 6600-7483)
+### THE TRUCKS' ROUTES (0.8.8, batch FR5; spec-freight 4.7, D21) (lines 5872-6068)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6664 | 523 | **type** `final class MapPieces implements CityRuns.Pieces` | The city's ground in pieces (CL5): what CityRuns.layTo() is handed so that a net is laid on every piece of ground the city builds on. |
-| 6711 | 3 | `void begin()` _(in CityMap.MapPieces)_ | A month's runs are about to ask: the weights are worked out again at the first ask. |
-| 6715 | 4 | `public int count()` _(in CityMap.MapPieces)_ |  |
-| 6720 | 6 | `public int pieceOf(long x, long y)` _(in CityMap.MapPieces)_ |  |
-| 6727 | 6 | `public long weight(int p)` _(in CityMap.MapPieces)_ |  |
-| 6738 | 9 | `public long[] hub(int p)` _(in CityMap.MapPieces)_ | Piece p's hub: the highway line crossing on its dry ground nearest its anchor - since RI1 (ET5's "a linked island's hub at its port") the piece's port when it has one, else the founding site (the home piece, and an is... |
-| 6752 | 4 | `public long[] anchor(int p)` _(in CityMap.MapPieces)_ | (RI1) Where piece p's nets start from - ET5's "a linked island's hub at its port": the middle of the box of the first berthed sea terminal (the oldest) on the piece's shore; the piece's hub() where it has none, and al... |
-| 6758 | 13 | `private long[] portOf(int p)` _(in CityMap.MapPieces)_ | The port anchor of piece p, null where it has none. |
-| 6777 | 14 | `private int pieceOfWork(CityShore.Work w)` _(in CityMap.MapPieces)_ | The piece a work on the shore stands on: the piece of the nearest labelled land tile to its box, sought in rings of tiles round it out to PIECE_PORT_REACH (the ring, then the northern, then the western); -1 where ther... |
-| 6793 | 4 | `long tiles(int p)` _(in CityMap.MapPieces)_ | The land tiles piece p holds. |
-| 6799 | 6 | `long landTiles()` _(in CityMap.MapPieces)_ | The land tiles of every piece. |
-| 6808 | 43 | `private void ensure()` _(in CityMap.MapPieces)_ | ----- keeping it against the ground ----- |
-| 6853 | 16 | `private void indexShore()` _(in CityMap.MapPieces)_ | The tiles a work on the shore may block a sample of: its box and clear verge and its quay, tile by tile (a few; blocks() is asked of a sample in none of them never). |
-| 6873 | 18 | `private void scan(long tx0, long ty0, long tx1, long ty1)` _(in CityMap.MapPieces)_ | Reads the tiles tx0..tx1 by ty0..ty1 (inclusive) that are not yet land, a district's block of them at a time so ground the city owns none of is passed over whole. |
-| 6893 | 24 | `private boolean isLand(LandGrid g, long tx, long ty, int c8)` _(in CityMap.MapPieces)_ | Whether tile (tx, ty) is land: one of its four samples owned, dry (the terrain's verdict, kept) and not blocked by a work on the shore. |
-| 6919 | 9 | `private byte[] terrainChunk(long tx, long ty)` _(in CityMap.MapPieces)_ | A chunk of the kept terrain verdicts: per tile a byte, the four samples' dryness in its low bits and, in its high bits, which of them have been read. |
-| 6930 | 19 | `private int labAt(long tx, long ty)` _(in CityMap.MapPieces)_ | The label of tile (tx, ty), -1 where it is not land. |
-| 6950 | 12 | `private void setLab(long tx, long ty, int l)` _(in CityMap.MapPieces)_ |  |
-| 6963 | 7 | `private int find(int l)` _(in CityMap.MapPieces)_ |  |
-| 6972 | 34 | `private void join(long tx, long ty)` _(in CityMap.MapPieces)_ | A land tile joins the pieces round it: the labels of its eight neighbours that are land, merged into one (the smaller joined to the larger), or a new label when it has none. |
-| 7010 | 37 | `private void finish()` _(in CityMap.MapPieces)_ | The pieces from the labels: the home piece 0, the others by their first tile (row by row); every label's piece. |
-| 7056 | 27 | `private long[] findHub(int p)` _(in CityMap.MapPieces)_ | The first tile of piece p, nearest the piece's reference tile (ties: the northern, then the western), whose highway line crossing is owned dry ground by the runs' own ground; null when none is. |
-| 7089 | 1 | **type** `private interface TileSink` _(in CityMap.MapPieces)_ |  |
-| 7089 | 1 | `void at(long key, int piece)` _(in CityMap.MapPieces.TileSink)_ |  |
-| 7092 | 14 | `private void eachTile(int only, TileSink sink)` _(in CityMap.MapPieces)_ | Gives the sink each land tile's hub key (squared distance from its piece's reference tile << 30 \| row << 15 \| column: tile coordinates are under 2^15, the world being 23,552 tiles a side, the squared distance under 2^... |
-| 7108 | 6 | `private long[] hubAt(long key)` _(in CityMap.MapPieces)_ | The highway line crossing of the tile a hub key names if it is owned dry ground by the runs' own ground, else null. |
-| 7118 | 18 | `private void weigh()` _(in CityMap.MapPieces)_ | Each piece's built ground this month: the plots its districts' buildings stand on, each district whole to the piece holding most of its 8 x 8 tiles' land. |
-| 7138 | 12 | `private void weighOne(District d)` _(in CityMap.MapPieces)_ | District d weighed again if its counts moved or the pieces did. |
-| 7152 | 13 | `long builtCells(District d)` _(in CityMap.MapPieces)_ | The plots a district's buildings stand on: its used cells less those of its roads, highways, track and works at sea (the types a district does not draw on its ground). |
-| 7167 | 19 | `int pieceOfDistrict(District d)` _(in CityMap.MapPieces)_ | The piece holding most of the land tiles of a district's 8 x 8 (ties: the lower index), -1 for none. |
-| 7191 | 1 | `MapPieces pieces()` | The city's ground in pieces (CL5): what the runs are laid on. |
-| 7194 | 1 | `long[] site()` | The founding site, {x, y} in plots. |
-| 7197 | 6 | `private boolean hasFreightLine(long[] counts)` | Whether the counts have any Freight Line, whose track makes the main line double. |
-| 7219 | 60 | `boolean layRuns(long[] model)` | Lays the runs to the model's counts (CityRuns.layTo()): its Elevated Highways' plots, its track's, its Rail Terminals and Rail Depots as yards, each asked for its type's footprint (FR7 slice 3: Terminals first, then D... |
-| 7286 | 13 | `private int[] yardSequence(long[] counts)` | The type of each yard the model has, in the order the runs lay them (FR7 slice 3): every Rail Terminal (by type index), then every Rail Depot - each yard is asked for its type's footprint (laid YARD_LONG along its lin... |
-| 7304 | 9 | `private int[] yardSequenceOf(long[] counts)` |  |
-| 7314 | 3 | `private int[] haveSequence()` |  |
-| 7319 | 5 | `private int[] footprintOf(int t)` | A type's footprint, {across, down} in whole plots (BuildingVisual.footprint()), kept: the size a yard is asked for, every yard every month (FX5 Y1: laid so long along its line as the ground allows, CityRuns.YARD_LONG,... |
-| 7331 | 9 | `int yardTypeOf(int i)` | The type index of the runs' yard i: the model's sequence (yardSequence() of the map's counts); past it (MF1) the terminal type whose footprint the yard was laid for, where the yard stands idle (CityRuns.yardIdleSince(... |
-| 7342 | 4 | `private int firstTerminal()` | The first Rail Terminal type's index, or -1. |
-| 7348 | 5 | `List<long[]> minedSites()` | The city's mines and wells standing on their sites, each {x0, y0, x1, y1} inclusive: where the railway starts and its yards are drawn near. |
-| 7355 | 5 | `List<long[]> bulkSites()` | ...and (FR7 slice 3) of those, the BULK works' (BuildingVisual.Type.bulk(): a mine, a quarry - not a well): the works a siding is laid into and a further yard stands beside. |
-| 7362 | 14 | `private void scanMinedSites(List<long[]> all, List<long[]> bulk)` | The mined sites into `all` and the bulk works' among them into `bulk` (either null to leave out): one pass over the districts' site lists. |
-| 7386 | 12 | `private void refreshMines()` |  |
-| 7411 | 10 | `private int[] terminalTypes()` | The terminal types' indices (BuildingVisual.Type.terminal()), in type order; worked out once (the types are the map's for life). |
-| 7425 | 5 | `private District yardFrame(long[] yard)` | The district whose frame holds more of a yard's plots than any other frame does (workIn(): the plan the yard's ground is given to), or null where the map has none there. |
-| 7432 | 44 | `int yardsOf(District d, int t)` | How many of district d's buildings of terminal type t are the runs' yards. |
-| 7478 | 5 | `int yardsOf(District d)` | How many of district d's Rail Terminals and Depots are the runs' yards. |
+| 5929 | 22 | `public List<TruckSchedule.Route> truckRoutes()` | The trucks' highway routes (TruckSchedule.Route, world true): for each ramp the highways have (CityRuns.highwayRamps(): their arms' ends), from TruckSchedule.WORLD_PLOTS out along the highways' world line (along line.... |
+| 5953 | 5 | `private static TruckSchedule.Route truckRoute(boolean world, List<double[]> pts, double fadeTo)` | A truck route through points, fadeTo plots faded in. |
+| 5960 | 1 | **type** `public record DistrictRoutes(long key, List<TruckSchedule.Route> routes)` | One district's access roads' routes, with the stable key it is told apart by: the district's own, the same every call. |
+| 5963 | 4 | **type** `private static final class AccessRoutes` | A district's routes as last made, and what they were made against: its Drawn's stamp and its frame's origin in world plots. |
+| 5985 | 18 | `public List<DistrictRoutes> accessRoutesIn(long x0, long y0, long x1, long y1)` | The access roads' routes (TruckSchedule.Route, world false) of the districts already drawn whose frame meets the box (x0, y0) to (x1, y1), in world plots, the corners inclusive: for each district its roads, each from ... |
+| 6005 | 21 | `private void accessRoutesOf(District d, List<DistrictRoutes> out)` | Adds district d's access routes to out when its plan is drawn and current and it has any. |
+| 6028 | 14 | `private static void accessRouteInto(List<TruckSchedule.Route> out, int[] way, long ox, long oy)` | Adds the route of one access road (Drawn.access: frame indices, the end first) to out: its plots' middles in world plots from the frame's origin (ox, oy), a straight run kept to its two ends. |
+| 6052 | 12 | `public int accessRoadCount()` | How many works the city has that need an access road (batch FR7, D17): the railway's yards the runs draw, the shore's berthed works (sea terminals) and the Truck Depots among its buildings - read from what the map hol... |
 
-### the Rail Spurs the runs' sidings left: dealt to the plans' works (batch FR7 slice 5, D14) (lines 7484-7629)
+### the trips (batch FR9) (lines 6069-6682)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 7496 | 3 | `int spursLeft()` | The Rail Spurs the runs' sidings did not take: the model's less the sidings the runs laid into mined sites. |
-| 7501 | 4 | `long sidingsDealt()` | How many Rail Spurs are dealt to the districts' plans in all (sidingsOf()). |
-| 7519 | 10 | `int sidingsOf(District d)` | How many sidings district d's plan lays (batch FR7 slice 5, D14): its share of the Rail Spurs the runs' sidings left (spursLeft()). |
-| 7530 | 26 | `private void dealSidings(int[] share)` |  |
-| 7558 | 3 | `long runsInto(District d, byte[] fixed)` | The runs' frame for district d's plan: their plots over its 257 x 257 (DistrictPlan's codes), a hash of them returned. |
-| 7563 | 14 | `long runsInto(District d, byte[] fixed, boolean[] ramp)` | ...and (batch FR7) the frame's highway plots that carry a ramp into `ramp` (null to leave them): where an access road may end. |
-| 7588 | 8 | `void worksInto(District d, DistrictPlan.Input in)` | The works of the city that need an access road and stand in district d's frame (batch FR7, D17): each Rail Terminal and Rail Depot the runs draw as a yard, each sea terminal on the shore (a tank farm has no berth and ... |
-| 7603 | 6 | `static int[] workIn(long[] yard, long x0, long y0)` | A yard's box as the district frame whose first plot is (x0, y0) holds it, {x, y, w, h} in the frame's plots, or null when another frame holds more of it. |
-| 7611 | 4 | `private static boolean holdsMost(long p, long n, long f)` | Whether the frame whose first plot is f holds more of the n plots from p than any other frame does; a tie to the first. |
-| 7617 | 8 | `private static long frameHolding(long p, long n)` | The first plot of the frame that holds more of the n plots from p than any other frame does (a tie to the first), Long.MIN_VALUE for none. |
-| 7626 | 3 | `private static void addWork(DistrictPlan.Input in, long x, long y, long w, long h)` |  |
+| 6090 | 1 | `private static long plot(long x, long y)` | A plot packed into a long (x high, y low), and none. |
+| 6091 | 1 | `private static long plotX(long p)` |  |
+| 6092 | 1 | `private static long plotY(long p)` |  |
+| 6096 | 1 | **type** `public record DistrictTrips(long key, District district, List<TruckSchedule.Route> trips)` | One district's trips (TruckSchedule.Route: each road's world trip, then its home trip, road by road) with the stable key it is told apart by, the district's own, and the district: the tonnes its trips carry are its ca... |
+| 6099 | 15 | **type** `private static final class TripRoad` | One access road as the trips see it: its way (Drawn.access, in its frame's plots, the end first and the gate last), where that frame starts, and, once the search settled it, the ramp its street leg comes from and the ... |
+| 6105 | 8 | `TripRoad(int[] way, long ox, long oy)` _(in CityMap.TripRoad)_ |  |
+| 6116 | 5 | **type** `private static final class TripLegs` | A district's street legs as last made, and what they were made against: its plan's stamp, the stamps of the drawn plans its box meets, the runs over the box, and the arm the highways' line leaves from. |
+| 6123 | 1 | **type** `private record TripPlan(District d, Drawn dr, long ox, long oy)` | A drawn, current plan and where its frame starts, in world plots. |
+| 6171 | 54 | `public List<DistrictTrips> tripsDrawn()` | The trucks' trips (FR9; TruckSchedule.Route) of the districts whose plan is drawn and current, by district key, those with a trip. |
+| 6227 | 8 | `private static long metStamps(List<TripPlan> plans, TripPlan p)` | A fold of the keys and stamps of the drawn plans whose frame meets p's search box, in key order: what its street legs were read from. |
+| 6237 | 3 | `private static boolean meetsBox(TripPlan q, long x0, long y0)` | Whether plan q's frame meets the search box starting at world plot (x0, y0). |
+| 6251 | 4 | `void forgetTrips()` | Forgets the street legs kept and the trips asked last, so the next tripsDrawn() makes them all again: a harness's, to time a warm remake. |
+| 6259 | 1 | `int tripSearches()` |  |
+| 6262 | 8 | `long tripScratchBytes()` | The bytes the street search's scratch holds (0 before the first search). |
+| 6275 | 81 | `private void tripSearch(TripPlan p, List<TripPlan> plans, int arm, TripLegs legs)` | The street legs of one district's roads (legs.roads), settled from the ramps in its search box by a Dial's search over the drawn plans' streets; each road's ramp and leg are set when a ramp reached its end. |
+| 6361 | 11 | `private int tripCostOf(int i, long bx0, long by0, int bw)` | What it costs a truck to drive box plot i (the world plot (bx0 + i % bw, by0 + i / bw)): 1 on an arterial, a boulevard or an access road, TRIP_STREET_COST on any other street, 0 where no street is drawn. |
+| 6374 | 6 | `private void tripPush(int d, int a)` | Queues plot a at distance d in its bucket (d modulo the buckets: an edge costs at most TRIP_STREET_COST, one more buckets than that are Dial's whole circle). |
+| 6385 | 72 | `private void tripTrips(List<TripPlan> plans, Map<Long, TripLegs> kept, TruckGate gate, List<DistrictTrips> out)` | The trips of every district in `plans` whose street legs are in `kept`, into out: the world trips, and the home trips among the roads whose legs come to one ramp. |
+| 6459 | 5 | `private static TruckSchedule.Route homeRoute(List<double[]> pts)` | A home trip through points, TRUCK_ACCESS_FADE faded in. |
+| 6466 | 3 | `private static void addLeg(List<double[]> pts, long[] leg, int from, int to, int step)` | Adds the middles of leg plots from index `from` to `to` (inclusive) stepping `step`, no point twice running. |
+| 6471 | 5 | `private static void addWay(List<double[]> pts, int[] way, long ox, long oy, boolean reversed, int from)` | Adds the middles of an access way's plots (Drawn.access: frame indices, the end first) in the world from frame origin (ox, oy): from index `from` to the gate, or, when `reversed`, the gate to the end. |
+| 6477 | 7 | `private static void addPoint(List<double[]> pts, double x, double y)` |  |
+| 6486 | 3 | `private static void appendStraight(List<double[]> out, List<double[]> piece)` | Adds the points of `piece` straightened (straight()) to out, none twice running. |
+| 6491 | 12 | `private static List<double[]> straight(List<double[]> pts)` | The points with those dropped that lie on the straight line between their neighbours, going on: a run along a row or a column is kept to its two ends. |
+| 6508 | 12 | `int[] tripRoadCounts()` | What the trips made of the roads of the districts last asked (tripsDrawn()): {roads, roads whose leg is a ramp alone (the road ends at one), roads with a street leg of more than a plot, roads no ramp reached}. |
+| 6534 | 143 | **type** `private final class RunGround implements CityRuns.Ground` | The ground the runs read (CityRuns.Ground): a plot's World class where the city owns it, -1 where it does not - the terrain a tile's row or column at a time (World.lineTerrain(), byte for byte the painter's tileTerrai... |
+| 6556 | 3 | `public int at(long x, long y, int dir)` _(in CityMap.RunGround)_ |  |
+| 6565 | 3 | `int atRaw(long x, long y, int dir)` _(in CityMap.RunGround)_ | ...with the ownership unmasked (ET5): a plot the city owns whatever landmass it lies on, as at() reads it where the city is on one landmass. |
+| 6569 | 35 | `private int read(long x, long y, int dir, boolean masked)` _(in CityMap.RunGround)_ |  |
+| 6606 | 32 | `private boolean ownedAt(long tx, long ty, int ix, int iy)` _(in CityMap.RunGround)_ | Whether the city owns plot (ix, iy) of tile (tx, ty): the grid's cover of the tile, its leaves where it owns some. |
+| 6640 | 23 | `private boolean rawOwnedAt(long tx, long ty, int ix, int iy)` _(in CityMap.RunGround)_ | Whether the city owns plot (ix, iy) of tile (tx, ty), whatever landmass it is on: ownedAt() without the island rule's mask (ET5; atRaw()). |
+| 6664 | 6 | `public long version()` _(in CityMap.RunGround)_ |  |
+| 6671 | 5 | `public long[] box()` _(in CityMap.RunGround)_ |  |
+| 6681 | 1 | `CityRuns.Ground runGround()` | The ground the runs read: a harness's, to lay runs of its own on the city's ground. |
 
-### THE SHORE: TERMINALS AND TANK FARMS AT THE WATER (0.7.97, batch O13; (lines 7630-8406)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 7672 | 1 | `public CityShore shore()` | The city's works on its shore (0.7.97). |
-| 7675 | 1 | **type** `private record QuayRailKept(CityShore shore, long shoreVersion, CityRuns runs, long runsVersion, QuayRail r...` | The quay rail as it was worked out, and what it was worked out from: the shore and the runs, with their versions. |
-| 7681 | 12 | `public QuayRail quayRail()` | The terminals the railway reaches (HB2): QuayRail.of() the shore and the ends of the quay spurs laid, worked out again only when the shore or the runs move. |
-| 7697 | 11 | `int[] shoreTypes()` |  |
-| 7713 | 1 | `public int shoreShort()` | How many of the model's terminals and tank farms the shore has no place for: their districts' plans draw them. |
-| 7716 | 5 | `private long groundKey()` | The ground's key, without the shore's own works: what a search that came up short waits on. |
-| 7733 | 95 | `boolean layShore(long[] model)` | Lays the shore to the model's counts: one fewer of a type takes its newest work; one more is laid where shoreSpot() finds it, the first types first. |
-| 7829 | 4 | `private static boolean anyOf(long[] model, int[] ids)` |  |
-| 7842 | 30 | `private LinkedHashMap<Integer, Long> portWants(int t, long total)` | How many of a terminal's `total` the city has on each landmass (ET5), the home landmass first and then the others ascending, only those with any: what the picture says stands off home (Landmasses.picture()'s triples o... |
-| 7874 | 12 | `private List<Integer> shoreLandmasses(int t, LinkedHashMap<Integer, Long> wants)` | The landmasses a terminal type is to be taken from or laid on (ET5): those it is wanted on, and those its works stand on now, the home landmass first. |
-| 7888 | 4 | `private int workLandmass(World world, CityShore.Work w)` | The landmass a work stands on (ET5): its shore plot's, a derived read - CityShore's sidecar carries none. |
-| 7894 | 6 | `private int shoreOn(int t, int at)` | How many works of type t stand on a landmass. |
-| 7902 | 14 | `private boolean takeNewest(int t, int at)` | The newest work of type t on a landmass taken away (the districts it lies in read first, as layShore() reads them); false when there is none. |
-| 7926 | 3 | `CityShore.Work shoreSpot(int t, List<long[]> mines)` | Where the next work of type t goes (CityShore's rule), or null: the districts in the map's order, each one's tiles nearest the founding site first; on each tile with owned salt water and owned dry ground, its shore pl... |
-| 7940 | 3 | `CityShore.Work shoreSpot(int t, List<long[]> mines, int landmass)` | ...for a terminal on a landmass (ET5, 2026-10-25): while the city holds a picture of its landmasses and asks for one, the ground is read with the ownership unmasked (RunGround.atRaw(): an island no port links is owned... |
-| 7945 | 3 | `CityShore.Work shoreSpotFull(int t, List<long[]> mines)` | ...searched from the nearest tile every time, nothing kept or read of where the last search found room: the search as it was before SL1, which MapCheck 9 holds shoreSpot() equal to. |
-| 7949 | 3 | `CityShore.Work shoreSpotFull(int t, List<long[]> mines, int landmass)` |  |
-| 7972 | 6 | **type** `private static final class DTrack` | WHERE THE LAST SEARCH FOUND ROOM (SL1, 2026-10-28). |
-| 7980 | 18 | **type** `private static final class ShoreTrack` | What the searches for one type on one landmass kept, and what it is kept against. |
-| 7991 | 6 | `ShoreTrack(CityShore shore, long removals, long stamp, int districts)` _(in CityMap.ShoreTrack)_ |  |
-| 8005 | 1 | `long shoreLooked()` |  |
-| 8010 | 1 | `long shoreTouched()` |  |
-| 8013 | 6 | `private long shoreStamp(List<long[]> mines)` | What the kept marks are valid against besides the shore: the ground, the runs, the mined sites and the districts in their order. |
-| 8023 | 4 | `private SeaRoutes.Grid shoreSea()` |  |
-| 8029 | 4 | `void shoreSeaIs(SeaRoutes.Grid grid)` | A harness's sea for the searches (a mask of the cells, SeaRoutes.grid(): a lagoon as wide as the flood's reach, say), in place of the world's; the marks of the searches are forgotten. |
-| 8041 | 27 | **type** `private static final class ShutSet extends HashSet<Long>` | The water found shut (SeaRoutes.opensToSea()), noting when a flood touches a water as wide as the reach (hot): where a flood that starts in another part of it may open, so that what a terminal's water is told depends ... |
-| 8046 | 15 | `public boolean addAll(java.util.Collection<? extends Long> cells)` _(in CityMap.ShutSet)_ |  |
-| 8062 | 5 | `public boolean contains(Object k)` _(in CityMap.ShutSet)_ |  |
-| 8070 | 186 | **type** `private final class ShoreScan` | One search for a type's spot: the scratch its tiles are read into, and what the tile last looked at held. |
-| 8103 | 3 | `ShoreScan(int t, List<long[]> mines, int landmass)` _(in CityMap.ShoreScan)_ |  |
-| 8108 | 13 | `ShoreScan(int t, List<long[]> mines, int landmass, boolean harbour)` _(in CityMap.ShoreScan)_ | `harbour`: a terminal's quay is the harbour's common one (MF1), not its pier of its own. |
-| 8123 | 6 | `ShoreScan within(long x, long y, int reach)` _(in CityMap.ShoreScan)_ | The search is for the harbour whose first work's shore plot is (x, y): no spot farther from it than `reach` plots is one (MF1). |
-| 8135 | 4 | `ShoreScan nearestTo(long[] plots)` _(in CityMap.ShoreScan)_ | HB1: the search is for the spot nearest the shore plots `plots` ({x, y, ...}): look() then tries every spot of a tile, weighing each by the squared distance of its shore plot from the nearest of them before it asks wh... |
-| 8141 | 8 | `private long nearestSq(long x, long y)` _(in CityMap.ShoreScan)_ | The squared distance from plot (x, y) to the nearest of nearestTo()'s plots. |
-| 8156 | 99 | `boolean look(long tx, long ty, boolean stopAtAny)` _(in CityMap.ShoreScan)_ | Looks at tile (tx, ty): false when it has no salt water or no dry ground (nothing to stand on: no window is read), else its spots are tried in the order of the plots, the first near one ending the look (near) and the ... |
-| 8263 | 16 | `private CityShore.Work shoreSpot(int t, List<long[]> mines, int landmass, boolean kept)` | Where the next work of type t goes, by the harbour rule (MF1): in the first harbour of its coast that has room, else in a harbour opened at the best shore the search weighs - the first on a coast, or a second once the... |
-| 8285 | 121 | `private CityShore.Work shoreSpotWholeCoast(int t, List<long[]> mines, int landmass, boolean kept)` | The districts in the map's order, each one's tiles nearest the site first: the first district with a spot gives its first near spot, else its first spot. |
-
-### THE HARBOUR (MF1, 2026-10-28) (lines 8407-8773)
+### THE CITY'S GROUND IN PIECES (batch CL5, slice B) (lines 6683-7566)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8428 | 5 | `void harbourReachLike(CityMap o)` | A harness's map read back from another's sidecar takes the other's harbour rule (its reach), so that both lay what they lay alike. |
-| 8435 | 4 | `List<CityShore.Harbour> harbours()` | The shore's harbours in the order opened (CityShore.harbours()), each work on the landmass its shore plot is on - ANY_LANDMASS for all while the city holds no picture of its landmasses. |
-| 8448 | 33 | `private CityShore.Work harbourSpot(int t, List<long[]> mines, int landmass, boolean kept, CityShore.Harbour h, List<CityShore.H...` | The spot in harbour h's reach for a work of type t, or null. |
-| 8493 | 29 | `private CityShore.Work harbourSpotBundled(ShoreScan sc, ShoreTrack tr, long[] order, CityShore.Harbour h, List<CityShore.Harbou...` | HB1 (2026-11-08; Jerus, 2026-10-31, of his Bergen's 27 works scattered over 3.7 x 4.9 km: "you still want ports.. |
-| 8528 | 28 | `long[] harbourPlots(CityShore.Harbour h, List<CityShore.Harbour> all)` | The shore plots of harbour h's works, flat {x, y, ...} in the order laid: the works CityShore.harbours() counts to h - each on h's landmass within the reach of h's first work's shore plot that no harbour opened before... |
-| 8558 | 20 | `private long[] harbourTiles(CityShore.Harbour h)` | The tiles of harbour h's reach, as pairs (tx, ty) in a flat array: a tile whose square lies within HARBOUR_REACH of its first work's shore plot, the nearest that plot first (the tile's middle's distance, then its row ... |
-| 8588 | 62 | `private CityShore.Work openHarbour(int t, List<long[]> mines, int landmass, List<CityShore.Harbour> all, int coast)` | A harbour opened: the first work on a coast, or a second once the first has none left in its reach. |
-| 8664 | 14 | `List<long[]> worldWalks()` | The walks the world line reads (worldLine()), as {x, y, dx, dy}: from the end of each spine arm that has steps - the railway's trunk and corridor arms (not its branches and sidings), the highways' of the home piece - ... |
-| 8680 | 10 | `private static boolean onAWalk(CityShore.Work c, long[][] walks)` | Whether any plot of c's box, verge or quay lies on one of the walks (worldWalks(), as arrays). |
-| 8697 | 16 | `double harbourScore(World world, CityShore.Work c)` | What a shore costs as a harbour's, in plots of distance, the least the best: its distance from the founding site (the built middle, where the freight yard stands), and a reach more for water open all round it (CitySho... |
-| 8715 | 20 | `private static boolean shoreFits(CityShore.Work c, int[] ground, byte[] fixed, long wx0, long wy0, int ww)` | Whether a work fits where c puts it, on the window's ground and runs from (wx0, wy0), ww a side: its box in one cell's interior on owned dry ground no run, mine or other work takes (and, since ET2, not steep: shoreSpo... |
-| 8737 | 8 | `static boolean nearRing(CityShore.Work c)` | Whether a work's box lies within TilePainter.REACH of its cell's ring on a side away from the sea: where an arterial runs when the cell is open. |
-| 8751 | 22 | `int shoreOf(District d, int t)` | How many of district d's buildings of type t the shore holds. |
+| 6747 | 523 | **type** `final class MapPieces implements CityRuns.Pieces` | The city's ground in pieces (CL5): what CityRuns.layTo() is handed so that a net is laid on every piece of ground the city builds on. |
+| 6794 | 3 | `void begin()` _(in CityMap.MapPieces)_ | A month's runs are about to ask: the weights are worked out again at the first ask. |
+| 6798 | 4 | `public int count()` _(in CityMap.MapPieces)_ |  |
+| 6803 | 6 | `public int pieceOf(long x, long y)` _(in CityMap.MapPieces)_ |  |
+| 6810 | 6 | `public long weight(int p)` _(in CityMap.MapPieces)_ |  |
+| 6821 | 9 | `public long[] hub(int p)` _(in CityMap.MapPieces)_ | Piece p's hub: the highway line crossing on its dry ground nearest its anchor - since RI1 (ET5's "a linked island's hub at its port") the piece's port when it has one, else the founding site (the home piece, and an is... |
+| 6835 | 4 | `public long[] anchor(int p)` _(in CityMap.MapPieces)_ | (RI1) Where piece p's nets start from - ET5's "a linked island's hub at its port": the middle of the box of the first berthed sea terminal (the oldest) on the piece's shore; the piece's hub() where it has none, and al... |
+| 6841 | 13 | `private long[] portOf(int p)` _(in CityMap.MapPieces)_ | The port anchor of piece p, null where it has none. |
+| 6860 | 14 | `private int pieceOfWork(CityShore.Work w)` _(in CityMap.MapPieces)_ | The piece a work on the shore stands on: the piece of the nearest labelled land tile to its box, sought in rings of tiles round it out to PIECE_PORT_REACH (the ring, then the northern, then the western); -1 where ther... |
+| 6876 | 4 | `long tiles(int p)` _(in CityMap.MapPieces)_ | The land tiles piece p holds. |
+| 6882 | 6 | `long landTiles()` _(in CityMap.MapPieces)_ | The land tiles of every piece. |
+| 6891 | 43 | `private void ensure()` _(in CityMap.MapPieces)_ | ----- keeping it against the ground ----- |
+| 6936 | 16 | `private void indexShore()` _(in CityMap.MapPieces)_ | The tiles a work on the shore may block a sample of: its box and clear verge and its quay, tile by tile (a few; blocks() is asked of a sample in none of them never). |
+| 6956 | 18 | `private void scan(long tx0, long ty0, long tx1, long ty1)` _(in CityMap.MapPieces)_ | Reads the tiles tx0..tx1 by ty0..ty1 (inclusive) that are not yet land, a district's block of them at a time so ground the city owns none of is passed over whole. |
+| 6976 | 24 | `private boolean isLand(LandGrid g, long tx, long ty, int c8)` _(in CityMap.MapPieces)_ | Whether tile (tx, ty) is land: one of its four samples owned, dry (the terrain's verdict, kept) and not blocked by a work on the shore. |
+| 7002 | 9 | `private byte[] terrainChunk(long tx, long ty)` _(in CityMap.MapPieces)_ | A chunk of the kept terrain verdicts: per tile a byte, the four samples' dryness in its low bits and, in its high bits, which of them have been read. |
+| 7013 | 19 | `private int labAt(long tx, long ty)` _(in CityMap.MapPieces)_ | The label of tile (tx, ty), -1 where it is not land. |
+| 7033 | 12 | `private void setLab(long tx, long ty, int l)` _(in CityMap.MapPieces)_ |  |
+| 7046 | 7 | `private int find(int l)` _(in CityMap.MapPieces)_ |  |
+| 7055 | 34 | `private void join(long tx, long ty)` _(in CityMap.MapPieces)_ | A land tile joins the pieces round it: the labels of its eight neighbours that are land, merged into one (the smaller joined to the larger), or a new label when it has none. |
+| 7093 | 37 | `private void finish()` _(in CityMap.MapPieces)_ | The pieces from the labels: the home piece 0, the others by their first tile (row by row); every label's piece. |
+| 7139 | 27 | `private long[] findHub(int p)` _(in CityMap.MapPieces)_ | The first tile of piece p, nearest the piece's reference tile (ties: the northern, then the western), whose highway line crossing is owned dry ground by the runs' own ground; null when none is. |
+| 7172 | 1 | **type** `private interface TileSink` _(in CityMap.MapPieces)_ |  |
+| 7172 | 1 | `void at(long key, int piece)` _(in CityMap.MapPieces.TileSink)_ |  |
+| 7175 | 14 | `private void eachTile(int only, TileSink sink)` _(in CityMap.MapPieces)_ | Gives the sink each land tile's hub key (squared distance from its piece's reference tile << 30 \| row << 15 \| column: tile coordinates are under 2^15, the world being 23,552 tiles a side, the squared distance under 2^... |
+| 7191 | 6 | `private long[] hubAt(long key)` _(in CityMap.MapPieces)_ | The highway line crossing of the tile a hub key names if it is owned dry ground by the runs' own ground, else null. |
+| 7201 | 18 | `private void weigh()` _(in CityMap.MapPieces)_ | Each piece's built ground this month: the plots its districts' buildings stand on, each district whole to the piece holding most of its 8 x 8 tiles' land. |
+| 7221 | 12 | `private void weighOne(District d)` _(in CityMap.MapPieces)_ | District d weighed again if its counts moved or the pieces did. |
+| 7235 | 13 | `long builtCells(District d)` _(in CityMap.MapPieces)_ | The plots a district's buildings stand on: its used cells less those of its roads, highways, track and works at sea (the types a district does not draw on its ground). |
+| 7250 | 19 | `int pieceOfDistrict(District d)` _(in CityMap.MapPieces)_ | The piece holding most of the land tiles of a district's 8 x 8 (ties: the lower index), -1 for none. |
+| 7274 | 1 | `MapPieces pieces()` | The city's ground in pieces (CL5): what the runs are laid on. |
+| 7277 | 1 | `long[] site()` | The founding site, {x, y} in plots. |
+| 7280 | 6 | `private boolean hasFreightLine(long[] counts)` | Whether the counts have any Freight Line, whose track makes the main line double. |
+| 7302 | 60 | `boolean layRuns(long[] model)` | Lays the runs to the model's counts (CityRuns.layTo()): its Elevated Highways' plots, its track's, its Rail Terminals and Rail Depots as yards, each asked for its type's footprint (FR7 slice 3: Terminals first, then D... |
+| 7369 | 13 | `private int[] yardSequence(long[] counts)` | The type of each yard the model has, in the order the runs lay them (FR7 slice 3): every Rail Terminal (by type index), then every Rail Depot - each yard is asked for its type's footprint (laid YARD_LONG along its lin... |
+| 7387 | 9 | `private int[] yardSequenceOf(long[] counts)` |  |
+| 7397 | 3 | `private int[] haveSequence()` |  |
+| 7402 | 5 | `private int[] footprintOf(int t)` | A type's footprint, {across, down} in whole plots (BuildingVisual.footprint()), kept: the size a yard is asked for, every yard every month (FX5 Y1: laid so long along its line as the ground allows, CityRuns.YARD_LONG,... |
+| 7414 | 9 | `int yardTypeOf(int i)` | The type index of the runs' yard i: the model's sequence (yardSequence() of the map's counts); past it (MF1) the terminal type whose footprint the yard was laid for, where the yard stands idle (CityRuns.yardIdleSince(... |
+| 7425 | 4 | `private int firstTerminal()` | The first Rail Terminal type's index, or -1. |
+| 7431 | 5 | `List<long[]> minedSites()` | The city's mines and wells standing on their sites, each {x0, y0, x1, y1} inclusive: where the railway starts and its yards are drawn near. |
+| 7438 | 5 | `List<long[]> bulkSites()` | ...and (FR7 slice 3) of those, the BULK works' (BuildingVisual.Type.bulk(): a mine, a quarry - not a well): the works a siding is laid into and a further yard stands beside. |
+| 7445 | 14 | `private void scanMinedSites(List<long[]> all, List<long[]> bulk)` | The mined sites into `all` and the bulk works' among them into `bulk` (either null to leave out): one pass over the districts' site lists. |
+| 7469 | 12 | `private void refreshMines()` |  |
+| 7494 | 10 | `private int[] terminalTypes()` | The terminal types' indices (BuildingVisual.Type.terminal()), in type order; worked out once (the types are the map's for life). |
+| 7508 | 5 | `private District yardFrame(long[] yard)` | The district whose frame holds more of a yard's plots than any other frame does (workIn(): the plan the yard's ground is given to), or null where the map has none there. |
+| 7515 | 44 | `int yardsOf(District d, int t)` | How many of district d's buildings of terminal type t are the runs' yards. |
+| 7561 | 5 | `int yardsOf(District d)` | How many of district d's Rail Terminals and Depots are the runs' yards. |
 
-### THE OIL AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the (lines 8774-8818)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8787 | 1 | **type** `public record Jacket(double x, double y, long wells, List<Long> wellPlots)` | A platform as the map draws it: its jacket's middle in plots, its wells, and the plots its wells stand on (each x << 32 \| y). |
-| 8790 | 1 | **type** `public record Pipe(double x0, double y0, double x1, double y1)` | A pipe as the map draws it: from its field's middle (x0, y0) toward the founding site, to (x1, y1), in plots - its kilometres standing. |
-| 8793 | 1 | **type** `public record RailPicture(boolean goodsByRail, double wagonShare)` | The railway as the map draws its yard: whether it carries goods, and the share of the track's wagon sets the fleet has standing. |
-| 8798 | 1 | `public RailPicture railPicture()` | The railway's picture, as the game last handed it. |
-| 8801 | 3 | `static int wagonTracksOf(double share)` | The whole wagon tracks a share of the fleet gives: its share of YARD_TRACKS, rounded to a whole track. |
-| 8806 | 8 | `public void railPicture(RailPicture r)` | The railway's picture handed over by the game (Game.mapRail()); a change of goods or of the whole wagon tracks restamps the tiles. |
-| 8815 | 3 | `private static double clamp(double v, double lo, double hi)` |  |
-
-### THE ISLAND RULE ON THE MAP (ET5, 2026-10-25) (lines 8819-9060)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8892 | 1 | `public Landmasses.Picture landmassPicture()` | The picture of the landmasses the game last handed over: null while the city is on one landmass. |
-| 8895 | 1 | `private long linksStamp()` | The picture's stamp, 0 for none: what a cache of anything the mask touches keys on. |
-| 8903 | 18 | `public void landmassPicture(Landmasses.Picture p)` | The landmasses handed over by the game (Game.reconcileMap(), beside railPicture()). |
-| 8923 | 3 | `private boolean linkedLandmass(int id)` | Whether a landmass is one the picture lets the city's buildings stand on: 0 (the sea), home and the linked ids. |
-| 8928 | 4 | `private int landmassOfShorePlot(World world, long x, long y)` | A plot's landmass as the map reads it, 0 (no landmass) as home: the id a terminal's shore plot is laid for. |
-| 8934 | 3 | `private boolean onLandmass(int id, int landmass)` | Whether a dry plot whose landmass is `id` (World.tileLandmass()) is on `landmass`, 0 read as home - the test a terminal's search puts to every plot. |
-| 8943 | 38 | **type** `private final class LinkedMask` | Which plots of each tile are masked, kept for the picture held: the plots whose landmass the picture does not link. |
-| 8951 | 4 | `void reset(Landmasses.Picture picture)` _(in CityMap.LinkedMask)_ |  |
-| 8957 | 23 | `boolean[] of(long tx, long ty)` _(in CityMap.LinkedMask)_ | The mask of tile (tx, ty), a boolean a plot in rows (true = masked), or null when no plot of it is masked or there is no picture. |
-| 8983 | 7 | `public void buildableOwnership(long tx, long ty, boolean[] out)` | Which plots of tile (tx, ty) the city owns and may build on: tileOwnership() less the plots the island rule masks (ET5; all of it while the city is on one landmass). |
-| 8992 | 12 | `private boolean holdsMasked(int dx, int dy)` | Whether the city owns ground in district (dx, dy) that the island rule masks: such a district stays on the map with no room, so the shore reaches it. |
-| 9006 | 4 | `public long[] freightStation()` | The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail main arm's end (spec 4.2; CityRuns.freightStation()); null for none. |
-| 9012 | 4 | **type** `public record AtSea(List<Jacket> jackets, List<Pipe> pipes)` | The oil at sea: its jackets and pipes. |
-| 9020 | 1 | `public AtSea atSea()` | The oil at sea, as the game last handed it. |
-| 9023 | 7 | `public void atSea(AtSea a)` | The oil at sea handed over by the game (Game.mapAtSea()); a change restamps the tiles it crosses. |
-| 9035 | 25 | `private void atSeaInto(long px0, long py0, TilePainter.Input in)` | The oil at sea over tile (px0, py0)'s plots, into its inputs: the jackets' and wells' plots, the rings and pipes that may cross it. |
-
-### LONG BRIDGES ON THE MAP (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) (lines 9061-9170)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 9106 | 20 | **type** `public record BridgeRun(int kind, long[] corners)` | One long bridge that stands, as the model hands it to the map (ET6): its kind (ROAD, HIGHWAY or RAIL) and the plots of its path where its heading changes, x0, y0, x1, y1, ... |
-| 9114 | 3 | `public boolean equals(Object o)` _(in CityMap.BridgeRun)_ |  |
-| 9118 | 3 | `public int hashCode()` _(in CityMap.BridgeRun)_ |  |
-| 9122 | 3 | `public String toString()` _(in CityMap.BridgeRun)_ |  |
-| 9137 | 1 | `public List<BridgeRun> bridgePicture()` | The long bridges as the game last handed them: empty while the city has none. |
-| 9140 | 1 | `public long bridgeStamp()` | The bridges' stamp, 0 for none; the same bridges in another order are the same stamp. |
-| 9147 | 6 | `public void bridgePicture(List<BridgeRun> runs)` | The long bridges that stand, handed over by the game (Game.reconcileMap(), beside landmassPicture()); null or empty for none. |
-| 9155 | 3 | `private boolean applyBridges()` | The bridges noted laid on the runs, if they are not: true when they moved. |
-| 9160 | 10 | `private void roadBridgesInto(long px0, long py0, TilePainter.Input in)` | A road bridge's plots on the tile whose first plot is (px0, py0), as the street the plan draws none on: paved and whole, the deck under it the painter's. |
-
-### THE SEA ROUTES (0.7.97, batch O13; spec-roads-and-ports.md 4.1) (lines 9171-9328)
+### the Rail Spurs the runs' sidings left: dealt to the plans' works (batch FR7 slice 5, D14) (lines 7567-7712)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9206 | 6 | `double cityRadius()` | The city's radius for the offing, in plots: the farthest corner of its owned box from the founding site. |
-| 9214 | 3 | `private long routesKeyNow()` | What the routes are found at: the world, the founding site and the city's radius's band (SeaRoutes.band()). |
-| 9219 | 3 | `private boolean routesCurrent()` | Whether the routes kept are the city's: found, the shore and its version those they were read from, the band the same. |
-| 9224 | 8 | `public List<BoatSchedule.Route> seaRoutes()` | The routes now, found here when they are not (a harness's way; the view hands a RoutesJob to its worker). |
-| 9234 | 3 | `public List<BoatSchedule.Route> seaRoutesIfFound()` | The routes when they are found and current, else null: the screen's thread, which never finds them itself. |
-| 9239 | 4 | `public SeaLanes seaLanes()` | The lanes of the routes now (SeaLanes), found here when they are not. |
-| 9245 | 3 | `public SeaLanes seaLanesIfFound()` | The lanes when the routes are found and current, else null: the screen's thread. |
-| 9250 | 44 | **type** `public static final class RoutesJob implements Runnable` | The berths' routes found away from the screen's thread: what they are found from, copied here, and the routes already found for the berths' first ones. |
-| 9264 | 13 | `RoutesJob(long key, World.Key world, CityShore shore, long shoreVersion, List<BoatSchedule.Berth> berths, List<BoatSchedule.Rou...` _(in CityMap.RoutesJob)_ |  |
-| 9278 | 6 | `public void run()` _(in CityMap.RoutesJob)_ |  |
-| 9286 | 1 | `public boolean done()` _(in CityMap.RoutesJob)_ | Whether it has run. |
-| 9289 | 1 | `public SeaRoutes.Found found()` _(in CityMap.RoutesJob)_ | What it found, with how many berths it searched and how many joined a lane; null before it has run. |
-| 9292 | 1 | `public int kept()` _(in CityMap.RoutesJob)_ | How many routes it was handed, those kept. |
-| 9300 | 16 | `public RoutesJob routesJob()` | The job that finds the routes now, or null when they are current. |
-| 9318 | 10 | `public boolean adoptRoutes(RoutesJob j)` | A job run: its routes kept when they are still the city's. |
+| 7579 | 3 | `int spursLeft()` | The Rail Spurs the runs' sidings did not take: the model's less the sidings the runs laid into mined sites. |
+| 7584 | 4 | `long sidingsDealt()` | How many Rail Spurs are dealt to the districts' plans in all (sidingsOf()). |
+| 7602 | 10 | `int sidingsOf(District d)` | How many sidings district d's plan lays (batch FR7 slice 5, D14): its share of the Rail Spurs the runs' sidings left (spursLeft()). |
+| 7613 | 26 | `private void dealSidings(int[] share)` |  |
+| 7641 | 3 | `long runsInto(District d, byte[] fixed)` | The runs' frame for district d's plan: their plots over its 257 x 257 (DistrictPlan's codes), a hash of them returned. |
+| 7646 | 14 | `long runsInto(District d, byte[] fixed, boolean[] ramp)` | ...and (batch FR7) the frame's highway plots that carry a ramp into `ramp` (null to leave them): where an access road may end. |
+| 7671 | 8 | `void worksInto(District d, DistrictPlan.Input in)` | The works of the city that need an access road and stand in district d's frame (batch FR7, D17): each Rail Terminal and Rail Depot the runs draw as a yard, each sea terminal on the shore (a tank farm has no berth and ... |
+| 7686 | 6 | `static int[] workIn(long[] yard, long x0, long y0)` | A yard's box as the district frame whose first plot is (x0, y0) holds it, {x, y, w, h} in the frame's plots, or null when another frame holds more of it. |
+| 7694 | 4 | `private static boolean holdsMost(long p, long n, long f)` | Whether the frame whose first plot is f holds more of the n plots from p than any other frame does; a tie to the first. |
+| 7700 | 8 | `private static long frameHolding(long p, long n)` | The first plot of the frame that holds more of the n plots from p than any other frame does (a tie to the first), Long.MIN_VALUE for none. |
+| 7709 | 3 | `private static void addWork(DistrictPlan.Input in, long x, long y, long w, long h)` |  |
 
-### A TILE'S INPUTS FOR THE PAINTER (lines 9329-9996)
+### THE SHORE: TERMINALS AND TANK FARMS AT THE WATER (0.7.97, batch O13; (lines 7713-8489)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9334 | 3 | `public District districtOfTile(long tx, long ty)` | The district holding tile (tx, ty), or null. |
-| 9339 | 3 | `static int tileIn(long tx, long ty)` | The tile in district d at its column and row of tiles (tile = row x 8 + column), from world tile (tx, ty). |
-| 9344 | 10 | `public void tileCounts(long tx, long ty, int[] out)` | A tile's buildings by type id as its district's plan draws them (0.7.88; the deal's until 0.7.87), packed ones among them: into out, zeros where no district is. |
-| 9356 | 8 | `public void tileOwnership(long tx, long ty, boolean[] out)` | Which of a tile's plots the city owns: a tile owned wholly or not at all in one test (the grid's cover at level 5), the rest from the grid's leaves under it (spec-grid 2.4). |
-| 9375 | 6 | `public void tileInput(long tx, long ty, TilePainter.Input in)` | Everything the painter needs for tile (tx, ty), into in: its ground, what the city owns of it, and from its district's plan (0.7.88; the deal's counts and road plots until 0.7.87) the streets through it and every buil... |
-| 9383 | 5 | `public void tileInput(long tx, long ty, TilePainter.Input in, byte[] terrain)` | ...with the tile's ground given (a view keeps it: MapTiles.terrain(), batch J4) rather than read from the world. |
-| 9390 | 10 | `public List<District> tileDistricts(long tx, long ty)` | The districts a tile's picture is drawn from (0.7.88): those of the tiles about it - its own, the ones whose plans lay the street on its first column or row (west, north, north-west) and those its edges look across to... |
-| 9402 | 4 | `public boolean tileReady(long tx, long ty)` | Whether tile (tx, ty) paints without planning: every plan it is drawn from current (planned()). |
-| 9429 | 6 | `public long tileKey(long tx, long ty)` | A key of everything tileInput() reads for tile (tx, ty) (batch UP5): equal keys, equal inputs, so equal MapTiles.stamp()s, and a view that holds a picture against it asks fillInput() for nothing (ui/MapView.paint(): a... |
-| 9437 | 35 | `long[] tileKeyParts(long tx, long ty)` | The four parts tileKey() folds, in order (a harness's: which of them moved when a key did): what the city owns of the tile, its plans', the railway's bends on it, and the whole map's (tileWorldKey()). |
-| 9474 | 12 | `private long tileWorldKey()` | The part of tileKey() that is the whole map's and not a tile's: see tileKey(). |
-| 9488 | 5 | `public List<Job> tileJobs(long tx, long ty)` | The jobs that make tile (tx, ty)'s plans current (planJobs()), in order; empty when they are. |
-| 9502 | 3 | `byte streetAt(long x, long y)` | The street a plan draws on world plot (x, y) (TilePainter's S_ codes): the district's own; on its first column or row the district west or north of it (or north-west, at its corner) lays the same plot as its frame's m... |
-| 9507 | 3 | `private byte streetAt(long x, long y, Map<Long, Drawn> seen)` | ...the plans looked up through `seen`, by district key (null for none), which it fills. |
-| 9516 | 28 | `private byte streetAt(long x, long y, Map<Long, Drawn> seen, boolean plan)` | ...and, `plan` false, from the plans in `seen` alone, a district missing there having none: the trips' way (FR9), which plans nothing. |
-| 9549 | 9 | `private Drawn drawnAt(long dk, Map<Long, Drawn> seen, boolean plan)` | The plan drawn for the district keyed `dk`, looked up in `seen` once (a plan already seen is one lookup, a district with none is looked for once) and, `plan` true, made and kept there when not seen: null for none. |
-| 9565 | 8 | `private static byte interiorCode(Drawn dr, int lx, int ly)` | What streetAt() answers for a plot inside its district's frame, off its first column and row (where no other district lays a code) and with no road bridge to ask about (MF1: the ring of CROSS_REACH about a tile reads ... |
-| 9581 | 43 | `private void fillAvenues(long px0, long py0, TilePainter.Input in, Map<Long, Drawn> seen)` | The avenues' marks on the tile at world plot (px0, py0) and the CROSS_REACH plots about it (batch CL4), into in.avenue and in.avenueRing, and their origin when it lies near: each plan of the districts the ring reaches... |
-| 9633 | 40 | `private void fillCurves(long px0, long py0, TilePainter.Input in, Map<Long, Drawn> seen)` | The curves that reach the tile at world plot (px0, py0) and the REACH plots about it (batch CL4, slice D), into the input's curves: each plan of the districts the ring reaches (seen, looked up as fillAvenues() has the... |
-| 9675 | 198 | `private void fillInput(long tx, long ty, TilePainter.Input in)` | Everything tileInput() fills but the ground, which is in `in` already. |
-| 9875 | 1 | **type** `record DrawnSite(long x0, long y0, long x1, long y1, int kind, int state, int mine)` | One site as the map draws it: its square of plots (inclusive), resource, state and the mine on it (-1 for none). |
-| 9894 | 14 | `List<DrawnSite> siteList(int dx, int dy)` | The sites whose centres lie in district (dx, dy) - every resource's, owned or not - each with its holding's state (its field's holding, the one holding the field's centre, since 0.7.64) and, for the SITED resources, t... |
-| 9910 | 47 | `private List<DrawnSite> siteListWithRuns(int dx, int dy, int[][] siteRuns)` | A site's geometry and claim from explicit runs, bypassing the current-state cache for the month's before-mask. |
-| 9959 | 22 | `private byte[] siteMask(District d, Map<District, int[][]> overrides)` | A district's own site classes, including boxes centred in its neighbours and any claims captured before the month. |
-| 9983 | 13 | `public void forgetPainted()` | Forgets the painted state of every district - the plans, their links, the packing and the site lists - after the ground's states moved (what is worked out). |
+| 7755 | 1 | `public CityShore shore()` | The city's works on its shore (0.7.97). |
+| 7758 | 1 | **type** `private record QuayRailKept(CityShore shore, long shoreVersion, CityRuns runs, long runsVersion, QuayRail r...` | The quay rail as it was worked out, and what it was worked out from: the shore and the runs, with their versions. |
+| 7764 | 12 | `public QuayRail quayRail()` | The terminals the railway reaches (HB2): QuayRail.of() the shore and the ends of the quay spurs laid, worked out again only when the shore or the runs move. |
+| 7780 | 11 | `int[] shoreTypes()` |  |
+| 7796 | 1 | `public int shoreShort()` | How many of the model's terminals and tank farms the shore has no place for: their districts' plans draw them. |
+| 7799 | 5 | `private long groundKey()` | The ground's key, without the shore's own works: what a search that came up short waits on. |
+| 7816 | 95 | `boolean layShore(long[] model)` | Lays the shore to the model's counts: one fewer of a type takes its newest work; one more is laid where shoreSpot() finds it, the first types first. |
+| 7912 | 4 | `private static boolean anyOf(long[] model, int[] ids)` |  |
+| 7925 | 30 | `private LinkedHashMap<Integer, Long> portWants(int t, long total)` | How many of a terminal's `total` the city has on each landmass (ET5), the home landmass first and then the others ascending, only those with any: what the picture says stands off home (Landmasses.picture()'s triples o... |
+| 7957 | 12 | `private List<Integer> shoreLandmasses(int t, LinkedHashMap<Integer, Long> wants)` | The landmasses a terminal type is to be taken from or laid on (ET5): those it is wanted on, and those its works stand on now, the home landmass first. |
+| 7971 | 4 | `private int workLandmass(World world, CityShore.Work w)` | The landmass a work stands on (ET5): its shore plot's, a derived read - CityShore's sidecar carries none. |
+| 7977 | 6 | `private int shoreOn(int t, int at)` | How many works of type t stand on a landmass. |
+| 7985 | 14 | `private boolean takeNewest(int t, int at)` | The newest work of type t on a landmass taken away (the districts it lies in read first, as layShore() reads them); false when there is none. |
+| 8009 | 3 | `CityShore.Work shoreSpot(int t, List<long[]> mines)` | Where the next work of type t goes (CityShore's rule), or null: the districts in the map's order, each one's tiles nearest the founding site first; on each tile with owned salt water and owned dry ground, its shore pl... |
+| 8023 | 3 | `CityShore.Work shoreSpot(int t, List<long[]> mines, int landmass)` | ...for a terminal on a landmass (ET5, 2026-10-25): while the city holds a picture of its landmasses and asks for one, the ground is read with the ownership unmasked (RunGround.atRaw(): an island no port links is owned... |
+| 8028 | 3 | `CityShore.Work shoreSpotFull(int t, List<long[]> mines)` | ...searched from the nearest tile every time, nothing kept or read of where the last search found room: the search as it was before SL1, which MapCheck 9 holds shoreSpot() equal to. |
+| 8032 | 3 | `CityShore.Work shoreSpotFull(int t, List<long[]> mines, int landmass)` |  |
+| 8055 | 6 | **type** `private static final class DTrack` | WHERE THE LAST SEARCH FOUND ROOM (SL1, 2026-10-28). |
+| 8063 | 18 | **type** `private static final class ShoreTrack` | What the searches for one type on one landmass kept, and what it is kept against. |
+| 8074 | 6 | `ShoreTrack(CityShore shore, long removals, long stamp, int districts)` _(in CityMap.ShoreTrack)_ |  |
+| 8088 | 1 | `long shoreLooked()` |  |
+| 8093 | 1 | `long shoreTouched()` |  |
+| 8096 | 6 | `private long shoreStamp(List<long[]> mines)` | What the kept marks are valid against besides the shore: the ground, the runs, the mined sites and the districts in their order. |
+| 8106 | 4 | `private SeaRoutes.Grid shoreSea()` |  |
+| 8112 | 4 | `void shoreSeaIs(SeaRoutes.Grid grid)` | A harness's sea for the searches (a mask of the cells, SeaRoutes.grid(): a lagoon as wide as the flood's reach, say), in place of the world's; the marks of the searches are forgotten. |
+| 8124 | 27 | **type** `private static final class ShutSet extends HashSet<Long>` | The water found shut (SeaRoutes.opensToSea()), noting when a flood touches a water as wide as the reach (hot): where a flood that starts in another part of it may open, so that what a terminal's water is told depends ... |
+| 8129 | 15 | `public boolean addAll(java.util.Collection<? extends Long> cells)` _(in CityMap.ShutSet)_ |  |
+| 8145 | 5 | `public boolean contains(Object k)` _(in CityMap.ShutSet)_ |  |
+| 8153 | 186 | **type** `private final class ShoreScan` | One search for a type's spot: the scratch its tiles are read into, and what the tile last looked at held. |
+| 8186 | 3 | `ShoreScan(int t, List<long[]> mines, int landmass)` _(in CityMap.ShoreScan)_ |  |
+| 8191 | 13 | `ShoreScan(int t, List<long[]> mines, int landmass, boolean harbour)` _(in CityMap.ShoreScan)_ | `harbour`: a terminal's quay is the harbour's common one (MF1), not its pier of its own. |
+| 8206 | 6 | `ShoreScan within(long x, long y, int reach)` _(in CityMap.ShoreScan)_ | The search is for the harbour whose first work's shore plot is (x, y): no spot farther from it than `reach` plots is one (MF1). |
+| 8218 | 4 | `ShoreScan nearestTo(long[] plots)` _(in CityMap.ShoreScan)_ | HB1: the search is for the spot nearest the shore plots `plots` ({x, y, ...}): look() then tries every spot of a tile, weighing each by the squared distance of its shore plot from the nearest of them before it asks wh... |
+| 8224 | 8 | `private long nearestSq(long x, long y)` _(in CityMap.ShoreScan)_ | The squared distance from plot (x, y) to the nearest of nearestTo()'s plots. |
+| 8239 | 99 | `boolean look(long tx, long ty, boolean stopAtAny)` _(in CityMap.ShoreScan)_ | Looks at tile (tx, ty): false when it has no salt water or no dry ground (nothing to stand on: no window is read), else its spots are tried in the order of the plots, the first near one ending the look (near) and the ... |
+| 8346 | 16 | `private CityShore.Work shoreSpot(int t, List<long[]> mines, int landmass, boolean kept)` | Where the next work of type t goes, by the harbour rule (MF1): in the first harbour of its coast that has room, else in a harbour opened at the best shore the search weighs - the first on a coast, or a second once the... |
+| 8368 | 121 | `private CityShore.Work shoreSpotWholeCoast(int t, List<long[]> mines, int landmass, boolean kept)` | The districts in the map's order, each one's tiles nearest the site first: the first district with a spot gives its first near spot, else its first spot. |
 
-### THE RUNS DATED (batch FX7, 0.8.24) (lines 9997-10237)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 10084 | 3 | `private static boolean journalKind(int k)` | The kinds a journal's record holds: 0, a highway's, the railway's, a yard's and (since UP5, FORMAT 15) an interchange's reserve. |
-| 10107 | 1 | `public long journalDropped()` | How many plots' records the plans' inputs have left out because the journal did not end on the runs as they stand: 0. |
-| 10110 | 14 | `private void beginJournal()` | Starts a month's journalling: the witness set on the runs, the highways' reach noted, the reserves as the month begins found if they are not known. |
-| 10126 | 15 | `private void witnessed(long wx, long wy)` | The runs tell the map that world district (wx, wy) is about to change: its kinds are read, once a month, as they are now. |
-| 10150 | 4 | `private byte[] takeKinds()` | A kinds array: one kept, or a new one. |
-| 10156 | 3 | `private void giveKinds(byte[] b)` | An array kindsOf() gave and nothing holds any more, kept for the next month (no more than KINDS_KEPT). |
-| 10168 | 8 | `byte[] kindsOf(District d, boolean reach)` | What a district's own DISTRICT x DISTRICT plots carry in a plan's input, the interchanges' reserves left out: the runs as runsInto() maps them (a railway over a highway is a highway's) with the shore's works over them... |
-| 10182 | 55 | `private void endJournal()` | Ends a month's journalling, the runs and the shore laid: each district read is read again, and a record made of every plot whose kind differs, at the map's month - the interchanges' reserves laid over what the runs le... |
-
-### THE RESERVES DATED (batch UP5, FX7's star 2) (lines 10238-10534)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 10269 | 3 | `private static List<Long> boxKey(long[] b)` | The key of a reserve's box, for comparing sets of them. |
-| 10274 | 3 | `private static boolean meets(long[] b, long[] r)` | Whether the world plot box b = {x0, y0, w, h} meets the box r. |
-| 10279 | 7 | `private static void addLaid(List<InterchangeGround.Site> sites, List<long[]> out, java.util.Set<List<Long>> have)` | The sites that got their reserve, as boxes, into out unless already in `have`. |
-| 10288 | 13 | `private long[] changedBox(byte[] was, byte[] now, District d)` | The box {x0, y0, w, h}, in world plots, about the plots of district d whose kind differs between `was` and `now` (kindsOf()); null where none does. |
-| 10303 | 9 | `private boolean heldBeside(long wx, long wy)` | Whether a district the map holds lies beside world district (wx, wy). |
-| 10314 | 3 | `private static long[] districtRegion(long wx, long wy)` | The region of world district (wx, wy) and a margin about it, {x0, y0, w, h}: where a change in it can move a reserve. |
-| 10319 | 10 | `private List<long[]> laidReserves()` | The reserves that are laid now, found over every district the highways lie in and the margin about it (while the highways reach a street: none before). |
-| 10336 | 71 | `private List<long[]> reservesEnded(boolean reach, List<long[]> changed)` | The reserves as the month ended: those found afresh in the regions the month could have moved one in - a margin about the plots the runs changed, the districts a mine came to or left, the districts under the land boug... |
-| 10412 | 4 | `private static boolean meetsAny(long[] b, List<long[]> rs)` | Whether the world plot box b meets any of the boxes r. |
-| 10418 | 9 | `private static List<long[]> reservesMoved(List<long[]> a, List<long[]> b)` | The boxes in one of two sets of reserves and not the other: the reserves that came or went. |
-| 10429 | 13 | `private void laidOver(byte[] kinds, District d, List<long[]> reserves)` | `kinds` (district d's own plots, as kindsOf() has them) with every reserve of the set that meets d laid over the plots the runs leave at 0. |
-| 10444 | 8 | `private long journalStamp(District d, long h)` | `h` with district d's journal over its frame folded in (ownStamp()): its own, and its east neighbour's first column, its south neighbour's first row and its south-east neighbour's first plot - nothing where there is n... |
-| 10464 | 70 | `private void fixedLogInto(District d, DistrictPlan.Input in)` | District d's frame's records for its plan's input (Input.fixedLogMonth and fixedLog): its own journal's, and its east neighbour's records on its first column (the frame's last), its south neighbour's on its first row ... |
-
-### THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's (lines 10535-10559)
+### THE HARBOUR (MF1, 2026-10-28) (lines 8490-8856)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 10554 | 5 | `DistrictPlan plan(District d)` | District d's own plan, drawn now from planInput(d) - its own buildings alone, none carried to it (R7): not kept (THE DRAWN PLANS keep the painter's). |
+| 8511 | 5 | `void harbourReachLike(CityMap o)` | A harness's map read back from another's sidecar takes the other's harbour rule (its reach), so that both lay what they lay alike. |
+| 8518 | 4 | `List<CityShore.Harbour> harbours()` | The shore's harbours in the order opened (CityShore.harbours()), each work on the landmass its shore plot is on - ANY_LANDMASS for all while the city holds no picture of its landmasses. |
+| 8531 | 33 | `private CityShore.Work harbourSpot(int t, List<long[]> mines, int landmass, boolean kept, CityShore.Harbour h, List<CityShore.H...` | The spot in harbour h's reach for a work of type t, or null. |
+| 8576 | 29 | `private CityShore.Work harbourSpotBundled(ShoreScan sc, ShoreTrack tr, long[] order, CityShore.Harbour h, List<CityShore.Harbou...` | HB1 (2026-11-08; Jerus, 2026-10-31, of his Bergen's 27 works scattered over 3.7 x 4.9 km: "you still want ports.. |
+| 8611 | 28 | `long[] harbourPlots(CityShore.Harbour h, List<CityShore.Harbour> all)` | The shore plots of harbour h's works, flat {x, y, ...} in the order laid: the works CityShore.harbours() counts to h - each on h's landmass within the reach of h's first work's shore plot that no harbour opened before... |
+| 8641 | 20 | `private long[] harbourTiles(CityShore.Harbour h)` | The tiles of harbour h's reach, as pairs (tx, ty) in a flat array: a tile whose square lies within HARBOUR_REACH of its first work's shore plot, the nearest that plot first (the tile's middle's distance, then its row ... |
+| 8671 | 62 | `private CityShore.Work openHarbour(int t, List<long[]> mines, int landmass, List<CityShore.Harbour> all, int coast)` | A harbour opened: the first work on a coast, or a second once the first has none left in its reach. |
+| 8747 | 14 | `List<long[]> worldWalks()` | The walks the world line reads (worldLine()), as {x, y, dx, dy}: from the end of each spine arm that has steps - the railway's trunk and corridor arms (not its branches and sidings), the highways' of the home piece - ... |
+| 8763 | 10 | `private static boolean onAWalk(CityShore.Work c, long[][] walks)` | Whether any plot of c's box, verge or quay lies on one of the walks (worldWalks(), as arrays). |
+| 8780 | 16 | `double harbourScore(World world, CityShore.Work c)` | What a shore costs as a harbour's, in plots of distance, the least the best: its distance from the founding site (the built middle, where the freight yard stands), and a reach more for water open all round it (CitySho... |
+| 8798 | 20 | `private static boolean shoreFits(CityShore.Work c, int[] ground, byte[] fixed, long wx0, long wy0, int ww)` | Whether a work fits where c puts it, on the window's ground and runs from (wx0, wy0), ww a side: its box in one cell's interior on owned dry ground no run, mine or other work takes (and, since ET2, not steep: shoreSpo... |
+| 8820 | 8 | `static boolean nearRing(CityShore.Work c)` | Whether a work's box lies within TilePainter.REACH of its cell's ring on a side away from the sea: where an arterial runs when the cell is open. |
+| 8834 | 22 | `int shoreOf(District d, int t)` | How many of district d's buildings of type t the shore holds. |
 
-### THE WALL WAYS DATED (DM2) (lines 10560-10839)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 10563 | 10 | `boolean keepWays(District d, int[] months, int[] changes)` | Keeps a plan's appended wall events on the map's thread. |
-| 10575 | 5 | `private static long wallHash(int[] months, int[] changes)` | A wall journal's stable stamp, also used when the sidecar is read. |
-| 10582 | 9 | `private long siteHistoryFrameHash(District d)` | The source histories feeding a plan's own plots and its east/south seams. |
-| 10593 | 5 | `DistrictPlan.Input planInput(District d)` | The inputs of district d's plan (DistrictPlan.Input), its ground read from the world. |
-| 10608 | 26 | `private void syncPlanExclusions()` | Updates source flows once the month's sites, yards and shore stand; no plan or view is needed. |
-| 10636 | 16 | `void recordPlanExclusion(District d, int t, int now)` | Records an actual change in units drawn elsewhere, at the map's month; harnesses may supply the source count directly. |
-| 10654 | 49 | `void planExclusionsInto(District d, DistrictPlan.Input in)` | A pure merge: the initial prefix stays a prefix, and later departures and arrivals retain their separate records. |
-| 10705 | 17 | `static void readGround(DistrictPlan.Input in, World.Key world)` | The ground over a plan's frame, a World class a plot, read from the world the key names (0.7.115; the input's seed's until then), and its relief beside it (ET2: World.tileRelief(), a tile at a time as the cover is; FL... |
-| 10724 | 115 | `DistrictPlan.Input planInputHere(District d)` | ...everything but the ground: what the map's own thread reads (the land, the counts, the sites, the runs). |
-
-### ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: (lines 10840-10910)
+### THE OIL AT SEA (0.7.97, batch O13; docs/studies/spec-oil.md 2.12, the (lines 8857-8901)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 10858 | 1 | **type** `public record ZoneArea(String sector, double sqFt)` | A zone as the map tints it: its sector and the ground it covers, in square feet - what it holds free and what its sector has built in it (LandManager.heldBy() and usedBy()). |
-| 10861 | 1 | **type** `public record Tinted(long x0, long y0, int zone)` | A district a zone's tint covers: its box's first plot, {x, y} in the world, a district (DISTRICT plots) a side, and the zone's index in the list given. |
-| 10864 | 46 | `public List<Tinted> zoneTint(List<ZoneArea> zones)` | Each zone's districts (ZONES BY DISTRICT), in the map's order: none with no zone. |
+| 8870 | 1 | **type** `public record Jacket(double x, double y, long wells, List<Long> wellPlots)` | A platform as the map draws it: its jacket's middle in plots, its wells, and the plots its wells stand on (each x << 32 \| y). |
+| 8873 | 1 | **type** `public record Pipe(double x0, double y0, double x1, double y1)` | A pipe as the map draws it: from its field's middle (x0, y0) toward the founding site, to (x1, y1), in plots - its kilometres standing. |
+| 8876 | 1 | **type** `public record RailPicture(boolean goodsByRail, double wagonShare)` | The railway as the map draws its yard: whether it carries goods, and the share of the track's wagon sets the fleet has standing. |
+| 8881 | 1 | `public RailPicture railPicture()` | The railway's picture, as the game last handed it. |
+| 8884 | 3 | `static int wagonTracksOf(double share)` | The whole wagon tracks a share of the fleet gives: its share of YARD_TRACKS, rounded to a whole track. |
+| 8889 | 8 | `public void railPicture(RailPicture r)` | The railway's picture handed over by the game (Game.mapRail()); a change of goods or of the whole wagon tracks restamps the tiles. |
+| 8898 | 3 | `private static double clamp(double v, double lo, double hi)` |  |
 
-### THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 (lines 10911-11042)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 10930 | 112 | **type** `public static final class Pyramid` | The districts summed two by two, level by level, to one node - level 0 is the districts themselves, each level above a grid of nodes over the districts' box, a node NODE_WIDTH numbers. |
-| 10938 | 45 | `Pyramid(CityMap map)` _(in CityMap.Pyramid)_ |  |
-| 10985 | 11 | `long[] vector(District d)` _(in CityMap.Pyramid)_ | A district's numbers: its buildings by class, its ground used (half square feet) and its owned buildable plots. |
-| 10998 | 15 | `void add(District d, int t, long k)` _(in CityMap.Pyramid)_ | k more (or fewer) of type t in a district: its ancestors take them. |
-| 11015 | 1 | `public int levels()` _(in CityMap.Pyramid)_ | How many levels above the districts. |
-| 11018 | 1 | `public int nodes()` _(in CityMap.Pyramid)_ | How many nodes above the districts hold anything (and the top). |
-| 11021 | 11 | `public long[] root()` _(in CityMap.Pyramid)_ | The top node: the whole city's numbers. |
-| 11034 | 7 | `public long[] node(int level, int dx, int dy)` _(in CityMap.Pyramid)_ | The node at a level (1 up) covering district (dx, dy), or null. |
-
-### THE SIDECAR (spec-land 2.5) (lines 11043-11509)
+### THE ISLAND RULE ON THE MAP (ET5, 2026-10-25) (lines 8902-9143)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11078 | 3 | `public byte[] writeSidecar(int month)` | The map as its sidecar's bytes, deflated: the header (magic, format, the world - its seed, or since 0.7.121 an Earth world's key folded, worldId() - month, stamp, the founding site, the stamp of the land's rectangles ... |
-| 11083 | 3 | `byte[] writeSidecar(int month, int format)` | ...in a given format, FORMAT or OLDEST_READ (a harness writes the older one to read it back). |
-| 11088 | 109 | `byte[] writeSidecar(int month, int format, boolean withRuns)` | ...and with its runs or (a harness's, as 0.7.88 wrote FORMAT 5) a count of none. |
-| 11201 | 6 | `private static long landStampOf(CityLand land, int bought, Landmasses.Picture landmasses, long bridges)` | The land's stamp over its first `bought` purchases, with the picture's stamp folded in when the city holds one (ET5): the sidecar's land stamp. |
-| 11209 | 7 | `static void writeVarint(DataOutputStream out, int v) throws IOException` | An unsigned varint (CL3): seven bits a byte, the low first, the high bit set where more follow. |
-| 11218 | 9 | `static int readVarint(DataInputStream in) throws IOException` | ...read back; an IOException for one more than five bytes long. |
-| 11236 | 7 | `static long worldId(World.Key key)` | The world a sidecar names in its header (0.7.121, batch E4): a generated world's seed, as every sidecar has carried it, so theirs are the bytes they were; an Earth world's whole key - its seed, spot and data - folded ... |
-| 11245 | 1 | `public long lastStamp()` | The stamp of the sidecar last written: what the save carries as mapStamp. |
-| 11248 | 13 | `static long stampOf(byte[] raw)` | The stamp of a sidecar's raw bytes: SplitMix64 folded over them, the stamp's own eight bytes read as zero. |
-| 11263 | 7 | `public static long stampIn(byte[] deflated)` | The stamp a sidecar carries, or 0 when it is not one. |
-| 11271 | 7 | `private static byte[] inflate(byte[] deflated)` |  |
-| 11285 | 4 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | Reads the current sidecar, or returns null for an unsupported format, a different city, month, stamp or land, or invalid counts and histories. |
-| 11294 | 4 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | ...on the landmasses the game hands over (ET5): a sidecar written under another linked set - or under none - is not this city's, and the map is drawn again; the picture is the map's own from the first district read, s... |
-| 11303 | 169 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | ...and the long bridges the game hands over (ET6): a sidecar written under another list of them - or none - is not this city's and the map is drawn again; the bridges are laid on the runs read back, none in the file. |
-| 11474 | 3 | `public boolean same(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (0.7.89) the same runs, and (0.7.97) the same works on the shore. |
-| 11479 | 3 | `public boolean sameDistricts(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (CL3) the same logs: the count of records, the first batch and every record. |
-| 11484 | 3 | `public boolean sameDistricts(CityMap o, boolean withLogs)` | Compares district figures, optionally including their arrival logs and dated histories. |
-| 11493 | 3 | `boolean sameSources(CityMap o)` | Whether two maps hold the same districts, logs and dated source histories (the runs' journal, the sites', the units' exclusions) and the same runs and shore, the wall ways' journals left out: what a city reconciled un... |
-| 11497 | 12 | `private boolean sameDistricts(CityMap o, boolean withLogs, boolean withWalls)` |  |
+| 8975 | 1 | `public Landmasses.Picture landmassPicture()` | The picture of the landmasses the game last handed over: null while the city is on one landmass. |
+| 8978 | 1 | `private long linksStamp()` | The picture's stamp, 0 for none: what a cache of anything the mask touches keys on. |
+| 8986 | 18 | `public void landmassPicture(Landmasses.Picture p)` | The landmasses handed over by the game (Game.reconcileMap(), beside railPicture()). |
+| 9006 | 3 | `private boolean linkedLandmass(int id)` | Whether a landmass is one the picture lets the city's buildings stand on: 0 (the sea), home and the linked ids. |
+| 9011 | 4 | `private int landmassOfShorePlot(World world, long x, long y)` | A plot's landmass as the map reads it, 0 (no landmass) as home: the id a terminal's shore plot is laid for. |
+| 9017 | 3 | `private boolean onLandmass(int id, int landmass)` | Whether a dry plot whose landmass is `id` (World.tileLandmass()) is on `landmass`, 0 read as home - the test a terminal's search puts to every plot. |
+| 9026 | 38 | **type** `private final class LinkedMask` | Which plots of each tile are masked, kept for the picture held: the plots whose landmass the picture does not link. |
+| 9034 | 4 | `void reset(Landmasses.Picture picture)` _(in CityMap.LinkedMask)_ |  |
+| 9040 | 23 | `boolean[] of(long tx, long ty)` _(in CityMap.LinkedMask)_ | The mask of tile (tx, ty), a boolean a plot in rows (true = masked), or null when no plot of it is masked or there is no picture. |
+| 9066 | 7 | `public void buildableOwnership(long tx, long ty, boolean[] out)` | Which plots of tile (tx, ty) the city owns and may build on: tileOwnership() less the plots the island rule masks (ET5; all of it while the city is on one landmass). |
+| 9075 | 12 | `private boolean holdsMasked(int dx, int dy)` | Whether the city owns ground in district (dx, dy) that the island rule masks: such a district stays on the map with no room, so the shore reaches it. |
+| 9089 | 4 | `public long[] freightStation()` | The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail main arm's end (spec 4.2; CityRuns.freightStation()); null for none. |
+| 9095 | 4 | **type** `public record AtSea(List<Jacket> jackets, List<Pipe> pipes)` | The oil at sea: its jackets and pipes. |
+| 9103 | 1 | `public AtSea atSea()` | The oil at sea, as the game last handed it. |
+| 9106 | 7 | `public void atSea(AtSea a)` | The oil at sea handed over by the game (Game.mapAtSea()); a change restamps the tiles it crosses. |
+| 9118 | 25 | `private void atSeaInto(long px0, long py0, TilePainter.Input in)` | The oil at sea over tile (px0, py0)'s plots, into its inputs: the jackets' and wells' plots, the rings and pipes that may cross it. |
+
+### LONG BRIDGES ON THE MAP (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) (lines 9144-9253)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 9189 | 20 | **type** `public record BridgeRun(int kind, long[] corners)` | One long bridge that stands, as the model hands it to the map (ET6): its kind (ROAD, HIGHWAY or RAIL) and the plots of its path where its heading changes, x0, y0, x1, y1, ... |
+| 9197 | 3 | `public boolean equals(Object o)` _(in CityMap.BridgeRun)_ |  |
+| 9201 | 3 | `public int hashCode()` _(in CityMap.BridgeRun)_ |  |
+| 9205 | 3 | `public String toString()` _(in CityMap.BridgeRun)_ |  |
+| 9220 | 1 | `public List<BridgeRun> bridgePicture()` | The long bridges as the game last handed them: empty while the city has none. |
+| 9223 | 1 | `public long bridgeStamp()` | The bridges' stamp, 0 for none; the same bridges in another order are the same stamp. |
+| 9230 | 6 | `public void bridgePicture(List<BridgeRun> runs)` | The long bridges that stand, handed over by the game (Game.reconcileMap(), beside landmassPicture()); null or empty for none. |
+| 9238 | 3 | `private boolean applyBridges()` | The bridges noted laid on the runs, if they are not: true when they moved. |
+| 9243 | 10 | `private void roadBridgesInto(long px0, long py0, TilePainter.Input in)` | A road bridge's plots on the tile whose first plot is (px0, py0), as the street the plan draws none on: paved and whole, the deck under it the painter's. |
+
+### THE SEA ROUTES (0.7.97, batch O13; spec-roads-and-ports.md 4.1) (lines 9254-9411)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 9289 | 6 | `double cityRadius()` | The city's radius for the offing, in plots: the farthest corner of its owned box from the founding site. |
+| 9297 | 3 | `private long routesKeyNow()` | What the routes are found at: the world, the founding site and the city's radius's band (SeaRoutes.band()). |
+| 9302 | 3 | `private boolean routesCurrent()` | Whether the routes kept are the city's: found, the shore and its version those they were read from, the band the same. |
+| 9307 | 8 | `public List<BoatSchedule.Route> seaRoutes()` | The routes now, found here when they are not (a harness's way; the view hands a RoutesJob to its worker). |
+| 9317 | 3 | `public List<BoatSchedule.Route> seaRoutesIfFound()` | The routes when they are found and current, else null: the screen's thread, which never finds them itself. |
+| 9322 | 4 | `public SeaLanes seaLanes()` | The lanes of the routes now (SeaLanes), found here when they are not. |
+| 9328 | 3 | `public SeaLanes seaLanesIfFound()` | The lanes when the routes are found and current, else null: the screen's thread. |
+| 9333 | 44 | **type** `public static final class RoutesJob implements Runnable` | The berths' routes found away from the screen's thread: what they are found from, copied here, and the routes already found for the berths' first ones. |
+| 9347 | 13 | `RoutesJob(long key, World.Key world, CityShore shore, long shoreVersion, List<BoatSchedule.Berth> berths, List<BoatSchedule.Rou...` _(in CityMap.RoutesJob)_ |  |
+| 9361 | 6 | `public void run()` _(in CityMap.RoutesJob)_ |  |
+| 9369 | 1 | `public boolean done()` _(in CityMap.RoutesJob)_ | Whether it has run. |
+| 9372 | 1 | `public SeaRoutes.Found found()` _(in CityMap.RoutesJob)_ | What it found, with how many berths it searched and how many joined a lane; null before it has run. |
+| 9375 | 1 | `public int kept()` _(in CityMap.RoutesJob)_ | How many routes it was handed, those kept. |
+| 9383 | 16 | `public RoutesJob routesJob()` | The job that finds the routes now, or null when they are current. |
+| 9401 | 10 | `public boolean adoptRoutes(RoutesJob j)` | A job run: its routes kept when they are still the city's. |
+
+### A TILE'S INPUTS FOR THE PAINTER (lines 9412-10079)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 9417 | 3 | `public District districtOfTile(long tx, long ty)` | The district holding tile (tx, ty), or null. |
+| 9422 | 3 | `static int tileIn(long tx, long ty)` | The tile in district d at its column and row of tiles (tile = row x 8 + column), from world tile (tx, ty). |
+| 9427 | 10 | `public void tileCounts(long tx, long ty, int[] out)` | A tile's buildings by type id as its district's plan draws them (0.7.88; the deal's until 0.7.87), packed ones among them: into out, zeros where no district is. |
+| 9439 | 8 | `public void tileOwnership(long tx, long ty, boolean[] out)` | Which of a tile's plots the city owns: a tile owned wholly or not at all in one test (the grid's cover at level 5), the rest from the grid's leaves under it (spec-grid 2.4). |
+| 9458 | 6 | `public void tileInput(long tx, long ty, TilePainter.Input in)` | Everything the painter needs for tile (tx, ty), into in: its ground, what the city owns of it, and from its district's plan (0.7.88; the deal's counts and road plots until 0.7.87) the streets through it and every buil... |
+| 9466 | 5 | `public void tileInput(long tx, long ty, TilePainter.Input in, byte[] terrain)` | ...with the tile's ground given (a view keeps it: MapTiles.terrain(), batch J4) rather than read from the world. |
+| 9473 | 10 | `public List<District> tileDistricts(long tx, long ty)` | The districts a tile's picture is drawn from (0.7.88): those of the tiles about it - its own, the ones whose plans lay the street on its first column or row (west, north, north-west) and those its edges look across to... |
+| 9485 | 4 | `public boolean tileReady(long tx, long ty)` | Whether tile (tx, ty) paints without planning: every plan it is drawn from current (planned()). |
+| 9512 | 6 | `public long tileKey(long tx, long ty)` | A key of everything tileInput() reads for tile (tx, ty) (batch UP5): equal keys, equal inputs, so equal MapTiles.stamp()s, and a view that holds a picture against it asks fillInput() for nothing (ui/MapView.paint(): a... |
+| 9520 | 35 | `long[] tileKeyParts(long tx, long ty)` | The four parts tileKey() folds, in order (a harness's: which of them moved when a key did): what the city owns of the tile, its plans', the railway's bends on it, and the whole map's (tileWorldKey()). |
+| 9557 | 12 | `private long tileWorldKey()` | The part of tileKey() that is the whole map's and not a tile's: see tileKey(). |
+| 9571 | 5 | `public List<Job> tileJobs(long tx, long ty)` | The jobs that make tile (tx, ty)'s plans current (planJobs()), in order; empty when they are. |
+| 9585 | 3 | `byte streetAt(long x, long y)` | The street a plan draws on world plot (x, y) (TilePainter's S_ codes): the district's own; on its first column or row the district west or north of it (or north-west, at its corner) lays the same plot as its frame's m... |
+| 9590 | 3 | `private byte streetAt(long x, long y, Map<Long, Drawn> seen)` | ...the plans looked up through `seen`, by district key (null for none), which it fills. |
+| 9599 | 28 | `private byte streetAt(long x, long y, Map<Long, Drawn> seen, boolean plan)` | ...and, `plan` false, from the plans in `seen` alone, a district missing there having none: the trips' way (FR9), which plans nothing. |
+| 9632 | 9 | `private Drawn drawnAt(long dk, Map<Long, Drawn> seen, boolean plan)` | The plan drawn for the district keyed `dk`, looked up in `seen` once (a plan already seen is one lookup, a district with none is looked for once) and, `plan` true, made and kept there when not seen: null for none. |
+| 9648 | 8 | `private static byte interiorCode(Drawn dr, int lx, int ly)` | What streetAt() answers for a plot inside its district's frame, off its first column and row (where no other district lays a code) and with no road bridge to ask about (MF1: the ring of CROSS_REACH about a tile reads ... |
+| 9664 | 43 | `private void fillAvenues(long px0, long py0, TilePainter.Input in, Map<Long, Drawn> seen)` | The avenues' marks on the tile at world plot (px0, py0) and the CROSS_REACH plots about it (batch CL4), into in.avenue and in.avenueRing, and their origin when it lies near: each plan of the districts the ring reaches... |
+| 9716 | 40 | `private void fillCurves(long px0, long py0, TilePainter.Input in, Map<Long, Drawn> seen)` | The curves that reach the tile at world plot (px0, py0) and the REACH plots about it (batch CL4, slice D), into the input's curves: each plan of the districts the ring reaches (seen, looked up as fillAvenues() has the... |
+| 9758 | 198 | `private void fillInput(long tx, long ty, TilePainter.Input in)` | Everything tileInput() fills but the ground, which is in `in` already. |
+| 9958 | 1 | **type** `record DrawnSite(long x0, long y0, long x1, long y1, int kind, int state, int mine)` | One site as the map draws it: its square of plots (inclusive), resource, state and the mine on it (-1 for none). |
+| 9977 | 14 | `List<DrawnSite> siteList(int dx, int dy)` | The sites whose centres lie in district (dx, dy) - every resource's, owned or not - each with its holding's state (its field's holding, the one holding the field's centre, since 0.7.64) and, for the SITED resources, t... |
+| 9993 | 47 | `private List<DrawnSite> siteListWithRuns(int dx, int dy, int[][] siteRuns)` | A site's geometry and claim from explicit runs, bypassing the current-state cache for the month's before-mask. |
+| 10042 | 22 | `private byte[] siteMask(District d, Map<District, int[][]> overrides)` | A district's own site classes, including boxes centred in its neighbours and any claims captured before the month. |
+| 10066 | 13 | `public void forgetPainted()` | Forgets the painted state of every district - the plans, their links, the packing and the site lists - after the ground's states moved (what is worked out). |
+
+### THE RUNS DATED (batch FX7, 0.8.24) (lines 10080-10320)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 10167 | 3 | `private static boolean journalKind(int k)` | The kinds a journal's record holds: 0, a highway's, the railway's, a yard's and (since UP5, FORMAT 15) an interchange's reserve. |
+| 10190 | 1 | `public long journalDropped()` | How many plots' records the plans' inputs have left out because the journal did not end on the runs as they stand: 0. |
+| 10193 | 14 | `private void beginJournal()` | Starts a month's journalling: the witness set on the runs, the highways' reach noted, the reserves as the month begins found if they are not known. |
+| 10209 | 15 | `private void witnessed(long wx, long wy)` | The runs tell the map that world district (wx, wy) is about to change: its kinds are read, once a month, as they are now. |
+| 10233 | 4 | `private byte[] takeKinds()` | A kinds array: one kept, or a new one. |
+| 10239 | 3 | `private void giveKinds(byte[] b)` | An array kindsOf() gave and nothing holds any more, kept for the next month (no more than KINDS_KEPT). |
+| 10251 | 8 | `byte[] kindsOf(District d, boolean reach)` | What a district's own DISTRICT x DISTRICT plots carry in a plan's input, the interchanges' reserves left out: the runs as runsInto() maps them (a railway over a highway is a highway's) with the shore's works over them... |
+| 10265 | 55 | `private void endJournal()` | Ends a month's journalling, the runs and the shore laid: each district read is read again, and a record made of every plot whose kind differs, at the map's month - the interchanges' reserves laid over what the runs le... |
+
+### THE RESERVES DATED (batch UP5, FX7's star 2) (lines 10321-10617)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 10352 | 3 | `private static List<Long> boxKey(long[] b)` | The key of a reserve's box, for comparing sets of them. |
+| 10357 | 3 | `private static boolean meets(long[] b, long[] r)` | Whether the world plot box b = {x0, y0, w, h} meets the box r. |
+| 10362 | 7 | `private static void addLaid(List<InterchangeGround.Site> sites, List<long[]> out, java.util.Set<List<Long>> have)` | The sites that got their reserve, as boxes, into out unless already in `have`. |
+| 10371 | 13 | `private long[] changedBox(byte[] was, byte[] now, District d)` | The box {x0, y0, w, h}, in world plots, about the plots of district d whose kind differs between `was` and `now` (kindsOf()); null where none does. |
+| 10386 | 9 | `private boolean heldBeside(long wx, long wy)` | Whether a district the map holds lies beside world district (wx, wy). |
+| 10397 | 3 | `private static long[] districtRegion(long wx, long wy)` | The region of world district (wx, wy) and a margin about it, {x0, y0, w, h}: where a change in it can move a reserve. |
+| 10402 | 10 | `private List<long[]> laidReserves()` | The reserves that are laid now, found over every district the highways lie in and the margin about it (while the highways reach a street: none before). |
+| 10419 | 71 | `private List<long[]> reservesEnded(boolean reach, List<long[]> changed)` | The reserves as the month ended: those found afresh in the regions the month could have moved one in - a margin about the plots the runs changed, the districts a mine came to or left, the districts under the land boug... |
+| 10495 | 4 | `private static boolean meetsAny(long[] b, List<long[]> rs)` | Whether the world plot box b meets any of the boxes r. |
+| 10501 | 9 | `private static List<long[]> reservesMoved(List<long[]> a, List<long[]> b)` | The boxes in one of two sets of reserves and not the other: the reserves that came or went. |
+| 10512 | 13 | `private void laidOver(byte[] kinds, District d, List<long[]> reserves)` | `kinds` (district d's own plots, as kindsOf() has them) with every reserve of the set that meets d laid over the plots the runs leave at 0. |
+| 10527 | 8 | `private long journalStamp(District d, long h)` | `h` with district d's journal over its frame folded in (ownStamp()): its own, and its east neighbour's first column, its south neighbour's first row and its south-east neighbour's first plot - nothing where there is n... |
+| 10547 | 70 | `private void fixedLogInto(District d, DistrictPlan.Input in)` | District d's frame's records for its plan's input (Input.fixedLogMonth and fixedLog): its own journal's, and its east neighbour's records on its first column (the frame's last), its south neighbour's on its first row ... |
+
+### THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's (lines 10618-10642)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 10637 | 5 | `DistrictPlan plan(District d)` | District d's own plan, drawn now from planInput(d) - its own buildings alone, none carried to it (R7): not kept (THE DRAWN PLANS keep the painter's). |
+
+### THE WALL WAYS DATED (DM2) (lines 10643-10922)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 10646 | 10 | `boolean keepWays(District d, int[] months, int[] changes)` | Keeps a plan's appended wall events on the map's thread. |
+| 10658 | 5 | `private static long wallHash(int[] months, int[] changes)` | A wall journal's stable stamp, also used when the sidecar is read. |
+| 10665 | 9 | `private long siteHistoryFrameHash(District d)` | The source histories feeding a plan's own plots and its east/south seams. |
+| 10676 | 5 | `DistrictPlan.Input planInput(District d)` | The inputs of district d's plan (DistrictPlan.Input), its ground read from the world. |
+| 10691 | 26 | `private void syncPlanExclusions()` | Updates source flows once the month's sites, yards and shore stand; no plan or view is needed. |
+| 10719 | 16 | `void recordPlanExclusion(District d, int t, int now)` | Records an actual change in units drawn elsewhere, at the map's month; harnesses may supply the source count directly. |
+| 10737 | 49 | `void planExclusionsInto(District d, DistrictPlan.Input in)` | A pure merge: the initial prefix stays a prefix, and later departures and arrivals retain their separate records. |
+| 10788 | 17 | `static void readGround(DistrictPlan.Input in, World.Key world)` | The ground over a plan's frame, a World class a plot, read from the world the key names (0.7.115; the input's seed's until then), and its relief beside it (ET2: World.tileRelief(), a tile at a time as the cover is; FL... |
+| 10807 | 115 | `DistrictPlan.Input planInputHere(District d)` | ...everything but the ground: what the map's own thread reads (the land, the counts, the sites, the runs). |
+
+### ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: (lines 10923-10993)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 10941 | 1 | **type** `public record ZoneArea(String sector, double sqFt)` | A zone as the map tints it: its sector and the ground it covers, in square feet - what it holds free and what its sector has built in it (LandManager.heldBy() and usedBy()). |
+| 10944 | 1 | **type** `public record Tinted(long x0, long y0, int zone)` | A district a zone's tint covers: its box's first plot, {x, y} in the world, a district (DISTRICT plots) a side, and the zone's index in the list given. |
+| 10947 | 46 | `public List<Tinted> zoneTint(List<ZoneArea> zones)` | Each zone's districts (ZONES BY DISTRICT), in the map's order: none with no zone. |
+
+### THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 (lines 10994-11125)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 11013 | 112 | **type** `public static final class Pyramid` | The districts summed two by two, level by level, to one node - level 0 is the districts themselves, each level above a grid of nodes over the districts' box, a node NODE_WIDTH numbers. |
+| 11021 | 45 | `Pyramid(CityMap map)` _(in CityMap.Pyramid)_ |  |
+| 11068 | 11 | `long[] vector(District d)` _(in CityMap.Pyramid)_ | A district's numbers: its buildings by class, its ground used (half square feet) and its owned buildable plots. |
+| 11081 | 15 | `void add(District d, int t, long k)` _(in CityMap.Pyramid)_ | k more (or fewer) of type t in a district: its ancestors take them. |
+| 11098 | 1 | `public int levels()` _(in CityMap.Pyramid)_ | How many levels above the districts. |
+| 11101 | 1 | `public int nodes()` _(in CityMap.Pyramid)_ | How many nodes above the districts hold anything (and the top). |
+| 11104 | 11 | `public long[] root()` _(in CityMap.Pyramid)_ | The top node: the whole city's numbers. |
+| 11117 | 7 | `public long[] node(int level, int dx, int dy)` _(in CityMap.Pyramid)_ | The node at a level (1 up) covering district (dx, dy), or null. |
+
+### THE SIDECAR (spec-land 2.5) (lines 11126-11592)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 11161 | 3 | `public byte[] writeSidecar(int month)` | The map as its sidecar's bytes, deflated: the header (magic, format, the world - its seed, or since 0.7.121 an Earth world's key folded, worldId() - month, stamp, the founding site, the stamp of the land's rectangles ... |
+| 11166 | 3 | `byte[] writeSidecar(int month, int format)` | ...in a given format, FORMAT or OLDEST_READ (a harness writes the older one to read it back). |
+| 11171 | 109 | `byte[] writeSidecar(int month, int format, boolean withRuns)` | ...and with its runs or (a harness's, as 0.7.88 wrote FORMAT 5) a count of none. |
+| 11284 | 6 | `private static long landStampOf(CityLand land, int bought, Landmasses.Picture landmasses, long bridges)` | The land's stamp over its first `bought` purchases, with the picture's stamp folded in when the city holds one (ET5): the sidecar's land stamp. |
+| 11292 | 7 | `static void writeVarint(DataOutputStream out, int v) throws IOException` | An unsigned varint (CL3): seven bits a byte, the low first, the high bit set where more follow. |
+| 11301 | 9 | `static int readVarint(DataInputStream in) throws IOException` | ...read back; an IOException for one more than five bytes long. |
+| 11319 | 7 | `static long worldId(World.Key key)` | The world a sidecar names in its header (0.7.121, batch E4): a generated world's seed, as every sidecar has carried it, so theirs are the bytes they were; an Earth world's whole key - its seed, spot and data - folded ... |
+| 11328 | 1 | `public long lastStamp()` | The stamp of the sidecar last written: what the save carries as mapStamp. |
+| 11331 | 13 | `static long stampOf(byte[] raw)` | The stamp of a sidecar's raw bytes: SplitMix64 folded over them, the stamp's own eight bytes read as zero. |
+| 11346 | 7 | `public static long stampIn(byte[] deflated)` | The stamp a sidecar carries, or 0 when it is not one. |
+| 11354 | 7 | `private static byte[] inflate(byte[] deflated)` |  |
+| 11368 | 4 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | Reads the current sidecar, or returns null for an unsupported format, a different city, month, stamp or land, or invalid counts and histories. |
+| 11377 | 4 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | ...on the landmasses the game hands over (ET5): a sidecar written under another linked set - or under none - is not this city's, and the map is drawn again; the picture is the map's own from the first district read, s... |
+| 11386 | 169 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | ...and the long bridges the game hands over (ET6): a sidecar written under another list of them - or none - is not this city's and the map is drawn again; the bridges are laid on the runs read back, none in the file. |
+| 11557 | 3 | `public boolean same(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (0.7.89) the same runs, and (0.7.97) the same works on the shore. |
+| 11562 | 3 | `public boolean sameDistricts(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (CL3) the same logs: the count of records, the first batch and every record. |
+| 11567 | 3 | `public boolean sameDistricts(CityMap o, boolean withLogs)` | Compares district figures, optionally including their arrival logs and dated histories. |
+| 11576 | 3 | `boolean sameSources(CityMap o)` | Whether two maps hold the same districts, logs and dated source histories (the runs' journal, the sites', the units' exclusions) and the same runs and shore, the wall ways' journals left out: what a city reconciled un... |
+| 11580 | 12 | `private boolean sameDistricts(CityMap o, boolean withLogs, boolean withWalls)` |  |
 

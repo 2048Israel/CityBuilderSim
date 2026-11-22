@@ -1,4 +1,4 @@
-# TileRaster.java - 4,470 lines · 164 methods · 104 constants · model
+# TileRaster.java - 4,498 lines · 165 methods · 104 constants · model
 
 `ham/citybuildersim/TileRaster.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > shed, the freight it handles - ore stockpiles, or at the freight station
 > ... (64 more lines in the source)
 
-**Uses:** [TilePainter](TilePainter.md) (624), [BuildingVisual](BuildingVisual.md) (131), [World](World.md) (39), [CityRuns](CityRuns.md) (35), [TrackCurves](TrackCurves.md) (26), [DistrictPlan](DistrictPlan.md) (8), [Resource](Resource.md) (3), [StreetCurves](StreetCurves.md) (1), [InterchangeGround](InterchangeGround.md) (1)
+**Uses:** [TilePainter](TilePainter.md) (625), [BuildingVisual](BuildingVisual.md) (131), [World](World.md) (39), [CityRuns](CityRuns.md) (35), [TrackCurves](TrackCurves.md) (29), [DistrictPlan](DistrictPlan.md) (8), [Resource](Resource.md) (3), [StreetCurves](StreetCurves.md) (1), [InterchangeGround](InterchangeGround.md) (1)
 
 **Used by (32):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [HarbourRenders](HarbourRenders.md), [HarbourYard](HarbourYard.md), [IslandRailRenders](IslandRailRenders.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [PortCheck](PortCheck.md), [QuayCrane](QuayCrane.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TrainSchedule](TrainSchedule.md), [TrainShapes](TrainShapes.md)
 
@@ -94,7 +94,7 @@
 | 3626 | · 7. kerb corners and estate T's (batch FR7; spec-freight 4.6's table) |
 | 3748 | · the track as rail, and its crossings (0.8.1, batch FR0; spec-freight 4.3) |
 | 4036 | · the curves (FX5) |
-| 4403 | A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS |
+| 4431 | A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS |
 
 ## Constants
 
@@ -202,8 +202,8 @@
 | 3629 | `TileRaster.KERB_RADIUS` | `0.25` | A kerb corner's radius, in plots: 0.25 (7.5 m), the corner of a + of two streets in a homes cell - and of a street's T on an arterial there. |
 | 3632 | `TileRaster.ESTATE_T_RADIUS` | `0.5` | An estate T's corner radius, in plots: 0.5 (15 m) - wide, where trucks turn (spec-freight 4.6: "a T with wide radius corners"). |
 | 3846 | `TileRaster.SIDING_SHED` | `0.7` | A siding's loading shed, the share of a plot it fills (FR7 slice 3): 0.7, a small block at the siding's end beside the works. |
-| 4198 | `TileRaster.HIGHWAY_LEG` | `2` | How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over. |
-| 4450 | `TileRaster.ROAD_SMALL` | `{ 0, 0xffbdb8ae, 0xff6a7077, 0xff3b4048 }` | A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it vanishes among the h... |
+| 4198 | `TileRaster.HIGHWAY_LEG` | `2` | How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over; less where the next be... |
+| 4478 | `TileRaster.ROAD_SMALL` | `{ 0, 0xffbdb8ae, 0xff6a7077, 0xff3b4048 }` | A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it vanishes among the h... |
 
 ## Fields (state)
 
@@ -220,7 +220,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 131 | 4340 | **type** `public final class TileRaster` | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image. |
+| 131 | 4368 | **type** `public final class TileRaster` | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image. |
 | 133 | 1 | `private TileRaster()` |  |
 | 165 | 9 | `static { ... }` |  |
 | 181 | 4 | `public static int colour(int cover, int relief)` | A plot's ground colour from its cover (a World class) and its relief (World.FLAT to VERY_STEEP): GROUND[cover] on flat ground, on water, on ice and for a generated world (which has no relief); on dry open ground (gras... |
@@ -469,7 +469,7 @@
 | 4019 | 7 | `private static void railH(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int row, int c, ...` | A rail a pixel wide along an east-west track at row `row`, its middle and its arms. |
 | 4028 | 7 | `private static void railV(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int col, int c, ...` | ...and a north-south track's, at column `col`. |
 
-### the curves (FX5) (lines 4036-4402)
+### the curves (FX5) (lines 4036-4430)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -478,22 +478,23 @@
 | 4078 | 18 | `private static double pathLateral(TrackCurves.Bend s, double back1, double back2, double x, double y, double[] out)` | How far point (x, y) lies from the path of bend s (in pixels): its arc, the straight of `back1` before its start along the incoming leg, and the straight of `back2` after its end along the outgoing one - the least of ... |
 | 4097 | 69 | `private static void drawBend(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, TrackCurves.Bend b, boolean double...` |  |
 | 4172 | 24 | `private static void blockBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The bends in the blocks' views (FX5): each bend's arc and straights in RAIL_DARK at the width the blocks draw track (a plot, px pixels), in place of the cells of the plots it replaces. |
-| 4214 | 24 | `private static void highwayBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, double half, int c)` | The highways' bends (Input.bends of net HIGHWAY, FX5 slice D), drawn as the carriageway along the arc: the pixels within `half` pixels of each bend's path in colour c, one pass of the highways' casing or surface (ways... |
-| 4247 | 26 | `private static void highwayBendDashes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int dash)` | The highways' bends' centre line (FX5 slice D): a dash over the first 55% of each plot's length of the path from the arc's start (`dash` pixels of every px), a pixel wide on the row or column the straight's own dash t... |
-| 4283 | 18 | `private static void ladderRails(int[] img, int w, int px, boolean ew, double apexAlong, double lineAcross, double sidingAlong, ...` | One of a yard's ladders (FX5), from the fan's apex on the line to its siding's start, as TrackCurves.ladder() lays it - an S tangent to the line and to the siding, the points the trains' routes run along - drawn as th... |
-| 4309 | 51 | `private static void railCrossings(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The railway's crossings (0.8.1, spec-freight 4.3, D18): the street's surface already lies over the bed; from RAILS_FROM px a plot, draw the rails through a level crossing with its crossbucks and half barriers, and an ... |
-| 4362 | 5 | `private static void drawCrossbucks(int px, int[] img, int w, int x0, int y0)` | A level crossing's two crossbucks: a white X in the plot's north-west and south-east corners. |
-| 4369 | 6 | `private static void drawX(int[] img, int w, int x0, int y0, int s)` | An X of side `s` in CROSSBUCK, its corner at (x0, y0). |
-| 4377 | 25 | `private static void drawBarriers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int w, int x0, int y0, ...` | A level crossing's half barriers: a bar across the lane coming in at each edge where the street enters the plot. |
+| 4206 | 19 | `private static double[] highwayLegs(TilePainter.Input in, int k, int px)` | How far highway bend k's legs' straights are drawn past its tangent points, in pixels, {back along the incoming leg, on along the outgoing one}: HIGHWAY_LEG plots, or to where the next highway bend's arc begins on tha... |
+| 4240 | 25 | `private static void highwayBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, double half, int c)` | The highways' bends (Input.bends of net HIGHWAY, FX5 slice D), drawn as the carriageway along the arc: the pixels within `half` pixels of each bend's path in colour c, one pass of the highways' casing or surface (ways... |
+| 4274 | 27 | `private static void highwayBendDashes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int dash)` | The highways' bends' centre line (FX5 slice D): a dash over the first 55% of each plot's length of the path from the arc's start (`dash` pixels of every px), a pixel wide on the row or column the straight's own dash t... |
+| 4311 | 18 | `private static void ladderRails(int[] img, int w, int px, boolean ew, double apexAlong, double lineAcross, double sidingAlong, ...` | One of a yard's ladders (FX5), from the fan's apex on the line to its siding's start, as TrackCurves.ladder() lays it - an S tangent to the line and to the siding, the points the trains' routes run along - drawn as th... |
+| 4337 | 51 | `private static void railCrossings(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The railway's crossings (0.8.1, spec-freight 4.3, D18): the street's surface already lies over the bed; from RAILS_FROM px a plot, draw the rails through a level crossing with its crossbucks and half barriers, and an ... |
+| 4390 | 5 | `private static void drawCrossbucks(int px, int[] img, int w, int x0, int y0)` | A level crossing's two crossbucks: a white X in the plot's north-west and south-east corners. |
+| 4397 | 6 | `private static void drawX(int[] img, int w, int x0, int y0, int s)` | An X of side `s` in CROSSBUCK, its corner at (x0, y0). |
+| 4405 | 25 | `private static void drawBarriers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int w, int x0, int y0, ...` | A level crossing's half barriers: a bar across the lane coming in at each edge where the street enters the plot. |
 
-### A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS (lines 4403-4470)
+### A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS (lines 4431-4498)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4408 | 10 | `private static void grain(TilePainter.Input in, int[] img, int w, int x0, int y0, int x1, int y1, int c)` | Speckles GRAVEL_GRAIN_SHARE of the box's pixels with c, each by a hash of its pixel in the tile and the tile's place, so the same street speckles the same at every paint. |
-| 4419 | 6 | `private static void fillRect(int[] img, int w, int x0, int y0, int x1, int y1, int c)` |  |
-| 4427 | 10 | `static int groundColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's ground: its terrain - forest under a building cleared (0.7.88; spec 2.6) - its site's tint or grey, dimmed when unowned: what a road is drawn on from LINES_FROM px. |
-| 4439 | 9 | `static int siteTint(TilePainter.Input in, int i, int s, int c)` | A site's plot over its ground: its resource's colour, speckled, half grey while its holding is worked, grey worked out. |
-| 4453 | 9 | `static int plotColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's colour before its building: its ground, its site's tint or grey, its road's colour - a track's brown (0.7.88) - or (0.7.72) its track's, where no street crosses it - and dimmed when unowned. |
-| 4464 | 6 | `static int blend(int a, int b, double f)` | a toward b by share f, channel by channel, opaque. |
+| 4436 | 10 | `private static void grain(TilePainter.Input in, int[] img, int w, int x0, int y0, int x1, int y1, int c)` | Speckles GRAVEL_GRAIN_SHARE of the box's pixels with c, each by a hash of its pixel in the tile and the tile's place, so the same street speckles the same at every paint. |
+| 4447 | 6 | `private static void fillRect(int[] img, int w, int x0, int y0, int x1, int y1, int c)` |  |
+| 4455 | 10 | `static int groundColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's ground: its terrain - forest under a building cleared (0.7.88; spec 2.6) - its site's tint or grey, dimmed when unowned: what a road is drawn on from LINES_FROM px. |
+| 4467 | 9 | `static int siteTint(TilePainter.Input in, int i, int s, int c)` | A site's plot over its ground: its resource's colour, speckled, half grey while its holding is worked, grey worked out. |
+| 4481 | 9 | `static int plotColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's colour before its building: its ground, its site's tint or grey, its road's colour - a track's brown (0.7.88) - or (0.7.72) its track's, where no street crosses it - and dimmed when unowned. |
+| 4492 | 6 | `static int blend(int a, int b, double f)` | a toward b by share f, channel by channel, opaque. |
 
