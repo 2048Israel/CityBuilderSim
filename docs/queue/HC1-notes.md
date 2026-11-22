@@ -833,3 +833,16 @@ The marker remains provisional and the9 accepted pin rows remain. Mail
 the PASS verdict and `HC1 dry run?`, then end for the orchestrator's slot
 go. Do not start the ALL dry run until that go; the earlier stopped run
 is still not a reusable green run.
+
+### ALL dry-run slot go, 2026-11-22
+
+The orchestrator accepts the folded notes and ensemble PASS and gives
+HC1 the box slot after PW5 released it. Mainccdae08cf is merged first:
+only QUEUE and the FC2 brief change. Source/pom/ensemble tools remain
+identical to the tested99c5c41ec snapshot, so the final-model ensemble
+still applies. Push the merged record before starting a new ALL dry run;
+the stopped x8baF9O4 run is never reused. Use a new kept run, a7200s
+parent with its own PID/exit file, and block automatic laptop fallback.
+After a green run change only these notes and the ship file, record its
+branch/main commits and kept directory, then drop the marker last in
+its own commit, verify it gone on origin, and mail ready.
