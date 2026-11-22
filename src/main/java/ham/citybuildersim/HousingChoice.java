@@ -66,6 +66,10 @@ public final class HousingChoice {
     }
     /** Equivalent nodes share their allocation pro rata; input order confers no priority. */
     public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month) {
+        return clear(demands,offers,incumbents,month,true);
+    }
+    /** Planning can reserve suitable homes without assuming emergency crowding in a new project. */
+    public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month,boolean emergency) {
         List<Demand> ds=demands.stream().sorted(Comparator.comparing(Demand::key)).toList();
         List<Offer> os=offers.stream().sorted(Comparator.comparing(o->o.key().toString())).toList();
         int h=ds.size(),t=os.size(); double[][] x=new double[h][t];
@@ -80,7 +84,7 @@ public final class HousingChoice {
         double kept=0;
         for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];double ratio=sum>free[j]?free[j]/sum:1;
             for(int i=0;i<h;i++){x[i][j]*=ratio;need[i]=Math.max(0,need[i]-x[i][j]);free[j]-=x[i][j];kept+=x[i][j];}}
-        double suitable=allocate(ds,os,need,free,x,month,false),crowded=allocate(ds,os,need,free,x,month,true);
+        double suitable=allocate(ds,os,need,free,x,month,false),crowded=emergency?allocate(ds,os,need,free,x,month,true):0;
         // Pro-rata products may sum one ULP over a source. Round down only within
         // the model's packing bound; a genuine excess remains an error.
         for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];
@@ -107,6 +111,20 @@ public final class HousingChoice {
         return new Result(List.copyOf(leases),kept,suitable,crowded,poor,noSuitable,left);
     }
     private record DemandSignature(int size,int children,boolean retired,int tier,boolean young,double budget) { }
+    /** Books the outcome of internal emergency phases without clearing or pricing again. */
+    public static Result summarize(List<Demand> demand,List<Offer> offers,List<Lease> leases,double kept,double normal,double crowded,
+                                   Map<String,Double> remainingBudgets){
+        Map<HousingInventory.Key,Double> used=new HashMap<>();for(var l:leases)used.merge(l.home(),l.count(),Double::sum);
+        double poor=0,shortage=0,left=0;
+        for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(Lease::count).sum();
+            double missing=Math.max(0,d.count()-taken);if(missing<=FamilyModel.packingRounding(d.count()))continue;
+            Demand budget=new Demand(d.key(),d.count(),d.size(),d.children(),d.retired(),d.tier(),d.young(),remainingBudgets.getOrDefault(d.key(),d.budget()));
+            boolean compatible=false,affordable=false;
+            for(var o:offers)if(o.count()>used.getOrDefault(o.key(),0.0)&&suitable(budget,o,false)){compatible=true;affordable|=affordable(budget,o);}
+            left+=missing;if(compatible&&!affordable)poor+=missing;else shortage+=missing;
+        }
+        return new Result(List.copyOf(leases),kept,normal,crowded,poor,shortage,left);
+    }
     private record OfferSignature(int capacity,int bedrooms,double area,double quality,double garden,boolean stepFree,double rent,double recurring) { }
     private static double allocate(List<Demand> ds,List<Offer> os,double[] need,double[] free,double[][] x,int month,boolean emergency){
         Map<DemandSignature,List<Integer>> dg=new LinkedHashMap<>(); Map<OfferSignature,List<Integer>> og=new LinkedHashMap<>();

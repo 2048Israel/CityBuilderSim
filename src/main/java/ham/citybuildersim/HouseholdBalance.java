@@ -685,6 +685,12 @@ public class HouseholdBalance {
         return Double.isFinite(typed)?Math.max(0,typed):pooled*Math.max(0,rentShares.applyAsDouble(c));
     }
     public record HousingResources(double count,double budget) { }
+    /** An incoming worker starts without the city's existing household debts; all recurring fees and food still have a payer. */
+    public double incomingHousingBudget(Household c,double netWage,HouseholdAccounts accounts,double foodPrice) {
+        int r=c.row();double people=accounts.getRowPeople(r);
+        double fees=accounts.getRowHealthcare(r)+accounts.getRowTuition(r)+accounts.getRowFares(r)+accounts.getRowFuel(r)+accounts.getRowHomeFuel(r);
+        return Math.max(0,netWage*c.earningWeight()-(people>0?fees*c.headcount()/people:0)-accountFee-c.baskets()*Math.max(0,foodPrice));
+    }
     /** Monthly housing uses the same staged census and income/fee splits as the cash strike, without moving any stocks. */
     public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
                                                                      ToDoubleFunction<Household> chargedRent) {
@@ -699,7 +705,7 @@ public class HouseholdBalance {
         for(int i=0;i<cells.length;i++){
             Household c=cells[i];double oldRent=chargedRent.applyAsDouble(c);
             double actualFixed=Math.max(0,c.disposable()-c.afterFixed()-oldRent);
-            double projected=bills[i]+accountFeeFor(c,fresh[i])+c.interest()+c.studentInterest()+c.studentRepaid();
+            double projected=bills[i]+Math.max(0,accountFee)+c.interest()+c.studentInterest()+c.studentRepaid();
             double budget=Math.max(0,pay[i]-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
                     +c.savings()/HousingMarket.SAVINGS_MONTHS);
             result.put(c.key(),new HousingResources(fresh[i],budget));

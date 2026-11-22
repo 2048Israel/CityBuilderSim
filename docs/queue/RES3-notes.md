@@ -84,27 +84,43 @@ their own allocated carry when tight. A glut class cannot pass its shortfall
 to another class. The 0.058 rate is an initialization comparator, not a forced
 actual return. BO1-H's absent owner-family seeker group remains its queued seam.
 
-## Current mends (not ready)
+## Integration mends
 
-Latest focused results: HousingChoiceCheck, HousingMarketCheck,
-BuildingDataCheck, HouseholdCheck and OwnerCheck green. HousingCheck green
-after retaining the controlled three-form HD1/RN1-H fixture menu. Its assertions
-are unchanged; the separate catalogue fixture exercises all fourteen forms.
-InvestCheck is red: prospective workers currently inherit the budgets of the
-city's current unemployed/retired residents. Its jobs-ahead-of-housing finding
-is retained. The mend will use actual unfilled/funded jobs and the current
-wage/tax schedule for incoming workers, with one-count demand reserved against
-standing and funded pipeline supply before a candidate earns any forecast rent.
+The prospective-worker forecast now uses actual unfilled/funded jobs and the
+current wage/tax schedule, rather than the budget of a current unemployed or
+retired household. Standing homes and funded sites reserve eligible demand
+once. Each candidate alternative reads the same remaining demand snapshot;
+requested quantities and the mortgage desk use its attainable occupied income.
+No candidate receives full-capacity proceeds merely because it has capacity.
 
-Own flow review also identified that the live legacy pooled-price sharing pass
-runs before typed matching. It must be replaced by normal/crowding allocation
-first, then actually affordable sharing groups on remaining physical vacancies.
-Only unplaced singles may move into the existing shared household cells; valid
-incumbents remain. Save bounded sharing transfers as monthly flows, preserving
-the existing household stock/card-transfer path. This is still one quote and
-one monthly clearing, with internal emergency phases and no price equilibrium.
+★ The live pooled-price sharing passes are retired. A single monthly quote
+feeds normal and emergency allocation phases. Only unplaced singles whose
+pooled recurring resources fund a real remaining door enter sharing groups.
+Working singles move into their existing shape/tier/stage shared cells;
+seekers retain explicit sharing flows. The existing financial census moves
+stocks, without resetting debts or balances. Saved bounded transfer records
+retain pre-transfer counts/resources for prospective normal-home substitution.
+There is no new permanent household preference axis.
 
-The report fixture is being strengthened to observe completion events directly
-from BuildLog each month, rather than calling a net stock change a completion.
-Its large-city supporting infrastructure/workforce/equity are explicit initial
-fixture inputs; residential work and settlement remain the actual paid path.
+HousingMarketCheck now causes both sides: affordable singles remain normal,
+while five otherwise unaffordable budgets fund an actual home. People, bills,
+sharing counts/resources and the native snapshot reconcile. Quote-only classes
+retain their cost comparator until built; an unbuilt class is not vacant stock.
+Equal residual preferences split one-count rent pressure without catalogue-order
+priority. Zero posted asks remain valid instead of silently reinitializing.
+
+InvestCheck passes with the new forecast. Its grouped-thousands hold-reason
+fixture now supplies 10,000 House doors and explicitly posts their class ask at
+zero: with typed affordability, spare unaffordable houses do not cause the
+original no-beneficial-order premise. All original assertions remain. The
+controlled HD1/RN1-H fixtures retain their original three-form menu; independent
+catalogue checks exercise all fourteen forms. No conservation or save assertion
+has been removed or weakened.
+
+The catalogue fixture observes BuildLog completion events every month, including
+other funded work completing in the window. Its initial workforce, supporting
+infrastructure, land and equity are disclosed fixture inputs; all residential
+work and settlement use the paid builder path. All fourteen present-day orders
+and all historically available orders complete through actual work, and both
+cities close the monthly money identities and native continuation exactly.
+Final focused checks and the committed report follow.

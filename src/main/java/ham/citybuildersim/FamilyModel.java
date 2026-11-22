@@ -1694,6 +1694,26 @@ public class FamilyModel implements HouseholdBalance.Census {
     /** Actual lets by door size; BO1-H's owner-family seekers belong in the match. */
     public double[] occupiedBySize() { return occupiedBySize.clone(); }
 
+    /** Starts the single typed housing pass; the existing bare-model valves remain available to their fixtures. */
+    public void beginTypedHousing(long[] homes){lastHomesBySize=homes.clone();pricedOutShares=0;}
+
+    /** Only unplaced singles enter a newly funded sharing group; financial stocks move by the existing census path. */
+    public double shareForTypedHousing(Household source,double groups){
+        double moving=5*groups;
+        if(source instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT){
+            double available=get(w.shape(),w.tier(),w.stage());
+            if(moving>available+packingRounding(available))throw new IllegalArgumentException("Housing sharing exceeds singles");
+            moving=Math.min(moving,available);int t=w.tier().ordinal(),s=FamilyStructure.SINGLE_ADULT.ordinal(),h=FamilyStructure.SHARED_ADULTS.ordinal();
+            households[s][t]-=moving;households[h][t]+=moving/5;
+            if(w.stage()==AdultStage.YOUNG){young[s][t]-=moving;young[h][t]+=moving/5;}
+            pricedOutShares+=moving/5;return moving/5;
+        }
+        Seeker seeker=source instanceof StudentHousehold?Seeker.STUDENT:source instanceof UnemployedHousehold?Seeker.UNEMPLOYED:null;
+        if(seeker==null)return 0;int g=seeker.ordinal();double available=Math.max(0,seekers[g]-seekersSharing[g]);
+        if(moving>available+packingRounding(available))throw new IllegalArgumentException("Housing sharing exceeds seekers");
+        moving=Math.min(moving,available);seekersSharing[g]+=moving;return moving/5;
+    }
+
     /** RES3 projects the single typed clearing into the existing crowding and rent readers. */
     public void acceptTypedHousing(java.util.List<HousingChoice.Demand> demand,HousingChoice.Result result,
                                    java.util.List<Household> cells,HousingInventory inventory) {

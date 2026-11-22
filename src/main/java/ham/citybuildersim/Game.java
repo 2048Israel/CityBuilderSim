@@ -7846,7 +7846,7 @@ public class Game {
     private LenderReading lenderReads(BuildingsTemplate t, long quantity, double cash, double perUnitRent) {
         var residential=getSectors().realEstate();
         if(residential.housingMarket().active() && quantity>0)
-            perUnitRent=residential.housingMarket().candidateIncome(t,Math.max(0,residential.latentHeadShortfall()),quantity)/quantity;
+            perUnitRent=residential.housingMarket().candidateIncome(this,t,quantity)/quantity;
         double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
         double tested = businessInvestment.realTestRate(insured);
         // ...at the door's own price (FB15, HN1-A; A LANDLORD'S ORDER AT THE DOOR'S OWN PRICE): the planner's was 2-5% under it.
@@ -16026,50 +16026,11 @@ public class Game {
         // and left carries their money at this month's census, before the pool.
         householdBalance.setFlows(cohorts);
 
-        // One household, one home - and if there are not enough homes, they
-        // crowd rather than sleep outside. See FamilyModel.squeeze().
-        /*
-         * HOMES HAVE SIZES NOW, so this is a match rather than a count.
-         *
-         * Two passes on purpose. The first says who could not be housed; the
-         * crowding valves then turn some of those singles into flatshares,
-         * which CHANGES what fits where - five adults sharing need one door,
-         * not five - so the second pass is what the landlords actually bill.
-         */
-        long[] stock = buildingManager.homesBySize();
-        double unplaced = families.house(stock);
-        families.squeezeUnplaced(unplaced);
-        families.noteUnplaced(families.house(stock));
-        buildingManager.getHousingInventory().match(families.occupiedBySize());
-
-        // What the landlords can bill, off the match rather than off an
-        // average, and split by which segment the door was in. See
-        // CommercialHandler.getRentIncome() and FamilyModel's TWO SEGMENTS.
-        getSectors().realEstate().setRentWeight(
-                families.studioRentWeight(), families.familyRentWeight());
-
-        // And the advisor prices a new home on who would move into it.
+        // One quote and clearing: suitable affordable moves first, then explicit
+        // emergency crowding and actually placed sharing groups (RES3).
+        families.beginTypedHousing(buildingManager.homesBySize());
         businessInvestment.setFamilies(families);
         businessInvestment.setBank(bank);
-
-        /*
-         * ...and the ones who cannot afford one either.
-         *
-         * squeeze() above is the housing shortage; this is the poverty. A tier
-         * whose single wage does not cover a home and a basket puts that share
-         * of its single adults into flatshares - which is what people actually
-         * do, and it is the response the model had no answer to at all. Before
-         * this, an unskilled single adult short of rent went on being short of
-         * it until the credit ran out and the hunger started.
-         *
-         * Reads LAST month's books, which is the only honest source: this
-         * month's have not been struck yet, and a household decides where to
-         * live on the payslip it has already had.
-         */
-        families.shareByAffordability(households.livingAlonePressure(families));
-        // ...and the people outside the families, with their own kind.
-        families.shareSeekersByAffordability(households.seekerPressure(new double[] {
-                unemployment.getHoused(), families.getSeekers(FamilyModel.Seeker.STUDENT) }));
         clearTypedHousing();
 
         // EI and the grant are both paid at the top of the month now, where
@@ -16581,7 +16542,7 @@ public class Game {
         return families.get(c.shape(),c.tier());
     }
 
-    /** Once after the legacy emergency shape valves; read-only rebuilds never enter here. */
+    /** Once after the raw census; read-only rebuilds never quote or clear. */
     private void clearTypedHousing() {
         var market=getSectors().realEstate().housingMarket();
         java.util.List<HousingChoice.Demand> demand=new java.util.ArrayList<>();
@@ -16602,7 +16563,7 @@ public class Game {
                     c.tier()==null?0:c.tier().ordinal(),c instanceof WorkingHousehold w&&w.stage()==AdultStage.YOUNG,budget));
         }
         var result=market.clear(this,demand);
-        families.acceptTypedHousing(demand,result,householdBalance.cells(),buildingManager.getHousingInventory());
+        families.acceptTypedHousing(market.demands(),result,householdBalance.cells(),buildingManager.getHousingInventory());
         getSectors().realEstate().setRentWeight(families.studioRentWeight(),families.familyRentWeight());
     }
 

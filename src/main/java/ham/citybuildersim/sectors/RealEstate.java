@@ -694,13 +694,14 @@ public final class RealEstate extends Sector {
         // building more studios cannot answer.
         double familyShortfall = doorsWanted(true);
 
-        if (headShortfall <= 0 && familyShortfall <= 0) {
+        if (headShortfall <= 0 && familyShortfall <= 0 && (!housingMarket.active() || housingMarket.result().unplaced()+housingMarket.result().crowded()+housingMarket.sharingGroups()<=0)) {
             return BusinessInvestment.Decision.no(sector, comingCapacity > 0
                     ? String.format("housing ahead of jobs (%,d now, %,d coming), homes for %,.0f on site",
                             totalJobs, jobsComing, comingCapacity)
                     : String.format("housing ahead of jobs (%,d now, %,d coming)", totalJobs, jobsComing));
         }
 
+        var typedForecast=housingMarket.active()?housingMarket.forecast(game):null;
         BuildingsTemplate best = null;
         double bestScore = 0, bestDoors = 0;
         String blocked = null;
@@ -710,7 +711,7 @@ public final class RealEstate extends Sector {
 
             // What it would actually let, not what it holds.
             double doors = fillableDoors(t, headShortfall);
-            double typedIncome=housingMarket.active()?housingMarket.candidateIncome(t,Math.max(0,headShortfall)):0;
+            double typedIncome=typedForecast!=null?typedForecast.income(t,1):0;
             if(housingMarket.active())doors=typedIncome>0?Math.min(t.getDwellings(),typedIncome/Math.max(1e-30,
                     housingMarket.meanPerCapacity(t)*t.getCapacity()/t.getDwellings())):0;
             if (doors <= 0) {
@@ -740,6 +741,9 @@ public final class RealEstate extends Sector {
         }
 
         if (best == null) {
+            if(housingMarket.active()&&headShortfall<=0&&familyShortfall<=0)
+                return BusinessInvestment.Decision.no(sector,String.format("housing ahead of jobs (%,d now, %,d coming); %s",
+                        totalJobs,jobsComing,blocked!=null?blocked:"new homes would not cover their costs"));
             return BusinessInvestment.Decision.no(sector, blocked != null ? blocked : "nothing worth building");
         }
 
@@ -753,7 +757,7 @@ public final class RealEstate extends Sector {
 
         // ...what the shortage needs, on the land there is: no months of the builders' work to fit it in (BA1, above).
         int quantity = Math.min(wanted, plots);
-        if(housingMarket.active())while(quantity>1 && housingMarket.candidateIncome(best,Math.max(0,headShortfall),quantity)
+        if(housingMarket.active())while(quantity>1 && typedForecast.income(best,quantity)
                 < game.getEconomyManager().housingBuildHurdle(best)*quantity)quantity=Math.max(1,quantity/2);
 
         return new BusinessInvestment.Decision(sector, best, quantity,
@@ -872,7 +876,7 @@ public final class RealEstate extends Sector {
     @Override
     public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
         BuildingsTemplate t = u == null ? null : u.template();
-        if(t!=null&&housingMarket.active())return housingMarket.candidateIncome(t,Math.max(0,latentHeadShortfall()));
+        if(t!=null&&housingMarket.active())return housingMarket.candidateIncome(game,t,1);
         int units = t.getDwellings() > 0 ? t.getDwellings() : Math.max(1, t.getCapacity() / 4);
         FamilyModel families = plans.families();
         if (families == null) return t.getCapacity() * rentPrice;

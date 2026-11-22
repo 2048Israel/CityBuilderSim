@@ -201,10 +201,15 @@ public class InvestCheck {
          */
         Game held = city(root, "held");
         BuildingManager heldBuildings = held.getBuildingManager();
-        heldBuildings.addStack(template(held, "House"), 1_000, true);
+        heldBuildings.addStack(template(held, "House"), 10_000, true);
         heldBuildings.addStack(template(held, "Bakery"), 30, true);
         heldBuildings.addStack(template(held, "Construction Depot"), 10, true);
         month(held);
+        // RES3: the formatting fixture is ahead in affordable doors as well as
+        // beds. A vacant premium portfolio is no longer sufficient to cause a hold.
+        BuildingsTemplate heldHouse=template(held,"House");
+        held.getSectors().realEstate().housingMarket().setAsk(new HousingInventory.Key(heldHouse.getId(),
+                heldHouse.getHousingRecipe().mix().getFirst().id()),0);
         BusinessInvestment plansHeld = new BusinessInvestment(heldBuildings, held.getEconomyManager());
         plansHeld.setLandAvailable(1e12, 0);
         long heldJobs = held.getPopulationManager().getTotalJobs() + heldBuildings.getPostsWithheld();

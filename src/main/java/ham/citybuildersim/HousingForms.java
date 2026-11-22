@@ -26,7 +26,7 @@ public final class HousingForms {
         public double garden() { return floors <= 3 && recipe.doors() <= 6
                 ? Math.max(0, plot-footprint()-recipe.mix().stream().mapToDouble(d -> d.count()*d.privateParking()*BAY_SQFT).sum()) / recipe.doors() / SQFT_PER_M2 : 0; }
         /** Only explicit ground-level homes have step-free layouts in this catalogue. */
-        public boolean stepFree() { return floors == 1; }
+        public boolean stepFree() { return code.equals("C01"); }
         public double homeCapital(String dwelling, double structure, double land) {
             for (int i=0;i<recipe.mix().size();i++) if (recipe.mix().get(i).id().equals(dwelling))
                 return structure*structureShares[i]+land*landShares[i];
