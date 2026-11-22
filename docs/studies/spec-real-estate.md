@@ -1,18 +1,20 @@
 # Real Estate: buildings, dwellings and the households choosing them
 
-RES1, opened 2026-11-20; extended during review on 2026-11-21. **Design
-study and numerical proposal; catalogue calibration remains unfinished.**
-The earlier completed-study label overstated that work. Section 12 now puts
-the complete numerical proposal, assumptions and reproducer together. Section 13
-adds measured aggregate kernels and current-game month timings, with integration
-slowdown still to be measured. Branch
-`study/real-estate`, model base `a9bfcd070`; fetched `origin/main` through
-`e9dadb540` before measuring. The later queue clarification at `4f1056f11`
-records RES1 as docs only and carries the planner finding into OG1. Only
-this study and its index change here.
-RES1 names the docs study; RES2-RES5 below are proposed implementation
-batches. The earlier REU1 note called RES1 the future model batch; update
-that dependency rather than reuse a shipped study's ID.
+RES1, opened 2026-11-20; finalized for implementation on 2026-11-21.
+**Design finalized for implementation. Jerus's general study-review hold is
+released; HO1 follows the shipped housing foundations and its existing credit/
+household prerequisites.** Section 14 records the closure, selected defaults,
+proofs and precise remaining engineering gates. This is a completed design study,
+not a claim that unimplemented buildings have calibrated game outcomes.
+
+The numerical catalogue is an explicit initial implementation baseline. Its full
+game construction/occupancy/rate/era calibration and the integrated slowdown are
+assigned to RES3/RES4/HO1 acceptance, without another general study-approval wait.
+Sections 11-13 retain the earlier measurements and their original provenance.
+Measured model source base: `a9bfcd070`; closure checked queue/dependencies against
+freshly fetched `origin/main` `a9ffdac83` (0.9.181). No game code, save, version,
+main queue or global publisher record is changed in this branch. It adds the
+final study/validation and concrete implementation briefs for the publisher.
 
 ## 1. The recommendation
 
@@ -46,10 +48,10 @@ adding building pictures: the current planner already orders quantities.
 OG1 owns that investigation. REU1 follows the model and draws its saved
 figures, as Jerus requested.
 
-Accepted instructions are separated from recommendations in section 8.
-The proposed catalogue is concrete enough to test, but its quantities,
-areas, heights, quality premiums and parking ratios are **candidates, not
-Jerus's decisions or calibrated game data**.
+Section 8 records the decisions selected under Jerus's closure delegation.
+Section 12's quantities, areas, heights, quality premiums and parking ratios are
+the explicit first implementation inputs, subject to caused/played calibration
+in the named model batches. The reference quotes are not observed market trades.
 
 ## 2. What was observed in the model
 
@@ -353,13 +355,13 @@ monthly income. Existing shortfalls use the household funding/arrears paths,
 not a rule that evicts every household on the first unaffordable month.
 
 Among feasible homes, preferences trade space/layout, private garden,
-quality, accessibility and shared amenities against cost. Recommend a small
-set of preference profiles within cells rather than an elite-only housing
-class. Higher resources permit more space or quality; a wealthy retired
+quality, known accessibility and shared amenities against cost. Reuse the
+existing shape/tier/stage cells with one preference vector each initially. Higher resources permit more space or quality; a wealthy retired
 couple can prefer an accessible apartment while an affluent family prefers
 a garden. A penthouse preference can fall back to a luxury apartment or
-ordinary home. Profile shares, utility weights and voluntary move pace are
-open parameters; none has been fitted here.
+ordinary home. The first version uses one vector per existing shape/tier/stage cell, with
+section 12's prototype weights as calibration inputs; extra permanent profile
+bands are deferred. RES3 records the actual fitted weights and move pace.
 
 Owner-occupier counts retain their housing category when their tier or stage
 changes. A household change may create mover demand; it does not automatically
@@ -506,8 +508,8 @@ its expenses.
 Rent parking against actual shared capacity/demand with its own carrying
 cost and construction alternatives. A scarce bay can be dear; a vacant bay
 still costs its owner. Test parking variants at several demand levels, not
-one obligatory free bay per apartment. No parking ratio, stall footprint or
-garage price is accepted yet. A builder can provide a surface lot only if it
+one obligatory free bay per apartment. Use the explicit section 12 bay ratios, footprint and garage cost inputs as
+the initial calibration baseline, verified through RES4's actual quotes. A builder can provide a surface lot only if it
 fits the site's remaining land; already purchased plot area is paid for once.
 
 Feed the recurring parking quote into housing and Motoring's affordability
@@ -515,8 +517,9 @@ comparisons, and reserve a bay atomically when a new car or move needs one.
 Keep the one-car ceiling in this work. Do not delete existing cars when bays
 are insufficient: report unserved parking demand and let ordinary household
 choices/stock turnover adjust. Whether to refuse a new car without secured
-parking is an **open behavior call**, not a hidden extension of RES4. It needs
-a caused car/parking/transit fixture if selected. A street-parking market or
+parking is not selected for this version: retain the existing car-purchase rule
+and report unserved demand. A later no-bay prohibition needs a separate caused
+car/parking/transit fixture and scope decision. A street-parking market or
 additional-car market would be further scope, not free overflow capacity.
 
 ## 6. Ownership, common costs and disposal after HO1
@@ -564,7 +567,7 @@ subsequent calls; do not silently pay it to RE. A reserve contribution can
 later be a distinct saved line; the numerical prototype uses zero reserve
 accumulation. Existing monthly repairs are not a second reserve contribution.
 Start management remuneration from the actual service/staffing cost; a profit
-markup is an open calibration, not an invented permanent fraction of value.
+markup starts at zero, with reserve contribution zero; cost recovery is explicit.
 
 Every ownership group pays its weighted contribution, including RE for
 **all unsold quantities**, vacant or rented. Renter cells pay RE gross rent;
@@ -595,8 +598,8 @@ physical homes.
 Initialize an ask from comparable offers/trades and the home's attributes,
 not a mandatory rental-value floor. Reduce an unsold ask on successive
 marketing reviews. An illustrative rule is `ask[t+1] = ask[t] * (1 - m)`;
-the 0.5/1/2% monthly experiments below are sensitivities, **not a selected
-markdown rate**. An inflation update must not keep raising an exiting unit's
+the 1% monthly value is the selected starting calibration input; 0.5/2%
+remain sensitivity cases. An inflation update must not keep raising an exiting unit's
 ask while the policy says lower it. Currency redenomination scales its money
 and tick together. At the smallest positive transaction tick an unsold home
 remains held and maintained; there is no demolition timeout or salvage floor.
@@ -757,110 +760,109 @@ tax or collateral release paths; HO1/RES5 must cause those in the model.
 | 2% | 100 | 88.5842 | 78.4717 | 61.5780 |
 
 With no buyer, all have zero trades, unchanged physical homes, no realized
-sale proceeds and no fresh transaction price. Holding costs continue. Select
-a pace from a caused and played listing experiment in RES5; the table alone
+sale proceeds and no fresh transaction price. Holding costs continue. Start with 1% and measure the caused and played listing experiment in RES5; the table alone
 does not show a buyer's willingness, the right starting ask or a safe fee.
 
-## 8. Jerus's calls, accepted and open
+## 8. Decision record at study closure
 
-**★1 Mixed dwellings in some buildings — accepted.** Jerus answered the
-explanation with "thats a great idea". Permit some mixed apartment forms and
-some uniform ones. The schedules and counts in section 4.2 remain candidates.
+On 2026-11-21, after reviewing the full catalogue and compute tables, Jerus asked:
+"ok so now do what you must to finish up the study, so that ho1 is green lighted".
+The following recommended defaults are now selected under that delegation.
+This does not recast each numerical assumption as a personal literal he specified.
 
-**★2 Preferences including the elite — requested; exact rule open.** His
-words: "the elite may prefer different types". Recommend flexible preferences
-for space/garden, quality and amenities subject to real budgets, with several
-profiles within tiers. No exclusive elite type. Neither "elite always buys a
-mansion" nor fixed profile shares has been accepted or measured.
+**★1 Mixed dwellings in some buildings — accepted, retained.** His earlier
+"thats a great idea" remains controlling. Use the section 12 schedules as the
+first 14-form/32-class implementation catalogue. Keep both mixed and uniform forms.
 
-**★3 Garages/parking — scope and billing accepted; quantities/effects open.**
-His words: "garage/parking lot factored in, cause cars are a thing right";
-he accepted the explained billing with "ok". Private provision is in the
-home's price; shared spaces are separately let except explicit included
-rights; extras separately charged. Recommend the conserved rights ledger,
-physical costing and one-car ceiling in section 5. Ratios, stall dimensions,
-prices, overflow and a no-parking refusal for new car purchases remain open.
+**★2 Preferences including the elite — selected first rule.** His request
+"the elite may prefer different types" is met through shape/tier/stage/resources.
+Use one explicit preference vector per existing household cell initially. Space,
+garden, quality/amenities and known accessibility compete under full budgets;
+no tier-exclusive home. Existing shape/stage cells vary within a tier. Extra
+permanent preference-profile bands are deferred until an actual need and cost are
+measured. RES3 calibrates the numerical prototype's starting score against caused
+family/retired/high-resource cases and records its coefficients.
 
-**★4 The pictogram UI — accepted later.** Jerus: "after this also a ui update
-for real estate right? such that you know how industyr has pictograms and
-stuff, i feel like it would be good to implement one for real estate as well,
-but thats later after this study". REU1 follows the settled model. No UI work
-is included in this docs branch.
+**★3 Garages/parking — accepted billing, selected initial behavior.** His
+"garage/parking lot factored in, cause cars are a thing right" and accepted
+billing remain: private provision in housing price; reserved included shared
+rights; separately charged other/extra leases. Use section 12's explicit initial
+quantities/costs and conserved S=I+L+V. Preserve existing cars and the one-car cap;
+report unserved demand. Add no new no-bay prohibition to the car-purchase rule.
+RES4 verifies actual demand, costs, rights and bills before ownership consumes them.
 
-**★5 The 1900 home — standing choice.** Costs follow wages, measured against
-take-home too; revisit after HO1. Recommend retaining that choice and R1g's
-unscaled land distinction, not substituting its held/calendar alternatives
-or fitting every new form to the historical 0.289185 founding figure.
+**★4 The pictogram UI — approved after the model.** His request for Real Estate
+to have Industry-style "pictograms and stuff" is carried by the concrete REU1
+brief. It follows RES2-RES4, HO1 and RES5; no need to wait for LP1.
 
-**★6 Disposal after home ownership — accepted requirement.** Jerus: "after
-HO real estate instead of demolishing it should just sell either the units
-of the apartment and charge a monthly fee like a condo but not rent, or sell
-its houses"; "if no one then lower and lower prices, but not demolish".
-List standing houses/units, mark down unsold asks and preserve them. Owners
-pay owner/common bills, not rent. Exact exit triggers, listing pace and
-financial resolution are recommendations to calibrate, not accepted literals.
+**★5 The 1900 home — standing wage-following choice retained.** Measure against
+take-home too and revisit after HO1. Land keeps its own price. R1g's blocked GDP
+finding remains its owner's work; no alternative cost scaler or universal
+0.289185 factor is invented to bypass it. RES3 verifies then-current research/
+year/recipe/scaler behavior in both historical and present-day fixtures.
 
-**★7 Layout, forms, density and year — authorized study questions; mechanics
-open.** Recommend the explicit room/area/quality model and finite form menu,
-with physically checked mixes and the current recipe/year framework. Treat
-bedroom suitability as a target where data supports it, distinct from the
-current studio eligibility rule. Calibrate construction/work/utilities through
-model quotes. A geographic neighbourhood simulation is optional further
-scope: current zoning allocates amounts, not neighbourhood locations.
+**★6 Disposal after ownership — accepted requirement, selected starting pace.**
+His "if no one then lower and lower prices, but not demolish" controls. HO1
+immediately guards financial residential demolition; RES5 then uses standing-home
+listings, actual funded closes and a 1% monthly continuing-exit-ask markdown as
+the starting calibration value. Test 0.5/1/2%; no timeout, fictitious proceeds,
+self-bidding, automatic insurance claim or transferred RE debt in owner fees.
 
-On reviewing the first catalogue table, Jerus noted that bigger apartments
-exist. Section 4.2 now expands both building capacity/height and dwelling
-area, keeping the original geometric examples as examples rather than caps.
-The additional numerical ranges remain candidates, not accepted recipes.
+**★7 Layout, forms, density and year — selected baseline.** All 14 forms and 32
+dwelling/form classes in section 12 enter the implementation baseline, including
+large homes and towers. The earlier 64/160-home examples remain examples. Keep
+the current adults-only studio eligibility rule, explicit normal suitability and
+reported emergency compromises. Validate actual work/material/service recipes
+and historical availability before activation. No neighbourhood simulation or
+custom floorplan generation is added.
 
-**★8 Occupied units offered for sale — open; recommended tenant retention.**
-Offer the sitting tenant a purchase; keep renting to them if they cannot or
-do not buy. External owner-occupiers buy vacant homes. No forced move merely
-to facilitate disposal. The consequence is that an occupied holding may stay
-on RE's books for a long time. A private buy-to-let buyer would require more
-ownership scope than HO1 currently has.
+**★8 Occupied listings — tenant retention selected.** Eligible sitting tenants
+can buy their existing housing category. Otherwise they keep renting; outside
+owner-occupiers buy vacant supply. No eviction for disposal and no new private
+buy-to-let landlord class. Unfunded occupied stock can remain RE-owned indefinitely.
 
-**★9 Common-fee recipient and last sale — open; recommended common account.**
-Owners, including RE on unsold quantities, fund fixed weighted shares of a
-common-cost pool for equivalent buildings. It pays costs and an explicit RE
-management service. Owners
-do not keep paying rent after purchase; the manager does not take the whole
-common fee as profit. Start from actual service cost and make any profit
-markup a separately justified parameter. Section 7 proves the bookkeeping,
-not an accepted management price or reserve policy.
+**★9 Common costs and last sale — common pool selected.** Fixed area/right
+weights fund actual common bills, including RE on all unsold shares. RE receives
+only an explicit management service payment, initially actual cost recovery with
+profit markup 0. Reserve contribution starts at 0; current repair work still has
+a payer. The 70/30 apartment repair partition is an explicit first cost-allocation
+assumption, reconciled to actual total repairs in RES3/HO1. It is not extra upkeep.
+Optional parking surplus stays common cash and reduces later calls. Unpaid fees
+are receivables/shortfalls. The pool and management payer survive zero RE ownership.
 
-**★10 Implementation boundary — recommended.** RES2-RES4 establish the
-foundations before HO1. HO1 includes the first owner's actual common-cost
-bills and the residential demolition guard. RES5 then supplies deliberate
-disposal/markdown policy; HO2 uses its real listing/closing outcomes. This
-honors the later "after HO" instruction. Review this order with the design,
-including the proposed posted-offer closing rule in section 4.4; these are
-not instructions to start HO1 or implementation tonight.
+**★10 Implementation boundary — selected serial chain.** RES2 inventory,
+RES3 choice/rents/forms, RES4 parking, HO1 ownership/common costs, RES5 deliberate
+disposal. Existing HT1/HS3/HC1 precedents remain. HO1 includes minimal safe stock/
+loan/obligation transfers on ageing/death/departure; HO2 expands lifecycle trading
+later. HO1 settles actual posted offers, not a forced all-supply equilibrium, once
+at the verified monthly seam. Its old 18-month builder timer is superseded.
 
-**★11 Aggregate simulation — confirmed requirement.** Jerus: "everything
-should be handled in aggregates no?" Yes: use building/form stock cohorts,
-dwelling-type counts, household-cell occupancy/ownership shares, aggregate
-mortgage/listing bands, parking capacities and common-cost pools. No per-person,
-per-building, per-apartment or per-bay identities/accounts. Partial sales
-and the last RE-owned quantity are count/weight boundaries. Split/merge
-invariance and bounded state growth are required proofs, not optional
-optimizations. The earlier stable-building-key proposal is superseded.
+**★11 Aggregation and compute — confirmed, implementation budget selected.**
+His "everything should be handled in aggregates no?" remains mandatory. Following
+"so 180 and 32 is the way right", reuse existing cells (141 in the measurement)
+with roughly 180 as the initial budget and 32 housing classes for the 14 forms.
+One monthly quote/clearing cadence and cached loan factors; no routine 12-pass
+equilibrium. Temporary disjoint income/savings regions prevent shared buyer-tail
+reuse; they are neither saved cells nor people. Bound stock/loan/listing/service
+cohorts, coalesce only compatible obligations and measure actual row counts.
+The 0.864 ms case has 720 occupancy, 5,760 loan and 3,072 listing rows; it is not a
+hard whole-feature ceiling. Section 14 supplies the qualification/dense-book follow-up.
 
-For morning review, the main new choices are ★8 tenant retention, ★9 the
-common account/manager, and the candidate form/layout direction in ★2/★7.
-Exact mixes, costs, preference shares and markdown rates should come back
-with their model calibration evidence; they are not silently approved here.
+No general design question in this list remains a reason to hold HO1. The named
+model acceptance gates below remain required; they do not require another blanket
+study approval. A new premise or a failed gate is handled through the contract.
 
 ## 9. Ordered implementation and caused proofs
 
-IDs RES1, REU1 and RES2-RES5 pass `tools/batch-id.sh`; no implementation row is
-being inserted by this study branch. The orchestrator owns the queue, gates
-and global lanes. Before starting, refresh the listed moving branches and
+IDs RES1, REU1 and RES2-RES5 pass `tools/batch-id.sh`. The implementation chain
+is decided and the concrete `docs/queue/RES2.md`, `RES3.md`, `RES4.md`,
+`HO1-real-estate.md`, `RES5.md` and rewritten `REU1.md` are publication inputs.
+The orchestrator owns their main-queue insertion, gates and global lanes. Before starting, refresh the listed moving branches and
 the applicable baseline, and resolve overlaps by the contract.
 
 | Order / batch | Scope and likely source changes | What its caused harness must prove |
 |---|---|---|
-| **RES1, this study** | This file and `docs/studies/README.md`; docs only, no trace change | Source/probe provenance, physical/accounting examples, dependency and acceptance consistency; docs fast checks |
+| **RES1, this study** | This study/index, companion validation and implementation briefs/untagged records; docs only, no trace change | Source/probe provenance, physical/accounting examples, dependency and acceptance consistency; docs fast checks |
 | **RES2, aggregate housing foundations** | `BuildingsTemplate`, `BuildingCatalog`, `BuildingManager`/`BuildingsStacks`; housing stock/cell cohorts; `DataSave`/load; `RealEstate` compatibility getters | Existing three schedules reproduce exact door/capacity censuses including the separate founding adjustment; mixed-type counts survive completion and save/load; ownership transfers move no structure/land/material; equivalent cohort split/merge preserves all quantities/values; scaling represented buildings does not create building/unit records; RN2's first-month debt share cannot diverge |
 | **RES3, home choice, typed rents and forms** | `FamilyModel`, `HouseholdBalance`/accounts, `RealEstate`, `EconomyManager`, finite new `buildings.json` recipes and their actual builder/utility inputs; aggregate cell assignments | Same headcount/different layout outcomes; scarce family stock with empty compact homes; unaffordable premium vacancy; a high-resource household choosing quality and compromising when unavailable; incumbent stability; fair ties; no demand counted across alternatives twice; per-class rent differs where justified and falls in glut; an empty premium project does not earn full rent; mixed project's inputs/area/floor limits reconcile |
 | **RES4, parking supply and bills** | Housing registry/templates/recipes; `HouseholdBalance`, `Motoring` budget inputs, shared-parking quote/leases, saved flows and audit | Private/included/shared/extra cases charge once; unused included rights cannot also be rented; exact S=I+L+V; full lot refuses another lease; bay acquisition/release on move or sale is atomic; construction consumes land/work/cash; recurring parking reaches budgets and optional receipts the owner; existing car stock is conserved and the one-car cap unchanged; low/high car demand and no-car households |
@@ -890,12 +892,15 @@ multiply represented counts by 1,000 and verify no individual records appear
 and bookkeeping scales correctly. Measure allocation, pricing, fee settlement,
 save size and reload on small and large model cities before choosing a solver
 or more preference profiles. Do not add a loop per represented dwelling or
-resident. No runtime improvement is claimed by the arithmetic prototypes.
+resident. The placement prototype measures compatible quantity flow, not global utility
+optimization or final integrated performance. The disjoint-funding and dense-book
+supplement addresses its underwriting-work limitation; actual performance remains
+an implementation acceptance measurement.
 
 ### REU1's concrete replacement brief
 
 The `4f1056f11` queue note already distinguishes the docs study from the
-future model batches. Once reviewed, make its tentative dependencies precise:
+future model batches. The rewritten `docs/queue/REU1.md` now makes its dependencies precise:
 wait for this reviewed study, RES2-RES4, HO1 and RES5, then show the whole
 requested housing model.
 It need not wait on LP1. Coordinate the common screen file with HO2's screens;
@@ -916,14 +921,15 @@ economic formula belongs in the screen.
 ## 10. Precise amendments and takeovers in HO1
 
 The existing authority is [spec-credit-housing section 2.3 and section 7](spec-credit-housing.md#23-owning-a-home-household-householdbalance-new-homemarket-realestate-bank).
-The following is a replacement contract for the affected parts, not an edit
-to that brief or an implementation in this docs branch.
+The following replacement contract is now carried by the concrete
+`docs/queue/HO1-real-estate.md` brief. It supersedes the affected old assumptions;
+this docs branch implements no model behavior.
 
 | Existing HO1 assumption | Required replacement / ownership of the change |
 |---|---|
 | An owned home is a studio/family segment capacity share; physical doors stay solely the landlord's portfolio | Keep aggregation, with richer bounded categories: RES2 supplies building counts and dwelling-mix vectors; HO1 carries ownership and occupancy quantities by housing class and household cell. All homes remain in physical totals; only RE-owned shares/cash flows remain its investment portfolio. No building or dwelling IDs. |
 | One home price per capacity in each of two segments | RES3 supplies comparable dwelling classes; HO1 offers/clears actual homes with their included rights and common obligations. Preserve a city transaction index only as an observed summary, not another independently traded price. |
-| P* makes buyers' capacity equal everything offered; the price lags toward it | Recommend matched posted offers: only eligible, funded buyers close, at accepted asks. The old equilibrium calculation can guide ordinary quotes; its lag is not a fictitious transaction and does not make every listing sell. Actual transactions alone update the cleared-price index. Re-measure the rate response. |
+| P* makes buyers' capacity equal everything offered; the price lags toward it | Use matched posted offers: only eligible, funded buyers close, at accepted asks. The old equilibrium calculation can guide ordinary quotes; its lag is not a fictitious transaction and does not make every listing sell. Actual transactions alone update the cleared-price index. Re-measure the rate response. |
 | Household cells gain seven averaged owner slots | Keep count/balance/rate-weight/month-weight/arrears sums, disaggregated into bounded housing/loan categories where fees/rights/credit differ. Move aggregate quantities and sums with household flows, then sum for cell reporting. Overall cell averages alone can hide differences between housing classes; that does not require individual mortgages or titles. Do not duplicate authoritative debt. |
 | Owners pay `.01 * home value` upkeep, and landlord bills fall by owned capacity | Partition aggregate private/common repair and payroll/utility costs once. HO1 funds a shared-cost pool per equivalent building/service cohort; contribution weights follow RE/household ownership counts. No account per building. Renters pay gross rent only; RES5 extends exit/listing policy, not the first existence of common fees. |
 | `V_L = net monthly rent * 12 / cap rate` | Keep the formula and chosen pass-through, but use the actual comparable home's net operating income, correctly allocated expenses/tax and transferable included parking rights. Do not capitalize a free common-cost liability or subtract financing interest twice. |
@@ -964,9 +970,9 @@ to that brief or an implementation in this docs branch.
 
 Do not run overlapping model batches on the shared month, matching, credit
 or screen paths. The dependency order here is architectural, not permission
-to edit main, QUEUE.md, versions, changelog or gate records. The complete
-study is for Jerus's satisfaction first; then request docs-only untagged
-shipping with `gate --no-tag` and the agreed ordering. No model, UI, ensemble
+to edit main, QUEUE.md, versions, changelog or gate records. Jerus's closure delegation now releases the study-review hold. Publish the
+docs-only study untagged and queue the decided foundation chain/amended HO1 brief
+through the orchestrator, with the normal docs checks and contract gates. No model, UI, ensemble
 or user save has been changed by this study.
 
 ## 11. Reproduction and validation record
@@ -1172,8 +1178,8 @@ labels, the HO1 prerequisite split and the two-file-only diff. The final
 Stale scan exited 0 with zero firm findings at `-Xmx1024m`; its first 256 MB
 attempts exhausted heap while parsing the source tree, so it was rerun after
 checking committed memory (64.2%) with the larger permitted heap. Whitespace
-and LF checks passed. No ensemble was owed by this docs-only change. Shipping
-awaits Jerus's review. The subsequent aggregate-only amendment passed the
+and LF checks passed. No ensemble was owed by this docs-only change. At that earlier record, shipping awaited Jerus's review; section 14 now closes
+that hold. The subsequent aggregate-only amendment passed the
 exact-rational split/merge, zero-RE-ownership and 1,000x quantity checks above;
 no model code changed and the model probes were not rerun.
 
@@ -1181,11 +1187,14 @@ no model code changed and the model probes were not rerun.
 
 The earlier sections established the existing model, aggregate architecture,
 accounting rules and dependency split. They did not calibrate a complete
-building catalogue. The tables below are a new explicit numerical draft,
-not measurements of implemented buildings or a finished balance pass.
+building catalogue. The tables below are the explicit initial numerical baseline selected at
+closure. They remain reference calculations, not measured completed-building
+outcomes. The original reproducer below retains its draft-era status text as
+provenance; this closure supersedes that review status.
 
 
-**Status: numerical design draft for review; not calibrated game outcomes.**
+**Closure status: initial implementation catalogue selected under section 14;
+actual game calibration is RES3/RES4/HO1 acceptance work.**
 All prices below are present-day benchmark model dollars. Land is $50/sq ft; material is $18,000/unit; ordinary demand pressure is 1. No inflation, finance, scarcity or rebate is added to the reference rents.
 
 C01-C14 are comparison labels, not permanent game building IDs or batch IDs. Existing catalogue IDs remain unchanged.
@@ -1704,8 +1713,8 @@ plot/basement capacity and specified floor schedules pass the prototype.
 Existing cost anchors are reproduced before new parking. Cohort
 split/merge checks remain green. Full-game funding, completions,
 household budget/tenure behavior, actual prices/parking use and historical
-availability still require calibration. No model/UI implementation or
-shipping approval is implied by this numerical draft.
+availability still require calibration. No model/UI implementation is implied by these numerical checks. The later
+closure authorizes the design handoff and docs publication; model gates remain.
 
 ## 13. Monthly compute measurements
 
@@ -2204,3 +2213,78 @@ RES1TIME kernel,H1080_T192,month_1quote_1flow,median_ms=34.548000,p95_batch_ms=4
 RES1TIME kernel,H1080_T192,month_12quote_1flow,median_ms=225.017000,p95_batch_ms=229.329200,reps=1,batches=15,checksum=841413694537.0369
 RES1TIME kernel,H1080_T192,month_1quote_12flow,median_ms=165.620500,p95_batch_ms=172.277900,reps=1,batches=15,checksum=842192170701.3174
 ```
+
+## 14. Final handoff and HO1 readiness
+
+### Authorization and design completion
+
+Jerus reviewed the full building/cost/rent/parking catalogue and compute results,
+confirmed the approximately 180-by-32 starting design, and then instructed:
+"ok so now do what you must to finish up the study, so that ho1 is green lighted".
+Section 8's recommended implementation choices are selected under that delegation.
+The study-design hold is closed. The earlier completed-study label was premature;
+this closure adds concrete defaults, underwriting and ledger counterexamples,
+published handoff briefs and explicit owners for every remaining engineering gate.
+
+| Item | Closure result | Required implementation evidence / owner |
+|---|---|---|
+| Housing design | Aggregate structures, dwelling/tenure counts, 14 initial forms / 32 classes | RES2 physical/save invariants; RES3 actual class outcomes |
+| Household/compute budget | Reuse existing 141 cells; roughly 180 headroom, one monthly quote/clearing, cached loan factors | Profile H/T/A/M/L and temporary regions on the implemented model |
+| Mixed forms and preferences | Stable shape/tier/stage vectors, no first-version extra profile axis, full budgets, retained incumbents | RES3 family/retired/wealth/layout/substitution/tie fixtures |
+| Parking | Initial explicit ratios/costs, private/included/optional rights, common-owned shared facility, unserved-demand report | RES4 S=I+L+V, actual bills/demand/site quotes |
+| Tenant sales | Tenant purchase or continued tenancy; outside owner-occupier uses vacancy | HO1 occupancy/credit/funding fixtures |
+| Common cost/last RE sale | Fixed weights; full actual bills; cost-recovery management, markup0/reserve contribution0 | HO1 pool/cash/arrears/zero-owner and split/merge proofs |
+| Credit and real settlement | Original policy plus half-fee qualification/full-fee cash, financed insurance, disjoint eligible demand | HO1 bank/cash/audit/collateral/default checks |
+| Financial exit | HO1 immediate demolition guard; RES5 standing listings and initial1% continuing markdown | RES5 no-trade/declining-ask/no-self-bid/default experiments |
+| Life events | HO1 safe stock/loan carry immediately; HO2 richer moves and actual beneficiary proceeds | No state corruption before HO2; actual closing/debt priority |
+| Era/market calibration | Initial recipe/reference numbers disclosed; no claim of unimplemented game outcomes | RES3/RES4 actual funded completion, rent/parking demand, wage/year reports; HO1 typed rate/price ensemble |
+| UI | Rewritten complete REU1 brief after the model | Model/getter reconciliation and kept-node rendering; LP1 not required |
+
+### Decisive new design proofs
+
+34 caused arithmetic/flow fixtures pass in the companion
+[validation appendix](spec-real-estate-validation.md), including class-level
+credit/fee inputs for all 32 offers. This is executable design evidence, separate
+from model integration tests.
+
+The critical underwriting counterexample has 100 households but only one jointly
+eligible buyer. Two alternatives each appear to have one qualified buyer; using
+independent offer-edge caps would incorrectly sell two homes. Closed-form income/
+savings CDF intervals form disjoint temporary regions with an eligible-offer mask.
+Each region has one source quantity and can be allocated only once. Identical
+region masks coalesce. Crossing thresholds give a 28% eligible union, not32%.
+The saved household and dwelling schemas stay fixed. The implementation must
+also enforce actual TDS, full cash bills, bank funding and tenant/vacancy constraints;
+the region kernel alone is not complete underwriting.
+
+Other fixtures prove financed premium/closing money conservation; full-fee cash
+refusal despite half-fee credit pass; funded versus unfunded voluntary short sales
+and recognized insurance losses; tenant retention/vacancy; first/partial/zero RE
+ownership costs; opening versus next-month tenure billing; unpaid fee receivables;
+unsold ask/reload invariance; no phantom proceeds/trade price; and count scaling.
+
+### Supplemental compute coverage
+
+Section 13's 0.864 ms reference used 720 occupancy rows, 5,760 loan rows and 3,072
+listing rows. Merely saying180-by-32 does not bound every financial subcohort or
+the work of preventing shared eligible-tail reuse. The closure supplement adds
+the joint-eligibility allocation and a 46,080-row loan book, with fixed household/
+housing class counts. It does not repeat the game baseline or claim full integration.
+Its source, raw measurements and limits are in the validation appendix.
+
+### Publication and execution handoff
+
+Concrete briefs: [RES2](../queue/RES2.md), [RES3](../queue/RES3.md),
+[RES4](../queue/RES4.md), [amended HO1](../queue/HO1-real-estate.md),
+[RES5](../queue/RES5.md), [REU1](../queue/REU1.md). Publish the study untagged;
+queue RES2-RES4 before HO1, RES5 after HO1, and REU1 after its model dependencies.
+Preserve existing HT1/HS3/HC1 prerequisites and the accepted HO4/HO2/LP1 order.
+The publisher rewrites HO1's old main-queue description/link to this contract
+and removes the resolved study-review hold. No implementation requires another
+blanket approval of this study after those predecessors ship.
+
+As checked against main a9ffdac83, RES2-RES5 are not implemented and HT1/HS3/HC1
+precede HO1. **Green light means the design is authorized and its review hold is
+cleared; actual HO1 execution still follows its real code dependencies.**
+That status must be reported accurately by the orchestrator. No user save,
+game code, UI, version or main publication record was modified by the study.
