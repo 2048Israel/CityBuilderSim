@@ -1,6 +1,7 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-R6e-mR0hJgHi -->
 <!-- readiness: provisional -->
 ## changelog
-### {next} — R6e, GM crop history — 2026-11-22, provisional, see docs/queue/R6e-notes.md
+### {next} — R6e, GM crop history — 2026-11-22, ready, see docs/queue/R6e-notes.md
 GM crops enter farm history in 1996. Before E21 is known, output is the unchanged
 modern 500/69 divided by 1.22: an approximate crop-mix estimate with source limits
 and CC BY 4.0 credit disclosed. PE20/E10/E21 add fixed-anchor differences; livestock,

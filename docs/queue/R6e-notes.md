@@ -2,6 +2,49 @@
 
 <!-- readiness: provisional -->
 
+## Final retained ALL dry: pass
+
+The box run /home/jerus/cbs/runs/cbs-gate-R6e-mR0hJgHi exits0 on
+2026-11-22. It tests pushed588d16b175f76eb181cf2c9941a92b2c00ba0aba
+against main4a6af0baa3dbb704c6c1f8e499b96cbbc1393286, with prospective
+publication0.9.186. The check suite takes979s overall, native suite exit3:
+**236 harnesses in960s,218 pass,18 main known-red harnesses, no new red**.
+unnamed.txt is0 bytes; refs.before/after are identical. Nine Monocle display
+harnesses start, none may skip. Two timing assertions remain the runner's
+standard soft observations and seven path assertions the existing observed
+family; no R6e payment law is softened. All owned gate/compiler/JVM processes
+are terminal. No money/save/model/harness change follows this dry run.
+
+The retained run is copied locally to
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R6e-mR0hJgHi. It is only read;
+nothing is executed or edited in that sealed run. Original command, native
+exit and log are under target/R6e-evidence/final; the source/data files are
+the box's named earth-2.bin and world-1.bin. Its gate-run pointer is the
+ship file's first line for publication reuse.
+
+**Default trace unchanged, empirically confirmed.** The dry run's completed
+LongPlaytest report and main0.9.184's final retained HT1-MUAPeyHl report
+have565 lines each. Only two wall-clock prefixes and the layout-watch
+runtime suffix differ. After replacing only those non-model fields,
+every other character and all model numbers are byte-identical, normalized
+SHA256 **7d4a62be304982964ee8e5c81aa71766429bc7707a5b9ce4aacf8e815fd859a9**.
+The sealed final report also matches the copy used for this comparison.
+Raw main SHA256 f5c8cfbafda48108965ebef0e845c8959ff4ee9538c88af3fdac3e113b1138f6;
+raw R6e SHA2562704e4e06412bec1eadb623b0fcb93afba607675725b9751ba1df6e3774cdb0a.
+Strict normalization, both raw reports, normalized copies and manifest
+are preserved in final/default-report-comparison.json and its neighbors.
+Thus the conditional ensemble is not owed and is not run; no80-run score
+or new baseline is claimed. Root received ensemble verdict761a and dry
+result5ab4. The latest baseline remains0.9.184.md.
+
+REV-R6ec1-1's SHIP on78a5cba4f and root6d11 authorize ready after this
+green dry. Only these notes and the ship record change after it; the last
+commit removes the readiness markers, with their absence verified on
+origin. The reviewed scope is E21 plus the producer-credit licence mends,
+format/floor60, and eight explicit remaining-scope/finding Pending records.
+No whole-batch claim silently treats those other engineering effects as
+implemented. The builder reports ready; publication remains the starter's.
+
 ## SHIP and final default-path gate (root 6d11)
 
 REV-R6ec1-1 gives SHIP on78a5cba4f; root6d11 releases the remaining
