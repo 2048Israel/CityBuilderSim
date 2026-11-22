@@ -12,7 +12,7 @@ setters, then a stood town, then a threshold from both sides against the
 model's constant, then a read at the caused month).
 
 The branch was cut from origin/main 827bc03f7 (0.9.181) and merged with main
-at 2149ca45c (0.9.183, OG1 and FB16), then at 51e887638 (0.9.184, HT1). It is
+at 2149ca45c (0.9.183, OG1 and FB16), then at 51e887638 (0.9.184, HT1) and 4a6af0baa (0.9.185, RR1). It is
 **harness-only**: the diff is the twelve harnesses and `Observation.java`'s
 registry, nothing in the model,
 the screens, the save or the trace, so `moves_playtest=no` and no ensemble is
@@ -272,3 +272,8 @@ On the merge with main 51e887638 (0.9.184, HT1), 2026-11-22:
   retailer's till under and over a shop (CreditCheck). For the two section 1b
   mends, HT1's own path is the red side: no ground (9.1 households with no
   home) and no premium (the door equal to the planner at m200).
+- On the merge with 4a6af0baa (0.9.185, RR1, the map's drawing only):
+  `--fast` green; the twelve harnesses of the batch, ObservationCheck,
+  KnownRedsCheck and LongPlaytest (285 s) exit 0 with `cbs.timing=soft`. The
+  rest of the pick was not run again: RR1 changes only the map, which nothing
+  in the model reads, and the pick of 44 had run on 0.9.184 an hour before.
