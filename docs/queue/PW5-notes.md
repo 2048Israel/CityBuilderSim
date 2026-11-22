@@ -916,3 +916,14 @@ the canonical native-60 and native-61 pairs remain valid, and the 069504753
 final-model ensemble remains applicable. The failed run is not reused; send
 these mends with the provisional marker for review, then request another
 dry-run slot on its SHIP.
+
+Merged that documentation-only main in ce7ccf7dc. A fresh --fast on the merged
+tree exits 0: maps regenerated, zero firm Stale findings, 196 soft, clean
+tree. Log: target/PW5-fixture-coverage/fast-merged-main.txt. The known-reds
+parser exits 0 with only the accepted OrderDoor row. The pick is ALL 243
+(96 files), review needed for DataSave, SAVE_FORMAT and its floor. PowerPriceCheck
+passes all 77 checks in the final caller sweep, SaveFileCheck passes, and the
+kept ALL run's BuildingDataCheck remains green for the identical building
+data and production code. git diff --check and LF checks pass. No own job
+remains; the marker is still provisional, awaiting this delta's review and
+a newly granted dry-run slot.
