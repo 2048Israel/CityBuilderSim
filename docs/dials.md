@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,551 constants in 620 files.**
+**6,554 constants in 620 files.**
 
 ## model (3002 constants)
 
@@ -5912,7 +5912,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2053 constants)
+## harnesses (2056 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6368,18 +6368,19 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 86 | `CreditCrunchCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 107 | `CreditCrunchCheck.OWED` | `1_000_000, OWNED = 100_000_000` | What the landlords owe before the month, and what they own: room to spare under the default point. |
-| 232 | `CreditCrunchCheck.SEED` | `13` | The ensemble's seed CU2 found the crunch on (SHOCK seed 13, the AUTO2 path before its shock). |
-| 234 | `CreditCrunchCheck.FROM` | `150, TO = 270` | The crunch, months already run: from the city's first years of growth, before its bank's leverage first binds on its own. |
-| 236 | `CreditCrunchCheck.HOLD` | `.5` | Where the bank is held: halfway from its leverage minimum to its target. |
-| 238 | `CreditCrunchCheck.MARGIN` | `12` | ★ The households the placement may still take when the crunch starts: the homes cut to the doubling valve's last few. |
-| 240 | `CreditCrunchCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
-| 247 | `CreditCrunchCheck.months` | `new ArrayList<>()` |  |
-| 256 | `CreditCrunchCheck.BINDS_BY` | `1.25` | ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. |
-| 413 | `CreditCrunchCheck.ORDER` | `6` | ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). |
-| 415 | `CreditCrunchCheck.TILL` | `1.5` | ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. |
-| 417 | `CreditCrunchCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for the order's ground. |
+| 87 | `CreditCrunchCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 108 | `CreditCrunchCheck.OWED` | `1_000_000, OWNED = 100_000_000` | What the landlords owe before the month, and what they own: room to spare under the default point. |
+| 233 | `CreditCrunchCheck.SEED` | `13` | The ensemble's seed CU2 found the crunch on (SHOCK seed 13, the AUTO2 path before its shock). |
+| 235 | `CreditCrunchCheck.FROM` | `150, TO = 270` | The crunch, months already run: from the city's first years of growth, before its bank's leverage first binds on its own. |
+| 237 | `CreditCrunchCheck.HOLD` | `.5` | Where the bank is held: halfway from its leverage minimum to its target. |
+| 239 | `CreditCrunchCheck.MARGIN` | `12` | ★ The households the placement may still take when the crunch starts: the homes cut to the doubling valve's last few. |
+| 241 | `CreditCrunchCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
+| 248 | `CreditCrunchCheck.months` | `new ArrayList<>()` |  |
+| 257 | `CreditCrunchCheck.BINDS_BY` | `1.25` | ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. |
+| 279 | `CreditCrunchCheck.GROUND_BLOCKS` | `CreditCrunchCheck.ORDER` | ★ The ground stood before each crunch month, in blocks of Low-Rise Apartments: section 4's order, so the landlords never wait on land. |
+| 439 | `CreditCrunchCheck.ORDER` | `6` | ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). |
+| 441 | `CreditCrunchCheck.TILL` | `1.5` | ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. |
+| 443 | `CreditCrunchCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for the order's ground. |
 
 ### CrossingCheck.java ([map](map/CrossingCheck.md))
 
@@ -7984,14 +7985,16 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 59 | `OrderDoorCheck.SEED` | `12` | The ensemble's seed HN1's harness plays (HousingDoorCheck.SEED). |
-| 61 | `OrderDoorCheck.FROM` | `200, TO = 420` | The months searched for the landlord's edge: from FROM, to TO at most. |
-| 63 | `OrderDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
-| 64 | `OrderDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 65 | `OrderDoorCheck.BLOCK` | `"Low-Rise Apartments", STORE = "Convenience Store"` |  |
-| 67 | `OrderDoorCheck.SIX` | `6` | The project's order, and its till in stores at the door's price: one, and not two. |
-| 68 | `OrderDoorCheck.TILL` | `1.5, SHORT_TILL =.5` |  |
-| 70 | `OrderDoorCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for its ground. |
+| 66 | `OrderDoorCheck.SEED` | `12` | The ensemble's seed HN1's harness plays (HousingDoorCheck.SEED). |
+| 68 | `OrderDoorCheck.FROM` | `200` | The month the city is played to, the edge's prices then set by hand (FS9: no search). |
+| 70 | `OrderDoorCheck.YARD_SHARE` | `.5` | ★ The yard the fixture leaves, a share of one block's materials: short of a block, as main's own edge was (204 of 377 at m206). |
+| 72 | `OrderDoorCheck.DEAR` | `.035` | ★ The market's materials at the door over the planner's world price, set by hand: within HN1-A's measured 2-5%. |
+| 74 | `OrderDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
+| 75 | `OrderDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 76 | `OrderDoorCheck.BLOCK` | `"Low-Rise Apartments", STORE = "Convenience Store"` |  |
+| 78 | `OrderDoorCheck.SIX` | `6` | The project's order, and its till in stores at the door's price: one, and not two. |
+| 79 | `OrderDoorCheck.TILL` | `1.5, SHORT_TILL =.5` |  |
+| 81 | `OrderDoorCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for its ground. |
 
 ### OrderSearchCheck.java ([map](map/OrderSearchCheck.md))
 
