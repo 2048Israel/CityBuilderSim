@@ -6816,7 +6816,7 @@ public class Game {
         economyManager.setSectorCash(decision.sector, seller.getCash() - repaid);
 
         lastInvestment.put(decision.sector,
-                String.format("Sold %,d %s - %s%s%s",
+                String.format("Scrapped %,d %s - %s%s%s",
                         scrapped, decision.template.getName(), decision.reason,
                         proceeds > 0
                                 ? String.format(" (plot back to the city for %s)",
