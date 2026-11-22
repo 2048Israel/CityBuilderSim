@@ -53,3 +53,20 @@ the difference is in the existing unserved kWh, short-block count and cap-price 
   its generation-short premise remains, with enough wires to isolate it.
 
 Final named checks, pre-PW5 rule failures, review, ensemble and gate results follow below.
+
+## The finding against main
+
+Compiled untouched 01e6c2d4b in a detached scratch worktree (`--fast`, no baseline suite).
+Copied only the compiled SubstationCheck.class into those classes and ran that named
+harness's `--rules` section. It uses the old model's existing inputs and reads its book
+through Gson, so no new model class or data row was transplanted. Exit 1, six assertions
+failed: the 99/101 MW carry boundary, per-half conservation at the carry and shortage
+price, the city held to its starter grid, costs in the wires' bill, a changed building cost
+changing the next bill, and the peak-growth order with its site counted once. They all
+pass on PW5. Raw output: target/PW5-main-rules.txt; the six labels are the harness's
+first six assertions. This is a mechanic finding, not a compile-failure comparison.
+
+PowerPriceCheck now passes all 77 checks, including filled grid payroll, actual bills,
+the treasury's margin, fuel sellers and all fixture-month money audits. BuildingDataCheck's
+first pass identified its exact dated-id map needed the appended 1900 Substation entry;
+the map was extended, preserving all earlier dates and the exact equality check.

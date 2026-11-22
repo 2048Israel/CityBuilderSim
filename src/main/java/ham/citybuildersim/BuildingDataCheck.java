@@ -816,6 +816,7 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL, 1900);
         years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
         years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
+        years.put(Substations.ID, 1900);   // PW5: the district grid is available at founding.
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
@@ -834,7 +835,7 @@ public class BuildingDataCheck {
                         + " Steel Mini-Mill E13 1969, the Walk-in Clinic B4 1973, the Wind Farm E16 1980, the Assisted Living Residence M8 1981 and the Shared"
                         + " Services Centre B6 1982) and R6b's two near-future buildings, the Sulphide Leach & SX-EW Plant 2025 (FE2) and the Hydrogen Steel Works 2028 (FE4, a projection); the Large Cement Plant, the Large Copper Mine, the pelletising and two magnetite works, the Large"
                         + " Mini-Mill, the Leach & SX-EW Plant and the Harvesting Operation keep their years, now as the codes PE4, PE8, E4, E13, E12 and E14,"
-                        + " their years here being their entries'; no row"
+                        + " their years here being their entries'; and PW5's Substation 1900; no row"
                         + " before them: " + dated,
                 dated.equals(years));
 
