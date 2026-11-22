@@ -10,7 +10,7 @@ Household money shows debt holders, medians, means, payment burdens, arrears
 and yearly surveys by tier and stage, per household or adult. Every new flow
 has one money and national-accounts path. Save format 62 refuses older saves
 without conversion; refusal of formats 60/61 and exact next-month continuation are checked.
-The card-model 80-run ensemble passed its money-audit and findings checks.
+The 80-run ensemble of f78dfd076 passes its money-audit and findings checks.
 
 ## known-reds
 HoldersCheck | fixture: in those months no household left and none sold the bank's desk any paper | HT1-H | 2026-11-22 | m63-65 paper sales and m63-66 departures move the played issue after its quiet-desk premise; exact amounts in HC1-notes. Bank-first, holder books and money audits pass; FS14 shipped, owner assigned by orchestrator.

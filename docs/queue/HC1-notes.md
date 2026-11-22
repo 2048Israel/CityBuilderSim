@@ -1049,3 +1049,56 @@ The new money delta is specifically Game.desksBuysHouseholdPaper and the
 HouseholdBalance PaperDesk callers, with ScaleCheck's native regression.
 Push the updated provisional ship record last; no ready or gate-run marker
 is claimed. Mail mends for this delta and wait for the orchestrator/reviewer.
+
+
+### Reviewed paper mend: re-earned final-model ensemble, 2026-11-22
+
+REV-HC1-2 on f78dfd076 is SHIP (orchestrator mail191556). The reviewer
+finds the paper desk sound where the drift arises, ScaleCheck:325 an
+honest cause, and the OrderDoor trace honest to HT1-H. Its remaining note
+requires replacing the99c5c41ec ensemble claim with evidence after the
+74dc953ef money mend. No further review is requested. The same mail gives
+the ALL dry-run slot after this ensemble and asks HC1 to announce its start.
+
+Main is still591fc92d8 on both the pre-ensemble and post-ensemble fetch;
+it is already merged as bfb03608a. The fresh final-model run uses pushed
+commit`f78dfd0761bfd16480c6d48ef4fdd59ff8a1451c`, label
+`HC1-paper-final-20261122`, on the gate box:
+`/home/jerus/cbs/tools/f78dfd0761bfd16480c6d48ef4fdd59ff8a1451c/target/ensemble/HC1-paper-final-20261122`.
+The copy is`target/ensemble/HC1-paper-final-20261122`; controller
+`target/hc1-paper-ensemble.txt`. Snapshot UTC2026-11-22T23:19Z,
+Java21.0.13,8 box jobs. Preflight sees0 heavy jobs; JAVA_OPTS is empty and
+JDK_JAVA_OPTIONS unset, so the md5-equal box Earth/world copies are used.
+No laptop fallback or model restart occurs. The7200s parent stays alive;
+two9-minute watchers expire before completion and are collected normally.
+The run's own files, not those watcher deadlines, decide its result.
+
+**PASS:25/26 versus baseline0.9.188's23/26; M1/F1 all10/10 PASS.**
+Launcher/score exit0. Independent verification checks all80 distinct
+policy/seed pairs, each actual month count equal to its scheduled count,
+80 nonempty CSVs and10 hard PASS verdicts. Each of the16 seeds runs
+AUTO2 for2400 months, ZERO_SLACK2040, ZERO_HOT402, SHOCK840 and HIGH720.
+No missing or short runs; each policy has0 failed audit months and0 runs
+with findings. AUTO2/T2 and ZERO_SLACK/T2 change informational FAIL to
+PASS against0.9.188; they are population criteria. AUTO2/A2 remains the
+informational FAIL, as in the baseline. Pairing remains a separate
+64/64 diagnostic excluded from the25/26 score; one retired row is excluded.
+
+Final-population medians on this **post-paper-mend** snapshot:
+
+| policy | f78dfd076 | baseline0.9.188 |
+|---|---:|---:|
+| AUTO2 | 5,217,451 | 2,470,539.5 |
+| ZERO_SLACK | 3,579,897.5 | 1,277,612.5 |
+| ZERO_HOT | 7,562.5 | 7,582.5 |
+| SHOCK | 102,120.5 | 40,935.5 |
+| HIGH | 31,959.5 | 31,616.5 |
+
+These figures supersede the earlier99c5c41ec figures for readiness; the
+native path did move, so that earlier result could not stand in for the
+mended final model. `docs/ensemble/HC1.md` now copies this run's baseline,
+changing only its heading and introductory version to{next}; its snapshot,
+data, criteria and JSON are the scorer's. The ship paragraph now names
+f78dfd076 explicitly, as the review requires. No source changes follow the
+ensemble. Commit/push these publication records, announce the authorized
+ALL dry-run start, and use a fresh kept run rather than either STOPPED run.
