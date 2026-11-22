@@ -43,7 +43,10 @@ import java.nio.file.Path;
  *      the year ago survives a save; and its equity's two parts, paid in
  *      and retained - and since 0.7.14 the city's preferred, a third - add
  *      up to it to the cent every month and move by exactly their own
- *      causes, and an older save does not invent them. Since 0.7.33
+ *      causes, and an older save does not invent them. Those are read on a
+ *      played city whose founding, loan, owners' capital, dividend, buyback,
+ *      loss, bond, treasury buyback and rescue are each set in a month of
+ *      its own (TAB_* dials; FS9: a played city's own path moved under them). Since 0.7.33
  *      (section 13b) every rate the ladder draws in its parts is those parts
  *      - a sector's quote to the bit, an insured mortgage to 1e-12 - a city
  *      just loaded quotes its record and its concentration, and the branch
@@ -121,12 +124,23 @@ import java.nio.file.Path;
  *     gives retail a record (BusinessDebtManager.restoreCreditRecord) and a concentration
  *     charge (setConcentrationCharges, CONCENTRATION_BY_HAND), reads every sector's quote
  *     in its parts at 1e-12 of the rate (the arithmetic can part by an ulp on another path).
+ *   - "(13) on a played city" plays TAB_PLAYED months (the last caused event, the rescue, and the
+ *     year a year ago needs to read a sheet with the rescue on it) and sets what it reads, each in
+ *     its own month: the city's first branch is the founding's own (one stands before the first
+ *     month, and its settlement and offering are that month's); retail is lent by hand in
+ *     TAB_LEND_MONTH (BusinessDebtManager.issueLoan, the bank's cash and retail's till moved with
+ *     it); the owners put one top of the band in by hand in TAB_CAPITAL_MONTH (Bank.injectCapital),
+ *     so the rule's dividend falls due in the next, on what it holds over the top; the desk buys
+ *     shares back by hand in TAB_BUYBACK_MONTH (Bank.buyBackOwnShares, TAB_BUYBACK_SHARE of its
+ *     spare capital); a claim past the default point is written on retail in TAB_LOSS_MONTH, so
+ *     its firms default and the month is a loss; and the bond, the treasury's buyback and the
+ *     rescue are set at TAB_BOND_MONTH, TAB_TREASURY_BUYBACK_MONTH and TAB_RESCUE_MONTH.
  *   FS9: the played city moved under these, a premise measured on its path (a month, a
  *   count, a share) failing for a change in the economy and not in the bank.
  *
- * The books city of section 8, whose identities are the point, stays played, and so
- * does the tab's city of section 13 (not yet caused: its first branch, its owners' dividends, its
- * loss month and its year of sheets are read off 72 months).
+ * The books city of section 8, whose identities are the point, stays played. So does the tab's
+ * city of section 13: its identities (the equity's movement, the interest by who paid it, the
+ * sheet and a year ago) are read off every month it plays, and what they are read against is set.
  */
 public class BankCheck {
 
@@ -169,6 +183,36 @@ public class BankCheck {
 
     /** The concentration charge the rate-parts section hands one sector, a year: more than the rates' own rounding and less than a spread. */
     static final double CONCENTRATION_BY_HAND = .004;
+
+    /** The month of the tab city, counted from the first played, in which a claim on retail is written by hand (BusinessDebtManager.issueLoan) and paid out by the bank: after the founding month, with retail's books standing. */
+    static final int TAB_LEND_MONTH = 2;
+
+    /** The share of the room retail has under the lender's ceiling (MAX_LOAN_TO_ASSETS of its assets, less what it owes) that the tab city's by-hand claim takes: half, so retail is lent to and stays far from every line. */
+    static final double TAB_LEND_SHARE = .5;
+
+    /** The month of the tab city in which its owners put the bank one top of its band's equity in by hand (Bank.injectCapital), between two presses, so that the next month it holds that over the top and its rule pays a twelfth of it out. */
+    static final int TAB_CAPITAL_MONTH = 5;
+
+    /** The month of the tab city in which the bank's desk buys its own shares back by hand (Bank.buyBackOwnShares), between two presses and after the capital above, so there is spare capital over its target to spend. */
+    static final int TAB_BUYBACK_MONTH = 9;
+
+    /** The share of its spare capital over its target that the tab city's by-hand buyback spends: half, so the bank ends the month over its target, as the desk's own rule would leave it. */
+    static final double TAB_BUYBACK_SHARE = .5;
+
+    /** The month of the tab city in which a claim past the default point is written on retail by hand (the section-14 dial PAST_THE_LINE_LEVERAGE), so its firms default in the month after, whole: a year and a half after the first claim, with the bank's capital in. */
+    static final int TAB_LOSS_MONTH = 20;
+
+    /** The month of the tab city in which the city borrows on a bond that the bank buys at the next settle. */
+    static final int TAB_BOND_MONTH = 12;
+
+    /** The month of the tab city in which the treasury buys that bond back between two presses, which is in no income statement. */
+    static final int TAB_TREASURY_BUYBACK_MONTH = 30;
+
+    /** The month of the tab city in which the city puts capital into the bank that stands, between two presses: its preferred, since 0.7.14. */
+    static final int TAB_RESCUE_MONTH = 45;
+
+    /** The months the tab city is played: through its last caused event, the rescue, and the year after it that a year ago on the Balance sheet page needs to read a sheet that has the rescue in it. */
+    static final int TAB_PLAYED = TAB_RESCUE_MONTH + 1 + Bank.YEAR_MONTHS;
 
     /** Whether a rate drawn in its parts is the rate priced, to 1e-12 of it: the parts' arithmetic can part from the pricing's by an ulp on another path. */
     static boolean parted(double drawn, double priced) {
@@ -3527,9 +3571,21 @@ public class BankCheck {
         double worstResidual = 0, worstBetween = 0, worstByWho = 0, worstLast = 0, worstYear = 0, worstFoot = 0;
         double largestMovement = 0;   // the size of the figures the movements were made of (0.7.54)
         boolean movementAddsUp = true;   // the page's alert never shows on a played bank (BI2)
-        int foundingMonths = 0, dividendMonths = 0, familyMonths = 0, cityMonths = 0, businessMonths = 0;
-        int lastChecked = 0, yearChecked = 0, played = 72;
+        int foundingMonths = 0, foundingMonth = -1, familyMonths = 0, cityMonths = 0, businessMonths = 0;
+        int lastChecked = 0, yearChecked = 0, played = TAB_PLAYED;
         double buybackGain = 0, rescued = 0;
+        // FS9: what the tab city's events set, and what the month each caused reads (a premise set by hand and read
+        // in its month, not a count of the months a played city happened to give).
+        BusinessDebtManager tabLender = city.getEconomyManager().getBusinessDebtManager();
+        String RET = Sectors.RETAIL;
+        int retailAt = java.util.Arrays.asList(Sectors.KEYS).indexOf(RET);
+        BusinessLoan handLoan = null;
+        double lentFace = 0, lentOwedBefore = 0, lentOwedAfter = 0, booksBefore = 0, lentOnBooks = 0;
+        double capitalPut = 0, excessAtPayout = 0, dividendPaid = 0;
+        double boughtBackByHand = 0, boughtBackInMonth = 0;
+        double lossClaim = 0, lossKept = 0, lossWrittenOff = 0;
+        double offeredAtFounding = 0;
+        int standingAtOpening = -1;
         java.util.List<Double> nets = new java.util.ArrayList<>(), fees = new java.util.ArrayList<>();
         Debt bond = null;
         // ...and the Balance sheet page (0.7.13): the sheet as this loop read it
@@ -3541,11 +3597,11 @@ public class BankCheck {
         // every month, and what its causes, read at the end of each month
         // played - after whatever was done between the presses - add up to.
         double worstSplit = 0, paidInCauses = 0, retainedCauses = 0, paidInStart = 0, retainedStart = 0;
-        int offeringMonths = 0, buybackMonths = 0, lossMonths = 0;
         boolean splitAll = true;
         System.setOut(quiet);
         try {
             city.run();
+            standingAtOpening = (int) city.getBuildingManager().countByName("Commercial Bank");
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -3575,7 +3631,29 @@ public class BankCheck {
             worstSplit = Math.abs(bank.equitySplitResidual());
 
             for (int m = 0; m < played; m++) {
+                // FS9: a claim written by hand on retail before the month - the first a loan it can carry (TAB_LEND_MONTH), the
+                // second one past the default point, which its firms default on in the month (TAB_LOSS_MONTH) - and, after the
+                // month's close and before it is read, the bank's cash it was paid out of and retail's till it went into, so
+                // that the claim moves no equity the month's movement does not name.
+                double claim = 0;
+                if (m == TAB_LEND_MONTH) {
+                    lentOwedBefore = tabLender.getPrincipal(RET);
+                    booksBefore = bank.getLoansToSector(retailAt);
+                    claim = lentFace = TAB_LEND_SHARE * Math.max(0,
+                            BusinessDebtManager.MAX_LOAN_TO_ASSETS * tabLender.getAssets(RET) - lentOwedBefore);
+                } else if (m == TAB_LOSS_MONTH) {
+                    claim = lossClaim = Math.max(0, PAST_THE_LINE_LEVERAGE * tabLender.getAssets(RET) - tabLender.getPrincipal(RET));
+                }
+                if (claim > 0) {
+                    BusinessLoan written = tabLender.issueLoan(RET, claim, city.getMonth());
+                    if (m == TAB_LEND_MONTH) handLoan = written;
+                }
+                if (m == TAB_LEND_MONTH) lentOwedAfter = tabLender.getPrincipal(RET);
                 city.simulateMonths(1);
+                if (claim > 0) {
+                    bank.setCash(bank.getCash() - claim);
+                    city.getEconomyManager().setSectorCash(RET, city.getEconomyManager().getSectorCash(RET) + claim);
+                }
                 /*
                  * A HOLDER SELLS THE BANK ITS OWN SHARES (EM1). The bank bids for them
                  * over its target at half a spread under fair value, which is their
@@ -3597,11 +3675,24 @@ public class BankCheck {
                 worstResidual = Math.max(worstResidual, Math.abs(moved.residual()));
                 largestMovement = Math.max(largestMovement, moved.scale());
                 movementAddsUp &= moved.addsUp();
-                if (Math.abs(moved.founding()) > 1e-9) foundingMonths++;
-                if (moved.dividends() > 0) dividendMonths++;
-                if (moved.fromShareholders() > 0) offeringMonths++;
-                if (moved.boughtBack() > 0) buybackMonths++;
-                if (moved.kept() < 0) lossMonths++;
+                // The founding's own: the month the city's first branch took the standing book over, and the capital its
+                // owners were offered for it.
+                if (Math.abs(moved.founding()) > 1e-9) {
+                    foundingMonths++;
+                    foundingMonth = m;
+                    offeredAtFounding = moved.fromShareholders();
+                }
+                // The month after the owners' capital was put in: what the payout's rule read, and what it paid.
+                if (m == TAB_CAPITAL_MONTH + 1) {
+                    excessAtPayout = bank.getPayoutExcess();
+                    dividendPaid = moved.dividends();
+                }
+                // The month retail's firms default on the claim past the line: what the bank kept, what it wrote off.
+                if (m == TAB_LEND_MONTH) lentOnBooks = bank.getLoansToSector(retailAt);
+                if (m == TAB_LOSS_MONTH) {
+                    lossKept = moved.kept();
+                    lossWrittenOff = bank.getWriteOffs();
+                }
                 worstSplit = Math.max(worstSplit, Math.abs(bank.equitySplitResidual()));
 
                 double byWho = bank.getInterestFromBusinesses() + bank.getInterestFromHouseholds()
@@ -3635,13 +3726,13 @@ public class BankCheck {
                 worstFoot = Math.max(worstFoot, Math.abs(footing - bank.getWeightedBook()));
 
                 // The city borrows; the bank buys the paper at the next settle.
-                if (m == 12) {
+                if (m == TAB_BOND_MONTH) {
                     city.setCashForTest(city.getCash() + 20_000 * PriceLevel.FACTOR);
                     city.handleLongBondLogic(5_000 * PriceLevel.FACTOR, LongTermBond.MATURITIES[0], 100 * PriceLevel.FACTOR);
                     bond = city.getDebtManager().getDebt().get(city.getDebtManager().getDebt().size() - 1);
                 }
                 // ...and buys it back between two presses, which is in no income statement.
-                if (m == 30 && bond != null && bond.bankPrincipal() > 0) {
+                if (m == TAB_TREASURY_BUYBACK_MONTH && bond != null && bond.bankPrincipal() > 0) {
                     city.setCashForTest(city.getCash() + 2 * bond.getOustandingPrincipal());
                     city.repurchaseDebt(bond);
                     buybackGain = bank.getTreasuryBuybackGain();
@@ -3650,7 +3741,23 @@ public class BankCheck {
                 // ...and the city puts capital into a bank that stands, between two
                 // presses - its preferred since 0.7.14, the gift before it gone:
                 // the treasury buys it, a purchase, and the bank issues it.
-                if (m == 45) {
+                // FS9: ...and the owners put capital in, one top of its band's equity of it, so the next month the rule's
+                // dividend falls due on what it holds over the top (the month is read above, at TAB_CAPITAL_MONTH + 1)...
+                if (m == TAB_CAPITAL_MONTH) {
+                    capitalPut = bank.topEquity();
+                    bank.injectCapital(capitalPut, 0);
+                    worstBetween = Math.max(worstBetween, Math.abs(bank.equityMovement().residual()));
+                }
+                // ...and its desk buys shares back out of what it holds over its target, half of it, as it would between
+                // two presses, and the month's buyback is what the movement reads after it.
+                if (m == TAB_BUYBACK_MONTH) {
+                    double boughtBefore = bank.equityMovement().boughtBack();
+                    boughtBackByHand = TAB_BUYBACK_SHARE * Math.max(0, bank.spareCapital());
+                    bank.buyBackOwnShares(boughtBackByHand);
+                    boughtBackInMonth = bank.equityMovement().boughtBack() - boughtBefore;
+                    worstBetween = Math.max(worstBetween, Math.abs(bank.equityMovement().residual()));
+                }
+                if (m == TAB_RESCUE_MONTH) {
                     rescued = city.treasuryPays(TreasuryLine.BANK_CAPITAL, 500);
                     bank.issuePreferred(rescued, city.getExchange().price(Equity.BANK), 0);
                     worstBetween = Math.max(worstBetween, Math.abs(bank.equityMovement().residual()));
@@ -3679,7 +3786,10 @@ public class BankCheck {
                 }
                 worstBySector = Math.max(worstBySector, Math.abs(bySector - bank.sheet(Bank.Sheet.BUSINESS_LOANS))
                         + Math.abs(interim - bank.sheet(Bank.Sheet.INTERIM)));
-                if (bank.sheet(Bank.Sheet.BUSINESS_LOANS) > 0) lentMonths++;
+                // ...and the bank's books carried the claim in each month of its term, from the month after it was written.
+                if (handLoan != null && m > TAB_LEND_MONTH && m < TAB_LEND_MONTH + BusinessDebtManager.LOAN_TERM_MONTHS
+                        && bank.getLoansToSector(retailAt) + 1e-6 >= handLoan.getOutstandingPrincipal()
+                        && handLoan.getOutstandingPrincipal() > 0) lentMonths++;
                 if (bank.knowsYearAgo()) {
                     yearAgoMonths++;
                     worstYearAgoSheet = Math.max(worstYearAgoSheet, Math.abs(bank.yearAgoResidual()));
@@ -3694,13 +3804,27 @@ public class BankCheck {
         } finally {
             System.setOut(out);
         }
-        out.printf("   %d months: the founding in %d, dividends in %d; a treasury buyback moved its equity by $%,.2fk"
-                + " and a rescue by $%,.2fk between two presses%n", played, foundingMonths, dividendMonths,
-                buybackGain, rescued);
+        out.printf("   %d months: the founding's own in month %d with %d branch standing before it and $%,.2fk offered for it;"
+                + " a treasury buyback moved its equity by $%,.2fk and a rescue by $%,.2fk between two presses%n", played,
+                foundingMonth, standingAtOpening, offeredAtFounding, buybackGain, rescued);
+        out.printf("   set by hand: $%,.2fk lent to retail in month %d (it owed $%,.2fk -> $%,.2fk; the bank's books $%,.2fk -> $%,.2fk);"
+                + " $%,.2fk of capital in month %d, a dividend of $%,.2fk in the next on $%,.2fk over the top;"
+                + " $%,.2fk of its shares bought back in month %d; a claim of $%,.2fk past the default point in month %d,"
+                + " the month kept $%,.2fk after $%,.2fk written off%n", lentFace, TAB_LEND_MONTH, lentOwedBefore, lentOwedAfter,
+                booksBefore, lentOnBooks, capitalPut, TAB_CAPITAL_MONTH, dividendPaid, excessAtPayout, boughtBackInMonth,
+                TAB_BUYBACK_MONTH, lossClaim, TAB_LOSS_MONTH, lossKept, lossWrittenOff);
         out.printf("   interest from the families in %d months, the city in %d, the businesses in %d%n",
                 familyMonths, cityMonths, businessMonths);
-        assertTrue("fixture: the played city's first branch opened in it", foundingMonths == 1);
-        assertTrue("fixture: the bank paid its owners in it", dividendMonths > 0);
+        assertTrue("fixture: the city's first branch is the founding's own: one stood before the first month, and its settlement is that month's",
+                standingAtOpening == 1 && foundingMonths == 1 && foundingMonth == 0);
+        assertTrue("fixture: the bank paid its owners in the month after its owners put one top of its band in by hand (TAB_CAPITAL_MONTH),"
+                + " at least a twelfth of what it then held over the top",
+                capitalPut > 0 && excessAtPayout > 0 && dividendPaid >= excessAtPayout / Bank.EXCESS_PAYOUT_MONTHS - 1e-9);
+        assertTrue("fixture: retail was lent by hand in month " + TAB_LEND_MONTH + ": the lender owes it what it did and the bank's books carry it",
+                lentFace > 0 && Math.abs(lentOwedAfter - lentOwedBefore - lentFace) < 1e-9
+                        && lentOnBooks >= lentFace * (1 - 1.0 / BusinessDebtManager.LOAN_TERM_MONTHS));
+        assertTrue("fixture: its firms defaulted in the month of a claim past the default point (TAB_LOSS_MONTH), and the bank lost money in it",
+                lossClaim > 0 && lossKept < 0 && lossWrittenOff > 0);
         assertTrue("fixture: the treasury bought paper back from it, at a gain or a loss", Math.abs(buybackGain) > 1e-9);
         assertTrue("fixture: the city put capital into it", rescued > 0);
         close("its equity's movement left nothing unexplained, every month", worstResidual, 0,
@@ -3710,16 +3834,20 @@ public class BankCheck {
         assertTrue("...and the page's \"Something moved its equity without telling it\" never shows on the played bank (BI2)", movementAddsUp);
         assertTrue("fixture: the city and the businesses paid it interest", cityMonths > 0 && businessMonths > 0);
         close("its interest by who paid it is the whole of its interest, every month", worstByWho, 0, 1e-6);
-        assertTrue("fixture: last month and the year were read in most months", lastChecked > 60 && yearChecked > 50);
+        assertTrue("fixture: last month and the year were read in most months",
+                lastChecked == played - 1 && yearChecked == played - Bank.YEAR_MONTHS + 1);
         close("last month's column is what that month read, whole", worstLast, 0, 1e-9);
         close("...and the last twelve months add up to the last twelve read", worstYear, 0, 1e-6);
         close("the played bank's weight table foots every month", worstFoot, 0, 1e-6);
 
         out.println("\n--- (13) the Balance sheet page: it foots this month and a year ago, and a year ago survives a save ---");
-        out.printf("   %d months with a year ago on file; the businesses owed the bank in %d%n",
-                yearAgoMonths, lentMonths);
-        assertTrue("fixture: a year ago was on file in most of the months played", yearAgoMonths > 50);
-        assertTrue("fixture: the businesses owed the bank in most of them", lentMonths > 50);
+        out.printf("   %d months with a year ago on file; the bank's books carried its claim on retail in %d of the %d months it ran (written in month %d)%n",
+                yearAgoMonths, lentMonths, BusinessDebtManager.LOAN_TERM_MONTHS - 1, TAB_LEND_MONTH);
+        assertTrue("fixture: a year ago was on file in most of the months played", yearAgoMonths == played - Bank.YEAR_MONTHS + 1);
+        assertTrue("fixture: the sheet a year ago, at the end, is one with the city's preferred on it: the year after the rescue was played",
+                bank.yearAgo(Bank.Sheet.PREFERRED) > 0);
+        assertTrue("fixture: the bank's books carried the loan set by hand in every month from the one after it, for its term",
+                lentMonths == BusinessDebtManager.LOAN_TERM_MONTHS - 1);
         double assetLines = 0, liabilityLines = 0;
         for (Bank.Sheet line : Bank.SHEET_ASSETS) assetLines += bank.sheet(line);
         for (Bank.Sheet line : Bank.SHEET_LIABILITIES) liabilityLines += bank.sheet(line);
@@ -3761,13 +3889,14 @@ public class BankCheck {
                 !sheetOld.getBank().knowsYearAgo() && sheetOld.getBank().yearAgo(Bank.Sheet.EQUITY) == 0);
 
         out.println("\n--- (13) its equity in parts: paid in, retained and the city's preferred add up to it, to the cent, every month ---");
-        out.printf("   paid in $%,.2fk -> $%,.2fk, retained $%,.2fk -> $%,.2fk; offerings in %d months, its own shares"
-                + " bought back in %d, a loss in %d%n", paidInStart, bank.paidInCapital(), retainedStart,
-                bank.retainedEarnings(), offeringMonths, buybackMonths, lossMonths);
-        assertTrue("fixture: a branch opened, its capital sold as shares", offeringMonths > 0 && foundingMonths == 1);
-        assertTrue("fixture: it bought its own shares back", buybackMonths > 0);
-        assertTrue("fixture: it paid a dividend", dividendMonths > 0);
-        assertTrue("fixture: it lost money in a month", lossMonths > 0);
+        out.printf("   paid in $%,.2fk -> $%,.2fk, retained $%,.2fk -> $%,.2fk; the offering at the founding $%,.2fk, its own shares"
+                + " bought back by hand $%,.2fk, a dividend of $%,.2fk, a loss of $%,.2fk%n", paidInStart, bank.paidInCapital(),
+                retainedStart, bank.retainedEarnings(), offeredAtFounding, boughtBackInMonth, dividendPaid, lossKept);
+        assertTrue("fixture: a branch opened, its capital sold as shares", offeredAtFounding > 0 && foundingMonths == 1);
+        assertTrue("fixture: its desk bought its own shares back in month " + TAB_BUYBACK_MONTH + ", by hand, with half of what it held over its target",
+                boughtBackByHand > 0 && boughtBackInMonth >= boughtBackByHand - 1e-9);
+        assertTrue("fixture: it paid a dividend, the month after its owners put capital in by hand", dividendPaid > 0);
+        assertTrue("fixture: it lost money in a month, the one its firms defaulted on a claim by hand", lossKept < 0);
         assertTrue("a bank founded in this build keeps the split, every month", splitAll);
         close("paid in, retained and the preferred add up to its equity, to the cent, every month and between two presses",
                 worstSplit, 0, 1e-5);
