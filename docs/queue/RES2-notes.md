@@ -1,8 +1,8 @@
 # RES2 — aggregate housing inventory
 
 Built from 52c79806b (0.9.187), integrated with shipped RS1/main 01e6c2d4b
-(0.9.188) in model commit 32c81f469. Final model verification is against that
-newest main. No new design call remains for Jerus.
+(0.9.188) in initial model commit 32c81f469. The reviewed-model mends are
+51f417367; final post-review verification is against that newest main. No new design call remains for Jerus.
 
 ## What changed and the calls
 
@@ -102,9 +102,11 @@ quantity and across all titles. The 1000x represented stock retains 2 physical
 class rows / 2 saved cohorts. The current catalogue has 3 compatible classes.
 
 The actual scratch save uses slot 10 in GameFiles.scratch, retains a half title
-and quarter occupied home, changes RE's capacity baseline from 45 to 42.75 and
-saves a stranded share of .05. Reload restores those exact counts; both first
-months count 45 and dilute the share to .0475. Existing ReloadCheck 3k also
+and quarter occupied home, and changes RE's counted-capacity baseline by 5%.
+The reviewed fixture also includes two Houses and a Studio on site, with partial
+House progress. Its RE portfolio capacity is 217 (pipeline included), saved at
+206.15 with a stranded share of .05. Both first months count 217 and dilute that
+share to .0475, complete the same House and preserve the remaining pipeline. Existing ReloadCheck 3k also
 retains its caused changed-capacity and zero-capacity first-month proofs.
 
 | Check | Result |
@@ -142,8 +144,9 @@ their exact classes. No new queue row or approval is requested.
 ## Final trace and measured cost
 
 Fresh main 01e6c2d4b was compiled and ran only the named 2,400-month LongPlaytest
-in an isolated detached reference checkout. Merged model 32c81f469 ran the same
-default with the same JDK, seed/options and required Earth/world files. Every one
+in an isolated detached reference checkout. Integrated model 32c81f469 and the final reviewed-model mend 51f417367 both
+ran the same default with the same JDK, seed/options and required Earth/world
+files. Every one
 of the eight complete CSVs is observed byte-identical, not merely rounded equal.
 The comparison and raw files are target/RES2-trace/comparison.json,
 main-01e6-*.csv and merged-*.csv. The earlier independent 52c79806b comparison
@@ -173,10 +176,11 @@ These observations do not replace nightly performance judgement. The study's
 
 ## Review and gate handoff
 
-Model source is final at 32c81f469; the final records/maps commit changes prose
-only. A stranger's saves review is owed. No money transfer or new thread is
-activated by the batch; the allocation and quantity contracts remain reviewable.
-The provisional ship marker stays until that review's SHIP and the ALL dry run.
+The final mended model source is 51f417367; the following records/maps commit
+changes prose only. The same stranger reviews the delta, including money and
+saves for the restored construction-work input. No sale or new thread is
+activated. The provisional marker stays until that review's SHIP and the ALL
+dry run.
 No dry run has been run yet, so no retained run or two gate commits are claimed.
 
 
@@ -206,7 +210,7 @@ saves. Both their guards and the old boundary/refusal assertions are retained.
    fill was 1 live versus 0 reloaded, with the same 160 physical point capacity,
    offered share and road ratio. The source advanced a House while the loaded
    twin did no work. No premise or tolerance was weakened to pass this.
-   Construction now saves that previous-period work input in sector extras
+   ★ Construction now saves that previous-period work input in sector extras
    (through DataSave's SectorState) and Game restores it after the load's wage
    rebuild, just as RN2 restores its counted-capacity baseline. The input is a
    flow because sites advance before the next wage count (SimulationEngine).
@@ -232,6 +236,31 @@ format-61 schema. Current shipped main remains format 60; the existing bump to
 61 and matching load floor remain owed, with no second bump until HC1 ships
 first. Its absence from native format 60 is not repaired or converted.
 
-Initial mended HousingInventoryCheck and SaveFileCheck runs are green; the
-remaining named checks and the final post-mend trace are being completed before
-the next provisional push. Logs are target/RES2-review/*-after.txt.
+Final delta checks are complete. HousingInventoryCheck, SaveFileCheck,
+ReadPathCheck, HousingCheck, ConstructionControlCheck, ConstructionTrapCheck and
+--fast are green. ReloadCheck exits 3 solely on its already recorded HT1-H
+material-draw fixture; every RN2 changed-count and zero-count premise/comparison
+passes. LongPlaytest exits 3 solely on the same CL7 m2400 finding as fresh main.
+All eight complete post-mend CSVs are observed byte-identical to main 01e6c2d4b;
+no ensemble is owed. The final comparison is
+target/RES2-trace/review-comparison.json with mended-*.csv, and the named logs
+are target/RES2-review/*-after.txt. No model change followed these checks.
+
+The three coverage guards demonstrably fail with the reviewed model/input
+fixtures in regression-only commit 57999ec3f and pass after 51f417367. In
+addition, the expanded pipeline initially failed actual next-month parity on
+the unchanged 1-versus-0 work fill; preserving that period input mended the
+failure without changing the fixture or relaxing any conservation/save check.
+HC1 has the same native fixture bytes and producer at the same paths. Whichever
+ships second merges main, keeps this one pair/shared helper, and updates the
+format from the then-shipped value.
+
+Post-mend trace verification is complete at model 51f417367: all eight files
+match the fresh 01e6c2d4b main files byte for byte. The mended scratch month was
+312.617 ms with 2 physical class rows / 2 saved cohorts, including its genuine
+pipeline. ConstructionControlCheck and ConstructionTrapCheck also pass their
+native save/load, contractor-book and next-month checks. These additions are
+kept in target/RES2-review; no model source changed after final verification.
+
+The final mended LongPlaytest measured 299.5 s on this laptop (known CL7 only);
+its timing is observational, and its complete eight-file comparison is exact.

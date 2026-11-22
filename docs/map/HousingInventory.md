@@ -1,4 +1,4 @@
-# HousingInventory.java - 279 lines · 33 methods · 1 constants · model
+# HousingInventory.java - 288 lines · 33 methods · 1 constants · model
 
 `ham/citybuildersim/HousingInventory.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -42,7 +42,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16 | 264 | **type** `public final class HousingInventory` | Aggregate housing titles, occupants and listings over the physical stacks. |
+| 16 | 273 | **type** `public final class HousingInventory` | Aggregate housing titles, occupants and listings over the physical stacks. |
 | 19 | 1 | **type** `public enum Owner` |  |
 | 20 | 1 | **type** `public record Key(int recipe, String dwelling)` |  |
 | 21 | 5 | **type** `public record Stock(Key key, HousingRecipe recipe, HousingRecipe.Dwelling dwelling, long structures, long p...` |  |
@@ -74,11 +74,11 @@
 | 157 | 8 | `public void list(Key key, Owner owner, double vacant, double occupied)` |  |
 | 167 | 16 | `public void transfer(Key key, Owner from, Owner to, double amount, double occupied)` | Atomic title transfer, retaining the stated occupied quantity; no money or physical work. |
 | 185 | 9 | `public Allocation allocate(Key key, Owner owner, double amount, double structure, double land, double collateral)` | Fixed title weights partition actual project books/collateral for a later funded sale. |
-| 198 | 16 | `public void match(double[] occupiedBySize)` | Legacy match input by size, distributed evenly across equivalent class doors. |
-| 216 | 9 | `boolean mayRemove(BuildingsStacks stack, long amount)` | Physical removal cannot destroy a title already conveyed to another owner. |
-| 225 | 13 | `void physicalChanged(BuildingsStacks stack)` |  |
-| 239 | 5 | `private void coalesce()` |  |
-| 245 | 1 | `void clear()` | A new city clears assignments together with the physical stacks. |
-| 246 | 5 | `public List<Holding> forSave()` |  |
-| 252 | 27 | `public void restore(List<Holding> saved)` | Validates the whole saved matrix before replacing it; no reconstruction of economic flows. |
+| 198 | 25 | `public void match(double[] occupiedBySize)` | Legacy match input by size, distributed evenly across equivalent class doors. |
+| 225 | 9 | `boolean mayRemove(BuildingsStacks stack, long amount)` | Physical removal cannot destroy a title already conveyed to another owner. |
+| 234 | 13 | `void physicalChanged(BuildingsStacks stack)` |  |
+| 248 | 5 | `private void coalesce()` |  |
+| 254 | 1 | `void clear()` | A new city clears assignments together with the physical stacks. |
+| 255 | 5 | `public List<Holding> forSave()` |  |
+| 261 | 27 | `public void restore(List<Holding> saved)` | Validates the whole saved matrix before replacing it; no reconstruction of economic flows. |
 
