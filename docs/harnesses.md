@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**238 harness files, 27,321 labelled assertions.** AllChecks runs 238 of them.
+**238 harness files, 27,345 labelled assertions.** AllChecks runs 238 of them.
 
 ## Which harnesses read which class
 
@@ -4035,7 +4035,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L707 ...and a load puts it back
   - L721 every month of it is conserved: the money audit closes
 
-## CapitalGainsCheck.java - 182 labelled assertions
+## CapitalGainsCheck.java - 206 labelled assertions
 
 > Household average-cost stocks and investment taxes, through the real fills, census and city (HT1).
 > WHY: the fund already tracked average cost, but a household sale previously lost its acquisition cost.
@@ -4198,40 +4198,64 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L513 all actual corporate holders add to face
   - L514 the capsule is the actual new bond holder
   - L516 no paper counterpart was invented
-  - L591 actual bank coupon credit matches its clearing debit
-- **L595 coupon cash clearing before/after charge, bank booking and partial custody transfer**
-  - L605 an uncharged record-date promise is zero clearing cash
-  - L608 the uncharged promise cannot pay custody or disappear
-  - L609 the uncharged promise remains fully recorded
-  - L613 partial custody transfer preserves the complete holder sum
-  - L614 only the deceased source fraction receives the recorded coupon
-  - L617 the real issuer debit moves to cash clearing
-  - L618 charged clearing includes the still-unpaid bank
-  - L622 a missing issuer debit is caught by the actual pool identity
-  - L625 bank-booked clearing excludes the paid bank
-  - L626 post-payment cash clearing is empty
-  - L633 all record-date maps/flags/cash survive phase
-  - L639 the bank's once-only credit survives phase
-  - L641 native charges/bookings conserve pooled cash
-  - L644 actual partial inherited coupon reaches treasury once
-  - L645 the live source keeps its original record-date fraction
-  - L646 final clearing is discharged
-  - L647 the actual debit, bank credit and remaining payments conserve cash
-  - L650 post-payment cannot create a duplicate receipt
-- **L658 actual all-stock no-heir estate, pending settlement and both loaders**
-  - L666 every custody owner slot survives loader
-  - L668 saved holder discount survives loader
-  - L669 recorded coupon entitlement survives loader
-  - L670 noncash ownership history survives loader
-  - L677 post-settlement custody snapshot survives
-  - L680 post-settlement load cannot repeat retirement
-  - L681 post-settlement reservation remains cleared
-  - L687 a real unrelated heir receives its stepped basis
-  - L688 ordinary real heirs still carry the unpaid 35 claim
-  - L691 the loss-only estate retains a positive exact memo stock
-  - L699 reservation uses the native schedule
-  - L700 reservation uses the native issuer carrying operation
-  - L701 nonzero reserved discount is retired with its exact holder
+  - L606 every recorded issuer bill is still unpaid before its one actual charge
+  - L611 actual issuer pays its own recorded coupon
+  - L615 all issuer debits fund the exact aggregate recorded bill
+  - L617 actual issuer charges and clearing conserve whole cash
+  - L622 actual bank coupon credit matches its clearing debit
+  - L623 actual bank booking and clearing conserve whole cash
+- **L647 coupon cash clearing before/after charge, bank booking and partial custody transfer**
+  - L654 the warmed book has no pending record to replace
+  - L656 the appended issue uses an unused native nextId
+  - L670 the complete warmed register plus one new issue remains live
+  - L673 the new issue contributes exactly its own coupon
+  - L674 the new source face contributes exactly its own entitlement
+  - L675 preserved baseline and new private obligations are fully recorded
+  - L676 preserved baseline and new bank obligations are fully recorded
+  - L678 an uncharged record-date promise is zero clearing cash
+  - L681 the uncharged promise cannot pay custody or disappear
+  - L682 the uncharged promise remains fully recorded
+  - L691 the complete source bundle transfers its quarter
+  - L692 only the source quarter leaves private ownership
+  - L693 the original issuer face is preserved
+  - L694 the unrelated bank retains its position
+  - L695 the unrelated world retains its position
+  - L696 the ordinary city fund retains its position
+  - L697 every unrelated company retains its position
+  - L700 partial custody transfer preserves the complete holder sum
+  - L701 the new inherited issue contributes exactly ten face
+  - L702 only the deceased complete source fraction receives its recorded coupon
+  - L703 the new inherited issue contributes exactly its own recorded coupon
+  - L704 the live source retains its full record-date fraction
+  - L705 other private record-date holders are preserved
+  - L709 the real issuer debit moves to cash clearing
+  - L710 charged clearing includes the still-unpaid bank
+  - L714 a missing issuer debit is caught by the actual pool identity
+  - L717 bank-booked clearing excludes the paid bank
+  - L718 post-payment cash clearing is empty
+  - L726 all record-date maps/flags/cash survive phase
+  - L733 the bank's once-only credit survives phase
+  - L735 native charges/bookings conserve pooled cash
+  - L740 actual partial inherited coupon reaches treasury once
+  - L741 the live source keeps its original record-date fraction
+  - L742 every preserved private holder receives its recorded entitlement
+  - L744 final clearing is discharged
+  - L745 the actual debit, bank credit and remaining payments conserve cash
+  - L748 post-payment cannot create a duplicate receipt
+- **L756 actual all-stock no-heir estate, pending settlement and both loaders**
+  - L764 every custody owner slot survives loader
+  - L766 saved holder discount survives loader
+  - L767 recorded coupon entitlement survives loader
+  - L768 noncash ownership history survives loader
+  - L775 post-settlement custody snapshot survives
+  - L778 post-settlement load cannot repeat retirement
+  - L779 post-settlement reservation remains cleared
+  - L785 a real unrelated heir receives its stepped basis
+  - L786 ordinary real heirs still carry the unpaid 35 claim
+  - L789 the loss-only estate retains a positive exact memo stock
+  - L797 reservation uses the native schedule
+  - L798 reservation uses the native issuer carrying operation
+  - L799 nonzero reserved discount is retired with its exact holder
 
 ## CarCheck.java - 70 labelled assertions
 

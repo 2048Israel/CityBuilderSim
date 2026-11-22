@@ -536,16 +536,26 @@ public final class CapitalGainsCheck {
         close(label + " own debt consolidation manufactures no redemption cash", g.getCash(), treasury);
         double issuerCash = g.getEconomyManager().getSectorCash(Sectors.RETAIL), before = poolTotal(g);
         BondMarket bm = g.getBondMarket(); double worldBefore = bm.getCouponsAbroad();
-        bm.takeMonth(g.getMonth());
+        payRecordedCoupons(bm);
         close(label + " the recorded custody coupon is actual cash once", g.getCash() - treasury, .5);
         close(label + " the issuer is not charged a second time", g.getEconomyManager().getSectorCash(Sectors.RETAIL), issuerCash);
         close(label + " coupon clearing conserves real pooled cash across the world edge", poolTotal(g) + bm.getCouponsAbroad() - worldBefore, before);
         close(label + " the record-date entitlement is discharged", owner.pendingCoupons() + bm.couponClearingCash(), 0);
-        double paidOnce = g.getCash(); bm.takeMonth(g.getMonth()); close(label + " cleared coupons cannot pay twice", g.getCash(), paidOnce);
+        double paidOnce = g.getCash(); payRecordedCoupons(bm); close(label + " cleared coupons cannot pay twice", g.getCash(), paidOnce);
+        // Keep a distinct genuine market step: coupon-only payment above cannot conceal trading cash edges.
+        double[] marketBefore = bondCashEdges(bm); double marketPools = poolTotal(g);
+        double orphaned = bm.getOrphanedToHouseholds();
+        bm.takeMonth(g.getMonth());
+        double[] marketAfter = bondCashEdges(bm);
+        check(label + " the full market really fills native cash trades", marketAfter[2] > marketBefore[2]);
+        close(label + " native trading/coupon/principal and paired-world edges conserve pooled cash",
+                poolTotal(g) - marketPools, (marketAfter[0] - marketBefore[0]) - (marketAfter[1] - marketBefore[1]));
+        close(label + " the full market leaves no uncredited household cash", bm.getOrphanedToHouseholds(), orphaned);
         // A later ordinary coupon is charged on actual custody holdings and entered on its existing FundLedger lot.
-        bm.strikeCoupons(); double charge = bm.getCouponsStruck();
-        g.getEconomyManager().setSectorCash(Sectors.RETAIL, issuerCash - charge); bm.recordCouponIssuerCharge(charge); bm.recordCouponBankPayment(0);
-        bm.takeMonth(g.getMonth()); close(label + " a later real custody coupon is paid", g.getCash() - paidOnce, .5);
+        bm.strikeCoupons();
+        check(label + " trading caused a nonzero bank record-date entitlement", bm.getCouponsDueToBank() > 0);
+        chargeFixtureCoupons(g); bookFixtureBankCoupon(g);
+        payRecordedCoupons(bm); close(label + " a later real custody coupon is paid", g.getCash() - paidOnce, .5);
         double basis = owner.getLedger().acbHeld(), units = owner.shares(0), ordinaryFund = g.getEquity().getCityShares(0);
         g.getEquity().split(0, 2);
         close(label + " custody split scales units", owner.shares(0), units * 2);
@@ -580,15 +590,57 @@ public final class CapitalGainsCheck {
     static void payRecordedCoupons(BondMarket market) throws Exception {
         java.lang.reflect.Method pay = BondMarket.class.getDeclaredMethod("payCoupons"); pay.setAccessible(true); pay.invoke(market);
     }
+    /** The bond edges declared by MoneyAudit, including both legs of household/world trades. */
+    static double[] bondCashEdges(BondMarket b) {
+        double in = b.getHouseholdsBought() + b.getWorldBought() + b.getHouseholdsSoldAbroad()
+                + b.getHouseholdsBoughtAbroad() + b.getWorldWrittenOff();
+        double out = b.getHouseholdsSold() + b.getCouponsToHouseholds() + b.getPrincipalToHouseholds()
+                + b.getWorldSold() + b.getCouponsAbroad() + b.getPrincipalAbroad()
+                + b.getHouseholdsSoldAbroad() + b.getHouseholdsBoughtAbroad() + b.getWorldWrittenOff();
+        double fills = b.getHouseholdsBought() + b.getHouseholdsSold() + b.getWorldBought() + b.getWorldSold()
+                + b.getHouseholdsBoughtAbroad() + b.getHouseholdsSoldAbroad();
+        return new double[] {in, out, fills};
+    }
     static void chargeFixtureCoupons(Game g) {
-        BondMarket bm = g.getBondMarket(); double due = bm.getCouponsStruck();
-        double cash = g.getEconomyManager().getSectorCash(Sectors.RETAIL);
-        g.getEconomyManager().setSectorCash(Sectors.RETAIL, cash - due); bm.recordCouponIssuerCharge(due);
+        BondMarket bm = g.getBondMarket(); double due = bm.getCouponsStruck(), pools = poolTotal(g);
+        check("every recorded issuer bill is still unpaid before its one actual charge", !bm.toState().couponsCharged);
+        double charged = 0;
+        for (var bill : bm.toState().dueByIssuer.entrySet()) {
+            double cash = g.getEconomyManager().getSectorCash(bill.getKey());
+            g.getEconomyManager().setSectorCash(bill.getKey(), cash - bill.getValue());
+            close("actual issuer pays its own recorded coupon " + bill.getKey(),
+                    cash - g.getEconomyManager().getSectorCash(bill.getKey()), bill.getValue());
+            charged += bill.getValue();
+        }
+        close("all issuer debits fund the exact aggregate recorded bill", charged, due);
+        bm.recordCouponIssuerCharge(charged);
+        close("actual issuer charges and clearing conserve whole cash", poolTotal(g), pools);
     }
     static void bookFixtureBankCoupon(Game g) {
-        double due = g.getBondMarket().getCouponsDueToBank(), bank = g.getBank().getCash();
+        double due = g.getBondMarket().getCouponsDueToBank(), bank = g.getBank().getCash(), pools = poolTotal(g);
         g.getBank().takeBondCoupons(due); g.getBondMarket().recordCouponBankPayment(due);
         close("actual bank coupon credit matches its clearing debit", g.getBank().getCash() - bank, due);
+        close("actual bank booking and clearing conserve whole cash", poolTotal(g), pools);
+    }
+    static void bondCounterparts(Game g, String label) {
+        java.util.Set<Integer> ids = new java.util.HashSet<>();
+        for (CorporateBond b : g.getBondMarket().getBonds()) {
+            check(label + " unique live issuer " + b.id(), ids.add(b.id()));
+            close(label + " complete issuer/holder face " + b.id(), b.held(), b.face());
+            close(label + " actual private face " + b.id(), b.households(), g.getHouseholdBalance().bondFaceHeld(b.id()));
+            close(label + " actual custody face " + b.id(), b.custody(), g.getEstateCustody().bondFace(b.id()));
+        }
+        for (Household cell : g.getHouseholdBalance().cells()) for (int id : cell.bondFace.keySet())
+            check(label + " private holding has its original live issuer " + cell.key() + "/" + id, ids.contains(id));
+        for (int id : g.getEstateCustody().bondFaces().keySet())
+            check(label + " custody holding has a live issuer " + id, ids.contains(id));
+        BondMarket.State s = g.getBondMarket().toState();
+        close(label + " cell entitlements equal the private record", s.dueCells.values().stream().mapToDouble(Double::doubleValue).sum(), s.couponDues[0]);
+        close(label + " capsule entitlement equals the custody record", g.getEstateCustody().pendingCoupons(), s.couponDues[4]);
+        if (s.couponRecordOpen) {
+            double holders = Arrays.stream(s.couponDues).sum() + s.dueCompanies.values().stream().mapToDouble(Double::doubleValue).sum();
+            close(label + " all record-date holders match every issuer bill", holders, s.dueByIssuer.values().stream().mapToDouble(Double::doubleValue).sum());
+        }
     }
     /** Nonempty phase snapshots: no end-holder reconstruction, no charge/payment replay. */
     static void custodyCouponPhases() throws Exception {
@@ -597,33 +649,74 @@ public final class CapitalGainsCheck {
             GameFiles files = GameFiles.scratch("ht1-coupon-phase-" + phase);
             Game g = LongPlaytest.probeCity(files, null); BondMarket bm = g.getBondMarket();
             Household h = g.getHouseholdBalance().cells().stream().filter(c -> c.households() > 0).findFirst().orElseThrow();
-            CorporateBond bond = new CorporateBond(1, Sectors.RETAIL, 100, .06, g.getMonth(), 120);
+            bondCounterparts(g, "warmed opening");
+            BondMarket.State state = bm.toState().copy();
+            check("the warmed book has no pending record to replace", !state.couponRecordOpen);
+            int id = state.nextId;
+            check("the appended issue uses an unused native nextId", state.bonds.stream().noneMatch(b -> b.id() == id)
+                    && g.getHouseholdBalance().cells().stream().noneMatch(c -> c.bondFace.containsKey(id)));
+            double baselineAll = 0, baselineHouseholds = 0, baselineBank = 0, baselineSource = 0;
+            for (CorporateBond b : state.bonds) {
+                double coupon = b.monthlyCoupon(); baselineAll += coupon;
+                baselineHouseholds += coupon * b.households() / b.face();
+                baselineBank += coupon * b.bank / b.face();
+                baselineSource += coupon * h.bondFace(b.id()) * h.households() / b.face();
+            }
+            CorporateBond bond = new CorporateBond(id, Sectors.RETAIL, 100, .06, g.getMonth(), 120);
             bond.households = 40; bond.bank = bond.bankCost = 30; bond.world = 30;
-            h.setBondFace(1, 40 / h.households());
-            BondMarket.State state = new BondMarket.State(); state.bonds = new java.util.ArrayList<>(java.util.List.of(bond)); state.nextId = 2;
-            bm.restore(state); bm.strikeCoupons();
+            h.setBondFace(id, 40 / h.households());
+            state.bonds.add(bond); state.nextId = id + 1;
+            bm.restore(state);
+            check("the complete warmed register plus one new issue remains live", bm.getBonds().size() == state.bonds.size() && bm.toState().nextId == id + 1);
+            bondCounterparts(g, "before strike"); bm.strikeCoupons();
+            double totalCoupon = baselineAll + .5, sourceCoupon = baselineSource + .2;
+            close("the new issue contributes exactly its own coupon", bm.getCouponsStruck() - baselineAll, .5);
+            close("the new source face contributes exactly its own entitlement", bm.toState().recordDueCells.get(h.key()) - baselineSource, .2);
+            close("preserved baseline and new private obligations are fully recorded", bm.toState().couponDues[0], baselineHouseholds + .2);
+            close("preserved baseline and new bank obligations are fully recorded", bm.getCouponsDueToBank(), baselineBank + .15);
+            bondCounterparts(g, "struck opening");
             close("an uncharged record-date promise is zero clearing cash", bm.couponClearingCash(), 0);
             double cashBeforeCharge = poolTotal(g), treasuryBefore = g.getCash();
             payRecordedCoupons(bm);
             close("the uncharged promise cannot pay custody or disappear", g.getCash(), treasuryBefore);
-            close("the uncharged promise remains fully recorded", bm.couponUnpaidEntitlement(), .5);
+            close("the uncharged promise remains fully recorded", bm.couponUnpaidEntitlement(), totalCoupon);
             // A quarter of the source record-date holder dies; the other three quarters retain their entitlement.
-            h.setBondFace(1, 30 / h.households()); bm.transferToCustody(1, 10);
+            java.util.Map<Integer, Double> sourceBundle = new java.util.LinkedHashMap<>(h.bondFace);
+            for (CorporateBond b : bm.getBonds()) {
+                double face = sourceBundle.getOrDefault(b.id(), 0.0) * h.households();
+                CorporateBond opening = b.copy();
+                double privateFace = b.households(), custodyFace = b.custody();
+                h.setBondFace(b.id(), sourceBundle.getOrDefault(b.id(), 0.0) * .75);
+                bm.transferToCustody(b.id(), face * .25);
+                close("the complete source bundle transfers its quarter " + b.id(), b.custody() - custodyFace, face * .25);
+                close("only the source quarter leaves private ownership " + b.id(), privateFace - b.households(), face * .25);
+                close("the original issuer face is preserved " + b.id(), b.face(), opening.face());
+                close("the unrelated bank retains its position " + b.id(), b.bank, opening.bank);
+                close("the unrelated world retains its position " + b.id(), b.world, opening.world);
+                close("the ordinary city fund retains its position " + b.id(), b.city, opening.city);
+                check("every unrelated company retains its position " + b.id(), b.companies.equals(opening.companies));
+            }
             bm.transferRecordedCouponToCustody(h.key(), .25);
             close("partial custody transfer preserves the complete holder sum", bond.held(), bond.face());
-            close("only the deceased source fraction receives the recorded coupon", g.getEstateCustody().pendingCoupons(), .05);
+            close("the new inherited issue contributes exactly ten face", g.getEstateCustody().bondFace(id), 10);
+            close("only the deceased complete source fraction receives its recorded coupon", g.getEstateCustody().pendingCoupons(), sourceCoupon * .25);
+            close("the new inherited issue contributes exactly its own recorded coupon", g.getEstateCustody().pendingCoupons() - baselineSource * .25, .05);
+            close("the live source retains its full record-date fraction", bm.toState().dueCells.get(h.key()), sourceCoupon * .75);
+            close("other private record-date holders are preserved", bm.toState().couponDues[0], baselineHouseholds + .2 - sourceCoupon * .25);
+            bondCounterparts(g, "after complete quarter transfer");
             if (phase >= 1) {
                 chargeFixtureCoupons(g);
                 close("the real issuer debit moves to cash clearing", poolTotal(g), cashBeforeCharge);
-                close("charged clearing includes the still-unpaid bank", bm.couponClearingCash(), .5);
+                close("charged clearing includes the still-unpaid bank", bm.couponClearingCash(), totalCoupon);
                 // Remove an actual issuer debit deliberately: the unchanged cash audit pool definition MUST expose it.
                 double issuer = g.getEconomyManager().getSectorCash(Sectors.RETAIL);
                 g.getEconomyManager().setSectorCash(Sectors.RETAIL, issuer + .5);
                 check("a missing issuer debit is caught by the actual pool identity", Math.abs(poolTotal(g) - cashBeforeCharge) > MoneyAudit.CENT);
                 g.getEconomyManager().setSectorCash(Sectors.RETAIL, issuer);
             }
-            if (phase >= 2) { bookFixtureBankCoupon(g); close("bank-booked clearing excludes the paid bank", bm.couponClearingCash(), .35); }
+            if (phase >= 2) { bookFixtureBankCoupon(g); close("bank-booked clearing excludes the paid bank", bm.couponClearingCash(), totalCoupon - baselineBank - .15); }
             if (phase >= 3) { payRecordedCoupons(bm); close("post-payment cash clearing is empty", bm.couponClearingCash(), 0); }
+            bondCounterparts(g, "before phase save " + phase);
             String pending = custodyJson.toJson(bm.toState());
             quietly(() -> g.saveGame(10, "HT1 nonempty coupon phase")); g.awaitSaves();
             for (boolean rebuild : new boolean[] {true, false}) {
@@ -632,6 +725,7 @@ public final class CapitalGainsCheck {
                 BondMarket restored = loaded.getBondMarket();
                 check("all record-date maps/flags/cash survive phase " + phase + "/" + rebuild,
                         pending.equals(custodyJson.toJson(restored.toState())));
+                bondCounterparts(loaded, "after phase load " + phase + "/" + rebuild);
                 double heldBefore = poolTotal(loaded), bankBefore = loaded.getBank().getCash();
                 double expectedBankCredit = restored.getCouponsDueToBank();
                 if (phase == 0) chargeFixtureCoupons(loaded);
@@ -640,9 +734,13 @@ public final class CapitalGainsCheck {
                         loaded.getBank().getCash() - bankBefore, expectedBankCredit);
                 close("native charges/bookings conserve pooled cash", poolTotal(loaded), heldBefore);
                 double receiverBefore = loaded.getCash(), households = loaded.getHouseholdBalance().totalSavings();
+                Household liveSource = loaded.getHouseholdBalance().cells().stream().filter(c -> c.key().equals(h.key())).findFirst().orElseThrow();
+                double sourceSavings = liveSource.savings * liveSource.households();
                 double abroad = restored.getCouponsAbroad(); payRecordedCoupons(restored);
-                close("actual partial inherited coupon reaches treasury once", loaded.getCash() - receiverBefore, phase == 3 ? 0 : .05);
-                close("the live source keeps its original record-date fraction", loaded.getHouseholdBalance().totalSavings() - households, phase == 3 ? 0 : .15);
+                close("actual partial inherited coupon reaches treasury once", loaded.getCash() - receiverBefore, phase == 3 ? 0 : sourceCoupon * .25);
+                close("the live source keeps its original record-date fraction", liveSource.savings * liveSource.households() - sourceSavings, phase == 3 ? 0 : sourceCoupon * .75);
+                close("every preserved private holder receives its recorded entitlement", loaded.getHouseholdBalance().totalSavings() - households,
+                        phase == 3 ? 0 : baselineHouseholds + .2 - sourceCoupon * .25);
                 close("final clearing is discharged", restored.couponClearingCash(), 0);
                 close("the actual debit, bank credit and remaining payments conserve cash", poolTotal(loaded)
                         + loaded.getHouseholdBalance().totalSavings() - households + restored.getCouponsAbroad() - abroad, heldBefore);

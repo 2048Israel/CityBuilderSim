@@ -4,7 +4,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 617 files, 671,651 lines, 29,365 methods, 6,501 constants. `GameVersion.VERSION` is "0.9.180", `SAVE_FORMAT` 59.
+**The tree:** 617 files, 671,749 lines, 29,367 methods, 6,501 constants. `GameVersion.VERSION` is "0.9.180", `SAVE_FORMAT` 59.
 
 ## model (274 files)
 
@@ -406,7 +406,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CalendarCheck.java](CalendarCheck.md) | 313 | 7 | The date on the status bar, and the log of what the city has finished. | 0 |
 | [CallCheck.java](CallCheck.md) | 852 | 31 | Callable bonds, the call and "worth calling" (CD4, spec-city-debt.md sections 2.6 and 6.4; D22, D23, D24): a bond of ten years or more may be sold ... | 1 |
 | [CapitalFlowCheck.java](CapitalFlowCheck.md) | 780 | 9 | Hot money: does it come for the right reason, and does it leave for one? | 0 |
-| [CapitalGainsCheck.java](CapitalGainsCheck.md) | 720 | 27 | Household average-cost stocks and investment taxes, through the real fills, census and city (HT1). | 2 |
+| [CapitalGainsCheck.java](CapitalGainsCheck.md) | 818 | 29 | Household average-cost stocks and investment taxes, through the real fills, census and city (HT1). | 2 |
 | [CarCheck.java](CarCheck.md) | 1,336 | 11 | The cars: who buys one, what it costs them, and what it does to the road. | 2 |
 | [CarryTradeCheck.java](CarryTradeCheck.md) | 382 | 5 | The carry trade: the other side of hot money, and the bank's first borrower. | 0 |
 | [CausesOfDeathCheck.java](CausesOfDeathCheck.md) | 1,023 | 30 | Proves the causes of death of 1900 (R0b, slice 1): the model on its own, before the month hands its rates to the cohorts. | 1 |

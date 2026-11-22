@@ -1,11 +1,11 @@
-# CapitalGainsCheck.java - 720 lines · 27 methods · 2 constants · harnesses
+# CapitalGainsCheck.java - 818 lines · 29 methods · 2 constants · harnesses
 
 `ham/citybuildersim/CapitalGainsCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Household average-cost stocks and investment taxes, through the real fills, census and city (HT1).
 > WHY: the fund already tracked average cost, but a household sale previously lost its acquisition cost.
 
-**Uses:** [Game](Game.md) (24), [FamilyStructure](FamilyStructure.md) (18), [Household](Household.md) (17), [Sectors](Sectors.md) (17), [PayTier](PayTier.md) (15), [Exchange](Exchange.md) (15), [HouseholdFlowCheck](HouseholdFlowCheck.md) (14), [ExchangeCheck](ExchangeCheck.md) (13), [HouseholdBalance](HouseholdBalance.md) (12), [Equity](Equity.md) (12), [BondMarket](BondMarket.md) (11), [MoneyAudit](MoneyAudit.md) (10), [OrderBook](OrderBook.md) (10), [GameFiles](GameFiles.md) (10), [CorporateBond](CorporateBond.md) (8), [Debt](Debt.md) (6), [TaxPolicy](TaxPolicy.md) (5), [FundLedgerCheck](FundLedgerCheck.md) (4), [LongPlaytest](LongPlaytest.md) (4), [YearBook](YearBook.md) (4), [GameVersion](GameVersion.md) (3), [WageBand](WageBand.md) (2), [LongTermBond](LongTermBond.md) (2), [EstateCustody](EstateCustody.md) (2), [Bank](Bank.md) (1), [DebtManager](DebtManager.md) (1), [AdultStage](AdultStage.md) (1), [Auction](Auction.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [MediumTermBond](MediumTermBond.md) (1)... and 2 more
+**Uses:** [Game](Game.md) (25), [Household](Household.md) (19), [FamilyStructure](FamilyStructure.md) (18), [PayTier](PayTier.md) (15), [Exchange](Exchange.md) (15), [HouseholdFlowCheck](HouseholdFlowCheck.md) (14), [Sectors](Sectors.md) (14), [ExchangeCheck](ExchangeCheck.md) (13), [HouseholdBalance](HouseholdBalance.md) (12), [Equity](Equity.md) (12), [CorporateBond](CorporateBond.md) (12), [BondMarket](BondMarket.md) (12), [MoneyAudit](MoneyAudit.md) (10), [OrderBook](OrderBook.md) (10), [GameFiles](GameFiles.md) (10), [Debt](Debt.md) (6), [TaxPolicy](TaxPolicy.md) (5), [FundLedgerCheck](FundLedgerCheck.md) (4), [LongPlaytest](LongPlaytest.md) (4), [YearBook](YearBook.md) (4), [GameVersion](GameVersion.md) (3), [WageBand](WageBand.md) (2), [LongTermBond](LongTermBond.md) (2), [EstateCustody](EstateCustody.md) (2), [Bank](Bank.md) (1), [DebtManager](DebtManager.md) (1), [AdultStage](AdultStage.md) (1), [Auction](Auction.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [MediumTermBond](MediumTermBond.md) (1)... and 2 more
 
 **Used by (2):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -44,7 +44,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 710 | **type** `public final class CapitalGainsCheck` | Household average-cost stocks and investment taxes, through the real fills, census and city (HT1). |
+| 11 | 808 | **type** `public final class CapitalGainsCheck` | Household average-cost stocks and investment taxes, through the real fills, census and city (HT1). |
 | 17 | 4 | `static void check(String label, boolean ok)` |  |
 | 22 | 4 | `static void close(String label, double got, double want)` |  |
 | 27 | 5 | `static void quietly(Runnable action)` |  |
@@ -67,11 +67,13 @@
 | 440 | 79 | `static Game custodyEstate(GameFiles files, boolean lossCase)` |  |
 | 520 | 4 | `static void invokeHouseholdSettle(Game g) throws Exception` |  |
 | 524 | 1 | `static double poolTotal(Game g)` |  |
-| 526 | 53 | `static void custodyContinuation(Game g, String label) throws Exception` |  |
-| 580 | 3 | `static void payRecordedCoupons(BondMarket market) throws Exception` |  |
-| 583 | 5 | `static void chargeFixtureCoupons(Game g)` |  |
-| 588 | 5 | `static void bookFixtureBankCoupon(Game g)` |  |
-| 594 | 62 | `static void custodyCouponPhases() throws Exception` | Nonempty phase snapshots: no end-holder reconstruction, no charge/payment replay. |
-| 657 | 47 | `static void custodySaves() throws Exception` |  |
-| 705 | 15 | `public static void main(String[] args) throws Exception` |  |
+| 526 | 63 | `static void custodyContinuation(Game g, String label) throws Exception` |  |
+| 590 | 3 | `static void payRecordedCoupons(BondMarket market) throws Exception` |  |
+| 594 | 10 | `static double[] bondCashEdges(BondMarket b)` | The bond edges declared by MoneyAudit, including both legs of household/world trades. |
+| 604 | 15 | `static void chargeFixtureCoupons(Game g)` |  |
+| 619 | 6 | `static void bookFixtureBankCoupon(Game g)` |  |
+| 625 | 20 | `static void bondCounterparts(Game g, String label)` |  |
+| 646 | 108 | `static void custodyCouponPhases() throws Exception` | Nonempty phase snapshots: no end-holder reconstruction, no charge/payment replay. |
+| 755 | 47 | `static void custodySaves() throws Exception` |  |
+| 803 | 15 | `public static void main(String[] args) throws Exception` |  |
 
