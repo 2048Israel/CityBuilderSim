@@ -406,8 +406,8 @@ A2 remains the informational failure. No criterion or threshold changed.
 | AUTO2 | 2,470,539.5 | 4,772,827.5 | 179.6 / 226.2 |
 | ZERO_SLACK | 1,277,612.5 | 3,061,157.5 | 144.4 / 172.2 |
 | ZERO_HOT | 7,582.5 | 9,164.5 | 18.4 / 18.9 |
-| SHOCK | 40,936 | 103,159.5 | 44.4 / 46.9 |
-| HIGH | 31,615.5 | 32,997.5 | 35.6 / 37.5 |
+| SHOCK | 40,935.5 | 103,159.5 | 44.4 / 46.9 |
+| HIGH | 31,616.5 | 32,997.5 | 35.6 / 37.5 |
 
 This is label `HC1-final-189-20261122`, the frozen pushed model
 `d325c74c863f3e823a65aae7fe180bca7d240b02`, on gatebox Java 21.0.13, eight
