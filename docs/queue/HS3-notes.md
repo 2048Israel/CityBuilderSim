@@ -144,4 +144,9 @@ that record exits 3 (`target/HS3-pick-judge-integrated.txt`), and the integrated
 The final pick still names the same 21 harnesses and says
 `review not needed - no money, saves or threading in the diff`.
 
-The provisional ship file retains GG1's marker for the orchestrator's go.
+The orchestrator gave the go on 2026-11-22 at 09:07 Atlantic
+(`20261122-090755-056-orchestrator-3b5a`): no review owed, the two read-only
+getters checked, and the per-household measure with each stage's own counts
+and wealth accepted. No ensemble or dry run is owed. Main remained at
+`abc8fd4f5` at the final fetch. GG1's provisional marker is removed last in
+its own commit for the ready handoff.
