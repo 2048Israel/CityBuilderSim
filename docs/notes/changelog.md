@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.186 — R6e, GM crop history — 2026-11-22, ready, see docs/queue/R6e-notes.md
+GM crops enter farm history in 1996. Before E21 is known, output is the unchanged
+modern 500/69 divided by 1.22: an approximate crop-mix estimate with source limits
+and CC BY 4.0 credit disclosed. PE20/E10/E21 add fixed-anchor differences; livestock,
+land, jobs and inputs stay unchanged. Patentability uses the native estimate.
+Captured fees now follow each farm's actual credited output, so an idle farm
+cannot pay for another farm's coproducts; this also mends main's combine/milking fees.
+SAVE_FORMAT and its floor rise to 60: format-59 pre-E21 choices load wrong crop
+figures immediately, so older saves are refused without conversion. Other rows
+retain their figures and explicit conditions below; E24 waits for PW3, E27 for E18.
+
 ### 0.9.185 — RR1, the map's roads and rails — 2026-11-22, ready, see docs/queue/RR1-notes.md
 Jerus's city drawn as he saw it (slot 10's copy, months 1,204 to 1,208). A works siding drawn square from the first draw after
 a month keeps its arcs (`CityMap.planSidingsRoutable()`, RailDrawCheck 31). A highway S-bend's straights stop where the next

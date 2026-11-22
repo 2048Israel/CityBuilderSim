@@ -1,8 +1,8 @@
-# gate of Merge batch/RR1: the map's roads and rails (Jerus, 2026-11-20: "rail still has dead ends and random 90 degree turns ... dont worry about sea/lake"): the corners TrackCurves skips, ends that lead nowhere, a jagged S-bend, stubs where a highway cuts streets; drawing only (not beside FS6, PX2); takes TN1's two follow-ups on the same fjord city: HWW1 (no highway world line at m1204: trace the exit and the world truck calls, mend the cause with a fixture) and STY1 (Bergen's 15-plot station holds 9.0 against an 80-wagon train's 41.4: a valid longer station where ground allows), 0.9.185
+# gate of Merge batch/R6e: research: the 1996-2024 engineering rows with something behind them, each held at the old figure until the row is known (R2e's undone pattern): E21 GM crops at the Grain Farm and the Mixed Farm; E22 the pressure exchanger at the Desalination Plant, after reverse osmosis (1977) as E33; E23 GPS autosteer at the farms; E24 the large-rotor turbine at the Wind Farm (after PW3); E26 driverless haul trucks at the open pits; E27 endless strip production at the mini-mill, only if its step against the thin-slab caster is found; E30 calcined-clay cement; E32 the battery-electric long-haul truck at the Truck Depot. On R6-G's recommended calls (★1, ★6) unless Jerus says otherwise, 0.9.186
 # date: 2026-11-22
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 231 harnesses run in 693s: 215 passed, 16 failed
+# suite: 236 harnesses run in 960s: 218 passed, 18 failed
 MortgageCheck | exit 1
 MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not FAIL
 MortgageCheck | ...and a month that earned 0.00 against 0.00 of principal pays nothing, where the old rule paid 0.00 FAIL
@@ -56,29 +56,28 @@ ReloadCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | ...and every building drawn, one for one                                       FAIL
 MapCheck | 1 FAILED
+KeptCheck | exit 3
+KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 45 of 401; 11 of 25 months made none) FAIL
+KeptCheck | fixture: the Rankings tab with the city's drawer open: every cell the household grid opens before the month it opens after, the families held (2 closed; the month alone would have closed 2) FAIL
+KeptCheck | 3 FAILED
 DistressBleedCheck | exit 2
 DistressBleedCheck | fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in FAIL
 DistressBleedCheck | ...and the rule is not dead: the centres go when the operating streak reaches the dial FAIL
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.2, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.153980 != 378.187926
 Forms1900Check | 2 FAILED
 PublicLicenceCheck | exit 1
-PublicLicenceCheck | FAIL fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive: demand 13053.100 with 13053.100 without 2533.368 gain -645.221353 (1 mills)
-PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge: pending 0.0 paid 0.0 expected -161.3053381405228
-PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12883.3 with 12883.3 without 2139.672062154245 gain -12.14647318415844
-PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -26.933215529045174 pending 0.0 then gain -12.14647318415844 pending 0.0
+PublicLicenceCheck | FAIL fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive: demand 13053.100 with 13053.100 without 2523.178 gain -645.206081 (1 mills)
+PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge: pending 0.0 paid 0.0 expected -161.30152037225773
+PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12882.1 with 12882.1 without 2139.0296982550963 gain -12.147956635350319
+PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -26.93446406507404 pending 0.0 then gain -12.147956635350319 pending 0.0
 PublicLicenceCheck | 64 passed, 4 FAILED
 YoungBankCheck | exit 2
 YoungBankCheck | FAIL no spell under Bank.CAPITAL_RATIO begins with the write-off of a sector of one plant
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 2 FAILED
-KeptCheck | exit 4
-KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
-KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 45 of 401; 11 of 25 months made none) FAIL
-KeptCheck | fixture: the Rankings tab with the city's drawer open: every cell the household grid opens before the month it opens after, the families held (2 closed; the month alone would have closed 2) FAIL
-KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 4 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED

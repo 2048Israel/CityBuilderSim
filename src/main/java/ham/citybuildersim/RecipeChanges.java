@@ -519,7 +519,7 @@ public final class RecipeChanges {
                     || !c.knownAt(game.getMonth(), game.getResearch())
                     || !LicenceFees.payable(c.since(), game.getMonth(), game.getResearch()) || !charged.add(c.since())) continue;
             double benefit = gain(t, c, absent, missing -> compose(t, process, missing, process.getId()),
-                    r -> standing ? standingValue(r, prices, values, rate) : Recipes.value(r, prices) * rate,
+                    r -> standing ? standingValue(t, owner, r, prices, values, rate) : Recipes.value(r, prices) * rate,
                     change -> extraValue(t, change, extra, actualFeed) * rate);
             bill += LicenceFees.onGain(c.since(), game.getMonth(), game.getResearch(), benefit);
         }
@@ -527,10 +527,10 @@ public final class RecipeChanges {
     }
 
     /** R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. */
-    private static double standingValue(Recipe r, Recipes.Prices p,
+    private static double standingValue(BuildingsTemplate t, Sector owner, Recipe r, Recipes.Prices p,
                                        ham.citybuildersim.sectors.SpreadPlanner.Values values, double rate) {
         double value = 0;
-        for (var e : r.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * rate);
+        for (var e : r.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * LicenceFees.creditedOutputRate(t, owner, e.getKey(), rate));
         for (var e : r.uses().entrySet()) value -= values.out(e.getKey(), e.getValue() * rate);
         for (JobType type : JobType.values()) value -= r.getJobs(type) * p.wages()[type.ordinal()];
         return value - (r.getElectricity() - r.getGen()) * p.pricePerWatt()

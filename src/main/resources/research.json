@@ -1,12 +1,12 @@
 {
  "_readme": [
   "The research catalogue (R2): every discovery the city's schools can make, which field researches it, what it unlocks, history's date, what it needs first and what the work costs.",
-  "Read by ResearchCatalog. The file is packaged with the game, so a change here needs a rebuild. 96 entries: the original 89, the first study's 40 (research-design.md 4), the 1900 study's 48 (research-1900.md 8.1-8.4) and L5 (research-1900.md 8.6), plus E19/E20 (research-1900 Q13, R2e-notes), the near future's FE1, FE2 and FE4 (research-near-future.md 3, R6b) and the speculative tier's FE8 and FE10 (research-speculative.md 3, R6d).",
+  "Read by ResearchCatalog. The file is packaged with the game, so a change here needs a rebuild. 97 entries: the original 89, the first study's 40 (research-design.md 4), the 1900 study's 48 (research-1900.md 8.1-8.4) and L5 (research-1900.md 8.6), plus E19/E20 (research-1900 Q13, R2e-notes), E21 (research-1996-2024 3.3, R6e-notes), the near future's FE1, FE2 and FE4 (research-near-future.md 3, R6b) and the speculative tier's FE8 and FE10 (research-speculative.md 3, R6d).",
   "",
   "CODE IS PERMANENT. buildings.json's \"since\" names a discovery by its code (\"E1\", \"PE14\") and saves will key by it. Never renumber or reuse a code; a new discovery takes the next free number in its field.",
   "Reordering entries is safe. The order here is the order the studies print them in.",
   "",
-  "code      the study's code: E, M, B, L (the 1951-1995 catalogue) and PE, PM, PB, PL (before 1950, \"P\" for pre); L5 is the 1966 pension contribution.",
+  "code      the study's code: E, M, B, L (the 1951-1995 catalogue; E21 extends engineering to 1996) and PE, PM, PB, PL (before 1950, \"P\" for pre); L5 is the 1966 pension contribution.",
   "name      the study's Discovery column.",
   "field     ENGINEERING, MEDICINE, BUSINESS or LAW: the school that researches it (the Institute of technology, the Medical school, the Business school, the Law school).",
   "kind      one or two of \"building\", \"equipment\", \"recipe\", \"drug\": what it unlocks.",
@@ -610,6 +610,12 @@
    ],
    "work": 1124
   },
+  { "code": "E21", "name": "GM crops", "field": "ENGINEERING", "kind": ["recipe"], "size": "recipe",
+    "year": 1996, "month": 6, "monthKnown": false, "world": "1996, USA (June is a model placeholder; USDA gives no month)",
+    "touches": "Grain Farm, Mixed Farm: CROPS only",
+    "effect": "The 2014 synthesis abstract reports yield +22% versus conventional crops (body +21%); R6e uses the rounded 22% as an all-CROPS model estimate across heterogeneous crops, traits and countries, not a universal measured trait effect. Old crop output is modern/1.22; no livestock, pesticide, seed or other input change.",
+    "sources": ["G-I1: Klumper and Qaim (2014), doi:10.1371/journal.pone.0111629, https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0111629; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/; mapping changed by the game, see tools/world/ATTRIBUTION.txt", "G-I2: USDA ERS, commercial introduction in 1996, https://www.ers.usda.gov/data-products/adoption-of-genetically-engineered-crops-in-the-united-states/recent-trends-in-ge-adoption; date fact"],
+    "needs": [], "requires": "", "fee": true, "feeNote": "patentability estimate under the unchanged native licence rate/term; no measured seed royalty or extra seed invoice", "work": 2151, "study": "research-1996-2024 3.3; R6e-notes" },
   { "code": "FE1", "name": "Driverless truck", "field": "ENGINEERING", "kind": ["equipment"], "size": "equipment",
     "year": 2025, "month": 5, "monthKnown": true, "world": "May 2025, Dallas to Houston",
     "touches": "Truck Depot",
