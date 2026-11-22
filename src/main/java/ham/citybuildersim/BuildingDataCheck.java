@@ -66,6 +66,12 @@ public class BuildingDataCheck {
 
         System.out.println("\n--- coverage ---");
         assertTrue("same number of buildings (" + data.size() + ")", data.size() == code.size());
+        BuildingsTemplate grid = byId(data, Substations.ID);
+        assertTrue("PW5 appends Substation, a city utility carrying the study's peak MW, without generation",
+                grid != null && "Substation".equals(grid.getName()) && grid.getCategory() == BuildingType.ELECTRICITY
+                        && !grid.isOwnedBySector() && grid.getCapacity() == Substations.SUBSTATION_MW * 1000
+                        && grid.getProduction1() == 0 && grid.getTotalJobs() == 140
+                        && near(todays(grid.getCashCost()) + todays(BuildingManager.MATERIALS_WORLD_PRICE) * grid.getConstructionMaterials(), 440004));
 
         /* ---------- every field of every building ---------- */
         System.out.println("\n--- field by field, against the built-in definitions ---");
