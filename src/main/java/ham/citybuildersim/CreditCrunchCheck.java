@@ -60,8 +60,9 @@ import java.util.Locale;
  *   2. the fixture: a played city whose bank's leverage requirement is the
  *      larger and its ratio held in its band before every month of the crunch
  *      (so the rule the month strikes is the band's), its landlords asking for homes the
- *      bank has no capital to lend on, its households doubled up to within a
- *      few of the valve's ceiling;
+ *      bank has no capital to lend on, ground for GROUND_BLOCKS of their blocks
+ *      stood before every month (FS9: HT1's path left them none for 25 months),
+ *      its households doubled up to within a few of the valve's ceiling;
  *   3. through the crunch the owners put in what the till lacked, homes are
  *      built, and no month leaves more than one household with no home
  *      (FamilyModel.getStillUnplaced(), LongPlaytest's watch, unmoved), and no
@@ -70,8 +71,8 @@ import java.util.Locale;
  *      played crunch asks for one block at a time once the door prices it,
  *      the bank held in its band and the rule struck on it by hand just
  *      before, the yard emptied and the planner's land refreshed after the
- *      plots bought, so the door's price is the planner's and the imported
- *      materials' premium over it, not the played yard's:
+ *      plots bought, so the door buys the materials at the market's quote and
+ *      the planner at the yard's world price, and the two part (either way: FS9):
  *      the lender reads it, and the owners are offered what the till lacks,
  *      at the door's own price (FB15, HN1-A; red on main's classes); where
  *      their issue falls short, the door trims for the bank's capital what
@@ -274,6 +275,26 @@ public final class CreditCrunchCheck {
         bank.setForeignDeposits(exposure * (1 - ratio) - owedAtHome);
     }
 
+    /** ★ The ground stood before each crunch month, in blocks of Low-Rise Apartments: section 4's order, so the landlords never wait on land. */
+    static final long GROUND_BLOCKS = CreditCrunchCheck.ORDER;
+    /** The crunch months that began with ground for GROUND_BLOCKS blocks, and the plots bought for it. */
+    static int groundMonths, groundPlots;
+
+    /**
+     * The city buys the cheapest plots (Game.buyLandBlock(), the player's own purchase, MAX_PLOTS at most a month)
+     * until the landlords' zone holds GROUND_BLOCKS blocks. WHY (FS9): on HT1's path seed 13's landlords asked for
+     * nothing in m197-221, the planner refusing for no land (5,570 square metres needed, 1,600-1,800 free), and the
+     * households with no home rose to 9.1: section 3's law read whether the played town happened to have ground.
+     */
+    static void standGround(Game g) {
+        BuildingsTemplate block = LongPlaytest.template(g, "Low-Rise Apartments");
+        if (block == null) return;
+        int plots = 0;
+        while (!ground(g, block, GROUND_BLOCKS) && plots < MAX_PLOTS && g.buyLandBlock()) plots++;
+        groundPlots += plots;
+        if (ground(g, block, GROUND_BLOCKS)) groundMonths++;
+    }
+
     /** The households the placement could still take against the homes standing. */
     static double room(Game g) {
         FamilyModel.Room r = g.getFamilies().roomLeft(g.getBuildingManager().homesBySize());
@@ -334,6 +355,7 @@ public final class CreditCrunchCheck {
             }, () -> {
                 if (g.getMonth() == FROM) cutToTheValve(g);
                 if (g.getMonth() >= FROM) {
+                    standGround(g);
                     holdInBand(g.getBank());
                     heldRatio = g.getBank().leverageRatio();
                 }
@@ -373,6 +395,10 @@ public final class CreditCrunchCheck {
                 inBand == months.size());
         check("fixture: the landlords asked for homes the bank had no capital to lend on",
                 shortMonths > 0 && asking > 0);
+        out.printf("   %d of %d crunch months began with ground for %d blocks; %d plots bought for it%n",
+                groundMonths, TO - FROM, GROUND_BLOCKS, groundPlots);
+        check("fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments",
+                groundMonths == TO - FROM);
         check("fixture: the homes cut left the placement room for MARGIN households and less than one house more",
                 cutHomes > 0 && roomAfterCut >= MARGIN && roomAfterCut < MARGIN + 1 && roomAfterCut < roomAtStart);
 
@@ -481,7 +507,9 @@ public final class CreditCrunchCheck {
                 + " growth finite and above nothing, not keeping borrowers going", bandsRule);
         check("fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage",
                 groundForAll && quote && askedThisMonth == ORDER && shortThisMonth);
-        check("fixture: the door's price of the order is over the planner's (the yard short of its materials)", whole > plan * (1 + 1e-6));
+        out.printf(Locale.ROOT, "   the door %s the planner by %.1f%%%n", whole > plan ? "over" : "under", 100 * Math.abs(whole - plan) / plan);
+        check("fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)",
+                Math.abs(whole - plan) > 1e-6 * plan);
         // FB15 (HN1-A, REV-FB15-2): what consider() itself did, so the line fails if the order is priced at the plan again.
         check("the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)",
                 Math.abs(lenderCost - whole) <= 1e-9 * whole && offered >= asked - 1e-6 && asked > whole - held - 1e-6);
