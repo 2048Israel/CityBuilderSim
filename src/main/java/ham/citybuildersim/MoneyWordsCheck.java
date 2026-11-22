@@ -356,7 +356,13 @@ public class MoneyWordsCheck {
         elite.households = 20; elite.savings = 50; elite.debt = 200;
         double[] mix = families.toSaveArray();
         mix[FamilyStructure.ELDER_ALONE.ordinal() * PayTier.values().length] = 32;
+        FamilyStructure widestShape = java.util.Arrays.stream(FamilyStructure.values()).filter(s -> !s.isRetired())
+                .max(java.util.Comparator.comparingInt(s -> s.getLabel().length())).orElseThrow();
+        PayTier widestTier = java.util.Arrays.stream(PayTier.values())
+                .max(java.util.Comparator.comparingInt(t -> t.getLabel().length())).orElseThrow();
+        mix[widestShape.ordinal() * PayTier.values().length + widestTier.ordinal()] = 1;
         families.restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), mix);
+        bal.cell(widestShape, widestTier).households = families.get(widestShape, widestTier, AdultStage.ESTABLISHED);
         bal.setOwnerLine(true);
         bal.restoreOwnerLine(Map.of(Equity.COMPANIES[0], 0));
         bal.owners().households = 1;
@@ -419,6 +425,18 @@ public class MoneyWordsCheck {
         }
         check("both former tiers are named on the page", words.contains(college.label()) && words.contains(elite.label()));
         check("the owner family has its own line", words.contains(bal.owners().label()) && bench.householdCells().contains("OUT:" + bal.owners().key()));
+        bench.householdCell(widestTier.ordinal() + ":" + widestShape.name());
+        bench.householdColumnWidth(1000);
+        bench.drawKept(page);
+        bench.passes();
+        bench.settle();
+        String widestCaption = widestShape.getLabel() + "  ·  " + widestTier.getLabel()
+                + "  ·  " + AdultStage.ESTABLISHED.getLabel() + ", " + AdultStage.ESTABLISHED.getAges();
+        boolean captionShown = false;
+        for (Node n : bench.nodesOnPage()) if (n instanceof Labeled l && widestCaption.equals(l.getText()))
+            captionShown = l.lookup(".text") instanceof Text rendered && widestCaption.equals(rendered.getText());
+        check("the longest shape, tier and stage caption is shown in full with the books stacked", captionShown);
+        bench.householdColumnWidth(0);
         for (Household own : List.of(college, elite, bal.owners())) {
             bench.householdCell("OUT:" + own.key());
             bench.drawKept(page);
