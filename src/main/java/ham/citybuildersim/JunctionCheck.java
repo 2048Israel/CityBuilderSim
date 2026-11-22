@@ -264,6 +264,7 @@ public class JunctionCheck {
         wideRoad();
         bridgeDeck();
         loopsJoined();
+        sBend();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -2362,6 +2363,66 @@ public class JunctionCheck {
         check("23b. " + name + ": each of them has a pixel beside the east-west carriageway and one beside the north-south one (" + loose + " that has not)", n > 0 && loose == 0);
         check("23c. " + name + ": the loops keep inside the reserve's box and off the highways' plots, and change no pixel outside the box (" + changedOutside + " changed)",
                 outside == 0 && onHighway == 0 && changedOutside == 0);
+    }
+
+    /* ================= 24. (RR1) an S of two 45-degree joints a short step apart is one carriageway ================= */
+
+    /** Section 24's S: the highway north up column SX_24 to row SY_24, two steps north-west, and north again up column SX_24 - 2 - his coastal highway's (arm 6, Jerus's shot 3). */
+    static final int SX_24 = 16, SY_24 = 17, STEPS_24 = 2;
+
+    /**
+     * Jerus, 2026-11-20 (his shot 3): the coastal highway's "jagged S-bend". Where the highway runs north, steps two plots north-west and
+     * runs north again, the two joints' arcs meet on the step between them: the one's tangent point is the other's. Each bend drew its
+     * legs' straights HIGHWAY_LEG plots on past its tangent points over every plot a bend replaces - the other bend's too - so the first
+     * bend's diagonal straight ran on past the second joint, off its arc, and the second's back past the first: a square notch outside each
+     * joint, its centre line doubled. The fixture lays his S as CityRuns lays a 45-degree stretch (stretchInto(): a step and the corner
+     * beside it, marked M_DIAG of the heading's code) with the bends the map gives it; the picture must be section 18's one carriageway.
+     */
+    static void sBend() {
+        System.out.println("--- 24. (RR1) an S of two 45-degree joints two steps apart is one carriageway: no notch outside either joint, no ground inside, the centre line single ---");
+        int px = 8, w = T * px, cx = SX_24, cy = SY_24, tx = cx - STEPS_24, ty = cy - STEPS_24;
+        int[] cs = TileRaster.crossSection(BuildingVisual.HIGHWAY, px);
+        double halfCase = cs[0] / 2.0, halfSurface = (cs[0] - 2 * cs[1]) / 2.0;
+        TilePainter.Input in = owned();
+        for (int y = cy; y < T; y++) in.fixed[y * T + cx] = BuildingVisual.HIGHWAY;
+        int diag = CityRuns.M_DIAG | (CityRuns.diagCode(5) << CityRuns.M_DIAG_SHIFT);
+        for (int k = 1; k <= STEPS_24; k++) {
+            int step = (cy - k) * T + cx - k, corner = (cy - k + 1) * T + cx - k;
+            in.fixed[step] = BuildingVisual.HIGHWAY;
+            in.marks[step] = (byte) diag;
+            in.fixed[corner] = BuildingVisual.HIGHWAY;
+            in.marks[corner] = (byte) (diag | CityRuns.M_CORNER);
+        }
+        for (int y = 0; y < ty; y++) in.fixed[y * T + tx] = BuildingVisual.HIGHWAY;
+        double[] xs = { cx + 0.5, cx + 0.5, tx + 0.5, tx + 0.5 }, ys = { T - 0.5, cy + 0.5, ty + 0.5, 0.5 };
+        for (TrackCurves.Bend b : TrackCurves.bends(xs, ys, TrackCurves.HIGHWAY_RADIUS, TrackCurves.HIGHWAY))
+            in.addBend(b.net(), b.x(), b.y(), b.ux(), b.uy(), b.vx(), b.vy(), b.r(), b.t(), false);
+        in.markCurved();
+        boolean shared = in.bends == 2 && Math.hypot(in.bendAt(0).endX() - in.bendAt(1).startX(), in.bendAt(0).endY() - in.bendAt(1).startY()) < 1e-6;
+        check("24-fixture. his S: two highway bends, the first's arc ending where the second's begins (the step between them no longer than their tangent lengths)", shared);
+        int[] img = raster(in, paint(in), px);
+        JPath path = new JPath(xs, ys, px);
+        double[] at = new double[1];
+        double lo = (ty - 3) * px, hi = (cy + 4) * px;
+        int ground = 0, stub = 0, groundX = -1, groundY = -1, stubX = -1, stubY = -1;
+        for (int Y = (int) lo; Y < hi; Y++)
+            for (int X = (tx - 4) * px; X < (cx + 5) * px; X++) {
+                double d = path.dist(X + 0.5, Y + 0.5, at);
+                int c = img[Y * w + X];
+                if (d <= halfSurface - 1 && c != TileRaster.ROAD[BuildingVisual.HIGHWAY] && c != TileRaster.CENTRE_LINE && ground++ == 0) { groundX = X; groundY = Y; }
+                if (d > halfCase + 1 && highwayColour(c) && stub++ == 0) { stubX = X; stubY = Y; }
+            }
+        check("24a. no highway-coloured pixel beyond the casing's half-width plus a pixel from the S's path (no notch outside either joint)", stub == 0);
+        System.out.println("  " + stub + " highway-coloured pixels beyond " + (halfCase + 1) + " px of the centre line" + (stub == 0 ? "" : ", the first at pixel (" + stubX + ", " + stubY + ")"));
+        check("24b. no ground pixel inside the carriageway's outline (the surface's half-width less a pixel)", ground == 0);
+        System.out.println("  " + ground + " ground pixels within " + (halfSurface - 1) + " px of the centre line" + (ground == 0 ? "" : ", the first at pixel (" + groundX + ", " + groundY + ")"));
+        // The centre line: every centre-line pixel lies on the path (within a pixel and a half), so it is not doubled.
+        int astray = 0, astrayX = -1, astrayY = -1;
+        for (int Y = (int) lo; Y < hi; Y++)
+            for (int X = (tx - 4) * px; X < (cx + 5) * px; X++)
+                if (img[Y * w + X] == TileRaster.CENTRE_LINE && path.dist(X + 0.5, Y + 0.5, at) > 1.5 && astray++ == 0) { astrayX = X; astrayY = Y; }
+        check("24c. ...and the centre line is single: no centre-line pixel more than a pixel and a half off the path", astray == 0);
+        System.out.println("  " + astray + " centre-line pixels off the path" + (astray == 0 ? "" : ", the first at pixel (" + astrayX + ", " + astrayY + ")"));
     }
 
 }

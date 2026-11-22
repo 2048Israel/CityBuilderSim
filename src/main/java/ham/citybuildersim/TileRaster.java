@@ -4194,8 +4194,34 @@ public final class TileRaster {
         }
     }
 
-    /** How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over. */
+    /** How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over; less where the next bend's arc begins sooner (highwayLegs(), RR1). */
     private static final double HIGHWAY_LEG = 2;
+
+    /**
+     * How far highway bend k's legs' straights are drawn past its tangent points, in pixels, {back along the incoming leg, on along the
+     * outgoing one}: HIGHWAY_LEG plots, or to where the next highway bend's arc begins on that leg if that is sooner (RR1). Jerus, his
+     * shot 3, 2026-11-20, the coastal highway's "jagged S-bend": north, two steps north-west, north again - the joints' arcs meet on the
+     * step between them, and each bend's straight ran on over the other's replaced plots, off its arc, a notch outside each joint.
+     */
+    private static double[] highwayLegs(TilePainter.Input in, int k, int px) {
+        TrackCurves.Bend b = in.bendAt(k);
+        double back = HIGHWAY_LEG, on = HIGHWAY_LEG;
+        for (int l = 0; l < in.bends; l++) {
+            TrackCurves.Bend o = in.bendAt(l);
+            if (l == k || o.net() != TrackCurves.HIGHWAY) continue;
+            // The other's arc beginning on this one's outgoing leg, ahead of its end, heading on along it...
+            double dx = o.startX() - b.endX(), dy = o.startY() - b.endY(), along = dx * b.vx() + dy * b.vy();
+            if (along > -1e-6 && Math.abs(dx * b.vy() - dy * b.vx()) < 1e-6 && Math.abs(o.ux() - b.vx()) < 1e-6 && Math.abs(o.uy() - b.vy()) < 1e-6)
+                on = Math.min(on, Math.max(0, along));
+            // ...or ending on its incoming leg, behind its start.
+            dx = o.endX() - b.startX();
+            dy = o.endY() - b.startY();
+            along = -(dx * b.ux() + dy * b.uy());
+            if (along > -1e-6 && Math.abs(dx * b.uy() - dy * b.ux()) < 1e-6 && Math.abs(o.vx() - b.ux()) < 1e-6 && Math.abs(o.vy() - b.uy()) < 1e-6)
+                back = Math.min(back, Math.max(0, along));
+        }
+        return new double[] { back * px, on * px };
+    }
 
     /**
      * The highways' bends (Input.bends of net HIGHWAY, FX5 slice D), drawn as
@@ -4219,15 +4245,16 @@ public final class TileRaster {
             TrackCurves.Bend b = in.bendAt(k);
             if (b.net() != TrackCurves.HIGHWAY) continue;
             TrackCurves.Bend s = inPixels(b, px);
-            double back = HIGHWAY_LEG * px, reach = half + 2;
-            double ax = s.startX() - s.ux() * back, ay = s.startY() - s.uy() * back, bx = s.endX() + s.vx() * back, by = s.endY() + s.vy() * back;
+            double[] legs = highwayLegs(in, k, px);
+            double reach = half + 2;
+            double ax = s.startX() - s.ux() * legs[0], ay = s.startY() - s.uy() * legs[0], bx = s.endX() + s.vx() * legs[1], by = s.endY() + s.vy() * legs[1];
             int x0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ax, bx), s.x()) - reach)), x1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ax, bx), s.x()) + reach));
             int y0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ay, by), s.y()) - reach)), y1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ay, by), s.y()) + reach));
             for (int Y = y0; Y < y1; Y++) {
                 for (int X = x0; X < x1; X++) {
                     int i = (Y / px) * tile + X / px;
                     if (p.bridge[i] || p.tunnel[i]) continue;
-                    if (pathLateral(s, back, back, X + 0.5, Y + 0.5, at) >= half) continue;
+                    if (pathLateral(s, legs[0], legs[1], X + 0.5, Y + 0.5, at) >= half) continue;
                     // The legs' straights only on the plots the bend replaces: the others draw their own.
                     if (at[1] != 0 && !in.curved[i]) continue;
                     img[Y * w + X] = in.owned[i] ? c : blend(c, VOID, UNOWNED_DIM);
@@ -4254,15 +4281,16 @@ public final class TileRaster {
             TrackCurves.Bend b = in.bendAt(k);
             if (b.net() != TrackCurves.HIGHWAY) continue;
             TrackCurves.Bend s = inPixels(b, px);
-            double back = HIGHWAY_LEG * px, reach = 3;
-            double ax = s.startX() - s.ux() * back, ay = s.startY() - s.uy() * back, bx = s.endX() + s.vx() * back, by = s.endY() + s.vy() * back;
+            double[] legs = highwayLegs(in, k, px);
+            double reach = 3;
+            double ax = s.startX() - s.ux() * legs[0], ay = s.startY() - s.uy() * legs[0], bx = s.endX() + s.vx() * legs[1], by = s.endY() + s.vy() * legs[1];
             int x0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ax, bx), s.x()) - reach)), x1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ax, bx), s.x()) + reach));
             int y0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ay, by), s.y()) - reach)), y1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ay, by), s.y()) + reach));
             for (int Y = y0; Y < y1; Y++) {
                 for (int X = x0; X < x1; X++) {
                     int i = (Y / px) * tile + X / px;
                     if (p.bridge[i] || p.tunnel[i] || p.run[i] == TilePainter.RAIL_OVER) continue;
-                    if (pathLateral(s, back, back, X + shift, Y + shift, at) >= 0.5) continue;
+                    if (pathLateral(s, legs[0], legs[1], X + shift, Y + shift, at) >= 0.5) continue;
                     if (at[1] != 0 && !in.curved[i]) continue;
                     if (Math.floorMod((long) Math.floor(at[0]), px) >= dash) continue;
                     img[Y * w + X] = in.owned[i] ? CENTRE_LINE : blend(CENTRE_LINE, VOID, UNOWNED_DIM);

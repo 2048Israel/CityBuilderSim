@@ -19,3 +19,20 @@ plays it four months on to 1,208 where a shot needs it.
    for the routes first (the trains, `tileKey()`), they are made without the siding and kept; the plan drawn again has the same
    stamp, so `planSidingsVersion` does not move, and the routes stay without the siding, its train and its arcs, all month.
    Probe: month, routes 1, draw (square), routes still 1; the cache flushed, routes 2 and the arcs drawn.
+   Why the band falls: each month moves the counts of the chain's first district, the home square (0, 0); the siding's
+   district (0, 1) is the chain's second, so its band holds to 0 until (0, 0) is planned again (probe `why`: "own differs at 0
+   d(0,0)", valid to 0; after the draw valid to 25, the siding's plan the same stamp).
+   **Mend** (`CityMap.planSidingsRoutable()`): the routes are kept also against which plans' sidings they may run to now - a
+   sum over the plans with sidings whose link holds and whose band holds past them. **Harness**: `RailDrawCheck` 31, section 29's
+   siding city a month at a time, each month a building fewer of a type only the chain's first district holds (his month's
+   change), the routes asked before the plans are drawn as the screen does: on main 5 of 5 months short and 0 of 4 corners arcs;
+   with the mend none short, 4 of 4 arcs. His city: `f1`-`f4` (main, square from the second) against `m1`-`m3` (all arcs).
+
+2. **Shot 3, the coastal highway's jagged S-bend**: highway arm 6 north up column 376560, two steps north-west, north up 376558
+   (376558-376560, 376743-376745). The joints' arcs meet on the step between them (each tangent length 1.41 = the step's half).
+   `TileRaster.highwayBends()` drew each bend's legs' straights `HIGHWAY_LEG` (2) plots past its tangent points over every plot
+   a bend replaces - the other bend's too - so the lower bend's diagonal straight ran on past the upper joint, off its arc (the
+   notch up and left), the upper's back past the lower (down and right), each with its centre line, doubled.
+   **Mend** (`TileRaster.highwayLegs()`): a straight stops where the next highway bend's arc begins on its leg, if sooner; the
+   dashes the same. **Harness**: `JunctionCheck` 24, his S as `CityRuns.stretchInto()` lays it with the map's bends: on main 14
+   highway pixels outside the casing and 6 centre-line pixels off the path; with the mend 0 and 0. `c-jog-zoom` before, after.
