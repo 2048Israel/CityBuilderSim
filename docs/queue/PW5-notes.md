@@ -269,3 +269,25 @@ The final format62 `--fast` also exits 0, regenerating maps with zero firm Stale
 findings. Main remains 7e484c4da/0.9.189 at shipped format61; no further integration
 is outstanding before the new box ensemble, again against the newest monetary
 baseline, docs/ensemble/0.9.188.md (RES2 did not move that trace).
+
+### Final merged-model ensemble: PASS
+
+`PW5-RES2-069504753-20261122` ran on gatebox from pushed 069504753, with the
+merged 0.9.189 code and PW5 format/floor62. All 80 runs finish all 2,400 months;
+no missing/short run, failed/unread money audit or LongPlaytest finding. M1/F1
+pass 10/10; overall 24/26 versus the baseline's 23/26. Informational verdict
+changes are the same AUTO2/ZERO_SLACK T2 improvements and HIGH R2 failure noted
+above. All eighty CSVs are byte-identical to the earlier pre-RES2 model's CSVs,
+confirming RES2 did not change the monetary trace, while its new save shape and
+PW5's format62/native61 refusals are now included in the checked model.
+
+docs/ensemble/PW5.md now records this final snapshot, superseding the first
+report for shipping. Actual data paths, host and OpenJDK 21.0.13 are recorded
+there. Local kept files: target/ensemble/PW5-RES2-069504753-20261122/; launcher:
+target/PW5-ensemble-RES2.txt (exit 0). The box run is
+/home/jerus/cbs/tools/06950475380397d39da789e1101374135d75a129/target/ensemble/PW5-RES2-069504753-20261122.
+
+The final pre-request fetch still has main at 7e484c4da/0.9.189, shipped format61.
+The branch keeps one shared format60 pair plus the distinct real format61 pair,
+and floor62. The orchestrator's separate dry-run slot is requested next; no dry
+run has started. Re-fetch main on that reply before starting the ALL gate.
