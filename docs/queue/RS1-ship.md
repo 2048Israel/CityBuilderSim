@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — RS1, the city can sell the bank it rescued — 2026-11-22, ready, see docs/queue/RS1-notes.md
 The city's hand offers its shares before world and household investors choose
