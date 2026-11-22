@@ -1,4 +1,4 @@
-# OrderDoorCheck.java - 456 lines · 19 methods · 10 constants · harnesses
+# OrderDoorCheck.java - 459 lines · 19 methods · 10 constants · harnesses
 
 `ham/citybuildersim/OrderDoorCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -53,13 +53,13 @@
 >      whole with the till holding one, as on main (REV-FB15: there the till is
 >      the sector's last money).
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (33), [Game](Game.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (12), [BusinessInvestment](BusinessInvestment.md) (9), [Mortgage](Mortgage.md) (9), [Equity](Equity.md) (7), [BusinessDebtManager](BusinessDebtManager.md) (4), [EconomyManager](EconomyManager.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Good](Good.md) (2), [GameFiles](GameFiles.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [SectorBooks](SectorBooks.md) (1), [Investor](Investor.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (33), [Game](Game.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (12), [BusinessInvestment](BusinessInvestment.md) (9), [Mortgage](Mortgage.md) (9), [Equity](Equity.md) (7), [BusinessDebtManager](BusinessDebtManager.md) (4), [EconomyManager](EconomyManager.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Good](Good.md) (2), [GameFiles](GameFiles.md) (2), [SubstationCheck](SubstationCheck.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [SectorBooks](SectorBooks.md) (1), [Investor](Investor.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 368 | THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge |
+| 371 | THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge |
 
 ## Constants
 
@@ -86,13 +86,13 @@
 | 198 | `static double priceOne, priceAsked, tillAtOrder` |  |
 | 200 | `static double tillAtProject` | What the project's order told the door: the till, and the slice that carries its interest. |
 | 201 | `static long carried` |  |
-| 372 | `static boolean stuck` |  |
+| 375 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 397 | **type** `public class OrderDoorCheck` | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the lender says no to asked again of half, down to one. |
+| 60 | 400 | **type** `public class OrderDoorCheck` | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the lender says no to asked again of half, down to one. |
 | 83 | 4 | `static void check(String label, boolean ok)` |  |
 | 88 | 3 | `static boolean near(double a, double b)` |  |
 | 93 | 3 | `static double door(Game g, BuildingsTemplate t, long n)` | What buildFor() charges for n of these, read as HousingDoorCheck reads the door: the quote and the plot. |
@@ -108,13 +108,13 @@
 | 175 | 3 | `static double dearPrice(Game g)` | What the fixture prices the market's materials at: DEAR over the planner's price. |
 | 180 | 15 | `static void edgeParts(Game g, BuildingsTemplate block)` | Each condition of the edge, printed, so a fixture that misses it says which. |
 | 203 | 7 | `static void consider(Game g, BusinessInvestment.Decision d) throws Exception` |  |
-| 211 | 151 | `public static void main(String[] args) throws Exception` |  |
-| 363 | 4 | `static void finish()` |  |
+| 211 | 154 | `public static void main(String[] args) throws Exception` |  |
+| 366 | 4 | `static void finish()` |  |
 
-### THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge (lines 368-456)
+### THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge (lines 371-459)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 375 | 10 | `static void run(Game g, int months)` | ...and stopped at the month-end FROM, every later step a no-op (FS9: the edge is then caused, not searched for). |
-| 386 | 70 | `static void foundAndPlay(Game g)` |  |
+| 378 | 10 | `static void run(Game g, int months)` | ...and stopped at the month-end FROM, every later step a no-op (FS9: the edge is then caused, not searched for). |
+| 389 | 70 | `static void foundAndPlay(Game g)` |  |
 

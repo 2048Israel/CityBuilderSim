@@ -259,6 +259,9 @@ public class OrderDoorCheck {
         BuildingsTemplate block = LongPlaytest.template(g, BLOCK), store = LongPlaytest.template(g, STORE);
         check(String.format("fixture: the ensemble's seed %d played to FROM (m%d, at m%d)", SEED, FROM, g.getMonth()), played);
         if (!played) { finish(); return; }
+        out.println("  played city wires " + SubstationCheck.gridReading(g));
+        check("fixture: the played city has the wire capacity its billed and closing peaks need at the order-door month",
+                SubstationCheck.gridCovered(g));
         GoodsMarket mat = g.getMarkets().get(Good.MATERIALS);
         out.printf("  %d plots bought for three blocks; the yard left %,d; the materials at %.6f made here and %.6f landed,"
                         + " against the planner's %.6f%n", groundPlots, g.getBuildingManager().getConstructionMaterials(),

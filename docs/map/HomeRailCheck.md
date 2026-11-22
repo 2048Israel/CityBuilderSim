@@ -1,4 +1,4 @@
-# HomeRailCheck.java - 925 lines · 28 methods · 6 constants · harnesses
+# HomeRailCheck.java - 927 lines · 28 methods · 6 constants · harnesses
 
 `ham/citybuildersim/HomeRailCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -55,7 +55,7 @@
 > mechanic deals are the tonnes a city makes: each fixture says what it lays
 > and the section asserts the condition it needed actually came about.
 
-**Uses:** [Good](Good.md) (62), [Freight](Freight.md) (42), [Game](Game.md) (36), [Haulage](Haulage.md) (33), [LongPlaytest](LongPlaytest.md) (28), [HaulageCheck](HaulageCheck.md) (17), [Sector](Sector.md) (15), [GameFiles](GameFiles.md) (11), [Traffic](Traffic.md) (4), [RailDepotCheck](RailDepotCheck.md) (3), [BuildingManager](BuildingManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [SectorState](SectorState.md) (1), [Markets](Markets.md) (1), [Ports](Ports.md) (1), [Sectors](Sectors.md) (1), [Mining](Mining.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Good](Good.md) (62), [Freight](Freight.md) (42), [Game](Game.md) (36), [Haulage](Haulage.md) (33), [LongPlaytest](LongPlaytest.md) (28), [HaulageCheck](HaulageCheck.md) (17), [Sector](Sector.md) (15), [GameFiles](GameFiles.md) (11), [Traffic](Traffic.md) (4), [RailDepotCheck](RailDepotCheck.md) (3), [BuildingManager](BuildingManager.md) (2), [SubstationCheck](SubstationCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [SectorState](SectorState.md) (1), [Markets](Markets.md) (1), [Ports](Ports.md) (1), [Sectors](Sectors.md) (1), [Mining](Mining.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 **Used by (2):** [FreightViewCheck](FreightViewCheck.md), [TradeBandCheck](TradeBandCheck.md)
 
@@ -68,13 +68,13 @@
 | 289 | THE RUN |
 | 329 | 1. NO RAILWAY, NO CHANGE |
 | 390 | 2. DEALT AFTER THE BOUNDARY |
-| 484 | 3. EACH LEG ONCE |
-| 547 | 4. THE PORT YARD |
-| 632 | 5. THE BILL |
-| 690 | 6. THE DIESEL |
-| 719 | 7. THE WEIGHING |
-| 774 | 8. THE SAVE |
-| 819 | 9. A REAL RUN |
+| 486 | 3. EACH LEG ONCE |
+| 549 | 4. THE PORT YARD |
+| 634 | 5. THE BILL |
+| 692 | 6. THE DIESEL |
+| 721 | 7. THE WEIGHING |
+| 776 | 8. THE SAVE |
+| 821 | 9. A REAL RUN |
 
 ## Constants
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 859 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
+| 67 | 861 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
 | 71 | 1 | `static void quietly(Runnable r)` |  |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -152,51 +152,51 @@
 |---:|---:|---|---|
 | 333 | 56 | `static void noRailway(Game plain, Game trackOnly)` |  |
 
-### 2. DEALT AFTER THE BOUNDARY (lines 390-483)
+### 2. DEALT AFTER THE BOUNDARY (lines 390-485)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 394 | 89 | `static void dealt(Game tight, Game rail)` |  |
+| 394 | 91 | `static void dealt(Game tight, Game rail)` |  |
 
-### 3. EACH LEG ONCE (lines 484-546)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 488 | 58 | `static void eachLegOnce(Game rail, Game yard)` |  |
-
-### 4. THE PORT YARD (lines 547-631)
+### 3. EACH LEG ONCE (lines 486-548)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 551 | 80 | `static void portYard(Game rail, Game yard, Game spurBerth)` |  |
+| 490 | 58 | `static void eachLegOnce(Game rail, Game yard)` |  |
 
-### 5. THE BILL (lines 632-689)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 636 | 53 | `static Month[] bill(Game rail, Game yard)` |  |
-
-### 6. THE DIESEL (lines 690-718)
+### 4. THE PORT YARD (lines 549-633)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 694 | 24 | `static void diesel(Game plain, Month[] months)` |  |
+| 553 | 80 | `static void portYard(Game rail, Game yard, Game spurBerth)` |  |
 
-### 7. THE WEIGHING (lines 719-773)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 723 | 50 | `static void weighing(Game rail, Game yard)` |  |
-
-### 8. THE SAVE (lines 774-818)
+### 5. THE BILL (lines 634-691)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 778 | 40 | `static void save(Game yard, GameFiles files)` |  |
+| 638 | 53 | `static Month[] bill(Game rail, Game yard)` |  |
 
-### 9. A REAL RUN (lines 819-925)
+### 6. THE DIESEL (lines 692-720)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 823 | 102 | `static void realRun()` |  |
+| 696 | 24 | `static void diesel(Game plain, Month[] months)` |  |
+
+### 7. THE WEIGHING (lines 721-775)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 725 | 50 | `static void weighing(Game rail, Game yard)` |  |
+
+### 8. THE SAVE (lines 776-820)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 780 | 40 | `static void save(Game yard, GameFiles files)` |  |
+
+### 9. A REAL RUN (lines 821-927)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 825 | 102 | `static void realRun()` |  |
 

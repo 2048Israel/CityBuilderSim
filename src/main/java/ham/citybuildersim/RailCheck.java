@@ -256,6 +256,7 @@ public class RailCheck {
         System.out.println("\n--- and the business, in a city that trades ---");
 
         prepareTradeTown(game, null);
+        System.out.println("      rail trade fixture " + SubstationCheck.gridReading(game));
 
         Freight rail = game.getSectors().freight();
         BuildingManager live = game.getBuildingManager();
@@ -679,7 +680,7 @@ public class RailCheck {
         System.out.println("\nAll checks passed.");
     }
 
-    /** The unchanged m37 steel-town fixture, with an optional pre-month wires counterfactual. */
+    /** The m37 steel town, with real wires before its months and an optional wires counterfactual. */
     static void prepareTradeTown(Game game, java.util.function.Consumer<Game> setup) {
         quietly(() -> {
             game.newGame();
@@ -742,6 +743,7 @@ public class RailCheck {
             game.setCashForTest(game.getCash() + worksCount * game.getBusinessInvestment().getCostOf(works, 1));
             game.buildStack(works, worksCount, true);
             game.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
+            SubstationCheck.peakWires(game);
             if (setup != null) setup.accept(game);
             for (int i = 0; i < 36; i++) game.toggleNextMonth();
         });

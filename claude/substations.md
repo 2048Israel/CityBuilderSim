@@ -20,5 +20,7 @@ a 45 MW billed peak pays 11.38¢ for one district. Three unnecessary districts
 would charge 33.99¢ and stop its coal chain. The view fixture now supplies the
 one district its load needs and runs at the native commodity prices. The game's
 automatic builder already sizes from peak demand, including forecast growth.
-The steel-town test's much larger trade fall has a different cause: it owns no
-districts, exceeds its free founding carry and pays the shortage-cap energy price.
+The steel-town test's earlier trade fall came from omitted districts: it exceeded
+its free founding carry and paid the shortage-cap energy price. Both hand-built
+rail fixtures now stand real wires before their months; the original freight,
+capacity, money and save checks remain.

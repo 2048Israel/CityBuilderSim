@@ -227,6 +227,26 @@ public final class SubstationCheck {
                        double ratio, double dieselBid, double cokingHome,
                        double thermalMargin, double cokingMargin, Substations.Costs costs, boolean literals) { }
 
+    /** Current stock and both real dispatch snapshots, for a fixture that loses its intended condition. */
+    static String gridReading(Game g) {
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        UtilitiesHandler.Book b = u.getStruckBook();
+        double cents = 1000 * 100 * PowerPriceCheck.unitOf(g) / PriceLevel.FACTOR;
+        return String.format("m%d districts=%d carry=%.3f closingPeak=%.3f closingRatio=%.9f billedDistricts=%d billedCarry=%.3f billedPeak=%.3f billedRatio=%.9f wiresCents=%.6f energyCents=%.6f",
+                g.getMonth(), g.getBuildingManager().getQuantity(Substations.ID), Substations.costs(g).carryKw(),
+                Arrays.stream(u.getLatestMonth().load).max().orElse(0), u.getEnergyRatio(),
+                b.gridCosts == null ? -1 : b.gridCosts.count(), b.gridCosts == null ? 0 : b.gridCosts.carryKw(),
+                Arrays.stream(b.load).max().orElse(0), b.ratio,
+                (b.transmissionPrice + b.distributionPrice) * cents, b.energyPrice * cents);
+    }
+
+    static boolean gridCovered(Game g) {
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        UtilitiesHandler.Book b = u.getStruckBook();
+        return Substations.costs(g).carryKw() >= Arrays.stream(u.getLatestMonth().load).max().orElse(0)
+                && b.gridCosts != null && b.gridCosts.carryKw() >= Arrays.stream(b.load).max().orElse(0);
+    }
+
     /** PW5-F1: whole districts have a utilization cost; omitted wires cause a different, physical squeeze. */
     static void smallTownFinding() {
         OUT.println("--- PW5-F1: low-utilization wires and the honest works fixture ---");
@@ -253,13 +273,14 @@ public final class SubstationCheck {
 
         double[] tonnes = new double[3];
         WireFinding[] rail = new WireFinding[3];
-        String[] kinds = {"actual", "flat", "peak-sized"};
+        String[] kinds = {"omitted", "flat", "actual"};
         for (int i = 0; i < kinds.length; i++) {
             String kind = kinds[i];
             Game g = new Game(GameFiles.scratch("pw5-rail-wire-finding"));
             RailCheck.prepareTradeTown(g, x -> {
+                if (!kind.equals("actual")) x.getBuildingManager().retire(x.getBuildingManager().getTemplate(Substations.ID),
+                        x.getBuildingManager().getQuantity(Substations.ID));
                 if (kind.equals("flat")) x.getServicesManager().getUtilitiesHandler().setGridCostSource(null);
-                if (kind.equals("peak-sized")) peakWires(x);
             });
             rail[i] = townFinding("rail-" + kind, g);
             var f = g.getSectors().freight();

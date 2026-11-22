@@ -539,3 +539,101 @@ parser passes and the pick remains ALL243 with its saves review line. The latest
 main is stilldb9b1fd99; format/floor62 and the native60/61 pairs remain unchanged.
 Keep the provisional marker and send these mends to the same reviewer. No own
 JVM or gate process remains; the next ALL dry-run slot is requested only on SHIP.
+
+### REV-PW5-2 delta: stand the rail fixtures' real wires
+
+Mail 20261122-155812-905-orchestrator-680f correctly identifies an error in the
+preceding ownership decision. The rail towns are hand-built with automation
+off. Omitting their substations is a fixture defect exposed by PW5's physical
+carry limit, not a played-city premise to pass to HT1-H. The earlier assertion
+that all nine pins belonged there is withdrawn. No rail assertion, threshold,
+money identity or save bound is changed in this mend.
+
+RailCheck.prepareTradeTown and HaulageCheck.base now call peakWires after their
+buildings are standing and before their first monthly advance. The helper
+reads the buildings' powerBought draw at the highest season and stands real
+districts. It does not force energy ratios, tariffs or freight. Each of these
+towns needs one district. The omitted-wire and flat-wire counterfactuals in
+SubstationCheck now explicitly retire that stock before their months; their
+physical-shortage finding and every PW5-F1 assertion still pass.
+
+The fixture trace now prints current stock, closing and billed peaks, both
+served ratios, and the struck energy and wires prices. These are readings of
+actual dispatch books, not prices or loads assigned by a harness. This gives
+the following results after real wires, in baseline-price cents/kWh:
+
+| Fixture | Month | Districts / carry kW | Closing / billed peak kW | Closing / billed served | Wires / energy cents |
+| --- | --- | --- | --- | --- | --- |
+| RailCheck steel town | 37 | 1 / 100,000 | 43,006 / 40,448 | 1 / 1 | 14.361365 / 3.751932 |
+| RailDepotCheck bulk town | 18 | 1 / 100,000 | 29,346 / 24,787 | 1 / 1 | 23.213349 / 3.801464 |
+| HomeRailCheck full-boundary town | 23 | 1 / 100,000 | 17,229 / 17,298 | 1 / 1 | 33.598504 / 3.778053 |
+| HomeRailCheck fractional-share search | 78 | 1 / 100,000 | 30,880 / 25,732 | 1 / 1 | 21.850946 / 3.478324 |
+| OrderDoorCheck seed 12 | 200 | 0 / 10,000 | 1,901 / 2,027 | 1 / 1 | 0 / 0 |
+
+Six of the eight rail pins now pass: all three RailCheck pins, both
+RailDepotCheck pins and HomeRailCheck's full-boundary case. RailCheck m37
+carries 45,369 tonnes, beyond the unchanged 30,000-tonne premise, with a
+203,127 model-dollar lorry bill. Its later m67 billing and sizing premises
+also pass. RailDepotCheck offers 120,988 bulk tonnes before laying one spur;
+after three months it offers 129,025 bulk tonnes and deals exactly the spur's
+50,000-tonne sidings. No missing wires exemption remains for either harness.
+
+Only the following three lines remain with HT1-H:
+
+- HomeRailCheck.java:480, `...and one the boundary leaves room in`: at m78,
+  boundary traffic is 205,767 of 248,958 tonnes, leaving 43,191 tonnes of room.
+  All 32,614 home tonnes fit, so the home share is 1, not strictly between 0
+  and 1. The unchanged sixty-month search does not reach its intended premise.
+- HomeRailCheck.java:497, `fixture: the railway carries a share of the city's
+  own bulk, strictly between nothing and all`: the same wired m78 city has
+  share 1. The physical bounds, actual legs, bills and save identities pass.
+- OrderDoorCheck.java:273, `fixture: there the landlord stands at HN1-A's
+  edge`: at seed 12 m200 both lender-pass conditions are false. All other
+  edge components hold; no order is attempted or lost. The city has all the
+  wires it needs at this month: its roughly 2 MW peaks are below the existing
+  free 10 MW founding network, and both dispatch books serve it fully.
+
+OrderDoorCheck does not own a district because none is required. Substations
+costs() retains max(founding carry, districts times 100 MW), and GRID only
+orders above the founding carry. Adding a 440M district to this 2 MW town
+would change the lending premise unnecessarily. A new strict assertion checks
+both its closing and billed carry against their actual peaks and passes;
+the printed figures above make the absence of a physical shortage explicit.
+
+The ship file removes all eight old rail exemptions and keeps only the two
+remaining HomeRail patterns plus OrderDoor. Its changelog now includes PW5-F1:
+a 45 MW town pays 11.38 cents/kWh for its one whole district against the
+5.94-cent typical-load benchmark. The changelog remains within twelve lines.
+
+Mail 20261122-161104-087-orchestrator-6e3a resolves the queue-record mechanism:
+the orchestrator will narrow HT1-H on main to the named remaining lines and
+figures in the mends mail. The ship parser has no existing-row replacement
+section. No QUEUE.md edit, duplicate queue row, HTML instruction or publisher
+change is made here.
+
+Verification for this delta is in target/PW5-review4/. RailCheck's serial
+selection first ran with no rail exemptions: its three former reds, QuayRail
+and IslandRail pass; only the two HomeRail premises fail. RailDepotCheck and
+HaulageCheck each exit 0. After recording exactly the remaining patterns,
+HomeRailCheck and OrderDoorCheck each exit 3, with no unnamed reds;
+SubstationCheck exits 0, including the native old-save refusals, tariff,
+currency reform and all PW5-F1 counterfactuals. The strict OrderDoor wires
+coverage line passes. Original bounds and money/save comparisons are retained.
+The first-run files use Name.txt/log; the final refreshed files use
+Name-final.txt/log, with their exit codes in final-status.txt.
+
+Production sources are still identical to ensemble commit 069504753 (only
+*Check.java changes under src/main/java). No saved field or floor changes in
+this delta; the existing final-model ensemble, M1/F1 10/10 and 24/26, remains
+applicable. The pick is still ALL 243 and requests saves review for DataSave
+and the raised format/floor, already reviewed with the native 60/61 pairs.
+The known-reds parser exits 0 with exactly three PW5 rows. The provisional
+marker remains; this delta goes back to the same reviewer before requesting
+the next dry-run slot.
+
+Final --fast exits 0: maps regenerated, zero firm Stale findings and 196 soft.
+git diff --check passes; edited files remain LF. The changelog is eleven lines
+including its heading. The check loop and its waiter have ended; no own JVM
+or gate process remains. Keep the prior stopped dry-run directory as evidence,
+not as a passing reusable run. A fresh ALL dry run awaits the delta SHIP and
+the orchestrator's newly granted slot.

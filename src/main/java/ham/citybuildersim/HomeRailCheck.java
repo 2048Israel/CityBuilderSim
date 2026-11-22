@@ -393,6 +393,8 @@ public class HomeRailCheck {
 
     static void dealt(Game tight, Game rail) {
         System.out.println("\n--- 2. dealt after the boundary: what the track and the stations leave of the boundary's tonnes, never more ---");
+        System.out.println("      tight fixture " + SubstationCheck.gridReading(tight));
+        System.out.println("      fractional fixture " + SubstationCheck.gridReading(rail));
 
         // Hand-made cases, each causing one cap to bind. {capacity, stations, sidings, bulk dealt, goods dealt, offer, tonnes taken}.
         double[][] hand = {
