@@ -846,3 +846,197 @@ parent with its own PID/exit file, and block automatic laptop fallback.
 After a green run change only these notes and the ship file, record its
 branch/main commits and kept directory, then drop the marker last in
 its own commit, verify it gone on origin, and mail ready.
+
+
+### Second ALL dry run STOPPED: paper register and played door premise
+
+The ALL dry run on2026-11-22 stops, exit1, in kept remote run
+`/home/jerus/cbs/runs/cbs-gate-HC1-4snCeHRQ`, copied home to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HC1-4snCeHRQ`.
+It tested branch`d51db6b664ac2eb8c4f727c39823885b832897ac` and
+main`653cb95ce9f4c2c7b5ffde6ce4b488ea6bf78181`. Compile8s;
+238 harnesses actually ran in1092s (226 passed,12 failed); MapCheck's
+one timing line is SOFT and8 path observations are not assertion passes.
+There are2 NEW assertion lines, OrderDoorCheck and ScaleCheck. The other
+reds are exact main/accepted rows. No reusable gate-run comment is added
+for this stopped run; the marker remains provisional. Controller:
+`target/HC1-final-dry.txt`. The retained folder is read only.
+
+The orchestrator's182013 mail keeps the slot with HC1 while these are
+mended. It confirms HT1-H owns the exact OrderDoorCheck premise, provided
+HC1 traces the month, figures, cause and absence of a lost tested order.
+It does not permit passing ScaleCheck's register law by name.
+
+**ScaleCheck is HC1's mend.** Its original register bound remains unchanged.
+The offending register is city paper, not shares or corporate bonds. At
+m265 the small copy has register0.00060338591572401650 and household
+face0.00060338591446767480; the large copy has0.60338591572401650 and
+0.60338591446767440. The large gap is1.256342e-9, persisting almost
+unchanged in absolute terms through m271, where its relative error is
+2.1163009e-9. Custody reserved face is0 throughout: no estate subtraction
+explains it. Native-town diagnostics trace its origin before scaling:
+at m66, paper200.82213104820153 and households200.82213104820144 differ
+by8.53e-14; by m130 the difference is1.56e-13. The spread sales continue
+reducing the households' book and the old absolute register subtractions
+carry a roughly1.25634e-13 residue down to tiny remaining holdings. The
+scaler faithfully multiplies that existing discrepancy; it did not create
+or repair it. Diagnostic logs are`target/hc1-scale-origin.txt` and the
+saved ScaleCheck log; temporary every-month/debt-piece dumps are removed.
+
+? The desk now moves the **share of the opening household book sold**
+from each paper line to the bank. It carries the source's opening face
+alongside the face and cash sold. This is the existing pro-rata economic
+rule, evaluated as a fraction on both ledgers so an old absolute rounding
+residue does not stay behind as the book shrinks. No register is reset to
+the household figure. The bank books the actual sum of the faces moved
+from the lines and the same cash handed to the households, once each;
+the unearned-discount path is unchanged. Spread sales are one batch after
+the cells record their sales. The waterfall uses its opening total before
+removing paper. Departures use paper gone plus the survivors' paper at
+fresh counts: followThePeople has moved stocks but has not yet installed
+those counts. This includes bankruptcy departures and ordinary departures.
+No saved field, stock interpretation, money-flow category or layout changes:
+format/floor remain62, with the existing refusal and continuation checks.
+
+ScaleCheck adds a native-input fixture: two issued debt lines, independent
+ulp-rounded register additions, and eligible cells holding a paper book of
+210.07142857142858. Through320 calls of sellPaperForSpread at the model's
+HOME_SPEED and minimum move, holdings reach5.0866444281678855e-11. The
+mended register is5.0866444281678940e-11, worst relative error2.17e-15;
+its cash and face enter the bank exactly once within the original register
+bound. A separate fault control gives one line1% extra face: the resulting
+0.398% book mismatch stays visible throughout those sales. Proportional
+transfers do not conceal a genuinely wrong initial register. The played
+city and K-times copy now satisfy the original load-plus-six-month law,
+worst3.0e-15 instead of2.1e-9. The named ScaleCheck run passes; full
+regression checks and the old-model failure demonstration follow below.
+
+OrderDoorCheck prints its exact native inputs at the failed premise,
+without placing the tested order or moving the edge. Seed12 reaches m200;
+there is ground for3 blocks. One block costs579.980369014 at the door,
+two1337.68880836; their registers would raise0 on both, but the regime
+isGOOD, whereas raisesNothing requiresNORMAL orBAD. NOI is3.42667378139,
+tested annual rate0.0522711961875; Mortgage.decide admits1/1 but only1/2
+with the specified down payments. The bank has capital for two; its own
+income/carry test refuses the second. The shopkeeper is ready. The watch
+counts asked0 and passed0, and the harness returns immediately after this
+fixture assertion: no tested order was attempted or lost. A separate
+closed-card native control is recorded below to identify the path change;
+it never replaces the city against which the original assertion runs.
+
+The old-model demonstration restores Game.java and HouseholdBalance.java
+byte-for-byte from the stopped d51db6b66 snapshot, leaving the new regression
+in ScaleCheck. The same native inputs fail the new320-sale register line:
+remaining household face5.0866444281678855e-11, register4.9496745958730300e-11,
+worst relative0.00137. The original six-month city/copy line also fails again
+at2.1e-9. No fault switch or test-only sale implementation is used. Its
+controller is`target/hc1-scale-old-model-regression.txt`; kept harness output
+`target/hc1-scale-old-model.log`. Both production files are then restored
+to the mend before final checks. This is a red-to-green regression, not a
+revised threshold or premise.
+
+The native closed-card control identifies HC1's causal path. It uses the
+same seed12 founding, plan, literal FROM200,3 plots and hand-set DEAR/yard;
+only card lending is held shut from month1 through the existing harness
+input. It reaches m200 with3751 people, card debt0 and borrowing0. Its
+equity regime isNORMAL; door costs723.176686593/1652.76671647,
+NOI3.35842306483 and tested rate0.00555684297614; its own lender accepts
+1/1 and2/2, and every original edge predicate passes. With lending open,
+HC1's native city instead has3131 people, card book12.3228564928,
+new borrowing1.26042938945, new-loan fees0.0126042938945 and unexpected
+bills25.7000268394. (The first diagnostic mislabeled those loan fees as
+interest; the final output labels them correctly and prints interest
+separately.) Card lending changes the endogenously played prices, rate
+and equity regime before this picked-month premise is read; it does not
+change Mortgage.decide or the door/principal/carry formula. The actual
+city's5.2271196% tested rate, compared with the control's0.5556843%, and
+its costs/NOI leave only one of two blocks affordable to its own lender.
+The higher rate is an observed native input, not a manually fitted value.
+
+? Pass this exact fixture line by name to HT1-H, as the orchestrator
+specifies and main's row already owns for PW5. Keep one matching label,
+not a new queue item. The original assertion stays red, its premise and
+the lender/order checks are unchanged, and the closed-card control is
+only diagnostic: it never substitutes for the city the assertion tests.
+Its controller is`target/hc1-orderdoor-control.txt`; final named run below
+uses the corrected fee/interest labels. No ScaleCheck law is named away.
+Main591fc92d8's FC2/FC2b records merge as bfb03608a before these mends;
+there are no new production changes from main to absorb.
+
+The paper-desk arithmetic is a production money change after the99c5c41ec
+ensemble. That80-run PASS remains historical evidence for that snapshot;
+it is not represented as validation of the new arithmetic. After the
+delta review's go, run the final-model ensemble on the pushed mend and
+then the ALL dry run in the orchestrator's slot. M1/F1 remain hard stops.
+No stopped run is reusable and the readiness marker stays until green.
+
+Final OrderDoorCheck output corrects the diagnostic labels: card interest
+is0.263427568182 and new-loan fees0.0126042938945 in the open-card city;
+both are0 in the closed-card control. The completed named check is known
+red only through the single exact HT1-H row. It still prints the original
+failed assertion and never places the test's order. Final --fast passes.
+
+The new320-sale regression is strengthened before the final run: it divides
+by the actual positive remaining face, with no absolute1e-9 denominator
+floor. The played ScaleCheck law and its existing apart() remain untouched.
+The old-model run above used that floor; its captured final gap is2.69%
+of the remaining household face, so removing the floor can only strengthen
+its demonstrated failure. The real-fault control must remain visible at
+every step, also below the floor. Final figures are recorded below.
+
+The closed-card control is an input control on the HC1 model, not a claimed
+run of main: it closes ordinary credit as well as HC1's new shock draws.
+It proves that the native credit/spending path can move this picked-month
+edge and that the lender still applies its own test. It does not isolate
+which card feature contributes how much to the rate change. The direct
+findings are the actual city's figures and zero tested orders; the fixture
+class/owner is already queued explicitly for this seed/month by HT1-H.
+No claim that the mortgage formula or its threshold regressed is inferred
+from the failed premise, and no predicate is changed to pass it.
+
+
+### Paper-register mend: final named checks, 2026-11-22
+
+The final serial runner completes exit0. It calls batch-check.sh with one
+name at a time, cbs.parallel=1 and the worktree's required C:/ Earth/world
+paths; no local pick/ALL suite or ensemble is run. Its verdict record is
+`target/hc1-paper-final-verdicts.txt`; individual controller logs are
+`target/hc1-paper-final-<name>.txt`, and native logs are under
+`target/checks/<name>.log`.
+
+| check | result |
+|---|---|
+| --fast | 0 |
+| OrderDoorCheck | 3, exact existing HT1-H premise only; original failure and both native input sets printed |
+| CardCheck | 0, also BuildCardCheck selected by its name; no new red |
+| HouseholdFlowCheck | 0 |
+| HouseholdCheck | 0 |
+| ReadPathCheck | 0 |
+| SaveFileCheck | 0, including native60/61 byte/city refusal and next-month continuation |
+| HoldersCheck | 3, its accepted HT1-H pins only; transfer and money assertions pass |
+| PriceLevelCheck | 0, full strict paired-city check,337.6s |
+| ScaleCheck | 0, original register law and stronger new regression |
+
+Final ScaleCheck's strict remainder read (no denominator floor) still has
+worst2.17e-15; the fault remains0.00398 relative, and the original six-month
+city/copy register line reads3.0e-15. Both original observations remain
+OBSERVED,2, not counted as assertion passes. Maps regenerate; Stale has
+0 firm findings and199 soft. Source and handwritten records pass
+`git diff --check`; all four changed Java files and both records retain LF.
+Known-red validation exits0 with the exact OrderDoorCheck label to HT1-H;
+no register or save failure is admitted as a known red. A final fast-only
+run follows this completed serial runner; no model source changes follow.
+
+Production money mend is74dc953ef. The pending delta also strengthens the
+new test's actual-remainder denominator and prints the failed door
+premise's native/card-control figures. Main is still591fc92d8 after the
+final fetch, already merged as bfb03608a. Once the final fast check passes,
+commit and push these mends with the provisional ship file, report the
+pick/review line and both findings to the orchestrator, and end for the
+same reviewer's delta. The subsequent final-model ensemble and ALL dry
+run remain owed; HC1 is not ready and the marker is not dropped.
+
+The final fast-only run completes exit0 after every named run, controller
+`target/hc1-paper-last-fast.txt`: compile3s, maps regenerated, Stale0 firm
+and199 soft. No source changes follow it. The old native60 pair/helper,
+native61 refusal and next-month save comparisons are retained intact.

@@ -345,7 +345,10 @@ public class ScaleCheck {
             double raised = 0, worst = 0, smallestFault = Double.POSITIVE_INFINITY;
             for (int step = 0; step < 320; step++) {
                 raised += hb.sellPaperForSpread(0, 1);
-                double miss = apart(g.getDebtManager().householdPrincipal(), hb.totalPaper());
+                double live = hb.totalPaper(), registered = g.getDebtManager().householdPrincipal();
+                // This fixture deliberately goes below apart()'s absolute floor:
+                // read the actual positive remainder, however small it becomes.
+                double miss = Math.abs(registered - live) / Math.max(Math.abs(registered), Math.abs(live));
                 worst = Math.max(worst, miss); smallestFault = Math.min(smallestFault, miss);
             }
             double remaining = hb.totalPaper(), register = g.getDebtManager().householdPrincipal();
