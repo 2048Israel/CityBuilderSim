@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,513 constants in 620 files.**
+**6,519 constants in 621 files.**
 
 ## model (3002 constants)
 
@@ -1712,9 +1712,9 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 7372 | `GameVersion.VERSION` | `"0.9.184"` | Bump on release. |
-| 8357 | `GameVersion.SAVE_FORMAT` | `59` | The save shape. |
-| 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `59` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8423 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 8364 | `GameVersion.SAVE_FORMAT` | `60` | R6e: PRE-GM CROP RECIPES (format 60). |
+| 8424 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `60` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8432 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -5912,7 +5912,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2015 constants)
+## harnesses (2021 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7833,6 +7833,17 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 154 | `MiningCheck.IMPORTED_SCRAP_LOW` | `.05, IMPORTED_SCRAP_HIGH =.15` | The share of its sales an arc furnace keeps on imported scrap, selling its steel at home, at least and at most (docs/studies/spec-materials.md 4, from the study's 2.5: the furnace about 7%, the Min... |
 | 157 | `MiningCheck.LOCAL_SCRAP_LOW` | `.20, LOCAL_SCRAP_HIGH =.35` | ...and on the city's own scrap, at its export price (the study's 25% and 31%). |
 
+### ModernEngineeringCheck.java ([map](map/ModernEngineeringCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 39 | `ModernEngineeringCheck.OUT` | `System.out` |  |
+| 40 | `ModernEngineeringCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 42 | `ModernEngineeringCheck.GM_FACTOR` | `1.22` | Study/root's deliberately rounded abstract result; body21% is disclosed in the data and credits. |
+| 44 | `ModernEngineeringCheck.LEGACY_FORMAT` | `58` | The exact pre-R6e source-plan base, .181, wrote format58; this is a legacy fixture, not a new format decision. |
+| 46 | `ModernEngineeringCheck.PRE_E21_FORMAT` | `59` | HT1's shipped .184 still predates E21's physical recipe flag. |
+| 47 | `ModernEngineeringCheck.FARMS` | `List.of("Mixed Farm", "Grain Farm")` |  |
+
 ### MonetaryCheck.java ([map](map/MonetaryCheck.md))
 
 | line | constant | value | says |
@@ -8406,15 +8417,15 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 97 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
-| 142 | `ResearchCheck.MONTH_KNOWN` | `32` | The entries whose World column names a month: the tables' 30 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
-| 145 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 91 rows (HISTORY_ROWS). |
-| 146 | `ResearchCheck.PREFIX_COUNTS` | `{ 20, 10, 8, 5, 27, 6, 3, 12 }` |  |
-| 147 | `ResearchCheck.HISTORY_ROWS` | `91` |  |
-| 150 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE... |
-| 151 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
-| 154 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 91. |
-| 157 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 562 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 143 | `ResearchCheck.MONTH_KNOWN` | `32` | The entries whose World column names a month: the tables' 30 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
+| 146 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 92 rows (HISTORY_ROWS). |
+| 147 | `ResearchCheck.PREFIX_COUNTS` | `{ 21, 10, 8, 5, 27, 6, 3, 12 }` |  |
+| 148 | `ResearchCheck.HISTORY_ROWS` | `92` |  |
+| 151 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE... |
+| 152 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
+| 155 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 92. |
+| 158 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "E21", 2151 }, { "M...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
+| 568 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
 ### ResearchPreviewCheck.java ([map](map/ResearchPreviewCheck.md))
 

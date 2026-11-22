@@ -2,6 +2,111 @@
 
 <!-- readiness: provisional -->
 
+## Merged-main completion (root 793c, 2026-11-22)
+
+Origin/main 0.9.184 at d7cad5c0e was merged and pushed as170f75ed3.
+OG1/FB16/HT1 are retained. Conflicts were only generated indexes; main's
+copies were selected for regeneration on the merged sources, not hand
+merged into invented method maps. The baseline for the final ensemble is
+now docs/ensemble/0.9.184.md. No HT1 money, custody or load method changes.
+
+The new native May-1996 control constructs both the retained .181/58 case
+and the actual pre-E21 .184/59 physical choices through the existing save
+API. Before a format edit, the merged-tree wrapper exits1:155/157 laws pass,
+and format58 is refused under HT1's floor59. Format59 is **accepted and
+wrong** immediately: Mixed Farm69 instead of56.55737704918033 CROPS,
+Grain Farm500 instead of409.8360655737705. Current E21-flag records restore
+correctly; both accepted old records recover only at the next chooser.
+Raw command, native exit and output: target/R6e-evidence/stage3/format59.*.
+This is the conditional format-bump premise root793c asked to test, not an
+assumption that the previous floor59 covers a different feature.
+
+SAVE_FORMAT and OLDEST_LOADABLE_FORMAT are consequently raised together
+59->60. No converter, flag repair, prefix padding or HT1 core edit.
+ModernEngineeringCheck reuses SaveFileCheck.refusedAtTheFloor for each
+real old file: exact header refusal naming its build, fresh city still at
+month1 and file bytes intact. SaveFileCheck calls its native current-save
+and old-format controls; ReadPathCheck also causes refusals into an actual
+running loaded twin, pins its manager/month/cash/physical figures/choices,
+and repeats real screen reads. Current save controls retain immediate
+old coefficients, exact next-month modern coefficients and saved choices.
+The final merged-tree changed-source wrapper is terminal, native exit0:
+compile45s, **14/14 harnesses pass in250s**, maps regenerated and Stale0firm
+(194 soft). ModernEngineeringCheck passes159/159. The named set is
+ModernEngineeringCheck, SaveFileCheck, ReadPathCheck, ResearchCheck,
+DiscoveryCheck, RecipeCheck, HistoricalRecipeCheck, PostwarRecipeCheck,
+EquipmentCheck, FittingCheck, NewUnitCheck, LicenceFeesCheck,
+HistoricalLicenceCheck and AgricultureCheck. The RecipeCheck substring
+intentionally includes its two historical readers in this single serial
+wrapper, with cbs.parallel=1; no unchanged broad replay follows it.
+Command, raw native exit and each reader's output are preserved in
+target/R6e-evidence/stage3/focused.* and focused/. Both farms still record
+old-active/crossing/adopted-active1/1/1, actual factory3+measured2=5
+advances and positive freshly produced crops. Partial production still
+captures native marginal rent0.00859444282014371 (Mixed) and
+0.06227857116046165 (Grain), against independent fresh-output valuation.
+Every format58/59 refusal is caused in both farms; current saves and
+immediate/next-month/reader controls pass. No wrapper/compiler/JVM remains.
+
+The final diff check then exposed five existing generated empty-label rows
+whose line numbers had shifted, introducing trailing-space diff lines.
+The new SaveFile/ReadPath controls were placed on existing blank lines,
+after the appropriate helper setup. This preserves all original assertion
+positions and changes no law or tolerance. Only those two actual affected
+harnesses were rerun: native exit0, compile48s,2/2 pass, maps regenerated,
+Stale0firm/194soft. The other12 greens and159/159 E21 laws are reused,
+not replayed. Raw readers-mend command/output/native exit are beside the
+focused receipt. Generated content was never hand edited; verified
+date-only changes were restored verbatim. All owned processes are terminal.
+
+### Final row dispositions for the provisional publication records
+
+The compact numerical primary-source table below is retained unchanged;
+its S/M/C distinction and original downloads remain the evidence. Root's
+end-to-end release does not supply missing denominators or replace the
+original brief's rule to retain unsupported figures. E21 is implemented
+under the explicitly accepted approximation. Other rows have concrete
+remaining-source/model conditions rather than speculative catalogue
+entries. The ship file carries each as an actual proposed Pending record,
+so a publisher cannot remove R6e's queue row and silently lose its scope.
+They are publication records for root/reviewer disposition, not new
+queued batch decisions or a claim that the other mechanics were built.
+
+| row | disposition and exact remaining condition |
+|---|---|
+| E21 | Implemented:1996/June placeholder, lag7, work2151, fee estimate; CROPS69/500 exact, pre-row/1.22. The22%/21% discrepancy and crop/trait/country heterogeneity remain in resources and shipped CC BY4.0 attribution. |
+| E22/E33 | No row or number changed. E33's1977 primary plant is brackish, not seawater. Obtain a seawater commercial date and a consistent purchased-electricity/thermal boundary for flash->pre-PX RO->PX; the measured3.49->2.68 kWh/m³ PX process retrofit does not partition the model's whole10880 draw. Numerical commercial-use permission remains unresolved. Neither step may claim the same recovery twice. |
+| E23 | No row or diesel/job change. The controlled seeding/turning trial's20% fuel/ha effect has no all-farm fuel fraction; its copy is CC BY-NC-ND. The CC BY2 survey's5.33% incremental perception is a different denominator. Need commercially usable measured field-work evidence and its mapped fuel share; no operator-removal/yield proxy. |
+| E24 | WAIT PW3 as briefed; no power owner or early dependency implementation. Resolve its dated23% vintage against PW3's place/season dispatch and existing33.8% model anchor there. |
+| E26 | No row, job, diesel or mine-output change. Primary+12% effective truck utilization/-13% load-and-haul cost does not calibrate a whole mine or split jobs. Need the haul bottleneck/share and explicit open-pit recipient list plus numerical commercial-use terms. |
+| E27 | Unsupported incremental E18 step: retain old figures/no row. A conventional-line45% claim does not add another45% beyond thin-slab casting. Need a matched incremental energy boundary including induction heat. |
+| E30 | No row or coal/electricity/mineral change. Primary30% is thermal versus Portland. Need commercially usable numerical evidence and a supported kiln-state/coal share; an after-E2 change would also require a reviewed reader/dependency proposal because E2 is already afterPE4. No second unreviewed process chain. |
+| E32 | No row or fleet-energy change. The prototype103 kWh/100km,40t gross long-haul run does not establish a charged city fleet's consumption/payload/availability. Existing depot150 is fixed power; actual truckTonnes burns0.66L/t. Need the dynamic charging/quote/dispatch/save owner plan, driving-to-charging losses and commercial numerical terms; neither fixed150 nor FE1's driver gain can substitute. |
+
+Final expected model review includes fresh money and saves review, since
+E21 adds a native patentable gain and the floor60 refuses old physical
+semantics. A selector's lexical floor cannot waive either. No stranger
+SHIP, final ensemble, ALL dry or readiness is claimed at this point.
+Modern/default coefficient guards pass, but unchanged anchors alone do not
+prove an unchanged city trace: E21 adds a research opportunity and an
+imported patent gain when it is known. Final trace/ensemble duty remains
+against0.9.184 after stranger SHIP; no main baseline is rerun or another
+batch's finding disposition borrowed. Self-review found no extra source
+owner, production formula copy, tolerated economic red or converter.
+The only production Java diff is the conditionally released GameVersion
+format/floor and its reason; VERSION and all HT1 core methods stay intact.
+Final static pick: **ALL241**, exit0. Review line:
+`needed - saves: +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT`.
+Root's fresh money review for native patent flow remains owed in addition
+to that saves floor. Static resource review pins all96 original rows and
+their order/content, only ids52/53 gaining E21, exact69/500 anchors and
+all other building fields unchanged. Seven explicit Pending publication
+records preserve the unsupported/dependent remaining scope. The project
+write-up is claude/r6e-engineering.md. For a manual look, compare the
+Historical farm panels in May/June1996 and E21's research entry; no new
+screen or eye-check Pending row is introduced. The marker remains until
+stranger SHIP and the ordered final model/ensemble/dry/ready sequence.
+
 ## Native focused milestone (root e7fc, 2938 and 00d4)
 
 The E21 implementation remains provisional. HT1 directly released the

@@ -8354,7 +8354,14 @@ public final class GameVersion {
      *     strangers' money rather than their own. It is refused, naming the
      *     build that still opens it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 59;
+    /* R6e: PRE-GM CROP RECIPES (format 60).
+     * A native pre-E21 May-1996 save of shipped format 59 has a fitted
+     * farm's tractor recipe without E21's missing-change flag. Restoring
+     * that choice into this catalogue gives Mixed/Grain Farm 69/500 CROPS
+     * immediately, instead of 69/1.22 and 500/1.22. Next month's selection
+     * repairs it too late. The floor rises with the format; no conversion.
+     */
+    public static final int SAVE_FORMAT = 60;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8364,6 +8371,8 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
+     * 60 since batch R6e (PRE-GM CROP RECIPES above: an older native choice
+     * has no missing-E21 flag and loads its crop coefficient as modern).
      * 58 since batch HS2 (TWO ADULT STAGES above: a save's households hold
      * no adult stage, and its working cells' money would load all into the
      * established). 57 from batch HS1 (MONEY FOLLOWS PEOPLE above: a save's retired cells
@@ -8412,7 +8421,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 59;
+    public static final int OLDEST_LOADABLE_FORMAT = 60;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

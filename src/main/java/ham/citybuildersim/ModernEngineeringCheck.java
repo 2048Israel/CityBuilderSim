@@ -42,6 +42,8 @@ public final class ModernEngineeringCheck {
     static final double GM_FACTOR = 1.22;
     /** The exact pre-R6e source-plan base, .181, wrote format58; this is a legacy fixture, not a new format decision. */
     static final int LEGACY_FORMAT = 58;
+    /** HT1's shipped .184 still predates E21's physical recipe flag. */
+    static final int PRE_E21_FORMAT = 59;
     private static final List<String> FARMS = List.of("Mixed Farm", "Grain Farm");
     private static int checks, fails;
 
@@ -380,7 +382,18 @@ public final class ModernEngineeringCheck {
         }
     }
 
-    static void savedStates() throws Exception {
+    static void physicalReaders(Game game, String name) {
+        BuildingsTemplate t = farm(game, name);
+        Map<String, Double> before = HistoricalRecipeCheck.figures(t);
+        Map<Integer, List<String>> choices = game.getRecipes().forSave();
+        int month = game.getMonth();
+        for (int i = 0; i < 3; i++) ReadPathCheck.readEverything(game);
+        check(name + " repeated actual screen reads preserve saved physical figures and choices",
+                before.equals(HistoricalRecipeCheck.figures(t)) && choices.equals(game.getRecipes().forSave())
+                        && game.getMonth() == month, game.getRecipes().forSave());
+    }
+
+    static void savedStates(boolean readPaths) throws Exception {
         OUT.println("--- 6. immediate native load, next month, and the pre-R6e missing-flag record ---");
         for (String name : FARMS) {
             Fixture f = new Fixture("R6e-save-" + name, true);
@@ -398,39 +411,81 @@ public final class ModernEngineeringCheck {
             // Snapshot the same May state, including its history, before either twin
             // advances. Construct the literal pre-R6e choice through native setters;
             // no flag stripping, prefix padding or loader repair is performed.
-            SaveWriter.Job job = f.game.prepareSaveForChecks(10, "R6e .181 missing E21");
-            DataSave legacy = job.data();
-            Map<Integer, List<String>> priorChoices = new HashMap<>(legacy.getRecipeChoices());
-            String priorProcess = t.defaultRecipe().getId();
-            priorChoices.put(t.getId(), List.of(priorProcess, priorProcess));
-            legacy.setRecipeChoices(priorChoices);
-            legacy.stamp("0.9.181", LEGACY_FORMAT, legacy.getSavedAt());
+            List<SaveWriter.Job> legacyJobs = new java.util.ArrayList<>();
+            for (int format : List.of(LEGACY_FORMAT, PRE_E21_FORMAT)) {
+                SaveWriter.Job job = f.game.prepareSaveForChecks(10, "R6e pre-E21 format" + format);
+                DataSave legacy = job.data();
+                Map<Integer, List<String>> priorChoices = new HashMap<>(legacy.getRecipeChoices());
+                String priorProcess = t.defaultRecipe().getId();
+                priorChoices.put(t.getId(), List.of(priorProcess, priorProcess));
+                legacy.setRecipeChoices(priorChoices);
+                legacy.stamp(format == LEGACY_FORMAT ? "0.9.181" : "0.9.184", format, legacy.getSavedAt());
+                legacyJobs.add(job);
+            }
 
             Game loaded = RecipeCheck.load10(f.game);
             BuildingsTemplate restored = farm(loaded, name);
             check(name + " current save loads with exactly the saved choices",
                     loaded.getLoadFailure() == null && loaded.getRecipes().forSave().equals(present), loaded.getLoadFailure());
             near(name + " present flags restore old crops immediately", restored.makes(Good.CROPS), old);
+            if (readPaths) physicalReaders(loaded, name);
             advanceLoaded(loaded, name + " present flags");
             f.advance(t);
             check(name + " loaded twin really advances to history's month", loaded.getMonth() == date(), loaded.getMonth());
             near(name + " loaded and unbroken next-month crop figures agree", restored.makes(Good.CROPS), t.makes(Good.CROPS));
             check(name + " next-month native saved choices agree", loaded.getRecipes().forSave().equals(f.game.getRecipes().forSave()), loaded.getRecipes().forSave());
 
-            GameFiles.Result written = job.write();
-            check(name + " exact .181-shaped record is written by native save APIs", written.whole(), written.message());
-            Game earlier = RecipeCheck.load10(f.game);
-            if (GameVersion.OLDEST_LOADABLE_FORMAT > LEGACY_FORMAT) {
-                check(name + " coordinated format floor refuses the old physical semantics", earlier.getLoadFailure() != null, earlier.getLoadFailure());
-            } else {
-                check(name + " legacy record loads without an unrelated refusal", earlier.getLoadFailure() == null, earlier.getLoadFailure());
-                near(name + " accepted missing-flag record must already run pre-E21 crops immediately", farm(earlier, name).makes(Good.CROPS), old);
-                advanceLoaded(earlier, name + " legacy flags");
-                check(name + " missing-flag load really advances once", earlier.getMonth() == date(), earlier.getMonth());
-                near(name + " next-month selection recovers modern crops after the legacy load",
-                        farm(earlier, name).makes(Good.CROPS), t.defaultRecipe().makes().get(Good.CROPS));
+            for (SaveWriter.Job job : legacyJobs) {
+                int format = job.data().getSaveFormat();
+                GameFiles.Result written = job.write();
+                check(name + " exact pre-E21 format" + format + " record is written by native save APIs", written.whole(), written.message());
+                byte[] beforeBytes = java.nio.file.Files.readAllBytes(f.game.getGameFiles().saveFile(10));
+                Game earlier = RecipeCheck.load10(f.game);
+                if (GameVersion.OLDEST_LOADABLE_FORMAT > format) {
+                    check(name + " native format floor refuses pre-E21 format" + format + " before applying it, naming its build and preserving its bytes",
+                            SaveFileCheck.refusedAtTheFloor(f.game.getGameFiles(), 10, earlier, beforeBytes), earlier.getLoadFailure());
+                    if (readPaths) {
+                        Map<String, Double> physical = HistoricalRecipeCheck.figures(restored);
+                        Map<Integer, List<String>> choices = loaded.getRecipes().forSave();
+                        BuildingManager manager = loaded.getBuildingManager();
+                        int month = loaded.getMonth();
+                        double cash = loaded.getCash();
+                        RecipeCheck.quietly(() -> loaded.loadGameSave(10));
+                        SaveHeader header = f.game.getGameFiles().readHeader(10);
+                        check(name + " refusing format" + format + " into an actual running twin keeps its city and physical choices",
+                                GameVersion.noLongerReadable(header.getGameVersion()).equals(loaded.getLoadFailure())
+                                        && loaded.getBuildingManager() == manager && loaded.getMonth() == month && loaded.getCash() == cash
+                                        && physical.equals(HistoricalRecipeCheck.figures(restored)) && choices.equals(loaded.getRecipes().forSave())
+                                        && java.util.Arrays.equals(beforeBytes, java.nio.file.Files.readAllBytes(f.game.getGameFiles().saveFile(10))),
+                                loaded.getLoadFailure());
+                        physicalReaders(loaded, name);
+                    }
+                } else {
+                    check(name + " format" + format + " record loads without an unrelated refusal", earlier.getLoadFailure() == null, earlier.getLoadFailure());
+                    near(name + " accepted format" + format + " missing-flag record must already run pre-E21 crops immediately", farm(earlier, name).makes(Good.CROPS), old);
+                    advanceLoaded(earlier, name + " legacy format" + format);
+                    check(name + " missing-flag format" + format + " load really advances once", earlier.getMonth() == date(), earlier.getMonth());
+                    near(name + " next-month selection recovers modern crops after the format" + format + " load",
+                            farm(earlier, name).makes(Good.CROPS), t.defaultRecipe().makes().get(Good.CROPS));
+                }
             }
         }
+    }
+
+    /** Native current-save twins and both actual pre-E21 format refusals, shared by SaveFileCheck. */
+    static boolean saveChecks() throws Exception {
+        quietHelpers();
+        int before = fails;
+        savedStates(false);
+        return fails == before;
+    }
+
+    /** The same real saves/refusals with repeated screen reads and refusal into a running twin. */
+    static boolean readChecks() throws Exception {
+        quietHelpers();
+        int before = fails;
+        savedStates(true);
+        return fails == before;
     }
 
     public static void main(String[] args) throws Exception {
@@ -440,7 +495,7 @@ public final class ModernEngineeringCheck {
         actualProductionAndFiringCounts();
         localFind();
         licenceCapture();
-        savedStates();
+        savedStates(true);
         OUT.println("ModernEngineeringCheck: " + (fails == 0 ? "all " + checks + " ok" : fails + " FAILED of " + checks));
         System.exit(fails == 0 ? 0 : 1);
     }
