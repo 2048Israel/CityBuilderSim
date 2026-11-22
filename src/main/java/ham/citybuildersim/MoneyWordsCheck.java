@@ -46,6 +46,8 @@ import javafx.scene.text.Text;
  *      section 2 without having been looked at.
  *   2. On the Krona's city no string holds a "$" except inside a foreign mark (US$, C$, A$: ForeignAccounts.MONEY_MARK, and
  *      Currency.FOREIGN_SYMBOL). Each string is printed once, with the page it was first read on, as one FAIL line.
+ *   3. HS3's household page names both adult stages and their own ledgers, two former tiers and an owner family; caused estates,
+ *      actual profitable fills and dividends show the public model's figures, kept equal to built new and through a real redraw.
  *
  * The city is the playtest's village founded by hand with the money (LongPlaytest.founding() and its first builds) and played
  * MONTHS months, no more: the pages need figures, not a history.
@@ -358,6 +360,7 @@ public class MoneyWordsCheck {
         bal.setOwnerLine(true);
         bal.restoreOwnerLine(Map.of(Equity.COMPANIES[0], 0));
         bal.owners().households = 1;
+        bal.owners().savings = 5432;
         bal.setOutsideCensus(Household::households);
         bal.setFlows(0, 0, 0, 0, .2, 0, 0);
         bal.censusOnly(families);
@@ -418,6 +421,12 @@ public class MoneyWordsCheck {
         }
         check("both former tiers are named on the page", words.contains(college.label()) && words.contains(elite.label()));
         check("the owner family has its own line", words.contains(bal.owners().label()) && bench.householdCells().contains("OUT:" + bal.owners().key()));
+        for (Household own : List.of(college, elite, bal.owners())) {
+            bench.householdCell("OUT:" + own.key());
+            bench.drawKept(page);
+            check("the open ledger shows the model's savings for " + own.label(), lineShows(bench, "Put by",
+                    ham.citybuildersim.ui.Money.tightMoney(own.savings() * 1000, false)));
+        }
         String[] labels = {"Estate cash passed to heirs", "Estate debt repaid", "Estate debt written off", "Tax on realised gains", "Tax on dividends"};
         double[] amounts = {bal.getEstatePassed(), bal.getEstateRepaid(), bal.getEstateWrittenOff(), bal.getCapitalGainsTax(), bal.getDividendTax()};
         for (int i = 0; i < labels.length; i++) {
