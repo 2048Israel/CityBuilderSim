@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**239 harness files, 27,560 labelled assertions.** AllChecks runs 239 of them.
+**239 harness files, 27,562 labelled assertions.** AllChecks runs 239 of them.
 
 ## Which harnesses read which class
 
@@ -4728,7 +4728,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L361 ...and made cement, into its silo or straight abroad (the export-bound share leaves from the line)
   - L365 the month's money audit closes
 
-## CentralBankCheck.java - 346 labelled assertions
+## CentralBankCheck.java - 348 labelled assertions
 
 > Proves the central bank's books: that money is made and destroyed on them
 > and nowhere else, every price 0.7.0 hangs off the policy rate, and its two
@@ -4980,141 +4980,143 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1361 fixture: the households, the bank and the central bank each hold part of it
   - L1367 fixture: the only term piece is the serial and actual inherited face was consolidated
   - L1369 fixture: the bank bought its dial's share before actual own-paper consolidation
-  - L1388 fixture: a slice falls due next month and the central bank holds part of it
-  - L1390 the plan names its par in what falls due
-  - L1391 ...and, at its dial, rolls all of it
-  - L1392 ...so the market's issue is sized for the rest, less what is netted
-  - L1394 fixture: ...nothing netted, and the rest is issued
-  - L1397 the rollover sold one piece, a serial like the one falling due
-  - L1400 it holds exactly its maturing par of the new paper, from issue
-  - L1401 ...which is what its books say it rolled
-  - L1402 ...paid at the issue's price on each unit of face
-  - L1404 ...under par, as the market paid
-  - L1405 the bank's book of the new issue excludes its par: the bank, the households, the businesses and the world hold the market's face
-  - L1408 ...and the households took part of it
-  - L1409 ...for which they, the businesses, the world and the bank paid what the rollover raised, and no more
-  - L1412 ...which is what the bank's own book carries
-  - L1414 ...and the households' cells hold what the paper says they do
-  - L1416 the treasury repaid it its maturing par, as it always has
-  - L1417 so it holds what it held: the replacement in, the maturing par out
-  - L1422 fixture: the fresh roll records both its actual market sale and central-bank add-on
-  - L1428 fixture: actual inherited paper retirement includes positive parts of both old and newly settled issues
-  - L1430 term face conserves the actual gross issue, scheduled slice and native inherited retirement
-  - L1435 a month on it buys its dial's share of what the roll capitalised less actual consolidated face, and not its par back
-  - L1437 ...which puts it at its dial of the term paper
-  - L1445 by hand, the plan still names its par
-  - L1449 fixture: by hand, the one term loan the player sold in the gap
-  - L1451 the player's issue the month its holding falls due carries its par on top
-  - L1453 ...at that issue's price on each unit of face
-  - L1463 by hand with nothing sold, there is nothing to add it on to
-  - L1464 ...and its holding runs off, repaid it
-  - L1465 ...off its book
-  - L1474 fixture: its dial under what it holds, by more than its par in the slice
-  - L1477 in its QT the plan rolls nothing of its own
-  - L1478 ...all of its par runs off
-  - L1479 ...and the market's issue is sized for all of what falls due, less what is netted
-  - L1482 it takes nothing at issue
-  - L1485 ...holds none of the new paper
-  - L1486 ...and what it held of the slice is repaid it
-  - L1497 fixture: over its dial by less than its par in the slice
-  - L1499 over its dial, it rolls its par less how far over it is
-  - L1500 ...that much runs off
-  - L1501 ...and the market's issue is sized for the rest
-  - L1506 it holds that much of the new paper
-  - L1507 ...so what it held past its dial ran off, and the rest was rolled
-  - L1519 fixture: it holds all of the term paper
-  - L1523 the plan rolls all of what falls due as its own
-  - L1527 ...so there is nothing for the market to be sold
-  - L1530 the rollover issues it one serial like the one falling due
-  - L1533 ...its par exactly, all of it the central bank's
-  - L1534 ...none of it the bank's
-  - L1535 ...paid for at its quote's price on each unit of face
-  - L1537 ...under par, and settled: nobody owes for it
-  - L1539 so it holds what it held, the whole of the term paper
-  - L1540 ...all of it
-  - L1554 through a save: the new paper is there
-  - L1555 ...the central bank's par in it
-  - L1556 ...the households'
-  - L1557 ...its discount still to accrete
-  - L1558 ...the central bank's book
-  - L1559 ...what it has rolled at issue since founding
-  - L1561 ...and paid for it
-  - L1564 a month on, both hold the same
-  - L1565 ...and have made the same money
-  - L1574 fixture: a finite positive holding share can cause the at-dial rollover
-  - L1577 fixture: the at-dial rollover has no holding above its actual target
-  - L1682 fixture: the treasury sold a two-year term bond
-  - L1687 fixture: the central bank took the whole of the first bond, through its dial
-  - L1696 fixture: the treasury sold a new line of the same term with the first bond two months from its end
-  - L1703 fixture: the households and the bank each hold part of the line
-  - L1705 fixture: the first bond is in its last month, and the line is the benchmark the roll will reopen
-  - L1716 fixture: the benchmark line is a two-year line the households and the bank each hold part of
-  - L1718 fixture: the central bank holds the first bond, which falls due next month and is not the line
-  - L1721 fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing
-  - L1724 fixture: nothing is sold between the presses
-  - L1725 fixture: ...and the central bank's book is at its dial, so none of it runs off or is bought on
-  - L1739 fixture: the sale reopened the same line - no new piece - and has yet to settle
-  - L1743 fixture: the households and the bank each hold part of the line, and the central bank the first bond
-  - L1748 fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more
-  - L1751 fixture: term paper was sold between the presses, and the central bank is at its dial
-- **L1828 20. last year's surplus pays the market's part first, then the central bank's par**
-  - L1868 fixture: the town ran a surplus over its last year to size the serial from
-  - L1872 fixture: the treasury sold a small two-year serial
-  - L1882 fixture: the serial's first slice falls due next month
-  - L1890 fixture: the central bank at its dial holds part of the slice
-  - L1892 fixture: last year's surplus, unused, is more than all of the slice
-  - L1902 S nets all of what falls due
-  - L1903 ...the market's part first, then all of the central bank's par
-  - L1904 ...so it rolls nothing at issue
-  - L1905 ...and nothing is sold to the market
-  - L1908 no add-on is issued
-  - L1909 ...nor any other paper
-  - L1910 its maturing par is paid off, repaid it at the maturity
-  - L1911 ...and off its book
-  - L1912 the one ledger carries what was netted, once
-  - L1913 ...and the serial is down by the slice
-  - L1922 with less, S is what the treasury can net
-  - L1923 ...the market's part netted first, then what is left of S off the central bank's par
-  - L1925 ...and it rolls the remainder
-  - L1926 ...with nothing sold to the market
-  - L1929 the add-on is the remainder
-  - L1931 ...issued it alone, one serial like the one falling due
-  - L1933 ...its face the remainder
-  - L1934 ...all of it the central bank's but what the step then sold on to the bank
-  - L1936 ...at its quote's price on each unit of face
-  - L1938 its whole maturing par is repaid it
-  - L1942 with the market's part paid down, the remainder left it over its dial, and the step sold to the bank
-  - L1944 ...back to its dial's share of the term paper
-  - L1946 ...its book what it held, less the part of its par the surplus paid, less what it sold
-  - L1948 the one ledger carries S, once
-  - L1959 through a save: the paper issued it alone is there
-  - L1960 ...its par the central bank's
-  - L1961 ...the central bank's book
-  - L1962 ...what it has rolled at issue since founding
-  - L1964 ...and the ledger: what the year's surplus has paid
-  - L1968 a month on, both hold the same
-  - L1969 ...and have made the same money
-- **L2091 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals**
-  - L2134 ...and a new city's is Standard: its rule, advice, neutral rate and holdingRate() are the old
-  - L2139 very strict aims STRICTEST_AIM under the target
-  - L2140 ...never under MIN_INFLATION_TARGET: at half that target it aims at the bottom
-  - L2161 a strict step on its aim sets the neutral real rate plus the aim
-  - L2162 a loose step holds the neutral rate from the target to the top of its band
-  - L2163 ...and past the top answers only the excess, at its weight
-  - L2194 every step's weight is over one: past its band, inflation makes money dearer
-  - L2195 three points over the target, each step sets more than the one looser
-  - L2196 the words: Standard aims at the target
-  - L2198 ...very strict under it, at its aim:
-  - L2201 ...very loose acts only past its band, or under the target (0.7.81; under the band until then):
-  - L2213 fixture: the city is at its branch, on the rule, at Standard and the default target
-  - L2289 the Policy tab's preview at the step in force is the rule's own, to the bit
-  - L2321 fixture: each city of the set is at its branch, on the rule, at Standard and the default target
-  - L2328 STRICT_SHARE is over a half, so a set that holds the share holds the median too
-  - L2390 setting it is a decision on the central bank's record
-  - L2397 it survives a save
-  - L2400 fixture: the save carries it by name
-  - L2408 a save without it reads Standard
-  - L2410 ...as does a name this build does not know
+  - L1389 fixture: a slice falls due next month and the central bank holds part of it
+  - L1391 the plan names its par in what falls due
+  - L1392 ...and, at its dial, rolls all of it
+  - L1393 ...so the market's issue is sized for the rest, less what is netted
+  - L1395 fixture: ...nothing netted, and the rest is issued
+  - L1398 the rollover sold one piece, a serial like the one falling due
+  - L1401 it holds exactly its maturing par of the new paper, from issue
+  - L1402 ...which is what its books say it rolled
+  - L1403 ...paid at the issue's price on each unit of face
+  - L1405 ...under par, as the market paid
+  - L1406 the bank's book of the new issue excludes its par: the bank, the households, the businesses and the world hold the market's face
+  - L1409 ...and the households took part of it
+  - L1410 ...for which they, the businesses, the world and the bank paid what the rollover raised, and no more
+  - L1413 ...which is what the bank's own book carries
+  - L1415 ...and the households' cells hold what the paper says they do
+  - L1417 the treasury repaid it its maturing par, as it always has
+  - L1418 so it holds what it held: the replacement in, the maturing par out
+  - L1423 fixture: the fresh roll records both its actual market sale and central-bank add-on
+  - L1431 fixture: native inherited retirement reduces the old serial's actual principal payment
+  - L1433 the early inherited retirement leaves the newly settled issue whole
+  - L1435 the old serial releases actual cash principal and actual noncash inherited face
+  - L1437 term face conserves the actual gross issue, cash principal and native inherited retirement
+  - L1442 a month on it buys its dial's share of what the roll capitalised less actual consolidated face, and not its par back
+  - L1444 ...which puts it at its dial of the term paper
+  - L1452 by hand, the plan still names its par
+  - L1456 fixture: by hand, the one term loan the player sold in the gap
+  - L1458 the player's issue the month its holding falls due carries its par on top
+  - L1460 ...at that issue's price on each unit of face
+  - L1470 by hand with nothing sold, there is nothing to add it on to
+  - L1471 ...and its holding runs off, repaid it
+  - L1472 ...off its book
+  - L1481 fixture: its dial under what it holds, by more than its par in the slice
+  - L1484 in its QT the plan rolls nothing of its own
+  - L1485 ...all of its par runs off
+  - L1486 ...and the market's issue is sized for all of what falls due, less what is netted
+  - L1489 it takes nothing at issue
+  - L1492 ...holds none of the new paper
+  - L1493 ...and what it held of the slice is repaid it
+  - L1504 fixture: over its dial by less than its par in the slice
+  - L1506 over its dial, it rolls its par less how far over it is
+  - L1507 ...that much runs off
+  - L1508 ...and the market's issue is sized for the rest
+  - L1513 it holds that much of the new paper
+  - L1514 ...so what it held past its dial ran off, and the rest was rolled
+  - L1526 fixture: it holds all of the term paper
+  - L1530 the plan rolls all of what falls due as its own
+  - L1534 ...so there is nothing for the market to be sold
+  - L1537 the rollover issues it one serial like the one falling due
+  - L1540 ...its par exactly, all of it the central bank's
+  - L1541 ...none of it the bank's
+  - L1542 ...paid for at its quote's price on each unit of face
+  - L1544 ...under par, and settled: nobody owes for it
+  - L1546 so it holds what it held, the whole of the term paper
+  - L1547 ...all of it
+  - L1561 through a save: the new paper is there
+  - L1562 ...the central bank's par in it
+  - L1563 ...the households'
+  - L1564 ...its discount still to accrete
+  - L1565 ...the central bank's book
+  - L1566 ...what it has rolled at issue since founding
+  - L1568 ...and paid for it
+  - L1571 a month on, both hold the same
+  - L1572 ...and have made the same money
+  - L1581 fixture: a finite positive holding share can cause the at-dial rollover
+  - L1584 fixture: the at-dial rollover has no holding above its actual target
+  - L1689 fixture: the treasury sold a two-year term bond
+  - L1694 fixture: the central bank took the whole of the first bond, through its dial
+  - L1703 fixture: the treasury sold a new line of the same term with the first bond two months from its end
+  - L1710 fixture: the households and the bank each hold part of the line
+  - L1712 fixture: the first bond is in its last month, and the line is the benchmark the roll will reopen
+  - L1723 fixture: the benchmark line is a two-year line the households and the bank each hold part of
+  - L1725 fixture: the central bank holds the first bond, which falls due next month and is not the line
+  - L1728 fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing
+  - L1731 fixture: nothing is sold between the presses
+  - L1732 fixture: ...and the central bank's book is at its dial, so none of it runs off or is bought on
+  - L1746 fixture: the sale reopened the same line - no new piece - and has yet to settle
+  - L1750 fixture: the households and the bank each hold part of the line, and the central bank the first bond
+  - L1755 fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more
+  - L1758 fixture: term paper was sold between the presses, and the central bank is at its dial
+- **L1835 20. last year's surplus pays the market's part first, then the central bank's par**
+  - L1875 fixture: the town ran a surplus over its last year to size the serial from
+  - L1879 fixture: the treasury sold a small two-year serial
+  - L1889 fixture: the serial's first slice falls due next month
+  - L1897 fixture: the central bank at its dial holds part of the slice
+  - L1899 fixture: last year's surplus, unused, is more than all of the slice
+  - L1909 S nets all of what falls due
+  - L1910 ...the market's part first, then all of the central bank's par
+  - L1911 ...so it rolls nothing at issue
+  - L1912 ...and nothing is sold to the market
+  - L1915 no add-on is issued
+  - L1916 ...nor any other paper
+  - L1917 its maturing par is paid off, repaid it at the maturity
+  - L1918 ...and off its book
+  - L1919 the one ledger carries what was netted, once
+  - L1920 ...and the serial is down by the slice
+  - L1929 with less, S is what the treasury can net
+  - L1930 ...the market's part netted first, then what is left of S off the central bank's par
+  - L1932 ...and it rolls the remainder
+  - L1933 ...with nothing sold to the market
+  - L1936 the add-on is the remainder
+  - L1938 ...issued it alone, one serial like the one falling due
+  - L1940 ...its face the remainder
+  - L1941 ...all of it the central bank's but what the step then sold on to the bank
+  - L1943 ...at its quote's price on each unit of face
+  - L1945 its whole maturing par is repaid it
+  - L1949 with the market's part paid down, the remainder left it over its dial, and the step sold to the bank
+  - L1951 ...back to its dial's share of the term paper
+  - L1953 ...its book what it held, less the part of its par the surplus paid, less what it sold
+  - L1955 the one ledger carries S, once
+  - L1966 through a save: the paper issued it alone is there
+  - L1967 ...its par the central bank's
+  - L1968 ...the central bank's book
+  - L1969 ...what it has rolled at issue since founding
+  - L1971 ...and the ledger: what the year's surplus has paid
+  - L1975 a month on, both hold the same
+  - L1976 ...and have made the same money
+- **L2098 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals**
+  - L2141 ...and a new city's is Standard: its rule, advice, neutral rate and holdingRate() are the old
+  - L2146 very strict aims STRICTEST_AIM under the target
+  - L2147 ...never under MIN_INFLATION_TARGET: at half that target it aims at the bottom
+  - L2168 a strict step on its aim sets the neutral real rate plus the aim
+  - L2169 a loose step holds the neutral rate from the target to the top of its band
+  - L2170 ...and past the top answers only the excess, at its weight
+  - L2201 every step's weight is over one: past its band, inflation makes money dearer
+  - L2202 three points over the target, each step sets more than the one looser
+  - L2203 the words: Standard aims at the target
+  - L2205 ...very strict under it, at its aim:
+  - L2208 ...very loose acts only past its band, or under the target (0.7.81; under the band until then):
+  - L2220 fixture: the city is at its branch, on the rule, at Standard and the default target
+  - L2296 the Policy tab's preview at the step in force is the rule's own, to the bit
+  - L2328 fixture: each city of the set is at its branch, on the rule, at Standard and the default target
+  - L2335 STRICT_SHARE is over a half, so a set that holds the share holds the median too
+  - L2397 setting it is a decision on the central bank's record
+  - L2404 it survives a save
+  - L2407 fixture: the save carries it by name
+  - L2415 a save without it reads Standard
+  - L2417 ...as does a name this build does not know
 
 ## ChartCheck.java - 111 labelled assertions
 

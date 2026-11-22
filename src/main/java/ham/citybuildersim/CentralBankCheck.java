@@ -1384,6 +1384,7 @@ public class CentralBankCheck {
         double itsPar = slice * sa.centralBankPrincipal() / sa.getOustandingPrincipal();
         double heldBefore = cba.getPaperHeld();
         double termBeforeRoll = a.getDebtManager().termPrincipal();
+        double oldFaceBeforeRoll = sa.getOustandingPrincipal();
         Rollover.Plan plan = a.rolloverPlan();
         assertTrue("fixture: a slice falls due next month and the central bank holds part of it",
                 itsPar > 0 && itsPar < slice && a.centralBankOverItsDial() == 0);
@@ -1416,20 +1417,26 @@ public class CentralBankCheck {
         close("the treasury repaid it its maturing par, as it always has", cba.getPaperRedeemed(), itsPar, 1e-6);
         close("so it holds what it held: the replacement in, the maturing par out", cba.getPaperHeld(), heldBefore, 1e-6);
         double termNow = a.getDebtManager().termPrincipal();
-        // The sale records retain gross face. Closing fresh face already lost its own
-        // inherited fraction; subtracting the whole retirement from that would count
-        // that fraction twice. Reconcile the complete issue/maturity/retirement stock.
+        // Gross issue and actual cash principal are recorded flows. Inherited own
+        // paper is consolidated BEFORE principal processing: it shrinks the old
+        // serial's schedule, so the previewed slice is not the cash actually paid.
         assertTrue("fixture: the fresh roll records both its actual market sale and central-bank add-on",
                 fresh.getSales() != null && fresh.getSales().size() == 2
                         && fresh.getSales().stream().anyMatch(sale -> Debt.CENTRAL_BANK_ADD_ON.equals(sale.getHow())));
         double grossIssued = fresh.getSales().stream().mapToDouble(Debt.Sale::getFace).sum();
         double retiredInRoll = a.getEstateCustody().paperConsolidated();
-        double freshRetired = grossIssued - fresh.getOustandingPrincipal();
-        assertTrue("fixture: actual inherited paper retirement includes positive parts of both old and newly settled issues",
-                freshRetired > 0 && freshRetired < retiredInRoll);
-        close("term face conserves the actual gross issue, scheduled slice and native inherited retirement",
-                termNow, termBeforeRoll + grossIssued - slice - retiredInRoll, 1e-6);
-        double capitalised = grossIssued - slice;
+        double principalPaid = a.getCityPrincipalRepaidThisMonth();
+        out.printf("   roll: previewed slice %.12g, actual cash principal %.12g, inherited face retired %.12g, gross new face %.12g%n",
+                slice, principalPaid, retiredInRoll, grossIssued);
+        assertTrue("fixture: native inherited retirement reduces the old serial's actual principal payment",
+                retiredInRoll > 0 && principalPaid > 0 && principalPaid < slice);
+        close("the early inherited retirement leaves the newly settled issue whole",
+                fresh.getOustandingPrincipal(), grossIssued, 1e-6);
+        close("the old serial releases actual cash principal and actual noncash inherited face",
+                oldFaceBeforeRoll - sa.getOustandingPrincipal(), principalPaid + retiredInRoll, 1e-6);
+        close("term face conserves the actual gross issue, cash principal and native inherited retirement",
+                termNow, termBeforeRoll + grossIssued - principalPaid - retiredInRoll, 1e-6);
+        double capitalised = grossIssued - principalPaid;
         double heldNow = cba.getPaperHeld();
         play(a);
         close("a month on it buys its dial's share of what the roll capitalised less actual consolidated face, and not its par back",
