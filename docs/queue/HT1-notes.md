@@ -649,8 +649,8 @@ Pick stays ALL239; whole money/save review floor remains BondMarket, Debt,
 DebtManager, FundLedger, TreasuryJournal, DataSave, HistorySave and both
 save-format constants (59/oldest59). L7 remains separate Pending.
 
-The full CentralBankCheck wrapper subsequently terminated: wrapper1, native
-child3, one new own fixture failure plus the two precisely named FS10H
+The full CentralBankCheck wrapper subsequently terminated: wrapper4, native
+child3, PowerShell relay1, one new own fixture failure plus the two precisely named FS10H
 predicates, no exception. All119 recorded audit months close and M0 moves
 by actual money made; the existing long policy comparisons completed too.
 Its complete source/raw/classes/terminal are preserved. The own failure
@@ -760,3 +760,62 @@ main integration. This checkpoint retains the provisional marker and makes
 no source-SHIP/readiness claim. Final ensemble must use the pushed final
 source against docs/ensemble/0.9.183.md, followed by the versioned ALL dry;
 old .181 ensemble evidence cannot certify this model. L7 remains Pending.
+
+
+## Independent clearance and final .183 ensemble
+
+Root45f6 relays REV-HT1c1-2 SHIP on b499ee747..71af5eea2. The new native
+extinction removes every household issuer ID and records actual noncash
+face loss without changing savings or the share-tax loss carry. The loss
+survives a save without replay; format59 and published hooks remain, fixture
+tolerances stay, and both zero-cash predicates are main's code. This meets
+the required follow-up condition. Any further money/save source change
+requires another scoped review; none was made afterward.
+
+Final label HT1-final183-20261122-0407 runs pushed71af5eea2, source
+dd6d53436dddd65815ba0dcb7f0207ea5adebe0b, base2149ca45c, against the
+published docs/ensemble/0.9.183.md baseline. All80/80 finish, none missing
+or short,15.9 wall/125.4 summed minutes; BOX OpenJDK21.0.13 with native
+main earth-2/world-1. Native controller4, PowerShell relay1; raw score
+21/26 overall and6/10 hard FAIL. All five M1 criteria pass, failed/unread0/0
+in every policy. F1 is1/16 AUTO2/ZERO_SLACK/SHOCK/HIGH,0/16 ZERO_HOT;
+the sole distinct finding is seed14, m456, households with no home,
+population16631. Informational AUTO2 T2 now PASS, median3958776 versus
+baseline1818590; other verdict changes are the four F1 rows. The complete
+raw scores, baseline, logs, CSVs, native exits and snapshot remain unchanged.
+docs/ensemble/HT1.md copies the whole new baseline with a truthful named
+preface. No old .181 verdict is reused to certify this model.
+
+The final CSV prefix is not byte-equal to the old .181 prefix, so I did not
+infer the old private figures from that match. One new snapshot-only
+in-process replay uses the unchanged accepted HT1LandTrace driver against
+the final ensemble's exact original classes, no implicit/production compile
+and no new main comparison. Native compiler0/.36s, model0/11.98s; both
+owned groups verified gone, post class/JAR/data pins unchanged. Its456-line
+CSV equals this ensemble's prefix byte for byte, SHA256
+70f1e3b9a3d32b6b863b516e21510b013fa87b6909e49b8fa7c7bde3fd1871c0.
+Complete source/pins/observations/terminal are retained in
+target/ht1-housing-183-20261122-0427 and the corresponding BOX diagnostic
+directory, outside the retained ensemble clone.
+
+Actual final-model figures confirm FB11H again: at the m404 advisor visit,
+used ground.9974023085 exceeds.9523809524; offer1679.800015 is affordable,
+but starting cash6249.185859 makes the10% growth-land budget at most624.92.
+Growth-land short counter3->4, bought count stays21; after the visit used
+share.9862464631 still exceeds target. No more advisor visit through456.
+All51 native housing decisions406..456 refuse land, zero mortgage events;
+last63 homes open407, then2496 homes and no sites persist. At455 unplaced
+.8080997702, at4564.374953812222884; households4812.528356 and doubled
+2407.264178. Native planner needs5570 square metres versus74 free. At456
+bank equity32453.503077 exceeds target22176.365052, minimum10752.176995;
+project room62285.685004 and capital growth unrestricted. Landlord cash
+2585.349310/monthly after-profit-tax536.475113; city cash27063.534290 versus
+offer6682.439460/10% allowance2706.35, observed without an extra visit.
+Earlier down-payment refusals remain logged and are not the binding stage.
+
+Under the already delegated b856/107a call, those four exact F1 recurrences
+pass BY NAME with FB11H's current fixture appended. Raw hard6/10 remains
+FAIL; no scorer/premise/precision/threshold or tax/land/bank model changed.
+The source is independently cleared, all owned ensemble/diagnostic trees
+actually terminal/home-copied, and final versioned ALL dry proceeds under
+the standing GO. Provisional marker stays until that verdict is complete.

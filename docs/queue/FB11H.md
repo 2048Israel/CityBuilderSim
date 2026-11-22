@@ -1,4 +1,4 @@
-# FB11H ? HT1 seed14 growth-land funding fixture
+# FB11H — HT1 seed14 growth-land funding fixture
 
 Queued by HT1 under orchestrator b856's delegated call and Jerus's 2026-11-04 rule: a main-class finding reached on the batch's path passes by name with its repair queued. This is the exact new fixture for FB11's ER1-F advisor/land-funding class. Coordinate with [FB11](FB11.md); do not run competing LongPlaytest edits. MC1 shipped in .171 and is not this owner. No bank-capital or tax-rule redesign is authorized by this row.
 
@@ -11,3 +11,20 @@ RealEstate's own monthly decision says no land from406 through456. The last63 ho
 Use the existing bounded land-office funding flow for demanded growth land, preserving whole offers, seller payment, debt-service checks, currency/reserve edges and the cash-share rule for unfinanced purchases, as FB11/ER1-F already recommends. Expected owners are LongPlaytest.keepGroundAhead/advise and the existing bounded land-funding route as needed; LandMarket's price/whole-offer rules are read, not changed. Scope any additional owner before editing it.
 
 A causing proof must retain this exact seeded path, measure cash/offer/budget and native refusal/placement counters, then prove the funded land purchase and housing response remove the failure with actual stock/cash/issuer/counterparty conservation. Retain a genuinely unaffordable/debt-service-refused control. Do not clip unplaced households, lower F1's greater-than1 threshold, add cash, force cheap offers, retune tax/bank rules, suppress the long skip or replace the founding. The resulting real model needs its own final ensemble and gate under the contract. This queued case does not authorize implementing FB11 inside HT1.
+
+## Final integrated .183 recurrence
+
+The final model at71af5eea2/source dd6d53436dddd65815ba0dcb7f0207ea5adebe0b,
+base2149ca45c/.183, reaches the same seed14/m456 finding in AUTO2 and its
+ZERO_SLACK/SHOCK/HIGH twins. A new snapshot-only native replay to456
+matches its own final ensemble prefix exactly, SHA256
+70f1e3b9a3d32b6b863b516e21510b013fa87b6909e49b8fa7c7bde3fd1871c0;
+the old prefix was not presumed equal. Current figures: m404 offer1679.800015
+versus cash6249.185859 and at most624.92 cash-share budget; native short3->4,
+bought21 unchanged, no later advice through456. All51 decisions406..456
+refuse land, no mortgage events. At456 homes2496/sites0, households4812.528356,
+doubled2407.264178, unplaced4.374953812222884;74 square metres free against
+5570 required. Bank equity32453.503077/target22176.365052, landlord cash
+2585.349310/after-profit-tax income536.475113. This is the same bounded
+land-office funding class, confirmed on current classes, not a tax or
+bank-capital repair. Evidence: target/ht1-housing-183-20261122-0427.
