@@ -1,4 +1,4 @@
-# CityRuns.java - 5,348 lines · 267 methods · 57 constants · model
+# CityRuns.java - 5,366 lines · 268 methods · 57 constants · model
 
 `ham/citybuildersim/CityRuns.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >             The highways' alone: the railway grows no corridors (WAYS below);
 > ... (77 more lines in the source)
 
-**Uses:** [World](World.md) (71), [CityMap](CityMap.md) (41), [Pieces](Pieces.md) (18), [InterchangeGround](InterchangeGround.md) (14), [DistrictPlan](DistrictPlan.md) (6), [TilePainter](TilePainter.md) (6), [TrainSchedule](TrainSchedule.md) (6), [BuildingVisual](BuildingVisual.md) (2), [TileRaster](TileRaster.md) (2)
+**Uses:** [World](World.md) (72), [CityMap](CityMap.md) (41), [Pieces](Pieces.md) (18), [InterchangeGround](InterchangeGround.md) (14), [DistrictPlan](DistrictPlan.md) (6), [TilePainter](TilePainter.md) (6), [TrainSchedule](TrainSchedule.md) (6), [BuildingVisual](BuildingVisual.md) (2), [TileRaster](TileRaster.md) (2)
 
 **Used by (21):** [BridgeMapCheck](BridgeMapCheck.md), [CityMap](CityMap.md), [CrossingCheck](CrossingCheck.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [InterchangeGround](InterchangeGround.md), [IslandNetCheck](IslandNetCheck.md), [IslandRailCheck](IslandRailCheck.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [QuayRailCheck](QuayRailCheck.md), [RailDrawCheck](RailDrawCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -92,10 +92,10 @@
 | 3787 | · a further yard, and its branch |
 | 3980 | THE MAIN LINE (0.8.1, batch FR0; spec-freight 4.2, D14) |
 | 4224 | · the trains' way (0.8.2, batch FR1; spec-freight 4.4) |
-| 4382 | THE MONTH: TO THE MODEL'S COUNTS |
-| 4609 | LONG BRIDGES (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) |
-| 4883 | READING THEM: A BOX OF PLOTS |
-| 5137 | THE SIDECAR |
+| 4396 | THE MONTH: TO THE MODEL'S COUNTS |
+| 4624 | LONG BRIDGES (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) |
+| 4898 | READING THEM: A BOX OF PLOTS |
+| 5155 | THE SIDECAR |
 
 ## Constants
 
@@ -155,9 +155,9 @@
 | 3555 | `CityRuns.SIDING_TRIES` | `200` | The most works laySidings() tries in one run: 200. |
 | 3679 | `CityRuns.QUAY` | `Integer.MAX_VALUE` | The corridor of the arms laid to a harbour's quay lines: one the net never lists, so a quay spur is no siding, branch or spine to anything that reads the net (sidings(), the Rail Spurs, the loading sheds, the sidecar'... |
 | 3682 | `CityRuns.QUAY_REACH` | `CityMap.DISTRICT / 2` | How far from the main line a quay spur's end may lie, in plots, counted along its way: half a district. |
-| 4653 | `CityRuns.BRIDGE_ROAD` | `CityMap.BridgeRun.ROAD, BRIDGE_HIGHWAY = CityMap.BridgeRun.HIGHWAY, BRIDGE_RA...` | A long bridge's kinds (CityMap.BridgeRun's): a street-sized deck that belongs to no net, a highway's and the railway's. |
-| 4656 | `CityRuns.BRIDGE_LEGS` | `1024, BRIDGE_LEG = 1<<20` | The most corners a bridge's path may have and the longest leg of it, in plots: 1,024 legs of 1,048,576 plots, so that its steps fit an int. |
-| 4659 | `CityRuns.BRIDGE_NET` | `new Net(RAILWAY, RAIL_AT, 0)` | A net for a bridge's stretches to be read as, so that stretchInto() marks no highway's ramp on them: the railway's, which never takes one. |
+| 4668 | `CityRuns.BRIDGE_ROAD` | `CityMap.BridgeRun.ROAD, BRIDGE_HIGHWAY = CityMap.BridgeRun.HIGHWAY, BRIDGE_RA...` | A long bridge's kinds (CityMap.BridgeRun's): a street-sized deck that belongs to no net, a highway's and the railway's. |
+| 4671 | `CityRuns.BRIDGE_LEGS` | `1024, BRIDGE_LEG = 1<<20` | The most corners a bridge's path may have and the longest leg of it, in plots: 1,024 legs of 1,048,576 plots, so that its steps fit an int. |
+| 4674 | `CityRuns.BRIDGE_NET` | `new Net(RAILWAY, RAIL_AT, 0)` | A net for a bridge's stretches to be read as, so that stretchInto() marks no highway's ramp on them: the railway's, which never takes one. |
 
 ## Fields (state)
 
@@ -257,23 +257,23 @@
 | 4007 | `private long stationAt` |  |
 | 4008 | `private int stationAtGateway` |  |
 | 4009 | `private int stationAtArm` |  |
-| 4504 | `int[] mp` | The map piece each net's hub lies on (-1 - j for a hub on none), whether the net is its map piece's owner, and its target in plots. |
-| 4505 | `boolean[] owner` |  |
-| 4506 | `long[] tgt` |  |
-| 4663 | `final int kind` |  |
-| 4664 | `final long[] corners` |  |
-| 4665 | `final Arm path` |  |
-| 4666 | `final long hash, x0, y0, x1, y1` |  |
-| 4683 | `private List<Bridge> bridges` | The bridges that stand, in the order handed (ET6); empty in every city with none, and then nothing in this section runs. |
-| 4686 | `private long bridgeStamp` | A stamp of the list they were handed as (stampOf()): 0 for none. |
-| 4689 | `private int bridgesRefused` | How many of the runs handed were no path (a leg off the eight headings, fewer than two corners, an unknown kind) and so are not laid. |
-| 4692 | `private boolean roadBridges` | Whether a road bridge stands: a tile's street pass asks it of every plot, so the answer is kept. |
+| 4518 | `int[] mp` | The map piece each net's hub lies on (-1 - j for a hub on none), whether the net is its map piece's owner, and its target in plots. |
+| 4519 | `boolean[] owner` |  |
+| 4520 | `long[] tgt` |  |
+| 4678 | `final int kind` |  |
+| 4679 | `final long[] corners` |  |
+| 4680 | `final Arm path` |  |
+| 4681 | `final long hash, x0, y0, x1, y1` |  |
+| 4698 | `private List<Bridge> bridges` | The bridges that stand, in the order handed (ET6); empty in every city with none, and then nothing in this section runs. |
+| 4701 | `private long bridgeStamp` | A stamp of the list they were handed as (stampOf()): 0 for none. |
+| 4704 | `private int bridgesRefused` | How many of the runs handed were no path (a leg off the eight headings, fewer than two corners, an unknown kind) and so are not laid. |
+| 4707 | `private boolean roadBridges` | Whether a road bridge stands: a tile's street pass asks it of every plot, so the answer is kept. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 152 | 5197 | **type** `public final class CityRuns` | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map... |
+| 152 | 5215 | **type** `public final class CityRuns` | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map... |
 
 ### THE DIALS (lines 154-236)
 
@@ -598,7 +598,7 @@
 | 4128 | 45 | `public List<int[]> mainLine()` | The main line as ranges of steps, each {arm, from, to} inclusive (step 0 an arm's start plot). |
 | 4179 | 44 | `private static long mainInto(Arm a, int from, int to, long x0, long y0, int w, int h, byte[] marks, boolean doubleMain)` | Marks one main-line range's plots inside the box with M_MAIN, and with M_DOUBLE where doubleMain; returns a hash of the range when any of it lies in the box, else 0. |
 
-### the trains' way (0.8.2, batch FR1; spec-freight 4.4) (lines 4224-4381)
+### the trains' way (0.8.2, batch FR1; spec-freight 4.4) (lines 4224-4395)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -608,69 +608,70 @@
 | 4310 | 3 | `public double[][] highwayWayTo(int fromArm, long px, long py)` | The highways' way from the end of arm fromArm (the arm their world line leaves the city's ground from) to a plot of the highways net, as wayToPlot() finds the railway's (FR5, slice B: the trucks' routes): wayOn(highwa... |
 | 4322 | 16 | `public List<double[][]> highwayPolylines()` | The highways' arms as polylines (FX5 slice D), each {xs, ys} in plots: the points of the arm at its ends and at every turn (armPoints()) at the middles of their plots (x + 0.5, y + 0.5), the corners the map rounds wit... |
 | 4345 | 9 | `public List<long[]> highwayRamps()` | The highways' ramps at their arms' ends (fill() marks one at each arm that has steps): {x, y, the arm's index} in plots, in the arms' order; none while the highways reach no street (highwaysReach()). |
-| 4356 | 10 | `static void armPoints(Arm a, int from, int to, List<long[]> out)` | Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. |
-| 4368 | 13 | `static long[] plotAt(Arm a, int k)` | The plot at step k of arm a: its start at 0, its end at a.steps and past. |
+| 4363 | 5 | `public List<long[]> waitingEnds()` | (RR1) The ramps among highwayRamps() at the ends of arms that wait at the city's own water (stoppedBy SEA: the sea, or water wider than the net bridges), {x, y, the arm's index}: such an arm grows on only if the groun... |
+| 4370 | 10 | `static void armPoints(Arm a, int from, int to, List<long[]> out)` | Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. |
+| 4382 | 13 | `static long[] plotAt(Arm a, int k)` | The plot at step k of arm a: its start at 0, its end at a.steps and past. |
 
-### THE MONTH: TO THE MODEL'S COUNTS (lines 4382-4608)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4395 | 5 | `public boolean layTo(long highwayPlots, long trackPlots, int yardCount, int yardW, int yardH, Ground g, long fx, long fy, long ...` | Lays the runs to the model's plots of highway and of track, and its yards (w x h each), over the ground: the highways grown, or taken back from their newest end, from the founding site (fx, fy); the railway laid from ... |
-| 4407 | 4 | `public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, long spurs, Ground g, long fx, long fy, long rx...` | ...with a yard of its own size each (`yardSizes`, {w, h} in the order the map lays them: Rail Terminals, then Rail Depots), `spurs` Rail Spurs, each a siding into a bulk works, and the bulk works' boxes `works`, each ... |
-| 4422 | 13 | `public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, long spurs, Ground g, long fx, long fy, long rx...` | ...with the city's ground in pieces (CL5; ONE_PIECE for none): the highways are dealt between the pieces that hold buildings, each with a net of its own from its own hub (layHighways()). |
-| 4458 | 42 | `private void layHighways(long plots, Ground g, long fx, long fy, Pieces pieces)` | The highways to the model's `plots`, dealt between the city's pieces of ground (CL5). |
-| 4502 | 6 | **type** `private static final class Deal` | A net's `plots` dealt between its pieces (deal()): each piece's map piece, whether it owns it, and its target. |
-| 4515 | 49 | `private static Deal deal(Net n, long plots, Pieces pieces)` | (CL5; RI1 lifted it out of layHighways() for layRail() to deal the railway as the highways are) Net n's `plots` dealt between its pieces: each map piece's OWNER is the oldest net whose hub lies on it, and a net that i... |
-| 4570 | 17 | `private static void openPieces(Net n, Ground g, Pieces pieces)` | Opens a net for each map piece but the home piece (piece 0) that has weight and a hub on dry ground of its own, and none yet: no net's hub lies on it already (openPiece()). |
-| 4589 | 19 | `long signature()` | A hash of everything laid. |
-
-### LONG BRIDGES (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) (lines 4609-4882)
+### THE MONTH: TO THE MODEL'S COUNTS (lines 4396-4623)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4662 | 19 | **type** `static final class Bridge` | One long bridge that stands (ET6): its kind, its corners as the map was handed them, its legs as the stretches of an Arm, a hash of it and the box of plots it lies in. |
-| 4668 | 12 | `Bridge(int kind, long[] corners, Arm path)` _(in CityRuns.Bridge)_ |  |
-| 4695 | 5 | `static long hashOf(int kind, long[] corners)` | A hash of a bridge: its kind and its corners, each plot in order. |
-| 4705 | 6 | `static long stampOf(List<CityMap.BridgeRun> list)` | A stamp of a list of bridges the map is handed: the sum of their hashes, so that the same bridges in another order are the same stamp, mixed with how many; 0 for none (null or empty), and never 0 for any. |
-| 4713 | 4 | `static int headingOf(long sx, long sy)` | The heading (0 to 7) of a step of (sx, sy), each -1, 0 or 1 and not both 0: its index in DX and DY. |
-| 4723 | 27 | `static Bridge bridgeOf(CityMap.BridgeRun r)` | The bridge a run is, or null when it is no path: a kind that is not one, fewer than two corners, a leg that stands still or is off the eight headings (a leg runs from one corner to the next along a row, a column or a ... |
-| 4758 | 23 | `public boolean setBridges(List<CityMap.BridgeRun> list)` | Hands the runs the long bridges that stand (ET6): the bridges laid before are replaced by these, each laid whole. |
-| 4783 | 5 | `private void sawBridge(Bridge b)` | Tells the witness that every district a highway's or a railway's bridge lies in is about to change (a road bridge's ground is not dated). |
-| 4790 | 1 | `public int bridgeCount()` | How many long bridges stand. |
-| 4793 | 1 | `public boolean roadBridges()` | Whether a road bridge stands. |
-| 4796 | 5 | `public int bridgeCount(int kind)` | ...of a kind (BRIDGE_ROAD, BRIDGE_HIGHWAY or BRIDGE_RAIL). |
-| 4803 | 1 | `public long bridgeStamp()` | The stamp of the bridges that stand, 0 for none: what CityMap folds into its sidecar's land stamp. |
-| 4806 | 1 | `public int bridgesRefused()` | How many runs the map handed were no path, and are not laid. |
-| 4809 | 8 | `public boolean onBridge(int kind, long x, long y)` | Whether a bridge of the kind stands on plot (x, y): one of its stretches' plots, a 45-degree step's corner or its first landing. |
-| 4819 | 4 | `public boolean bridgeNear(int kind, long x0, long y0, long w, long h)` | Whether a bridge of the kind lies in the box of plots w x h from (x0, y0) (by its own box: it may still miss the plots). |
-| 4829 | 27 | `private long bridgesInto(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean roadGround)` | The bridges' plots in the box, into fixed (fill()): a highway's F_HIGHWAY and a railway's F_RAIL, mixed with what the nets laid there as put() mixes any two; a road bridge's only when `roadGround` and only on a plot n... |
-| 4858 | 15 | `private long bridgesHash(long x0, long y0, int w, int h)` | A hash of the bridges' stretches in the box, of every kind and without laying them: frameHash()'s part; 0 where no bridge has a plot in the box. |
-| 4875 | 7 | `private static boolean reaches(Arm a, int s, long x0, long y0, int w, int h)` | Whether stretch s of a bridge's path may put a plot in the box: range() clips a straight stretch along its heading alone, so the row or column it runs in is tested here. |
+| 4409 | 5 | `public boolean layTo(long highwayPlots, long trackPlots, int yardCount, int yardW, int yardH, Ground g, long fx, long fy, long ...` | Lays the runs to the model's plots of highway and of track, and its yards (w x h each), over the ground: the highways grown, or taken back from their newest end, from the founding site (fx, fy); the railway laid from ... |
+| 4421 | 4 | `public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, long spurs, Ground g, long fx, long fy, long rx...` | ...with a yard of its own size each (`yardSizes`, {w, h} in the order the map lays them: Rail Terminals, then Rail Depots), `spurs` Rail Spurs, each a siding into a bulk works, and the bulk works' boxes `works`, each ... |
+| 4436 | 13 | `public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, long spurs, Ground g, long fx, long fy, long rx...` | ...with the city's ground in pieces (CL5; ONE_PIECE for none): the highways are dealt between the pieces that hold buildings, each with a net of its own from its own hub (layHighways()). |
+| 4472 | 42 | `private void layHighways(long plots, Ground g, long fx, long fy, Pieces pieces)` | The highways to the model's `plots`, dealt between the city's pieces of ground (CL5). |
+| 4516 | 6 | **type** `private static final class Deal` | A net's `plots` dealt between its pieces (deal()): each piece's map piece, whether it owns it, and its target. |
+| 4529 | 49 | `private static Deal deal(Net n, long plots, Pieces pieces)` | (CL5; RI1 lifted it out of layHighways() for layRail() to deal the railway as the highways are) Net n's `plots` dealt between its pieces: each map piece's OWNER is the oldest net whose hub lies on it, and a net that i... |
+| 4584 | 17 | `private static void openPieces(Net n, Ground g, Pieces pieces)` | Opens a net for each map piece but the home piece (piece 0) that has weight and a hub on dry ground of its own, and none yet: no net's hub lies on it already (openPiece()). |
+| 4603 | 20 | `long signature()` | A hash of everything laid. |
 
-### READING THEM: A BOX OF PLOTS (lines 4883-5136)
+### LONG BRIDGES (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6) (lines 4624-4897)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4897 | 3 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver)` | What the runs lay on the w x h plots from world plot (x0, y0), row by row: into fixed, F_HIGHWAY, F_RAIL, F_RAIL_OVER (the railway over a highway) and, `yardsOver`, F_YARD over every plot of a yard (a plan's ground: n... |
-| 4907 | 3 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver, boolean reserves)` | ...with or without the interchanges' reserves (F_RESERVE; THE RUNS DATED, batch FX7): the reserves are derived from the runs, the ground and the works about them and found when asked, so the map's dated record of what... |
-| 4916 | 77 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver, boolean reserves, boolean reach)` | ...and with the highways filled in as if highwaysReach() were `reach` (batch FX7): what the runs lay today, as they were drawn the month before the highways first reached a street, or the month they ceased to. |
-| 5001 | 37 | `public long frameHash(long x0, long y0, int w, int h)` | A hash of what the runs lay on the w x h plots from (x0, y0) - each stretch's steps there, the hub, the arms' ends (their ramps), the yards - without drawing them: what a district's plan is kept against (CityMap.ownSt... |
-| 5040 | 14 | `static long[] range(Arm a, int s, long x0, long y0, int w, int h)` | The steps of stretch s of arm a whose plots (or corners) may fall in the box: {first, last}; first > last for none. |
-| 5055 | 6 | `private static void put(byte[] fixed, int w, long x, long y, byte code)` |  |
-| 5063 | 34 | `private static long stretchInto(Net n, Arm a, int s, long x0, long y0, int w, int h, byte[] fixed, byte[] marks, byte code)` | One stretch's plots inside the box, into fixed and marks; a hash of its part there. |
-| 5099 | 3 | `static int diagCode(int h)` | A 45-degree heading's two bits: south-east 0, south-west 1, north-west 2, north-east 3. |
-| 5104 | 7 | `public byte at(long x, long y)` | What the runs carry at world plot (x, y): F_YARD, F_RAIL_OVER, F_HIGHWAY, F_RAIL, or 0 - no highway while the net reaches no street (highwaysReach(), FX2). |
-| 5118 | 7 | `public List<long[]> highwayDistricts()` | The districts the highways' stretches are filed under (batch FX7, THE RUNS DATED), each {world column, world row} (plot / CityMap.DISTRICT, rounded down): every district a highway plot lies in, and - after a net was t... |
-| 5127 | 9 | `public boolean highwaysNear(long wx, long wy)` | Whether a highway stretch is filed under world district (wx, wy) or one of the eight beside it (batch UP5, THE RESERVES DATED): where an interchange's reserve can lie. |
+| 4677 | 19 | **type** `static final class Bridge` | One long bridge that stands (ET6): its kind, its corners as the map was handed them, its legs as the stretches of an Arm, a hash of it and the box of plots it lies in. |
+| 4683 | 12 | `Bridge(int kind, long[] corners, Arm path)` _(in CityRuns.Bridge)_ |  |
+| 4710 | 5 | `static long hashOf(int kind, long[] corners)` | A hash of a bridge: its kind and its corners, each plot in order. |
+| 4720 | 6 | `static long stampOf(List<CityMap.BridgeRun> list)` | A stamp of a list of bridges the map is handed: the sum of their hashes, so that the same bridges in another order are the same stamp, mixed with how many; 0 for none (null or empty), and never 0 for any. |
+| 4728 | 4 | `static int headingOf(long sx, long sy)` | The heading (0 to 7) of a step of (sx, sy), each -1, 0 or 1 and not both 0: its index in DX and DY. |
+| 4738 | 27 | `static Bridge bridgeOf(CityMap.BridgeRun r)` | The bridge a run is, or null when it is no path: a kind that is not one, fewer than two corners, a leg that stands still or is off the eight headings (a leg runs from one corner to the next along a row, a column or a ... |
+| 4773 | 23 | `public boolean setBridges(List<CityMap.BridgeRun> list)` | Hands the runs the long bridges that stand (ET6): the bridges laid before are replaced by these, each laid whole. |
+| 4798 | 5 | `private void sawBridge(Bridge b)` | Tells the witness that every district a highway's or a railway's bridge lies in is about to change (a road bridge's ground is not dated). |
+| 4805 | 1 | `public int bridgeCount()` | How many long bridges stand. |
+| 4808 | 1 | `public boolean roadBridges()` | Whether a road bridge stands. |
+| 4811 | 5 | `public int bridgeCount(int kind)` | ...of a kind (BRIDGE_ROAD, BRIDGE_HIGHWAY or BRIDGE_RAIL). |
+| 4818 | 1 | `public long bridgeStamp()` | The stamp of the bridges that stand, 0 for none: what CityMap folds into its sidecar's land stamp. |
+| 4821 | 1 | `public int bridgesRefused()` | How many runs the map handed were no path, and are not laid. |
+| 4824 | 8 | `public boolean onBridge(int kind, long x, long y)` | Whether a bridge of the kind stands on plot (x, y): one of its stretches' plots, a 45-degree step's corner or its first landing. |
+| 4834 | 4 | `public boolean bridgeNear(int kind, long x0, long y0, long w, long h)` | Whether a bridge of the kind lies in the box of plots w x h from (x0, y0) (by its own box: it may still miss the plots). |
+| 4844 | 27 | `private long bridgesInto(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean roadGround)` | The bridges' plots in the box, into fixed (fill()): a highway's F_HIGHWAY and a railway's F_RAIL, mixed with what the nets laid there as put() mixes any two; a road bridge's only when `roadGround` and only on a plot n... |
+| 4873 | 15 | `private long bridgesHash(long x0, long y0, int w, int h)` | A hash of the bridges' stretches in the box, of every kind and without laying them: frameHash()'s part; 0 where no bridge has a plot in the box. |
+| 4890 | 7 | `private static boolean reaches(Arm a, int s, long x0, long y0, int w, int h)` | Whether stretch s of a bridge's path may put a plot in the box: range() clips a straight stretch along its heading alone, so the row or column it runs in is tested here. |
 
-### THE SIDECAR (lines 5137-5348)
+### READING THEM: A BOX OF PLOTS (lines 4898-5154)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5142 | 3 | `public int runs()` | The sidecar's count of runs: the arms of both nets, and one for the yards (0: none laid). |
-| 5147 | 3 | `void write(DataOutputStream out) throws IOException` | Writes the runs after their count (CityMap's FORMAT 5): each net's hub, corridors, arms stretch by stretch and interchanges; the yards (and since FORMAT 10 the footprints they were laid for); what was short. |
-| 5160 | 54 | `void write(DataOutputStream out, int format) throws IOException` | ...in the sidecar format given: from FORMAT 10 (FX5 Y1) each yard's box is followed, after all the boxes, by the footprint it was laid for, two ints (w, h) each - the size it was asked for, which a box laid long or sh... |
-| 5216 | 3 | `static CityRuns read(DataInputStream in) throws IOException` | The runs write() wrote, read back; null when they do not add up. |
-| 5221 | 99 | `static CityRuns read(DataInputStream in, int format) throws IOException` | ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5); before FORMAT 13 each arm reads as stoppe... |
-| 5322 | 26 | `public boolean same(CityRuns o)` | Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. |
+| 4912 | 3 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver)` | What the runs lay on the w x h plots from world plot (x0, y0), row by row: into fixed, F_HIGHWAY, F_RAIL, F_RAIL_OVER (the railway over a highway) and, `yardsOver`, F_YARD over every plot of a yard (a plan's ground: n... |
+| 4922 | 3 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver, boolean reserves)` | ...with or without the interchanges' reserves (F_RESERVE; THE RUNS DATED, batch FX7): the reserves are derived from the runs, the ground and the works about them and found when asked, so the map's dated record of what... |
+| 4931 | 80 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver, boolean reserves, boolean reach)` | ...and with the highways filled in as if highwaysReach() were `reach` (batch FX7): what the runs lay today, as they were drawn the month before the highways first reached a street, or the month they ceased to. |
+| 5019 | 37 | `public long frameHash(long x0, long y0, int w, int h)` | A hash of what the runs lay on the w x h plots from (x0, y0) - each stretch's steps there, the hub, the arms' ends (their ramps), the yards - without drawing them: what a district's plan is kept against (CityMap.ownSt... |
+| 5058 | 14 | `static long[] range(Arm a, int s, long x0, long y0, int w, int h)` | The steps of stretch s of arm a whose plots (or corners) may fall in the box: {first, last}; first > last for none. |
+| 5073 | 6 | `private static void put(byte[] fixed, int w, long x, long y, byte code)` |  |
+| 5081 | 34 | `private static long stretchInto(Net n, Arm a, int s, long x0, long y0, int w, int h, byte[] fixed, byte[] marks, byte code)` | One stretch's plots inside the box, into fixed and marks; a hash of its part there. |
+| 5117 | 3 | `static int diagCode(int h)` | A 45-degree heading's two bits: south-east 0, south-west 1, north-west 2, north-east 3. |
+| 5122 | 7 | `public byte at(long x, long y)` | What the runs carry at world plot (x, y): F_YARD, F_RAIL_OVER, F_HIGHWAY, F_RAIL, or 0 - no highway while the net reaches no street (highwaysReach(), FX2). |
+| 5136 | 7 | `public List<long[]> highwayDistricts()` | The districts the highways' stretches are filed under (batch FX7, THE RUNS DATED), each {world column, world row} (plot / CityMap.DISTRICT, rounded down): every district a highway plot lies in, and - after a net was t... |
+| 5145 | 9 | `public boolean highwaysNear(long wx, long wy)` | Whether a highway stretch is filed under world district (wx, wy) or one of the eight beside it (batch UP5, THE RESERVES DATED): where an interchange's reserve can lie. |
+
+### THE SIDECAR (lines 5155-5366)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5160 | 3 | `public int runs()` | The sidecar's count of runs: the arms of both nets, and one for the yards (0: none laid). |
+| 5165 | 3 | `void write(DataOutputStream out) throws IOException` | Writes the runs after their count (CityMap's FORMAT 5): each net's hub, corridors, arms stretch by stretch and interchanges; the yards (and since FORMAT 10 the footprints they were laid for); what was short. |
+| 5178 | 54 | `void write(DataOutputStream out, int format) throws IOException` | ...in the sidecar format given: from FORMAT 10 (FX5 Y1) each yard's box is followed, after all the boxes, by the footprint it was laid for, two ints (w, h) each - the size it was asked for, which a box laid long or sh... |
+| 5234 | 3 | `static CityRuns read(DataInputStream in) throws IOException` | The runs write() wrote, read back; null when they do not add up. |
+| 5239 | 99 | `static CityRuns read(DataInputStream in, int format) throws IOException` | ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5); before FORMAT 13 each arm reads as stoppe... |
+| 5340 | 26 | `public boolean same(CityRuns o)` | Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. |
 

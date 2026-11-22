@@ -94,32 +94,51 @@ plays it four months on to 1,208 where a shot needs it.
    past the gate arm's end, which waits `LOOK` short of the edge; the yard's sidings follow its own track (FX3,
    `TileRaster.yardLayout()`), so a box laid there without that track draws no fan and runs no train (tried and taken back:
    a box through the hub got a 33-plot station that never reached 48 and lost its route). Laying the line back past the hub
-   for a station is a change to how the railway is grown, left for a batch of its own.
+   for a station is a change to how the railway is grown, left for a batch of its own (queued, RH1).
 
-## The shots diagnosed and not mended
+## The three sent back (the orchestrator, 2026-11-22: "two of the three pendings are this batch's to mend")
 
-6. **Shot 4's dark stub where the diagonal highway meets the east-west one**: highway arm 3 (corridor 1, west 149 plots from
-   the hub) waits at the lake at x 376667; the link arm 4 (CL5, `openLink()`) leaves it 2 plots short of that end, at 376669,
-   north-west (its search's source plot: a way from the arm's end would run over the lake). Every arm with steps has a ramp at
-   its end (`highwayRamps()`), and an arm's last plot with a ramp and no street beneath is drawn as an open end that narrows
-   (`JunctionCheck` 4): the 2 plots past the bend, the dark stub (`z-corner`). The same at the gate arm's end (arm 0, south
-   then south-west, 1 plot past link arm 7's start at 376806, 376839; shot 6, bottom). A mend takes the arm back to the link's
-   start (as `cutDeadSpine()` does the rail's), but the highways are laid to the model's count of plots: the 2 plots taken back
-   are laid nowhere while every arm waits at water, so the legend's "highway not laid" would read 2, or another arm grows
-   them. Which, and whether a ramp may stand at a bend, is a design call.
-7. **Shot 6, the east-west highway ending in the housing**: arm 2 (corridor 1, east 11 plots) waits `LOOK` short of the sea,
-   its end the same open end with no street beneath (`JunctionCheck` 4, by design for an arm still to grow). At the city's
-   own water it never grows: a street the plan lays under each waiting arm's ramp, or the arm taken back, is the same call as 6.
-8. **Shots 2 and 4, the stair-stepped stubs with junction marks to nowhere**: FA1's frontage avenues (`DistrictPlan`'s
-   `frontage()`, `frontageArm()`), each `FRONTAGE_GAP` (4) plots off the diagonal highway, cross the street at the diagonal's
-   end and run on one step past it (his copy: rows 376799, one north of the boulevard on 376800-376801, at x 376647-376648 and
-   376655-376656), ending there. `frontageTails()` takes up a new tip with fewer than two street neighbours, but a step's two
-   plots neighbour each other and the street they have crossed, so the stub stays. A mend takes up a frontage arm's steps past
-   its last crossing; FA1's own harness (`PlanCheck` 20, "no new street dead end") is where its line goes. Left: FA1's
-   frontage passes keep old grid and dated extents, and the change is the plan's, not this batch's map.
+6. **Shot 4's dark stub where the diagonal highway meets the east-west one: mended (★ RR1-A).** Highway arm 3 (corridor 1,
+   west 149 plots from the hub) waits at the lake (stoppedBy SEA) at x 376667; the link arm 4 (CL5, `openLink()`) leaves it 2
+   plots short of that end, at 376669, north-west. My first reading (an open end narrowing, `JunctionCheck` 4) was wrong: the
+   painter's own view of the plots (the probe's `plot`) shows the plan's street row 376816 running beneath the whole east-west
+   highway, to the gravel street at 376666, on main as on the branch. An end with a street beneath was never drawn as an end:
+   `highwayEnds()` passed over any plot with a street beneath, and the diamond's slips come only where a street crosses, so
+   376667 was a plain highway square, its centre line north-south (the staircase's corner north of it), cut off from the
+   straight by the corner plot 376668, which the staircase draws as verge. **Mend** (`TileRaster.highwayEnds()`,
+   `beneathEndOpen()`, `bandAcrossCorner()`): an arm's end ramp with a street beneath that does not cross it narrows toward
+   the one street beside it, the highway on the side across; the straight band is carried across a staircase's corner to it;
+   its centre line runs along the axis it opens on. On his copy the straight now runs past the bend and tapers to the gravel
+   street (`9-bend-stub-main`, `9-bend-stub-mended`). The highways keep every plot. `JunctionCheck` 25 (c to e), red on main.
+   The gate arm's end (arm 0, 1 plot past link arm 7's start) is an arm still to grow (stoppedBy OPEN) with no street beneath:
+   it keeps `JunctionCheck` 4's narrowing end, as the orchestrator meant.
+7. **Shot 6, the east-west highway ending in the housing: mended (★ RR1-A).** Arm 2 (corridor 1, east 11 plots) waits short of
+   the sea (stoppedBy SEA). The same street row runs beneath it and on to the gravel street at 376828, and the end was drawn
+   squared and flush against it. The same mend narrows it into that street (`10-highway-end-main`, `10-highway-end-mended`);
+   `JunctionCheck` 25 (a, b), red on main; a street across an end keeps the diamond (25 f).
+   **The plan's half, as the orchestrator set it:** an arm that waits at the city's own water never grows, so its ramp is given
+   a street beneath, joined to the nearest street of the plan within `RAMP_JOIN_REACH` (a cell's side), by the shortest way
+   over ground a street may take, a turn costing half a plot (`DistrictPlan.rampJoins()`, before the access roads, which may
+   end at it). The waiting ends are `CityRuns.waitingEnds()`, given the plan by `CityMap.runsInto()` (`Input.rampJoin`); the
+   frame's hash and the runs' signature carry an arm's waiting, so a plan is made again when an arm comes to wait (the runs'
+   mark byte has no bit free: 32, 64 and 128 are `TilePainter`'s M_MAIN, M_DOUBLE and M_SHED). On his copy every waiting end
+   (arms 1, 2, 3, 5, 6) already had its street; the joins are 1 to 3 plots. `JunctionCheck` 26 (the access fixture's south
+   arm made to wait: no street beneath before, 3 plots joined after).
+8. **Shots 2 and 4, the stair-stepped stubs with junction marks to nowhere: mended (RR1-B).** FA1's frontage avenues
+   (`frontage()`, `frontageArm()`), each `FRONTAGE_GAP` (4) plots off the diagonal highway, crossed the street at the
+   diagonal's end and ran on a step past it (his copy: rows 376799, one north of the boulevard on 376800-376801, at x
+   376647-376648 and 376655-376656). `frontageTails()` takes up a new tip with fewer than two street neighbours, but a step's
+   two plots neighbour each other and the street they crossed, so the stub stayed. **Mend** (`DistrictPlan.frontageEnds()`):
+   each frontage arm's run, from either end, is taken up past its last crossing (the last plot the avenue did not make a
+   street), as far as leaves no street beside it with fewer than two street neighbours; run after the opening pass, after
+   `frontageTails()` and when the arm grows. Nothing in a saved plan or an old save's grid stops it: a plan is made again
+   from its input. `PlanCheck` 20 (RR1): a Z highway's two turns, 34 plots of the runs past them (40 on main), 8 tips, stubs 2 on main
+   and 0 mended, no dead end (`8-frontage-stub-main`, `8-frontage-stub-mended`).
 9. **Shot 4's avenue into the water**: not a fault on his copy. It is the south-west frontage avenue of 8, crossing the inlet
-   on a bridge (`AVENUE_BRIDGE_STEPS`) and landing beside the stub of 6, then on to the boulevard (`z-corner`); at the shot's
-   scale the stub's narrowing end beside the bridge's landing reads as the avenue stopping.
+   on a bridge (`AVENUE_BRIDGE_STEPS`) and landing beside the stub of 6, then on to the boulevard (`6-corner-stub`).
+
+**RR1-C, queued as RH1**: Bergen's unit-train station laid 48 plots through the hub, the track laid back past it (the figures
+are in STY1 above and the ship file's row). It is a change to how the railway is grown, not this batch's map.
 
 ## The two that may be intended
 
@@ -132,7 +151,7 @@ plays it four months on to 1,208 where a shot needs it.
 
 ## The model
 
-Every mend is the map's: `CityMap`, `CityRuns`, `TileRaster`. Nothing in the model reads them (the map's train and truck
+Every mend is the map's: `CityMap`, `CityRuns`, `TileRaster`, `DistrictPlan`. Nothing in the model reads them (the map's train and truck
 routes, the station's box and the highways' portal are read by the screen alone), so the default trace cannot move.
 
 ## The renders
@@ -140,7 +159,9 @@ routes, the station's box and the highways' portal are read by the screen alone)
 In `docs/queue/RR1/`, each of his copy drawn as the screen draws it (the probe), named by the finding: `1-siding-main`
 against `1-siding-mended` (the siding a month on, square on main, its arcs mended), `2-s-bend-main` against
 `2-s-bend-mended`, `3-hub-rail-main` against `3-hub-rail-mended` (a month on), `5-bergen-station-m1322` (the playtest's
-station's ground), `6-corner-stub` (findings 6, 8 and 9 at 12 px a plot).
+station's ground), `6-corner-stub` (findings 6, 8 and 9 at 12 px a plot, main), `8-frontage-stub-main` against
+`8-frontage-stub-mended` (the boulevard's crossing at 24 px), `9-bend-stub-main` against `9-bend-stub-mended` and
+`10-highway-end-main` against `10-highway-end-mended` (32 px).
 
 ## The checks
 
