@@ -19,8 +19,9 @@ without a normal placement and a real remaining home their combined resources
 can fund. Five working singles enter their existing shared household cell;
 financial stocks follow the existing census transfer path. Unplaced demand
 retains shortage and affordability reasons. Two households may also divide one
-actual door and its one rent bill; household counts and door-equivalents remain
-separate, and a host's bill falls when a guest joins it. Retirement can remove
+actual vacant door and its one rent bill. An emergency guest can also join an
+already funded host without adding rent. Household counts and door-equivalents
+remain separate, and the hosting reason is explicit. Retirement can remove
 only whole structures whose complete dwelling mix has enough vacant RE titles.
 The monthly quote is not repeated
 until a price equilibrium is reached.

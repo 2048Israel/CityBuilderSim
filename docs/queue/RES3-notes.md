@@ -134,10 +134,10 @@ class occupancy at the worst month when it fails.
 
 ★ A lease now carries both household quantity and occupied door-equivalents.
 Normal placements and valid incumbents precede emergency sharing and doubling.
-Doubling joins one guest to a real occupied door or funds two households in a
-vacant door, with half of the one rent charged to each. Existing hosts' bills
-fall by the corresponding share. Seekers keep their own-kind rule; the emergency
-groups rotate access to shared vacancies. Equal class/cell nodes still coalesce.
+Doubling can fund two households in a vacant door, with half of the one rent
+charged to each. Seekers keep their own-kind rule for those paid pairs, and
+emergency groups rotate access to shared vacancies. Equal class/cell nodes
+still coalesce.
 No additional permanent preference or identity axis is introduced. The actual
 allocation, rather than the legacy inferred valve, sets the crowding, unplaced
 and reason readers. Separate household/door quantities and bills are saved and
@@ -162,3 +162,19 @@ does not borrow anything. Ordinary households still receive no assumed new
 credit. Caused checks assert both facility states, unchanged debt while quoting,
 and retired input classification in the actual city. The lender finding is
 being repeated without changing its people, rhythm or unplaced threshold.
+
+The next played failure retained retired households with zero resources after
+food/fees and unemployed parents with no own-kind host. The former implicit
+valve called these guests, without requiring a second rent payment.
+
+★ Emergency hosting now makes that actual: after normal affordable placements
+and funded sharing, one additional household may join an already funded home.
+The host continues its existing full bill; the guest pays zero, creates no extra
+rental proceeds or credit, and cannot bypass the adults-only rule. Extended
+family hosting may cross income/status cells; the bounded saved hosted counter
+distinguishes it from a normal affordable lease and from a paid vacant pair.
+The corresponding shares still sum to one real door, with at most two household
+units per occupied door. The primary funded tenant is retained next month from
+its actual class payment, rather than treating the emergency guest as a new
+normal incumbent. A caused funded-host check asserts zero guest resources, the
+host's unchanged bill, one physical home, one actual rent, and explicit hosting.
