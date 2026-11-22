@@ -176,8 +176,8 @@ public final class HousingInventory {
         b.owned = to == Owner.REAL_ESTATE ? 0 : target + amount;
         a.occupied -= occupied; b.occupied += occupied;
         // Accepted quantities leave the seller's offered subset; a buyer does not inherit an offer.
-        a.listedOccupied = Math.min(a.listedOccupied, a.occupied);
-        a.listedVacant = Math.min(a.listedVacant, Math.max(0, source - amount - a.occupied));
+        a.listedOccupied = Math.max(0, a.listedOccupied - occupied);
+        a.listedVacant = Math.max(0, a.listedVacant - (amount - occupied));
         coalesce();
     }
 

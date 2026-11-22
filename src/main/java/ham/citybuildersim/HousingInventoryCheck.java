@@ -98,6 +98,8 @@ public final class HousingInventoryCheck {
             near("ownership sums to physical homes", sumOwned(m, k), 4);
             near("occupancy is conserved through a sale", sumOccupied(m, k), 2.5);
             near("listings are subsets and add no homes", m.homes(), 6);
+            near("a transferred occupied offer leaves the seller's listing once", m.listed(k, REAL_ESTATE, true), .75);
+            near("a transferred vacant offer leaves the seller's listing once", m.listed(k, REAL_ESTATE, false), .75);
             near("owned capacity excludes conveyed capacity", m.ownedCapacity(REAL_ESTATE, false), 17);
             String before = new com.google.gson.Gson().toJson(m.forSave());
             refused("overselling is atomic", () -> m.transfer(k, REAL_ESTATE, ESTATE, 8, 0));
