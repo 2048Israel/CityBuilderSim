@@ -392,3 +392,48 @@ The current pick is ALL 244 harnesses. The ensemble uses label
 `JAVA_OPTS` (the baseline names data properties only). Laptop data properties
 are omitted from its call so GB3 uses the box's matching copies. PW5's ensemble
 is running on the box; HC1 is to queue behind it. The provisional marker stays.
+
+## Final-model ensemble, 2026-11-22
+
+The ensemble is PASS, exit 0: 80/80 complete, none missing or short; all ten
+M1/F1 hard criteria pass. Every policy has zero money-audit failed months and
+zero finding runs. It scored **25/26**, beside baseline `.188` **23/26**, whose
+hard score was also 10/10. AUTO2 T2 and ZERO_SLACK T2 change from FAIL to PASS;
+A2 remains the informational failure. No criterion or threshold changed.
+
+| policy | .188 median final population | HC1 median final population | .188 / HC1 median seconds |
+|---|---:|---:|---:|
+| AUTO2 | 2,470,539.5 | 4,772,827.5 | 179.6 / 226.2 |
+| ZERO_SLACK | 1,277,612.5 | 3,061,157.5 | 144.4 / 172.2 |
+| ZERO_HOT | 7,582.5 | 9,164.5 | 18.4 / 18.9 |
+| SHOCK | 40,936 | 103,159.5 | 44.4 / 46.9 |
+| HIGH | 31,615.5 | 32,997.5 | 35.6 / 37.5 |
+
+This is label `HC1-final-189-20261122`, the frozen pushed model
+`d325c74c863f3e823a65aae7fe180bca7d240b02`, on gatebox Java 21.0.13, eight
+runs at once, using its own Earth/world copies. It first waited behind PW5's
+ensemble, then yielded after 23 completions to PW5's dry run. It resumed the
+same snapshot and retained all completed CSVs; it is one final-model run, not
+a new model or a rerun of completed cities. Raw files are in
+`target/ensemble/HC1-final-189-20261122/`, controller log
+`target/hc1-ensemble.txt`, box folder
+`/home/jerus/cbs/tools/d325c74c863f3e823a65aae7fe180bca7d240b02/target/ensemble/HC1-final-189-20261122`.
+The generated baseline is committed as `docs/ensemble/HC1.md`, with the
+publisher's next-version token in its heading and introductory model line.
+
+Final local checks are all green. The integration group passes CardCheck,
+SaveFileCheck, ReadPathCheck, HousingInventoryCheck and the repaired
+ExchangeCheck. The shared fixture's consumers BankCheck, MarketCheck and
+ShortSellingCheck pass too. ShortSellingCheck's native cities with shorts on
+and off both pass their money audits and share-register checks; the on run's
+worst audit residual is 0.000001 and worst relative register drift 1.08e-14.
+The final fast check compiles in 52s with 0 firm / 199 soft Stale findings.
+Logs are `target/hc1-exchange-fixtures-fast.txt`,
+`target/hc1-exchange-fixture-run.txt`,
+`target/hc1-exchange-shared-bank-run.txt`, and
+`target/hc1-shared-fixture-checks.txt`, plus each direct named log.
+
+A final fetch still names main `7e484c4da`, .189. The pick remains ALL 244,
+with the already-SHIP money/saves review. No HC1 known red is claimed.
+The next step is the separately required `HC1 dry run?` question and ended
+turn; no HC1 dry run has begun and the provisional marker remains.
