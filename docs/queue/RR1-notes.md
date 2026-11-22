@@ -165,13 +165,15 @@ station's ground), `6-corner-stub` (findings 6, 8 and 9 at 12 px a plot, main), 
 
 ## The checks
 
-- `./batch-check.sh --fast` green on the merge with main 0.9.182 (FB16); the named harnesses one at a time, each green:
-  `TruckRouteCheck`, `MainLineCheck`, `RailDrawCheck`, `JunctionCheck`, `GatewayCheck`, `MapCheck`, `IslandRailCheck`,
-  `QuayRailCheck`, `RunWorksCheck`.
-- **The trace.** The default playtest ran traced (`-Dplaytest.trace`, both data files named) on main de51e413b (0.9.182,
-  built apart) and on this branch's merge: all eight CSVs byte-identical, and the reports differ only in run times and an
-  object's hash in one line. `LongPlaytest`: "All checks passed". So no ensemble.
-- The pick (`sh tools/pick.sh origin/main HEAD`): 24 harnesses, no review (no money, saves or threading). Each run alone,
-  all green: the nine above, `LongPlaytest` (the traced run), `BridgeCheck`, `BridgeMapCheck`, `CrossingCheck`,
-  `EarthTerrainCheck`, `GlobeCheck`, `IslandNetCheck`, `LandmassCheck`, `PlanCheck`, `PortCheck`, `ReadPathCheck`,
-  `ReplayCheck`, `SaveFileCheck`, `SlopeCheck`; `TimingCheck` left to the gate and the nightly (`--timing`).
+- On the merge with main 2149ca45c (0.9.183, OG1) and RR1-A and RR1-B: `./batch-check.sh --fast` green; the pick
+  (`sh tools/pick.sh origin/main HEAD`) 25 of 239 harnesses, no review (no money, saves or threading). Each run alone, all
+  green: `BridgeCheck`, `BridgeMapCheck`, `CrossingCheck`, `EarthTerrainCheck`, `GatewayCheck`, `GlobeCheck`,
+  `IslandNetCheck`, `IslandRailCheck`, `JunctionCheck`, `LandmassCheck`, `MainLineCheck`, `MapCheck`, `MiningCheck`,
+  `PlanCheck`, `PortCheck`, `QuayRailCheck`, `RailDrawCheck`, `ReadPathCheck`, `ReplayCheck`, `RunWorksCheck`,
+  `SaveFileCheck`, `SlopeCheck`, `TruckRouteCheck`, and `LongPlaytest` (the traced run); `TimingCheck` left to the gate
+  and the nightly (`--timing`).
+- **Red on main.** `JunctionCheck` with main's `TileRaster` (and main's `CityRuns`, `CityMap`, `DistrictPlan`) in front: 25b,
+  25d and 25e fail; 26 cannot run there (`CityRuns.waitingEnds()` is new), its 26b and 26f hold main's plan to the fixture.
+  `PlanCheck` 20 (RR1) on main's `DistrictPlan`: 2 stubs, FAIL.
+- **The trace.** The default playtest ran traced (`-Dplaytest.trace`, both data files named) on main 2149ca45c (built apart)
+  and on this branch: all eight CSVs byte-identical, 398 s and 376 s. `LongPlaytest`: "All checks passed". So no ensemble.
