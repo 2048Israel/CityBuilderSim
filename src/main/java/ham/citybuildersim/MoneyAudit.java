@@ -601,12 +601,13 @@ public final class MoneyAudit {
     static final String[] POOL_NAMES = poolNames();
 
     private static String[] poolNames() {
-        String[] names = new String[Sectors.KEYS.length + 4];
+        String[] names = new String[Sectors.KEYS.length + 5];
         names[0] = "city";
         for (int i = 0; i < Sectors.KEYS.length; i++) names[1 + i] = Sectors.KEYS[i].toLowerCase();
         names[Sectors.KEYS.length + 1] = "order book";
         names[Sectors.KEYS.length + 2] = "bank";
         names[Sectors.KEYS.length + 3] = "fund";
+        names[Sectors.KEYS.length + 4] = "bond coupon clearing";
         return names;
     }
 
@@ -677,6 +678,7 @@ public final class MoneyAudit {
          * households and the world, declared below. See TreasuryFund.
          */
         pools[i++] = g.getFund().getCash();
+        pools[i++] = g.getBondMarket().couponClearingCash();
         return pools;
     }
 
@@ -1047,6 +1049,11 @@ public final class MoneyAudit {
          * carries migrants' transfers, as a real one does (spec-wealth 3.4, item 4).
          */
         in += credit.apply("+ households ArrivedWith", g.getHouseholdBalance().getArrivedWith(), Scope.FINANCIAL);
+        in += credit.apply("+ unclaimed HouseholdCash", g.getEstateCustody().cashFromHouseholds(), Scope.DOMESTIC);
+        in += credit.apply("+ unclaimed ForeignCoupon", g.getEstateCustody().foreignCoupon(), Scope.INCOME);
+        in += credit.apply("+ households CapitalGainsTax", g.getHouseholdBalance().getDomesticCapitalGainsTax(), Scope.DOMESTIC);
+        in += credit.apply("+ foreign SecuredCapitalTaxCollected", g.getHouseholdBalance().getForeignCapitalGainsTax(), Scope.FINANCIAL);
+        in += credit.apply("+ households DividendTax", g.getHouseholdBalance().getDividendTax(), Scope.DOMESTIC);
         in += credit.apply("+ households LeftWith (from their savings)", g.getHouseholdBalance().getTakenAway(), Scope.DOMESTIC);
         /*
          * THE CARS THE HOUSEHOLDS BOUGHT FROM ABROAD (2026-09-16).

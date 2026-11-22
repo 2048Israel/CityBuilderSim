@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.184 — HT1, household basis and investment taxes — 2026-11-22, ready, see docs/queue/HT1-notes.md
+Household stock purchases and founders carry average acquisition cost with the people; sales release it and carry unused losses. Real sale and integrated dividend taxes transfer cash to two named treasury revenues, with an adjustable inclusion dial. Cash-first secured deferral, estate step-up, survivor rollover and passive unclaimed-property custody preserve the actual stocks and payments. The incompatible save format carries basis, claims, policy and struck flows. Genuine bond extinction closes every household position without inventing cash. Independent whole and scoped reviews have cleared the money/save changes; integrated .183 custody, monetary, save and scaling checks pass. The final model ensemble passes every money audit; its exact seed14 land-funding finding passes by name with FB11H queued. The versioned ALL dry completes all234 selected harnesses and its retained-run record gate passes, with remaining assertions traced and named with queued owners. L7 retains its separate Pending account-design disposition.
+
 ### 0.9.183 — OG1, a planner orders to the gap — 2026-11-22, ready, see docs/queue/OG1-notes.md
 Past a nine-month backlog the builders no longer order one depot a month. They order the gap between their
 sites' month and the work a typical month sends them, plus the queue past the knee over two years, never more

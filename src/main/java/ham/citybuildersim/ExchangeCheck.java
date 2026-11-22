@@ -1101,6 +1101,11 @@ public class ExchangeCheck {
         double held7n = short7n.shares(RETAIL);
         short7n.shares[RETAIL] = 0;
         Exchange ex7n = exchange();
+        double[] taxCash7n = {0}; int[] taxCalls7n = {0};
+        owners7n.setInvestmentTaxes(new TaxPolicy(), ex7n::price, (line, amount) -> {
+            assertTrue("the waterfall credits its actual tax receiver by name", line.equals("Capital gains tax"));
+            taxCash7n[0] += amount; taxCalls7n[0]++;
+        });
         Firms firms7n = new Firms();
         firms7n.assets[RETAIL] = 10_000; firms7n.equity[RETAIL] = 10_000;
         firms7n.cash[RETAIL] = 5_000; firms7n.opex[RETAIL] = 100;
@@ -1115,15 +1120,24 @@ public class ExchangeCheck {
                 ex7n.bookOf(RETAIL).resting(Equity.COMPANIES[RETAIL], OrderBook.Side.BUY), pace7n / limit7n, 1e-9);
         close("...not one share retired yet", reg7n.getShares(RETAIL), shares7n, 1e-12);
         short7n.shares[RETAIL] = held7n;                     // ...the shares come back to the cell, and it is short of money
+        double people7n = short7n.households(), need7n = 20;
+        assertTrue("fixture: the requested net cash exceeds the entire resting gross bid", need7n * people7n > pace7n);
+        assertTrue("fixture: the seller holds enough shares to exhaust the resting bid", held7n * people7n > pace7n / limit7n);
+        close("the waiting bid has not yet generated any tax receipt", taxCash7n[0], 0, 0);
+        double taxBefore7n = owners7n.getCapitalGainsTax(); long callsBefore7n = owners7n.getGainAssessments();
         double raised7n = ex7n.sellForHousehold(reg7n, dead, owners7n, short7n, 20) * 100;
         assertTrue("fixture: a household short of money sells in the waterfall and the bid meets it", raised7n > 0);
+        assertTrue("the filled waterfall really withholds positive capital-gains tax", taxCash7n[0] > 0);
+        assertTrue("the single resting bid assesses and transfers its tax once", taxCalls7n[0] == 1 && owners7n.getGainAssessments() - callsBefore7n == 1);
+        close("the actual named receipt matches the native tax cash flow", taxCash7n[0], owners7n.getCapitalGainsTax() - taxBefore7n, 1e-12);
+        close("net seller cash plus the actual tax receipt exhausts the gross bid", raised7n + taxCash7n[0], pace7n, 1e-9);
         close("a household short of money sells into the resting bid, at the bid's price",
-                (held7n - short7n.shares(RETAIL)) * 100 * limit7n, raised7n, 1e-9);
-        close("...paid from the company's till", 5_000 - firms7n.cash[RETAIL], raised7n, 1e-9);
-        close("...the shares retired", shares7n - reg7n.getShares(RETAIL), raised7n / limit7n, 1e-9);
-        close("...counted as a buyback from the households", ex7n.getBuybackToHouseholds(RETAIL), raised7n, 1e-9);
+                (held7n - short7n.shares(RETAIL)) * 100 * limit7n, pace7n, 1e-9);
+        close("...paid from the company's till", 5_000 - firms7n.cash[RETAIL], pace7n, 1e-9);
+        close("...the shares retired", shares7n - reg7n.getShares(RETAIL), pace7n / limit7n, 1e-9);
+        close("...counted as a buyback from the households", ex7n.getBuybackToHouseholds(RETAIL), pace7n, 1e-9);
         close("...and the rest of the bid still rests", ex7n.bookOf(RETAIL).resting(Equity.COMPANIES[RETAIL], OrderBook.Side.BUY),
-                (pace7n - raised7n) / limit7n, 1e-9);
+                0, 1e-9);
 
         Equity loser = withRecord(RETAIL, months(-10));
         HouseholdBalance owners7l = savers(20.0, 4.0);

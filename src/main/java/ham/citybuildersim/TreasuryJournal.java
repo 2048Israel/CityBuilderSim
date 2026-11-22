@@ -7,7 +7,9 @@ import java.util.List;
 /**
  * The treasury's journal: every movement of the city's cash that is neither a
  * budget line nor paper raised or repaid, recorded by name as it happens, so
- * the bridge on the Government tab can name them line by line.
+ * the bridge on the Government tab can name them line by line. HT1 also records
+ * investment-tax cash receipts: these are budget revenues, so bridgeLines()
+ * leaves them outside the bridge adjustments while the saved journal keeps them.
  *
  * WHY. Jerus, 2026-09-18: "in the government tab, in the revenues vs deficits
  * and all that, it just says 'everything else' - that should be expandable,
@@ -215,10 +217,17 @@ public final class TreasuryJournal {
     /** Last month's lines, in the order they happened. Empty until a month has closed. */
     public List<Entry> lastMonth() { return closed; }
 
+    /** HT1 receipts are in the budget already; kept in the journal, outside the cash bridge's adjustments. */
+    private static boolean budgetRevenue(Entry e) {
+        return "Capital gains tax".equals(e.label()) || "Dividend tax".equals(e.label()) || "Unclaimed estates and receipts".equals(e.label());
+    }
+
+    public List<Entry> bridgeLines() { return closed.stream().filter(e -> !budgetRevenue(e)).toList(); }
+
     /** The sum of last month's lines - what the journal explains of the bridge's last row. */
     public double lastMonthTotal() {
         double total = 0;
-        for (Entry e : closed) total += e.amount();
+        for (Entry e : closed) if (!budgetRevenue(e)) total += e.amount();
         return total;
     }
 
