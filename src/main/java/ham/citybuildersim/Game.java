@@ -4234,6 +4234,14 @@ public class Game {
      * month's wages with last month's tax.
      */
     private void updateHouseholdAccounts(){
+        households.setTypedRents(row -> {
+            var market=getSectors().realEstate().housingMarket();
+            if(!market.active())return Double.NaN;
+            double total=0;
+            for(Household c:householdBalance.cells())if(c.row()==row)
+                total+=market.rentFor(c.key(),1);
+            return total;
+        });
         syncHouseholdAccounts(true);
     }
 
@@ -16059,6 +16067,7 @@ public class Game {
         // ...and the people outside the families, with their own kind.
         families.shareSeekersByAffordability(households.seekerPressure(new double[] {
                 unemployment.getHoused(), families.getSeekers(FamilyModel.Seeker.STUDENT) }));
+        clearTypedHousing();
 
         // EI and the grant are both paid at the top of the month now, where
         // they are credited (0.7.3 and 0.7.1), and what was paid is kept for
@@ -16503,6 +16512,8 @@ public class Game {
     {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
         householdBalance.setRentShares(this::rentShareOf);
+        householdBalance.setRentBills(c -> getSectors().realEstate().housingMarket().active()
+                ? getSectors().realEstate().housingMarket().rentFor(c.key(),housingCellCount(c)) : Double.NaN);
         householdBalance.setHousedShares(this::housedShareOf);
         householdBalance.setOutsideDependants(this::outsideDependantsOf);
         // The owner line (BO1) runs in a city by its dial, on since BO1-S; a bare fixture, which never switches it, grants the founders' shares by grown-ups.
@@ -16557,6 +16568,38 @@ public class Game {
         if (c instanceof PrisonerHousehold) return 0;
         if (c.shape() != null) return 1 - families.unhousedShareOf(c.shape());
         return 1;
+    }
+
+    /** The existing stage/shape/tier census, shared by typed housing and its actual bills. */
+    private double housingCellCount(Household c) {
+        if(c.shape()==null)return outsideHouseholds(c);
+        if(c.isRetired())return families.get(c.shape(),PayTier.values()[0])*householdBalance.tierShareOf(c);
+        if(c instanceof WorkingHousehold w)return families.get(w.shape(),w.tier(),w.stage());
+        return families.get(c.shape(),c.tier());
+    }
+
+    /** Once after the legacy emergency shape valves; read-only rebuilds never enter here. */
+    private void clearTypedHousing() {
+        var market=getSectors().realEstate().housingMarket();
+        java.util.List<HousingChoice.Demand> demand=new java.util.ArrayList<>();
+        for(Household c:householdBalance.cells()) {
+            if(c instanceof OwnerHousehold || c instanceof OrphanHousehold || c instanceof PrisonerHousehold)continue;
+            if(c instanceof UnemployedHousehold u && u.status()==UnemployedHousehold.Status.UNHOUSED)continue;
+            double count=housingCellCount(c);if(count<=0)continue;
+            double oldRent=market.active()?market.rentFor(c.key(),Math.max(count,c.households())):households.rentPerHousehold()*rentShareOf(c);
+            double income=c.disposable();
+            if(!(income>0)&&households.getRowHouseholds(c.row())>0)
+                income=households.getRowDisposable(c.row())/households.getRowHouseholds(c.row());
+            double nonRent=Math.max(0,c.disposable()-c.afterFixed()-oldRent);
+            double budget=Math.max(0,income-nonRent-c.subsistence()+c.savings()/HousingMarket.SAVINGS_MONTHS);
+            int size=c.shape()==null?Math.max(1,(int)Math.ceil(c.headcount())):c.shape().size();
+            int children=c.shape()==null?(int)Math.ceil(c.getDependants()):c.shape().dependants();
+            demand.add(new HousingChoice.Demand(c.key(),count,size,children,c.isRetired(),
+                    c.tier()==null?0:c.tier().ordinal(),c instanceof WorkingHousehold w&&w.stage()==AdultStage.YOUNG,budget));
+        }
+        var result=market.clear(this,demand);
+        families.acceptTypedHousing(demand,result,householdBalance.cells(),buildingManager.getHousingInventory());
+        getSectors().realEstate().setRentWeight(families.studioRentWeight(),families.familyRentWeight());
     }
 
     /**
@@ -17659,8 +17702,10 @@ public class Game {
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
+        dataSave.setHousingMarket(getSectors().realEstate().housingMarket().forSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
+        dataSave.setHomePayIndices(recipes.payIndicesForSave(),recipes.payIndexMonth());
         dataSave.setLicenceFees(licenceFeesForSave());
         // ...and the licence the city's own patented works accrued and last paid (R2c-P).
         dataSave.setPublicIpPending(publicIpPending);
@@ -21864,6 +21909,7 @@ public class Game {
             // reads every building on site as the whole template, its pieces decided at the finish, as it was ordered.
             buildingManager.restoreLots(loaded.getLotsById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
+            getSectors().realEstate().housingMarket().restore(loaded.getHousingMarket());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
             // ...and the city's research (R3): its grants, the posts the month struck, the work piled and the finds, with the bill that month paid.
@@ -21886,6 +21932,7 @@ public class Game {
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
+            recipes.restorePayIndices(loaded.getHomePayIndices(),loaded.getHomePayMonth());
             restoreLicenceFees(loaded.getLicenceFees());
             restorePublicLicences(loaded.getPublicIpPending(), loaded.getPublicIpPaid());
             recipes.apply(this);

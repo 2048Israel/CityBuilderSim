@@ -677,6 +677,13 @@ public class HouseholdBalance {
      * Game off the housing match; everybody pays a whole door by default.
      */
     private ToDoubleFunction<Household> rentShares = c -> 1;
+    /** RES3 actual class bill per household; NaN retains the bare-model pooled-rent API. */
+    private ToDoubleFunction<Household> rentBills = c -> Double.NaN;
+    public void setRentBills(ToDoubleFunction<Household> bills) { rentBills=bills; }
+    private double rentBill(Household c,double pooled) {
+        double typed=rentBills.applyAsDouble(c);
+        return Double.isFinite(typed)?Math.max(0,typed):pooled*Math.max(0,rentShares.applyAsDouble(c));
+    }
 
     public void setRentShares(ToDoubleFunction<Household> shares) {
         this.rentShares = shares == null ? c -> 1 : shares;
@@ -1407,7 +1414,7 @@ public class HouseholdBalance {
                 // Too few to strike - the position stands, carried for the
                 // month the cell fills, and the working is blank.
                 // ...and its share of the rent is the landlords' sale, charged to nobody (HL1: UnsettledRent).
-                lastUnsettledRent += rentPerHousehold * Math.max(0, rentShares.applyAsDouble(c)) * c.households;
+                lastUnsettledRent += rentBill(c,rentPerHousehold) * c.households;
                 c.clearWorking();
                 continue;
             }
@@ -1415,7 +1422,7 @@ public class HouseholdBalance {
                     : rowShopping[c.row()] * shopWeight[i] / rowShopWeight[c.row()] / c.households;
 
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
-            double rentDue = rentPerHousehold * c.rentShare;
+            double rentDue = rentBill(c,rentPerHousehold);
             c.studentLoanRate = studentLoanRate;
             // ...and the bank's account fee with the other fixed bills (0.7.7).
             double accountDue = accountFeeFor(c, c.households);
@@ -5213,7 +5220,7 @@ public class HouseholdBalance {
             if (c.isEmpty()) { c.clearWorking(); continue; }
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             c.studentLoanRate = studentLoanRate;
-            c.restrike(disposablePer[i], rentPerHousehold * c.rentShare,
+            c.restrike(disposablePer[i], rentBill(c,rentPerHousehold),
                     feesPer[i] + accountFeeFor(c, c.households),
                     foodPricePerHead, riskFreeAnnual);
             c.voucher = foodAssistanceFor(c, foodPricePerHead);

@@ -229,7 +229,7 @@ public class BuildingsTemplate {
      * EconomyManager.setElectricityConsumption().
      */
     public static boolean isBilledForUtilities(BuildingsTemplate t) {
-        return t != null && t.isOwnedBySector() && t.getCategory() != BuildingType.RESIDENTIAL;
+        return t != null && t.isOwnedBySector();
     }
 
     /**
@@ -1092,6 +1092,14 @@ public class BuildingsTemplate {
      */
     public double getFoundingCashCost() {
         return Double.isNaN(foundingCashCost) ? cashCost : foundingCashCost;
+    }
+
+    /** The catalogue's upkeep in founding money, for the selected residential wage scaler. */
+    public double getFoundingUpkeep() { return Double.isNaN(foundingUpkeep)?upkeep:foundingUpkeep; }
+    /** Re-strikes a dated home's baseline without cumulative monthly multiplication. */
+    public BuildingsTemplate setFoundingCosts(double cash,double upkeep) {
+        rememberFounding();foundingCashCost=cash;foundingUpkeep=upkeep;
+        cashCost=cash/struckAt;this.upkeep=upkeep/struckAt;return this;
     }
 
     public int getConstructionPoints() {

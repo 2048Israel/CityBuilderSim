@@ -1694,6 +1694,35 @@ public class FamilyModel implements HouseholdBalance.Census {
     /** Actual lets by door size; BO1-H's owner-family seekers belong in the match. */
     public double[] occupiedBySize() { return occupiedBySize.clone(); }
 
+    /** RES3 projects the single typed clearing into the existing crowding and rent readers. */
+    public void acceptTypedHousing(java.util.List<HousingChoice.Demand> demand,HousingChoice.Result result,
+                                   java.util.List<Household> cells,HousingInventory inventory) {
+        java.util.Map<String,Household> byKey=new java.util.HashMap<>();
+        for(Household c:cells)byKey.put(c.key(),c);
+        java.util.Arrays.fill(unplacedByShape,0);java.util.Arrays.fill(seekersUnplaced,0);
+        java.util.Arrays.fill(seekersUnplacedHomes,0);
+        for(var d:demand){
+            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            double left=Math.max(0,d.count()-placed);Household c=byKey.get(d.key());
+            if(c==null)continue;
+            if(c instanceof StudentHousehold){seekersUnplaced[Seeker.STUDENT.ordinal()]+=left;seekersUnplacedHomes[Seeker.STUDENT.ordinal()]+=left;}
+            else if(c instanceof UnemployedHousehold){seekersUnplaced[Seeker.UNEMPLOYED.ordinal()]+=left;seekersUnplacedHomes[Seeker.UNEMPLOYED.ordinal()]+=left;}
+            else if(c.shape()!=null)unplacedByShape[c.shape().ordinal()]+=left;
+        }
+        occupiedBySize=new double[inventory.homesBySize().length];rentWeight=studioRentWeight=familyRentWeight=0;
+        for(var stock:inventory.stock()){
+            double homes=result.leases().stream().filter(l->l.home().equals(stock.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            bill(stock.dwelling().capacity(),homes);
+        }
+        crowdedHouseholds=result.crowded();
+        refusedByStudio=0;
+        for(var d:demand)if(d.children()>0){
+            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            refusedByStudio+=Math.max(0,d.count()-placed);
+        }
+        noteUnplaced(result.unplaced());
+    }
+
     private void bill(int unitSize, double homes) {
         occupiedBySize[unitSize] += homes;
         double weight = homes * rentWeightOf(unitSize);

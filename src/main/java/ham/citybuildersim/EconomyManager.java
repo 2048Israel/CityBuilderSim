@@ -610,8 +610,12 @@ public class EconomyManager {
         // is the structure's book value (BuildingManager) and its plot.
         double repairBase = ownersRepairCost(t, sectors.realEstate().key(),
                 buildingManager.nonMaterialCost(t) + materials);
+        double payroll=0;
+        for(JobType job:JobType.values())if(job.ordinal()<wageRates.length)payroll+=t.getJobs(job)*wageRates[job.ordinal()];
         return repairBase * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12
-                + full * monthlyPropertyRate;
+                + full * monthlyPropertyRate + payroll
+                + t.getElectricityConsumption()*getPowerPriceFor(t)
+                + t.getWaterConsumption()*getPricePerWaterUnit();
     }
 
     /** The cheapest way to house one more person, land included, per segment. */

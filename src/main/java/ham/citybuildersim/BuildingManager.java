@@ -5063,6 +5063,7 @@ public class BuildingManager {
                 .setSince("FE4")
                 .setId(154));
         //add more buildings; next Building ID is 155
+        HousingForms.installFallback(templates);
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 

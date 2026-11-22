@@ -119,6 +119,8 @@ import java.util.Map;
  * ======================================================================
  */
 public final class RealEstate extends Sector {
+    private final ham.citybuildersim.HousingMarket housingMarket=new ham.citybuildersim.HousingMarket();
+    public ham.citybuildersim.HousingMarket housingMarket() { return housingMarket; }
 
     /** What share of a working household's income rent should take. The affordability yardstick. */
     public static final double TARGET_RENT_BURDEN = .30;
@@ -539,6 +541,7 @@ public final class RealEstate extends Sector {
      * no drift; a rent at nothing still steps linearly.
      */
     public void repriceRent() {
+        if(housingMarket.active()) { housingMarket.reprice(expectedMonthly); return; }
         double target = rentTarget();
         if (target > 0) {
             lastRentTarget = target;
@@ -555,6 +558,7 @@ public final class RealEstate extends Sector {
 
     /** What one person of capacity actually cost on average this month - the price index's figure. */
     public double getAverageRentPaid() {
+        if(housingMarket.active())return getRentWeight()>0?housingMarket.receipts()/getRentWeight():0;
         double weight = studioRentWeight + familyRentWeight;
         if (weight <= 0) return rentPrice;
         return (studioRentWeight * studioRentPrice + familyRentWeight * rentPrice) / weight;
@@ -574,6 +578,7 @@ public final class RealEstate extends Sector {
      * recorded, and the load path before the first housing pass.
      */
     public double getRentIncome() {
+        if(housingMarket.active())return housingMarket.receipts();
         double weight = studioRentWeight + familyRentWeight;
         if (weight > 0) return studioRentWeight * studioRentPrice + familyRentWeight * rentPrice;
         if (homes <= 0) return Math.min(household, population) * rentPrice;
@@ -591,6 +596,14 @@ public final class RealEstate extends Sector {
         rBilledFamilyWeight = familyRentWeight;
         double income = getRentIncome();
         rRentIncome = income;
+        if(housingMarket.active()) {
+            for(var c:housingMarket.classes())if(c.occupied>0) {
+                double value=housingMarket.leases().stream().filter(l->l.home().equals(new ham.citybuildersim.HousingInventory.Key(c.recipe,c.dwelling)))
+                        .mapToDouble(ham.citybuildersim.HousingChoice.Lease::bill).sum();
+                bookSale(m.record(key(),Trade.HOUSEHOLDS,c.occupied,value/c.occupied));
+            }
+            housingMarket.sold();return;
+        }
         if (income <= 0) return;
         if (studioRentWeight + familyRentWeight > 0) {
             if (studioRentWeight > 0) bookSale(m.record(key(), Trade.HOUSEHOLDS, studioRentWeight, studioRentPrice));
@@ -697,6 +710,9 @@ public final class RealEstate extends Sector {
 
             // What it would actually let, not what it holds.
             double doors = fillableDoors(t, headShortfall);
+            double typedIncome=housingMarket.active()?housingMarket.candidateIncome(t,Math.max(0,headShortfall)):0;
+            if(housingMarket.active())doors=typedIncome>0?Math.min(t.getDwellings(),typedIncome/Math.max(1e-30,
+                    housingMarket.meanPerCapacity(t)*t.getCapacity()/t.getDwellings())):0;
             if (doors <= 0) {
                 blocked = "nobody the city has could live in one";
                 continue;
@@ -707,12 +723,12 @@ public final class RealEstate extends Sector {
             // the city would actually fill. Asking both on fillable doors
             // stopped a city building housing entirely.
             double hurdle = game.getEconomyManager().housingBuildHurdle(t);
-            if (hurdle > 0 && t.getCapacity() * price < hurdle) {
+            if (hurdle > 0 && (housingMarket.active()?typedIncome:t.getCapacity() * price) < hurdle) {
                 blocked = String.format("rent does not cover a new %s", t.getName());
                 continue;
             }
 
-            double income = doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
+            double income = housingMarket.active()?typedIncome:doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double score = income / cost;
@@ -840,6 +856,7 @@ public final class RealEstate extends Sector {
 
     /** The price the segment this template belongs to is charging. */
     public double priceForSegment(BuildingsTemplate t) {
+        if(housingMarket.active())return housingMarket.meanPerCapacity(t);
         return t.homeSize() <= FamilyModel.STUDIO_MAX_SIZE ? studioRentPrice : rentPrice;
     }
 
@@ -853,6 +870,7 @@ public final class RealEstate extends Sector {
     @Override
     public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
         BuildingsTemplate t = u == null ? null : u.template();
+        if(t!=null&&housingMarket.active())return housingMarket.candidateIncome(t,Math.max(0,latentHeadShortfall()));
         int units = t.getDwellings() > 0 ? t.getDwellings() : Math.max(1, t.getCapacity() / 4);
         FamilyModel families = plans.families();
         if (families == null) return t.getCapacity() * rentPrice;
@@ -1035,6 +1053,7 @@ public final class RealEstate extends Sector {
 
     @Override
     protected void resetExtras() {
+        housingMarket.reset();
         rentPrice = rentFor(wageAnchor);
         studioRentPrice = rentPrice;
         lastRentTarget = lastStudioTarget = 0;
@@ -1053,6 +1072,7 @@ public final class RealEstate extends Sector {
     /** The prices and the per-capacity costs are money; the doors, the weights and the rates are not. */
     @Override
     protected void redenominateExtras(double scale) {
+        housingMarket.redenominate(scale);
         rentPrice *= scale;
         studioRentPrice *= scale;
         lastRentTarget *= scale;

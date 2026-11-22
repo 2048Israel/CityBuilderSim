@@ -99,6 +99,14 @@ public class DataSave implements Cloneable {
 
     /** RES2 bounded title/occupancy/listing cohorts; physical stock stays in buildings[]. */
     private java.util.List<HousingInventory.Holding> housingInventory;
+    private double[] homePayIndices;
+    private int homePayMonth;
+    public void setHomePayIndices(double[] indices,int month) {homePayIndices=indices;homePayMonth=month;}
+    public double[] getHomePayIndices() {return homePayIndices;}
+    public int getHomePayMonth() {return homePayMonth;}
+    private HousingMarket.State housingMarket;
+    public void setHousingMarket(HousingMarket.State state) { housingMarket=state; }
+    public HousingMarket.State getHousingMarket() { return housingMarket; }
     public void setHousingInventory(java.util.List<HousingInventory.Holding> holdings) { housingInventory = holdings; }
     public java.util.List<HousingInventory.Holding> getHousingInventory() { return housingInventory; }
     private int month = 1;
