@@ -793,3 +793,43 @@ PW5's dry run. A private runner shim blocks automatic laptop fallback;
 no local ensemble is started silently. The Bash job has a7200s timeout,
 its own PID and exit file, and stays under a waiting parent. M1/F1 stop
 the ship. Ask for the dry-run slot after the final ensemble passes.
+
+The final ensemble completes, launcher/score exit0, on the gate box:
+`/home/jerus/cbs/tools/99c5c41ec53b26e94f50a4d8051ee1299b59b616/target/ensemble/HC1-final-review-20261122`.
+Its copied files are `target/ensemble/HC1-final-review-20261122`; controller
+log `target/hc1-final-ensemble.txt`. Snapshot99c5c41ec, UTC2026-11-22T21:17Z,
+Java21.0.13,8 jobs, main7b60b9a8d. It waited for PW5's dry run, then ran
+all80 policy/seed pairs to their scheduled ends. The80 CSVs are nonempty;
+the scorer reports no missing or short run. No laptop fallback occurred.
+
+**PASS:25/26 against baseline0.9.188's23/26; M1/F1 all10/10 PASS.**
+Every policy has0 failed audit months and0 runs with findings. AUTO2/T2
+and ZERO_SLACK/T2 change FAIL to PASS: these are final-population criteria,
+not runtime criteria (the commentary initially called them runtime; this
+corrects that). AUTO2/A2 is the only remaining informational FAIL, also
+FAIL in the baseline. Pairing is64/64 PASS, a diagnostic excluded from
+the25/26 count; one retired criterion is excluded too. No hard failure
+is named away or moved to a queue.
+
+Final-population medians, final model beside0.9.188:
+
+| policy | HC1 | baseline |
+|---|---:|---:|
+| AUTO2 | 4,865,899.5 | 2,470,539.5 |
+| ZERO_SLACK | 2,858,789 | 1,277,612.5 |
+| ZERO_HOT | 7,562.5 | 7,582.5 |
+| SHOCK | 91,580.5 | 40,935.5 |
+| HIGH | 32,644.5 | 31,616.5 |
+
+`docs/ensemble/HC1.md` is now this final artifact, replacing the historical
+d325c74c8 artifact. Only its version heading and introduction use{next};
+all provenance, figures and summary JSON are the scorer's. Independent
+verification checks all80 distinct pairs/full planned lengths,80 files
+and10 hard PASS verdicts; its score count excludes the pairing diagnostic
+just as the official scorer does. The post-run fetch still finds main at
+7b60b9a8d. No model or test code changed after snapshot99c5c41ec.
+
+The marker remains provisional and the9 accepted pin rows remain. Mail
+the PASS verdict and `HC1 dry run?`, then end for the orchestrator's slot
+go. Do not start the ALL dry run until that go; the earlier stopped run
+is still not a reusable green run.
