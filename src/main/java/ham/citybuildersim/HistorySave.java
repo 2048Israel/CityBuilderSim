@@ -613,6 +613,10 @@ public class HistorySave {
 
     /** Struck power observations, at the strike month; source dispatch and paid dispatch months are separate series. */
     private Map<String, List<Double>> powerSeries = new LinkedHashMap<>();
+    /** Annual household debt surveys (HC2), on their own year axis. */
+    private List<DebtStatistics.Survey> debtSurveys = new ArrayList<>();
+
+    public List<DebtStatistics.Survey> getDebtSurveys() { return List.copyOf(debtSurveys); }
 
     private void recordPower(Game game) {
         Map<String, Double> values = PowerView.series(PowerView.of(game));
@@ -1022,6 +1026,7 @@ public class HistorySave {
         basketsAsked.add(round2(finite(shops.getDemandAtPrice())));
         basketsHanded.add((double) shops.getProductsSold());
         HouseholdBalance fed = game.getHouseholdBalance();
+        if (game.getMonth() % 12 == 0) debtSurveys.add(DebtStatistics.survey(fed, game.getMonth()));
         hunger.add(round4(finite(fed.getHungerRate())));
         hungerPricedOut.add(round4(finite(fed.getHungerPricedOut())));
         householdsAssisted.add(round2(finite(fed.getHouseholdsAssisted())));
@@ -1262,6 +1267,7 @@ public class HistorySave {
         hunger = copy(loaded.hunger);
         hungerPricedOut = copy(loaded.hungerPricedOut);
         householdsAssisted = copy(loaded.householdsAssisted);
+        debtSurveys = loaded.debtSurveys == null ? new ArrayList<>() : new ArrayList<>(loaded.debtSurveys);
         mealMargin = copy(loaded.mealMargin);
         mealTargetMargin = copy(loaded.mealTargetMargin);
         luxuryMargin = copy(loaded.luxuryMargin);
@@ -1607,6 +1613,7 @@ public class HistorySave {
             int thisYear = CityCalendar.yearOf(lastMonth);
             copy.tradeByPartner.removeIf(t -> t.year() >= thisYear);
         }
+        if (copy.debtSurveys != null) copy.debtSurveys.removeIf(s -> s.month() > lastMonth);
         return copy;
     }
 
@@ -2181,6 +2188,7 @@ public class HistorySave {
         }
         // The trade by partner's finished years (DZ1): each cell's value out and in is money; the tables are immutable, so the list takes the scaled ones.
         if (tradeByPartner != null) tradeByPartner.replaceAll(t -> t.scaled(scale));
+        if (debtSurveys != null) debtSurveys.replaceAll(s -> s.scaled(scale));
     }
 
     @SafeVarargs

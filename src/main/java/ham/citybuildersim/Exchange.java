@@ -1363,7 +1363,7 @@ public class Exchange {
      * not the other (PriceLevelCheck 9's town parted at month 26, as it had at month 56 before FC1).
      */
     boolean mayBuy(Household c) {
-        return !c.isEmpty() && c.canInvest() && !owes(c) && c.lockout <= 0 && !c.isGoingShort();
+        return !c.isEmpty() && c.canInvest() && !owes(c) && c.shutOut < 1 && !c.isGoingShort();
     }
 
     /** Whether a cell owes anything (mayBuy()): past the households' rounding floor where the balance is attached, else anything above nothing. */

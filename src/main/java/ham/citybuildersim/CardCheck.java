@@ -1,0 +1,226 @@
+package ham.citybuildersim;
+
+import java.util.Random;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
+/**
+ * Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1).
+ * WHY: a cell average used to discharge all its neighbours and conceal thin buffers.
+ * Every edge is caused with the household's own inputs; money is checked as an identity.
+ */
+public final class CardCheck {
+    static int fails;
+    static void check(String label, boolean pass) {
+        System.out.println((pass ? "OK   " : "FAIL ") + label); if (!pass) fails++;
+    }
+    static void close(String label, double got, double want, double tolerance) {
+        check(label + " (" + got + "; expected " + want + ")", Math.abs(got - want) <= tolerance);
+    }
+    static WorkingHousehold cell(double income, double savings, double debt, double holders) {
+        WorkingHousehold c = new WorkingHousehold(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        c.households = 1000; c.disposable = income; c.savings = savings; c.debt = debt; c.revolving = holders;
+        return c;
+    }
+    static void spread() {
+        System.out.println("--- Closed forms against a draw, including both sides of the point mass ---");
+        for (double sigma : new double[]{.35, CellSpread.CARD_SIGMA, CellSpread.SAVINGS_SIGMA}) {
+            Random random = new Random(7614);
+            int n = 600_000; double mean = 4, line = 3, below = 0, above = 0, gap = 0, capped = 0;
+            for (int i = 0; i < n; i++) {
+                double x = mean * Math.exp(sigma * random.nextGaussian() - sigma * sigma / 2);
+                if (x <= line) below++; else above += x;
+                gap += Math.max(0, line - x);
+                capped += Math.min(line, x);
+            }
+            close("CDF matches drawn holders at sigma " + sigma, CellSpread.below(line, mean, sigma), below / n, .003);
+            close("balance tail matches drawn holders at sigma " + sigma, CellSpread.aboveMean(line, mean, sigma), above / n, .04);
+            close("shortfall matches drawn buffers at sigma " + sigma, CellSpread.shortfall(line, mean, sigma), gap / n, .012);
+            close("capped repayment matches drawn holders at sigma " + sigma, CellSpread.cappedMean(line, mean, sigma), capped / n, .012);
+        }
+        close("zero buffers borrow the whole bill", CellSpread.shortfall(3, 0, 1.5), 3, 0);
+        close("no bill borrows nothing", CellSpread.shortfall(0, 3, 1.5), 0, 0);
+        close("a point amount below the line is counted", CellSpread.below(4, 4, 0), 1, 0);
+        close("a point amount above the line is excluded", CellSpread.below(3, 4, 0), 0, 0);
+    }
+    static void month() {
+        System.out.println("--- Thin buffers borrow; fixed minimum and all the cash have a recipient ---");
+        WorkingHousehold thin = cell(4, 0, 0, 0), rich = cell(4, 400, 0, 0);
+        for (WorkingHousehold c : new WorkingHousehold[]{thin, rich}) {
+            double before = c.savings, debt = c.debt;
+            c.settle(4, 1, 0, 1, .2, .04);
+            close("household cash identity through minimum, shock and lending", c.savings - before,
+                    4 - 1 - 1 - c.interest - c.repaid + c.borrowed - c.emergencyBill, 1e-10);
+            close("card book identity including its fee", c.debt - debt, c.borrowed + c.loanFee - c.repaid, 1e-10);
+            check("emergency bill is positive", c.emergencyBill > 0);
+            check("holding share fits the acceptance rule", c.revolving > 0 && c.revolving <= c.cardAccess(4));
+        }
+        check("thinner buffers borrow more on the same bill", thin.borrowed > rich.borrowed);
+        WorkingHousehold owe = cell(4, 0, 2, .5);
+        owe.settle(4, 1, 0, 1, .2, .04);
+        check("a current debtor pays minimum principal before the food", owe.minimumPaid > 0 && owe.afterFixed < 4 - 1 - owe.interest);
+        check("extra paydown reaches the bank with the minimum", owe.repaid >= owe.minimumPaid);
+        WorkingHousehold poor = cell(1, 0, 2, .5), comfortable = cell(100, 0, 2, .5);
+        poor.settle(1, 1, 0, .2, .2, .04);
+        comfortable.settle(100, 1, 0, .2, .2, .04);
+        check("inability to carry the minimum puts more balance behind", poor.lateDebt > comfortable.lateDebt);
+        WorkingHousehold capped = cell(4, 0, 2, .1);
+        capped.settle(4, 1, 0, 1, .2, 2);
+        close("rate cap binds above its edge", capped.rate, Bank.CARD_RATE_CAP, 0);
+        check("lower rate stays below the cap", owe.rate < Bank.CARD_RATE_CAP);
+        for (double extraCapital : new double[]{0, .1}) {
+            WorkingHousehold rationed = cell(1, 0, 2, .5);
+            rationed.capitalCeiling = 2 + extraCapital;
+            rationed.settle(1, 1, 0, .5, .2, .04);
+            check("waterfall and emergency draws share one capital/interest allowance at " + extraCapital,
+                    rationed.debt <= 2 + extraCapital + rationed.interest + 1e-12);
+        }
+        // Cause both sides of the minimum's crossover through the supplied bank rate.
+        for (double side : new double[]{-1, 1}) {
+            WorkingHousehold edge = cell(100, 0, 2, .5);
+            double risk = HouseholdBalance.RISK_SLOPE * 2 / .5 / 100;
+            double base = 12 * (Bank.CARD_MINIMUM - Bank.CARD_MIN_PRINCIPAL) - Bank.CARD_SPREAD - risk + side * 1e-6;
+            edge.settle(100, 1, 0, 1, .2, base);
+            close("minimum follows its " + (side < 0 ? "percentage" : "interest plus principal") + " branch",
+                    edge.minimumDue, side < 0 ? Bank.CARD_MINIMUM * 2
+                            : edge.interest + Bank.CARD_MIN_PRINCIPAL * 2, 1e-12);
+        }
+    }
+    static void chargeOff() {
+        System.out.println("--- Late stock cures or charges off; only its share is excluded ---");
+        WorkingHousehold c = cell(4, .2, 2, .5);
+        c.lateDebt = 1; c.lateShare = .2;
+        double before = c.debt, late = c.lateDebt, savings = c.savings;
+        double written = c.chargeOff();
+        close("annual write-off hazard is the sourced ratio", 12 / Bank.CARD_CHARGE_OFF_MONTHS, 3.82 / 2.85, 1e-12);
+        close("late balances cure and charge off once", c.lateDebt, late * (1 - Bank.CARD_CURE - 1 / Bank.CARD_CHARGE_OFF_MONTHS), 1e-12);
+        close("ended debt is exactly the repayment and the bank's loss", before - c.debt, c.seizedSavings + written / c.households, 1e-12);
+        close("seized savings reach the creditor", savings - c.savings, c.seizedSavings, 1e-12);
+        close("write-off is the exact loss of the bank's loan book", c.cardWrittenOff * c.households, written, 0);
+        close("only the charged-off share goes bankrupt", c.bankrupt, .2 / Bank.CARD_CHARGE_OFF_MONTHS * c.households, 1e-12);
+        check("neighbours still have credit", c.shutOut > 0 && c.creditRoom(4) > 0);
+        c.lateDebt = c.lateShare = 0;
+        double excluded = c.shutOut;
+        c.chargeOff();
+        close("exclusion decays on the year's own hazard", c.shutOut, excluded * (1 - 1.0 / HouseholdBalance.LOCKOUT_MONTHS), 1e-12);
+        WorkingHousehold all = cell(4, 0, 0, 0); all.shutOut = 1;
+        close("all excluded cannot borrow", all.creditRoom(4), 0, 0);
+        all.shutOut = 0;
+        check("an accepted household can borrow again", all.creditRoom(4) > 0);
+        close("no income fails the card test", Bank.cardAccess(0, PayTier.UNSKILLED, 0), 0, 0);
+        close("bottom tier has its estimated access", Bank.cardAccess(1, PayTier.UNSKILLED, 0), Bank.CARD_BOTTOM_ACCESS, 0);
+        close("other tiers have their own access", Bank.cardAccess(1, PayTier.COLLEGE, 0), Bank.CARD_OTHER_ACCESS, 0);
+        check("late balances need a larger loss allowance", Bank.cardAllowance(2, 1) > Bank.cardAllowance(2, 0));
+        Bank bank = new Bank();
+        bank.refresh(1, 1_000_000, 0, 0, 0, 0);
+        bank.closeMonth();
+        close("sound neutral card rate is the agreed rate", bank.cardRate(DebtManager.NEUTRAL_RATE), Bank.CARD_NEUTRAL_RATE, 1e-12);
+        for (double tax : new double[]{0, .2}) {
+            ham.citybuildersim.sectors.BusinessServices seller = new ham.citybuildersim.sectors.BusinessServices();
+            seller.sellHouseholdEmergencies(10, tax);
+            close("emergency receipt has one household buyer at tax " + tax, seller.pending().salesToHouseholds, 10, 0);
+            close("emergency receipt pays its imports and its sales tax at " + tax,
+                    seller.pending().imports + seller.pending().salesToHouseholds * tax, 10, 1e-12);
+        }
+    }
+    static void save() {
+        System.out.println("--- Card stocks and settled flows survive the cell save and currency reform ---");
+        HouseholdBalance balance = new HouseholdBalance();
+        Household c = balance.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        c.households = 100; c.savings = 2; c.debt = 1; c.revolving = .4;
+        c.lateDebt = .2; c.lateShare = .05; c.shutOut = .1;
+        c.minimumPaid = .02; c.minimumDue = .04; c.emergencyBill = .3; c.cardWrittenOff = .01; c.disposable = 3; c.bankrupt = 2; c.depositIncome = .07;
+        c.studentDebt = 2; c.studentRepaid = .02; c.studentInterest = .005;
+        HouseholdBalance restored = new HouseholdBalance();
+        check("cell save is accepted", restored.restoreCells(balance.cellKeys(), balance.toCellSaveArray(), Equity.COMPANIES));
+        Household d = restored.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        check("all four card stocks round-trip", c.revolving == d.revolving && c.lateDebt == d.lateDebt && c.lateShare == d.lateShare && c.shutOut == d.shutOut);
+        check("settled card figures round-trip", c.minimumPaid == d.minimumPaid && c.minimumDue == d.minimumDue && c.emergencyBill == d.emergencyBill && c.cardWrittenOff == d.cardWrittenOff && c.disposable == d.disposable && c.bankrupt == d.bankrupt && c.depositIncome == d.depositIncome);
+        check("settled student service is saved alongside card service", c.studentRepaid == d.studentRepaid && c.studentInterest == d.studentInterest);
+        d.redenominate(.01);
+        close("late balance follows the money", d.lateDebt, c.lateDebt * .01, 0);
+        close("holder share survives a currency reform", d.revolving, c.revolving, 0);
+        check("old saves are refused at the new format", GameVersion.SAVE_FORMAT == GameVersion.OLDEST_LOADABLE_FORMAT);
+    }
+    static void city() {
+        System.out.println("--- Real city money, annual surveys, saved reads and continuation ---");
+        PrintStream real = System.out, quiet = new PrintStream(OutputStream.nullOutputStream());
+        Game g = LongPlaytest.probeCity(GameFiles.scratch("cardcheck"), null);
+        double bills = 0, worst = 0, worstHouseholds = 0;
+        int billMonths = 0, drawMonths = 0, minimumMonths = 0, lateMonths = 0, chargeOffMonths = 0;
+        System.setOut(quiet);
+        try {
+            for (int month = 0; month < 24; month++) {
+                g.simulateMonths(1);
+                bills += g.getHouseholdBalance().totalEmergencyBills();
+                HouseholdBalance balance = g.getHouseholdBalance();
+                if (balance.totalEmergencyBills() > 0) billMonths++;
+                if (balance.totalBorrowed() > 0) drawMonths++;
+                if (balance.cells().stream().anyMatch(c -> c.minimumDue > 0)) minimumMonths++;
+                if (balance.cells().stream().anyMatch(c -> c.lateDebt > 0)) lateMonths++;
+                if (balance.getWrittenOff() > 0) chargeOffMonths++;
+                MoneyAudit.Result audit = g.getLastMoneyAudit();
+                worst = Math.max(worst, Math.abs(audit.residual) / MoneyAudit.tolerance(audit.moved()));
+                MoneyAudit.Households households = g.getLastHouseholdsAudit();
+                worstHouseholds = Math.max(worstHouseholds, Math.abs(households.residual)
+                        / MoneyAudit.tolerance(Math.abs(households.toHouseholds) + Math.abs(households.fromHouseholds)));
+            }
+        } finally { System.setOut(real); }
+        System.out.printf("24 measured months: emergency bills %d, card draws %d, minimums %d, late stock %d, charge-offs %d%n",
+                billMonths, drawMonths, minimumMonths, lateMonths, chargeOffMonths);
+        check("city actually paid unexpected bills in the measured months", bills > 0);
+        check("every measured month conserves the money pools (worst tolerance ratio " + worst + ")", worst <= 1);
+        check("every measured month conserves household cash (worst tolerance ratio " + worstHouseholds + ")", worstHouseholds <= 1);
+        check("the yearly surveys were actually recorded", g.getHistorySave().getDebtSurveys().size() >= 2);
+        double[] beforeReads = g.getHouseholdBalance().toCellSaveArray();
+        for (int i = 0; i < 3; i++) DebtStatistics.survey(g.getHouseholdBalance(), g.getMonth());
+        check("reading every debt group changes no saved cell field", java.util.Arrays.equals(beforeReads, g.getHouseholdBalance().toCellSaveArray()));
+        System.setOut(quiet);
+        Game back;
+        boolean saved;
+        try {
+            saved = g.saveGame(10, "card check").ok;
+            back = new Game(g.getGameFiles());
+            back.loadGameSave(10);
+        } finally { System.setOut(real); }
+        check("scratch city saves in the assistant slot", saved);
+        boolean sameCards = true;
+        for (Household c : g.getHouseholdBalance().cells()) {
+            Household d = back.getHouseholdBalance().cellByKey(c.key());
+            sameCards &= d != null && c.revolving == d.revolving && c.lateDebt == d.lateDebt
+                    && c.lateShare == d.lateShare && c.shutOut == d.shutOut && c.minimumPaid == d.minimumPaid
+                    && c.emergencyBill == d.emergencyBill && c.cardWrittenOff == d.cardWrittenOff
+                    && c.minimumDue == d.minimumDue && c.disposable == d.disposable && c.bankrupt == d.bankrupt;
+        }
+        check("all card stocks and settled statistics survive the game loader", sameCards);
+        check("annual surveys survive the history loader", g.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
+        DebtStatistics.Snapshot live = g.getHouseholdBalance().debtStatistics();
+        DebtStatistics.Snapshot loaded = back.getHouseholdBalance().debtStatistics();
+        if (!live.equals(loaded)) {
+            System.out.printf("Current statistics live/load: DTI %.12f / %.12f; assets %.12f / %.12f; service %.12f / %.12f; high %.12f / %.12f%n",
+                    live.debtToDisposableIncome(), loaded.debtToDisposableIncome(), live.debtToAssets(), loaded.debtToAssets(),
+                    live.debtServiceRatio(), loaded.debtServiceRatio(), live.payingOver40(), loaded.payingOver40());
+            for (Game city : new Game[]{g, back}) {
+                HouseholdBalance b = city.getHouseholdBalance();
+                double financial = 0, cars = 0;
+                for (Household c : b.cells()) {
+                    financial += b.financialAssets(c) * c.households;
+                    cars += (b.assets(c) - b.financialAssets(c)) * c.households;
+                }
+                System.out.printf("Asset inputs: savings %.12f, abroad %.12f, paper %.12f, bonds %.12f, shares %.12f, financial %.12f, cars %.12f%n",
+                        b.totalSavings(), b.totalAbroadValue(), b.marketValueOfPaper(), b.marketValueOfBonds(), b.marketValueOfShares(), financial, cars);
+            }
+        }
+        check("all current statistics survive the loader", live.equals(loaded));
+        DebtStatistics.Measure cards = live.perHousehold().get(DebtStatistics.Kind.CARD);
+        System.out.printf("Closing card figures: holders %.3f%%, late households %.3f%%, late balances %.3f%%, annualised charge-off %.3f%%%n",
+                100 * cards.shareHolding(), 100 * cards.lateShare(), 100 * cards.delinquency(), 100 * cards.annualChargeOff());
+        int cutMonth = g.getHistorySave().getDebtSurveys().get(0).month();
+        check("replay history excludes later surveys", g.getHistorySave().cutAt(cutMonth).getDebtSurveys().stream().allMatch(s -> s.month() <= cutMonth));
+    }
+    public static void main(String[] args) {
+        spread(); month(); chargeOff(); save(); city();
+        System.out.println("CardCheck: " + fails + " failures");
+        System.exit(fails == 0 ? 0 : 1);
+    }
+}

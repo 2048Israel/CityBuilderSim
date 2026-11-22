@@ -1908,6 +1908,17 @@ public class SaveFileCheck {
         }
         same("...the orders resting on their books", backOrders, liveOrders);
         same("the households' bonds", back.getHouseholdBalance().totalBonds(), full.getHouseholdBalance().totalBonds());
+        boolean cardsMatch = true;
+        for (Household c : full.getHouseholdBalance().cells()) {
+            Household t = back.getHouseholdBalance().cellByKey(c.key());
+            cardsMatch &= t != null && c.revolving == t.revolving && c.lateDebt == t.lateDebt
+                    && c.lateShare == t.lateShare && c.shutOut == t.shutOut
+                    && c.minimumPaid == t.minimumPaid && c.minimumDue == t.minimumDue
+                    && c.emergencyBill == t.emergencyBill && c.cardWrittenOff == t.cardWrittenOff;
+        }
+        assertTrue("HC1 card positions and settled flows cross the loader", cardsMatch);
+        assertTrue("HC2 annual debt surveys cross the history loader",
+                full.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
         // ...each cell's own, bond by bond, by the cell's name (0.7.12 round 2).
         int cellsWithBonds = 0, cellsBack = 0;
         for (Household c : full.getHouseholdBalance().cells()) {

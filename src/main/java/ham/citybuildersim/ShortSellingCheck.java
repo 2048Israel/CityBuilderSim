@@ -816,8 +816,8 @@ public class ShortSellingCheck {
 
         // The fee, on the quote the book stood at before the step. 700 and 100 can be lent, 100 are short: well under HARD_TO_BORROW.
         Bench feed = standard();
-        feed.poor.lockout = 1;                                  // both cells locked out of buying, so the fee is all that reaches their savings
-        feed.rich.lockout = 1;
+        feed.poor.shutOut = 1;                                  // both cells locked out of buying, so the fee is all that reaches their savings
+        feed.rich.shutOut = 1;
         feed.open(Exchange.DESK, feed.shortAsk(), 100);
         double lendable = feed.hb.sharesHeld(INDUSTRY) + feed.reg.getCityMarketShares(INDUSTRY);
         double u = feed.shortShares() / lendable;
@@ -1204,8 +1204,8 @@ public class ShortSellingCheck {
 
         // The fund's books. The fixture of section 4's fee: 700 can be lent by the cells and the fund, 100 are short.
         Bench feed = standard();
-        feed.poor.lockout = 1;
-        feed.rich.lockout = 1;
+        feed.poor.shutOut = 1;
+        feed.rich.shutOut = 1;
         feed.open(Exchange.DESK, feed.shortAsk(), 100);
         feed.city.step(0);
         double toFund = feed.ex.lendingFeeToFund(INDUSTRY);

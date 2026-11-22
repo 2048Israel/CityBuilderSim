@@ -1437,7 +1437,7 @@ public class PrizeCheck {
         for (int i = 0; i < weight.length; i++) {
             Household cell = cells.get(i);
             if (!cell.isEmpty() && cell.canInvest() && cell.tradesShares() && cell.debt <= 0
-                    && cell.lockout <= 0 && !cell.isGoingShort()) weight[i] = cell.households();
+                    && cell.shutOut < 1 && !cell.isGoingShort()) weight[i] = cell.households();
         }
         return village.getHouseholdBalance().creditByWeight(amount, weight);
     }

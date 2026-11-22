@@ -324,6 +324,17 @@ public final class BusinessServices extends Sector {
         sellUpkeepOn(BANK_UPKEEP_SUPPLIES, bill);
     }
 
+    /** Emergency repairs and replacement services brokered abroad for households (HC1). */
+    public void sellHouseholdEmergencies(double bill, double salesTaxRate) {
+        if (!(bill > 0)) return;
+        bookSale(new ham.citybuildersim.Trade(Good.SUPPORT_WORK, ham.citybuildersim.Sectors.BUSINESS_SERVICES,
+                ham.citybuildersim.Trade.HOUSEHOLDS, 1, bill));
+        // Sector sales tax is a share of the recorded receipt; imported VAT
+        // is charged and credited back. Reserve that remittance from the bill.
+        double tax = Math.max(0, Math.min(1, salesTaxRate));
+        bookImportedService("Household emergency services", bill * (1 - tax));
+    }
+
     /**
      * What a month of its seats could bill at capacity, in the city's own money: every kind's seats at what the world pays for a seat-month
      * (priceOfSeat(), the price the screen shows). The most upkeep the sector can serve in a month, the bank's and the services' together

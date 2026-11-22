@@ -3012,7 +3012,7 @@ final class BankScreen {
                         + "never catches up is discharged - the bank loses all of it.", null),
                 big(m(bank.getHouseholdBook()), Palette.TEXT_HEAD),
                 line("owed on their credit lines"),
-                cardLine(String.format("...by families owing more than %.0f months of their income", Bank.HOUSEHOLD_WATCH_MONTHS),
+                cardLine("...by families late on their card minimums",
                         mFull(bank.getHouseholdWatchedDebt()), bank.getHouseholdWatchedDebt() > 0 ? Palette.WARN : null),
                 cardLine("Stage", bank.getHouseholdStage() == 2 ? "2 - some are in trouble" : "1 - every family sound",
                         bank.getHouseholdStage() == 2 ? Palette.WARN : null),

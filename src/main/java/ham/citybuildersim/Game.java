@@ -4665,6 +4665,9 @@ public class Game {
             double feeEach = householdBalance.getAccountFee();
             bank.setCustomers(feeEach > 0 ? householdBalance.totalAccountFees() / feeEach : 0);
             bank.bookLoanFees(householdBalance.totalLoanFees());
+            // HC1: the bill settled in the household waterfall has one seller.
+            getSectors().businessServices().sellHouseholdEmergencies(householdBalance.totalEmergencyBills(),
+                    tax.effectiveSalesRate(Sectors.BUSINESS_SERVICES));
 
             /*
              * THE PEOPLE OUTSIDE THE FAMILIES' MONTH, on the city's side.
@@ -16503,6 +16506,9 @@ public class Game {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
         householdBalance.setRentShares(this::rentShareOf);
         householdBalance.setHousedShares(this::housedShareOf);
+        householdBalance.setCarAssetPrice(() -> motoring.getUsedCarPrice() > 0 ? motoring.getUsedCarPrice()
+                : getMarkets().get(Good.CARS).getLocalPrice() * HouseholdBalance.USED_CAR_FLOOR);
+        householdBalance.setAssetExchangeRate(() -> this.foreign.getRate());
         householdBalance.setOutsideDependants(this::outsideDependantsOf);
         // The owner line (BO1) runs in a city by its dial, on since BO1-S; a bare fixture, which never switches it, grants the founders' shares by grown-ups.
         householdBalance.setOwnerLine(OwnerHousehold.IN_CITIES);

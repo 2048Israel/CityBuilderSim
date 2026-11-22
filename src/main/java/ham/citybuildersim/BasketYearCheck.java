@@ -680,7 +680,7 @@ public class BasketYearCheck {
         double car = g.getMarkets().get(Good.CARS).getLocalPrice();
         for (Household c : g.getHouseholdBalance().cells()) {
             if (c.isEmpty()) continue;
-            c.lockout = 0;
+            c.shutOut = 0;
             c.savings = Math.max(c.savings, HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * car);
         }
     }

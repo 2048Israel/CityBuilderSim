@@ -281,6 +281,10 @@ public class ReadPathCheck {
      * the same report fields these print.
      */
     static void readEverything(Game g) {
+        g.getHouseholdBalance().debtStatistics();
+        for (PayTier tier : PayTier.values()) DebtStatistics.of(g.getHouseholdBalance(), tier, null);
+        for (DebtStatistics.Stage stage : DebtStatistics.Stage.values()) DebtStatistics.of(g.getHouseholdBalance(), null, stage);
+        g.getHistorySave().getDebtSurveys();
 
         EconomyManager e = g.getEconomyManager();
         ham.citybuildersim.sectors.Retail c = g.getSectors().retail();

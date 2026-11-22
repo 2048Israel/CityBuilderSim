@@ -1360,7 +1360,7 @@ public class HealthCheck {
                     c.savings = 0;
                     c.abroad = 0;
                     java.util.Arrays.fill(c.shares, 0);
-                    c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
+                    c.shutOut = 1; c.revolving = c.lateShare = 0;
                 }
                 // ...AND NO BUSINESS BUILDS DURING THE WINDOW (LD1, 2026-10-31).
                 for (String key : Sectors.KEYS) town.getBusinessInvestment().holdSector(key);
@@ -1371,7 +1371,7 @@ public class HealthCheck {
                     trucksKeepUp(town);
                     standing = keepBedsAhead(town, standing, bedsAdded, step++, k == 0);
                     // WN3 (after EM1): THE BANK STAYS SHUT FOR THE WINDOW.
-                    for (Household c : town.getHouseholdBalance().cells()) c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
+                    for (Household c : town.getHouseholdBalance().cells()) { c.shutOut = 1; c.revolving = c.lateShare = 0; }
                     town.simulateMonths(1);
                     Healthcare hc = town.getHealthcare();
                     double treated = 0, offered = 0;

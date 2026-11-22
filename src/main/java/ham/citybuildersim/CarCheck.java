@@ -383,7 +383,7 @@ public class CarCheck {
             for (Household c : homes.cells()) {
                 if (c.isEmpty()) continue;
                 c.debt = 0;
-                c.lockout = 0;
+                c.shutOut = 0;
                 c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * carMarket.getLocalPrice();
             }
             game.toggleNextMonth();
@@ -394,7 +394,7 @@ public class CarCheck {
             if (c.isEmpty()) continue;
             c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * carAsking;
             c.cars = 0;
-            if (c.lockout <= 0 && !c.isGoingShort()) able++;
+            if (c.shutOut < 1 && !c.isGoingShort()) able++;
         }
         // ...what the households want at the ceiling the last month's buyers weighed (a cell buys whole cars, so the sum can be none in a thin town).
         double carsWantedNow = homes.carsWanted(carAsking, game.getMotoring().getOwnershipCeiling());
@@ -1222,7 +1222,7 @@ public class CarCheck {
             if (c.isEmpty()) continue;
             c.cars = 0;
             c.debt = 0;
-            c.lockout = 0;
+            c.shutOut = 0;
             c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             if (c.canInvest() && !c.isGoingShort()) buyers.add(c);
         }
@@ -1380,7 +1380,7 @@ public class CarCheck {
                 if (c.isEmpty()) continue;
                 c.cars = 0;
                 c.debt = 0;
-                c.lockout = 0;
+                c.shutOut = 0;
                 c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * p;
             }
             int before = carMarket.monthsDraws().size();

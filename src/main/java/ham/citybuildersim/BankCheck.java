@@ -798,8 +798,9 @@ public class BankCheck {
         }
         close("a month's fee is ACCOUNT_FEE at the expected price level, in today's money",
                 fee, Bank.ACCOUNT_FEE * 1.2, 1e-15);
-        close("the households charged it end the month poorer by exactly the fee on every household",
-                feeless.totalSavings() - charged.totalSavings(), fee * 1_000, 1e-9);
+        close("the fee is the exact extra cash cost after emergency bills and their card draws",
+                feeless.totalSavings() - charged.totalSavings() + charged.totalBorrowed() - feeless.totalBorrowed()
+                        - charged.totalEmergencyBills() + feeless.totalEmergencyBills(), fee * 1_000, 1e-9);
         close("...which is what the balance says they paid", charged.totalAccountFees(), fee * 1_000, 1e-9);
         double byRow = 0;
         for (double v : charged.accountFeesByRow(townCensus)) byRow += v;
@@ -1150,8 +1151,8 @@ public class BankCheck {
 
         assertTrue("a household that cannot pay its rent does go broke",
                 firstBankruptMonth > 0);
-        assertTrue("...and it takes months, not one bad month",
-                firstBankruptMonth > 3);
+        assertTrue("...only a share falls behind and is charged off, not the whole cell",
+                broke.getBankrupt(r) > 0 && broke.getBankrupt(r) < 1000);
         assertTrue("the write-off is real money, not a rounding",
                 writtenOff > 0);
         assertTrue("...and the discharged tier is locked out afterwards",
@@ -1190,84 +1191,39 @@ public class BankCheck {
          * month their pay stops.
          */
         double[] noPay = new double[rows];
-        for (double savingsOverDebt : new double[] { .5, 2 }) {
+        // HC1: charge-offs come from the late stock. Give an otherwise
+        // identical debtor a late share and buffers on both sides of its debt.
+        for (double savingsOverDebt : new double[]{.5, 1.5}) {
             HouseholdBalance owing = new HouseholdBalance();
-            for (int m = 1; m < firstBankruptMonth; m++) {
-                spent[r] = people * foodPerHead;
-                owing.advanceMonth(census, disposable, rent, fees, spent, foodPerHead, .05, 1);
-            }
-            double given = 0;
-            for (Household cell : owing.cellsForMarket()) {
-                if (cell.households <= 0 || cell.debt <= 0) continue;
-                cell.savings = cell.debt * savingsOverDebt;
-                given += cell.savings * cell.households;
-            }
-            // The month their pay stops: they still eat and pay the rent, out of the savings, and a debt with no income is past its ceiling.
-            spent[r] = people * foodPerHead;
-            owing.advanceMonth(census, noPay, rent, fees, spent, foodPerHead, .05, 1);
-            double gone = owing.getBankrupt(r);
-            double seized = owing.getSeizedAtBankruptcy(), wrote = owing.getWrittenOff(), ended = 0, kept = 0;
-            boolean within = true;
-            for (Household cell : owing.cellsForMarket()) {
-                if (cell.bankrupt() <= 0) continue;
-                // What the discharge ended, per household of the cell: read back from the debt it left (debt *= 1 - BANKRUPT_RATE).
-                double endedEach = cell.debt * HouseholdBalance.BANKRUPT_RATE / (1 - HouseholdBalance.BANKRUPT_RATE);
-                ended += endedEach * cell.households;
-                kept += cell.savings * cell.households;
-                within &= cell.seizedSavings() <= endedEach * (1 + 1e-9) && cell.savings >= 0;
-            }
-            out.printf("   savings of %.1f x the debt ($%,.0fk given), the pay stopped: %,.1f households discharged that month;%n"
-                            + "      the discharge ended $%,.2fk of debt: $%,.2fk repaid out of their savings, $%,.2fk written off; $%,.0fk of savings still theirs%n",
-                    savingsOverDebt, given, gone, ended, seized, wrote, kept);
-            assertTrue("fixture: a family whose pay stops, holding savings worth " + savingsOverDebt + " of its debt, discharges that month",
-                    given > 0 && gone > 0 && ended > 0);
+            Household cell = owing.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+            cell.households = 100; cell.disposable = 1.2;
+            cell.debt = 2; cell.revolving = .5; cell.lateDebt = 1; cell.lateShare = .2;
+            cell.savings = savingsOverDebt * cell.lateDebt / cell.lateShare;
+            double debtBefore = cell.debt, savedBefore = cell.savings;
+            double wrote = cell.chargeOff(), seized = owing.getSeizedAtBankruptcy();
+            // City-level lastSeized is struck by advanceMonth; direct fixture reads the cell.
+            seized = cell.seizedSavings * cell.households;
+            double ended = (debtBefore - cell.debt) * cell.households;
+            assertTrue("fixture: the specified late share is charged off", cell.bankrupt > 0 && ended > 0);
             assertTrue("...its savings repay the bank before anything is written off", seized > 0);
-            assertTrue("...the debt the discharge ended is what those savings repaid and what the bank wrote off, and nothing else",
-                    Math.abs(ended - seized - wrote) <= 1e-9 * ended);
-            assertTrue("...the repayment reaches the bank with the month's others (totalRepaid())",
-                    owing.totalRepaid() >= seized * (1 - 1e-12));
-            assertTrue("...no cell repaid more than its bankrupt share owed, and none is left overdrawn", within);
-            if (savingsOverDebt < 1) {
-                assertTrue("...savings short of the debt leave the bank a loss", wrote > 0);
-            } else {
-                assertTrue("...savings that cover the debt leave nothing to write off", wrote <= 1e-9 * ended);
-                assertTrue("......and what is left of them is still the family's", kept > 0);
+            close("...ended debt is exactly repayment and the bank's loss", ended, seized + wrote, 1e-9);
+            close("...seized savings leave their owner exactly once", (savedBefore - cell.savings) * cell.households, seized, 1e-9);
+            assertTrue("...repayment is in the bank's existing payment channel", owing.totalRepaid() >= seized);
+            assertTrue("...the bankrupt share cannot repay more than it owed", seized <= ended * (1 + 1e-12) && cell.savings >= 0);
+            if (savingsOverDebt < 1) assertTrue("...insufficient savings leave a bank loss", wrote > 0);
+            else {
+                close("...sufficient savings cover the ended debt", wrote, 0, 1e-9);
+                assertTrue("...the unused savings remain with their owners", cell.savings > 0);
             }
         }
 
-        /*
-         * A LOCKED-OUT ROW CANNOT BORROW.
-         *
-         * The lockout is the whole consequence: wiping the debt and handing the
-         * same family a fresh line of credit the next month is not a bankruptcy,
-         * it is a subsidy.
-         */
-        HouseholdBalance locked = new HouseholdBalance();
-        double[][] few = new double[FamilyStructure.values().length][PayTier.values().length];
-        java.util.function.ToDoubleBiFunction<FamilyStructure, PayTier> fewCensus =
-                (s, t) -> few[s.ordinal()][t.ordinal()];
-        few[FamilyStructure.COUPLE.ordinal()][r] = 50;        // 100 people
-        few[FamilyStructure.COUPLE_TEEN.ordinal()][r] = 50;   // 150 people
-        double[] pay = new double[rows];
-        pay[r] = 100 * 1.2;
-        double[] noFees = new double[rows];
-        double[] mustEat = new double[rows];
-        mustEat[r] = 250 * foodPerHead;
-        double borrowedWhileOpen = 0;
-        for (int m = 1; m <= 60; m++) {
-            locked.advanceMonth(fewCensus, pay, rent, noFees, mustEat, foodPerHead, .05, 1);
-            if (!locked.isLockedOut(r)) borrowedWhileOpen += locked.getBorrowed(r);
-        }
-        double borrowedWhileShut = 0;
-        for (int m = 1; m <= 6; m++) {
-            if (locked.isLockedOut(r)) {
-                locked.advanceMonth(fewCensus, pay, rent, noFees, mustEat, foodPerHead, .05, 1);
-                borrowedWhileShut += locked.getBorrowed(r);
-            }
-        }
-        assertTrue("the fixture did reach a lockout - or this proves nothing",
-                borrowedWhileOpen > 0);
-        close("a locked-out household is lent nothing at all", borrowedWhileShut, 0, 1e-9);
+        Household lock = new WorkingHousehold(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        lock.shutOut = 1;
+        close("a fully excluded share has no credit room", lock.creditRoom(1.2), 0, 0);
+        lock.shutOut = .25;
+        assertTrue("the unexcluded neighbours retain their card access", lock.creditRoom(1.2) > 0);
+        lock.shutOut = 0;
+        assertTrue("when exclusion ends the household can pass the card test", lock.creditRoom(1.2) > 0);
 
         /* ================= 7. and the city opens its own ================= */
         out.println("\n--- and a city with nobody watching opens one itself ---");
@@ -2671,7 +2627,10 @@ public class BankCheck {
                 // The notice (Inbox, "defaults") is live exactly when some
                 // sector's month was news - never on retail's slices alone.
                 boolean anyNews = false;
-                for (String s : credit.sectors()) anyNews |= credit.defaultsAreNews(s);
+                for (String s : credit.sectors()) {
+                    if (credit.defaultsAreNews(s)) out.printf("   measured defaults news: %s at m%d, leverage %.6f%n", s, city.getMonth(), credit.getLeverage(s));
+                    anyNews |= credit.defaultsAreNews(s);
+                }
                 if (!anyNews) quietMonths++;
                 if ((city.getInbox().live("defaults") != null) == anyNews) noticeRight++;
             }
@@ -4146,14 +4105,12 @@ public class BankCheck {
         close("over the episode the provisions add up to the write-offs, to the cent", provided, writtenOff, 1e-9);
         close("...and every month its equity moved by its net income and nothing else", worstMove, 0, 1e-9);
 
-        // The families: a cell past HOUSEHOLD_WATCH_MONTHS, scaled to its whole debt at the discharge line.
-        close("a family owing under the watch line holds a year's loss",
-                Bank.householdAllowance(1_000, Bank.HOUSEHOLD_WATCH_MONTHS), 1_000 * Bank.BASE_LOSS_RATE, 1e-12);
-        close("...halfway from there to the discharge line, half its debt",
-                Bank.householdAllowance(1_000, (Bank.HOUSEHOLD_WATCH_MONTHS + HouseholdBalance.BANKRUPT_AT_MONTHS) / 2),
-                500, 1e-9);
-        close("...and at the line, all of it - a discharge writes the whole debt off",
-                Bank.householdAllowance(1_000, HouseholdBalance.BANKRUPT_AT_MONTHS), 1_000, 1e-9);
+        // HC1: allowance follows the late book, not a cell-wide income ceiling.
+        close("a performing card book holds a year's sound loss", Bank.cardAllowance(1000, 0), 1000 * Bank.BASE_LOSS_RATE, 1e-12);
+        double lateLoss = 1 / (1 + Bank.CARD_CURE * Bank.CARD_CHARGE_OFF_MONTHS);
+        close("half the book late holds its competing cure/charge-off loss", Bank.cardAllowance(1000, 500),
+                500 * Bank.BASE_LOSS_RATE + 500 * lateLoss, 1e-9);
+        close("all the book late holds its competing cure/charge-off loss", Bank.cardAllowance(1000, 1000), 1000 * lateLoss, 1e-9);
         double[][] poor = new double[FamilyStructure.values().length][PayTier.values().length];
         poor[FamilyStructure.COUPLE.ordinal()][0] = 500;
         java.util.function.ToDoubleBiFunction<FamilyStructure, PayTier> poorCensus =
