@@ -18744,24 +18744,28 @@ public class Game {
 
     /**
      * THE BANK BUYS THE HOUSEHOLDS' PAPER (0.7.1), for the waterfall, the
-     * spread gone, or a household on its way out of the city: this much face
-     * for this much cash, off every piece's household share pro rata, onto
+     * spread gone, or a household on its way out of the city: the fraction
+     * face / heldBefore for this much cash, off each line's household face, onto
      * the bank's book with the unearned discount riding on it. The cash
      * leaves the bank's pool for a household - declared by MoneyAudit as
      * "- desk PaperBoughtFromHouseholds".
      */
-    private void desksBuysHouseholdPaper(double face, double cash) {
+    private void desksBuysHouseholdPaper(double face, double cash, double heldBefore) {
         double held = debtManager.householdPrincipal();
-        if (!(face > 0) || held <= 0) return;
-        double take = Math.min(face, held);
-        double unearned = 0;
+        if (!(face > 0) || !(heldBefore > 0) || held <= 0) return;
+        // The household ledger names the share sold. Apply that share to each
+        // line: repeated absolute subtractions otherwise leave old rounding on
+        // the register as a book of hundreds dwindles to a millionth of one.
+        // A real relative mismatch remains a mismatch; no register is reset.
+        double share = Math.min(1, face / heldBefore);
+        double take = 0, unearned = 0;
         // BD1: the book's figure and the carried one before any face moves, for the re-strike below.
         double carriedBefore = bank.getUnearnedDiscount(), bookBefore = debtManager.bankUnearnedDiscount();
         for (Debt d : debtManager.getDebt()) {
             double mine = d.householdPrincipal();
             if (mine <= 0) continue;
-            double off = mine >= held ? take : take * mine / held;
-            off = Math.min(off, mine);
+            double off = share >= 1 ? mine : mine * share;
+            take += off;
             unearned += d.pass(Debt.Holder.HOUSEHOLDS, Debt.Holder.BANK, off);
         }
         bank.buyPaperFromHouseholds(cash, take, unearned);

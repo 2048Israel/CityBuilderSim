@@ -2060,7 +2060,11 @@ public class HouseholdBalance {
         double paperGone = left[paperSlot];
         if (paperGone > 0 && paperDesk != null) {
             double cash = paperGone * paperRatio;
-            paperDesk.buy(paperGone, cash);
+            // The pool has moved the stocks but not yet the cell counts. Read the
+            // surviving book at the fresh counts, plus the face leaving it.
+            double heldBefore = paperGone;
+            for (int i = 0; i < n; i++) heldBefore += cells[i].paper * fresh[i];
+            paperDesk.buy(paperGone, cash, heldBefore);
             lastTakenAway += cash;
         }
         /*
@@ -4630,8 +4634,8 @@ public class HouseholdBalance {
      * face off every piece of paper's household share pro rata.
      */
     public interface PaperDesk {
-        /** The desk buys this much face of the households' paper for this much cash. */
-        void buy(double face, double cash);
+        /** The desk buys face / heldBefore of the opening household book for this much cash. */
+        void buy(double face, double cash, double heldBefore);
     }
 
     private PaperDesk paperDesk;
@@ -4793,8 +4797,9 @@ public class HouseholdBalance {
         double cashPer = Math.min(needPer, c.paper * paperRatio);
         double facePer = Math.min(c.paper, cashPer / paperRatio);
         cashPer = facePer * paperRatio;
+        double heldBefore = totalPaper();
         c.paper -= facePer;
-        paperDesk.buy(facePer * c.households, cashPer * c.households);
+        paperDesk.buy(facePer * c.households, cashPer * c.households, heldBefore);
         return cashPer;
     }
 
@@ -4809,7 +4814,7 @@ public class HouseholdBalance {
      */
     public double sellPaperForSpread(double bookYield, double depositRate) {
         if (paperDesk == null || bookYield > Math.max(0, depositRate)) return 0;
-        double raised = 0;
+        double raised = 0, faceSold = 0, heldBefore = totalPaper();
         for (Household c : cells) {
             if (c.isEmpty() || !c.canInvest() || c.paper <= 0) continue;
             double facePer = c.paper * OutwardInvestment.HOME_SPEED;
@@ -4818,9 +4823,10 @@ public class HouseholdBalance {
             c.paper -= facePer;
             c.savings += cashPer;
             c.paperSold += cashPer;
-            paperDesk.buy(facePer * c.households, cashPer * c.households);
+            faceSold += facePer * c.households;
             raised += cashPer * c.households;
         }
+        if (faceSold > 0) paperDesk.buy(faceSold, raised, heldBefore);
         return raised;
     }
 
