@@ -402,6 +402,12 @@ public class FundLedgerCheck {
         check("fixture: the existing native largest listed company supplies the issuer key", company >= 0);
         if (company < 0) throw new IllegalStateException("No native listed issuer exists in the fixture copy");
         String issuer = Equity.COMPANIES[company];
+        double openingIssuerCash = 20_000; // controlled unit-fixture input, not revenue, borrowing or a played-city observation
+        check("fixture: the native issuer exists before opening balances are installed", payer.getSectors().byKey(issuer) != null);
+        if (payer.getSectors().byKey(issuer) == null) throw new IllegalStateException("No native fixture issuer " + issuer);
+        payer.setSectorCash(issuer, openingIssuerCash);
+        close("fixture: the declared opening issuer cash is installed before the test interval", payer.getSectorCash(issuer), openingIssuerCash, 0);
+        out.println("Fixture opening: " + issuer + " issuer cash " + openingIssuerCash + " (declared test input, not a played-city result)");
         BondMarket bm = new BondMarket();
         bm.attach(readings(1), null, null, null, null);
         TreasuryFund f = new TreasuryFund();
@@ -414,6 +420,7 @@ public class FundLedgerCheck {
         bm.restore(s);
         b = bm.getBonds().get(0);
         f.receive(5_000);
+        double openingCash = payer.getSectorCash(issuer) + f.getCash();
         bm.tradeForCheck(b, BondMarket.WORLD, OrderBook.Side.SELL, .98, 1_000);
         bm.tradeForCheck(b, BondMarket.FUND_HAND, OrderBook.Side.BUY, .98, 1_000);
         bm.tradeForCheck(b, BondMarket.WORLD, OrderBook.Side.SELL, 1.02, 1_000);
@@ -425,7 +432,9 @@ public class FundLedgerCheck {
         double value = bm.modelPrice(b, 1);
         close("...and was worth its face at the bond's value at the step: a bargain's measure", lot.boughtValue(), 2_000 * value, 1e-9);
         // ...its cash spent and its shares where its mix wants them, so the step's rule neither buys nor rebalances.
-        f.pay(f.getCash());
+        double beforeExternalUse = f.getCash(); f.pay(f.getCash());
+        double externalUse = beforeExternalUse - f.getCash(); // the original fixture's cash spent outside this detached bond component
+        close("the original fund cash use outside the bond component remains three thousand", externalUse, 3_000, 1e-12);
         bm.strikeCoupons();
         BondMarket.State record = bm.toState();
         double bill = bm.getCouponsStruck(), bankDue = bm.getCouponsDueToBank();
@@ -443,7 +452,7 @@ public class FundLedgerCheck {
         close("fixture: an uncharged promise contains no cash", bm.couponClearingCash(), 0, 0);
         // The detached book keeps its original participants; an existing real sector supplies the actual coupon cash.
         double issuerCash = payer.getSectorCash(issuer);
-        out.println("Observed: native issuer " + issuer + ", deterministic company " + company + ", existing cash " + issuerCash + ", coupon bill " + bill);
+        out.println("Observed: native issuer " + issuer + ", deterministic company " + company + ", declared opening cash " + issuerCash + ", coupon bill " + bill);
         boolean usablePayer = payer.getSectors().byKey(issuer) != null && Double.isFinite(issuerCash) && issuerCash >= bill;
         check("fixture: the selected existing native sector can actually fund its recorded bill", usablePayer);
         if (!usablePayer) throw new IllegalStateException("Native " + issuer + " cash cannot fund the fixture's actual coupon bill: " + issuerCash);
@@ -506,12 +515,26 @@ public class FundLedgerCheck {
         bm.writeDown(issuer, 1);
         close("a write-down that keeps the whole face realizes nothing", lot.realized(), realized, 0);
         double face = b.city(), acb = lot.acb();
+        double maturityBill = b.face(), beforeMaturity = payer.getSectorCash(issuer);
+        payer.setSectorCash(issuer, beforeMaturity - maturityBill); // this detached market has no economy participant to debit it automatically
+        close("the actual native issuer cash funds the whole maturing face", beforeMaturity - payer.getSectorCash(issuer), maturityBill, 1e-12);
         bm.redeemMaturing(b.maturityMonth());
         close("its maturity realizes the face less the cost", lot.realized() - realized, face - acb, 1e-9);
         check("...and closes the lot, with its record", lot.isClosed() && lot.acb() == 0 && lot.income() > 0);
         close("...the face is what the fund was paid", f.getPrincipal(), face, 1e-9);
         close("the ledger's proceeds are the counters' sales and principal", f.getLedger().proceeds(),
                 f.getBondsSold() + f.getPrincipal(), 1e-9);
+        close("opening through closing conserves issuer, fund, clearing and actual external cash",
+                payer.getSectorCash(issuer) + f.getCash() + bm.couponClearingCash() + externalUse
+                + bm.getWorldSold() - bm.getWorldBought() + bm.getCouponsAbroad() + bm.getPrincipalAbroad(), openingCash, 1e-12);
+        double closedCash = f.getCash(), closedIssuer = payer.getSectorCash(issuer), closedPrincipal = f.getPrincipal();
+        double closedWorld = bm.getPrincipalAbroad(), closedRealized = lot.realized();
+        bm.redeemMaturing(b.maturityMonth());
+        close("a repeated native maturity creates no fund cash", f.getCash(), closedCash, 1e-12);
+        close("a repeated native maturity creates no issuer debit", payer.getSectorCash(issuer), closedIssuer, 1e-12);
+        close("a repeated native maturity creates no principal receipt", f.getPrincipal(), closedPrincipal, 1e-12);
+        close("a repeated native maturity creates no world principal", bm.getPrincipalAbroad(), closedWorld, 1e-12);
+        close("a repeated native maturity creates no realized gain", lot.realized(), closedRealized, 1e-12);
         payerCity.awaitSaves();
     }
 
