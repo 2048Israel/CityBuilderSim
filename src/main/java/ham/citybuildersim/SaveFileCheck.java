@@ -3061,6 +3061,21 @@ public class SaveFileCheck {
         assertTrue("fixture: the month's cash ran short and the fund owes what it sells for",
                 drawing.getFund().sellsToPay() && drawing.getFund().getToRaise() > 0);
         double fundAsked = 0, worldBought = 0;
+        // The normal step may already fill its whole ask. Count actual rule
+        // share sales as well as resting asks, with actual world settlement.
+        java.util.Set<String> shareLots=new java.util.HashSet<>();
+        for(String company:Equity.COMPANIES)shareLots.add(FundLedger.shareKey(company));
+        double highestSalePrice=0;boolean handSold=false;
+        for(var activity:drawing.getFund().getLedger().getActivity())if(activity.month()==drawing.getMonth()
+                &&FundLedger.SELL.equals(activity.kind())&&shareLots.contains(activity.key())){
+            if(activity.hand())handSold=true;
+            else if(activity.units()>0){fundAsked+=activity.units();highestSalePrice=Math.max(highestSalePrice,activity.money()/activity.units());}
+        }
+        assertTrue("fixture: the withdrawal's share sales are the rule's, with no hand sale mixed in",!handSold);
+        // Cash divided by the highest actual share-sale price is a lower
+        // bound on the world's filled share quantity, in the same units.
+        if(!handSold&&highestSalePrice>0)worldBought=drawing.getExchange().getFundSoldAbroad()/highestSalePrice;
+        System.out.printf("   rule shares already sold %.9f, world-filled quantity at least %.9f%n",fundAsked,worldBought);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             OrderBook shares = drawing.getExchange().bookOf(c);
             double resting = shares.resting(Exchange.FUND, OrderBook.Side.SELL);
