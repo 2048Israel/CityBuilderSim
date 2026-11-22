@@ -1,6 +1,6 @@
 # FieldOperatorsCheck.java - 474 lines · 22 methods · 2 constants · harnesses
 
-`ham/citybuildersim/FieldOperatorsCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FieldOperatorsCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Driverless field work (R6d, FE8: Deere's goal of a fully autonomous corn and soybean season by 2030, projected 2033, window 2030-2036): the autonomy kit,
 > the third piece of equipment on the Grain Farm and the Mixed Farm, and what the farms that carry it do to their posts: the operator of each tractor and

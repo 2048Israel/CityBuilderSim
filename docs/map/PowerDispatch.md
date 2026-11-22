@@ -1,6 +1,6 @@
 # PowerDispatch.java - 279 lines · 16 methods · 19 constants · model
 
-`ham/citybuildersim/PowerDispatch.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerDispatch.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks,
 > and the price each half-block clears at.
