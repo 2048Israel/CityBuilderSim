@@ -1,4 +1,4 @@
-# ConstructionControlCheck.java - 852 lines · 21 methods · 1 constants · harnesses
+# ConstructionControlCheck.java - 858 lines · 21 methods · 1 constants · harnesses
 
 `ham/citybuildersim/ConstructionControlCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -61,7 +61,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [ConstructionControl](ConstructionControl.md) (60), [Game](Game.md) (28), [BuildingManager](BuildingManager.md) (15), [BuildingsStacks](BuildingsStacks.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [JobType](JobType.md) (6), [GameFiles](GameFiles.md) (4), [Sector](Sector.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Good](Good.md) (3), [GameVersion](GameVersion.md) (3), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Construction](Construction.md) (2), [Notice](Notice.md) (2), [Observation](Observation.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
+**Uses:** [ConstructionControl](ConstructionControl.md) (60), [Game](Game.md) (28), [BuildingManager](BuildingManager.md) (15), [BuildingsStacks](BuildingsStacks.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [JobType](JobType.md) (6), [GameFiles](GameFiles.md) (4), [Sector](Sector.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Good](Good.md) (3), [GameVersion](GameVersion.md) (3), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Construction](Construction.md) (2), [Notice](Notice.md) (2), [Observation](Observation.md) (2), [BuildCard](BuildCard.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
 
 ## Sections
 
@@ -74,9 +74,9 @@
 | 394 | 5. CANCEL |
 | 471 | 6. DEMOLITION |
 | 570 | 7. BUY-OUT |
-| 626 | 8. CONSERVED |
-| 635 | 9. SAVE AND LOAD |
-| 727 | 10. ONE WAIT, AND THE ORDER'S LIFE |
+| 632 | 8. CONSERVED |
+| 641 | 9. SAVE AND LOAD |
+| 733 | 10. ONE WAIT, AND THE ORDER'S LIFE |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 778 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
+| 75 | 784 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -146,28 +146,28 @@
 |---:|---:|---|---|
 | 473 | 96 | `static void demolition(Path root)` |  |
 
-### 7. BUY-OUT (lines 570-625)
+### 7. BUY-OUT (lines 570-631)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 572 | 53 | `static void buyOut(Path root)` |  |
+| 572 | 59 | `static void buyOut(Path root)` |  |
 
-### 8. CONSERVED (lines 626-634)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 628 | 6 | `static void conserved()` |  |
-
-### 9. SAVE AND LOAD (lines 635-726)
+### 8. CONSERVED (lines 632-640)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 637 | 89 | `static void saveAndLoad(Path root) throws Exception` |  |
+| 634 | 6 | `static void conserved()` |  |
 
-### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 727-852)
+### 9. SAVE AND LOAD (lines 641-732)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 729 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
-| 849 | 3 | `static String fmt(double thousands)` |  |
+| 643 | 89 | `static void saveAndLoad(Path root) throws Exception` |  |
+
+### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 733-858)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 735 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
+| 855 | 3 | `static String fmt(double thousands)` |  |
 

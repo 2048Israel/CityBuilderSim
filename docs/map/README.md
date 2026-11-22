@@ -4,7 +4,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 619 files, 672,894 lines, 29,406 methods, 6,502 constants. `GameVersion.VERSION` is "0.9.181", `SAVE_FORMAT` 59.
+**The tree:** 619 files, 672,926 lines, 29,407 methods, 6,502 constants. `GameVersion.VERSION` is "0.9.181", `SAVE_FORMAT` 59.
 
 ## model (275 files)
 
@@ -28,7 +28,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BridgeWorks.java](BridgeWorks.md) | 126 | 7 | What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the construction points those dollars ... | 14 |
 | [Bridges.java](Bridges.md) | 321 | 31 | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its... | 11 |
 | [BuildAdvice.java](BuildAdvice.md) | 2,768 | 150 | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure befor... | 52 |
-| [BuildCard.java](BuildCard.md) | 1,967 | 100 | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 143 of them since FR3, the Bulk Berth): what it gives the city ... | 39 |
+| [BuildCard.java](BuildCard.md) | 1,967 | 100 | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 143 of them since FR3, the Bulk Berth): what it gives the city ... | 41 |
 | [BuildLog.java](BuildLog.md) | 162 | 10 | What the city has gained, and when. | 5 |
 | [BuildersShort.java](BuildersShort.md) | 145 | 10 | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months... | 8 |
 | [BuildingCatalog.java](BuildingCatalog.md) | 873 | 29 | Reads the building definitions out of buildings.json. | 25 |
@@ -397,11 +397,11 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BridgeCheck.java](BridgeCheck.md) | 977 | 39 | The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and on the Earth, what a s... | 3 |
 | [BridgeMapCheck.java](BridgeMapCheck.md) | 1,015 | 51 | A long bridge that stands is laid by the runs, kept clear by the plans and drawn with its deck (ET6; docs/studies/spec-earth2-terrain.md 6.5 and 6.6). | 1 |
 | [BuildAdviceCheck.java](BuildAdviceCheck.md) | 1,732 | 55 | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city -... | 3 |
-| [BuildCardCheck.java](BuildCardCheck.md) | 2,323 | 41 | The build card (0.7.25): BuildCard's figures for every building in buildings.json (143 since FR3, the Bulk Berth) held to the model's own reads - t... | 1 |
+| [BuildCardCheck.java](BuildCardCheck.md) | 2,339 | 42 | The build card (0.7.25): BuildCard's figures for every building in buildings.json (143 since FR3, the Bulk Berth) held to the model's own reads - t... | 1 |
 | [BuildMenuCheck.java](BuildMenuCheck.md) | 288 | 2 | Verifies that every building in the game can describe itself. | 0 |
 | [BuildersFirstCheck.java](BuildersFirstCheck.md) | 683 | 17 | The builders' own depots first (0.7.130, batch T1-C): the rule that serves a depot on site the crews' rule would starve - keep there past the month... | 1 |
 | [BuildingDataCheck.java](BuildingDataCheck.md) | 935 | 6 | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. | 0 |
-| [BuildingStackCheck.java](BuildingStackCheck.md) | 668 | 14 | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's sc... | 0 |
+| [BuildingStackCheck.java](BuildingStackCheck.md) | 678 | 14 | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's sc... | 0 |
 | [BusinessServicesCheck.java](BusinessServicesCheck.md) | 525 | 6 | The sector whose customer is not in the city. | 0 |
 | [BuybackCheck.java](BuybackCheck.md) | 1,576 | 48 | The city's paper bought back in a reverse auction (CD4, spec-city-debt.md section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central ba... | 0 |
 | [CalendarCheck.java](CalendarCheck.md) | 313 | 7 | The date on the status bar, and the log of what the city has finished. | 0 |
@@ -418,7 +418,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ChildcareCheck.java](ChildcareCheck.md) | 641 | 22 | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE ... | 6 |
 | [ClockCheck.java](ClockCheck.md) | 690 | 25 | The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and drops what it could not run, the header's speed sa... | 1 |
 | [CoalMiningCheck.java](CoalMiningCheck.md) | 675 | 16 | Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.m... | 3 |
-| [ConstructionControlCheck.java](ConstructionControlCheck.md) | 852 | 21 | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. | 0 |
+| [ConstructionControlCheck.java](ConstructionControlCheck.md) | 858 | 21 | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. | 0 |
 | [ConstructionTrapCheck.java](ConstructionTrapCheck.md) | 1,237 | 36 | The builders short (FC1): what an order pays a point of work as the repairs leave the builders fewer points for the sites, and the foreign contract... | 0 |
 | [ConsumptionCheck.java](ConsumptionCheck.md) | 343 | 4 | Verifies the consumption model against the two laws it is shaped to obey, and guards the data file against the Java. | 0 |
 | [CopperBufferCheck.java](CopperBufferCheck.md) | 250 | 10 | A stock buffer must not buy feed worth more than its undemanded output (CPB1). | 0 |

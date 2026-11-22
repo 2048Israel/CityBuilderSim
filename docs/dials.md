@@ -6057,7 +6057,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 989 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
+| 990 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
 
 ### BuildersFirstCheck.java ([map](map/BuildersFirstCheck.md))
 
