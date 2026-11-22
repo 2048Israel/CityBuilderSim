@@ -2767,6 +2767,18 @@ public abstract class Sector {
         s.salesTax = capitalTaxCredit != 0 ? salesTaxRemitted + capitalTaxCredit : salesTaxRemitted;
         double earned = s.foreignIncome != 0 ? s.operatingIncome + s.foreignIncome : s.operatingIncome;
         s.preTaxIncome = earned - s.interest - s.borrowingCosts - s.propertyTax - s.salesTax;
+        // HC1's broker reserves the receipt's VAT and imports the rest: its
+        // margin is zero. Cancelling those doubles can leave a few ulps that
+        // would issue an entire company in one price unit and none in another.
+        // Normalize only arithmetic dust, never a real tax change or margin;
+        // the money audit's tolerance and every cash-flow check stay unchanged.
+        if (pending.householdServices > 0 && pending.oldMetalSold == 0
+                && s.localSales == 0 && s.exports == 0 && s.payroll == 0
+                && s.electricity == 0 && s.water == 0 && s.maintenance == 0
+                && s.interest == 0 && s.borrowingCosts == 0 && s.propertyTax == 0 && s.foreignIncome == 0) {
+            double scale = Math.max(Math.abs(s.revenue), Math.max(Math.abs(s.inputs), Math.abs(s.salesTax)));
+            if (Double.isFinite(scale) && Math.abs(s.preTaxIncome) <= 8 * Math.ulp(scale)) s.preTaxIncome = 0;
+        }
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
         // ...less nothing twice: stock paid for when it was bought is a cost

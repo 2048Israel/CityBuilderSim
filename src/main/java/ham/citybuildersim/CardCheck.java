@@ -48,6 +48,35 @@ public final class CardCheck {
         check("a nine-sigma holding tail stays positive beside its balance tail", tail > 0);
         close("the holding tail is the model's direct normal tail", tail, BusinessDebtManager.normalCdf(-9), 1e-30);
     }
+    /** A pure imported broker has no profit to list, at either currency scale. */
+    static void brokerRounding() {
+        System.out.println("--- The broker's tax reserve creates no phantom company ---");
+        boolean zero = true, real = true;
+        for (double factor : new double[]{.001, 1, 1_000_000}) {
+            for (double bill : new double[]{.017471, .3, 3.14159265359, 100}) {
+                for (double tax : new double[]{0, .075, .10, .125, .2135, .35, 1}) {
+                    var broker = new ham.citybuildersim.sectors.BusinessServices();
+                    double amount = bill * factor;
+                    broker.sellHouseholdEmergencies(amount, tax);
+                    broker.strike(); broker.bank(amount * tax);
+                    zero &= broker.statement().preTaxIncome == 0 && broker.getCash() == 0;
+                    // A genuine change of tax after the bill was booked must
+                    // still produce either sign of margin, beyond round-off.
+                    for (double sign : new double[]{-1, 1}) {
+                        var changed = new ham.citybuildersim.sectors.BusinessServices();
+                        changed.sellHouseholdEmergencies(amount, tax);
+                        changed.strike();
+                        double difference = sign * amount * 1e-8;
+                        changed.bank(amount * tax + difference);
+                        real &= changed.statement().preTaxIncome * sign < 0
+                                && Math.abs(changed.statement().preTaxIncome + difference) <= 16 * Math.ulp(amount);
+                    }
+                }
+            }
+        }
+        check("an exactly offset service receipt/import/VAT leaves no profit or cash at any scale", zero);
+        check("both genuine gains and losses survive the broker's arithmetic-dust boundary", real);
+    }
     static void month() {
         System.out.println("--- Thin buffers borrow; fixed minimum and all the cash have a recipient ---");
         WorkingHousehold thin = cell(4, 0, 0, 0), rich = cell(4, 400, 0, 0);
@@ -279,7 +308,7 @@ public final class CardCheck {
         check("replay history excludes later surveys", g.getHistorySave().cutAt(cutMonth).getDebtSurveys().stream().allMatch(s -> s.month() <= cutMonth));
     }
     public static void main(String[] args) {
-        spread(); month(); chargeOff(); save(); neighbours(); census(); reviewFlows();
+        spread(); month(); chargeOff(); save(); neighbours(); census(); reviewFlows(); brokerRounding();
         check("REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact", SaveFileCheck.nativeCard60Refusal());
         check("HC1 format62: native format61 refusal keeps bytes and the running loaded city intact", SaveFileCheck.nativeCard61Refusal(false));
         city();

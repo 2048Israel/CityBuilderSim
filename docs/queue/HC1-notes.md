@@ -437,3 +437,55 @@ A final fetch still names main `7e484c4da`, .189. The pick remains ALL 244,
 with the already-SHIP money/saves review. No HC1 known red is claimed.
 The next step is the separately required `HC1 dry run?` question and ended
 turn; no HC1 dry run has begun and the provisional marker remains.
+
+## First ALL dry run and mends, 2026-11-22
+
+On the 13:54 slot go, main was still `7e484c4da`. The ALL244 dry run kept
+`/home/jerus/cbs/runs/cbs-gate-HC1-x8baF9O4`, copied to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HC1-x8baF9O4`, of branch
+`2d5b1dd6afd74235fa0db9e1d450c4636903b4d6` and main
+`7e484c4da555ac6492a6e55d6101e1a5976de65f`. Compilation passed in 8s;
+the suite ended after 1268s, exit4, and the launcher exit1: 86 unnamed report
+lines across 17 harnesses. The kept files are read only. The provisional
+marker stayed. A dry-run result was mailed at 14:21; this stopped run is a
+finding, not a reusable green verdict.
+
+The orchestrator's 14:23 clarification assigns a moved played/load premise
+whose sweep shipped to HT1-H, widened on main `db9b1fd99`; a still-queued
+sweep remains its owner. Only a premise may use that route; broken laws are
+HC1 mends. `db9b1fd99` is merged (QUEUE-only change). A fresh delta review,
+then a final-model ensemble if the trace moves, and a new dry-run slot ask
+are required. No failed run is called ready.
+
+Direct mends so far, with the original assertions/bounds retained:
+
+- EquityCheck's offering-boundary savers are now actually debt-free, without
+  a preceding shock month followed by a cash-only reset. The all-owing case
+  explicitly has holder share1. All five offering assertions now pass.
+- OutsideCheck's living shortfall uses the model's closed-form buffer tail.
+  Its government loan still covers the entire ordinary gap; the bank funds
+  only the separate unexpected bill, checked by its saving draw and fee.
+  The exact grant, no-unfunded-spending and treasury-loan checks remain.
+- OwnerCheck observes owner-to-couple reclassification at the census
+  boundary, before differently counted households settle another month's
+  minima/shocks. The exact50,000 cash-transfer identity passes unchanged.
+- SectorStatementCheck's imports identity now includes the household service's
+  named foreign input, alongside named non-goods services. Its strict sum is
+  retained; 3,000 statements and all expanded lines pass.
+- ★ The pure service broker's receipt, imported bill and reserved VAT
+  mathematically leave no margin. Floating cancellation could leave a few
+  ulps and list a phantom company in one currency unit only. Sector.bank
+  normalizes only that arithmetic dust (8 ulps of the posted magnitude),
+  only with household services and no physical sales/payroll/utilities,
+  maintenance, finance/property costs, foreign income or scrap sale. It
+  preserves real positive/negative margins beyond roundoff. CardCheck causes
+  zero margins and both real signs through receipts and tax inputs across
+  currency scales; all are green. PriceLevelCheck's entire strict scale
+  comparison now passes, versus eight failures in the kept run. No money
+  audit, save or comparison tolerance changed. This is a model mend; the
+  previously recorded d325c74c8 ensemble predates it and is not claimed as
+  the new final model's verdict.
+
+CardCheck, PriceLevelCheck, EquityCheck, OutsideCheck, OwnerCheck and
+SectorStatementCheck pass on these mends. Additional controlled input mends
+and the trace of remaining played/load premises are in progress.
