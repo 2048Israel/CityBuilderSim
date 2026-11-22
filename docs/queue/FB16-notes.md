@@ -147,3 +147,13 @@ from origin/main 827bc03f7 (0.9.181); main had not moved at the mends. Commits: 
   the 12 months ... (0 of 12)", PT2's assertion) go green with PT2 (REV-FB16's note 2); all seven are the publisher's
   to remove.
 - The four known-reds rows (CarCheck CI1, PassThroughCheck PT2, ReloadCheck RN2 x2) leave in their rows' commits.
+
+## 8. The dry run
+
+- `sh tools/gate.sh FB16 --dry-run` on the gate box at 9b2e86df6 (main 827bc03f7, unmoved), after REV-FB16's mend:
+  it waited for the box (OG1's ensemble), then ran `/home/jerus/cbs/runs/cbs-gate-FB16-QvIAXbeQ`, kept here at
+  `%TEMP%\cbs-gate-FB16-QvIAXbeQ`. The whole suite ran in 675 s, exit 3: main's known reds only (BankCheck,
+  BuildAdviceCheck, CreditCrunchCheck, DenominationCheck, Forms1900Check, MortgageCheck, PublicLicenceCheck,
+  RoadCheck, YoungBankCheck). `unnamed.txt` is empty. CarCheck, PassThroughCheck and ReloadCheck are green, so their
+  known-reds rows and `gate.txt`'s lines 28-30 and 34-37 are spent. Gate exit 0; the tree as it was. The ship file's
+  first line names the run.

@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FB16-QvIAXbeQ -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — FB16, OE1's four follow-ups — 2026-11-22, ready, see docs/queue/FB16-notes.md
