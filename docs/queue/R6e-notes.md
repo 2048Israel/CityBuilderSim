@@ -1,6 +1,5 @@
 # R6e - sources and proposed proof scope
 
-<!-- readiness: provisional -->
 
 ## Final retained ALL dry: pass
 

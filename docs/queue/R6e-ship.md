@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-R6e-mR0hJgHi -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R6e, GM crop history — 2026-11-22, ready, see docs/queue/R6e-notes.md
 GM crops enter farm history in 1996. Before E21 is known, output is the unchanged
