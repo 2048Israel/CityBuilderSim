@@ -98,7 +98,7 @@ public final class HousingMarket {
             if(c.capacity>FamilyModel.STUDIO_MAX_SIZE)family+=slots;else compact+=slots;
         }
         double children=0,adults=0;
-        for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+        if(result.unplaced()>0)for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double missing=Math.max(0,d.count()-taken);if(d.children()>0)children+=missing;else adults+=missing;}
         family=Math.max(0,family-children);double inCompact=Math.min(compact,adults);compact-=inCompact;family=Math.max(0,family-(adults-inCompact));
         if(arrivalProjection){
@@ -199,7 +199,7 @@ public final class HousingMarket {
         for(ClassState c:classes.values()){c.occupied=0;c.demand=0;}
         for(var l:leases){ClassState c=classes.get(l.home());c.occupied+=l.count();c.demand+=l.count();}
         // One-count residual demand goes to its best compatible affordable class, never to every alternative.
-        for(var d:demand){double used=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+        if(result.unplaced()>0)for(var d:demand){double used=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double left=Math.max(0,d.count()-used),best=Double.NEGATIVE_INFINITY;
             if(left<=FamilyModel.packingRounding(d.count()))continue;
             List<HousingChoice.Offer> tied=new ArrayList<>();

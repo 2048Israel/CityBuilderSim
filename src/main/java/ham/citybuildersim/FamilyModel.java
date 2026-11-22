@@ -1724,7 +1724,7 @@ public class FamilyModel implements HouseholdBalance.Census {
         doubledUp=0;java.util.Arrays.fill(seekersDoubled,0);
         for(var d:demand){
             double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
-            double left=Math.max(0,d.count()-placed);boolean sharing=d.key().endsWith("#sharing");
+            double left=result.unplaced()>0?Math.max(0,d.count()-placed):0;boolean sharing=d.key().endsWith("#sharing");
             Household c=byKey.get(sharing?d.key().substring(0,d.key().length()-8):d.key());
             if(c==null)continue;
             double guests=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(l->l.households()-l.count()).sum();
@@ -1745,7 +1745,7 @@ public class FamilyModel implements HouseholdBalance.Census {
         double compactFree=0;
         for(var stock:inventory.stock())if(stock.dwelling().capacity()<=STUDIO_MAX_SIZE)
             compactFree+=inventory.vacant(stock.key(),HousingInventory.Owner.REAL_ESTATE);
-        for(var d:demand)if(d.children()>0){
+        for(var d:demand)if(result.unplaced()>0&&d.children()>0){
             double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             refusedByStudio+=Math.min(compactFree,Math.max(0,d.count()-placed));
         }

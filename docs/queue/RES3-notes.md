@@ -440,3 +440,31 @@ microbenchmarks. All retain 141 permanent household cells. Modern physical
 classes are 32; historical known stock is 16 classes, with all 32 quoted and
 availability reported. M is new typed loan cohorts (HO1), L live listing cohorts;
 both are zero here. Paid starts and BuildLog completions are observed separately.
+
+The next full named pass was green for --fast, inventory, households/flows,
+building data, investment, housing, utilities, SaveFileCheck, ReadPathCheck and
+ReloadCheck. Reload compared 423,170 history figures and 99,495 saved figures
+through m1229 exactly. HousingCheck's existing optional retirement-in-debt path
+was reported OBSERVED/not reached, not counted as a pass.
+
+DenominationCheck then returned the recorded exit 3 but with 18 large comparison
+failures, rather than the earlier eight small DK1 differences. That verdict was
+not accepted as evidence of a main fault. The trace shows equivalent housing
+asks/allocations through m124 (about 1e-15/1e-13); at m125 Agriculture alone
+offered 22.3997697976 in the plain twin, nothing in the reformed twin. The plain
+twin built two Mixed Farms while the other held for the city's housing priority.
+Their m124 Agriculture cash, debt, shares, income and quote agreed to arithmetic
+precision; the share quote parted only after that unequal offering. Both books
+were empty, so this was not the queued DK1 dust-fill event.
+
+★ A caused final-match case has 100 funded hosts, 100 zero-resource guests and
+one ULP of a 100-household source in a separate cell. It failed three exact-zero
+assertions: that tiny entire cell survived the per-cell rounding and became a
+positive final shortage, activating Agriculture's unchanged `> 0` guard. A real
+0.0001-household deficit remained explicitly unplaced in the same fixture.
+The final aggregate shortage/reason counters now use the existing whole-source
+FamilyModel.packingRounding once. Family status rows and residual price pressure
+respect that final classification. No assignment, title, bill, money tolerance
+or stock check is changed; physical occupancy and two-household limits remain
+strict. The genuine fractional shortage must still activate housing priority.
+This is RES3's integration fault and is mended here, not waived as DK1.

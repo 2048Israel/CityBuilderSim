@@ -113,6 +113,11 @@ public final class HousingChoice {
             }
             if(compatible&&!canPay)poor+=need[i];else noSuitable+=need[i];
         }
+        // A tiny residual cell may itself have been made by the whole match's
+        // subtraction. Use that source's existing packing resolution, once,
+        // rather than treating the residue as a new exactly sized household.
+        double source=ds.stream().mapToDouble(Demand::count).sum();
+        if(left<=FamilyModel.packingRounding(source))left=poor=noSuitable=0;
         return new Result(List.copyOf(leases),kept,suitable,crowded,poor,noSuitable,left);
     }
     private record DemandSignature(int size,int children,boolean retired,int tier,boolean young,double budget) { }
@@ -128,6 +133,8 @@ public final class HousingChoice {
             for(var o:offers)if(o.count()>used.getOrDefault(o.key(),0.0)&&suitable(budget,o,false)){compatible=true;affordable|=affordable(budget,o);}
             left+=missing;if(compatible&&!affordable)poor+=missing;else shortage+=missing;
         }
+        double source=demand.stream().mapToDouble(Demand::count).sum();
+        if(left<=FamilyModel.packingRounding(source))left=poor=shortage=0;
         return new Result(List.copyOf(leases),kept,normal,crowded,poor,shortage,left);
     }
     private record OfferSignature(int capacity,int bedrooms,double area,double quality,double garden,boolean stepFree,double rent,double recurring) { }

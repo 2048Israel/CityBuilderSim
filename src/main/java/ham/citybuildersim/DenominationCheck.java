@@ -1215,13 +1215,49 @@ public class DenominationCheck {
         }
     }
 
-    static boolean housingParted, housingAsksParted, exchangeParted, exchangeBookParted;
+    static boolean housingParted, housingAsksParted, exchangeParted, exchangeBookParted, exchangeQuoteParted;
+    static boolean offeringParted;
+    static String[] previousPlainInputs=new String[Equity.COMPANIES.length],previousReformedInputs=new String[Equity.COMPANIES.length];
+    static String offeringInputs(Game city,int company,double factor){
+        String sector=Equity.COMPANIES[company];var register=city.getEquity();var market=city.getExchange();
+        return String.format(java.util.Locale.ROOT,"m%d %s cash %.17g debt %.17g shares %.17g offered %.17g raised %.17g income %.17g spare %.17g fair %.17g quote %.17g | %s",
+                city.getMonth(),sector,city.getEconomyManager().getSectorCash(sector)*factor,
+                city.getEconomyManager().getBusinessDebtManager().getPrincipal(sector)*factor,register.getShares(company),
+                register.getOfferedThisMonth(company)*factor,register.getRaisedThisMonth(company)*factor,
+                register.getTrailingIncome(company)*factor,market.spareOf(company)*factor,market.fair(company)*factor,market.price(company)*factor,city.getLastInvestment(sector));
+    }
     /** First differing cell/class allocation, beside the existing money trace. */
     static void housingTrace(Game a, Game b) {
         var left = a.getSectors().realEstate().housingMarket();
         var right = b.getSectors().realEstate().housingMarket();
         double factor = b.getDenomination().getUnit() / a.getDenomination().getUnit();
         double askGap = 0, countGap = 0, budgetGap = 0;
+        for(int company=0;company<Equity.COMPANIES.length;company++){
+            String plain=offeringInputs(a,company,1),reformed=offeringInputs(b,company,factor);
+            double p=a.getEquity().getOfferedThisMonth(company),r=b.getEquity().getOfferedThisMonth(company)*factor;
+            if(!offeringParted&&Math.abs(p-r)>1e-8*Math.max(1,Math.abs(p))){
+                offeringParted=true;out.println("   first offering split:");
+                out.println("      previous plain "+previousPlainInputs[company]);out.println("      previous reformed "+previousReformedInputs[company]);
+                out.println("      current plain "+plain);out.println("      current reformed "+reformed);
+            }
+            previousPlainInputs[company]=plain;previousReformedInputs[company]=reformed;
+        }
+        if(!exchangeQuoteParted)for(int company=0;company<Equity.COMPANIES.length;company++){
+            double p=a.getExchange().price(company),r=b.getExchange().price(company)*factor;
+            if(Math.abs(p-r)>1e-8*Math.max(1e-300,Math.abs(p))){
+                exchangeQuoteParted=true;
+                out.printf("   first exchange quote split m%d %s quote %.17g / %.17g; fair %.17g / %.17g; spare %.17g / %.17g; offered %.17g / %.17g%n",
+                        a.getMonth(),Equity.COMPANIES[company],p,r,a.getExchange().fair(company),b.getExchange().fair(company)*factor,
+                        a.getExchange().spareOf(company),b.getExchange().spareOf(company)*factor,
+                        a.getEquity().getOfferedThisMonth(company),b.getEquity().getOfferedThisMonth(company)*factor);
+                for(Game city:new Game[]{a,b}){
+                    double unit=city==a?1:factor;var book=city.getExchange().bookOf(company);
+                    for(var side:java.util.List.of(book.bids(),book.asks()))for(var order:side)
+                        out.printf("      %s %s %s price %.17g quantity %.17g submitted %.17g%n",city==a?"plain":"reformed",order.who(),order.side(),order.price()*unit,order.quantity(),order.submitted());
+                }
+                break;
+            }
+        }
         if (!exchangeBookParted) for(int company=0;company<Equity.COMPANIES.length;company++) {
             var plainBook=a.getExchange().bookOf(company);var reformedBook=b.getExchange().bookOf(company);
             double p=plainBook.lastPrice(),r=reformedBook.lastPrice()*factor;
