@@ -655,6 +655,12 @@ public class ScaleCheck {
             g.playOnLiterals();   // FS2: as its town does (historicalScale())
             quietly(() -> g.loadGameSave(10));
             assertTrue("the historical copy at K = " + k + " loads", g.getLoadFailure() == null);
+            // RES3 prices the actual builder quote, including the city's free
+            // material yard. Its fixed 36/month is intentionally not K-scaled:
+            // the larger town exhausts it on repairs while the smaller does not.
+            // Put both tracking controls in the same ample-material regime.
+            // This is a fixture input before the audits; all TRACK bands stay.
+            g.getBuildingManager().setConstructionMaterials(1_000_000_000L);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
             g.getBusinessInvestment().holdBranches();
         }
@@ -689,8 +695,27 @@ public class ScaleCheck {
                     small.getLabourMarket().getLadder() == WageLadder.Y1901 && big.getLabourMarket().getLadder() == WageLadder.Y1901);
             assertTrue("1900 month " + month + ": registers still equal their holders", Math.max(registersMiss(small), registersMiss(big)) <= REGISTER_WITHIN);
             double[] miss = new Figures(big).missAgainst(new Figures(small), TRACK_TIMES);
+            var smallMaterials=small.quoteBuild(small.getBuildingManager().getTemplate(0),1);
+            var bigMaterials=big.quoteBuild(big.getBuildingManager().getTemplate(0),1);
+            assertTrue("1900 month "+month+": both controls' home quotes draw the same free-material regime",
+                    smallMaterials.materialsInStock==smallMaterials.materialsNeeded&&bigMaterials.materialsInStock==bigMaterials.materialsNeeded);
             out.printf("   1900 month %d: largest horse-post miss %d / K; people %.2e, savings %.2e, GDP %.2e, prices %.2e; the food basket D$%.6f and D$%.6f a person-month (FS2)%n",
                     month, most, miss[0], miss[2], miss[3], miss[5], small.getEconomyManager().getFoodLocalPrice(), big.getEconomyManager().getFoodLocalPrice());
+            if (Boolean.getBoolean("scale.housingTrace")) {
+                var smallRE=small.getSectors().realEstate();var bigRE=big.getSectors().realEstate();
+                out.printf("      housing m%d rent %.12g / %.12g; weight %.12g / %.12g; index %.12g / %.12g%n",month,
+                        smallRE.getAverageRentPaid(),bigRE.getAverageRentPaid(),smallRE.getRentWeight(),bigRE.getRentWeight()/TRACK_TIMES,small.getPriceIndex().getIndex(),big.getPriceIndex().getIndex());
+                var smallHome=small.getBuildingManager().getTemplate(0);var bigHome=big.getBuildingManager().getTemplate(0);
+                var smallQuote=small.quoteBuild(smallHome,1);var bigQuote=big.quoteBuild(bigHome,1);
+                out.printf("      House quote total %.12g / %.12g; sticker %.12g / %.12g; allowance %.12g / %.12g; yard %d / %d; free material %.12g / %.12g; land %.12g / %.12g; wage scaler %.12g / %.12g%n",
+                        smallQuote.total,bigQuote.total,smallQuote.sticker,bigQuote.sticker,smallQuote.allowance,bigQuote.allowance,
+                        small.getBuildingManager().getConstructionMaterials(),big.getBuildingManager().getConstructionMaterials(),smallQuote.materialsInStock,bigQuote.materialsInStock,
+                        small.doorPriceOf(smallHome,1)-smallQuote.total,big.doorPriceOf(bigHome,1)-bigQuote.total,small.getRecipes().datedScale(smallHome),big.getRecipes().datedScale(bigHome));
+                for(var row:smallRE.housingMarket().classes())for(var other:bigRE.housingMarket().classes())
+                    if(row.recipe==other.recipe&&row.dwelling.equals(other.dwelling)&&(row.homes>0||row.demand>0||other.demand>0))
+                        out.printf("      class %d/%s ask %.12g / %.12g; capital %.12g / %.12g; carry %.12g / %.12g; homes %.12g / %.12g; demand %.12g / %.12g%n",
+                                row.recipe,row.dwelling,row.ask,other.ask,row.capital,other.capital,row.carry,other.carry,row.homes,other.homes/TRACK_TIMES,row.demand,other.demand/TRACK_TIMES);
+            }
             for (int f = 0; f < miss.length; f++) assertTrue("1900 month " + month + ": " + Figures.NAMES[f]
                     + " obeys the existing TRACK law", miss[f] <= Figures.WITHIN[f]);
             if (month < FREE_MONTHS) for (Game g : cities) quietly(() -> g.simulateMonths(1));

@@ -1215,13 +1215,31 @@ public class DenominationCheck {
         }
     }
 
-    static boolean housingParted, housingAsksParted;
+    static boolean housingParted, housingAsksParted, exchangeParted, exchangeBookParted;
     /** First differing cell/class allocation, beside the existing money trace. */
     static void housingTrace(Game a, Game b) {
         var left = a.getSectors().realEstate().housingMarket();
         var right = b.getSectors().realEstate().housingMarket();
         double factor = b.getDenomination().getUnit() / a.getDenomination().getUnit();
         double askGap = 0, countGap = 0, budgetGap = 0;
+        if (!exchangeBookParted) for(int company=0;company<Equity.COMPANIES.length;company++) {
+            var plainBook=a.getExchange().bookOf(company);var reformedBook=b.getExchange().bookOf(company);
+            double p=plainBook.lastPrice(),r=reformedBook.lastPrice()*factor;
+            if((plainBook.volume()==0)!=(reformedBook.volume()==0)
+                    ||Double.isFinite(p)&&Double.isFinite(r)&&Math.abs(p-r)>1e-8*Math.max(1e-300,Math.abs(p))){
+                exchangeBookParted=true;
+                out.printf("   first native exchange book split m%d %s price %.17g / %.17g; volume %.17g / %.17g; turnover %.17g / %.17g%n",
+                        a.getMonth(),Equity.COMPANIES[company],p,r,plainBook.volume(),reformedBook.volume(),plainBook.turnover(),reformedBook.turnover()*factor);
+            }
+        }
+        if (!exchangeParted) for (int company=0;company<Equity.COMPANIES.length;company++) {
+            double plainPrice=a.getEquity().getLastPrice(company),reformedPrice=b.getEquity().getLastPrice(company)*factor;
+            if(Math.abs(plainPrice-reformedPrice)>1e-9*Math.max(1e-300,Math.abs(plainPrice))){
+                exchangeParted=true;
+                out.printf("   first exchange price split m%d %s price %.17g / %.17g; volume %.17g / %.17g%n",a.getMonth(),Equity.COMPANIES[company],plainPrice,reformedPrice,
+                        a.getExchange().getVolume(company),b.getExchange().getVolume(company));
+            }
+        }
         for (var row : left.classes()) for (var other : right.classes())
             if (row.recipe == other.recipe && row.dwelling.equals(other.dwelling))
                 askGap = Math.max(askGap, Math.abs(row.ask - other.ask * factor) / Math.max(1e-300, row.ask));

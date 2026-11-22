@@ -325,3 +325,27 @@ Other working tiers keep shopping. Ten real pantry baskets cause positive
 rationed delivery; three presses carry the sale through health's lag. The broad
 price shock was removed. No pension or hunger output is assigned directly, and
 all original money/save comparisons remain; positive delivery is strengthened.
+
+★ Historical ScaleCheck controls now begin with an ample one-billion-unit city
+material yard each. The copier intentionally does not K-scale that yard or its
+fixed 36-unit monthly replenishment. With actual builder quotes now pricing
+homes, the large copy exhausted its yard on repairs at month 1 and the small
+one retained 3,838 units: the House's allowance was 1.78522166439 versus zero,
+with identical land and wage scaler. That is a different intensive cost input,
+not a tracking error to hide in a larger band. Both controls now assert each
+month that their House quote draws all its material from the same free-yard
+regime. All original TRACK prices, savings, counts, registers and other bounds
+pass unchanged; ordinary construction and the catalogue report retain the
+actual unnormalized yard/funding path. ScaleCheck exits 0.
+
+Refreshed main through 7b60b9a8d (queue coordination only). The current traced
+DenominationCheck exits 3 with eight recorded DK1 comparison lines; first-month
+and year checks pass, and national-card/trade-lane comparisons pass. Its
+first later financial drift is visible in the Real Estate share mark at m133,
+while housing asks and assigned quantities still agree to about 2e-12 and
+5e-13. A native Bank book price split is visible by m142. The residual decade
+gaps are about 1e-6 in output/rent/index/currency, with the shops' small till
+about 2.5e-5 relative. The share/desk code is untouched. The recorded financial
+rounding class remains with DK1; its automatic known-red verdict is not a
+relaxed comparison. The stranger's money/save review sees the trace and the
+unchanged 1e-9 checks. Final ordinary (untraced) repetition follows below.
