@@ -2,6 +2,33 @@
 
 <!-- readiness: provisional -->
 
+## SHIP and final default-path gate (root 6d11)
+
+REV-R6ec1-1 gives SHIP on78a5cba4f; root6d11 releases the remaining
+ensemble/dry/ready sequence without another question. The reviewer confirms
+the E21 and main PE17/PE18 mends, and FE8's same idle-template path; no other
+licence changed. No further money or save source change is made.
+
+The conditional ensemble is not owed on this final default model.
+LongPlaytest.FOUNDED_1900 defaults to false (`playtest.founded=today`), and
+the ensemble uses the same played() founding. Game's research.month runs
+only for foundedUnfitted(), otherwise idleMonth; Recipes.choose/apply return
+immediately for the default founding; Markets only constructs private
+LicenceFees.Production for foundedUnfitted(), and the new-unit fees have
+the same gate. Sector's new weight reader is only called by that capture.
+ModernEngineeringCheck also pins unchanged default physical figures.
+Thus the historical research/crop/patent change does not enter the default
+trace. No founding override is configured in the box's gate.env (read-only
+check, final/box-status.log). No80-run ensemble or new baseline is claimed.
+The latest baseline remains docs/ensemble/0.9.184.md, as root orders.
+
+The box was idle at the admission check. Its retained final HT1 main gate
+is the actual0.9.184 receipt: d7cad5c0e's second parent's ship pointer names
+/home/jerus/cbs/runs/cbs-gate-HT1-MUAPeyHl. Its original LongPlaytest report
+is copied read-only with SHA256 to target/R6e-evidence/final, for comparison
+with the ALL dry's default report excluding the runtime line. This uses
+existing main evidence; no main baseline or extra probe run is started.
+
 ## Review1: actual producer credits (REV-R6ec1-1, root a312)
 
 The records-only main51e887638 was merged before this mend. The same
