@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HS3, the household money page by stage — 2026-11-22, ready, see docs/queue/HS3-notes.md
 Household money separates young and established households and opens each
