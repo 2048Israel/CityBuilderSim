@@ -176,3 +176,18 @@ inputs are the defects being prevented; mutation results and final checks follow
 The review go remains outstanding. On its SHIP: merge main, reconcile the save format
 above the shipped floor, then run the ensemble against docs/ensemble/0.9.188.md and
 the ALL dry run, in that order, before dropping the marker.
+
+## Delta SHIP and ensemble
+
+REV-PW5's delta review of f1239be04 is SHIP (orchestrator mail
+20261122-114759-597-orchestrator-cc5e). Fetched and merged the newest origin/main:
+still 01e6c2d4b/0.9.188, already an ancestor. HC1/RES2 have not shipped, so the
+save format/floor remain 61 above shipped 60, and there is one format-60 fixture.
+No model or harness changes were needed after review.
+
+The newest baseline remains docs/ensemble/0.9.188.md. Its only data overrides are
+Earth/world paths; the box run omits those overrides so it uses its MD5-equal copies.
+JAVA_OPTS is otherwise empty. The gate box is reachable at its configured IP and
+had no serve jobs at the preflight read. Run the full 16 seeds by five policies on
+the pushed commit, and keep the provisional marker. Before the ALL dry run, the
+orchestrator now requires a separate `PW5 dry run?` mail and a wait for its slot.
