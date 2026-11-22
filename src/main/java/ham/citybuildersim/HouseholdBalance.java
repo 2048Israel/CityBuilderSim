@@ -5565,9 +5565,9 @@ public class HouseholdBalance {
     /**
      * EVERY CELL GIVES UP ITS SHARES OF ONE COMPANY, for nothing: a failed
      * bank's resolution (0.7.14; Equity.takeAllForCity() - the old owners
-     * are wiped out, CDIC). Nothing is paid, so no cash moves: the loss is a
-     * valuation, and the households are outside the audited pools, so the
-     * audit has nothing to see. What this month's leavers took with them is
+     * are wiped out, CDIC). There are no disposal proceeds. In an open tax
+     * month the realised loss can refund current tax; between presses it
+     * carries forward without refunding stale gains. What leavers took is
      * the world's now, and goes with the world's.
      *
      * @return the shares the households held, all cells together
@@ -5576,7 +5576,10 @@ public class HouseholdBalance {
         double gone = sharesHeld(company);
         for (Household c : cells) {
             extinguishClaim(c, company);
-            c.lossCarried += c.basis[company];
+            if (c.basis[company] > 0) {
+                if (taxWindow) c.savings -= realizeGain(c, -c.basis[company]);
+                else c.lossCarried += c.basis[company];
+            }
             c.shares[company] = 0;
             c.basis[company] = 0;
         }

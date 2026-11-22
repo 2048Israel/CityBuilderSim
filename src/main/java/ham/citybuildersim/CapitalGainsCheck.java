@@ -60,6 +60,10 @@ public final class CapitalGainsCheck {
         }
 
         void trade(boolean buy, double price, double shares) {
+            trade(company, buy, price, shares);
+        }
+
+        void trade(int company, boolean buy, double price, double shares) {
             exchange.bookOf(company).withdrawAll();
             String cell = Exchange.CELL + holder.key();
             exchange.tradeForCheck(company, buy ? Exchange.WORLD : cell, OrderBook.Side.SELL, price, shares);
@@ -103,6 +107,76 @@ public final class CapitalGainsCheck {
         m.trade(false, 6, 50);
         close("the later gain uses the earlier loss", m.holder.lossCarried, 0);
         close("fill order leaves the month's net gain untaxed", m.received, 0);
+    }
+
+    static void cancellationLosses() {
+        out.println("--- actual gain fills and zero-proceeds common surrender, both orders and closed window ---");
+        double[][] results = new double[2][4];
+        for (int order = 0; order < 3; order++) {
+            Market m = new Market(); int cancelled = Equity.BANK;
+            m.equity.listIfUnlisted(cancelled, 10_000, m.balance);
+            m.equity.moveForeign(cancelled, m.balance.sharesHeld(cancelled));
+            for (Household c : m.balance.cells()) { c.shares[cancelled] = 0; c.basis[cancelled] = 0; }
+            double opening = m.holder.savings;
+            m.trade(true, 1, 100); m.trade(cancelled, true, 1, 100);
+            close("both actual purchases pay exactly their basis", opening - m.holder.savings, 200);
+            close("the cancellable common has actual paid basis", m.holder.basis[cancelled], 100);
+            close("the holder starts with no prior taxable gain", m.holder.taxedGains, 0);
+            if (order == 1) {
+                double cash = m.holder.savings, sales = m.exchange.getHouseholdsSoldAbroad();
+                close("loss-first native surrender removes the actual hundred units", m.balance.surrenderShares(cancelled), 100);
+                m.equity.takeAllForCity(cancelled, 0);
+                close("loss-first surrender has no sale cash or premature refund", m.holder.savings, cash);
+                close("loss-first cancellation carries the actual hundred loss", m.holder.lossCarried, 100);
+                close("loss-first cancellation creates no market sale", m.exchange.getHouseholdsSoldAbroad(), sales);
+            }
+            m.trade(false, 2, 100); // an actual 200 receipt on 100 cost, independent of the cancelled bank lot
+            if (order != 1) {
+                close("the actual profitable fill first pays the accepted default tax", m.received, 7.5);
+                close("the profitable fill has a hundred current taxable gain", m.holder.taxedGains, 100);
+                if (order == 2) m.balance.closeTaxMonth();
+                double cash = m.holder.savings, treasury = m.received, sales = m.exchange.getHouseholdsSoldAbroad();
+                close("native surrender removes the actual hundred remaining units", m.balance.surrenderShares(cancelled), 100);
+                m.equity.takeAllForCity(cancelled, 0);
+                close("common surrender never invents market sale proceeds", m.exchange.getHouseholdsSoldAbroad(), sales);
+                close("the cancellation's only cash movement is an actual tax refund", m.holder.savings - cash, treasury - m.received);
+                if (order == 2) {
+                    close("a closed window cannot refund a stale month's cash tax", m.received, treasury);
+                    close("closed-window cancellation leaves household cash unchanged", m.holder.savings, cash);
+                    close("the closed-window loss carries in full", m.holder.lossCarried, 100);
+                    close("closed cancellation does not consume stale taxed gains", m.holder.taxedGains, 100);
+                    double[] pending = m.balance.investmentTaxesToSave();
+                    close("closed cancellation saves no pending tax refund", pending[HouseholdBalance.TAX_FLOW_SLOTS], 0);
+                    close("closed cancellation saves no pending assessment", pending[HouseholdBalance.TAX_FLOW_SLOTS + 6], 0);
+                    m.balance.beginTaxMonth();
+                    close("opening the next window cannot replay a stale refund", m.holder.savings, cash);
+                    close("the closed loss remains available for later gains", m.holder.lossCarried, 100);
+                } else {
+                    close("open-window surrender refunds the actual seven-fifty", m.holder.savings - cash, 7.5);
+                }
+            }
+            close("surrender releases all cancelled basis", m.holder.basis[cancelled], 0);
+            close("surrender leaves no old common with the household", m.holder.shares[cancelled], 0);
+            close("native takeover's holder identity remains complete", m.equity.getCityShares(cancelled), m.equity.getShares(cancelled));
+            double finalCash = m.holder.savings, finalTax = m.received, finalAssessment = m.balance.getCapitalTaxAssessed();
+            long finalCalls = m.balance.getGainAssessments();
+            close("repeating surrender has no remaining common to remove", m.balance.surrenderShares(cancelled), 0);
+            close("repeating surrender cannot repeat a cash refund", m.holder.savings, finalCash);
+            close("repeating surrender cannot change treasury receipts", m.received, finalTax);
+            close("repeating surrender cannot assess the same loss twice", m.balance.getCapitalTaxAssessed(), finalAssessment);
+            check("repeating surrender makes no extra assessment call", m.balance.getGainAssessments() == finalCalls);
+            if (order < 2) {
+                close("net-zero gain and cancellation leave no current tax", m.received, 0);
+                close("net-zero gain and cancellation leave no net assessment", m.balance.getCapitalTaxAssessed(), 0);
+                close("the hundred loss is fully used in either operation order", m.holder.lossCarried, 0);
+                close("no current taxable gain survives the net-zero result", m.holder.taxedGains, 0);
+                close("actual purchase/sale cash and tax conserve both balances", m.holder.savings + m.received, opening);
+                results[order] = new double[] {m.received, m.balance.getCapitalTaxAssessed(), m.holder.savings, m.holder.lossCarried};
+            }
+            out.println("Observed: cancellation order " + order + ", tax " + m.received + ", savings " + m.holder.savings
+                    + ", carry " + m.holder.lossCarried + ", current taxable gains " + m.holder.taxedGains);
+        }
+        for (int i = 0; i < results[0].length; i++) close("both native operation orders have the same closing result " + i, results[0][i], results[1][i]);
     }
 
     static void foundersSplitsAndDividends() {
@@ -901,6 +975,7 @@ public final class CapitalGainsCheck {
         securedDepartures();
         costAndLoss();
         lossesFirst();
+        cancellationLosses();
         foundersSplitsAndDividends();
         waterfall();
         stockFlows();
