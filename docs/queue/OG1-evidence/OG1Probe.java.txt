@@ -1,0 +1,174 @@
+package ham.citybuildersim;
+
+import java.io.PrintStream;
+import java.io.OutputStream;
+import java.nio.file.*;
+import java.util.*;
+
+/**
+ * OG1's measure: month by month, what holds the builders' depot (the Decision's words, the backlog in months, the
+ * depots' staffing, the land, the foreign crews) and, for each sector, how far its capacity trails its market and
+ * what it asked for against what consider() found.
+ *
+ *   OG1Probe slot <months> <outDir> <savesDir>   a copy of slot 10 from savesDir in a GameFiles.scratch folder
+ *   OG1Probe play <months> <outDir>              LongPlaytest.probeCity() and the playtest's own loop
+ */
+public final class OG1Probe {
+
+    static final PrintStream REAL = System.out;
+    static final PrintStream QUIET = new PrintStream(new OutputStream() {
+        @Override public void write(int b) { }
+        @Override public void write(byte[] b, int off, int len) { }
+    });
+
+    static final Map<String, long[]> askedFound = new HashMap<>();   // sector -> {asked, found} this month
+    static PrintStream builders, makers, staffable;
+
+    public static void main(String[] a) throws Exception {
+        String mode = a[0];
+        int months = Integer.parseInt(a[1]);
+        Path outDir = Path.of(a[2]);
+        Files.createDirectories(outDir);
+        Game g;
+        if (mode.equals("slot")) {
+            GameFiles files = GameFiles.scratch("og1-slot10");
+            Path saves = files.savesDirectory();
+            Files.createDirectories(saves);
+            for (String f : new String[] {"slot-10.json", "slot-10-map.bin", "slot-10-history.json"}) {
+                Files.copy(Path.of(a[3]).resolve(f), saves.resolve(f), StandardCopyOption.REPLACE_EXISTING);
+            }
+            REAL.println("copied slot 10 to " + saves);
+            g = new Game(files);
+            Game gg = g;
+            System.setOut(QUIET);
+            try { gg.run(); gg.loadGame(10); } finally { System.setOut(REAL); }
+        } else {
+            System.setOut(QUIET);
+            try { g = LongPlaytest.probeCity(GameFiles.scratch("og1-play"), null); } finally { System.setOut(REAL); }
+        }
+        LongPlaytest.out = QUIET;
+        REAL.println("month " + g.getMonth() + " pop " + g.getPopulationManager().getPopulation());
+
+        builders = new PrintStream(Files.newOutputStream(outDir.resolve("builders.csv")), true);
+        makers = new PrintStream(Files.newOutputStream(outDir.resolve("makers.csv")), true);
+        staffable = new PrintStream(Files.newOutputStream(outDir.resolve("staffable.csv")), true);
+        staffable.println("month,pop,sector,template,plots,staffableCount,share1");
+        builders.println("month,pop,unemp,buildFill,capacity,outputAll,maintenance,sites,remaining,backlogMonths,premium,"
+                + "foreign,foreignCap,depotsOnSite,bestShare,bestShareNow,bestPasses,unfillable,plots,typical,reason");
+        makers.println("month,sector,good,demandTrend,demand,imported,exported,capacity,pipeline,unitMakes,gapPlants,asked,found,reason");
+
+        g.watchOrders(new BusinessInvestment.OrderWatch() {
+            @Override public void invested(BusinessInvestment.Decision d, double cash, double perUnit, Game.Afford found) {
+                if (d == null) return;
+                long[] af = askedFound.computeIfAbsent(d.sector, k -> new long[2]);
+                af[0] += d.quantity;
+                af[1] += found == null ? 0 : found.quantity();
+            }
+        });
+
+        int end = g.getMonth() + months;
+        if (mode.equals("slot")) {
+            while (g.getMonth() < end) step(g);
+        } else {
+            int stop = 0;
+            while (g.getMonth() < end) {
+                stop++;
+                int skip = switch (stop % 6) {
+                    case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120;
+                };
+                skip = Math.min(skip, LongPlaytest.longestSkip());
+                int n = Math.min(skip, Math.max(1, end - g.getMonth()));
+                for (int i = 0; i < n; i++) step(g);
+                quiet(() -> { LongPlaytest.ensureSchools(g); LongPlaytest.childcareWhenNeeded(g); });
+                for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
+                    String[] said = new String[1];
+                    quiet(() -> said[0] = LongPlaytest.advise(g));
+                    if (said[0] == null) break;
+                    step(g);
+                }
+                step(g);
+                step(g);
+            }
+        }
+        builders.close();
+        makers.close();
+        REAL.println("done at month " + g.getMonth() + " pop " + g.getPopulationManager().getPopulation());
+    }
+
+    static void quiet(Runnable r) {
+        System.setOut(QUIET);
+        try { r.run(); } finally { System.setOut(REAL); }
+    }
+
+    static void step(Game g) {
+        askedFound.clear();
+        quiet(() -> LongPlaytest.run(g, 1));
+        record(g);
+        if (g.getMonth() % 60 == 0) {
+            REAL.println("  m" + g.getMonth() + " pop " + g.getPopulationManager().getPopulation()
+                    + " builders: " + g.getLastInvestment(Sectors.CONSTRUCTION));
+        }
+    }
+
+    static String q(String s) {
+        return s == null ? "" : "\"" + s.replace("\"", "'") + "\"";
+    }
+
+    static void record(Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        BusinessInvestment plans = g.getBusinessInvestment();
+        Sector cons = g.getSectors().byKey(Sectors.CONSTRUCTION);
+        double sites = g.getBuildingOutputAtEveryPost();
+        double all = g.getConstructionOutputAtEveryPost();
+        double remaining = bm.getRemainingConstructionPoints();
+        double months = sites > 0 ? remaining / sites : remaining > 0 ? Double.POSITIVE_INFINITY : 0;
+        boolean foreign = bm.foreignCrewsTakeOrders();
+        double foreignCap = BuildersShort.foreignCapacity(all, bm.largestDepotPoints());
+        Sector.Staffing best = null;
+        BuildingsTemplate bestT = null;
+        for (BuildingsTemplate t : bm.getTemplatesBySector(Sectors.CONSTRUCTION)) {
+            NewUnit u = plans.newUnit(t);
+            if (u == null || u.makes(Good.BUILDING_WORK) <= 0) continue;
+            Sector.Staffing s = cons.staffing(t);
+            if (best == null || s.share > best.share) { best = s; bestT = t; }
+        }
+        builders.printf(Locale.ROOT, "%d,%d,%.4f,%.4f,%d,%.0f,%.0f,%.0f,%.0f,%.3f,%.4f,%b,%.0f,%d,%.4f,%.4f,%b,%s,%d,%.0f,%s%n",
+                g.getMonth(), g.getPopulationManager().getPopulation(), g.getPopulationManager().getUnemploymentRate(),
+                cons.getAverageFill(), bm.getTotalConstructionCapacity(), all, g.getMaintenancePoints(), sites, remaining,
+                months, BuildersShort.premium(months), foreign, foreignCap, bm.getUnderConstructionBySector(Sectors.CONSTRUCTION),
+                best == null ? -1 : best.share, best == null ? -1 : best.shareNow, best != null && best.passes(),
+                best == null || best.unfillable == null ? "" : best.unfillable.toString(),
+                bestT == null ? -1 : plans.plotsAvailableFor(bestT), plans.typicalMonthOfSiteWork(), q(g.getLastInvestment(Sectors.CONSTRUCTION)));
+
+        if (g.getMonth() % 12 == 0) {
+            for (String key : new String[] {Sectors.CONSTRUCTION, Sectors.MANUFACTURING, Sectors.FOOD_PROCESSING, Sectors.AUTOMOTIVE}) {
+                Sector s = g.getSectors().byKey(key);
+                if (s == null) continue;
+                for (BuildingsTemplate t : bm.getTemplatesBySector(key)) {
+                    int plots = plans.plotsAvailableFor(t);
+                    long most = Math.min(Math.max(plots, 1), 100000);
+                    staffable.printf(Locale.ROOT, "%d,%d,%s,%s,%d,%d,%.4f%n", g.getMonth(), g.getPopulationManager().getPopulation(), key,
+                            t.getName().replace(',', ' '), plots, s.staffableCount(t, most), s.staffing(t).share);
+                }
+            }
+        }
+        for (Sector s : g.getSectors().all()) {
+            Good good = s.planningGood();
+            GoodsMarket m = good == null || !good.traded() ? null : g.getEconomyManager().getMarkets().get(good);
+            double unit = 0;
+            for (BuildingsTemplate t : bm.getTemplatesBySector(s.key())) {
+                NewUnit u = plans.newUnit(t);
+                if (u != null && good != null) unit = Math.max(unit, u.makes(good));
+            }
+            double cap = good == null ? 0 : s.getCapacity(good);
+            double pipe = good == null ? 0 : s.getPipeline(good);
+            double trend = m == null ? 0 : m.getDemandTrend();
+            double gap = unit > 0 ? (trend - cap - pipe) / unit : 0;
+            long[] af = askedFound.getOrDefault(s.key(), new long[2]);
+            makers.printf(Locale.ROOT, "%d,%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.2f,%d,%d,%s%n",
+                    g.getMonth(), s.key(), good == null ? "" : good.name(), trend, m == null ? 0 : m.getDemand(),
+                    m == null ? 0 : m.getImported(), m == null ? 0 : m.getExported(), cap, pipe, unit, gap,
+                    af[0], af[1], q(g.getLastInvestment(s.key())));
+        }
+    }
+}
