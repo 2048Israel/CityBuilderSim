@@ -512,7 +512,8 @@ public class ExchangeCheck {
             fund.queue(new TreasuryFund.HandOrder(false, Equity.BANK, -1, false, 1_000, 1, ask));
             HouseholdBalance buyers = local ? savers(10_000, 4) : null;
             double householdCash = local ? couple(buyers).savings * couple(buyers).households() : 0;
-            step(ex, reg, buyers, null, new Firms(), bookOf(Equity.BANK, 24_000), W, 0, 2);
+            double deposit = local ? HURDLE : 0;
+            step(ex, reg, buyers, null, new Firms(), bookOf(Equity.BANK, 24_000), W, deposit, 2);
             double sold = 1_000 - reg.getCityShares(Equity.BANK);
             assertTrue("RS1-0: the world buys rescued shares without a bank buyback", reg.getForeignShares(Equity.BANK) > 0);
             close("RS1-0: a sale transfers shares rather than cancelling them", reg.getShares(Equity.BANK), 1_000, 1e-9);
@@ -524,6 +525,9 @@ public class ExchangeCheck {
             close("RS1-1: its own rule leaves no bid behind its crossing hand sale",
                     ex.bookOf(Equity.BANK).resting(Exchange.FUND, OrderBook.Side.BUY), 0, 1e-9);
             if (local) {
+                double floor = (deposit + Exchange.HOUSEHOLD_PREMIUM) * (1 + Exchange.BAND);
+                assertTrue("RS1-star fixture: fair misses the household hurdle, the offered ask clears it",
+                        ex.expectedReturn(Equity.BANK, fair) < floor && ex.expectedReturn(Equity.BANK, ask) > floor);
                 assertTrue("RS1-star: households too can buy the rescue book", buyers.sharesHeld(Equity.BANK) > 0);
                 close("RS1-star: households pay the fund from their savings",
                         householdCash - couple(buyers).savings * couple(buyers).households(),
