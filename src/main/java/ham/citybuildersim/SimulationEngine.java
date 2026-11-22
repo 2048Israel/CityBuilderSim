@@ -70,7 +70,11 @@ public class SimulationEngine {
         // builders' points and left the sites none - see Game, THE FOREIGN CREWS.
         Game.ForeignOffer foreign = game.foreignCrewsOffer();
         // His points are in the month the sites take, and not on a rushed site's overtime (FC1b): his crews are not the city's.
+        // ...and the work ordered of the builders since the last advance, read either side of this one (OG1; BusinessInvestment,
+        // THE WORK THE CITY SENDS THE BUILDERS): what their next depot order is sized to.
+        game.getBusinessInvestment().beforeSitesAdvance();
         java.util.List<BuildingManager.Completion> opened = buildingManager.advanceConstruction(siteOutput + foreign.points(), foreign.points());
+        game.getBusinessInvestment().afterSitesAdvance();
         game.recordCompletions(opened);
         // ...and what the buildings that opened come with (R1b): in a city founded the 1900 way, only the equipment that pays for a new building;
         // nothing in a city founded the default way, where every building opens fitted.
