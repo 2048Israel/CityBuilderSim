@@ -7,4 +7,6 @@ than 1.8 times that month. The typical month is a saved median of a year, their 
 batch takes at most the premium's share of a month of the sites. Food Processing orders as many plants as the
 city already eats. On the 2,424-month playtest the months past the knee fell from 685 to 438 (470 to 224 with
 over 100,000 people), and the city reached 629,000 people to main's 531,000. A first cut sized to the queue
-ran to 7,771 depots to main's 299 and was dropped. GapOrderCheck holds it.
+ran to 7,771 depots to main's 299 and was dropped. His own city (slot 10) plays as main and gains nothing
+from this batch: its builders' order is refused at the staffing gate (0.57 of a depot's posts staffable
+against 0.80, with 0.0% out of work) before OG1 sizes it. GapOrderCheck holds it.

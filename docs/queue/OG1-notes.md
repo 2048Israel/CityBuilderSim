@@ -74,7 +74,7 @@ Copied into a `GameFiles.scratch` folder and loaded headless; slot 10 itself nev
   cut to the plots and to what the city could staff together (`BusinessInvestment.gapOrder()`, found by
   halving with `largestThatPasses()`). `consider()` then rations it as BA1 meant.
 - **Everything else still orders one.**
-- `GapOrderCheck`, new: seven sections, 30 assertions; registered in `AllChecks` beside
+- `GapOrderCheck`, new: seven sections, 34 assertions (sections 5 and 6 caused, after REV-OG1, see 4); registered in `AllChecks` beside
   `BuildersFirstCheck`, and its line is in `docs/tree.md`.
 
 ## 3. Why this does not repeat 0.7.130
@@ -101,9 +101,21 @@ and the city collapsed. With the depots served first, the builders ran away to t
   the typical month, however long the queue (`GapOrderCheck` 1). The 860,000 points a playtest move put on
   site at m1088 (195 months of the sites) met a typical month of 0 and got one depot a month, as main
   does. It cleared in 92 months.
-- **Not the collapse: a batch is never months of the sites.** It takes at most the premium's share of
-  one month (at most 0.8), served first, so it opens inside the month and the rest of the queue keeps its
-  share. In the stalled city (sites 77 a month) that is under one depot, so the trap orders one
+- **Not the collapse: one order is never months of the sites.** An order takes at most the premium's share
+  of one month (at most 0.8). Served first, it opens inside the month, and the rest of the queue keeps the
+  rest. That bounds one order, not a run of them. Once the depots open, none of theirs is left on site, and
+  next month's plan may order again on what is still a long queue. So back-to-back batches can each take up
+  to 80% of the sites' month until the gate shuts (the queue under the knee, or the share under a depot).
+  Counted on the playtest from the probe's rows, each order's points against that month's sites:
+  - The longest run of consecutive months each ordering several was 7, m1846-m1852 (5, 4, 6, 30, 18, 3 and
+    10 depots). Each took at most 28.5% of the month's sites (m1849), 10.5% on average.
+  - 29 months of 2,424 ordered several. The most one month took was 36.1%: 73 depots at m2250, in the
+    boom below.
+  - The longest run of months each ordering at all was 24, from m1094. That is the floor of one depot
+    clearing m1088's spike, each at most 7.8% of the sites. Main's longest such run was 42 months from
+    m1886, at most 2.1%.
+  - On slot 10's copy there is no run: the builders ordered nothing in 48 months (below).
+  In the stalled city (sites 77 a month) the share is under one depot, so the trap orders one
   (`GapOrderCheck` 6, `BuildersFirstCheck`).
 - **The playtest, 2,424 months, main against OG1:**
 
@@ -122,24 +134,42 @@ and the city collapsed. With the depots served first, the builders ran away to t
   builders matched it, 152,000 -> 345,000 nameplate, and stood idle when the city stalled near 610,000
   from m2280. That is a construction cycle, at most 1.8 times the work coming in, not depots ordered on
   their own queue.
-- **Slot 10's copy, 48 months on the branch: the same city to the point** (619,469 people at m1252 on both,
-  the backlog 117.1 -> 67.0 months on both). The builders held on the 739 depots on site at the load every
-  month (124 left at m1252), and the record started empty on the load (a save from before OG1). Once those
-  open, the depot's share is 0.57 against 0.80 at 0.0% out of work, so staffing refuses the order and the
-  queue is the city's labour. Food Processing never ordered there (staffing). Neither collapse nor runaway
-  can start in his city from this batch: the order it changes is the one staffing refuses.
+- **Slot 10's copy, his city, plays as main and gains nothing from this batch.** 48 months on the branch
+  end on the same city to the point: 619,469 people at m1252 on both, the backlog 117.1 -> 67.0 months on
+  both.
+  - The builders held on the 739 depots on site at the load every month (124 left at m1252). The record
+    started empty on the load (a save from before OG1).
+  - Beyond those depots, the plan is refused at the staffing gate (`staffing.passes()`, `Construction.plan()`
+    line 818): the depot's share is 0.57 against `MIN_STAFFABLE_TO_ORDER` 0.80, at 0.0% out of work.
+  - OG1's sizing is reached only by an order that has passed that gate, so it never runs in his city.
+    Food Processing never ordered there either (staffing).
+  - So neither collapse nor runaway can start in his city from this batch, and nothing shortens his backlog
+    that main would not. Whether the gate should give is his call (6).
 
 ## 4. The checks
 
 - `./batch-check.sh --fast`: exit 0 (compile, maps regenerated and committed, Stale 0 firm findings).
 - One at a time, green: `BuildersFirstCheck`, `ScaleCheck`, `ConstructionTrapCheck`,
-  `FoodProcessingCheck`, `SaveFileCheck`, `InvestCheck`, and `GapOrderCheck` (30 assertions).
+  `FoodProcessingCheck`, `SaveFileCheck`, `InvestCheck`, and `GapOrderCheck` (34 assertions).
 - `ReloadCheck`: exit 3, only main's known red (RN2's `strandedDebtShare`, `docs/notes/known-reds.txt`).
   Its "every figure in the save is the live city's" a month and two months on finds nothing else, so the
   two new saved fields read back to the point.
-- `GapOrderCheck` against one a month: sections 5 and 7 assert more than one (3 depots for a 32-month
-  queue in a town of 3,853 points a month, 6 Bottling Plants for six plants' drinks), so the old planners
-  fail them.
+- `GapOrderCheck` against one a month: sections 5 and 7 assert more than one, so the old planners fail
+  them. Section 5 has 5 depots for a 43.9-month queue, in a town ordering 7,200 points a month on sites of
+  3,817; section 7 has 6 Bottling Plants for six plants' drinks.
+- ...and without the ration: with the premium's share taken out of `depotsForTheQueue()` (a local edit,
+  reverted), three assertions fail. Section 5 orders 23 depots, 9,200 points against a share of 2,074,
+  and section 6's stalled city builds 11. So the cut is what holds both.
+- **Caused, after REV-OG1.** In sections 5 and 6 a year of the city's own clinic orders makes the typical
+  month (7,200 and 2,400 points read, the same as ordered). Penitentiaries ordered after the last month
+  make section 5's queue. The expectations are the brief's bounds read off the city (the premium's share,
+  the work ordered a month, the staffing and the plots), not the planner's own sum.
+  - Section 6 now asserts first that the work coming in asks for two depots or more and that the city could
+    staff two. Before, its record was empty, so the guard returned one before the cut was reached.
+  - Section 7 is the harness's one restore. A town eating six Bottling Plants' drinks is about 30,000
+    people (60,000 kg a plant, about 12 a person), a playtest rather than a fixture. So the market's demand
+    is set, and the expectation is the six it states, once the fixture shows the plots and the staffing
+    for six.
 - The pick (`sh tools/pick.sh origin/main HEAD`): ALL, since `AllChecks` changed. Review: needed, for
   saves (`DataSave`). The suite runs at the dry run; its log is `target/OG1-dry.txt` when it has run.
 
@@ -167,14 +197,24 @@ and the city collapsed. With the depots served first, the builders ran away to t
   - The mines and Forestry are held on deposits, never one a month in either run.
   - `ProcessingSector`'s order is `SpreadPlanner`'s, which is CY1's (not beside).
 - ★ **No change to `MIN_STAFFABLE_TO_ORDER`.** In his city (slot 10) the cause is labour, with the figures
-  in 1a: 0.0% out of work and the depot's share 0.66 -> 0.57 against 0.80. The order there is cut where it
-  is refused (`staffableCount()`), not by loosening the gate.
+  in 1a: 0.0% out of work and the depot's share 0.66 -> 0.57 against 0.80. The gate refuses the order
+  before it is sized. `staffableCount()` trims only an order that has passed, so this batch does not reach
+  his city at all. Whether the gate should give is his call (6).
 - **Housing in his city is held by the landlords' own funds** ("its own funds put the 15% down on 4-9",
   from 186-2,061 asked): for study/real-estate.
 
 ## 6. Left for Jerus
 
-Nothing beyond the ensemble's verdict on the dials in 5.
+- **The labour gate in his city.** Slot 10 plays as main under OG1. Its builders' order is refused at
+  `MIN_STAFFABLE_TO_ORDER` (0.80) every month no depot of theirs is on site. On the copy, m1204-m1252:
+  - 0.0% out of work;
+  - the best depot's share 0.66 -> 0.57 with a year's draw (0.30 now);
+  - the builders' posts 88.5% -> 90.4% filled;
+  - the backlog 117.1 -> 67.0 months, worked off by the 739 depots already on site.
+  His choice is to leave the gate (the queue is the city's labour, and the premium prices the wait at
+  0.76 of its 0.80 ceiling) or to lower it for the builders, which this batch has not measured. The
+  brief said not to loosen it blind, so it is untouched.
+- The ensemble's verdict on the dials in 5.
 
 ## 7. Where things are
 
