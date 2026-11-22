@@ -1,4 +1,4 @@
-# FitoutCheck.java - 757 lines · 32 methods · 3 constants · harnesses
+# FitoutCheck.java - 754 lines · 32 methods · 3 constants · harnesses
 
 `ham/citybuildersim/FitoutCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -41,7 +41,7 @@
 >   8. R1d's rules kept: the builders are credited what the treasury paid for an order, and a building delivered without a
 >      piece, given a fitting job and then scrapped, refunds nothing while an unfitted building is left for the job.
 
-**Uses:** [Game](Game.md) (37), [Fitout](Fitout.md) (24), [BuildingsTemplate](BuildingsTemplate.md) (16), [BuildingsStacks](BuildingsStacks.md) (16), [BuildingManager](BuildingManager.md) (12), [Equipment](Equipment.md) (9), [Good](Good.md) (9), [RecipeCheck](RecipeCheck.md) (6), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (4), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (4), [Founding](Founding.md) (2), [Sectors](Sectors.md) (2), [GameFiles](GameFiles.md) (2), [Construction](Construction.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BuildersShort](BuildersShort.md) (2), [FittingCheck](FittingCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [EquipmentFit](EquipmentFit.md) (1), [ResearchCatalog](ResearchCatalog.md) (1), [SubstationCheck](SubstationCheck.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Game](Game.md) (37), [Fitout](Fitout.md) (24), [BuildingsTemplate](BuildingsTemplate.md) (16), [BuildingsStacks](BuildingsStacks.md) (16), [BuildingManager](BuildingManager.md) (12), [Equipment](Equipment.md) (9), [Good](Good.md) (9), [RecipeCheck](RecipeCheck.md) (6), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (4), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (4), [Founding](Founding.md) (2), [Sectors](Sectors.md) (2), [GameFiles](GameFiles.md) (2), [Construction](Construction.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BuildersShort](BuildersShort.md) (2), [FittingCheck](FittingCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [EquipmentFit](EquipmentFit.md) (1), [ResearchCatalog](ResearchCatalog.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Sector](Sector.md) (1)
 
 ## Sections
 
@@ -49,15 +49,15 @@
 |---:|---|
 | 84 | · the harness's own split and price |
 | 185 | · the 1900 farm town |
-| 273 | · 1 |
-| 362 | · 2 |
-| 396 | · 3 |
-| 469 | · 4 |
-| 530 | · 5 |
-| 588 | · 6 |
-| 630 | · 7 |
-| 672 | · 8 |
-| 700 | · 9 |
+| 270 | · 1 |
+| 359 | · 2 |
+| 393 | · 3 |
+| 466 | · 4 |
+| 527 | · 5 |
+| 585 | · 6 |
+| 627 | · 7 |
+| 669 | · 8 |
+| 697 | · 9 |
 
 ## Constants
 
@@ -77,15 +77,15 @@
 | 190 | `BuildingsTemplate farm` |  |
 | 191 | `BuildingsStacks stack` |  |
 | 192 | `double cheap` |  |
-| 248 | `Set<String> offA, offB` |  |
-| 249 | `Game.BuildQuote quoteA, quoteB` |  |
-| 250 | `boolean placed` |  |
+| 245 | `Set<String> offA, offB` |  |
+| 246 | `Game.BuildQuote quoteA, quoteB` |  |
+| 247 | `boolean placed` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 694 | **type** `public final class FitoutCheck` | A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e): Fitout, BuildingsStacks' lots, Game.fitWhatFinished(). |
+| 64 | 691 | **type** `public final class FitoutCheck` | A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e): Fitout, BuildingsStacks' lots, Game.fitWhatFinished(). |
 | 73 | 6 | `static void check(String label, boolean ok, String detail)` |  |
 | 80 | 1 | `static void section(String title)` |  |
 | 82 | 1 | `static boolean near(double a, double b)` |  |
@@ -106,73 +106,73 @@
 | 162 | 5 | `static Map<String, Long> unfitted(BuildingsStacks s)` |  |
 | 169 | 15 | `static List<BuildingManager.Completion> work(Game g, int points)` | The month's construction statements in SimulationEngine's order on `points` of site output; the completions. |
 
-### the 1900 farm town (lines 185-272)
+### the 1900 farm town (lines 185-269)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 188 | 6 | **type** `static final class Farms` | A 1900 town past the combine's date, with real depots covering all repairs before site work, and a full materials yard. |
-| 195 | 28 | `static Farms farmTown(String label) throws Exception` |  |
-| 224 | 4 | `static void cheap(Farms f)` |  |
-| 229 | 4 | `static void dear(Farms f)` |  |
-| 234 | 5 | `static boolean cityOrder(Game g, BuildingsTemplate t, long n)` |  |
-| 240 | 5 | `static boolean farmersOrder(Game g, BuildingsTemplate t, long n)` |  |
-| 247 | 5 | **type** `static final class Two` | Both orders on site: A, two farms with every piece that pays at cheap machinery; B, three at dear machinery. |
-| 253 | 3 | `static Two placeBoth(Farms f)` |  |
-| 258 | 14 | `static Two placeBoth(Farms f, boolean farmersB)` | ...B the farmers' order, or the city's (a site the city may stop is the city's alone). |
+| 188 | 6 | **type** `static final class Farms` | A 1900 town where every discovery but the autonomy kit's is found, past the combine's date, with two builders' depots, their yard full (no material is bought, so no escalation). |
+| 195 | 25 | `static Farms farmTown(String label) throws Exception` |  |
+| 221 | 4 | `static void cheap(Farms f)` |  |
+| 226 | 4 | `static void dear(Farms f)` |  |
+| 231 | 5 | `static boolean cityOrder(Game g, BuildingsTemplate t, long n)` |  |
+| 237 | 5 | `static boolean farmersOrder(Game g, BuildingsTemplate t, long n)` |  |
+| 244 | 5 | **type** `static final class Two` | Both orders on site: A, two farms with every piece that pays at cheap machinery; B, three at dear machinery. |
+| 250 | 3 | `static Two placeBoth(Farms f)` |  |
+| 255 | 14 | `static Two placeBoth(Farms f, boolean farmersB)` | ...B the farmers' order, or the city's (a site the city may stop is the city's alone). |
 
-### 1 (lines 273-361)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 275 | 84 | `static void splitSourced() throws Exception` |  |
-| 360 | 1 | `static boolean apart(double a, double b)` |  |
-
-### 2 (lines 362-395)
+### 1 (lines 270-358)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 364 | 31 | `static void defaultCity() throws Exception` |  |
+| 272 | 84 | `static void splitSourced() throws Exception` |  |
+| 357 | 1 | `static boolean apart(double a, double b)` |  |
 
-### 3 (lines 396-468)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 398 | 70 | `static void twoOrders() throws Exception` |  |
-
-### 4 (lines 469-529)
+### 2 (lines 359-392)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 471 | 58 | `static void discoveryOnSite() throws Exception` |  |
+| 361 | 31 | `static void defaultCity() throws Exception` |  |
 
-### 5 (lines 530-587)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 532 | 55 | `static void saveMidBuild() throws Exception` |  |
-
-### 6 (lines 588-629)
+### 3 (lines 393-465)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 590 | 39 | `static void receipts() throws Exception` |  |
+| 395 | 70 | `static void twoOrders() throws Exception` |  |
 
-### 7 (lines 630-671)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 632 | 39 | `static void shell() throws Exception` |  |
-
-### 8 (lines 672-699)
+### 4 (lines 466-526)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 674 | 25 | `static void r1dKept() throws Exception` |  |
+| 468 | 58 | `static void discoveryOnSite() throws Exception` |  |
 
-### 9 (lines 700-757)
+### 5 (lines 527-584)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 702 | 30 | `static void runInvoice() throws Exception` |  |
-| 733 | 24 | `public static void main(String[] args) throws Exception` |  |
+| 529 | 55 | `static void saveMidBuild() throws Exception` |  |
+
+### 6 (lines 585-626)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 587 | 39 | `static void receipts() throws Exception` |  |
+
+### 7 (lines 627-668)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 629 | 39 | `static void shell() throws Exception` |  |
+
+### 8 (lines 669-696)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 671 | 25 | `static void r1dKept() throws Exception` |  |
+
+### 9 (lines 697-754)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 699 | 30 | `static void runInvoice() throws Exception` |  |
+| 730 | 24 | `public static void main(String[] args) throws Exception` |  |
 

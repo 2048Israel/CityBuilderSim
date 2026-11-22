@@ -1,4 +1,4 @@
-# NewUnitCheck.java - 1,205 lines · 35 methods · 3 constants · harnesses
+# NewUnitCheck.java - 1,203 lines · 35 methods · 3 constants · harnesses
 
 `ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -73,10 +73,10 @@
 | 433 | · 6 |
 | 455 | · 7 and 8 |
 | 644 | · 9 |
-| 696 | · 13 |
-| 947 | · 10 |
-| 1001 | · 11 |
-| 1064 | · 12 |
+| 697 | · 13 |
+| 945 | · 10 |
+| 999 | · 11 |
+| 1062 | · 12 |
 
 ## Constants
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 83 | 1123 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
+| 83 | 1121 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
 | 90 | 6 | `static void check(String label, boolean ok, String detail)` |  |
 | 97 | 1 | `static void section(String title)` |  |
 | 99 | 1 | `static boolean near(double a, double b)` |  |
@@ -175,40 +175,40 @@
 | 622 | 6 | `static double latentWith(Game g, double coming)` | The landlords' head shortage with `coming` posts on site, from its parts (RealEstate.latentHeadShortfall()'s arithmetic, no home on site): every post standing, the builders' laid-off crews included, and the coming one... |
 | 630 | 13 | `static double[] loadsAhead(Game g, BuildingsTemplate t, StringBuilder said, int[] done)` | The power ahead of a queue on a stack: the readings at half the first completion, just before it, at it and past the last. |
 
-### 9 (lines 644-695)
+### 9 (lines 644-696)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 646 | 49 | `static Queued changedDraw() throws Exception` |  |
+| 646 | 50 | `static Queued changedDraw() throws Exception` |  |
 
-### 13 (lines 696-946)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 699 | 1 | **type** `record Queued(Game g, BuildingsTemplate kiln)` | Section 9's city after it: two Cement Plants queued on the plant's own stack, their new units' draw not the fleet's. |
-| 702 | 5 | `static boolean sameBits(double[] a, double[] b)` | Every reading equal to the other to the bit (Double.doubleToLongBits). |
-| 708 | 1 | `static boolean sameBits(double a, double b)` |  |
-| 711 | 5 | `static double[] loads(Game g, double[] horizons)` | The power ahead at each horizon, read as the caller's scope (or none) has it. |
-| 718 | 9 | `static double[] horizons(Game g, BuildingsTemplate kiln, int steps)` | Horizons from now to a month past the last unit on the kilns' site, by its own quotes: every completion inside them. |
-| 728 | 218 | `static void heldForAPass(Queued q) throws Exception` |  |
-
-### 10 (lines 947-1000)
+### 13 (lines 697-944)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 949 | 44 | `static void crewDemand() throws Exception` |  |
-| 995 | 5 | `static double college(Ran r)` | A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. |
+| 700 | 1 | **type** `record Queued(Game g, BuildingsTemplate kiln)` | Section 9's city after it: two Cement Plants queued on the plant's own stack, their new units' draw not the fleet's. |
+| 703 | 5 | `static boolean sameBits(double[] a, double[] b)` | Every reading equal to the other to the bit (Double.doubleToLongBits). |
+| 709 | 1 | `static boolean sameBits(double a, double b)` |  |
+| 712 | 5 | `static double[] loads(Game g, double[] horizons)` | The power ahead at each horizon, read as the caller's scope (or none) has it. |
+| 719 | 9 | `static double[] horizons(Game g, BuildingsTemplate kiln, int steps)` | Horizons from now to a month past the last unit on the kilns' site, by its own quotes: every completion inside them. |
+| 729 | 215 | `static void heldForAPass(Queued q) throws Exception` |  |
 
-### 11 (lines 1001-1063)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1003 | 60 | `static void powerAhead() throws Exception` |  |
-
-### 12 (lines 1064-1205)
+### 10 (lines 945-998)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1066 | 108 | `static void cardGoods() throws Exception` |  |
-| 1175 | 30 | `public static void main(String[] args) throws Exception` |  |
+| 947 | 44 | `static void crewDemand() throws Exception` |  |
+| 993 | 5 | `static double college(Ran r)` | A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. |
+
+### 11 (lines 999-1061)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1001 | 60 | `static void powerAhead() throws Exception` |  |
+
+### 12 (lines 1062-1203)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1064 | 108 | `static void cardGoods() throws Exception` |  |
+| 1173 | 30 | `public static void main(String[] args) throws Exception` |  |
 

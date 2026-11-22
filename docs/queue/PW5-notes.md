@@ -999,3 +999,78 @@ points. It changes no simulation input or saved field and prints nothing
 when the option is unset; the default trace remains unchanged beyond runtime.
 The separate named run uses playtest.seed=0, its default, with the normal
 world-path seed. This observation is not another ensemble or a model change.
+
+The corrected named LongPlaytest run exits 0 through its normal 2400 months.
+Its first standing district appears at **closing m576**, after the press
+from m575, count one. This is the default city seed 0 and default world-path
+seed 48,213. Both actual and potential builder output read **6,176 points**.
+Standing repairs total 420.054779 points, including this district's whole
+110 points; 5,756 site points remain. The already charged month's repair
+tally is 303.468529: the district has just completed, so the standing-stock
+reading describes its new continuing load, not a second charge in that press.
+The complete line is retained in
+target/PW5-peak-mends/LongPlaytest-default.log under FIRST_DISTRICT.
+
+The changelog now pairs PW5-F1's cents figure with its 110-point repair lump
+and the default city's m576 builder budget, within twelve lines including
+the heading. The 87-point illustration remains explicitly qualified above;
+the measured no-district construction fixture has 120 points available.
+The ordinary town measurement and the original construction runs pass; the
+same 29-caller serial sweep now runs in target/PW5-peak-coverage/, preserving
+the previous sweep's logs separately. The census launcher was moved from
+an inline shell argument to a script after that argument failed to start
+the second command; only the completed, exit-0 named run is used as evidence.
+
+### Final peak-sized caller rerun
+
+The complete rerun finishes on source f36fa1af0 with no new reds. The caller
+set is the same audited 29: pricedTown adds no new caller class. The separate
+default-seed census above also exits 0. Every call is serial with
+cbs.parallel=1, one name per batch-check invocation.
+
+| Harness | Result |
+| --- | --- |
+| BuildAdviceCheck | 3; existing FS12 streets-card line only |
+| CopperRefiningCheck | 3; existing FS8 played cut only |
+| ElectrolyserCheck | 0 |
+| EquipmentCheck | 0 |
+| EssentialWorksCheck | 0 |
+| FitoutCheck | 0; original 66 assertions, original two depots |
+| FittingCheck | 0 |
+| Forms1900Check | 3; the two existing FS8 lines only |
+| FreightViewCheck | 0 |
+| HaulageCheck | 0 |
+| HistoricalLicenceCheck | 0 |
+| HomeRailCheck | 0, covered by the serial RailCheck selection |
+| IndustryViewCheck | 0 |
+| LandlordPortCheck | 0 |
+| LicenceFeesCheck | 0 |
+| ModernEngineeringCheck | 0 |
+| NewUnitCheck | 0; original 83 assertions and four depots, no added priority override |
+| PolicyPreviewCheck | 0 |
+| PostwarRecipeCheck | 0; original 230 assertions, four depots and 120-month guard |
+| PowerPriceCheck | 0 |
+| PublicLicenceCheck | 3; the four existing PW1-W lines only |
+| RailCheck | 0; all four selected rail harnesses |
+| RailDepotCheck | 0 |
+| ReadPathCheck | 0 |
+| SaveFileCheck | 0 |
+| SubstationCheck | 0; both new historical-town assertions and every original line |
+| TradeBandCheck | 0 |
+| TruckRouteCheck | 0 |
+| WorksFinanceCheck | 0 |
+
+QuayRailCheck and IslandRailCheck pass too in that selection. All selected
+suite logs, individual logs and return codes are retained separately in
+target/PW5-peak-coverage/. Final --fast exits 0, maps regenerated, zero firm
+Stale findings and 196 soft. The validation shell has exited; no own JVM or
+gate process remains. The final fetch still finds main 591fc92d8, so no
+merge, format bump or replacement native-save fixture is required in this
+pass: main remains at 61, PW5 at 62. No simulator, tariff, saved field or
+building data changed; the optional LongPlaytest observation is disabled on
+normal runs. The final-model ensemble 069504753 remains applicable, M1/F1
+10/10 and 24/26. The only ship exemption remains OrderDoorCheck:277.
+
+Keep the provisional marker and send this one-pass delta and the complete
+caller list to the same reviewer. HC1 holds the dry-run slot; a fresh slot
+is requested after this delta's SHIP. Neither stopped ALL run is reused.

@@ -342,7 +342,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StrategicReserve](map/StrategicReserve.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, SaveFileCheck |
 | [StreetCurves](map/StreetCurves.md) | MapCheck, PlanCheck |
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
-| [Substations](map/Substations.md) | BuildAdviceCheck, BuildingDataCheck, ElectrolyserCheck, PowerPriceCheck, SubstationCheck |
+| [Substations](map/Substations.md) | BuildAdviceCheck, BuildingDataCheck, ElectrolyserCheck, HistoricalLicenceCheck, LongPlaytest, NewUnitCheck, PowerPriceCheck, SubstationCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CapitalGainsCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandlordPortCheck, LongPlaytest, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
@@ -10902,7 +10902,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L469 ...and it is less than the buildings' posts would have cost at the same rates: the operators struck are paid no more, the watch added is paid
   - L471 ...by exactly the operators' wages less the watch's
 
-## FitoutCheck.java - 76 labelled assertions
+## FitoutCheck.java - 75 labelled assertions
 
 > A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e):
 > Fitout, BuildingsStacks' lots, Game.fitWhatFinished().
@@ -10918,82 +10918,81 @@ _(this harness does not label its checks through a helper - it prints its findin
 > of the points; a piece with no work is carried in and in no price), the price is BuildingManager.nonMaterialCost()'s
 > ...
 
-  - L204 fixture: the builders leave positive site output after the standing town and its wires are repaired
-  - L276 1. the split, sourced: a built-in piece's goods at the import price and its work; a carried-in piece in no price
-  - L306 fixture: the catalogue carries both kinds of piece
-  - L307 each piece's part of its template's cash is its goods at the import price over the founding cash, with work; none without
-  - L309 no template's pieces come to more than its price; the shell without every piece is that cash and those points, never below nothing
-  - L311 the whole template is its own cash and points, to the bit, and chosen by no one
-  - L331 a point of work costs the same with or without a piece: each built-in piece left off takes its goods and its work's cash, the shell's cash a point (its piece...
-  - L336 the 25% pieces read a quarter: the Vehicle Works's carbide tools and the Grain Farm's combine, at a tenth of the points' work
-  - L342 the Grain Farm without its combine (the catalogue's 1,200 of cash for 100 points, the combine 300 of goods and 10 points): 840 for 90, the 600 the whole farm...
-  - L347 a carried-in piece is bought apart: a Truck Depot without its trucks costs what the depot does
-  - L349 an id the template does not carry is dropped
-  - L355 the split does not move with the machinery market: the shell's cash at a hundred times the import price is what it was, while the fitting quote moves
-  - L365 2. a city founded the default way: the whole template, chosen by no one, priced as before, no lot, no key
-  - L374 fixture: a city founded the default way, with templates that carry equipment
-  - L375 every template's fitout there is the whole template and chosen by no one
-  - L380 an order's buildings are priced as before: nonMaterialCost(t) on the template's points, to the bit
-  - L382 ...and the money test's multiple reads the template's points
-  - L387 the order, placed, leaves its buildings loose on site: no lot
-  - L390 ...and nothing is saved for it
-  - L393 the save carries no lotsById key
-  - L399 3. two orders for one template, with and without a piece: each priced, kept and owed on its own set
-  - L408 fixture: a 1900 town; at cheap machinery a new farm keeps its combine, not its autonomy kit (not yet found); at dear it goes without the combine
-  - L411 fixture: the nonMaterialCost() arithmetic written out here reads the whole template as the model does
-  - L423 the quote with every piece that pays is the shell plus its pieces (the kit, carried in, no part of it): with every built-in piece, the template's price
-  - L426 the quote without the combine is the shell plus the pieces it keeps, at the multiple on its own points
-  - L429 ...its fitout is the set fittedForNew() keeps at the quote
-  - L431 the investors' estimate prices each set as the quote does: its fall is the quote's
-  - L433 ...and the money test's multiple reads each set's points
-  - L447 premise: the farm's labour is under its cash (nonMaterialCost() does not cap it)
-  - L449 the twin: a farm without the combine, and the combine's goods at the import price with its work at the whole farm's own price a point (its pieces' goods apar...
-  - L456 both orders placed: the city's two at cheap machinery, the farmers' three at dear
-  - L457 the site keeps each order's set, front first
-  - L458 ...and owes each building the points its set takes
-  - L463 the quote's wait reads the work its set owes: three without the combine, on the same site, wait what that work waits, no longer than three with it
-  - L466 ...and the investors' lead time reads it too
-  - L472 4. a discovery and a price change while both are on site: a new order's set moves, the orders on site deliver theirs
-  - L483 fixture: both on site; now a new farm would come with every piece (the kit found, machinery cheap)
-  - L486 a new order is quoted on the new set, the whole template
-  - L488 ...and the orders on site keep theirs
-  - L490 the new order joins the site behind them with its own set
-  - L507 the site finishes first placed first: A's two open first, with A's set, B's behind them
-  - L513 every order's buildings came with the set it froze: the unfitted counts rose by A's two and B's three, C's none
-  - L515 ...which the rule asked at the finish would not have given: every piece pays now
-  - L523 fixture: two put on site with no order's set are loose
-  - L527 ...and come with what the rule keeps at their finish, as before R1e
-  - L533 5. a save and load mid-build: the sets come back and the twins finish alike; a save without the key reads as main
-  - L542 fixture: mid-build, one of A's open, the next part worked, B's three behind
-  - L546 the save carries the sites' sets
-  - L549 loaded, the site holds the same sets, the same progress and owes the same points
-  - L564 the twins, finishing after a discovery and a price change, deliver the frozen sets alike
-  - L574 a save without the key loads its site whole: every building loose, owing the template's points, as it was paid
-  - L584 ...and its buildings come with what the rule keeps at the finish, as main delivers them
-  - L591 6. the builders' receipts, investment and VAT entries are each order's own set's price
-  - L609 fixture: the farmers order three without the combine; the yard covers the material, so nothing is bought
-  - L611 the builders' order book took the set's price, taxed
-  - L612 ...for the points the set takes, three times the shell's
-  - L614 the farmers paid it and their ground
-  - L615 their contract on the site is the set's price
-  - L616 the sales tax in the quote, the builders' VAT, is their rate on the set's price
-  - L624 the work recognised as the builders' revenue, the accounts' investment, is the set's price, earned to the last as the farms open
-  - L626 the farmers' capital purchases from the builders, the base of their VAT credit, are the set's price at their share (no escalation: no material bought)
-  - L633 7. a stopped site's shell keeps its orders' sets; its restart is priced on them and delivers them
-  - L651 fixture: the city stops the site with both orders on it
-  - L652 the shell keeps both orders' sets
-  - L657 its restart is priced on the sets' work left: their price a point, at the multiple
-  - L664 restarted, the site holds the sets again
-  - L669 ...and delivers them after a discovery and a price change
-  - L675 8. R1d's rules kept: the builders credited what the treasury paid; a delivered building without a piece, scrapped mid-fitting, refunds nothing
-  - L684 the city's order without the combine: the builders' book took what the treasury paid (to the rounding of the city's cash), the set's price
-  - L692 fixture: three farms delivered without the combine, and the city pays for a fitting on one
-  - L696 a farm scrapped while the job is on site, with an unfitted farm left for it: the job goes on and nothing is refunded
-  - L703 9. a run's invoice is its orders placed one by one: each queued on its set's points, as bill() is handed them
-  - L713 fixture: the builders are short, the queue past the knee, and a new farm goes without its combine
-  - L716 premise: the depot's multiple moves with the farms' points ahead of it, their set's against the template's
-  - L728 fixture: the run's two orders placed in turn
-  - L729 the run's invoice is what placing its orders in turn charged: the depot priced on the farms' sets' points ahead of it
+  - L273 1. the split, sourced: a built-in piece's goods at the import price and its work; a carried-in piece in no price
+  - L303 fixture: the catalogue carries both kinds of piece
+  - L304 each piece's part of its template's cash is its goods at the import price over the founding cash, with work; none without
+  - L306 no template's pieces come to more than its price; the shell without every piece is that cash and those points, never below nothing
+  - L308 the whole template is its own cash and points, to the bit, and chosen by no one
+  - L328 a point of work costs the same with or without a piece: each built-in piece left off takes its goods and its work's cash, the shell's cash a point (its piece...
+  - L333 the 25% pieces read a quarter: the Vehicle Works's carbide tools and the Grain Farm's combine, at a tenth of the points' work
+  - L339 the Grain Farm without its combine (the catalogue's 1,200 of cash for 100 points, the combine 300 of goods and 10 points): 840 for 90, the 600 the whole farm...
+  - L344 a carried-in piece is bought apart: a Truck Depot without its trucks costs what the depot does
+  - L346 an id the template does not carry is dropped
+  - L352 the split does not move with the machinery market: the shell's cash at a hundred times the import price is what it was, while the fitting quote moves
+  - L362 2. a city founded the default way: the whole template, chosen by no one, priced as before, no lot, no key
+  - L371 fixture: a city founded the default way, with templates that carry equipment
+  - L372 every template's fitout there is the whole template and chosen by no one
+  - L377 an order's buildings are priced as before: nonMaterialCost(t) on the template's points, to the bit
+  - L379 ...and the money test's multiple reads the template's points
+  - L384 the order, placed, leaves its buildings loose on site: no lot
+  - L387 ...and nothing is saved for it
+  - L390 the save carries no lotsById key
+  - L396 3. two orders for one template, with and without a piece: each priced, kept and owed on its own set
+  - L405 fixture: a 1900 town; at cheap machinery a new farm keeps its combine, not its autonomy kit (not yet found); at dear it goes without the combine
+  - L408 fixture: the nonMaterialCost() arithmetic written out here reads the whole template as the model does
+  - L420 the quote with every piece that pays is the shell plus its pieces (the kit, carried in, no part of it): with every built-in piece, the template's price
+  - L423 the quote without the combine is the shell plus the pieces it keeps, at the multiple on its own points
+  - L426 ...its fitout is the set fittedForNew() keeps at the quote
+  - L428 the investors' estimate prices each set as the quote does: its fall is the quote's
+  - L430 ...and the money test's multiple reads each set's points
+  - L444 premise: the farm's labour is under its cash (nonMaterialCost() does not cap it)
+  - L446 the twin: a farm without the combine, and the combine's goods at the import price with its work at the whole farm's own price a point (its pieces' goods apar...
+  - L453 both orders placed: the city's two at cheap machinery, the farmers' three at dear
+  - L454 the site keeps each order's set, front first
+  - L455 ...and owes each building the points its set takes
+  - L460 the quote's wait reads the work its set owes: three without the combine, on the same site, wait what that work waits, no longer than three with it
+  - L463 ...and the investors' lead time reads it too
+  - L469 4. a discovery and a price change while both are on site: a new order's set moves, the orders on site deliver theirs
+  - L480 fixture: both on site; now a new farm would come with every piece (the kit found, machinery cheap)
+  - L483 a new order is quoted on the new set, the whole template
+  - L485 ...and the orders on site keep theirs
+  - L487 the new order joins the site behind them with its own set
+  - L504 the site finishes first placed first: A's two open first, with A's set, B's behind them
+  - L510 every order's buildings came with the set it froze: the unfitted counts rose by A's two and B's three, C's none
+  - L512 ...which the rule asked at the finish would not have given: every piece pays now
+  - L520 fixture: two put on site with no order's set are loose
+  - L524 ...and come with what the rule keeps at their finish, as before R1e
+  - L530 5. a save and load mid-build: the sets come back and the twins finish alike; a save without the key reads as main
+  - L539 fixture: mid-build, one of A's open, the next part worked, B's three behind
+  - L543 the save carries the sites' sets
+  - L546 loaded, the site holds the same sets, the same progress and owes the same points
+  - L561 the twins, finishing after a discovery and a price change, deliver the frozen sets alike
+  - L571 a save without the key loads its site whole: every building loose, owing the template's points, as it was paid
+  - L581 ...and its buildings come with what the rule keeps at the finish, as main delivers them
+  - L588 6. the builders' receipts, investment and VAT entries are each order's own set's price
+  - L606 fixture: the farmers order three without the combine; the yard covers the material, so nothing is bought
+  - L608 the builders' order book took the set's price, taxed
+  - L609 ...for the points the set takes, three times the shell's
+  - L611 the farmers paid it and their ground
+  - L612 their contract on the site is the set's price
+  - L613 the sales tax in the quote, the builders' VAT, is their rate on the set's price
+  - L621 the work recognised as the builders' revenue, the accounts' investment, is the set's price, earned to the last as the farms open
+  - L623 the farmers' capital purchases from the builders, the base of their VAT credit, are the set's price at their share (no escalation: no material bought)
+  - L630 7. a stopped site's shell keeps its orders' sets; its restart is priced on them and delivers them
+  - L648 fixture: the city stops the site with both orders on it
+  - L649 the shell keeps both orders' sets
+  - L654 its restart is priced on the sets' work left: their price a point, at the multiple
+  - L661 restarted, the site holds the sets again
+  - L666 ...and delivers them after a discovery and a price change
+  - L672 8. R1d's rules kept: the builders credited what the treasury paid; a delivered building without a piece, scrapped mid-fitting, refunds nothing
+  - L681 the city's order without the combine: the builders' book took what the treasury paid (to the rounding of the city's cash), the set's price
+  - L689 fixture: three farms delivered without the combine, and the city pays for a fitting on one
+  - L693 a farm scrapped while the job is on site, with an unfitted farm left for it: the job goes on and nothing is refunded
+  - L700 9. a run's invoice is its orders placed one by one: each queued on its set's points, as bill() is handed them
+  - L710 fixture: the builders are short, the queue past the knee, and a new farm goes without its combine
+  - L713 premise: the depot's multiple moves with the farms' points ahead of it, their set's against the template's
+  - L725 fixture: the run's two orders placed in turn
+  - L726 the run's invoice is what placing its orders in turn charged: the depot priced on the farms' sets' points ahead of it
 
 ## FittingCheck.java - 237 labelled assertions
 
@@ -14859,63 +14858,63 @@ _(this harness does not label its checks through a helper - it prints its findin
 > production bill stayed zero. Staffed works and rail invoices must pay,
 > preserve their captured bills, and close the same month's money audit.
 
-- **L43 independent cutting equipment: gross and net**
-  - L52 fixture: a standing machine works has a positive independent carbide gain in its patent term
-  - L55 the equipment's gross gain is its own undo, beside its process
-  - L56 the fitting verdict loses exactly the imported patent share
-  - L61 the fitted independent carbide piece pays on real machine-works production
-  - L64 a local carbide find keeps the whole gain
-  - L67 expiry restores the whole equipment gain
-- **L70 independent flotation recipe: real production and settlement**
-  - L83 fixture: a standing flotation mill really produces concentrate during PE7's patent
-  - L86 the independent flotation recipe pays a positive captured service
-  - L87 that payment is in the same month's named audit and current account, which close
-  - L91 history records the same positive paid flow
-  - L93 the same independent recipe contributes a positive new-building licence estimate
-  - L99 a local flotation find stops new accrual and pays no fee after the old bill settles
-  - L104 the same real flotation production is exempt after its patent expires
-  - L147 fixture:
-  - L150 fixture: known catalytic cracking is rejected while thermal cracking still produces
-- **L161 public patent estimates net the city's own licence and carry no firm royalty (R2c-P)**
-  - L169 fixture:
-  - L183 the public fitting estimate nets exactly the bill the capture would strike on the new building's piece for
-  - L187 the public
-- **L193 demolition preserves the invoice's cached engine share (REV-R2d-4)**
-  - L207 the private PE21 fitting still nets exactly the patent share of its own positive estimate
-  - L222 fixture: a real ordered demolition closes the unfitted one of two depots while the invoice retains its half-steam cache
-  - L234 the demolition fixture's real haul draws exactly half diesel at its cached share
-  - L236 its royalty uses that same drawn diesel share, rather than the new all-fitted count
-  - L239 later goods capture retains the demolition invoice's exact standing bill
-- **L244 the last depot closes before its final real invoice**
-  - L255 the fitted service period saves a valid zero steam snapshot
-  - L271 fixture: the last real depot closes, but Freight still invoices its positive prior-month haul
-  - L274 that final real service still owes its exact positive patent bill
-  - L277 goods capture preserves that pending final bill without assigning cost to an absent depot
-- **L283 the final unfitted depot's service stays steam across closure and load (REV-R2d-5)**
-  - L298 fixture: the unfitted depot really serves a period with a captured all-steam mix, load
-  - L315 legacy absence keeps the old modern rail meaning, while JSON restores the captured steam period
-  - L325 fixture: normal month closure removes the unfitted final depot before its positive haul invoice, load
-  - L328 the unfitted final depot's real invoice burns coal and no diesel, load
-  - L330 equipment never fitted creates no PE21 royalty after final demolition, load
-  - L332 that actual steam-service month closes its audit and current account, load
-- **L339 PE21 liability belongs to its production month, not its later invoice**
-  - L358 fixture: a local find after production leaves the imported period's frozen eligibility
-  - L363 actual disk load keeps earned eligibility despite the now-local patent
-  - L367 fixture: the last patent month really produces a fitted diesel period with eligibility
-  - L374 the last period's real haul is invoiced after patent expiry
-  - L377 the already-produced
-  - L380 the following
-- **L394 the PE21 private rail service, on both month routes**
-  - L414 fixture: real diesel rail service earns haul revenue, route
-  - L418 PE21's captured bill is positive and paid exactly once, route
-  - L420 the rail IP service is in the same closed audit and current account, route
-  - L425 goods production retains the rail service's saved standing memo, route
-  - L433 a new goods capture cannot revalue or erase the last rail invoice, route
-  - L467 fixture: the no-port haul overload invoices both boundary and city tonnes with a genuinely mixed fleet
-  - L470 actual diesel and its city component exclude the steam share
-  - L473 PE21 bills exactly a quarter of the fitted share's actual boundary and city fuel saving
-  - L475 the partial line's saved bill divides its fitted capacity share across the whole stack
-  - L487 the actual rail pending bill and standing memo survive the normal sector and DataSave JSON fields
+- **L51 independent cutting equipment: gross and net**
+  - L60 fixture: a standing machine works has a positive independent carbide gain in its patent term
+  - L63 the equipment's gross gain is its own undo, beside its process
+  - L64 the fitting verdict loses exactly the imported patent share
+  - L69 the fitted independent carbide piece pays on real machine-works production
+  - L72 a local carbide find keeps the whole gain
+  - L75 expiry restores the whole equipment gain
+- **L78 independent flotation recipe: real production and settlement**
+  - L91 fixture: a standing flotation mill really produces concentrate during PE7's patent
+  - L94 the independent flotation recipe pays a positive captured service
+  - L95 that payment is in the same month's named audit and current account, which close
+  - L99 history records the same positive paid flow
+  - L101 the same independent recipe contributes a positive new-building licence estimate
+  - L107 a local flotation find stops new accrual and pays no fee after the old bill settles
+  - L112 the same real flotation production is exempt after its patent expires
+  - L155 fixture:
+  - L158 fixture: known catalytic cracking is rejected while thermal cracking still produces
+- **L169 public patent estimates net the city's own licence and carry no firm royalty (R2c-P)**
+  - L178 fixture:
+  - L192 the public fitting estimate nets exactly the bill the capture would strike on the new building's piece for
+  - L196 the public
+- **L202 demolition preserves the invoice's cached engine share (REV-R2d-4)**
+  - L216 the private PE21 fitting still nets exactly the patent share of its own positive estimate
+  - L231 fixture: a real ordered demolition closes the unfitted one of two depots while the invoice retains its half-steam cache
+  - L243 the demolition fixture's real haul draws exactly half diesel at its cached share
+  - L245 its royalty uses that same drawn diesel share, rather than the new all-fitted count
+  - L248 later goods capture retains the demolition invoice's exact standing bill
+- **L253 the last depot closes before its final real invoice**
+  - L264 the fitted service period saves a valid zero steam snapshot
+  - L280 fixture: the last real depot closes, but Freight still invoices its positive prior-month haul
+  - L283 that final real service still owes its exact positive patent bill
+  - L286 goods capture preserves that pending final bill without assigning cost to an absent depot
+- **L292 the final unfitted depot's service stays steam across closure and load (REV-R2d-5)**
+  - L307 fixture: the unfitted depot really serves a period with a captured all-steam mix, load
+  - L324 legacy absence keeps the old modern rail meaning, while JSON restores the captured steam period
+  - L334 fixture: normal month closure removes the unfitted final depot before its positive haul invoice, load
+  - L337 the unfitted final depot's real invoice burns coal and no diesel, load
+  - L339 equipment never fitted creates no PE21 royalty after final demolition, load
+  - L341 that actual steam-service month closes its audit and current account, load
+- **L348 PE21 liability belongs to its production month, not its later invoice**
+  - L367 fixture: a local find after production leaves the imported period's frozen eligibility
+  - L372 actual disk load keeps earned eligibility despite the now-local patent
+  - L376 fixture: the last patent month really produces a fitted diesel period with eligibility
+  - L383 the last period's real haul is invoiced after patent expiry
+  - L386 the already-produced
+  - L389 the following
+- **L403 the PE21 private rail service, on both month routes**
+  - L423 fixture: real diesel rail service earns haul revenue, route
+  - L427 PE21's captured bill is positive and paid exactly once, route
+  - L429 the rail IP service is in the same closed audit and current account, route
+  - L434 goods production retains the rail service's saved standing memo, route
+  - L442 a new goods capture cannot revalue or erase the last rail invoice, route
+  - L476 fixture: the no-port haul overload invoices both boundary and city tonnes with a genuinely mixed fleet
+  - L479 actual diesel and its city component exclude the steam share
+  - L482 PE21 bills exactly a quarter of the fitted share's actual boundary and city fuel saving
+  - L484 the partial line's saved bill divides its fitted capacity share across the whole stack
+  - L496 the actual rail pending bill and standing memo survive the normal sector and DataSave JSON fields
 
 ## HistoricalRecipeCheck.java - 54 labelled assertions
 
@@ -20857,111 +20856,111 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L3603 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3658 AND EVERYTHING THAT IS A PURCHASE.**
 - **L4026 AND THE BEST OF THEM WINS.**
-- **L6735 founding: a few months at a time, by hand**
-- **L6832 then the real rhythm**
-- **L6965 the report**
-- **L6988 ==**
-- **L7085 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L8374 what the advisor tried, and what happened**
-- **L8380 findings**
-- **L8400 HA1 money audit fixtures**
-- **L8997 1. a city that prospers**
-  - L9019 a founding city conserves money to within 0.01% of what moved
-- **L9038 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L9061 an industrial city conserves money to within 0.01% of what moved
-  - L9063 ...and it really did carry passengers, so the fare was really charged
-  - L9080 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L9089 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L9099 land bought out of the vault: nothing moves the audit cannot see**
-  - L9109 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L9113 a city that paid for land out of the vault conserves money
-  - L9115 ...and nothing moved a pool after any month's audit
-- **L9118 2. a city under stress**
-  - L9145 a stressed city conserves money to within 0.01% of what moved
-  - L9176 fixture: retail went under whole, and was restructured
-  - L9178 a restructure moves no cash the audit cannot see
-- **L9181 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L9199 a city paying over the world: the money that arrives is audited**
-  - L9220 fixture: the rate actually brought money in
-  - L9222 ...and the audit saw it cross the border
-  - L9225 a city conserves money with hot money flowing
-  - L9228 ...and nothing moved after the audit struck
-- **L9230 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L9244 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L9274 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L9277 ...and bought consumables abroad, inside their imports
-  - L9279 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L9281 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L9285 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L9297 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L9335 fixture: the yard bought old steel from the households and from a sector
-  - L9337 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L9339 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9343 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-  - L9354 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
-  - L9356 the households' books close in every one of the yard's months (worst residual
-  - L9358 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
-- **L9361 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L9372 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L9403 fixture: the refinery bought old copper from the households and from a sector
-  - L9405 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L9407 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9417 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
-  - L9419 the households' books close in every one of the refinery's months (worst residual
-  - L9421 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
-- **L9424 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L9453 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L9479 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9525 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9526 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9528 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9530 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9532 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9534 ...and nothing moved a pool after any month's audit struck
-  - L9535 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9537 ...and it is the cash coupons the budget calls its cash interest
-- **L9539 12. the services' upkeep is bought of Business Services**
-  - L9560 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
-  - L9563 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
-  - L9565 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
-  - L9576 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
-  - L9588 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
-  - L9590 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
-  - L9593 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
-  - L9596 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
-  - L9601 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-  - L9604 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
-  - L9609 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
-  - L9622 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
-  - L9626 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
-  - L9631 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-- **L9633 13. the households' books close**
-  - L9642 fixture: the longest city this file plays gave at least 24 months to read
-  - L9644 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
-  - L9653 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
-- **L9657 14. a cent that vanishes from a household is seen**
-  - L9669 fixture: the city holds savings enough that 1% of them is a hundred cents or more
-  - L9674 the theft took what it was meant to: the savings fell by X, to the cent
-  - L9680 the game's own strike, whose opening figure was read after the theft, closes
-  - L9681 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
-- **L9684 15. a bond's face that no cell holds is named**
-  - L9708 fixture: the bond town's households hold a corporate bond
-  - L9728 fixture: the bond's record now exceeds the cells' own by D, over a cent
-  - L9736 the press that paid the coupon on D declares it orphaned:
-  - L9739 ...and the own line fired with that figure
-  - L9740 ...the households' books close
-  - L9743 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
-  - L9766 the bond matured within its term (m
-  - L9768 ...every month on the way closed its households' books
-  - L9769 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
-  - L9772 ...and the households' books close that month, the principal paid on a face no cell held
-- **L9776 16. what comes off the payslips is in transit a press**
-  - L9796 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
-  - L9818 fixture: the treasury banked all three that press
-  - L9821 ...by the lines the pools' identity reads
-  - L9832 fixture: what comes off the payslips moved by over a cent in at least three presses
-  - L9833 the households' books close in every one of the
-  - L9834 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
+- **L6748 founding: a few months at a time, by hand**
+- **L6845 then the real rhythm**
+- **L6978 the report**
+- **L7001 ==**
+- **L7098 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L8387 what the advisor tried, and what happened**
+- **L8393 findings**
+- **L8413 HA1 money audit fixtures**
+- **L9010 1. a city that prospers**
+  - L9032 a founding city conserves money to within 0.01% of what moved
+- **L9051 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L9074 an industrial city conserves money to within 0.01% of what moved
+  - L9076 ...and it really did carry passengers, so the fare was really charged
+  - L9093 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L9102 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L9112 land bought out of the vault: nothing moves the audit cannot see**
+  - L9122 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L9126 a city that paid for land out of the vault conserves money
+  - L9128 ...and nothing moved a pool after any month's audit
+- **L9131 2. a city under stress**
+  - L9158 a stressed city conserves money to within 0.01% of what moved
+  - L9189 fixture: retail went under whole, and was restructured
+  - L9191 a restructure moves no cash the audit cannot see
+- **L9194 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L9212 a city paying over the world: the money that arrives is audited**
+  - L9233 fixture: the rate actually brought money in
+  - L9235 ...and the audit saw it cross the border
+  - L9238 a city conserves money with hot money flowing
+  - L9241 ...and nothing moved after the audit struck
+- **L9243 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L9257 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L9287 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L9290 ...and bought consumables abroad, inside their imports
+  - L9292 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L9294 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L9298 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L9310 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L9348 fixture: the yard bought old steel from the households and from a sector
+  - L9350 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L9352 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9356 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+  - L9367 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
+  - L9369 the households' books close in every one of the yard's months (worst residual
+  - L9371 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
+- **L9374 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L9385 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L9416 fixture: the refinery bought old copper from the households and from a sector
+  - L9418 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L9420 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9430 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
+  - L9432 the households' books close in every one of the refinery's months (worst residual
+  - L9434 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
+- **L9437 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L9466 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L9492 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9538 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9539 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9541 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9543 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9545 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9547 ...and nothing moved a pool after any month's audit struck
+  - L9548 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9550 ...and it is the cash coupons the budget calls its cash interest
+- **L9552 12. the services' upkeep is bought of Business Services**
+  - L9573 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
+  - L9576 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
+  - L9578 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
+  - L9589 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
+  - L9601 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
+  - L9603 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
+  - L9606 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
+  - L9609 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
+  - L9614 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+  - L9617 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
+  - L9622 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
+  - L9635 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
+  - L9639 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
+  - L9644 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+- **L9646 13. the households' books close**
+  - L9655 fixture: the longest city this file plays gave at least 24 months to read
+  - L9657 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
+  - L9666 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
+- **L9670 14. a cent that vanishes from a household is seen**
+  - L9682 fixture: the city holds savings enough that 1% of them is a hundred cents or more
+  - L9687 the theft took what it was meant to: the savings fell by X, to the cent
+  - L9693 the game's own strike, whose opening figure was read after the theft, closes
+  - L9694 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
+- **L9697 15. a bond's face that no cell holds is named**
+  - L9721 fixture: the bond town's households hold a corporate bond
+  - L9741 fixture: the bond's record now exceeds the cells' own by D, over a cent
+  - L9749 the press that paid the coupon on D declares it orphaned:
+  - L9752 ...and the own line fired with that figure
+  - L9753 ...the households' books close
+  - L9756 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
+  - L9779 the bond matured within its term (m
+  - L9781 ...every month on the way closed its households' books
+  - L9782 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
+  - L9785 ...and the households' books close that month, the principal paid on a face no cell held
+- **L9789 16. what comes off the payslips is in transit a press**
+  - L9809 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
+  - L9831 fixture: the treasury banked all three that press
+  - L9834 ...by the lines the pools' identity reads
+  - L9845 fixture: what comes off the payslips moved by over a cent in at least three presses
+  - L9846 the households' books close in every one of the
+  - L9847 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
 
 ## LuxuryRetailCheck.java - 8 labelled assertions
 
@@ -23586,52 +23585,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L608 premise: only the two plants are on site, and the fleet's posts would give the landlords another head shortage
   - L610 the landlords' head shortage counts the actual new plants' posts on site, not the fleet's
   - L647 9. the power ahead: two queued Cement Plants without their rotary kiln draw the shaft kilns' power, from their completion
-  - L668 fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's
-  - L673 fixture: nothing on site and nothing pending
-  - L684 fixture: two queued on the plant's own stack, the first finishing before the last
-  - L689 the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last
-  - L691 ...and not the fleet's draw
-  - L729 13. held for one pass (AP1): inside WorksValue.hold() the power ahead is the bare figure to the bit; an order, a rush
-  - L738 fixture: no scope open, two plants queued on the city's own site, and the power ahead some draw by the last horizon
-  - L755 inside a scope the power ahead at each of
-  - L757 one schedule is built for the scope's
-  - L763 premise: outside a scope each reading builds its own schedule
-  - L776 premise: a second city, g saved and loaded, a third plant ordered there: its power ahead is its own, not g's
-  - L790 the second city read inside g's scope reads its own bare figure to the bit, built afresh at each reading, and g's scope
-  - L805 g read on a second thread while g's scope is open on this one: the bare figure, from a schedule of its own
-  - L823 the second city's hold nested in g's is g's scope one deeper: the second city reads bare, built afresh at each
-  - L840 premise: a third plant ordered moves the power ahead
-  - L842 an order inside a scope: the next reading is the bare one after the order, to the bit, from a schedule built anew
-  - L856 premise: the city's site is rushed, and the rush moves the power ahead
-  - L858 a rush inside a scope: the readings after it are the bare ones to the bit
-  - L877 premise: a second city site, the kilns moved past it in the city's order, and the priority moves the power ahead
-  - L880 a priority inside a scope: the readings after it are the bare ones to the bit
-  - L896 premise: the kilns' work half done moves the power ahead
-  - L898 progress moved inside a scope: the readings after it are the bare ones to the bit, from a schedule built anew
-  - L911 builders first turned off inside a scope: the readings after it are the bare ones to the bit, from a schedule
-  - L921 closed, nothing is held: no scope open, and a reading after a fourth plant ordered reads it, as a scope opened then does
-  - L940 premise: on the rationed grid a Coal Power Plant prevents some output loss, with the plants on site drawing ahead
-  - L943 ...and its avoided loss read inside a scope, from the held schedule and draws, is the bare figure to the bit
-  - L950 10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes
-  - L967 fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet
-  - L977 fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts
-  - L983 fixture: two queued on the centre's own stack
-  - L986 the colleges' places grow by the queued centres' own college posts, not the fleet's
-  - L990 the landlords' head shortage counts the queued centres' own posts, not the fleet's
-  - L1004 11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
-  - L1019 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
-  - L1028 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
-  - L1056 fixture: the utilities have posts and a fill, and a base to supply from
-  - L1058 premise: the fleet's generation would read a different figure than the actual new plant's
-  - L1060 the power measure reads the actual new plant's generation (and its draw)
-  - L1067 12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so
-  - L1085 fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not
-  - L1091 fixture: a new camp rejects the chainsaw and cuts other figures than the fleet
-  - L1102 the camp's card lists its outlets at the actual new camp's cut, not the fleet's
-  - L1129 tripwire: no piece changes which goods a building makes, nor what a building on typed ground makes (the group heading's made words and stands() read alike fo...
-  - L1141 the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them
-  - L1154 the furnace's group heading says its cards are made from fuel oil, which only the actual new furnaces burn
-  - L1171 the camp's card says it makes the actual new camp's cut a month, not the fleet's
+  - L667 fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's
+  - L674 fixture: nothing on site and nothing pending
+  - L685 fixture: two queued on the plant's own stack, the first finishing before the last
+  - L690 the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last
+  - L692 ...and not the fleet's draw
+  - L730 13. held for one pass (AP1): inside WorksValue.hold() the power ahead is the bare figure to the bit; an order, a rush
+  - L739 fixture: no scope open, two plants queued on the city's own site, and the power ahead some draw by the last horizon
+  - L756 inside a scope the power ahead at each of
+  - L758 one schedule is built for the scope's
+  - L764 premise: outside a scope each reading builds its own schedule
+  - L777 premise: a second city, g saved and loaded, a third plant ordered there: its power ahead is its own, not g's
+  - L791 the second city read inside g's scope reads its own bare figure to the bit, built afresh at each reading, and g's scope
+  - L806 g read on a second thread while g's scope is open on this one: the bare figure, from a schedule of its own
+  - L824 the second city's hold nested in g's is g's scope one deeper: the second city reads bare, built afresh at each
+  - L841 premise: a third plant ordered moves the power ahead
+  - L843 an order inside a scope: the next reading is the bare one after the order, to the bit, from a schedule built anew
+  - L857 premise: the city's site is rushed, and the rush moves the power ahead
+  - L859 a rush inside a scope: the readings after it are the bare ones to the bit
+  - L876 premise: a second city site, the kilns moved past it in the city's order, and the priority moves the power ahead
+  - L879 a priority inside a scope: the readings after it are the bare ones to the bit
+  - L894 premise: the kilns' work half done moves the power ahead
+  - L896 progress moved inside a scope: the readings after it are the bare ones to the bit, from a schedule built anew
+  - L909 builders first turned off inside a scope: the readings after it are the bare ones to the bit, from a schedule
+  - L919 closed, nothing is held: no scope open, and a reading after a fourth plant ordered reads it, as a scope opened then does
+  - L938 premise: on the rationed grid a Coal Power Plant prevents some output loss, with the plants on site drawing ahead
+  - L941 ...and its avoided loss read inside a scope, from the held schedule and draws, is the bare figure to the bit
+  - L948 10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes
+  - L965 fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet
+  - L975 fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts
+  - L981 fixture: two queued on the centre's own stack
+  - L984 the colleges' places grow by the queued centres' own college posts, not the fleet's
+  - L988 the landlords' head shortage counts the queued centres' own posts, not the fleet's
+  - L1002 11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
+  - L1017 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
+  - L1026 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
+  - L1054 fixture: the utilities have posts and a fill, and a base to supply from
+  - L1056 premise: the fleet's generation would read a different figure than the actual new plant's
+  - L1058 the power measure reads the actual new plant's generation (and its draw)
+  - L1065 12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so
+  - L1083 fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not
+  - L1089 fixture: a new camp rejects the chainsaw and cuts other figures than the fleet
+  - L1100 the camp's card lists its outlets at the actual new camp's cut, not the fleet's
+  - L1127 tripwire: no piece changes which goods a building makes, nor what a building on typed ground makes (the group heading's made words and stands() read alike fo...
+  - L1139 the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them
+  - L1152 the furnace's group heading says its cards are made from fuel oil, which only the actual new furnaces burn
+  - L1169 the camp's card says it makes the actual new camp's cut a month, not the fleet's
 
 ## ObservationCheck.java - 5 labelled assertions
 
@@ -26226,7 +26225,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2397 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
   - L2413 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
-## PostwarRecipeCheck.java - 64 labelled assertions
+## PostwarRecipeCheck.java - 63 labelled assertions
 
 > The postwar engineering and business discoveries run their sourced earlier
 > figures, compose in either order, retain saved decisions and leave default
@@ -26305,18 +26304,17 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L820 the shared PE4 code loses one entry fee in both fitting increments
   - L830 the positive real bill charges the shared PE4 code once
 - **L836 13. a Cement Plant standing before PE4 refits the long kiln on its works' order and earns PE4's royalty**
-  - L850 fixture: the wired town's real depots leave the site's monthly share of the long kiln's work within the existing guard
-  - L861 fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known
-  - L868 in PE4's month the plant's long kiln is a paying refit on a positive coal saving
-  - L873 the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant
-  - L878 ...the order is taken, and one long kiln is on site for the plant
-  - L889 the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form
-  - L895 its positive production in PE4's patent pays a royalty, E2 still unknown
-  - L909 ...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate
-- **L926 2. two entries compose in either fitting or discovery order**
-  - L927 Vehicle Works
-  - L928 Steel Mini-Mill
-  - L929 Commercial Bank
+  - L856 fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known
+  - L863 in PE4's month the plant's long kiln is a paying refit on a positive coal saving
+  - L868 the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant
+  - L873 ...the order is taken, and one long kiln is on site for the plant
+  - L878 the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form
+  - L884 its positive production in PE4's patent pays a royalty, E2 still unknown
+  - L898 ...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate
+- **L915 2. two entries compose in either fitting or discovery order**
+  - L916 Vehicle Works
+  - L917 Steel Mini-Mill
+  - L918 Commercial Bank
 
 ## PowerDispatchCheck.java - 69 labelled assertions
 
@@ -32072,37 +32070,39 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L201 the fund press moves a leading unit or its tenth
   - L204 the actual fund has exactly two positive magnitude steps
 
-## SubstationCheck.java - 18 labelled assertions
+## SubstationCheck.java - 20 labelled assertions
 
 > Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5).
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
 > the dispatch's demand input, and automation's demand input; each rule also fails against the pre-PW5 model.
 
-- **L104 the carry's two edges and the shared shortfall**
-  - L111 a peak below one substation is served; above it only the two peak halves brown out at its carry
-  - L118 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
-  - L122 a city without substations carries only its existing free 10 MW starter grid
-- **L133 the substations' own costs, struck once**
-  - L146 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
-  - L154 changing the substation's cost changes the next bill; the previously struck book keeps its price
-- **L159 currency reform preserves the wires' breakdown**
-  - L175 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
-- **L181 independent worked study tariff**
-  - L194 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
-  - L201 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
-- **L207 the same order machinery as the roads**
-  - L212 peak growth orders the missing substation, counts its site once, and does not order below the edge
-  - L225 peak growth orders the missing substation, counts its site once, and does not order below the edge
-- **L230 closing costs survive the load rebuild**
-  - L237 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
-  - L240 the first post-load strike bills exactly the same grid costs as the uninterrupted city
-  - L241 a native format-60 city and history are refused without changing either file or a running twin
-  - L242 a native format-61 city and history are refused without changing either file or a running twin
-- **L271 PW5-F1: low-utilization wires and the honest works fixture**
-  - L282 PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working
-  - L285 PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load
-  - L288 PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain
-  - L310 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
+- **L85 the carry's two edges and the shared shortfall**
+  - L92 a peak below one substation is served; above it only the two peak halves brown out at its carry
+  - L99 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
+  - L103 a city without substations carries only its existing free 10 MW starter grid
+- **L114 the substations' own costs, struck once**
+  - L127 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
+  - L135 changing the substation's cost changes the next bill; the previously struck book keeps its price
+- **L140 currency reform preserves the wires' breakdown**
+  - L156 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
+- **L162 independent worked study tariff**
+  - L175 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
+  - L182 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
+- **L188 the same order machinery as the roads**
+  - L193 peak growth orders the missing substation, counts its site once, and does not order below the edge
+  - L206 peak growth orders the missing substation, counts its site once, and does not order below the edge
+- **L211 closing costs survive the load rebuild**
+  - L218 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
+  - L221 the first post-load strike bills exactly the same grid costs as the uninterrupted city
+  - L222 a native format-60 city and history are refused without changing either file or a running twin
+  - L223 a native format-61 city and history are refused without changing either file or a running twin
+- **L252 PW5-F1: low-utilization wires and the honest works fixture**
+  - L263 PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working
+  - L266 PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load
+  - L269 PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain
+  - L291 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
+  - L345 the shared historical town's measured peak fits its free founding wires and GRID needs no district
+  - L354 PW5-F1: the explicitly priced district adds the study's whole 110 repair points and a wires price to a town below its carry
 
 ## SulphideLeachCheck.java - 32 labelled assertions
 
