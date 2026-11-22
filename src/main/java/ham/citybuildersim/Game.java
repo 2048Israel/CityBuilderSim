@@ -15880,8 +15880,8 @@ public class Game {
          * the month's migration rather than folded into it, because it is a
          * push from the balance sheet and has nothing to say about wages.
          */
-        migration.setBankruptcyDepartures(householdBalance.getLeavingCity()
-                * Math.max(1, families.averageHouseholdSize()));
+        HouseholdBalance.BankruptcyDepartures discharged = householdBalance.prepareBankruptcyDepartures(cohorts);
+        migration.setBankruptcyDepartures(discharged.people());
 
         /*
          * ...and what a flat costs here, which is a PULL rather than a push and
@@ -15904,7 +15904,7 @@ public class Game {
         // arrivals are drawn from. A city founded the default way holds none and draws from WageBand's ceilings alone, as it always did.
         migration.setYearMix(foundedUnfitted() ? ArrivalMix.at(month) : null);
 
-        cohorts.migrate(migration.monthlyNet(
+        double netMigration = migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),
                 getHouseholdCapacity(),
@@ -15917,7 +15917,9 @@ public class Game {
                 // ageing pyramid something to manage rather than merely endure.
                 seniorCoverage,
                 labourMarket,
-                populationManager));
+                populationManager);
+        discharged = householdBalance.limitBankruptcyDepartures(discharged, migration.getLastBankruptcyDepartures());
+        cohorts.migrate(netMigration, discharged);
 
         population = populationManager.applyPopulation(
                 Math.round(cohorts.total()), adultsAlreadyHere);

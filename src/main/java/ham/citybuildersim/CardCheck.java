@@ -145,6 +145,7 @@ public final class CardCheck {
         c.minimumPaid = .02; c.minimumDue = .04; c.emergencyBill = .3; c.cardWrittenOff = .01; c.disposable = 3; c.bankrupt = 2; c.depositIncome = .07;
         c.studentDebt = 2; c.studentRepaid = .02; c.studentInterest = .005;
         c.rate = .24;
+        c.bankruptcyLeaving = .01; c.bankruptcyCash = .007;
         HouseholdBalance restored = new HouseholdBalance();
         check("cell save is accepted", restored.restoreCells(balance.cellKeys(), balance.toCellSaveArray(), Equity.COMPANIES));
         Household d = restored.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
@@ -152,9 +153,13 @@ public final class CardCheck {
         check("settled card figures round-trip", c.minimumPaid == d.minimumPaid && c.minimumDue == d.minimumDue && c.emergencyBill == d.emergencyBill && c.cardWrittenOff == d.cardWrittenOff && c.disposable == d.disposable && c.bankrupt == d.bankrupt && c.depositIncome == d.depositIncome);
         check("settled student service is saved alongside card service", c.studentRepaid == d.studentRepaid && c.studentInterest == d.studentInterest);
         close("the applied APR is saved rather than repriced from the closing balances", d.rate, c.rate, 0);
+        check("REV-HC1 P2: pending debt-free departure share and cash survive the cell save",
+                c.bankruptcyLeaving == d.bankruptcyLeaving && c.bankruptcyCash == d.bankruptcyCash);
         d.redenominate(.01);
         close("late balance follows the money", d.lateDebt, c.lateDebt * .01, 0);
         close("holder share survives a currency reform", d.revolving, c.revolving, 0);
+        close("REV-HC1 P2: pending departure cash redenominates", d.bankruptcyCash, c.bankruptcyCash * .01, 0);
+        close("REV-HC1 P2: pending departure share does not redenominate", d.bankruptcyLeaving, c.bankruptcyLeaving, 0);
         check("old saves are refused at the new format", GameVersion.SAVE_FORMAT == GameVersion.OLDEST_LOADABLE_FORMAT);
     }
     static void neighbours() {
@@ -266,6 +271,7 @@ public final class CardCheck {
             }
         }
         check("all current statistics survive the loader", live.equals(loaded));
+        check("REV-HC1 P5: format-61 card, service, loan-book and capital continuation", continues(g, back));
         DebtStatistics.Measure cards = live.perHousehold().get(DebtStatistics.Kind.CARD);
         System.out.printf("Closing card figures: holders %.3f%%, late households %.3f%%, late balances %.3f%%, annualised charge-off %.3f%%%n",
                 100 * cards.shareHolding(), 100 * cards.lateShare(), 100 * cards.delinquency(), 100 * cards.annualChargeOff());
@@ -273,8 +279,113 @@ public final class CardCheck {
         check("replay history excludes later surveys", g.getHistorySave().cutAt(cutMonth).getDebtSurveys().stream().allMatch(s -> s.month() <= cutMonth));
     }
     public static void main(String[] args) {
-        spread(); month(); chargeOff(); save(); neighbours(); census(); city();
+        spread(); month(); chargeOff(); save(); neighbours(); census(); reviewFlows();
+        check("REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact", SaveFileCheck.nativeCard60Refusal());
+        city();
         System.out.println("CardCheck: " + fails + " failures");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    static void reviewFlows() {
+        System.out.println("--- REV-HC1: estates, debt-free bankruptcy departures and rejected credit ---");
+        HouseholdFlowCheck.Town estate = new HouseholdFlowCheck.Town();
+        Household dead = estate.cell(FamilyStructure.ELDER_ALONE, PayTier.UNSKILLED, 20);
+        dead.savings = 3; dead.debt = 2; dead.revolving = .6; dead.lateDebt = 1; dead.lateShare = .1; dead.shutOut = .2;
+        Household heir = estate.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED, 100);
+        heir.debt = 4; heir.revolving = .4;
+        estate.bal.setFlows(0, 0, 0, 0, .25, 0, 0);
+        estate.expectRetired(FamilyStructure.ELDER_ALONE, 15).run();
+        check("REV-HC1 P1: an estate passes no late debt, holder share or credit exclusion to heirs",
+                heir.lateDebt == 0 && heir.lateShare == 0 && heir.shutOut == 0 && heir.revolving == .4);
+        close("REV-HC1 P1: the heirs' performing book cannot be charged off by the dead's arrears", heir.chargeOff(), 0, 0);
+        close("REV-HC1 P1: the estate still repays its own debt", estate.bal.getEstateRepaid(), 10, 1e-12);
+
+        HouseholdFlowCheck.Town leaving = new HouseholdFlowCheck.Town();
+        Household source = leaving.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED, 100);
+        source.debt = 5; source.revolving = .6; source.lateDebt = 1; source.lateShare = .2;
+        Household neighbour = leaving.cell(FamilyStructure.COUPLE, PayTier.ELITE, 100);
+        neighbour.debt = 2; neighbour.revolving = .3;
+        source.chargeOff();
+        double leavers = source.bankrupt * HouseholdBalance.LEAVE_ON_BANKRUPTCY;
+        double book = leaving.bal.totalDebt(), late = source.lateDebt * source.households;
+        double excluded = source.shutOut * source.households;
+        leaving.expect(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED, 100 - leavers).run();
+        close("REV-HC1 P2: discharged leavers cause no second loss of performing debt", leaving.bal.getWrittenOff(), 0, 1e-10);
+        close("REV-HC1 P2: only zero-card-debt households depart", leaving.bal.totalDebt(), book, 1e-10);
+        close("REV-HC1 P2: surviving late balances stay in their source cell", source.lateDebt * source.households, late, 1e-10);
+        close("REV-HC1 P2: the excluded leavers leave their own exclusion behind", source.shutOut * source.households, excluded - leavers, 1e-10);
+        close("REV-HC1 P2: neighbours retain their own book", neighbour.debt, 2, 1e-12);
+
+        HouseholdFlowCheck.Town families = new HouseholdFlowCheck.Town();
+        Household parents = families.cell(FamilyStructure.COUPLE_CHILD, PayTier.UNSKILLED, 100);
+        families.youngCell(FamilyStructure.SINGLE_ADULT, PayTier.ELITE, 100);
+        parents.savings = 4; parents.debt = 1; parents.revolving = .5; parents.lateDebt = .5; parents.lateShare = .2;
+        parents.chargeOff();
+        double departing = parents.bankrupt * HouseholdBalance.LEAVE_ON_BANKRUPTCY;
+        double cashToLeave = parents.bankruptcyCash * parents.households;
+        double allCash = families.bal.totalSavings();
+        PopulationCohorts people = HouseholdMemoryCheck.staged(0, 100, 0, 300, 100);
+        var request = families.bal.prepareBankruptcyDepartures(people);
+        close("REV-HC1 P2: the departure count is the source family's own three heads", request.people(), 3 * departing, 1e-12);
+        var admitted = families.bal.limitBankruptcyDepartures(request, request.people() / 2);
+        people.migrate(-admitted.people(), admitted);
+        close("REV-HC1 P2: bankruptcy leaves the other adult stage alone", people.get(AdultStage.YOUNG), 100, 1e-12);
+        close("REV-HC1 P2: only the source family's child leaves", people.get(AgeBand.CHILD), 100 - departing / 2, 1e-12);
+        families.expect(FamilyStructure.COUPLE_CHILD, PayTier.UNSKILLED, 100 - departing / 2).run();
+        close("REV-HC1 P2: a capped departure takes only its own post-seizure cash",
+                families.bal.totalSavings(), allCash - cashToLeave / 2, 1e-10);
+        close("REV-HC1 P2: capped source departures still write off no second debt", families.bal.getWrittenOff(), 0, 1e-10);
+
+        for (double shut : new double[]{0, .2, 1}) {
+            WorkingHousehold rejected = cell(1, 0, 0, 0);
+            rejected.shutOut = shut;
+            double access = rejected.cardAccess(1);
+            rejected.settle(1, 0, 0, 1.5, 0, .04);
+            close("REV-HC1 P3: rejected ordinary borrowers remain unfunded at exclusion " + shut,
+                    rejected.unfunded, .5 * (1 - access), 1e-12);
+            close("REV-HC1 P3: only accepted borrowers receive the ordinary advance at exclusion " + shut,
+                    rejected.borrowed - rejected.emergencyBill, .5 * access, 1e-12);
+        }
+    }
+
+    /** Advance both real cities; a matching reload must also make the same next month. */
+    static boolean continues(Game live, Game loaded) {
+        int month = live.getMonth();
+        double[] openingLive = live.getBank().monthLinesToSave(), openingLoaded = loaded.getBank().monthLinesToSave();
+        var gson = new com.google.gson.Gson();
+        var beforeLive = gson.toJsonTree(live.prepareSaveForChecks(10, "continuation diagnostic").data()).getAsJsonObject();
+        var beforeLoaded = gson.toJsonTree(loaded.prepareSaveForChecks(10, "continuation diagnostic").data()).getAsJsonObject();
+        PrintStream out = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        try { live.simulateMonths(1); loaded.simulateMonths(1); }
+        finally { System.setOut(out); }
+        boolean same = live.getMonth() == month + 1 && loaded.getMonth() == month + 1;
+        for (Household c : live.getHouseholdBalance().cells()) {
+            Household d = loaded.getHouseholdBalance().cellByKey(c.key());
+            same &= d != null && c.households == d.households && c.debt == d.debt
+                    && c.revolving == d.revolving && c.lateDebt == d.lateDebt && c.lateShare == d.lateShare && c.shutOut == d.shutOut
+                    && c.bankruptcyLeaving == d.bankruptcyLeaving && c.bankruptcyCash == d.bankruptcyCash
+                    && c.minimumDue == d.minimumDue && c.minimumPaid == d.minimumPaid && c.emergencyBill == d.emergencyBill;
+        }
+        var a = live.getSectors().businessServices().pending();
+        var b = loaded.getSectors().businessServices().pending();
+        same &= a.householdServices == b.householdServices && a.salesToHouseholds == b.salesToHouseholds && a.imports == b.imports;
+        same &= live.getBank().getHouseholdBook() == loaded.getBank().getHouseholdBook()
+                && live.getBank().equity() == loaded.getBank().equity();
+        if (!same) System.out.printf("Continuation bank: loans %.17g / %.17g, capital %.17g / %.17g%n",
+                live.getBank().getHouseholdBook(), loaded.getBank().getHouseholdBook(), live.getBank().equity(), loaded.getBank().equity());
+        if (!same) {
+            System.out.println("Continuation opening saved fields: " + SaveFileCheck.jsonDiff(beforeLive, beforeLoaded, java.util.Set.of("savedAt")));
+            for (int i = 0; i < openingLive.length; i++) if (openingLive[i] != openingLoaded[i])
+                System.out.printf("Opening bank month-line[%d] %.17g / %.17g%n", i, openingLive[i], openingLoaded[i]);
+            double[] endLive = live.getBank().monthLinesToSave(), endLoaded = loaded.getBank().monthLinesToSave();
+            for (int i = 0; i < endLive.length; i++) if (endLive[i] != endLoaded[i])
+                System.out.printf("Closing bank month-line[%d] %.17g / %.17g%n", i, endLive[i], endLoaded[i]);
+            System.out.printf("Closing cash %.17g / %.17g, book %.17g / %.17g, allowance %.17g / %.17g, assets %.17g / %.17g, liabilities %.17g / %.17g%n",
+                    live.getBank().getCash(), loaded.getBank().getCash(), live.getBank().getBook(), loaded.getBank().getBook(),
+                    live.getBank().getAllowance(), loaded.getBank().getAllowance(), live.getBank().totalAssets(), loaded.getBank().totalAssets(),
+                    live.getBank().totalLiabilities(), loaded.getBank().totalLiabilities());
+        }
+        return same;
     }
 }

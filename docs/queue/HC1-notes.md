@@ -205,3 +205,65 @@ The stranger's money/saves review, final-model ensemble and ALL dry run remain.
 The card changes alter the default trace by construction; the 80-run ensemble is
 owed after the review's go, on the gate box, followed by the ALL dry run there.
 No dry-run log or gate-run reuse is claimed yet.
+
+## REV-HC1, the five findings on ee3e14849
+
+The orchestrator returned five P1s on 2026-11-22. The focused `CardCheck`
+cases were first compiled against the reviewed production source, before
+any model mend. `target/hc1-review-before-CardCheck.log` records ten failing
+assertions: inherited borrower status/loss, a second departure loss of
+2.730017783249555, loss of surviving arrears, inherited exclusion and the
+rejected 40% financed in full. That same run's default-city next-month
+continuation already passed; P5 is added coverage, not a claimed failure
+of that default fixture.
+
+1. **Estates.** `Stock.borrowerStatus()` marks all four card positions.
+   Estate settlement still repays/writes off the deceased's debt, but those
+   positions enter no heir/custody pool. A partner's surviving household and
+   other actual life flows still carry their own positions. The native
+   dying-alone fixture checks no inherited late debt, holder share or
+   exclusion; charging off the heir's book loses exactly zero.
+2. **Bankruptcy departures.** ★ The charge-off queues its own departing
+   share and that share's cash remaining after seizure. Both are saved
+   positions, appended after the ten settled figures (16 HC1 slots total).
+   Cash redenominates; the departing share does not. The next census removes
+   that debt-free/excluded share first, from its source cell, re-averages
+   survivors and only then moves other life flows and the anonymous pools.
+   It takes zero card/late debt or active holders and one unit of exclusion
+   per departing household. Other assets retain the existing transfer/tax
+   path, with only the captured post-seizure cash available to leave.
+   ★ The demographic push uses the source families' actual heads, age bands
+   and adult stages. Only other net movers use proportional migration.
+   A common bound keeps whole source families inside the live age/stage
+   counts; migration's admission cap scales those same sources and cash.
+   The harness checks unchanged loan/late books, no second write-off,
+   unchanged neighbours, source children/stage and capped post-seizure cash.
+3. **Access.** Ordinary residual bills are weighted by the accepted share
+   before the bank draws; their rejected share remains unfunded. Newly
+   holding shares use the fraction of accepted demand actually funded.
+   Student living loans retain their own override. Emergency credit was
+   already weighted, so its private bank draw is not weighted twice. The
+   input case income 1/spending 1.5 now leaves 0.2 unfunded and advances 0.3
+   to the bottom tier; partial and full exclusion are checked too.
+4. **Authentic old save.** `fixtures/hc1-format60` contains a native save and
+   history produced by shipped `.188` source `01e6c2d4b` in an isolated
+   detached worktree, through scratch slot 10. Its producer, exact hashes
+   and 128-slot layout are recorded beside the compressed bytes. Nothing
+   is relabelled or converted. Both CardCheck and SaveFileCheck verify
+   provenance, refusal, identical save/history bytes and the running city's
+   complete saved state, history, managers, month and cash. The existing
+   loader already refused format 60 correctly; this mends the missing real
+   fixture, with no invented loader change or claim that refusal was broken.
+5. **Continuation.** Both the normal card city and the populated save's
+   original/reloaded twins advance one native month. The checks compare
+   exact card positions and pending departures, minimums, emergency-service
+   receipts/imports, household loan book and bank capital. The default
+   fixture passes. The populated fixture exposed a capital difference of
+   about 1.4e-8; that is being traced, with the assertion kept exact.
+
+The focused CardCheck passes all three model mends, the native old-save
+refusal and 24 measured months with every card mechanism firing. Its worst
+pooled/household residuals are 7.25e-9 / 2.80e-9 of the unchanged tolerances;
+closing holders 7.337%, late households 0.293%, late balances 4.596%, annual
+net charge-offs 0.895%. Final checks and the review handoff remain. After
+the review SHIP, merge main and use `docs/ensemble/0.9.188.md` as ordered.

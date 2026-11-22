@@ -159,6 +159,8 @@ public abstract class Household {
     double revolving, lateDebt, lateShare, shutOut;
     /** The settled month's minimum principal, emergency bill, and net write-off, per household. */
     double minimumPaid, emergencyBill, cardWrittenOff, minimumDue, depositIncome;
+    /** Next census's debt-free departing share, and its remaining cash per original household. */
+    double bankruptcyLeaving, bankruptcyCash;
 
     public double revolving() { return revolving; }
     public double lateDebt() { return lateDebt; }
@@ -1068,9 +1070,10 @@ public abstract class Household {
              */
             if (still <= SHORT_ROUNDING * gap) still = 0;
             double holdersBefore = revolving;
+            double acceptedNeed = still * Math.max(holdersBefore, cardAccess(disposablePer));
             double raised = fundShortfall(still, disposablePer);
             if (borrowed > 0) revolving = holdersBefore + Math.max(0, cardAccess(disposablePer) - holdersBefore)
-                    * borrowerShare * Math.min(1, raised / Math.max(still, Double.MIN_NORMAL));
+                    * borrowerShare * Math.min(1, raised / Math.max(acceptedNeed, Double.MIN_NORMAL));
             unfunded = still - raised;
         } else {
             double surplus = -gap;
@@ -1337,7 +1340,10 @@ public abstract class Household {
      * @return what was funded
      */
     protected double fundShortfall(double still, double disposablePer) {
-        return fundCardShortfall(still, disposablePer);
+        // The residual bill belongs to all households. Only the accepted share
+        // can draw it; rejected neighbours go unfunded even when the total
+        // balance would fit the cell's aggregate credit ceiling.
+        return fundCardShortfall(still * Math.max(revolving, cardAccess(disposablePer)), disposablePer);
     }
 
     /** The bank's card draw, distinct from the student's tuition/living loan. */
@@ -1461,11 +1467,14 @@ public abstract class Household {
         lateDebt = Math.max(0, lateDebt - ended - cured);
         lateShare = Math.max(0, lateShare - offShare - curedShare);
         revolving = Math.max(0, revolving - offShare);
-        double seized = Math.min(ended, Math.max(0, savings) * offShare);
+        double cashBefore = Math.max(0, savings);
+        double seized = Math.min(ended, cashBefore * offShare);
         seizedSavings = seized; savings -= seized; repaid += seized;
         debt = Math.max(0, debt - ended);
         bankrupt = offShare * households;
         shutOut += offShare;
+        bankruptcyLeaving += offShare * HouseholdBalance.LEAVE_ON_BANKRUPTCY;
+        bankruptcyCash += Math.max(0, cashBefore * offShare - seized) * HouseholdBalance.LEAVE_ON_BANKRUPTCY;
         cardWrittenOff = Math.max(0, ended - seized);
         boundCards();
         return cardWrittenOff * households;
@@ -1490,6 +1499,7 @@ public abstract class Household {
     void clearAll() {
         savings = 0; debt = 0; households = 0; abroad = 0; studentDebt = 0;
         revolving = lateDebt = lateShare = shutOut = 0;
+        bankruptcyLeaving = bankruptcyCash = 0;
         paper = 0; bonds = 0; bondFace.clear();
         cars = 0; mealsEaten = 0; carePaid = 1;
         groceriesGot = 0; groceriesAsked = 0; groceriesNeed = 0; assistance = 0;
@@ -1505,6 +1515,7 @@ public abstract class Household {
     void redenominate(double scale) {
         savings *= scale;  debt *= scale;  dividends *= scale;  sold *= scale;
         lateDebt *= scale; minimumPaid *= scale; emergencyBill *= scale; cardWrittenOff *= scale; minimumDue *= scale; depositIncome *= scale;
+        bankruptcyCash *= scale;
         for (int k = 0; k < basis.length; k++) basis[k] *= scale;
         lossCarried *= scale; taxedGains *= scale;
         for (int k = 0; k < taxClaim.length; k++) taxClaim[k] *= scale;
