@@ -1208,9 +1208,42 @@ public class DenominationCheck {
     static void stepBoth(Game a, Game b, int months) {
         for (int m = 0; m < months; m++) {
             quietly(() -> { a.simulateMonths(1); b.simulateMonths(1); });
+            if (Boolean.getBoolean("denom.trace")) housingTrace(a, b);
             scanEmpty(a);
             scanEmpty(b);
             cellsFolded += a.getHouseholdBalance().getCellsFolded() + b.getHouseholdBalance().getCellsFolded();
+        }
+    }
+
+    static boolean housingParted, housingAsksParted;
+    /** First differing cell/class allocation, beside the existing money trace. */
+    static void housingTrace(Game a, Game b) {
+        var left = a.getSectors().realEstate().housingMarket();
+        var right = b.getSectors().realEstate().housingMarket();
+        double factor = b.getDenomination().getUnit() / a.getDenomination().getUnit();
+        double askGap = 0, countGap = 0, budgetGap = 0;
+        for (var row : left.classes()) for (var other : right.classes())
+            if (row.recipe == other.recipe && row.dwelling.equals(other.dwelling))
+                askGap = Math.max(askGap, Math.abs(row.ask - other.ask * factor) / Math.max(1e-300, row.ask));
+        for (var row : left.demands()) for (var other : right.demands()) if (row.key().equals(other.key()))
+            budgetGap = Math.max(budgetGap, Math.abs(row.budget() - other.budget() * factor) / Math.max(1e-300, row.budget()));
+        var counts = new java.util.TreeMap<String, Double>();
+        for (var lease : left.leases()) counts.merge(lease.cell() + "/" + lease.home(), lease.households(), Double::sum);
+        for (var lease : right.leases()) counts.merge(lease.cell() + "/" + lease.home(), -lease.households(), Double::sum);
+        for (double difference : counts.values()) countGap = Math.max(countGap, Math.abs(difference));
+        out.printf("   housing m%d ask %.3g budget %.3g count %.3g | %s || %s%n", a.getMonth(), askGap, budgetGap, countGap,
+                a.getLastInvestment("Real Estate"), b.getLastInvestment("Real Estate"));
+        if (!housingAsksParted && askGap > 1e-8) {
+            housingAsksParted = true;
+            for (var row : left.classes()) for (var other : right.classes())
+                if (row.recipe == other.recipe && row.dwelling.equals(other.dwelling)
+                        && Math.abs(row.ask-other.ask*factor)>1e-8*Math.max(1e-300,row.ask))
+                    out.printf("      class %d/%s ask %.12g / %.12g; target %.12g / %.12g; capital %.12g / %.12g; homes %.12g / %.12g; pressure quantity %.12g / %.12g%n",
+                            row.recipe,row.dwelling,row.ask,other.ask*factor,row.target,other.target*factor,row.capital,other.capital*factor,row.homes,other.homes,row.demand,other.demand);
+        }
+        if (!housingParted && countGap > 1e-8) {
+            housingParted = true;
+            for (var row : counts.entrySet()) if (Math.abs(row.getValue()) > 1e-8) out.printf("      flow %s plain-minus-reformed %.12g%n", row.getKey(), row.getValue());
         }
     }
 

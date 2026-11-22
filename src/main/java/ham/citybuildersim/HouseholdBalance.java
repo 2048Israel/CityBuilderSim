@@ -696,6 +696,11 @@ public class HouseholdBalance {
     /** Monthly housing uses the same staged census and income/fee splits as the cash strike, without moving any stocks. */
     public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
                                                                      ToDoubleFunction<Household> chargedRent) {
+        return strikeHousingBudgets(families,accounts,foodPrice,chargedRent,c->Double.NaN);
+    }
+    /** Current scheduled wages/pensions precede the later cash strike; old row totals describe last month's people. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome) {
         double[] fresh=takeCensus(families),income=new double[ROWS],fees=new double[ROWS];
         for(int r=0;r<ROWS;r++){
             income[r]=accounts.getRowDisposable(r);
@@ -706,9 +711,11 @@ public class HouseholdBalance {
         java.util.Map<String,HousingResources> result=new java.util.LinkedHashMap<>();
         for(int i=0;i<cells.length;i++){
             Household c=cells[i];double oldRent=chargedRent.applyAsDouble(c);
+            double scheduled=currentIncome.applyAsDouble(c);
+            double recurringIncome=Double.isFinite(scheduled)?Math.max(0,scheduled):pay[i];
             double actualFixed=Math.max(0,c.disposable()-c.afterFixed()-oldRent);
             double projected=bills[i]+Math.max(0,accountFee)+c.interest()+c.studentInterest()+c.studentRepaid();
-            double budget=Math.max(0,pay[i]-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
+            double budget=Math.max(0,recurringIncome-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
                     +c.savings()/HousingMarket.SAVINGS_MONTHS);
             // The existing student facility funds housing shortfalls too, while open.
             // It is settled as treasury lending in the normal household strike.

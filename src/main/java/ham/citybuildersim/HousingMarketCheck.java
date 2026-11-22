@@ -88,6 +88,29 @@ public final class HousingMarketCheck {
         near("a monetary reform scales committed pipeline asks",debt.forSave().pipeline.getFirst().rent(),.1);
         near("a monetary reform scales committed pipeline recurring costs",debt.forSave().pipeline.getFirst().recurring(),.02);
     }
+    static void foundingBudgets(){
+        out.println("--- a founding worker's current wage funds the first actual home ---");
+        Game g=new Game(GameFiles.scratch("res3-founding-budgets"),LongPlaytest.played(null));g.run();
+        LongPlaytest.villageBuild(g,"House",40);LongPlaytest.villageBuild(g,"Convenience Store",3);LongPlaytest.villageBuild(g,"Mixed Farm",2);
+        for(int i=0;i<3;i++){
+            g.simulateMonths(1);audits(g);
+            check("founding month "+g.getMonth()+" does not use an empty prior wage row for new workers",g.getFamilies().getStillUnplaced()<=1);
+            near("founding rent receipts are actual accepted bills",g.getSectors().realEstate().getRentIncome(),g.getSectors().realEstate().housingMarket().receipts());
+        }
+    }
+    static void fractionalPressure(){
+        out.println("--- fully placed fractional demand creates no phantom blueprint scarcity ---");
+        Game g=new Game(GameFiles.scratch("res3-fractional-pressure"));g.run();
+        var bm=g.getBuildingManager();bm.addStack(bm.getTemplate(0),100,true);
+        List<HousingChoice.Demand> cells=new ArrayList<>();
+        for(int i=1;i<=17;i++)cells.add(new HousingChoice.Demand("fraction-"+i,i/10.0,1,0,false,0,false,100));
+        var market=g.getSectors().realEstate().housingMarket();var result=market.clear(g,cells);
+        near("fractional sources all find a real affordable door",result.unplaced(),0);
+        check("no unbuilt class receives floating-point leftover demand",market.classes().stream().filter(c->c.homes==0).allMatch(c->c.demand==0));
+        market.reprice(0);
+        for(var c:market.classes())if(c.available&&c.homes==0)
+            near("an unbuilt class keeps its opening comparator "+c.key(),c.ask,c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12);
+    }
     static void sharingOrder(){
         out.println("--- affordable singles before emergency sharing; one quote and conserved existing cells ---");
         for(boolean ordinary:new boolean[]{true,false}){
@@ -208,15 +231,17 @@ public final class HousingMarketCheck {
             report.append(String.format(Locale.ROOT,"| %s | %d | %d / %s | %d / %.1f / %.0f | %d / %d | %.6f / %.6f | %d / %d / %.3f | %.6f | %d | %d / %d |%n",f.code(),f.id(),t.getSince(),!g.foundedUnfitted()||t.knownAt(g.getMonth(),g.getResearch()),f.floors(),f.grossArea(),f.plot(),t.getConstructionMaterials(),t.getConstructionPoints(),t.getCashCost(),g.doorPriceOf(t,1),f.staff(),t.getElectricityConsumption(),t.getWaterConsumption(),g.getRecipes().datedScale(t),starts.getOrDefault(f.id(),0L),completed,months));}
         double gross=2*em.getWageRates()[JobType.NO_DIPLOMA.ordinal()];
         double count=g.getHouseholds().getRowHouseholds(PayTier.UNSKILLED.ordinal());
-        double net=count>0?g.getHouseholds().getRowDisposable(PayTier.UNSKILLED.ordinal())/count:0;
-        report.append("\nCompletions are observed BuildLog events collected every month, including prior funded work that completes in the window. They are structure counts, not net changes in standing stock. Money is in current model thousands. Gross comparator is two current unskilled wages; take-home is the actual unskilled household row mean. Land is charged once by the existing builder quote. Optional parking has capital but no assumed lease receipts.\n\n")
+        double rowNet=count>0?g.getHouseholds().getRowDisposable(PayTier.UNSKILLED.ordinal())/count:0;
+        double net=gross*Math.max(0,1-em.getTaxPolicy().payslipShare(WageBand.of(JobType.NO_DIPLOMA)));
+        report.append("\nCompletions are observed BuildLog events collected every month, including prior funded work that completes in the window. They are structure counts, not net changes in standing stock. Money is in current model thousands. Both burden columns use the same two-earner unskilled household: gross current wages and take-home after the actual payslip levies. Land is charged once by the existing builder quote. Optional parking has capital but no assumed lease receipts.\n")
+                .append(String.format(Locale.ROOT,"Reference gross / take-home: %.6f / %.6f. Observed unskilled row mean take-home, including its actual mix of singles, families and sharing cells: %.6f.%n%n",gross,net,rowNet))
                 .append("| Form / dwelling | Area / bedrooms / places / quality | Private / included bays | Ask | Gross burden | Take-home burden | RE doors / vacancy | Last trade qty / value / price / stale |\n|---|---|---|---:|---:|---:|---|---|\n");
         for(var f:HousingForms.ALL)for(var d:f.recipe().mix()){
             var c=market.classes().stream().filter(s->s.recipe==f.id()&&s.dwelling.equals(d.id())).findFirst().orElseThrow();
             report.append(String.format(Locale.ROOT,"| %s / %s | %.0f / %d / %d / %.2f | %.2f / %.2f | %.6f | %.4f | %s | %.3f / %.3f | %.3f / %.6f / %.6f / %d |%n",f.code(),d.id(),d.area(),d.bedrooms(),d.capacity(),d.quality(),d.privateParking(),d.includedParking(),c.ask,gross>0?c.ask/gross:0,net>0?String.format(Locale.ROOT,"%.4f",c.ask/net):"no take-home",c.homes,c.homes-c.occupied,c.tradeQuantity,c.tradeValue,c.lastTrade,c.stale));}
         report.append("\n| Form | Floorplate ft² | Shared bays | Basement levels / footprint ft² |\n|---|---:|---:|---|\n");
         for(var f:HousingForms.ALL)report.append(String.format(Locale.ROOT,"| %s | %.1f | %.0f | %d / %.0f |%n",f.code(),f.footprint(),f.recipe().sharedParking(),f.basementLevels(),f.basementFootprint()));
-        report.append("\nReference home capital is section 12's present-day benchmark dollars, before the game's live price, tax and construction quote. Its 0.058 monthly comparator is also benchmark dollars; actual allocated capital and its comparator are current model thousands.\n\n| Form / class | Reference home capital / monthly comparator | Actual allocated capital / monthly comparator |\n|---|---:|---:|\n");
+        report.append("\nReference home capital is section 12's present-day benchmark dollars, before the game's live price, tax and construction quote. The monthly comparator is capital × 0.058 / 12: the reference is in benchmark dollars, and actual allocated capital and its comparator are current model thousands.\n\n| Form / class | Reference home capital / monthly comparator | Actual allocated capital / monthly comparator |\n|---|---:|---:|\n");
         for(var f:HousingForms.ALL)for(var d:f.recipe().mix()){
             var c=market.classes().stream().filter(s->s.recipe==f.id()&&s.dwelling.equals(d.id())).findFirst().orElseThrow();
             report.append(String.format(Locale.ROOT,"| %s / %s | %.2f / %.2f | %.6f / %.6f |%n",f.code(),d.id(),d.costWeight(),d.costWeight()*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12,c.capital,c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12));
@@ -288,7 +313,7 @@ public final class HousingMarketCheck {
     public static void main(String[] args)throws Exception{
         out=System.out;PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
-        try{System.setOut(silent);classPrices();sharingOrder();doubledDoors();studentFacility();fundedHost();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
+        try{System.setOut(silent);classPrices();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();studentFacility();fundedHost();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
         out.println("Report: "+target);out.println(fails==0?"HousingMarketCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }

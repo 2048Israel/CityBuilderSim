@@ -273,3 +273,30 @@ typed flows explicitly: counts and aggregate bills grow with the copied city;
 per-home asks/carry/capital, per-household budgets, attributes, dates and wage
 indices remain intensive. It also includes RES2's native inventory holdings,
 which the older copier omitted. No assertion or scaling tolerance changes.
+
+The full 2,400-month LongPlaytest then reported one new model finding: three
+early unplaced-household months, 2–38, with no money or native-continuation
+finding. A short traced replay identifies zero housing budgets across every
+new working cell in months 2–3: last month's empty aggregate income rows were
+being divided across this month's new people. ★ Current scheduled net wages
+and pensions now supply recurring housing income, with all existing fee,
+food, interest and savings reserves retained. The ordinary payroll/cash strike
+still pays it; the quote creates no income, loan or receipt. The same founding
+inputs now have a caused HousingMarketCheck case with monthly money audits.
+
+DenominationCheck's extended trace localized a second discrete choice defect:
+class asks parted at m124 while actual assigned counts still agreed to about
+2e-13 households and all budgets to about 9e-16 relative. A recomputed positive
+ULP remainder was pressure on an unbuilt class; its no-stock positive-demand
+branch changed the target multiplier. Residual demand now observes the same
+existing packing-rounding bound as the allocation/summarizer. No capacity,
+conservation or money/save tolerance moves. The caused fractional-demand case
+requires exactly zero demand in every unbuilt class after full placement,
+then checks each opening comparator is unchanged.
+
+The first hunger input shock was too broad and stopped ordinary shopping;
+the second revealed that a one-basket recipe pantry can round just under one
+and Retail's whole-basket sale becomes zero. The fixture now caps its price
+input at the model's existing retail cap, supplies ten real baskets and strikes
+three months for health's lag. Its original hunger, shopping and continuation
+assertions remain, and delivered share is additionally required positive.

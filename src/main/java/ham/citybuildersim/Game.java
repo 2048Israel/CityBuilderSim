@@ -16549,8 +16549,17 @@ public class Game {
     private void clearTypedHousing() {
         var market=getSectors().realEstate().housingMarket();
         java.util.List<HousingChoice.Demand> demand=new java.util.ArrayList<>();
+        double[] netWages=new double[PayTier.values().length];int[] wageKinds=new int[netWages.length];
+        var wageSchedule=populationManager.getWagesPerType();var tax=economyManager.getTaxPolicy();
+        for(JobType job:JobType.values()){
+            int tier=PayTier.of(job).ordinal();
+            netWages[tier]+=wageSchedule[job.ordinal()]*Math.max(0,1-tax.payslipShare(WageBand.of(job)));wageKinds[tier]++;
+        }
+        for(int t=0;t<netWages.length;t++)if(wageKinds[t]>0)netWages[t]/=wageKinds[t];
         var resources=householdBalance.strikeHousingBudgets(families,households,getSectors().retail().getStoreSellPrice(),
-                c -> market.active()?market.rentFor(c.key(),c.households()):households.rentPerHousehold()*c.rentShare());
+                c -> market.active()?market.rentFor(c.key(),c.households()):households.rentPerHousehold()*c.rentShare(),
+                c -> c instanceof WorkingHousehold?netWages[c.tier().ordinal()]*c.earningWeight():
+                        c instanceof RetiredHousehold?tax.pensionPerSenior()*c.grownUps():Double.NaN);
         for(Household c:householdBalance.cells()) {
             if(c instanceof OwnerHousehold || c instanceof OrphanHousehold || c instanceof PrisonerHousehold)continue;
             if(c instanceof UnemployedHousehold u && u.status()==UnemployedHousehold.Status.UNHOUSED)continue;

@@ -171,6 +171,7 @@ public final class HousingMarket {
         // One-count residual demand goes to its best compatible affordable class, never to every alternative.
         for(var d:demand){double used=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double left=Math.max(0,d.count()-used),best=Double.NEGATIVE_INFINITY;
+            if(left<=FamilyModel.packingRounding(d.count()))continue;
             List<HousingChoice.Offer> tied=new ArrayList<>();
             HousingChoice.Demand willing=d;
             for(var shift:sharing)if(shift.target().equals(d.key()))willing=with(d,d.count(),shift.targetBudget());

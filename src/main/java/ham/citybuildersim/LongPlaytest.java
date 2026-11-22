@@ -1736,6 +1736,18 @@ public class LongPlaytest {
                     String.format("%.3f households nowhere, %d homes of %d sizes",
                             homeless, b.getTotalHomes(), b.homesBySize().length - 1),
                     homeless);
+            if (Boolean.getBoolean("playtest.housingTrace")) {
+                var market = g.getSectors().realEstate().housingMarket();
+                var room = g.getFamilies().roomLeft(b.homesBySize());
+                var match = market.result();
+                out.printf("  housing m%d: kept %.3f normal %.3f crowded %.3f poor %.3f supply %.3f; arrivals %.3f / prior room %.3f; remaining room %.3f households, %.3f people%n", month,
+                        match.kept(), match.suitable(), match.crowded(), match.unaffordable(), match.noSuitable(),
+                        g.getMigration().getLastArrivals(), g.getMigration().getLastRoom(), room == null ? -1 : room.households(), room == null ? -1 : room.people());
+                for (var d : market.demands()) {
+                    double taken = market.leases().stream().filter(lease -> lease.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+                    if (d.count() - taken > FamilyModel.packingRounding(d.count())) out.printf("    missing %s: %.6f / %.6f, size %d children %d budget %.12f%n", d.key(), d.count() - taken, d.count(), d.size(), d.children(), d.budget());
+                }
+            }
         }
 
         /*
