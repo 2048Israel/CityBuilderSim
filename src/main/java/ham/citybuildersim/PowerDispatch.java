@@ -136,6 +136,23 @@ public final class PowerDispatch {
 
     /** What a month's dispatch came to. */
     public static final class Month {
+        /** The actual dispatch order, including idle rows; observation only, never read by the dispatch. */
+        private List<Integer> meritOrder = List.of();
+
+        /** Immutable indices into the supplied rows, in the actual dispatch order, including idle rows. */
+        public List<Integer> getMeritOrder() { return meritOrder; }
+
+        /** Detached saved flow, so load need not dispatch an already completed month again. */
+        public Month copy() {
+            Month m = new Month();
+            System.arraycopy(load, 0, m.load, 0, HALVES);
+            System.arraycopy(unserved, 0, m.unserved, 0, HALVES);
+            System.arraycopy(price, 0, m.price, 0, HALVES);
+            m.meritOrder = List.copyOf(meritOrder);
+            m.askedKwh = askedKwh; m.servedKwh = servedKwh; m.curtailedKwh = curtailedKwh;
+            m.ratio = ratio; m.energyPrice = energyPrice;
+            return m;
+        }
         /** Per half-block: the load asked (kW, losses in), what was left unserved (kW), and the price it cleared at (city money a kWh). */
         public final double[] load = new double[HALVES], unserved = new double[HALVES], price = new double[HALVES];
         public double askedKwh, servedKwh, curtailedKwh;
@@ -182,6 +199,7 @@ public final class PowerDispatch {
      */
     public static Month dispatch(List<Row> rows, double drawKw, double season, double voll) {
         Month m = new Month();
+        List<Integer> observedOrder = new ArrayList<>();
         double draw = nonNegative(drawKw) * nonNegative(season) / (1 - GRID_LOSSES), cap = nonNegative(voll);
         double[] residual = new double[HALVES];
         for (int s = 0; s < HALVES; s++) m.load[s] = residual[s] = draw * BLOCK_LOAD[s / 2];
@@ -192,6 +210,7 @@ public final class PowerDispatch {
             Kind steady = pass == 0 ? Kind.MUST_RUN : Kind.WIND;
             for (Row r : rows) {
                 if (r.kind != steady) continue;
+                observedOrder.add(rows.indexOf(r));
                 for (int s = 0; s < HALVES; s++) {
                     double out = steady == Kind.WIND ? r.kw * windAt(s) : r.kw, take = Math.min(out, residual[s]);
                     r.gen[s] = take; residual[s] -= take; m.curtailedKwh += (out - take) * halfHours(s);
@@ -201,6 +220,7 @@ public final class PowerDispatch {
 
         // 3. Hydro levels the load: its water runs wherever the residual stands above a level found by halving.
         for (Row r : rows) {
+            if (r.kind == Kind.HYDRO) observedOrder.add(rows.indexOf(r));
             if (r.kind != Kind.HYDRO || r.kw <= 0 || r.waterKwh <= 0) continue;
             double lo = 0, hi = 0;
             for (double x : residual) hi = Math.max(hi, x);
@@ -219,6 +239,8 @@ public final class PowerDispatch {
         List<Row> order = new ArrayList<>();
         for (Row r : rows) if (r.kind == Kind.FUELLED) order.add(r);
         order.sort(Comparator.comparingDouble(r -> r.marginal));
+        for (Row r : order) observedOrder.add(rows.indexOf(r));
+        m.meritOrder = List.copyOf(observedOrder);
         for (int s = 0; s < HALVES; s++) {
             double price = 0;
             for (Row r : order) {

@@ -390,6 +390,7 @@ public class ReadPathCheck {
         // diplomas, the homes' draws, the long-sick ring in people
         g.getEducation().getNewDiplomas();
         s.getUtilitiesHandler().getHomesElectricityDraw();
+        PowerView.of(g);
         s.getUtilitiesHandler().getHomesWaterDraw();
         for (int k = 0; k < Sickness.RING; k++) g.getSickness().peopleInSlot(g.getCohorts(), k);
         // ...and what the Infrastructure screen added (0.7.29): the curve at

@@ -35,7 +35,7 @@
 
 **Uses:** [PowerDispatch](PowerDispatch.md) (31), [UtilitiesHandler](UtilitiesHandler.md) (16), [Game](Game.md) (16), [Sectors](Sectors.md) (16), [Good](Good.md) (9), [MoneyAudit](MoneyAudit.md) (7), [Sector](Sector.md) (6), [Resource](Resource.md) (4), [PriceLevel](PriceLevel.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Founding](Founding.md) (2), [LandManager](LandManager.md) (2), [BuildingManager](BuildingManager.md) (2), [Trade](Trade.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (1)
 
-**Used by (1):** [SaveFileCheck](SaveFileCheck.md)
+**Used by (3):** [HistoryCheck](HistoryCheck.md), [PowerViewCheck](PowerViewCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

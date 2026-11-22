@@ -315,6 +315,10 @@ public final class YearBook {
     private static Map<String, Rule> prefixRules() {
         Map<String, Rule> m = new LinkedHashMap<>();
         m.put("crime:", new Rule(Kind.FLOW, "crimes of that cause"));
+        m.put("powerFlow:", new Rule(Kind.FLOW, "struck dispatch energy in kWh, or row fuel units; source month is powerLevel:dispatchMonth"));
+        m.put("powerMoney:", new Rule(Kind.FLOW, "power clearing receipts or fuel/upkeep payments in thousands; payments name their own source month"));
+        m.put("powerPrice:", new Rule(Kind.RATE, "power tariff or clearing/marginal price, thousands per kWh"));
+        m.put("powerLevel:", new Rule(Kind.LEVEL, "power observation: source month, firm/peak/load/unserved kW at the strike"));
         m.put("households:", new Rule(Kind.LEVEL, "households of that shape standing"));
         m.put(HistorySave.priceKey(""), new Rule(Kind.RATE, "the dealer's quote per founding share, in thousands"));
         m.put(HistorySave.valueKey(""), new Rule(Kind.RATE, "fair value per founding share, in thousands"));

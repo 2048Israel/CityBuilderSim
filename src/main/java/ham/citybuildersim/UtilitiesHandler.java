@@ -503,6 +503,42 @@ public class UtilitiesHandler {
     private PowerDispatch.Month latest = new PowerDispatch.Month();
     private List<PowerDispatch.Row> latestRows = new ArrayList<>();
 
+    /** Observation sources only: the absolute dispatch month and the existing build advice's firm supply. */
+    private IntSupplier observationMonth;
+    private DoubleSupplier firmSupply;
+    private DispatchRecord latestRecord;
+    private int paidDispatchMonth = -1;
+    private int fuelPaidMonth = -1;
+    private PowerDispatch.Month pendingLoadedMonth;
+    private DispatchRecord pendingLoadedRecord;
+
+    public void setPowerObservationSources(IntSupplier month, DoubleSupplier firm) {
+        observationMonth = month;
+        firmSupply = firm;
+    }
+
+    /** Reserved aggregate row ids; catalogue rows keep their permanent nonnegative ids. */
+    public static final int WORKS_ID = -1, GRID_ID = -2, FIXTURE_ID = -3;
+
+    /** One catalogue row's actual run and clearing receipts, not its profit or its fuel purchase bill. */
+    public record RowRecord(int id, int sourceIndex, PowerDispatch.Kind kind, Good fuel, double offeredKw, double nameplateKw,
+            double waterKwh, double fuelPerKwh, double upkeepPerKwh,
+            double kwh, double fuelUnits, double receipts, double marginal, double upkeepWorld, List<Double> runKw) {
+        public RowRecord { runKw = List.copyOf(runKw); }
+        RowRecord scaled(double scale) {
+            return new RowRecord(id, sourceIndex, kind, fuel, offeredKw, nameplateKw, waterKwh, fuelPerKwh, upkeepPerKwh, kwh, fuelUnits, receipts * scale,
+                    marginal * scale, upkeepWorld, runKw);
+        }
+    }
+
+    /** Immutable bounded aggregates, captured at dispatch, before another month can change fleet, fuel or prices. */
+    public record DispatchRecord(int month, double firmKw, List<RowRecord> rows) {
+        public DispatchRecord { rows = List.copyOf(rows); }
+        DispatchRecord scaled(double scale) {
+            return new DispatchRecord(month, firmKw, rows.stream().map(r -> r.scaled(scale)).toList());
+        }
+    }
+
     /** The month last struck: the founding tariff until one is. */
     private Book struck = Book.founding();
 
@@ -562,6 +598,10 @@ public class UtilitiesHandler {
         public LinkedHashMap<String, Double> fuel = new LinkedHashMap<>();
         /** True once a month has been struck into this book; false in the founding book, for the screens to say "still at founding". */
         public boolean cleared;
+        /** Optional observations: absent in older saves, never back-filled from the ending fleet. */
+        public DispatchRecord dispatch;
+        public int struckMonth = -1;
+        public double transmissionPrice, distributionPrice;
 
         /** The book before any month has cleared: the founding tariff, ratio 1, nothing made. */
         public static Book founding() {
@@ -581,11 +621,15 @@ public class UtilitiesHandler {
             b.upkeepWorld = upkeepWorld;
             b.fuel = new LinkedHashMap<>(fuel);
             b.cleared = cleared;
+            b.dispatch = dispatch; b.struckMonth = struckMonth;
+            b.transmissionPrice = transmissionPrice; b.distributionPrice = distributionPrice;
             return b;
         }
     }
 
     private static void scale(Book b, double scale) {
+        b.transmissionPrice *= scale; b.distributionPrice *= scale;
+        if (b.dispatch != null) b.dispatch = b.dispatch.scaled(scale);
         b.energyPrice *= scale; b.commercePrice *= scale; b.industryPrice *= scale; b.worksPrice *= scale;
         for (int s = 0; s < b.price.length; s++) b.price[s] *= scale;
     }
@@ -595,6 +639,9 @@ public class UtilitiesHandler {
         PowerDispatch.Month m = latest;
         Book b = new Book();
         b.ratio = m.ratio;
+        b.dispatch = latestRecord;
+        b.struckMonth = observationMonth == null ? -1 : observationMonth.getAsInt();
+        b.transmissionPrice = transmission; b.distributionPrice = distribution;
         b.energyPrice = m.energyPrice;
         // Commerce and light industry pay the energy and all the wires; Heavy Industry and Mining take power at high voltage and pay the energy and the long wires alone (spec 2.6).
         b.commercePrice = (m.energyPrice + transmission + distribution) * PowerDispatch.MONTH_HOURS;
@@ -667,6 +714,8 @@ public class UtilitiesHandler {
 
     /** ...with the imported part good by good (Game.buyPowerFuel()). */
     public void setFuelPaid(double local, double imported, double upkeep, Map<String, Double> importedByGood) {
+        paidDispatchMonth = struck.dispatch == null ? -1 : struck.dispatch.month();
+        fuelPaidMonth = observationMonth == null ? -1 : observationMonth.getAsInt();
         this.fuelLocal = Double.isFinite(local) ? local : 0;
         this.fuelImported = Double.isFinite(imported) ? imported : 0;
         this.upkeepPaid = Double.isFinite(upkeep) ? upkeep : 0;
@@ -686,12 +735,19 @@ public class UtilitiesHandler {
     public double getFuelImported() { return fuelImported; }
     public double getUpkeepPaid() { return upkeepPaid; }
     public double getFuelBill() { return fuelLocal + fuelImported + upkeepPaid; }
+    public int getPaidDispatchMonth() { return paidDispatchMonth; }
+    public int getFuelPaidMonth() { return fuelPaidMonth; }
 
     /** What the save keeps of the merit order: the struck book and the fuel paid (a later slice wires it to DataSave). */
     public static final class PowerState {
         public Book struck;
         public double fuelLocal, fuelImported, upkeepPaid;
         public Map<String, Double> fuelImportedByGood;
+        public int paidDispatchMonth = -1;
+        public int fuelPaidMonth = -1;
+        /** The completed closing dispatch, still awaiting the next strike; optional in older saves. */
+        public PowerDispatch.Month pendingMonth;
+        public DispatchRecord pendingDispatch;
     }
 
     public PowerState toPowerState() {
@@ -699,6 +755,9 @@ public class UtilitiesHandler {
         s.struck = struck.copy();
         s.fuelLocal = fuelLocal; s.fuelImported = fuelImported; s.upkeepPaid = upkeepPaid;
         s.fuelImportedByGood = new LinkedHashMap<>(fuelImportedByGood);
+        s.paidDispatchMonth = paidDispatchMonth;
+        s.fuelPaidMonth = fuelPaidMonth;
+        s.pendingMonth = latest.copy(); s.pendingDispatch = latestRecord;
         return s;
     }
 
@@ -717,12 +776,40 @@ public class UtilitiesHandler {
         struck.ratio = energyRatio;
     }
 
+    /** Restores the completed closing flow after the load's LAST derived-services rebuild, for the next strike. */
+    public void restorePendingPower() {
+        // Derived services have just rebuilt. Their new dispatch cannot replace the completed flow the next strike consumes.
+        if (pendingLoadedMonth != null && pendingLoadedRecord != null) {
+            latest = pendingLoadedMonth; latestRecord = pendingLoadedRecord;
+            latestRows = new ArrayList<>();
+            for (RowRecord r : latestRecord.rows().stream().sorted(java.util.Comparator.comparingInt(RowRecord::sourceIndex)).toList()) {
+                String name = r.id() == WORKS_ID ? WORKS_ROW : r.id() == GRID_ID ? GRID_ROW : "plants";
+                if (plants != null) for (BuildingsTemplate t : plants.keySet()) if (t.getId() == r.id()) { name = t.getName(); break; }
+                PowerDispatch.Row row = switch (r.kind()) {
+                    case MUST_RUN -> PowerDispatch.Row.mustRun(name, r.offeredKw());
+                    case WIND -> PowerDispatch.Row.wind(name, r.offeredKw());
+                    case HYDRO -> PowerDispatch.Row.hydro(name, r.offeredKw(), r.waterKwh(), r.upkeepPerKwh());
+                    case FUELLED -> PowerDispatch.Row.fuelled(name, r.offeredKw(), r.marginal(), r.fuel(), r.fuelPerKwh(), r.upkeepPerKwh());
+                };
+                for (int s = 0; s < PowerDispatch.HALVES; s++) row.gen[s] = r.runKw().get(s);
+                row.kwh = r.kwh(); row.fuelUnits = r.fuelUnits(); row.earned = r.receipts();
+                latestRows.add(row);
+            }
+            energyRatio = latest.ratio;
+        }
+        pendingLoadedMonth = null; pendingLoadedRecord = null;
+    }
+
     /** Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. */
     public void restorePowerState(PowerState s) {
         struck = s == null || s.struck == null ? Book.founding() : s.struck.copy();
         seedOnLoad = s == null || s.struck == null;
-        if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; return; }
+        pendingLoadedMonth = s == null || s.pendingMonth == null ? null : s.pendingMonth.copy();
+        pendingLoadedRecord = s == null ? null : s.pendingDispatch;
+        if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; paidDispatchMonth = fuelPaidMonth = -1; return; }
         setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
+        paidDispatchMonth = s.paidDispatchMonth;
+        fuelPaidMonth = s.fuelPaidMonth;
     }
 
     //setters
@@ -821,6 +908,25 @@ public class UtilitiesHandler {
         latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(calendarMonth == null ? 0 : calendarMonth.getAsInt()), voll);
         latestRows = rows;
         energyRatio = latest.ratio;
+        // Keep the dispatch's own order and figures; no screen runs the dispatch or reprices a row.
+        List<RowRecord> records = new ArrayList<>();
+        for (int index : latest.getMeritOrder()) {
+            PowerDispatch.Row r = rows.get(index);
+            int id = WORKS_ROW.equals(r.name) ? WORKS_ID : GRID_ROW.equals(r.name) ? GRID_ID : FIXTURE_ID;
+            double nameplate = r.kw;
+            if (plants != null) for (Map.Entry<BuildingsTemplate, Long> e : plants.entrySet()) {
+                if (!e.getKey().getName().equals(r.name)) continue;
+                id = e.getKey().getId();
+                nameplate = e.getKey().getNameplate() * e.getValue();
+                break;
+            }
+            List<Double> run = new ArrayList<>();
+            for (double kw : r.gen) run.add(kw);
+            records.add(new RowRecord(id, index, r.kind, r.fuel, r.kw, nameplate, r.waterKwh, r.fuelPerKwh, r.upkeepPerKwh, r.kwh, r.fuelUnits,
+                    r.earned, r.marginal, r.kwh * r.upkeepPerKwh, run));
+        }
+        latestRecord = new DispatchRecord(observationMonth == null ? -1 : observationMonth.getAsInt(),
+                firmSupply == null ? -1 : firmSupply.getAsDouble(), records);
     }
 
     public void updateWaterRatio() {
@@ -1045,6 +1151,7 @@ public class UtilitiesHandler {
         transmission *= scale;
         distribution *= scale;
         scale(struck, scale);
+        if (latestRecord != null) latestRecord = latestRecord.scaled(scale);
         // ...and the month last dispatched, which strikePower() would read in the old unit.
         latest.energyPrice *= scale;
         for (int s = 0; s < latest.price.length; s++) latest.price[s] *= scale;
