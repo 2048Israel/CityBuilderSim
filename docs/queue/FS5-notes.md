@@ -2742,3 +2742,99 @@ terminal; no owned job. Only notes are pushed. FS5 remains blocked/Pending,
 marker/four vetoes/1536/KHL1Pending/source/registry/ship/counts unchanged.
 Await separate exact root review and NEW runtime/disk/deadline/ordering GO;
 no second diagnostic invocation, compile, gate or readiness was run.
+
+
+## Root 051b: one frozen v6 BOX diagnostic, PASS and no capture
+
+After PW6's .181 publication was terminal, root separately authorized ONE
+exact v6 BOX diagnostic. No merge: frozen sourceaa570/.180/src
+c518908bbc58374df1b680830be6990f7067aa63, branchHEAD088b79d0288963938df84683082e69785675a6ea
+stayed frozen through model/group/owner terminal and verified homecopy.
+Exact canonical14 files/plan25c0fbe0e2e8c99521e43c76ea5f008fdbddd7f167ae769bff320aeaa93b55e7
+and external root tokenSHA74a30cf82bedf5ad14a64cff5cd41fb68af4f1386248a82d0d28ae4fe2759f41
+were checked before the ONE C:/Python314/python.exe local.py invocation.
+That runtime GO is now spent; its token and all old false templates remain
+byte-identical. No extra model/helper/version/smoke/compile JVM or retry.
+
+Local entry 2026-11-22T01:49:49.348027+00:00; nonce81baaeb148240981693fd410f148c35d.
+Controller274.4012438s/enclosing shell274.572s; original JVM0, ownerSSH0,
+local controller0. Total1800 was never renewed/exceeded; copy600 remained
+within it,180 dump observation was not activated. Model/copy durations were
+not separately instrumented. Actual foreground exec session19036 was owned
+to shell exit; owner3178100/start16891888/pgrp=session3178100/UID1000,
+model3178103/start16891932/pgrp=session3178103/UID1000. Four read-only own
+receipt/proc inspections matched those exact identities while active; each
+SSH query exited0 and invoked no controller/model. Saved stop_and_wait/
+group_gone, normal JVM0, HANDOFF_COMPLETE and actual foreground ownerSSH0
+prove this ownership lifecycle terminal, with heavy/output leases released.
+Post-terminal work inspected saved local receipts only; no owned job remains.
+
+Full459414B/5390-line UTF-8 log,4236 OK assertions,0 FAIL/error/observer-disabled
+lines, ALL OK and original section103 continuation. Exact logged heap:
+live1482.9MiB - software targets4.6MiB = objects1478.3MiB, below unchanged1536
+by57.7MiB; suite2048, observed SWPipeline,45 canvases/10 targets/10 onheap.
+Original hard assertion is OK. Classification
+HEAP_PASS_NOT_TRIGGERED_NO_RETRY_OR_WAIVER; no BEGIN/return/error, before/
+after capture receipt or HPROF. Helper native-dump/error paths and identity-
+uncertainty/changed-seal error paths were not exercised by this normal run.
+No2GiB dump/copy throughput claim, fishing, waiver or further execution.
+
+Independent saved audit rehashed all20 raw snapshot files+2 footers,22 total/
+2352444B, matched exact sets/sizes/hash footer/verified receipt, and reread
+every regular archived member against those bytes. Retained tar2375680B;
+original files/raws/partials at both ends preserved. Snapshot SHA
+8022c9592586469935369ec82d368d40d01dc537c7fa91241c6f1fcff05ec22d.
+All2484 input pre/post pins match:2438 base classes/resources,19 overlay
+classes,5 JDK files,10 dependency jars,2 data,5 controller/template files,
+5 Java source/patch/manifest files. Exact plan/root-review bytes, launch
+properties including launcher-preflight SHA, local controller/binding and
+read-only native/Pango pre/post seals also match. Selected pinned Java is
+the explicit Temurin21.0.13+9 argv; saved native selected symlink path is
+/home/jerus/cbs/jdk/bin/java. Linux/x86_64/Monocle-Headless configuration,
+SWPipeline observed; this receipt does not independently name loaded Glass.
+Pango file SHAe80bafce7e827bc43dd5d519a6332786943ee167dddb698cdcbef15387c97dc2
+is unchanged; no old stopped-gate native-byte provenance is inferred.
+
+Fresh receiver start64397733888B, clock bound0.294872284s. Runtime guards
+passed fresh>=12GiB both ends/nonblocking priority/private nonce paths.
+The controller did not log initial numerical BOX free bytes; separate own
+progress observations were886874181632/886874054656/886873919488/886873780224B
+at the four saved timestamps, without calling them initial preflight values.
+Receiver post-audit64385740800B; extraction/copy headroom checks completed.
+This is a small no-HPROF transfer, not prospective dump performance evidence.
+
+All73 share-call rows and every printed excluded-choice event are in the
+audit; target/FS5c2-v6-exclusions.md gives each section/call:1087 counted of
+1237 choice months,2 content readings+148 actual model actions excluded,
+0 refused. Two nonrecurring Policy-currency content readings,0 recurring
+KBP1 blocks; KRT1 reading0. Government hard release1904distinct->0alive,
+signature/counters/kept-nodes/roots-cleared/abort-restored alltrue. Current
+three Healthcare-open comparisons green,0 held content looks; no optional
+Healthcare leaf-capture property/pair, and no original four-look owner proof.
+Bank Profit quiet24/25,max1; paper92 has2 already-held pieces (premisePASS),
+refused-sale fallback was not exercised. Three grid premises0closed/unheld0;
+fund1 actual settled B:3181,114-month life,36->32 lots after the held rule.
+Initial played605/pop4903, Government entry2370. No month/content exclusion
+was used to soften any recurring/hard assertion or memory bound.
+
+Terminal audit target/FS5c2-051b-terminal-audit.json SHA
+605618e4bfb7684833c447bf0062b3f66242ebd46ddfd536968475725cccb7ac
+contains full rows/premises/provenance/ownership/disk and artifact hashes.
+snapshot/capture/stdout.log SHAce88bcc860135b4a02c74d8c4d00654c4aff407c0128bc67c4888936d76031bc.
+controller.terminal.json SHA97e886d9d6f6cdcab171bc2c9c60ed89f813ff3692d7fbab10fc251ff87a21b8.
+copy.verified.json SHAfd2f9cd9b7b78819932e1e80304bfa4544f71ed0ec00353ded8a6c38bb5e57e1.
+snapshot.tar.partial SHA63d882be98482c9c9fef024f5c7180e1486c8e43b991db24184aa2b863730464.
+Supporting local/progress/source receipt manifest SHAbf62c479230c85bec54fdaafeea66ba8c8298c4be5ab9b0554fbab71c38acff3.
+
+
+This is a new-provenance purpose-specific diagnostic of the accepted overlay
+on frozen .180 source, not the .181 model, a225-suite gate, original pcPZSnVc
+runtime/byte equality, historical175.9/209.1/53.6MiB cause, or Healthcare cure.
+V4/v5/c4fd, nativekept7, accepted Java/19classes/29copies/base archive remain
+unchanged. No HPROF exists to analyze; no offline root attribution was done.
+Next evidence decision belongs to root reviewing these complete current
+receipts while the historical hard failure remains unattributed. No unchanged
+replay or dump fishing is justified/released by this GO. Notes-only provisional
+checkpoint; source/ship/registry/marker/four vetoes/1536/KHL1Pending and actual
+process counts819/809(registry819/829) unchanged. FS5 remains blocked/Pending,
+awaiting root's separate review/GO; no readiness or publication claim.
