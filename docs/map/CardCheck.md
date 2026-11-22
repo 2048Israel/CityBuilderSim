@@ -1,4 +1,4 @@
-# CardCheck.java - 433 lines · 15 methods · 0 constants · harnesses
+# CardCheck.java - 434 lines · 15 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CardCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -20,20 +20,20 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 422 | **type** `public final class CardCheck` | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). |
+| 12 | 423 | **type** `public final class CardCheck` | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). |
 | 14 | 3 | `static void check(String label, boolean pass)` |  |
 | 17 | 3 | `static void close(String label, double got, double want, double tolerance)` |  |
 | 20 | 5 | `static WorkingHousehold cell(double income, double savings, double debt, double holders)` |  |
 | 25 | 26 | `static void spread()` |  |
-| 52 | 18 | `static void closedLender()` | A lender can stay closed while borrowers' exclusion shares age normally. |
-| 71 | 28 | `static void brokerRounding()` | A pure imported broker has no profit to list, at either currency scale. |
-| 99 | 47 | `static void month()` |  |
-| 146 | 41 | `static void chargeOff()` |  |
-| 187 | 26 | `static void save()` |  |
-| 213 | 15 | `static void neighbours()` |  |
-| 228 | 17 | `static void census()` |  |
-| 245 | 84 | `static void city()` |  |
-| 329 | 8 | `public static void main(String[] args)` |  |
-| 338 | 61 | `static void reviewFlows()` |  |
-| 401 | 32 | `static boolean continues(Game live, Game loaded)` | Advance both real cities; a matching reload must also make the same next month. |
+| 52 | 19 | `static void closedLender()` | A lender can stay closed while borrowers' exclusion shares age normally. |
+| 72 | 28 | `static void brokerRounding()` | A pure imported broker has no profit to list, at either currency scale. |
+| 100 | 47 | `static void month()` |  |
+| 147 | 41 | `static void chargeOff()` |  |
+| 188 | 26 | `static void save()` |  |
+| 214 | 15 | `static void neighbours()` |  |
+| 229 | 17 | `static void census()` |  |
+| 246 | 84 | `static void city()` |  |
+| 330 | 8 | `public static void main(String[] args)` |  |
+| 339 | 61 | `static void reviewFlows()` |  |
+| 402 | 32 | `static boolean continues(Game live, Game loaded)` | Advance both real cities; a matching reload must also make the same next month. |
 

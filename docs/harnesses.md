@@ -4497,106 +4497,106 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L44 a point amount above the line is excluded
   - L48 a nine-sigma holding tail stays positive beside its balance tail
   - L49 the holding tail is the model's direct normal tail
-  - L60 REV2 P1: a closed lender lends nothing despite the ordinary and unexpected gaps
-  - L61 REV2 P1: exclusion ages, but no card room enters the next plan
-  - L64 REV2 P1: the closed lender also stops existing holders drawing more
-  - L68 REV2 P1: reopening the same lender funds the same household's gap
-- **L72 The broker's tax reserve creates no phantom company**
-  - L96 an exactly offset service receipt/import/VAT leaves no profit or cash at any scale
-  - L97 both genuine gains and losses survive the broker's arithmetic-dust boundary
-- **L100 Thin buffers borrow; fixed minimum and all the cash have a recipient**
-  - L105 household cash identity through minimum, shock and lending
-  - L107 card book identity including its fee
-  - L108 emergency bill is positive
-  - L109 holding share fits the acceptance rule
-  - L111 thinner buffers borrow more on the same bill
-  - L114 a current debtor pays minimum principal before the food
-  - L115 extra paydown reaches the bank with the minimum
-  - L118 cash pays the fixed minimum before a food shortfall draws credit
-  - L123 inability to carry the minimum puts more balance behind
-  - L126 rate cap binds above its edge
-  - L127 lower rate stays below the cap
-  - L132 waterfall and emergency draws share one capital/interest allowance at
-  - L141 minimum follows its
-- **L147 Late stock cures or charges off; only its share is excluded**
-  - L152 annual write-off hazard is the sourced ratio
-  - L153 late balances cure and charge off once
-  - L154 ended debt is exactly the repayment and the bank's loss
-  - L155 seized savings reach the creditor
-  - L156 write-off is the exact loss of the bank's loan book
-  - L157 only the charged-off share goes bankrupt
-  - L158 neighbours still have credit
-  - L162 exclusion decays on the year's own hazard
-  - L164 all excluded cannot borrow
-  - L166 an accepted household can borrow again
-  - L167 no income fails the card test
-  - L168 bottom tier has its estimated access
-  - L169 other tiers have their own access
-  - L170 late balances need a larger loss allowance
-  - L174 sound neutral card rate is the agreed rate
-  - L178 emergency receipt has one household buyer at tax
-  - L179 emergency receipt is named without inventing a seat-service good
-  - L180 emergencies produce no domestic seat-service units
-  - L181 emergency receipt pays its imports and its sales tax at
-  - L184 the pending named receipt follows a currency reform
-- **L188 Card stocks and settled flows survive the cell save and currency reform**
-  - L198 cell save is accepted
-  - L200 all four card stocks round-trip
-  - L201 settled card figures round-trip
-  - L202 settled student service is saved alongside card service
-  - L203 the applied APR is saved rather than repriced from the closing balances
-  - L204 REV-HC1 P2: pending debt-free departure share and cash survive the cell save
-  - L207 late balance follows the money
-  - L208 holder share survives a currency reform
-  - L209 REV-HC1 P2: pending departure cash redenominates
-  - L210 REV-HC1 P2: pending departure share does not redenominate
-  - L211 old saves are refused at the new format
-- **L214 A cardholder does not bar its debt-free neighbours from investing**
-  - L218 the paper budget belongs to the debt-free share
-  - L220 debt-free neighbours can subscribe to shares
-  - L222 exclusion removes only its own share
-  - L224 a wholly indebted cell has no paper budget
-  - L226 raw debt without a supplied distribution is conservatively ineligible
-- **L229 All four card stocks follow the same families across a birthday**
-  - L235 unchanged census keeps the holder share
-  - L238 birthday carries the card balance
-  - L239 birthday carries holders
-  - L240 birthday carries late balances
-  - L241 birthday carries late holders
-  - L242 birthday carries exclusion
-  - L243 a birthday writes off no loan
-- **L246 Real city money, annual surveys, saved reads and continuation**
-  - L271 city actually paid unexpected bills in the measured months
-  - L272 every measured month conserves the money pools (worst tolerance ratio
-  - L273 every measured month conserves household cash (worst tolerance ratio
-  - L274 the yearly surveys were actually recorded
-  - L277 reading every debt group changes no saved cell field
-  - L286 scratch city saves in the assistant slot
-  - L296 all card stocks and settled statistics survive the game loader
-  - L297 annual surveys survive the history loader
-  - L299 a positive pending emergency receipt survives its ledger save
-  - L302 a positive struck emergency receipt survives in its named statement
-  - L321 all current statistics survive the loader
-  - L322 REV-HC1 P5: format-62 card, service, loan-book and capital continuation
-  - L327 replay history excludes later surveys
-  - L331 REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact
-  - L332 HC1 format62: native format61 refusal keeps bytes and the running loaded city intact
-- **L339 REV-HC1: estates, debt-free bankruptcy departures and rejected credit**
-  - L347 REV-HC1 P1: an estate passes no late debt, holder share or credit exclusion to heirs
-  - L349 REV-HC1 P1: the heirs' performing book cannot be charged off by the dead's arrears
-  - L350 REV-HC1 P1: the estate still repays its own debt
-  - L362 REV-HC1 P2: discharged leavers cause no second loss of performing debt
-  - L363 REV-HC1 P2: only zero-card-debt households depart
-  - L364 REV-HC1 P2: surviving late balances stay in their source cell
-  - L365 REV-HC1 P2: the excluded leavers leave their own exclusion behind
-  - L366 REV-HC1 P2: neighbours retain their own book
-  - L378 REV-HC1 P2: the departure count is the source family's own three heads
-  - L381 REV-HC1 P2: bankruptcy leaves the other adult stage alone
-  - L382 REV-HC1 P2: only the source family's child leaves
-  - L384 REV-HC1 P2: a capped departure takes only its own post-seizure cash
-  - L386 REV-HC1 P2: capped source departures still write off no second debt
-  - L393 REV-HC1 P3: rejected ordinary borrowers remain unfunded at exclusion
-  - L395 REV-HC1 P3: only accepted borrowers receive the ordinary advance at exclusion
+  - L59 REV2 P1: a closed lender lends nothing despite the ordinary and unexpected gaps
+  - L62 REV2 P1: exclusion ages, but no card room enters the next plan
+  - L65 REV2 P1: the closed lender also stops existing holders drawing more
+  - L69 REV2 P1: reopening the same lender funds the same household's gap
+- **L73 The broker's tax reserve creates no phantom company**
+  - L97 an exactly offset service receipt/import/VAT leaves no profit or cash at any scale
+  - L98 both genuine gains and losses survive the broker's arithmetic-dust boundary
+- **L101 Thin buffers borrow; fixed minimum and all the cash have a recipient**
+  - L106 household cash identity through minimum, shock and lending
+  - L108 card book identity including its fee
+  - L109 emergency bill is positive
+  - L110 holding share fits the acceptance rule
+  - L112 thinner buffers borrow more on the same bill
+  - L115 a current debtor pays minimum principal before the food
+  - L116 extra paydown reaches the bank with the minimum
+  - L119 cash pays the fixed minimum before a food shortfall draws credit
+  - L124 inability to carry the minimum puts more balance behind
+  - L127 rate cap binds above its edge
+  - L128 lower rate stays below the cap
+  - L133 waterfall and emergency draws share one capital/interest allowance at
+  - L142 minimum follows its
+- **L148 Late stock cures or charges off; only its share is excluded**
+  - L153 annual write-off hazard is the sourced ratio
+  - L154 late balances cure and charge off once
+  - L155 ended debt is exactly the repayment and the bank's loss
+  - L156 seized savings reach the creditor
+  - L157 write-off is the exact loss of the bank's loan book
+  - L158 only the charged-off share goes bankrupt
+  - L159 neighbours still have credit
+  - L163 exclusion decays on the year's own hazard
+  - L165 all excluded cannot borrow
+  - L167 an accepted household can borrow again
+  - L168 no income fails the card test
+  - L169 bottom tier has its estimated access
+  - L170 other tiers have their own access
+  - L171 late balances need a larger loss allowance
+  - L175 sound neutral card rate is the agreed rate
+  - L179 emergency receipt has one household buyer at tax
+  - L180 emergency receipt is named without inventing a seat-service good
+  - L181 emergencies produce no domestic seat-service units
+  - L182 emergency receipt pays its imports and its sales tax at
+  - L185 the pending named receipt follows a currency reform
+- **L189 Card stocks and settled flows survive the cell save and currency reform**
+  - L199 cell save is accepted
+  - L201 all four card stocks round-trip
+  - L202 settled card figures round-trip
+  - L203 settled student service is saved alongside card service
+  - L204 the applied APR is saved rather than repriced from the closing balances
+  - L205 REV-HC1 P2: pending debt-free departure share and cash survive the cell save
+  - L208 late balance follows the money
+  - L209 holder share survives a currency reform
+  - L210 REV-HC1 P2: pending departure cash redenominates
+  - L211 REV-HC1 P2: pending departure share does not redenominate
+  - L212 old saves are refused at the new format
+- **L215 A cardholder does not bar its debt-free neighbours from investing**
+  - L219 the paper budget belongs to the debt-free share
+  - L221 debt-free neighbours can subscribe to shares
+  - L223 exclusion removes only its own share
+  - L225 a wholly indebted cell has no paper budget
+  - L227 raw debt without a supplied distribution is conservatively ineligible
+- **L230 All four card stocks follow the same families across a birthday**
+  - L236 unchanged census keeps the holder share
+  - L239 birthday carries the card balance
+  - L240 birthday carries holders
+  - L241 birthday carries late balances
+  - L242 birthday carries late holders
+  - L243 birthday carries exclusion
+  - L244 a birthday writes off no loan
+- **L247 Real city money, annual surveys, saved reads and continuation**
+  - L272 city actually paid unexpected bills in the measured months
+  - L273 every measured month conserves the money pools (worst tolerance ratio
+  - L274 every measured month conserves household cash (worst tolerance ratio
+  - L275 the yearly surveys were actually recorded
+  - L278 reading every debt group changes no saved cell field
+  - L287 scratch city saves in the assistant slot
+  - L297 all card stocks and settled statistics survive the game loader
+  - L298 annual surveys survive the history loader
+  - L300 a positive pending emergency receipt survives its ledger save
+  - L303 a positive struck emergency receipt survives in its named statement
+  - L322 all current statistics survive the loader
+  - L323 REV-HC1 P5: format-62 card, service, loan-book and capital continuation
+  - L328 replay history excludes later surveys
+  - L332 REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact
+  - L333 HC1 format62: native format61 refusal keeps bytes and the running loaded city intact
+- **L340 REV-HC1: estates, debt-free bankruptcy departures and rejected credit**
+  - L348 REV-HC1 P1: an estate passes no late debt, holder share or credit exclusion to heirs
+  - L350 REV-HC1 P1: the heirs' performing book cannot be charged off by the dead's arrears
+  - L351 REV-HC1 P1: the estate still repays its own debt
+  - L363 REV-HC1 P2: discharged leavers cause no second loss of performing debt
+  - L364 REV-HC1 P2: only zero-card-debt households depart
+  - L365 REV-HC1 P2: surviving late balances stay in their source cell
+  - L366 REV-HC1 P2: the excluded leavers leave their own exclusion behind
+  - L367 REV-HC1 P2: neighbours retain their own book
+  - L379 REV-HC1 P2: the departure count is the source family's own three heads
+  - L382 REV-HC1 P2: bankruptcy leaves the other adult stage alone
+  - L383 REV-HC1 P2: only the source family's child leaves
+  - L385 REV-HC1 P2: a capped departure takes only its own post-seizure cash
+  - L387 REV-HC1 P2: capped source departures still write off no second debt
+  - L394 REV-HC1 P3: rejected ordinary borrowers remain unfunded at exclusion
+  - L396 REV-HC1 P3: only accepted borrowers receive the ordinary advance at exclusion
 
 ## CarryTradeCheck.java - 44 labelled assertions
 
@@ -14944,7 +14944,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1180 ...and settles where it pays what it can, month after month
   - L1183 ...rather than swinging between served and starving
   - L1450 WN3: the bank stays shut through every native month, including the next plan
-  - L1452 the lifted mean leaves the original wallet's cash target under the model's buffer spread
+  - L1452 fixture: the bisection leaves the original wallet's cash target under its retained-buffer formula
   - L1458 fixture: every twin held a place at a clinic for every one of its people in every month
   - L1460 fixture: at the dial's top the fee turns away a material share of the care the founding fee serves
   - L1462 at a high fee a poor city serves a smaller share of its people than at the founding fee

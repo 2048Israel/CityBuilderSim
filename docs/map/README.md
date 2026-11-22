@@ -4,7 +4,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 629 files, 679,420 lines, 29,709 methods, 6,589 constants. `GameVersion.VERSION` is "0.9.189", `SAVE_FORMAT` 62.
+**The tree:** 629 files, 679,421 lines, 29,709 methods, 6,589 constants. `GameVersion.VERSION` is "0.9.189", `SAVE_FORMAT` 62.
 
 ## model (279 files)
 
@@ -414,7 +414,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CapitalFlowCheck.java](CapitalFlowCheck.md) | 843 | 10 | Hot money: does it come for the right reason, and does it leave for one? | 0 |
 | [CapitalGainsCheck.java](CapitalGainsCheck.md) | 1,025 | 33 | Household average-cost stocks and investment taxes, through the real fills, census and city (HT1). | 2 |
 | [CarCheck.java](CarCheck.md) | 1,408 | 12 | The cars: who buys one, what it costs them, and what it does to the road. | 2 |
-| [CardCheck.java](CardCheck.md) | 433 | 15 | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). | 1 |
+| [CardCheck.java](CardCheck.md) | 434 | 15 | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). | 1 |
 | [CarryTradeCheck.java](CarryTradeCheck.md) | 430 | 5 | The carry trade: the other side of hot money, and the bank's first borrower. | 0 |
 | [CausesOfDeathCheck.java](CausesOfDeathCheck.md) | 1,023 | 30 | Proves the causes of death of 1900 (R0b, slice 1): the model on its own, before the month hands its rates to the cohorts. | 1 |
 | [CementConcreteCheck.java](CementConcreteCheck.md) | 368 | 11 | Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-rese... | 0 |

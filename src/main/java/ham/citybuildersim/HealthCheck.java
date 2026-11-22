@@ -1449,7 +1449,7 @@ public class HealthCheck {
         }
         assertTrue("WN3: the bank stays shut through every native month, including the next plan",
                 closedCreditMonths[0] == window && closedCreditMonths[1] == window && closedCreditMonths[2] == window);
-        assertTrue("the lifted mean leaves the original wallet's cash target under the model's buffer spread",
+        assertTrue("fixture: the bisection leaves the original wallet's cash target under its retained-buffer formula",
                 biggestLiftError <= 1e-9);
         Observation.reached("fixture: the poor city has somebody at the eat-less step", hungerAtEnd[1] > 0);
         // HX1, RN1-F: the three lines below are the fixture's own (betweenTheBills(), keepBedsAhead()), caused and not waited for, so a miss is the fixture's fault and fails.

@@ -770,3 +770,26 @@ checks and independent student allocation formulas. No production
 threading change. Marker stays provisional; mail mends and end for the
 same reviewer's delta. The final-model ensemble and new ALL dry-run slot
 remain after SHIP, as ordered; the stopped run is never reused as green.
+
+### Final ensemble after SHIP, 2026-11-22
+
+REV-HC1-2's review of9796601df is SHIP. The orchestrator read the delta,
+ordered no further review, and asked for three small notes in this commit:
+the bisection check is labelled `fixture:` (it tests its own retained-mean
+formula, not settle's separate fixedDraw reservation); OutsideCheck reads
+the student's own tier; CardCheck's first closed-lender edge has shutOut0,
+so it discriminates against an ignored lender input. The exclusion-age
+case is then set to1 separately, and the reopen control again has0.
+CardCheck's batch call (also selecting BuildCardCheck), OutsideCheck and
+HealthCheck pass, serially with cbs.parallel1. Final fast passes.
+
+Main7b60b9a8d is merged: QUEUE-only, naming the accepted HC1 pins under
+HT1-H. The three notes are folded into that unpublished merge commit.
+Next is a fresh final-model80-run ensemble on the pushed snapshot, label
+HC1-final-review-20261122, against0.9.188. Baseline JAVA_OPTS has only
+data paths; pass none of those paths (JAVA_OPTS empty, JDK_JAVA_OPTIONS
+unset), so the box uses its md5-equal copies. The box preflight sees only
+PW5's dry run. A private runner shim blocks automatic laptop fallback;
+no local ensemble is started silently. The Bash job has a7200s timeout,
+its own PID and exit file, and stays under a waiting parent. M1/F1 stop
+the ship. Ask for the dry-run slot after the final ensemble passes.

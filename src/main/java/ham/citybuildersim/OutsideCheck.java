@@ -392,7 +392,7 @@ public class OutsideCheck {
             double unexpectedTail = CellSpread.shortfall(unexpectedBill,
                     savingsAfterLiving, CellSpread.SAVINGS_SIGMA);
             double expectedCardDraw = Bank.CARD_SHOCK_CHANCE
-                    * Bank.cardAccess(.5, null, 0) * unexpectedTail;
+                    * Bank.cardAccess(.5, st.tier(), 0) * unexpectedTail;
             check("...the bank lends only the unexpected bill, not the living gap",
                     st.borrowed(), expectedCardDraw, 1e-9);
             check("...the savings draw is the living draw plus the shock's closed-form saving share",

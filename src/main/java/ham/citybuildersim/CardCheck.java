@@ -53,11 +53,12 @@ public final class CardCheck {
         HouseholdBalance hb = new HouseholdBalance();
         hb.censusOnly((shape, tier) -> shape == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED ? 100 : 0);
         Household c = hb.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
-        c.disposable = 1; c.savings = c.debt = c.revolving = 0; c.shutOut = 1;
+        c.disposable = 1; c.savings = c.debt = c.revolving = 0; c.shutOut = 0;
         hb.setCardLenderOpenForHarness(false);
         c.settle(1, 0, 0, 2, 1, .03, null, 1);
-        c.chargeOff();
         check("REV2 P1: a closed lender lends nothing despite the ordinary and unexpected gaps", c.borrowed() == 0 && c.unfunded() > 0);
+        c.shutOut = 1;
+        c.chargeOff();
         check("REV2 P1: exclusion ages, but no card room enters the next plan",
                 c.shutOut() < 1 && c.creditRoom(1) == 0 && c.planningRoom() == 0);
         c.debt = 1; c.revolving = 1; c.shutOut = 0;
