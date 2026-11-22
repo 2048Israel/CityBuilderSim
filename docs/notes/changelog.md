@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.188 — RS1, the city can sell the bank it rescued — 2026-11-22, ready, see docs/queue/RS1-notes.md
+The city's hand offers its shares before world and household investors choose
+their purchases, so they can buy a rescued bank and pay the fund for real
+ownership. The fund's rule pauses its buying of a company the hand is selling.
+A crossed book quotes the last trade, or fair value before its first, and
+explains the crossing instead of showing a misleading midpoint. Rounding
+residue at the desk's caps or the bank's buyback capital target cannot fund a
+dust trade that replaces a real last price. Regression fixtures cover all four
+findings and both sorts of buyer; no new saved state is needed.
+
 ### 0.9.187 — HS3, the household money page by stage — 2026-11-22, ready, see docs/queue/HS3-notes.md
 Household money separates young and established households and opens each
 stage's own books, with the retired still named by former tier and owner
