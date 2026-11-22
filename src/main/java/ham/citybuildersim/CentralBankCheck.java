@@ -1360,8 +1360,14 @@ public class CentralBankCheck {
         while (serial.getRemainingMonths() > 52) play(city);   // three months before its first slice (49 months left)
         assertTrue("fixture: the households, the bank and the central bank each hold part of it",
                 serial.householdPrincipal() > 0 && serial.bankPrincipal() > 0 && serial.centralBankPrincipal() > 0);
-        close("fixture: ...the central bank its dial's share of the term paper, and no more",
-                city.getCentralBank().getPaperHeld(), dial * city.getDebtManager().termPrincipal(), 1e-6);
+        // HT1: own paper inherited without an heir is consolidated after the holdings step.
+        // This town has just this serial: its actual retired face reconciles the closing
+        // term book to the book on which the bank bought its dial's share, with no cash.
+        double retired = city.getEstateCustody().paperConsolidated();
+        assertTrue("fixture: the only term piece is the serial and actual inherited face was consolidated",
+                city.getDebtManager().getDebt().size() == 1 && retired > 0);
+        close("fixture: the bank bought its dial's share before actual own-paper consolidation",
+                city.getCentralBank().getPaperHeld(), dial * (city.getDebtManager().termPrincipal() + retired), 1e-6);
         quietly(() -> city.saveGame(ROLL_SLOT, "three months before the slice"));
         out.printf("   m%d: the serial $%,.0fk - the households $%,.0fk, the bank $%,.0fk, the central bank $%,.0fk%n",
                 city.getMonth(), serial.getOustandingPrincipal(), serial.householdPrincipal(),
@@ -1372,9 +1378,12 @@ public class CentralBankCheck {
         Debt sa = fixtureSerial(a, soldIn);
         CentralBank cba = a.getCentralBank();
         a.setCashForTest(0);                               // no cash for S to net: the market's part is issued
+        atItsHoldingsDial(a);                              // the at-dial case, after the real closing retirement
+        double atDial = cba.getTargetShare();
         double slice = sa.principalDueNextMonth();
         double itsPar = slice * sa.centralBankPrincipal() / sa.getOustandingPrincipal();
         double heldBefore = cba.getPaperHeld();
+        double termBeforeRoll = a.getDebtManager().termPrincipal();
         Rollover.Plan plan = a.rolloverPlan();
         assertTrue("fixture: a slice falls due next month and the central bank holds part of it",
                 itsPar > 0 && itsPar < slice && a.centralBankOverItsDial() == 0);
@@ -1407,17 +1416,31 @@ public class CentralBankCheck {
         close("the treasury repaid it its maturing par, as it always has", cba.getPaperRedeemed(), itsPar, 1e-6);
         close("so it holds what it held: the replacement in, the maturing par out", cba.getPaperHeld(), heldBefore, 1e-6);
         double termNow = a.getDebtManager().termPrincipal();
-        double capitalised = fresh.getOustandingPrincipal() - slice;
+        // The sale records retain gross face. Closing fresh face already lost its own
+        // inherited fraction; subtracting the whole retirement from that would count
+        // that fraction twice. Reconcile the complete issue/maturity/retirement stock.
+        assertTrue("fixture: the fresh roll records both its actual market sale and central-bank add-on",
+                fresh.getSales() != null && fresh.getSales().size() == 2
+                        && fresh.getSales().stream().anyMatch(sale -> Debt.CENTRAL_BANK_ADD_ON.equals(sale.getHow())));
+        double grossIssued = fresh.getSales().stream().mapToDouble(Debt.Sale::getFace).sum();
+        double retiredInRoll = a.getEstateCustody().paperConsolidated();
+        double freshRetired = grossIssued - fresh.getOustandingPrincipal();
+        assertTrue("fixture: actual inherited paper retirement includes positive parts of both old and newly settled issues",
+                freshRetired > 0 && freshRetired < retiredInRoll);
+        close("term face conserves the actual gross issue, scheduled slice and native inherited retirement",
+                termNow, termBeforeRoll + grossIssued - slice - retiredInRoll, 1e-6);
+        double capitalised = grossIssued - slice;
         double heldNow = cba.getPaperHeld();
         play(a);
-        close("a month on it buys its dial's share of what the roll capitalised, and not its par back",
-                cba.getPaperHeld() - heldNow, dial * capitalised, 1e-6);
-        close("...which puts it at its dial of the term paper", cba.getPaperHeld(), dial * termNow, 1e-6);
+        close("a month on it buys its dial's share of what the roll capitalised less actual consolidated face, and not its par back",
+                cba.getPaperHeld() - heldNow, atDial * (capitalised - retiredInRoll), 1e-6);
+        close("...which puts it at its dial of the term paper", cba.getPaperHeld(), atDial * termNow, 1e-6);
 
         /* ---- by hand: an issue in the gap carries its par on top ---- */
         Game h = toTheSlice(files, soldIn);
         h.setRolloverMode(Rollover.Mode.MANUAL);
         Debt sh = fixtureSerial(h, soldIn);
+        atItsHoldingsDial(h);
         double handPar = sh.principalDueNextMonth() * sh.centralBankPrincipal() / sh.getOustandingPrincipal();
         close("by hand, the plan still names its par", h.rolloverPlan().centralBankPar(), handPar, 1e-9);
         quietly(() -> h.handleLongBondLogic(5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR));
@@ -1543,6 +1566,15 @@ public class CentralBankCheck {
 
         assertTrue(String.format("every month of the rollover's branches closed the audit, and M0"
                 + " moved by exactly the money made (%d months in all)", monthsPlayed), monthsBroken == 0);
+    }
+
+    /** Cause the rollover's at-dial premise on the actual book, as section22's held-line fixture does. No holding or cash is changed. */
+    static void atItsHoldingsDial(Game g) {
+        double held = g.getCentralBank().getPaperHeld(), term = g.getDebtManager().termPrincipal();
+        assertTrue("fixture: a finite positive holding share can cause the at-dial rollover",
+                term > 0 && held > 0 && Double.isFinite(held / term) && held / term <= CentralBank.MAX_QE_SHARE);
+        g.getCentralBank().setTargetShare(held / term);
+        assertTrue("fixture: the at-dial rollover has no holding above its actual target", g.centralBankOverItsDial() == 0);
     }
 
     /* =====================================================================

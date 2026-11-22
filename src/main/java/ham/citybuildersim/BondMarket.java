@@ -1313,6 +1313,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         // Gone whole: a bond a backstop wrote to nothing.
         bonds.removeIf(b -> {
             if (b.face > dust) return false;
+            // Native extinction closes the cells too: their own per-cell positions otherwise
+            // outlive the deleted issuer and cannot pass to an estate (HT1/FundCheck).
+            if (households != null) lossHouseholds += households.writeDownBonds(b.id, 0);
+            b.households = 0;
             // ...what is left of its cost in the fund, a loss (0.7.39).
             if (fund != null) fund.getLedger().gone(b, month);
             if (custody != null && b.custody > 0) { custody.writeDownBond(b, b.custody, 0); b.custody = 0; }

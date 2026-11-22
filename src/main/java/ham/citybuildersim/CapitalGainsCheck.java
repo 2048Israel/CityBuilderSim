@@ -968,9 +968,47 @@ public final class CapitalGainsCheck {
         }
     }
 
+    static void extinguishedBondPositions() throws Exception {
+        out.println("--- native dust extinction closes household and custody positions before a later estate ---");
+        java.nio.file.Path root = TempDirs.create("capital-gains-bond-extinction-");
+        Game g = custodyEstate(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+        BondMarket market = g.getBondMarket(); payRecordedCoupons(market);
+        HouseholdBalance balance = g.getHouseholdBalance();
+        Household buyer = balance.cell(FamilyStructure.SINGLE_ADULT, PayTier.ELITE);
+        buyer.clearAll(); buyer.households = 1; buyer.savings = 100;
+        CorporateBond bond = market.getBonds().stream().filter(b -> b.id() == 2).findFirst().orElseThrow();
+        market.tradeForCheck(bond, BondMarket.WORLD, OrderBook.Side.SELL, 1, 20);
+        close("a real filled bond purchase creates the living household position",
+                FundLedgerCheck.filled(market.tradeForCheck(bond, BondMarket.CELL + buyer.key(), OrderBook.Side.BUY, 1, 20)), 20);
+        close("the actual household purchase paid its seller", buyer.savings, 80);
+        close("the acquired household face is on the live issuer", balance.bondFaceHeld(2), bond.households());
+        double keep = BondMarket.FACE_DUST / (2 * bond.face());
+        market.writeDown(Sectors.RETAIL, keep);
+        check("native default leaves a positive issue under the existing extinction cutoff", bond.face() > 0 && bond.face() < BondMarket.FACE_DUST);
+        check("the living household still owns a positive residual before extinction", buyer.bondFace(2) > 0);
+        check("passive custody still owns its positive residual before extinction", g.getEstateCustody().bondFace(2) > 0);
+        double remaining = balance.totalBonds(), losses = market.getLossHouseholds();
+        double cash = buyer.savings, pools = poolTotal(g), treasury = g.getCash();
+        market.takeMonth(g.getMonth());
+        check("the native market genuinely removes both extinct issues", market.getBonds().isEmpty());
+        close("extinction releases every household position", balance.totalBonds(), 0);
+        check("no cancelled issuer ID can survive into a later estate", balance.cells().stream().allMatch(c -> c.bondFace.isEmpty()));
+        check("extinction also closes custody's issuer counterparts", g.getEstateCustody().bondFaces().isEmpty());
+        check("the actual positive residual is recorded as household asset loss", market.getLossHouseholds() > losses);
+        close("the recorded added loss is the actual residual face", market.getLossHouseholds() - losses, remaining);
+        check("the tiny extinction loss is conserved within the existing accumulator's floating-point resolution",
+                Math.abs(market.getLossHouseholds() - (losses + remaining)) <= 4 * Math.ulp(losses + remaining));
+        close("extinction cannot invent a household redemption payment", buyer.savings, cash);
+        close("extinction cannot invent treasury cash", g.getCash(), treasury);
+        close("extinction cannot invent pooled cash", poolTotal(g), pools);
+        double once = market.getLossHouseholds(); market.takeMonth(g.getMonth());
+        close("another market step cannot lose the same positions twice", market.getLossHouseholds(), once);
+    }
+
     public static void main(String[] args) throws Exception {
         custodyCouponPhases();
         custodySaves();
+        extinguishedBondPositions();
         securedEstates();
         securedDepartures();
         costAndLoss();

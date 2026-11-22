@@ -1798,7 +1798,7 @@ public class ScaleCheck {
                 "allotFirmsFace", "allotFirmsCash", "allotWorldFace", "allotWorldCash", "issueDiscount", "bankDiscount", "householdDiscount",
                 "centralBankDiscount", "firmDiscount", "worldDiscount", "unsettledDiscount",
                 "carryingValue", "lastExpenseOwn", "lastCouponOwn", "face", "proceeds", "lastUpliftOwn", "lastUpliftPaidOwn",
-                "principalPerSlice");
+                "principalPerSlice", "custodyReservedFace", "custodyReservedDiscount");
         // The builders' contracts still on site: their value, the units of material still to draw and the allowance priced in.
         named(d.get("contractRecords"), k, "value", "units", "allowance");
         // The construction queue's runs: how many of a stack have opened and what its orders cost, K times as the stack is. Its
@@ -1810,6 +1810,7 @@ public class ScaleCheck {
         exchange(d, k);
         bonds(d, k);
         fund(d, k);
+        investmentTaxesAndCustody(d, k);
 
         // The hot money and the carry trade: the stock, what arrived and left, the carry book, the city's paper the world holds
         // and what left on doubt, K times over; the panic's month, the deposit share and the count of stops stay.
@@ -1928,7 +1929,7 @@ public class ScaleCheck {
         if (!d.has("equity")) return;
         JsonArray a = d.getAsJsonArray("equity");
         int r = Equity.RECORD_MONTHS, per = Equity.SLOTS;
-        if (per != 3 * r + 19 || a.size() % per != 0) {
+        if (per != 3 * r + 21 || a.size() % per != 0) {
             throw new IllegalStateException("ScaleCheck.registerOfShares(): equity's slots a company are not the layout it reads");
         }
         for (int b = 0; b < a.size(); b += per) {
@@ -1938,6 +1939,7 @@ public class ScaleCheck {
             for (int i = 10; i <= 11; i++) a.set(b + 2 * r + i, times(a.get(b + 2 * r + i), k));    // the desk's shares, bought back
             for (int i = 0; i < r; i++) a.set(b + 2 * r + 12 + i, times(a.get(b + 2 * r + 12 + i), k)); // dividends paid
             for (int i = 13; i <= 17; i++) a.set(b + 3 * r + i, times(a.get(b + 3 * r + i), k));    // the city's shares and rescue, its dividends, the founders' book, buybacks paid
+            for (int i = 19; i <= 20; i++) a.set(b + 3 * r + i, times(a.get(b + 3 * r + i), k));    // passive custody's units and actual dividend cash; the derived flag at18 stays
         }
     }
 
@@ -1960,6 +1962,7 @@ public class ScaleCheck {
         JsonObject e = d.getAsJsonObject("exchangeState");
         for (JsonElement b : e.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
         whole(e, "emigrantShares", k);
+        whole(e, "taxEmigrantsGross", k); whole(e, "taxEmigrantsRetained", k);
         whole(e, "buybackBudget", k);
         // ...what each company's spare money, its net income and its money's income came to: totals, K times (EM1).
         for (String field : new String[] { "spare", "earnings", "moneyIncome" }) whole(e, field, k);
@@ -1979,14 +1982,16 @@ public class ScaleCheck {
     static void bonds(JsonObject d, long k) {
         if (!d.has("bondMarket")) return;
         JsonObject m = d.getAsJsonObject("bondMarket");
-        named(m.get("bonds"), k, "issued", "face", "households", "bank", "bankCost", "world", "city", "companies", "writtenOff");
+        named(m.get("bonds"), k, "issued", "face", "households", "bank", "bankCost", "world", "city", "custody", "companies", "writtenOff");
         for (JsonElement b : m.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
         // the month: money but for the issues (20) and the counts of sells and trades (26, 27, 28, 31).
         allBut(m, "month", k, 20, 26, 27, 28, 31);
         // life: money but for the issues (15), the sells (16, 17) and the trades (19).
         allBut(m, "life", k, 15, 16, 17, 19);
         slots(m, "lastIssueFigures", k, 0);
-        for (String f : new String[] { "issuedBySector", "proceedsBySector", "repaidBySector", "boughtBySector", "couponsBySector" }) whole(m, f, k);
+        for (String f : new String[] { "issuedBySector", "proceedsBySector", "repaidBySector", "boughtBySector", "couponsBySector",
+                "dueHouseholds", "dueBank", "dueWorld", "dueCity", "dueCustody", "dueCompanies", "dueCells", "recordDueCells",
+                "dueByIssuer", "dueCityById", "dueCustodyById", "couponCash", "couponIssuerDebit", "couponBankPaid" }) whole(m, f, k);
     }
 
     /** The city's fund: its cash and what it paid in and drew, its resolutions, orders and ledger; its dial, its months and its limits and prices stay. */
@@ -2001,10 +2006,36 @@ public class ScaleCheck {
                 "householdsValue", "worldShares", "worldValue", "fundShares", "fundValue", "preferredCancelled", "warrantsCancelled");
         named(f.get("hand"), k, "amount", "units", "filled", "spent");
         named(f.get("posted"), k, "amount", "units", "filled", "spent");
-        if (f.has("ledger")) {
-            JsonObject l = f.getAsJsonObject("ledger");
-            named(l.get("lots"), k, "acb", "realized", "proceeds", "acbOut", "bought", "income", "incomeBefore", "boughtValue", "lastIncome");
-            named(l.get("activity"), k, "units", "money", "realized", "asked", "lapsed", "value");
+        ledger(f.get("ledger"), k);
+    }
+
+    /** The same average-cost ledger on either owner: book amounts and acquired units grow; months, IDs and prices stay. */
+    static void ledger(JsonElement value, long k) {
+        if (value == null || value.isJsonNull()) return;
+        JsonObject l = value.getAsJsonObject();
+        named(l.get("lots"), k, "acb", "realized", "proceeds", "acbOut", "bought", "income", "incomeBefore", "boughtValue", "lastIncome");
+        named(l.get("activity"), k, "units", "money", "realized", "asked", "lapsed", "value");
+    }
+
+    /** HT1's aggregate stocks/receipts grow with the city; per-household cell basis/claims stay on the cells above. */
+    static void investmentTaxesAndCustody(JsonObject d, long k) {
+        if (d.has("householdInvestmentTaxes")) {
+            JsonArray a = d.getAsJsonArray("householdInvestmentTaxes");
+            int slots = HouseholdBalance.TAX_FLOW_SLOTS;
+            expect(a, 2 * slots + 1, "householdInvestmentTaxes");
+            // Actual receipts/assessments/losses, in both windows; calls per pooled cell (2,3) and the window flag stay.
+            for (int i = 0; i < 2 * slots; i++) if (i % slots != 2 && i % slots != 3) a.set(i, times(a.get(i), k));
+        }
+        if (d.has("securedHouseholdTaxes")) {
+            JsonArray a = d.getAsJsonArray("securedHouseholdTaxes");
+            expect(a, 4 * Equity.COMPANIES.length + 1, "securedHouseholdTaxes");
+            for (int i = 0; i < a.size() - 1; i++) a.set(i, times(a.get(i), k)); // G, transit units/claim and gross handoff; once-only flag stays
+        }
+        whole(d, "securedForeignTaxes", k); scalar(d, "unbackedCustodyPaper", k);
+        if (d.has("estateCustody") && !d.get("estateCustody").isJsonNull()) {
+            JsonObject c = d.getAsJsonObject("estateCustody");
+            for (String key : new String[] { "shares", "bonds", "usd", "cars", "lossCarried", "pendingPaper", "pendingCoupons", "flows", "pending" }) whole(c, key, k);
+            ledger(c.get("ledger"), k); // passive holdings remain distinct from ordinary fund/rescue stock
         }
     }
 

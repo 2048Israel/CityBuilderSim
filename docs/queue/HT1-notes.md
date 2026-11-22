@@ -506,3 +506,158 @@ Every RealEstate decision406?456 says no land. The last63 homes open407;2496 hom
 The sole main827 path has3299 homes plus63 on site at456,3975.432 households,1378.557 doubled and0 unplaced; bank equity1931.94 against2086.52 target and landlords298.76 cash/100.47 monthly after-tax income. The HT1 path collected actual gain/dividend cash4260.150665/4132.405456 to456; the first tiny gain-tax receipt is at13. At120, household savings are4575.53 versus4941.24 main. By456 they are205838.34 versus100950.12; the observed savings+shares+bonds+paper+abroad market values less debt total887016.69 versus323162.23 (physical cars excluded). These are measurements of the whole accepted HT1 path and its altered growth/returns, not an isolated tax-elasticity or invented counterfactual claim. The binding land-refusal code remains main's unchanged code, reached on this path.
 
 **The orchestrator's call, b856, executed under Jerus's 2026-11-04 rule:** this demonstrated untouched-main class passes F1 BY NAME for AUTO2 seed14/m456 and its ZERO_SLACK/SHOCK/HIGH pre-switch twins. New checked-free queued ID FB11H carries the exact causing fixture and coordinates the bounded land-office funding repair with existing FB11; it does not duplicate FB11's existing queue row, reuse merged MC1 or waive another seed/condition. Full raw scores remain FAIL6/10; no scorer or policy change turns them into a numeric10/10. M1 stays0 failed/unread in every policy. Conditional authority now proceeds to versioned BOX ALLdry without an unchanged ensemble/model replay. No FB11 implementation is folded into HT1. The provisional marker remains until that gate is complete.
+
+## First versioned ALL dry and native extinction mend, 2026-11-22
+
+The versioned BOX dry on cb96679a9 is genuinely terminal, native gate1/suite4,
+233 normally selected harnesses of ALL239 (six nightly checks are left to the
+normal runner). Complete retained run is
+`/home/jerus/cbs/runs/cbs-gate-HT1-AnHRdJzp`, copied home to the matching
+Temp directory. Compile9s, suite941s;47 unnamed lines were retained, not
+waived. Root received the dry result. No retained clone or evidence was
+edited. The provisional marker stays. All subsequent mends are under b856's
+autonomous own-mend direction; this is not a new policy or account design.
+
+FundCheck's uncaught estate exception is an own production defect. An
+original-class observer preserves the actual run: at m265 tiny live issues
+have positive household positions; at266 native BondMarket.takeMonth deletes
+issues6/7/10 at its existing face cutoff, but TEEN retains their IDs. By305
+all issues have disappeared while household maps retain1..16. The actual
+estate at306 correctly fails the strict missing-issuer transfer guard.
+There was no legacy book clearing or missing fixture issuer to forgive.
+
+The four-line BondMarket correction closes household positions and records
+their actual remaining asset loss at that same genuine issuer extinction,
+before removing the issuer. It changes no cutoff, guard, cash or tax rule.
+The new CapitalGainsCheck case executes actual20-face purchase, native
+partial default leaving positive household/custody positions below the
+existing cutoff, native extinction of both issues, zero remaining household
+IDs/custody counterparts, positive actual added loss and zero savings,
+treasury or pooled cash movement, then no duplicate loss. Its first native
+full wrapper passes. A subsequent stricter ULP-based conservation assertion
+has been added and compiled, but is not yet claimed executed at this
+checkpoint. Existing coupon/debit negatives, eight whole-State phase loads
+and120 monthly audits remain in that same reached green run.
+
+Other owned fixture updates: FundCheck's declared opening cap holding now
+moves actual acquisition basis in kind with its shares and proves unchanged
+household cash; a hard unencumbered-stock premise rejects any attempt to
+put an assessed holding in the ordinary fund. BusinessServicesCheck counts
+the appended basis/loss/tag/claim slots explicitly. PriceLevelCheck classes
+custodyUsd with its existing USD-money history series, preserving local
+redenomination's distinct treatment. ScaleCheck scales complete aggregate
+tag/custody/coupon clearing/record maps and own-paper reservations, leaving
+per-cell amounts, prices, rates, flags and call counts in their native units.
+The average-cost ledger scaler is shared by the fund and passive custody.
+Native ScaleCheck passes, with its two existing path observations separately
+reported as OBSERVED. These are fixture/state-layout changes, not runner
+machinery; one-in/one-out does not apply.
+
+All work/evidence is under `target/ht1-dry-mends-20261122-0220`:
+changed-fast first preserves a real compiler failure (Household[] has no
+stream), changed-fast2 native0/compile39s/maps/Stale0firm; focused CGC0;
+FundCheck finishes but exposes one later cap-premise red; ScaleCheck0.
+Every wrapper has full source diff/pins, pre/run checks, class hashes,
+native exit and terminal. No earlier21-red, six-red or diagnostic archive
+has been changed. Source currently includes the additional CentralBankCheck
+fixture owner explained below; its full wrapper is RUNNING, not passed.
+
+## Exact dry-run attribution and remaining fixture work
+
+Native observers run against copied original dry-run production classes,
+outside the retained clone. Their Windows JDK21.0.4, ten Windows dependency
+JARs, release/VM/java/javac bytes and main C:/earth-2/world-1 bytes are newly
+pinned. They do not claim retrospective runtime equality with Linux
+OpenJDK21.0.13. Original class bytes remain pinned. One initial isolated
+observer compile failed because preparation removed the unused shape20
+helper; it started no model and is retained. Corrected r2 compiler0 then
+Denomination1/31.75s (all9 reds), selected original CentralBank sections1/
+13.97s (all13 reds,72 audited months), original Fund hand1/6.02s. r3 adds
+earlier read observations and existing plan-result observations only:
+compiler0, Denomination1/36.63s and selected CentralBank1/12.85s. Every owned
+native Job reports active0/cleanup verified, within its bound, all post-pins
+unchanged. These reproduce reds and measure causes; they are not passes.
+
+Fund hand: the native m76 ledger explicitly lapses its111.11111111111116
+Retail-share limit order for `no room under the 10% cap`. Actual holdings
+453.0628287024921/4530.628287024921 are exactly0.1; posted orders are empty.
+Split factor1 before/after disproves the candidate split explanation; that
+candidate fixture change was removed. No controller/postFund cap algorithm
+changed. New checked-free FS13H queues the missing room cause and retains a
+distinct correct rejection control; the exact original limit assertion stays.
+
+Central-bank section19: at69, actual term20000.152037220538 and held
+8000.060841492224 are2.660400878e-5 above the0.4 closing ratio. Actual
+inherited own-paper face6.65100243641608e-5 was consolidated after the
+holdings step;0.4 of it exactly explains the excess. At72 the actual native
+over-dial amount2.54120595855e-5 reduces rolled par1600.0121525758193 to
+1600.0121271637597 correctly. The fixture now reconciles the real retired
+face, then explicitly causes its intended at-dial state using the existing
+public dial, as its held-line section already does; it does not alter any
+holding or cash. Its subsequent capitalization law includes the actual
+face retired during the roll. Original par/payment/holder/M0 assertions
+remain hard, with unchanged tolerances. This source is compiled; the full
+named native proof is still running at this checkpoint.
+
+The separate original section22 first issue has face20000.152511469427
+versus central-bank held20000.15251146943. Both real native plan results
+have cash0/netted0/no issues, but centralBankNetted3.637978807091713e-12.
+There is no custody reservation/retirement in those branches. This is the
+untouched main rollover/holder floating-point boundary, not a missing cash
+payment or an HT1 tax claim. New checked-free FS10H names just the two exact
+zero-netting predicates and queues a causing stock/payment proof; no
+tolerance or rollover production change is made.
+
+Denomination's initial, next-month and year comparisons all pass. Existing
+DK1's full-desk numeric class reaches a quantum trade on this path at183:
+book8's actual volume6.746766826432446e-9/turnover1.7323708605198633e-11 in
+the plain city, zero in its reformed twin (last trade171). The native last
+price becomes0.00256770525065842 instead of the twin's0.014112229710257654
+in original units. Other fills, the bank's next capital/real housing orders
+and eventually population part. Existing eight DK1 nominal rows already
+name this class; the ninth, population, is added by exact name. Small prior
+floating-point differences are preserved, not declared a missing tax/FX
+field or a harmless JSON effect. The share desk's cancellation/room
+arithmetic is untouched. All9 original hard decade failures stay in raw logs.
+
+Kept's native Lending blank label150x20 kept/150x13 fresh is in unchanged
+Lending/Kept code. Government Overview's45 new nodes of379,11 quiet of25,
+retains380/379 with every monthly fresh-page equality green: main's FB2
+section103 already describes the same allocation class (47/378). Fresh
+FS5H queues only these two exact states without reopening FS5's separate
+Pending heap finding. Existing FS5 rows already name the settled0/null-lot
+premises. No memory, geometry, page-equality or retention threshold changes.
+
+CreditCrunch's existing FS9 band premises fail on33/120 rationed and36/120
+in-band months;32 asks,25 capital-short. Its late explicit six-block order
+has till1273.6 versus a negative453.0 owners' ask and is correctly trimmed
+by the lender's test to4, not a capital-short issue. Original native records
+also retain its new no-home finding; the native planner reason at those
+months is being traced before a final attribution. OrderDoor's seed12
+does not reach its initial edge by420; YoungBank's unchanged first-plant
+write-off reaches ratio.0727 in Freight at115. The queued FS9 sweep owns
+these played-bank fixture premises, not an exemption for a new cash error.
+
+Rootd3ab reports published main de51e413b/.182: FB16's RN2 owned-capacity
+restore follows updateEcon in Game.rebuildSimulationState. Main will be
+merged normally after the current native run terminates, preserving HT1's
+tax/custody/clearing restore and PW6 fields. No other batch branch is merged.
+The new monetary extinction delta still needs a fresh stranger follow-up;
+the prior b499 SHIP does not certify it. Final-model BOX ensemble and a new
+versioned ALL dry remain owed after this source and integration are final.
+Pick stays ALL239; whole money/save review floor remains BondMarket, Debt,
+DebtManager, FundLedger, TreasuryJournal, DataSave, HistorySave and both
+save-format constants (59/oldest59). L7 remains separate Pending.
+
+The full CentralBankCheck wrapper subsequently terminated: wrapper1, native
+child3, one new own fixture failure plus the two precisely named FS10H
+predicates, no exception. All119 recorded audit months close and M0 moves
+by actual money made; the existing long policy comparisons completed too.
+Its complete source/raw/classes/terminal are preserved. The own failure
+uses fresh closing face and subtracts the total retirement, double-counting
+the part of that retirement already removed from the new issue. The next
+candidate takes actual gross face from the native market/add-on Sale
+records, requires positive real old/new inherited retirement, and adds the
+full term-face issue/maturity/retirement conservation identity. The
+unchanged capitalization/payment/holder laws and tolerances remain. That
+candidate is authored, not yet compiled or behaviorally claimed here.

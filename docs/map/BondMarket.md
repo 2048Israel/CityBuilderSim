@@ -1,4 +1,4 @@
-# BondMarket.java - 2,297 lines · 190 methods · 16 constants · model
+# BondMarket.java - 2,301 lines · 190 methods · 16 constants · model
 
 `ham/citybuildersim/BondMarket.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -66,13 +66,13 @@
 | 894 | WHO ISSUES, AND WHEN |
 | 1071 | THE COUPONS AND THE PRINCIPAL |
 | 1243 | THE ORDERS ARE GOOD FOR A MONTH |
-| 1550 | · the city's fund (0.7.14) |
-| 1643 | A HOUSEHOLD SHORT OF MONEY SELLS |
-| 1732 | one order, settled |
-| 1872 | the people who leave |
-| 1917 | reading |
-| 2007 | · THE FINANCES TAB'S SUMS (0.7.32) |
-| 2075 | save and load |
+| 1554 | · the city's fund (0.7.14) |
+| 1647 | A HOUSEHOLD SHORT OF MONEY SELLS |
+| 1736 | one order, settled |
+| 1876 | the people who leave |
+| 1921 | reading |
+| 2011 | · THE FINANCES TAB'S SUMS (0.7.32) |
+| 2079 | save and load |
 
 ## Constants
 
@@ -165,31 +165,31 @@
 | 1061 | `private String lastIssue` | The last issue, for the Bonds page: who, how much, at what, against the bank's rate, when. |
 | 1062 | `private double lastIssueFace, lastIssueCoupon, lastIssueLoanRate` |  |
 | 1063 | `private int lastIssueMonth` |  |
-| 1547 | `private Household posting` | The cell posting its bids at the step right now, and what it may still spend this month. |
-| 1548 | `private double postingBudget` |  |
-| 1692 | `private Household selling` | The cell selling in the waterfall right now, whose proceeds go back to its waterfall rather than into its savings. |
-| 1693 | `private double raised` |  |
-| 1729 | `private double companiesSoldShort` | What companies short of money raised selling their bonds this month, from the credit settle (round 4); a month's figure, cleared with the market's month. |
-| 1748 | `final CorporateBond b` |  |
-| 2079 | `List<CorporateBond> bonds` |  |
-| 2080 | `List<OrderBook> books` |  |
-| 2081 | `int nextId` |  |
-| 2082 | `double[] month` |  |
-| 2083 | `double[] life` |  |
-| 2084 | `String lastIssue` |  |
-| 2085 | `double[] lastIssueFigures` |  |
-| 2086 | `Map<String, Double> issuedBySector, proceedsBySector, repaidBySector, boughtBySector, couponsBySector` |  |
-| 2087 | `double[] couponDues` |  |
-| 2088 | `boolean couponRecordOpen, couponsCharged, bankCouponsBooked` |  |
-| 2089 | `double couponCash, couponIssuerDebit, couponBankPaid` |  |
-| 2090 | `Map<String, Double> dueCells, recordDueCells, dueCompanies, dueByIssuer` |  |
-| 2091 | `Map<Integer, Double> dueCityById, dueCustodyById` |  |
+| 1551 | `private Household posting` | The cell posting its bids at the step right now, and what it may still spend this month. |
+| 1552 | `private double postingBudget` |  |
+| 1696 | `private Household selling` | The cell selling in the waterfall right now, whose proceeds go back to its waterfall rather than into its savings. |
+| 1697 | `private double raised` |  |
+| 1733 | `private double companiesSoldShort` | What companies short of money raised selling their bonds this month, from the credit settle (round 4); a month's figure, cleared with the market's month. |
+| 1752 | `final CorporateBond b` |  |
+| 2083 | `List<CorporateBond> bonds` |  |
+| 2084 | `List<OrderBook> books` |  |
+| 2085 | `int nextId` |  |
+| 2086 | `double[] month` |  |
+| 2087 | `double[] life` |  |
+| 2088 | `String lastIssue` |  |
+| 2089 | `double[] lastIssueFigures` |  |
+| 2090 | `Map<String, Double> issuedBySector, proceedsBySector, repaidBySector, boughtBySector, couponsBySector` |  |
+| 2091 | `double[] couponDues` |  |
+| 2092 | `boolean couponRecordOpen, couponsCharged, bankCouponsBooked` |  |
+| 2093 | `double couponCash, couponIssuerDebit, couponBankPaid` |  |
+| 2094 | `Map<String, Double> dueCells, recordDueCells, dueCompanies, dueByIssuer` |  |
+| 2095 | `Map<Integer, Double> dueCityById, dueCustodyById` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 2246 | **type** `public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtManager.BondDesk` | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participant trades by. |
+| 52 | 2250 | **type** `public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtManager.BondDesk` | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participant trades by. |
 
 ### THE PARTICIPANTS (lines 54-159)
 
@@ -343,144 +343,144 @@
 | 1158 | 38 | `public void redeemMaturing(int month)` | PAYS EVERY BOND THAT FALLS DUE THIS MONTH: its face out of the issuer's till - which may go short, for the credit settle to cover (see THE COUPONS AND THE PRINCIPAL) - to each holder: every cell its own face, into its... |
 | 1198 | 44 | `private void payCoupons()` | Pays the saved record-date holders after the actual issuer charge and bank booking. |
 
-### THE ORDERS ARE GOOD FOR A MONTH (lines 1243-1549)
+### THE ORDERS ARE GOOD FOR A MONTH (lines 1243-1553)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1263 | 27 | `public void startMonth()` | Opens the month's flows. |
 | 1296 | 3 | `public void takeMonth(int month)` | THE MARKET'S MONTH, after the shares have traded and before the sectors move their money abroad: the coupons paid, last month's orders withdrawn, every bond valued, and every participant's orders posted. |
-| 1301 | 43 | `public void takeMonth(int month, double fundSharesValue)` | ...with what the city's fund's shares are worth this month (0.7.14), for its mix; its orders are posted last (postFund()). |
-| 1346 | 14 | `private void noteBook(OrderBook book)` | Adds a book's month, as it closed, to the market's record. |
-| 1362 | 29 | `private void postBank(int month, Map<String, Double> el, double[] value)` | The bank: over its target, a bid at its loan-equivalent price on its spare capital; under it, an ask at the bond's value for what takes it back. |
-| 1393 | 26 | `private void postWorld(int month, Map<String, Double> el)` | The world: hot money's target in each bond, its share of the stock the spread calls for; a bid for a month of the gap, an ask for the excess. |
-| 1421 | 43 | `private void postCompanies(int month, Map<String, Double> el)` | The companies: OutwardInvestment's share of each owing-nothing company's wealth, spread over the other sectors' bonds by face; a bid for OUT_SPEED of the gap, an ask for HOME_SPEED of the excess. |
-| 1479 | 66 | `private void postHouseholds(int month, Map<String, Double> el)` | THE HOUSEHOLDS, CELL BY CELL (0.7.12 round 2): round 1's rule for the pool, applied to each cell's own savings and holdings. |
+| 1301 | 47 | `public void takeMonth(int month, double fundSharesValue)` | ...with what the city's fund's shares are worth this month (0.7.14), for its mix; its orders are posted last (postFund()). |
+| 1350 | 14 | `private void noteBook(OrderBook book)` | Adds a book's month, as it closed, to the market's record. |
+| 1366 | 29 | `private void postBank(int month, Map<String, Double> el, double[] value)` | The bank: over its target, a bid at its loan-equivalent price on its spare capital; under it, an ask at the bond's value for what takes it back. |
+| 1397 | 26 | `private void postWorld(int month, Map<String, Double> el)` | The world: hot money's target in each bond, its share of the stock the spread calls for; a bid for a month of the gap, an ask for the excess. |
+| 1425 | 43 | `private void postCompanies(int month, Map<String, Double> el)` | The companies: OutwardInvestment's share of each owing-nothing company's wealth, spread over the other sectors' bonds by face; a bid for OUT_SPEED of the gap, an ask for HOME_SPEED of the excess. |
+| 1483 | 66 | `private void postHouseholds(int month, Map<String, Double> el)` | THE HOUSEHOLDS, CELL BY CELL (0.7.12 round 2): round 1's rule for the pool, applied to each cell's own savings and holdings. |
 
-### the city's fund (0.7.14) (lines 1550-1642)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1568 | 53 | `private void postFund(int month, double[] value)` | THE CITY'S FUND (TreasuryFund), BY ITS RULE AND THEN BY THE PLAYER'S HAND, last: the rest of the fund's market book and cash in bonds - the share Exchange's rule leaves, 1 - TreasuryFund.EQUITY_WEIGHT - spread over th... |
-| 1623 | 4 | `private int indexOf(int id)` | Where a bond is in the list, by its id, or -1. |
-| 1629 | 1 | `public double faceHeldByCity()` | The city's fund's face in every bond, together (0.7.14). |
-| 1632 | 10 | `public double fundBondRoom(int month)` | The money that would buy every live bond's face the city's fund does not hold, at the bonds' value this month (RB1): the room its rule's bond bids could still take, for TreasuryFund.idleCash(). |
-
-### A HOUSEHOLD SHORT OF MONEY SELLS (lines 1643-1731)
+### the city's fund (0.7.14) (lines 1554-1646)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1657 | 33 | `double sellForCell(Household cell, double needPer, double borrowingRate)` |  |
-| 1709 | 18 | `public double sellForCompany(String sector, double need, double borrowingRate)` | A COMPANY SHORT OF MONEY SELLS (0.7.12 round 4, CAN'T PAY MEANS DEFAULT - see BusinessDebtManager), by the households' rule above: in each other sector's bond it holds, it asks the price at which the buyer's yield wou... |
-| 1730 | 1 | `public double getCompaniesSoldShort()` |  |
+| 1572 | 53 | `private void postFund(int month, double[] value)` | THE CITY'S FUND (TreasuryFund), BY ITS RULE AND THEN BY THE PLAYER'S HAND, last: the rest of the fund's market book and cash in bonds - the share Exchange's rule leaves, 1 - TreasuryFund.EQUITY_WEIGHT - spread over th... |
+| 1627 | 4 | `private int indexOf(int id)` | Where a bond is in the list, by its id, or -1. |
+| 1633 | 1 | `public double faceHeldByCity()` | The city's fund's face in every bond, together (0.7.14). |
+| 1636 | 10 | `public double fundBondRoom(int month)` | The money that would buy every live bond's face the city's fund does not hold, at the bonds' value this month (RB1): the room its rule's bond bids could still take, for TreasuryFund.idleCash(). |
 
-### one order, settled (lines 1732-1871)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1735 | 3 | `List<OrderBook.Fill> tradeForCheck(CorporateBond b, String who, OrderBook.Side side, double price, double quantity)` | One order on a bond's book, settled, between two steps: for FundLedgerCheck (0.7.39), as Exchange.tradeForCheck(). |
-| 1739 | 6 | `private List<OrderBook.Fill> submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month)` |  |
-| 1747 | 119 | **type** `private final class Settle implements OrderBook.Clearing` | Where each participant's money and holding is, for one bond's book. |
-| 1749 | 1 | `Settle(CorporateBond b)` _(in BondMarket.Settle)_ |  |
-| 1751 | 26 | `public double capacity(String who, OrderBook.Side side, double price)` _(in BondMarket.Settle)_ |  |
-| 1779 | 3 | `public boolean mayTrade(String buyer, String seller)` _(in BondMarket.Settle)_ | The fund's rule and its hand never trade with each other (0.7.14). |
-| 1783 | 82 | `public void settle(String buyer, String seller, double q, double price)` _(in BondMarket.Settle)_ |  |
-| 1868 | 3 | `private Household cellOf(String who)` | The cell a participant's name is, or null. |
-
-### the people who leave (lines 1872-1916)
+### A HOUSEHOLD SHORT OF MONEY SELLS (lines 1647-1735)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1881 | 8 | `public void householdLeft(int id, double face)` | WHAT A HOUSEHOLD THAT LEAVES TAKES WITH IT: its bonds, which it holds from abroad from then on - as a leaver's shares are held abroad (Equity.followEmigrants()) - taken off the households' face of the bond and put on ... |
-| 1900 | 9 | `public void recountHouseholds()` | Every bond's households' face, checked against the cells that hold it after a load, which restores the two separately (round 2). |
-| 1911 | 5 | `public Map<Integer, Double> householdsFaceById()` | The households' face in each bond, by its id: what an old pooled save hands the cells (HouseholdBalance.claimPooledBonds()). |
+| 1661 | 33 | `double sellForCell(Household cell, double needPer, double borrowingRate)` |  |
+| 1713 | 18 | `public double sellForCompany(String sector, double need, double borrowingRate)` | A COMPANY SHORT OF MONEY SELLS (0.7.12 round 4, CAN'T PAY MEANS DEFAULT - see BusinessDebtManager), by the households' rule above: in each other sector's bond it holds, it asks the price at which the buyer's yield wou... |
+| 1734 | 1 | `public double getCompaniesSoldShort()` |  |
 
-### reading (lines 1917-2006)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1920 | 1 | `public double getHouseholdsBought()` | The households' cash into the pools for bonds this month: at issue and from the bank and the companies. |
-| 1922 | 1 | `public double getHouseholdsSold()` | ...and out of the pools to them, for bonds they sold to the bank and the companies. |
-| 1924 | 1 | `public double getHouseholdsBoughtAbroad()` | What the households paid the world for bonds, and the world paid them: both outside the pools, declared as pairs. |
-| 1925 | 1 | `public double getHouseholdsSoldAbroad()` |  |
-| 1927 | 1 | `public double getWorldBought()` | The world's money into the pools for bonds - at issue and from the bank and the companies - and out of them for bonds it sold them. |
-| 1928 | 1 | `public double getWorldSold()` |  |
-| 1930 | 1 | `public double getWorldPurchases()` | Every bond purchase the world made this month, whoever sold, and every sale. |
-| 1931 | 1 | `public double getWorldSales()` |  |
-| 1932 | 1 | `public double getCouponsToHouseholds()` |  |
-| 1933 | 1 | `public double getCouponsToBank()` |  |
-| 1934 | 1 | `public double getCouponsToCompanies()` |  |
-| 1935 | 1 | `public double getCouponsAbroad()` |  |
-| 1936 | 1 | `public double getPrincipalToHouseholds()` |  |
-| 1937 | 1 | `public double getPrincipalToBank()` |  |
-| 1938 | 1 | `public double getPrincipalToCompanies()` |  |
-| 1939 | 1 | `public double getPrincipalAbroad()` |  |
-| 1941 | 1 | `public double getOrphanedToHouseholds()` | The principal and coupons the issuers paid this month on the households' face that no cell was credited (HL1): the bond's record less the cells' own. |
-| 1943 | 1 | `public double getLossHouseholds()` | Face written off this month's defaults, by holder. |
-| 1944 | 1 | `public double getLossBank()` |  |
-| 1945 | 1 | `public double getLossCompanies()` |  |
-| 1946 | 1 | `public double getWorldWrittenOff()` |  |
-| 1947 | 1 | `public double getIssuedFace()` |  |
-| 1948 | 1 | `public double getIssuedCosts()` |  |
-| 1949 | 1 | `public int getIssues()` |  |
-| 1950 | 1 | `public double getEmigrantsFace()` |  |
-| 1953 | 1 | `public double getIssued(String sector)` | One sector's month: the face it issued, what that handed it, the principal it repaid, what it spent on other sectors' bonds (net of sales and principal back), and the coupons it was paid. |
-| 1954 | 1 | `public double getProceeds(String sector)` |  |
-| 1955 | 1 | `public double getRepaid(String sector)` |  |
-| 1956 | 1 | `public double getBoughtNet(String sector)` |  |
-| 1957 | 1 | `public double getCouponsTo(String sector)` |  |
-| 1960 | 1 | `public double getLastPostedBuy()` | Last month's order book, every bond together: posted to buy and to sell, filled, sell orders posted and those that waited unfilled, and trades. |
-| 1961 | 1 | `public double getLastPostedSell()` |  |
-| 1962 | 1 | `public double getLastFilled()` |  |
-| 1963 | 1 | `public int getLastSellsPosted()` |  |
-| 1964 | 1 | `public int getLastSellsWaited()` |  |
-| 1965 | 1 | `public double getLastSellQuantityWaited()` |  |
-| 1966 | 1 | `public int getLastTrades()` |  |
-| 1969 | 1 | `public double getLifeIssued()` | Over the city's life. |
-| 1970 | 1 | `public double getLifeCosts()` |  |
-| 1971 | 1 | `public int getLifeIssues()` |  |
-| 1972 | 1 | `public double getLifeCouponsHouseholds()` |  |
-| 1973 | 1 | `public double getLifeCouponsBank()` |  |
-| 1974 | 1 | `public double getLifeCouponsCompanies()` |  |
-| 1975 | 1 | `public double getLifeCouponsAbroad()` |  |
-| 1976 | 1 | `public double getLifeLossHouseholds()` |  |
-| 1977 | 1 | `public double getLifeLossBank()` |  |
-| 1978 | 1 | `public double getLifeLossCompanies()` |  |
-| 1979 | 1 | `public double getLifeLossWorld()` |  |
-| 1980 | 1 | `public double getLifeVolume()` |  |
-| 1981 | 1 | `public double getLifePostedSell()` |  |
-| 1982 | 1 | `public double getLifeFilledSell()` |  |
-| 1983 | 1 | `public int getLifeSellsPosted()` |  |
-| 1984 | 1 | `public int getLifeSellsWaited()` |  |
-| 1985 | 1 | `public double getLifeWorldBought()` |  |
-| 1986 | 1 | `public double getLifeWorldSold()` |  |
-| 1988 | 1 | `public double getBetweenHouseholds()` | One cell buying from another (round 2): this month's cash and trades, and the city's life's - a transfer inside the households. |
-| 1989 | 1 | `public int getBetweenHouseholdsTrades()` |  |
-| 1990 | 1 | `public double getLifeBetweenHouseholds()` |  |
-| 1991 | 1 | `public int getLifeBetweenHouseholdsTrades()` |  |
-| 1994 | 5 | `public double averageCoupon(String sector)` | One sector's bonds' coupon, weighted by face: what its bond debt costs a year. |
-| 2001 | 5 | `public double averageCoupon()` | ...and every bond's. |
-
-### THE FINANCES TAB'S SUMS (0.7.32) (lines 2007-2074)
+### one order, settled (lines 1736-1875)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2013 | 3 | `public double getCouponsPaid()` | The month's coupons, every holder's: the households', the bank's, the companies' and the world's. |
-| 2018 | 3 | `public double getPrincipalRepaid()` | ...the principal repaid at maturity, to every holder. |
-| 2023 | 3 | `public double getWrittenOffThisMonth()` | ...and the face written off in defaults, every holder's. |
-| 2033 | 3 | **type** `public record Issuer(String issuer, int bonds, double face, double lowCoupon, double highCoupon, int neares...` | One issuer's bonds outstanding together: how many and their face, the lowest and highest coupon, the nearest maturity, its largest bond's number (the one its book opens on), and the face each holder class holds - the ... |
-| 2038 | 26 | `public List<Issuer> byIssuer()` | Every issuer with a bond outstanding, biggest face first. |
-| 2066 | 8 | `public double valueHeld(java.util.function.ToDoubleFunction<CorporateBond> holding, int month)` | What a holder class's bonds are worth at the bonds' value this month. |
+| 1739 | 3 | `List<OrderBook.Fill> tradeForCheck(CorporateBond b, String who, OrderBook.Side side, double price, double quantity)` | One order on a bond's book, settled, between two steps: for FundLedgerCheck (0.7.39), as Exchange.tradeForCheck(). |
+| 1743 | 6 | `private List<OrderBook.Fill> submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month)` |  |
+| 1751 | 119 | **type** `private final class Settle implements OrderBook.Clearing` | Where each participant's money and holding is, for one bond's book. |
+| 1753 | 1 | `Settle(CorporateBond b)` _(in BondMarket.Settle)_ |  |
+| 1755 | 26 | `public double capacity(String who, OrderBook.Side side, double price)` _(in BondMarket.Settle)_ |  |
+| 1783 | 3 | `public boolean mayTrade(String buyer, String seller)` _(in BondMarket.Settle)_ | The fund's rule and its hand never trade with each other (0.7.14). |
+| 1787 | 82 | `public void settle(String buyer, String seller, double q, double price)` _(in BondMarket.Settle)_ |  |
+| 1872 | 3 | `private Household cellOf(String who)` | The cell a participant's name is, or null. |
 
-### save and load (lines 2075-2297)
+### the people who leave (lines 1876-1920)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2078 | 45 | **type** `public static final class State implements Cloneable` | Everything the market carries from one month to the next, as the save writes it. |
-| 2100 | 22 | `State copy()` _(in BondMarket.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the market's own bonds and books, which the months go on changing while the autosave is written. |
-| 2124 | 36 | `public State toState()` |  |
-| 2162 | 62 | `public void restore(State s)` | Puts a saved market back. |
-| 2226 | 1 | `private static double finite(double v)` | A save carries no NaN: nothing where there was none. |
-| 2228 | 5 | `private static void putAll(Map<String, Double> into, Map<String, Double> from)` |  |
-| 2235 | 27 | `public void reset()` | No bonds, no books, nothing over the city's life: a new city. |
-| 2264 | 33 | `public void redenominate(double scale)` | Every money figure in the new unit: the bonds' faces and holdings, the orders' quantities, the month's flows. |
+| 1885 | 8 | `public void householdLeft(int id, double face)` | WHAT A HOUSEHOLD THAT LEAVES TAKES WITH IT: its bonds, which it holds from abroad from then on - as a leaver's shares are held abroad (Equity.followEmigrants()) - taken off the households' face of the bond and put on ... |
+| 1904 | 9 | `public void recountHouseholds()` | Every bond's households' face, checked against the cells that hold it after a load, which restores the two separately (round 2). |
+| 1915 | 5 | `public Map<Integer, Double> householdsFaceById()` | The households' face in each bond, by its id: what an old pooled save hands the cells (HouseholdBalance.claimPooledBonds()). |
+
+### reading (lines 1921-2010)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1924 | 1 | `public double getHouseholdsBought()` | The households' cash into the pools for bonds this month: at issue and from the bank and the companies. |
+| 1926 | 1 | `public double getHouseholdsSold()` | ...and out of the pools to them, for bonds they sold to the bank and the companies. |
+| 1928 | 1 | `public double getHouseholdsBoughtAbroad()` | What the households paid the world for bonds, and the world paid them: both outside the pools, declared as pairs. |
+| 1929 | 1 | `public double getHouseholdsSoldAbroad()` |  |
+| 1931 | 1 | `public double getWorldBought()` | The world's money into the pools for bonds - at issue and from the bank and the companies - and out of them for bonds it sold them. |
+| 1932 | 1 | `public double getWorldSold()` |  |
+| 1934 | 1 | `public double getWorldPurchases()` | Every bond purchase the world made this month, whoever sold, and every sale. |
+| 1935 | 1 | `public double getWorldSales()` |  |
+| 1936 | 1 | `public double getCouponsToHouseholds()` |  |
+| 1937 | 1 | `public double getCouponsToBank()` |  |
+| 1938 | 1 | `public double getCouponsToCompanies()` |  |
+| 1939 | 1 | `public double getCouponsAbroad()` |  |
+| 1940 | 1 | `public double getPrincipalToHouseholds()` |  |
+| 1941 | 1 | `public double getPrincipalToBank()` |  |
+| 1942 | 1 | `public double getPrincipalToCompanies()` |  |
+| 1943 | 1 | `public double getPrincipalAbroad()` |  |
+| 1945 | 1 | `public double getOrphanedToHouseholds()` | The principal and coupons the issuers paid this month on the households' face that no cell was credited (HL1): the bond's record less the cells' own. |
+| 1947 | 1 | `public double getLossHouseholds()` | Face written off this month's defaults, by holder. |
+| 1948 | 1 | `public double getLossBank()` |  |
+| 1949 | 1 | `public double getLossCompanies()` |  |
+| 1950 | 1 | `public double getWorldWrittenOff()` |  |
+| 1951 | 1 | `public double getIssuedFace()` |  |
+| 1952 | 1 | `public double getIssuedCosts()` |  |
+| 1953 | 1 | `public int getIssues()` |  |
+| 1954 | 1 | `public double getEmigrantsFace()` |  |
+| 1957 | 1 | `public double getIssued(String sector)` | One sector's month: the face it issued, what that handed it, the principal it repaid, what it spent on other sectors' bonds (net of sales and principal back), and the coupons it was paid. |
+| 1958 | 1 | `public double getProceeds(String sector)` |  |
+| 1959 | 1 | `public double getRepaid(String sector)` |  |
+| 1960 | 1 | `public double getBoughtNet(String sector)` |  |
+| 1961 | 1 | `public double getCouponsTo(String sector)` |  |
+| 1964 | 1 | `public double getLastPostedBuy()` | Last month's order book, every bond together: posted to buy and to sell, filled, sell orders posted and those that waited unfilled, and trades. |
+| 1965 | 1 | `public double getLastPostedSell()` |  |
+| 1966 | 1 | `public double getLastFilled()` |  |
+| 1967 | 1 | `public int getLastSellsPosted()` |  |
+| 1968 | 1 | `public int getLastSellsWaited()` |  |
+| 1969 | 1 | `public double getLastSellQuantityWaited()` |  |
+| 1970 | 1 | `public int getLastTrades()` |  |
+| 1973 | 1 | `public double getLifeIssued()` | Over the city's life. |
+| 1974 | 1 | `public double getLifeCosts()` |  |
+| 1975 | 1 | `public int getLifeIssues()` |  |
+| 1976 | 1 | `public double getLifeCouponsHouseholds()` |  |
+| 1977 | 1 | `public double getLifeCouponsBank()` |  |
+| 1978 | 1 | `public double getLifeCouponsCompanies()` |  |
+| 1979 | 1 | `public double getLifeCouponsAbroad()` |  |
+| 1980 | 1 | `public double getLifeLossHouseholds()` |  |
+| 1981 | 1 | `public double getLifeLossBank()` |  |
+| 1982 | 1 | `public double getLifeLossCompanies()` |  |
+| 1983 | 1 | `public double getLifeLossWorld()` |  |
+| 1984 | 1 | `public double getLifeVolume()` |  |
+| 1985 | 1 | `public double getLifePostedSell()` |  |
+| 1986 | 1 | `public double getLifeFilledSell()` |  |
+| 1987 | 1 | `public int getLifeSellsPosted()` |  |
+| 1988 | 1 | `public int getLifeSellsWaited()` |  |
+| 1989 | 1 | `public double getLifeWorldBought()` |  |
+| 1990 | 1 | `public double getLifeWorldSold()` |  |
+| 1992 | 1 | `public double getBetweenHouseholds()` | One cell buying from another (round 2): this month's cash and trades, and the city's life's - a transfer inside the households. |
+| 1993 | 1 | `public int getBetweenHouseholdsTrades()` |  |
+| 1994 | 1 | `public double getLifeBetweenHouseholds()` |  |
+| 1995 | 1 | `public int getLifeBetweenHouseholdsTrades()` |  |
+| 1998 | 5 | `public double averageCoupon(String sector)` | One sector's bonds' coupon, weighted by face: what its bond debt costs a year. |
+| 2005 | 5 | `public double averageCoupon()` | ...and every bond's. |
+
+### THE FINANCES TAB'S SUMS (0.7.32) (lines 2011-2078)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2017 | 3 | `public double getCouponsPaid()` | The month's coupons, every holder's: the households', the bank's, the companies' and the world's. |
+| 2022 | 3 | `public double getPrincipalRepaid()` | ...the principal repaid at maturity, to every holder. |
+| 2027 | 3 | `public double getWrittenOffThisMonth()` | ...and the face written off in defaults, every holder's. |
+| 2037 | 3 | **type** `public record Issuer(String issuer, int bonds, double face, double lowCoupon, double highCoupon, int neares...` | One issuer's bonds outstanding together: how many and their face, the lowest and highest coupon, the nearest maturity, its largest bond's number (the one its book opens on), and the face each holder class holds - the ... |
+| 2042 | 26 | `public List<Issuer> byIssuer()` | Every issuer with a bond outstanding, biggest face first. |
+| 2070 | 8 | `public double valueHeld(java.util.function.ToDoubleFunction<CorporateBond> holding, int month)` | What a holder class's bonds are worth at the bonds' value this month. |
+
+### save and load (lines 2079-2301)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2082 | 45 | **type** `public static final class State implements Cloneable` | Everything the market carries from one month to the next, as the save writes it. |
+| 2104 | 22 | `State copy()` _(in BondMarket.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the market's own bonds and books, which the months go on changing while the autosave is written. |
+| 2128 | 36 | `public State toState()` |  |
+| 2166 | 62 | `public void restore(State s)` | Puts a saved market back. |
+| 2230 | 1 | `private static double finite(double v)` | A save carries no NaN: nothing where there was none. |
+| 2232 | 5 | `private static void putAll(Map<String, Double> into, Map<String, Double> from)` |  |
+| 2239 | 27 | `public void reset()` | No bonds, no books, nothing over the city's life: a new city. |
+| 2268 | 33 | `public void redenominate(double scale)` | Every money figure in the new unit: the bonds' faces and holdings, the orders' quantities, the month's flows. |
 
