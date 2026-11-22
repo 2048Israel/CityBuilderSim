@@ -2057,6 +2057,15 @@
        "CROPS": -34.5
       }
      }
+    },
+    {
+     "entry": "E21",
+     "source": "R6e: Klumper and Qaim 2014, doi:10.1371/journal.pone.0111629, CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ (credit and changed mapping in tools/world/ATTRIBUTION.txt). Abstract yield +22%, body +21%, heterogeneous maize/soy/cotton, traits and countries. Approved all-CROPS crop-mix estimate: fixed modern anchor/1.22 minus anchor, additive beside PE20/E10, not compounded yield ratios. No other output/input, jobs, land or seed-fee delta; E21 patentability is the catalogue estimate.",
+     "without": {
+      "makes": {
+       "CROPS": -12.442622950819668
+      }
+     }
     }
    ]
   },
@@ -2180,6 +2189,15 @@
      "without": {
       "makes": {
        "CROPS": -250.0
+      }
+     }
+    },
+    {
+     "entry": "E21",
+     "source": "R6e: Klumper and Qaim 2014, doi:10.1371/journal.pone.0111629, CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ (credit and changed mapping in tools/world/ATTRIBUTION.txt). Abstract yield +22%, body +21%, heterogeneous maize/soy/cotton, traits and countries. Approved all-CROPS crop-mix estimate: fixed modern anchor/1.22 minus anchor, additive beside PE20/E10, not compounded yield ratios. No other output/input, jobs, land or seed-fee delta; E21 patentability is the catalogue estimate.",
+     "without": {
+      "makes": {
+       "CROPS": -90.1639344262295
       }
      }
     }

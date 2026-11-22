@@ -1,6 +1,6 @@
 # FittingCheck.java - 1,412 lines · 43 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FittingCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FittingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city
 > founded the 1900 way, what a building that finishes comes with, and the fitting itself - ordered, paid, bought and worked, ranked with the
@@ -52,7 +52,7 @@
 
 **Uses:** [Game](Game.md) (70), [EquipmentFit](EquipmentFit.md) (56), [EquipmentCheck](EquipmentCheck.md) (54), [BuildingsStacks](BuildingsStacks.md) (30), [Good](Good.md) (30), [Founding](Founding.md) (25), [Equipment](Equipment.md) (22), [Sector](Sector.md) (16), [BusinessInvestment](BusinessInvestment.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (10), [Fittings](Fittings.md) (9), [GameFiles](GameFiles.md) (8), [Forms1900Check](Forms1900Check.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [DataSave](DataSave.md) (6), [MoneyAudit](MoneyAudit.md) (6), [RecipeChanges](RecipeChanges.md) (4), [BuildingManager](BuildingManager.md) (3), [Observation](Observation.md) (3), [Construction](Construction.md) (3), [GoodsMarket](GoodsMarket.md) (3), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Sectors](Sectors.md) (2), [Recipes](Recipes.md) (2), [JobType](JobType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1)... and 7 more
 
-**Used by (17):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [KeptCheck](KeptCheck.md), [MedicineCheck](MedicineCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
+**Used by (18):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [KeptCheck](KeptCheck.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # Forms1900Check.java - 1,012 lines · 39 methods · 5 constants · harnesses
 
-`ham/citybuildersim/Forms1900Check.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Forms1900Check.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The farm's horses, the factory's steam, road freight's horse and wagon and the homes' lamp oil and coal, as forms a share of a sector or of the homes runs.
 > 
@@ -46,7 +46,7 @@
 
 **Uses:** [Good](Good.md) (81), [Game](Game.md) (39), [Sector](Sector.md) (26), [Haulage](Haulage.md) (20), [Agriculture](Agriculture.md) (10), [Retail](Retail.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (7), [MoneyAudit](MoneyAudit.md) (6), [HomeFuel](HomeFuel.md) (6), [Freight](Freight.md) (5), [Household](Household.md) (5), [HydroSites](HydroSites.md) (4), [GameFiles](GameFiles.md) (3), [BuildingManager](BuildingManager.md) (3), [CementConcrete](CementConcrete.md) (3), [HaulageCheck](HaulageCheck.md) (3), [Founding](Founding.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PriceLevel](PriceLevel.md) (2), [JobType](JobType.md) (2), [GoodsMarket](GoodsMarket.md) (2), [TaxPolicy](TaxPolicy.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Statement](Statement.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (12):** [BasketYearCheck](BasketYearCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md)
+**Used by (13):** [BasketYearCheck](BasketYearCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md)
 
 ## Sections
 

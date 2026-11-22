@@ -1,6 +1,6 @@
 # Recipes.java - 286 lines · 21 methods · 0 constants · model
 
-`ham/citybuildersim/Recipes.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Recipes.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of
 > R1c's recipes, as EquipmentForms is of R1's forms.
@@ -38,7 +38,7 @@
 
 **Uses:** [Recipe](Recipe.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (14), [Game](Game.md) (7), [Research](Research.md) (6), [Good](Good.md) (4), [RecipeChanges](RecipeChanges.md) (4), [LicenceFees](LicenceFees.md) (3), [JobType](JobType.md) (2), [Markets](Markets.md) (1), [EconomyManager](EconomyManager.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Sector](Sector.md) (1)
 
-**Used by (15):** [DiscoveryCheck](DiscoveryCheck.md), [EquipmentFit](EquipmentFit.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md)
+**Used by (16):** [DiscoveryCheck](DiscoveryCheck.md), [EquipmentFit](EquipmentFit.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md)
 
 ## Sections
 

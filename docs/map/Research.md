@@ -1,6 +1,6 @@
 # Research.java - 1,168 lines · 98 methods · 24 constants · model
 
-`ham/citybuildersim/Research.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Research.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The city's research (R3): the grants the player sets, the posts they buy, the researchers who fill them, the work piled on each open problem, the
 > discoveries found here and the month's pure step that moves the work on (docs/studies/research-design.md 1.8, 5.1, 5.2, 6.3).
@@ -38,7 +38,7 @@
 
 **Uses:** [JobType](JobType.md) (17), [ResearchCatalog](ResearchCatalog.md) (7), [World](World.md) (2), [EducationType](EducationType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1)
 
-**Used by (28):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicalRows](MedicalRows.md), [MedicineCheck](MedicineCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
+**Used by (29):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicalRows](MedicalRows.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
 
 ## Sections
 

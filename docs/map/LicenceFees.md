@@ -1,6 +1,6 @@
 # LicenceFees.java - 593 lines · 49 methods · 5 constants · model
 
-`ham/citybuildersim/LicenceFees.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LicenceFees.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The patent rent on discoveries imported by a city founded the 1900 way.
 > 
@@ -14,7 +14,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (33), [Game](Game.md) (31), [Sector](Sector.md) (18), [RecipeChanges](RecipeChanges.md) (15), [Recipes](Recipes.md) (14), [BuildingsStacks](BuildingsStacks.md) (13), [Recipe](Recipe.md) (11), [ResearchCatalog](ResearchCatalog.md) (9), [NewUnit](NewUnit.md) (8), [EquipmentFit](EquipmentFit.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BuildingType](BuildingType.md) (6), [BuildAdvice](BuildAdvice.md) (6), [Research](Research.md) (5), [ExtractionSector](ExtractionSector.md) (5), [UtilitiesHandler](UtilitiesHandler.md) (4), [Refining](Refining.md) (3), [ProcessingSector](ProcessingSector.md) (3), [Equipment](Equipment.md) (3), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [RefineryFlow](RefineryFlow.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1)
 
-**Used by (25):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentFit](EquipmentFit.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [Fitout](Fitout.md), [FittingCheck](FittingCheck.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [NewUnit](NewUnit.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [ResearchView](ResearchView.md), [Sector](Sector.md), [WorksValue](WorksValue.md)
+**Used by (26):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentFit](EquipmentFit.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [Fitout](Fitout.md), [FittingCheck](FittingCheck.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [MoneyAudit](MoneyAudit.md), [NewUnit](NewUnit.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [ResearchView](ResearchView.md), [Sector](Sector.md), [WorksValue](WorksValue.md)
 
 ## Sections
 

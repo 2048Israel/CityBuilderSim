@@ -1,6 +1,6 @@
 # GameVersion.java - 8,475 lines · 6 methods · 4 constants · model
 
-`ham/citybuildersim/GameVersion.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameVersion.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > What build this is, and what shape its saves are.
 > 
@@ -40,7 +40,7 @@
 > earlier wording of this very comment was a second match, and survived only
 > because it happened to carry no equals sign.
 
-**Used by (25):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
+**Used by (26):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
 
 ## Constants
 

@@ -1,6 +1,96 @@
 # R6e - sources and proposed proof scope
 
-<!-- readiness: provisional; source-plan only -->
+<!-- readiness: provisional -->
+
+## E21 implementation checkpoint (root mail 20261121-223202-617)
+
+R6e remains **Queued/building**, in the same worker/worktree. The first
+stage's blocked wording meant awaiting root scope; no Pending move was
+ordered. Root releases E21 only, including the all-CROPS approximation,
+22% abstract figure, native patentability estimate and unchanged modern
+anchors. The source-plan receipt and evidence below are retained as the
+record of that earlier stage, not a description of the current diff.
+
+Implemented resource changes: E21 after E20 and before FE1; all original96
+entries retain their content and relative order. The year1996/June
+placeholder/monthKnown=false, no needs, recipe size, fee estimate and
+work2,151 use unchanged production readers. Only ids52/53 gain the signed
+CROPS undo. Source attribution, CC BY4.0 and the game's changed mapping
+are in licences.md, the resource sources and tools/world/ATTRIBUTION.txt,
+the existing shipped credit location. ResearchCheck extends only necessary
+catalogue/date/work/fee/order/count/range expectations. No production Java
+owner, save/format owner or publisher record changes.
+
+ModernEngineeringCheck is prepared, **not run**: exact recipient/field
+checks, both isolated farms' positive dispatch across date-1/date, native
+early research finding at its science boundary, PE20/E10/E21 each/all
+absent and both discovery orders, zero/three/mixed quantities, full modern
+snapshots and livestock/input invariants, native quote and partial-production
+patent capture/local exemption/expiry. It records factory return month and
+actual before/after simulation advances, old-active/crossing/adopted-active
+months and actual positive crop units. It uses the village factory (zero
+advances), not an assumed probeCity age. No observation waiver is added.
+
+**Save finding to prove, not a run result:** .181/format58 at May1996,
+tractor/tractor choices on a fitted farm, PE20/E10 known and no E21 missing
+flag. Recipes.restore preserves the two strings; decode composes only
+flags present. Static reading predicts an accepted immediate load gives
+500/69 instead of409.836066/56.557377 until the next chooser. The new hard
+control snapshots May's real native save/history before advancing either
+twin, uses native recipe setters/stamp/write to represent that exact older
+record, and requires correct immediate output or a genuine format refusal.
+A present-E21-flag save must preserve its immediate figures and the next
+month/choices. No flag stripping, prefix padding, converter or loader edit.
+Stop before any format/core mend if the causing run confirms this fault.
+HT1 owns pending format59 and must publish/integrate first; its future
+format cannot be assumed to settle this new physical-semantics change.
+Root then coordinates the smallest necessary format/floor change and save
+review on the actual predecessor. Neither constant is edited here.
+
+Root mail 20261121-225026-471 replaces the edit/check micro-GOs with one
+E21 milestone: implementation, meaningful causing/firing/save proofs,
+affected readers, self-review and provisional mends. Model checks become
+admitted once HT1 directly reports its laptop named slot released/no owned
+JVM, never beside its tests or a gate/dry/nightly. HT1 was contacted; no
+named model check has run at this checkpoint. Root conditionally releases
+the format/floor edit and necessary SaveFile/ReadPath controls **after HT1
+publishes and is merged**, only if native proof establishes the semantic
+save fault. No additional policy question is required; the save law and
+economic premises stay hard. No Game/DataSave/HistorySave/YearBook edit.
+
+Changed-source fast1 passed (40s compile, maps regenerated, Stale0firm,
+native exit0). A wrapper error then launched fast2 despite a failed
+Javadoc-edit guard: an unnecessary unchanged replay, exit0 (4s compile),
+reported to root without hiding its raw log. It finished before attempted
+interruption. Three Javadoc paragraph separators were subsequently changed
+to avoid generated trailing whitespace. Final changed-source fast3 passed
+(40s compile, maps regenerated, Stale0firm, native exit0). No named harness
+ran in these wrappers. Commands, native exits and raw logs are retained
+under target/R6e-evidence/stage2. Of the regenerated files,595 with only a
+generation-date change were restored verbatim; semantic indexes remain.
+Static resource comparison verifies all96 original catalogue entries and
+all original building fields exactly unchanged, with E21 added only to52/53.
+
+Source-level tools/pick.sh origin/main returns **ALL239**, exit0, because
+AllChecks changes (36 changed files including the new files at that point).
+Its textual floor is `review not needed - no money, saves or threading in
+the diff`; this is not a waiver of root's **fresh money review** for the
+resource-driven patent flow, plus **saves review** if the semantic break is
+confirmed. The pick only selected; no ALL/fullpick suite was executed.
+Final ensemble if owed, ALL dry/heavy admission, readiness and publication
+remain root/contract gates. The provisional marker stays.
+
+The provisional ship file describes E21 only and carries its marker; it
+does not settle the whole queued remit. After the causing proofs, recommend
+that root explicitly retain E22/E33 (seawater/date/energy split), E23
+(affected fuel fraction and permitted numerical evidence), E26 (haulage
+denominator/recipients), E30 (thermal/prior-kiln mapping and numerical
+licence) and E32 (fleet energy/power/save scope) in actual queue/publication
+records if E21 is to publish separately. E24 still waits for PW3; E27 still
+lacks an incremental E18 comparison. No follow-up ID, Pending transfer or
+scope closure is decided in prose or written to Queue by this checkpoint.
+
+## Original source-plan receipt (2fcf023b3)
 
 2026-11-21. Builder R6ecodex1, Codex, launcher-specified model
 gpt-6.1-sol / xhigh, CBS_ORCHESTRATOR=0. The precreated worktree was clean

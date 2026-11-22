@@ -1,6 +1,6 @@
 # RecipeCheck.java - 1,197 lines · 43 methods · 3 constants · harnesses
 
-`ham/citybuildersim/RecipeCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RecipeCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Recipes (R1c): the ways a building runs, as data on its template, chosen at the city's prices in a city founded the 1900 way, set on the template's
 > figures weighted by the buildings of each part of a stack, and saved.
@@ -46,7 +46,7 @@
 
 **Uses:** [Recipes](Recipes.md) (119), [Good](Good.md) (106), [Recipe](Recipe.md) (82), [BuildingsTemplate](BuildingsTemplate.md) (57), [Game](Game.md) (34), [EquipmentFit](EquipmentFit.md) (33), [JobType](JobType.md) (25), [EquipmentCheck](EquipmentCheck.md) (20), [Equipment](Equipment.md) (12), [BuildingsStacks](BuildingsStacks.md) (10), [FittingCheck](FittingCheck.md) (7), [Sector](Sector.md) (7), [GameFiles](GameFiles.md) (7), [PolicyDates](PolicyDates.md) (5), [Founding](Founding.md) (4), [CityCalendar](CityCalendar.md) (4), [PriceLevel](PriceLevel.md) (3), [BuildingType](BuildingType.md) (3), [Forms1900Check](Forms1900Check.md) (2), [RecipeChanges](RecipeChanges.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [RecipeChange](RecipeChange.md) (1), [ProcessingSector](ProcessingSector.md) (1), [ExtractionSector](ExtractionSector.md) (1)
 
-**Used by (6):** [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md)
+**Used by (7):** [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md)
 
 ## Sections
 
