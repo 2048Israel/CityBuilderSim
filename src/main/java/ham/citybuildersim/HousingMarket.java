@@ -47,6 +47,9 @@ public final class HousingMarket {
     private List<HousingChoice.Offer> pipeline=List.of();
     private List<Sharing> sharing=List.of();
     private double hosted;
+    /** Derived pre-migration workspace, discarded by clearing and rebuilt after load. */
+    private boolean arrivalProjection, arrivalsNeedFamily;
+    private double formingFamilies, formingAdults;
     /** Emergency guests whose host already funds the door; no extra rent or credit is invented. */
     public double hosted(){return hosted;}
     public double sharingGroups(){return sharing.stream().mapToDouble(Sharing::groups).sum();}
@@ -59,6 +62,30 @@ public final class HousingMarket {
     public double rentFor(String cell,double count) { return count>0?leases.stream().filter(l->l.cell().equals(cell)||l.cell().startsWith(cell+"#")).mapToDouble(HousingChoice.Lease::bill).sum()/count:0; }
     public double receipts() { return leases.stream().mapToDouble(HousingChoice.Lease::bill).sum(); }
     public double occupied() { return leases.stream().mapToDouble(HousingChoice.Lease::count).sum(); }
+    /** Reserve this press's domestic formation before admitting people who start work next press. */
+    public void prepareMigration(Game game){
+        arrivalProjection=true;formingFamilies=formingAdults=0;
+        arrivalsNeedFamily=game.getCohorts().get(AgeBand.BABY)+game.getCohorts().get(AgeBand.CHILD)+game.getCohorts().get(AgeBand.TEEN)>0;
+        if(!active())return;
+        var current=game.getFamilies();var preview=new FamilyModel();
+        preview.restore(current.toSaveArray());preview.rememberHouseholds(current.remembersHouseholds());
+        var people=game.getPopulationManager();double[] jobs=new double[PayTier.values().length];
+        var posts=people.getJobs();var fill=people.getJobFillRate();
+        for(JobType job:JobType.values())jobs[PayTier.of(job).ordinal()]+=posts[job.ordinal()]*fill[job.ordinal()];
+        preview.rebuild(game.getCohorts(),jobs,game.getCrime().prisoners(),people.getUnemployed()+people.getStudyingTotal(),current.getOwnerAdults());
+        preview.setSeekers(game.getUnemployment().getHoused(),people.getStudyingTotal());
+        double beforeFamily=0,beforeAdult=0,afterFamily=0,afterAdult=0;
+        for(FamilyStructure shape:FamilyStructure.values()){
+            double old=0;for(PayTier tier:PayTier.values())old+=current.getFormed(shape,tier);
+            double n=preview.totalOf(shape);
+            if(!shape.isRetired()&&shape.dependants()>0){beforeFamily+=old;afterFamily+=n;}else{beforeAdult+=old;afterAdult+=n;}
+        }
+        double previousSeekers=current.getSeekers(FamilyModel.Seeker.UNEMPLOYED)+current.getSeekers(FamilyModel.Seeker.STUDENT);
+        if(current.dependantsPerOutsideHousehold()>0)beforeFamily+=previousSeekers;else beforeAdult+=previousSeekers;
+        double seekers=preview.getSeekers(FamilyModel.Seeker.UNEMPLOYED)+preview.getSeekers(FamilyModel.Seeker.STUDENT);
+        if(preview.dependantsPerOutsideHousehold()>0)afterFamily+=seekers;else afterAdult+=seekers;
+        formingFamilies=Math.max(0,afterFamily-beforeFamily);formingAdults=Math.max(0,afterAdult-beforeAdult);
+    }
     /** Read-only migration bound: actual remaining door/guest capacity, with the raw incoming household mix. */
     public FamilyModel.Room roomLeft(Game game,FamilyModel.Room legacy){
         if(!active())return null;
@@ -74,6 +101,9 @@ public final class HousingMarket {
         for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double missing=Math.max(0,d.count()-taken);if(d.children()>0)children+=missing;else adults+=missing;}
         family=Math.max(0,family-children);double inCompact=Math.min(compact,adults);compact-=inCompact;family=Math.max(0,family-(adults-inCompact));
+        if(arrivalProjection){
+            family=Math.max(0,family-formingFamilies);inCompact=Math.min(compact,formingAdults);compact-=inCompact;family=Math.max(0,family-(formingAdults-inCompact));
+        }
         double incoming=0,heads=0,parents=0;
         for(Household c:game.getHouseholdBalance().cells())if(c instanceof WorkingHousehold w){
             double n=game.getFamilies().getFormed(w.shape(),w.tier(),w.stage());incoming+=n;heads+=n*c.size();
@@ -82,8 +112,8 @@ public final class HousingMarket {
         double seeking=demand.stream().mapToDouble(HousingChoice.Demand::count).sum();
         // The approach ramp measures physical crowding; affordability already has its own migration pull.
         // Counting only paid leases here would freeze an empty founding city's workers out of its vacant homes.
-        return new FamilyModel.Room(family,compact,0,seeking,Math.min(homes,legacy.withADoor),incoming>0?parents/incoming:legacy.withDependants,
-                incoming>0?heads/incoming:legacy.peoplePerHousehold);
+        return new FamilyModel.Room(family,compact,0,seeking,Math.min(homes,legacy.withADoor),arrivalProjection?(arrivalsNeedFamily?1:0):incoming>0?parents/incoming:legacy.withDependants,
+                arrivalProjection?1:incoming>0?heads/incoming:legacy.peoplePerHousehold);
     }
     public double price(HousingInventory.Key key) { ClassState c=classes.get(key);return c==null?0:c.ask; }
     /** A posted class ask can change without inventing a lease or a trade. */
@@ -153,7 +183,7 @@ public final class HousingMarket {
             }
         }
         demand=List.copyOf(cells);offers=List.copyOf(supply);
-        hosted=0;
+        hosted=0;arrivalProjection=false;formingFamilies=formingAdults=0;
         List<HousingChoice.Offer> pending=new ArrayList<>();
         for(var s:inventory.stock())if(s.pipeline()>0){var d=s.dwelling();var f=HousingForms.of(s.key().recipe());
             pending.add(new HousingChoice.Offer(s.key(),s.pipeline(),d.capacity(),d.bedrooms(),d.area(),d.quality(),
@@ -473,7 +503,7 @@ public final class HousingMarket {
         }
         restore(s);
     }
-    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
+    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;arrivalProjection=false;formingFamilies=formingAdults=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
     public void redenominate(double scale){for(ClassState c:classes.values()){c.ask*=scale;c.capital*=scale;c.carry*=scale;c.target*=scale;c.lastTrade*=scale;c.tradeValue*=scale;}
         leases=leases.stream().map(l->new HousingChoice.Lease(l.cell(),l.home(),l.count(),l.bill()*scale,l.households())).toList();
         sharing=sharing.stream().map(t->new Sharing(t.source(),t.target(),t.groups(),t.sourceCount(),t.targetCount(),t.sourceBudget()*scale,t.targetBudget()*scale)).toList();

@@ -2,7 +2,8 @@
 
 Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through main's
 db9b1fd99 queue correction. Final verification and publication status are below.
-No user city or save slot 1–9 is opened or written.
+No user city or user save slot 1–9 is opened or written. Existing checks use
+their own isolated scratch slots; new RES3 native fixtures use slot 10.
 
 The implementation adds the section 12 recipe catalogue, aggregate cell/class
 assignment and class rental ledgers. The existing builder quotes, work queue,
@@ -362,3 +363,38 @@ each form, plus the actual current staffed RE total. Both burden columns use
 the same two-earner unskilled reference household, with its actual payslip
 levies; the observed mixed unskilled row mean is reported separately so sharing
 does not silently change the take-home comparison's reference household.
+
+The final 2,400-month run passed its money and native continuation checks but
+caused a later supply finding: 56 unplaced-household months, m1009–1102, worst
+108.751 at m1067 with 4,547 physical homes. The traced replay shows all paid
+doors already doubled: m1009 has 3,924 occupied doors, 3,924 emergency household
+units, and 7.016 still needing supply despite positive budgets. Arrivals were
+admitted against last month's household formation at working-family density;
+current domestic formation and arrivals who start work next month then exceeded
+the real two-household capacity. No occupancy limit is raised.
+
+★ Before migration, a bounded copy of the existing FamilyModel previews current
+domestic formation from the current pyramid and existing employment/outside
+context. Positive family/adult demand changes reserve their compatible rooms
+first. Immediate arrivals conservatively require at most one room per person;
+when children are present their outside-household profile requires family space.
+They do not assume the established workers' sharing/density. This frame moves
+no people, money, quote or lease. It is derived once before migration, discarded
+by clearing, rebuilt after load, and adds no saved field. The caused room cases
+prove the formation reserve, actual extra-door admission and unchanged live
+families/monthly state; the founding case also requires positive population and
+occupied homes.
+
+Main was refreshed through 653cb95ce: only QUEUE.md and the future FC2 brief
+changed. No foreign-construction-pricing code is taken ahead of that batch.
+
+The changed played path also exposed a withdrawal-fixture observation error.
+Its first withdrawal owed 67.884292601; the normal step had already sold
+12,168.8674462 Retail shares by rule to the world for 67.8842926011. No ask was
+left resting for the fixture's later manual world buyer. The fund's actual cash
+was 59.079630949 and that amount was paid late next press. The fixture now
+counts actual current-month rule share-sale ledger units plus resting asks.
+It separately requires no hand sale mixed in, and reads actual fund-to-world
+settlement cash. Dividing by the highest actual sale price gives a conservative
+lower bound on world-filled share quantity, preserving the original share-unit
+thresholds. An unsold/unfunded position still fails; no sale output is assigned.

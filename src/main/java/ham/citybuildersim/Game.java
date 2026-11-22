@@ -15908,6 +15908,7 @@ public class Game {
         // left is asked against (0.7.17): arrivals are bounded by it. See
         // Migration.monthlyNet() and FamilyModel.roomLeft().
         migration.setDoors(buildingManager.homesBySize());
+        getSectors().realEstate().housingMarket().prepareMigration(this);
 
         // ...and, in a city founded the 1900 way, what the world's movers hold this year (R0d; ArrivalMix): the skills the month's
         // arrivals are drawn from. A city founded the default way holds none and draws from WageBand's ceilings alone, as it always did.

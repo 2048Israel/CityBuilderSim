@@ -119,6 +119,7 @@ public final class HousingMarketCheck {
             check("founding month "+g.getMonth()+" does not use an empty prior wage row for new workers",g.getFamilies().getStillUnplaced()<=1);
             near("founding rent receipts are actual accepted bills",g.getSectors().realEstate().getRentIncome(),g.getSectors().realEstate().housingMarket().receipts());
         }
+        check("the founding premise really admits people and lets occupied homes",g.getCohorts().total()>0&&g.getSectors().realEstate().housingMarket().occupied()>0);
     }
     static void fractionalPressure(){
         out.println("--- fully placed fractional demand creates no phantom blueprint scarcity ---");
@@ -240,6 +241,16 @@ public final class HousingMarketCheck {
         near("migration room sees a real completion and first reserves current unplaced demand",
                 market.roomLeft(g,new FamilyModel.Room(0,0,0,2,1,0,2)).households(),2-result.unplaced());
         check("a completion projection leaves the one monthly quote untouched",beforeRoom.equals(JSON.toJson(market.forSave())));
+        people[AgeBand.ADULT.ordinal()]=200;g.getCohorts().restore(PopulationCohorts.saveBands(),people);
+        double[] oldFamilies=g.getFamilies().toSaveArray();market.prepareMigration(g);
+        near("current domestic household formation reserves the last rooms before arrivals",
+                market.roomLeft(g,new FamilyModel.Room(0,0,0,2,1,0,2)).households(),0);
+        check("the formation preview leaves actual families and the monthly market unchanged",
+                Arrays.equals(oldFamilies,g.getFamilies().toSaveArray())&&beforeRoom.equals(JSON.toJson(market.forSave())));
+        bm.addStack(t,100,true);
+        var newcomers=market.roomLeft(g,new FamilyModel.Room(0,0,0,2,1,0,2));
+        check("real additional doors still admit arrivals after the formation reserve",newcomers.households()>0);
+        near("arrivals who start work next press cannot use the working family's density",newcomers.people(),newcomers.households());
     }
     static void writeReport(StringBuilder report,Game g,String label,Map<Integer,Long> starts,Map<Integer,Long> completions,int months,double ms){
         var re=g.getSectors().realEstate();var market=re.housingMarket();var bm=g.getBuildingManager();var em=g.getEconomyManager();
