@@ -69,7 +69,8 @@ ConstructionControlCheck's unchanged household-retention observation was
 not reached (households did not outnumber homes); its native buyout,
 compensation, debt, demolition and other economic assertions passed.
 The named slot was released to the orchestrator after actual terminal;
-no SD1 job remains. Root admission is required before the owed ALL dry run.
+no SD1 job remains from focused validation. The orchestrator admitted the
+normal untagged ALL dry run on 2026-11-22 (mail 63a2); no ensemble is owed.
 
 Self-review: the three production owners are Game.retire (one format-string
 prefix), BuildCard.wordKind and its SELLING documentation, and
@@ -82,3 +83,10 @@ the text through or match unaffected phrases. A byte-level comparison against
 the branch base confirmed exactly those wording, reader and documentation
 replacements in all three production files, with every other byte retained.
 No other source owner is needed.
+
+Dry integration: merged main 2cdf061013811d209acfcdfeb5aa82140a6fc204,
+including the RES1 study and queue-only records, without conflicts. A diff
+against mends 4c508e2ac confirms no source change from that integration.
+Unchanged focused checks were not repeated. The merged provisional branch
+is committed and pushed before the admitted gate-box-first dry run, and
+source, branch and records remain frozen through its actual terminal.
