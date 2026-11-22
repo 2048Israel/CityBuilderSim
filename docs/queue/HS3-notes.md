@@ -40,6 +40,15 @@ the young and established have distinct cell keys. No threading change.
 Initial `./batch-check.sh --fast`: green, Stale 0 firm findings.
 Final checks and the eight-CSV comparison will be recorded here when complete.
 
+The first HS3 fixture run matched all five estate/tax amounts but failed its
+kept/fresh comparison: it read the kept signature immediately after opening
+the stage panels, before their layout had settled. The probe now follows
+KeptCheck's `passes()`/`settle()` protocol on both pages; exact signature
+equality is unchanged. The corrected run passed all 32 assertions. The first
+receipt is retained in `target/HS3-words-first.log` and `target/HS3-words.txt`.
+The final probe additionally compares each retired tier's and the owner's
+open savings line with its own getter.
+
 `MoneyWordsCheck` now has an HS3 section. Its scratch city's initial census
 has both adult stages, retirees of two former tiers, an owner family, an
 estate with repayable debt and an insolvent estate. Native death flows cause

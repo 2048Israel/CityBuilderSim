@@ -2962,7 +2962,7 @@ final class PeopleScreen {
        statement left them out and did not foot).
        ===================================================================== */
 
-    /** Which cell of the grid is open, as "tier:shape", or "OUT:" and a ledger's key. Empty for none. */
+    /** Which cell is open: "tier:shape", with ":YOUNG" for that stage, or "OUT:" and a ledger's key. Empty for none. */
     String openCell = "";
 
     /** Set by a click that opens a cell, so the panel it opened is brought into view. */
@@ -3119,7 +3119,7 @@ final class PeopleScreen {
         return out;
     }
 
-    /** The grid's key for a cell: "tier:SHAPE" for a family, "OUT:" and its ledger's key for the rest. */
+    /** A family's stage key (the young append ":YOUNG"), or "OUT:" and the ledger's key for the rest. */
     static String gridKey(Household c) {
         if (c instanceof WorkingHousehold working && c.tier() != null)
             return c.tier().ordinal() + ":" + c.shape().name() + working.stage().keySuffix();

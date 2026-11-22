@@ -5093,7 +5093,7 @@ public final class KeptBench {
 
     /**
      * The cells of the grid that can be opened on the city as it is, by the key the grid opens them under, in the grid's order: a
-     * family's cell with anybody in it ("tier:SHAPE", the tier's number), then the rows below the rule ("OUT:" and the ledger's key -
+     * family's cell in each adult stage ("tier:SHAPE", the young append ":YOUNG"), then the rows below the rule ("OUT:" and the ledger's key -
      * the retired, the out of work, the students, the orphans, the prison).
      */
     public List<String> householdCells() {
