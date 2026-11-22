@@ -389,6 +389,127 @@ public class BusinessInvestment {
     }
 
     /*
+     * THE ORDER IS THE GAP, NOT ONE (OG1, 2026-11-22). Jerus: "in big cities,
+     * even if building on depot every month its not enough, same with every
+     * other sector ... one a month is simply not enough in big cities". Since
+     * BA1 every planner counts its own buildings on site, so a planner that
+     * ordered one building a month met a gap of several plants one plant a
+     * month: in main's playtest Manufacturing ordered one in 441 months (65
+     * running), the builders one depot in 284 (42), Food Processing one plant
+     * in 214 (21) while it imported up to eight plants' worth, Automotive one
+     * in 121 (21). A planner whose test measures a gap of demand now orders
+     * it - Food Processing as many plants as the city already eats, the n-th
+     * passing with the n - 1 before it counted - cut to the plots and to what
+     * the city could staff together (gapOrder()), and consider() rations it
+     * as BA1 meant: each building priced on the queue the ones before it
+     * leave, the interest on the whole order's wait, dear contracts; the
+     * builders order to the work the city sends them (THE WORK THE CITY SENDS
+     * THE BUILDERS, below; Construction.depotsForTheQueue()). The staffing
+     * gate is not a gap: with the draw it grows with the posts (GW1), and in
+     * that playtest it passed every plot there was, 1,180 depots or 61
+     * Fabrication Works at once. So the planners whose buildings sell to the
+     * world and meet no gap of their own still order one: sized to the
+     * workers or the steel they could take, Manufacturing and Automotive
+     * ordered 8,107 and 5,928 to main's 502 and 339 on the same playtest, and
+     * Manufacturing stood at 7.1 million a month to main's 1.4 (OG1's notes).
+     */
+
+    /**
+     * The largest n of up to {@code most} for which {@code passes} holds, a test that holds of an order of n only if it
+     * holds of every smaller one (the n-th building passes with the n - 1 before it counted); at least one, which the
+     * caller's plan has already passed. Found by halving (OG1).
+     */
+    public static long largestThatPasses(long most, java.util.function.LongPredicate passes) {
+        long lo = 1, hi = Math.max(1, most);
+        while (lo < hi) {
+            long mid = lo + (hi - lo + 1) / 2;
+            if (passes.test(mid)) lo = mid; else hi = mid - 1;
+        }
+        return lo;
+    }
+
+    /**
+     * An order of {@code wanted} of {@code t} for {@code sector}, the gap its plan measured (OG1, THE ORDER IS THE GAP):
+     * no more than the plots the city has for it nor than it could staff together (Sector.staffableCount()), and at
+     * least one, which the plan has passed both of.
+     */
+    public long gapOrder(Sector sector, BuildingsTemplate t, long wanted) {
+        long n = Math.max(1, Math.min(wanted, plotsAvailableFor(t)));
+        return Math.max(1, sector.staffableCount(t, n));
+    }
+
+    /*
+     * THE WORK THE CITY SENDS THE BUILDERS (OG1, 2026-11-22). The builders'
+     * order is sized to the work a typical month orders of them, not to the
+     * queue standing: depots outlive the queue that called for them, and a
+     * subsidised builder never sells one, so a first cut that sized them to
+     * the queue - the sites' month that would work it down to the knee in a
+     * year - reached 7,771 depots by month 2,400 of the playtest to main's
+     * 299, three times the depots a head, its sites doing 1.7 million points
+     * a month with nothing queued: one playtest move put 18 million points on
+     * site in a month and the builders grew to clear it in a year, then stood.
+     * Each month's work is read as the points owed on everyone else's sites as
+     * the month's advance begins less what they owed when the last advance
+     * ended (SimulationEngine): the orders placed between the two - the
+     * businesses', the city's and the player's - and the builders' own depots
+     * left out, so an order of depots is never read as work that calls for
+     * more. Kept TREND_WINDOW months and saved (DataSave, buildersWork), so a
+     * loaded city sizes its next order as the unbroken one does; a city that
+     * has not yet kept MIN_MONTHS_OF_SITE_WORK of them orders one depot, as
+     * before OG1.
+     */
+
+    /** The months of site work kept before the builders size an order to their median (OG1): half the window. */
+    public static final int MIN_MONTHS_OF_SITE_WORK = TREND_WINDOW / 2;
+
+    /** The points each recent month ordered of the builders, their own depots left out, oldest first (OG1). */
+    private final List<Double> siteWorkOrdered = new ArrayList<>();
+    /** What everyone else's sites owed when the last advance ended; NaN before the first (OG1). */
+    private double othersOwedAfterAdvance = Double.NaN;
+
+    /** The points owed on every site but the builders' own depots and yards (OG1): the queue less pointsOwedBySector(CONSTRUCTION). */
+    public double othersOwedOnSite() {
+        return Math.max(0, buildingManager.getRemainingConstructionPoints()
+                - buildingManager.pointsOwedBySector(Sectors.CONSTRUCTION));
+    }
+
+    /** Call once a month as the sites' advance begins (SimulationEngine): the month's orders join the record. */
+    public void beforeSitesAdvance() {
+        if (Double.isNaN(othersOwedAfterAdvance)) return;
+        siteWorkOrdered.add(Math.max(0, othersOwedOnSite() - othersOwedAfterAdvance));
+        while (siteWorkOrdered.size() > TREND_WINDOW) siteWorkOrdered.remove(0);
+    }
+
+    /** ...and once as it ends: what the sites still owe is where the next month's orders are counted from. */
+    public void afterSitesAdvance() {
+        othersOwedAfterAdvance = othersOwedOnSite();
+    }
+
+    /**
+     * The work a typical month orders of the builders (OG1): the median of the months kept, so one month's spike - a
+     * playtest move of 18 million points - is worked off rather than built for; NaN under MIN_MONTHS_OF_SITE_WORK.
+     */
+    public double typicalMonthOfSiteWork() {
+        if (siteWorkOrdered.size() < MIN_MONTHS_OF_SITE_WORK) return Double.NaN;
+        double[] months = siteWorkOrdered.stream().mapToDouble(Double::doubleValue).sorted().toArray();
+        int mid = months.length / 2;
+        return months.length % 2 == 1 ? months[mid] : (months[mid - 1] + months[mid]) / 2;
+    }
+
+    public List<Double> getSiteWorkOrdered() { return new ArrayList<>(siteWorkOrdered); }
+
+    /** The point the next month's orders count from, null before the first advance (a save's form: a JSON number is never NaN). */
+    public Double getOthersOwedAfterAdvance() { return Double.isNaN(othersOwedAfterAdvance) ? null : othersOwedAfterAdvance; }
+
+    /** A save's record (DataSave.buildersWork); a save from before OG1 has none and starts it again. */
+    public void restoreSiteWork(List<Double> ordered, Double owedAfterAdvance) {
+        siteWorkOrdered.clear();
+        if (ordered != null) for (Double d : ordered) if (d != null && d >= 0) siteWorkOrdered.add(d);
+        while (siteWorkOrdered.size() > TREND_WINDOW) siteWorkOrdered.remove(0);
+        othersOwedAfterAdvance = owedAfterAdvance == null ? Double.NaN : owedAfterAdvance;
+    }
+
+    /*
      * THE WAIT GROWS WITH THE ORDER (0.7.54; read by carryOf() since BA1).
      * orderSize() once counted up from one building, reading the wait for
      * each, until it passed the months an order could take; the order grows
