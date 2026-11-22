@@ -1703,10 +1703,11 @@ public class FamilyModel implements HouseholdBalance.Census {
         java.util.Arrays.fill(seekersUnplacedHomes,0);
         for(var d:demand){
             double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
-            double left=Math.max(0,d.count()-placed);Household c=byKey.get(d.key());
+            double left=Math.max(0,d.count()-placed);boolean sharing=d.key().endsWith("#sharing");
+            Household c=byKey.get(sharing?d.key().substring(0,d.key().length()-8):d.key());
             if(c==null)continue;
-            if(c instanceof StudentHousehold){seekersUnplaced[Seeker.STUDENT.ordinal()]+=left;seekersUnplacedHomes[Seeker.STUDENT.ordinal()]+=left;}
-            else if(c instanceof UnemployedHousehold){seekersUnplaced[Seeker.UNEMPLOYED.ordinal()]+=left;seekersUnplacedHomes[Seeker.UNEMPLOYED.ordinal()]+=left;}
+            if(c instanceof StudentHousehold){seekersUnplaced[Seeker.STUDENT.ordinal()]+=left*(sharing?5:1);seekersUnplacedHomes[Seeker.STUDENT.ordinal()]+=left;}
+            else if(c instanceof UnemployedHousehold){seekersUnplaced[Seeker.UNEMPLOYED.ordinal()]+=left*(sharing?5:1);seekersUnplacedHomes[Seeker.UNEMPLOYED.ordinal()]+=left;}
             else if(c.shape()!=null)unplacedByShape[c.shape().ordinal()]+=left;
         }
         occupiedBySize=new double[inventory.homesBySize().length];rentWeight=studioRentWeight=familyRentWeight=0;

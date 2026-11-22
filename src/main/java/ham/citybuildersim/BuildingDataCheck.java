@@ -817,7 +817,8 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL, 1900);
         years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
         years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
-        assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
+        for (HousingForms.Form form : HousingForms.ALL) years.put(form.id(),form.since());
+        assertTrue("RES3's fourteen forms and the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
                         + " as standing before it - and batch I5's three: the Large Open-Pit Mine 1900, the two magnetite works 1955 (E4,"

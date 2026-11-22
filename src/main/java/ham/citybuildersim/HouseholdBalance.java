@@ -684,6 +684,28 @@ public class HouseholdBalance {
         double typed=rentBills.applyAsDouble(c);
         return Double.isFinite(typed)?Math.max(0,typed):pooled*Math.max(0,rentShares.applyAsDouble(c));
     }
+    public record HousingResources(double count,double budget) { }
+    /** Monthly housing uses the same staged census and income/fee splits as the cash strike, without moving any stocks. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent) {
+        double[] fresh=takeCensus(families),income=new double[ROWS],fees=new double[ROWS];
+        for(int r=0;r<ROWS;r++){
+            income[r]=accounts.getRowDisposable(r);
+            fees[r]=accounts.getRowHealthcare(r)+accounts.getRowTuition(r)+accounts.getRowFares(r)
+                    +accounts.getRowFuel(r)+accounts.getRowHomeFuel(r);
+        }
+        double[] pay=splitIncome(fresh,income),bills=splitByPeople(fresh,fees);
+        java.util.Map<String,HousingResources> result=new java.util.LinkedHashMap<>();
+        for(int i=0;i<cells.length;i++){
+            Household c=cells[i];double oldRent=chargedRent.applyAsDouble(c);
+            double actualFixed=Math.max(0,c.disposable()-c.afterFixed()-oldRent);
+            double projected=bills[i]+accountFeeFor(c,fresh[i])+c.interest()+c.studentInterest()+c.studentRepaid();
+            double budget=Math.max(0,pay[i]-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
+                    +c.savings()/HousingMarket.SAVINGS_MONTHS);
+            result.put(c.key(),new HousingResources(fresh[i],budget));
+        }
+        return result;
+    }
 
     public void setRentShares(ToDoubleFunction<Household> shares) {
         this.rentShares = shares == null ? c -> 1 : shares;

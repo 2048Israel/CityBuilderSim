@@ -7844,6 +7844,9 @@ public class Game {
 
     /** The lender's reading of an order of `quantity` with `cash` in hand - the one call the landlords' order (considerOnMortgage()) and the build card (lenderTest()) both make, so they cannot disagree. */
     private LenderReading lenderReads(BuildingsTemplate t, long quantity, double cash, double perUnitRent) {
+        var residential=getSectors().realEstate();
+        if(residential.housingMarket().active() && quantity>0)
+            perUnitRent=residential.housingMarket().candidateIncome(t,Math.max(0,residential.latentHeadShortfall()),quantity)/quantity;
         double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
         double tested = businessInvestment.realTestRate(insured);
         // ...at the door's own price (FB15, HN1-A; A LANDLORD'S ORDER AT THE DOOR'S OWN PRICE): the planner's was 2-5% under it.
@@ -16582,19 +16585,20 @@ public class Game {
     private void clearTypedHousing() {
         var market=getSectors().realEstate().housingMarket();
         java.util.List<HousingChoice.Demand> demand=new java.util.ArrayList<>();
+        var resources=householdBalance.strikeHousingBudgets(families,households,getSectors().retail().getStoreSellPrice(),
+                c -> market.active()?market.rentFor(c.key(),c.households()):households.rentPerHousehold()*c.rentShare());
         for(Household c:householdBalance.cells()) {
             if(c instanceof OwnerHousehold || c instanceof OrphanHousehold || c instanceof PrisonerHousehold)continue;
             if(c instanceof UnemployedHousehold u && u.status()==UnemployedHousehold.Status.UNHOUSED)continue;
-            double count=housingCellCount(c);if(count<=0)continue;
-            double oldRent=market.active()?market.rentFor(c.key(),Math.max(count,c.households())):households.rentPerHousehold()*rentShareOf(c);
-            double income=c.disposable();
-            if(!(income>0)&&households.getRowHouseholds(c.row())>0)
-                income=households.getRowDisposable(c.row())/households.getRowHouseholds(c.row());
-            double nonRent=Math.max(0,c.disposable()-c.afterFixed()-oldRent);
-            double budget=Math.max(0,income-nonRent-c.subsistence()+c.savings()/HousingMarket.SAVINGS_MONTHS);
+            double count=resources.get(c.key()).count();if(count<=0)continue;
+            double budget=resources.get(c.key()).budget();
             int size=c.shape()==null?Math.max(1,(int)Math.ceil(c.headcount())):c.shape().size();
             int children=c.shape()==null?(int)Math.ceil(c.getDependants()):c.shape().dependants();
-            demand.add(new HousingChoice.Demand(c.key(),count,size,children,c.isRetired(),
+            FamilyModel.Seeker seeker=c instanceof StudentHousehold?FamilyModel.Seeker.STUDENT:
+                    c instanceof UnemployedHousehold?FamilyModel.Seeker.UNEMPLOYED:null;
+            double sharing=seeker==null?0:Math.min(count,families.getSeekersSharing(seeker));
+            if(sharing>0)demand.add(new HousingChoice.Demand(c.key()+"#sharing",sharing/5,5+children,children,false,0,false,budget*5));
+            if(count>sharing)demand.add(new HousingChoice.Demand(c.key(),count-sharing,size,children,c.isRetired(),
                     c.tier()==null?0:c.tier().ordinal(),c instanceof WorkingHousehold w&&w.stage()==AdultStage.YOUNG,budget));
         }
         var result=market.clear(this,demand);
@@ -22407,6 +22411,7 @@ public class Game {
             // counted them: saved apart (DataSave.getOwnerAdults), since the line may have gained or lost a
             // family after the census.
             families.restoreOwnerAdults(restoredFlows.getOwnerAdults());
+            getSectors().realEstate().housingMarket().restore(restoredFlows.getHousingMarket());
             populationManager.setOwners(families.getOwnerAdults());
             health.restore(restoredFlows.getHealth());
             // ...and the causes of death of 1900 (R0b): a save from before has

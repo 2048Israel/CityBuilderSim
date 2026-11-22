@@ -19,17 +19,35 @@ public final class HousingChoice {
     public static final double ACCESS_WEIGHT = .60;
     /** Remaining-budget sensitivity, after all recurring necessities are reserved. */
     public static final double BUDGET_WEIGHT = .20;
+    /** Base desired private floor area, in square metres. */
+    public static final double BASE_AREA = 30;
+    /** Desired private floor area added per household member. */
+    public static final double AREA_PER_PERSON = 20;
+    /** Each tier's increment in the desired-area vector. */
+    public static final double AREA_PER_TIER = .15;
+    /** Young adults' desired area relative to established households. */
+    public static final double YOUNG_AREA = .9;
+    /** Each tier's extra preference for finish quality. */
+    public static final double QUALITY_PER_TIER = .20;
+    /** Outdoor square metres at which the family garden term saturates. */
+    public static final double GARDEN_AREA = 100;
     public record Demand(String key, double count, int size, int children, boolean retired,
                          int tier, boolean young, double budget) {
-        public Demand { quantity(count); quantity(budget); if (size<1 || key==null) throw new IllegalArgumentException(); }
-        double targetArea() { return (30+20*size)*(1+.15*tier)*(young?.9:1); }
+        public Demand { quantity(count); quantity(budget); if (size<1 || children<0 || tier<0 || key==null || key.isBlank()) throw new IllegalArgumentException(); }
+        double targetArea() { return (BASE_AREA+AREA_PER_PERSON*size)*(1+AREA_PER_TIER*tier)*(young?YOUNG_AREA:1); }
     }
     public record Offer(HousingInventory.Key key, double count, int capacity, int bedrooms,
                         double area, double quality, double garden, boolean stepFree,
                         double rent, double recurring) {
-        public Offer { quantity(count); quantity(rent); quantity(recurring); }
+        public Offer {
+            quantity(count);quantity(rent);quantity(recurring);quantity(garden);
+            if(key==null||capacity<1||bedrooms<0||!(area>0)||!Double.isFinite(area)||!(quality>0)||!Double.isFinite(quality))
+                throw new IllegalArgumentException("Invalid housing offer");
+        }
     }
-    public record Lease(String cell, HousingInventory.Key home, double count, double bill) { }
+    public record Lease(String cell, HousingInventory.Key home, double count, double bill) {
+        public Lease { quantity(count);quantity(bill);if(cell==null||cell.isBlank()||home==null)throw new IllegalArgumentException("Invalid lease"); }
+    }
     public record Result(List<Lease> leases, double kept, double suitable, double crowded,
                          double unaffordable, double noSuitable, double unplaced) { }
     private static void quantity(double v) { if (!Double.isFinite(v)||v<0) throw new IllegalArgumentException("Invalid housing quantity"); }
@@ -40,8 +58,8 @@ public final class HousingChoice {
     public static boolean affordable(Demand d, Offer o) { return o.rent()+o.recurring()<=d.budget(); }
     public static double score(Demand d, Offer o) {
         return -Math.abs(Math.log(o.area()/d.targetArea()))
-                +(QUALITY_WEIGHT+.20*d.tier())*Math.log(o.quality())
-                +(d.children()>0 ? GARDEN_WEIGHT*Math.min(1,o.garden()/100) : 0)
+                +(QUALITY_WEIGHT+QUALITY_PER_TIER*d.tier())*Math.log(o.quality())
+                +(d.children()>0 ? GARDEN_WEIGHT*Math.min(1,o.garden()/GARDEN_AREA) : 0)
                 +(d.retired()&&o.stepFree()?ACCESS_WEIGHT:0)
                 -BEDROOM_PENALTY*Math.max(0,(d.size()+1)/2.0-o.bedrooms())
                 -BUDGET_WEIGHT*(d.budget()>0?(o.rent()+o.recurring())/d.budget():0);
@@ -63,6 +81,20 @@ public final class HousingChoice {
         for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];double ratio=sum>free[j]?free[j]/sum:1;
             for(int i=0;i<h;i++){x[i][j]*=ratio;need[i]=Math.max(0,need[i]-x[i][j]);free[j]-=x[i][j];kept+=x[i][j];}}
         double suitable=allocate(ds,os,need,free,x,month,false),crowded=allocate(ds,os,need,free,x,month,true);
+        // Pro-rata products may sum one ULP over a source. Round down only within
+        // the model's packing bound; a genuine excess remains an error.
+        for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];
+            if(sum>os.get(j).count()){
+                if(sum-os.get(j).count()>FamilyModel.packingRounding(sum))throw new IllegalStateException("Housing allocation exceeds stock");
+                double ratio=Math.nextDown(os.get(j).count()/sum);for(int i=0;i<h;i++)x[i][j]*=ratio;
+            }
+            double used=0;
+            for(int i=0;i<h;i++){
+                if(used+x[i][j]>os.get(j).count())x[i][j]=Math.max(0,Math.nextDown(os.get(j).count()-used));
+                used+=x[i][j];
+            }}
+        for(int i=0;i<h;i++){double sum=Arrays.stream(x[i]).sum();need[i]=Math.max(0,ds.get(i).count()-sum);
+            if(need[i]<=FamilyModel.packingRounding(ds.get(i).count()))need[i]=0;}
         double poor=0,noSuitable=0,left=0; List<Lease> leases=new ArrayList<>();
         for(int i=0;i<h;i++){
             left+=need[i]; boolean compatible=false,canPay=false;
@@ -82,7 +114,7 @@ public final class HousingChoice {
         for(int j=0;j<os.size();j++)if(free[j]>0){Offer o=os.get(j);og.computeIfAbsent(new OfferSignature(o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()),k->new ArrayList<>()).add(j);}
         List<List<Integer>> hs=new ArrayList<>(dg.values()),ts=new ArrayList<>(og.values());
         // Stable keys, rotated monthly, decide only incomparable residual ties.
-        hs.sort(Comparator.comparingLong(g->Integer.toUnsignedLong(Objects.hash(ds.get(g.getFirst()).key(),month))));
+        hs.sort(Comparator.comparingLong(g->rotatedKey(ds.get(g.getFirst()).key(),month)));
         int hn=hs.size(),tn=ts.size(),sink=hn+tn+1; List<List<Edge>> graph=new ArrayList<>();for(int i=0;i<=sink;i++)graph.add(new ArrayList<>());
         double[] nh=new double[hn],nt=new double[tn]; Edge[][] links=new Edge[hn][tn];
         for(int a=0;a<hn;a++){for(int i:hs.get(a))nh[a]+=need[i];edge(graph,0,1+a,nh[a]);}
@@ -90,7 +122,7 @@ public final class HousingChoice {
         for(int a=0;a<hn;a++){
             Demand d=ds.get(hs.get(a).getFirst()); List<Integer> rank=new ArrayList<>();for(int b=0;b<tn;b++)rank.add(b);
             rank.sort(Comparator.<Integer>comparingDouble(b->score(d,os.get(ts.get(b).getFirst()))).reversed()
-                    .thenComparingLong(b->Integer.toUnsignedLong(Objects.hash(os.get(ts.get(b).getFirst()).key(),month))));
+                    .thenComparingLong(b->rotatedKey(os.get(ts.get(b).getFirst()).key().toString(),month)));
             for(int b:rank){Offer o=os.get(ts.get(b).getFirst());if(suitable(d,o,emergency)&&affordable(d,o))links[a][b]=edge(graph,1+a,1+hn+b,Math.min(nh[a],nt[b]));}
         }
         double placed=0;
@@ -109,5 +141,9 @@ public final class HousingChoice {
         return placed;
     }
     private static final class Edge { final int to; double left; Edge reverse;Edge(int to,double left){this.to=to;this.left=left;} }
+    private static long rotatedKey(String key,int month){
+        long x=key.hashCode()*0x9e3779b97f4a7c15L ^ (long)month*0xbf58476d1ce4e5b9L;
+        x=(x^(x>>>30))*0xbf58476d1ce4e5b9L;x=(x^(x>>>27))*0x94d049bb133111ebL;return x^(x>>>31);
+    }
     private static Edge edge(List<List<Edge>> g,int u,int v,double cap){Edge a=new Edge(v,cap),b=new Edge(u,0);a.reverse=b;b.reverse=a;g.get(u).add(a);g.get(v).add(b);return a;}
 }

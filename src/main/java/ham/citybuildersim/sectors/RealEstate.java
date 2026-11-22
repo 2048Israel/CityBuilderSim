@@ -380,8 +380,8 @@ public final class RealEstate extends Sector {
     public double getBilledRentWeight()      { return rBilledStudioWeight + rBilledFamilyWeight; }
     public double getBilledStudioWeight()    { return rBilledStudioWeight; }
     public double getBilledFamilyWeight()    { return rBilledFamilyWeight; }
-    public double getRentPrice()             { return rentPrice; }
-    public double getStudioRentPrice()       { return studioRentPrice; }
+    public double getRentPrice()             { return housingMarket.active()?housingMarket.paidPerCapacity(true):rentPrice; }
+    public double getStudioRentPrice()       { return housingMarket.active()?housingMarket.paidPerCapacity(false):studioRentPrice; }
     public double getRentTarget()            { return lastRentTarget > 0 ? lastRentTarget : rentPrice; }
     public double getStudioRentTarget()      { return lastStudioTarget > 0 ? lastStudioTarget : studioRentPrice; }
     /** Rent billed in the month last sold - the figure the households were charged. */
@@ -753,6 +753,8 @@ public final class RealEstate extends Sector {
 
         // ...what the shortage needs, on the land there is: no months of the builders' work to fit it in (BA1, above).
         int quantity = Math.min(wanted, plots);
+        if(housingMarket.active())while(quantity>1 && housingMarket.candidateIncome(best,Math.max(0,headShortfall),quantity)
+                < game.getEconomyManager().housingBuildHurdle(best)*quantity)quantity=Math.max(1,quantity/2);
 
         return new BusinessInvestment.Decision(sector, best, quantity,
                 familyShortfall > 0 && headShortfall <= 0
