@@ -494,10 +494,101 @@ public class ExchangeCheck {
                         && e1.fund.getMonthSold() == 0);
     }
 
+    /** RS1: cause the rescued bank's sale, its unavailable self-bid and both price faults through settlement. */
+    static void rescueSaleChecks() {
+        out.println("\n--- RS1. the city sells its rescued bank to real buyers ---");
+        for (boolean local : new boolean[] { false, true }) {
+            Equity reg = withPaid(Equity.BANK, 100, 40);
+            reg.takeAllForCity(Equity.BANK, 1_000);
+            TreasuryFund fund = new TreasuryFund();
+            fund.notePaidInByHand(100_000);
+            TreasuryFund.Resolution rescue = TreasuryFund.newResolution(1);
+            rescue.paid = 12_000;
+            fund.noteResolution(rescue);
+            Exchange ex = exchange();
+            ex.attachFund(fund);
+            double fair = reg.fairValue(Equity.BANK, 24_000, 0, W);
+            double ask = fair * (local ? .5 : .01);
+            fund.queue(new TreasuryFund.HandOrder(false, Equity.BANK, -1, false, 1_000, 1, ask));
+            HouseholdBalance buyers = local ? savers(10_000, 4) : null;
+            double householdCash = local ? couple(buyers).savings * couple(buyers).households() : 0;
+            step(ex, reg, buyers, null, new Firms(), bookOf(Equity.BANK, 24_000), W, 0, 2);
+            double sold = 1_000 - reg.getCityShares(Equity.BANK);
+            assertTrue("RS1-0: the world buys rescued shares without a bank buyback", reg.getForeignShares(Equity.BANK) > 0);
+            close("RS1-0: a sale transfers shares rather than cancelling them", reg.getShares(Equity.BANK), 1_000, 1e-9);
+            close("RS1-sale: the rescue book gives up exactly the buyers' shares", sold,
+                    reg.getForeignShares(Equity.BANK) + (local ? buyers.sharesHeld(Equity.BANK) : 0), 1e-9);
+            assertTrue("RS1-sale: the city actually relinquishes ownership", sold > 0);
+            close("RS1-sale: the fund receives the price buyers paid", fund.getCash() - 100_000, sold * ask, 1e-8);
+            close("RS1-sale: rescue cost falls pro rata", fund.getRescueCost(), 12_000 * (1 - sold / 1_000), 1e-8);
+            close("RS1-1: its own rule leaves no bid behind its crossing hand sale",
+                    ex.bookOf(Equity.BANK).resting(Exchange.FUND, OrderBook.Side.BUY), 0, 1e-9);
+            if (local) {
+                assertTrue("RS1-star: households too can buy the rescue book", buyers.sharesHeld(Equity.BANK) > 0);
+                close("RS1-star: households pay the fund from their savings",
+                        householdCash - couple(buyers).savings * couple(buyers).households(),
+                        ex.getFundSoldToHouseholds(), 1e-8);
+            }
+        }
+
+        // A bid and an ask can legitimately cross when the clearing bars self-trade.
+        Equity reg = equity();
+        reg.takeAllForCity(Equity.BANK, 1_000);
+        TreasuryFund fund = new TreasuryFund();
+        fund.notePaidInByHand(100_000);
+        Exchange ex = exchange();
+        ex.attachFund(fund);
+        step(ex, reg, null, null, new Firms(), bookOf(Equity.BANK, 14_140), W, 0, 1);
+        double fair = ex.fair(Equity.BANK);
+        ex.tradeForCheck(Equity.BANK, Exchange.FUND_HAND, OrderBook.Side.SELL, fair * .01, 1_000);
+        assertTrue("RS1-2 fixture: an ask rests below the fund's own bid", ex.bestBid(Equity.BANK) > ex.bestAsk(Equity.BANK));
+        close("RS1-2: a crossed book uses fair value before its first trade", ex.price(Equity.BANK), fair, 1e-12);
+        assertTrue("RS1-2: the caption explains why there is no midpoint", ex.quoteWords(Equity.BANK).contains("crossed"));
+        ex.tradeForCheck(Equity.BANK, Exchange.WORLD, OrderBook.Side.BUY, fair, 10);
+        close("RS1-2: after a real trade the crossed book keeps the price paid", ex.price(Equity.BANK), ex.lastTrade(Equity.BANK), 1e-12);
+        assertTrue("RS1-2: the crossed last-trade quote can age", ex.quoteIsLastTrade(Equity.BANK));
+
+        out.println("\n--- RS1-3. a full desk cannot print a dust price (DK1's class) ---");
+        for (double scale : new double[] { 1, 1e9 }) {
+            int a = Equity.indexOf(Sectors.RETAIL), b = Equity.indexOf(Sectors.INDUSTRY);
+            int target = Equity.indexOf(Sectors.MATERIALS);
+            Equity r = equity();
+            Bank bank = bankWith(1e12 * scale);
+            double cap = Exchange.BOOK_LIMIT * bank.equity();
+            double held = Math.nextDown(cap / 2);
+            double[] book = new double[N];
+            for (int c : new int[] { a, b, target }) {
+                r.offer(c, 1e12, 0, null, W);
+                book[c] = 1e12 * scale;
+            }
+            for (int c : new int[] { a, b }) {
+                r.moveForeign(c, -held / scale);
+                r.moveDesk(c, held / scale);
+            }
+            bank.deskPays(2 * held);
+            bank.markSecurities(2 * held);
+            Exchange x = exchange();
+            step(x, r, null, null, new Firms(), book, W, 0, 1);
+            x.attach(r, null, bank, null, 1);
+            double residue = cap - 2 * held;
+            assertTrue("RS1-3 fixture: positive book room is below the sums' resolution but above quantity dust",
+                    residue / scale > OrderBook.DUST && residue <= MoneyAudit.tolerance(0, cap));
+            double cheap = x.fair(target) * .000259 / 14.14;
+            x.tradeForCheck(target, Exchange.WORLD, OrderBook.Side.SELL, cheap, 100);
+            x.tradeForCheck(target, Exchange.DESK, OrderBook.Side.BUY, x.fair(target), 100);
+            assertTrue("RS1-3: arithmetic residue cannot set the order card's last price", !x.hasTraded(target));
+            bank.injectCapital(cap * 1e-5);
+            x.tradeForCheck(target, Exchange.DESK, OrderBook.Side.BUY, x.fair(target), 100);
+            assertTrue("RS1-3 control: resolved room permits a real cheap trade", x.hasTraded(target));
+            close("RS1-3 control: a real trade records the actual buyer's price", x.lastTrade(target), cheap, 1e-12 * scale);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        rescueSaleChecks();
 
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
         int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
@@ -1387,7 +1478,8 @@ public class ExchangeCheck {
                     // with one side, the last trade held inside it; with neither, the last trade.
                     double bid = x.bestBid(c), ask = x.bestAsk(c), last = x.lastTrade(c);
                     boolean hasBid = !Double.isNaN(bid), hasAsk = !Double.isNaN(ask);
-                    double quote = hasBid && hasAsk ? (bid + ask) / 2 : hasAsk ? Math.min(last, ask) : hasBid ? Math.max(last, bid) : last;
+                    double quote = hasBid && hasAsk ? (bid > ask ? last : (bid + ask) / 2)
+                            : hasAsk ? Math.min(last, ask) : hasBid ? Math.max(last, bid) : last;
                     if (Math.abs(x.price(c) - quote) > 1e-12 * Math.max(1, quote)) quoteMisread++;
                     if (x.price(c) != last) quoteNotLastTrade++;
                 }
