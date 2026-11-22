@@ -619,3 +619,49 @@ The stopped run's Policy/Taxes Profit retention line clears on the broker
 mend: the full current run retains193 of194 nodes, versus195 of224 in the
 stopped run. The original90% requirement passes; no known-red row is added
 for it. This is further trace evidence of the phantom company's effect.
+
+`./batch-check.sh KeptCheck` completes, exit3: only the Fund retention
+finding just traced and the main-recorded empty-paper premise remain.
+The latter still reads0 paper; its existing owner is FS5. The live heap
+after release is1326.3MiB of2048MiB and the quarter-free check passes on
+Windows. Policy Profit's193/194 retention was at m3355. All kept-versus-
+fresh comparisons, including household money, pass; KRT1 reports0
+nonrepeating place/size differences. The diagnostic page-name prefix
+added during that run changes only the emitted label; final compilation
+and common-judge validation of the remaining premise rows follow it.
+
+### Delta handoff after the stopped ALL run
+
+The final common-judge calls each name one harness:
+`CurrencyCheck`, `HoldersCheck`, `EducationCheck`, `HealthCheck` all exit3,
+with only the3/4/1/1 exact premise lines above. `--fast` then exits0:
+compilation, generated maps and Stale pass (0 firm,199 soft findings).
+The last KeptCheck code change only prefixes its diagnostic label; it is
+compiled in these final calls. No assertion predicate, budget, money-audit
+tolerance or save/continuation comparison was weakened.
+
+`tools/known-reds.sh HC1 docs/queue/HC1-ship.md` validates the10 narrow
+new rows (the9 premise lines and the fund-specific FS5 retention line).
+FundCheck's existing limit and DeathRecordCheck's existing OX2 line stay
+in main's record. The old stopped run remains evidence, never a green
+run to reuse. Its corrected PriceLevel, Equity, Outside, Owner,
+SectorStatement, Prize, SaveSlot size, Holders waterfall, Gold, Credit,
+CreditCrunch, Fund pro-rata, Death m48 and Policy Profit lines are not
+approved as known reds.
+
+The final fetch still finds main at `db9b1fd99`, already merged by
+`4c7b3cfc5`. The pick is **ALL244 harnesses**,116 changed files against
+that main (generated maps included). Its review floor reads:
+`money: Bank.java, DebtStatistics.java, ui/BankScreen.java; saves:
+HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT`. The fresh
+delta review must also inspect the Sector.bank monetary normalization
+and the pin traces; the HistorySave delta is its harness-only padding,
+with no new saved layout after format62. No production threading changes.
+
+The GG1 marker remains provisional. Mail `HC1 mends at` for the required
+fresh stranger's delta review and end the turn. On its SHIP, merge main
+again, replace the historical d325c74c8 ensemble with one80-run ensemble
+on the final monetary model against the instructed newest baseline
+(.188 at the last go), and stop on M1/F1 as required. Then ask for a new
+ALL dry-run slot before starting it. No second dry run or readiness is
+claimed in this handoff.
