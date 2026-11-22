@@ -363,3 +363,32 @@ Focused integration checks are running serially: CardCheck, SaveFileCheck,
 ReadPathCheck, HousingInventoryCheck and ExchangeCheck. Logs are
 `target/hc1-integrated-fast.txt`, `target/hc1-integrated-named.txt` and
 `target/hc1-integrated-suite-status.txt`.
+
+The five focused integration harnesses initially left eight ExchangeCheck
+assertions red. The saver fixture had struck a native household month and then
+reset cash alone, retaining new card debt/holder shares. It no longer represented
+its stated debt-free savers, reducing the buying budgets. ★ Establish these
+exchange-boundary positions with `censusOnly`, then the fixture's stated cash and
+take-home. No card balances are erased or defaults disabled. The two-cell
+rebalance setup uses the same boundary construction.
+
+The native cell-to-cell sale case still runs the real household waterfall. Its
+old 18-spending/4-income/12-cash input now has a distributed savings shortfall
+and a separate income-scaled shock, so it is not the asserted pure 2 shortfall.
+★ Cause that exact ordinary gap with zero opening cash, zero income and
+spending 2; increase the buyer's input cash to 1,000 so its bid covers the
+seller's current card-priced reservation. The original checks of sold quantity
+at the model's borrowing rate, all cash/holding transfers, exactly 2 raised,
+zero debt, zero outside-pool flow and the register remain, with every original
+numerical tolerance unchanged. The earlier emigrant wait check passes too.
+All eight ExchangeCheck assertions now pass. Production card/exchange logic did
+not change. Its shared helper's BankCheck and MarketCheck consumers also pass;
+ShortSellingCheck's native 1,000-month audit is still running at this checkpoint.
+The fast check passes (0 firm/199 soft); CardCheck, SaveFileCheck, ReadPathCheck,
+HousingInventoryCheck, ExchangeCheck, BankCheck and MarketCheck are green.
+
+The current pick is ALL 244 harnesses. The ensemble uses label
+`HC1-final-189-20261122`, baseline `docs/ensemble/0.9.188.md`, and no extra
+`JAVA_OPTS` (the baseline names data properties only). Laptop data properties
+are omitted from its call so GB3 uses the box's matching copies. PW5's ensemble
+is running on the box; HC1 is to queue behind it. The provisional marker stays.
