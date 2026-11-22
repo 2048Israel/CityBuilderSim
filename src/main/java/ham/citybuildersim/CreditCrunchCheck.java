@@ -29,6 +29,26 @@ import java.util.Locale;
  * whose bank its restore setters hold halfway down its leverage band, its
  * homes cut at the start to the doubling valve's last few households.
  *
+ * WHY THE HOLD MOVES CASH AND DEPOSITS FROM ABROAD TOGETHER (FS9: the
+ * played city moved under it with HN1-A, seed 13 standing at 483
+ * households at m150 where it stood at 930): the desks' capital rule is
+ * struck inside the month, in Game.startOfMonthUpdate() (strikeBankBonds(),
+ * lendingGrowthLimit(), lendsOnlyToKeepBorrowersGoing(), leverageBinds()),
+ * and the bank's equity and exposure hardly move between the hold before
+ * the month and that strike. What had moved was the book: it weighs nearly
+ * all of the bank's exposure, so the risk-based requirement (CAPITAL_RATIO
+ * of the weighted book) was the larger of the two, and a hold by cash alone
+ * set the leverage ratio to the band while the leverage requirement did not
+ * bind: the rule was the risk weights', the bank under its risk minimum
+ * and lending only to keep borrowers going, most months. The hold now
+ * brings the exposure to BINDS_BY times what the risk weights ask (cash,
+ * funded by deposits from abroad, which weigh nothing) and sets the equity
+ * by the deposits, so the leverage requirement is the larger and the ratio
+ * stands in its band at the strike. Game.nextMonth() sets the deposits
+ * from abroad back to the hot money's stock after the strike, so the bank
+ * a month ends on is not the one its rule was struck on: section 4 holds
+ * and strikes again before its order.
+ *
  * What this has to prove:
  *   1. the door's capital test asked first (mortgageShortOfCapital()) says
  *      what the door says, records nothing, and is no while the risk weights
@@ -37,8 +57,9 @@ import java.util.Locale;
  *      only while it says short, on the loan the door is asked for once the
  *      down payment is in, never on the cost less a till under the down
  *      payment (REV-MC1);
- *   2. the fixture: a played city whose bank's leverage ratio binds, held in
- *      its band every month of the crunch, its landlords asking for homes the
+ *   2. the fixture: a played city whose bank's leverage requirement is the
+ *      larger and its ratio held in its band before every month of the crunch
+ *      (so the rule the month strikes is the band's), its landlords asking for homes the
  *      bank has no capital to lend on, its households doubled up to within a
  *      few of the valve's ceiling;
  *   3. through the crunch the owners put in what the till lacked, homes are
@@ -46,7 +67,11 @@ import java.util.Locale;
  *      (FamilyModel.getStillUnplaced(), LongPlaytest's watch, unmoved), and no
  *      month the door trimmed is left marked as held for the bank's capital;
  *   4. an order of six caused at the crunch's end (REV-FB15), since the
- *      played crunch asks for one block at a time once the door prices it:
+ *      played crunch asks for one block at a time once the door prices it,
+ *      the bank held in its band and the rule struck on it by hand just
+ *      before, the yard emptied and the planner's land refreshed after the
+ *      plots bought, so the door's price is the planner's and the imported
+ *      materials' premium over it, not the played yard's:
  *      the lender reads it, and the owners are offered what the till lacks,
  *      at the door's own price (FB15, HN1-A; red on main's classes); where
  *      their issue falls short, the door trims for the bank's capital what
@@ -227,12 +252,26 @@ public final class CreditCrunchCheck {
     static double roomAtStart = Double.NaN, roomAfterCut = Double.NaN;
     static long cutHomes;
 
-    /** The restore setters: the bank's cash moved so its leverage ratio stands HOLD of its band up, its book as it is. */
+    /** ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. */
+    static final double BINDS_BY = 1.25;
+    /** The leverage ratio the last hold left, which is what the month's rule is struck on (the month's end reads the hot money's reset). */
+    static double heldRatio = Double.NaN;
+
+    /**
+     * The restore setters: the bank's cash and its deposits from abroad moved, its book as it is, so that its leverage
+     * requirement is the larger (BINDS_BY over the risk-based one: the cash and the deposits both come in at no weight)
+     * and its leverage ratio stands HOLD of its band up. Cash for the exposure, the deposits for the equity.
+     * The played city's own bank sits under its risk weights (its book weighs more than LEVERAGE_RATIO_MIN/CAPITAL_RATIO of its exposure), so
+     * the cash alone, which moves the ratio but not the requirement that binds, held it in the wrong band (FS9).
+     */
     static void holdInBand(Bank bank) {
-        for (int i = 0; i < 6; i++) {
-            double ratio = Bank.LEVERAGE_RATIO_MIN + HOLD * (bank.leverageTarget() - Bank.LEVERAGE_RATIO_MIN);
-            bank.setCash(bank.getCash() - (bank.equity() - ratio * bank.exposure()));
-        }
+        double ratio = Bank.LEVERAGE_RATIO_MIN + HOLD * (bank.leverageTarget() - Bank.LEVERAGE_RATIO_MIN);
+        double owedAtHome = bank.totalLiabilities() - bank.borrowings() - Math.max(0, bank.getForeignDeposits());
+        double book = bank.exposure() - bank.cashReserves();
+        double wanted = BINDS_BY * Bank.CAPITAL_RATIO * bank.getWeightedBook() / Bank.LEVERAGE_RATIO_MIN;
+        double exposure = Math.max(wanted, Math.max(book, owedAtHome / (1 - ratio)));
+        bank.setCash(exposure - book);
+        bank.setForeignDeposits(exposure * (1 - ratio) - owedAtHome);
     }
 
     /** The households the placement could still take against the homes standing. */
@@ -287,14 +326,17 @@ public final class CreditCrunchCheck {
                             g.getBuildingManager().getTotalHomes(), desk.getMortgagesWrittenThisMonth(),
                             desk.wasMortgageRefusedForCapital(RE), askedThisMonth, shortThisMonth,
                             g.getEconomyManager().getEquityRaised(RE), desk.isInsuredRationed(),
-                            desk.getCapitalGrowth(), desk.isKeepGoingOnly(), bank.leverageRatio(), bank.leverageTarget(),
+                            desk.getCapitalGrowth(), desk.isKeepGoingOnly(), heldRatio, bank.leverageTarget(),
                             g.getLastInvestment(RE)));
                 }
                 askedThisMonth = 0;
                 shortThisMonth = false;
             }, () -> {
                 if (g.getMonth() == FROM) cutToTheValve(g);
-                if (g.getMonth() >= FROM) holdInBand(g.getBank());
+                if (g.getMonth() >= FROM) {
+                    holdInBand(g.getBank());
+                    heldRatio = g.getBank().leverageRatio();
+                }
             });
         } finally {
             LongPlaytest.out = was;
@@ -379,9 +421,15 @@ public final class CreditCrunchCheck {
      * is short, and an order of one has no half to trim to: the door's trim
      * for the capital where the owners' issue fell short (MC1, HN1) would be
      * watched over no order at all. So the order is caused, at the crunch's
-     * end, the bank still in its band: ORDER blocks, put to Game.consider()
-     * (by reflection, as OrderDoorCheck does) on ground bought for them and a
-     * till of TILL blocks, the owners asked for what it lacks on the order.
+     * end: ORDER blocks, put to Game.consider() (by reflection, as
+     * OrderDoorCheck does) on ground bought for them and a till of TILL
+     * blocks, the owners asked for what it lacks on the order. The bank is
+     * held in its band again just before, and the desks' capital rule
+     * struck on it by the calls Game.startOfMonthUpdate() strikes it with,
+     * since the month's end has left the bank where its hot money's reset
+     * puts it, not where the rule was struck (FS9). The yard is emptied, so
+     * the builders buy the order's materials at the market's quote and the
+     * door's price is not the planner's.
      */
     static void theShortIssue(Game g) throws Exception {
         out.println("\n--- 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital ---");
@@ -390,6 +438,22 @@ public final class CreditCrunchCheck {
         BuildingsTemplate block = LongPlaytest.template(g, "Low-Rise Apartments");
         int plots = 0;
         while (!ground(g, block, ORDER) && plots < MAX_PLOTS && g.buyLandBlock()) plots++;
+        // The yard empty: the order's materials come in at their landed price, over the planner's (the yard short of its materials).
+        g.getBuildingManager().setConstructionMaterials(0);
+        // The planner reads the land as the month's plan does, refreshed before it asks (Game.runPrivateInvestment()): after the plots.
+        java.lang.reflect.Method refreshLand = Game.class.getDeclaredMethod("refreshLand");
+        refreshLand.setAccessible(true);
+        refreshLand.invoke(g);
+        Bank bank = g.getBank();
+        holdInBand(bank);
+        strikeTheRule(g);
+        double growth = desk.getCapitalGrowth();
+        boolean bandsRule = bank.leverageBinds() && bank.leverageRatio() > Bank.LEVERAGE_RATIO_MIN
+                && bank.leverageRatio() < bank.leverageTarget() && desk.isInsuredRationed()
+                && growth > 0 && !Double.isInfinite(growth) && !desk.isKeepGoingOnly();
+        out.printf(Locale.ROOT, "   the bank held at leverage %.4f of %.4f (minimum %.4f); the rule struck: insured %s, growth %.4f, %s%n",
+                bank.leverageRatio(), bank.leverageTarget(), Bank.LEVERAGE_RATIO_MIN,
+                desk.isInsuredRationed() ? "rationed" : "free", growth, desk.isKeepGoingOnly() ? "keeping borrowers going" : "lending in its band");
         em.setSectorCash(RE, TILL * door(g, block, 1));
         double whole = door(g, block, ORDER), held = em.getSectorCash(RE) + em.getForeignAssets(RE);
         double asked = desk.ownersAskOnMortgage(RE, whole, held), raisedBefore = em.getEquityRaised(RE);
@@ -413,6 +477,8 @@ public final class CreditCrunchCheck {
                         + " the owners were offered %.1f of the %.1f it lacked and put in %.1f; the door asked for %d%s%n     \"%s\"%n",
                 g.getMonth(), ORDER, block.getName(), whole, plan, held, plots, lenderCost, offered, asked, raised,
                 askedThisMonth, shortThisMonth ? ", the bank short of capital for its mortgage" : "", line);
+        check("fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,"
+                + " growth finite and above nothing, not keeping borrowers going", bandsRule);
         check("fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage",
                 groundForAll && quote && askedThisMonth == ORDER && shortThisMonth);
         check("fixture: the door's price of the order is over the planner's (the yard short of its materials)", whole > plan * (1 + 1e-6));
@@ -423,6 +489,20 @@ public final class CreditCrunchCheck {
         check("the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys",
                 line != null && line.startsWith("Built ") && line.contains("(trimmed from " + ORDER + " - the bank is short of capital"));
         check("...and is not left marked as held for the bank's capital (REV-HN1-1)", !desk.wasMortgageRefusedForCapital(RE));
+    }
+
+    /** The desks' capital rule struck from the bank as it stands, by the calls Game.startOfMonthUpdate() makes (strikeBankBonds() is its own). */
+    static void strikeTheRule(Game g) throws Exception {
+        java.lang.reflect.Method bonds = Game.class.getDeclaredMethod("strikeBankBonds");
+        bonds.setAccessible(true);
+        bonds.invoke(g);
+        Bank bank = g.getBank();
+        double growth = bank.lendingGrowthLimit();
+        boolean keepGoingOnly = bank.lendsOnlyToKeepBorrowersGoing();
+        BusinessDebtManager desk = g.getEconomyManager().getBusinessDebtManager();
+        desk.setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());
+        desk.setProjectBudget(bank);
+        g.getHouseholdBalance().setCapitalRule(growth, keepGoingOnly);
     }
 
     /** What buildFor() charges for n: the builders' quote and the ground at its zone's price (Game.doorPriceOf() since FB15). */
