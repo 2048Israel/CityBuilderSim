@@ -231,8 +231,11 @@ by queued FB11. F1's FAIL-to-PASS comparison reflects the latest baseline's
 one-run counts; RS1 does not claim to have repaired that housing path. No
 new finding, threshold edit or score edit was used.
 
-Final main is `52c79806b`, merged as `4c79376dd`. The final pick names 42
-of 241 harnesses (`target/RS1-ready-pick.txt`), not ALL; no dry run is owed.
+Final main is `52c79806b`, merged as `4c79376dd`. The committed ensemble
+record adds EnsembleCheck, so the final pick names 43 of 241 harnesses
+(`target/RS1-ready-pick.txt`), not ALL; no dry run is owed. EnsembleCheck
+and HS3's newly selected MoneyWordsCheck were run separately and passed;
+logs are `target/RS1-ensemble-check.txt` and `target/RS1-money-words.txt`.
 `sh tools/known-reds.sh RS1 docs/queue/RS1-ship.md` exits 0. The ship file
 adds no known-reds rows and therefore names no removed queue owner. The
 ready marker is removed last, in its own commit after these records.
