@@ -4010,8 +4010,10 @@ public final class DistrictPlan {
                     do { frontageStops(); } while (frontageTails());
                     frontageProtect = false;
                 }
-                // A piece of avenue the ground leaves touching no other street is taken up again, undecided (avAlone()).
-                if (avAlone()) {
+                // A frontage arm's run past its last crossing is taken up (frontageEnds(), RR1); a piece of avenue the ground
+                // leaves touching no other street is taken up again, undecided (avAlone()).
+                boolean ends = frontageEnds();
+                if (avAlone() | ends) {
                     int m = 0;
                     for (int k = 0; k < nChanged; k++) if (str[changed[k]] || under[changed[k]]) changed[m++] = changed[k];
                     nChanged = m;
@@ -4286,6 +4288,7 @@ public final class DistrictPlan {
             do {
                 frontageStops();
             } while (frontageTails());
+            frontageEnds();
             avAlone();
             for (int k = 0; k < nChanged; k++) if (str[changed[k]] || under[changed[k]]) occ[changed[k]] = -1;
             for (int c = 0; c < CELLS; c++) if (bOut.cellKind[c] != CLOSED) {
@@ -4338,6 +4341,93 @@ public final class DistrictPlan {
                 changed = true;
             }
             return changed;
+        }
+
+        /**
+         * (RR1) NO FRONTAGE PAST ITS LAST CROSSING: a frontage arm's extent runs LATTICE steps past its highway's diagonal
+         * (frontageArm()), so where the highway turns the arm's run ended wherever its extent did - a stair step past the last
+         * street it crossed, two plots alongside that street with junction marks to nowhere (Jerus's fjord city at 0.9.181, his
+         * shots 2 and 4: one north of the boulevard on each side of the highway where it turns west). From each end of each
+         * frontage arm's run the plots it made streets of (avOwn) are walked in along the staircase, corner before step, to the
+         * first plot that was a street before it - its last crossing - and taken up, the outermost first, while none leaves a
+         * street beside it with fewer than two streets beside that (a street ending on the stub keeps it, and so does another
+         * avenue it crosses). Not where the run meets the frame's edge, where a plot the plan may still lay (undecided) lies past
+         * it, or where a gap comes before any crossing. Taken up as frontageTakeUp() takes a plot: decided, not laid. Whether any was.
+         */
+        boolean frontageEnds() {
+            boolean any = false;
+            for (int a = 4; a < avArms.size(); a++) {
+                int[] arm = avArms.get(a);
+                int dx = AVENUE_DX[arm[2]], dy = AVENUE_DY[arm[2]], span = arm[4] - arm[3] + 1;
+                int[] path = new int[2 * span];
+                for (int end = 0; end < 2; end++) {
+                    // The arm's path from this end inward: -1 for a plot off the frame.
+                    int n = 0;
+                    for (int i = 0; i < span; i++) {
+                        int k = end == 0 ? arm[3] + i : arm[4] - i;
+                        for (int c = 0; c < 2; c++) {
+                            boolean corner = end == 0 ? c == 0 : c == 1;
+                            if (corner && k < 1) continue;
+                            int x = arm[0] + dx * k, y = arm[1] + dy * (corner ? k - 1 : k);
+                            path[n++] = x < 0 || y < 0 || x >= FRAME || y >= FRAME ? -1 : y * FRAME + x;
+                        }
+                    }
+                    int tip = -1, cross = -1;
+                    for (int j = 0; j < n && cross < 0; j++) {
+                        int q = path[j];
+                        if (tip < 0) {
+                            if (q < 0 || avMark[q] == 0 || avDone[q] == 2) continue;
+                            if (avDone[q] == 0) break;
+                            tip = j;
+                        }
+                        if (q < 0 || avDone[q] != 1) break;
+                        int x = q % FRAME, y = q / FRAME;
+                        if (x == 0 || y == 0 || x == FRAME - 1 || y == FRAME - 1) break;
+                        if (!avOwn[q]) cross = j;
+                    }
+                    if (tip < 0 || cross < 0) continue;
+                    // The most of the run past the crossing whose taking up leaves no street beside it, the run's new tip
+                    // among them, with fewer than two streets beside it.
+                    int m = cross;
+                    while (m > tip && !frontageEndsLeave(path, tip, m)) m--;
+                    for (int j = tip; j < m; j++) {
+                        int q = path[j];
+                        if (str[q]) setStr(q, false);
+                        under[q] = false;
+                        art[q] = false;
+                        role[q] = 0;
+                        avOwn[q] = false;
+                        avUnlay(q);
+                        any = true;
+                    }
+                }
+            }
+            return any;
+        }
+
+        /** Whether taking up path[from..to) (frontageEnds()) leaves every street beside those plots, off the frame's edge, two streets beside it. */
+        boolean frontageEndsLeave(int[] path, int from, int to) {
+            for (int j = from; j < to; j++) {
+                int q = path[j];
+                for (int d = 0; d < 4; d++) {
+                    int s = q + TilePainter.DX[d] + FRAME * TilePainter.DY[d];
+                    if (!(str[s] || under[s]) || frontageEndsIn(path, from, to, s)) continue;
+                    int sx = s % FRAME, sy = s / FRAME;
+                    if (sx == 0 || sy == 0 || sx == FRAME - 1 || sy == FRAME - 1) continue;
+                    int beside = 0;
+                    for (int e = 0; e < 4; e++) {
+                        int t = s + TilePainter.DX[e] + FRAME * TilePainter.DY[e];
+                        if ((str[t] || under[t]) && !frontageEndsIn(path, from, to, t)) beside++;
+                    }
+                    if (beside < 2) return false;
+                }
+            }
+            return true;
+        }
+
+        static boolean frontageEndsIn(int[] path, int from, int to, int p) {
+            for (int j = from; j < to; j++) if (path[j] == p) return true;
+            return false;
         }
 
         /** Gives back one new frontage plot exactly as it stood before the pass, retaining every existing street. */
@@ -4599,6 +4689,7 @@ public final class DistrictPlan {
                 do { frontageStops(); } while (frontageTails());
                 frontageProtect = false;
             }
+            frontageEnds();
             avAlone();
             // What holds a street now is no building's; what avAlone() took up again is the avenue's, kept off (blocked).
             for (int k = 0; k < nChanged; k++) {
