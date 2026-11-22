@@ -7,5 +7,6 @@ a city short of wires browns out in the power dispatch's existing shortfall figu
 The wires' bill now reads their capital over forty years at four percent real, repairs
 and filled posts, paid through the existing city books once; industry retains its
 transmission-only share. Closing costs are saved with the dispatch, so reloading keeps
-the next bill exact. Older saves are refused under the raised save-format floor.
+the next bill exact. Currency reforms scale every wires component once. Older saves
+are refused with both files and the running city intact under the raised format floor.
 ## known-reds
