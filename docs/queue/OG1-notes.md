@@ -182,6 +182,21 @@ and the city collapsed. With the depots served first, the builders ran away to t
   - A2: 13 months [7 to 26] against 15 [4 to 36], FAIL in both. T1: 16 of 16 seeds, at m771 against m758.
   - FB16, merged since (0.9.182), does not move the playtest (the orchestrator), so the run counts on the
     merged model.
+- **The dry run's one red is main's, passed by name with RN3 queued.** The ALL dry run on the merge
+  (`cbs-gate-OG1-cTu7Sk2M`, on the box) stopped on two `ReloadCheck` lines, fixture 3k. Both are
+  REV-FB16's every-home-closed point, which FB16 (0.9.182) shipped hours before. Reproduced here, with a
+  diagnostic print (reverted):
+  - On OG1's Danzik at m1230, Real Estate counts 19,710 places, with a closed homes' share of
+    0.077046814583437140.
+  - `RealEstate.setOwnedHousingCapacity(0)` makes the share `s + (1 - s) × 1` = 0.99999999999999990.
+  - The fixture's precondition, "their share whole", asks `strandedDebtShare() == 1` exactly. On main's
+    path the sum happened to fall on 1.
+  - The second key ("count moved in the month on") is no second cause. The month on counts 19,710 again
+    with the share above zero; `onCausedPoint()` reports 0 for every key after the first that fails.
+  - OG1's code never touches Real Estate: it moves Danzik's path, and the reload itself matches to the
+    cent and to the bit (every figure in the save, every history series).
+  The queued fix, RN3 (in the ship file): a count of none sets the share to 1, not `s + (1 - s)`, so the
+  point is exercised on any path. It is a model change, so not here: this batch's ensemble stays counted.
 - The pick (`sh tools/pick.sh origin/main HEAD`): ALL, since `AllChecks` changed. Review: needed, for
   saves (`DataSave`). REV-OG1 found money and saves clean, and one P1 and three P2 (the four mends above
   and in 3, 5 and 6). It said SHIP on the delta 359913171..ab4b414e5. The suite runs at the dry run; its log is `target/OG1-dry.txt` when it has run.
