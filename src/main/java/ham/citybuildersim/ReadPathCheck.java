@@ -1591,6 +1591,7 @@ public class ReadPathCheck {
 
     public static void main(String[] args) throws Exception {
         out = System.out;
+        assertTrue("HT1 appended household stocks and struck flows survive both read paths", CapitalGainsCheck.saveChecks());
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         out.println("--- XR7: reads keep the support already bought under a peg ---");
         Game supported = CurrencyRegimeCheck.supportedTown("xr7-read-support");

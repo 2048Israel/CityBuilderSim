@@ -1252,22 +1252,31 @@ public class ShortSellingCheck {
         double s2 = 3_000;
         double[] none = new double[HouseholdBalance.ROWS];
         double[][] nobody = new double[FamilyStructure.values().length][PayTier.values().length];
-        HouseholdBalance leaving = ExchangeCheck.savers(20.0, 4.0);
-        Equity regLeaving = ExchangeCheck.equity();
-        regLeaving.listIfUnlisted(INDUSTRY, 10_000, leaving);
-        Household leaver = ExchangeCheck.couple(leaving);
-        leaver.shares[INDUSTRY] += s2 / leaver.households();
-        double held2 = leaving.sharesHeld(INDUSTRY);
-        leaving.advanceMonth((st, t) -> nobody[st.ordinal()][t.ordinal()], none, 0, none, none, .25, .05, 1);
-        double taken = leaving.getSharesTakenAway(INDUSTRY);
-        assertTrue("fixture: the town holds " + String.format("%,.0f", held2) + " shares, the 10,000 founders' and 3,000 a short sold it, and they all leave: "
-                + String.format("%,.0f", taken), held2 == 13_000 && Math.abs(taken - 13_000) < 1e-6);
-        Equity regKnown = ExchangeCheck.equity();
-        regKnown.listIfUnlisted(INDUSTRY, 10_000, ExchangeCheck.savers(20.0, 4.0));
-        regKnown.followEmigrants(leaving, c -> c == INDUSTRY ? s2 : 0);
-        close("told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short", regKnown.getForeignShares(INDUSTRY), 13_000, 1e-6);
-        regLeaving.followEmigrants(leaving);
-        close("...as the one-argument form, which knows of no short, caps them at the shares in issue", regLeaving.getForeignShares(INDUSTRY), 10_000, 1e-6);
+        // Each register owns its own departure batch: HT1 deliberately hands one batch off only once.
+        for (boolean knownShort : new boolean[] { true, false }) {
+            HouseholdBalance leaving = ExchangeCheck.savers(20.0, 4.0);
+            Equity regLeaving = ExchangeCheck.equity();
+            regLeaving.listIfUnlisted(INDUSTRY, 10_000, leaving);
+            Household leaver = ExchangeCheck.couple(leaving);
+            leaver.shares[INDUSTRY] += s2 / leaver.households();
+            double held2 = leaving.sharesHeld(INDUSTRY);
+            leaving.advanceMonth((st, t) -> nobody[st.ordinal()][t.ordinal()], none, 0, none, none, .25, .05, 1);
+            double taken = leaving.getSharesTakenAway(INDUSTRY);
+            assertTrue("fixture: the town holds " + String.format("%,.0f", held2) + " shares, the 10,000 founders' and 3,000 a short sold it, and they all leave: "
+                    + String.format("%,.0f", taken), held2 == 13_000 && Math.abs(taken - 13_000) < 1e-6);
+            assertTrue("fixture: this register's real departure batch has not been handed off", !leaving.departuresHandedOff());
+            if (knownShort) {
+                regLeaving.followEmigrants(leaving, c -> c == INDUSTRY ? s2 : 0);
+                close("told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short", regLeaving.getForeignShares(INDUSTRY), 13_000, 1e-6);
+            } else {
+                regLeaving.followEmigrants(leaving);
+                close("...as the one-argument form, which knows of no short, caps them at the shares in issue", regLeaving.getForeignShares(INDUSTRY), 10_000, 1e-6);
+            }
+            assertTrue("the receiving register consumes the departure batch once", leaving.departuresHandedOff());
+            double handed = regLeaving.getForeignShares(INDUSTRY);
+            regLeaving.followEmigrants(leaving, c -> c == INDUSTRY ? s2 : 0);
+            close("another handoff cannot add the same departing shares again", regLeaving.getForeignShares(INDUSTRY), handed, 0);
+        }
 
         // A company with no shares in issue and a short open (edge 3): what the short sold goes with it, and a later listing holds only the founders'.
         Bench gone = standard();

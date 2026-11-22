@@ -1,4 +1,4 @@
-# ExchangeCheck.java - 1,464 lines · 39 methods · 6 constants · harnesses
+# ExchangeCheck.java - 1,478 lines · 39 methods · 6 constants · harnesses
 
 `ham/citybuildersim/ExchangeCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 >      exchange's mark, every price read is the quote (EM2) the book as it
 > ... (9 more lines in the source)
 
-**Uses:** [Exchange](Exchange.md) (145), [Equity](Equity.md) (70), [HouseholdBalance](HouseholdBalance.md) (56), [OrderBook](OrderBook.md) (48), [PayTier](PayTier.md) (26), [Bank](Bank.md) (21), [TreasuryFund](TreasuryFund.md) (21), [FamilyStructure](FamilyStructure.md) (17), [Household](Household.md) (8), [Sectors](Sectors.md) (6), [Game](Game.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [MoneyAudit](MoneyAudit.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [Exchange](Exchange.md) (145), [Equity](Equity.md) (70), [HouseholdBalance](HouseholdBalance.md) (56), [OrderBook](OrderBook.md) (48), [PayTier](PayTier.md) (26), [Bank](Bank.md) (21), [TreasuryFund](TreasuryFund.md) (21), [FamilyStructure](FamilyStructure.md) (17), [Household](Household.md) (8), [Sectors](Sectors.md) (6), [Game](Game.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [MoneyAudit](MoneyAudit.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TaxPolicy](TaxPolicy.md) (1), [TempDirs](TempDirs.md) (1)
 
-**Used by (5):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
+**Used by (6):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 
@@ -83,10 +83,10 @@
 | 935 | · 6. cell to cell |
 | 982 | · 6b. the cells rebalance by the bond rule (round 3) |
 | 1013 | · 7. the buyback, and the money that stays |
-| 1147 | · 7b. the fund past its cap (RB1) |
-| 1239 | · 8. the split |
-| 1284 | · 9. the save |
-| 1321 | · 10. a live city |
+| 1161 | · 7b. the fund past its cap (RB1) |
+| 1253 | · 8. the split |
+| 1298 | · 9. the save |
+| 1335 | · 10. a live city |
 
 ## Constants
 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 1387 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
+| 78 | 1401 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
 | 84 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 89 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 113 | 1 | `static Equity equity()` | A register in the fixtures' dollar. |
@@ -163,7 +163,7 @@
 | 269 | 27 | `static void splitOccurrenceControls(Exchange realSplit)` | A perfectly closed audit without any split must fail the same law the played city uses. |
 | 298 | 46 | `static void wageBand()` | A century of rising and falling founding-share prices, with an independently growing wage. |
 
-### 7c. the last trade under fair value (RB3) (lines 345-1464)
+### 7c. the last trade under fair value (RB3) (lines 345-1478)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -174,5 +174,5 @@
 | 415 | 1 | `double sold()` _(in ExchangeCheck.LeaversTown)_ | The shares the fund sold in the month, out of its market book. |
 | 418 | 1 | `double asked()` _(in ExchangeCheck.LeaversTown)_ | The tenth of the excess the rule asks (TreasuryFund.limitSale()), on the holding and the issue the month began with. |
 | 430 | 66 | `static void theLastTradeUnderFair()` | THE BOOK LAST TRADED UNDER FAIR VALUE, AND THE LEAVERS ASK UNDER THE FUND'S FAIR VALUE (RB3; FS13's ★g, FundCheck 9e's town on 60 and 84 months of founding). |
-| 497 | 967 | `public static void main(String[] args) throws Exception` |  |
+| 497 | 981 | `public static void main(String[] args) throws Exception` |  |
 

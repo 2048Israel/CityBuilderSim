@@ -154,7 +154,8 @@ public class WoodProductsCheck {
                         + " pool a sector in the keys' order; the bank's year of sheets a column a sector",
                 Equity.COMPANIES.length == keys.length + 1 && Equity.COMPANIES[at].equals(Sectors.WOOD_PRODUCTS)
                         && HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD - HouseholdBalance.CELL_SLOTS_BEFORE_SHARES == Equity.COMPANIES.length
-                        && MoneyAudit.POOL_NAMES.length == keys.length + 4
+                        && MoneyAudit.POOL_NAMES.length == keys.length + 5
+                && MoneyAudit.POOL_NAMES[keys.length + 4].equals("bond coupon clearing")
                         && (int) new Bank().sheetYearToSave()[2] == keys.length);
         boolean prices = true;
         StringBuilder got = new StringBuilder();

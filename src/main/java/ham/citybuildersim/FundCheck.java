@@ -1620,8 +1620,23 @@ public class FundCheck {
         double take = limit * reg.getShares(buyer) - reg.getCityMarketShares(buyer);
         double households = g.getHouseholdBalance().sharesHeld(buyer);
         double keep = 1 - take / households;
-        for (Household cell : g.getHouseholdBalance().cellsForMarket()) cell.shares[buyer] *= keep;
+        double basisMoved = 0;
+        double savingsBeforeGift = g.getHouseholdBalance().totalSavings();
+        double oldFundCost = g.getFund().getLedger().acbHeld();
+        boolean unencumbered = true;
+        for (Household cell : g.getHouseholdBalance().cellsForMarket())
+            unencumbered &= cell.taxClaim[buyer] == 0 && cell.taxShares[buyer] == 0;
+        check("fixture: the opening in-kind holding carries no unrelated secured claim", unencumbered);
+        if (!unencumbered) throw new IllegalStateException("Opening cap fixture cannot transfer an assessed holding to the ordinary fund");
+        for (Household cell : g.getHouseholdBalance().cellsForMarket()) {
+            basisMoved += cell.basis[buyer] * (1 - keep) * cell.households();
+            cell.shares[buyer] *= keep;
+            cell.basis[buyer] *= keep;
+        }
         reg.moveCity(buyer, take);
+        g.getFund().getLedger().receivedShareInKind(Equity.COMPANIES[buyer], take, basisMoved, g.getMonth());
+        close("the opening holding moves actual acquisition cost in kind", g.getFund().getLedger().acbHeld() - oldFundCost, basisMoved, 1e-9);
+        close("the opening in-kind allocation does not invent purchase cash", g.getHouseholdBalance().totalSavings(), savingsBeforeGift, 0);
         close("fixture: the fund holds the limit of it, " + Equity.COMPANIES[buyer],
                 reg.getCityMarketShares(buyer) / reg.getShares(buyer), limit, 1e-12);
 
