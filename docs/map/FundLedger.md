@@ -1,4 +1,4 @@
-# FundLedger.java - 794 lines · 95 methods · 7 constants · model
+# FundLedger.java - 804 lines · 97 methods · 7 constants · model
 
 `ham/citybuildersim/FundLedger.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -56,9 +56,9 @@
 > Saved inside TreasuryFund.State as `ledger`: plain lists Gson writes as they
 > stand, no new save key, SAVE_FORMAT unchanged.
 
-**Uses:** [CorporateBond](CorporateBond.md) (7), [Equity](Equity.md) (4), [TreasuryFund](TreasuryFund.md) (3), [OrderBook](OrderBook.md) (1), [Game](Game.md) (1), [Exchange](Exchange.md) (1)
+**Uses:** [CorporateBond](CorporateBond.md) (8), [Equity](Equity.md) (4), [TreasuryFund](TreasuryFund.md) (3), [OrderBook](OrderBook.md) (1), [Game](Game.md) (1), [Exchange](Exchange.md) (1)
 
-**Used by (14):** [BondMarket](BondMarket.md), [Exchange](Exchange.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
+**Used by (15):** [BondMarket](BondMarket.md), [EstateCustody](EstateCustody.md), [Exchange](Exchange.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
 
 ## Sections
 
@@ -71,9 +71,9 @@
 | 225 | the state |
 | 327 | the rows |
 | 396 | the hooks |
-| 712 | an older save |
-| 765 | a reform |
-| 785 | totals, for the checks |
+| 722 | an older save |
+| 775 | a reform |
+| 795 | totals, for the checks |
 
 ## Constants
 
@@ -119,7 +119,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 732 | **type** `public final class FundLedger` | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in income, and every trade, income, transfer and event the fund saw (0.7.39). |
+| 63 | 742 | **type** `public final class FundLedger` | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in income, and every trade, income, transfer and event the fund saw (0.7.39). |
 
 ### the dials (lines 65-78)
 
@@ -215,53 +215,55 @@
 | 375 | 9 | `private Activity openHand(String key, boolean buy)` | The hand's open order for this lot and side that a fill belongs to: the oldest that has not filled what it asked for - the book matches the hand's orders on one name in the order they were posted - or, past them all, ... |
 | 386 | 9 | `private Activity fillRow(int month, String key, boolean hand, boolean buy)` | Where a fill is written: the hand's open order for the lot and side if it is the hand's, otherwise this month's row. |
 
-### the hooks (lines 396-711)
+### the hooks (lines 396-721)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 403 | 12 | `void boughtShare(String company, boolean hand, double q, double price, double value, int month)` | The fund bought shares of a company's market book, by its rule or the player's hand: `q` at `price` (Exchange's settle), when the company's fair value a share was `value`. |
-| 417 | 5 | `private static void worth(Lot l, Activity a, double q, double value)` | A buy's units at the step's value, on its lot and its row; nothing where the value is not known. |
-| 424 | 5 | `private static void paid(Lot l, double amount, int month)` | Income to a lot: its total, and the last month's that paid any. |
-| 431 | 4 | `static double basisReleased(double basis, double sold, double held)` | Average-cost stock released by a sale; a final fill releases the remaining rounding too (HT1). |
-| 443 | 31 | `void soldShare(String company, boolean hand, double q, double price, double fromRescue, double marketBefore, double rescueBefor...` | ...sold `q` at `price`: `fromRescue` of them out of the rescue book (the hand's sale takes the market book first), the market and rescue books' units before the sale, and the rescue book's cost before it (TreasuryFund... |
-| 476 | 12 | `void boughtBond(CorporateBond b, boolean hand, double q, double price, double value, int month)` | The fund bought `q` of a bond's face at `price` a unit of face, when the bond's value a unit was `value`. |
-| 490 | 16 | `void soldBond(CorporateBond b, boolean hand, double q, double price, double faceBefore, int month)` | ...sold `q` of its face at `price`, out of `faceBefore`. |
-| 508 | 8 | `void coupon(int bondId, double amount, int month)` | A bond's coupon to the fund, by the bond's id - it may have been repaid since the coupon was struck: income, never cost. |
-| 518 | 18 | `void matured(CorporateBond b, double face, int month)` | A bond repaid: the face against what it cost. |
-| 538 | 16 | `void writtenDown(CorporateBond b, double before, double after, int month)` | A default or a restructure took the face from `before` to `after`: that share of the ACB out, a realized loss, no proceeds. |
-| 556 | 12 | `void sharesGone(String company, int month)` | A company's shares gone with the company, the fund's market book among them (LF1, Exchange.cancelShortHeld()): what is left of their cost, a realized loss. |
-| 570 | 13 | `void gone(CorporateBond b, int month)` | A bond whose face a backstop wrote to dust, taken off the market: what is left of its cost, a realized loss. |
-| 585 | 9 | `void dividend(String company, double amount, double rescueShare, int month)` | A dividend: income on each book's lot, by the share each holds; one row a month for them all. |
-| 596 | 7 | `void lendingFee(String company, double amount, int month)` | The lending fee the world paid for the shares the market book lent a short (LF1): income on the market lot, one row a month for them all, as the dividend's. |
-| 605 | 17 | `void split(String company, double k, int month)` | A company's shares split (k > 1) or consolidated: the ACB stands, the average a share moves by 1/k. |
-| 629 | 10 | `double rescueTakes(String company, int month)` | THE RESCUE: before the register takes every share, the fund's market-book shares of the company pass for nothing - their ACB realized as a loss. |
-| 640 | 9 | `void rescued(String company, TreasuryFund.Resolution r, double marketAcbLost, int month)` |  |
-| 651 | 7 | `void preferred(String what, double money, double realized, int month)` | The preferred: bought (par), a dividend, redeemed at par, or cancelled at a failure (`par` negative: a realized loss). |
-| 660 | 7 | `void warrants(String what, double money, double shares, int month)` | The warrants: bought back (`money`, all of it realized, they cost nothing) or exercised into `shares` of the rescue book. |
-| 669 | 5 | `void flow(String kind, double money, boolean hand, int month)` | Money in or out of the fund as a whole: a pay-in (by the dial or by hand), a draw-out, the month's transfer. |
-| 679 | 8 | `void handPosted(String key, boolean buy, double units, double limit, int month)` | One of the player's orders posted at the step: a row from now until the step that withdraws it, at `limit` a unit for `units`. |
-| 689 | 8 | `void handDropped(String key, boolean buy, double asked, double limit, String why, int month)` | ...one that could not be posted at all: the company was not listed or worth nothing, the bond had gone or was worth nothing, a bond buy too small to post, nothing was held to sell, or no room under the cap. |
-| 699 | 7 | `void handClosed(String key, boolean buy)` | The step withdrew what was left of the hand's orders on a lot and side: each closes, what it did not fill lapsed. |
-| 708 | 3 | `void closeAllHand()` | Every open hand row, closed: an older save, or a fund reset. |
+| 417 | 4 | `void receivedShareInKind(String company, double quantity, double basis, int month)` | Property received without cash: the transferred average basis, never a purchase/proceeds fiction (HT1). |
+| 421 | 4 | `void receivedBondInKind(CorporateBond bond, double face, double basis, int month)` |  |
+| 427 | 5 | `private static void worth(Lot l, Activity a, double q, double value)` | A buy's units at the step's value, on its lot and its row; nothing where the value is not known. |
+| 434 | 5 | `private static void paid(Lot l, double amount, int month)` | Income to a lot: its total, and the last month's that paid any. |
+| 441 | 4 | `static double basisReleased(double basis, double sold, double held)` | Average-cost stock released by a sale; a final fill releases the remaining rounding too (HT1). |
+| 453 | 31 | `void soldShare(String company, boolean hand, double q, double price, double fromRescue, double marketBefore, double rescueBefor...` | ...sold `q` at `price`: `fromRescue` of them out of the rescue book (the hand's sale takes the market book first), the market and rescue books' units before the sale, and the rescue book's cost before it (TreasuryFund... |
+| 486 | 12 | `void boughtBond(CorporateBond b, boolean hand, double q, double price, double value, int month)` | The fund bought `q` of a bond's face at `price` a unit of face, when the bond's value a unit was `value`. |
+| 500 | 16 | `void soldBond(CorporateBond b, boolean hand, double q, double price, double faceBefore, int month)` | ...sold `q` of its face at `price`, out of `faceBefore`. |
+| 518 | 8 | `void coupon(int bondId, double amount, int month)` | A bond's coupon to the fund, by the bond's id - it may have been repaid since the coupon was struck: income, never cost. |
+| 528 | 18 | `void matured(CorporateBond b, double face, int month)` | A bond repaid: the face against what it cost. |
+| 548 | 16 | `void writtenDown(CorporateBond b, double before, double after, int month)` | A default or a restructure took the face from `before` to `after`: that share of the ACB out, a realized loss, no proceeds. |
+| 566 | 12 | `void sharesGone(String company, int month)` | A company's shares gone with the company, the fund's market book among them (LF1, Exchange.cancelShortHeld()): what is left of their cost, a realized loss. |
+| 580 | 13 | `void gone(CorporateBond b, int month)` | A bond whose face a backstop wrote to dust, taken off the market: what is left of its cost, a realized loss. |
+| 595 | 9 | `void dividend(String company, double amount, double rescueShare, int month)` | A dividend: income on each book's lot, by the share each holds; one row a month for them all. |
+| 606 | 7 | `void lendingFee(String company, double amount, int month)` | The lending fee the world paid for the shares the market book lent a short (LF1): income on the market lot, one row a month for them all, as the dividend's. |
+| 615 | 17 | `void split(String company, double k, int month)` | A company's shares split (k > 1) or consolidated: the ACB stands, the average a share moves by 1/k. |
+| 639 | 10 | `double rescueTakes(String company, int month)` | THE RESCUE: before the register takes every share, the fund's market-book shares of the company pass for nothing - their ACB realized as a loss. |
+| 650 | 9 | `void rescued(String company, TreasuryFund.Resolution r, double marketAcbLost, int month)` |  |
+| 661 | 7 | `void preferred(String what, double money, double realized, int month)` | The preferred: bought (par), a dividend, redeemed at par, or cancelled at a failure (`par` negative: a realized loss). |
+| 670 | 7 | `void warrants(String what, double money, double shares, int month)` | The warrants: bought back (`money`, all of it realized, they cost nothing) or exercised into `shares` of the rescue book. |
+| 679 | 5 | `void flow(String kind, double money, boolean hand, int month)` | Money in or out of the fund as a whole: a pay-in (by the dial or by hand), a draw-out, the month's transfer. |
+| 689 | 8 | `void handPosted(String key, boolean buy, double units, double limit, int month)` | One of the player's orders posted at the step: a row from now until the step that withdraws it, at `limit` a unit for `units`. |
+| 699 | 8 | `void handDropped(String key, boolean buy, double asked, double limit, String why, int month)` | ...one that could not be posted at all: the company was not listed or worth nothing, the bond had gone or was worth nothing, a bond buy too small to post, nothing was held to sell, or no room under the cap. |
+| 709 | 7 | `void handClosed(String key, boolean buy)` | The step withdrew what was left of the hand's orders on a lot and side: each closes, what it did not fill lapsed. |
+| 718 | 3 | `void closeAllHand()` | Every open hand row, closed: an older save, or a fund reset. |
 
-### an older save (lines 712-764)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 722 | 42 | `void seed(Game g, int month)` | Seeds the ledger of a save from before it: each market lot and bond at its market value at the load month (`seeded`, `since` that month), with the dividends paid to the city before it; the rescue lot exact from the co... |
-
-### a reform (lines 765-784)
+### an older save (lines 722-774)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 768 | 16 | `public void redenominate(double scale)` | Every money figure in the new unit: a lot's cost and record, a row's money, a bond's face and a share's price limit; share counts and a bond's price a unit of face do not move. |
+| 732 | 42 | `void seed(Game g, int month)` | Seeds the ledger of a save from before it: each market lot and bond at its market value at the load month (`seeded`, `since` that month), with the dividends paid to the city before it; the rescue lot exact from the co... |
 
-### totals, for the checks (lines 785-794)
+### a reform (lines 775-794)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 788 | 1 | `public double purchases()` | What every trade it booked paid, and what every sale and maturity brought in - since tracking began. |
-| 789 | 1 | `public double proceeds()` |  |
-| 791 | 1 | `public double realized()` | The realized gain on every lot. |
-| 793 | 1 | `public double acbHeld()` | The ACB of every market and bond lot (the rescue lot's is TreasuryFund.getRescueCost()). |
+| 778 | 16 | `public void redenominate(double scale)` | Every money figure in the new unit: a lot's cost and record, a row's money, a bond's face and a share's price limit; share counts and a bond's price a unit of face do not move. |
+
+### totals, for the checks (lines 795-804)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 798 | 1 | `public double purchases()` | What every trade it booked paid, and what every sale and maturity brought in - since tracking began. |
+| 799 | 1 | `public double proceeds()` |  |
+| 801 | 1 | `public double realized()` | The realized gain on every lot. |
+| 803 | 1 | `public double acbHeld()` | The ACB of every market and bond lot (the rescue lot's is TreasuryFund.getRescueCost()). |
 

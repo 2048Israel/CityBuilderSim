@@ -131,6 +131,18 @@ public final class YearBook {
         level(m, "capitalTaxOutstanding", "secured capital gains tax still unpaid, in thousands (HT1)");
         flow(m, "capitalTaxWrittenOff", "genuinely extinguished secured claims, noncash, in thousands (HT1)");
         flow(m, "capitalTaxConsolidated", "own-treasury claims consolidated without cash, in thousands (HT1)");
+        flow(m, "unclaimedReceipts", "actual cash received as unclaimed property, in thousands (HT1)");
+        flow(m, "custodyNoncash", "local acquisition book received in kind, no cash, in thousands (HT1)");
+        flow(m, "custodyLoss", "custody asset cost extinguished, noncash, in thousands (HT1)");
+        flow(m, "custodyDebtGain", "issuer carrying less received holder book on own-paper consolidation, noncash, in thousands (HT1)");
+        flow(m, "custodyPaperRetired", "own-paper face actually consolidated after settlement, in thousands (HT1)");
+        level(m, "custodyBook", "custody local security acquisition cost held, in thousands (HT1)");
+        level(m, "custodyPaper", "custody city-paper face awaiting native retirement, in thousands (HT1)");
+        level(m, "custodyPaperFinding", "explicit unmatched city-paper entitlement, a finding, in thousands (HT1)");
+        level(m, "custodyUsd", "unclaimed US dollars held, not local cash or reserves (HT1)");
+        level(m, "custodyCars", "unclaimed idle physical cars (HT1)");
+        level(m, "custodyLossCarry", "inherited loss carry memo held, in thousands (HT1)");
+        level(m, "custodyCouponDue", "record-date coupons awaiting actual payment, in thousands (HT1)");
         flow(m, "capitalGainsTax", "households' net capital gains tax paid to the treasury, in thousands (HT1)");
         flow(m, "dividendTax", "households' integrated dividend tax paid to the treasury, in thousands (HT1)");
         flow(m, "taxWage", "wage tax collected, in thousands");

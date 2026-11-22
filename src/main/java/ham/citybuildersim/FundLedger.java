@@ -413,6 +413,16 @@ public final class FundLedger {
         worth(l, a, q, value);
     }
 
+    /** Property received without cash: the transferred average basis, never a purchase/proceeds fiction (HT1). */
+    void receivedShareInKind(String company, double quantity, double basis, int month) {
+        if (!(quantity > 0) && basis == 0) return;
+        Lot l = shareLot(company, false, month); reopen(l, month); l.acb += basis;
+    }
+    void receivedBondInKind(CorporateBond bond, double face, double basis, int month) {
+        if (!(face > 0)) return;
+        Lot l = bondLot(bond, month); reopen(l, month); l.acb += basis;
+    }
+
     /** A buy's units at the step's value, on its lot and its row; nothing where the value is not known. */
     private static void worth(Lot l, Activity a, double q, double value) {
         if (!(value > 0) || !Double.isFinite(value)) return;

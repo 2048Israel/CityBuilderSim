@@ -124,6 +124,14 @@ public class NationalAccounts {
     private double taxWage;
     /** HT1 cash receipts, reported separately from the wage and company taxes. */
     private double capitalGainsTax, dividendTax;
+    private double[] custody = new double[8]; // cash, book received, loss, retirement gain, USD, cars, book held, reserved city face
+    public void setEstateCustody(EstateCustody owner) {
+        custody = new double[] { owner.cashReceived(), owner.noncashReceived(), owner.assetLoss(), owner.debtGain(),
+                owner.usd(), owner.cars(), owner.getLedger().acbHeld(), owner.pendingPaper() };
+    }
+    public double getUnclaimedReceipts() { return custody[0]; }
+    public double getCustodyDebtGain() { return custody[3]; }
+    public double[] getCustodyDisclosures() { return custody.clone(); }
     private double capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated;
     public void setCapitalTaxClaims(double assessed, double outstanding, double writtenOff, double consolidated) {
         capitalTaxAssessed = assessed; capitalTaxOutstanding = outstanding;
@@ -1281,7 +1289,8 @@ public class NationalAccounts {
             // ...and the research grants' bill (R3): an older save reads zero, which is right: it paid none.
             researchSpending,
             // ...and the licence the city's own patented works paid abroad (R2c-P): an older save reads zero, which is right: it accrued none.
-            publicIpCharges, capitalGainsTax, dividendTax, capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated };
+            publicIpCharges, capitalGainsTax, dividendTax, capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated,
+            custody[0], custody[1], custody[2], custody[3], custody[4], custody[5], custody[6], custody[7] };
     }
 
     void restoreGovernment(double[] saved) {
@@ -1296,7 +1305,8 @@ public class NationalAccounts {
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
                 && saved.length != 29 && saved.length != 33 && saved.length != 35
-                && saved.length != 37 && saved.length != 38 && saved.length != 39 && saved.length != 40 && saved.length != 42 && saved.length != 46)) return;
+                && saved.length != 37 && saved.length != 38 && saved.length != 39 && saved.length != 40 && saved.length != 42 && saved.length != 46 && saved.length != 54)) return;
+        custody = saved.length >= 54 ? java.util.Arrays.copyOfRange(saved, 46, 54) : new double[8];
         setCapitalTaxClaims(saved.length >= 46 ? saved[42] : 0, saved.length >= 46 ? saved[43] : 0,
                 saved.length >= 46 ? saved[44] : 0, saved.length >= 46 ? saved[45] : 0);
         capitalGainsTax = saved.length >= 42 ? saved[40] : 0;
@@ -1465,7 +1475,7 @@ public class NationalAccounts {
     public double getPropertyTax()   { return propertyTax; }
 
     public double getTotalRevenue() {
-        return taxBusiness + taxIndustrial + taxSales + taxWage + capitalGainsTax + dividendTax
+        return taxBusiness + taxIndustrial + taxSales + taxWage + capitalGainsTax + dividendTax + custody[0]
                 + utilityIncome + landSales + propertyTax + contributions
                 + eiPremiums + healthFees + educationFees + healthPremiums
                 // ...and the interest on the student loans (2026-09-21); the
@@ -1536,7 +1546,7 @@ public class NationalAccounts {
      */
     public double getBalance() {
         // CD7: revenue - expenses + the gain on debt retired + the exchange gain on the foreign debt.
-        return getTotalRevenue() - getTotalExpenses() + retiredGain + debtExchangeGain;
+        return getTotalRevenue() - getTotalExpenses() + retiredGain + debtExchangeGain + custody[3];
     }
 
     /** Revenue as a share of output. The city's effective take from the economy. */
@@ -1552,6 +1562,7 @@ public class NationalAccounts {
 
     public void reset() {
         capitalGainsTax = dividendTax = 0;
+        custody = new double[8];
         setCapitalTaxClaims(0, 0, 0, 0);
         history.clear();
         lastFoodVolume = 0;
@@ -1594,6 +1605,7 @@ public class NationalAccounts {
         taxBusiness *= scale;  taxIndustrial *= scale;
         taxSales *= scale;  taxWage *= scale;
         capitalGainsTax *= scale; dividendTax *= scale;
+        for (int k : new int[] {0, 1, 2, 3, 6, 7}) custody[k] *= scale;
         capitalTaxAssessed *= scale; capitalTaxOutstanding *= scale; capitalTaxWrittenOff *= scale; capitalTaxConsolidated *= scale;
         utilityIncome *= scale;  landSales *= scale;
         propertyTax *= scale;  interestExpense *= scale;

@@ -1525,7 +1525,7 @@ final class GovernmentScreen {
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
                 "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
-                "Transfer from the fund", "Transit fares", "Crude sold from the reserve", "Fuel duty", "Port dues", "Capital gains tax", "Dividend tax");
+                "Transfer from the fund", "Transit fares", "Crude sold from the reserve", "Fuel duty", "Port dues", "Capital gains tax", "Dividend tax", "Unclaimed estates and receipts");
     }
 
     List<Double> revenueAmounts(NationalAccounts na) {
@@ -1563,7 +1563,7 @@ final class GovernmentScreen {
                 // ...and the fuel duty on the drivers' petrol (0.7.103, Jerus's A7), its own line.
                 na.getFuelDuty(),
                 // ...and the port dues Freight paid on its berths' tonnes (FR3), its own line; the dial's door is Policy › Taxes › Port dues (FR4).
-                na.getPortDues(), na.getCapitalGainsTax(), na.getDividendTax());
+                na.getPortDues(), na.getCapitalGainsTax(), na.getDividendTax(), na.getUnclaimedReceipts());
     }
 
     /*
@@ -2259,6 +2259,11 @@ final class GovernmentScreen {
                             + "; cash collected " + money(na.getCapitalGainsTax()) + "; secured unpaid " + money(na.getCapitalTaxOutstanding())
                             + "; noncash claim losses " + money(na.getCapitalTaxWrittenOff())
                             + "; noncash consolidations " + money(na.getCapitalTaxConsolidated()) + ". Only cash collected is revenue.");
+                    double[] held = na.getCustodyDisclosures();
+                    claims.setText(claims.getText() + " Unclaimed property: noncash local book received " + money(held[1])
+                            + "; asset losses " + money(held[2]) + "; own-paper noncash result " + money(held[3])
+                            + "; local book held " + money(held[6]) + "; reserved own-paper face " + money(held[7])
+                            + "; USD held " + held[4] + "; idle cars " + held[5] + ". These stocks are not cash revenue.");
                     claims.setWrapText(true); return claims;
                 }));
     }

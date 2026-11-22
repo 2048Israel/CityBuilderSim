@@ -440,6 +440,9 @@ public class Game {
         fund.reset();
         exchange.attachFund(fund);
         bondMarket.attachFund(fund);
+        estateCustody.reset();
+        estateCustody.attach(equity, debtManager, bondMarket, this::receiveUnclaimedCash, this::getMonth);
+        householdBalance.attachCustody(estateCustody, bondMarket);
         ownersWipedAbroadThisMonth = 0;
         bankedClearedAtLoad = 0;
         economyManager.setBondMarket(bondMarket);
@@ -13872,6 +13875,7 @@ public class Game {
         salvageBySector.clear();
         salvageUsedThisMonth = 0;
         householdBalance.beginTaxMonth();
+        estateCustody.beginMonth();
         double[] poolsBefore = MoneyAudit.pools(this);
         double householdsBefore = MoneyAudit.householdsHeld(this);
         double pooledBefore = 0;
@@ -14026,6 +14030,7 @@ public class Game {
         // for the rest below. See THE HOUSEHOLDS TAKE THEIR SHARE.
         if (settleProbeForTest != null) settleProbeForTest.accept(false);
         householdsTakeTheirShare();
+        estateCustody.consolidatePaper();
         if (settleProbeForTest != null) settleProbeForTest.accept(true);
         debtManager.processAllDebts(this);
 
@@ -14081,8 +14086,12 @@ public class Game {
         // Less the coupons on the businesses' bonds (0.7.12), which are their
         // holders': the bank takes its own beside the loans' interest, and the
         // market pays the rest at its step.
-        bank.takeInterest(interestDue, sectorInterestPaid - bondMarket.getCouponsStruck());
-        bank.takeBondCoupons(bondMarket.getCouponsDueToBank());
+        double issuerCoupons = bondMarket.getCouponsStruck();
+        bank.takeInterest(interestDue, sectorInterestPaid - issuerCoupons);
+        bondMarket.recordCouponIssuerCharge(issuerCoupons);
+        double bankCoupon = bondMarket.getCouponsDueToBank();
+        bank.takeBondCoupons(bankCoupon);
+        bondMarket.recordCouponBankPayment(bankCoupon);
 
         refreshBank();
         lender.projectLoansSettled();
@@ -14325,6 +14334,7 @@ public class Game {
         // ...and the households, by the same rule, with what the owners were
         // just paid. See HouseholdBalance.investAbroad().
         householdBalance.investAbroad(bank.depositRate(), debtManager.worldRate(), foreign.getRate());
+        estateCustody.payForeignCoupon(debtManager.worldRate(), foreign.getRate());
         // ...and the city's paper, when the spread that brought them in has
         // gone (0.7.1): home to the bank's desk, a little a month.
         householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());
@@ -14587,8 +14597,9 @@ public class Game {
         economyManager.getNationalAccounts().setInvestmentTaxes(householdBalance.getCapitalGainsTax(), householdBalance.getDividendTax());
         economyManager.getNationalAccounts().setCapitalTaxClaims(householdBalance.getCapitalTaxAssessed(),
                 householdBalance.getCapitalTaxOutstanding(), householdBalance.getCapitalTaxWrittenOff(), householdBalance.getCapitalTaxConsolidated());
+        economyManager.getNationalAccounts().setEstateCustody(estateCustody);
         takeTreasuryMonth();
-        householdBalance.closeTaxMonth();
+        householdBalance.closeTaxMonth(); estateCustody.closeMonth();
 
         dataSave.setCash(cash);
 
@@ -16698,6 +16709,8 @@ public class Game {
      * See BondMarket, and CorporateBond for the instrument.
      */
     private final BondMarket bondMarket = new BondMarket();
+    private final EstateCustody estateCustody = new EstateCustody();
+    public EstateCustody getEstateCustody() { return estateCustody; }
     public BondMarket getBondMarket() { return bondMarket; }
 
     /**
@@ -17728,6 +17741,8 @@ public class Game {
         dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
         // ...and the month's flows the next census carries (HS1).
         dataSave.setHouseholdFlows(householdBalance.flowsToSave());
+        dataSave.setEstateCustody(estateCustody.toState());
+        dataSave.setUnbackedCustodyPaper(debtManager.unbackedCustodyPaper());
         dataSave.setHouseholdInvestmentTaxes(householdBalance.investmentTaxesToSave());
         dataSave.setSecuredHouseholdTaxes(householdBalance.securedTaxesToSave());
         dataSave.setSecuredForeignTaxes(equity.foreignTaxesToSave());
@@ -19641,6 +19656,11 @@ public class Game {
     /** The named non-budget movements, this month and last. See TreasuryJournal. */
     private final TreasuryJournal treasuryJournal = new TreasuryJournal();
 
+    /** Actual unclaimed property or issuer cash; no receivable/mark credits this sink (HT1). */
+    private void receiveUnclaimedCash(double amount) {
+        cash += amount; treasuryJournal.record("Unclaimed estates and receipts", amount);
+    }
+
     /** The household has paid this cash already, from a fill or its dividend (HT1). */
     private void receiveInvestmentTax(String line, double amount) {
         cash += amount;
@@ -19658,7 +19678,8 @@ public class Game {
                 + economyManager.getNationalAccounts().getUpliftNotCash()
                 - economyManager.getNationalAccounts().getRetiredGain()
                 // CD7: the exchange gain on the dollar paper is in the surplus and moved no cash.
-                - economyManager.getNationalAccounts().getDebtExchangeGain();
+                - economyManager.getNationalAccounts().getDebtExchangeGain()
+                - estateCustody.debtGain();
         treasuryRecorded = true;
         // Struck with the rest: last month's lines become the ones the bridge
         // shows, and the month in progress opens empty - here, at the bottom
@@ -19805,6 +19826,8 @@ public class Game {
         return java.util.List.of(
                 new TreasuryJournal.Entry("Capital gains tax", na.getCapitalGainsTax()),
                 new TreasuryJournal.Entry("Dividend tax", na.getDividendTax()),
+                new TreasuryJournal.Entry("Unclaimed estates and receipts", na.getUnclaimedReceipts()),
+                new TreasuryJournal.Entry("Own estate paper consolidation, noncash", na.getCustodyDebtGain()),
                 new TreasuryJournal.Entry("Land sold", na.getLandSales()),
                 new TreasuryJournal.Entry("Land bought", -na.getLandPurchases()),
                 new TreasuryJournal.Entry("Buildings", -na.getCapitalSpending()),
@@ -22138,6 +22161,7 @@ public class Game {
             }
 
             debtManager.setDebt(loadedDebts);
+            debtManager.restoreUnbackedCustodyPaper(loaded.getUnbackedCustodyPaper());
 
             /*
              * ...AND WHETHER THE PAPER STILL OWED FOR CARRIES ITS OWN DISCOUNT
@@ -22201,6 +22225,7 @@ public class Game {
             // any sector's interest bill off them. An older save has none: a
             // city whose businesses owe only the bank, which is what it was.
             bondMarket.restore(loaded.getBondMarket());
+            estateCustody.restore(loaded.getEstateCustody());
             // ...and each cell's own face of them (round 2) - put back again
             // below, after the rebuild's census, with the cells' other stocks.
             restoreCellBonds(loaded);
@@ -22626,6 +22651,8 @@ public class Game {
             householdBalance.restoreOwnerLine(restoredFlows.getOwnerFamilies());
             householdBalance.restoreInvestmentTaxes(restoredFlows.getHouseholdInvestmentTaxes());
             householdBalance.restoreSecuredTaxes(restoredFlows.getSecuredHouseholdTaxes());
+            estateCustody.restore(restoredFlows.getEstateCustody());
+            debtManager.restoreUnbackedCustodyPaper(restoredFlows.getUnbackedCustodyPaper());
             equity.restoreForeignTaxes(restoredFlows.getEquityKeys(), restoredFlows.getSecuredForeignTaxes());
             // ...and each cell's own bonds with them, for the same reason: the
             // rebuild's census folds a cell it reads under half a household
@@ -23017,6 +23044,7 @@ public class Game {
         sectorBooks.redenominate(scale);
         priceIndex.redenominate(scale);
         householdBalance.redenominate(scale);
+        estateCustody.redenominate(scale);
         households.redenominate(scale);
         unemployment.redenominate(scale);
         studentLoansLent *= scale;  studentLoansRepaid *= scale;  studentLoansWrittenOff *= scale;

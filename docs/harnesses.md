@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**238 harness files, 27,261 labelled assertions.** AllChecks runs 238 of them.
+**238 harness files, 27,321 labelled assertions.** AllChecks runs 238 of them.
 
 ## Which harnesses read which class
 
@@ -15,7 +15,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, LabourCheck, LongPlaytest, MedicineCheck, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, WorksFinanceCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LongPlaytest, ScaleCheck, ZoningCheck |
 | [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck |
-| [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, StepsCheck, WorksFinanceCheck |
+| [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, CapitalGainsCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, StepsCheck, WorksFinanceCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
 | [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, PublicLicenceCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, WorksFinanceCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
@@ -23,7 +23,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MortgageCheck, NewUnitCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
 | [BankScreen](map/BankScreen.md) | **none** |
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PartnerCallsCheck, PortCheck, QuayCraneCheck, ReadPathCheck |
-| [BondMarket](map/BondMarket.md) | BankFailureCheck, BondCheck, CurveCheck, FundCheck, FundLedgerCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, MortgageCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, StepsCheck |
+| [BondMarket](map/BondMarket.md) | BankFailureCheck, BondCheck, CapitalGainsCheck, CurveCheck, FundCheck, FundLedgerCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, MortgageCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, StepsCheck |
 | [BookDesk](map/BookDesk.md) | DebtExchangeCheck, DeskCheck, ReadPathCheck |
 | [Branding](map/Branding.md) | BrandingCheck |
 | [BridgeGround](map/BridgeGround.md) | **none** |
@@ -80,12 +80,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Consumption](map/Consumption.md) | BasketYearCheck, ConsumptionCheck, ForeignCheck, PriceLevelCheck |
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, GroundInputCheck, HistoricalRecipeCheck, IndustryViewCheck, SulphideLeachCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperBufferCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, LongPlaytest, ReadPathCheck, SulphideLeachCheck, UndemandedFeedCheck |
-| [CorporateBond](map/CorporateBond.md) | BankFailureCheck, BondCheck, FundCheck, FundLedgerCheck, KeptCheck, KeptTimingCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
+| [CorporateBond](map/CorporateBond.md) | BankFailureCheck, BondCheck, CapitalGainsCheck, FundCheck, FundLedgerCheck, KeptCheck, KeptTimingCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [Credits](map/Credits.md) | CreditsCheck, PackagingCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, EssentialWorksCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LandmassCheck, LicenceFeesCheck, MapCheck, MoneyDatesCheck, MoneySignCheck, PolicyOpenCheck, PopulationCheck, PostwarRecipeCheck, PublicLicenceCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
-| [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck, WorksFinanceCheck |
+| [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalGainsCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck, WorksFinanceCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CreditCrunchCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FB13Check, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, GovernmentViewCheck, HoldersCheck, HousingCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyOpenCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, PriceLevelCheck, StepsCheck, WorksFinanceCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, GoldStandardCheck, KeptCheck, LabourCheck, LongPlaytest, OilCheck, PegAnchorCheck, PolicyOpenCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
@@ -107,6 +107,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
+| [EstateCustody](map/EstateCustody.md) | CapitalGainsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, BankFailureCheck, CapitalGainsCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, OwnerCheck, PrizeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck, RecipeCheck |
@@ -115,7 +116,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FinancesScreen](map/FinancesScreen.md) | **none** |
 | [Fitout](map/Fitout.md) | FitoutCheck |
 | [Fittings](map/Fittings.md) | FittingCheck, ScaleCheck |
-| [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
+| [FloatingRateNote](map/FloatingRateNote.md) | CapitalGainsCheck, DeskCheck, FloatLinkCheck |
 | [FloorView](map/FloorView.md) | PolicyPreviewCheck |
 | [FollowBench](map/FollowBench.md) | KeptCheck, ReplayCheck, TimingCheck |
 | [FollowPlayer](map/FollowPlayer.md) | ReplayCheck |
@@ -172,7 +173,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Inbox](map/Inbox.md) | DiscoveryCheck, InboxCheck, LandmassCheck, PlaytestFixCheck, PrizeCheck |
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
 | [IndustryView](map/IndustryView.md) | IndustryViewCheck, KeptCheck, OilCheck |
-| [InflationLinkedBond](map/InflationLinkedBond.md) | DeskCheck, FloatLinkCheck, GovernmentViewCheck |
+| [InflationLinkedBond](map/InflationLinkedBond.md) | CapitalGainsCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck |
 | [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, EssentialWorksCheck, FoodProcessingCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, KeptCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckRouteCheck, WorksFinanceCheck |
 | [InfrastructureScreen](map/InfrastructureScreen.md) | **none** |
 | [InputLog](map/InputLog.md) | ReplayCheck |
@@ -207,7 +208,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, BuildingStackCheck, CapitalFlowCheck, FB13Check, FittingCheck, ForeignCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Levers](map/Levers.md) | **none** |
 | [LicenceFees](map/LicenceFees.md) | DriverlessTruckCheck, ElectrolyserCheck, FB13Check, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HydrogenSteelCheck, LicenceFeesCheck, PostwarRecipeCheck, PublicLicenceCheck |
-| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
+| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalGainsCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | LuxuryRetailCheck |
 | [MagnitudeSteps](map/MagnitudeSteps.md) | StepsCheck |
@@ -221,7 +222,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Markets](map/Markets.md) | BankFailureCheck, BooksCheck, BuildMenuCheck, BuildingStackCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HomeRailCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, UndemandedFeedCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MedicalRows](map/MedicalRows.md) | MedicineCheck |
-| [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CentralBankCheck, DeskCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
+| [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CapitalGainsCheck, CentralBankCheck, DeskCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
 | [Migration](map/Migration.md) | ArrivalMixCheck, CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WantedPostsCheck |
 | [MiniMap](map/MiniMap.md) | **none** |
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
@@ -373,7 +374,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WantedPosts](map/WantedPosts.md) | StaffingTieCheck, WantedPostsCheck |
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BankFailureCheck, BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
-| [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck, HouseholdStageCheck |
+| [WorkingHousehold](map/WorkingHousehold.md) | CapitalGainsCheck, DenominationCheck, HoldersCheck, HouseholdCheck, HouseholdStageCheck |
 | [WorksValue](map/WorksValue.md) | ChildcareCheck, EssentialWorksCheck, NewUnitCheck, WorksFinanceCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, PriceLevelCheck, QuarryingCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldChain](map/WorldChain.md) | WorldMarketCheck |
@@ -4034,141 +4035,203 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L707 ...and a load puts it back
   - L721 every month of it is conserved: the money audit closes
 
-## CapitalGainsCheck.java - 122 labelled assertions
+## CapitalGainsCheck.java - 182 labelled assertions
 
 > Household average-cost stocks and investment taxes, through the real fills, census and city (HT1).
 > WHY: the fund already tracked average cost, but a household sale previously lost its acquisition cost.
 
-  - L67 the real order book fills
-- **L72 average-cost purchases, partial and full sales, loss carry**
-  - L77 two purchases add the actual 600 paid to basis
-  - L78 the buyer has paid exactly its basis
-  - L81 a partial sale leaves 450 of average cost
-  - L82 the 100 realised gain reaches the treasury
-  - L83 cash held plus tax is the actual purchase and sale money
-  - L85 the month's loss refunds its earlier gain tax
-  - L86 only the net loss carries
-  - L89 the final sale releases all remaining basis
-  - L90 the loss offsets the later 150 gain, leaving 50 taxable
-  - L91 the carried loss is consumed
-  - L92 a full sale leaves no share
-  - L93 all proceeds and actual taxes conserve the money
-- **L97 a loss before the gain in the same month**
-  - L101 the first sale carries its actual loss
-  - L103 the later gain uses the earlier loss
-  - L104 fill order leaves the month's net gain untaxed
-- **L108 founders, offerings, splits and integration**
-  - L115 the actual quote crosses the model's split trigger
-  - L117 a share split leaves total basis standing
-  - L118 a share split changes the units
-  - L121 default integration transfers no dividend tax
-  - L122 investment income receives the whole default dividend
-  - L127 the raised band actually pays integrated dividend tax
-  - L128 the raised-band investment income is net
-  - L133 the bank integrates the Retail profit rate it actually pays
-  - L135 the inclusion dial stops at the whole gain
-  - L137 the inclusion dial stops at zero
-  - L139 a staged policy copy keeps the inclusion
-  - L145 founders receive their actual founding book as cost
-  - L149 offerings add only the actual paid amount to basis
-- **L153 the spending waterfall receives proceeds after the actual tax**
-  - L162 the waterfall actually sells shares and pays tax
-  - L163 its released cost has the purchased average
-  - L164 net spending, surplus banked and tax equal buyer payment
-- **L168 census and stage stocks**
-  - L177 stage ageing carries the original average basis
-  - L178 stage ageing carries the original loss stock
-  - L179 stage ageing conserves basis
-  - L187 the census conserves shares
-  - L188 basis follows the shares through the pool
-  - L189 loss carry is a census stock
-  - L190 the receiving cell takes the average basis
-- **L194 real months: actual assessments and both money identities**
-  - L210 the live city actually assesses sales
-  - L211 the live city actually assesses dividends
-  - L212 the default city actually transfers gain tax
-  - L213 every played month's pool audit holds
-  - L214 every played month's household identity holds
-  - L215 the budget and journal account for the actual transfers
-  - L216 every actual government claim has a debtor or unhanded transit counterpart
-  - L233 the save fixture actually transfers its foreign collateral
-  - L249 the nonzero saved domestic and foreign claims match their government asset
-  - L256 both investment receipts are declared monthly flows
-  - L267 basis survives
-  - L268 tagged units survive
-  - L269 secured liability survives
-  - L270 matching government/transit snapshot survives
-  - L272 foreign attribution snapshot survives
-  - L274 loss carry survives
-  - L275 the current month's taxable gain survives
-  - L276 every appended cell slot survives
-  - L277 the inclusion policy survives
-  - L278 the struck transfers and call counts survive
-  - L280 restored claims retain matching government and debtor stocks
-  - L282 budget gain revenue survives
-  - L283 budget dividend revenue survives
-  - L284 the recorded gain-tax history survives
-  - L286 the recorded dividend-tax history survives
-  - L290 the save floor rises past the last zero-basis format
-  - L298 an old zero-basis save is actually refused before rebuild
-  - L301 the scratch save can be read for the incompatible-format proof
-- **L329 cash-first secured estate: assessment is distinct from collection**
-  - L331 the accepted 1000 value / 400 basis estate assesses 45
-  - L332 only the actual ten cash is collected
-  - L333 the remaining 35 is a saved government claim
-  - L334 the heirs carry the claim with their tagged shares
-  - L335 the stepped-up inherited basis is 1000
-  - L336 the surviving source households keep their 400 basis
-  - L337 matching receivable equals domestic and transit liabilities
-  - L339 a real attributable net dividend of twenty pays twenty old tax
-  - L340 fifteen remains, without repeating the assessment
-  - L341 assessment is still the original 45
-  - L343 collection caps at the old claim
-  - L344 paid security is released
-  - L346 a later unencumbered receipt cannot pay the cleared claim
-  - L348 cash-sufficient estate pays the actual 45
-  - L349 cash-sufficient heirs get the remaining 55
-  - L350 a fully paid estate creates no claim
-  - L352 the existing revolving debt gets its fifteen first
-  - L353 tax takes only the five remaining cash
-  - L354 the rest is secured, not written off for cash shortage
-  - L358 between-press common extinction saves its pending noncash claim loss
-  - L359 common extinction never receives tax cash
-  - L361 the next window records the saved pending loss once
-  - L363 the transferred loss reduces the assessed gain
-  - L364 the inherited loss stock is consumed only in that fraction
-  - L365 the living source keeps its own loss carry
-  - L375 a survivor rolls the original basis untaxed
-  - L376 a survivor carries the secured liability
-  - L377 survivor rollover does not assess a deemed gain
-  - L378 survivor claims conserve exactly
-- **L382 persistent foreign security through actual unfilled and filled orders**
-  - L387 departure is assessed once before cash leaves
-  - L388 departure cash first collects ten
-  - L389 no negative departing savings is created
-  - L393 a repeated handoff cannot add gross foreign holdings again
-  - L394 all hundred unpaid tagged units remain attributed
-  - L395 the 35 is foreign, not erased with the cell
-  - L397 the tagged order really rests with no bid
-  - L401 the actual monthly reset preserves the unfilled tagged holding
-  - L402 the actual monthly reset preserves the unpaid claim
-  - L403 unfilled is not a tax receipt
-  - L406 an unrelated WORLD purchase does not pay old foreign tax
-  - L412 the ordinary new leaver actually sells ten units
-  - L413 ordinary new-leaver proceeds do not pay the older tagged claim
-  - L416 a real partial tagged fill delivers twenty units
-  - L417 the partial receipt collects twenty and leaves fifteen
-  - L418 native tagged gross settlement is twenty
-  - L419 retained tax is a separate actual amount
-  - L420 the tagged holder has no net cash from that fill
-  - L424 partial foreign attribution is copied by value
-  - L426 split multiplies foreign tagged units
-  - L427 split preserves the nominal claim
-  - L429 currency scales the foreign claim
-  - L430 government claim still matches the debtor after currency reform
-  - L432 genuine old-common extinction writes off the unpaid claim
-  - L433 extinction never collects invented cash
-  - L434 a saved government snapshot contains the outstanding claim
+  - L68 the real order book fills
+- **L73 average-cost purchases, partial and full sales, loss carry**
+  - L78 two purchases add the actual 600 paid to basis
+  - L79 the buyer has paid exactly its basis
+  - L82 a partial sale leaves 450 of average cost
+  - L83 the 100 realised gain reaches the treasury
+  - L84 cash held plus tax is the actual purchase and sale money
+  - L86 the month's loss refunds its earlier gain tax
+  - L87 only the net loss carries
+  - L90 the final sale releases all remaining basis
+  - L91 the loss offsets the later 150 gain, leaving 50 taxable
+  - L92 the carried loss is consumed
+  - L93 a full sale leaves no share
+  - L94 all proceeds and actual taxes conserve the money
+- **L98 a loss before the gain in the same month**
+  - L102 the first sale carries its actual loss
+  - L104 the later gain uses the earlier loss
+  - L105 fill order leaves the month's net gain untaxed
+- **L109 founders, offerings, splits and integration**
+  - L116 the actual quote crosses the model's split trigger
+  - L118 a share split leaves total basis standing
+  - L119 a share split changes the units
+  - L122 default integration transfers no dividend tax
+  - L123 investment income receives the whole default dividend
+  - L128 the raised band actually pays integrated dividend tax
+  - L129 the raised-band investment income is net
+  - L134 the bank integrates the Retail profit rate it actually pays
+  - L136 the inclusion dial stops at the whole gain
+  - L138 the inclusion dial stops at zero
+  - L140 a staged policy copy keeps the inclusion
+  - L146 founders receive their actual founding book as cost
+  - L150 offerings add only the actual paid amount to basis
+- **L154 the spending waterfall receives proceeds after the actual tax**
+  - L163 the waterfall actually sells shares and pays tax
+  - L164 its released cost has the purchased average
+  - L165 net spending, surplus banked and tax equal buyer payment
+- **L169 census and stage stocks**
+  - L178 stage ageing carries the original average basis
+  - L179 stage ageing carries the original loss stock
+  - L180 stage ageing conserves basis
+  - L188 the census conserves shares
+  - L189 basis follows the shares through the pool
+  - L190 loss carry is a census stock
+  - L191 the receiving cell takes the average basis
+- **L195 real months: actual assessments and both money identities**
+  - L211 the live city actually assesses sales
+  - L212 the live city actually assesses dividends
+  - L213 the default city actually transfers gain tax
+  - L214 every played month's pool audit holds
+  - L215 every played month's household identity holds
+  - L216 the budget and journal account for the actual transfers
+  - L217 every actual government claim has a debtor or unhanded transit counterpart
+  - L234 the save fixture actually transfers its foreign collateral
+  - L250 the nonzero saved domestic and foreign claims match their government asset
+  - L257 both investment receipts are declared monthly flows
+  - L268 basis survives
+  - L269 tagged units survive
+  - L270 secured liability survives
+  - L271 matching government/transit snapshot survives
+  - L273 foreign attribution snapshot survives
+  - L275 loss carry survives
+  - L276 the current month's taxable gain survives
+  - L277 every appended cell slot survives
+  - L278 the inclusion policy survives
+  - L279 the struck transfers and call counts survive
+  - L281 restored claims retain matching government and debtor stocks
+  - L283 budget gain revenue survives
+  - L284 budget dividend revenue survives
+  - L285 the recorded gain-tax history survives
+  - L287 the recorded dividend-tax history survives
+  - L291 the save floor rises past the last zero-basis format
+  - L299 an old zero-basis save is actually refused before rebuild
+  - L302 the scratch save can be read for the incompatible-format proof
+- **L330 cash-first secured estate: assessment is distinct from collection**
+  - L332 the accepted 1000 value / 400 basis estate assesses 45
+  - L333 only the actual ten cash is collected
+  - L334 the remaining 35 is a saved government claim
+  - L335 the heirs carry the claim with their tagged shares
+  - L336 the stepped-up inherited basis is 1000
+  - L337 the surviving source households keep their 400 basis
+  - L338 matching receivable equals domestic and transit liabilities
+  - L340 a real attributable net dividend of twenty pays twenty old tax
+  - L341 fifteen remains, without repeating the assessment
+  - L342 assessment is still the original 45
+  - L344 collection caps at the old claim
+  - L345 paid security is released
+  - L347 a later unencumbered receipt cannot pay the cleared claim
+  - L349 cash-sufficient estate pays the actual 45
+  - L350 cash-sufficient heirs get the remaining 55
+  - L351 a fully paid estate creates no claim
+  - L353 the existing revolving debt gets its fifteen first
+  - L354 tax takes only the five remaining cash
+  - L355 the rest is secured, not written off for cash shortage
+  - L359 between-press common extinction saves its pending noncash claim loss
+  - L360 common extinction never receives tax cash
+  - L362 the next window records the saved pending loss once
+  - L364 the transferred loss reduces the assessed gain
+  - L365 the inherited loss stock is consumed only in that fraction
+  - L366 the living source keeps its own loss carry
+  - L376 a survivor rolls the original basis untaxed
+  - L377 a survivor carries the secured liability
+  - L378 survivor rollover does not assess a deemed gain
+  - L379 survivor claims conserve exactly
+- **L383 persistent foreign security through actual unfilled and filled orders**
+  - L388 departure is assessed once before cash leaves
+  - L389 departure cash first collects ten
+  - L390 no negative departing savings is created
+  - L394 a repeated handoff cannot add gross foreign holdings again
+  - L395 all hundred unpaid tagged units remain attributed
+  - L396 the 35 is foreign, not erased with the cell
+  - L398 the tagged order really rests with no bid
+  - L402 the actual monthly reset preserves the unfilled tagged holding
+  - L403 the actual monthly reset preserves the unpaid claim
+  - L404 unfilled is not a tax receipt
+  - L407 an unrelated WORLD purchase does not pay old foreign tax
+  - L413 the ordinary new leaver actually sells ten units
+  - L414 ordinary new-leaver proceeds do not pay the older tagged claim
+  - L417 a real partial tagged fill delivers twenty units
+  - L418 the partial receipt collects twenty and leaves fifteen
+  - L419 native tagged gross settlement is twenty
+  - L420 retained tax is a separate actual amount
+  - L421 the tagged holder has no net cash from that fill
+  - L425 partial foreign attribution is copied by value
+  - L427 split multiplies foreign tagged units
+  - L428 split preserves the nominal claim
+  - L430 currency scales the foreign claim
+  - L431 government claim still matches the debtor after currency reform
+  - L433 genuine old-common extinction writes off the unpaid claim
+  - L434 extinction never collects invented cash
+  - L435 a saved government snapshot contains the outstanding claim
+  - L474 no eligible working heir exists before the census
+  - L479 the estate repays existing revolving debt first
+  - L480 only actual remaining cash reaches treasury as property
+  - L481 the unchanged pool identity sees only the actual inherited cash edge
+  - L482 household savings conserve estate cash plus the native debt repayment
+  - L484 no cash is labelled capital tax on a self-claim
+  - L485 new and old secured assessments consolidate after receipt
+  - L488 loss carry is consumed or retained by this actual assessment
+  - L489 the government has no remaining self-claim
+  - L490 no estate cash enters either emigration leg
+  - L491 the receiver retains actual USD
+  - L492 the receiver retains actual idle cars
+  - L493 city paper is reserved, not silently redeemed
+  - L494 the precise holder discount follows the reservation
+  - L495 reserved face cannot be traded as private face
+  - L496 unpaid auction entitlement never enters the paid household estate stock
+  - L497 all real own-paper holder counterparts including custody add to the issuer
+  - L500 the no-heir event really occurs during an unsettled sale
+  - L501 no coupon is lost or duplicated at the holder handoff
+  - L502 the already-recorded source coupon reaches custody
+  - L503 inheritance creates no bought-cash fiction
+  - L504 inheritance creates no disposal-proceeds fiction
+  - L506 custody retains every domestic share
+  - L507 issuer and custody quantities match
+  - L508 the complete share identity holds
+  - L513 all actual corporate holders add to face
+  - L514 the capsule is the actual new bond holder
+  - L516 no paper counterpart was invented
+  - L591 actual bank coupon credit matches its clearing debit
+- **L595 coupon cash clearing before/after charge, bank booking and partial custody transfer**
+  - L605 an uncharged record-date promise is zero clearing cash
+  - L608 the uncharged promise cannot pay custody or disappear
+  - L609 the uncharged promise remains fully recorded
+  - L613 partial custody transfer preserves the complete holder sum
+  - L614 only the deceased source fraction receives the recorded coupon
+  - L617 the real issuer debit moves to cash clearing
+  - L618 charged clearing includes the still-unpaid bank
+  - L622 a missing issuer debit is caught by the actual pool identity
+  - L625 bank-booked clearing excludes the paid bank
+  - L626 post-payment cash clearing is empty
+  - L633 all record-date maps/flags/cash survive phase
+  - L639 the bank's once-only credit survives phase
+  - L641 native charges/bookings conserve pooled cash
+  - L644 actual partial inherited coupon reaches treasury once
+  - L645 the live source keeps its original record-date fraction
+  - L646 final clearing is discharged
+  - L647 the actual debit, bank credit and remaining payments conserve cash
+  - L650 post-payment cannot create a duplicate receipt
+- **L658 actual all-stock no-heir estate, pending settlement and both loaders**
+  - L666 every custody owner slot survives loader
+  - L668 saved holder discount survives loader
+  - L669 recorded coupon entitlement survives loader
+  - L670 noncash ownership history survives loader
+  - L677 post-settlement custody snapshot survives
+  - L680 post-settlement load cannot repeat retirement
+  - L681 post-settlement reservation remains cleared
+  - L687 a real unrelated heir receives its stepped basis
+  - L688 ordinary real heirs still carry the unpaid 35 claim
+  - L691 the loss-only estate retains a positive exact memo stock
+  - L699 reservation uses the native schedule
+  - L700 reservation uses the native issuer carrying operation
+  - L701 nonzero reserved discount is retired with its exact holder
 
 ## CarCheck.java - 70 labelled assertions
 
@@ -5252,57 +5315,57 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L173 Equity's companies are the keys and then the bank, the bank's index the keys' count
   - L176 ...the households' share block a slot a company
   - L178 ...the audit's pools the city, a pool a sector in the keys' order - coal mining's after the refinery's - and the
-  - L183 ...and the bank's year of sheets files a column of loans and of interim financing a sector
-  - L185 Resource.COAL is sold as thermal coal - both its types, washing being the sector's flow - at 1/200 of its export
-  - L197 ...so an offer's coal is in its price: a site's 6.5 Mt at US$0.25 a tonne, about US$1.6M (to the US$5k rounding)
-  - L200 the two coals are the goods batch I4 brought, at the study's 3.2 prices (thermal 75/50, coking 225/180), stockable
-- **L248 3. the four rows at parity: the study's 3.3, and its four cases worked from its own figures, to its rounding**
-  - L264 the
-  - L274 ...its ground
-  - L280 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
-  - L307 ...its four cases are the study's arithmetic to its rounding:
-  - L317 the surface mine burns the study's 230,000 L, the large one the same a tonne, the longwall and the plant none
-  - L326 the study's 3.4: a surface mine returns 3.3% a month exporting, a large one 3.6% (its \"3.3-3.6%\")
-  - L329 ...a longwall alone 0.8%, its raw coal sold as thermal
-  - L335 ...with the plant the pair 2.4% - the plant fed whole, two longwalls' 500,000 t (one longwall's 250,000 reads 2.2%)
-  - L339 ...and the plant alone 19%, because washing is where coking coal is made
-- **L357 4. a longwall alone sells its raw coal as thermal, tonne for tonne; with a plant, coking coal**
-  - L363 an Underground Coal Mine standing alone: the sector's nameplate 250,000 t of thermal coal and no coking (getCapacity())
-  - L368 ...a plant on site counts as supply the planner sees: the flow with it less the flow without, never below nothing
-  - L373 ...and standing, it washes the longwall's 250,000 t: 137,500 t of coking coal and 50,000 of thermal
-  - L377 ...a surface mine's coal is thermal whatever stands beside it, and no plant washes it
-- **L387 5. coal's types at I1's shares and E3's odds, and each mine on the field that fits it**
-  - L396 coal's fields on the default world are thermal at TYPE_SHARES' 85% and coking 15%, within two points (I1's draw)
-  - L401 on Earth coking leans on the ground (E3): odds three times as long in a fold belt, half on a shield, the rest at
-  - L415 fixture: a town founded on a coking field, three thermal sites by fiat (the first type)
-  - L417 a surface mine fits a thermal site, and three of them the three; a large one, four sites of one field, does not
-  - L419 ...a longwall fits only the coking sites, as many as there are, and the plant needs no site but coal in the ground
-  - L423 on four thermal sites of one piece the large mine fits, one and not two
-- **L487 6. the dig by type: the month's coal is the lift, each type's ground gives it up at its dig, W exact**
-  - L500 fixture: a surface mine and a longwall standing, no plant; the month's lift each one's nameplate at the sector's rate
-  - L503 ...what the market is priced on and the month makes: the lift's flow, the raw sold as thermal
-  - L511 at the month's end each type's ground gives up its coal at its dig: the thermal 1/.95 t a tonne, the coking 1/.80
-  - L514 ...E rising by the seam taken out, and W by type to the tonne
-  - L522 with 30,000 t of thermal seam left the surface mine digs what it holds, 30,000 x .95 t of coal; the longwall its whole ask
-  - L527 ...and once the thermal is out the surface mine digs nothing and is spare, and only it may be sold
-- **L536 7. the plan: a preparation plant beside the coking mines first, then the best mine that fits**
-  - L546 fixture: a longwall standing, its 250,000 t of raw coal unwashed: a plant would add 137,500 t of coking coal and take
-  - L555 ...its estimate the flow's increment: the coking coal at the makers' rule, less the thermal at what it was selling for,
-  - L559 ...and the plan orders the plant, before any mine
-  - L567 with the plant on site nothing is unwashed, so no second plant is ordered for it, and the sector is not held to one order in flight (BA1)
-  - L591 with the plant standing and room in its wash, the mines' rule: the best earnings on the whole cost of those that fit
-  - L595 ...a second longwall's raw coal is washed in the plant's spare 250,000 t: it adds coking coal, not thermal
-- **L602 8. a played month: the coal is the lift's, the ground gives it up, the audit closes**
-  - L618 fixture: a surface mine, a longwall and a plant standing, a month on: the sector made both coals
-  - L623 ...each coal's month - made for home, from the line abroad, and idled - the lift's flow at the month's rate
-  - L626 ...and the ground gave up the seam for it, the thermal at 1/.95 a tonne and the raw at 1/.80; W by type exact
-  - L630 the month's money audit closes
-- **L638 9. worked-out mines count in raw nameplate, not the thermal output left after washing**
-  - L649 fixture: coking and thermal ground remain, so no mine is spare before exhaustion (washed=
-  - L661 the worked-out mines add up to the measure in raw tonnes (washed=
-  - L666 the rule sells the most-held mine and the share its constants allow (washed=
-  - L669 a wash plant is not a worked-out mine (washed=
-  - L670 the thermal type still has coal and its mines may not be sold
+  - L184 ...and the bank's year of sheets files a column of loans and of interim financing a sector
+  - L186 Resource.COAL is sold as thermal coal - both its types, washing being the sector's flow - at 1/200 of its export
+  - L198 ...so an offer's coal is in its price: a site's 6.5 Mt at US$0.25 a tonne, about US$1.6M (to the US$5k rounding)
+  - L201 the two coals are the goods batch I4 brought, at the study's 3.2 prices (thermal 75/50, coking 225/180), stockable
+- **L249 3. the four rows at parity: the study's 3.3, and its four cases worked from its own figures, to its rounding**
+  - L265 the
+  - L275 ...its ground
+  - L281 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
+  - L308 ...its four cases are the study's arithmetic to its rounding:
+  - L318 the surface mine burns the study's 230,000 L, the large one the same a tonne, the longwall and the plant none
+  - L327 the study's 3.4: a surface mine returns 3.3% a month exporting, a large one 3.6% (its \"3.3-3.6%\")
+  - L330 ...a longwall alone 0.8%, its raw coal sold as thermal
+  - L336 ...with the plant the pair 2.4% - the plant fed whole, two longwalls' 500,000 t (one longwall's 250,000 reads 2.2%)
+  - L340 ...and the plant alone 19%, because washing is where coking coal is made
+- **L358 4. a longwall alone sells its raw coal as thermal, tonne for tonne; with a plant, coking coal**
+  - L364 an Underground Coal Mine standing alone: the sector's nameplate 250,000 t of thermal coal and no coking (getCapacity())
+  - L369 ...a plant on site counts as supply the planner sees: the flow with it less the flow without, never below nothing
+  - L374 ...and standing, it washes the longwall's 250,000 t: 137,500 t of coking coal and 50,000 of thermal
+  - L378 ...a surface mine's coal is thermal whatever stands beside it, and no plant washes it
+- **L388 5. coal's types at I1's shares and E3's odds, and each mine on the field that fits it**
+  - L397 coal's fields on the default world are thermal at TYPE_SHARES' 85% and coking 15%, within two points (I1's draw)
+  - L402 on Earth coking leans on the ground (E3): odds three times as long in a fold belt, half on a shield, the rest at
+  - L416 fixture: a town founded on a coking field, three thermal sites by fiat (the first type)
+  - L418 a surface mine fits a thermal site, and three of them the three; a large one, four sites of one field, does not
+  - L420 ...a longwall fits only the coking sites, as many as there are, and the plant needs no site but coal in the ground
+  - L424 on four thermal sites of one piece the large mine fits, one and not two
+- **L488 6. the dig by type: the month's coal is the lift, each type's ground gives it up at its dig, W exact**
+  - L501 fixture: a surface mine and a longwall standing, no plant; the month's lift each one's nameplate at the sector's rate
+  - L504 ...what the market is priced on and the month makes: the lift's flow, the raw sold as thermal
+  - L512 at the month's end each type's ground gives up its coal at its dig: the thermal 1/.95 t a tonne, the coking 1/.80
+  - L515 ...E rising by the seam taken out, and W by type to the tonne
+  - L523 with 30,000 t of thermal seam left the surface mine digs what it holds, 30,000 x .95 t of coal; the longwall its whole ask
+  - L528 ...and once the thermal is out the surface mine digs nothing and is spare, and only it may be sold
+- **L537 7. the plan: a preparation plant beside the coking mines first, then the best mine that fits**
+  - L547 fixture: a longwall standing, its 250,000 t of raw coal unwashed: a plant would add 137,500 t of coking coal and take
+  - L556 ...its estimate the flow's increment: the coking coal at the makers' rule, less the thermal at what it was selling for,
+  - L560 ...and the plan orders the plant, before any mine
+  - L568 with the plant on site nothing is unwashed, so no second plant is ordered for it, and the sector is not held to one order in flight (BA1)
+  - L592 with the plant standing and room in its wash, the mines' rule: the best earnings on the whole cost of those that fit
+  - L596 ...a second longwall's raw coal is washed in the plant's spare 250,000 t: it adds coking coal, not thermal
+- **L603 8. a played month: the coal is the lift's, the ground gives it up, the audit closes**
+  - L619 fixture: a surface mine, a longwall and a plant standing, a month on: the sector made both coals
+  - L624 ...each coal's month - made for home, from the line abroad, and idled - the lift's flow at the month's rate
+  - L627 ...and the ground gave up the seam for it, the thermal at 1/.95 a tonne and the raw at 1/.80; W by type exact
+  - L631 the month's money audit closes
+- **L639 9. worked-out mines count in raw nameplate, not the thermal output left after washing**
+  - L650 fixture: coking and thermal ground remain, so no mine is spare before exhaustion (washed=
+  - L662 the worked-out mines add up to the measure in raw tonnes (washed=
+  - L667 the rule sells the most-held mine and the share its constants allow (washed=
+  - L670 a wash plant is not a worked-out mine (washed=
+  - L671 the thermal type still has coal and its mines may not be sold
 
 ## ConstructionControlCheck.java - 154 labelled assertions
 
@@ -5873,45 +5936,45 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L128 Sectors.KEYS has Copper Mining after Cement & Concrete, the twenty-first, and Copper Refining after it, the
   - L134 ...an extraction sector on copper, found by its saved name, making concentrate and cathode and using acid (and its
   - L140 Equity's companies are the keys and then the bank; the households' share block a slot a company; the audit's pools a
-  - L148 Resource.COPPER is priced as cathode: a sulphide field's good concentrate, an oxide field's cathode, ANY's cathode;
-  - L159 ...so an offer's copper is in its price: a site's 300,000 t of metal at US$100 a tonne, US$30M (to the US$5k rounding)
-  - L171 copper's seven goods at the study's 4.2 prices - scrap's import end and wire's export end widened (its 1.2) - freight
-  - L173 ...wire and cable and rod by the GOODS stream, the other five BULK (spec 2.3); by sea acid a tanker's, concentrate and
-  - L185 ...cathode follows cement on NationalAccounts.HELD, then wood's five, trucks and gold in their permanent order
-- **L228 2. the three rows at parity: the study's 4.3, and its 4.4 table's four cases to its rounding**
-  - L245 the
-  - L257 ...its ground the copper sites it takes, 0.5 km2 each, its road load its tonnes out
-  - L265 its consumables are its running cost less its wages, power and water - no diesel, the study naming none
-  - L275 ...its four cases are the study's 4.4 to its rounding:
-  - L278 the study's 4.4: a mine is always worth building - every case of all three over 2.5% a month, the leach plant's
-  - L280 ...and the dig the spec's 2.4: .341 t of a sulphide field's copper a tonne of concentrate (2,200 t of 30% from
-- **L292 3. copper's types at I1's shares, and each building on the field that fits it**
-  - L301 copper's fields on the default world are sulphide at TYPE_SHARES' 80% and oxide 20%, within two points (the study's 1.4)
-  - L312 fixture: a town founded on the oxide field nearest the default site, three sulphide sites by fiat (the first type)
-  - L315 a Copper Mine & Mill fits a sulphide site, three of them the three; the Large Copper Mine, eight sites of one
-  - L318 ...a leach plant fits only the oxide sites, as many as there are
-  - L321 on eight sulphide sites of one piece the Large Copper Mine fits, one and not two
-- **L389 4. a sulphide mine makes concentrate, digging its own type as it is made, W exact**
-  - L402 fixture: a Copper Mine & Mill standing: the month's concentrate its 2,200 t at the sector's rate
-  - L405 ...the sulphide ground gives up CONC_DIG a tonne as it is made, the oxide nothing; E by it and W by type exact
-  - L409 ...and it makes no cathode: the lift's cathode, and the sector's, nothing
-  - L415 with 300 t of the sulphide's copper left the mine makes what it holds, 300 / .341 t of concentrate, and W holds
-  - L419 ...and once the sulphide is out the mine is spare, measured in the tonnes it makes, and may be sold
-- **L427 5. an oxide field's leach plant makes cathode: the lift, the month's end dig, its acid**
-  - L435 fixture: a Leach & SX-EW Plant standing on the oxide field: the month's cathode its 1,000 t at the sector's rate
-  - L438 ...what the market is priced on and the month makes (Sector.madeAtRate()): never past the lift
-  - L440 ...and it bids for its acid, 3,500 t a month at the rate
-  - L445 at the month's end the oxide ground gives up LEACH_DIG a tonne of the cathode made, the sulphide nothing; W exact
-  - L450 with 700 t of the oxide's copper left the plant leaches what it holds, 700 / 1.4 t
-  - L454 ...and once the oxide is out it leaches nothing and is spare, while the sulphide still holds copper
-- **L461 6. the plan: the best earnings on the whole cost of the buildings that fit, their freight in it**
-  - L478 with oxide and sulphide sites free, the plan is the best earnings on the whole cost of those that fit and pass, or none
-  - L484 ...each one's estimate the maker's, less its consumables and its freight (ExtractionSector), to the bit
-- **L491 7. a played month: concentrate shipped, cathode made, acid bought, the ground given up by type, the audit closed**
-  - L509 fixture: a mine and mill and a leach plant standing, three months on: concentrate made and shipped, cathode made
-  - L513 ...the ground gave up the month's copper by type: the sulphide CONC_DIG a tonne of concentrate, the oxide LEACH_DIG a
-  - L519 ...the leach plant bought its acid - from the world, no smelter standing
-  - L522 the month's money audit closes
+  - L149 Resource.COPPER is priced as cathode: a sulphide field's good concentrate, an oxide field's cathode, ANY's cathode;
+  - L160 ...so an offer's copper is in its price: a site's 300,000 t of metal at US$100 a tonne, US$30M (to the US$5k rounding)
+  - L172 copper's seven goods at the study's 4.2 prices - scrap's import end and wire's export end widened (its 1.2) - freight
+  - L174 ...wire and cable and rod by the GOODS stream, the other five BULK (spec 2.3); by sea acid a tanker's, concentrate and
+  - L186 ...cathode follows cement on NationalAccounts.HELD, then wood's five, trucks and gold in their permanent order
+- **L229 2. the three rows at parity: the study's 4.3, and its 4.4 table's four cases to its rounding**
+  - L246 the
+  - L258 ...its ground the copper sites it takes, 0.5 km2 each, its road load its tonnes out
+  - L266 its consumables are its running cost less its wages, power and water - no diesel, the study naming none
+  - L276 ...its four cases are the study's 4.4 to its rounding:
+  - L279 the study's 4.4: a mine is always worth building - every case of all three over 2.5% a month, the leach plant's
+  - L281 ...and the dig the spec's 2.4: .341 t of a sulphide field's copper a tonne of concentrate (2,200 t of 30% from
+- **L293 3. copper's types at I1's shares, and each building on the field that fits it**
+  - L302 copper's fields on the default world are sulphide at TYPE_SHARES' 80% and oxide 20%, within two points (the study's 1.4)
+  - L313 fixture: a town founded on the oxide field nearest the default site, three sulphide sites by fiat (the first type)
+  - L316 a Copper Mine & Mill fits a sulphide site, three of them the three; the Large Copper Mine, eight sites of one
+  - L319 ...a leach plant fits only the oxide sites, as many as there are
+  - L322 on eight sulphide sites of one piece the Large Copper Mine fits, one and not two
+- **L390 4. a sulphide mine makes concentrate, digging its own type as it is made, W exact**
+  - L403 fixture: a Copper Mine & Mill standing: the month's concentrate its 2,200 t at the sector's rate
+  - L406 ...the sulphide ground gives up CONC_DIG a tonne as it is made, the oxide nothing; E by it and W by type exact
+  - L410 ...and it makes no cathode: the lift's cathode, and the sector's, nothing
+  - L416 with 300 t of the sulphide's copper left the mine makes what it holds, 300 / .341 t of concentrate, and W holds
+  - L420 ...and once the sulphide is out the mine is spare, measured in the tonnes it makes, and may be sold
+- **L428 5. an oxide field's leach plant makes cathode: the lift, the month's end dig, its acid**
+  - L436 fixture: a Leach & SX-EW Plant standing on the oxide field: the month's cathode its 1,000 t at the sector's rate
+  - L439 ...what the market is priced on and the month makes (Sector.madeAtRate()): never past the lift
+  - L441 ...and it bids for its acid, 3,500 t a month at the rate
+  - L446 at the month's end the oxide ground gives up LEACH_DIG a tonne of the cathode made, the sulphide nothing; W exact
+  - L451 with 700 t of the oxide's copper left the plant leaches what it holds, 700 / 1.4 t
+  - L455 ...and once the oxide is out it leaches nothing and is spare, while the sulphide still holds copper
+- **L462 6. the plan: the best earnings on the whole cost of the buildings that fit, their freight in it**
+  - L479 with oxide and sulphide sites free, the plan is the best earnings on the whole cost of those that fit and pass, or none
+  - L485 ...each one's estimate the maker's, less its consumables and its freight (ExtractionSector), to the bit
+- **L492 7. a played month: concentrate shipped, cathode made, acid bought, the ground given up by type, the audit closed**
+  - L510 fixture: a mine and mill and a leach plant standing, three months on: concentrate made and shipped, cathode made
+  - L514 ...the ground gave up the month's copper by type: the sulphide CONC_DIG a tonne of concentrate, the oxide LEACH_DIG a
+  - L520 ...the leach plant bought its acid - from the world, no smelter standing
+  - L523 the month's money audit closes
 
 ## CopperRefiningCheck.java - 84 labelled assertions
 
@@ -11726,70 +11789,70 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L152 Sectors.KEYS has Forestry after Copper Refining, the twenty-third (Jerus's Q21: iron, coal, stone, copper, wood) -
   - L157 ...an extraction sector on the forest, found by its saved name, making sawlogs and pulpwood (and buying its vans, as
   - L163 Equity's companies are the keys and then the bank; the households' share block a slot a company; the audit's pools a
-  - L178 wood's two goods at the study's 5.3 prices - pulpwood's import end widened to 90 (its 1.2) - freight three eighths of
-  - L180 ...a cubic metre of either 0.9 t on the road (green roundwood, spec 2.3), by the BULK stream, and by sea general cargo
-  - L185 Resource.FOREST is priced as pulpwood, its one pricing good (spec 2.4), at 2% of its export price in the ground
-  - L196 ...so an offer's forest is in its price: a square kilometre's 13,700 m3 at US$0.70, about US$9,590 (to the US$5k
-  - L204 ...and an offer holding forest and nothing else is still bare ground - forest is the terrain, not a deposit -
-- **L232 2. the four rows at parity: the study's 5.4, and its 5.5 table's four cases to its rounding**
-  - L246 the
-  - L258 ...its consumables are the study's running cost less its wages - no power or water, the study giving none
-  - L262 ...its road load its logs out at 0.9 t a cubic metre, at the Iron Mine's 420 for 2,500 t; no yard
-  - L266 ...its ground its 1,000 ha (10 km2), a cubic metre of growth on it a month at nameplate PLANTED x ha / 12
-  - L279 ...its four cases are the study's 5.5 to its rounding:
-  - L284 ...and the map draws each as a building on its own ground, on no resource's sites - a crew cuts terrain, so the
-  - L289 the Woodlot (132) is a tenth of the plantation (Jerus's A12): 100 ha, its cost a tenth, 167 m3 a month once grown, its
-  - L300 ...and like the plantation it never pays - nothing to sell for 25 years: every case below nothing, a post's wage and its
-- **L308 3. E: a crew only while the forest it may cut lasts 120 months of every crew's cut with it**
-  - L314 a 10 km2 forest gets no crew: its 137,000 m3 is under a Logging Camp's 120 months of 2,000 m3 (spec-zoning 3.2)
-  - L317 ...a Logging Camp needs 17.5 km2 of cuttable forest and a Harvesting Operation 109 km2 (spec 2.11), at the world's
-  - L323 ...and every crew's cut counts: with a Harvesting Operation on the forest a camp needs 120 months of both
-  - L331 fixture: a town whose ground round the founding site holds more forest than a Harvesting Operation's room
-  - L337 with 10 km2 of it cuttable the plan holds, in E's words
-  - L341 ...with a Logging Camp's 17.5 km2 the plan is a camp or, refused by the money gate or the staff, says why - never a
-  - L357 ...with the whole forest cuttable the plan is the best earnings on the whole cost of the crews E allows, or none
-  - L359 ...a planted stand is never a candidate (it is planted, not ordered), and nothing is planned on no forest
-- **L411 4. the cut: a crew's two goods out of the cuttable forest together, the protected wood never, W exact**
-  - L423 fixture: a Logging Camp standing: the month's sawlogs and pulpwood its 1,000 m3 each at the sector's rate
-  - L426 ...taken out of the forest together, once: E rises by the 2,000 m3 at the rate, what stands falls by it, W exact
-  - L435 with the law leaving 500 m3 to cut the crew takes it, 250 m3 of each - in either good's order - and the protected wood
-  - L444 ...a month later it cuts nothing, and with nothing it may cut its crew is spare, measured in its cut, and may be sold
-- **L453 5. regrowth: a 240th of what was cut and the planted stands' growth a month, never past the full stock**
-  - L459 fixture: a million m3 cut; a month with no stand grows back FOREST_REGROWTH of it, to the bit, W exact
-  - L467 ...the regrowth the month's end will give is the rule's and the stands', and Forestry's planting reads it
-  - L470 three plantations and two woodlots take 20 m3 a ha a year off E with it: 3 x 1,666.7 + 2 x 166.7 m3 more grows back
-  - L476 ...and never past the forest's full stock: stands growing more than was cut leave E at nothing, the forest full, W exact
-- **L490 6. planting: only on Forestry's zone, a plantation or a woodlot by its room, only while the cut outgrows the regrowth**
-  - L500 fixture: a Harvesting Operation's month cut, more than the regrowth; no zone
-  - L503 with no Forestry zone nothing is planted (B: \"No Forestry zone, no plantation\")
-  - L508 ...with a zone of 50 ha nothing either: it holds no woodlot's 100 ha
-  - L515 a zone of 500 ha, free, plants a Woodlot (A12: a plantation's 1,000 ha will not fit), its ground the zone's used ground
-  - L519 ...paid from Forestry's cash, the zone's price nothing, outside the interest test and never borrowed
-  - L528 a zone of 20 km2 at half the going price plants a Tree Plantation, the city paid the zone's price for its ground
-  - L537 ...and with ten plantations growing more than the cut nothing more is planted
-  - L539 ...a planted stand is the cut's cost while there is a cut: never sold while a crew stands
-  - L552 ...and a Forestry with no cash plants nothing and borrows nothing
-- **L573 7. the salvage cut: a clearing's wood sold half and half, billed by the builders, none lost, W exact**
-  - L582 fixture: a square kilometre built past the bare ground clears its standing wood, waiting to be sold
-  - L591 Forestry sells it that month, with no crew standing: half sawlogs and half pulpwood, nothing left waiting
-  - L595 ...billed by the builders at a Harvesting Operation's running cost a cubic metre (none standing), at today's wages: the
-  - L604 ...with crews standing, the crews' own running cost a cubic metre
-  - L609 a clearing after the month's market waits past the month's end - none lost
-  - L614 ...and across a save: the loaded city's salvage waiting is the saved one's, and its next month sells it
-  - L619 ...sold the next month, half and half, after the crews' cut
-- **L631 8. where the forest settles (Q13): 240 months of the cut gone, or the law's protected share**
-  - L633 mockup 4's 25.4M m3 cut by 75,000 a month settle with 240 x the cut gone - 18.0M - at 29.1% standing
-  - L637 ...and at 40% with 40% protected: the crews cut the rest to the bone
-  - L640 ...the planted stands' growth off the cut (32 plantations, the study's 5.7, close the gap) and ground cleared for
-- **L649 9. a played city: a crew and a clearing a month on, the books and the audit, saved and reloaded the same**
-  - L667 fixture: the fields' zone holding the free bare ground, a Logging Camp and a Woodlot put up clear the forest under
-  - L674 a month on: that month's sawlogs its crew's and half the salvage, nothing left waiting
-  - L679 the month's money audit closes
-  - L684 ...struck the next month: the salvage on Forestry's inputs, the builders' revenue named, the same figure
-  - L688 ...and the wood sold - abroad, nobody here buying logs without a Wood Products mill (0.7.140)
-  - L689 W exact after the months played
-  - L695 saved and reloaded: the crews' cut and the forest the same
-  - L699 ...a month on, the two the same month: Forestry's cash and cut, the forest, the city's cash
+  - L179 wood's two goods at the study's 5.3 prices - pulpwood's import end widened to 90 (its 1.2) - freight three eighths of
+  - L181 ...a cubic metre of either 0.9 t on the road (green roundwood, spec 2.3), by the BULK stream, and by sea general cargo
+  - L186 Resource.FOREST is priced as pulpwood, its one pricing good (spec 2.4), at 2% of its export price in the ground
+  - L197 ...so an offer's forest is in its price: a square kilometre's 13,700 m3 at US$0.70, about US$9,590 (to the US$5k
+  - L205 ...and an offer holding forest and nothing else is still bare ground - forest is the terrain, not a deposit -
+- **L233 2. the four rows at parity: the study's 5.4, and its 5.5 table's four cases to its rounding**
+  - L247 the
+  - L259 ...its consumables are the study's running cost less its wages - no power or water, the study giving none
+  - L263 ...its road load its logs out at 0.9 t a cubic metre, at the Iron Mine's 420 for 2,500 t; no yard
+  - L267 ...its ground its 1,000 ha (10 km2), a cubic metre of growth on it a month at nameplate PLANTED x ha / 12
+  - L280 ...its four cases are the study's 5.5 to its rounding:
+  - L285 ...and the map draws each as a building on its own ground, on no resource's sites - a crew cuts terrain, so the
+  - L290 the Woodlot (132) is a tenth of the plantation (Jerus's A12): 100 ha, its cost a tenth, 167 m3 a month once grown, its
+  - L301 ...and like the plantation it never pays - nothing to sell for 25 years: every case below nothing, a post's wage and its
+- **L309 3. E: a crew only while the forest it may cut lasts 120 months of every crew's cut with it**
+  - L315 a 10 km2 forest gets no crew: its 137,000 m3 is under a Logging Camp's 120 months of 2,000 m3 (spec-zoning 3.2)
+  - L318 ...a Logging Camp needs 17.5 km2 of cuttable forest and a Harvesting Operation 109 km2 (spec 2.11), at the world's
+  - L324 ...and every crew's cut counts: with a Harvesting Operation on the forest a camp needs 120 months of both
+  - L332 fixture: a town whose ground round the founding site holds more forest than a Harvesting Operation's room
+  - L338 with 10 km2 of it cuttable the plan holds, in E's words
+  - L342 ...with a Logging Camp's 17.5 km2 the plan is a camp or, refused by the money gate or the staff, says why - never a
+  - L358 ...with the whole forest cuttable the plan is the best earnings on the whole cost of the crews E allows, or none
+  - L360 ...a planted stand is never a candidate (it is planted, not ordered), and nothing is planned on no forest
+- **L412 4. the cut: a crew's two goods out of the cuttable forest together, the protected wood never, W exact**
+  - L424 fixture: a Logging Camp standing: the month's sawlogs and pulpwood its 1,000 m3 each at the sector's rate
+  - L427 ...taken out of the forest together, once: E rises by the 2,000 m3 at the rate, what stands falls by it, W exact
+  - L436 with the law leaving 500 m3 to cut the crew takes it, 250 m3 of each - in either good's order - and the protected wood
+  - L445 ...a month later it cuts nothing, and with nothing it may cut its crew is spare, measured in its cut, and may be sold
+- **L454 5. regrowth: a 240th of what was cut and the planted stands' growth a month, never past the full stock**
+  - L460 fixture: a million m3 cut; a month with no stand grows back FOREST_REGROWTH of it, to the bit, W exact
+  - L468 ...the regrowth the month's end will give is the rule's and the stands', and Forestry's planting reads it
+  - L471 three plantations and two woodlots take 20 m3 a ha a year off E with it: 3 x 1,666.7 + 2 x 166.7 m3 more grows back
+  - L477 ...and never past the forest's full stock: stands growing more than was cut leave E at nothing, the forest full, W exact
+- **L491 6. planting: only on Forestry's zone, a plantation or a woodlot by its room, only while the cut outgrows the regrowth**
+  - L501 fixture: a Harvesting Operation's month cut, more than the regrowth; no zone
+  - L504 with no Forestry zone nothing is planted (B: \"No Forestry zone, no plantation\")
+  - L509 ...with a zone of 50 ha nothing either: it holds no woodlot's 100 ha
+  - L516 a zone of 500 ha, free, plants a Woodlot (A12: a plantation's 1,000 ha will not fit), its ground the zone's used ground
+  - L520 ...paid from Forestry's cash, the zone's price nothing, outside the interest test and never borrowed
+  - L529 a zone of 20 km2 at half the going price plants a Tree Plantation, the city paid the zone's price for its ground
+  - L538 ...and with ten plantations growing more than the cut nothing more is planted
+  - L540 ...a planted stand is the cut's cost while there is a cut: never sold while a crew stands
+  - L553 ...and a Forestry with no cash plants nothing and borrows nothing
+- **L574 7. the salvage cut: a clearing's wood sold half and half, billed by the builders, none lost, W exact**
+  - L583 fixture: a square kilometre built past the bare ground clears its standing wood, waiting to be sold
+  - L592 Forestry sells it that month, with no crew standing: half sawlogs and half pulpwood, nothing left waiting
+  - L596 ...billed by the builders at a Harvesting Operation's running cost a cubic metre (none standing), at today's wages: the
+  - L605 ...with crews standing, the crews' own running cost a cubic metre
+  - L610 a clearing after the month's market waits past the month's end - none lost
+  - L615 ...and across a save: the loaded city's salvage waiting is the saved one's, and its next month sells it
+  - L620 ...sold the next month, half and half, after the crews' cut
+- **L632 8. where the forest settles (Q13): 240 months of the cut gone, or the law's protected share**
+  - L634 mockup 4's 25.4M m3 cut by 75,000 a month settle with 240 x the cut gone - 18.0M - at 29.1% standing
+  - L638 ...and at 40% with 40% protected: the crews cut the rest to the bone
+  - L641 ...the planted stands' growth off the cut (32 plantations, the study's 5.7, close the gap) and ground cleared for
+- **L650 9. a played city: a crew and a clearing a month on, the books and the audit, saved and reloaded the same**
+  - L668 fixture: the fields' zone holding the free bare ground, a Logging Camp and a Woodlot put up clear the forest under
+  - L675 a month on: that month's sawlogs its crew's and half the salvage, nothing left waiting
+  - L680 the month's money audit closes
+  - L685 ...struck the next month: the salvage on Forestry's inputs, the builders' revenue named, the same figure
+  - L689 ...and the wood sold - abroad, nobody here buying logs without a Wood Products mill (0.7.140)
+  - L690 W exact after the months played
+  - L696 saved and reloaded: the crews' cut and the forest the same
+  - L700 ...a month on, the two the same month: Forestry's cash and cut, the forest, the city's cash
 
 ## FormatsCheck.java - 12 labelled assertions
 
@@ -26411,43 +26474,43 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L240 Equity's companies are the keys and then the bank, the bank's index the keys' count; the stone pair in the keys' place
   - L244 ...the households' share block a slot a company
   - L246 ...the audit's pools the city, a pool a sector in the keys' order - quarrying's and cement & concrete's after coal's - and the
-  - L251 ...and the bank's year of sheets files a column of loans and of interim financing a sector
-  - L252 Resource.STONE is priced as aggregate, its pricing good; a limestone field's stone is LIMESTONE and hard rock's
-  - L264 ...so an offer's stone is in its price: a site's 13.5 Mt at US$0.025 a tonne, about US$340k (to the US$5k rounding)
-  - L267 stone's goods are the study's 6.3: aggregate 40/10 (limestone's band), dimension stone 260/170, cement 110/45;
-  - L279 ...cement stockable, on HELD after the coals (cathode after it since 0.7.133); aggregate and blocks flow goods;
-  - L287 LIMESTONE's makers are the quarries and its buyers the blast furnaces and the kilns and cement plants
-- **L330 3. the three rows at parity: the study's 6.4, and its four cases worked from its own figures, to its rounding**
-  - L337 the study's month is 730 hours: its 3,700 kW for 6,000 t is 450 kWh a tonne (its 2.2)
-  - L350 the
-  - L359 ...its ground the stone sites it takes, 0.1 km2 each, to the square foot
-  - L364 its consumables are the study's running cost less its wages, power and water (no diesel: the study names none)
-  - L379 ...its four cases are the study's arithmetic to its rounding:
-  - L384 the study's 6.5: quarries return 1.6-1.7% a month exporting at D$10 - the Quarry 1.6, the Large Quarry 1.7
-  - L389 ...and about 10% replacing imports at D$40 (\"D$4 a tonne to run\": 163k for 40,000 t)
-- **L398 4. a hard-rock quarry makes aggregate only; the Dimension Stone Quarry only on hard rock**
-  - L405 fixture: a town founded on a hard-rock field, no limestone
-  - L408 the Dimension Stone Quarry fits a hard-rock site, as many as there are; the Quarry fits too
-  - L411 a Quarry standing on hard rock makes aggregate only: 40,000 t, no limestone
-  - L418 ...and on a town of limestone alone the Dimension Stone Quarry does not fit, whatever its free sites
-- **L426 5. the packing: quarries on ANY onto limestone first, a typed works before them, the larger first**
-  - L432 fixture: a town on a hard-rock field, three limestone sites by fiat (the first type)
-  - L439 LandManager.packed(): two Quarries, a Large Quarry and a Dimension Stone Quarry - the blocks on hard rock first, the
-  - L447 two Quarries standing: both on limestone - 80,000 t of limestone, the blocks 1,000 t, no aggregate
-  - L452 ...a third would take the last limestone site; a Large Quarry would take the limestone's three, the two standing
-  - L457 ...a third on site is the pipeline: 40,000 t of limestone coming, nothing standing moved
-  - L461 ...and a fourth, past the limestone, goes onto hard rock: aggregate
-  - L463 the order gate agrees with the packing: room for a Large Quarry on the hard rock beside the standing (fits(), Game
-- **L472 6. the dig by type: each good out of its type's ground at its dig, W exact; a type worked out**
-  - L490 fixture: a Quarry, a Large Quarry and a Dimension Stone Quarry on three limestone sites and hard rock: the Large
-  - L494 ...out of their types' ground: limestone the limestone, aggregate and three tonnes of rock a tonne of blocks the hard
-  - L501 with the limestone worked out, the quarries on ANY dig hard rock: 290,000 t of aggregate, no limestone
-  - L509 with 30,000 t of hard rock left, the quarries take it first and the blocks get what they leave; W exact
-  - L514 ...and with stone worked out every quarry is spare, measured in the tonnes it digs (unitsOf())
-- **L521 7. the plan: the increment to the packing, limestone past the city's room valued as aggregate**
-  - L540 one more Quarry on a limestone town adds 40,000 t of limestone; its estimate the city's room for limestone at the
-  - L553 the plan: the best earnings on the whole cost of the quarries that fit, staff and pay - or none, and why
-  - L557 ...the Dimension Stone Quarry weighed only where it fits: never on a limestone town
+  - L252 ...and the bank's year of sheets files a column of loans and of interim financing a sector
+  - L253 Resource.STONE is priced as aggregate, its pricing good; a limestone field's stone is LIMESTONE and hard rock's
+  - L265 ...so an offer's stone is in its price: a site's 13.5 Mt at US$0.025 a tonne, about US$340k (to the US$5k rounding)
+  - L268 stone's goods are the study's 6.3: aggregate 40/10 (limestone's band), dimension stone 260/170, cement 110/45;
+  - L280 ...cement stockable, on HELD after the coals (cathode after it since 0.7.133); aggregate and blocks flow goods;
+  - L288 LIMESTONE's makers are the quarries and its buyers the blast furnaces and the kilns and cement plants
+- **L331 3. the three rows at parity: the study's 6.4, and its four cases worked from its own figures, to its rounding**
+  - L338 the study's month is 730 hours: its 3,700 kW for 6,000 t is 450 kWh a tonne (its 2.2)
+  - L351 the
+  - L360 ...its ground the stone sites it takes, 0.1 km2 each, to the square foot
+  - L365 its consumables are the study's running cost less its wages, power and water (no diesel: the study names none)
+  - L380 ...its four cases are the study's arithmetic to its rounding:
+  - L385 the study's 6.5: quarries return 1.6-1.7% a month exporting at D$10 - the Quarry 1.6, the Large Quarry 1.7
+  - L390 ...and about 10% replacing imports at D$40 (\"D$4 a tonne to run\": 163k for 40,000 t)
+- **L399 4. a hard-rock quarry makes aggregate only; the Dimension Stone Quarry only on hard rock**
+  - L406 fixture: a town founded on a hard-rock field, no limestone
+  - L409 the Dimension Stone Quarry fits a hard-rock site, as many as there are; the Quarry fits too
+  - L412 a Quarry standing on hard rock makes aggregate only: 40,000 t, no limestone
+  - L419 ...and on a town of limestone alone the Dimension Stone Quarry does not fit, whatever its free sites
+- **L427 5. the packing: quarries on ANY onto limestone first, a typed works before them, the larger first**
+  - L433 fixture: a town on a hard-rock field, three limestone sites by fiat (the first type)
+  - L440 LandManager.packed(): two Quarries, a Large Quarry and a Dimension Stone Quarry - the blocks on hard rock first, the
+  - L448 two Quarries standing: both on limestone - 80,000 t of limestone, the blocks 1,000 t, no aggregate
+  - L453 ...a third would take the last limestone site; a Large Quarry would take the limestone's three, the two standing
+  - L458 ...a third on site is the pipeline: 40,000 t of limestone coming, nothing standing moved
+  - L462 ...and a fourth, past the limestone, goes onto hard rock: aggregate
+  - L464 the order gate agrees with the packing: room for a Large Quarry on the hard rock beside the standing (fits(), Game
+- **L473 6. the dig by type: each good out of its type's ground at its dig, W exact; a type worked out**
+  - L491 fixture: a Quarry, a Large Quarry and a Dimension Stone Quarry on three limestone sites and hard rock: the Large
+  - L495 ...out of their types' ground: limestone the limestone, aggregate and three tonnes of rock a tonne of blocks the hard
+  - L502 with the limestone worked out, the quarries on ANY dig hard rock: 290,000 t of aggregate, no limestone
+  - L510 with 30,000 t of hard rock left, the quarries take it first and the blocks get what they leave; W exact
+  - L515 ...and with stone worked out every quarry is spare, measured in the tonnes it digs (unitsOf())
+- **L522 7. the plan: the increment to the packing, limestone past the city's room valued as aggregate**
+  - L541 one more Quarry on a limestone town adds 40,000 t of limestone; its estimate the city's room for limestone at the
+  - L554 the plan: the best earnings on the whole cost of the quarries that fit, staff and pay - or none, and why
+  - L558 ...the Dimension Stone Quarry weighed only where it fits: never on a limestone town
 
 ## QuayCraneCheck.java - 23 labelled assertions
 
@@ -33383,45 +33446,45 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L142 ...a processing sector found by its saved name, Iron & Steel's group, making lumber, residues, panels, pulp, paper and
   - L150 ...residues and pulp captive - made and used inside it - and nothing else
   - L153 Equity's companies are the keys and then the bank; the households' share block a slot a company; the audit's pools a
-  - L170 the six goods at the study's 5.3 prices, freight three eighths of each wedge; lumber, panels and residues by the cubic
-  - L175 ...the five stockable follow copper's cathode in Good's order, before trucks and gold, preserving the held slots
-  - L180 ...lumber, panels and paper by the goods stream and, by sea, in containers; residues, pulp and pellets by the bulk
-  - L200 the buyers (spec 2.12): Forestry's logs Wood Products'; residues and pulp its own; fuel oil the paper mill's, its first
-- **L274 2. the six rows at parity: the study's 5.4 and 5.6, and its 5.5 table's four cases to its rounding**
-  - L297 the
-  - L316 ...its posts
-  - L335 its consumables are the study's running cost less its wages, the power it buys and water
-  - L347 ...its four cases are the study's 5.5 to its rounding
-  - L359 where caseEarns() and the study differ: the paper mill's fuel is a feed at the case's price, not one price in its running
-  - L368 residues have two buyers, and the pulp mill pays more for a cubic metre of them than the pellet mill (the study's 5.5): its
-  - L372 ...the paper mill pays only where it replaces imported paper (the study's 5.6): nothing on the city's pulp exporting (B), its
-  - L376 ...and on imported feed for export (A) no mill earns more than 0.4% of its cost a month, under the hurdle (the study's 1.2)
-- **L413 3. the chain: the sawmill's residues to the pulp mill, its pulp to the paper mill, captive; the rest bought or shipped**
-  - L430 fixture: a sawmill, a pulp mill and a paper mill standing, two months on: the sawmill's 1,640 m3 of residues at the rate all to
-  - L437 ...the pulp mill's pulp to the paper mill first, captive: min of its 11,000 t and the paper mill's 5,775 at the rate - the
-  - L443 ...the paper mill's 850,000 litres of fuel oil needed at the rate it needs its 5,775 t of pulp - no refinery here, so all
-  - L448 ...its lumber and paper made for the market, nobody here buying them: none sold at home
-  - L456 ...on the books (struck at the next month's top): no sale of residues or pulp booked to itself - the residues bought only
-  - L462 the month's money audit closes
-- **L469 4. the pulp mill's own power: none bought, its 13,500 kW sold to the grid at the works' price, the city's utility paying**
-  - L489 fixture: a town with a pulp mill standing, four months on: it draws nothing from the grid and sells 13,500 kW
-  - L494 its statement's powerSold is the 13,500 kW at the works' price (the struck book's), in its revenue past its sales; its electricity bill nothing
-  - L497 the utility pays the works what their statement booked, and the grid counts their surplus as generation
-  - L500 the month's money audit closes
-- **L506 5. the logs: a sawmill buys Forestry's sawlogs at home first and imports only the rest; past its need they ship**
-  - L519 fixture: a Logging Camp and a sawmill on a forest town, two months on: the camp's sawlogs all sold at home to the sawmill,
-  - L526 ...and the camp's pulpwood, nobody here buying it without a panel or pulp mill, all shipped
-  - L535 with a Harvesting Operation beside the camp, cutting more sawlogs than the mill takes: the mill imports none, its whole bid
-  - L543 ...on the books (struck at the next month's top): Wood Products bought its sawlogs at home and none abroad, Forestry sold at
-  - L549 the month's money audit closes
-- **L556 6. the plan at founding: on imported feed for export no mill clears the whole-cost hurdle, so none is ordered**
-  - L574 fixture: a founded town, two months on, trading no wood: each of the six weighed at the city's values - its feed landed, its
-  - L578 ...none clears the money gate, so the plan orders none and says why
-- **L585 7. a played city: the mills' yards on HELD, saved and reloaded the same**
-  - L613 fixture: a large sawmill, a panel mill, a pulp mill and a pellet mill, three months on: the next month's accounts hold
-  - L617 the month's money audit closes
-  - L625 saved and reloaded: the sector's cash and its five yards the same, and the accounts' held units
-  - L633 ...a month on, the two the same month to the reload's known residual: Wood Products' cash and yards, the city's cash
+  - L171 the six goods at the study's 5.3 prices, freight three eighths of each wedge; lumber, panels and residues by the cubic
+  - L176 ...the five stockable follow copper's cathode in Good's order, before trucks and gold, preserving the held slots
+  - L181 ...lumber, panels and paper by the goods stream and, by sea, in containers; residues, pulp and pellets by the bulk
+  - L201 the buyers (spec 2.12): Forestry's logs Wood Products'; residues and pulp its own; fuel oil the paper mill's, its first
+- **L275 2. the six rows at parity: the study's 5.4 and 5.6, and its 5.5 table's four cases to its rounding**
+  - L298 the
+  - L317 ...its posts
+  - L336 its consumables are the study's running cost less its wages, the power it buys and water
+  - L348 ...its four cases are the study's 5.5 to its rounding
+  - L360 where caseEarns() and the study differ: the paper mill's fuel is a feed at the case's price, not one price in its running
+  - L369 residues have two buyers, and the pulp mill pays more for a cubic metre of them than the pellet mill (the study's 5.5): its
+  - L373 ...the paper mill pays only where it replaces imported paper (the study's 5.6): nothing on the city's pulp exporting (B), its
+  - L377 ...and on imported feed for export (A) no mill earns more than 0.4% of its cost a month, under the hurdle (the study's 1.2)
+- **L414 3. the chain: the sawmill's residues to the pulp mill, its pulp to the paper mill, captive; the rest bought or shipped**
+  - L431 fixture: a sawmill, a pulp mill and a paper mill standing, two months on: the sawmill's 1,640 m3 of residues at the rate all to
+  - L438 ...the pulp mill's pulp to the paper mill first, captive: min of its 11,000 t and the paper mill's 5,775 at the rate - the
+  - L444 ...the paper mill's 850,000 litres of fuel oil needed at the rate it needs its 5,775 t of pulp - no refinery here, so all
+  - L449 ...its lumber and paper made for the market, nobody here buying them: none sold at home
+  - L457 ...on the books (struck at the next month's top): no sale of residues or pulp booked to itself - the residues bought only
+  - L463 the month's money audit closes
+- **L470 4. the pulp mill's own power: none bought, its 13,500 kW sold to the grid at the works' price, the city's utility paying**
+  - L490 fixture: a town with a pulp mill standing, four months on: it draws nothing from the grid and sells 13,500 kW
+  - L495 its statement's powerSold is the 13,500 kW at the works' price (the struck book's), in its revenue past its sales; its electricity bill nothing
+  - L498 the utility pays the works what their statement booked, and the grid counts their surplus as generation
+  - L501 the month's money audit closes
+- **L507 5. the logs: a sawmill buys Forestry's sawlogs at home first and imports only the rest; past its need they ship**
+  - L520 fixture: a Logging Camp and a sawmill on a forest town, two months on: the camp's sawlogs all sold at home to the sawmill,
+  - L527 ...and the camp's pulpwood, nobody here buying it without a panel or pulp mill, all shipped
+  - L536 with a Harvesting Operation beside the camp, cutting more sawlogs than the mill takes: the mill imports none, its whole bid
+  - L544 ...on the books (struck at the next month's top): Wood Products bought its sawlogs at home and none abroad, Forestry sold at
+  - L550 the month's money audit closes
+- **L557 6. the plan at founding: on imported feed for export no mill clears the whole-cost hurdle, so none is ordered**
+  - L575 fixture: a founded town, two months on, trading no wood: each of the six weighed at the city's values - its feed landed, its
+  - L579 ...none clears the money gate, so the plan orders none and says why
+- **L586 7. a played city: the mills' yards on HELD, saved and reloaded the same**
+  - L614 fixture: a large sawmill, a panel mill, a pulp mill and a pellet mill, three months on: the next month's accounts hold
+  - L618 the month's money audit closes
+  - L626 saved and reloaded: the sector's cash and its five yards the same, and the accounts' held units
+  - L634 ...a month on, the two the same month to the reload's known residual: Wood Products' cash and yards, the city's cash
 
 ## WorksFinanceCheck.java - 62 labelled assertions
 

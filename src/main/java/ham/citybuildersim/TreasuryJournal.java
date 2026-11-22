@@ -219,7 +219,7 @@ public final class TreasuryJournal {
 
     /** HT1 receipts are in the budget already; kept in the journal, outside the cash bridge's adjustments. */
     private static boolean budgetRevenue(Entry e) {
-        return "Capital gains tax".equals(e.label()) || "Dividend tax".equals(e.label());
+        return "Capital gains tax".equals(e.label()) || "Dividend tax".equals(e.label()) || "Unclaimed estates and receipts".equals(e.label());
     }
 
     public List<Entry> bridgeLines() { return closed.stream().filter(e -> !budgetRevenue(e)).toList(); }

@@ -601,11 +601,16 @@ public class HouseholdBalance {
         departuresHandedOff = state[4*n] > 0;
     }
 
+    private EstateCustody custody;
+    private BondMarket custodyBonds;
+    public void attachCustody(EstateCustody owner, BondMarket market) { custody = owner; custodyBonds = market; }
+
     /** One transferred fraction, assessed before pooling; no person/estate history is retained. */
     private final class Deemed {
         final double[][] security = new double[4][Equity.COMPANIES.length];
         double loss, cashTax;
-        Deemed(Household from, double count, double cash) {
+        Deemed(Household from, double count, double cash) { this(from, count, cash, true); }
+        Deemed(Household from, double count, double cash, boolean collectCash) {
             double gain = 0, positives = 0; double[] positive = new double[Equity.COMPANIES.length];
             for (int c = 0; c < positive.length; c++) {
                 security[0][c] = from.shares[c] * count;
@@ -617,7 +622,7 @@ public class HouseholdBalance {
             loss = Math.max(0, from.lossCarried * count - gain);
             double assessed = Math.max(0, gain - from.lossCarried * count)
                     * investmentPolicy.getCapitalGainsInclusion() * investmentWageRate(from);
-            cashTax = Math.min(assessed, Math.max(0, cash));
+            cashTax = collectCash ? Math.min(assessed, Math.max(0, cash)) : 0;
             taxFlow(GAINS_CALLS, 1); taxFlow(ASSESSED, assessed);
             receiveInvestmentTax(true, cashTax);
             double deferred = assessed - cashTax, left = deferred;
@@ -1723,6 +1728,8 @@ public class HouseholdBalance {
         default int securityCompany() { return -1; }
         default int securityPart() { return -1; }
         default boolean lossStock() { return false; }
+        default int custodyKind() { return 0; } // 1 USD, 2 cars, 3 city paper
+        default int bondId() { return -1; }
     }
 
     /**
@@ -1755,6 +1762,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.abroad; }
             public void set(Household c, double v) { c.abroad = v; }
+            public int custodyKind() { return 1; }
         });
         // The student loan follows the graduate into a family - and out of
         // the city with one who leaves, which the treasury writes off.
@@ -1782,6 +1790,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.cars; }
             public void set(Household c, double v) { c.cars = v; }
+            public int custodyKind() { return 2; }
             public boolean notAChildsToClaim() { return true; }
         });
         // ...and the city's paper (0.7.1), named like the loans, not "the last one".
@@ -1789,6 +1798,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.paper; }
             public void set(Household c, double v) { c.paper = v; }
+            public int custodyKind() { return 3; }
         });
         /*
          * ...and the businesses' bonds (0.7.12), BOND BY BOND since round 2:
@@ -1811,6 +1821,7 @@ public class HouseholdBalance {
             // square of the bonds a cell holds, every month.
             stocks.add(new Stock() {
                 public double get(Household c) { return c.bondFace(bond); }
+                public int bondId() { return bond; }
                 public void set(Household c, double v) { if (v > 0) c.bondFace.put(bond, v); else c.bondFace.remove(bond); }
             });
         }
@@ -2603,6 +2614,9 @@ public class HouseholdBalance {
         double[] b = new double[n];
         for (int i = 0; i < n; i++) b[i] = cells[i].households;
         if (plan == null || plan.moves.isEmpty()) return b;
+        double[] after = b.clone(), arriving = new double[n];
+        for (Move m : plan.moves) { after[m.from] -= m.out; if (m.to >= 0) arriving[m.to] += m.in; }
+        for (int i = 0; i < n; i++) after[i] = Math.max(0, after[i]) + arriving[i];
         double[][] in = new double[n][];
         double[] inHouseholds = new double[n];
         // By the tier, and the heirs' stage within it (HS2): slot 0 either, then each stage.
@@ -2630,7 +2644,11 @@ public class HouseholdBalance {
                 double repaid = Math.min(saved, owed);
                 lastEstateRepaid += repaid;
                 lastEstateWrittenOff += owed - repaid;
-                Deemed d = new Deemed(from, m.out, saved - repaid);
+                AdultStage heirs = m.heirs < 0 ? null : AdultStage.values()[m.heirs];
+                boolean unclaimed = !hasHeir(PayTier.values()[m.tier], heirs, after);
+                Deemed d = new Deemed(from, m.out, saved - repaid, !unclaimed);
+                if (unclaimed && custodyBonds != null)
+                    custodyBonds.transferRecordedCouponToCustody(from.key(), m.out / from.households);
                 e[0] += saved - repaid - d.cashTax;
                 left[1] += owed - repaid;
                 left[loanSlot] += from.studentDebt * m.out;
@@ -2688,16 +2706,39 @@ public class HouseholdBalance {
             lastEstatePassed += e[0];
             return;
         }
-        // Existing no-heir boundary still means emigration, NOT treasury escheat.
-        // Preserve its securities and secured attribution until the separately scoped custodian exists.
+        if (custody == null) throw new IllegalStateException("No receiving owner for an unclaimed estate");
+        double[] units = new double[Equity.COMPANIES.length], basis = units.clone(), claims = units.clone();
+        java.util.Map<Integer, Double> bonds = new java.util.LinkedHashMap<>();
+        double dollars = 0, cars = 0, paper = 0, loss = 0;
         for (int s = 0; s < e.length; s++) {
-            left[s] += e[s]; Stock st = stocks.get(s);
-            if (st.securityPart() == 2) departingTaxShares[st.securityCompany()] += e[s];
-            if (st.securityPart() == 3) departingTaxClaim[st.securityCompany()] += e[s];
+            Stock st = stocks.get(s); int company = st.securityCompany();
+            if (company >= 0) {
+                if (st.securityPart() == 0) units[company] = e[s];
+                if (st.securityPart() == 1) basis[company] = e[s];
+                if (st.securityPart() == 3) claims[company] = e[s];
+            }
+            if (st.bondId() >= 0 && e[s] != 0) bonds.put(st.bondId(), e[s]);
+            if (st.custodyKind() == 1) dollars = e[s];
+            if (st.custodyKind() == 2) cars = e[s];
+            if (st.custodyKind() == 3) paper = e[s];
+            if (st.lossStock()) loss = e[s];
+        }
+        custody.receive(e[0], units, basis, bonds, dollars, cars, loss, paper);
+        // Only after receiving the actual property, cancel the treasury's self-claims without tax cash.
+        for (int company = 0; company < claims.length; company++) {
+            governmentClaim[company] -= claims[company]; taxFlow(CONSOLIDATED, claims[company]);
         }
     }
 
     /** Whether a cell inherits in a pass of passOn(): 0 the tier's heirs' stage, 1 the tier's, 2 the city's working households. */
+    private boolean hasHeir(PayTier tier, AdultStage heirs, double[] counts) {
+        for (int pass = heirs == null ? 1 : 0; pass < 3; pass++) {
+            double weight = 0;
+            for (int i = 0; i < cells.length; i++) if (heirOf(cells[i], counts[i], pass, tier, heirs)) weight += counts[i] * cells[i].grownUps();
+            if (weight > 0) return true;
+        }
+        return false;
+    }
     private static boolean heirOf(Household c, double households, int pass, PayTier tier, AdultStage heirs) {
         if (!(c instanceof WorkingHousehold w) || c.isEmpty() || !(households > 0)) return false;
         if (pass == 2) return true;
@@ -4338,12 +4379,15 @@ public class HouseholdBalance {
     /** Dollars the households that left this month took with them. Nothing crosses the border. */
     private double lastAbroadTakenAway;
 
+    /** The existing foreign coupon is paid home; the USD principal stays abroad. */
+    static double foreignCouponUsd(double dollars, double worldRate) { return dollars * Math.max(0, worldRate) / 12; }
+
     /**
      * Every household decides where to keep its idle money: what is past the
      * cushion goes abroad towards the target share, a little a month; what
      * is abroad comes home when the target falls. A household in debt, locked
-     * out or going short holds nothing abroad. The coupon is rolled where it
-     * is earned. Called once a month, after the shares have traded and before
+     * out or going short holds nothing abroad. The coupon is paid home; the
+     * USD principal stays abroad. Called once a month, after the shares have traded and before
      * the audit strikes.
      *
      * @param depositRate what the bank pays savers, annual
@@ -4391,7 +4435,7 @@ public class HouseholdBalance {
                change the other two need to exist. A coupon is income, not a
                bigger bond.
                ============================================================= */
-            double earnedUsd = c.abroad * Math.max(0, worldRate) / 12;
+            double earnedUsd = foreignCouponUsd(c.abroad, worldRate);
             c.foreignInterest = earnedUsd * rate;
             c.savings += c.foreignInterest;
             c.investmentIncome += c.foreignInterest;

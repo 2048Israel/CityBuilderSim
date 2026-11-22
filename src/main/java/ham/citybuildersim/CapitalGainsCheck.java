@@ -10,6 +10,7 @@ import java.util.Arrays;
  */
 public final class CapitalGainsCheck {
     static int fails;
+    static final com.google.gson.Gson custodyJson = new com.google.gson.Gson();
     static PrintStream out = System.out;
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
@@ -434,7 +435,276 @@ public final class CapitalGainsCheck {
         check("a saved government snapshot contains the outstanding claim", government[0] > 0);
     }
 
+    /** All property enters the real Game receiver through census death, never a fabricated sale. */
+    static Game custodyEstate(GameFiles files) { return custodyEstate(files, false); }
+    static Game custodyEstate(GameFiles files, boolean lossCase) {
+        Game g = LongPlaytest.probeCity(files, null);
+        HouseholdBalance balance = g.getHouseholdBalance(); Equity equity = g.getEquity();
+        double[] domestic = new double[Equity.COMPANIES.length];
+        for (int c = 0; c < domestic.length; c++) domestic[c] = balance.sharesHeld(c);
+        for (Household c : balance.cells()) { c.clearAll(); c.households = 0; }
+        Household source = balance.cell(FamilyStructure.SENIOR_ALONE, PayTier.SKILLED); source.households = 10;
+        source.savings = 3; source.debt = 1; source.studentDebt = 2;
+        source.abroad = 4; source.cars = 2; source.paper = 10; source.lossCarried = 1;
+        for (int c = 0; c < domestic.length; c++) {
+            source.shares[c] = domestic[c] / 10; source.basis[c] = source.shares[c] * 4;
+        }
+        if (lossCase) source.lossCarried = Arrays.stream(source.shares).sum() * 12 + 10;
+        source.taxShares[0] = source.shares[0] / 2; source.taxClaim[0] = .7;
+        double[] claims = balance.securedTaxesToSave(); Arrays.fill(claims, 0); claims[0] = 7;
+        balance.restoreSecuredTaxes(claims);
+        balance.setInvestmentTaxes(g.getEconomyManager().getTaxPolicy(), c -> 10,
+                (line, amount) -> { throw new AssertionError("A no-heir self-claim must not collect tax cash"); });
+        LongTermBond paper = new LongTermBond(1000, 120, g.getMonth(), .05);
+        paper.markIssued(900, .06); paper.takeAtSettle(Debt.Holder.HOUSEHOLDS, 100, 95); paper.settled();
+        paper.reopen(200, 180, .06); // settled old private property while a new sale really is unsettled
+        paper.allot(new Auction.Fill(20, 0, 0, 180), 200, 180);
+        g.getDebtManager().setDebt(new java.util.ArrayList<>(java.util.List.of(paper)));
+        CorporateBond a = new CorporateBond(1, Sectors.RETAIL, 100, .06, g.getMonth(), 1);
+        CorporateBond b = new CorporateBond(2, Sectors.RETAIL, 200, .06, g.getMonth(), 2);
+        a.households = 30; a.world = 70; b.households = 70; b.world = 130;
+        source.setBondFace(1, 3); source.setBondFace(2, 7);
+        BondMarket.State market = new BondMarket.State(); market.bonds = new java.util.ArrayList<>(java.util.List.of(a, b)); market.nextId = 3;
+        BondMarket bm = g.getBondMarket(); bm.restore(market); bm.strikeCoupons();
+        double charged = bm.getCouponsStruck(), issuerCash = g.getEconomyManager().getSectorCash(Sectors.RETAIL);
+        // The same issuer cash API that the real finance phase charges; recording/payment cannot charge it again.
+        g.getEconomyManager().setSectorCash(Sectors.RETAIL, issuerCash - charged); bm.recordCouponIssuerCharge(charged); bm.recordCouponBankPayment(0);
+        double pendingCash = bm.couponClearingCash(), before = g.getCash();
+        double openingPools = poolTotal(g), openingHouseholds = balance.totalSavings();
+        check("no eligible working heir exists before the census", balance.cells().stream()
+                .noneMatch(c -> c instanceof WorkingHousehold && c.households() > 0));
+        balance.setOutsideCensus(c -> 0); balance.setFlows(0, 0, 0, 1, 0, 0, 0);
+        balance.censusOnly((HouseholdBalance.Census) (shape, tier, stage) -> 0);
+        EstateCustody owner = g.getEstateCustody();
+        close("the estate repays existing revolving debt first", balance.getEstateRepaid(), 10);
+        close("only actual remaining cash reaches treasury as property", g.getCash() - before, 20);
+        close("the unchanged pool identity sees only the actual inherited cash edge", poolTotal(g) - openingPools, 20);
+        close("household savings conserve estate cash plus the native debt repayment", balance.totalSavings()
+                + g.getCash() - before + balance.getEstateRepaid(), openingHouseholds);
+        close("no cash is labelled capital tax on a self-claim", balance.getCapitalGainsTax(), 0);
+        check("new and old secured assessments consolidate after receipt", lossCase
+                ? balance.getCapitalTaxAssessed() == 0 && balance.getCapitalTaxConsolidated() == 7
+                : balance.getCapitalTaxAssessed() > 0 && balance.getCapitalTaxConsolidated() > 7);
+        check("loss carry is consumed or retained by this actual assessment", lossCase ? owner.lossCarried() > 0 : owner.lossCarried() == 0);
+        close("the government has no remaining self-claim", balance.getCapitalTaxOutstanding(), 0);
+        close("no estate cash enters either emigration leg", balance.getTakenAway(), 0);
+        close("the receiver retains actual USD", owner.usd(), 40);
+        close("the receiver retains actual idle cars", owner.cars(), 20);
+        close("city paper is reserved, not silently redeemed", owner.pendingPaper(), 100);
+        close("the precise holder discount follows the reservation", paper.custodyReservedBook(), 95);
+        close("reserved face cannot be traded as private face", paper.householdPrincipal(), 0);
+        close("unpaid auction entitlement never enters the paid household estate stock", paper.allotHouseholdsFace(), 20);
+        close("all real own-paper holder counterparts including custody add to the issuer", paper.householdPrincipal()
+                + paper.custodyReservedFace() + paper.bankPrincipal() + paper.centralBankPrincipal()
+                + paper.firmPrincipal() + paper.worldPrincipal(), paper.getOustandingPrincipal());
+        check("the no-heir event really occurs during an unsettled sale", paper.unsettledFace() == 200 && paper.getSettleDue() == 180);
+        close("no coupon is lost or duplicated at the holder handoff", bm.couponClearingCash(), pendingCash);
+        close("the already-recorded source coupon reaches custody", owner.pendingCoupons(), .5);
+        close("inheritance creates no bought-cash fiction", owner.getLedger().purchases(), 0);
+        close("inheritance creates no disposal-proceeds fiction", owner.getLedger().proceeds(), 0);
+        for (int c = 0; c < domestic.length; c++) {
+            close("custody retains every domestic share " + c, owner.shares(c), domestic[c]);
+            close("issuer and custody quantities match " + c, equity.getCustodyShares(c), owner.shares(c));
+            close("the complete share identity holds " + c, equity.getShares(c) + g.getExchange().shortShares(c),
+                    balance.sharesHeld(c) + equity.getForeignShares(c) + equity.getDealerShares(c)
+                    + equity.getCityShares(c) + owner.shares(c));
+        }
+        for (CorporateBond bond : bm.getBonds()) {
+            close("all actual corporate holders add to face " + bond.id(), bond.held(), bond.face());
+            close("the capsule is the actual new bond holder " + bond.id(), owner.bondFace(bond.id()), bond.custody());
+        }
+        close("no paper counterpart was invented", owner.paperFinding(), 0);
+        return g;
+    }
+
+    static void invokeHouseholdSettle(Game g) throws Exception {
+        java.lang.reflect.Method settle = Game.class.getDeclaredMethod("householdsTakeTheirShare");
+        settle.setAccessible(true); settle.invoke(g); // the production settlement, including its native unsettled guard
+    }
+    static double poolTotal(Game g) { return Arrays.stream(MoneyAudit.pools(g)).sum(); }
+
+    static void custodyContinuation(Game g, String label) throws Exception {
+        EstateCustody owner = g.getEstateCustody(); Debt d = g.getDebtManager().getDebt().get(0);
+        double openingFace = d.getOustandingPrincipal(), treasury = g.getCash(), reserved = owner.pendingPaper();
+        boolean refused = false;
+        try { d.retirePart(0, reserved, 0, 0); } catch (IllegalStateException expected) { refused = true; }
+        check(label + " preserves the native unsettled-retirement guard", refused);
+        owner.consolidatePaper(); close(label + " does not consolidate before actual settlement", owner.pendingPaper(), reserved);
+        invokeHouseholdSettle(g); owner.consolidatePaper();
+        close(label + " native settlement permits exact face retirement", d.getOustandingPrincipal(), openingFace - reserved);
+        close(label + " both reservation counterparts are cleared", d.custodyReservedFace() + owner.pendingPaper(), 0);
+        close(label + " own debt consolidation manufactures no redemption cash", g.getCash(), treasury);
+        double issuerCash = g.getEconomyManager().getSectorCash(Sectors.RETAIL), before = poolTotal(g);
+        BondMarket bm = g.getBondMarket(); double worldBefore = bm.getCouponsAbroad();
+        bm.takeMonth(g.getMonth());
+        close(label + " the recorded custody coupon is actual cash once", g.getCash() - treasury, .5);
+        close(label + " the issuer is not charged a second time", g.getEconomyManager().getSectorCash(Sectors.RETAIL), issuerCash);
+        close(label + " coupon clearing conserves real pooled cash across the world edge", poolTotal(g) + bm.getCouponsAbroad() - worldBefore, before);
+        close(label + " the record-date entitlement is discharged", owner.pendingCoupons() + bm.couponClearingCash(), 0);
+        double paidOnce = g.getCash(); bm.takeMonth(g.getMonth()); close(label + " cleared coupons cannot pay twice", g.getCash(), paidOnce);
+        // A later ordinary coupon is charged on actual custody holdings and entered on its existing FundLedger lot.
+        bm.strikeCoupons(); double charge = bm.getCouponsStruck();
+        g.getEconomyManager().setSectorCash(Sectors.RETAIL, issuerCash - charge); bm.recordCouponIssuerCharge(charge); bm.recordCouponBankPayment(0);
+        bm.takeMonth(g.getMonth()); close(label + " a later real custody coupon is paid", g.getCash() - paidOnce, .5);
+        double basis = owner.getLedger().acbHeld(), units = owner.shares(0), ordinaryFund = g.getEquity().getCityShares(0);
+        g.getEquity().split(0, 2);
+        close(label + " custody split scales units", owner.shares(0), units * 2);
+        close(label + " custody split preserves total basis", owner.getLedger().acbHeld(), basis);
+        double cash = g.getCash(), sector = g.getEconomyManager().getSectorCash(Equity.COMPANIES[0]);
+        double dividend = 1;
+        g.getEconomyManager().setSectorCash(Equity.COMPANIES[0], sector - dividend);
+        double abroad = g.getEquity().payDividend(0, dividend, g.getHouseholdBalance(), g.getExchange().shortShares(0));
+        check(label + " a true issuer dividend reaches its passive holder", g.getCash() > cash && abroad >= 0);
+        close(label + " custody never becomes an ordinary fund lot", g.getEquity().getCityShares(0), ordinaryFund * 2);
+        cash = g.getCash(); sector = g.getEconomyManager().getSectorCash(Sectors.RETAIL);
+        bm.redeemMaturing(g.getMonth() + 1);
+        close(label + " actual issuer maturity pays only its custody face to treasury", g.getCash() - cash, 30);
+        close(label + " actual maturity charges the whole issued face once", sector - g.getEconomyManager().getSectorCash(Sectors.RETAIL), 100);
+        close(label + " the matured custody issue disappears", owner.bondFace(1), 0);
+        bm.writeDown(Sectors.RETAIL, .5);
+        close(label + " a genuine default writes down the other custody bond", owner.bondFace(2), 35);
+        check(label + " default records a noncash asset loss", owner.assetLoss() > 0);
+        for (CorporateBond bond : bm.getBonds()) close(label + " default preserves complete holders", bond.held(), bond.face());
+        double usd = owner.usd(), cars = owner.cars();
+        owner.payForeignCoupon(.02, g.getForeignAccounts().getRate());
+        check(label + " the existing foreign coupon really pays home", owner.foreignCoupon() > 0);
+        close(label + " earning does not mark USD principal to local cash", owner.usd(), usd);
+        check(label + " actual currency reform succeeds", g.reformCurrencyForTest(100));
+        close(label + " currency reform preserves USD units", owner.usd(), usd);
+        close(label + " currency reform preserves physical cars", owner.cars(), cars);
+        g.getEquity().cancelHeld(0);
+        close(label + " resolved old common leaves no custody replacement shares", owner.shares(0), 0);
+        check(label + " the issuer has no custody residual after extinction", g.getEquity().getCustodyShares(0) == 0);
+    }
+
+    static void payRecordedCoupons(BondMarket market) throws Exception {
+        java.lang.reflect.Method pay = BondMarket.class.getDeclaredMethod("payCoupons"); pay.setAccessible(true); pay.invoke(market);
+    }
+    static void chargeFixtureCoupons(Game g) {
+        BondMarket bm = g.getBondMarket(); double due = bm.getCouponsStruck();
+        double cash = g.getEconomyManager().getSectorCash(Sectors.RETAIL);
+        g.getEconomyManager().setSectorCash(Sectors.RETAIL, cash - due); bm.recordCouponIssuerCharge(due);
+    }
+    static void bookFixtureBankCoupon(Game g) {
+        double due = g.getBondMarket().getCouponsDueToBank(), bank = g.getBank().getCash();
+        g.getBank().takeBondCoupons(due); g.getBondMarket().recordCouponBankPayment(due);
+        close("actual bank coupon credit matches its clearing debit", g.getBank().getCash() - bank, due);
+    }
+    /** Nonempty phase snapshots: no end-holder reconstruction, no charge/payment replay. */
+    static void custodyCouponPhases() throws Exception {
+        out.println("--- coupon cash clearing before/after charge, bank booking and partial custody transfer ---");
+        for (int phase = 0; phase < 4; phase++) {
+            GameFiles files = GameFiles.scratch("ht1-coupon-phase-" + phase);
+            Game g = LongPlaytest.probeCity(files, null); BondMarket bm = g.getBondMarket();
+            Household h = g.getHouseholdBalance().cells().stream().filter(c -> c.households() > 0).findFirst().orElseThrow();
+            CorporateBond bond = new CorporateBond(1, Sectors.RETAIL, 100, .06, g.getMonth(), 120);
+            bond.households = 40; bond.bank = bond.bankCost = 30; bond.world = 30;
+            h.setBondFace(1, 40 / h.households());
+            BondMarket.State state = new BondMarket.State(); state.bonds = new java.util.ArrayList<>(java.util.List.of(bond)); state.nextId = 2;
+            bm.restore(state); bm.strikeCoupons();
+            close("an uncharged record-date promise is zero clearing cash", bm.couponClearingCash(), 0);
+            double cashBeforeCharge = poolTotal(g), treasuryBefore = g.getCash();
+            payRecordedCoupons(bm);
+            close("the uncharged promise cannot pay custody or disappear", g.getCash(), treasuryBefore);
+            close("the uncharged promise remains fully recorded", bm.couponUnpaidEntitlement(), .5);
+            // A quarter of the source record-date holder dies; the other three quarters retain their entitlement.
+            h.setBondFace(1, 30 / h.households()); bm.transferToCustody(1, 10);
+            bm.transferRecordedCouponToCustody(h.key(), .25);
+            close("partial custody transfer preserves the complete holder sum", bond.held(), bond.face());
+            close("only the deceased source fraction receives the recorded coupon", g.getEstateCustody().pendingCoupons(), .05);
+            if (phase >= 1) {
+                chargeFixtureCoupons(g);
+                close("the real issuer debit moves to cash clearing", poolTotal(g), cashBeforeCharge);
+                close("charged clearing includes the still-unpaid bank", bm.couponClearingCash(), .5);
+                // Remove an actual issuer debit deliberately: the unchanged cash audit pool definition MUST expose it.
+                double issuer = g.getEconomyManager().getSectorCash(Sectors.RETAIL);
+                g.getEconomyManager().setSectorCash(Sectors.RETAIL, issuer + .5);
+                check("a missing issuer debit is caught by the actual pool identity", Math.abs(poolTotal(g) - cashBeforeCharge) > MoneyAudit.CENT);
+                g.getEconomyManager().setSectorCash(Sectors.RETAIL, issuer);
+            }
+            if (phase >= 2) { bookFixtureBankCoupon(g); close("bank-booked clearing excludes the paid bank", bm.couponClearingCash(), .35); }
+            if (phase >= 3) { payRecordedCoupons(bm); close("post-payment cash clearing is empty", bm.couponClearingCash(), 0); }
+            String pending = custodyJson.toJson(bm.toState());
+            quietly(() -> g.saveGame(10, "HT1 nonempty coupon phase")); g.awaitSaves();
+            for (boolean rebuild : new boolean[] {true, false}) {
+                Game loaded = new Game(files);
+                quietly(() -> { if (rebuild) loaded.loadGameSave(10); else { loaded.run(); loaded.loadGame(10); } });
+                BondMarket restored = loaded.getBondMarket();
+                check("all record-date maps/flags/cash survive phase " + phase + "/" + rebuild,
+                        pending.equals(custodyJson.toJson(restored.toState())));
+                double heldBefore = poolTotal(loaded), bankBefore = loaded.getBank().getCash();
+                double expectedBankCredit = restored.getCouponsDueToBank();
+                if (phase == 0) chargeFixtureCoupons(loaded);
+                if (phase < 2) bookFixtureBankCoupon(loaded);
+                close("the bank's once-only credit survives phase " + phase + "/" + rebuild,
+                        loaded.getBank().getCash() - bankBefore, expectedBankCredit);
+                close("native charges/bookings conserve pooled cash", poolTotal(loaded), heldBefore);
+                double receiverBefore = loaded.getCash(), households = loaded.getHouseholdBalance().totalSavings();
+                double abroad = restored.getCouponsAbroad(); payRecordedCoupons(restored);
+                close("actual partial inherited coupon reaches treasury once", loaded.getCash() - receiverBefore, phase == 3 ? 0 : .05);
+                close("the live source keeps its original record-date fraction", loaded.getHouseholdBalance().totalSavings() - households, phase == 3 ? 0 : .15);
+                close("final clearing is discharged", restored.couponClearingCash(), 0);
+                close("the actual debit, bank credit and remaining payments conserve cash", poolTotal(loaded)
+                        + loaded.getHouseholdBalance().totalSavings() - households + restored.getCouponsAbroad() - abroad, heldBefore);
+                double after = poolTotal(loaded); payRecordedCoupons(restored);
+                close("post-payment cannot create a duplicate receipt", poolTotal(loaded), after);
+                loaded.awaitSaves();
+            }
+            g.awaitSaves();
+        }
+    }
+
+    static void custodySaves() throws Exception {
+        out.println("--- actual all-stock no-heir estate, pending settlement and both loaders ---");
+        GameFiles files = GameFiles.scratch("ht1-custody"); Game original = custodyEstate(files);
+        original.getHistorySave().recordMonth(original);
+        String expected = custodyJson.toJson(original.getEstateCustody().toState());
+        quietly(() -> original.saveGame(10, "HT1 custody pending native settlement")); original.awaitSaves();
+        for (boolean rebuild : new boolean[] {true, false}) {
+            Game loaded = new Game(files);
+            quietly(() -> { if (rebuild) loaded.loadGameSave(10); else { loaded.run(); loaded.loadGame(10); } });
+            check("every custody owner slot survives loader " + rebuild,
+                    expected.equals(custodyJson.toJson(loaded.getEstateCustody().toState())));
+            close("saved holder discount survives loader " + rebuild, loaded.getDebtManager().getDebt().get(0).custodyReservedBook(), 95);
+            close("recorded coupon entitlement survives loader " + rebuild, loaded.getEstateCustody().pendingCoupons(), .5);
+            close("noncash ownership history survives loader " + rebuild, loaded.getHistorySave().raw("custodyUsd")[original.getHistorySave().raw("custodyUsd").length - 1], 40);
+            custodyContinuation(loaded, "loader " + rebuild); loaded.awaitSaves();
+            String afterState = custodyJson.toJson(loaded.getEstateCustody().toState());
+            quietly(() -> loaded.saveGame(11, "HT1 custody after native receipts")); loaded.awaitSaves();
+            for (boolean again : new boolean[] {true, false}) {
+                Game after = new Game(files);
+                quietly(() -> { if (again) after.loadGameSave(11); else { after.run(); after.loadGame(11); } });
+                check("post-settlement custody snapshot survives " + rebuild + "/" + again,
+                        afterState.equals(custodyJson.toJson(after.getEstateCustody().toState())));
+                double closing = after.getCash(); after.getEstateCustody().consolidatePaper();
+                close("post-settlement load cannot repeat retirement " + rebuild + "/" + again, after.getCash(), closing);
+                close("post-settlement reservation remains cleared " + rebuild + "/" + again, after.getEstateCustody().pendingPaper(), 0);
+                after.awaitSaves();
+            }
+        }
+        // Unrelated real heirs continue on the ordinary taxed route even when custody exists elsewhere.
+        Estate heirs = new Estate(10, 0); heirs.run();
+        close("a real unrelated heir receives its stepped basis", heirs.heirs.basis[0] * 20, 1000);
+        close("ordinary real heirs still carry the unpaid 35 claim", heirs.heirs.taxClaim[0] * 20, 35);
+        original.awaitSaves();
+        Game losses = custodyEstate(GameFiles.scratch("ht1-custody-loss"), true);
+        check("the loss-only estate retains a positive exact memo stock", losses.getEstateCustody().lossCarried() > 0);
+        losses.awaitSaves();
+        for (Debt d : java.util.List.of(new MediumTermBond(1000, 120, 1, .05),
+                new FloatingRateNote(1000, 120, 1, .01, .03), new InflationLinkedBond(1000, 120, 1, .02, 100))) {
+            d.markIssued(900, .06); d.takeAtSettle(Debt.Holder.HOUSEHOLDS, 100, 95); d.settled();
+            Debt control = custodyJson.fromJson(custodyJson.toJson(d), d.getClass());
+            control.retirePart(0, 100, 0, 0); // the existing native holder/schedule operation is the oracle
+            d.reserveCustody(100); d.consolidateCustody();
+            check("reservation uses the native schedule " + d.getType(), Arrays.equals(d.remainingCashFlows(), control.remainingCashFlows()));
+            close("reservation uses the native issuer carrying operation " + d.getType(), d.getCarryingValue(), control.getCarryingValue());
+            close("nonzero reserved discount is retired with its exact holder " + d.getType(), d.discountOf(Debt.Holder.HOUSEHOLDS), 0);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
+        custodyCouponPhases();
+        custodySaves();
         securedEstates();
         securedDepartures();
         costAndLoss();

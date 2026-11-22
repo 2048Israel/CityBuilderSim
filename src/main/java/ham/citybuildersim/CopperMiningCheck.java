@@ -142,7 +142,8 @@ public class CopperMiningCheck {
                 Equity.COMPANIES.length == keys.length + 1 && Equity.COMPANIES[at].equals(Sectors.COPPER_MINING)
                         && Equity.COMPANIES[Equity.BANK].equals("Bank")
                         && HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD - HouseholdBalance.CELL_SLOTS_BEFORE_SHARES == Equity.COMPANIES.length
-                        && MoneyAudit.POOL_NAMES.length == keys.length + 4 && MoneyAudit.POOL_NAMES[at + 1].equals("copper mining")
+                        && MoneyAudit.POOL_NAMES.length == keys.length + 5
+                && MoneyAudit.POOL_NAMES[keys.length + 4].equals("bond coupon clearing") && MoneyAudit.POOL_NAMES[at + 1].equals("copper mining")
                         && MoneyAudit.POOL_NAMES[at + 2].equals("copper refining")
                         && (int) new Bank().sheetYearToSave()[2] == keys.length);
         assertTrue("Resource.COPPER is priced as cathode: a sulphide field's good concentrate, an oxide field's cathode, ANY's cathode;"

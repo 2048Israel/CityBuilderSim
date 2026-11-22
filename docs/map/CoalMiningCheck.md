@@ -1,4 +1,4 @@
-# CoalMiningCheck.java - 674 lines · 16 methods · 17 constants · harnesses
+# CoalMiningCheck.java - 675 lines · 16 methods · 17 constants · harnesses
 
 `ham/citybuildersim/CoalMiningCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > 
 > ... (15 more lines in the source)
 
-**Uses:** [Good](Good.md) (72), [CoalMining](CoalMining.md) (57), [Resource](Resource.md) (42), [Deposit](Deposit.md) (30), [BuildingManager](BuildingManager.md) (14), [World](World.md) (14), [Geology](Geology.md) (14), [Sectors](Sectors.md) (13), [Game](Game.md) (10), [BusinessInvestment](BusinessInvestment.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [LandManager](LandManager.md) (8), [Equity](Equity.md) (6), [PriceLevel](PriceLevel.md) (6), [CityLand](CityLand.md) (5), [SpreadPlanner](SpreadPlanner.md) (5), [MoneyAudit](MoneyAudit.md) (4), [LandCheck](LandCheck.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1), [PayTier](PayTier.md) (1)... and 2 more
+**Uses:** [Good](Good.md) (72), [CoalMining](CoalMining.md) (57), [Resource](Resource.md) (42), [Deposit](Deposit.md) (30), [BuildingManager](BuildingManager.md) (14), [World](World.md) (14), [Geology](Geology.md) (14), [Sectors](Sectors.md) (13), [Game](Game.md) (10), [BusinessInvestment](BusinessInvestment.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [LandManager](LandManager.md) (8), [Equity](Equity.md) (6), [PriceLevel](PriceLevel.md) (6), [MoneyAudit](MoneyAudit.md) (5), [CityLand](CityLand.md) (5), [SpreadPlanner](SpreadPlanner.md) (5), [LandCheck](LandCheck.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1), [PayTier](PayTier.md) (1)... and 2 more
 
 **Used by (3):** [GroundInputCheck](GroundInputCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md)
 
@@ -74,13 +74,13 @@
 |---:|---|
 | 129 | 1. the flow |
 | 156 | 2. the sector on the registry, after the refinery |
-| 206 | 3. the four rows against the study |
-| 354 | 4. a longwall alone sells its raw coal as thermal |
-| 381 | 5. the types and the fit |
-| 484 | 6. the dig by type |
-| 533 | 7. the plan |
-| 599 | 8. a played month |
-| 634 | 9. the retirement |
+| 207 | 3. the four rows against the study |
+| 355 | 4. a longwall alone sells its raw coal as thermal |
+| 382 | 5. the types and the fit |
+| 485 | 6. the dig by type |
+| 534 | 7. the plan |
+| 600 | 8. a played month |
+| 635 | 9. the retirement |
 
 ## Constants
 
@@ -89,20 +89,20 @@
 | 94 | `CoalMiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 96 | `CoalMiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 132 | `CoalMiningCheck.STUDY_RAW` | `500_000, STUDY_COKING = 275_000, STUDY_THERMAL = 100_000, STUDY_SPOIL = 125_000` | The study's 3.3: a plant's 500,000 t of raw coal, and what comes of it. |
-| 209 | `CoalMiningCheck.ROWS` | `{ CoalMining.SURFACE_MINE, CoalMining.LARGE_SURFACE_MINE, CoalMining.UNDERGRO...` | Coal Mining's rows, by their permanent ids, in the study's 3.3 order. |
-| 213 | `CoalMiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 950_000, 800_000, 150_000)` | The study's 3.3: each one's cost, D$ thousands all in. |
-| 216 | `CoalMiningCheck.STUDY_POSTS` | `{ 80, 350, 400, 50 }` | ...its posts. |
-| 219 | `CoalMiningCheck.STUDY_KW` | `{ 800, 6_000, 29_000, 4_000 }` | ...its draw, kW. |
-| 222 | `CoalMiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(1_070, 5_570, 5_770, 774)` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
-| 225 | `CoalMiningCheck.STUDY_MAKES` | `{ 100_000, 800_000, 250_000, 500_000 }` | ...the coal each mine makes a month, t (the longwall's raw), and the plant's wash. |
-| 228 | `CoalMiningCheck.STUDY_SITES` | `{ 1, 4, 1, 0 }` | ...the sites each stands on, and of which type (the study's 1.3 and 3.3; the plant none). |
-| 230 | `CoalMiningCheck.STUDY_TYPES` | `{ Deposit.FieldType.THERMAL, Deposit.FieldType.THERMAL, Deposit.FieldType.COK...` | ...and the type of field each stands on (null for the plant, which stands on none). |
-| 233 | `CoalMiningCheck.SURFACE_DIG` | `1 /.95, UNDERGROUND_DIG = 1 /.80` | ...the tonnes of seam a tonne of coal takes: 95% of the seam recovered at the surface, 80% by a longwall (the study's 3.1; spec 2.4). |
-| 236 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006 * PriceLevel.FACTOR` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
-| 239 | `CoalMiningCheck.STUDY_PLANT_HECTARES` | `19` | ...the plant's ground, hectares (the study's 3.3). |
-| 242 | `CoalMiningCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, the plant's 19% to the point. |
-| 245 | `CoalMiningCheck.STUDY_SURFACE` | `3.3, STUDY_LARGE = 3.6, STUDY_ALONE =.8, STUDY_PAIR = 2.4, STUDY_PLANT = 19` | The returns the study's 3.4 states, % of the cost a month: a surface mine and a large one exporting, a longwall alone, the pair, the plant alone. |
-| 384 | `CoalMiningCheck.TYPE_WITHIN` | `.02` | How far coal's thermal share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points, WorldCheck 8's). |
+| 210 | `CoalMiningCheck.ROWS` | `{ CoalMining.SURFACE_MINE, CoalMining.LARGE_SURFACE_MINE, CoalMining.UNDERGRO...` | Coal Mining's rows, by their permanent ids, in the study's 3.3 order. |
+| 214 | `CoalMiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 950_000, 800_000, 150_000)` | The study's 3.3: each one's cost, D$ thousands all in. |
+| 217 | `CoalMiningCheck.STUDY_POSTS` | `{ 80, 350, 400, 50 }` | ...its posts. |
+| 220 | `CoalMiningCheck.STUDY_KW` | `{ 800, 6_000, 29_000, 4_000 }` | ...its draw, kW. |
+| 223 | `CoalMiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(1_070, 5_570, 5_770, 774)` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
+| 226 | `CoalMiningCheck.STUDY_MAKES` | `{ 100_000, 800_000, 250_000, 500_000 }` | ...the coal each mine makes a month, t (the longwall's raw), and the plant's wash. |
+| 229 | `CoalMiningCheck.STUDY_SITES` | `{ 1, 4, 1, 0 }` | ...the sites each stands on, and of which type (the study's 1.3 and 3.3; the plant none). |
+| 231 | `CoalMiningCheck.STUDY_TYPES` | `{ Deposit.FieldType.THERMAL, Deposit.FieldType.THERMAL, Deposit.FieldType.COK...` | ...and the type of field each stands on (null for the plant, which stands on none). |
+| 234 | `CoalMiningCheck.SURFACE_DIG` | `1 /.95, UNDERGROUND_DIG = 1 /.80` | ...the tonnes of seam a tonne of coal takes: 95% of the seam recovered at the surface, 80% by a longwall (the study's 3.1; spec 2.4). |
+| 237 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006 * PriceLevel.FACTOR` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
+| 240 | `CoalMiningCheck.STUDY_PLANT_HECTARES` | `19` | ...the plant's ground, hectares (the study's 3.3). |
+| 243 | `CoalMiningCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, the plant's 19% to the point. |
+| 246 | `CoalMiningCheck.STUDY_SURFACE` | `3.3, STUDY_LARGE = 3.6, STUDY_ALONE =.8, STUDY_PAIR = 2.4, STUDY_PLANT = 19` | The returns the study's 3.4 states, % of the cost a month: a surface mine and a large one exporting, a longwall alone, the pair, the plant alone. |
+| 385 | `CoalMiningCheck.TYPE_WITHIN` | `.02` | How far coal's thermal share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points, WorldCheck 8's). |
 
 ## Fields (state)
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 90 | 585 | **type** `public class CoalMiningCheck` | Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md - 1.3, 1.4 and 3): the second materials chain's digging industry, on... |
+| 90 | 586 | **type** `public class CoalMiningCheck` | Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md - 1.3, 1.4 and 3): the second materials chain's digging industry, on... |
 | 98 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 103 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 108 | 5 | `static void quietly(Runnable r)` |  |
@@ -126,54 +126,54 @@
 |---:|---:|---|---|
 | 134 | 21 | `static void flow()` |  |
 
-### 2. the sector on the registry, after the refinery (lines 156-205)
+### 2. the sector on the registry, after the refinery (lines 156-206)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 158 | 47 | `static void sector()` |  |
+| 158 | 48 | `static void sector()` |  |
 
-### 3. the four rows against the study (lines 206-353)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 247 | 95 | `static void rows()` |  |
-| 344 | 9 | `static Map<Good, Double> flowIncrement(double surface, double raw, double washing, double wash)` | What `wash` t of plants add to a flow of `surface` thermal and `raw` raw coal already washing `washing`: {good: tonnes}. |
-
-### 4. a longwall alone sells its raw coal as thermal (lines 354-380)
+### 3. the four rows against the study (lines 207-354)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 356 | 24 | `static void rawAsThermal()` |  |
+| 248 | 95 | `static void rows()` |  |
+| 345 | 9 | `static Map<Good, Double> flowIncrement(double surface, double raw, double washing, double wash)` | What `wash` t of plants add to a flow of `surface` thermal and `raw` raw coal already washing `washing`: {good: tonnes}. |
 
-### 5. the types and the fit (lines 381-483)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 386 | 40 | `static void typesAndFit() throws Exception` |  |
-| 435 | 25 | `static Game coalTown(String label, int thermalSites)` | A town to dig coal in: MaterialsCheck's (the Wealthy preset's cash and ground, homes, shops, power and water), its land founded instead on the coking coal field nearest the default founding site on dry ground - so it ... |
-| 462 | 21 | `static Deposit nearestCoking(World w)` | The coking coal field nearest a world's founding site whose centre plot is dry ground, cell ring by cell ring. |
-
-### 6. the dig by type (lines 484-532)
+### 4. a longwall alone sells its raw coal as thermal (lines 355-381)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 486 | 46 | `static void dig()` |  |
+| 357 | 24 | `static void rawAsThermal()` |  |
 
-### 7. the plan (lines 533-598)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 535 | 63 | `static void plan()` |  |
-
-### 8. a played month (lines 599-633)
+### 5. the types and the fit (lines 382-484)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 601 | 32 | `static void playedMonth()` |  |
+| 387 | 40 | `static void typesAndFit() throws Exception` |  |
+| 436 | 25 | `static Game coalTown(String label, int thermalSites)` | A town to dig coal in: MaterialsCheck's (the Wealthy preset's cash and ground, homes, shops, power and water), its land founded instead on the coking coal field nearest the default founding site on dry ground - so it ... |
+| 463 | 21 | `static Deposit nearestCoking(World w)` | The coking coal field nearest a world's founding site whose centre plot is dry ground, cell ring by cell ring. |
 
-### 9. the retirement (lines 634-674)
+### 6. the dig by type (lines 485-533)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 637 | 37 | `static void retirement()` | Raw mine tonnes remain additive when washing cuts the thermal output (RT2). |
+| 487 | 46 | `static void dig()` |  |
+
+### 7. the plan (lines 534-599)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 536 | 63 | `static void plan()` |  |
+
+### 8. a played month (lines 600-634)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 602 | 32 | `static void playedMonth()` |  |
+
+### 9. the retirement (lines 635-675)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 638 | 37 | `static void retirement()` | Raw mine tonnes remain additive when washing cuts the thermal output (RT2). |
 

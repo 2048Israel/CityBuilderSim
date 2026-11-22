@@ -2472,6 +2472,12 @@ public class DataSave implements Cloneable {
     /** HT1's struck investment-tax transfers and actual assessment counts. */
     private double[] householdInvestmentTaxes;
     private double[] securedHouseholdTaxes, securedForeignTaxes;
+    private EstateCustody.State estateCustody;
+    private double unbackedCustodyPaper;
+    public void setEstateCustody(EstateCustody.State state) { estateCustody = state == null ? null : state.copy(); }
+    public EstateCustody.State getEstateCustody() { return estateCustody == null ? null : estateCustody.copy(); }
+    public void setUnbackedCustodyPaper(double face) { unbackedCustodyPaper = face; }
+    public double getUnbackedCustodyPaper() { return unbackedCustodyPaper; }
     public void setSecuredHouseholdTaxes(double[] state) { securedHouseholdTaxes = state == null ? null : state.clone(); }
     public double[] getSecuredHouseholdTaxes() { return securedHouseholdTaxes == null ? null : securedHouseholdTaxes.clone(); }
     public void setSecuredForeignTaxes(double[] state) { securedForeignTaxes = state == null ? null : state.clone(); }

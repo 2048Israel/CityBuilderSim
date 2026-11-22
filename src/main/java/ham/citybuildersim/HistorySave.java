@@ -323,6 +323,18 @@ public class HistorySave {
     private List<Double> bankBranches = new ArrayList<>();
     private List<Double> householdSavings = new ArrayList<>();
     private List<Double> capitalGainsTax = new ArrayList<>();
+    private List<Double> unclaimedReceipts = new ArrayList<>();
+    private List<Double> custodyNoncash = new ArrayList<>();
+    private List<Double> custodyLoss = new ArrayList<>();
+    private List<Double> custodyDebtGain = new ArrayList<>();
+    private List<Double> custodyPaperRetired = new ArrayList<>();
+    private List<Double> custodyBook = new ArrayList<>();
+    private List<Double> custodyPaper = new ArrayList<>();
+    private List<Double> custodyPaperFinding = new ArrayList<>();
+    private List<Double> custodyUsd = new ArrayList<>();
+    private List<Double> custodyCars = new ArrayList<>();
+    private List<Double> custodyLossCarry = new ArrayList<>();
+    private List<Double> custodyCouponDue = new ArrayList<>();
     private List<Double> dividendTax = new ArrayList<>();
     private List<Double> capitalTaxConsolidated = new ArrayList<>();
     private List<Double> capitalTaxWrittenOff = new ArrayList<>();
@@ -847,6 +859,18 @@ public class HistorySave {
         bankBranches.add(round2(lender.getBranches()));
         householdSavings.add(round2(game.getHouseholds().getCumulativeSaving()));
         capitalGainsTax.add(round2(game.getHouseholdBalance().getCapitalGainsTax()));
+        unclaimedReceipts.add(round2(game.getEstateCustody().cashReceived()));
+        custodyNoncash.add(round2(game.getEstateCustody().noncashReceived()));
+        custodyLoss.add(round2(game.getEstateCustody().assetLoss()));
+        custodyDebtGain.add(round2(game.getEstateCustody().debtGain()));
+        custodyPaperRetired.add(round2(game.getEstateCustody().paperConsolidated()));
+        custodyBook.add(round2(game.getEstateCustody().getLedger().acbHeld()));
+        custodyPaper.add(round2(game.getEstateCustody().pendingPaper()));
+        custodyPaperFinding.add(round2(game.getEstateCustody().paperFinding()));
+        custodyUsd.add(round2(game.getEstateCustody().usd()));
+        custodyCars.add(round2(game.getEstateCustody().cars()));
+        custodyLossCarry.add(round2(game.getEstateCustody().lossCarried()));
+        custodyCouponDue.add(round2(game.getEstateCustody().pendingCoupons()));
         dividendTax.add(round2(game.getHouseholdBalance().getDividendTax()));
         capitalTaxConsolidated.add(round2(game.getHouseholdBalance().getCapitalTaxConsolidated()));
         capitalTaxWrittenOff.add(round2(game.getHouseholdBalance().getCapitalTaxWrittenOff()));
@@ -1296,6 +1320,18 @@ public class HistorySave {
         bankBranches = copy(loaded.bankBranches);
         householdSavings = copy(loaded.householdSavings);
         capitalGainsTax = copy(loaded.capitalGainsTax);
+        unclaimedReceipts = copy(loaded.unclaimedReceipts);
+        custodyNoncash = copy(loaded.custodyNoncash);
+        custodyLoss = copy(loaded.custodyLoss);
+        custodyDebtGain = copy(loaded.custodyDebtGain);
+        custodyPaperRetired = copy(loaded.custodyPaperRetired);
+        custodyBook = copy(loaded.custodyBook);
+        custodyPaper = copy(loaded.custodyPaper);
+        custodyPaperFinding = copy(loaded.custodyPaperFinding);
+        custodyUsd = copy(loaded.custodyUsd);
+        custodyCars = copy(loaded.custodyCars);
+        custodyLossCarry = copy(loaded.custodyLossCarry);
+        custodyCouponDue = copy(loaded.custodyCouponDue);
         dividendTax = copy(loaded.dividendTax);
         capitalTaxConsolidated = copy(loaded.capitalTaxConsolidated);
         capitalTaxWrittenOff = copy(loaded.capitalTaxWrittenOff);
@@ -1930,6 +1966,18 @@ public class HistorySave {
         map.put("bankBranches", bankBranches);
         map.put("householdSavings", householdSavings);
         map.put("capitalGainsTax", capitalGainsTax);
+        map.put("unclaimedReceipts", unclaimedReceipts);
+        map.put("custodyNoncash", custodyNoncash);
+        map.put("custodyLoss", custodyLoss);
+        map.put("custodyDebtGain", custodyDebtGain);
+        map.put("custodyPaperRetired", custodyPaperRetired);
+        map.put("custodyBook", custodyBook);
+        map.put("custodyPaper", custodyPaper);
+        map.put("custodyPaperFinding", custodyPaperFinding);
+        map.put("custodyUsd", custodyUsd);
+        map.put("custodyCars", custodyCars);
+        map.put("custodyLossCarry", custodyLossCarry);
+        map.put("custodyCouponDue", custodyCouponDue);
         map.put("dividendTax", dividendTax);
         map.put("capitalTaxConsolidated", capitalTaxConsolidated);
         map.put("capitalTaxWrittenOff", capitalTaxWrittenOff);
@@ -2097,7 +2145,7 @@ public class HistorySave {
         scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad, ipCharges, ipAccrued, publicIpCharges, publicIpAccrued,
                 businessDebt, businessBonds, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
-                householdSavings, capitalGainsTax, dividendTax, capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated, bankFees,
+                householdSavings, unclaimedReceipts, custodyNoncash, custodyLoss, custodyDebtGain, custodyPaperRetired, custodyBook, custodyPaper, custodyPaperFinding, custodyLossCarry, custodyCouponDue, capitalGainsTax, dividendTax, capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated, bankFees,
                 bankAllowance, bankProvisions, bankDividends,
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,
