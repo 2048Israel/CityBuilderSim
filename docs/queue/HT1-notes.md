@@ -819,3 +819,122 @@ FAIL; no scorer/premise/precision/threshold or tax/land/bank model changed.
 The source is independently cleared, all owned ensemble/diagnostic trees
 actually terminal/home-copied, and final versioned ALL dry proceeds under
 the standing GO. Provisional marker stays until that verdict is complete.
+
+## Final versioned ALL dry and retained-run attribution
+
+BOX run `/home/jerus/cbs/runs/cbs-gate-HT1-rNY0fHHw` tests pushed
+e8f739b840d7138bbf4ffc06ae7d8c79771e2679, unchanged reviewed source
+dd6d53436dddd65815ba0dcb7f0207ea5adebe0b, against main2149ca45c/.183.
+The native versioned merge is.184; SAVE_FORMAT/OLDEST both59. Compile8s,
+234 harnesses run1092s (216 passed/18 failed), wrapper suite1109s/native4,
+gate1/controller1/PowerShell relay1. The standard ALL240 selection excludes
+six nightly-only harnesses and explicitly includes the nine nightly picks
+the source diff requires; all234 selected harnesses finish. Monocle starts
+all9 display harnesses without a display skip. Maps regenerate, Stale0firm/
+194soft; one timing assertion stays SOFT and seven path assertions remain
+OBSERVED, not promoted to passed proofs. Complete raw79 red lines include
+44 assertion lines; the original gate reports7 unnamed lines, consisting
+of3 actual assertions and their4 exit/summary lines.
+
+CapitalGainsCheck passes in this complete run (0 failures), as do the
+affected FundLedger/HouseholdFlow/Equity/Exchange/SaveFile/ReadPath/History/
+YearBook and stock-count/currency/scaling checks. The full CentralBankCheck
+reaches119 closed audit months with only the two exact FS10H zero-cash
+rounding predicates; its corrected native retirement/principal assertions
+pass. FundCheck finishes the formerly throwing long run, retaining only the
+exact FS13H cap-premise failure. All raw named assertions were inspected,
+including the unchanged DK1 nine-decade, FS9 housing/bank and other main
+registry predicates; no new monetary/audit/loader assertion is hidden by an
+exit label. ShortSellingCheck finishes, including its real-world exchange
+cash edges, every-month audit and issued-plus-short ownership identities.
+
+Every owned suite child/controller/guardian is actually terminal, the
+remote active marker is absent, and no process command names this retained
+run. The native gate finishes08:52:05UTC and homecopy/controller finishes
+08:52:11UTC. All920 archived output/metadata/generated files are retained
+at `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HT1-rNY0fHHw`; every emitted
+check/generated hash agrees with checks.sha256. The local immutable index
+and native receipt are
+`target/ht1-final-20261122-0407/dry-original-receipt.json`. No original raw
+log, retained clone, seal or earlier diagnostic/red/green archive was
+changed. No source/record was edited while the gate was active.
+
+### FS17H hand-order premise
+
+This is a fresh companion to shipped FS17, checked unused after fetching
+origin/main. It is not RN3's exact-one homes-share rounding predicate.
+Final ReloadCheck's hand-caused city is saved at1208, and its own month on
+reports0 crews that drew materials. All338 history series and all save
+figures agree in both continuations, as do Construction's isDrawnKnown,
+home/imported draws, the market seller rows and every other native restore
+comparison. The one failing assertion is the cause's positive-draw premise.
+
+Main's unchanged ReloadCheck.causeTheConditions finds House and calls
+`g.buildStack(house, CAUSED_ORDER, false)` with CAUSED_ORDER5, silencing the
+reply and discarding its BuildResult. Native Game.buildStack may return
+NOT_KNOWN/NO_LAND/NEEDS_FUNDING (or another real gate) without ordering
+anything; an accepted order alone also does not prove when its crew draws.
+The fixture asserts neither the actual result nor that its next month
+contains positive work/materials. The exact result/refusal is not exposed
+by this raw log and is not invented here. The proven finding is that the
+unchanged hand cause does not establish the condition its assertion needs.
+HT1 changes neither this fixture, the build acceptance route nor the native
+material-draw rule. The nonzero played-checkpoint draw premise still passes.
+
+Queued FS17H must cause an actual accepted five-House order, capture its
+native funding/land/build/work/material counterparts and prove a positive
+draw in the month being saved/compared, retaining the hard missing-cause
+negative control. Keep all live/load save/history equality checks, closed
+homes RN2/RN3 controls, native refusals and monetary conservation. Do not
+inject free cash/land, waive a missing draw or use a different checkpoint's
+draw to satisfy this cause. Under root229e's moved-city sweep direction,
+this exact main fixture assertion passes by name with FS17H queued.
+
+### FS5H final page states
+
+The final run adds two exact states to the already queued FS5H companion;
+FS5's Pending heap scope stays separate. SectorScreen, StatementView,
+Kept, KeptCheck, FamilyModel and the grid's rendering code have no HT1 diff.
+
+Construction's Cash & debt statement has a native signature difference at
+line261: a row at17,52 is836x24 kept and836x16 fresh. Two more lines differ,
+the next268 is the same empty IBM Plex Mono figure label; the difference
+repeats on two held-still redraws. Its summary page passes, every other
+sector statement passes. This is the existing blank-label geometry class
+in the unchanged cashStatementView -> StatementView.table/schedule/debt
+scopes, not a missing cash posting or an HT1 tax statement. The exact
+kept/fresh equality remains hard; queue this specific state with FS5H.
+
+Rankings' city-drawer tooltip watch reports2 grid cells closed after the
+month, and the month alone closes the same2. Native tipsAcrossMonth holds
+FamilyModel's save array and owner-adult count, but lets the real month/job
+binding run, then asks KeptBench.householdCells again; its own comment
+describes the half-household threshold. The unchanged fixture does not hold
+the complete cell-count premise on this path. All60 before/after tooltips
+remain the same60 objects and none is lost. Main already records this
+KHT1 class for the every-measure-open state; this exact city-drawer state is
+named separately with FS5H, keeping all tooltip and grid thresholds.
+
+Government Overview now starts401 nodes, makes45 at most and is quiet11 of
+25 months. All25 kept/fresh page comparisons and380-of401 retention pass;
+the one-tenth allocation predicate remains red in the same previously
+traced unchanged scope class (old dry45/379, main FB2 previously47/378).
+The actual tax disclosures stay. The final heap is1881.8MiB/2048, with the
+existing software-rendered FS5 heap row; it is not called a new heap proof,
+reopened design or a memory waiver. No screenshot/signature normalization,
+threshold, geometry, household count or renderer was changed.
+
+Only this notes file and the ship file change after the dry. The first-line
+gate-run pointer names its exact retained run; its original raw hard reds
+remain immutable. The next step is the standard judge/retained-run reuse,
+with no unchanged full-suite or model replay and no new production edit.
+
+The standard local `batch-check.sh --judge target/checks/suite.txt`, with
+CBS_REJUDGE=rejudge, returns native3: known red only,18 harnesses. This
+judges a copied original suite in our own target; it runs no harness or
+model and changes no retained evidence. The local capture wrapper then
+returns1 trying to copy a nonexistent verdict.txt after the actual judge
+has ended. The raw native3/log/used-reds are present; the postprocessing
+limit is recorded in rejudge-terminal.json, with no judge/model retry.
+The versioned BOX gate reuse is still required to certify the final record
+merge; its run pointer retains the original complete234-harness evidence.
