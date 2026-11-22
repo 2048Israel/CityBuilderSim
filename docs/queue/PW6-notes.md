@@ -422,3 +422,31 @@ label is visible in those historical rendered bytes. Exact rendered Services SHA
 All 70 original PW6 proof files and all 44 original screen-worker manifest entries
 verify unchanged. Marker retained; no owned process remains running. Pick stays
 ALL 238; save review floor and completed pre-UI reviews remain as recorded above.
+
+## Final source fast passed; render helper failed before launch
+
+Root authorized one final changed-source fast and one conditional final render.
+The fast exited 0: compile 37s, regenerated maps, Stale 0 firm/194 soft. Generated
+indices now describe the exact pushed Roads correction, Services source SHA256
+`294e75e5987e2536ba73a8cf939c5f488003e15d98e3dd0237e519ee544aeb67`.
+
+The fresh target-only driver hardened the actual Roads link's positive/natural
+width, height, page/viewport bounds at narrow/wide and retained monthly redraw,
+alongside the prior six-tick/colour/period/scroll assertions. Its compilation failed
+before launch: Python `str(Path)` wrote backslashes into Java's output-path literal,
+causing `illegal escape character` on line 21. This is an own helper error; no
+production failure or successful final render is inferred. PowerShell stopped on
+native stderr before separately capturing javac's numeric exit; transport exit 1
+is retained distinctly. No render PID exists and zero additional advances occurred.
+Per the explicit stop-on-new-failure instruction, no correction/retry was attempted.
+
+`target/PW6-ui-final-20261121-2002/` retains fast/raw compile/mapping/Stale receipts,
+failed helper source, transport-error transcription, selected classpath, exact
+Services source/class hashes and before/after protected source manifests. The tracked
+source digest is unchanged:
+`12135b4c46d78d68a0e8c7e5253a170ba81b44e1400faed1add02a9304ac20c4`.
+All original 70 proof, 44 screen-worker and 57 earlier UI evidence entries remain
+unchanged. Smallest recommendation: correct only the target helper path to forward
+slashes, then fresh helper compilation/render evidence under new root ordering,
+without another unchanged fast or production edit. Final render/independent eyes
+and ALL-238 dry remain owed; marker retained, all owned processes terminal.
