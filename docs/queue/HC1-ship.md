@@ -9,4 +9,4 @@ neutral card APR is 21.35%, capped at 35%; the bank books payments and losses.
 Household money shows debt holders, medians, means, payment burdens, arrears
 and yearly surveys by tier and stage, per household or adult. Every new flow
 has one money and national-accounts path. Save format 62 refuses older saves
-without conversion; native refusal and exact next-month continuation are checked.
+without conversion; native 60/61 refusal and exact next-month continuation are checked.
