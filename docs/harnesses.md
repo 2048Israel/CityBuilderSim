@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**238 harness files, 27,345 labelled assertions.** AllChecks runs 238 of them.
+**238 harness files, 27,356 labelled assertions.** AllChecks runs 238 of them.
 
 ## Which harnesses read which class
 
@@ -133,7 +133,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Freight](map/Freight.md) | BuildCardCheck, DriverlessTruckCheck, EquipmentCheck, FittingCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckRouteCheck, WorldDataCheck |
 | [FreightView](map/FreightView.md) | FreightViewCheck, HistoricalLicenceCheck, TradeBandCheck |
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
-| [FundLedger](map/FundLedger.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
+| [FundLedger](map/FundLedger.md) | CapitalGainsCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
 | [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
@@ -4035,7 +4035,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L707 ...and a load puts it back
   - L721 every month of it is conserved: the money audit closes
 
-## CapitalGainsCheck.java - 206 labelled assertions
+## CapitalGainsCheck.java - 217 labelled assertions
 
 > Household average-cost stocks and investment taxes, through the real fills, census and city (HT1).
 > WHY: the fund already tracked average cost, but a household sale previously lost its acquisition cost.
@@ -4151,111 +4151,122 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L395 all hundred unpaid tagged units remain attributed
   - L396 the 35 is foreign, not erased with the cell
   - L398 the tagged order really rests with no bid
-  - L402 the actual monthly reset preserves the unfilled tagged holding
-  - L403 the actual monthly reset preserves the unpaid claim
-  - L404 unfilled is not a tax receipt
-  - L407 an unrelated WORLD purchase does not pay old foreign tax
-  - L413 the ordinary new leaver actually sells ten units
-  - L414 ordinary new-leaver proceeds do not pay the older tagged claim
-  - L417 a real partial tagged fill delivers twenty units
-  - L418 the partial receipt collects twenty and leaves fifteen
-  - L419 native tagged gross settlement is twenty
-  - L420 retained tax is a separate actual amount
-  - L421 the tagged holder has no net cash from that fill
-  - L425 partial foreign attribution is copied by value
-  - L427 split multiplies foreign tagged units
-  - L428 split preserves the nominal claim
-  - L430 currency scales the foreign claim
-  - L431 government claim still matches the debtor after currency reform
-  - L433 genuine old-common extinction writes off the unpaid claim
-  - L434 extinction never collects invented cash
-  - L435 a saved government snapshot contains the outstanding claim
-  - L474 no eligible working heir exists before the census
-  - L479 the estate repays existing revolving debt first
-  - L480 only actual remaining cash reaches treasury as property
-  - L481 the unchanged pool identity sees only the actual inherited cash edge
-  - L482 household savings conserve estate cash plus the native debt repayment
-  - L484 no cash is labelled capital tax on a self-claim
-  - L485 new and old secured assessments consolidate after receipt
-  - L488 loss carry is consumed or retained by this actual assessment
-  - L489 the government has no remaining self-claim
-  - L490 no estate cash enters either emigration leg
-  - L491 the receiver retains actual USD
-  - L492 the receiver retains actual idle cars
-  - L493 city paper is reserved, not silently redeemed
-  - L494 the precise holder discount follows the reservation
-  - L495 reserved face cannot be traded as private face
-  - L496 unpaid auction entitlement never enters the paid household estate stock
-  - L497 all real own-paper holder counterparts including custody add to the issuer
-  - L500 the no-heir event really occurs during an unsettled sale
-  - L501 no coupon is lost or duplicated at the holder handoff
-  - L502 the already-recorded source coupon reaches custody
-  - L503 inheritance creates no bought-cash fiction
-  - L504 inheritance creates no disposal-proceeds fiction
-  - L506 custody retains every domestic share
-  - L507 issuer and custody quantities match
-  - L508 the complete share identity holds
-  - L513 all actual corporate holders add to face
-  - L514 the capsule is the actual new bond holder
-  - L516 no paper counterpart was invented
-  - L606 every recorded issuer bill is still unpaid before its one actual charge
-  - L611 actual issuer pays its own recorded coupon
-  - L615 all issuer debits fund the exact aggregate recorded bill
-  - L617 actual issuer charges and clearing conserve whole cash
-  - L622 actual bank coupon credit matches its clearing debit
-  - L623 actual bank booking and clearing conserve whole cash
-- **L647 coupon cash clearing before/after charge, bank booking and partial custody transfer**
-  - L654 the warmed book has no pending record to replace
-  - L656 the appended issue uses an unused native nextId
-  - L670 the complete warmed register plus one new issue remains live
-  - L673 the new issue contributes exactly its own coupon
-  - L674 the new source face contributes exactly its own entitlement
-  - L675 preserved baseline and new private obligations are fully recorded
-  - L676 preserved baseline and new bank obligations are fully recorded
-  - L678 an uncharged record-date promise is zero clearing cash
-  - L681 the uncharged promise cannot pay custody or disappear
-  - L682 the uncharged promise remains fully recorded
-  - L691 the complete source bundle transfers its quarter
-  - L692 only the source quarter leaves private ownership
-  - L693 the original issuer face is preserved
-  - L694 the unrelated bank retains its position
-  - L695 the unrelated world retains its position
-  - L696 the ordinary city fund retains its position
-  - L697 every unrelated company retains its position
-  - L700 partial custody transfer preserves the complete holder sum
-  - L701 the new inherited issue contributes exactly ten face
-  - L702 only the deceased complete source fraction receives its recorded coupon
-  - L703 the new inherited issue contributes exactly its own recorded coupon
-  - L704 the live source retains its full record-date fraction
-  - L705 other private record-date holders are preserved
-  - L709 the real issuer debit moves to cash clearing
-  - L710 charged clearing includes the still-unpaid bank
-  - L714 a missing issuer debit is caught by the actual pool identity
-  - L717 bank-booked clearing excludes the paid bank
-  - L718 post-payment cash clearing is empty
-  - L726 all record-date maps/flags/cash survive phase
-  - L733 the bank's once-only credit survives phase
-  - L735 native charges/bookings conserve pooled cash
-  - L740 actual partial inherited coupon reaches treasury once
-  - L741 the live source keeps its original record-date fraction
-  - L742 every preserved private holder receives its recorded entitlement
-  - L744 final clearing is discharged
-  - L745 the actual debit, bank credit and remaining payments conserve cash
-  - L748 post-payment cannot create a duplicate receipt
-- **L756 actual all-stock no-heir estate, pending settlement and both loaders**
-  - L764 every custody owner slot survives loader
-  - L766 saved holder discount survives loader
-  - L767 recorded coupon entitlement survives loader
-  - L768 noncash ownership history survives loader
-  - L775 post-settlement custody snapshot survives
-  - L778 post-settlement load cannot repeat retirement
-  - L779 post-settlement reservation remains cleared
-  - L785 a real unrelated heir receives its stepped basis
-  - L786 ordinary real heirs still carry the unpaid 35 claim
-  - L789 the loss-only estate retains a positive exact memo stock
-  - L797 reservation uses the native schedule
-  - L798 reservation uses the native issuer carrying operation
-  - L799 nonzero reserved discount is retired with its exact holder
+  - L406 the first step actually records a finite automatic split
+  - L408 the first cumulative factor records the native step split
+  - L409 the actual monthly reset preserves the unfilled tagged holding in its recorded units
+  - L410 the actual monthly reset preserves the unpaid claim
+  - L411 unfilled is not a tax receipt
+  - L414 an unrelated WORLD purchase does not pay old foreign tax
+  - L417 the unrelated new departure adds no older tagged units
+  - L423 the second step actually records a finite automatic split
+  - L425 the second cumulative factor records the native step split
+  - L426 both native steps preserve the original tagged holding in recorded units
+  - L427 automatic splits leave the older nominal claim unchanged
+  - L430 the ordinary new leaver actually sells ten units
+  - L431 ordinary new-leaver proceeds do not pay the older tagged claim
+  - L434 a real partial tagged fill delivers twenty units
+  - L435 the partial receipt collects twenty and leaves fifteen
+  - L436 native tagged gross settlement is twenty
+  - L437 retained tax is a separate actual amount
+  - L438 the tagged holder has no net cash from that fill
+  - L442 partial foreign attribution is copied by value
+  - L444 the twenty-unit fill releases exactly twenty current tagged units
+  - L445 the native stock identity holds before the explicit split
+  - L448 split multiplies foreign tagged units
+  - L449 the explicit split preserves its actual nominal claim
+  - L450 split preserves the nominal claim
+  - L451 the native stock identity holds after the explicit split
+  - L454 currency scales the foreign claim
+  - L455 government claim still matches the debtor after currency reform
+  - L457 genuine old-common extinction writes off the unpaid claim
+  - L458 extinction never collects invented cash
+  - L459 a saved government snapshot contains the outstanding claim
+  - L498 no eligible working heir exists before the census
+  - L503 the estate repays existing revolving debt first
+  - L504 only actual remaining cash reaches treasury as property
+  - L505 the unchanged pool identity sees only the actual inherited cash edge
+  - L506 household savings conserve estate cash plus the native debt repayment
+  - L508 no cash is labelled capital tax on a self-claim
+  - L509 new and old secured assessments consolidate after receipt
+  - L512 loss carry is consumed or retained by this actual assessment
+  - L513 the government has no remaining self-claim
+  - L514 no estate cash enters either emigration leg
+  - L515 the receiver retains actual USD
+  - L516 the receiver retains actual idle cars
+  - L517 city paper is reserved, not silently redeemed
+  - L518 the precise holder discount follows the reservation
+  - L519 reserved face cannot be traded as private face
+  - L520 unpaid auction entitlement never enters the paid household estate stock
+  - L521 all real own-paper holder counterparts including custody add to the issuer
+  - L524 the no-heir event really occurs during an unsettled sale
+  - L525 no coupon is lost or duplicated at the holder handoff
+  - L526 the already-recorded source coupon reaches custody
+  - L527 inheritance creates no bought-cash fiction
+  - L528 inheritance creates no disposal-proceeds fiction
+  - L530 custody retains every domestic share
+  - L531 issuer and custody quantities match
+  - L532 the complete share identity holds
+  - L537 all actual corporate holders add to face
+  - L538 the capsule is the actual new bond holder
+  - L540 no paper counterpart was invented
+  - L700 every recorded issuer bill is still unpaid before its one actual charge
+  - L705 actual issuer pays its own recorded coupon
+  - L709 all issuer debits fund the exact aggregate recorded bill
+  - L711 actual issuer charges and clearing conserve whole cash
+  - L716 actual bank coupon credit matches its clearing debit
+  - L717 actual bank booking and clearing conserve whole cash
+- **L741 coupon cash clearing before/after charge, bank booking and partial custody transfer**
+  - L748 the warmed book has no pending record to replace
+  - L750 the appended issue uses an unused native nextId
+  - L764 the complete warmed register plus one new issue remains live
+  - L767 the new issue contributes exactly its own coupon
+  - L768 the new source face contributes exactly its own entitlement
+  - L769 preserved baseline and new private obligations are fully recorded
+  - L770 preserved baseline and new bank obligations are fully recorded
+  - L772 an uncharged record-date promise is zero clearing cash
+  - L775 the uncharged promise cannot pay custody or disappear
+  - L776 the uncharged promise remains fully recorded
+  - L785 the complete source bundle transfers its quarter
+  - L786 only the source quarter leaves private ownership
+  - L787 the original issuer face is preserved
+  - L788 the unrelated bank retains its position
+  - L789 the unrelated world retains its position
+  - L790 the ordinary city fund retains its position
+  - L791 every unrelated company retains its position
+  - L794 partial custody transfer preserves the complete holder sum
+  - L795 the new inherited issue contributes exactly ten face
+  - L796 only the deceased complete source fraction receives its recorded coupon
+  - L797 the new inherited issue contributes exactly its own recorded coupon
+  - L798 the live source retains its full record-date fraction
+  - L799 other private record-date holders are preserved
+  - L803 the real issuer debit moves to cash clearing
+  - L804 charged clearing includes the still-unpaid bank
+  - L808 a missing issuer debit is caught by the actual pool identity
+  - L811 bank-booked clearing excludes the paid bank
+  - L812 post-payment cash clearing is empty
+  - L820 all record-date maps/flags/cash survive phase
+  - L827 the bank's once-only credit survives phase
+  - L829 native charges/bookings conserve pooled cash
+  - L834 actual partial inherited coupon reaches treasury once
+  - L835 the live source keeps its original record-date fraction
+  - L836 every preserved private holder receives its recorded entitlement
+  - L838 final clearing is discharged
+  - L839 the actual debit, bank credit and remaining payments conserve cash
+  - L842 post-payment cannot create a duplicate receipt
+- **L850 actual all-stock no-heir estate, pending settlement and both loaders**
+  - L858 every custody owner slot survives loader
+  - L860 saved holder discount survives loader
+  - L861 recorded coupon entitlement survives loader
+  - L862 noncash ownership history survives loader
+  - L869 post-settlement custody snapshot survives
+  - L872 post-settlement load cannot repeat retirement
+  - L873 post-settlement reservation remains cleared
+  - L879 a real unrelated heir receives its stepped basis
+  - L880 ordinary real heirs still carry the unpaid 35 claim
+  - L883 the loss-only estate retains a positive exact memo stock
+  - L891 reservation uses the native schedule
+  - L892 reservation uses the native issuer carrying operation
+  - L893 nonzero reserved discount is retired with its exact holder
 
 ## CarCheck.java - 70 labelled assertions
 

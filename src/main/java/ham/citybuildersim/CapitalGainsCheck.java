@@ -398,8 +398,15 @@ public final class CapitalGainsCheck {
         check("the tagged order really rests with no bid", m.exchange.tradeForCheck(0, Exchange.TAX_EMIGRANTS, OrderBook.Side.SELL, 10, 100).isEmpty());
         double[] books = ExchangeCheck.bookOf(0, 1000);
         // A very high required return puts fair at the model's floor, so the ordinary world posts no bid.
+        double factorBeforeFirst = m.exchange.getSplitFactor(0);
         quietly(() -> ExchangeCheck.step(m.exchange, m.equity, m.balance, m.bank, m.firms, books, 1e6, 0, 2));
-        close("the actual monthly reset preserves the unfilled tagged holding", m.equity.foreignTaxShares(0), 100);
+        double factorAfterFirst = m.exchange.getSplitFactor(0), firstSplit = m.exchange.getSplit(0);
+        out.println("Observed: first departure step split factor " + factorBeforeFirst + " -> " + factorAfterFirst
+                + ", native step split " + firstSplit + ", tagged units " + m.equity.foreignTaxShares(0));
+        check("the first step actually records a finite automatic split", factorBeforeFirst > 0
+                && Double.isFinite(factorBeforeFirst) && factorAfterFirst > 0 && Double.isFinite(factorAfterFirst) && firstSplit > 0 && firstSplit != 1);
+        close("the first cumulative factor records the native step split", factorAfterFirst, factorBeforeFirst * firstSplit);
+        close("the actual monthly reset preserves the unfilled tagged holding in its recorded units", m.equity.foreignTaxShares(0), 100 * factorAfterFirst / factorBeforeFirst);
         close("the actual monthly reset preserves the unpaid claim", m.equity.foreignTaxClaim(0), 35);
         close("unfilled is not a tax receipt", m.received, 10);
         m.holder.households = 1; m.holder.savings = 100;
@@ -407,7 +414,17 @@ public final class CapitalGainsCheck {
         close("an unrelated WORLD purchase does not pay old foreign tax", m.equity.foreignTaxClaim(0), 35);
         m.balance.setFlows(0, 0, 0, 0, 0, 1, 0); m.town.run();
         m.equity.followEmigrants(m.balance, m.exchange::shortShares);
+        close("the unrelated new departure adds no older tagged units", m.equity.foreignTaxShares(0), 100 * factorAfterFirst / factorBeforeFirst);
+        double factorBeforeSecond = m.exchange.getSplitFactor(0);
         quietly(() -> ExchangeCheck.step(m.exchange, m.equity, m.balance, m.bank, m.firms, books, 1e6, 0, 3));
+        double factorAfterSecond = m.exchange.getSplitFactor(0), secondSplit = m.exchange.getSplit(0);
+        out.println("Observed: second departure step split factor " + factorBeforeSecond + " -> " + factorAfterSecond
+                + ", native step split " + secondSplit + ", tagged units " + m.equity.foreignTaxShares(0));
+        check("the second step actually records a finite automatic split", factorBeforeSecond > 0
+                && Double.isFinite(factorBeforeSecond) && factorAfterSecond > 0 && Double.isFinite(factorAfterSecond) && secondSplit > 0 && secondSplit != 1);
+        close("the second cumulative factor records the native step split", factorAfterSecond, factorBeforeSecond * secondSplit);
+        close("both native steps preserve the original tagged holding in recorded units", m.equity.foreignTaxShares(0), 100 * factorAfterSecond / factorBeforeFirst);
+        close("automatic splits leave the older nominal claim unchanged", m.equity.foreignTaxClaim(0), 35);
         m.exchange.bookOf(0).withdrawAll();
         m.exchange.tradeForCheck(0, Exchange.EMIGRANTS, OrderBook.Side.SELL, 1, 10);
         close("the ordinary new leaver actually sells ten units", FundLedgerCheck.filled(m.exchange.tradeForCheck(0, Exchange.WORLD, OrderBook.Side.BUY, 1, 10)), 10);
@@ -423,9 +440,16 @@ public final class CapitalGainsCheck {
         Equity copy = ExchangeCheck.equity(); copy.restore(m.equity.keys(), m.equity.toSaveArray());
         copy.restoreForeignTaxes(m.equity.keys(), foreignState);
         check("partial foreign attribution is copied by value", Arrays.equals(foreignState, copy.foreignTaxesToSave()));
+        double taggedBeforeSplit = m.equity.foreignTaxShares(0), claimBeforeSplit = m.equity.foreignTaxClaim(0);
+        close("the twenty-unit fill releases exactly twenty current tagged units", taggedBeforeSplit, 100 * factorAfterSecond / factorBeforeFirst - 20);
+        close("the native stock identity holds before the explicit split", m.equity.getShares(0) + m.exchange.shortShares(0),
+                m.balance.sharesHeld(0) + m.equity.getForeignShares(0) + m.equity.getDealerShares(0) + m.equity.getCityShares(0) + m.equity.getCustodyShares(0));
         m.equity.split(0, 10); m.balance.splitShares(0, 10);
-        close("split multiplies foreign tagged units", m.equity.foreignTaxShares(0), 800);
+        close("split multiplies foreign tagged units", m.equity.foreignTaxShares(0), taggedBeforeSplit * 10);
+        close("the explicit split preserves its actual nominal claim", m.equity.foreignTaxClaim(0), claimBeforeSplit);
         close("split preserves the nominal claim", m.equity.foreignTaxClaim(0), 15);
+        close("the native stock identity holds after the explicit split", m.equity.getShares(0) + m.exchange.shortShares(0),
+                m.balance.sharesHeld(0) + m.equity.getForeignShares(0) + m.equity.getDealerShares(0) + m.equity.getCityShares(0) + m.equity.getCustodyShares(0));
         m.equity.redenominate(.1); m.balance.redenominate(.1);
         close("currency scales the foreign claim", m.equity.foreignTaxClaim(0), 1.5);
         close("government claim still matches the debtor after currency reform", m.balance.getCapitalTaxOutstanding(), m.balance.securedClaimCounterpart());
@@ -571,20 +595,90 @@ public final class CapitalGainsCheck {
         close(label + " actual issuer maturity pays only its custody face to treasury", g.getCash() - cash, 30);
         close(label + " actual maturity charges the whole issued face once", sector - g.getEconomyManager().getSectorCash(Sectors.RETAIL), 100);
         close(label + " the matured custody issue disappears", owner.bondFace(1), 0);
+        int lossSlot = custodySlot("LOSS"), foreignSlot = custodySlot("FOREIGN");
+        EstateCustody.State beforeLoss = owner.toState();
+        check(label + " the native default window is actually closed", !beforeLoss.window);
+        if (beforeLoss.window) throw new IllegalStateException("Default fixture has no closed-window premise");
+        FundLedger.Lot lot = owner.getLedger().lot(FundLedger.bondKey(2));
+        check(label + " the actual defaulted custody lot has positive cost", lot != null && lot.acb() > 0);
+        if (lot == null || !(lot.acb() > 0)) throw new IllegalStateException("Default fixture has no acquired cost");
+        FundLedger.Lot beforeLot = lot.copy();
+        double defaultCash = g.getCash(), defaultPools = poolTotal(g), heldCost = owner.getLedger().acbHeld();
         bm.writeDown(Sectors.RETAIL, .5);
         close(label + " a genuine default writes down the other custody bond", owner.bondFace(2), 35);
-        check(label + " default records a noncash asset loss", owner.assetLoss() > 0);
+        double lostCost = beforeLot.acb() - lot.acb(); EstateCustody.State afterLoss = owner.toState();
+        check(label + " the native default releases positive actual cost", lostCost > 0);
+        close(label + " half the actual defaulted lot cost is released", lostCost, beforeLot.acb() / 2);
+        close(label + " default loss is realized on the existing lot", beforeLot.realized() - lot.realized(), lostCost);
+        close(label + " default releases matching aggregate held cost", heldCost - owner.getLedger().acbHeld(), lostCost);
+        close(label + " default records matching cost out", lot.acbOut() - beforeLot.acbOut(), lostCost);
+        close(label + " default invents no disposal proceeds", lot.proceeds(), beforeLot.proceeds());
+        close(label + " default loss enters its exact pending slot", afterLoss.pending[lossSlot] - beforeLoss.pending[lossSlot], lostCost);
+        for (int slot = 0; slot < EstateCustody.FLOW_SLOTS; slot++) if (slot != lossSlot)
+            close(label + " default preserves unrelated pending slot " + slot, afterLoss.pending[slot], beforeLoss.pending[slot]);
+        check(label + " default keeps the native window closed", !afterLoss.window);
+        check(label + " closed-window default leaves every current disclosure unchanged", Arrays.equals(afterLoss.flows, beforeLoss.flows));
+        close(label + " the public loss still names the current window", owner.assetLoss(), beforeLoss.flows[lossSlot]);
+        close(label + " a noncash default creates no treasury cash", g.getCash(), defaultCash);
+        close(label + " a noncash default creates no pooled cash", poolTotal(g), defaultPools);
+        out.println("Observed: " + label + " default closed=" + !beforeLoss.window + ", loss current/pending "
+                + beforeLoss.flows[lossSlot] + "/" + beforeLoss.pending[lossSlot] + " -> "
+                + afterLoss.flows[lossSlot] + "/" + afterLoss.pending[lossSlot] + ", lot cost " + beforeLot.acb() + " -> " + lot.acb()
+                + ", realized " + beforeLot.realized() + " -> " + lot.realized() + ", treasury delta " + (g.getCash() - defaultCash));
         for (CorporateBond bond : bm.getBonds()) close(label + " default preserves complete holders", bond.held(), bond.face());
         double usd = owner.usd(), cars = owner.cars();
-        owner.payForeignCoupon(.02, g.getForeignAccounts().getRate());
-        check(label + " the existing foreign coupon really pays home", owner.foreignCoupon() > 0);
+        EstateCustody.State beforeForeign = owner.toState();
+        check(label + " the native foreign-coupon window is actually closed", !beforeForeign.window);
+        if (beforeForeign.window) throw new IllegalStateException("Foreign coupon fixture has no closed-window premise");
+        double rate = g.getForeignAccounts().getRate(), reserves = g.getForeignAccounts().getReservesUsd();
+        double earnedUsd = HouseholdBalance.foreignCouponUsd(usd, .02), earnedLocal = earnedUsd * rate;
+        double foreignCash = g.getCash(), foreignPools = poolTotal(g);
+        check(label + " the native foreign earning rule has positive USD and local receipts", earnedUsd > 0 && earnedLocal > 0);
+        owner.payForeignCoupon(.02, rate);
+        EstateCustody.State afterForeign = owner.toState();
+        close(label + " the native USD earning really arrives in treasury cash", g.getCash() - foreignCash, earnedLocal);
+        close(label + " the real foreign receipt is the only pooled cash edge", poolTotal(g) - foreignPools, earnedLocal);
+        close(label + " the foreign income edge is saved pending once", afterForeign.pending[foreignSlot] - beforeForeign.pending[foreignSlot], earnedLocal);
+        close(label + " the pending foreign counterpart is the native earned USD", (afterForeign.pending[foreignSlot] - beforeForeign.pending[foreignSlot]) / rate, earnedUsd);
+        for (int slot = 0; slot < EstateCustody.FLOW_SLOTS; slot++) if (slot != foreignSlot)
+            close(label + " foreign receipt preserves unrelated pending slot " + slot, afterForeign.pending[slot], beforeForeign.pending[slot]);
+        check(label + " foreign receipt keeps the native window closed", !afterForeign.window);
+        check(label + " closed-window foreign receipt leaves current disclosures unchanged", Arrays.equals(afterForeign.flows, beforeForeign.flows));
+        close(label + " the public foreign receipt still names the current window", owner.foreignCoupon(), beforeForeign.flows[foreignSlot]);
+        close(label + " paid-home foreign interest does not convert reserve units", g.getForeignAccounts().getReservesUsd(), reserves);
         close(label + " earning does not mark USD principal to local cash", owner.usd(), usd);
+        out.println("Observed: " + label + " foreign closed=" + !beforeForeign.window + ", foreign current/pending "
+                + beforeForeign.flows[foreignSlot] + "/" + beforeForeign.pending[foreignSlot] + " -> "
+                + afterForeign.flows[foreignSlot] + "/" + afterForeign.pending[foreignSlot] + ", earned USD " + earnedUsd
+                + ", FX " + rate + ", treasury delta " + (g.getCash() - foreignCash) + ", USD principal " + owner.usd());
+        String ledgerBeforePromotion = custodyJson.toJson(owner.getLedger());
+        double cashBeforePromotion = g.getCash(), poolsBeforePromotion = poolTotal(g);
+        owner.beginMonth(); EstateCustody.State promoted = owner.toState();
+        check(label + " native beginMonth promotes the actual pending window", promoted.window && Arrays.equals(promoted.flows, afterForeign.pending));
+        check(label + " native beginMonth clears every pending slot", Arrays.equals(promoted.pending, new double[EstateCustody.FLOW_SLOTS]));
+        check(label + " default records a noncash asset loss", owner.assetLoss() > 0);
+        close(label + " the public loss exposes the exact pending loss", owner.assetLoss(), afterForeign.pending[lossSlot]);
+        check(label + " the existing foreign coupon really pays home", owner.foreignCoupon() > 0);
+        close(label + " the public foreign edge exposes the exact pending receipt", owner.foreignCoupon(), afterForeign.pending[foreignSlot]);
+        close(label + " promoting saved disclosures transfers no cash twice", g.getCash(), cashBeforePromotion);
+        close(label + " promoting saved disclosures changes no pooled cash", poolTotal(g), poolsBeforePromotion);
+        close(label + " promoting disclosures changes no USD principal", owner.usd(), usd);
+        close(label + " promoting disclosures changes no bond position", owner.bondFace(2), 35);
+        check(label + " promoting disclosures realizes no second ledger loss", ledgerBeforePromotion.equals(custodyJson.toJson(owner.getLedger())));
+        String promotedOnce = custodyJson.toJson(promoted); owner.beginMonth();
+        check(label + " a repeated native beginMonth cannot replay a disclosure", promotedOnce.equals(custodyJson.toJson(owner.toState())));
+        close(label + " a repeated native beginMonth cannot replay cash", g.getCash(), cashBeforePromotion);
         check(label + " actual currency reform succeeds", g.reformCurrencyForTest(100));
         close(label + " currency reform preserves USD units", owner.usd(), usd);
         close(label + " currency reform preserves physical cars", owner.cars(), cars);
         g.getEquity().cancelHeld(0);
         close(label + " resolved old common leaves no custody replacement shares", owner.shares(0), 0);
         check(label + " the issuer has no custody residual after extinction", g.getEquity().getCustodyShares(0) == 0);
+    }
+
+    /** Read the owner's native slot names without copying its private index layout. */
+    static int custodySlot(String name) throws ReflectiveOperationException {
+        java.lang.reflect.Field slot = EstateCustody.class.getDeclaredField(name); slot.setAccessible(true); return slot.getInt(null);
     }
 
     static void payRecordedCoupons(BondMarket market) throws Exception {

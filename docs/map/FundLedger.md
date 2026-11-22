@@ -58,7 +58,7 @@
 
 **Uses:** [CorporateBond](CorporateBond.md) (8), [Equity](Equity.md) (4), [TreasuryFund](TreasuryFund.md) (3), [OrderBook](OrderBook.md) (1), [Game](Game.md) (1), [Exchange](Exchange.md) (1)
 
-**Used by (15):** [BondMarket](BondMarket.md), [EstateCustody](EstateCustody.md), [Exchange](Exchange.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
+**Used by (16):** [BondMarket](BondMarket.md), [CapitalGainsCheck](CapitalGainsCheck.md), [EstateCustody](EstateCustody.md), [Exchange](Exchange.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
 
 ## Sections
 
