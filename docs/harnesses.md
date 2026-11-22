@@ -10397,128 +10397,128 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1047 tied names: the bid rests on the deepest
   - L1055 earnings moved by one ulp do not move where the money goes
 - **L1058 6. cell to cell**
-  - L1081 fixture: the rich cell's bid rests on the book; the short cell has nothing to bid with
-  - L1083 fixture: ...at the market, fair value
-  - L1092 the short cell sold into the rich cell's bid
-  - L1093 ...the rich cell holds what it sold
-  - L1094 ...at the rich cell's resting price, the last trade
-  - L1095 ...sized at its own ask, the price its borrowing rate puts on the dividend
-  - L1097 ...the cash between them the transfer counted
-  - L1098 ...the short cell raising what it was short
-  - L1099 ...and borrowing nothing
-  - L1100 no pool line moved: nothing sold to or bought from the households by anybody else
-  - L1103 the register still agrees with the cells
-- **L1105 6b. the cells rebalance by the bond rule (round 3)**
-  - L1118 fixture: the cell under its cushion holds more than its shortfall in shares
-  - L1124 the cell under its cushion offers HOME_SPEED of the shortfall, at the market
-  - L1126 ...the cell past its cushion takes all of it
-  - L1127 ...cell to cell, the transfer counted
-  - L1128 ...at the market: the price is where it was
-  - L1129 ...the seller's savings up by what it was paid
-  - L1130 ...and the buyer bids for the rest of OUT_SPEED of its excess
-  - L1133 no pool line moved
-- **L1136 7. the buyback, and the money that stays**
-  - L1142 fixture: the company is in a normal year
-  - L1157 it retires a month of the pace, in shares, at the desk's ask
-  - L1159 ...paid from its till
-  - L1160 ...to the desk, which was asking
-  - L1161 ...into the bank's cash
-  - L1162 ...and the shares are gone
-  - L1163 ...and nothing of its bid is left to rest: it spent the month's money
-  - L1174 fixture: six months of its costs with the payments are more than its till, without them far less
-  - L1178 a company whose loan payments take its cushion past its till buys nothing back
-  - L1180 ...bids for nothing either
-  - L1181 ...and its till is untouched
-  - L1200 fixture: the only ask rests past fair value plus the tolerance
-  - L1204 so the money stays in the till
-  - L1205 ...and the bid rests at its limit, fair value plus the tolerance
-  - L1207 ...for what the month's money buys there
-  - L1209 ...no holder is paid a dividend for it
-  - L1210 ...not one share retired
-  - L1229 the waterfall credits its actual tax receiver by name
-  - L1238 fixture: nobody offers the company's shares at all
-  - L1240 with nobody offering its shares, the money stays in the till
-  - L1241 ...and the bid rests at its limit
-  - L1242 ...for what the month's money buys there
-  - L1244 ...not one share retired yet
-  - L1247 fixture: the requested net cash exceeds the entire resting gross bid
-  - L1248 fixture: the seller holds enough shares to exhaust the resting bid
-  - L1249 the waiting bid has not yet generated any tax receipt
-  - L1252 fixture: a household short of money sells in the waterfall and the bid meets it
-  - L1253 the filled waterfall really withholds positive capital-gains tax
-  - L1254 the single resting bid assesses and transfers its tax once
-  - L1255 the actual named receipt matches the native tax cash flow
-  - L1256 net seller cash plus the actual tax receipt exhausts the gross bid
-  - L1257 a household short of money sells into the resting bid, at the bid's price
-  - L1259 ...paid from the company's till
-  - L1260 ...the shares retired
-  - L1261 ...counted as a buyback from the households
-  - L1262 ...and the rest of the bid still rests
-  - L1272 a company in a bad year buys nothing back
-  - L1273 ...and bids for nothing
-  - L1282 a company at its target buys nothing back
-- **L1284 7b. the fund past its cap (RB1)**
-  - L1309 fixture: the fund holds 15% of the company, over the limit, so it has an excess to offer
-  - L1314 fixture: the buyback fired, and its money buys at least what the fund asks, at fair value
-  - L1316 the fund sold the tenth of its excess over the limit that month, in shares
-  - L1318 ...at fair value: what it was paid
-  - L1319 ...ahead of the desk's ask: the desk was paid for the rest of the buyback's money alone
-  - L1321 ...the desk's ask still rests above fair value, by half a spread
-  - L1322 ...and the fund's share of the company is lower than the 15% it started at
-  - L1347 fixture: the fund starts at exactly the limit
-  - L1368 fixture: the buyback fired in every month of the run
-  - L1369 fixture: a month's buyback retires less than the tenth the fund offers, or there is no fixed point
-  - L1371 the buybacks lifted the fund's share past the limit
-  - L1372 ...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue
-- **L1376 8. the split**
-  - L1392 a share past the wage dial splits by the derived power of ten
-  - L1393 ...the register's count by the factor
-  - L1394 ...every household's count by the factor
-  - L1395 ...the last trade by its inverse: the price
-  - L1396 ...fair value with it
-  - L1397 ...and what the households hold is worth what it was
-  - L1398 the desk's resting bid moves too: its price by the inverse
-  - L1399 ...its quantity by the factor: still the ten shares' worth it was
-  - L1400 the split factor remembers it
-  - L1401 ...so the price per FOUNDING share is what it was: the history has no cliff
-  - L1413 a share below the wage dial consolidates by the derived power of ten
-  - L1414 ...the register shrinks by that factor
-  - L1415 ...the price rises by its inverse
-  - L1416 ...the households still agreeing with the register
-- **L1421 9. the save**
-  - L1427 it restores
-  - L1428 ...the last trade, so the price
-  - L1429 ...fair value
-  - L1430 ...the desk's resting ask
-  - L1432 ...and its bid
-  - L1436 ...and the split factor
-  - L1437 ...closed until the bank says otherwise
-  - L1439 ...open once a bank with capital is put back
-  - L1441 ...and not for a bank without
-  - L1448 the dealer's save, four a company, still restores
-  - L1449 ...its last quote the book's last price, so where the market opens
-  - L1450 ...fair value and the split factor as they were
-  - L1451 ...and the demand it carried is no order
-  - L1454 the exchange's first-night save, three a company, still restores
-  - L1455 ...with one share then being one share now
-  - L1456 an array of the wrong length is refused whole
-- **L1458 10. a live city**
-  - L1536 ...and every month of it is conserved
-  - L1537 MoneyAudit closes in every month with a split
-  - L1538 the dearest and cheapest live quotes stay inside the wage band every month
-  - L1552 ...and the audit closed through every month it did
-  - L1553 ...with the bank carrying the desk at the exchange's mark all along
-  - L1554 ...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands (
-  - L1562 ...the register and the cells agreeing on every company
-  - L1563 ...and the desk never short of anything
-  - L1565 the city saves
-  - L1570 ...and loads
-  - L1592 every quote, last trade and fair value comes back
-  - L1593 ...every book with the orders resting on it
-  - L1594 ...and the desk's inventory
-  - L1595 a save across the played splits keeps the factors and founding-share charts
-  - L1596 ...and the register, fund and households keep the same split holdings
-  - L1597 ...at the same mark
+  - L1082 fixture: the rich cell's bid rests on the book; the short cell has nothing to bid with
+  - L1084 fixture: ...at the market, fair value
+  - L1098 the short cell sold into the rich cell's bid
+  - L1099 ...the rich cell holds what it sold
+  - L1100 ...at the rich cell's resting price, the last trade
+  - L1101 ...sized at its own ask, the price its borrowing rate puts on the dividend
+  - L1103 ...the cash between them the transfer counted
+  - L1104 ...the short cell raising what it was short
+  - L1105 ...and borrowing nothing
+  - L1106 no pool line moved: nothing sold to or bought from the households by anybody else
+  - L1109 the register still agrees with the cells
+- **L1111 6b. the cells rebalance by the bond rule (round 3)**
+  - L1125 fixture: the cell under its cushion holds more than its shortfall in shares
+  - L1131 the cell under its cushion offers HOME_SPEED of the shortfall, at the market
+  - L1133 ...the cell past its cushion takes all of it
+  - L1134 ...cell to cell, the transfer counted
+  - L1135 ...at the market: the price is where it was
+  - L1136 ...the seller's savings up by what it was paid
+  - L1137 ...and the buyer bids for the rest of OUT_SPEED of its excess
+  - L1140 no pool line moved
+- **L1143 7. the buyback, and the money that stays**
+  - L1149 fixture: the company is in a normal year
+  - L1164 it retires a month of the pace, in shares, at the desk's ask
+  - L1166 ...paid from its till
+  - L1167 ...to the desk, which was asking
+  - L1168 ...into the bank's cash
+  - L1169 ...and the shares are gone
+  - L1170 ...and nothing of its bid is left to rest: it spent the month's money
+  - L1181 fixture: six months of its costs with the payments are more than its till, without them far less
+  - L1185 a company whose loan payments take its cushion past its till buys nothing back
+  - L1187 ...bids for nothing either
+  - L1188 ...and its till is untouched
+  - L1207 fixture: the only ask rests past fair value plus the tolerance
+  - L1211 so the money stays in the till
+  - L1212 ...and the bid rests at its limit, fair value plus the tolerance
+  - L1214 ...for what the month's money buys there
+  - L1216 ...no holder is paid a dividend for it
+  - L1217 ...not one share retired
+  - L1236 the waterfall credits its actual tax receiver by name
+  - L1245 fixture: nobody offers the company's shares at all
+  - L1247 with nobody offering its shares, the money stays in the till
+  - L1248 ...and the bid rests at its limit
+  - L1249 ...for what the month's money buys there
+  - L1251 ...not one share retired yet
+  - L1254 fixture: the requested net cash exceeds the entire resting gross bid
+  - L1255 fixture: the seller holds enough shares to exhaust the resting bid
+  - L1256 the waiting bid has not yet generated any tax receipt
+  - L1259 fixture: a household short of money sells in the waterfall and the bid meets it
+  - L1260 the filled waterfall really withholds positive capital-gains tax
+  - L1261 the single resting bid assesses and transfers its tax once
+  - L1262 the actual named receipt matches the native tax cash flow
+  - L1263 net seller cash plus the actual tax receipt exhausts the gross bid
+  - L1264 a household short of money sells into the resting bid, at the bid's price
+  - L1266 ...paid from the company's till
+  - L1267 ...the shares retired
+  - L1268 ...counted as a buyback from the households
+  - L1269 ...and the rest of the bid still rests
+  - L1279 a company in a bad year buys nothing back
+  - L1280 ...and bids for nothing
+  - L1289 a company at its target buys nothing back
+- **L1291 7b. the fund past its cap (RB1)**
+  - L1316 fixture: the fund holds 15% of the company, over the limit, so it has an excess to offer
+  - L1321 fixture: the buyback fired, and its money buys at least what the fund asks, at fair value
+  - L1323 the fund sold the tenth of its excess over the limit that month, in shares
+  - L1325 ...at fair value: what it was paid
+  - L1326 ...ahead of the desk's ask: the desk was paid for the rest of the buyback's money alone
+  - L1328 ...the desk's ask still rests above fair value, by half a spread
+  - L1329 ...and the fund's share of the company is lower than the 15% it started at
+  - L1354 fixture: the fund starts at exactly the limit
+  - L1375 fixture: the buyback fired in every month of the run
+  - L1376 fixture: a month's buyback retires less than the tenth the fund offers, or there is no fixed point
+  - L1378 the buybacks lifted the fund's share past the limit
+  - L1379 ...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue
+- **L1383 8. the split**
+  - L1399 a share past the wage dial splits by the derived power of ten
+  - L1400 ...the register's count by the factor
+  - L1401 ...every household's count by the factor
+  - L1402 ...the last trade by its inverse: the price
+  - L1403 ...fair value with it
+  - L1404 ...and what the households hold is worth what it was
+  - L1405 the desk's resting bid moves too: its price by the inverse
+  - L1406 ...its quantity by the factor: still the ten shares' worth it was
+  - L1407 the split factor remembers it
+  - L1408 ...so the price per FOUNDING share is what it was: the history has no cliff
+  - L1420 a share below the wage dial consolidates by the derived power of ten
+  - L1421 ...the register shrinks by that factor
+  - L1422 ...the price rises by its inverse
+  - L1423 ...the households still agreeing with the register
+- **L1428 9. the save**
+  - L1434 it restores
+  - L1435 ...the last trade, so the price
+  - L1436 ...fair value
+  - L1437 ...the desk's resting ask
+  - L1439 ...and its bid
+  - L1443 ...and the split factor
+  - L1444 ...closed until the bank says otherwise
+  - L1446 ...open once a bank with capital is put back
+  - L1448 ...and not for a bank without
+  - L1455 the dealer's save, four a company, still restores
+  - L1456 ...its last quote the book's last price, so where the market opens
+  - L1457 ...fair value and the split factor as they were
+  - L1458 ...and the demand it carried is no order
+  - L1461 the exchange's first-night save, three a company, still restores
+  - L1462 ...with one share then being one share now
+  - L1463 an array of the wrong length is refused whole
+- **L1465 10. a live city**
+  - L1543 ...and every month of it is conserved
+  - L1544 MoneyAudit closes in every month with a split
+  - L1545 the dearest and cheapest live quotes stay inside the wage band every month
+  - L1559 ...and the audit closed through every month it did
+  - L1560 ...with the bank carrying the desk at the exchange's mark all along
+  - L1561 ...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands (
+  - L1569 ...the register and the cells agreeing on every company
+  - L1570 ...and the desk never short of anything
+  - L1572 the city saves
+  - L1577 ...and loads
+  - L1599 every quote, last trade and fair value comes back
+  - L1600 ...every book with the orders resting on it
+  - L1601 ...and the desk's inventory
+  - L1602 a save across the played splits keeps the factors and founding-share charts
+  - L1603 ...and the register, fund and households keep the same split holdings
+  - L1604 ...at the same mark
 
 ## ExchangeRateCheck.java - 216 labelled assertions
 
