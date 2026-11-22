@@ -3219,6 +3219,8 @@ public class SaveFileCheck {
 
         /* ============ the oldest format this build loads (0.7.108) ============ */
         System.out.println("\n--- and a save older than this build loads, refused cleanly ---");
+        assertTrue("a native format-60 city and its history are refused without changing either file or a running twin",
+                Format60SaveFixture.checks(false));
 
         /*
          * AN OLD SAVE REFUSED CLEANLY (0.7.108, batch P7). Until the game is

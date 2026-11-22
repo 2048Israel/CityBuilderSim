@@ -93,9 +93,11 @@ public final class SubstationCheck {
         UtilitiesHandler.Book book = u.getStruckBook();
         JsonObject costs = costs(book);
         double value = t == null ? 0 : g.getEconomyManager().withBuildersTax(g.getBuildingManager().structureCost(t));
-        double annuity = Substations.REAL_RATE / (1 - Math.pow(1 + Substations.REAL_RATE, -Substations.LIFE_YEARS));
         double payroll = t == null ? 0 : BuildCard.runningCost(g, t) - t.getUpkeep();
-        double capital = value * annuity / 12, repairs = t == null ? 0 : value * t.repairsPerYear() / 12;
+        // Independent worked study figure: $440.004M at 4% over 40 years costs $1,852,544.78305859 a month.
+        // Pin the coefficient rather than repeating production's annuity expression or reading its rate/life dials.
+        double capital = value / (440004 * PriceLevel.FACTOR) * (1852.5447830585897 * PriceLevel.FACTOR);
+        double repairs = t == null ? 0 : value * t.repairsPerYear() / 12;
         double wires = (capital + repairs + payroll) / (book.servedKwh * (1 - PowerDispatch.GRID_LOSSES));
         check("the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh",
                 value > 0 && near(number(costs, "capital"), capital) && near(number(costs, "repairs"), repairs)
@@ -107,6 +109,54 @@ public final class SubstationCheck {
         dispatch(g, CARRY * .9);
         check("changing the substation's cost changes the next bill; the previously struck book keeps its price",
                 u.getStruckBook().commercePrice > before && book.commercePrice == before);
+    }
+
+    static void reform() {
+        OUT.println("--- currency reform preserves the wires' breakdown ---");
+        Game g = city("reform", 1);
+        UtilitiesHandler u = dispatch(g, CARRY * .9);
+        UtilitiesHandler.Book before = u.getStruckBook().copy();
+        var pending = u.toPowerState();
+        u.redenominate(.5);
+        UtilitiesHandler.Book after = u.getStruckBook();
+        var state = u.toPowerState();
+        boolean once = before.transmissionPrice > 0 && before.distributionPrice > 0
+                && near(after.transmissionPrice, before.transmissionPrice * .5)
+                && near(after.distributionPrice, before.distributionPrice * .5)
+                && near(after.commercePrice, before.commercePrice * .5) && near(after.industryPrice, before.industryPrice * .5)
+                && near(after.gridCosts.total(), before.gridCosts.total() * .5)
+                && near(state.pendingGridCosts.total(), pending.pendingGridCosts.total() * .5)
+                && after.servedKwh == before.servedKwh && after.gridCosts.carryKw() == before.gridCosts.carryKw();
+        UtilitiesHandler back = new UtilitiesHandler(); back.restorePowerState(state); back.restorePendingPower();
+        check("currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry",
+                once && near(back.getStruckBook().transmissionPrice, before.transmissionPrice * .5)
+                        && near(back.getStruckBook().distributionPrice, before.distributionPrice * .5));
+    }
+
+    static void workedTariff() {
+        OUT.println("--- independent worked study tariff ---");
+        Game g = city("worked-study", 1);
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate t = bm.getTemplateByName("Substation");
+        g.getEconomyManager().getTaxPolicy().setSalesTaxRate(0);
+        bm.setBuildersWages(null); bm.setExchangeRate(1);
+        // An input fixture at the study's $440.004M: no sales tax, no wage drift, no filled posts.
+        // The ordinary real-city tariff checks above and PowerPriceCheck exercise filled payroll separately.
+        t.setCashCost(264000 * PriceLevel.FACTOR);
+        for (JobType job : JobType.values()) t.setJobs(job, 0);
+        UtilitiesHandler u = dispatch(g, 90_000);
+        UtilitiesHandler.Book b = u.getStruckBook();
+        JsonObject costs = costs(b);
+        check("the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month",
+                near(number(costs, "capital") / PriceLevel.FACTOR, 1852.5447830585897)
+                        && near(number(costs, "repairs") / PriceLevel.FACTOR, 366.67) && number(costs, "payroll") == 0);
+        // 90 MW peak / 1.20 x 720 h x .95 = 51.3M delivered kWh. The independently worked
+        // wires bills are $31.1468741481907 and $9.88748025755129 a kW-month (1.885/5.938 transmission).
+        double commerce = (b.commercePrice - b.energyPrice * 720) / PriceLevel.FACTOR;
+        double industry = (b.industryPrice - b.energyPrice * 720) / PriceLevel.FACTOR;
+        check("51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month",
+                near(b.servedKwh * .95, 51_300_000) && near(commerce, .031146874148190733)
+                        && near(industry, .009887480257551285));
     }
 
     static void order() {
@@ -144,11 +194,11 @@ public final class SubstationCheck {
         quietly(() -> { g.simulateMonths(1); back.simulateMonths(1); });
         UtilitiesHandler x = g.getServicesManager().getUtilitiesHandler(), y = back.getServicesManager().getUtilitiesHandler();
         check("the first post-load strike bills exactly the same grid costs as the uninterrupted city", JSON.toJson(x.getStruckBook()).equals(JSON.toJson(y.getStruckBook())));
-        check("pre-grid-cost saves are refused under the old-saves rule", GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT - 1));
+        check("a native format-60 city and history are refused without changing either file or a running twin", Format60SaveFixture.checks(false));
     }
 
     public static void main(String[] args) throws Exception {
-        carry(); tariff(); order();
+        carry(); tariff(); workedTariff(); order(); reform();
         if (args.length == 0) saved();
         OUT.println("SubstationCheck: " + fails + " failures");
         if (fails > 0) System.exit(1);

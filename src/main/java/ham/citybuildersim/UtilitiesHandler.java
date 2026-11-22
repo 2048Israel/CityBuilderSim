@@ -643,7 +643,6 @@ public class UtilitiesHandler {
         b.transmissionPrice *= scale; b.distributionPrice *= scale;
         if (b.dispatch != null) b.dispatch = b.dispatch.scaled(scale);
         b.energyPrice *= scale; b.commercePrice *= scale; b.industryPrice *= scale; b.worksPrice *= scale;
-        b.transmissionPrice *= scale; b.distributionPrice *= scale;
         for (int s = 0; s < b.price.length; s++) b.price[s] *= scale;
     }
 
