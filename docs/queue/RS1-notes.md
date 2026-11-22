@@ -167,3 +167,22 @@ origin/main, run the owed ensemble once on that final pushed model against
 the newest baseline, record the score and any named main class, then remove
 the provisional marker last in its own commit. The pick is not ALL and no
 publisher code changed, so no dry run is owed.
+
+Money review REV-RS1 of `5eb4e034a` returned SHIP on 2026-11-22. The
+starter's go named main `abc8fd4f5` (R6e, FS9 and queue cleanup), merged as
+`cd01cb63f`. Only docs/harnesses.md and docs/map/README.md conflicted; both
+were regenerated. The reviewed Exchange, TreasuryFund and ExchangeCheck
+sources are byte-identical after the merge. Merged `--fast`, ExchangeCheck
+(and selected DebtExchangeCheck) and FundLedgerCheck are green; logs are
+`target/RS1-merged-fast.txt`, `target/RS1-merged-exchange.txt` and
+`target/RS1-merged-ledger.txt`. The merged pick names 41 of 241, not ALL.
+
+Queue cleanup consolidated FS10H/FS13H/FS17H as HT1-H and FS5H as FS5. The
+older names above describe the historical pre-merge run; any new ship-file
+exception will use a current QUEUE.md row. FS9's harness repairs came from
+main. No RS1 ship-file known-reds row is presently needed.
+
+The final ensemble uses docs/ensemble/0.9.184.md as explicitly ordered by
+the starter. Its only JVM options were the two data paths, so JAVA_OPTS is
+empty and JDK_JAVA_OPTIONS is unset for box dispatch. Gate-box preflight
+reported zero heavy jobs. The pushed snapshot and result are recorded below.
