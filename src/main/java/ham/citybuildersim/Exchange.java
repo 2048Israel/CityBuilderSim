@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * The stock exchange: one order book per company, where every share that
- * changes hands meets its buyer, and the price is the quote: the middle of the book (EM2).
+ * changes hands meets its buyer, and the price is the quote: the middle of an uncrossed book (EM2, RS1).
  *
  * ==================== WHY ====================
  *
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * One OrderBook per company: price-time priority, a trade at the resting
  * order's price, nobody obliged to trade, no trade with oneself. A
- * company's PRICE is its quote since EM2 - the middle of the book, or the
+ * company's PRICE is its quote since EM2 - the middle of an uncrossed book, or the
  * last trade held inside the side that stands (price()) - and its fair value - the register's
  * reckoning, Equity.fairValue(): book, or the dividend it actually pays
  * capitalised at what the world asks, whichever is more - is beside it,
@@ -64,6 +64,10 @@ import java.util.List;
  *     (Bank.buybackRoom(), "buybacks only from spare capital") and asks new
  *     ones only while under it (Bank.issuesOwnShares()), each at the buyback
  *     pace; bought, they are cancelled, and sold, issued.
+ *   - THE HAND'S SHARE SALES (RS1) post after the desk and the fund's
+ *     over-limit asks, before the world and households decide. Their buyers
+ *     pay the resting ask, including for rescue shares; those shares transfer
+ *     to the buyer. A hand sale pauses the rule's buying of that company.
  *   - EMIGRANTS sell on the way out: what the households' pool released and
  *     nobody claimed this month (HouseholdBalance.getSharesTakenAway()),
  *     asked at the price the dealer's bid at fair value used to pay them.
@@ -100,7 +104,7 @@ import java.util.List;
  *     between the desk's bid and fair value, posted after the desk and
  *     before the emigrants, the world and the companies:
  *     postFundOverLimit(), RB1, RB3); then
- *     the player's hand, at fair
+ *     the player's buys (its sales posted early, RS1), at fair
  *     value or the price it names and no further than the limit, every buy
  *     of the fund's on the company counted as filled and the rule's making
  *     way for the hand's (0.7.39, fundRoom()), under FUND_HAND. It never
@@ -558,7 +562,9 @@ public class Exchange {
 
     /**
      * A SHARE'S PRICE IS ITS QUOTE (EM2, 2026-10-30): the middle of its book
-     * while a bid and an ask both rest; with one side empty, the last trade -
+     * while an uncrossed bid and ask both rest; a crossed book uses the last
+     * trade, or fair value before its first (RS1), since no midpoint clears;
+     * with one side empty, the last trade -
      * never over the ask that stands, nor under the bid; with neither, the
      * last trade; and fair value before the first trade, held the same way
      * inside a side that stands.
@@ -581,9 +587,10 @@ public class Exchange {
     public double price(int c) {
         double bid = books[c].bestBid(), ask = books[c].bestAsk();
         boolean hasBid = bid > 0, hasAsk = ask > 0;
-        if (hasBid && hasAsk) return (bid + ask) / 2;
         double last = books[c].lastPrice();
         double base = last > 0 ? last : fair[c];
+        // A self-trade restriction can leave crossing orders: their midpoint is no market (RS1).
+        if (hasBid && hasAsk) return bid > ask ? base : (bid + ask) / 2;
         if (hasAsk) return Math.min(base, ask);
         if (hasBid) return Math.max(base, bid);
         return base;
@@ -594,21 +601,23 @@ public class Exchange {
         if (!hasTraded(c)) return false;
         double bid = books[c].bestBid(), ask = books[c].bestAsk(), last = books[c].lastPrice();
         boolean hasBid = bid > 0, hasAsk = ask > 0;
-        if (hasBid && hasAsk) return false;
+        if (hasBid && hasAsk) return bid > ask;
         if (hasAsk) return last <= ask;
         if (hasBid) return last >= bid;
         return true;
     }
 
     /**
-     * What a share's price is made of now, in words, for the caption beside it (EM2): "the middle of the bid and the ask" while both rest;
+     * What a share's price is made of now, in words, for the caption beside it (EM2): "the middle of the bid and the ask" while both rest uncrossed;
+     * a crossed book says so and uses the last trade or fair value (RS1);
      * with one side standing the last trade "held inside the ask" or "held over the bid"; with neither "the last trade"; and fair value,
      * the same way, before the first trade. The screens put "the quote: " in front of it; the rule is price()'s.
      */
     public String quoteWords(int c) {
         boolean hasBid = books[c].bestBid() > 0, hasAsk = books[c].bestAsk() > 0;
         String base = books[c].lastPrice() > 0 ? "the last trade" : "fair value";
-        if (hasBid && hasAsk) return "the middle of the bid and the ask";
+        if (hasBid && hasAsk) return books[c].bestBid() > books[c].bestAsk()
+                ? base + ": the book is crossed" : "the middle of the bid and the ask";
         if (hasAsk) return base + ", held inside the ask";
         if (hasBid) return base + ", held over the bid";
         return books[c].lastPrice() > 0 ? base : base + ": nothing has traded";
@@ -788,8 +797,8 @@ public class Exchange {
 
     /**
      * ...with what the city's fund's bonds are worth this month (0.7.14), for
-     * its mix: its orders are posted last, after the households', by its rule
-     * and then its hand (postFund()); and what the city's paper the
+     * its mix: the rule and then the hand's buys post last, after households
+     * (postFund()); hand sales post early (RS1). Also what the city's paper the
      * households hold yields, annual (EM1), one of the alternatives a share's
      * expected return is read against.
      */
@@ -842,6 +851,7 @@ public class Exchange {
         /* ---- and the orders, in the order they rest ---- */
         if (deskOpen) postDesk();
         postFundOverLimit();
+        postFundHandSales();
         postEmigrants();
         postWorld(worldRate);
         postCompanies();
@@ -996,7 +1006,11 @@ public class Exchange {
         if (c == Equity.BANK) {
             if (!ownSharesTrade(register) || !dealer.buysBackOwnShares()) return 0;
             double pace = Math.max(0, BUYBACK_PACE / 12 * register.getShares(c) - ownBoughtThisMonth);
-            return Math.min(pace, dealer.buybackRoom(markToMarket(register)) / price);
+            double room = dealer.buybackRoom(markToMarket(register));
+            // Own-share buybacks also subtract capital requirements from equity: no dust print at target (RS1).
+            double size = Math.max(Math.abs(dealer.equity()), Math.abs(dealer.targetEquity()));
+            if (room <= MoneyAudit.tolerance(0, size)) return 0;
+            return Math.min(pace, room / price);
         }
         double[] limits = deskLimits(register, c, price);
         double most = limits[0];
@@ -1017,10 +1031,16 @@ public class Exchange {
         double equity = Math.max(0, dealer.equity());
         double f = fair[c];
         double carry = dealer.deskCanCarry(markToMarket(register), price, Math.min(price, f));
-        double position = f > 0 ? POSITION_LIMIT * equity / f - Math.max(0, register.getDealerShares(c)) : 0;
-        double book = f > 0 ? (BOOK_LIMIT * equity - bookAtFair(register)) / f : 0;
+        double position = f > 0 ? resolvedRoom(POSITION_LIMIT * equity, Math.max(0, register.getDealerShares(c)) * f) / f : 0;
+        double book = f > 0 ? resolvedRoom(BOOK_LIMIT * equity, bookAtFair(register)) / f : 0;
         double notMine = Math.max(0, register.getShares(c) - Math.max(0, register.getDealerShares(c)));
         return new double[] { carry, position, book, notMine };
+    }
+
+    /** Cap less holding, in money: a residue below the sums' resolution buys nothing (RS1, DK1). */
+    private static double resolvedRoom(double cap, double held) {
+        double room = cap - held;
+        return room > 0 && room <= MoneyAudit.tolerance(0, Math.max(Math.abs(cap), Math.abs(held))) ? 0 : room;
     }
 
     /** What the desk holds of every other company, at fair value: what BOOK_LIMIT reads. */
@@ -1796,7 +1816,7 @@ public class Exchange {
                     if (register.getShares(c) > 0 && fair[c] > minFair) caps += marketCap(register, c);
                 }
                 for (int c = 0; c < n; c++) {
-                    if (!(caps > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+                    if (!(caps > 0) || register.getShares(c) <= 0 || fair[c] <= minFair || fundHandSelling(c)) continue;
                     double want = target * marketCap(register, c) / caps;
                     double mine = register.getCityMarketShares(c);
                     // The room under the cap, less the hand's buys waiting for this step (0.7.39): none, the default.
@@ -1807,35 +1827,52 @@ public class Exchange {
                 }
             }
         }
-        for (TreasuryFund.HandOrder o : fund.takeHandOrders(false)) {
-            int c = o.company();
-            String key = c >= 0 && c < n ? FundLedger.shareKey(Equity.COMPANIES[c]) : null;
-            if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) {
-                fund.noteDropped(o, key, 0, o.limit(), c >= 0 && c < n && register.getShares(c) > 0
-                        ? "the company was worth nothing" : "the company was not listed", month);
-                continue;
+        for (TreasuryFund.HandOrder o : fund.takeHandOrders(false)) postFundHand(o);
+    }
+
+    /** The hand's asks must be visible when the world and households decide, before they are withdrawn next month (RS1). */
+    private void postFundHandSales() {
+        if (fund == null || register == null) return;
+        for (TreasuryFund.HandOrder o : fund.takeShareSales()) postFundHand(o);
+    }
+
+    /** A hand sale pauses the rule's buying of that company for this step, even if the sale has filled (RS1). */
+    private boolean fundHandSelling(int c) {
+        for (TreasuryFund.HandOrder o : fund.getPosted()) {
+            if (!o.bond() && !o.buy() && o.company() == c) return true;
+        }
+        return false;
+    }
+
+    /** Posts one hand order with its existing price, holding, cap and ledger rules. */
+    private void postFundHand(TreasuryFund.HandOrder o) {
+        int c = o.company();
+        String key = c >= 0 && c < n ? FundLedger.shareKey(Equity.COMPANIES[c]) : null;
+        if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) {
+            fund.noteDropped(o, key, 0, o.limit(), c >= 0 && c < n && register.getShares(c) > 0
+                    ? "the company was worth nothing" : "the company was not listed", month);
+            return;
+        }
+        double price = o.limit() > 0 ? o.limit() : fair[c];
+        if (o.buy()) {
+            double q = o.amount() / price;
+            // The share orders are out of the queue by now: the room is what the market book and the hand's bids leave.
+            double room = fundRoom(register, fund, c);
+            if (!(Math.min(q, room) > OrderBook.DUST)) {
+                fund.noteDropped(o, key, q, price, "no room under the " + Math.round(TreasuryFund.OWNERSHIP_LIMIT * 100)
+                        + "% cap", month);
+                return;
             }
-            double price = o.limit() > 0 ? o.limit() : fair[c];
-            if (o.buy()) {
-                double q = o.amount() / price;
-                // The share orders are out of the queue by now: the room is what the market book and the hand's bids leave.
-                double room = fundRoom(register, fund, c);
-                if (!(Math.min(q, room) > OrderBook.DUST)) {
-                    fund.noteDropped(o, key, q, price, "no room under the " + Math.round(TreasuryFund.OWNERSHIP_LIMIT * 100)
-                            + "% cap", month);
-                    continue;
-                }
-                fund.notePosted(o, key, Math.min(q, room), price, month);
-                submit(c, FUND_HAND, OrderBook.Side.BUY, price, Math.min(q, room));
-            } else {
-                double q = Math.min(o.amount(), register.getCityShares(c));
-                if (!(q > OrderBook.DUST)) {
-                    fund.noteDropped(o, key, o.amount(), price, "nothing held to sell", month);
-                    continue;
-                }
-                fund.notePosted(o, key, q, price, month);
-                submit(c, FUND_HAND, OrderBook.Side.SELL, price, q);
+            fund.notePosted(o, key, Math.min(q, room), price, month);
+            submit(c, FUND_HAND, OrderBook.Side.BUY, price, Math.min(q, room));
+        } else {
+            double q = Math.min(o.amount(), register.getCityShares(c));
+            if (!(q > OrderBook.DUST)) {
+                fund.noteDropped(o, key, o.amount(), price, "nothing held to sell", month);
+                return;
             }
+            fund.notePosted(o, key, q, price, month);
+            submit(c, FUND_HAND, OrderBook.Side.SELL, price, q);
         }
     }
 

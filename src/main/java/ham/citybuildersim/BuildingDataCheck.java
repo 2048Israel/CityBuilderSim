@@ -87,6 +87,13 @@ public class BuildingDataCheck {
                 continue;
             }
 
+            if (actual.getCategory() == BuildingType.RESIDENTIAL) {
+                HousingRecipe housing = actual.getHousingRecipe();
+                assertTrue(actual.getName() + " immutable housing mix matches physical data",
+                        housing.doors() == actual.getDwellings() && housing.capacity() == actual.getCapacity());
+                assertTrue(actual.getName() + " housing metadata matches built-in fallback",
+                        housing.equals(expected.getHousingRecipe()));
+            }
             String who = expected.getName();
 
             boolean ok = actual.getName().equals(expected.getName())

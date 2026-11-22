@@ -77,6 +77,13 @@ public class ReadPathCheck {
      * move the price and nothing in the shared snapshot.
      */
     static void bankPrint(Game g, Map<String, Double> into) {
+        var housing = g.getBuildingManager().getHousingInventory();
+        into.put("housing.cohorts", (double) housing.forSave().size());
+        for (var row : housing.forSave()) {
+            String key = "housing." + row.recipe + "." + row.dwelling + "." + row.owner;
+            into.put(key + ".owned", row.owned); into.put(key + ".occupied", row.occupied);
+            into.put(key + ".listedVacant", row.listedVacant); into.put(key + ".listedOccupied", row.listedOccupied);
+        }
         Bank b = g.getBank();
         into.put("bank.cash", b.getCash());
         into.put("bank.depositRate", b.depositRate());
@@ -285,6 +292,13 @@ public class ReadPathCheck {
         for (PayTier tier : PayTier.values()) DebtStatistics.of(g.getHouseholdBalance(), tier, null);
         for (DebtStatistics.Stage stage : DebtStatistics.Stage.values()) DebtStatistics.of(g.getHouseholdBalance(), null, stage);
         g.getHistorySave().getDebtSurveys();
+        var housing = g.getBuildingManager().getHousingInventory();
+        housing.homes(); housing.pipelineHomes(); housing.capacity(); housing.foundingCapacity(); housing.homesBySize();
+        for (var row : housing.stock()) for (var owner : HousingInventory.Owner.values()) {
+            housing.owned(row.key(), owner); housing.occupied(row.key(), owner); housing.vacant(row.key(), owner);
+            housing.listed(row.key(), owner, false); housing.listed(row.key(), owner, true);
+            housing.allocate(row.key(), owner, 0, 100, 100, 100);
+        }
 
         EconomyManager e = g.getEconomyManager();
         ham.citybuildersim.sectors.Retail c = g.getSectors().retail();
@@ -1610,7 +1624,7 @@ public class ReadPathCheck {
         assertTrue("reading the public works' licence and its planners keeps the money still", PublicLicenceCheck.readChecks());
         assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
         assertTrue("R6e current E21 loads keep physical choices through real reads; formats58/59 are refused without changing a running city", ModernEngineeringCheck.readChecks());
-        assertTrue("REV-HC1 P4: native format60 refusal leaves a running loaded twin, its history and both file byte streams intact", SaveFileCheck.nativeCard60Refusal());
+        assertTrue("REV-HC1 P4: native format60 refusal leaves a running loaded twin, its history and both file byte streams intact", SaveFileCheck.nativeCard60Refusal(true));
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
         assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 

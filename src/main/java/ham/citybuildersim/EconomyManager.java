@@ -639,7 +639,7 @@ public class EconomyManager {
         }
         re.setHousingCosts(bestStructure, bestLand);
         re.setSegmentHousingCosts(bestStudio, bestFamily);
-        re.setOwnedHousingCapacity(buildingManager.getCapacityInPortfolioBySector(re.key()));
+        re.setOwnedHousingCapacity(buildingManager.getHousingInventory().ownedCapacity(HousingInventory.Owner.REAL_ESTATE, true));
     }
 
     /* ===================================================================

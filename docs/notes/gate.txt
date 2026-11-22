@@ -1,8 +1,8 @@
-# gate of Merge batch/HS3: the household money page by stage: the retired by former tier, the owner families, estates and the investment taxes in the month's lines (after KP7, BO1, HS1, HS2 and HT1), 0.9.187
+# gate of Merge batch/RES2: aggregate housing inventory before RES3/RES4/HO1: physical dwelling mixes, ownership/occupancy authority, non-saleable founding capacity and reload invariants, 0.9.189
 # date: 2026-11-22
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 228 harnesses run in 1151s: 217 passed, 11 failed
+# suite: 237 harnesses run in 827s: 225 passed, 12 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -20,17 +20,6 @@ CentralBankCheck | 2 FAILED
 FundCheck | exit 1
 FundCheck | a limit posts at its limit                                                                       FAIL
 FundCheck | 1 FAILED
-DenominationCheck | exit 1
-DenominationCheck | the same people live there, to the person                      FAIL
-DenominationCheck | the same output                                                FAIL  66.4706256575 != 72.5040434719  (0.0832 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  778.7084916052 != 836.4362375551  (0.0690 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0006929928 != 0.0007030209  (0.0143 apart)
-DenominationCheck | the same price level                                           FAIL  15.8054269667 != 16.0346889349  (0.0143 apart)
-DenominationCheck | the same currency                                              FAIL  0.0765603858 != 0.0783526617  (0.0229 apart)
-DenominationCheck | the same treasury                                              FAIL  1,982.6711188837 != 2,142.7196798421  (0.0747 apart)
-DenominationCheck | the same shops' till                                           FAIL  0.1039799572 != 0.0000000000  (1.04e+11 apart)
-DenominationCheck | the same bank                                                  FAIL  945.7897508795 != 1,094.5197031491  (0.136 apart)
-DenominationCheck | 9 FAILED
 ReloadCheck | exit 1
 ReloadCheck | fixture 3b, by hand: the caused point's own city exercised it                                                    FAIL  0 crews that drew materials
 ReloadCheck | 1 FAILED
@@ -42,6 +31,12 @@ KeptCheck | Construction, Cash & debt as a statement: the redraw and the next eq
 KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 45 of 401; 11 of 25 months made none) FAIL
 KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
 KeptCheck | 3 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 1.6 minutes; its output: /tmp/citybuildersim-tmp/1773002/copperrefiningcheck-rodmills5812707374451881386/seed1.log
+CopperRefiningCheck | 2 FAILED
+LongPlaytest | exit 1
+LongPlaytest | FAIL industry stands farther out than the homes         1 time(s), months 2400-2400
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.2, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.153980 != 378.187926
@@ -52,6 +47,3 @@ PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desal
 PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12882.1 with 12882.1 without 2139.0296982550963 gain -12.147956635350319
 PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -26.93446406507404 pending 0.0 then gain -12.147956635350319 pending 0.0
 PublicLicenceCheck | 64 passed, 4 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED

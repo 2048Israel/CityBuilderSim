@@ -23,3 +23,10 @@ and old cell-wide lockout slot, without HC1's holder, late and exclusion
 positions. The history has no HC2 surveys. `SaveFileCheck.nativeCard60Refusal`
 checks the layout, provenance hashes, refusal, unchanged save/history bytes,
 and an unchanged running city's complete saved state and history.
+
+RES2 reuses this exact pair and producer, including the absence of its new
+housing inventory state. The shared refusal check also exercises
+SaveFileCheck.refusedAtTheFloor on a fresh game and, from ReadPathCheck,
+repeated reads after refusal into a running loaded twin. It preserves both
+file streams, all saved state and history, and manager identities. Keep one
+copy of this pair when integrating HC1 and RES2.
