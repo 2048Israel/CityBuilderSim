@@ -35,6 +35,10 @@ the native flow can also pass investments in kind.
 The new sections and rows use Kept scopes keyed by stage, shape or line label;
 the young and established have distinct cell keys. No threading change.
 
+★ The five disclosures remain visible in quiet months too, showing zero from
+their getters. A zero tax is useful information (the default dividend
+integration can produce it), and a quiet estate month keeps the same rows.
+
 ## Checks
 
 Initial `./batch-check.sh --fast`: green, Stale 0 firm findings.
@@ -56,6 +60,8 @@ the estate lines; actual order-book purchases/sales cause a gain and native
 dividends cause dividend tax. Each displayed amount is compared with its
 public model getter. It also checks both stage ledgers, words, kept/fresh
 parity, retained nodes and the scroller across a real page redraw.
+The final fixture uses its Game's own exchange, equity register, bank and
+constructor-wired treasury receipts, so its asset and tax reads share one city.
 
 For an eye check: People › Household money, open one young and one established
 cell of the same shape/tier; the caption and the wealth must follow the stage.

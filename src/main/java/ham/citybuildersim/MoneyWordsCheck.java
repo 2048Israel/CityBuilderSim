@@ -369,9 +369,9 @@ public class MoneyWordsCheck {
                 && bal.getEstatePassed() > 0 && bal.getEstateRepaid() > 0 && bal.getEstateWrittenOff() > 0);
 
         // Use the same real book/fill path as CapitalGainsCheck, with this city's balance.
-        Equity equity = ExchangeCheck.equity();
-        Exchange exchange = ExchangeCheck.exchange();
-        Bank bank = ExchangeCheck.bankWith(0);
+        Equity equity = g.getEquity();
+        Exchange exchange = g.getExchange();
+        Bank bank = g.getBank();
         equity.listIfUnlisted(0, 10_000, bal);
         ExchangeCheck.addPaid(equity, 0, 100, 10);
         ExchangeCheck.Firms firms = new ExchangeCheck.Firms();
@@ -387,8 +387,6 @@ public class MoneyWordsCheck {
         holder.savings = 20_000;
         TaxPolicy policy = g.getEconomyManager().getTaxPolicy();
         policy.setWageTaxRate(.30);
-        bal.setInvestmentTaxes(policy, exchange::price, (line, amount) -> { });
-        bal.attachInvestmentRegister(equity, exchange::shortShares);
         String cell = Exchange.CELL + holder.key();
         exchange.bookOf(0).withdrawAll();
         exchange.tradeForCheck(0, Exchange.WORLD, OrderBook.Side.SELL, 2, 100);
