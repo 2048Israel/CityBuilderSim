@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### RES1 — Real Estate study and HO1 implementation contract — 2026-11-22, ready, see docs/queue/RES1-notes.md
 Finalized the aggregate housing design and HO1 contract after Jerus's review:
