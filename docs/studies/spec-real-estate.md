@@ -1,6 +1,6 @@
 # Real Estate: buildings, dwellings and the households choosing them
 
-RES1, opened 2026-11-20; finalized for implementation on 2026-11-21.
+RES1, opened 2026-11-20; finalized for implementation on 2026-11-22.
 **Design finalized for implementation. Jerus's general study-review hold is
 released; HO1 follows the shipped housing foundations and its existing credit/
 household prerequisites.** Section 14 records the closure, selected defaults,
@@ -1628,7 +1628,8 @@ def money(x):return f'{x:,.0f}'
 def mix_str(z):return ' + '.join(f'{n} {k}' for k,n in z['mix'].items())
 out=[]
 out += ['# Complete numerical catalogue proposal','',
- '**Status: numerical design draft for review; not calibrated game outcomes.**',
+ '**Closure status: initial implementation catalogue selected under section 14;
+actual game calibration is RES3/RES4/HO1 acceptance work.**',
  'All prices below are present-day benchmark model dollars. Land is $50/sq ft; material is $18,000/unit; ordinary demand pressure is 1. No inflation, finance, scarcity or rebate is added to the reference rents.', '',
  'C01-C14 are comparison labels, not permanent game building IDs or batch IDs. Existing catalogue IDs remain unchanged.', '',
  'The existing templates anchor the cost calculation. New area, height, layout, quality, parking, staff and work budgets are proposals. A cost-derived reference quote is not an observed rent or a promised transaction price.','']
@@ -1717,6 +1718,8 @@ availability still require calibration. No model/UI implementation is implied by
 closure authorizes the design handoff and docs publication; model gates remain.
 
 ## 13. Monthly compute measurements
+
+**Closure follow-up (2026-11-22): the fuller 180-by-32 underwriting workload measured 4.046 ms/month, or 4.731 ms with 46,080 loan rows. The 0.864 ms case below is the simpler original kernel. See section 14 and the validation appendix for the added disjoint funding-region allocation and reconciled title/fee inputs.**
 
 Measured 2026-11-21 on this laptop: Intel Core i7-13650HX, 14 cores / 20 logical processors, Java 21.0.4, maximum heap 1536 MiB. This is a study-only Java prototype and a separate unmodified-game baseline using this study's existing compiled model snapshot (source base `a9bfcd070`). Full integration remains unimplemented. Times are elapsed milliseconds per simulated month; CPU demand is primarily on the calling thread.
 
@@ -2242,7 +2245,7 @@ published handoff briefs and explicit owners for every remaining engineering gat
 
 ### Decisive new design proofs
 
-34 caused arithmetic/flow fixtures pass in the companion
+36 caused arithmetic/flow fixtures pass in the companion
 [validation appendix](spec-real-estate-validation.md), including class-level
 credit/fee inputs for all 32 offers. This is executable design evidence, separate
 from model integration tests.
@@ -2262,6 +2265,14 @@ refusal despite half-fee credit pass; funded versus unfunded voluntary short sal
 and recognized insurance losses; tenant retention/vacancy; first/partial/zero RE
 ownership costs; opening versus next-month tenure billing; unpaid fee receivables;
 unsold ask/reload invariance; no phantom proceeds/trade price; and count scaling.
+
+The section 12 rental-capital schedule allocates separately let parking its own
+capital. With common ownership selected, a sold title also conveys its fixed
+share of that common facility. The validation appendix's title reference capital
+adds that share once; summing all titles reproduces each whole project. Actual
+accepted sale asks need not equal capital cost. Their transferred rights and book
+release must still reconcile. Net parking receipts already reducing common fees
+cannot also be added a second time to capitalized NOI.
 
 ### Supplemental compute coverage
 

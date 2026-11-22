@@ -1,6 +1,6 @@
 # Real Estate study - closure validation
 
-34 caused design checks passed. These are study-only prototypes; model integration, actual funding/completions, market/era/rate calibration and save/audit checks remain the named implementation batches' acceptance work.
+36 caused design checks passed. These are study-only prototypes; model integration, actual funding/completions, market/era/rate calibration and save/audit checks remain the named implementation batches' acceptance work.
 
 ## Critical counterexample
 
@@ -8,7 +8,7 @@ A 100-household cell has only 1% simultaneously over both credit thresholds. Two
 
 ## Catalogue credit cross-check
 
-Illustrative reference-ask scenario: contract rate 6%, stress +2 points, 300 months, 5% down, 4% insurance premium on the base loan, 1.5% closing costs, property tax 1.5%, and heat 1% of gross. These are the accepted model-policy baseline plus explicit accounting assumptions, not an assertion of current national lending law. The income column is the GDS-only minimum with zero other debt. The full TDS/cash-budget tests can refuse additional buyers. The common-fee budget uses zero optional parking receipts and fixed area weights. Actual market asks and actual service costs replace these inputs in the model.
+Illustrative reference-ask scenario: contract rate 6%, stress +2 points, 300 months, 5% down, 4% insurance premium on the base loan, 1.5% closing costs, property tax 1.5%, and heat 1% of gross. These are the accepted model-policy baseline plus explicit accounting assumptions, not an assertion of current national lending law. The income column is the GDS-only minimum with zero other debt. The full TDS/cash-budget tests can refuse additional buyers. The common-fee budget uses zero optional parking receipts and fixed area weights. Reference title capital includes the area-weighted share of the common optional-parking facility; section 12 rental-housing capital excludes it because parking rents are separate. Summing all title capital reproduces each whole project exactly; the same capital is not also transferred as an independently owned parking asset. Actual market asks and actual service costs replace these inputs in the model.
 
 | Form | Dwelling | Count | Reference ask | Cash down + closing | Contract payment/month | Full fee/month | GDS gross/month |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -17,29 +17,29 @@ Illustrative reference-ask scenario: contract rate 6%, stress +2 points, 300 mon
 | C03 | H240 | 1 | 1,586,506 | 103,123 | 10,099 | 0 | 37,056 |
 | C04 | D90 | 2 | 557,371 | 36,229 | 3,548 | 0 | 13,018 |
 | C05 | T100 | 6 | 460,153 | 29,910 | 2,929 | 0 | 10,748 |
-| C06 | S | 80 | 191,100 | 12,422 | 1,216 | 221 | 4,754 |
-| C07 | S | 8 | 205,495 | 13,357 | 1,308 | 203 | 5,066 |
-| C07 | F | 12 | 317,641 | 20,647 | 2,022 | 380 | 7,919 |
-| C07 | L | 4 | 452,286 | 29,399 | 2,879 | 557 | 11,297 |
-| C08 | F | 63 | 308,286 | 20,039 | 1,962 | 311 | 7,610 |
-| C09 | S | 16 | 188,794 | 12,272 | 1,202 | 173 | 4,637 |
-| C09 | F | 40 | 286,326 | 18,611 | 1,823 | 324 | 7,114 |
-| C09 | L | 8 | 406,358 | 26,413 | 2,587 | 476 | 10,117 |
-| C10 | S | 48 | 209,531 | 13,620 | 1,334 | 222 | 5,186 |
-| C10 | F | 96 | 325,208 | 21,139 | 2,070 | 416 | 8,143 |
-| C10 | L | 12 | 510,885 | 33,208 | 3,252 | 610 | 12,736 |
-| C10 | P140 | 4 | 724,860 | 47,116 | 4,614 | 777 | 17,953 |
-| C11 | S | 120 | 189,542 | 12,320 | 1,207 | 189 | 4,675 |
-| C11 | F | 216 | 287,727 | 18,702 | 1,832 | 354 | 7,186 |
-| C11 | L | 24 | 408,413 | 26,547 | 2,600 | 519 | 10,222 |
-| C12 | S | 120 | 232,426 | 15,108 | 1,480 | 234 | 5,736 |
-| C12 | F | 232 | 368,136 | 23,929 | 2,343 | 438 | 9,175 |
-| C12 | L | 44 | 580,846 | 37,755 | 3,697 | 643 | 14,413 |
-| C12 | P180 | 4 | 1,036,803 | 67,392 | 6,600 | 1,052 | 25,601 |
-| C13 | S | 240 | 269,579 | 17,523 | 1,716 | 261 | 6,640 |
-| C13 | F | 480 | 437,797 | 28,457 | 2,787 | 490 | 10,870 |
-| C13 | L | 76 | 697,015 | 45,306 | 4,437 | 719 | 17,226 |
-| C13 | P360 | 4 | 2,341,461 | 152,195 | 14,905 | 2,352 | 57,783 |
+| C06 | S | 80 | 196,725 | 12,787 | 1,252 | 221 | 4,885 |
+| C07 | S | 8 | 209,833 | 13,639 | 1,336 | 203 | 5,168 |
+| C07 | F | 12 | 325,773 | 21,175 | 2,074 | 380 | 8,109 |
+| C07 | L | 4 | 464,214 | 30,174 | 2,955 | 557 | 11,576 |
+| C08 | F | 63 | 319,714 | 20,781 | 2,035 | 311 | 7,877 |
+| C09 | S | 16 | 193,573 | 12,582 | 1,232 | 173 | 4,749 |
+| C09 | F | 40 | 295,286 | 19,194 | 1,880 | 324 | 7,324 |
+| C09 | L | 8 | 419,500 | 27,267 | 2,670 | 476 | 10,424 |
+| C10 | S | 48 | 225,822 | 14,678 | 1,438 | 222 | 5,567 |
+| C10 | F | 96 | 355,754 | 23,124 | 2,265 | 416 | 8,857 |
+| C10 | L | 12 | 555,685 | 36,120 | 3,537 | 610 | 13,782 |
+| C10 | P140 | 4 | 781,878 | 50,822 | 4,977 | 777 | 19,284 |
+| C11 | S | 120 | 195,481 | 12,706 | 1,244 | 189 | 4,814 |
+| C11 | F | 216 | 298,863 | 19,426 | 1,902 | 354 | 7,446 |
+| C11 | L | 24 | 424,746 | 27,608 | 2,704 | 519 | 10,603 |
+| C12 | S | 120 | 253,729 | 16,492 | 1,615 | 234 | 6,234 |
+| C12 | F | 232 | 408,078 | 26,525 | 2,598 | 438 | 10,108 |
+| C12 | L | 44 | 639,428 | 41,563 | 4,070 | 643 | 15,781 |
+| C12 | P180 | 4 | 1,132,664 | 73,623 | 7,210 | 1,052 | 27,840 |
+| C13 | S | 240 | 295,860 | 19,231 | 1,883 | 261 | 7,254 |
+| C13 | F | 480 | 487,075 | 31,660 | 3,101 | 490 | 12,021 |
+| C13 | L | 76 | 769,289 | 50,004 | 4,897 | 719 | 18,914 |
+| C13 | P360 | 4 | 2,577,995 | 167,570 | 16,411 | 2,352 | 63,308 |
 | C14 | A | 61 | 876,426 | 56,968 | 5,579 | 856 | 21,597 |
 | C14 | V | 48 | 1,314,790 | 85,461 | 8,370 | 1,284 | 32,399 |
 | C14 | X | 8 | 3,312,029 | 215,282 | 21,083 | 3,211 | 81,583 |
@@ -79,12 +79,67 @@ Illustrative reference-ask scenario: contract rate 6%, stress +2 points, 300 mon
 - unfunded listing makes zero proceeds or price observation
 - unsold markdown preserves physical stock and secured debt
 - active exit intent suppresses same-category RE acquisition
+- optional parking capital exactly explains rental/title asset difference
+- transferred unit reference capital sums to every whole project once
 - every numerical catalogue quote is covered exactly once
 - all candidate mortgage/fee inputs are finite and nonnegative
 
-## Supplemental timing
+## Supplemental underwriting and dense-book timing — 2026-11-22
 
-Prepared; execution and required docs fast checks must finish before readiness.
+The initial 0.864 ms result covers the simpler prototype. The fuller reference
+workload measures **4.046 ms/month**, including the disjoint qualified-buyer
+allocation; the 46,080-loan-row sensitivity measures **4.731 ms/month**.
+Use this fuller coverage when discussing the ownership-path compute budget.
+Against the prior measured 14.767–39.162 ms game medians, those are approximately
+10.3–27.4% and
+12.1–32.0% additional calculation work.
+The integrated upgrade remains unimplemented, so these are estimates from kernels.
+
+| Workload | Median per operation/month | 95th percentile of batch means |
+|---|---:|---:|
+| Disjoint funding-region formation and compatible buyer allocation | 3.130 ms | 3.329 ms |
+| Books + one quote + housing placement + qualified-buyer allocation | 4.046 ms | 4.341 ms |
+| Additional 40,320 loan-cohort rows alone | 0.636 ms | 0.690 ms |
+| Reference bundle with 46,080 total loan-cohort rows | 4.731 ms | 5.145 ms |
+
+The state keeps 180 synthetic household groups, 32 class offers, 720 base
+occupancy rows and 3,072 listing rows. The normal book has5,760 loan rows; the
+sensitivity has46,080, preserving represented count weights. The two-dimensional
+threshold workspace has36 distinct financial eligibility masks and at most6,480
+cell/mask slots; equivalent masks after layout restrictions coalesce before flow.
+These are temporary aggregate quantities and preallocated arrays, never saved
+individual buyers. Mean-corrected lognormal marginal CDF intervals use the original
+independence approximation, sigma0.35 income/sigma1.5 savings.
+
+The closure workload uses title reference capital including common optional-parking
+equity, and area-weighted actual fee-budget inputs. All14 title schedules reconcile
+to whole-project capital. The normal matching and buyer-allocation kernels are
+independent workload stages, with no real closing between them; their bundle is
+computation coverage, not a simulated integrated market or an occupancy forecast.
+Actual bank funding, TDS, full cash bills, lifecycle/settlement/UI and new-model
+behavior still need the implementation checks. Higher-order utility optimization
+and adversarial matching graphs are outside this fixture.
+
+Mass conservation, count scaling and shared-tail exclusivity pass. Both the initial
+and final coalesced supplements exited0; the final source/results below are the
+reported version. Total measuring time across those short runs was below20 seconds.
+One measuring JVM at a time, compiler256 MiB and measuring heap768 MiB, committed
+memory44.3–44.5% (below75%). No game or user save was opened. Java21.0.4/i7-13650HX,
+the same laptop and existing classpath as section13; no new game baseline run.
+Each kernel warms at least0.5seconds;15 batches with5 repeats, or7 for the short
+extra-loan component. The percentile is of batch means, not full-game tail latency.
+
+Final supplemental source SHA-256: `585f40dbbcab9c5abf434d85f25a4f13f594cd7c247f8fa6d384510de4c8db80`.
+
+```text
+RES1TIME closure_laws,mass-conservation=pass,scale-1000=pass,shared-tail=pass,eligibility_masks=36,temporary_nodes=6480,placed=1579.186871,eligible=1579.186871
+RES1TIME closure_dimensions,H=180,T=32,base_assignment_rows=720,base_loan_rows=5760,dense_loan_rows=46080,listing_rows=3072,eligibility_masks=36,temporary_nodes=6480
+RES1TIME kernel,H180_T32,joint_funded_allocation,median_ms=3.129640,p95_batch_ms=3.329140,reps=5,batches=15,checksum=356896.2327
+RES1TIME kernel,H180_T32,funded_reference_bundle,median_ms=4.045720,p95_batch_ms=4.341000,reps=5,batches=15,checksum=761995645003.8618
+RES1TIME kernel,H180_T32,extra_40320_loan_rows,median_ms=0.636443,p95_batch_ms=0.689814,reps=7,batches=15,checksum=565610026496960.9000
+RES1TIME kernel,H180_T32,closure_bundle,median_ms=4.730920,p95_batch_ms=5.144880,reps=5,batches=15,checksum=751911180214.5728
+RES1TIME closure_done,status=pass,checksum=751911180214.572800
+```
 
 ## Exact design-fixture source
 
@@ -244,14 +299,28 @@ require('active exit intent suppresses same-category RE acquisition', (0 if exit
 # allocated capital as an illustrative ASK, not an observed market sale price.
 catalogue=json.loads((HERE/'catalogue-data.json').read_text(encoding='utf-8'))
 rows=[]
+capital_errors=[]
+title_errors=[]
 for b in catalogue['buildings']:
+    housing_capital=sum(q['asset']*q['count'] for q in b['quotes'].values())
+    optional_capital=b['cost']-housing_capital
+    expected_optional=b['optional']*b['park_rent']*12/.058
+    capital_errors.append(abs(optional_capital-expected_optional))
+    title_total=0
     for key,q in b['quotes'].items():
         area=catalogue['unit_types'][key][0]
         fee=b['fee_zero_park']*b['N']*area/b['net']
-        ask=q['asset']
+        # Rental housing capital excludes separately let parking. Condominium
+        # title conveys its share of the common facility: that capital also
+        # follows the title, allocated once with declared area weights.
+        ask=q['asset']+optional_capital*area/b['net']
+        title_total+=ask*q['count']
         minimum=gds_income(ask,fee)
         payment=annuity(ask*.95*1.04,.06,300)
         rows.append((b['code'],key,q['count'],ask,ask*.065,payment,fee,minimum))
+    title_errors.append(abs(title_total-b['cost']))
+require('optional parking capital exactly explains rental/title asset difference', max(capital_errors)<.01)
+require('transferred unit reference capital sums to every whole project once', max(title_errors)<.01)
 require('every numerical catalogue quote is covered exactly once', len(rows)==32)
 require('all candidate mortgage/fee inputs are finite and nonnegative', all(math.isfinite(x) and x>=0 for row in rows for x in row[2:]))
 report=['# HO1 study closure checks','',
@@ -259,7 +328,7 @@ report=['# HO1 study closure checks','',
         '## Critical counterexample','',
         'A 100-household cell has only 1% simultaneously over both credit thresholds. Two premium alternatives can each appear to have one qualified buyer. Independent edge caps would allow two purchases. Partitioning the cell into disjoint aggregate income/savings regions allows one purchase in total. Crossing thresholds give a 28% union, not 32%. Only temporary regions are added; the saved household and housing categories remain bounded.','',
         '## Catalogue credit cross-check','',
-        'Illustrative reference-ask scenario: contract rate 6%, stress +2 points, 300 months, 5% down, 4% insurance premium on the base loan, 1.5% closing costs, property tax 1.5%, and heat 1% of gross. These are the accepted model-policy baseline plus explicit accounting assumptions, not an assertion of current national lending law. The income column is the GDS-only minimum with zero other debt. The full TDS/cash-budget tests can refuse additional buyers. The common-fee budget uses zero optional parking receipts and fixed area weights. Actual market asks and actual service costs replace these inputs in the model.','',
+        'Illustrative reference-ask scenario: contract rate 6%, stress +2 points, 300 months, 5% down, 4% insurance premium on the base loan, 1.5% closing costs, property tax 1.5%, and heat 1% of gross. These are the accepted model-policy baseline plus explicit accounting assumptions, not an assertion of current national lending law. The income column is the GDS-only minimum with zero other debt. The full TDS/cash-budget tests can refuse additional buyers. The common-fee budget uses zero optional parking receipts and fixed area weights. Reference title capital includes the area-weighted share of the common optional-parking facility; section 12 rental-housing capital excludes it because parking rents are separate. Summing all title capital reproduces each whole project exactly; the same capital is not also transferred as an independently owned parking asset. Actual market asks and actual service costs replace these inputs in the model.','',
         '| Form | Dwelling | Count | Reference ask | Cash down + closing | Contract payment/month | Full fee/month | GDS gross/month |',
         '|---|---|---:|---:|---:|---:|---:|---:|']
 report += ['| '+' | '.join([r[0],r[1],str(r[2]),*[f'{x:,.0f}' for x in r[3:]]])+' |' for r in rows]
@@ -276,17 +345,41 @@ Compile alongside the exact HousingTimingProbe from section 13, using its classp
 ```java
 package ham.citybuildersim;
 
+import com.google.gson.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 /** Supplemental RES1 kernels: disjoint funding regions and dense loan rows.
  * No game implementation, save changes, calibrated economy or runtime gate. */
 public class HousingClosureProbe {
+  static HousingTimingProbe.Offer[] titleOffers(Path path)throws Exception{
+    var base=HousingTimingProbe.offers(path);
+    JsonObject doc=JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+    int i=0;
+    for(JsonElement e:doc.getAsJsonArray("buildings")){
+      JsonObject b=e.getAsJsonObject(),quotes=b.getAsJsonObject("quotes");
+      double housing=0,total=0;
+      for(JsonElement q:quotes.asMap().values()){
+        JsonObject v=q.getAsJsonObject();housing+=v.get("asset").getAsDouble()*v.get("count").getAsDouble();
+      }
+      double extra=b.get("cost").getAsDouble()-housing;
+      if(extra<-.01)throw new AssertionError("negative optional parking capital");
+      for(var q:quotes.entrySet()){
+        var o=base[i];double price=o.price()+Math.max(0,extra)*o.area()/b.get("net").getAsDouble();
+        double fee=o.fee()*b.get("N").getAsDouble()*o.area()/b.get("net").getAsDouble();
+        base[i++]=new HousingTimingProbe.Offer(o.area(),o.beds(),o.capacity(),o.quality(),o.rent(),price,fee,o.parking(),o.included(),o.building(),o.weight(),o.sharedRatio(),o.sharedRight());
+        total+=price*o.weight();
+      }
+      if(Math.abs(total-b.get("cost").getAsDouble())>.01)throw new AssertionError("title capital not reconciled");
+    }
+    return base;
+  }
   static final class Funding {
     final HousingTimingProbe.Kernel k;
     final int H,T,F;
-    final int[] byIncome,bySavings,region,pref;
-    final long[] masks;
+    final int[] byIncome,bySavings,region,pref,canonical;
+    final long[] masks,compatibleMask;
     final double[] incomeNeed,savingsNeed,mass,ci,cs;
     final HousingTimingProbe.Flow flow;
     double eligible,placed;
@@ -321,6 +414,20 @@ public class HousingClosureProbe {
       }
       F=found.size();masks=new long[F];int edgeKinds=0;
       for(Map.Entry<Long,Integer> e:found.entrySet()){masks[e.getValue()]=e.getKey();edgeKinds+=Long.bitCount(e.getKey());}
+      canonical=new int[H*F];Arrays.fill(canonical,-1);compatibleMask=new long[H*F];
+      // Coalesce regions after layout eligibility too: different financial
+      // regions often have exactly the same usable offers for this cell.
+      for(int i=0;i<H;i++){
+        long shape=0;
+        for(int j=0;j<T;j++)if(k.capacity[j]>=k.heads[i]&&(k.dependants[i]==0||k.beds[j]>0))shape|=1L<<j;
+        for(int r=0;r<F;r++){
+          long mask=masks[r]&shape;if(mask==0)continue;
+          int node=i*F+r,prior=-1;
+          for(int p=0;p<r;p++)if(compatibleMask[i*F+p]==mask){prior=i*F+p;break;}
+          canonical[node]=prior>=0?prior:node;
+          if(prior<0)compatibleMask[node]=mask;
+        }
+      }
       mass=new double[H*F];pref=new int[H*T];ci=new double[T+2];cs=new double[T+2];
       flow=new HousingTimingProbe.Flow(H*F+T+2,H*edgeKinds+H*F+T+4);
     }
@@ -336,7 +443,8 @@ public class HousingClosureProbe {
         for(int a=0;a<=T;a++){
           double w=k.need[i]*(ci[a+1]-ci[a]);
           for(int b=0;b<=T;b++){
-            int r=region[a*(T+1)+b];if(r>=0)mass[i*F+r]+=w*(cs[b+1]-cs[b]);
+            int r=region[a*(T+1)+b];
+            if(r>=0){int node=canonical[i*F+r];if(node>=0)mass[node]+=w*(cs[b+1]-cs[b]);}
           }
         }
         k.ranked(i);for(int j=0;j<T;j++)pref[i*T+j]=(int)k.rank[j];
@@ -349,9 +457,9 @@ public class HousingClosureProbe {
         for(int r=0;r<F;r++){
           double q=mass[i*F+r];if(q<=1e-12*k.scale)continue;
           int node=i*F+r;flow.edge(source,node,q);
-          long compatible=masks[r];
+          long compatible=compatibleMask[node];
           for(int p=T-1;p>=0;p--){int j=pref[i*T+p];
-            if((compatible&(1L<<j))!=0&&k.capacity[j]>=k.heads[i]&&(k.dependants[i]==0||k.beds[j]>0))
+            if((compatible&(1L<<j))!=0)
               flow.edge(node,H*F+j,q);
           }
           eligible+=q;
@@ -410,11 +518,15 @@ public class HousingClosureProbe {
     HousingTimingProbe.row("closure_laws,mass-conservation=pass,scale-1000=pass,shared-tail=pass,eligibility_masks=%d,temporary_nodes=%d,placed=%.6f,eligible=%.6f",f.F,f.H*f.F,a,eligible);
   }
   public static void main(String[] args)throws Exception{
-    var offers=HousingTimingProbe.offers(Path.of(args[0]));laws(offers);
+    var offers=titleOffers(Path.of(args[0]));laws(offers);
     var k=new HousingTimingProbe.Kernel(180,32,1,offers);
-    var f=new Funding(k);var extra=new ExtraLoans(k);
-    HousingTimingProbe.row("closure_dimensions,H=180,T=32,base_assignment_rows=%d,total_loan_rows=%d,listing_rows=%d,eligibility_masks=%d,temporary_nodes=%d",k.A,k.M+extra.M,k.L,f.F,f.H*f.F);
+    var f=new Funding(k);
+    HousingTimingProbe.row("closure_dimensions,H=180,T=32,base_assignment_rows=%d,base_loan_rows=%d,dense_loan_rows=%d,listing_rows=%d,eligibility_masks=%d,temporary_nodes=%d",k.A,k.M,k.M*8,k.L,f.F,f.H*f.F);
     HousingTimingProbe.measure("H180_T32","joint_funded_allocation",()->f.allocate(),60,15,5);
+    HousingTimingProbe.measure("H180_T32","funded_reference_bundle",()->{
+      k.book(false);k.quote(1);k.allocate();f.allocate();
+    },60,15,5);
+    var extra=new ExtraLoans(k);
     HousingTimingProbe.measure("H180_T32","extra_40320_loan_rows",()->extra.book(),60,15,5);
     HousingTimingProbe.measure("H180_T32","closure_bundle",()->{
       k.book(false);extra.book();k.quote(1);k.allocate();f.allocate();

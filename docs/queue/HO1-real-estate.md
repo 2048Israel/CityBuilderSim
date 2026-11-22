@@ -29,6 +29,10 @@ housing/accounting/save checks. No UI or new sector; coordinate live overlaps.
 
 1. Purchase quantities in actual dwelling classes. Preserve physical stock,
    occupancy and listing subset identities. Include allocated land and rights.
+   Transferred unit value/book includes its fixed share of the common optional-
+   parking facility. Section12 rental capital excludes separately let parking;
+   reconcile the title-capital schedule in the validation appendix to the whole
+   project. Do not gift that asset or separately sell the same capital twice.
    Owners pay zero rent, full actual fees/owner costs, tax, mortgage and their
    optional parking. Retain cost basis and secured debt allocation.
 2. Credit includes the financed insurance premium, property tax, applicable heat

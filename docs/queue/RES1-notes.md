@@ -35,11 +35,20 @@ checks and source-model probes remain recorded in sections11-13. The original
 33 kernel timings and4 model windows are unchanged. The measured model source
 base is a9bfcd070; closure/dependencies were refreshed against main a9ffdac83.
 
-New closure:34 caused design fixtures and32 class-level credit/fee input checks
-passed. Companion validation embeds exact Python and supplemental Java source.
-Supplemental timing and the standard docs-only --fast pass are pending while
-this ship file is provisional. Final results will replace this sentence before
-mends publication. No suite or ensemble is owed by this all-Markdown diff.
+New closure:36 caused design fixtures and32 class-level credit/fee input checks
+passed, including full project/title capital reconciliation when optional parking
+follows common ownership. Companion validation embeds exact Python and supplemental
+Java source, class-level reference lending inputs and raw results.
+Supplemental qualified-buyer/reference workload measured4.046 ms/month; the
+46,080-loan-row sensitivity measured4.731 ms. The earlier0.864 ms kernel excludes
+this fuller qualification allocation. Final supplements exited0 (combined measuring
+time below20 seconds); heaps256 MiB compiler/768 MiB measurement, memory44.3-44.5%.
+The final standard `batch-check.sh --fast` exited0 after merging main a9ffdac83:
+compile20 seconds, maps regenerated, Stale0 firm/194 soft findings. Maven/maps/
+Stale heaps were bounded at1024 MiB, committed memory44.4% before compilation.
+All owned JVMs then terminated and the named slot was actually released to root
+for SD1. The tree contains only the intended Markdown changes. No suite or
+ensemble is owed by this all-Markdown diff.
 
 ## Publisher handoff
 
