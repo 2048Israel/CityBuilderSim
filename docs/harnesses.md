@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**244 harness files, 27,972 labelled assertions.** AllChecks runs 244 of them.
+**244 harness files, 27,979 labelled assertions.** AllChecks runs 244 of them.
 
 ## Which harnesses read which class
 
@@ -20,7 +20,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, PublicLicenceCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, WorksFinanceCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
-| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewUnitCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
+| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewUnitCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
 | [BankScreen](map/BankScreen.md) | **none** |
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PartnerCallsCheck, PortCheck, QuayCraneCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BankFailureCheck, BondCheck, CapitalGainsCheck, CurveCheck, FundCheck, FundLedgerCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, MortgageCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, StepsCheck |
@@ -57,7 +57,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, FloatLinkCheck, HoldersCheck, InterestAbroadCheck, LongPlaytest, ReadPathCheck, ReloadCheck, SaveFileCheck |
 | [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, MedicineCheck, OwnerCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, WorksFinanceCheck |
 | [CausesOfDeath](map/CausesOfDeath.md) | CausesOfDeathCheck, LongPlaytest, MedicineCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
-| [CellSpread](map/CellSpread.md) | CardCheck, DebtStatisticsCheck, OutsideCheck |
+| [CellSpread](map/CellSpread.md) | CardCheck, DebtStatisticsCheck, HealthCheck, OutsideCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, Forms1900Check, IndustryViewCheck, QuarryingCheck |
 | [CentralBank](map/CentralBank.md) | AutoBuildCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, LongPlaytest, MoneyDatesCheck, MortgageCheck, PolicyOpenCheck, PolicyPreviewCheck, SaveFileCheck, ScaleCheck |
 | [ChartFitBench](map/ChartFitBench.md) | ChartFitCheck |
@@ -4480,7 +4480,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1401 fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product
   - L1405 ...and the imports declared are what the households paid, not the ship's product: to the bit
 
-## CardCheck.java - 98 labelled assertions
+## CardCheck.java - 102 labelled assertions
 
 > Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1).
 > WHY: a cell average used to discharge all its neighbours and conceal thin buffers.
@@ -4497,102 +4497,106 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L44 a point amount above the line is excluded
   - L48 a nine-sigma holding tail stays positive beside its balance tail
   - L49 the holding tail is the model's direct normal tail
-- **L53 The broker's tax reserve creates no phantom company**
-  - L77 an exactly offset service receipt/import/VAT leaves no profit or cash at any scale
-  - L78 both genuine gains and losses survive the broker's arithmetic-dust boundary
-- **L81 Thin buffers borrow; fixed minimum and all the cash have a recipient**
-  - L86 household cash identity through minimum, shock and lending
-  - L88 card book identity including its fee
-  - L89 emergency bill is positive
-  - L90 holding share fits the acceptance rule
-  - L92 thinner buffers borrow more on the same bill
-  - L95 a current debtor pays minimum principal before the food
-  - L96 extra paydown reaches the bank with the minimum
-  - L99 cash pays the fixed minimum before a food shortfall draws credit
-  - L104 inability to carry the minimum puts more balance behind
-  - L107 rate cap binds above its edge
-  - L108 lower rate stays below the cap
-  - L113 waterfall and emergency draws share one capital/interest allowance at
-  - L122 minimum follows its
-- **L128 Late stock cures or charges off; only its share is excluded**
-  - L133 annual write-off hazard is the sourced ratio
-  - L134 late balances cure and charge off once
-  - L135 ended debt is exactly the repayment and the bank's loss
-  - L136 seized savings reach the creditor
-  - L137 write-off is the exact loss of the bank's loan book
-  - L138 only the charged-off share goes bankrupt
-  - L139 neighbours still have credit
-  - L143 exclusion decays on the year's own hazard
-  - L145 all excluded cannot borrow
-  - L147 an accepted household can borrow again
-  - L148 no income fails the card test
-  - L149 bottom tier has its estimated access
-  - L150 other tiers have their own access
-  - L151 late balances need a larger loss allowance
-  - L155 sound neutral card rate is the agreed rate
-  - L159 emergency receipt has one household buyer at tax
-  - L160 emergency receipt is named without inventing a seat-service good
-  - L161 emergencies produce no domestic seat-service units
-  - L162 emergency receipt pays its imports and its sales tax at
-  - L165 the pending named receipt follows a currency reform
-- **L169 Card stocks and settled flows survive the cell save and currency reform**
-  - L179 cell save is accepted
-  - L181 all four card stocks round-trip
-  - L182 settled card figures round-trip
-  - L183 settled student service is saved alongside card service
-  - L184 the applied APR is saved rather than repriced from the closing balances
-  - L185 REV-HC1 P2: pending debt-free departure share and cash survive the cell save
-  - L188 late balance follows the money
-  - L189 holder share survives a currency reform
-  - L190 REV-HC1 P2: pending departure cash redenominates
-  - L191 REV-HC1 P2: pending departure share does not redenominate
-  - L192 old saves are refused at the new format
-- **L195 A cardholder does not bar its debt-free neighbours from investing**
-  - L199 the paper budget belongs to the debt-free share
-  - L201 debt-free neighbours can subscribe to shares
-  - L203 exclusion removes only its own share
-  - L205 a wholly indebted cell has no paper budget
-  - L207 raw debt without a supplied distribution is conservatively ineligible
-- **L210 All four card stocks follow the same families across a birthday**
-  - L216 unchanged census keeps the holder share
-  - L219 birthday carries the card balance
-  - L220 birthday carries holders
-  - L221 birthday carries late balances
-  - L222 birthday carries late holders
-  - L223 birthday carries exclusion
-  - L224 a birthday writes off no loan
-- **L227 Real city money, annual surveys, saved reads and continuation**
-  - L252 city actually paid unexpected bills in the measured months
-  - L253 every measured month conserves the money pools (worst tolerance ratio
-  - L254 every measured month conserves household cash (worst tolerance ratio
-  - L255 the yearly surveys were actually recorded
-  - L258 reading every debt group changes no saved cell field
-  - L267 scratch city saves in the assistant slot
-  - L277 all card stocks and settled statistics survive the game loader
-  - L278 annual surveys survive the history loader
-  - L280 a positive pending emergency receipt survives its ledger save
-  - L283 a positive struck emergency receipt survives in its named statement
-  - L302 all current statistics survive the loader
-  - L303 REV-HC1 P5: format-62 card, service, loan-book and capital continuation
-  - L308 replay history excludes later surveys
-  - L312 REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact
-  - L313 HC1 format62: native format61 refusal keeps bytes and the running loaded city intact
-- **L320 REV-HC1: estates, debt-free bankruptcy departures and rejected credit**
-  - L328 REV-HC1 P1: an estate passes no late debt, holder share or credit exclusion to heirs
-  - L330 REV-HC1 P1: the heirs' performing book cannot be charged off by the dead's arrears
-  - L331 REV-HC1 P1: the estate still repays its own debt
-  - L343 REV-HC1 P2: discharged leavers cause no second loss of performing debt
-  - L344 REV-HC1 P2: only zero-card-debt households depart
-  - L345 REV-HC1 P2: surviving late balances stay in their source cell
-  - L346 REV-HC1 P2: the excluded leavers leave their own exclusion behind
-  - L347 REV-HC1 P2: neighbours retain their own book
-  - L359 REV-HC1 P2: the departure count is the source family's own three heads
-  - L362 REV-HC1 P2: bankruptcy leaves the other adult stage alone
-  - L363 REV-HC1 P2: only the source family's child leaves
-  - L365 REV-HC1 P2: a capped departure takes only its own post-seizure cash
-  - L367 REV-HC1 P2: capped source departures still write off no second debt
-  - L374 REV-HC1 P3: rejected ordinary borrowers remain unfunded at exclusion
-  - L376 REV-HC1 P3: only accepted borrowers receive the ordinary advance at exclusion
+  - L60 REV2 P1: a closed lender lends nothing despite the ordinary and unexpected gaps
+  - L61 REV2 P1: exclusion ages, but no card room enters the next plan
+  - L64 REV2 P1: the closed lender also stops existing holders drawing more
+  - L68 REV2 P1: reopening the same lender funds the same household's gap
+- **L72 The broker's tax reserve creates no phantom company**
+  - L96 an exactly offset service receipt/import/VAT leaves no profit or cash at any scale
+  - L97 both genuine gains and losses survive the broker's arithmetic-dust boundary
+- **L100 Thin buffers borrow; fixed minimum and all the cash have a recipient**
+  - L105 household cash identity through minimum, shock and lending
+  - L107 card book identity including its fee
+  - L108 emergency bill is positive
+  - L109 holding share fits the acceptance rule
+  - L111 thinner buffers borrow more on the same bill
+  - L114 a current debtor pays minimum principal before the food
+  - L115 extra paydown reaches the bank with the minimum
+  - L118 cash pays the fixed minimum before a food shortfall draws credit
+  - L123 inability to carry the minimum puts more balance behind
+  - L126 rate cap binds above its edge
+  - L127 lower rate stays below the cap
+  - L132 waterfall and emergency draws share one capital/interest allowance at
+  - L141 minimum follows its
+- **L147 Late stock cures or charges off; only its share is excluded**
+  - L152 annual write-off hazard is the sourced ratio
+  - L153 late balances cure and charge off once
+  - L154 ended debt is exactly the repayment and the bank's loss
+  - L155 seized savings reach the creditor
+  - L156 write-off is the exact loss of the bank's loan book
+  - L157 only the charged-off share goes bankrupt
+  - L158 neighbours still have credit
+  - L162 exclusion decays on the year's own hazard
+  - L164 all excluded cannot borrow
+  - L166 an accepted household can borrow again
+  - L167 no income fails the card test
+  - L168 bottom tier has its estimated access
+  - L169 other tiers have their own access
+  - L170 late balances need a larger loss allowance
+  - L174 sound neutral card rate is the agreed rate
+  - L178 emergency receipt has one household buyer at tax
+  - L179 emergency receipt is named without inventing a seat-service good
+  - L180 emergencies produce no domestic seat-service units
+  - L181 emergency receipt pays its imports and its sales tax at
+  - L184 the pending named receipt follows a currency reform
+- **L188 Card stocks and settled flows survive the cell save and currency reform**
+  - L198 cell save is accepted
+  - L200 all four card stocks round-trip
+  - L201 settled card figures round-trip
+  - L202 settled student service is saved alongside card service
+  - L203 the applied APR is saved rather than repriced from the closing balances
+  - L204 REV-HC1 P2: pending debt-free departure share and cash survive the cell save
+  - L207 late balance follows the money
+  - L208 holder share survives a currency reform
+  - L209 REV-HC1 P2: pending departure cash redenominates
+  - L210 REV-HC1 P2: pending departure share does not redenominate
+  - L211 old saves are refused at the new format
+- **L214 A cardholder does not bar its debt-free neighbours from investing**
+  - L218 the paper budget belongs to the debt-free share
+  - L220 debt-free neighbours can subscribe to shares
+  - L222 exclusion removes only its own share
+  - L224 a wholly indebted cell has no paper budget
+  - L226 raw debt without a supplied distribution is conservatively ineligible
+- **L229 All four card stocks follow the same families across a birthday**
+  - L235 unchanged census keeps the holder share
+  - L238 birthday carries the card balance
+  - L239 birthday carries holders
+  - L240 birthday carries late balances
+  - L241 birthday carries late holders
+  - L242 birthday carries exclusion
+  - L243 a birthday writes off no loan
+- **L246 Real city money, annual surveys, saved reads and continuation**
+  - L271 city actually paid unexpected bills in the measured months
+  - L272 every measured month conserves the money pools (worst tolerance ratio
+  - L273 every measured month conserves household cash (worst tolerance ratio
+  - L274 the yearly surveys were actually recorded
+  - L277 reading every debt group changes no saved cell field
+  - L286 scratch city saves in the assistant slot
+  - L296 all card stocks and settled statistics survive the game loader
+  - L297 annual surveys survive the history loader
+  - L299 a positive pending emergency receipt survives its ledger save
+  - L302 a positive struck emergency receipt survives in its named statement
+  - L321 all current statistics survive the loader
+  - L322 REV-HC1 P5: format-62 card, service, loan-book and capital continuation
+  - L327 replay history excludes later surveys
+  - L331 REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact
+  - L332 HC1 format62: native format61 refusal keeps bytes and the running loaded city intact
+- **L339 REV-HC1: estates, debt-free bankruptcy departures and rejected credit**
+  - L347 REV-HC1 P1: an estate passes no late debt, holder share or credit exclusion to heirs
+  - L349 REV-HC1 P1: the heirs' performing book cannot be charged off by the dead's arrears
+  - L350 REV-HC1 P1: the estate still repays its own debt
+  - L362 REV-HC1 P2: discharged leavers cause no second loss of performing debt
+  - L363 REV-HC1 P2: only zero-card-debt households depart
+  - L364 REV-HC1 P2: surviving late balances stay in their source cell
+  - L365 REV-HC1 P2: the excluded leavers leave their own exclusion behind
+  - L366 REV-HC1 P2: neighbours retain their own book
+  - L378 REV-HC1 P2: the departure count is the source family's own three heads
+  - L381 REV-HC1 P2: bankruptcy leaves the other adult stage alone
+  - L382 REV-HC1 P2: only the source family's child leaves
+  - L384 REV-HC1 P2: a capped departure takes only its own post-seizure cash
+  - L386 REV-HC1 P2: capped source departures still write off no second debt
+  - L393 REV-HC1 P3: rejected ordinary borrowers remain unfunded at exclusion
+  - L395 REV-HC1 P3: only accepted borrowers receive the ordinary advance at exclusion
 
 ## CarryTradeCheck.java - 44 labelled assertions
 
@@ -14723,7 +14727,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1663 ...the smallest standing demands are served first and whole: every sector but the largest keeps a literal 1 and runs at one
   - L1666 ...and the largest is cut by the whole shortfall: its share is what it was carried less the shortfall, over what it asks
 
-## HealthCheck.java - 236 labelled assertions
+## HealthCheck.java - 238 labelled assertions
 
 > Sickness: what it moves, and - much more importantly - what it does not.
 > 
@@ -14939,70 +14943,72 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1175 a household that skipped last month's bill is judged on the full one
   - L1180 ...and settles where it pays what it can, month after month
   - L1183 ...rather than swinging between served and starving
-  - L1432 fixture: every twin held a place at a clinic for every one of its people in every month
-  - L1434 fixture: at the dial's top the fee turns away a material share of the care the founding fee serves
-  - L1436 at a high fee a poor city serves a smaller share of its people than at the founding fee
-  - L1462 fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away
-  - L1464 ...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top
-  - L1466 ...and its baseline sick rate, which coverage sets, is higher for it
-  - L1489 ...and it buries more of its people over the run
-  - L1490 ...its old first, whom a fee on senior care turns away
-  - L1491 with the fee at nothing the same city is served in full, every month
-  - L1493 ...every kind of care
-  - L1499 ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care
-  - L1505 
-  - L1507 ...and the served are the offered times the share who could pay
-  - L1515 the treatment fees are charged on the people treated
-  - L1532 ...which is less than the same beds would raise at full service, in every month the fee turned somebody away
-  - L1545 the buildings' upkeep is the same at a dear fee as at the founding fee, in founding money
-  - L1548 ...and the service still costs money to run
-- **L1551 14. the unchanged case, at zero tolerance**
-- **L1563 the unchanged case, at zero tolerance**
-  - L1576 in a city that can pay, every household paid its whole care bill
-  - L1578 
-  - L1580 ...and the served are the offered, exactly
-  - L1583 ...and the fees charged are the fees at full service, exactly
-  - L1585 ...and the households were billed exactly what the city collected a month ago, as before
-  - L1587 ...and nobody was priced out
-  - L1588 ...and no bill was skipped
-- **L1590 15. the premium**
-- **L1598 the premium**
-  - L1606 the premium raises exactly the rate times the wage bill
-  - L1608 fixture: which is money
-  - L1609 ...on the same base as the EI premium
-  - L1611 ...and it is on the government's revenue list
-  - L1614 ...inside the revenue total
-  - L1618 ...and reaches the treasury's cash, penny for penny
-  - L1626 the households' statement shows the premium the city collected a month ago
-  - L1632 ...and the rows add back up to it
-  - L1633 ...off the wages, so the retired pay none
-  - L1635 ...and it comes off take-home, like the EI premium
-  - L1641 the money audit saw it as a household-to-treasury flow
-  - L1668 
-  - L1671 the insured city charged no treatment fee
-  - L1672 ...and the fee-funded one did
-  - L1673 the insured city's wage earners paid a premium
-  - L1675 ...and the fee-funded city's paid none
-  - L1676 the gross cost is the same either way: a ward is paid for whether or not its patients are
-- **L1679 16. both dials survive a save, and a reform**
-  - L1689 the fee scale came back
-  - L1690 ...and the premium
-  - L1691 ...and the service charges at the reloaded scale
-  - L1692 ...and the full-service bill the next strike reads came back
-  - L1700 a save from before the dials is still read
-  - L1701 ...at the founding fee
-  - L1702 ...with no premium
-  - L1705 ...and so is the service's state from before the full-service bill
-  - L1707 ...which reads the bill it charged as the bill at full service
-  - L1709 ...and a coverage of 1 until a month strikes it
-  - L1714 ...and the state from before the coverages were kept
-  - L1715 ...which reads the full bill at 1x it carried
-  - L1716 the reloaded service kept the coverage the month read
-  - L1718 ...which is the figure the sick rate read, not the beds
-  - L1725 a currency reform leaves the fee scale alone
-  - L1726 ...and the premium
-  - L1730 ...and the service's scale
-  - L1731 ...while its fees move with the money
+  - L1450 WN3: the bank stays shut through every native month, including the next plan
+  - L1452 the lifted mean leaves the original wallet's cash target under the model's buffer spread
+  - L1458 fixture: every twin held a place at a clinic for every one of its people in every month
+  - L1460 fixture: at the dial's top the fee turns away a material share of the care the founding fee serves
+  - L1462 at a high fee a poor city serves a smaller share of its people than at the founding fee
+  - L1488 fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away
+  - L1490 ...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top
+  - L1492 ...and its baseline sick rate, which coverage sets, is higher for it
+  - L1515 ...and it buries more of its people over the run
+  - L1516 ...its old first, whom a fee on senior care turns away
+  - L1517 with the fee at nothing the same city is served in full, every month
+  - L1519 ...every kind of care
+  - L1525 ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care
+  - L1531 
+  - L1533 ...and the served are the offered times the share who could pay
+  - L1541 the treatment fees are charged on the people treated
+  - L1558 ...which is less than the same beds would raise at full service, in every month the fee turned somebody away
+  - L1571 the buildings' upkeep is the same at a dear fee as at the founding fee, in founding money
+  - L1574 ...and the service still costs money to run
+- **L1577 14. the unchanged case, at zero tolerance**
+- **L1589 the unchanged case, at zero tolerance**
+  - L1602 in a city that can pay, every household paid its whole care bill
+  - L1604 
+  - L1606 ...and the served are the offered, exactly
+  - L1609 ...and the fees charged are the fees at full service, exactly
+  - L1611 ...and the households were billed exactly what the city collected a month ago, as before
+  - L1613 ...and nobody was priced out
+  - L1614 ...and no bill was skipped
+- **L1616 15. the premium**
+- **L1624 the premium**
+  - L1632 the premium raises exactly the rate times the wage bill
+  - L1634 fixture: which is money
+  - L1635 ...on the same base as the EI premium
+  - L1637 ...and it is on the government's revenue list
+  - L1640 ...inside the revenue total
+  - L1644 ...and reaches the treasury's cash, penny for penny
+  - L1652 the households' statement shows the premium the city collected a month ago
+  - L1658 ...and the rows add back up to it
+  - L1659 ...off the wages, so the retired pay none
+  - L1661 ...and it comes off take-home, like the EI premium
+  - L1667 the money audit saw it as a household-to-treasury flow
+  - L1694 
+  - L1697 the insured city charged no treatment fee
+  - L1698 ...and the fee-funded one did
+  - L1699 the insured city's wage earners paid a premium
+  - L1701 ...and the fee-funded city's paid none
+  - L1702 the gross cost is the same either way: a ward is paid for whether or not its patients are
+- **L1705 16. both dials survive a save, and a reform**
+  - L1715 the fee scale came back
+  - L1716 ...and the premium
+  - L1717 ...and the service charges at the reloaded scale
+  - L1718 ...and the full-service bill the next strike reads came back
+  - L1726 a save from before the dials is still read
+  - L1727 ...at the founding fee
+  - L1728 ...with no premium
+  - L1731 ...and so is the service's state from before the full-service bill
+  - L1733 ...which reads the bill it charged as the bill at full service
+  - L1735 ...and a coverage of 1 until a month strikes it
+  - L1740 ...and the state from before the coverages were kept
+  - L1741 ...which reads the full bill at 1x it carried
+  - L1742 the reloaded service kept the coverage the month read
+  - L1744 ...which is the figure the sick rate read, not the beds
+  - L1751 a currency reform leaves the fee scale alone
+  - L1752 ...and the premium
+  - L1756 ...and the service's scale
+  - L1757 ...while its fees move with the money
 
 ## HistoricalLicenceCheck.java - 49 labelled assertions
 
@@ -24342,7 +24348,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L857 every mortgage in
   - L858 no order in
 
-## OutsideCheck.java - 106 labelled assertions
+## OutsideCheck.java - 107 labelled assertions
 
 > The people outside the families: the out of work, the students, the
 > unhoused and the orphans (2026-09-11).
@@ -24414,66 +24420,67 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L384 a student is paid the grant
   - L385 ...cannot run out: nothing unfunded (Jerus: \"can't run out, for now\")
   - L386 ...because the student loan covered what the savings could not
-  - L389 ...the bank lends only the unexpected bill, not the living gap
-  - L391 ...its card balance is that emergency draw and its fee
-  - L393 the treasury lent it
-  - L396 an orphan has no income
-  - L397 ...and goes without
-  - L408 fixture: the students owe something
-  - L416 the graduates repay a 114th of what they brought
-  - L417 ...and owe the rest
-  - L427 fixture: the students owe something
-  - L429 fixture: the workers owe nothing
-  - L432 five graduates leave a student body that did not change size
-  - L433 ...with their loans, to the working households
-  - L435 ...who start repaying them
-  - L436 the freshers in their places owe nothing yet: the students' loan is halved, plus this month's
-  - L438 nothing written off: a graduate is not a leaver
-  - L440 ...and it happens once
-- **L443 6. health**
-  - L451 a tenth of the city unhoused adds their extra sickness over the baseline
-  - L460 a tenth of the adults unhoused die 3.7 times as fast
-  - L462 a fifth of the babies orphaned die at the rate of a baby nobody cares for
-  - L464 ...which is faster than any cared-for baby
-  - L465 a band with nobody outside is untouched
-- **L468 7. a real city: the treasury and the books agree**
-  - L511 the treasury pays the EI the ring struck on the pool the month opened with
-  - L513 the premium is the dial times the staffed wage bill
-  - L516 the pool is the labour market's
-  - L521 the families hold the adults who are not outside them
-  - L559 fixture: the city has more workers than posts
-  - L586 fixture: the closing cost filled posts
-  - L588 ...and put people on EI
-  - L601 the closing month pays the EI of the pool it opened with
-  - L603 ...and the out of work are credited that figure, the same month
-  - L606 fixture: the closing moved the bill, so a month's lag would show
-  - L608 fixture: there is EI to pay
-  - L611 the month after pays the bill the closing struck
-  - L613 ...and the out of work are credited it in the month it is paid
-  - L616 and both months pass the money audit
-- **L620 8. a city with a college: the students' money, and a save**
-  - L686 fixture: the stayers, the first finishers and the last finishers went into the university's courses
-  - L724 fixture: the college has students
-  - L732 fixture: the grant is on its default basis, a fixed amount at today's prices
-  - L735 the grant is the fixed amount at the month's expected price level, for every student
-  - L738 the students pay the tuition (Jerus: \"students pay it\")
-  - L740 ...and no family does
-  - L741 the treasury lent student loans
-  - L742 every month, the students the census saw finish left with their loans
-  - L744 fixture: people graduated
-  - L745 ...so the working families carry student loans
-  - L746 ...and graduates have repaid some of them
-  - L747 a student is never cut off
-  - L748 every month passed the money audit
-  - L754 the city saved
-  - L757 the student loans came back
-  - L758 ...and the pool
-  - L759 ...and who was on EI
-  - L760 ...and the EI dial
-  - L761 ...and the orphans
-  - L762 ...and who finished a course, which the families read next
-  - L764 fixture: somebody finished that month
-  - L766 a temporary directory for the save:
+  - L396 ...the bank lends only the unexpected bill, not the living gap
+  - L398 ...the savings draw is the living draw plus the shock's closed-form saving share
+  - L401 ...its card balance is that emergency draw and its fee
+  - L403 the treasury lent it
+  - L406 an orphan has no income
+  - L407 ...and goes without
+  - L418 fixture: the students owe something
+  - L426 the graduates repay a 114th of what they brought
+  - L427 ...and owe the rest
+  - L437 fixture: the students owe something
+  - L439 fixture: the workers owe nothing
+  - L442 five graduates leave a student body that did not change size
+  - L443 ...with their loans, to the working households
+  - L445 ...who start repaying them
+  - L446 the freshers in their places owe nothing yet: the students' loan is halved, plus this month's
+  - L448 nothing written off: a graduate is not a leaver
+  - L450 ...and it happens once
+- **L453 6. health**
+  - L461 a tenth of the city unhoused adds their extra sickness over the baseline
+  - L470 a tenth of the adults unhoused die 3.7 times as fast
+  - L472 a fifth of the babies orphaned die at the rate of a baby nobody cares for
+  - L474 ...which is faster than any cared-for baby
+  - L475 a band with nobody outside is untouched
+- **L478 7. a real city: the treasury and the books agree**
+  - L521 the treasury pays the EI the ring struck on the pool the month opened with
+  - L523 the premium is the dial times the staffed wage bill
+  - L526 the pool is the labour market's
+  - L531 the families hold the adults who are not outside them
+  - L569 fixture: the city has more workers than posts
+  - L596 fixture: the closing cost filled posts
+  - L598 ...and put people on EI
+  - L611 the closing month pays the EI of the pool it opened with
+  - L613 ...and the out of work are credited that figure, the same month
+  - L616 fixture: the closing moved the bill, so a month's lag would show
+  - L618 fixture: there is EI to pay
+  - L621 the month after pays the bill the closing struck
+  - L623 ...and the out of work are credited it in the month it is paid
+  - L626 and both months pass the money audit
+- **L630 8. a city with a college: the students' money, and a save**
+  - L696 fixture: the stayers, the first finishers and the last finishers went into the university's courses
+  - L734 fixture: the college has students
+  - L742 fixture: the grant is on its default basis, a fixed amount at today's prices
+  - L745 the grant is the fixed amount at the month's expected price level, for every student
+  - L748 the students pay the tuition (Jerus: \"students pay it\")
+  - L750 ...and no family does
+  - L751 the treasury lent student loans
+  - L752 every month, the students the census saw finish left with their loans
+  - L754 fixture: people graduated
+  - L755 ...so the working families carry student loans
+  - L756 ...and graduates have repaid some of them
+  - L757 a student is never cut off
+  - L758 every month passed the money audit
+  - L764 the city saved
+  - L767 the student loans came back
+  - L768 ...and the pool
+  - L769 ...and who was on EI
+  - L770 ...and the EI dial
+  - L771 ...and the orphans
+  - L772 ...and who finished a course, which the families read next
+  - L774 fixture: somebody finished that month
+  - L776 a temporary directory for the save:
 
 ## OwnerCheck.java - 146 labelled assertions
 

@@ -808,6 +808,17 @@ public class HouseholdBalance {
         }
     }
 
+    /**
+     * Harness-only lender input for a native window with no card offers or
+     * draws. This is not an exclusion stock: census and monthly cures must
+     * not reopen the fixture's lender. All cells exist from construction,
+     * including the empty cells that later receive arrivals. Not saved;
+     * a fixture loading another city must supply its lender again.
+     */
+    void setCardLenderOpenForHarness(boolean open) {
+        for (Household c : cells) c.cardLenderOpenForHarness = open;
+    }
+
     /** What the bank sets aside against the families' debt (0.7.8), summed cell by cell - see Household.lossAllowance(). */
     public double lossAllowance() { return sum(Household::lossAllowance); }
 

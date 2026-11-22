@@ -721,3 +721,52 @@ misses the five-point turnaway condition:99.999671% served at x1 versus
 Further per-cell diagnostics trace the lifted cells' retained cash/assets;
 the old lift assumed a whole wallet's draw, while HC1 keeps the spread's
 unspent tail. No five-point bound has been moved.
+
+The closed-lender trace identifies the remaining error in the input lift.
+At m145 a lifted unskilled senior-alone cell held mean savings0.143550550
+against a base care bill0.00448642927, and spent0.169107433 from its buffer;
+it was still fully served at x15. This is not a card draw (the entire
+native window has none). The single-wallet seed assumed it would spend
+min(gap,seed). HC1 instead leaves `seed-gap+shortfall(gap,seed,sigma)`;
+the remaining tail was extra liquidity and could acquire foreign/bond
+positions too. Closing credit alone cannot remove that tail.
+
+★ Keep the original target, BETWEEN_THE_BILLS, the selected poor cells,
+the native spread and the native shock. Solve only the seed input: find
+the lognormal mean whose cash left after that same planned gap equals
+the old wallet's `max(seed-gap,0)`. A monotone bisection calls the model's
+closed-form shortfall; it does not alter settlement or care. The native
+run independently retains the five-point assertion, and a new assertion
+checks every solved input against the original cash target (error<=1e-9).
+Diagnostics expose old/new seeds and the counterfactual extra cash.
+For the final m145 senior-alone unskilled input, old seed0.372014065
+would leave extra cash0.156194007 (40.4 base bills at0.00386615083);
+the solved seed is0.158820625. The high-fee care share is then0.332048,
+not full service. No care response is assigned by the fixture.
+
+`./batch-check.sh HealthCheck` now exits0. All twins have96/96 native
+months with exactly0 advances and0 planned card room. Over those96
+months, service at x1 is99.999523% versus88.250785% at x15, an11.748738
+point gap; the unchanged five-point premise passes. Beds, bills,
+coverage, sickness, mortality and hunger assertions all pass, as does
+the solved-input goal. Stale has0 firm findings. The FS11 ship row stays
+removed. The remaining9 rows are the pins the reviewer accepted.
+
+Final REV-HC1-2 validation: HealthCheck, OutsideCheck, CardCheck,
+SaveFileCheck, ReadPathCheck and HouseholdCheck all exit0 on the mends
+(the final HealthCheck is the solved-input run, superseding its earlier
+diagnostic failures). Final `--fast` exits0, compile53s, maps regenerated,
+Stale0 firm/199 soft. Source/notes whitespace checks are clean; generated
+Markdown retains its generator's hard-break spacing. Native60/61 refusal
+and current-format continuation remain green; format/floor stay62.
+The closed lender is a transient harness input, supplied only by
+HealthCheck and CardCheck, not a player position or a saved field.
+
+The provisional ship file validates with the accepted9 rows and no
+HealthCheck exemption. The pick remains ALL244, with the same money/saves
+review floor as the previous handoff. Fresh review is of the two P1
+mends against a77513b71: the lender input, native-window/buffer input
+checks and independent student allocation formulas. No production
+threading change. Marker stays provisional; mail mends and end for the
+same reviewer's delta. The final-model ensemble and new ALL dry-run slot
+remain after SHIP, as ordered; the stopped run is never reused as green.

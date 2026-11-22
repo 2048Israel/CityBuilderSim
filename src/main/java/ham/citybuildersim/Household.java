@@ -171,9 +171,16 @@ public abstract class Household {
     public double emergencyBill() { return emergencyBill; }
     public double cardWrittenOff() { return cardWrittenOff; }
 
+    /**
+     * Harness-only lender input, not a borrower stock: a closed lender offers
+     * no card room, even as an exclusion ages. The game leaves this true.
+     * Like a fixture census/market, it is not part of a city's saved position.
+     */
+    transient boolean cardLenderOpenForHarness = true;
+
     /** Available customers after the bank's income/access test, excluding children and prisoners. */
     double cardAccess(double income) {
-        return grownUps() > 0 && !debtFrozen()
+        return cardLenderOpenForHarness && grownUps() > 0 && !debtFrozen()
                 ? Bank.cardAccess(income, tier(), shutOut) : 0;
     }
 
@@ -1444,6 +1451,7 @@ public abstract class Household {
 
     /** What the bank will still lend one of these: the ceiling less what is owed, or nothing. */
     public double creditRoom(double disposablePer) {
+        if (!cardLenderOpenForHarness) return 0;
         double access = cardAccess(disposablePer);
         return Math.max(0, HouseholdBalance.CREDIT_LIMIT_MONTHS * Math.max(0, disposablePer)
                 * Math.max(access, revolving) - debt);

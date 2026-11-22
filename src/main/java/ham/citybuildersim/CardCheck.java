@@ -48,6 +48,25 @@ public final class CardCheck {
         check("a nine-sigma holding tail stays positive beside its balance tail", tail > 0);
         close("the holding tail is the model's direct normal tail", tail, BusinessDebtManager.normalCdf(-9), 1e-30);
     }
+    /** A lender can stay closed while borrowers' exclusion shares age normally. */
+    static void closedLender() {
+        HouseholdBalance hb = new HouseholdBalance();
+        hb.censusOnly((shape, tier) -> shape == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED ? 100 : 0);
+        Household c = hb.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        c.disposable = 1; c.savings = c.debt = c.revolving = 0; c.shutOut = 1;
+        hb.setCardLenderOpenForHarness(false);
+        c.settle(1, 0, 0, 2, 1, .03, null, 1);
+        c.chargeOff();
+        check("REV2 P1: a closed lender lends nothing despite the ordinary and unexpected gaps", c.borrowed() == 0 && c.unfunded() > 0);
+        check("REV2 P1: exclusion ages, but no card room enters the next plan",
+                c.shutOut() < 1 && c.creditRoom(1) == 0 && c.planningRoom() == 0);
+        c.debt = 1; c.revolving = 1; c.shutOut = 0;
+        check("REV2 P1: the closed lender also stops existing holders drawing more", c.creditRoom(1) == 0);
+        c.debt = c.revolving = 0;
+        hb.setCardLenderOpenForHarness(true);
+        c.settle(1, 0, 0, 2, 1, .03, null, 1);
+        check("REV2 P1: reopening the same lender funds the same household's gap", c.borrowed() > 0 && c.creditRoom(1) > 0);
+    }
     /** A pure imported broker has no profit to list, at either currency scale. */
     static void brokerRounding() {
         System.out.println("--- The broker's tax reserve creates no phantom company ---");
@@ -308,7 +327,7 @@ public final class CardCheck {
         check("replay history excludes later surveys", g.getHistorySave().cutAt(cutMonth).getDebtSurveys().stream().allMatch(s -> s.month() <= cutMonth));
     }
     public static void main(String[] args) {
-        spread(); month(); chargeOff(); save(); neighbours(); census(); reviewFlows(); brokerRounding();
+        spread(); month(); chargeOff(); save(); neighbours(); census(); reviewFlows(); brokerRounding(); closedLender();
         check("REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact", SaveFileCheck.nativeCard60Refusal());
         check("HC1 format62: native format61 refusal keeps bytes and the running loaded city intact", SaveFileCheck.nativeCard61Refusal(false));
         city();
