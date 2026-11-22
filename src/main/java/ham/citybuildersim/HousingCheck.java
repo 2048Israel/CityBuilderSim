@@ -1065,6 +1065,17 @@ public class HousingCheck {
         // Every place closed: every debt is a closed home's.
         re.setOwnedHousingCapacity(0);
         isNear("1200 places down to none: the whole debt is a closed home's", re.strandedDebtShare(), 1);
+        // REV-FB16: ...and saved so, a count of none is a count: put back after the rebuild's (1200, the portfolio grown between the presses),
+        // so the next month's count, 1300, is one from nothing and leaves the share whole, as the live landlord's does.
+        ham.citybuildersim.sectors.RealEstate closed = new ham.citybuildersim.sectors.RealEstate();
+        closed.restore(re.toState());
+        closed.setOwnedHousingCapacity(1200);
+        closed.restoreLoadedCapacity();
+        isNear("a landlord saved with every place closed, loaded: its count of none is put back after the rebuild's (REV-FB16)",
+                closed.getOwnedHousingCapacity(), 0);
+        closed.setOwnedHousingCapacity(1300);
+        isNear("...so its first month's count is from nothing, and the whole debt stays a closed home's, as the live landlord's",
+                closed.strandedDebtShare(), 1);
         re.setOwnedHousingCapacity(1200);
         isNear("...and a count from nothing leaves it", re.strandedDebtShare(), 1);
     }

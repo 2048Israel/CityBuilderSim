@@ -106,6 +106,9 @@ import java.util.function.Function;
  * count, the portfolio's, moves the count back up and dilutes the share (3k). Before RN2 the count was not saved, so the reload's
  * first count was one from nothing and kept the share as saved, while the live city's diluted it: on OE1's path, Danzik's
  * strandedDebtShare read 0.12079056423500815 live and 0.12091110568025631 reloaded, a month whose capacity the path happened to move.
+ * REV-FB16: and a last point, CLOSED_CITY, reloaded after the autosave with Real Estate's count set to none by hand while it owns its
+ * places (every home closed, the share whole): a count of none is a count, and comes back as one, so the reload's first month counts
+ * from nothing as the live city's does, not from the portfolio its rebuild counted.
  *
  * @author Jerus
  */
@@ -148,6 +151,9 @@ public class ReloadCheck {
 
     /** The name of the caused point's city, which the by-hand fixtures look it up by (FS17). */
     static final String CAUSED_CITY = "Danzik, caused";
+
+    /** The name of the last point, reloaded after the autosave with Real Estate counting no place while it owns some (REV-FB16). */
+    static final String CLOSED_CITY = "Danzik, every home closed";
 
     /** The seller-priced goods no sector sells through its market (FB3, FW6-C): building work is the crews' own points, so its list is empty at every checkpoint and no fixture can ask that it sold. */
     static final Set<Good> NEVER_FILLED = Set.of(Good.BUILDING_WORK);
@@ -506,8 +512,11 @@ public class ReloadCheck {
         RealEstate landlord = g.getSectors().realEstate(), landlordBack = back.getSectors().realEstate();
         p.countAtLoad = landlord.getOwnedHousingCapacity();
         p.landlord.saw("landlords with a closed homes' share", landlord.strandedDebtShare() > 0 ? 1 : 0);
-        p.landlord.saw("...with a count under the places they own",
-                p.countAtLoad > 0 && p.countAtLoad < g.getBuildingManager().getCapacityInPortfolioBySector(landlord.key()) ? 1 : 0);
+        long owned = g.getBuildingManager().getCapacityInPortfolioBySector(landlord.key());
+        p.landlord.saw("...with a count under the places they own", p.countAtLoad > 0 && p.countAtLoad < owned ? 1 : 0);
+        // REV-FB16: ...and one counting none, every home closed, while it owns places: the count a save of none must bring back as none.
+        p.landlord.saw("landlords counting no place while they own some, their share whole",
+                p.countAtLoad == 0 && owned > 0 && landlord.strandedDebtShare() == 1 ? 1 : 0);
         p.landlord.compare("Real Estate: the places it owns", p.countAtLoad, landlordBack.getOwnedHousingCapacity());
         p.landlord.compare("Real Estate: the closed homes' share", landlord.strandedDebtShare(), landlordBack.strandedDebtShare());
     }
@@ -830,11 +839,17 @@ public class ReloadCheck {
         // RN2: the caused point's Real Estate had its count lowered by hand (CAUSED_CLOSED), so its share is above zero and the month on's count moved it.
         onCausedPoint(caused, "3k", p -> p.landlord, "landlords with a closed homes' share", "...with a count under the places they own",
                 "landlords whose count moved in the month on, their share with it");
+        // REV-FB16: the last point's Real Estate had its count set to none by hand while it owned places, and the month on counted them.
+        onCausedPoint(pointOf(points, CLOSED_CITY), "3k, every home closed", p -> p.landlord,
+                "landlords counting no place while they own some, their share whole", "landlords whose count moved in the month on, their share with it");
     }
 
     /** The caused point (FS17): the city after its last checkpoint, with the causes set by hand, or null. */
-    static Point causedPoint(List<Point> points) {
-        for (Point p : points) if (p.problem == null && CAUSED_CITY.equals(p.city)) return p;
+    static Point causedPoint(List<Point> points) { return pointOf(points, CAUSED_CITY); }
+
+    /** The point of the city named, compared without a problem, or null (REV-FB16: the caused point's and the last one's). */
+    static Point pointOf(List<Point> points, String city) {
+        for (Point p : points) if (p.problem == null && city.equals(p.city)) return p;
         return null;
     }
 
@@ -856,7 +871,7 @@ public class ReloadCheck {
     /** A cause whose fixture the caused point supplies (FB3, FW6-C): the line says what the checkpoints alone showed. */
     static void causedCause(List<Point> points, Function<Point, Cause> which, String id, String when, String label) {
         Map<String, Integer> saw = sawTogether(points, which), natural = new LinkedHashMap<>();
-        for (Point p : points) if (p.problem == null && p.order == null) which.apply(p).saw.forEach((k, v) -> natural.merge(k, v, Integer::sum));
+        for (Point p : points) if (p.problem == null && p.order == null && !CLOSED_CITY.equals(p.city)) which.apply(p).saw.forEach((k, v) -> natural.merge(k, v, Integer::sum));
         check("fixture " + id + ": the live city exercised it", allAbove0(saw),
                 seen(saw) + "; the checkpoints alone showed " + seen(natural) + ", the rest is the caused point's (a stop started, a hand order made between the presses"
                         + ", and a carry placed if no checkpoint had one)");
@@ -1004,6 +1019,11 @@ public class ReloadCheck {
         long a0 = System.nanoTime();
         Autosaved autosaved = autosaveAndReload(files, g);
         System.out.printf("  autosaved at month %d, loaded from the autosave and compared (%.0f s)%n", autosaved.month, (System.nanoTime() - a0) / 1e9);
+        // REV-FB16: ...and last, Real Estate counting no place (every home closed, the share whole) while it owns the portfolio's places, reloaded.
+        long z0 = System.nanoTime();
+        g.getSectors().realEstate().setOwnedHousingCapacity(0);
+        points.add(reload(files, g, CLOSED_CITY));
+        System.out.printf("  Real Estate's count set to none, saved, reloaded and compared at month %d (%.0f s)%n", points.get(points.size() - 1).month, (System.nanoTime() - z0) / 1e9);
         Point earth = null;
         if (earthHere()) {
             GameFiles earthFiles = GameFiles.scratch("reloadcheck-earth");

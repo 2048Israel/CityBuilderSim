@@ -223,8 +223,8 @@ public final class RealEstate extends Sector {
 
     /** People the residential buildings hold, sites included - the break-even's denominator. Saved since RN2. */
     private double ownedCapacity;
-    /** ...the count a save held, waiting for the load's rebuild to have counted (RN2): see restoreLoadedCapacity(); 0 when none waits. */
-    private double loadedCapacity;
+    /** ...the count a save held, waiting for the load's rebuild to have counted (RN2): see restoreLoadedCapacity(); NaN when none waits (a count of none is a count: REV-FB16). */
+    private double loadedCapacity = Double.NaN;
     /**
      * The share, in [0,1], of the company's debt whose homes are gone (RN1,
      * 2026-11-09): Game.retire sells the land back and leaves the mortgage on
@@ -317,12 +317,13 @@ public final class RealEstate extends Sector {
      * after the economy's updateEcon()). The rebuild hands the landlord the month's inputs again, the count among them; from
      * nothing, it leaves the share as saved, and the count it set is the portfolio as loaded. The live city still holds the count
      * of its last month, and moves its share against it at the next month's count; so the count goes back to the saved one here,
-     * and the reload's next count moves the share from where the live city's does. A save from before RN2 held none: the rebuild's
-     * count stands, as every load's did before.
+     * and the reload's next count moves the share from where the live city's does. A count of none goes back too (REV-FB16: a city
+     * whose every place closed, its share whole, and whose portfolio grew between the presses, counts from nothing at its next month
+     * as the live city does). A save from before RN2 held no count: the rebuild's count stands, as every load's did before.
      */
     public void restoreLoadedCapacity() {
-        if (loadedCapacity > 0) ownedCapacity = loadedCapacity;
-        loadedCapacity = 0;
+        if (!Double.isNaN(loadedCapacity)) ownedCapacity = loadedCapacity;
+        loadedCapacity = Double.NaN;
     }
 
     /** The share of the debt whose homes are closed (RN1): see setOwnedHousingCapacity(). */
@@ -1027,7 +1028,7 @@ public final class RealEstate extends Sector {
         // RN2: the count waits for the load's rebuild, which counts from nothing (the share kept as saved), and goes back after it:
         // see restoreLoadedCapacity(). A save from before RN2 has none, and loads as every save did before: the rebuild's count stands.
         ownedCapacity = 0;
-        loadedCapacity = extras.getOrDefault("ownedCapacity", 0.0);
+        loadedCapacity = extras.getOrDefault("ownedCapacity", Double.NaN);
     }
 
     @Override
@@ -1041,7 +1042,8 @@ public final class RealEstate extends Sector {
         homes = 0; occupiedHomes = 0; household = 0; population = 0; householdCount = 0;
         strandedDebtShare = 0;
         marginalHousingCost = structurePerCapacity = landPerCapacity = 0;
-        studioCostPerCapacity = familyCostPerCapacity = ownedCapacity = loadedCapacity = 0;
+        studioCostPerCapacity = familyCostPerCapacity = ownedCapacity = 0;
+        loadedCapacity = Double.NaN;
         studioHomes = familyHomes = 0;
         studioSeekers = familySeekers = studioSeekerHeads = familySeekerHeads = 0;
     }
