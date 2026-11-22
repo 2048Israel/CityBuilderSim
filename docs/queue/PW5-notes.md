@@ -240,3 +240,32 @@ quoting error in a first merge-edit command changed no source; direct patches re
 the conflicts before checking or committing. The complete first ensemble above remains
 valid evidence for its earlier model, but is superseded for shipping by the merged model's
 checks and a new full ensemble. No dry-run request has been sent yet.
+
+The merged SubstationCheck, BuildingDataCheck, HousingInventoryCheck,
+PowerPriceCheck, SaveFileCheck, ReadPathCheck and PowerViewCheck all exit 0.
+Before re-running the ensemble, the coordinator additionally required a real
+format-61 refusal (mail 20261122-123121-187-orchestrator-5504). Capture published
+7e484c4da/0.9.189 itself with GridLegacyFixture: native format61 at month31,
+thirty history rows, housingInventory present and both PW5 grid-cost fields absent.
+No JSON is restamped or converted. The history SHA-256 matches the canonical
+format60 history exactly, consistent with RES2's unchanged monetary trace.
+
+Use one refusal implementation for both native pairs. Keep every format60
+schema/hash check, add the literal format61 hashes/schema, preserve both files
+after each refusal, retain full DataSave/history and manager/history identities,
+and run readers before and after the loaded twin's refusal. All three callers
+have their own format61 assertion. Provenance: src/main/resources/fixtures/pw5-format61/README.md;
+producer: tools/fixtures/GridLegacyFixture.java, guarded against the wrong build
+or an executable already carrying PW5's fields. The new pair is a different old
+format, not a duplicate of the shared format60 pair.
+
+The format62/native61 integration recheck passes SubstationCheck (including the
+literal format60 and format61 refusals), SaveFileCheck, ReadPathCheck, PowerPriceCheck
+and PowerViewCheck, all exit 0 and one at a time. The canonical shared format60
+checks and exact old hashes remain; there is one shared implementation and one
+pair per historical format. No budget, conservation, continuation or save-equality
+assertion was loosened during consolidation. Named logs: target/PW5-format62-results/.
+The final format62 `--fast` also exits 0, regenerating maps with zero firm Stale
+findings. Main remains 7e484c4da/0.9.189 at shipped format61; no further integration
+is outstanding before the new box ensemble, again against the newest monetary
+baseline, docs/ensemble/0.9.188.md (RES2 did not move that trace).

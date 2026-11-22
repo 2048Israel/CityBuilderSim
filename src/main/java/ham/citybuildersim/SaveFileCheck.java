@@ -70,6 +70,7 @@ public class SaveFileCheck {
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
         assertTrue("R6e current E21 choices survive immediate and next-month loads; native pre-E21 formats58/59 are refused intact", ModernEngineeringCheck.saveChecks());
         assertTrue("native format60 save/history refusal preserves both files and a running loaded twin", nativeCard60Refusal());
+        assertTrue("native format61 save/history refusal preserves both files and a running loaded twin", nativeGrid61Refusal(false));
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -3366,8 +3367,12 @@ public class SaveFileCheck {
 
     /** Exact native .188 bytes, shared with HC1; no current JSON is converted. */
     static byte[] native60Bytes(String name) throws IOException {
-        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/hc1-format60/" + name + ".json.gz")) {
-            if (in == null) throw new IOException("Missing native format60 " + name);
+        return nativeFixtureBytes("hc1-format60", name);
+    }
+
+    private static byte[] nativeFixtureBytes(String directory, String name) throws IOException {
+        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/" + directory + "/" + name + ".json.gz")) {
+            if (in == null) throw new IOException("Missing native fixture " + directory + "/" + name);
             try (var zipped = new java.util.zip.GZIPInputStream(in)) { return zipped.readAllBytes(); }
         }
     }
@@ -3376,21 +3381,36 @@ public class SaveFileCheck {
     static boolean nativeCard60Refusal() { return nativeCard60Refusal(false); }
 
     static boolean nativeCard60Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 60, "0.9.188", "hc1-format60",
+                "9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
+    }
+
+    /** Native RES2 saves carry housing inventory but no PW5 closing grid costs. */
+    static boolean nativeGrid61Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 61, "0.9.189", "pw5-format61",
+                "f94833347a6e7bbd16cd151899b7c3984e729e96012a80d948198cf3cf97572a",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
+    }
+
+    private static boolean nativeOldFormatRefusal(boolean readPaths, int format, String version, String directory,
+                                                 String saveHash, String historyHash) {
         try {
-            byte[] save = native60Bytes("save"), history = native60Bytes("history");
+            byte[] save = nativeFixtureBytes(directory, "save"), history = nativeFixtureBytes(directory, "history");
             var old = com.google.gson.JsonParser.parseString(new String(save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             var oldHistory = com.google.gson.JsonParser.parseString(new String(history, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             int keys = old.getAsJsonArray("householdCellKeys").size();
-            boolean genuine = !old.has("housingInventory") && old.get("saveFormat").getAsInt() == 60 && old.get("gameVersion").getAsString().equals("0.9.188")
-                    && old.getAsJsonArray("householdCells").size() == keys * 128 + 3 && !oldHistory.has("debtSurveys")
+            boolean housingShape = format == 60 ? !old.has("housingInventory")
+                    && old.getAsJsonArray("householdCells").size() == keys * 128 + 3 && !oldHistory.has("debtSurveys") : old.has("housingInventory");
+            boolean genuine = housingShape && old.get("saveFormat").getAsInt() == format && old.get("gameVersion").getAsString().equals(version)
                     && oldHistory.getAsJsonArray("month").size() > 0
                     && !old.getAsJsonObject("powerBooks").has("pendingGridCosts")
                     && !old.getAsJsonObject("powerBooks").getAsJsonObject("struck").has("gridCosts")
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save))
-                            .equals("9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186")
+                            .equals(saveHash)
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history))
-                            .equals("96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
-            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("hc1-refuse-native60"), null));
+                            .equals(historyHash);
+            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("refuse-native" + format), null));
             GameFiles files = source.getGameFiles();
             if (!source.prepareSaveForChecks(10, "HC1 current before refusal").write().whole()) return false;
             Game running = new Game(files);
@@ -3419,8 +3439,8 @@ public class SaveFileCheck {
                     && running.getHistorySave() == historyObject
                     && running.getMonth() == month && running.getCash() == cash
                     && beforeHistory.equals(gson.toJson(running.getHistorySave())) && jsonDiff(before, after, java.util.Set.of("savedAt")).isEmpty();
-            boolean refused = !files.slotIsLoadable(10) && GameVersion.noLongerReadable("0.9.188").equals(running.getLoadFailure());
-            if (!(genuine && floor && untouched && intact && refused)) System.out.printf("Native60: genuine=%s, floor=%s, bytes=%s, city=%s, refused=%s%n", genuine, floor, untouched, intact, refused);
+            boolean refused = !files.slotIsLoadable(10) && GameVersion.noLongerReadable(version).equals(running.getLoadFailure());
+            if (!(genuine && floor && untouched && intact && refused)) System.out.printf("Native%d: genuine=%s, floor=%s, bytes=%s, city=%s, refused=%s%n", format, genuine, floor, untouched, intact, refused);
             return genuine && floor && untouched && intact && refused;
         } catch (Exception ex) { ex.printStackTrace(); return false; }
     }

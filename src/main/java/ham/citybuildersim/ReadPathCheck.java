@@ -1621,6 +1621,7 @@ public class ReadPathCheck {
         assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
         assertTrue("R6e current E21 loads keep physical choices through real reads; formats58/59 are refused without changing a running city", ModernEngineeringCheck.readChecks());
         assertTrue("native format60 refusal and repeated reads preserve an actual running loaded twin and both files", SaveFileCheck.nativeCard60Refusal(true));
+        assertTrue("native format61 refusal and repeated reads preserve an actual running loaded twin and both files", SaveFileCheck.nativeGrid61Refusal(true));
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
         assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 
