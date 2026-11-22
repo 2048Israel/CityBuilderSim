@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**238 harness files, 27,224 labelled assertions.** AllChecks runs 238 of them.
+**238 harness files, 27,227 labelled assertions.** AllChecks runs 238 of them.
 
 ## Which harnesses read which class
 
@@ -15863,7 +15863,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L551 ...shared with no established, retired or outside cell
   - L552 the stock groups: the rows, the retired's tiers and the young's tiers
 
-## HousingCheck.java - 100 labelled assertions
+## HousingCheck.java - 102 labelled assertions
 
 > Audits the three subsystems that describe the same housing, every month, and
 > makes them agree. Not part of the game.
@@ -15994,9 +15994,11 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1062 ...the rebuild's count from nothing leaves it as saved, and stands: no count was saved to put back
   - L1063 ...its count the rebuild's
   - L1067 1200 places down to none: the whole debt is a closed home's
-  - L1069 ...and a count from nothing leaves it
-- **L1085 an exact packing leaves nobody doubled up**
-  - L1101 ...and the match places them all: nobody doubled up (
+  - L1074 a landlord saved with every place closed, loaded: its count of none is put back after the rebuild's (REV-FB16)
+  - L1077 ...so its first month's count is from nothing, and the whole debt stays a closed home's, as the live landlord's
+  - L1080 ...and a count from nothing leaves it
+- **L1096 an exact packing leaves nobody doubled up**
+  - L1112 ...and the match places them all: nobody doubled up (
 
 ## HousingDoorCheck.java - 10 labelled assertions
 
@@ -27747,7 +27749,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L611 read twice, the same view, figure for figure and word for word
   - L615 ...and reading it makes no production row (asked of a sector that buys no product)
 
-## ReloadCheck.java - 61 labelled assertions
+## ReloadCheck.java - 62 labelled assertions
 
 > Plays a city, saves it, loads the save into a second game, runs both a month
 > and compares what each would save: a reloaded city has to play its next
@@ -27763,71 +27765,72 @@ _(this harness does not label its checks through a helper - it prints its findin
 > JSON compared leaf by leaf. Every history series matched for 24 months; the
 > ...
 
-  - L445 saving
-  - L461 markets that imported
-  - L462 markets that exported
-  - L469 markets with units drawn since the strike
-  - L471 markets carrying the tally the harness set
-  - L478 cities in a sudden stop
-  - L479 ...of them with the stop's words
-  - L480 cities with a hot money peak
-  - L481 ...of them with the stock below its peak
-  - L482 cities with a widest spread
-  - L483 the sudden stop: its words
-  - L484 the sudden stop: isStopped
-  - L485 the sudden stop: months left
-  - L486 the hot money: the most that was ever here
-  - L487 the hot money: the widest the gap ever got
-  - L489 Quarrying: the limestone carried
-  - L492 sectors with shares this month
-  - L493 sectors with shares last month
-  - L495 sectors carrying the shares the harness set, this month
-  - L496 sectors carrying the shares the harness set, last month
-  - L500 weights above zero
-  - L502 indexes based
-  - L503 the price index: rent weight
-  - L504 the price index: food weight
-  - L508 landlords with a closed homes' share
-  - L509 ...with a count under the places they own
-  - L511 Real Estate: the places it owns
-  - L512 Real Estate: the closed homes' share
-  - L517 markets with draws since the month closed
-  - L562 sectors that counted a revaluation
-  - L563 ...of them one not zero
-  - L568 crews that drew materials
-  - L569 Construction: isDrawnKnown
-  - L570 Construction: drawn at home
-  - L571 Construction: drawn imported
-  - L579 hand-ordered seller rows that hold the order a month on
-  - L586 landlords whose count moved in the month on, their share with it
-  - L588 Real Estate: the places it owns, a month on
-  - L589 Real Estate: the closed homes' share, a month on
-  - L592 investment notes the live city left
-  - L672 the report: outbreaks
-  - L673 the report: months in outbreak
-  - L674 the report: months sick
-  - L675 the report: worst work ratio
-  - L676 the report: peak unburied
-  - L735 fixture: the history holds more than a hundred series with the month's entry, at every checkpoint
-  - L753 fixture: the save holds over 10,000 numbers, at every checkpoint
-- **L764 3. the causes, one by one**
-  - L790 fixture 3e, by the constant: every point stands past PriceIndex.SETTLING_MONTHS, and its price index is based, so the weights are the spending's and not the ...
-  - L795 fixture 3f: time skips were run on both cities from the same month, one with an outbreak and one with months sick
-  - L801 fixture 3f, by hand: the caused point's own skips had an outbreak and months sick, from the outbreak put in force on both twins
-  - L810 3f.
-  - L853 fixture
-  - L860 fixture
-  - L873 fixture
-- **L942 5. a city loaded from its month-end autosave plays its next month as the one that kept running**
-  - L944 the autosave was loaded
-  - L947 fixture: the month the autosave fell due in wrote slot
-  - L951 fixture: ...a month that drew from the markets, so it had draws to close at its end
-  - L953 5. month
-  - L955 5. month
-  - L957 5. ...and every figure in its save, to the cent
-  - L967 the file -D
-- **L1016 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
-- **L1022 4. on the real Earth**
+  - L451 saving
+  - L467 markets that imported
+  - L468 markets that exported
+  - L475 markets with units drawn since the strike
+  - L477 markets carrying the tally the harness set
+  - L484 cities in a sudden stop
+  - L485 ...of them with the stop's words
+  - L486 cities with a hot money peak
+  - L487 ...of them with the stock below its peak
+  - L488 cities with a widest spread
+  - L489 the sudden stop: its words
+  - L490 the sudden stop: isStopped
+  - L491 the sudden stop: months left
+  - L492 the hot money: the most that was ever here
+  - L493 the hot money: the widest the gap ever got
+  - L495 Quarrying: the limestone carried
+  - L498 sectors with shares this month
+  - L499 sectors with shares last month
+  - L501 sectors carrying the shares the harness set, this month
+  - L502 sectors carrying the shares the harness set, last month
+  - L506 weights above zero
+  - L508 indexes based
+  - L509 the price index: rent weight
+  - L510 the price index: food weight
+  - L514 landlords with a closed homes' share
+  - L516 ...with a count under the places they own
+  - L518 landlords counting no place while they own some, their share whole
+  - L520 Real Estate: the places it owns
+  - L521 Real Estate: the closed homes' share
+  - L526 markets with draws since the month closed
+  - L571 sectors that counted a revaluation
+  - L572 ...of them one not zero
+  - L577 crews that drew materials
+  - L578 Construction: isDrawnKnown
+  - L579 Construction: drawn at home
+  - L580 Construction: drawn imported
+  - L588 hand-ordered seller rows that hold the order a month on
+  - L595 landlords whose count moved in the month on, their share with it
+  - L597 Real Estate: the places it owns, a month on
+  - L598 Real Estate: the closed homes' share, a month on
+  - L601 investment notes the live city left
+  - L681 the report: outbreaks
+  - L682 the report: months in outbreak
+  - L683 the report: months sick
+  - L684 the report: worst work ratio
+  - L685 the report: peak unburied
+  - L744 fixture: the history holds more than a hundred series with the month's entry, at every checkpoint
+  - L762 fixture: the save holds over 10,000 numbers, at every checkpoint
+- **L773 3. the causes, one by one**
+  - L799 fixture 3e, by the constant: every point stands past PriceIndex.SETTLING_MONTHS, and its price index is based, so the weights are the spending's and not the ...
+  - L804 fixture 3f: time skips were run on both cities from the same month, one with an outbreak and one with months sick
+  - L810 fixture 3f, by hand: the caused point's own skips had an outbreak and months sick, from the outbreak put in force on both twins
+  - L819 3f.
+  - L868 fixture
+  - L875 fixture
+  - L888 fixture
+- **L957 5. a city loaded from its month-end autosave plays its next month as the one that kept running**
+  - L959 the autosave was loaded
+  - L962 fixture: the month the autosave fell due in wrote slot
+  - L966 fixture: ...a month that drew from the markets, so it had draws to close at its end
+  - L968 5. month
+  - L970 5. month
+  - L972 5. ...and every figure in its save, to the cent
+  - L982 the file -D
+- **L1036 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
+- **L1042 4. on the real Earth**
 
 ## ReplayCheck.java - 194 labelled assertions
 

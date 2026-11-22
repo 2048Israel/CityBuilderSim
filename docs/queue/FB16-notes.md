@@ -89,6 +89,19 @@ from origin/main 827bc03f7 (0.9.181); main had not moved at the mends. Commits: 
   the final one calls `restoreLoadedCapacity()`, which main lacks.
 - **Checks.** HousingCheck, ReloadCheck (all checks passed, Danzik's §2 among them) and SaveFileCheck green;
   ReloadCheck's two known-reds rows leave.
+- **REV-FB16's note 1, mended.** The money and saves review (SHIP, no P1) found that `restoreLoadedCapacity()`'s
+  `loadedCapacity > 0` read a saved count of 0 as no key. Take a city whose every place closed (count 0, share 1) and
+  whose portfolio grew between the presses. Its reload kept the rebuild's count (the portfolio). The live city's next
+  month counts from nothing; the reloaded one counted from the portfolio, so a month that grew it diluted the whole
+  share. Now `restoreExtras` reads `getOrDefault("ownedCapacity", NaN)`, and `restoreLoadedCapacity()` puts back any
+  count that is not NaN, 0 among them, then waits on NaN again (`resetExtras` too). A save from before RN2 reads NaN and
+  loads as before. ReloadCheck causes it on a last point, `CLOSED_CITY` ("Danzik, every home closed"), reloaded after the
+  autosave with Real Estate's count set to none by hand while it owns its places. Its 3k line and a by-hand fixture line
+  ("landlords counting no place while they own some, their share whole", and the month on's count moved) back it.
+  On 90507a576 the 3k line fails: the places it owns 0.0 live against 19710.0 reloaded. HousingCheck's landlord section
+  gains the same case: saved at count 0, the rebuild's 1200, put back 0, the next count 1300 from nothing, share 1. Both
+  lines fail on 90507a576. All three harnesses are green on the mend. The trace cannot move: the change is on the load
+  path only, and LongPlaytest's `roundTrip()` compares a loaded twin and drops it, the played city going on.
 
 ## 5. The calls
 
@@ -130,5 +143,7 @@ from origin/main 827bc03f7 (0.9.181); main had not moved at the mends. Commits: 
 ## 7. For the orchestrator
 
 - `docs/notes/gate.txt` lines 34-37 (ReloadCheck, exit 1 and Danzik's two §2 lines) are main's red that RN2 makes
-  green; they are the publisher's to remove.
+  green, and lines 28-30 (PassThroughCheck, exit 1 and "...the imported cost sets the shelf in both twins in each of
+  the 12 months ... (0 of 12)", PT2's assertion) go green with PT2 (REV-FB16's note 2); all seven are the publisher's
+  to remove.
 - The four known-reds rows (CarCheck CI1, PassThroughCheck PT2, ReloadCheck RN2 x2) leave in their rows' commits.
