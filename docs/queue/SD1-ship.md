@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-SD1-q6JFau8t -->
 <!-- readiness: provisional -->
 ## changelog
 ### SD1 — Correct scrapping wording — 2026-11-22, ready, see docs/queue/SD1-notes.md

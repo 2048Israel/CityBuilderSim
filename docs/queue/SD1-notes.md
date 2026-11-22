@@ -88,5 +88,27 @@ Dry integration: merged main 2cdf061013811d209acfcdfeb5aa82140a6fc204,
 including the RES1 study and queue-only records, without conflicts. A diff
 against mends 4c508e2ac confirms no source change from that integration.
 Unchanged focused checks were not repeated. The merged provisional branch
-is committed and pushed before the admitted gate-box-first dry run, and
-source, branch and records remain frozen through its actual terminal.
+was committed and pushed before the admitted gate-box-first dry run, and
+source, branch and records were frozen through its actual terminal.
+
+Dry result: gate exit 0 on the gate box, run
+`/home/jerus/cbs/runs/cbs-gate-SD1-q6JFau8t`, testing branch
+01789b9e1153a28e3bce3b43f87ff72b95afa4ac against main
+2cdf061013811d209acfcdfeb5aa82140a6fc204. The check wrapper finished in
+638 seconds with exit 3 under the standard known-red judge: 224 harnesses
+ran in 621 seconds, 213 passed and 11 had only recorded known reds
+(BankCheck, BuildAdviceCheck, CreditCrunchCheck, DenominationCheck,
+Forms1900Check, MortgageCheck, PassThroughCheck, PublicLicenceCheck,
+ReloadCheck, RoadCheck, YoungBankCheck). `unnamed.txt` is empty; no NEW red
+or custom waiver. The normal gate policy reported 4 timing assertions SOFT
+and 6 path assertions OBSERVED, neither counted as failures. All eight
+selected Monocle display harnesses started. No unchanged focused replay,
+baseline or ensemble was added.
+
+The owner terminal exited 0, and the normal evidence copy completed to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-SD1-q6JFau8t`. Nothing was run
+inside the retained run. The original gate was not restarted. The heavy
+slot was released to the orchestrator after actual terminal (mail 0862).
+Only these notes and the ship file change after the dry. Its exact gate-run
+is the ship file's first line, followed by the retained provisional marker.
+Root readiness GO remains required; no marker removal or real publication.
