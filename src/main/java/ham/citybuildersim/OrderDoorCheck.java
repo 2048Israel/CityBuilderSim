@@ -260,6 +260,10 @@ public class OrderDoorCheck {
         check(String.format("fixture: the ensemble's seed %d played to FROM (m%d, at m%d)", SEED, FROM, g.getMonth()), played);
         if (!played) { finish(); return; }
         out.println("  played city wires " + SubstationCheck.gridReading(g));
+        UtilitiesHandler.Book power = g.getServicesManager().getUtilitiesHandler().getStruckBook();
+        out.printf("  billed power: %.3f kWh served, %.3f free founding grid, %.3f fuelled plants, %.3f wind, %.3f hydro, %.3f works; fuel %s; highest block price %.9f%n",
+                power.servedKwh, power.gridKwh, power.fuelledKwh, power.windKwh, power.hydroKwh, power.worksKwh,
+                power.fuel, java.util.Arrays.stream(power.price).max().orElse(0));
         check("fixture: the played city has the wire capacity its billed and closing peaks need at the order-door month",
                 SubstationCheck.gridCovered(g));
         GoodsMarket mat = g.getMarkets().get(Good.MATERIALS);

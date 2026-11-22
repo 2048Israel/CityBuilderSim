@@ -637,3 +637,97 @@ including its heading. The check loop and its waiter have ended; no own JVM
 or gate process remains. Keep the prior stopped dry-run directory as evidence,
 not as a passing reusable run. A fresh ALL dry run awaits the delta SHIP and
 the orchestrator's newly granted slot.
+
+### REV-PW5-2 delta: cause HomeRail's partial share and check the borrowers
+
+Mail 20261122-163348-763-orchestrator-88ff correctly rejects the two remaining
+HomeRail exemptions. Adequate physical carry does not isolate a tariff change:
+this hand-built town pays 21.85 cents/kWh for its real district, versus main's
+5.94-cent flat wires. It offers 32,614 home tonnes rather than main's 36,137,
+into 43,191 tonnes of room rather than 35,377. Its share of 1 is a fixture
+condition PW5 must re-cause. Those two exemptions are withdrawn; only the
+played OrderDoor premise remains in the ship file.
+
+★ Cause the strict interior through real stock and real months. HomeRail's
+fractional-share fixture now has two copies of the base town's buildings and
+iron sites/reserves, with real substations sized again from their peak draw.
+This makes the home offer wider than one spur's indivisible capacity step.
+After the town plays, its actual boundary offer sizes the count of real spurs
+beside its one depot: the first whole count putting their room above that
+offer. The excess is at most one spur's step, short of the larger home offer.
+The existing sixty-month guard still waits for the actual model's strictly
+partial share, including its normal fleet purchases and monthly trade drift.
+A new strict fixture line requires the observed home offer to exceed that
+step before laying the spurs. No share, trade row, capacity reading or market
+price is assigned to manufacture the answer. The existing literals/pellet
+quote preparation and its original documented cause are unchanged.
+
+The depot/three-spur town still causes the full-boundary zero-share side.
+The new town causes the other side from its played offer, then every original
+leg, actual bill, diesel and save identity runs against it. Both original
+0 < share < 1 conditions and their comparisons are retained; the descriptive
+label now says spurs sized from the offer instead of claiming exactly four.
+The larger stock is local to this one fixture. The shared HaulageCheck.base
+and every other caller keep the preceding real-wire preparation unchanged.
+
+OrderDoor remains HT1-H by the review's decision: seed 12, builder on, and no
+order attempted or lost. Its energy charge is zero for a concrete dispatch
+reason as well as its wires being free: UtilitiesHandler adds the founding
+generator as a zero-marginal-cost row (UtilitiesHandler.java:901). This town's
+roughly 2 MW peak is below that row's capacity throughout the billed month.
+No fuelled plant is needed; every half-block clears at zero, so the weighted
+energy price is zero (PowerDispatch.java:250-278). Zero owned districts also
+means no capital, repairs or district posts in the wires part. Main still
+charged its flat 5.94-cent wires even here. OrderDoor now prints the actual
+struck book's generator kWh, fuel and highest block price beside the carry
+reading, making both zero bill parts traceable. The lender-edge conditions
+remain assertions, not values changed to reach the order.
+
+HomeRailCheck now exits 0, including the full 1,250-month real-run section.
+Before its new spurs, the doubled town offers 76,785 home tonnes and 427,623
+boundary tonnes; the 50,000-tonne step selects eight spurs beside the depot.
+Normal months reach the strict interior after 15 of the permitted 60 months,
+at m33: the boundary deals 385,113 of 448,125 tonnes, leaving 63,012 tonnes
+for 63,868 home tonnes. The observed share is 0.9866, strictly between zero
+and one, and the tonnes taken equal the room to the unchanged tolerance.
+The original each-leg partial-share premise and every bill/diesel/save line
+pass. One district carries its closing 41.783 MW and billed 45.430 MW peaks
+fully, with actual wires 12.601571 cents/kWh and energy 3.762613 cents/kWh.
+The zero-share town remains fully wired and its original bounds also pass.
+Log: target/PW5-review5/HomeRailCheck.txt and HomeRailCheck.log.
+
+All five named borrowers of HaulageCheck.base were rerun, one named script
+call at a time with cbs.parallel=1:
+
+| Harness | Result |
+| --- | --- |
+| EquipmentCheck | 0; every fitting, dispatch and settlement comparison passes |
+| Forms1900Check | 3; only its two existing FS8 lamp-oil/door-count premises |
+| LandlordPortCheck | 0; all port, tariff and financing comparisons pass |
+| TradeBandCheck | 0; all band and reload comparisons pass |
+| TruckRouteCheck | 0; all route, leg, bill and save comparisons pass |
+
+Forms1900's recorded FS8 lines are the month having petrol duty (actual zero,
+378.2 homes and 7,450.7 litres) and the billed versus closing door counts
+(404.154565 versus 378.213948). These are the existing named assertions in
+docs/notes/known-reds.txt, not new exemptions; no assertion is weakened.
+Logs and return codes are target/PW5-review5/Name.txt/log and status.txt.
+
+The refreshed OrderDoor run has only its accepted edge premise red, now at
+OrderDoorCheck.java:277. Its billed book serves 1,216,106.526 kWh, all from
+the free founding grid: fuelled, wind, hydro and works output are each zero,
+the fuel map is empty and the highest block price is exactly zero. Both
+bill components are therefore zero for the traced reason above. Its strict
+closing/billed carry comparison passes, and both lender-pass predicates
+remain false. Only this OrderDoor row remains in PW5's ship known-reds; the
+orchestrator can narrow HT1-H on main to it after the delta review.
+
+Final --fast exits 0, maps regenerated, zero firm Stale findings and 196 soft.
+git diff --check passes and edited files are LF. The known-reds parser exits
+0 with the single remaining OrderDoor row; the changelog stays eleven lines.
+Pick remains ALL 243, review needed for DataSave and SAVE_FORMAT/floor.
+Only harness sources changed since the final-model ensemble 069504753;
+production code, format/floor 62, native save fixtures and the ensemble's
+M1/F1 10/10 and 24/26 result remain unchanged. The serial check loop ended
+with no own JVM or gate process left. Send this delta for the same reviewer's
+verdict with the provisional marker, then request the dry-run slot on SHIP.
