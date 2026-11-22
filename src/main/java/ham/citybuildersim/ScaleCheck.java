@@ -1625,6 +1625,19 @@ public class ScaleCheck {
         for (String key : TOP) {
             if (d.has(key)) d.add(key, sc(d.get(key), NAMED.contains(key) ? "x" : "", k));
         }
+        // RES3: native titles and cell/class flows grow with the city. Per-home
+        // prices, carry, capital, budgets, attributes and the wage indices stay.
+        named(d.get("housingInventory"), k, "owned", "occupied", "listedVacant", "listedOccupied");
+        if (d.has("housingMarket") && !d.get("housingMarket").isJsonNull()) {
+            JsonObject market = d.getAsJsonObject("housingMarket");
+            named(market.get("classes"), k, "demand", "homes", "occupied", "tradeQuantity", "tradeValue");
+            named(market.get("leases"), k, "count", "bill", "households");
+            named(market.get("demand"), k, "count");
+            named(market.get("pipeline"), k, "count");
+            named(market.get("sharing"), k, "groups", "sourceCount", "targetCount");
+            for (String key : new String[] { "kept", "suitable", "crowded", "unaffordable", "noSuitable", "unplaced", "hosted" })
+                scalar(market, key, k);
+        }
         // The land's books (0.7.67): each holding's five areas and its forest's timber, K times over, as the
         // square feet are - its blocks, its fields, its iron and its offers the founded city's.
         int timber = CityLand.AREAS + CityLand.KINDS + Resource.FOREST.ordinal();

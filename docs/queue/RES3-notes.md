@@ -256,11 +256,20 @@ pre-census balances remaining in that shape after housing moves. Assertions
 and every continuation comparison remain, with delivered share also required
 positive to avoid a default-zero round trip.
 
-ReadPathCheck passes. ReloadCheck reports only the existing HT1-H hand-order
-material-draw premise; its actual continuation comparisons remain green.
+ReadPathCheck passes. The latest ReloadCheck exits 3 with only the two existing
+RN3 fixture-3k premises (live and caused all-homes-closed). They are main's
+documented stranded-debt-share rounding class: the hand closure can yield
+0.99999999999999990 where the fixture requires exactly 1. Actual continuation
+comparisons remain green; neither premise nor save comparison was relaxed.
 DenominationCheck found a new divergence to mend, not a tolerance to relax.
 The student's large finite planning allowance now follows the actual currency
 unit through derived city context, including after load/new-city reset. No new
 saved stock is added. Genuinely equivalent demand on zero-cost offers now
 coalesces independent of irrelevant cash budgets; caused tests cover pro-rata
 free offers and the scaled treasury allowance. Final currency proof follows.
+
+The affected ScaleCheck fixture copier now classifies native housing titles and
+typed flows explicitly: counts and aggregate bills grow with the copied city;
+per-home asks/carry/capital, per-household budgets, attributes, dates and wage
+indices remain intensive. It also includes RES2's native inventory holdings,
+which the older copier omitted. No assertion or scaling tolerance changes.
