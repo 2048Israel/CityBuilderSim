@@ -141,3 +141,16 @@ In `docs/queue/RR1/`, each of his copy drawn as the screen draws it (the probe),
 against `1-siding-mended` (the siding a month on, square on main, its arcs mended), `2-s-bend-main` against
 `2-s-bend-mended`, `3-hub-rail-main` against `3-hub-rail-mended` (a month on), `5-bergen-station-m1322` (the playtest's
 station's ground), `6-corner-stub` (findings 6, 8 and 9 at 12 px a plot).
+
+## The checks
+
+- `./batch-check.sh --fast` green on the merge with main 0.9.182 (FB16); the named harnesses one at a time, each green:
+  `TruckRouteCheck`, `MainLineCheck`, `RailDrawCheck`, `JunctionCheck`, `GatewayCheck`, `MapCheck`, `IslandRailCheck`,
+  `QuayRailCheck`, `RunWorksCheck`.
+- **The trace.** The default playtest ran traced (`-Dplaytest.trace`, both data files named) on main de51e413b (0.9.182,
+  built apart) and on this branch's merge: all eight CSVs byte-identical, and the reports differ only in run times and an
+  object's hash in one line. `LongPlaytest`: "All checks passed". So no ensemble.
+- The pick (`sh tools/pick.sh origin/main HEAD`): 24 harnesses, no review (no money, saves or threading). Each run alone,
+  all green: the nine above, `LongPlaytest` (the traced run), `BridgeCheck`, `BridgeMapCheck`, `CrossingCheck`,
+  `EarthTerrainCheck`, `GlobeCheck`, `IslandNetCheck`, `LandmassCheck`, `PlanCheck`, `PortCheck`, `ReadPathCheck`,
+  `ReplayCheck`, `SaveFileCheck`, `SlopeCheck`; `TimingCheck` left to the gate and the nightly (`--timing`).
