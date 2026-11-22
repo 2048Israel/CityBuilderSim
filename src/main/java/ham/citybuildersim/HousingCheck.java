@@ -741,7 +741,16 @@ public class HousingCheck {
 
         /* ---- the plan, the card ---- */
         staffed.getBusinessInvestment().releaseSector(landlords.key());
-        BusinessInvestment.Decision ordered = landlords.plan(staffed.getBusinessInvestment(), staffed);
+        // RES3 may prefer a zero-staff House. This premise must offer only
+        // the blocks whose posts the city cannot fill; restore the menu after.
+        java.util.Set<Integer> staffingMenu=new java.util.HashSet<>();
+        for(var t:staffed.getBuildingManager().getKnownTemplates())staffingMenu.add(t.getId());
+        staffed.getBuildingManager().setTemplateKnown(t->staffingMenu.contains(t.getId())&&t.getId()!=house.getId());
+        assertTrue("fixture: every offered home for this staffing decision has posts",
+                staffed.getBuildingManager().getTemplatesBySector(landlords.key()).stream().allMatch(t->t.getTotalJobs()>0));
+        BusinessInvestment.Decision ordered;
+        try{ordered=landlords.plan(staffed.getBusinessInvestment(), staffed);}
+        finally{staffed.getBuildingManager().setTemplateKnown(t->staffingMenu.contains(t.getId()));}
         System.out.println("   " + ordered.reason
                 + (ordered.template == null ? "" : " -> " + ordered.quantity + " x " + ordered.template.getName()));
         assertTrue("the landlords still order a home the city could not staff",

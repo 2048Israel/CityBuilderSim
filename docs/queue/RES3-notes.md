@@ -349,3 +349,16 @@ about 2.5e-5 relative. The share/desk code is untouched. The recorded financial
 rounding class remains with DK1; its automatic known-red verdict is not a
 relaxed comparison. The stranger's money/save review sees the trace and the
 unchanged 1e-9 checks. Final ordinary (untraced) repetition follows below.
+
+The final HousingCheck staffing premise selected 150 Houses, a valid zero-staff
+home, so it did not exercise the assertion's "cannot staff the ordered home"
+condition. For that one decision the fixture now offers its two apartment
+blocks, asserts that every offered home has posts, then immediately restores
+its original three-form menu in finally. Its original order/staffing assertion
+and every card, payroll and carry assertion remain. No model gate is bypassed.
+
+The catalogue report now gives full-staff payroll cash as well as posts for
+each form, plus the actual current staffed RE total. Both burden columns use
+the same two-earner unskilled reference household, with its actual payslip
+levies; the observed mixed unskilled row mean is reported separately so sharing
+does not silently change the take-home comparison's reference household.

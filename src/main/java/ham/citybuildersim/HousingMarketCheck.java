@@ -242,15 +242,16 @@ public final class HousingMarketCheck {
         check("a completion projection leaves the one monthly quote untouched",beforeRoom.equals(JSON.toJson(market.forSave())));
     }
     static void writeReport(StringBuilder report,Game g,String label,Map<Integer,Long> starts,Map<Integer,Long> completions,int months,double ms){
-        var market=g.getSectors().realEstate().housingMarket();var bm=g.getBuildingManager();var em=g.getEconomyManager();
+        var re=g.getSectors().realEstate();var market=re.housingMarket();var bm=g.getBuildingManager();var em=g.getEconomyManager();
         report.append("\n## ").append(label).append("\n\nIntegrated month: ").append(String.format(Locale.ROOT,"%.3f",ms)).append(" ms. H/T/A/M/L = ")
                 .append(market.forSave().demand.size()).append('/').append(market.classes().size()).append('/').append(market.leases().size())
                 .append("/0/").append(bm.getHousingInventory().forSave().stream().filter(h->h.listedVacant+h.listedOccupied>0).count())
                 .append(". M counts new typed loan cohorts (ownership follows in HO1); L counts live listing cohorts. Physical cohorts: ")
                 .append(bm.getHousingInventory().stock().size()).append(".\n\n");
-        report.append("| Form | ID | Since / known | Floors / gross m² / site ft² | Materials / points | Cash / project quote | Payroll posts / power / water | Wage scale | Funded starts | Completed / months |\n|---|---:|---|---|---|---|---|---|---:|---|\n");
+        report.append("| Form | ID | Since / known | Floors / gross m² / site ft² | Materials / points | Cash / project quote | Posts / full payroll / power / water | Wage scale | Funded starts | Completed / months |\n|---|---:|---|---|---|---|---|---|---:|---|\n");
         for(var f:HousingForms.ALL){var t=bm.getTemplate(f.id());long completed=completions.getOrDefault(f.id(),0L);
-            report.append(String.format(Locale.ROOT,"| %s | %d | %d / %s | %d / %.1f / %.0f | %d / %d | %.6f / %.6f | %d / %d / %.3f | %.6f | %d | %d / %d |%n",f.code(),f.id(),t.getSince(),!g.foundedUnfitted()||t.knownAt(g.getMonth(),g.getResearch()),f.floors(),f.grossArea(),f.plot(),t.getConstructionMaterials(),t.getConstructionPoints(),t.getCashCost(),g.doorPriceOf(t,1),f.staff(),t.getElectricityConsumption(),t.getWaterConsumption(),g.getRecipes().datedScale(t),starts.getOrDefault(f.id(),0L),completed,months));}
+            double payroll=0;for(JobType job:JobType.values())payroll+=t.getJobs(job)*em.getWageRates()[job.ordinal()];
+            report.append(String.format(Locale.ROOT,"| %s | %d | %d / %s | %d / %.1f / %.0f | %d / %d | %.6f / %.6f | %d / %.6f / %d / %.3f | %.6f | %d | %d / %d |%n",f.code(),f.id(),t.getSince(),!g.foundedUnfitted()||t.knownAt(g.getMonth(),g.getResearch()),f.floors(),f.grossArea(),f.plot(),t.getConstructionMaterials(),t.getConstructionPoints(),t.getCashCost(),g.doorPriceOf(t,1),f.staff(),payroll,t.getElectricityConsumption(),t.getWaterConsumption(),g.getRecipes().datedScale(t),starts.getOrDefault(f.id(),0L),completed,months));}
         double gross=2*em.getWageRates()[JobType.NO_DIPLOMA.ordinal()];
         double count=g.getHouseholds().getRowHouseholds(PayTier.UNSKILLED.ordinal());
         double rowNet=count>0?g.getHouseholds().getRowDisposable(PayTier.UNSKILLED.ordinal())/count:0;
@@ -268,7 +269,7 @@ public final class HousingMarketCheck {
             var c=market.classes().stream().filter(s->s.recipe==f.id()&&s.dwelling.equals(d.id())).findFirst().orElseThrow();
             report.append(String.format(Locale.ROOT,"| %s / %s | %.2f / %.2f | %.6f / %.6f |%n",f.code(),d.id(),d.costWeight(),d.costWeight()*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12,c.capital,c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12));
         }
-        report.append(String.format(Locale.ROOT,"%nActual accepted occupied rent this month: %.6f; last settled class trade value total: %.6f; vacant RE doors: %.3f.%n",market.receipts(),market.classes().stream().mapToDouble(c->c.tradeValue).sum(),market.classes().stream().mapToDouble(c->c.homes-c.occupied).sum()));
+        report.append(String.format(Locale.ROOT,"%nActual accepted occupied rent this month: %.6f; last settled class trade value total: %.6f; vacant RE doors: %.3f. Current staffed RE payroll: %.6f (the per-form table budgets every post at full staffing).%n",market.receipts(),market.classes().stream().mapToDouble(c->c.tradeValue).sum(),market.classes().stream().mapToDouble(c->c.homes-c.occupied).sum(),re.getPayroll()));
         var outcome=market.result();
         report.append(String.format(Locale.ROOT,"%nMonthly allocation: %.3f retained, %.3f normal movers, %.3f emergency placements (%.3f hosted at no additional rent), %.3f unplaced for affordability, %.3f for compatible supply. Occupied household units / door-equivalents: %.3f / %.3f.%n",outcome.kept(),outcome.suitable(),outcome.crowded(),market.hosted(),outcome.unaffordable(),outcome.noSuitable(),market.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),market.occupied()));
     }
