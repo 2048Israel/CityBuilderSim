@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.185 — RR1, the map's roads and rails — 2026-11-22, ready, see docs/queue/RR1-notes.md
+Jerus's city drawn as he saw it (slot 10's copy, months 1,204 to 1,208). A works siding drawn square from the first draw after
+a month keeps its arcs (`CityMap.planSidingsRoutable()`, RailDrawCheck 31). A highway S-bend's straights stop where the next
+bend's arc begins (`TileRaster.highwayLegs()`, JunctionCheck 24). ★ A main line that reaches no edge is taken back to the trains'
+way (`CityRuns.cutDeadSpine()`, MainLineCheck). HWW1: where the highways' gate arm ends at the city's own water, the trucks come
+in at its end (`CityMap.highwayPortal()`; his city 0 world truck routes to 7, TruckRouteCheck 11). STY1: a station at the mixed
+train's tier is weighed beside the quarter line too (MainLineCheck 17 (c)). ★ A highway's end with a street beneath narrows to
+that street, carried past a link's bend, and an arm waiting at the city's own water has a street laid beneath its ramp
+(`TileRaster.highwayEnds()`, `DistrictPlan.rampJoins()`, JunctionCheck 25, 26). FA1's frontage avenues end at their last
+crossing, no stair step past it (`DistrictPlan.frontageEnds()`, PlanCheck 20). Bergen's 48-plot station through the hub is
+queued (RH1). Map only: nothing in the model reads it, and the default trace is unchanged.
+
 ### 0.9.184 — HT1, household basis and investment taxes — 2026-11-22, ready, see docs/queue/HT1-notes.md
 Household stock purchases and founders carry average acquisition cost with the people; sales release it and carry unused losses. Real sale and integrated dividend taxes transfer cash to two named treasury revenues, with an adjustable inclusion dial. Cash-first secured deferral, estate step-up, survivor rollover and passive unclaimed-property custody preserve the actual stocks and payments. The incompatible save format carries basis, claims, policy and struck flows. Genuine bond extinction closes every household position without inventing cash. Independent whole and scoped reviews have cleared the money/save changes; integrated .183 custody, monetary, save and scaling checks pass. The final model ensemble passes every money audit; its exact seed14 land-funding finding passes by name with FB11H queued. The versioned ALL dry completes all234 selected harnesses and its retained-run record gate passes, with remaining assertions traced and named with queued owners. L7 retains its separate Pending account-design disposition.
 
