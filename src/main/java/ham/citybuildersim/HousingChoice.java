@@ -87,7 +87,9 @@ public final class HousingChoice {
         double kept=0;
         for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];double ratio=sum>free[j]?free[j]/sum:1;
             for(int i=0;i<h;i++){x[i][j]*=ratio;need[i]=Math.max(0,need[i]-x[i][j]);free[j]-=x[i][j];kept+=x[i][j];}}
-        double suitable=allocate(ds,os,need,free,x,month,false),crowded=emergency?allocate(ds,os,need,free,x,month,true):0;
+        double[][] retained=new double[h][];for(int i=0;i<h;i++)retained[i]=x[i].clone();
+        double suitable=allocate(ds,os,need,free,x,month,false);
+        double crowded=emergency?completeEmergency(ds,os,need,free,x,retained,month):0;
         // Pro-rata products may sum one ULP over a source. Round down only within
         // the model's packing bound; a genuine excess remains an error.
         for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];
@@ -162,10 +164,70 @@ public final class HousingChoice {
         for(int j=0;j<free.length;j++)free[j]=Math.max(0,free[j]-takeT[j]);
         return placed;
     }
-    private static final class Edge { final int to; double left; Edge reverse;Edge(int to,double left){this.to=to;this.left=left;} }
+    /**
+     * Complete the maximum normal matching through its residual paths. A path's
+     * integer cost counts normal placements lost; only zero-cost additions are
+     * allowed. Thus soft preferences may move, but neither incumbents nor the
+     * maximum number of normally suitable households can be displaced by crowding.
+     */
+    private static double completeEmergency(List<Demand> ds,List<Offer> os,double[] need,double[] free,
+                                            double[][] x,double[][] retained,int month){
+        if(Arrays.stream(need).sum()<=1e-12||Arrays.stream(free).sum()<=1e-12)return 0;
+        double[] originalH=new double[ds.size()],originalT=new double[os.size()];
+        for(int i=0;i<ds.size();i++)originalH[i]=Math.max(0,ds.get(i).count()-Arrays.stream(retained[i]).sum());
+        boolean freeOffers=true;
+        for(int j=0;j<os.size();j++){
+            double kept=0;for(int i=0;i<ds.size();i++)kept+=retained[i][j];
+            originalT[j]=Math.max(0,os.get(j).count()-kept);
+            if(originalT[j]>0&&os.get(j).rent()+os.get(j).recurring()>0)freeOffers=false;
+        }
+        Map<DemandSignature,List<Integer>> dg=new LinkedHashMap<>();Map<OfferSignature,List<Integer>> og=new LinkedHashMap<>();
+        for(int i=0;i<ds.size();i++)if(originalH[i]>0){Demand d=ds.get(i);dg.computeIfAbsent(new DemandSignature(d.size(),d.children(),d.retired(),d.tier(),d.young(),freeOffers?0:d.budget()),k->new ArrayList<>()).add(i);}
+        for(int j=0;j<os.size();j++)if(originalT[j]>0){Offer o=os.get(j);og.computeIfAbsent(new OfferSignature(o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()),k->new ArrayList<>()).add(j);}
+        List<List<Integer>> hs=new ArrayList<>(dg.values()),ts=new ArrayList<>(og.values());
+        hs.sort(Comparator.comparingLong(g->rotatedKey(ds.get(g.getFirst()).key(),month)));
+        int hn=hs.size(),tn=ts.size(),sink=hn+tn+1;List<List<Edge>> graph=new ArrayList<>();for(int n=0;n<=sink;n++)graph.add(new ArrayList<>());
+        double[] nh=new double[hn],nt=new double[tn];Edge[][] links=new Edge[hn][tn];
+        for(int a=0;a<hn;a++){double left=0;for(int i:hs.get(a)){nh[a]+=originalH[i];left+=need[i];}edge(graph,0,1+a,left);}
+        for(int b=0;b<tn;b++){double left=0;for(int j:ts.get(b)){nt[b]+=originalT[j];left+=free[j];}edge(graph,1+hn+b,sink,left);}
+        for(int a=0;a<hn;a++){
+            Demand d=ds.get(hs.get(a).getFirst());List<Integer> rank=new ArrayList<>();for(int b=0;b<tn;b++)rank.add(b);
+            rank.sort(Comparator.<Integer>comparingDouble(b->score(d,os.get(ts.get(b).getFirst()))).reversed()
+                    .thenComparingLong(b->rotatedKey(os.get(ts.get(b).getFirst()).key().toString(),month)));
+            for(int b:rank){Offer o=os.get(ts.get(b).getFirst());if(!suitable(d,o,true)||!affordable(d,o))continue;
+                Edge e=costEdge(graph,1+a,1+hn+b,Math.min(nh[a],nt[b]),suitable(d,o,false)?-1:0);links[a][b]=e;
+                double old=0;for(int i:hs.get(a))for(int j:ts.get(b))old+=Math.max(0,x[i][j]-retained[i][j]);
+                e.left=Math.max(0,e.left-old);e.reverse.left=old;
+            }
+        }
+        double added=0;
+        while(true){
+            int[] distance=new int[sink+1],from=new int[sink+1];Arrays.fill(distance,Integer.MAX_VALUE);Arrays.fill(from,-1);
+            Edge[] path=new Edge[sink+1];boolean[] queued=new boolean[sink+1];ArrayDeque<Integer> q=new ArrayDeque<>();
+            distance[0]=0;from[0]=0;q.add(0);queued[0]=true;
+            while(!q.isEmpty()){
+                int u=q.remove();queued[u]=false;
+                for(Edge e:graph.get(u))if(e.left>1e-12&&e.to!=0&&distance[e.to]>distance[u]+e.cost){
+                    distance[e.to]=distance[u]+e.cost;from[e.to]=u;path[e.to]=e;
+                    if(!queued[e.to]){q.add(e.to);queued[e.to]=true;}
+                }
+            }
+            if(from[sink]<0||distance[sink]>0)break;
+            double flow=Double.POSITIVE_INFINITY;for(int n=sink;n!=0;n=from[n])flow=Math.min(flow,path[n].left);
+            for(int n=sink;n!=0;n=from[n]){path[n].left-=flow;path[n].reverse.left+=flow;}added+=flow;
+        }
+        for(int i=0;i<ds.size();i++)System.arraycopy(retained[i],0,x[i],0,os.size());
+        for(int a=0;a<hn;a++)for(int b=0;b<tn;b++)if(links[a][b]!=null){double amount=links[a][b].reverse.left;
+            for(int i:hs.get(a))for(int j:ts.get(b))x[i][j]+=amount*(originalH[i]/nh[a])*(originalT[j]/nt[b]);}
+        for(int i=0;i<ds.size();i++)need[i]=Math.max(0,ds.get(i).count()-Arrays.stream(x[i]).sum());
+        for(int j=0;j<os.size();j++){double used=0;for(int i=0;i<ds.size();i++)used+=x[i][j];free[j]=Math.max(0,os.get(j).count()-used);}
+        return added;
+    }
+    private static final class Edge { final int to,cost; double left; Edge reverse;Edge(int to,double left,int cost){this.to=to;this.left=left;this.cost=cost;} }
     private static long rotatedKey(String key,int month){
         long x=key.hashCode()*0x9e3779b97f4a7c15L ^ (long)month*0xbf58476d1ce4e5b9L;
         x=(x^(x>>>30))*0xbf58476d1ce4e5b9L;x=(x^(x>>>27))*0x94d049bb133111ebL;return x^(x>>>31);
     }
-    private static Edge edge(List<List<Edge>> g,int u,int v,double cap){Edge a=new Edge(v,cap),b=new Edge(u,0);a.reverse=b;b.reverse=a;g.get(u).add(a);g.get(v).add(b);return a;}
+    private static Edge edge(List<List<Edge>> g,int u,int v,double cap){return costEdge(g,u,v,cap,0);}
+    private static Edge costEdge(List<List<Edge>> g,int u,int v,double cap,int cost){Edge a=new Edge(v,cap,cost),b=new Edge(u,0,-cost);a.reverse=b;b.reverse=a;g.get(u).add(a);g.get(v).add(b);return a;}
 }

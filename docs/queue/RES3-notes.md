@@ -1,7 +1,7 @@
 # RES3 — home choice, typed rents and the 14-form catalogue
 
 Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through main's
-db9b1fd99 queue correction. Final verification and publication status are below.
+591fc92d8 FC2 capacity brief. Final verification and publication status are below.
 No user city or user save slot 1–9 is opened or written. Existing checks use
 their own isolated scratch slots; new RES3 native fixtures use slot 10.
 
@@ -398,3 +398,28 @@ It separately requires no hand sale mixed in, and reads actual fund-to-world
 settlement cash. Dividing by the highest actual sale price gives a conservative
 lower bound on world-filled share quantity, preserving the original share-unit
 thresholds. An unsold/unfunded position still fails; no sale output is assigned.
+
+HousingDoorCheck then caused a compatibility bottleneck: 77.558 unplaced at
+m706, mostly large child families, with all paid doors occupied but spare compact
+guest slots. The bounded HousingChoiceCheck reproduction failed four assertions:
+one adult softly chose the family door, the large family fit only that door in
+emergency, and the compact door stayed unused. Locking the normal assignment
+before the emergency pass made the soft choice an accidental hard constraint.
+
+★ Emergency completion now uses the normal matching's residual paths. Integer
+edge costs count normally suitable placements: a zero-cost augmentation may
+reroute movers while preserving the maximum normal count. Retained incumbents
+have no reverse edge. Equivalent cells/classes still coalesce and split pro rata;
+physical caps, budgets, children restrictions and strict final stock checks stay.
+The reproduction is green, including input reversal and an incumbent that must
+stay even when that leaves the family blocked.
+
+A separate integrated input case failed with 0.85 of a child family unplaced:
+five actual single adults formed a group that took the family host space before
+ordinary guests were offered compact space. Three funded hosts had enough real
+slots for everyone after that transfer. ★ The group phase reserves compatible
+family host slots for waiting child families first; adult groups can use compact
+host space explicitly as crowding. Only actual occupied host slots are offered,
+and each funded host retains its original bill. No income, credit or capacity
+is invented. The caused case also checks actual family-member conservation,
+sharing, the exact three occupied doors, receipts and the two-household cap.

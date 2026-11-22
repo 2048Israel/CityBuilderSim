@@ -77,6 +77,22 @@ public final class HousingChoiceCheck {
         System.out.println("--- emergency crowding is explicit, suitable placements happen first ---");
         r=clear(List.of(d("large",1,6,3,0,100)),List.of(home));near("smaller family home is emergency crowding",r.crowded(),1);near("crowding still occupies one real door",count(r,null,null),1);
         r=clear(List.of(d("large",1,6,3,0,100)),List.of(studios));near("emergency never bypasses adults-only rule",count(r,null,null),0);
+        var adult=d("adult",1,2,0,0,100);var large=d("large",1,6,4,0,100);
+        var compact=o("compact",1,2,32,1,0,false,10);var smallerFamily=o("smaller-family",1,4,70,1,0,false,10);
+        check("fixture adult softly prefers the family space",HousingChoice.score(adult,smallerFamily)>HousingChoice.score(adult,compact));
+        r=clear(List.of(adult,large),List.of(smallerFamily,compact));
+        near("residual emergency reassignment preserves one normal placement",r.suitable(),1);
+        near("residual emergency reassignment places the large family",r.crowded(),1);
+        near("soft adult preference cannot strand a compatible family",r.unplaced(),0);
+        near("adult moves to the compact normal door",count(r,"adult","compact"),1);
+        near("large family uses the undersized family door explicitly",count(r,"large","smaller-family"),1);
+        var opposite=clear(List.of(large,adult),List.of(compact,smallerFamily));
+        check("emergency reassignment is independent of input order",r.leases().equals(opposite.leases()));
+        r=HousingChoice.clear(List.of(adult,large),List.of(smallerFamily,compact),
+                List.of(new HousingChoice.Lease("adult",smallerFamily.key(),1,10)),7);
+        near("emergency does not evict a valid incumbent",r.kept(),1);
+        near("incumbent's family door stays occupied by that incumbent",count(r,"adult","smaller-family"),1);
+        near("blocked family is counted when an incumbent cannot move",r.unplaced(),1);
         System.out.println(fails==0?"HousingChoiceCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }
 }

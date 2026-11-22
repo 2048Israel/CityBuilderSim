@@ -303,10 +303,23 @@ public final class HousingMarket {
         List<HousingChoice.Offer> hosts=new ArrayList<>();
         for(var o:offers){double n=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
             hosts.add(new HousingChoice.Offer(o.key(),n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0));}
+        // Child families cannot use compact host rooms. Keep their actual remaining
+        // compatible slots before adult groups' softer preference for family space.
+        Set<String> pooled=new HashSet<>();for(var p:pools.values())pooled.add(p.original().key());
+        double waitingChildren=0;
+        for(var d:demand)if(d.children()>0&&!pooled.contains(d.key())){
+            double taken=all.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            waitingChildren+=Math.max(0,d.count()-taken);
+        }
+        double familyHosts=hosts.stream().filter(o->o.capacity()>FamilyModel.STUDIO_MAX_SIZE).mapToDouble(HousingChoice.Offer::count).sum();
+        double reserved=Math.min(familyHosts,waitingChildren);
+        if(reserved>0)for(int i=0;i<hosts.size();i++){var o=hosts.get(i);if(o.capacity()>FamilyModel.STUDIO_MAX_SIZE)
+            hosts.set(i,new HousingChoice.Offer(o.key(),o.count()*(1-reserved/familyHosts),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0));}
         var sheltered=HousingChoice.clear(missing,hosts,List.of(),game.getMonth());
         for(var o:hosts){double n=sheltered.leases().stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::households).sum();if(!(n>0))continue;
+            double actualHosts=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
             for(int i=0;i<all.size();i++){var l=all.get(i);if(l.home().equals(o.key()))
-                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*o.count()),l.bill(),l.households()));}
+                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*actualHosts),l.bill(),l.households()));}
             for(var l:sheltered.leases())if(l.home().equals(o.key()))all.add(new HousingChoice.Lease(l.cell(),l.home(),l.count()/2,0,l.count()));
             hosted+=n;
         }
