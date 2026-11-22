@@ -71,6 +71,25 @@ public final class HousingMarketCheck {
         near("zero-demand glut walks down at the existing lease speed",studio.ask,20*(1-1.0/ham.citybuildersim.sectors.RealEstate.LEASE_MONTHS));
         near("a glut class's debt does not change another class's ask",family.ask,normal.classes().get(1).ask);
         near("the tight class covers only its own carry",family.target,5);
+        var roundedInputs=priceInputs(0);double almostTen=Math.nextDown(10.0);
+        roundedInputs.classes.get(1).occupied=roundedInputs.classes.get(1).demand=almostTen;
+        roundedInputs.leases=List.of(new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),almostTen,almostTen*10));
+        roundedInputs.suitable=almostTen;
+        HousingMarket rounded=new HousingMarket();rounded.restore(roundedInputs);rounded.reprice(0);
+        near("one ULP of fully placed stock is not an economic glut",rounded.classes().get(1).target,family.target);
+        var glutInputs=priceInputs(0);glutInputs.classes.get(1).occupied=glutInputs.classes.get(1).demand=9.9;
+        glutInputs.leases=List.of(new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),9.9,99));
+        glutInputs.suitable=9.9;
+        glutInputs.demand=List.of(new HousingChoice.Demand("family",9.9,4,2,false,0,false,20));
+        HousingMarket glut=new HousingMarket();glut.restore(glutInputs);glut.reprice(0);
+        check("a genuine fractional vacancy still waives the carry lift",glut.classes().get(1).target<5);
+        var blueprint=priceInputs(0);var opening=blueprint.classes.get(1);
+        opening.homes=opening.occupied=opening.carry=0;opening.demand=1e-13;
+        blueprint.leases=List.of();blueprint.suitable=0;blueprint.noSuitable=blueprint.unplaced=1e-13;
+        blueprint.demand=List.of(new HousingChoice.Demand("family",1e-13,4,2,false,0,false,20));
+        HousingMarket unbuilt=new HousingMarket();unbuilt.restore(blueprint);unbuilt.reprice(0);
+        near("an unbuilt class has an opening quote, without a fictitious scarce market",unbuilt.classes().get(1).target,
+                opening.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12);
         near("repricing itself records no actual rent trade",family.tradeQuantity,0);
         near("repricing preserves last observed class trade",studio.lastTrade,20);
         near("actual occupied proceeds remain the accepted lease bill",debt.receipts(),100);
@@ -83,6 +102,9 @@ public final class HousingMarketCheck {
         String before=JSON.toJson(debt.forSave());var corrupt=debt.forSave();corrupt.classes.get(0).ask=Double.NaN;
         boolean refused=false;try{debt.restore(corrupt);}catch(IllegalArgumentException e){refused=true;}
         check("corrupt class prices are refused atomically",refused&&before.equals(JSON.toJson(debt.forSave())));
+        corrupt=debt.forSave();corrupt.classes.get(1).demand=0;
+        refused=false;try{debt.restore(corrupt);}catch(IllegalArgumentException e){refused=true;}
+        check("saved demand below actual occupied quantity is refused atomically",refused&&before.equals(JSON.toJson(debt.forSave())));
         debt.redenominate(.01);near("a monetary reform scales actual receipts",debt.receipts(),1);
         near("a monetary reform scales saved household budgets",debt.forSave().demand.getFirst().budget(),.2);
         near("a monetary reform scales committed pipeline asks",debt.forSave().pipeline.getFirst().rent(),.1);

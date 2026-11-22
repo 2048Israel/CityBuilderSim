@@ -400,10 +400,13 @@ public final class HousingMarket {
         for(ClassState c:classes.values()){
             if(!c.available)continue;
             // An unbuilt class keeps its opening supply quote until it has a market.
-            double pressure=c.homes>0?c.demand/c.homes:c.demand>0?2:1;
+            double pressure=c.homes>0?c.demand/c.homes:1;
             double anchor=c.capital*RealEstate.LANDLORD_YIELD/12;
             c.target=anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY);
-            if(pressure>=RealEstate.GLUT_PRESSURE&&c.occupied>0)c.target=Math.max(c.target,c.carry*c.homes/c.occupied);
+            double balanced=c.homes*RealEstate.GLUT_PRESSURE;
+            // Allocation can round down by an ULP at a full door. Classify
+            // economic vacancy with the same quantity bound as the match.
+            if(c.demand>=balanced-FamilyModel.packingRounding(balanced)&&c.occupied>0)c.target=Math.max(c.target,c.carry*c.homes/c.occupied);
             c.ask=c.target>0?Retail.stickyPrice(c.ask,c.target,expectedMonthly,1.0/RealEstate.LEASE_MONTHS)
                     :Math.max(0,c.ask*(1-1.0/RealEstate.LEASE_MONTHS));
         }
@@ -419,7 +422,7 @@ public final class HousingMarket {
         for(ClassState c:s.classes){
             if(c.dwelling==null||c.dwelling.isBlank()||c.capacity<1||rows.put(c.key(),c)!=null)throw new IllegalArgumentException("Invalid saved housing class");
             for(double n:new double[]{c.ask,c.capital,c.carry,c.demand,c.homes,c.occupied,c.target,c.lastTrade,c.tradeQuantity,c.tradeValue})nonnegative(n);
-            if(c.occupied>c.homes||c.stale<0)throw new IllegalArgumentException("Invalid saved housing occupancy");
+            if(c.occupied>c.homes||c.demand<c.occupied||c.stale<0)throw new IllegalArgumentException("Invalid saved housing occupancy");
         }
         Map<HousingInventory.Key,Double> occupied=new HashMap<>();
         for(var l:s.leases){if(!rows.containsKey(l.home()))throw new IllegalArgumentException("Unknown saved lease class");

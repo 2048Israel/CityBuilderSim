@@ -1503,36 +1503,34 @@ public class SaveFileCheck {
         // reload that forgot either would show (2026-09-19).
         squeeze.setHealthFeeScale(1.75);
         squeeze.setHealthPremiumRate(.02);
+        squeeze.setPensionReplacement(0); // Cause an actual income-free retired cohort, even when housing supplies a free host.
 
         // FS17: two months at the dials, the second the one read: the first has the service charge at the scale and the premium
         // collected once, and its sale is what the second's top reads.
-        final int STRIKE_MONTHS = 2;
+        final int STRIKE_MONTHS = 3;
         for (int struck = 0; struck < STRIKE_MONTHS; struck++) {
             full.buyForeignCurrency(1);
             ham.citybuildersim.sectors.Retail shops = full.getSectors().retail();
-            // RES3 moves cash between household shapes and can host a poor cell without rent.
-            // Cause priced-out hunger at the actual counter, above every ordinary cell's current
-            // per-basket resources, rather than depending on one pre-census cell staying poor.
-            double ordinaryRoom=0;
-            for(Household c:full.getHouseholdBalance().cells())if(!c.isEmpty()&&c.baskets()>0
-                    &&(c instanceof WorkingHousehold||c instanceof RetiredHousehold))
-                ordinaryRoom=Math.max(ordinaryRoom,Math.max(c.foodMoney,(1+HouseholdBalance.CREDIT_LIMIT_MONTHS)*Math.max(0,c.disposable()))/c.baskets());
-            shops.setStoreSellPrice(Math.max(shops.getStoreSellPrice(),2*ordinaryRoom));
-            shops.setStoreInventory(1); // One real person-month remains: a nonzero rationed sale, not an empty default.
+            // A one-basket pantry can be just under one after its recipe weights
+            // divide back; Retail sells whole baskets. Ten causes a real short sale.
+            shops.setStoreInventory(10);
             full.getCapitalFlows().setStockForTest(Math.min(full.getCapitalFlows().getStock(), full.getCapitalFlows().getTarget() / 2));   // HZ1: by name
             Household withoutMeans = null;
             for (Household c : full.getHouseholdBalance().cells()) {
-                // This case exhausts ordinary consumer credit, not the student's separate open treasury facility.
-                if (c.isEmpty() || c.households() < .5 || !(c instanceof WorkingHousehold || c instanceof RetiredHousehold)) continue;
-                if (withoutMeans == null || c.afterFixed()/c.baskets() < withoutMeans.afterFixed()/withoutMeans.baskets()) withoutMeans = c;
+                if (c.isEmpty() || c.households() < .5 || !(c instanceof RetiredHousehold)) continue;
+                if (withoutMeans == null || c.households() > withoutMeans.households()) withoutMeans = c;
             }
             assertTrue("fixture: the city has a household cell to leave without means", withoutMeans != null);
             if (withoutMeans != null) {
-                System.out.printf("   without means: %s, after fixed per basket %.9f%n",withoutMeans.key(),withoutMeans.afterFixed()/withoutMeans.baskets());
-                withoutMeans.savings = 0;
-                withoutMeans.abroad = 0;
-                withoutMeans.paper = 0;
-                withoutMeans.debt += withoutMeans.creditRoom(withoutMeans.disposable());
+                PayTier former=((RetiredHousehold)withoutMeans).formerTier();
+                // Clear the cohort's source and destination cells, so a shape
+                // reshuffle or this month's retirement cannot refill its cash.
+                for(Household c:full.getHouseholdBalance().cells())if(
+                        c instanceof RetiredHousehold r&&r.formerTier()==former
+                        ||c instanceof WorkingHousehold w&&w.tier()==former){
+                    c.savings=0;c.abroad=0;c.paper=0;
+                    c.debt+=c.creditRoom(c.disposable());
+                }
             }
             full.simulateMonths(1);
         }

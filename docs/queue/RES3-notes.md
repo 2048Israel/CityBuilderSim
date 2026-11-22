@@ -300,3 +300,28 @@ and Retail's whole-basket sale becomes zero. The fixture now caps its price
 input at the model's existing retail cap, supplies ten real baskets and strikes
 three months for health's lag. Its original hunger, shopping and continuation
 assertions remain, and delivered share is additionally required positive.
+
+The next trace proved why the per-source remainder bound alone was insufficient:
+at m125 an unbuilt Duplex had demand 6.17145223814e-14 in one currency and zero
+in the other, despite actual allocations agreeing to about 3e-13. ★ A blueprint
+without standing stock retains its opening cost comparator; it has no observed
+scarcity market. Demand is still reported and used once by prospective choice.
+Scarcity/glut repricing applies when stock exists. This removes the discontinuous
+"any positive quantity means double the target" shortcut without discarding
+small fractional households or changing any financial comparison.
+
+A separate caused price case failed before its mend: one ULP below ten fully
+occupied homes waived carry and targeted 4.833333333333332 instead of 5. The
+economic glut classification now uses the existing packing bound, while an
+actual 0.1-home vacancy still waives the lift. Physical occupancy stays strictly
+bounded. Native loading additionally refuses class demand below its occupied
+quantity, atomically.
+
+Final SaveFileCheck passes. Its full-shelves poverty premise is now caused by
+the actual zero-pension policy and empty cash/foreign/paper stocks across one
+large former tier's working and retired cells, with consumer credit exhausted.
+That prevents the census's shape/retirement moves from refilling a single cell.
+Other working tiers keep shopping. Ten real pantry baskets cause positive
+rationed delivery; three presses carry the sale through health's lag. The broad
+price shock was removed. No pension or hunger output is assigned directly, and
+all original money/save comparisons remain; positive delivery is strengthened.
