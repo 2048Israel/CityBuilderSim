@@ -46,6 +46,9 @@ adds its line here, not in `CLAUDE.md`.
         OrderDoorCheck.java        HN1-A and HN1-B at the door (FB15): a landlord's order and its
                                    down payment at the door's own price, one block and two, and a
                                    shop's order the bank said no to built at half (seed 12, m200-420)
+        GapOrderCheck.java         OG1: a planner orders to the gap, not one a month - the builders' target
+                                   the work a typical month sends them (a median, their own depots left out,
+                                   saved), bounded by CEILING; several depots and six Bottling Plants ordered
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
