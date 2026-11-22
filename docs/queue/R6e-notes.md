@@ -2,6 +2,92 @@
 
 <!-- readiness: provisional -->
 
+## Review1: actual producer credits (REV-R6ec1-1, root a312)
+
+The records-only main51e887638 was merged before this mend. The same
+reviewer had one P1 and clean saves points. E21's old billing inferred a
+template's run from the greatest sector-wide output ratio. A Mixed Farm
+running for livestock co-produces crops while a Grain Farm with crop order0
+is idle. The shared crop ratio could then bill the Grain Farm for those
+crops; a livestock run could also overvalue the Mixed Farm's crop gain.
+The earlier isolated-farm controls did not cover that fleet.
+
+The new ModernEngineeringCheck.mixedFleetLicenceCapture causes native
+orders with one of each farm: crop0, dairy/meat1. A complementary
+Mixed/Livestock pair has crop1, dairy/meat0. Prices bound the idle
+template's diesel cost above twice the cut outputs' value; the other
+outputs cover native costs. No order-map injection, payroll/recipe change,
+calibration, tolerance change or observed-bill oracle. It calls the native
+order and production/capture methods, measures fresh crop/coproduct units,
+and checks each template's memo plus the actual pending payment. Each
+factory's three actual startup advances are recorded; the calendar jumps
+are not simulation months. Ending orders cannot rewrite the booked flow.
+
+Before1 omitted the native EquipmentForms.apply after fitting, so horses
+kept the crop order at.22; those failed setup laws remain in raw evidence.
+After that setup correction, Before2 exposed the warmed factory's retained
+horse-feed row. Before3 pins both the actual0/1 orders and the exact
+fresh/gross coproduct reconciliation, without counting old feed as newly
+made crops. All fixture premises pass on the **unchanged93ff4e3b1 production
+code**; only seven billing laws fail (200/207, native exit1). The retained
+before3-production.diff is empty for LicenceFees/Sector/RecipeChanges,
+proving this is the requested counterexample before the money edit, after
+a records-only main merge. All three before commands/raw logs are retained
+under target/R6e-evidence/review1; no failed run was overwritten.
+
+| imported row / actual paired dispatch | old idle-template bill | old total capture | correct/new total | physical attribution |
+|---|---:|---:|---:|---|
+| E21, Mixed + Grain; crop0, livestock1 | .005898005215932145 | .012609935151662921 | .003910142980513731 | Mixed fresh CROPS7.597780322063313; Grain0. Expected share of the standing value difference of those crops and those crops/1.22 is.003910142980513724. |
+| PE17 combine, same pair/orders | .0009546562604074929 | .0009546562604074929 | 0 | Imported combine has positive native gain if it runs, but its Grain Farm makes no crops. Mixed Farm has no combine patent. |
+| PE18 milking, Mixed + Livestock; crop1, livestock0 | .0008310468912658443 | .00497309012709878 | .004142043235832935 | Only Mixed Farm makes the milk/meat; its own bill remains.004142043235832935, idle Livestock Farm0. |
+
+The same order-attribution defect therefore reaches **licensed rows already
+on main**, not only E21. A scan of main's default output sets finds Grain
+Farm's PE17 and FE8 beside Mixed Farm, and Livestock Farm's PE18 beside
+Mixed Farm. PE17/PE18 are caused numerically above; FE8 uses the same
+independent-piece capture path, and FieldOperatorsCheck remains green.
+All are mended by the shared rule, rather than left as an unrecorded
+licence follow-up.
+
+Exact production delta: Sector.productionWeight is a package-local read
+of existing buildingOrder/flowRunShare; it changes no producer or month
+phase. LicenceFees.productionRate/creditedOutputRate allocate actual good
+units with those native template weights, exclude a retained captive row
+when the good is no longer captive, and skip an idle stack. Its standing
+recipe value/fee and RecipeChanges.recipeFee/standingValue use each good's
+credited rate for output gains, rather than borrowing a livestock rate for
+crops. Existing run-rate input costs and fixed price roles stay intact;
+new-unit quotes/choices, patent share/term and captured typed-flow/refinery
+rates are preserved. No farm-specific billing exception, calibration,
+HT1 core edit, new saved field or additional format bump; both constants
+remain60. A captured bill and its per-template memo still use the existing
+save path and stay immutable after orders are cleared.
+
+The retained horse-feed field is a separate pre-existing production issue:
+after native tractor forms, captive(CROPS) is false but Output.captive
+still holds5.444138974213473. The unchanged ordered produceStock path
+subtracts it: Mixed gross13.041919296276786 becomes fresh7.597780322063313
+in the first two cases. The new bill correctly prices only fresh output.
+The ship file records R6e-CAPTIVE with those figures for a separately
+reviewed clearing/live-load control; produceStock itself is not edited in
+this P1 mend. This does not weaken the new hard payment law or invent an
+effect in the crop catalogue.
+
+After the fix, **ModernEngineeringCheck207/207 passes**, including all159
+previous laws and all48 mixed-fleet laws. Changed-source wrapper: compile41s,
+maps regenerated, Stale0firm/194soft,10 harnesses in93s:9 pass and the one
+PublicLicenceCheck is **main's already named FS3 class**,64 pass/4 known
+failures, native wrapper exit3. Those four lines are the unchanged
+desalination demand/running-cost fixture: first gain-645.206081, later
+gain-12.147956635350319. The main registry already names FS3; no new waiver
+or known-red record is added. LicenceFees' entire citysWork/public-work
+section remains byte-identical to main. Private LicenceFeesCheck45/45,
+HistoricalLicenceCheck, PostwarRecipeCheck, FieldOperatorsCheck,
+EquipmentCheck, FittingCheck, FitoutCheck and NewUnitCheck all pass.
+Raw output and native exits are retained in review1/after.* and after/.
+All owned wrapper/compiler/JVM processes are terminal. The same stranger's
+delta review and SHIP remain required before ensemble/dry/ready.
+
 ## Merged-main completion (root 793c, 2026-11-22)
 
 Origin/main 0.9.184 at d7cad5c0e was merged and pushed as170f75ed3.

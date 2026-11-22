@@ -3148,6 +3148,12 @@ public abstract class Sector {
         return buildings.totalBySector(key, t -> t.makes(g) * buildingOrder(t)) / made;
     }
 
+    /** This template's native joint-run weight relative to its good's fleet average; read during capture, before endOrders(). */
+    double productionWeight(BuildingsTemplate t, Good g) {
+        double average = flowRunShare(g);
+        return average > 0 ? buildingOrder(t) / average : 0;
+    }
+
     /** A sector whose output is limited by what is in the ground says so here. */
     protected double groundLimit(Good g, double asked) { return asked; }
 

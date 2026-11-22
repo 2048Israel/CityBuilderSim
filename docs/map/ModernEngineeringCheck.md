@@ -1,4 +1,4 @@
-# ModernEngineeringCheck.java - 502 lines · 27 methods · 6 constants · harnesses
+# ModernEngineeringCheck.java - 594 lines · 28 methods · 6 constants · harnesses
 
 `ham/citybuildersim/ModernEngineeringCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -27,7 +27,7 @@
 > before/after clock, separately from explicit date jumps. Nothing here is
 > an observation waiver: a missing positive dispatch or transition fails.
 
-**Uses:** [Good](Good.md) (53), [ResearchCatalog](ResearchCatalog.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (15), [LicenceFees](LicenceFees.md) (15), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (12), [RecipeCheck](RecipeCheck.md) (11), [Game](Game.md) (11), [EquipmentCheck](EquipmentCheck.md) (4), [FittingCheck](FittingCheck.md) (4), [Forms1900Check](Forms1900Check.md) (4), [Sector](Sector.md) (3), [Research](Research.md) (3), [SaveWriter](SaveWriter.md) (3), [PolicyDates](PolicyDates.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [GameFiles](GameFiles.md) (2), [GameVersion](GameVersion.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [RecipeChange](RecipeChange.md) (1), [Recipes](Recipes.md) (1), [ReadPathCheck](ReadPathCheck.md) (1), [DataSave](DataSave.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingManager](BuildingManager.md) (1), [SaveHeader](SaveHeader.md) (1)
+**Uses:** [Good](Good.md) (85), [LicenceFees](LicenceFees.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (19), [ResearchCatalog](ResearchCatalog.md) (16), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (15), [Game](Game.md) (12), [RecipeCheck](RecipeCheck.md) (11), [EquipmentCheck](EquipmentCheck.md) (4), [FittingCheck](FittingCheck.md) (4), [Forms1900Check](Forms1900Check.md) (4), [Sector](Sector.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Research](Research.md) (3), [SaveWriter](SaveWriter.md) (3), [PolicyDates](PolicyDates.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [GameFiles](GameFiles.md) (2), [GameVersion](GameVersion.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [RecipeChange](RecipeChange.md) (1), [Recipes](Recipes.md) (1), [Equipment](Equipment.md) (1), [RecipeChanges](RecipeChanges.md) (1), [ReadPathCheck](ReadPathCheck.md) (1), [DataSave](DataSave.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingManager](BuildingManager.md) (1), [SaveHeader](SaveHeader.md) (1)
 
 **Used by (2):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -59,7 +59,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 465 | **type** `public final class ModernEngineeringCheck` | E21's crop-only historical undo, its actual farm production and patent bill, and the saved physical state on either side of the discovery. |
+| 38 | 557 | **type** `public final class ModernEngineeringCheck` | E21's crop-only historical undo, its actual farm production and patent bill, and the saved physical state on either side of the discovery. |
 | 50 | 1 | `private ModernEngineeringCheck()` |  |
 | 52 | 5 | `static void check(String label, boolean ok, Object detail)` |  |
 | 58 | 4 | `static boolean near(double a, double b)` |  |
@@ -83,9 +83,10 @@
 | 271 | 26 | `static void actualProductionAndFiringCounts() throws Exception` |  |
 | 298 | 27 | `static void localFind() throws Exception` |  |
 | 326 | 58 | `static void licenceCapture() throws Exception` |  |
-| 385 | 10 | `static void physicalReaders(Game game, String name)` |  |
-| 396 | 78 | `static void savedStates(boolean readPaths) throws Exception` |  |
-| 476 | 6 | `static boolean saveChecks() throws Exception` | Native current-save twins and both actual pre-E21 format refusals, shared by SaveFileCheck. |
-| 484 | 6 | `static boolean readChecks() throws Exception` | The same real saves/refusals with repeated screen reads and refusal into a running twin. |
-| 491 | 11 | `public static void main(String[] args) throws Exception` |  |
+| 385 | 90 | `static void mixedFleetLicenceCapture() throws Exception` |  |
+| 476 | 10 | `static void physicalReaders(Game game, String name)` |  |
+| 487 | 78 | `static void savedStates(boolean readPaths) throws Exception` |  |
+| 567 | 6 | `static boolean saveChecks() throws Exception` | Native current-save twins and both actual pre-E21 format refusals, shared by SaveFileCheck. |
+| 575 | 6 | `static boolean readChecks() throws Exception` | The same real saves/refusals with repeated screen reads and refusal into a running twin. |
+| 582 | 12 | `public static void main(String[] args) throws Exception` |  |
 

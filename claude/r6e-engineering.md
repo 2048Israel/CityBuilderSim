@@ -22,6 +22,15 @@ is not a measured seed royalty and adds no seed invoice. Causing fixtures
 exercise both farms' positive production across the date, local research,
 partial production and its actual marginal licence bill.
 
+Review found that sector-wide crop ratios could charge an idle Grain Farm
+for a Mixed Farm's crops while the latter ran for livestock. The capture
+now credits each good to the templates that actually ran, using the
+producer's native joint-output order weights. A crop patent uses actual
+credited crop output, rather than a livestock run rate. The same rule fixes
+the existing combine and milking-machine patents' idle-peer charges.
+Mixed-fleet controls fail on the earlier code and pass after the mend;
+the already captured liability remains fixed when orders are cleared.
+
 A native pre-E21 save of shipped format 59 exposed a physical load fault.
 At May 1996 its fitted tractor choice has no missing-E21 flag. It loads
 immediately at 69/500 instead of 69/1.22 and 500/1.22. The next chooser

@@ -382,6 +382,97 @@ public final class ModernEngineeringCheck {
         }
     }
 
+    static void mixedFleetLicenceCapture() throws Exception {
+        OUT.println("--- mixed fleets: no patent can rent another template's co-produced crops or milk ---");
+        for (String code : List.of("E21", "PE17", "PE18")) {
+            boolean milkPatent = code.equals("PE18");
+            Fixture f = new Fixture("R6e-mixed-fee-" + code, true);
+            Game game = f.game;
+            BuildingsTemplate mixed = farm(game, "Mixed Farm");
+            BuildingsTemplate idle = farm(game, milkPatent ? "Livestock Farm" : "Grain Farm");
+            for (BuildingsTemplate t : game.getBuildingManager().getTemplates())
+                if ("Agriculture".equals(t.getSector())) quantity(game, t, t == mixed || t == idle ? 1 : 0);
+            MaterialsCheck.handWorkers(game);
+            knowledge(game, Set.of(code));
+            f.jump(ResearchCatalog.knownFrom(code));
+            apply(game);
+            game.getEquipmentForms().apply(game);
+            Sector owner = game.getSectors().agriculture();
+            check(code + " one mixed farm and one idle counterpart, no other farm, really stand",
+                    owner.buildingsStanding() == 2 && game.getBuildingManager().getStack(mixed).getQuantity() == 1
+                            && game.getBuildingManager().getStack(idle).getQuantity() == 1, owner.buildingsStanding());
+            check(code + " imported patent is payable and both farms actually run tractors",
+                    LicenceFees.payable(code, game.getMonth(), game.getResearch()) && !owner.captive(Good.CROPS)
+                            && owner.getOperatingRate() > 0, owner.getOperatingRate());
+            List<Good> livestock = List.of(Good.DAIRY_EGGS, Good.MEAT);
+            List<Good> cut = milkPatent ? livestock : List.of(Good.CROPS);
+            List<Good> asked = milkPatent ? List.of(Good.CROPS) : livestock;
+            double idleOutputValue = 0;
+            for (Good good : List.of(Good.CROPS, Good.DAIRY_EGGS, Good.MEAT)) {
+                double price = good.worldImportPrice() * game.getMarkets().getExchangeRate();
+                HistoricalRecipeCheck.priceForBothReaders(game, good, price);
+                if (cut.contains(good)) idleOutputValue += owner.getCapacity(good) * price;
+            }
+            // Even if every other output is free, the idle template's diesel
+            // alone costs more than twice all output that must be cut. The
+            // other farm's coproducts can therefore drive a different order.
+            check(code + " idle counterpart has positive native diesel use", idle.uses(Good.DIESEL) > 0, idle.uses(Good.DIESEL));
+            HistoricalRecipeCheck.priceForBothReaders(game, Good.DIESEL,
+                    2 * idleOutputValue / idle.uses(Good.DIESEL));
+            for (Good good : asked) {
+                double price = Math.max(good.worldImportPrice() * game.getMarkets().getExchangeRate(),
+                        2 * (owner.flowCostPerUnit(good) + owner.getMarginalCostPerUnit(good)));
+                HistoricalRecipeCheck.priceForBothReaders(game, good, price);
+                owner.setStock(good, 0);
+            }
+            for (Good good : cut) owner.setStock(good, 2 * owner.getStockCapacity(good) + owner.getCapacity(good));
+            owner.planOrders();
+            for (Good good : cut) near(code + " actual native order is zero for " + good, owner.orderShare(good), 0);
+            for (Good good : asked) near(code + " actual native order is one for " + good, owner.orderShare(good), 1);
+            double before = owner.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+            LicenceFees.Production capture = new LicenceFees.Production(game);
+            capture.before(owner, true);
+            for (Good good : owner.goodsMade()) if (good.stockable()) owner.produceStock(good, game.getMarkets().get(good));
+            double crops = owner.output(Good.CROPS).produced + owner.output(Good.CROPS).exportBound;
+            double cropRate = crops / mixed.makes(Good.CROPS);
+            // The warmed historical factory retains the previous horse-feed
+            // row. Native ordered stock production subtracts that row even
+            // after tractors replace horses. Do not bill it as fresh crops.
+            near(code + " native mixed-farm gross crops reconcile to fresh stock and the retained horse row",
+                    crops + owner.output(Good.CROPS).captive, mixed.makes(Good.CROPS) * owner.getOperatingRate());
+            check(code + " mixed farm really makes positive crops", crops > 0, crops);
+            for (Good good : livestock) near(code + " livestock is co-produced only by the mixed farm: " + good,
+                    owner.output(good).produced + owner.output(good).exportBound, mixed.makes(good) * owner.getOperatingRate());
+            double mixedRate = (owner.output(Good.DAIRY_EGGS).produced + owner.output(Good.DAIRY_EGGS).exportBound)
+                    / mixed.makes(Good.DAIRY_EGGS);
+            double expected;
+            if (code.equals("E21")) {
+                SpreadPlanner.Values values = SpreadPlanner.values(game.getMarkets());
+                expected = LicenceFees.SHARE * (values.in(Good.CROPS, crops) - values.in(Good.CROPS, crops / GM_FACTOR));
+                check("E21 mixed farm's actual crop increment has positive standing value", expected > 0, expected);
+            } else {
+                BuildingsTemplate patented = milkPatent ? mixed : idle;
+                Equipment piece = patented.getEquipment(milkPatent ? "milking-machine" : "combine");
+                double gain = RecipeChanges.gainForStanding(game, patented, piece);
+                check(code + " existing main patent would have positive gain if its template ran", gain > 0, gain);
+                expected = milkPatent ? LicenceFees.onGain(code, game.getMonth(), game.getResearch(), gain) * mixedRate : 0;
+            }
+            capture.made(owner, true);
+            capture.finish();
+            double paid = owner.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) - before;
+            double idleBill = LicenceFees.forStanding(game, idle), mixedBill = LicenceFees.forStanding(game, mixed);
+            near(code + " idle counterpart owes no rent on the other farm's production", idleBill, 0);
+            near(code + " mixed farm's bill is exactly its own credited production", mixedBill, expected);
+            near(code + " actual captured payment equals only credited production", paid, expected);
+            OUT.println("  mixed-fleet " + code + " actualAdvances=" + f.factoryAdvances + " cropUnits=" + crops
+                    + " cropRate=" + cropRate + " mixedRate=" + mixedRate + " idleCropUnits=0 idleBill=" + idleBill
+                    + " mixedBill=" + mixedBill + " paid=" + paid + " expected=" + expected);
+            owner.endOrders();
+            near(code + " clearing orders cannot rewrite the captured flow",
+                    owner.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) - before, paid);
+        }
+    }
+
     static void physicalReaders(Game game, String name) {
         BuildingsTemplate t = farm(game, name);
         Map<String, Double> before = HistoricalRecipeCheck.figures(t);
@@ -495,6 +586,7 @@ public final class ModernEngineeringCheck {
         actualProductionAndFiringCounts();
         localFind();
         licenceCapture();
+        mixedFleetLicenceCapture();
         savedStates(true);
         OUT.println("ModernEngineeringCheck: " + (fails == 0 ? "all " + checks + " ok" : fails + " FAILED of " + checks));
         System.exit(fails == 0 ? 0 : 1);
