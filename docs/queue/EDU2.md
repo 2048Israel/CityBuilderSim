@@ -25,6 +25,27 @@ Jerus's "say 50 seats at each step" is the starting point. The builder sets
 the numbers from the model, as one dial a level in `Education` with one
 sentence each, and says in the notes why each number is what it is.
 
+## The founding faculty
+
+Jerus, 2026-11-22 (desk chat): "perhaps give the starting base a few high
+level posts as well? like only a few? or no?"
+
+Research posts come only from a school's university-band staff
+(`Research.POSTS_PER_STAFF`, 2.7 each). Founding places with no staff would
+give a new city no research at all. So EDU2 adds a small founding faculty:
+
+- a few university-band staff;
+- researchers at the faculty's 40%;
+- the posts they make room for.
+
+The builder chooses between two ways to provide them, and says why:
+
+- an endowment like the founding doctor, with no wage and no worker taken;
+- real posts that the labour market fills.
+
+Either way, it keeps to Jerus's "only a few". RW1, the world's delay, asks
+whether it waits on this faculty.
+
 ## Why
 
 R1g's notes, "The skills: today's posts meet 1901's workers" (branch
