@@ -199,7 +199,8 @@ and the city collapsed. With the depots served first, the builders ran away to t
   point is exercised on any path. It is a model change, so not here: this batch's ensemble stays counted.
 - The pick (`sh tools/pick.sh origin/main HEAD`): ALL, since `AllChecks` changed. Review: needed, for
   saves (`DataSave`). REV-OG1 found money and saves clean, and one P1 and three P2 (the four mends above
-  and in 3, 5 and 6). It said SHIP on the delta 359913171..ab4b414e5. The suite runs at the dry run; its log is `target/OG1-dry.txt` when it has run.
+  and in 3, 5 and 6). It said SHIP on the delta 359913171..ab4b414e5. The ALL dry run on the merge with 0.9.182 stopped once, on the ReloadCheck red above. Judged again with
+  RN3's rows (`cbs-gate-OG1-cbYytvw6`), the kept suite is known red only, 10 harnesses, and the gate exits 0.
 
 ## 5. The calls
 
