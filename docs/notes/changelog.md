@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.187 — HS3, the household money page by stage — 2026-11-22, ready, see docs/queue/HS3-notes.md
+Household money separates young and established households and opens each
+stage's own books, with the retired still named by former tier and owner
+families on their own line. The month's estate cash, debt settlements and
+taxes on realised gains and dividends read the model's own figures. Kept
+redraws update the page in place and retain its scroll; no simulation or save
+change.
+
 ### FS9 (untagged) — the bank's harnesses cause what they read — 2026-11-22, ready, see docs/queue/FS9-notes.md
 The bank and its borrowers' twelve harnesses (Bank, YoungBank, Mortgage, CreditCrunch, SupplierCredit, Credit, CapitalFlow, CarryTrade, Invest, DistressBleed, BankFailure, OrderDoor) cause their premises, not what a played city happens to hold.
 DistressBleedCheck sets the loss and operating streaks, the desk's loan and the till, and reads planDistressRetirement at DISTRESS - 1 and DISTRESS: no LIFT_AT.

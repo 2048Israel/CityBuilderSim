@@ -62,7 +62,7 @@
 
 **Uses:** [Exchange](Exchange.md) (68), [FundLedger](FundLedger.md) (66), [OrderBook](OrderBook.md) (65), [TreasuryFund](TreasuryFund.md) (44), [Equity](Equity.md) (41), [Game](Game.md) (38), [FundView](FundView.md) (16), [BondMarket](BondMarket.md) (12), [Household](Household.md) (8), [FundCheck](FundCheck.md) (5), [ShortSellingCheck](ShortSellingCheck.md) (4), [CorporateBond](CorporateBond.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [Bank](Bank.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [EconomyManager](EconomyManager.md) (1)
 
-**Used by (1):** [CapitalGainsCheck](CapitalGainsCheck.md)
+**Used by (2):** [CapitalGainsCheck](CapitalGainsCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md)
 
 ## Sections
 
