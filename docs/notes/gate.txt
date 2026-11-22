@@ -1,8 +1,8 @@
-# gate of Merge batch/FS9: sweep: the bank and its borrowers (10 harnesses); takes HP2 item 4 and HL1's DistressBleedCheck 5 rows (not beside QR1, OE1), 0.9.186
+# gate of Merge batch/HS3: the household money page by stage: the retired by former tier, the owner families, estates and the investment taxes in the month's lines (after KP7, BO1, HS1, HS2 and HT1), 0.9.187
 # date: 2026-11-22
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 230 harnesses run in 766s: 219 passed, 11 failed
+# suite: 228 harnesses run in 1151s: 217 passed, 11 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -40,7 +40,7 @@ MapCheck | 1 FAILED
 KeptCheck | exit 3
 KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
 KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 45 of 401; 11 of 25 months made none) FAIL
-KeptCheck | fixture: the Rankings tab with the city's drawer open: every cell the household grid opens before the month it opens after, the families held (2 closed; the month alone would have closed 2) FAIL
+KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
 KeptCheck | 3 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.2, petrol duty 0.000000

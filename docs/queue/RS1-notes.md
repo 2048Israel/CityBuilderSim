@@ -186,3 +186,13 @@ The final ensemble uses docs/ensemble/0.9.184.md as explicitly ordered by
 the starter. Its only JVM options were the two data paths, so JAVA_OPTS is
 empty and JDK_JAVA_OPTIONS is unset for box dispatch. Gate-box preflight
 reported zero heavy jobs. The pushed snapshot and result are recorded below.
+
+While that snapshot waited behind HS3's gate, main advanced to `52c79806b`
+(0.9.187). Integrated HS3 before the ready handoff: its only model additions
+are read-only AdultStage and HouseholdAccounts getters, alongside the money
+page and its words harness. HS3 records all eight default trace CSVs as
+byte-identical. RS1's three reviewed Java files remain byte-identical to
+`5eb4e034a`; the ensemble's `06ff84630` snapshot therefore still measures
+this model. The two generated-index conflicts were regenerated, and the
+merged `--fast` is green (`target/RS1-HS3-fast.txt`). No new model change or
+second ensemble is needed for that trace-neutral integration.
