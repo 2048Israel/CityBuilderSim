@@ -178,3 +178,60 @@ only. A stranger's saves review is owed. No money transfer or new thread is
 activated by the batch; the allocation and quantity contracts remain reviewable.
 The provisional ship marker stays until that review's SHIP and the ALL dry run.
 No dry run has been run yet, so no retained run or two gate commits are claimed.
+
+
+## REV-RES2: three P1 mends
+
+The regression-only commit 57999ec3f leaves the reviewed model unchanged and
+adds guards for each reported gap. Its HousingInventoryCheck reports the exact
+1.5-versus-1 overcount, invented .5 occupant, .75-versus-.5 residual and 1.75
+repeated-match total. Its real-reload premise fails because no pipeline exists.
+SaveFileCheck's native-schema premise fails on the relabelled current record.
+Logs: target/RES2-review/*-before.txt and *-before.log. Findings 2 and 3 are
+coverage defects; no claim is made that the existing format floor accepted old
+saves. Both their guards and the old boundary/refusal assertions are retained.
+
+1. Equal-size matching now sums retained non-RE occupants by size first, sums
+   the available RE-owned doors, and only then allocates residual demand over
+   those doors. Matching neither invents an occupant in a second class nor
+   reallocates a conveyed title's occupants. The caused two-class fixture checks
+   whole, fractional and repeated demand after conveyance.
+2. The native reload fixture now has two Houses on site, one partly worked,
+   plus a Studio project, mixed RE/household titles, occupied and vacant homes,
+   both listing subsets and the endowment. Every class/owner's owned, occupied,
+   vacant and listed quantities, physical structures, pipeline, site progress,
+   capacity and endowment are compared immediately and after both native next
+   months, in addition to RN2's changed-capacity debt allocation.
+   The expanded fixture exposed a real continuation difference: opening work
+   fill was 1 live versus 0 reloaded, with the same 160 physical point capacity,
+   offered share and road ratio. The source advanced a House while the loaded
+   twin did no work. No premise or tolerance was weakened to pass this.
+   Construction now saves that previous-period work input in sector extras
+   (through DataSave's SectorState) and Game restores it after the load's wage
+   rebuild, just as RN2 restores its counted-capacity baseline. The input is a
+   flow because sites advance before the next wage count (SimulationEngine).
+   The fixture now reports 156/156 opening site points, both cities complete a
+   House and retain the remaining pipeline; all registry comparisons pass.
+   This justified the additional Construction source change and makes the
+   delta a money-and-saves review: the first loaded month's actual work must
+   receive exactly the running city's settlement, not a newly recomputed rate.
+3. Reused HC1's exact native format-60 save/history pair and producer from
+   shipped 01e6c2d4b, under fixtures/hc1-format60, with its existing hashes and
+   original 128-slot cell layout. There is one shared pair, no relabelled JSON
+   or conversion. SaveFileCheck's old-city case uses those exact bytes; a
+   separate synthetic header keeps the exact one-below-floor boundary tested
+   even after a later bump. The shared nativeCard60Refusal helper checks the
+   fresh-game refusedAtTheFloor path and a current save loaded into a running
+   twin. ReadPathCheck also exercises repeated actual reads after refusal.
+   Both file byte streams, full saved state/history and manager identities are
+   unchanged. HC1 and RES2 use the same artifact paths/helper name so the
+   second integration keeps one pair and producer.
+
+The Construction work-input field is added within the still-unshipped RES2
+format-61 schema. Current shipped main remains format 60; the existing bump to
+61 and matching load floor remain owed, with no second bump until HC1 ships
+first. Its absence from native format 60 is not repaired or converted.
+
+Initial mended HousingInventoryCheck and SaveFileCheck runs are green; the
+remaining named checks and the final post-mend trace are being completed before
+the next provisional push. Logs are target/RES2-review/*-after.txt.

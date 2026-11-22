@@ -197,15 +197,24 @@ public final class HousingInventory {
      */
     public void match(double[] occupiedBySize) {
         long[] doors = homesBySize();
-        for (Stock s : stock()) {
+        List<Stock> rows = stock();
+        double[] retained = new double[doors.length], available = new double[doors.length];
+        for (double wanted : occupiedBySize) quantity(wanted);
+        // Existing occupants consume demand before the remaining RE doors share it.
+        // Subtracting them after each class's share overbooks equal-size classes.
+        for (Stock s : rows) {
+            int size = s.dwelling().capacity();
+            for (Owner o : Owner.values()) if (o != Owner.REAL_ESTATE) retained[size] += occupied(s.key(), o);
+            available[size] += owned(s.key(), Owner.REAL_ESTATE);
+        }
+        for (Stock s : rows) {
             int size = s.dwelling().capacity();
             double wanted = size < occupiedBySize.length ? occupiedBySize[size] : 0;
-            quantity(wanted);
-            double occupiedElsewhere = 0;
-            for (Owner o : Owner.values()) if (o != Owner.REAL_ESTATE) occupiedElsewhere += occupied(s.key(), o);
-            double amount = doors[size] > 0 ? wanted * s.homes() / doors[size] : 0;
+            double remaining = Math.max(0, wanted - retained[size]);
+            double own = owned(s.key(), Owner.REAL_ESTATE);
+            double amount = available[size] > 0 ? remaining * own / available[size] : 0;
             Holding h = writable(s.key(), Owner.REAL_ESTATE);
-            h.occupied = Math.min(owned(s.key(), Owner.REAL_ESTATE), Math.max(0, amount - occupiedElsewhere));
+            h.occupied = Math.min(own, Math.max(0, amount));
             h.listedOccupied = Math.min(h.listedOccupied, h.occupied);
             h.listedVacant = Math.min(h.listedVacant, vacant(s.key(), Owner.REAL_ESTATE));
         }

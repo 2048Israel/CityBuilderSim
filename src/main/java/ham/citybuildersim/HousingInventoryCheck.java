@@ -79,6 +79,8 @@ public final class HousingInventoryCheck {
         values.put("homes", (double) h.homes());
         values.put("capacity", (double) h.capacity());
         values.put("pipeline homes", (double) h.pipelineHomes());
+        values.put("construction work fill", city.getSectors().construction().getAverageFill());
+        values.put("construction opening output", (double) city.getBuildingOutput());
         for (var s : h.stock()) {
             String key = s.key().recipe() + "/" + s.key().dwelling();
             values.put(key + " structures", (double) s.structures());
@@ -235,6 +237,9 @@ public final class HousingInventoryCheck {
             var ch = cb.getHousingInventory();
             ch.occupy(home, REAL_ESTATE, 4.5); ch.list(home, REAL_ESTATE, 1, 1);
             ch.transfer(home, REAL_ESTATE, HOUSEHOLD, .5, .25);
+            cb.addStack(house, 2, false);
+            cb.getStack(house).advanceConstruction(house.getConstructionPoints() * .5);
+            cb.addStack(cb.getTemplate(1), 1, false);
             check("REV-RES2 P2: real reload fixture contains pipeline, mixed titles, occupied/vacant homes, both listing subsets and the endowment",
                     ch.pipelineHomes() > 0 && ch.owned(home, REAL_ESTATE) > 0 && ch.owned(home, HOUSEHOLD) > 0
                             && ch.occupied(home, HOUSEHOLD) > 0 && ch.vacant(home, REAL_ESTATE) > 0
@@ -250,6 +255,11 @@ public final class HousingInventoryCheck {
             Game back = new Game(files); back.loadGameSave(10);
             check("actual game loader accepted its inventory save", back.getLoadFailure() == null);
             var bh = back.getBuildingManager().getHousingInventory();
+            out.printf(java.util.Locale.ROOT, "   opening work: capacity %d/%d, fill %.9f/%.9f, offered %.9f/%.9f, roads %.9f/%.9f, sites %d/%d%n",
+                    cb.getTotalConstructionCapacity(), back.getBuildingManager().getTotalConstructionCapacity(),
+                    city.getSectors().construction().getAverageFill(), back.getSectors().construction().getAverageFill(),
+                    city.getSectors().construction().getPostsOfferedShare(), back.getSectors().construction().getPostsOfferedShare(),
+                    city.getRoadRatio(), back.getRoadRatio(), city.getBuildingOutput(), back.getBuildingOutput());
             twins("immediately after load", city, back);
             near("load rebuild restores conveyed quantity", bh.owned(home, HOUSEHOLD), ch.owned(home, HOUSEHOLD));
             near("load rebuild restores occupancy", bh.occupied(home, HOUSEHOLD), ch.occupied(home, HOUSEHOLD));
@@ -261,6 +271,9 @@ public final class HousingInventoryCheck {
             double monthMs = (System.nanoTime() - monthStarted) / 1e6;
             back.simulateMonths(1);
             twins("after both next months", city, back);
+            check("REV-RES2 P2: both next-month cities still exercise the pipeline and conveyed title",
+                    ch.pipelineHomes() > 0 && bh.pipelineHomes() > 0
+                            && ch.owned(home, HOUSEHOLD) > 0 && bh.owned(home, HOUSEHOLD) > 0);
             out.printf(java.util.Locale.ROOT, "   integrated scratch month %.3f ms; %d physical class rows, %d saved cohorts; scaled fixture %d/%d rows%n",
                     monthMs, ch.stock().size(), ch.forSave().size(), huge.stock().size(), huge.forSave().size());
             near("first month allocates debt from the same changed baseline", back.getSectors().realEstate().strandedDebtShare(), re.strandedDebtShare());
