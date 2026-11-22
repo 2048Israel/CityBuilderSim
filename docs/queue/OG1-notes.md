@@ -170,8 +170,21 @@ and the city collapsed. With the depots served first, the builders ran away to t
     people (60,000 kg a plant, about 12 a person), a playtest rather than a fixture. So the market's demand
     is set, and the expectation is the six it states, once the fixture shows the plots and the staffing
     for six.
+- **The ensemble**, `OG1-final`: on the gate box, the classes of 359913171, scored against
+  `docs/ensemble/0.9.181.md`; its baseline is `docs/ensemble/OG1.md`.
+  - Batch verdict PASS: hard criteria 10 of 10, 24 of 26 in all. M1 is 0 months and F1 0 of 16 runs in
+    every policy.
+  - One verdict changed, AUTO2 T2 (info), PASS -> FAIL. The final population's median is 1,818,590
+    [78,580 to 4,870,275] against 2,532,050 [28,685 to 4,208,078]: 72% of the baseline against the 75%
+    line, with the range wider at both ends. Not traced, since it is info; the playtest's own seed gained
+    (629,491 against 531,045 at m2400).
+  - The other policies' T2 pass (ZERO_SLACK 85%; ZERO_HOT, SHOCK and HIGH at or above the baseline).
+  - A2: 13 months [7 to 26] against 15 [4 to 36], FAIL in both. T1: 16 of 16 seeds, at m771 against m758.
+  - FB16, merged since (0.9.182), does not move the playtest (the orchestrator), so the run counts on the
+    merged model.
 - The pick (`sh tools/pick.sh origin/main HEAD`): ALL, since `AllChecks` changed. Review: needed, for
-  saves (`DataSave`). The suite runs at the dry run; its log is `target/OG1-dry.txt` when it has run.
+  saves (`DataSave`). REV-OG1 found money and saves clean, and one P1 and three P2 (the four mends above
+  and in 3, 5 and 6). It said SHIP on the delta 359913171..ab4b414e5. The suite runs at the dry run; its log is `target/OG1-dry.txt` when it has run.
 
 ## 5. The calls
 
@@ -214,7 +227,9 @@ and the city collapsed. With the depots served first, the builders ran away to t
   His choice is to leave the gate (the queue is the city's labour, and the premium prices the wait at
   0.76 of its 0.80 ceiling) or to lower it for the builders, which this batch has not measured. The
   brief said not to loosen it blind, so it is untouched.
-- The ensemble's verdict on the dials in 5.
+- **The dials in 5** (`QUEUE_WORKED_OFF_MONTHS`, the 1.8 cap, the premium's share). The ensemble passes
+  them (4). Its one changed verdict, AUTO2's final population at 72% of the baseline (info), is his to
+  weigh.
 
 ## 7. Where things are
 
