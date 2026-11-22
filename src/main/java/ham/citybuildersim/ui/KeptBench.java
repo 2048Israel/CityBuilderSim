@@ -5101,10 +5101,12 @@ public final class KeptBench {
         ham.citybuildersim.HouseholdBalance bal = ui.game.getHouseholdBalance();
         ham.citybuildersim.FamilyModel families = ui.game.getFamilies();
         List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.AdultStage stage : ham.citybuildersim.AdultStage.values())
         for (ham.citybuildersim.FamilyStructure shape : ham.citybuildersim.FamilyStructure.values()) {
             if (shape.isRetired()) continue;
             for (int t = 0; t < ham.citybuildersim.HouseholdAccounts.RETIRED; t++) {
-                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t]).households() >= .5) out.add(t + ":" + shape.name());
+                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t], stage).households() >= .5)
+                    out.add(t + ":" + shape.name() + stage.keySuffix());
             }
         }
         for (ham.citybuildersim.Household h : ui.peopleScreen.belowTheRule(bal, families)) out.add("OUT:" + h.key());
@@ -5154,6 +5156,12 @@ public final class KeptBench {
     /** Household money forgotten, as another city opened would leave it: nothing kept (People's page too, which shares the screen's forget()). */
     public void forgetHousehold() {
         ui.peopleScreen.forget();
+    }
+
+    /** The window's scroller used by Household money's real redraw (HS3). */
+    public ScrollPane householdScroller() {
+        ensureWindow();
+        return ui.menuScroller;
     }
 
     /* =====================================================================
