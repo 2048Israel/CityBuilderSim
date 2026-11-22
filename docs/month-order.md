@@ -34,7 +34,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 17. **L13802** `fund.startMonth();` → [TreasuryFund.startMonth](map/TreasuryFund.md) (L742)
 18. **L13805** `equity.startMonth();` → [Equity.startMonth](map/Equity.md) (L420)  
    _The register's month: nothing offered, nothing paid, until it is._
-19. **L13806** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L531)
+19. **L13806** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L535)
 20. **L13807** `bondMarket.startMonth();` → [BondMarket.startMonth](map/BondMarket.md) (L1263)
 21. **L13808** `economyManager.clearEquityFlows();` → [EconomyManager.clearEquityFlows](map/EconomyManager.md) (L1690)
 22. **L13826** `treasuryOpening = treasuryRecorded ? treasuryClosing : cash;`  
@@ -183,7 +183,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 125. **L14307** `tradeShares();` → [Game.tradeShares](map/Game.md) (L5066)
 126. **L14317** `settleThePreferred();` → [Game.settleThePreferred](map/Game.md) (L5640)  
    _...and the city's preferred (0.7.14): every block at its third anniversary repaid whole at par with its unpaid dividends, from the bank's capital over its target and the rest by an offering of new ..._
-127. **L14327** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1296), [Exchange.cityMarketValue](map/Exchange.md) (L1920)  
+127. **L14327** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1296), [Exchange.cityMarketValue](map/Exchange.md) (L1957)  
    _...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their holders, last month's orders withdrawn, every bond valued and every participant's orders posted again - after the shares, and befo..._
 128. **L14328** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L5273)
 129. **L14333** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2984), [DebtManager.firmBookYield](map/DebtManager.md) (L2990)  
