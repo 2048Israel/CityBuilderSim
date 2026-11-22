@@ -116,3 +116,63 @@ At the review tip origin/main is still 01e6c2d4b (0.9.188); save format and its 
 61, raised from main's 60. Merge main again on SHIP/go, reconciling that number above
 HC1/RES2's shipped value before the ensemble and dry run. The provisional ship marker
 stays in place for that review and the remaining checks.
+
+## REV-PW5 mends of ccff8b92c
+
+1. **Native old-save refusal.** Format60SaveFixture is shared by SubstationCheck.saved,
+   SaveFileCheck's format-floor section and ReadPathCheck. Its two gzip resources are
+   the actual save/history written by unmodified production classes of 01e6c2d4b,
+   0.9.188/format60, at month 5 after four native played months. Only the fixture
+   capture class was added to that detached scratch checkout. No current save was
+   restamped, stripped or converted. The capture rejects a different executable
+   version/format; resource provenance and SHA-256 hashes are beside the files.
+   The checks validate the old field shape and four history rows, refuse into a fresh
+   Game through refusedAtTheFloor, and refuse into a running current-format loaded
+   twin. Full DataSave (apart from the save timestamp), full HistorySave, manager/history
+   object identities, the named refusal and both files' bytes must stay intact.
+   ReadPathCheck runs real readers before and after that refusal. HC1/RES2's equivalent
+   fixture will be consolidated to one after the first batch lands and main is merged.
+2. **Independent tariff oracle.** The harness no longer reads REAL_RATE/LIFE_YEARS or
+   repeats production's annuity expression. A worked $440.004M, 4%, 40-year case pins
+   capital at $1,852,544.78305859 a month and repairs at $366,670. Its controlled 90 MW
+   peak, 720-hour, 5%-loss fixture delivers 51.3M kWh and independently pins the wires
+   bills at $31.1468741481907 commerce and $9.88748025755129 industry per kW-month.
+   It has no filled posts, tax or wage drift; the ordinary tariff check and the real
+   PowerPriceCheck cities retain the actual filled-payroll coverage.
+3. **Currency reform.** Removed the second multiplication of transmissionPrice and
+   distributionPrice from UtilitiesHandler.scale(Book,...). SubstationCheck.reform
+   tests a half-scale on both saved price components, both tariffs, struck and pending
+   grid costs, restored state, and unchanged physical kWh/carry. The exact new line
+   failed before the model fix (target/PW5-review-results/before-fix-SubstationCheck.log)
+   and passes afterwards.
+
+Findings 1 and 2 are coverage defects: once supplied, the stronger native refusal and
+worked tariff cases agree with ccff8b92c's otherwise correct ordinary calculations.
+Unlike finding 3, they do not claim a newly reproduced runtime error on its unmutated
+production code. The missing real-fixture premise and the tariff oracle's shared wrong
+inputs are the defects being prevented; mutation results and final checks follow.
+
+- A control classpath restores UtilitiesHandler.java from ccff8b92c and omits the two
+  new fixture resources; all other production classes are unchanged since that tip.
+  Transplanting only the stronger checks gives exactly two failing assertions: the
+  currency breakdown and missing native old-save fixture. With all three mends the
+  named SubstationCheck passes. Logs: target/PW5-review-results/review-tip-no-fixture/.
+- For the independent-oracle finding, compiled the original ccff8b92c harness and the
+  new harness separately with deliberate 8% and 20-year Substations mutations, so each
+  old oracle sees the same wrong dials as production. The old oracle passes both
+  mutations (exit 0); the new oracle fails three exact capital/wires assertions on
+  each (exit 1). The unchanged 4%/40-year model passes. These are fault-injection
+  controls, not claimed ordinary-production failures. Logs: rate-old, rate-new,
+  life-old and life-new under target/PW5-review-results/; no tracked source was mutated.
+- SubstationCheck, SaveFileCheck, ReadPathCheck, PowerPriceCheck and PowerViewCheck all
+  exit 0, one harness per batch-check invocation and one JVM at a time. The native
+  old-save checks pass inside all three callers, including actual readers on the
+  running loaded twin. The substation harness now has twelve strict assertions plus
+  the shared native-fixture checks. Final fast/map and push checks follow.
+- Final review `--fast` exits 0 (compile, regenerated maps, zero firm Stale findings
+  and the tree check). Source/prose whitespace checks pass; no branch known-red
+  waiver was introduced. The provisional marker remains for the delta review.
+
+The review go remains outstanding. On its SHIP: merge main, reconcile the save format
+above the shipped floor, then run the ensemble against docs/ensemble/0.9.188.md and
+the ALL dry run, in that order, before dropping the marker.
