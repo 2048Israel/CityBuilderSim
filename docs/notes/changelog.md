@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### RES1 — Real Estate study and HO1 implementation contract — 2026-11-22, ready, see docs/queue/RES1-notes.md
+Finalized the aggregate housing design and HO1 contract after Jerus's review:
+fourteen initial building forms and 32 dwelling classes, complete numerical
+cost/rent/parking/fee tables, measured compute and executable underwriting/cash
+fixtures. Recorded tenant retention, persistent common-cost pools, real funded
+sales and the immediate financial-demolition guard; supplied RES2-RES5 and
+HO1/REU1 briefs. The study-review hold is closed; actual model calibration and
+code dependencies remain the named implementation gates. Documentation only.
+
 ### 0.9.181 — PW6, the recorded power month — 2026-11-21, ready, see docs/queue/PW6-notes.md
 Services › Utilities shows the recorded month's six supply stacks, each plant's run,
 fuel and clearing receipts, clearing prices and bill parts, firm capacity against

@@ -96,6 +96,10 @@ stuff".
 | HWW1 | Jerus's fjord city at m1204 has no highway world line; trace the highway exit and world truck calls, then mend the cause with a fixture | [HWW1 brief](docs/queue/TN1-notes.md#hww1) |
 | STY1 | Bergen's station remains 15 plots long at m840-1322, holding 9.0 against an 80-wagon train's 41.4 plots; provide a valid longer station where ground allows | [STY1 brief](docs/queue/TN1-notes.md#sty1) |
 | ML1 | The map lays rail after a load where the live map leaves the plots bare: ReloadCheck's `.mapStamp` red on PW1's earlier commits (district 3, 6 plots, month 1,205; green on its final tree, whose path misses it) and on clean main once the probe follows past ReloadCheck's last checkpoint (0a5b74ef: district 11, 2 plots, month 2,105), with the two maps byte-equal at the load, the same builds, no reserves and no mined sites. Main's fault, not PW1's; the probe is in the orchestrator's notes folder, `PW1-map-rail-after-load/`. Done means the reloaded map lays what the live one lays, and the probe clean on main to month 2,400 | [PW1 notes §3](docs/queue/PW1-notes.md) |
+| RES2 | Aggregate housing inventory before RES3/RES4/HO1: physical dwelling mixes, ownership/occupancy authority, non-saleable founding capacity and reload invariants | [RES2](docs/queue/RES2.md) |
+| RES3 | After RES2: typed home choice/rents and the 14-form/32-class initial catalogue; actual builder/era/occupancy calibration | [RES3](docs/queue/RES3.md) |
+| RES4 | After RES3, before HO1: aggregate private/included/optional parking stock, conserved rights and actual bills | [RES4](docs/queue/RES4.md) |
+| RES5 | After HO1: standing-home disposal, funded sale settlement and declining unsold asks, preserving tenants and common costs | [RES5](docs/queue/RES5.md) |
 
 ## Pending
 
