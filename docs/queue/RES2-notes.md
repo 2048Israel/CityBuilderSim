@@ -179,9 +179,9 @@ These observations do not replace nightly performance judgement. The study's
 The final mended model source is 51f417367; the following records/maps commit
 changes prose only. The same stranger reviews the delta, including money and
 saves for the restored construction-work input. No sale or new thread is
-activated. The provisional marker stays until that review's SHIP and the ALL
-dry run.
-No dry run has been run yet, so no retained run or two gate commits are claimed.
+activated. The delta review is SHIP and the ALL dry run is green, as recorded below.
+The marker is removed last in its own commit; no model source changes after
+this retained run.
 
 
 ## REV-RES2: three P1 mends
@@ -264,3 +264,43 @@ kept in target/RES2-review; no model source changed after final verification.
 
 The final mended LongPlaytest measured 299.5 s on this laptop (known CL7 only);
 its timing is observational, and its complete eight-file comparison is exact.
+
+
+## Final review, ALL dry run and readiness
+
+REV-RES2's delta review of e20e3ea63 is SHIP (2026-11-22). It traced the saved
+construction input through the post-wage rebuild restore and the clearing of
+its pending value. That SHIP authorized the ALL dry run; no ensemble is owed.
+
+The gate box completed the ALL selection (242 registered harnesses): the
+standard gate runner executed 237, with its five nightly-tier harnesses excluded
+by normal policy. Of those, 225 passed and 12 had only named main reds. The check
+phase took 846 s (the harness runner 827 s), returning 3 for known reds; the
+launcher/publisher dry run returned 0.
+unnamed.txt is empty. The recorded classes were AutoBuildCheck, BuildAdviceCheck,
+CentralBankCheck, CopperRefiningCheck, Forms1900Check, FundCheck, KeptCheck,
+LongPlaytest, MapCheck, PublicLicenceCheck, ReloadCheck and RoadCheck. The
+existing main record plus this ship file names them; no new red was waived and
+no check or conservation bound was relaxed.
+
+Retained run (immutable):
+`/home/jerus/cbs/runs/cbs-gate-RES2-OIFTyuGi`.
+Its copied logs/checks are at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RES2-OIFTyuGi`;
+the local relay log is `target/RES2-dry.txt`.
+The two exact tested commits, from branch.commit/main.commit and ship.log:
+
+- RES2: `e20e3ea632d224d5f29b20f07ac92f1ce3c5d6b9`.
+- Main: `4b5de63e123361c689767fe2c3b0d8fca08ad928`.
+
+Main advanced from the reviewed 01e6c2d4b through queue/docs-only commits; the
+run incorporated 4b5de63e1. Subsequent 6ec5ef03d also changes only QUEUE.md and
+EDU2/RW1 briefs, so the tested game source is unchanged. The kept-run reuse
+contract explicitly permits these main Markdown changes. Only this notes file
+and the ship file change after the dry run. The gate-run comment is the ship
+file's first line; its marker is dropped last in a separate commit.
+
+PW5 also has a native format-60 pair at checks/ via Format60SaveFixture. Per the
+orchestrator's instruction RES2 keeps its already built/reviewed shared HC1
+pair. Whichever branch ships second consolidates those artifacts and hooks;
+there is no new deferred design decision or queue row here.
