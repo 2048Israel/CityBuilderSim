@@ -221,7 +221,8 @@ public final class RealEstate extends Sector {
     private double studioCostPerCapacity;
     private double familyCostPerCapacity;
 
-    /** People the residential buildings hold, sites included - the break-even's denominator. Saved since RN2. */
+    /** Last counted RE-owned places, from HousingInventory including sites, excluding the founding endowment.
+     * An accounting baseline, not another stock authority: RN2 saves it so the first month's count allocates debt correctly. */
     private double ownedCapacity;
     /** ...the count a save held, waiting for the load's rebuild to have counted (RN2): see restoreLoadedCapacity(); NaN when none waits (a count of none is a count: REV-FB16). */
     private double loadedCapacity = Double.NaN;
@@ -363,6 +364,7 @@ public final class RealEstate extends Sector {
     public double getLandPerCapacity()       { return landPerCapacity; }
     public double getStudioCostPerCapacity() { return studioCostPerCapacity; }
     public double getFamilyCostPerCapacity() { return familyCostPerCapacity; }
+    /** The last inventory count used to allocate the debt; the live inventory is BuildingManager.getHousingInventory(). */
     public double getOwnedHousingCapacity()  { return ownedCapacity; }
     public long getStudioHomes()              { return studioHomes; }
     public long getFamilyHomes()              { return familyHomes; }

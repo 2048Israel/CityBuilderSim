@@ -225,6 +225,9 @@
    "sector": "Real Estate",
    "capacity": 6,
    "dwellings": 1,
+      "housing": {"form": "House", "sharedParking": 0, "mix": [
+        {"id": "legacy", "count": 1, "capacity": 6, "area": 120, "bedrooms": 3, "quality": 1, "privateParking": 0, "includedParking": 0, "costWeight": 120}
+      ]},
    "cashCost": 266,
    "constructionPoints": 10,
    "constructionMaterials": 10,
@@ -243,6 +246,9 @@
    "sector": "Real Estate",
    "capacity": 160,
    "dwellings": 80,
+      "housing": {"form": "Studio Apartments", "sharedParking": 0, "mix": [
+        {"id": "legacy", "count": 80, "capacity": 2, "area": 40, "bedrooms": 0, "quality": 1, "privateParking": 0, "includedParking": 0, "costWeight": 40}
+      ]},
    "cashCost": 8628,
    "constructionPoints": 680,
    "constructionMaterials": 320,
@@ -264,6 +270,9 @@
    "sector": "Real Estate",
    "capacity": 252,
    "dwellings": 63,
+      "housing": {"form": "Low-Rise Apartments", "sharedParking": 0, "mix": [
+        {"id": "legacy", "count": 63, "capacity": 4, "area": 80, "bedrooms": 2, "quality": 1, "privateParking": 0, "includedParking": 0, "costWeight": 80}
+      ]},
    "cashCost": 10196,
    "constructionPoints": 2400,
    "constructionMaterials": 377,

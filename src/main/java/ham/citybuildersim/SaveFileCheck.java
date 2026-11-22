@@ -69,6 +69,7 @@ public class SaveFileCheck {
         System.out.println("--- XR7: support already bought under a peg crosses the save ---");
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
         assertTrue("R6e current E21 choices survive immediate and next-month loads; native pre-E21 formats58/59 are refused intact", ModernEngineeringCheck.saveChecks());
+        assertTrue("native format60 save/history refusal preserves both files and a running loaded twin", nativeCard60Refusal());
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -617,6 +618,9 @@ public class SaveFileCheck {
         long peopleAfter = reloaded.getPopulationManager().getPopulation();
 
         BuildingManager after = reloaded.getBuildingManager();
+        assertTrue("RES2 inventory cohorts survive the actual load rebuild",
+                new com.google.gson.Gson().toJson(city.getBuildingManager().getHousingInventory().forSave())
+                        .equals(new com.google.gson.Gson().toJson(after.getHousingInventory().forSave())));
         assertEquals("depots still under construction",
                 after.getUnderConstructionById()[depot.getId()], depotsUnderWay);
         assertEquals("stores still under construction",
@@ -3205,38 +3209,58 @@ public class SaveFileCheck {
          * build's is - nothing of it applied, its file as it was, the
          * player told which build saved it and still opens it. Until 0.7.108
          * the loader refused no older format but the sectors' break, so a bump
-         * alone refused nothing. The fixtures are the city saved above with
-         * its format written down to one below the floor, to the floor, and up
-         * past this build; its build a stamp no build wrote, so words naming
-         * it can only have come from the save.
+         * alone refused nothing. The old city is now the genuine .188
+         * format-60 save/history pair shared with HC1. Separate synthetic
+         * header fixtures still exercise exactly one below the current floor,
+         * the floor itself, a missing build stamp, and a future format.
          */
         GameFiles oldest = new GameFiles(root.resolve("oldest"), root.resolve("no-legacy"));
         Files.createDirectories(oldest.saveFile(1).getParent());
         String citySaved = Files.readString(full.getGameFiles().saveFile(1));
         int savedMonth = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject().get("month").getAsInt();
-        String olderBuild = "P7-fixture";
-        com.google.gson.JsonObject below = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
-        below.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
-        below.addProperty("gameVersion", olderBuild);
-        Files.writeString(oldest.saveFile(2), new com.google.gson.Gson().toJson(below));
+        byte[] native60Save = native60Bytes("save"), native60History = native60Bytes("history");
+        com.google.gson.JsonObject below = com.google.gson.JsonParser.parseString(
+                new String(native60Save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        String olderBuild = below.get("gameVersion").getAsString();
+        assertTrue("REV-RES2 P3: the format60 fixture has its native pre-inventory schema and original build",
+                below.get("saveFormat").getAsInt() == 60 && !below.has("housingInventory")
+                        && below.get("gameVersion").getAsString().equals("0.9.188"));
+        Files.write(oldest.saveFile(2), native60Save);
+        Files.write(oldest.historyFile(2), native60History);
         com.google.gson.JsonObject unstamped = below.deepCopy();
         unstamped.remove("gameVersion");
         Files.writeString(oldest.saveFile(3), new com.google.gson.Gson().toJson(unstamped));
         com.google.gson.JsonObject newer = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
         newer.addProperty("saveFormat", GameVersion.SAVE_FORMAT + 1);
         Files.writeString(oldest.saveFile(4), new com.google.gson.Gson().toJson(newer));
-        for (int slot = 2; slot <= 4; slot++) {
+        for (int slot = 3; slot <= 4; slot++) {
             if (Files.isRegularFile(full.getGameFiles().historyFile(1))) {
                 Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(slot));
             }
         }
+        // Keep the original exact boundary test even when a later floor is
+        // more than one above the fixed historical format-60 artifact.
+        com.google.gson.JsonObject boundary = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
+        boundary.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
+        boundary.addProperty("gameVersion", "P7-boundary");
+        byte[] boundaryBytes = new com.google.gson.Gson().toJson(boundary).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Files.write(oldest.saveFile(10), boundaryBytes);
+        Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(10));
+        SaveHeader boundaryHeader = oldest.readHeader(10);
+        assertTrue("fixture: exactly one below the floor still reads as an older, unloadable header",
+                boundaryHeader != null && boundaryHeader.getSaveFormat() == GameVersion.OLDEST_LOADABLE_FORMAT - 1
+                        && boundaryHeader.isNoLongerReadable() && !boundaryHeader.isFromNewerBuild() && !oldest.slotIsLoadable(10));
+        Game boundaryRefused = new Game(oldest);
+        quietly(() -> boundaryRefused.loadGameSave(10));
+        assertTrue("the exact one-below-floor boundary is refused without applying it or rewriting its bytes",
+                refusedAtTheFloor(oldest, 10, boundaryRefused, boundaryBytes));
         java.util.Map<String, byte[]> folderBefore = folderBytes(root.resolve("oldest"));
         assertTrue("fixture: three saves and their histories in the folder",
                 folderBefore.size() >= 3 && Files.isRegularFile(oldest.saveFile(2)));
 
         SaveHeader old = oldest.readHeader(2);
-        assertTrue("fixture: its header reads, a format one below the floor",
-                old != null && old.getSaveFormat() == GameVersion.OLDEST_LOADABLE_FORMAT - 1);
+        assertTrue("fixture: its native format60 header reads below the floor",
+                old != null && old.getSaveFormat() == 60 && old.getSaveFormat() < GameVersion.OLDEST_LOADABLE_FORMAT);
         assertTrue("the header says this build can no longer read it, not that it is newer",
                 old.isNoLongerReadable() && !old.isFromNewerBuild() && !old.isReadableHere());
         assertTrue("...so the slot list marks it and offers no load: there, not damaged, not loadable",
@@ -3257,7 +3281,7 @@ public class SaveFileCheck {
                         && turnedAway.getLoadFailure().contains("can no longer read"));
         assertTrue("...and the log says the same, with the save's format and this build's",
                 log.contains(GameFiles.slotLabel(2)) && log.contains(GameVersion.noLongerReadable(olderBuild))
-                        && log.contains("save format " + (GameVersion.OLDEST_LOADABLE_FORMAT - 1))
+                        && log.contains("save format " + old.getSaveFormat())
                         && log.contains("reads formats " + GameVersion.OLDEST_LOADABLE_FORMAT + " to " + GameVersion.SAVE_FORMAT));
         assertEquals("...and nothing of it is applied", turnedAway.getMonth(), 1);
 
@@ -3315,6 +3339,60 @@ public class SaveFileCheck {
         fails += LoadConservation.fails;
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Exact native .188 bytes, shared with HC1; no current JSON is converted. */
+    static byte[] native60Bytes(String name) throws IOException {
+        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/hc1-format60/" + name + ".json.gz")) {
+            if (in == null) throw new IOException("Missing native format60 " + name);
+            try (var zipped = new java.util.zip.GZIPInputStream(in)) { return zipped.readAllBytes(); }
+        }
+    }
+
+    /** A native .188 record, with the actual 128-slot old cell layout and old history. */
+    static boolean nativeCard60Refusal() { return nativeCard60Refusal(false); }
+
+    static boolean nativeCard60Refusal(boolean readPaths) {
+        try {
+            byte[] save = native60Bytes("save"), history = native60Bytes("history");
+            var old = com.google.gson.JsonParser.parseString(new String(save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            var oldHistory = com.google.gson.JsonParser.parseString(new String(history, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            int keys = old.getAsJsonArray("householdCellKeys").size();
+            boolean genuine = !old.has("housingInventory") && old.get("saveFormat").getAsInt() == 60 && old.get("gameVersion").getAsString().equals("0.9.188")
+                    && old.getAsJsonArray("householdCells").size() == keys * 128 + 3 && !oldHistory.has("debtSurveys")
+                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save))
+                            .equals("9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186")
+                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history))
+                            .equals("96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
+            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("hc1-refuse-native60"), null));
+            GameFiles files = source.getGameFiles();
+            if (!source.prepareSaveForChecks(10, "HC1 current before refusal").write().whole()) return false;
+            Game running = new Game(files);
+            quietly(() -> running.loadGameSave(10));
+            if (running.getLoadFailure() != null || running.getMonth() != source.getMonth()) return false;
+            Files.createDirectories(files.saveFile(10).getParent());
+            Files.write(files.saveFile(10), save); Files.write(files.historyFile(10), history);
+            Game fresh = new Game(files);
+            quietly(() -> fresh.loadGameSave(10));
+            boolean floor = refusedAtTheFloor(files, 10, fresh, save);
+            var gson = new com.google.gson.Gson();
+            var before = gson.toJsonTree(running.prepareSaveForChecks(10, "HC1 refusal unchanged").data()).getAsJsonObject();
+            String beforeHistory = gson.toJson(running.getHistorySave());
+            var managers = running.getBuildingManager();
+            var economy = running.getEconomyManager();
+            int month = running.getMonth(); double cash = running.getCash();
+            quietly(() -> running.loadGameSave(10));
+            if (readPaths) for (int i = 0; i < 3; i++) ReadPathCheck.readEverything(running);
+            var after = gson.toJsonTree(running.prepareSaveForChecks(10, "HC1 refusal unchanged").data()).getAsJsonObject();
+            boolean untouched = java.util.Arrays.equals(save, Files.readAllBytes(files.saveFile(10)))
+                    && java.util.Arrays.equals(history, Files.readAllBytes(files.historyFile(10)));
+            boolean intact = running.getBuildingManager() == managers && running.getEconomyManager() == economy
+                    && running.getMonth() == month && running.getCash() == cash
+                    && beforeHistory.equals(gson.toJson(running.getHistorySave())) && jsonDiff(before, after, java.util.Set.of("savedAt")).isEmpty();
+            boolean refused = !files.slotIsLoadable(10) && GameVersion.noLongerReadable("0.9.188").equals(running.getLoadFailure());
+            if (!(genuine && floor && untouched && intact && refused)) System.out.printf("Native60: genuine=%s, floor=%s, bytes=%s, city=%s, refused=%s%n", genuine, floor, untouched, intact, refused);
+            return genuine && floor && untouched && intact && refused;
+        } catch (Exception ex) { ex.printStackTrace(); return false; }
     }
 
     /** Two readings that must be the same double, to the bit. */
