@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW6-aSoQEt9r -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — PW6, the recorded power month — 2026-11-21, ready, see docs/queue/PW6-notes.md
 Services › Utilities shows the recorded month's six supply stacks, each plant's run,
