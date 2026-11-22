@@ -44,15 +44,17 @@ import java.util.Locale;
  *   4. ...AND A SAVE KEEPS IT, so a loaded city sizes its next order as the
  *      unbroken one does.
  *
- *   5. THE ORDER IS THE GAP: a city whose typical month outruns its sites and
- *      whose queue is past the knee - its own plan orders several depots, the
- *      count the target, the premium's share of the month, the plots and the
- *      staffing give, where one a month ordered one; and it holds while they
- *      are on site.
+ *   5. THE ORDER IS THE GAP: a city that has ordered twice its sites' month
+ *      every month for a year, its queue past the knee - its own plan orders
+ *      several depots, where one a month ordered one: no more points than the
+ *      premium's share of the sites' month, the most that share, the staffing
+ *      and the plots allow, and never the sites past 1 + CEILING of the work
+ *      it orders a month; and it holds while they are on site.
  *
- *   6. THE TRAP STAYS AT ONE: BuildersFirstCheck's stalled city, its sites
- *      short of a depot's points on the premium's share of a month, orders
- *      one.
+ *   6. THE TRAP STAYS AT ONE: BuildersFirstCheck's stalled city, given a year
+ *      of orders that ask for depots it could staff, its sites short of a
+ *      depot's points on the premium's share of a month, orders one - the
+ *      premium's share the only cut, so the section fails without it.
  *
  *   7. A MAKER SHORT BY SEVERAL PLANTS ORDERS SEVERAL: Food Processing, the
  *      city eating k plants' worth of drinks - the n-th plant's fill counts
@@ -87,6 +89,7 @@ public class GapOrderCheck {
     static final String BUILDERS = Sectors.CONSTRUCTION;
     static final String DEPOT = "Construction Depot";
     static final String HOUSE = "House";
+    static final String CLINIC = "Walk-in Clinic";
 
     public static void main(String[] args) throws Exception {
         Locale.setDefault(Locale.CANADA);
@@ -248,32 +251,31 @@ public class GapOrderCheck {
     /* ============================ 5. THE GAP ============================ */
 
     static void theGap(Game g) {
-        out.println("\n--- 5. the order is the gap: work coming in past the sites, a queue past the knee, several depots ---");
+        out.println("\n--- 5. the order is the gap: a year of orders past the sites, a queue past the knee, several depots ---");
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingManager bm = g.getBuildingManager();
         Construction builders = g.getSectors().construction();
-        // The queue is the city's: penitentiaries, 62,000 points each, so a few make months of a town's sites.
-        BuildingsTemplate big = DeathCareFirstCheck.template(g, "Penitentiary");
+        // The work coming in, caused: a year in which the city orders clinics of about twice its sites' month, month by month.
+        double w = aYearOfOrders(g, (int) Math.ceil(2 * g.getBuildingOutputAtEveryPost()
+                / DeathCareFirstCheck.template(g, CLINIC).getConstructionPoints()));
         double s = g.getBuildingOutputAtEveryPost();
+        report("fixture: the typical month read is the clinics the city ordered each month", near(plans.typicalMonthOfSiteWork(), w),
+                String.format("%,.0f read, %,.0f ordered a month, sites %,.0f a month", plans.typicalMonthOfSiteWork(), w, s));
 
-        // The work coming in, caused: a year of months each ordering twice what the sites do.
-        double typical = 2 * s;
-        List<Double> year = new ArrayList<>();
-        for (int i = 0; i < BusinessInvestment.TREND_WINDOW; i++) year.add(typical);
-        plans.restoreSiteWork(year, plans.getOthersOwedAfterAdvance());
-
-        // ...and a queue whose premium's share of the month is three depots' points or more.
+        // ...and a queue whose premium's share of the month is three depots' points or more: the city's own orders,
+        // penitentiaries of 62,000 points, placed after the last month, so the record has not read them.
+        BuildingsTemplate big = DeathCareFirstCheck.template(g, "Penitentiary");
         double perDepot = DeathCareFirstCheck.template(g, DEPOT).getConstructionPoints();
         double months = BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
         while (months < 600 && BuildersShort.premium(months) * s < 3 * perDepot) months += 1;
         long prisons = (long) Math.ceil(Math.max(0, months * s - bm.getRemainingConstructionPoints()) / big.getConstructionPoints());
         quietly(() -> g.buildStack(big, prisons, false));
         double remaining = bm.getRemainingConstructionPoints();
+        double share = BuildersShort.premium(remaining / s) * s;
         report("fixture: the queue is past the knee, its premium's share of the month three depots or more",
-                remaining / s >= BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING
-                        && BuildersShort.premium(remaining / s) * s >= 3 * perDepot,
-                String.format("%,.0f owed on %,.0f a month = %.1f months, premium %.3f", remaining, s, remaining / s,
-                        BuildersShort.premium(remaining / s)));
+                remaining / s >= BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING && share >= 3 * perDepot,
+                String.format("%,.0f owed on %,.0f a month = %.1f months, premium %.3f, its share %,.0f", remaining, s, remaining / s,
+                        BuildersShort.premium(remaining / s), share));
 
         g.getBusinessInvestment().releaseSector(BUILDERS);
         BusinessInvestment.Decision d = builders.plan(plans, g);
@@ -282,25 +284,24 @@ public class GapOrderCheck {
         report("their own plan builds", d.build && d.template != null, d.reason);
         if (!d.build || d.template == null) return;
 
+        // The expectations are the brief's, read off the city: the ration (BA1, the premium's share of the sites' month),
+        // the work the city orders a month (w, the harness's own clinics), and what it could staff and has plots for.
         BuildingsTemplate t = d.template;
-        double each = plans.newUnit(t).makes(Good.BUILDING_WORK) * Math.max(0, Math.min(1, builders.staffing(t).share));
-        double gap = Construction.sitesMonthWanted(plans.typicalMonthOfSiteWork(), remaining, s) - s;
-        long wanted = (long) Math.ceil(gap / each);
-        long batch = (long) Math.floor(BuildersShort.premium(remaining / s) * s / Math.max(1, t.getConstructionPoints()));
-        long expected = Math.max(1, builders.staffableCount(t, Math.max(1, Math.min(Math.min(wanted, batch), plans.plotsAvailableFor(t)))));
-        report("it orders several, where one a month ordered one", d.quantity > 1, d.quantity + " ordered");
-        report("...the count the target, the premium's share of the month, the plots and the staffing give",
-                d.quantity == expected, String.format("wanted %d for a gap of %,.0f at %,.0f each, the premium's share %d, plots %d -> %d",
-                        wanted, gap, each, batch, plans.plotsAvailableFor(t), expected));
-        report("...and no more than take the premium's share of the sites' month",
-                d.quantity * t.getConstructionPoints() <= BuildersShort.premium(remaining / s) * s + 1e-9,
-                String.format("%,.0f points of %,.0f", d.quantity * (double) t.getConstructionPoints(), BuildersShort.premium(remaining / s) * s));
-        double after = s + d.quantity * each;
-        report("...nor take the sites past the target", d.quantity == 1 || after - each < Construction.sitesMonthWanted(
-                        plans.typicalMonthOfSiteWork(), remaining, s),
-                String.format("%,.0f a month after, target %,.0f", after, Construction.sitesMonthWanted(plans.typicalMonthOfSiteWork(), remaining, s)));
-
         long n = d.quantity;
+        double points = t.getConstructionPoints();
+        double each = plans.newUnit(t).makes(Good.BUILDING_WORK) * Math.max(0, Math.min(1, builders.staffing(t).share));
+        report("it orders several, where one a month ordered one", n > 1, n + " ordered");
+        report("...their points no more than the premium's share of the sites' month",
+                n * points <= share + 1e-9, String.format("%,.0f points of %,.0f", n * points, share));
+        boolean oneMoreRefused = (n + 1) * points > share || builders.staffableCount(t, n + 1) < n + 1 || plans.plotsAvailableFor(t) < n + 1;
+        report("...and the most that share, the staffing and the plots allow, the city's month asking for more",
+                oneMoreRefused && s + n * each < w,
+                String.format("%d depots would be %,.0f points; the sites %,.0f a month with them, the city orders %,.0f",
+                        n + 1, (n + 1) * points, s + n * each, w));
+        report("...nor take the sites past 1 + CEILING of the work the city orders a month",
+                s + (n - 1) * each < (1 + BuildersShort.CEILING) * w,
+                String.format("%,.0f a month with all but one, %,.0f at most", s + (n - 1) * each, (1 + BuildersShort.CEILING) * w));
+
         quietly(() -> g.buildStack(t, (int) n, false));
         g.getBusinessInvestment().releaseSector(BUILDERS);
         BusinessInvestment.Decision held = builders.plan(plans, g);
@@ -308,23 +309,68 @@ public class GapOrderCheck {
         report("with the order on site the plan holds", !held.build && held.reason.contains(Construction.ONE_DEPOT_ON_SITE), held.reason);
     }
 
+    /**
+     * A year of the city's own orders, the same each month: so many clinics placed by the city, then the month played,
+     * the builders held. Returns the points ordered a month. The record reads them as the advance begins (section 3).
+     */
+    static double aYearOfOrders(Game g, int clinics) {
+        BuildingsTemplate clinic = DeathCareFirstCheck.template(g, CLINIC);
+        quietly(() -> {
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            for (int i = 0; i < BusinessInvestment.TREND_WINDOW; i++) {
+                g.buildStack(clinic, clinics, false);
+                g.simulateMonths(1);
+            }
+        });
+        return clinics * (double) clinic.getConstructionPoints();
+    }
+
     /* ============================ 6. THE TRAP ============================ */
 
+    /**
+     * BuildersFirstCheck.stalled()'s city, given first a year of orders it cannot keep up with, so the typical month
+     * is read and the order passes the record's guard: the work coming in asks for depots the city could staff, and
+     * only the premium's share of the sites' month, under one depot's points, holds it at one.
+     */
     static void trap(Path root) {
-        out.println("\n--- 6. the trap stays at one: the stalled city's sites are short of a depot on the premium's share ---");
-        Game g = BuildersFirstCheck.stalled(root, "trap", true);
+        out.println("\n--- 6. the trap stays at one: a year of orders, but the stalled city's sites are short of a depot on the premium's share ---");
+        Game g = DeathCareFirstCheck.city(root, "trap");
+        DeathCareFirstCheck.sites(g);
+        g.getBuildingManager().setUnburied(() -> 0);
+        g.getBuildingManager().setBuildersFirstForTest(true);
+        double w = aYearOfOrders(g, 2);
+
+        BusinessInvestment plans = g.getBusinessInvestment();
+        Construction builders = g.getSectors().construction();
+        BuildingsTemplate depot = DeathCareFirstCheck.template(g, DEPOT);
         double s = g.getBuildingOutputAtEveryPost();
         double q = g.getBuildingManager().getRemainingConstructionPoints();
-        double perDepot = DeathCareFirstCheck.template(g, DEPOT).getConstructionPoints();
-        report("fixture: the stalled city, its queue past the knee and the premium's share under a depot",
-                q / s >= BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING && BuildersShort.premium(q / s) * s < perDepot,
-                String.format("sites %,.0f a month, %,.0f owed", s, q));
+        double each = plans.newUnit(depot).makes(Good.BUILDING_WORK) * Math.max(0, Math.min(1, builders.staffing(depot).share));
+        report("fixture: the stalled city has a year of orders, the typical month the clinics it ordered",
+                near(plans.typicalMonthOfSiteWork(), w), String.format("%,.0f read, %,.0f ordered a month", plans.typicalMonthOfSiteWork(), w));
+        report("fixture: its queue past the knee and the premium's share under a depot",
+                q / s >= BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING && BuildersShort.premium(q / s) * s < depot.getConstructionPoints(),
+                String.format("sites %,.0f a month, %,.0f owed, the share %,.0f", s, q, BuildersShort.premium(q / s) * s));
+        report("fixture: the work coming in asks for two depots or more, and the city could staff two",
+                s + 2 * each <= w && builders.staffableCount(depot, 2L) == 2,
+                String.format("sites %,.0f and %,.0f a depot against %,.0f ordered a month; %d of 2 staffable", s, each, w,
+                        builders.staffableCount(depot, 2L)));
+
+        g.getBusinessInvestment().releaseSector(BUILDERS);
+        quietly(() -> g.simulateMonths(1));
         String plan = g.getLastInvestment(BUILDERS);
-        report("its own plan ordered one depot", plan != null && plan.startsWith("Built 1 " + DEPOT), plan);
+        report("its own plan ordered one depot, the premium's share the only cut", plan != null && plan.startsWith("Built 1 " + DEPOT), plan);
     }
 
     /* ============================ 7. A MAKER ============================ */
 
+    /**
+     * The one restored input in this harness. A Bottling Plant makes 60,000 kg of drinks a month and a person drinks
+     * about 12 (consumption.json), so a town eating six plants' worth is about 30,000 people - a playtest, not a
+     * fixture. The market's demand is set to six plants beyond what the city makes and has coming; the expectation is
+     * that six, stated here, not the planner's own sum, once the fixture shows the city has the plots and could staff
+     * six together.
+     */
     static void food(Game g) {
         out.println("\n--- 7. a maker short by several plants orders several: Food Processing, the city eating k plants' drinks ---");
         FoodProcessing fp = g.getSectors().foodProcessing();
@@ -337,6 +383,9 @@ public class GapOrderCheck {
         drinks.restoreStrike(0, 0, k * made + fp.getCapacity(Good.DRINKS) + fp.getPipeline(Good.DRINKS));
         report("fixture: the city eats six Bottling Plants' drinks beyond what it makes", unit.goodsMade().size() == 1 && made > 0,
                 String.format("%,.0f a plant, %,.0f eaten", made, drinks.getDemand()));
+        report("fixture: it has the plots for six and could staff six together",
+                plans.plotsAvailableFor(bottling) >= k && fp.staffableCount(bottling, (long) k) == k,
+                String.format("%d plots, %d of %d staffable", plans.plotsAvailableFor(bottling), fp.staffableCount(bottling, (long) k), k));
         boolean falls = true;
         for (int n = 1; n <= k + 1; n++) falls &= fp.fillFor(unit, n) <= fp.fillFor(unit, n - 1);
         assertTrue("the n-th plant's fill counts the n - 1 before it, so it falls with n", falls);
@@ -349,7 +398,6 @@ public class GapOrderCheck {
         g.getBusinessInvestment().holdSector(fp.key());
         out.println("  the plan: " + (d.build ? "build " + d.quantity + " " + d.template.getName() : "") + " - " + d.reason);
         report("its plan orders the six, where one a month ordered one",
-                d.build && d.template == bottling && d.quantity == plans.gapOrder(fp, bottling, k) && d.quantity > 1,
-                d.reason);
+                d.build && d.template == bottling && d.quantity == k, d.reason);
     }
 }

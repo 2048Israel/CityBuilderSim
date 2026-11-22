@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**239 harness files, 27,235 labelled assertions.** AllChecks runs 239 of them.
+**239 harness files, 27,239 labelled assertions.** AllChecks runs 239 of them.
 
 ## Which harnesses read which class
 
@@ -12610,7 +12610,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1066 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
   - L1068 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
-## GapOrderCheck.java - 30 labelled assertions
+## GapOrderCheck.java - 34 labelled assertions
 
 > A planner orders to the gap, not one building a month (OG1, 2026-11-22).
 > 
@@ -12626,43 +12626,47 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L117 1. the builders' target is the work coming in, and bounded however long the queue**
-  - L120 under the knee the target is the typical month
-  - L122 ...and at the knee
-  - L125 past it, the queue past the knee over QUEUE_WORKED_OFF_MONTHS more
-  - L133 never more than 1 + CEILING of the typical month, a queue of a million months and all
-  - L135 ...and none at all with no work coming in
-  - L163 fixture: a town whose builders have a month of their own
-- **L174 2. the typical month is the median: a spike is worked off, not built for**
-  - L178 fixture: a played town has kept its months
-  - L185 eleven months of about a thousand and one of 18 million read as about a thousand
-  - L191 under MIN_MONTHS_OF_SITE_WORK there is no typical month
-  - L195 ...and a queue of a hundred months orders one depot, as before OG1
-- **L203 3. the record is the work ordered, the builders' own depots left out**
-  - L214 a month whose orders were ten houses records their points
-  - L221 a month whose orders were two depots records none
-  - L226 fixture: the two depots opened
-- **L232 4. a save keeps the record**
-  - L238 fixture: the town saved itself
-  - L242 the months kept came back, each to the point
-  - L243 ...and what the sites owed when the last advance ended
-  - L245 ...so the typical month reads the same
-- **L251 5. the order is the gap: work coming in past the sites, a queue past the knee, several depots**
-  - L272 fixture: the queue is past the knee, its premium's share of the month three depots or more
-  - L282 their own plan builds
-  - L291 it orders several, where one a month ordered one
-  - L292 ...the count the target, the premium's share of the month, the plots and the staffing give
-  - L295 ...and no more than take the premium's share of the sites' month
-  - L299 ...nor take the sites past the target
-  - L308 with the order on site the plan holds
-- **L314 6. the trap stays at one: the stalled city's sites are short of a depot on the premium's share**
-  - L319 fixture: the stalled city, its queue past the knee and the premium's share under a depot
-  - L323 its own plan ordered one depot
-- **L329 7. a maker short by several plants orders several: Food Processing, the city eating k plants' drinks**
-  - L338 fixture: the city eats six Bottling Plants' drinks beyond what it makes
-  - L342 the n-th plant's fill counts the n - 1 before it, so it falls with n
-  - L343 the sixth is FILLED with five before it, the seventh is not
-  - L351 its plan orders the six, where one a month ordered one
+- **L120 1. the builders' target is the work coming in, and bounded however long the queue**
+  - L123 under the knee the target is the typical month
+  - L125 ...and at the knee
+  - L128 past it, the queue past the knee over QUEUE_WORKED_OFF_MONTHS more
+  - L136 never more than 1 + CEILING of the typical month, a queue of a million months and all
+  - L138 ...and none at all with no work coming in
+  - L166 fixture: a town whose builders have a month of their own
+- **L177 2. the typical month is the median: a spike is worked off, not built for**
+  - L181 fixture: a played town has kept its months
+  - L188 eleven months of about a thousand and one of 18 million read as about a thousand
+  - L194 under MIN_MONTHS_OF_SITE_WORK there is no typical month
+  - L198 ...and a queue of a hundred months orders one depot, as before OG1
+- **L206 3. the record is the work ordered, the builders' own depots left out**
+  - L217 a month whose orders were ten houses records their points
+  - L224 a month whose orders were two depots records none
+  - L229 fixture: the two depots opened
+- **L235 4. a save keeps the record**
+  - L241 fixture: the town saved itself
+  - L245 the months kept came back, each to the point
+  - L246 ...and what the sites owed when the last advance ended
+  - L248 ...so the typical month reads the same
+- **L254 5. the order is the gap: a year of orders past the sites, a queue past the knee, several depots**
+  - L262 fixture: the typical month read is the clinics the city ordered each month
+  - L275 fixture: the queue is past the knee, its premium's share of the month three depots or more
+  - L284 their own plan builds
+  - L293 it orders several, where one a month ordered one
+  - L294 ...their points no more than the premium's share of the sites' month
+  - L297 ...and the most that share, the staffing and the plots allow, the city's month asking for more
+  - L301 ...nor take the sites past 1 + CEILING of the work the city orders a month
+  - L309 with the order on site the plan holds
+- **L336 6. the trap stays at one: a year of orders, but the stalled city's sites are short of a depot on the premium's share**
+  - L349 fixture: the stalled city has a year of orders, the typical month the clinics it ordered
+  - L351 fixture: its queue past the knee and the premium's share under a depot
+  - L354 fixture: the work coming in asks for two depots or more, and the city could staff two
+  - L362 its own plan ordered one depot, the premium's share the only cut
+- **L375 7. a maker short by several plants orders several: Food Processing, the city eating k plants' drinks**
+  - L384 fixture: the city eats six Bottling Plants' drinks beyond what it makes
+  - L386 fixture: it has the plots for six and could staff six together
+  - L391 the n-th plant's fill counts the n - 1 before it, so it falls with n
+  - L392 the sixth is FILLED with five before it, the seventh is not
+  - L400 its plan orders the six, where one a month ordered one
 
 ## GatewayCheck.java - 145 labelled assertions
 

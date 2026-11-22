@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,496 constants in 618 files.**
+**6,497 constants in 618 files.**
 
 ## model (2992 constants)
 
@@ -5897,7 +5897,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2008 constants)
+## harnesses (2009 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6861,9 +6861,10 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 87 | `GapOrderCheck.BUILDERS` | `Sectors.CONSTRUCTION` |  |
-| 88 | `GapOrderCheck.DEPOT` | `"Construction Depot"` |  |
-| 89 | `GapOrderCheck.HOUSE` | `"House"` |  |
+| 89 | `GapOrderCheck.BUILDERS` | `Sectors.CONSTRUCTION` |  |
+| 90 | `GapOrderCheck.DEPOT` | `"Construction Depot"` |  |
+| 91 | `GapOrderCheck.HOUSE` | `"House"` |  |
+| 92 | `GapOrderCheck.CLINIC` | `"Walk-in Clinic"` |  |
 
 ### GatewayCheck.java ([map](map/GatewayCheck.md))
 
