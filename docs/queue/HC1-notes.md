@@ -513,6 +513,10 @@ DeathRecordCheck peak comparison also passes again (closed peak5.04,
 open4.33); only the already named OX2 m60 arrivals/wave-end class remains.
 None of these cleared lines gets a new known-red row.
 
+Historical first-handoff dispositions below: REV-HC1-2 rejected the Health
+classification as HC1's own fault. That FS11 row is withdrawn; see the
+REV-HC1-2 mends below. The other dispositions were accepted.
+
 Remaining played-city premises, with no assertion, bound or model rule
 changed (owners follow the orchestrator's 2026-11-22 14:23 instruction):
 
@@ -665,3 +669,55 @@ on the final monetary model against the instructed newest baseline
 (.188 at the last go), and stop on M1/F1 as required. Then ask for a new
 ALL dry-run slot before starting it. No second dry run or readiness is
 claimed in this handoff.
+
+### REV-HC1-2 mends, 2026-11-22
+
+The review of a77513b71 is NOT SHIP. It accepts the broker normalization,
+synthetic history padding, other fixture mends and the Holders/Currency/
+Education/Fund pins. Both P1s are owned here; this is the single mend pass.
+
+P1: the HealthCheck FS11 disposition was wrong. HC1 replaced the old
+whole-cell lockout with an exclusion share that ages before the next
+plan. Resetting that share between months closes settlement's draws but
+does not hold the lender closed at planning, so the fixture's own native
+cash-room premise was broken by HC1. The FS11 ship row is removed.
+
+★ Supply an explicit harness-only closed lender, independently of the
+borrower's exclusion stock. `HouseholdBalance.setCardLenderOpenForHarness`
+sets every preconstructed cell, empty/incoming cells included. The closed
+input makes both access and credit room zero, for existing holders too;
+it changes no care equation, stock, charge-off/expiry rule or measured
+counter. The game never supplies this override and defaults to open.
+It is fixture configuration like the census/market inputs, not a saved
+borrower position; a fixture loading another city must reapply it. No
+native saved field/layout or format changes. CardCheck causes a positive
+ordinary gap, exclusion ageing, a former holder and reopening, and checks
+both sides of the lender input. HealthCheck uses the closed lender for
+the entire native window, without rewriting borrower status; it counts
+all96 months and prints card advances and the largest planned card room.
+The original five-point turnaway requirement and all care/mortality/
+money assertions stand. First compile caught a diagnostic local-name
+collision; corrected before the named checks.
+
+P2: OutsideCheck's read-back identity did not establish the allocation it
+claimed. The expected card draw is now independently
+`CARD_SHOCK_CHANCE * Bank.cardAccess(.5,null,0) * shortfall(.5 *
+CARD_SHOCK_MONTHS, savingsAfterLiving, SAVINGS_SIGMA)`. The savings left
+are the input opening buffer less the closed-form living savings draw.
+The savings draw is separately compared with living draw plus the shock's
+closed-form savings share; the card stock is compared with this expected
+draw times(1+LOAN_FEE), not the model's borrowed/fee counters. Student
+borrowing and the treasury's20-household transfer retain their independent
+ordinary-gap expectations. Checks on these mends follow.
+
+OutsideCheck passes the independent expectations: card draw0.0358,
+savings draw0.4839, card stock including fee0.0362, treasury loan20.8172
+(the log prints four decimals). CardCheck's closed/reopened lender edges,
+SaveFileCheck, ReadPathCheck and HouseholdCheck pass; fast has0 firm
+findings. The first native closed-lender HealthCheck run proves96/96
+months of zero advances and zero planned card room in all twins. It still
+misses the five-point turnaway condition:99.999671% served at x1 versus
+98.390284% at x15 (1.609387 points). That is still owned and not approved.
+Further per-cell diagnostics trace the lifted cells' retained cash/assets;
+the old lift assumed a whole wallet's draw, while HC1 keeps the spread's
+unspent tail. No five-point bound has been moved.
