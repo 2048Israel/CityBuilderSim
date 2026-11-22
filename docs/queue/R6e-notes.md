@@ -88,6 +88,17 @@ Raw output and native exits are retained in review1/after.* and after/.
 All owned wrapper/compiler/JVM processes are terminal. The same stranger's
 delta review and SHIP remain required before ensemble/dry/ready.
 
+During finalization main advanced to RR1 at4a6af0baa (drawing-only0.9.185).
+It was merged asd5926606a; only generated indexes conflicted and were
+regenerated. The four tested attribution/fixture source files are
+byte-identical to9710dc944 across that merge. Changed-source --fast on the
+combined tree passes, native0, compile53s/maps/Stale0firm/194soft. No named
+test is replayed for the drawing merge. VERSION is main's0.9.185, the
+format/floor remain60 and the latest ensemble baseline remains0.9.184.
+The committed selector stays ALL241; its lexical saves floor does not
+waive root's fresh money review of LicenceFees/RecipeChanges capture.
+No publisher, queue or known-red registry edit is introduced by R6e.
+
 ## Merged-main completion (root 793c, 2026-11-22)
 
 Origin/main 0.9.184 at d7cad5c0e was merged and pushed as170f75ed3.
