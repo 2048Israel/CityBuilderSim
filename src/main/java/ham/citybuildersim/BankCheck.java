@@ -100,8 +100,33 @@ import java.nio.file.Path;
  *   - "(12) a reload between two months" raises the families' allowance by
  *     hand (Bank.restoreAllowance, ALLOWANCE_BY_HAND), so what is saved and
  *     read back is what was set.
+ *   - "(14) a town with a claim taken on each month" plays SLICE_TOWN_MONTHS (one
+ *     month, which gives retail its books and the lender its assets), then has retail
+ *     owe SLICE_LEVERAGE times what it owns before each of twelve months
+ *     (BusinessDebtManager.issueLoan, a claim and no money moved), so a slice defaults
+ *     every month and none is news; and once, PAST_THE_LINE_LEVERAGE with two months of
+ *     the claim's interest in its till (setSectorCash), so the month is news by leverage.
+ *   - "(15) a failing sector's plant is sold to the builders" stands a lone shop (the
+ *     capacity rule sells whole shops of what is spare and one is not), waits at most
+ *     FAMILIES_WITHIN_MONTHS for the town's families to want groceries, holds the bank's
+ *     branches (holdBranches), then sets retail's loss streak to DISTRESS_LOSS_MONTHS
+ *     (BusinessInvestment.restoreLossMonths), shuts it out of credit and overdraws its
+ *     till (holdFromOrdering), tops the builders' cash up (setSectorCash) and plays the
+ *     one month it sells in - twice, the second with the builders overdrawn.
+ *   - "(19) the branches, by their customers" holds its premises as fixture assertions
+ *     (no Observation.reached is left in this class): the branches are stood by buildStack
+ *     and the cost a branch carries is struck from the month's own fees by the template's
+ *     upkeep (BuildingsTemplate.setUpkeep), so each premise is what was set.
+ *   - "(13b) the tab draws each rate in its parts" plays PARTS_TOWN_MONTHS (one month),
+ *     gives retail a record (BusinessDebtManager.restoreCreditRecord) and a concentration
+ *     charge (setConcentrationCharges, CONCENTRATION_BY_HAND), reads every sector's quote
+ *     in its parts at 1e-12 of the rate (the arithmetic can part by an ulp on another path).
+ *   FS9: the played city moved under these, a premise measured on its path (a month, a
+ *   count, a share) failing for a change in the economy and not in the bank.
  *
- * The books city of section 8, whose identities are the point, stays played.
+ * The books city of section 8, whose identities are the point, stays played, and so
+ * does the tab's city of section 13 (not yet caused: its first branch, its owners' dividends, its
+ * loss month and its year of sheets are read off 72 months).
  */
 public class BankCheck {
 
@@ -120,6 +145,35 @@ public class BankCheck {
 
     /** What the families' allowance is raised by, by hand, before a reload between two months, $k: more than a reload could round away. */
     static final double ALLOWANCE_BY_HAND = 10;
+
+    /** The months the town of the slice section is played before the claim is first taken on: the first, which gives each sector its books and the lender its assets to read. */
+    static final int SLICE_TOWN_MONTHS = 1;
+
+    /** What retail owes against what it owns, taken on again between each month of the slice section: past the watch line and under the default point, so a slice defaults each month and no month is news. */
+    static final double SLICE_LEVERAGE = 1.2;
+
+    /** What retail owes against what it owns when its month is to be news, after the slice section's quiet months: twice what it owns, past the default point (BusinessDebtManager.INSOLVENCY_TRIGGER). */
+    static final double PAST_THE_LINE_LEVERAGE = 2;
+
+    /** The most months a new town is waited for its families to arrive and want groceries, before retail is put in distress: the capacity rule reads no demand until they have, and past this the wait fails as a fixture. */
+    static final int FAMILIES_WITHIN_MONTHS = 12;
+
+    /** How far the town's fees leave the charter under its cost, as a share of it, for the law that it never closes "however far": under a tenth. */
+    static final double CHARTER_COVER_UNDER = .1;
+
+    /** What the builders hold, at least, before a sale of plant, $k: more than the material of the shop retail holds at the day's price, so they can pay for all of it. */
+    static final double BUILDERS_CASH_FOR_A_SALE = 100_000;
+
+    /** The months the town of the rate-parts section is played before its lender is handed a record and a concentration: the first, which prices every sector. */
+    static final int PARTS_TOWN_MONTHS = 1;
+
+    /** The concentration charge the rate-parts section hands one sector, a year: more than the rates' own rounding and less than a spread. */
+    static final double CONCENTRATION_BY_HAND = .004;
+
+    /** Whether a rate drawn in its parts is the rate priced, to 1e-12 of it: the parts' arithmetic can part from the pricing's by an ulp on another path. */
+    static boolean parted(double drawn, double priced) {
+        return Math.abs(drawn - priced) <= 1e-12 * Math.max(Math.abs(drawn), Math.abs(priced));
+    }
 
     /** The months the trading desk is stepped after the leavers sell it their shares, so it goes on to hold, re-mark and sell what it bought. */
     static final int DESK_MONTHS = 6;
@@ -2490,7 +2544,7 @@ public class BankCheck {
                 providedAfter < slices);
         close("...and every month its equity moved by its net income and nothing else", worstMove, 0, 1e-9);
 
-        out.println("\n--- (14) a played city through months of slices: the money audit closes ---");
+        out.println("\n--- (14) a town with a claim taken on each month: a slice every month, and the money audit closes ---");
 
         Path root = TempDirs.create("bankcheck-slices");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
@@ -2537,7 +2591,7 @@ public class BankCheck {
              * condition: no sector but retail is ever past the line.
              */
             city.getSectors().freight().setCash(1_000);
-            city.simulateMonths(72);
+            city.simulateMonths(SLICE_TOWN_MONTHS);
         } finally {
             System.setOut(out);
         }
@@ -2546,14 +2600,17 @@ public class BankCheck {
         double retailAssets = credit.getAssets(RET);
         assertTrue("fixture: the city has a standing bank, and retail has plant to lend against",
                 city.getBank().getBranches() >= 1 && !city.getBank().isInsolvent() && retailAssets > 0);
-        // It owes 1.2 times what it owns - taken on between months, as the
-        // money check's own stressed sector is: a claim, no money moved.
-        credit.issueLoan(RET, Math.max(0, 1.2 * retailAssets - credit.getPrincipal(RET)), city.getMonth());
+        assertTrue("fixture: the claim taken on each month is past the watch line and under the default point, the next one past it",
+                SLICE_LEVERAGE > Bank.SECTOR_WATCH_LEVERAGE && SLICE_LEVERAGE < BusinessDebtManager.INSOLVENCY_TRIGGER
+                        && PAST_THE_LINE_LEVERAGE > BusinessDebtManager.INSOLVENCY_TRIGGER);
         int sliceMonths = 0, cleanMonths = 0, bankAgrees = 0, quietMonths = 0, noticeRight = 0;
         double worstResidual = 0, worstRelative = 0;
         System.setOut(quiet);
         try {
             for (int m = 0; m < 12; m++) {
+                // It owes SLICE_LEVERAGE times what it owns - taken on between months, as the money check's own stressed
+                // sector is: a claim, no money moved. Taken on again each month, so each month has a slice to default.
+                credit.issueLoan(RET, Math.max(0, SLICE_LEVERAGE * credit.getAssets(RET) - credit.getPrincipal(RET)), city.getMonth());
                 city.simulateMonths(1);
                 MoneyAudit.Result audit = city.getLastMoneyAudit();
                 worstResidual = Math.max(worstResidual, Math.abs(audit.residual));
@@ -2579,17 +2636,19 @@ public class BankCheck {
         }
         out.printf("   retail sliced in %d of 12 months, written off $%,.0fk in all; worst residual $%.4fk%n",
                 sliceMonths, credit.getWrittenOffTotal(RET), worstResidual);
-        assertTrue("fixture: retail's firms really did default, a slice a month, for months", sliceMonths >= 6);
+        close("fixture: retail's firms really did default, a slice a month, for months", sliceMonths, 12, 0);
         close("every month of it closes to the cent", cleanMonths, 12, 0);
         assertTrue("...and within 0.01% of what moved", worstRelative < 1e-4);
         close("...and the bank wrote off what the lender did, every month", bankAgrees, 12, 0);
         out.printf("   %d of the 12 months had slices and nothing past the default point%n", quietMonths);
-        assertTrue("fixture: months went by with retail's firms defaulting and nothing past the line",
-                quietMonths >= 3);
+        close("fixture: months went by with retail's firms defaulting and nothing past the line", quietMonths, 12, 0);
         close("the defaults notice is live exactly in the months that were news, and in no other", noticeRight, 12, 0);
 
-        // ...and past the default point it is news: twice what it owns.
-        credit.issueLoan(RET, Math.max(0, 2 * credit.getAssets(RET) - credit.getPrincipal(RET)), city.getMonth());
+        // ...and past the default point it is news: twice what it owns, and two months of what that claim's interest
+        // costs in its till, so what defaults is the leverage's share and not a month it could not pay (a sector with
+        // nothing in its till defaulted all of its debt when it was overdrawn by the interest).
+        credit.issueLoan(RET, Math.max(0, PAST_THE_LINE_LEVERAGE * credit.getAssets(RET) - credit.getPrincipal(RET)), city.getMonth());
+        city.getEconomyManager().setSectorCash(RET, 2 * credit.getMonthlyInterest(RET));
         System.setOut(quiet);
         try {
             city.simulateMonths(1);
@@ -2609,8 +2668,8 @@ public class BankCheck {
     /* ============ 15. A FAILING SECTOR'S PLANT, SOLD TO THE BUILDERS (0.7.8) ============
 
        Jerus, 2026-09-23: "Sell a failing sector's plant ... to construction
-       company just in materials, and land to treasury". A played city whose
-       retail sector is held in distress - owing past what it owns, shut out
+       company just in materials, and land to treasury". A town whose
+       retail sector is put in distress - owing past what it owns, shut out
        of credit, overdrawn, two years of losses on its record - so the
        distress rule retires a shop inside a month the audit strikes. What it
        has to prove: the builders pay for the shop's material at the day's
@@ -2639,12 +2698,21 @@ public class BankCheck {
         if (overdraft > 0) econ.setSectorCash(sector, Math.min(econ.getSectorCash(sector), -overdraft));
     }
 
+    /** Sets a sector's loss streak, the months the distress rule reads, and leaves every other sector's as it stands. */
+    static void restoreStreak(BusinessInvestment plans, String sector, int months) {
+        java.util.Map<String, Integer> streaks = new java.util.LinkedHashMap<>(plans.getLossMonthsState());
+        streaks.put(sector, months);
+        plans.restoreLossMonths(streaks);
+    }
+
     static void aFailingSectorsPlantIsSoldToTheBuilders() throws Exception {
 
         out.println("\n--- (15) a failing sector's plant is sold to the builders, as its materials ---");
 
         Path root = TempDirs.create("bankcheck-salvage");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+        ham.citybuildersim.sectors.Retail retail = city.getSectors().retail();
+        int arrivals = 0;
         System.setOut(quiet);
         try {
             city.run();
@@ -2653,93 +2721,77 @@ public class BankCheck {
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getForeignAccounts().pinRate(1.0);
-            city.buildStack(template(city, "House"), 300, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Industrial Bakery"), 2, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.buildStack(template(city, "Commercial Bank"), 1, false);
-            city.simulateMonths(72);
+            city.buildStack(template(city, "House"), 300, true);
+            // A LONE SHOP: the capacity rule (BusinessInvestment.planRetirement) sells a shop's worth of what retail
+            // has spare in whole shops, and one is more than the town's customers leave spare, so the distress rule
+            // is the one that retires it (FS9; six shops were spare to the capacity rule in the town's first months).
+            city.buildStack(template(city, "Convenience Store"), 1, true);
+            city.buildStack(template(city, "Industrial Bakery"), 2, true);
+            city.buildStack(template(city, "Construction Depot"), 4, true);
+            city.buildStack(template(city, "Coal Power Plant"), 1, true);
+            city.buildStack(template(city, "Commercial Bank"), 1, true);
+            // The bank's branches neither open nor close in the month: a branch the bank closes is another sale of plant.
+            city.getBusinessInvestment().holdBranches();
+            // The capacity rule reads no demand before the town's families have arrived and shopped: wait for them.
+            while (retail.retirementDemandAndCapacity(city)[0] <= 0 && arrivals < FAMILIES_WITHIN_MONTHS) {
+                city.simulateMonths(1);
+                arrivals++;
+            }
         } finally {
             System.setOut(out);
         }
         String RET = Sectors.RETAIL;
         BusinessDebtManager credit = city.getEconomyManager().getBusinessDebtManager();
         EconomyManager econ = city.getEconomyManager();
+        BusinessInvestment plans = city.getBusinessInvestment();
         ham.citybuildersim.sectors.Construction builders = city.getSectors().construction();
         BuildingsTemplate shop = template(city, "Convenience Store");
+        double[] measure = retail.retirementDemandAndCapacity(city);
+        assertTrue("fixture: the town's families came and want groceries, within the months waited for them", measure[0] > 0);
+        assertTrue("fixture: retail has a shop to retire and nothing spare to sell, so only the distress rule would retire it",
+                city.getBuildingManager().getQuantity(shop.getId()) > 0 && credit.getAssets(RET) > 0
+                        && measure[1] <= measure[0] * (1 + BusinessInvestment.RETIREMENT_SLACK));
         credit.issueLoan(RET, Math.max(0, 1.3 * credit.getAssets(RET) - credit.getPrincipal(RET)), city.getMonth());
 
-        // Held in distress until the rule retires a shop: shut out, overdrawn,
-        // and the losing streak the rule reads - renewed every month.
+        // Held in distress, caused: shut out of credit, overdrawn with no lender, the register's twelve losing months
+        // (holdFromOrdering) and the losing streak the rule reads; the builders in funds. Then the one month it sells in.
         Game.Salvage sale = null;
         MoneyAudit.Result audit = null;
         double stockBefore = 0, shopsBefore = 0, priceBefore = 0, overdrawnBy = 0, costBefore = 0;
-        int tried = 0;
+        double tillWas = econ.getSectorCash(RET);
+        holdFromOrdering(city, RET, 2 * shop.getCashCost());
+        overdrawnBy = econ.getSectorCash(RET) - tillWas;
+        restoreStreak(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
+        double buildersHad = builders.getCash();
+        econ.setSectorCash(builders.key(), Math.max(buildersHad, BUILDERS_CASH_FOR_A_SALE));
+        double handedToBuilders = builders.getCash() - buildersHad;
+        stockBefore = builders.getSalvage();
+        costBefore = builders.getSalvageCost();
+        shopsBefore = city.getBuildingManager().getQuantity(shop.getId());
+        // The day's price: the materials market strikes later in the
+        // month than the retirement, so the price it sold at is the
+        // one standing when the month opened.
+        priceBefore = city.getMarkets().get(Good.MATERIALS).getLocalPrice();
         System.setOut(quiet);
         try {
-            while (sale == null && tried < 36) {
-                java.util.Map<String, Integer> blocked = new java.util.LinkedHashMap<>(credit.getBlockedMonthsAll());
-                blocked.put(RET, 12);
-                credit.restoreCreditRecord(credit.getRestructureCounts(), blocked);
-                java.util.Map<String, Integer> streaks = new java.util.LinkedHashMap<>(
-                        city.getBusinessInvestment().getLossMonthsState());
-                streaks.put(RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
-                city.getBusinessInvestment().restoreLossMonths(streaks);
-                /*
-                 * ...AND THE SAME LOSSES ON THE REGISTER'S RECORD (0.7.18,
-                 * re-caused). The shops the city lost are counted over the
-                 * month of the sale, so the fixture stands on retail not
-                 * buying a shop back that month, and what stopped it was the
-                 * borrowing ban by a hundred dollars: the owners are asked
-                 * first (Game.consider(), Equity.raiseFor()), a sector owing
-                 * past what it owns raises the whole plan in shares, the till
-                 * after the month's credit sat $0.1k under zero, and a banned
-                 * sector builds only what its cash covers. 0.7.18's city (its
-                 * planners wait for staff, its workers take the best-paid
-                 * job) leaves the till at zero, the shares cover the shop, and
-                 * retail bought one back in the month it sold one - 1 shop
-                 * retired, 0 lost. So the two years of losses the planner's
-                 * record is handed are handed to the register's too, as
-                 * twelve losing months: in its BAD regime the owners raise
-                 * nothing, and the ban holds the shop off as it did.
-                 */
-                int registerIndex = Equity.indexOf(RET);
-                for (int k = 0; k < Equity.RECORD_MONTHS; k++) city.getEquity().recordMonth(registerIndex, -1, 0);
-                double tillWas = econ.getSectorCash(RET);
-                econ.setSectorCash(RET, Math.min(tillWas, -2 * shop.getCashCost()));
-                overdrawnBy = econ.getSectorCash(RET) - tillWas;
-                stockBefore = builders.getSalvage();
-                costBefore = builders.getSalvageCost();
-                shopsBefore = city.getBuildingManager().getQuantity(shop.getId());
-                // The day's price: the materials market strikes later in the
-                // month than the retirement, so the price it sold at is the
-                // one standing when the month opened.
-                priceBefore = city.getMarkets().get(Good.MATERIALS).getLocalPrice();
-                city.simulateMonths(1);
-                tried++;
-                /*
-                 * ...IN A MONTH THAT NO OTHER SECTOR SOLD PLANT IN (LD1). The builders' stock and cash below move by every sale of
-                 * the month, and the figures asserted are this sale's: a second sale in the month (the builders' cash moved out
-                 * $1,352.7k where retail's was $109.8k) made "their stock rose by the units" read 118.5 against
-                 * 8.5 and "the builders' cash moved out by what they paid" 1,352.7 against 109.8. The distress is renewed and the
-                 * month tried again until retail's is the month's only sale.
-                 */
-                Game.Salvage mine = null;
-                boolean alone = true;
-                for (Game.Salvage s : city.getSalvageThisMonth()) {
-                    if (s.seller().equals(RET) && s.distress() && mine == null) mine = s;
-                    else alone = false;
-                }
-                if (mine != null && alone) sale = mine;
-                audit = city.getLastMoneyAudit();
-            }
+            city.simulateMonths(1);
         } finally {
             System.setOut(out);
+        }
+        audit = city.getLastMoneyAudit();
+        for (Game.Salvage s : city.getSalvageThisMonth()) {
+            if (s.seller().equals(RET) && s.distress() && sale == null) sale = s;
         }
         assertTrue("fixture: retail in distress retired plant, and the rule that did it was the distress rule",
                 sale != null);
         if (sale == null) return;
+        /*
+         * ...IN A MONTH THAT NO OTHER SECTOR SOLD PLANT IN (LD1). The builders' stock and cash below move by every sale of
+         * the month, and the figures asserted are this sale's: a second sale in the month (the builders' cash moved out
+         * $1,352.7k where retail's was $109.8k) made "their stock rose by the units" read 118.5 against
+         * 8.5 and "the builders' cash moved out by what they paid" 1,352.7 against 109.8.
+         */
+        assertTrue("fixture: retail's was the month's only sale of plant", city.getSalvageThisMonth().size() == 1);
         double shopsGone = shopsBefore - city.getBuildingManager().getQuantity(shop.getId());
         out.printf("   month %d: %d %s retired, %.0f units of material at $%,.3fk - the builders paid $%,.1fk%n",
                 city.getMonth(), sale.buildings(), sale.building(), sale.units(), sale.price(), sale.paid());
@@ -2762,7 +2814,7 @@ public class BankCheck {
         close("...both on their cash-flow statements", sellerBooks.salvage() + builderBooks.salvage(), 0, 1e-9);
         close("...which close for the seller, but for the overdraft the fixture handed it",
                 sellerBooks.unexplained(), overdrawnBy, MoneyAudit.tolerance(1e-6, sellerBooks.unexplainedScale()));
-        close("...and for the builders", builderBooks.unexplained(), 0,
+        close("...and for the builders, but for the cash the fixture handed them", builderBooks.unexplained(), handedToBuilders,
                 MoneyAudit.tolerance(1e-6, builderBooks.unexplainedScale()));
         assertTrue("and the month's money audit closes, to the cent",
                 audit != null && Math.abs(audit.residual) < MoneyAudit.tolerance(audit.moved()));
@@ -2843,29 +2895,19 @@ public class BankCheck {
         assertTrue("fixture: retail has no order in flight (the distress rule does not shrink a sector that is building)",
                 city.getBuildingManager().getUnderConstructionBySector(RET) == 0);
         // A builder that cannot pay buys nothing: the building is scrapped
-        // for nothing, as it always was.
+        // for nothing, as it always was. Retail is put in distress as above, the builders overdrawn, and the month played.
         Game.Salvage broke = null;
-        tried = 0;
+        holdFromOrdering(city, RET, 2 * shop.getCashCost());
+        restoreStreak(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
+        econ.setSectorCash(builders.key(), -1e12 * PriceLevel.FACTOR);
         System.setOut(quiet);
         try {
-            while (broke == null && tried < 36) {
-                java.util.Map<String, Integer> blocked = new java.util.LinkedHashMap<>(credit.getBlockedMonthsAll());
-                blocked.put(RET, 12);
-                credit.restoreCreditRecord(credit.getRestructureCounts(), blocked);
-                java.util.Map<String, Integer> streaks = new java.util.LinkedHashMap<>(
-                        city.getBusinessInvestment().getLossMonthsState());
-                streaks.put(RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
-                city.getBusinessInvestment().restoreLossMonths(streaks);
-                econ.setSectorCash(RET, Math.min(econ.getSectorCash(RET), -2 * shop.getCashCost()));
-                econ.setSectorCash(builders.key(), -1e12 * PriceLevel.FACTOR);
-                city.simulateMonths(1);
-                tried++;
-                for (Game.Salvage s : city.getSalvageThisMonth()) {
-                    if (s.seller().equals(RET)) broke = s;
-                }
-            }
+            city.simulateMonths(1);
         } finally {
             System.setOut(out);
+        }
+        for (Game.Salvage s : city.getSalvageThisMonth()) {
+            if (s.seller().equals(RET)) broke = s;
         }
         assertTrue("fixture: retail retired plant again, with the builders overdrawn", broke != null);
         if (broke == null) return;
@@ -3142,11 +3184,9 @@ public class BankCheck {
                 + " %d short month(s), %d followed by a closure%n",
                 standingAtRise, coverAtRise, standingAfterRise, shortMonths, shortThenClosed);
 
-        if (Observation.reached("fixture: the charter's fees covered under a tenth of its cost, every month",
-                charterMonths == 24 && worstCharterCover < .1,
-                "charter survival")) {
-            assertTrue("the founding branch never closes on the rule, however far its fees are from its cost", charterStood == 24);
-        }
+        assertTrue("fixture: the charter's fees covered under a tenth of its cost, every month",
+                charterMonths == 24 && worstCharterCover < CHARTER_COVER_UNDER);
+        assertTrue("the founding branch never closes on the rule, however far its fees are from its cost", charterStood == 24);
         out.printf("   the charter alone: operating cost charged at most %.4f, its template's upkeep %.1f%n",
                 charterOperating, charterTemplateUpkeep);
         assertTrue("fixture: the charter's template carries an operating cost",
@@ -3159,35 +3199,27 @@ public class BankCheck {
         // (the lag), so the fixture is read where it is made: five standing,
         // on fees that cover two at the cost the rule will read.
         assertTrue("the fixture placed five branches", placed == 5);
-        if (Observation.reached("fixture: five branches stood on fees that cover two",
-                coverPlaced == 2 && feesBefore > 0,
-                "branch closure and operating cost")) {
-            assertTrue("fixture: the branch's operating cost is what makes the fees cover two, not nothing",
-                    operatingOne > 0);
-            assertTrue("every branch past what the fees cover closed at once, the month after: two stand",
-                    standingAfter == 2 && closedAfter - closedBefore == 3);
-            // REWRITTEN (revised 0.7.19, "Exempt first branch"): "it ran two
-            // branches, not five" read the operating cost of two; the charter's is
-            // exempt, so it is one's.
-            close("...before the month paid them: it ran two branches, not five, and paid the operating cost of"
-                            + " one - the second; the charter's is exempt",
-                    operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
-        }
+        assertTrue("fixture: five branches stood on fees that cover two", coverPlaced == 2 && feesBefore > 0);
+        assertTrue("fixture: the branch's operating cost is what makes the fees cover two, not nothing",
+                operatingOne > 0);
+        assertTrue("every branch past what the fees cover closed at once, the month after: two stand",
+                standingAfter == 2 && closedAfter - closedBefore == 3);
+        // REWRITTEN (revised 0.7.19, "Exempt first branch"): "it ran two
+        // branches, not five" read the operating cost of two; the charter's is
+        // exempt, so it is one's.
+        close("...before the month paid them: it ran two branches, not five, and paid the operating cost of"
+                        + " one - the second; the charter's is exempt",
+                operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
         assertTrue("...and that month closes the audit, the operating cost in it",
                 Math.abs(auditAfterResidual) <= MoneyAudit.CENT || auditAfterRelative <= 1e-7);
-        if (Observation.reached("fixture: two branches stood every month until what a branch costs rose",
-                twoBeforeRise == riseMonth,
-                "pre-rise fee coverage")) {
-            assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
-                    coveredBeforeRise == twoBeforeRise);
-        }
-        if (Observation.reached("fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them",
-                standingAtRise == 2 && coverAtRise < 1,
-                "next-month branch closure")) {
-            assertTrue("...and the next month the rule, reading that cost, closed the one the fees no longer cover",
-                    standingAfterRise == 1);
-        }
-        Observation.reached("fixture: some month had branch fees short of cost", shortMonths > 0);
+        assertTrue("fixture: two branches stood every month until what a branch costs rose", twoBeforeRise == riseMonth);
+        assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
+                coveredBeforeRise == twoBeforeRise);
+        assertTrue("fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them",
+                standingAtRise == 2 && coverAtRise < 1);
+        assertTrue("...and the next month the rule, reading that cost, closed the one the fees no longer cover",
+                standingAfterRise == 1);
+        assertTrue("fixture: some month had branch fees short of cost", shortMonths > 0);
         assertTrue("every month the fees fell short of the branches standing, the next month's rule closed one",
                 shortThenClosed == shortMonths);
     }
@@ -4537,7 +4569,7 @@ public class BankCheck {
             town.buildStack(template(town, "Construction Depot"), 4, true);
             town.buildStack(template(town, "Coal Power Plant"), 1, true);
             town.buildStack(template(town, "Water Treatment Plant"), 1, true);
-            town.simulateMonths(24);
+            town.simulateMonths(PARTS_TOWN_MONTHS);
             retail = town.getSectors().retail().key();
         } finally {
             System.setOut(out);
@@ -4548,6 +4580,8 @@ public class BankCheck {
         java.util.Map<String, Integer> counts = credit.getRestructureCounts();
         counts.put(retail, 2);
         credit.restoreCreditRecord(counts, credit.getBlockedMonthsAll());
+        // ...and a concentration charge on the same sector, as the bank's book would price it, the lender's own door for it.
+        credit.setConcentrationCharges(java.util.Map.of(retail, CONCENTRATION_BY_HAND));
         credit.updateRates();
         int sectors = 0, exact = 0, partsAgree = 0, withConcentration = 0;
         double worstSpread = 0;
@@ -4555,7 +4589,7 @@ public class BankCheck {
             BusinessDebtManager.QuoteParts q = credit.quoteParts(s);
             if (q == null) continue;
             sectors++;
-            if (q.rate() == credit.getRate(s)) exact++;
+            if (parted(q.rate(), credit.getRate(s))) exact++;
             if (q.prime() == credit.getPrimeRate() && q.concentration() == credit.getConcentrationCharge(s)
                     && q.record() == credit.getRecordSurcharge(s)) partsAgree++;
             if (q.concentration() != 0) withConcentration++;
@@ -4568,8 +4602,9 @@ public class BankCheck {
         assertTrue("fixture: every sector is priced", sectors == credit.sectors().length);
         assertTrue("fixture: the sector given a record carries it in its quote",
                 credit.quoteParts(retail).record() == 2 * BusinessDebtManager.DEFAULT_SURCHARGE);
-        assertTrue("fixture: the book's concentration prices at least one sector", withConcentration > 0);
-        assertTrue("prime and a sector's three parts are its rate, to the bit, for every sector", exact == sectors);
+        assertTrue("fixture: the book's concentration prices at least one sector",
+                withConcentration > 0 && credit.quoteParts(retail).concentration() == CONCENTRATION_BY_HAND);
+        assertTrue("prime and a sector's three parts are its rate, to 1e-12 of it, for every sector", exact == sectors);
         assertTrue("...on the prime it was priced on, its record and the charge pushed for it", partsAgree == sectors);
         close("...and the three are its spread over prime", worstSpread, 0, 1e-12);
 
@@ -4580,9 +4615,9 @@ public class BankCheck {
             BusinessDebtManager.QuoteParts q = credit.quoteParts(s);
             if (q == null) continue;
             pricedAfter++;
-            if (q.rate() == credit.getRate(s)) exactAfter++;
+            if (parted(q.rate(), credit.getRate(s))) exactAfter++;
         }
-        assertTrue("...and a played month later, still to the bit", pricedAfter > 0 && exactAfter == pricedAfter);
+        assertTrue("...and a played month later, still to 1e-12 of it", pricedAfter > 0 && exactAfter == pricedAfter);
 
         // B5: saved, and loaded fresh.
         double recordSaved = credit.getRecordSurcharge(retail);
@@ -4602,7 +4637,7 @@ public class BankCheck {
             BusinessDebtManager.QuoteParts q = loaded.quoteParts(s);
             if (q == null) continue;
             pricedLoaded++;
-            if (q.rate() == loaded.getRate(s)) exactLoaded++;
+            if (parted(q.rate(), loaded.getRate(s))) exactLoaded++;
             if (q.record() == credit.getRecordSurcharge(s)) carried++;
             if (q.concentration() == back.getBank().concentrationCharge(policy, Bank.PRIME_TERM_MONTHS, s)) pushed++;
         }
@@ -4614,7 +4649,7 @@ public class BankCheck {
         assertTrue("...the fixture's record among them, in its rate", r.record() == recordSaved && recordSaved > 0
                 && Math.abs(loaded.getRate(retail) - (r.prime() + r.risk() + r.concentration()) - recordSaved) < 1e-12);
         assertTrue("...and the book's concentration on it, the charge the bank prices it at now", pushed == pricedLoaded);
-        assertTrue("...each quote still its parts, to the bit", exactLoaded == pricedLoaded);
+        assertTrue("...each quote still its parts, to 1e-12 of it", exactLoaded == pricedLoaded);
 
         // D9: the branch verdict is the planner's, on a fixture short of staff.
         BuildingsTemplate branch = template(town, "Commercial Bank");
