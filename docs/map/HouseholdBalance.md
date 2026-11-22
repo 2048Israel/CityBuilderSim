@@ -1,4 +1,4 @@
-# HouseholdBalance.java - 6,329 lines · 368 methods · 54 constants · model
+# HouseholdBalance.java - 6,331 lines · 368 methods · 54 constants · model
 
 `ham/citybuildersim/HouseholdBalance.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -113,7 +113,7 @@
 | 5340 | THEFT (2026-09-11) |
 | 5419 | THE OFFER |
 | 5712 | · saving |
-| 5970 | · THE SLOT COUNT ALONE DOES NOT SAY WHAT THE SLOTS ARE (2026-09-12) |
+| 5971 | · THE SLOT COUNT ALONE DOES NOT SAY WHAT THE SLOTS ARE (2026-09-12) |
 
 ## Constants
 
@@ -172,7 +172,7 @@
 | 5866 | `HouseholdBalance.CELL_SLOTS_BEFORE_BASIS` | `CELL_SLOTS_BEFORE_AFTER_FIXED + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, t... |
 | 5868 | `HouseholdBalance.CELL_SLOTS_BEFORE_SECURED_TAX` | `CELL_SLOTS_BEFORE_BASIS + Equity.COMPANIES.length + 2` | Basis by company, loss carry and the current month's taxable gains appended by HT1. |
 | 5870 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARDS` | `CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length` | The tagged units and limited claims, appended after the basis checkpoint. |
-| 5872 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_CARDS + 13` | Four card stocks and nine settled figures read by debt statistics (HC1). |
+| 5872 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_CARDS + 14` | Four card stocks and ten settled figures read by debt statistics and the bank (HC1). |
 
 ## Fields (state)
 
@@ -285,7 +285,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 6237 | **type** `public class HouseholdBalance` | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. |
+| 93 | 6239 | **type** `public class HouseholdBalance` | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. |
 
 ### the dials (lines 104-158)
 
@@ -806,7 +806,7 @@
 | 5707 | 1 | `public double totalRepaid()` | ...and what came back: the cells' repayments and the estates' (HS1, the dead's debt settled from their savings). |
 | 5710 | 1 | `public double totalNetWorth()` | What every household in the city has, less what it owes. |
 
-### saving (lines 5712-6329)
+### saving (lines 5712-6331)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -818,11 +818,11 @@
 | 5891 | 3 | `public double assets(Household c)` | The assets this model has: financial holdings and cars; owner homes arrive with HO1. |
 | 5896 | 8 | `public double financialAssets(Household c)` | A cell's financial assets at this month's marks, per household (HC2). |
 | 5905 | 5 | `public String[] cellKeys()` |  |
-| 5912 | 44 | `public double[] toCellSaveArray()` | CELL_SLOTS per cell, in cellKeys() order, then the three city figures. |
-| 5968 | 171 | `public boolean restoreCells(String[] keys, double[] saved, String[] savedCompanies)` | Puts the cells back, by name. |
-| 6158 | 58 | `public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Puts a ROW array back, seeding every cell of the row with the row's position: the save from a build that kept the stocks per tier. |
-| 6225 | 8 | `private void seedGroceries(Household c)` | The last sale's baskets for a household from a save before 0.7.43, which carries the money measure its hunger was struck on: its plan times the share the shops handed over, against subsistence - turned into baskets by... |
-| 6235 | 1 | `public void restore(double[] saved)` | The row array alone, with no census: the cells wait for the plan to count them. |
-| 6237 | 49 | `public void reset()` |  |
-| 6293 | 35 | `public void redenominate(double scale)` | The households' stocks and this month's working, in the new unit. |
+| 5912 | 45 | `public double[] toCellSaveArray()` | CELL_SLOTS per cell, in cellKeys() order, then the three city figures. |
+| 5969 | 172 | `public boolean restoreCells(String[] keys, double[] saved, String[] savedCompanies)` | Puts the cells back, by name. |
+| 6160 | 58 | `public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Puts a ROW array back, seeding every cell of the row with the row's position: the save from a build that kept the stocks per tier. |
+| 6227 | 8 | `private void seedGroceries(Household c)` | The last sale's baskets for a household from a save before 0.7.43, which carries the money measure its hunger was struck on: its plan times the share the shops handed over, against subsistence - turned into baskets by... |
+| 6237 | 1 | `public void restore(double[] saved)` | The row array alone, with no census: the cells wait for the plan to count them. |
+| 6239 | 49 | `public void reset()` |  |
+| 6295 | 35 | `public void redenominate(double scale)` | The households' stocks and this month's working, in the new unit. |
 

@@ -23,9 +23,9 @@ the late stock cures at 15% a month or charges off with the Fed ratio's hazard.
 - ★ The bank's rate ladder and motoring's credit-cost quote use its card APR.
   Settlement continues to receive the bank's underlying household funding price
   and adds the card spread once, then the holders' own risk and the cap.
-- ★ Four new position slots are followed by nine settled figures (minimum paid,
+- ★ Four new position slots are followed by ten settled figures (minimum paid,
   emergency spending, net write-off, disposable income, bankruptcies, minimum due,
-  deposit interest, student principal repaid and student interest). The contract
+  deposit interest, student principal repaid, student interest and applied APR). The contract
   requires a flow read between months to be saved, not reconstructed from closing stocks.
 - ★ Emergency repairs/replacements are brokered imported services on Business Services'
   ledger. The paid bill funds one imported input and its sales-tax remittance; it has no

@@ -1914,7 +1914,7 @@ public class SaveFileCheck {
             cardsMatch &= t != null && c.revolving == t.revolving && c.lateDebt == t.lateDebt
                     && c.lateShare == t.lateShare && c.shutOut == t.shutOut
                     && c.minimumPaid == t.minimumPaid && c.minimumDue == t.minimumDue
-                    && c.emergencyBill == t.emergencyBill && c.cardWrittenOff == t.cardWrittenOff;
+                    && c.emergencyBill == t.emergencyBill && c.cardWrittenOff == t.cardWrittenOff && c.rate == t.rate;
         }
         assertTrue("HC1 card positions and settled flows cross the loader", cardsMatch);
         assertTrue("HC2 annual debt surveys cross the history loader",

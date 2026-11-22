@@ -1,4 +1,4 @@
-# CardCheck.java - 277 lines · 11 methods · 0 constants · harnesses
+# CardCheck.java - 280 lines · 11 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CardCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -18,16 +18,16 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 266 | **type** `public final class CardCheck` | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). |
+| 12 | 269 | **type** `public final class CardCheck` | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). |
 | 14 | 3 | `static void check(String label, boolean pass)` |  |
 | 17 | 3 | `static void close(String label, double got, double want, double tolerance)` |  |
 | 20 | 5 | `static WorkingHousehold cell(double income, double savings, double debt, double holders)` |  |
 | 25 | 26 | `static void spread()` |  |
 | 51 | 47 | `static void month()` |  |
 | 98 | 41 | `static void chargeOff()` |  |
-| 139 | 19 | `static void save()` |  |
-| 158 | 15 | `static void neighbours()` |  |
-| 173 | 17 | `static void census()` |  |
-| 190 | 82 | `static void city()` |  |
-| 272 | 5 | `public static void main(String[] args)` |  |
+| 139 | 21 | `static void save()` |  |
+| 160 | 15 | `static void neighbours()` |  |
+| 175 | 17 | `static void census()` |  |
+| 192 | 83 | `static void city()` |  |
+| 275 | 5 | `public static void main(String[] args)` |  |
 

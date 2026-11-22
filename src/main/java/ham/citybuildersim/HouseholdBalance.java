@@ -5868,8 +5868,8 @@ public class HouseholdBalance {
     public static final int CELL_SLOTS_BEFORE_SECURED_TAX = CELL_SLOTS_BEFORE_BASIS + Equity.COMPANIES.length + 2;
     /** The tagged units and limited claims, appended after the basis checkpoint. */
     public static final int CELL_SLOTS_BEFORE_CARDS = CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length;
-    /** Four card stocks and nine settled figures read by debt statistics (HC1). */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARDS + 13;
+    /** Four card stocks and ten settled figures read by debt statistics and the bank (HC1). */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARDS + 14;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public double totalEmergencyBills() {
@@ -5947,6 +5947,7 @@ public class HouseholdBalance {
             out[i++] = c.minimumDue;
             out[i++] = c.depositIncome;
             out[i++] = c.studentRepaid; out[i++] = c.studentInterest;
+            out[i++] = c.rate;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -6009,7 +6010,7 @@ public class HouseholdBalance {
         final int wasBeforeBasis   = wasBeforeAfterFixed + 1;
         final int wasBeforeSecured = wasBeforeBasis + savedShares + 2;
         final int wasBeforeCards   = wasBeforeSecured + 2 * savedShares;
-        final int wasFull          = wasBeforeCards + 13;
+        final int wasFull          = wasBeforeCards + 14;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
@@ -6129,6 +6130,7 @@ public class HouseholdBalance {
                 c.minimumDue = saved[i++];
                 c.depositIncome = saved[i++];
                 c.studentRepaid = saved[i++]; c.studentInterest = saved[i++];
+                c.rate = saved[i++];
             }
         }
         plannedSpend = saved[i++];

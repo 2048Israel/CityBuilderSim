@@ -144,12 +144,14 @@ public final class CardCheck {
         c.lateDebt = .2; c.lateShare = .05; c.shutOut = .1;
         c.minimumPaid = .02; c.minimumDue = .04; c.emergencyBill = .3; c.cardWrittenOff = .01; c.disposable = 3; c.bankrupt = 2; c.depositIncome = .07;
         c.studentDebt = 2; c.studentRepaid = .02; c.studentInterest = .005;
+        c.rate = .24;
         HouseholdBalance restored = new HouseholdBalance();
         check("cell save is accepted", restored.restoreCells(balance.cellKeys(), balance.toCellSaveArray(), Equity.COMPANIES));
         Household d = restored.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
         check("all four card stocks round-trip", c.revolving == d.revolving && c.lateDebt == d.lateDebt && c.lateShare == d.lateShare && c.shutOut == d.shutOut);
         check("settled card figures round-trip", c.minimumPaid == d.minimumPaid && c.minimumDue == d.minimumDue && c.emergencyBill == d.emergencyBill && c.cardWrittenOff == d.cardWrittenOff && c.disposable == d.disposable && c.bankrupt == d.bankrupt && c.depositIncome == d.depositIncome);
         check("settled student service is saved alongside card service", c.studentRepaid == d.studentRepaid && c.studentInterest == d.studentInterest);
+        close("the applied APR is saved rather than repriced from the closing balances", d.rate, c.rate, 0);
         d.redenominate(.01);
         close("late balance follows the money", d.lateDebt, c.lateDebt * .01, 0);
         close("holder share survives a currency reform", d.revolving, c.revolving, 0);
@@ -236,6 +238,7 @@ public final class CardCheck {
                     && c.lateShare == d.lateShare && c.shutOut == d.shutOut && c.minimumPaid == d.minimumPaid
                     && c.emergencyBill == d.emergencyBill && c.cardWrittenOff == d.cardWrittenOff
                     && c.minimumDue == d.minimumDue && c.disposable == d.disposable && c.bankrupt == d.bankrupt;
+            sameCards &= c.rate == d.rate;
         }
         check("all card stocks and settled statistics survive the game loader", sameCards);
         check("annual surveys survive the history loader", g.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));

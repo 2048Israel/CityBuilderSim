@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**243 harness files, 27,814 labelled assertions.** AllChecks runs 243 of them.
+**243 harness files, 27,815 labelled assertions.** AllChecks runs 243 of them.
 
 ## Which harnesses read which class
 
@@ -4477,7 +4477,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1401 fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product
   - L1405 ...and the imports declared are what the households paid, not the ship's product: to the bit
 
-## CardCheck.java - 74 labelled assertions
+## CardCheck.java - 75 labelled assertions
 
 > Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1).
 > WHY: a cell average used to discharge all its neighbours and conceal thin buffers.
@@ -4530,40 +4530,41 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L133 emergency receipt pays its imports and its sales tax at
   - L136 the pending named receipt follows a currency reform
 - **L140 Card stocks and settled flows survive the cell save and currency reform**
-  - L148 cell save is accepted
-  - L150 all four card stocks round-trip
-  - L151 settled card figures round-trip
-  - L152 settled student service is saved alongside card service
-  - L154 late balance follows the money
-  - L155 holder share survives a currency reform
-  - L156 old saves are refused at the new format
-- **L159 A cardholder does not bar its debt-free neighbours from investing**
-  - L163 the paper budget belongs to the debt-free share
-  - L165 debt-free neighbours can subscribe to shares
-  - L167 exclusion removes only its own share
-  - L169 a wholly indebted cell has no paper budget
-  - L171 raw debt without a supplied distribution is conservatively ineligible
-- **L174 All four card stocks follow the same families across a birthday**
-  - L180 unchanged census keeps the holder share
-  - L183 birthday carries the card balance
-  - L184 birthday carries holders
-  - L185 birthday carries late balances
-  - L186 birthday carries late holders
-  - L187 birthday carries exclusion
-  - L188 a birthday writes off no loan
-- **L191 Real city money, annual surveys, saved reads and continuation**
-  - L216 city actually paid unexpected bills in the measured months
-  - L217 every measured month conserves the money pools (worst tolerance ratio
-  - L218 every measured month conserves household cash (worst tolerance ratio
-  - L219 the yearly surveys were actually recorded
-  - L222 reading every debt group changes no saved cell field
-  - L231 scratch city saves in the assistant slot
-  - L240 all card stocks and settled statistics survive the game loader
-  - L241 annual surveys survive the history loader
-  - L243 a positive pending emergency receipt survives its ledger save
-  - L246 a positive struck emergency receipt survives in its named statement
-  - L265 all current statistics survive the loader
-  - L270 replay history excludes later surveys
+  - L149 cell save is accepted
+  - L151 all four card stocks round-trip
+  - L152 settled card figures round-trip
+  - L153 settled student service is saved alongside card service
+  - L154 the applied APR is saved rather than repriced from the closing balances
+  - L156 late balance follows the money
+  - L157 holder share survives a currency reform
+  - L158 old saves are refused at the new format
+- **L161 A cardholder does not bar its debt-free neighbours from investing**
+  - L165 the paper budget belongs to the debt-free share
+  - L167 debt-free neighbours can subscribe to shares
+  - L169 exclusion removes only its own share
+  - L171 a wholly indebted cell has no paper budget
+  - L173 raw debt without a supplied distribution is conservatively ineligible
+- **L176 All four card stocks follow the same families across a birthday**
+  - L182 unchanged census keeps the holder share
+  - L185 birthday carries the card balance
+  - L186 birthday carries holders
+  - L187 birthday carries late balances
+  - L188 birthday carries late holders
+  - L189 birthday carries exclusion
+  - L190 a birthday writes off no loan
+- **L193 Real city money, annual surveys, saved reads and continuation**
+  - L218 city actually paid unexpected bills in the measured months
+  - L219 every measured month conserves the money pools (worst tolerance ratio
+  - L220 every measured month conserves household cash (worst tolerance ratio
+  - L221 the yearly surveys were actually recorded
+  - L224 reading every debt group changes no saved cell field
+  - L233 scratch city saves in the assistant slot
+  - L243 all card stocks and settled statistics survive the game loader
+  - L244 annual surveys survive the history loader
+  - L246 a positive pending emergency receipt survives its ledger save
+  - L249 a positive struck emergency receipt survives in its named statement
+  - L268 all current statistics survive the loader
+  - L273 replay history excludes later surveys
 
 ## CarryTradeCheck.java - 44 labelled assertions
 

@@ -4,7 +4,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 625 files, 677,601 lines, 29,607 methods, 6,586 constants. `GameVersion.VERSION` is "0.9.186", `SAVE_FORMAT` 61.
+**The tree:** 625 files, 677,606 lines, 29,607 methods, 6,586 constants. `GameVersion.VERSION` is "0.9.186", `SAVE_FORMAT` 61.
 
 ## model (277 files)
 
@@ -133,7 +133,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HomeFuel.java](HomeFuel.md) | 171 | 20 | The homes' lamp oil and coal: what the households that light with a lamp and heat with a stove ask of the shops each month, as two shares of the ho... | 4 |
 | [Household.java](Household.md) | 1,575 | 138 | Every household of one shape at one pay tier, as one ledger. | 54 |
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,451 | 109 | The city's residents, treated as one household. | 19 |
-| [HouseholdBalance.java](HouseholdBalance.md) | 6,329 | 368 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 70 |
+| [HouseholdBalance.java](HouseholdBalance.md) | 6,331 | 368 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 70 |
 | [HydroSites.java](HydroSites.md) | 440 | 31 | The city's hydro sites: where a river and a drop lie on the ground it owns - the places a Hydro Station can be ordered (HY1, 2026-10-26; docs/queue... | 10 |
 | [Inbox.java](Inbox.md) | 949 | 40 | Everything the city has had to say for itself, newest first. | 8 |
 | [IndustryPicture.java](IndustryPicture.md) | 1,617 | 85 | Each materials industry's month drawn as a picture, laid out to scale (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's mockups... | 2 |
@@ -411,7 +411,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CapitalFlowCheck.java](CapitalFlowCheck.md) | 843 | 10 | Hot money: does it come for the right reason, and does it leave for one? | 0 |
 | [CapitalGainsCheck.java](CapitalGainsCheck.md) | 1,025 | 33 | Household average-cost stocks and investment taxes, through the real fills, census and city (HT1). | 2 |
 | [CarCheck.java](CarCheck.md) | 1,408 | 12 | The cars: who buys one, what it costs them, and what it does to the road. | 2 |
-| [CardCheck.java](CardCheck.md) | 277 | 11 | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). | 0 |
+| [CardCheck.java](CardCheck.md) | 280 | 11 | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). | 0 |
 | [CarryTradeCheck.java](CarryTradeCheck.md) | 430 | 5 | The carry trade: the other side of hot money, and the bank's first borrower. | 0 |
 | [CausesOfDeathCheck.java](CausesOfDeathCheck.md) | 1,023 | 30 | Proves the causes of death of 1900 (R0b, slice 1): the model on its own, before the month hands its rates to the cohorts. | 1 |
 | [CementConcreteCheck.java](CementConcreteCheck.md) | 368 | 11 | Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-rese... | 0 |
