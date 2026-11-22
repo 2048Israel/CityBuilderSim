@@ -36,3 +36,18 @@ plays it four months on to 1,208 where a shot needs it.
    **Mend** (`TileRaster.highwayLegs()`): a straight stops where the next highway bend's arc begins on its leg, if sooner; the
    dashes the same. **Harness**: `JunctionCheck` 24, his S as `CityRuns.stretchInto()` lays it with the map's bends: on main 14
    highway pixels outside the casing and 6 centre-line pixels off the path; with the mend 0 and 0. `c-jog-zoom` before, after.
+
+3. **The rail's dead ends** (shot 6, the hub; Jerus: "rail still has dead ends"): his railway's gate arm (arm 0, south, 219
+   plots) waits at the sea, so FX2 grew the main line on along arm 1 (north 12, past the station's yard to the shore, the last
+   step a diagonal stub) and arm 2 (east 14, through the homes with a level crossing at each street, stopped on meeting the net).
+   No world line leaves from any of them (his city has none; the trains come in by TN1's portal at arm 0's end), so no train ran
+   past the yard. ★ **Mend** (`CityRuns.cutDeadSpine()`, the end of `layRail()`): where the gate arm waits at the sea and no arm
+   FX2 went on along reaches the city's edge (each waits at the sea or has met the net, and the map's main arm is the gate arm),
+   each of those arms is taken back to the last plot a train's way uses - a yard's, an interchange's, or where a siding, branch or
+   quay spur leaves it. FR7's star 3 ("no track on no train's way") applied to FX2's arms; Halifax (an arm reaching the edge) is
+   untouched. The arms keep their waits, so the line is grown again only when the ground moves, then taken back the same: the
+   runs' signature does not move, nor the plans. His city: arm 1 ends at the yard's north end (376808, 376802), arm 2 is gone
+   (`hub-rail-before` against `hub-rail-after`, a month on). A saved city keeps its arms until its railway is next laid (its stamp
+   moves: track, ground, a January). **Harness**: `MainLineCheck` "(RR1) a main line that reaches no edge", an island of owned
+   salt water with a station: on main three arms of 55 steps run on to the sea; with the mend none, the line 109 plots of 221,
+   the same a month later on moved ground; the control open west keeps FX2's arm to the edge.

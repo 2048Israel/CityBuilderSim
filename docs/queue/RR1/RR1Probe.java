@@ -62,17 +62,16 @@ public class RR1Probe {
                 CityRuns.Arm r = n.arms.get(i);
                 StringBuilder sb = new StringBuilder();
                 for (int s = 0; s < r.segs; s++) sb.append(String.format(" [h%d x%d from %d,%d]", r.segHead[s], r.segSteps[s], r.segX[s], r.segY[s]));
-                REAL.printf("  arm %d corr %d start %d,%d end %d,%d head %d steps %d joined %s%s%n", i, r.corridor, r.sx, r.sy, r.x, r.y, r.head, r.steps, r.joined, sb);
+                REAL.printf("  arm %d corr %d start %d,%d end %d,%d head %d steps %d joined %s stop %d%s%n", i, r.corridor, r.sx, r.sy, r.x, r.y, r.head, r.steps, r.joined, r.stoppedBy, sb);
             }
         }
         for (CityMap.WorldLine l : m.worldLines()) REAL.printf("worldline net %d at %.1f,%.1f way %d arm %d reach %.1f%n", l.net(), l.x(), l.y(), l.way(), l.arm(), l.reach());
-        REAL.printf("portal %s mainArm %d%n", Arrays.toString(m.portal()), runs.mainArm());
+        REAL.printf("portal %s mainArm %d gateArm %d gateway %d spine %s%n", Arrays.toString(m.portal()), runs.mainArm(), CityRuns.gateArm(runs.rail(), runs.gateway), runs.gateway, CityRuns.spineOrder(runs.rail(), CityRuns.gateArm(runs.rail(), runs.gateway)));
         for (int i = 0; i < runs.yards().size(); i++) REAL.printf("yard %d %s%n", i, Arrays.toString(runs.yards().get(i)));
         for (long[] s : runs.sidings()) REAL.printf("siding %s%n", Arrays.toString(s));
         REAL.printf("train routes %d, truck routes %d%n", m.trainRoutes().size(), m.truckRoutes().size());
     }
 
-    /** Every district plan's sidings (planSidings): its corners in plots, whether its link holds, and the trains' way to its first plot. */
     /** For each district with plan sidings: its band, how far the band holds now, and the first link in it that breaks, with why. */
     static void why(CityMap m) throws Exception {
         java.lang.reflect.Field fp = CityMap.class.getDeclaredField("planSidings"), fl = CityMap.class.getDeclaredField("links"), fv = CityMap.class.getDeclaredField("bandValidTo"), fo = CityMap.class.getDeclaredField("chainOrder");
@@ -107,6 +106,7 @@ public class RR1Probe {
         }
     }
 
+    /** Every district plan's sidings (planSidings): its corners in plots, whether its link holds, and the trains' way to its first plot. */
     static void sidings(CityMap m) throws Exception {
         java.lang.reflect.Field fp = CityMap.class.getDeclaredField("planSidings"), fl = CityMap.class.getDeclaredField("links");
         fp.setAccessible(true); fl.setAccessible(true);

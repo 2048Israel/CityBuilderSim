@@ -2943,6 +2943,8 @@ public final class CityRuns {
             if (!ctx.works.isEmpty()) for (int i = Math.max(1, yardsActive()); i < yards.size(); i++) reachYard(yards.get(i), g, ctx, budget);
             // (HB2) Last, a spur to each of the harbour's quay lines: after all the model's track, none of it the model's.
             layQuaySpurs(ctx, g);
+            // (RR1) ...and where the main line reaches no edge, its arms past the gate arm only as far as a train's way uses them.
+            if (deal == null) cutDeadSpine();
         }
         yardsShort = Math.max(0, sizes.size() - yardsActive());
         railStamp = stamp;
@@ -3170,6 +3172,71 @@ public final class CityRuns {
             }
         }
         return any;
+    }
+
+    /**
+     * (RR1) Takes the main line's arms past its gate arm back to the last plot a train's way uses, where none of them reaches the
+     * city's edge. FX2 grows the next arm of the spine where the gate arm waits at the sea, and the next after that, to the first that
+     * waits anywhere else - for the world line to leave from (Jerus's Halifax). Where each of them waits at the sea or has run into the
+     * net, no world line leaves from any (the trains come in by the portal at the gate arm's end, TN1), and the track they laid past the
+     * yards on them was track no train ran on: Jerus's fjord city, 2026-11-20, "rail still has dead ends" - the north arm past the
+     * station on to the shore, the east arm 14 plots into the homes. FR7's rule (star 3) holds there too: no track on no train's way.
+     * The arms keep their waits, so the line is not grown again until the ground moves; then it is grown and taken back as before.
+     * True when it took any back.
+     */
+    private boolean cutDeadSpine() {
+        int gate = gateArm(rail, gateway);
+        if (gate < 0 || rail.arms.get(gate).stoppedBy != SEA || mainArm() != gate) return false;
+        List<Integer> order = spineOrder(rail, gate), line = new ArrayList<>();
+        for (int k = 1; k < order.size(); k++) {
+            Arm a = rail.arms.get(order.get(k));
+            // An arm at the edge, or one still to wait (growing, or stopped by anything but the sea or the net), may take the world line.
+            if (a.stoppedBy == EDGE || a.stoppedBy != SEA && !a.joined) return false;
+            line.add(order.get(k));
+            if (a.joined) break;
+        }
+        boolean any = false;
+        for (int k = line.size() - 1; k >= 0; k--) {
+            int i = line.get(k);
+            Arm a = rail.arms.get(i);
+            while (a.steps > 0 && !trainsUse(a.x, a.y, i)) {
+                stepBack(rail, i);
+                any = true;
+            }
+        }
+        if (any) recountPieces(rail);
+        return any;
+    }
+
+    /** (RR1) Whether plot (x, y) of spine arm `arm` is one a train's way uses: a yard's, an interchange's, or where an arm of another corridor (a siding, a branch, a quay's spur) leaves it. */
+    private boolean trainsUse(long x, long y, int arm) {
+        for (long[] b : yards) if (x >= b[0] && y >= b[1] && x < b[0] + b[2] && y < b[1] + b[3]) return true;
+        for (Interchange c : rail.interchanges) if (c.x() == x && c.y() == y) return true;
+        for (int j = 0; j < rail.arms.size(); j++) {
+            Arm o = rail.arms.get(j);
+            if (j != arm && o.corridor > 1 && o.steps > 0 && o.sx == x && o.sy == y) return true;
+        }
+        return false;
+    }
+
+    /** (RR1) Takes arm i of net n back one step as trimPiece() does - its plot and a 45-degree step's corner seen going, its stretch shorter - but keeps its wait: what stopped it still does. */
+    private static void stepBack(Net n, int i) {
+        Arm a = n.arms.get(i);
+        int s = a.segs - 1, h = a.segHead[s], dx = DX[h], dy = DY[h], p = pieceOf(n, a);
+        long x = a.x, y = a.y;
+        boolean diag = dx != 0 && dy != 0;
+        saw(n, x, y);
+        if (diag) saw(n, x, y - dy);
+        a.segSteps[s]--;
+        if (a.segSteps[s] == 0) a.segs--;
+        a.steps--;
+        a.x = x - dx;
+        a.y = y - dy;
+        a.head = a.segs > 0 ? a.segHead[a.segs - 1] : a.home;
+        a.known = 0;
+        if (!covered(n, x, y)) { n.plots--; debit(n, p, 1); }
+        if (diag && !covered(n, x, y - dy)) { n.plots--; debit(n, p, 1); }
+        while (!a.crossings.isEmpty() && a.crossings.get(a.crossings.size() - 1)[2] > a.steps) a.crossings.remove(a.crossings.size() - 1);
     }
 
     /** The plots of net n: its hub's, if laid, and the union of its arms' (each 45-degree step's corner too). */

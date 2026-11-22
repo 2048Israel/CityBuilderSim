@@ -499,6 +499,7 @@ public class MainLineCheck {
         longYards(m);
         railCorner();
         stationLengthened();
+        noEdge(siteX, siteY);
 
         System.out.println();
         System.out.println(fails == 0 ? "The main line runs to the freight station." : fails + " FAILED");
@@ -1850,5 +1851,93 @@ public class MainLineCheck {
             }
         }
         return false;
+    }
+
+    /* ================= (RR1) a main line that reaches no edge runs on past no train's way ================= */
+
+    /** The island noEdge() lays its railway on: dry ground HALF_RR1 plots every way from the site, salt water the city owns SEA_RR1 plots beyond it to the box's edge. */
+    static final int HALF_RR1 = 60, SEA_RR1 = 30;
+
+    /** Salt water the city owns but for a dry square `half` plots every way from (cx, cy) - and, open west, dry on to the box's west edge, 200 plots further. Its version moves when asked: the ground a month later. */
+    static class IslandGround extends BoxGround {
+        final long cx, cy, half;
+        final boolean openWest;
+        long version = 1;
+
+        IslandGround(long cx, long cy, long half, long sea, boolean openWest) {
+            super(cx - half - (openWest ? 200 : sea), cy - half - sea, cx + half + sea, cy + half + sea);
+            this.cx = cx; this.cy = cy; this.half = half; this.openWest = openWest;
+        }
+
+        @Override public int at(long x, long y, int dir) {
+            if (x < x0 || x > x1 || y < y0 || y > y1) return -1;
+            boolean dry = Math.abs(y - cy) <= half && x <= cx + half && (openWest || x >= cx - half);
+            return dry ? World.GRASS : World.SALT;
+        }
+
+        @Override public long version() { return version; }
+    }
+
+    /** The arms after the gate arm in spineOrder() that have steps and do not end on a yard, each "arm i: n steps to (x, y)"; empty when none. */
+    static List<String> pastTheWay(CityRuns runs) {
+        List<String> out = new ArrayList<>();
+        int gate = CityRuns.gateArm(runs.rail, 0);
+        List<Integer> order = CityRuns.spineOrder(runs.rail, gate);
+        for (int k = 1; k < order.size(); k++) {
+            CityRuns.Arm a = runs.rail.arms.get(order.get(k));
+            if (a.steps == 0) continue;
+            boolean onYard = false;
+            for (long[] y : runs.yards()) onYard |= a.x >= y[0] && a.y >= y[1] && a.x < y[0] + y[2] && a.y < y[1] + y[3];
+            if (!onYard) out.add("arm " + order.get(k) + ": " + a.steps + " steps to (" + a.x + ", " + a.y + ")");
+        }
+        return out;
+    }
+
+    /**
+     * Jerus, 2026-11-20, his fjord city (Bergen, month 1,208): "rail still has dead ends". FX2 grows the main line on along the next arm
+     * of the spine where the gate arm waits at the sea, and the next after that, to the first that waits anywhere else - for the world
+     * line to leave from (his Halifax). In his city every arm waits at the sea: no world line leaves from any (the trains come in by
+     * TN1's portal at the gate arm's end), and the arms past the station ran on to the shore and into the homes, track no train ran on.
+     * The fixture is an island of salt water the city owns, a station and no track: the line must be the gate arm and the trains' way.
+     */
+    static void noEdge(long siteX, long siteY) {
+        System.out.println();
+        System.out.println("--- (RR1) a main line that reaches no edge runs on past no train's way ---");
+        List<int[]> station = new ArrayList<>(List.of(depotYard()));
+        IslandGround island = new IslandGround(siteX, siteY, HALF_RR1, SEA_RR1, false);
+        CityRuns runs = new CityRuns();
+        runs.setGateway(0);
+        runs.layTo(0, 0, station, 0, island, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        CityRuns.Net rail = runs.rail;
+        int gate = CityRuns.gateArm(rail, 0);
+        List<Integer> order = gate < 0 ? List.of() : CityRuns.spineOrder(rail, gate);
+        int atSea = 0, atEdge = 0;
+        for (int k = 1; k < order.size(); k++) {
+            CityRuns.Arm a = rail.arms.get(order.get(k));
+            if (a.stoppedBy == CityRuns.SEA) atSea++;
+            if (a.stoppedBy == CityRuns.EDGE) atEdge++;
+        }
+        check("fixture: on the island the gate arm waits at the sea, and so do " + atSea + " arms FX2 went on along, none at the city's edge; one yard, the station's, and the main arm the gate arm",
+                gate >= 0 && rail.arms.get(gate).stoppedBy == CityRuns.SEA && atSea >= 2 && atEdge == 0 && runs.yards().size() == 1 && runs.mainArm() == gate);
+        List<String> past = pastTheWay(runs);
+        System.out.println("  the arms past the gate arm that run on past the trains' way: " + (past.isEmpty() ? "none" : String.join("; ", past)));
+        check("no arm past the gate arm runs on past the trains' way: each has no steps or ends on the station's yard (red before RR1: they ran on to the sea)", past.isEmpty());
+        double[][] way = runs.wayTo(runs.freightStation());
+        check("...and the trains still reach the station along the line", way != null && way[0].length >= 2);
+        long plots = rail.plots;
+        island.version = 2;
+        runs.layTo(0, 1, station, 0, island, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        check("laid again a month later on ground whose version moved (the line grown again where it waited): the same " + plots + " plots, no arm past the way",
+                rail.plots == plots && pastTheWay(runs).isEmpty());
+
+        // The control: the island open west to the city's edge - the arm opposite the gate arm reaches it, and the world line leaves there (FX2).
+        IslandGround open = new IslandGround(siteX, siteY, HALF_RR1, SEA_RR1, true);
+        CityRuns halifax = new CityRuns();
+        halifax.setGateway(0);
+        halifax.layTo(0, 0, station, 0, open, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        int west = westArm(halifax.rail);
+        CityRuns.Arm westA = west < 0 ? null : halifax.rail.arms.get(west);
+        check("control: open west to the city's edge, the arm opposite the gate arm runs on to it as FX2 has it, within LOOK plots of the box's west edge",
+                westA != null && westA.steps > 0 && westA.x - open.x0 >= 0 && westA.x - open.x0 < CityRuns.LOOK);
     }
 }
