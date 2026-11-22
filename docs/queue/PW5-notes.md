@@ -191,3 +191,36 @@ JAVA_OPTS is otherwise empty. The gate box is reachable at its configured IP and
 had no serve jobs at the preflight read. Run the full 16 seeds by five policies on
 the pushed commit, and keep the provisional marker. Before the ALL dry run, the
 orchestrator now requires a separate `PW5 dry run?` mail and a wait for its slot.
+
+### Ensemble result: PASS
+
+`PW5-final-af641b6be-20261122` completed all 80 runs, all 2,400 months, with no
+missing or short run, on gatebox's OpenJDK 21.0.13. The box paused it at 26 completed
+cities for RES2's dry run, then resumed the same snapshot; it never ran on the laptop.
+The result is read from the run's score.md, progress.txt, summary.json and snapshot.txt.
+
+| measure | 0.9.188 baseline | PW5 |
+|---|---|---|
+| criteria passed | 23/26 | 24/26 |
+| hard M1/F1 criteria | 10/10 PASS | 10/10 PASS |
+| failed/unread audit months, every policy | 0/0 | 0/0 |
+| F1 runs with findings, AUTO2 / ZERO_SLACK / ZERO_HOT / SHOCK / HIGH | 1 / 1 / 0 / 1 / 1 of 16 | 0 / 0 / 0 / 0 / 0 of 16 |
+
+Informational verdicts changed: AUTO2 and ZERO_SLACK T2 become PASS (median final
+populations 3,422,172 vs 2,470,540 and 1,827,872 vs 1,277,612); HIGH R2 becomes FAIL
+(the reported unemployment spread is 0.50 points vs 2.29). No threshold or premise
+was changed for those scores. M1 and F1, the ship stoppers, pass for every policy.
+
+The baseline is committed as docs/ensemble/PW5.md, with the publication-version
+placeholders only in its heading/model introduction. The snapshot is af641b6be;
+the box used its own earth-2.bin/world-1.bin, whose full paths are in the baseline.
+Kept files are under target/ensemble/PW5-final-af641b6be-20261122/ (including the
+eighty CSVs and logs); launcher output is target/PW5-ensemble.txt. The box source
+run was /home/jerus/cbs/tools/af641b6be82957745f7ab1285c4a4530571f4b0a/target/ensemble/PW5-final-af641b6be-20261122.
+
+Fetched main again and merged its queue-only updates 6ec5ef03d in c96a5427d.
+The model remains exactly the scored one: src tree c1977ce96c8ea099ad09cb6d3c309c9b0afffcf5;
+`git diff af641b6be HEAD -- src pom.xml tools/ensemble` is empty. Shipped version
+and format remain 0.9.188/60; PW5's floor is 61 and the native fixture remains single.
+No dry run has started. The dry-run slot is requested after this result is committed;
+re-fetch main again on the orchestrator's go and reconcile a newly shipped batch then.
