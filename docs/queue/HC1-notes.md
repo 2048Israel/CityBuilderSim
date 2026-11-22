@@ -306,3 +306,28 @@ The orchestrator's 10:53 and 11:42 coordination says RES2/PW5 also have the nati
 format-60 fixture. Ours was already built, so it stays until integration; the
 second ship consolidates to one fixture and bumps save format/floor from the
 first ship's 61 to 62. That merge follows the review SHIP, before the ensemble.
+
+Final delta check at model/harness commit `5a5f01392`:
+
+- `./batch-check.sh --fast`: exit 0; compile 55s; Stale 0 firm, 199 soft.
+- Named harnesses, run one JVM at a time: SaveFileCheck, CardCheck, BankCheck,
+  HouseholdCheck, DebtStatisticsCheck, HouseholdFlowCheck, HouseholdStageCheck,
+  BusinessServicesCheck, CarCheck, DenominationCheck, MoneyWordsCheck and
+  ReadPathCheck all exit 0. MoneyWordsCheck: 43 assertions, 0 failed.
+- SaveFileCheck's populated format-61 continuation and CardCheck's native
+  continuation both pass exact equality. Native format-60 refusal also passes
+  against the running loaded twin in SaveFileCheck, CardCheck and ReadPathCheck.
+- Raw logs: `target/hc1-review-fast.txt`, `target/hc1-review-named.txt`,
+  `target/hc1-review-suite-status.txt`, and each `target/hc1-<Harness>-direct.log`.
+- `sh tools/pick.sh origin/main HEAD`: ALL 243 harnesses; review needed, money
+  (Bank.java, DebtStatistics.java, ui/BankScreen.java), saves (HistorySave.java,
+  SAVE_FORMAT, OLDEST_LOADABLE_FORMAT). `known-reds.sh HC1` exits 0; no HC1
+  known red is claimed. No conservation, save, or harness tolerance was weakened.
+
+The final fetch found RES2 shipped as `7e484c4da`, 0.9.189, format/floor 61.
+Per the review order, it is not merged before the delta review. After SHIP,
+merge main and bump HC1 from the shipped value to format/floor 62, retaining
+one authentic format-60 fixture. Then run the ensemble against
+`docs/ensemble/0.9.188.md` and the ALL dry run on the gate box. The provisional
+marker stays until those steps are green. No ensemble, dry-run result, or ready
+claim is made at this mends handoff.
