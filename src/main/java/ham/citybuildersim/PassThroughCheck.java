@@ -58,7 +58,13 @@ import ham.citybuildersim.sectors.Retail;
  *      imported cost sets, caused: both twins' goods' D$ and D$ set at DEAR
  *      times the saved city's, so the shop's cost-plus floor stands over its
  *      opening price and the clearing price under the floor (see the section
- *      for the shelf's rule, traced).
+ *      for the shelf's rule, traced); and since PT2 the shops' hand-over
+ *      caused too: Small Grocery Stores stood in both twins until the shops
+ *      hand over HAND_OVER_MARGIN of the households' need at the rate they
+ *      ran at when struck, both played at the DEAR pin until the shelf holds
+ *      what the places hand over, and then the step, so the clearing price is
+ *      under the floor whatever the year's turn does to the rate (both
+ *      counted, all 12 months).
  *   4. THE RING SETTLES. Twins of that city on the float, each first given
  *      the cash for the whole of what its treasury buys and a vault of twice
  *      THIN_COVER months of imports so the vault's cover is flat (a thin vault
@@ -167,6 +173,12 @@ public class PassThroughCheck {
 
     /** The multiple of the saved city's goods' D$ at which section 3's twins are struck and pinned: dear enough that the shop's cost-plus floor stands over its opening price and the clearing price under the floor (the section asserts both). */
     static final double DEAR = 2;
+
+    /** How much over the households' need section 3's shops can hand over, at the operating rate they ran at when the twins were struck, once the fixture's Small Grocery Stores stand (PT2): the year's turn took 7-9% off Retail's rate on OE1's path and on 0.9.181's, so half again is room for it. */
+    static final double HAND_OVER_MARGIN = 1.5;
+
+    /** The most months section 3's twins play as those stores stand, before the pin, for the shops' cash-capped restocking to fill the shelf to what the places hand over (PT2; two on 0.9.181). */
+    static final int STOCKING_MONTHS = 12;
 
     /** How far, in logs, section 6 pins the D$ from the goods' D$ (5%) to read the gap the mechanic closes. */
     static final double MARK_OFF = .05;
@@ -411,11 +423,57 @@ public class PassThroughCheck {
                 + String.format("%.1f%%", 100 * Math.log(steady.getForeignAccounts().getRate() / saved)) + " from it): pinning at the struck rate removes a real gap",
                 Math.abs(Math.log(steady.getForeignAccounts().getRate() / saved)) > APART);
         // THE GAP MADE, NOT INHERITED, AND DEAR (see the shelf's rule below): both twins' goods' D$ set at DEAR times the saved city's, and
-        // the D$ pinned at it, the weak twin's STEP weaker. No gap is pending between the goods' D$ and the steady twin's D$.
+        // the D$ pinned at it; then, once the shops are stocked at it (PT2, below), the weak twin's D$ pinned STEP weaker. No gap is pending
+        // between the goods' D$ and the steady twin's D$.
         double base = DEAR * saved;
-        steadyEm.setStruckRate(base);
-        weakEm.setStruckRate(base);
-        steady.getForeignAccounts().pinRate(base);
+        for (Game twin : new Game[] {steady, weak}) {
+            twin.getEconomyManager().setStruckRate(base);
+            twin.getForeignAccounts().pinRate(base);
+        }
+        /*
+         * PT2: THE SHOPS HAND OVER WHAT THE HOUSEHOLDS NEED, CAUSED. The clearing price falls under the floor only while the shops can
+         * hand over every basket the households need (see the shelf's rule below: the band's bottom then clears it), and the saved
+         * city's shops could not: on 0.9.181 its 4,160 places at Retail's rate of 0.28 (roads at MIN_THROUGHPUT, health 0.81) handed
+         * over 1,158 baskets against 2,327 needed, so the shelf cleared at the band's top in all 12 months; on OE1's path 14,240 places
+         * handed over the need to within a basket until the year's turn took the rate from 0.2907 to 0.2660 at the twelfth. Both twins
+         * stand, at once, the Small Grocery Stores that bring the places at the rate they run at to HAND_OVER_MARGIN of the need, and
+         * play at the DEAR pin, before the step, until the shelf holds what the places hand over: the shops restock for the baskets they
+         * sold last month (Retail.recentUse()) out of a budget their cash and credit cap (Sector.wasPurchaseLimited()), and the
+         * households' basket is struck at the month's prices (Game.cityBasketPerHead()), so at the DEAR pin a head takes 1.50 kg of
+         * grains where it took 0.91: on 0.9.181, with the stores stood and stocked before the pin, the pin's first sale had 1,746 baskets
+         * on the shelf of the 3,174 the places could hand over. The model's own restocking fills it; nothing is put on the shelf by hand.
+         */
+        Retail shopAtStrike = steady.getSectors().retail();
+        BuildingsTemplate grocer = ForeignCheck.template(steady, "Small Grocery Store");
+        double rateAtStrike = shopAtStrike.getOperatingRate(), needAtStrike = shopAtStrike.getBasketsNeeded();
+        long placesBefore = shopAtStrike.getStoreCoverage();
+        long stores = rateAtStrike > 0 ? Math.max(0, (long) Math.ceil(
+                (HAND_OVER_MARGIN * needAtStrike / rateAtStrike - placesBefore) / grocer.getCoverage())) : 0;
+        for (Game twin : new Game[] {steady, weak}) {
+            quietly(() -> twin.buildStack(ForeignCheck.template(twin, "Small Grocery Store"), stores, true));
+        }
+        long places = steady.getSectors().retail().getStoreCoverage();
+        out.printf("   the shops: %,d places at Retail's rate of %.4f hand over %,.0f baskets of the %,.0f the households need; %d Small Grocery Store(s)"
+                + " stood in each twin make it %,d places, %,.0f baskets%n", placesBefore, rateAtStrike, placesBefore * rateAtStrike, needAtStrike,
+                stores, places, places * rateAtStrike);
+        assertTrue("fixture: the stores stood in both twins alike, and the shops' places at the rate they ran at hand over HAND_OVER_MARGIN of the"
+                + " households' need", rateAtStrike > 0 && needAtStrike > 0 && places == weak.getSectors().retail().getStoreCoverage()
+                && places * rateAtStrike >= HAND_OVER_MARGIN * needAtStrike);
+        int stocking = 0;
+        while (stocking < STOCKING_MONTHS && (stocking == 0 || !shelfHoldsTheHandOver(steady.getSectors().retail()) || !shelfHoldsTheHandOver(weak.getSectors().retail()))) {
+            month(steady);
+            month(weak);
+            stocking++;
+        }
+        Retail stocked = steady.getSectors().retail();
+        out.printf("   %d month(s) played at the DEAR pin as the stores stand: the shelf holds %,d baskets, the places hand over %,.0f, the households need %,.0f%n",
+                stocking, stocked.getStoreInventory(), stocked.getHandOver(), stocked.getBasketsNeeded());
+        assertTrue("fixture: before the step, the shelf holds what the places hand over in both twins, within STOCKING_MONTHS (" + stocking + ")",
+                stocking > 0 && shelfHoldsTheHandOver(steady.getSectors().retail()) && shelfHoldsTheHandOver(weak.getSectors().retail()));
+        assertTrue("fixture: ...and the twins are one city still at the step: one month, one struck rate, one price index, one shelf, to the bit",
+                steady.getMonth() == weak.getMonth() && Double.compare(steadyEm.getStruckRate(), weakEm.getStruckRate()) == 0
+                        && Double.compare(steady.getPriceIndex().getIndex(), weak.getPriceIndex().getIndex()) == 0
+                        && steady.getSectors().retail().getStoreInventory() == weak.getSectors().retail().getStoreInventory());
         weak.getForeignAccounts().pinRate(base * STEP);
         assertTrue("fixture: both D$ are pinned, the steady one at the goods' D$ (no gap pending) and the other's 10% weaker",
                 steady.getForeignAccounts().isPinned() && weak.getForeignAccounts().isPinned()
@@ -423,7 +481,7 @@ public class PassThroughCheck {
                         && Double.compare(steadyEm.getStruckRate(), base) == 0 && Double.compare(weakEm.getStruckRate(), base) == 0
                         && Math.abs(weak.getForeignAccounts().getRate() / steady.getForeignAccounts().getRate() - STEP) < 1e-12);
         Retail steadyShop = steady.getSectors().retail(), weakShop = weak.getSectors().retail();
-        int costMonths = 0;
+        int costMonths = 0, handOverMonths = 0;
 
         double worstGoods = 0, worstMarkets = 0;
         double[] share = new double[37], goods = new double[37], component12 = new double[PriceIndex.COMPONENTS];
@@ -437,6 +495,7 @@ public class PassThroughCheck {
                     Math.abs(Math.log(weak.getMarkets().getExchangeRate() / steady.getMarkets().getExchangeRate()) - expected));
             share[n] = Math.log(weak.getPriceIndex().getIndex() / steady.getPriceIndex().getIndex()) / Math.log(STEP);
             if (n <= 12 && costSets(steadyShop) && costSets(weakShop)) costMonths++;
+            if (n <= 12 && handsOverTheNeed(steadyShop) && handsOverTheNeed(weakShop)) handOverMonths++;
             if (n == 12) {
                 for (int c = 0; c < PriceIndex.COMPONENTS; c++) {
                     component12[c] = Math.log(weak.getPriceIndex().getComponentLevel(c) / steady.getPriceIndex().getComponentLevel(c)) / Math.log(STEP);
@@ -475,9 +534,11 @@ public class PassThroughCheck {
          * section did until FS10), the weak twin's shelf had passed 42.7% of the step at 12 months against the goods' own 28.7%, its floor
          * 18.3%: the clearing price moved, not the cost. Nothing in the shelf reads rent, land or wages; only the goods' prices.
          * The law is the floor's, and it is caused: twins struck and pinned at DEAR times the saved city's goods' D$, so the imported basket's
-         * cost times RETAIL_MARKUP stands over the opening price and the clearing price falls under the floor (the fixture counts both, over the
-         * twelve months, and asserts them). Withdrawn - DEAR 1 - the shelf sits at its clearing price and the cost does not set it.
+         * cost times RETAIL_MARKUP stands over the opening price, and the shops stood and stocked to hand over what the households need
+         * (PT2, above), so the clearing price falls under the floor (the fixture counts both, over the twelve months, and asserts them). Withdrawn - DEAR 1 - the shelf sits at its clearing price and the cost does not set it.
          */
+        assertTrue("fixture: the shops hand over at least the households' need in both twins in each of the 12 months, the shelf too ("
+                + handOverMonths + " of 12)", handOverMonths == 12);
         assertTrue("fixture: the imported cost sets the shelf in both twins in each of the 12 months: the floor over the opening price and the"
                 + " clearing price not over the floor (" + costMonths + " of 12)", costMonths == 12);
         assertTrue("the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (" + String.format("%.1f%%", 100 * component12[PriceIndex.GROCERIES])
@@ -485,6 +546,16 @@ public class PassThroughCheck {
         assertTrue("...and under the goods' own share at 12 months: the shelf follows the goods' D$ with a lag of its own, not ahead of it ("
                 + String.format("%.1f%% against %.1f%%", 100 * component12[PriceIndex.GROCERIES], 100 * reached(K, 12)) + ")",
                 component12[PriceIndex.GROCERIES] < reached(K, 12));
+    }
+
+    /** Whether the shops handed over every basket the households need at this month's sale (PT2): the places at the operating rate, and the shelf, at least the need. */
+    static boolean handsOverTheNeed(Retail shop) {
+        return shop.getBasketsNeeded() > 0 && shop.getSupplyBaskets() >= shop.getBasketsNeeded();
+    }
+
+    /** Whether the month's sale handed over what the places could, the shelf not short of it, and the shelf as the month left it holds as many again (PT2): next month's sale is then the places', not the shelf's. */
+    static boolean shelfHoldsTheHandOver(Retail shop) {
+        return shop.getHandOver() > 0 && !shop.isShelfBound() && shop.getStoreInventory() >= shop.getHandOver();
     }
 
     /** Whether the imported cost sets the shop's shelf this month: its cost-plus floor stands over the opening price, and the clearing price is not over the floor (so the target is the floor). */

@@ -1,8 +1,8 @@
-# gate of Merge batch/SD1: Correct scrapping wording, 0.9.181
+# gate of Merge batch/FB16: oE1's four follow-ups in one batch (the orchestrator, 2026-11-22, the queue's bundling practice): AS1 (AuctionCheck 11 causes the sale it counts), CI1 (Motoring strikes car imports from the spend's own sum), PT2 (PassThroughCheck 3 causes the shops' hand-over), RN2 (RealEstate saves its owned housing capacity); each row verbatim in the brief, 0.9.182
 # date: 2026-11-22
 # earth-2.bin: named
-# nightly: 2026-11-21 03:01 0.9.174 4f1056f11 4,000 months: RED, exit 1 in 682 s: FAIL a building on the map moved 1 time(s), months 3992-3992; nightly tier OK; observations: 7 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-21-4f1056f11-99PEFqiX
-# suite: 224 harnesses run in 621s: 213 passed, 11 failed
+# nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
+# suite: 225 harnesses run in 657s: 216 passed, 9 failed
 MortgageCheck | exit 1
 MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not FAIL
 MortgageCheck | ...and a month that earned 0.00 against 0.00 of principal pays nothing, where the old rule paid 0.00 FAIL
@@ -25,16 +25,9 @@ RoadCheck | 2 FAILED
 BankCheck | exit 1
 BankCheck | it pays its savers something                               FAIL
 BankCheck | 1 FAILED
-PassThroughCheck | exit 1
-PassThroughCheck | fixture: the imported cost sets the shelf in both twins in each of the 12 months: the floor over the opening price and the clearing price not over the floor (0 of 12) FAIL
-PassThroughCheck | 1 FAILED
 DenominationCheck | exit 1
 DenominationCheck | the same shops' till                                           FAIL  0.1783334236 != 0.1783334232  (2.42e-09 apart)
 DenominationCheck | 1 FAILED
-ReloadCheck | exit 1
-ReloadCheck | Danzik, caused month 1211, reloaded and a month on: every figure in the save is the live city's, to the cent     FAIL  1 differ, in 1 kind: .sectors[*].extras.strandedDebtShare x1
-ReloadCheck | Danzik, caused month 1211, reloaded and two months on: every figure in the save is the live city's, to the cent  FAIL  1 differ, in 1 kind: .sectors[*].extras.strandedDebtShare x1
-ReloadCheck | 2 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.2, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.153980 != 378.187926
