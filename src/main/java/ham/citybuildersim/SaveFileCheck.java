@@ -1510,15 +1510,25 @@ public class SaveFileCheck {
         for (int struck = 0; struck < STRIKE_MONTHS; struck++) {
             full.buyForeignCurrency(1);
             ham.citybuildersim.sectors.Retail shops = full.getSectors().retail();
-            shops.setStoreInventory((int) Math.min(Integer.MAX_VALUE, shops.getHouseholdWant() / 2));
+            // RES3 moves cash between household shapes and can host a poor cell without rent.
+            // Cause priced-out hunger at the actual counter, above every ordinary cell's current
+            // per-basket resources, rather than depending on one pre-census cell staying poor.
+            double ordinaryRoom=0;
+            for(Household c:full.getHouseholdBalance().cells())if(!c.isEmpty()&&c.baskets()>0
+                    &&(c instanceof WorkingHousehold||c instanceof RetiredHousehold))
+                ordinaryRoom=Math.max(ordinaryRoom,Math.max(c.foodMoney,(1+HouseholdBalance.CREDIT_LIMIT_MONTHS)*Math.max(0,c.disposable()))/c.baskets());
+            shops.setStoreSellPrice(Math.max(shops.getStoreSellPrice(),2*ordinaryRoom));
+            shops.setStoreInventory(1); // One real person-month remains: a nonzero rationed sale, not an empty default.
             full.getCapitalFlows().setStockForTest(Math.min(full.getCapitalFlows().getStock(), full.getCapitalFlows().getTarget() / 2));   // HZ1: by name
             Household withoutMeans = null;
             for (Household c : full.getHouseholdBalance().cells()) {
-                if (c.isEmpty() || c.households() < .5) continue;
-                if (withoutMeans == null || c.afterFixed() < withoutMeans.afterFixed()) withoutMeans = c;
+                // This case exhausts ordinary consumer credit, not the student's separate open treasury facility.
+                if (c.isEmpty() || c.households() < .5 || !(c instanceof WorkingHousehold || c instanceof RetiredHousehold)) continue;
+                if (withoutMeans == null || c.afterFixed()/c.baskets() < withoutMeans.afterFixed()/withoutMeans.baskets()) withoutMeans = c;
             }
             assertTrue("fixture: the city has a household cell to leave without means", withoutMeans != null);
             if (withoutMeans != null) {
+                System.out.printf("   without means: %s, after fixed per basket %.9f%n",withoutMeans.key(),withoutMeans.afterFixed()/withoutMeans.baskets());
                 withoutMeans.savings = 0;
                 withoutMeans.abroad = 0;
                 withoutMeans.paper = 0;
@@ -2250,9 +2260,9 @@ public class SaveFileCheck {
                 Math.abs(causes - died.getLastDeaths()) <= 1e-9 * Math.max(1, died.getLastDeaths()));
 
         HouseholdBalance fed = full.getHouseholdBalance(), fedAgain = back.getHouseholdBalance();
-        // FS17: the shelf at half of the want before each of the two months (above) is what leaves the delivered share under 1 at the second.
+        // The controlled shelf and resource-based price shock above cause both distinct hunger measures.
         assertTrue("fixture: the shops handed over less than the households planned",
-                fed.getDeliveredShare() < 1);
+                fed.getDeliveredShare() > 0 && fed.getDeliveredShare() < 1);
         same("the share the shops handed over", fedAgain.getDeliveredShare(), fed.getDeliveredShare());
         // FS17 (known-reds row 105): this read what the played city happened to be, and on a path where every cell could afford a basket at full
         // shelves in the month read it was 0. The household cell with the least after its fixed bills is left (above) with no savings, no
@@ -3033,7 +3043,10 @@ public class SaveFileCheck {
          */
         Game drawing = new Game(fundCity.getGameFiles());
         drawing.loadGameSave(4);
-        drawing.fundDrawOut(drawing.fundCashFree());
+        // The prior manual-order fixture can reserve cash. Free cash alone leaves that reserve
+        // available to the withdrawal and no longer causes a shortage. Draw the actual whole till.
+        drawing.fundDrawOut(drawing.getFund().getCash());
+        assertTrue("fixture: the withdrawal opens with the fund's actual till empty",drawing.getFund().getCash()==0);
         drawing.setFundWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
         // ...and nothing paid in (0.7.55): under the crowding premium this
         // city's treasury runs a surplus whose pay-in met the transfer every
@@ -3046,6 +3059,7 @@ public class SaveFileCheck {
         // value); between the steps the world bids for it, at the ask and for all that rests at or under it, the way a buyer arrives between
         // the clearings (Exchange.tradeForCheck()); and the second month's top pays what the shares fetched, late.
         drawing.simulateMonths(1);
+        System.out.printf("   first withdrawal: due %.9f, paid %.9f, to raise %.9f, cash %.9f, reserved %.9f%n",drawing.getFund().getTransferDue(),drawing.getFund().getTransferPaid(),drawing.getFund().getToRaise(),drawing.getFund().getCash(),drawing.getFund().handReserve());
         assertTrue("fixture: the month's cash ran short and the fund owes what it sells for",
                 drawing.getFund().sellsToPay() && drawing.getFund().getToRaise() > 0);
         double fundAsked = 0, worldBought = 0;

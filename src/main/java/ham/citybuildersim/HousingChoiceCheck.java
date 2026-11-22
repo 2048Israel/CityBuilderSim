@@ -53,6 +53,9 @@ public final class HousingChoiceCheck {
         near("equivalent offers split pro rata",count(r,"a","x"),.5);
         var reversed=clear(List.of(b,a),List.of(o("y",2,2,40,1,0,false,10),o("x",2,2,40,1,0,false,10)));
         check("reversing input order changes no lease",r.leases().equals(reversed.leases()));
+        r=clear(List.of(d("poor",2,1,0,0,0),d("funded",6,1,0,0,100)),List.of(o("free-host",4,2,40,1,0,false,0)));
+        near("budgets give no priority on a genuinely free offer",count(r,"poor",null),1);
+        near("otherwise equivalent free guests split pro rata",count(r,"funded",null),3);
         r=clear(List.of(d("fraction",.75,1,0,0,100)),List.of(o("x",.25,2,40,1,0,false,10)));
         near("partial placement is conserved",count(r,null,null),.25);near("remaining demand counted once",r.unplaced(),.5);
         var huge=clear(List.of(d("a",2e9,1,0,0,100),d("b",6e9,1,0,0,100)),List.of(o("x",2e9,2,40,1,0,false,10),o("y",2e9,2,40,1,0,false,10)));

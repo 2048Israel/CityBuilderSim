@@ -45,6 +45,7 @@ public final class HousingMarketCheck {
         }
         near("rental proceeds are exactly actual occupied leases",market.receipts(),receipt);
         near("sector bills only actual occupied leases",g.getSectors().realEstate().getRentIncome(),receipt);
+        near("the compatibility occupancy reader counts actual typed lets",g.getSectors().realEstate().getOccupiedHomes(),market.occupied());
         var state=JSON.toJson(market.forSave());
         // A second call in the same month is not a second quote/clearing or a trade.
         market.clear(g,List.of());check("one clearing per month",state.equals(JSON.toJson(market.forSave())));
@@ -158,6 +159,8 @@ public final class HousingMarketCheck {
         student.studentLoansOpen=true;
         double open=balances.strikeHousingBudgets(families,accounts,1,c->0).get(student.key()).budget();
         check("student housing counts only the existing open treasury facility",open>shut&&open-shut==student.planningRoom());
+        balances.setMoneyUnitSource(()->100);
+        near("the student's finite planning allowance follows a currency reform",balances.strikeHousingBudgets(families,accounts,1,c->0).get(student.key()).budget(),open/100);
         near("quoting a funded student budget itself borrows nothing",student.studentDebt(),0);
     }
     static void fundedHost(){

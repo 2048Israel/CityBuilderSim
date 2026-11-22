@@ -680,6 +680,8 @@ public class HouseholdBalance {
     /** RES3 actual class bill per household; NaN retains the bare-model pooled-rent API. */
     private ToDoubleFunction<Household> rentBills = c -> Double.NaN;
     public void setRentBills(ToDoubleFunction<Household> bills) { rentBills=bills; }
+    /** The student's large finite treasury allowance is money too, and follows the city's unit. */
+    public void setMoneyUnitSource(java.util.function.DoubleSupplier source){for(Household c:cells)if(c instanceof StudentHousehold s)s.setMoneyUnitSource(source);}
     private double rentBill(Household c,double pooled) {
         double typed=rentBills.applyAsDouble(c);
         return Double.isFinite(typed)?Math.max(0,typed):pooled*Math.max(0,rentShares.applyAsDouble(c));

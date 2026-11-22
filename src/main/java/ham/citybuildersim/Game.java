@@ -16476,6 +16476,7 @@ public class Game {
 
     {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
+        householdBalance.setMoneyUnitSource(()->getDenomination().getUnit());
         householdBalance.setRentShares(this::rentShareOf);
         families.setTypedRoom(legacy->getSectors().realEstate().housingMarket().roomLeft(this,legacy));
         householdBalance.setRentBills(c -> getSectors().realEstate().housingMarket().active()
@@ -16567,6 +16568,7 @@ public class Game {
         var result=market.clear(this,demand);
         families.acceptTypedHousing(market.demands(),result,householdBalance.cells(),buildingManager.getHousingInventory());
         getSectors().realEstate().setRentWeight(families.studioRentWeight(),families.familyRentWeight());
+        getSectors().realEstate().setOccupiedHomes(market.occupied());
     }
 
     /**
@@ -20861,12 +20863,14 @@ public class Game {
      */
     // The full sequence, not just the match - or stillUnplaced keeps whatever
     // the live path last left in it, which is a figure about a different month.
-    families.noteUnplaced(families.house(buildingManager.homesBySize()));
+    var savedHousing=getSectors().realEstate().housingMarket();
+    if(savedHousing.active())families.acceptTypedHousing(savedHousing.demands(),savedHousing.result(),householdBalance.cells(),buildingManager.getHousingInventory());
+    else families.noteUnplaced(families.house(buildingManager.homesBySize()));
     // ...and the two-pass figure the save carried wins over that one pass,
     // because migration reads it. See FamilyModel.adoptCarriedUnplaced().
     families.adoptCarriedUnplaced();
     families.adoptCarriedDoubling();
-    if (carriedRentWeight > 0) {
+    if (savedHousing.active() || carriedRentWeight > 0) {
         /*
          * BOTH HALVES, RESTORED, not one total re-split.
          *
@@ -22457,7 +22461,7 @@ public class Game {
          */
         getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
         getSectors().retail().setWantedSpend(carriedRetailWant);
-        if (carriedRentWeight > 0) {
+        if (getSectors().realEstate().housingMarket().active() || carriedRentWeight > 0) {
             // Both halves, and the family one by subtraction so the two always
             // sum to the figure the landlords were paid. See the note at the
             // other restore site.

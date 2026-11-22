@@ -273,6 +273,7 @@ public final class RealEstate extends Sector {
      * flat that does not exist.
      */
     public void setOccupiedHomes(double occupied) {
+        if(housingMarket.active()){occupiedHomes=housingMarket.occupied();return;}
         double want = Math.max(0, occupied);
         this.occupiedHomes = homes > 0 ? Math.min(want, homes) : want;
     }
@@ -358,7 +359,7 @@ public final class RealEstate extends Sector {
     /* ------------------------------ readers ------------------------------ */
 
     public long getHomes()                    { return homes; }
-    public double getOccupiedHomes()         { return occupiedHomes; }
+    public double getOccupiedHomes()         { return housingMarket.active()?housingMarket.occupied():occupiedHomes; }
     public long getHousehold()                { return household; }
     public double getHouseholdCount()        { return householdCount; }
     public double getMarginalHousingCost()   { return marginalHousingCost; }
@@ -1052,7 +1053,7 @@ public final class RealEstate extends Sector {
         extras.put("billedFamilyWeight", rBilledFamilyWeight);
         extras.put("rentIncome", rRentIncome);
         extras.put("homes", (double) homes);
-        extras.put("occupiedHomes", occupiedHomes);
+        extras.put("occupiedHomes", getOccupiedHomes());
         extras.put("strandedDebtShare", strandedDebtShare);
         // RN2: the count the share moves against, so a reload's first count moves the share as the live city's does (see setOwnedHousingCapacity()).
         extras.put("ownedCapacity", ownedCapacity);

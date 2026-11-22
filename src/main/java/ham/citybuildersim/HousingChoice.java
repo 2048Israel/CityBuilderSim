@@ -131,7 +131,8 @@ public final class HousingChoice {
     private record OfferSignature(int capacity,int bedrooms,double area,double quality,double garden,boolean stepFree,double rent,double recurring) { }
     private static double allocate(List<Demand> ds,List<Offer> os,double[] need,double[] free,double[][] x,int month,boolean emergency){
         Map<DemandSignature,List<Integer>> dg=new LinkedHashMap<>(); Map<OfferSignature,List<Integer>> og=new LinkedHashMap<>();
-        for(int i=0;i<ds.size();i++)if(need[i]>0){Demand d=ds.get(i);dg.computeIfAbsent(new DemandSignature(d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()),k->new ArrayList<>()).add(i);}
+        boolean freeOffers=true;for(int j=0;j<os.size();j++)if(free[j]>0&&os.get(j).rent()+os.get(j).recurring()>0)freeOffers=false;
+        for(int i=0;i<ds.size();i++)if(need[i]>0){Demand d=ds.get(i);dg.computeIfAbsent(new DemandSignature(d.size(),d.children(),d.retired(),d.tier(),d.young(),freeOffers?0:d.budget()),k->new ArrayList<>()).add(i);}
         for(int j=0;j<os.size();j++)if(free[j]>0){Offer o=os.get(j);og.computeIfAbsent(new OfferSignature(o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()),k->new ArrayList<>()).add(j);}
         List<List<Integer>> hs=new ArrayList<>(dg.values()),ts=new ArrayList<>(og.values());
         // Stable keys, rotated monthly, decide only incomparable residual ties.

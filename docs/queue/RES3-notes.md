@@ -227,3 +227,40 @@ If HC1/PW5 publishes its 62 before RES3, RES3 merges it and advances from that
 shipped value; no conversion is introduced. Its new form IDs likewise follow
 any shipped Substation row. Neither concurrent batch has shipped as of the
 latest main refresh recorded above.
+
+## Save and unit findings during final checks
+
+SaveFileCheck found two real zero-weight reload errors: the old size matcher
+could replace a saved zero rent weight with a positive one. The load rebuild
+now projects saved typed assignments without clearing again, and restores zero
+weights as well as positive weights. The topology save byte comparisons pass
+unchanged. Compatibility occupied-home readers and their saved field now read
+actual typed lets, including a valid zero, rather than a capped demand estimate.
+
+PowerViewCheck's future-input alignment changed the fixture's unsaved House
+power override back to the native template but left the live sector's cached
+residential draw behind. RE now genuinely pays that building-side utility bill.
+The fixture recomputes its future sector draws from the aligned templates and
+also asserts every sector's draw agrees; all dispatch/observation/history,
+actual next bill, fuel, currency and audit comparisons remain. PowerViewCheck
+passes, including both native fuel and exact native bills.
+
+SaveFileCheck's withdrawal case drained only free fund cash, leaving cash
+reserved by its earlier hand-order fixture. The withdrawal could therefore
+pay instead of owing the sale. It now drains the whole actual till through
+fundDrawOut (the treasury is the counterparty) and asserts it opens empty.
+The actual fund sale, world fills, late payment and save comparisons pass.
+The remaining hunger premise is being strengthened through actual retail input
+prices and a nonzero rationed shelf, rather than depending on a poor cell's
+pre-census balances remaining in that shape after housing moves. Assertions
+and every continuation comparison remain, with delivered share also required
+positive to avoid a default-zero round trip.
+
+ReadPathCheck passes. ReloadCheck reports only the existing HT1-H hand-order
+material-draw premise; its actual continuation comparisons remain green.
+DenominationCheck found a new divergence to mend, not a tolerance to relax.
+The student's large finite planning allowance now follows the actual currency
+unit through derived city context, including after load/new-city reset. No new
+saved stock is added. Genuinely equivalent demand on zero-cost offers now
+coalesces independent of irrelevant cash budgets; caused tests cover pro-rata
+free offers and the scaled treasury allowance. Final currency proof follows.
