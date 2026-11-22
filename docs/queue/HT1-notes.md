@@ -938,3 +938,44 @@ has ended. The raw native3/log/used-reds are present; the postprocessing
 limit is recorded in rejudge-terminal.json, with no judge/model retry.
 The versioned BOX gate reuse is still required to certify the final record
 merge; its run pointer retains the original complete234-harness evidence.
+
+## Final retained verdict and ready handoff
+
+Pushed records c4ed957d9 change only this notes file and the ship file from
+the completed dry. Standard versioned BOX dry reuse
+`/home/jerus/cbs/runs/cbs-gate-HT1-MUAPeyHl` accepts the original sealed
+`cbs-gate-HT1-rNY0fHHw` evidence. It runs the common judge only: native
+suite3, known red only18 harnesses; native gate/controller/relay0. No
+compiler, harness, simulator or unchanged suite is replayed. It would
+publish.184 with one Pending/five Queued rows and preserves the actual
+format59. Nothing is published by a dry run. Original hard raw79 lines
+and44 assertion lines stay hard evidence, with all unrelated assertions
+named individually by their queued owners; no red-ok waiver is used.
+
+The green gate ends08:57:33UTC, homecopy/controller ends08:57:39UTC.
+Both retained runs have no active marker and no remaining process naming
+their run. The green run's saved logs/seals/generated/check files are home
+at `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HT1-MUAPeyHl`. Ship's first
+line now names this green reusable run. Only notes/ship changes follow it.
+Source remains dd6d53436dddd65815ba0dcb7f0207ea5adebe0b, baseline
+2149ca45c93b6343c3bd5b9728d131c9d0eed982, origin/main unchanged.
+
+Final pick is ALL240. Exact review floor: money BondMarket.java, Debt.java,
+DebtManager.java, FundLedger.java, TreasuryJournal.java; saves DataSave.java,
+HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT. Whole-batch
+REV-HT1c1-1 plus the closed P2 follow-up and REV-HT1c1-2's final scoped
+SHIP cover the complete reviewed source, including the native extinction
+mend. No later money/save source edit exists. Main PW6/FB16/OG1 hooks and
+aggregate fields remain intact. The final .183 ensemble's exact F1
+recurrence passes by the delegated FB11H call; all five money criteria
+are numeric PASS0failed/0unread. New queued FS17H and FS5H states are the
+untouched fixture/UI findings above. L7 remains separately Pending with no
+invented account or research effect. Process machinery did not change,
+so the process one-in/one-out rule is not invoked.
+
+All authorized implementation, independent review, final-model evidence
+and versioned ALL dry work is complete. The provisional marker is removed
+last in its own pushed commit, under root229e's end-to-end GO. Publication
+of main/tag/version belongs to the orchestrator; this branch only hands
+off the ready source, exact records and reusable evidence. No owned job
+remains running.
