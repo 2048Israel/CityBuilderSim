@@ -17903,6 +17903,9 @@ public class Game {
         dataSave.setSectorLossMonths(businessInvestment.getLossMonthsState());
         dataSave.setSectorOperatingLossMonths(businessInvestment.getOperatingLossMonthsState());
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
+        // ...and the work the city sends the builders (OG1): what their next depot order is sized to.
+        dataSave.setBuildersWork(businessInvestment.getSiteWorkOrdered());
+        dataSave.setBuildersOwedAfterAdvance(businessInvestment.getOthersOwedAfterAdvance());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
         // ...and the investors' last word on each sector (0.7.102, A22): words written inside the tick.
@@ -20993,6 +20996,9 @@ public class Game {
             buildingManager.getJobArrayByName("Commercial Bank"));
 
     economyManager.updateEcon();
+    // RN2: ...and the landlord's count of its places put back as the save held it, once the count above has run from nothing:
+    // the live city moves its closed homes' share at its next month's count, and so does this one (RealEstate.restoreLoadedCapacity()).
+    getSectors().realEstate().restoreLoadedCapacity();
 
     servicesManager.updateServices();
 
@@ -22335,6 +22341,7 @@ public class Game {
             businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
             businessInvestment.restoreOperatingLossMonths(restoredFlows.getSectorOperatingLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
+            businessInvestment.restoreSiteWork(restoredFlows.getBuildersWork(), restoredFlows.getBuildersOwedAfterAdvance());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
             // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which
