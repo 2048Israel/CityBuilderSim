@@ -255,69 +255,7 @@ public class RailCheck {
 
         System.out.println("\n--- and the business, in a city that trades ---");
 
-        quietly(() -> {
-            game.newGame();
-            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): the town below was
-            // written against one that taxes from month 1; every lever is open from the founding since OP1.
-            game.getEconomyManager().getTaxPolicy().reset();
-            // ...and 1900's causes of death held off (R0b), as ScaleCheck's city is: the freight this town ships is its people's, and the railway's net is read against it.
-            game.holdCausesOfDeathOff();
-            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
-            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
-            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
-            game.setCashForTest(Founding.WEALTHY_CASH);
-            /*
-             * THE RAILWAY IS HELD, so what stands is what this harness laid and
-             * nothing else. The first version let the investor build too, and
-             * the comparison below - a sized network against an over-built one -
-             * silently became "two spurs against three" the day a thirteenth
-             * sector shifted the fixture city. An assertion whose subject is
-             * decided by a planner is an assertion about the planner.
-             */
-            game.getBusinessInvestment().holdSector(Sectors.FREIGHT);
-            game.getLandManager().setOwnedSqFt(400_000_000L);
-            BuildingManager b = game.getBuildingManager();
-            game.buildStack(b.getTemplateByName("House"), 900, true);
-            game.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
-            game.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
-            game.buildStack(b.getTemplateByName("Paved Road"), 60, true);
-            game.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
-            game.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
-            game.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
-            game.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 30, true);
-            /*
-             * ...AND THE MILLS ARE HELD (0.7.120, batch I3): at steel's world
-             * price a furnace on imported scrap shipping its steel loses money
-             * (the study's case A, -0.5% of its cost a month), and Iron &
-             * Steel's planner sheds it inside two years - the furnaces stood
-             * here for their tonnage would be gone before they are read. An
-             * assertion whose subject is decided by a planner is an assertion
-             * about the planner.
-             */
-            game.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
-            /*
-             * ...AND FABRICATION WORKS TO SHIP WHAT ITS STEEL BECOMES (0.7.120,
-             * batch I3). At steel's world price a tonne of steel or scrap
-             * carries about two fifths of the lorry freight it did (STEEL
-             * .0675 a tonne and SCRAP .04125, against .1639 and IRON's .101),
-             * and a steel town's freight alone no longer pays for two spurs:
-             * measured, its quote pinned at the lorries' price, billing 63% of
-             * what the rule allowed - section 4's railway "sized to its city"
-             * an over-built one. Eight works export fabricated steel at .3398
-             * a tonne, the played city's freight (section 4's note), and are
-             * held as the mills are.
-             */
-            // WN3 (the world market): on the world's band for 2000 the same eight works and thirty furnaces bill the lorries 9,021k a month
-            // (9,923k at the literals' prices) against the 9,253k the railway is allowed, and its quote pins at the lorry rate (0.9999, 0.943
-            // at the literals): nothing is left to keep, and the city leg's bill (FR6, in the haulage billed but not in the lorry bill) takes
-            // the bill over it. The railway "sized to its city" again, as 0.7.120 found it at steel's price: ten works ship more (0.95).
-            final int worksCount = 10;
-            BuildingsTemplate works = b.getTemplateByName("Fabrication Works");
-            game.setCashForTest(game.getCash() + worksCount * game.getBusinessInvestment().getCostOf(works, 1));
-            game.buildStack(works, worksCount, true);
-            game.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
-            for (int i = 0; i < 36; i++) game.toggleNextMonth();
-        });
+        prepareTradeTown(game, null);
 
         Freight rail = game.getSectors().freight();
         BuildingManager live = game.getBuildingManager();
@@ -739,6 +677,74 @@ public class RailCheck {
             System.exit(1);
         }
         System.out.println("\nAll checks passed.");
+    }
+
+    /** The unchanged m37 steel-town fixture, with an optional pre-month wires counterfactual. */
+    static void prepareTradeTown(Game game, java.util.function.Consumer<Game> setup) {
+        quietly(() -> {
+            game.newGame();
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): the town below was
+            // written against one that taxes from month 1; every lever is open from the founding since OP1.
+            game.getEconomyManager().getTaxPolicy().reset();
+            // ...and 1900's causes of death held off (R0b), as ScaleCheck's city is: the freight this town ships is its people's, and the railway's net is read against it.
+            game.holdCausesOfDeathOff();
+            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
+            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
+            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
+            game.setCashForTest(Founding.WEALTHY_CASH);
+            /*
+             * THE RAILWAY IS HELD, so what stands is what this harness laid and
+             * nothing else. The first version let the investor build too, and
+             * the comparison below - a sized network against an over-built one -
+             * silently became "two spurs against three" the day a thirteenth
+             * sector shifted the fixture city. An assertion whose subject is
+             * decided by a planner is an assertion about the planner.
+             */
+            game.getBusinessInvestment().holdSector(Sectors.FREIGHT);
+            game.getLandManager().setOwnedSqFt(400_000_000L);
+            BuildingManager b = game.getBuildingManager();
+            game.buildStack(b.getTemplateByName("House"), 900, true);
+            game.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
+            game.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
+            game.buildStack(b.getTemplateByName("Paved Road"), 60, true);
+            game.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            game.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            game.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
+            game.buildStack(b.getTemplate(HeavyIndustry.ARC_FURNACE), 30, true);
+            /*
+             * ...AND THE MILLS ARE HELD (0.7.120, batch I3): at steel's world
+             * price a furnace on imported scrap shipping its steel loses money
+             * (the study's case A, -0.5% of its cost a month), and Iron &
+             * Steel's planner sheds it inside two years - the furnaces stood
+             * here for their tonnage would be gone before they are read. An
+             * assertion whose subject is decided by a planner is an assertion
+             * about the planner.
+             */
+            game.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+            /*
+             * ...AND FABRICATION WORKS TO SHIP WHAT ITS STEEL BECOMES (0.7.120,
+             * batch I3). At steel's world price a tonne of steel or scrap
+             * carries about two fifths of the lorry freight it did (STEEL
+             * .0675 a tonne and SCRAP .04125, against .1639 and IRON's .101),
+             * and a steel town's freight alone no longer pays for two spurs:
+             * measured, its quote pinned at the lorries' price, billing 63% of
+             * what the rule allowed - section 4's railway "sized to its city"
+             * an over-built one. Eight works export fabricated steel at .3398
+             * a tonne, the played city's freight (section 4's note), and are
+             * held as the mills are.
+             */
+            // WN3 (the world market): on the world's band for 2000 the same eight works and thirty furnaces bill the lorries 9,021k a month
+            // (9,923k at the literals' prices) against the 9,253k the railway is allowed, and its quote pins at the lorry rate (0.9999, 0.943
+            // at the literals): nothing is left to keep, and the city leg's bill (FR6, in the haulage billed but not in the lorry bill) takes
+            // the bill over it. The railway "sized to its city" again, as 0.7.120 found it at steel's price: ten works ship more (0.95).
+            final int worksCount = 10;
+            BuildingsTemplate works = b.getTemplateByName("Fabrication Works");
+            game.setCashForTest(game.getCash() + worksCount * game.getBusinessInvestment().getCostOf(works, 1));
+            game.buildStack(works, worksCount, true);
+            game.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
+            if (setup != null) setup.accept(game);
+            for (int i = 0; i < 36; i++) game.toggleNextMonth();
+        });
     }
 
     /**

@@ -171,14 +171,23 @@ public class IndustryViewCheck {
      * Coal Mine and a Preparation Plant, a Quarry, Coke Ovens and a Mini Blast
      * Furnace, a Scrap Yard and an Electric Arc Furnace, a Lime Kiln - with
      * old steel arising for the yard every month.
+     * PW5: wires are sized to this load's highest seasonal peak (61.1 MW),
+     * not its 260 MW of unused generation. One 100 MW district keeps the coal
+     * chain working at the unmodified world-market prices; three overbuilt
+     * districts stopped it. SubstationCheck's PW5-F1 counterfactual traces
+     * both costs and the mine margins. No literal-price switch or markup.
      */
     static Town works() {
+        return works(null);
+    }
+
+    /** The same physical town, with a pre-month setup for the wires counterfactuals. */
+    static Town works(java.util.function.Consumer<Game> setup) {
         Game g = CoalMiningCheck.coalTown("industryviewcheck-works", 1);
         FILES.add(g.getGameFiles());
         LandManager land = g.getLandManager();
         BuildingManager b = g.getBuildingManager();
         quietly(() -> {
-            g.playOnLiterals(); // Keep this flow fixture's controlled quotes, as the copper town does.
             land.restoreSites(Resource.IRON, land.getSites(Resource.IRON) + 1,
                     land.getOwnedAmount(Resource.IRON) + Resource.IRON.amountPerSite());
             land.restoreSites(Resource.STONE, land.getSites(Resource.STONE) + 2,
@@ -188,13 +197,8 @@ public class IndustryViewCheck {
                     HeavyIndustry.MINI_BLAST_FURNACE, HeavyIndustry.SCRAP_YARD, HeavyIndustry.ARC_FURNACE, CementConcrete.LIME_KILN }) {
                 b.addStack(b.getTemplate(id), 1, true);
             }
-            // PW5: cause a working coal/coke chain at the new tariff. THE ORDER correctly skips losing mines;
-            // a skipped mine bids no diesel and makes no product, so it cannot exercise the feeds/chain/roof cases.
-            // Raise the chain's goods together, retaining their relative goods margins while covering its fixed costs.
-            for (Good good : new Good[] { Good.THERMAL_COAL, Good.COKING_COAL, Good.MET_COKE, Good.PIG_IRON, Good.STEEL, Good.LIME })
-                g.getMarkets().get(good).setWorldPrices(100 * good.worldImportPrice(), 100 * good.worldExportPrice());
         });
-        return play("the works town", g, () -> g.getOldMetal().arise(OldMetal.Source.DEMOLITIONS, Sectors.REAL_ESTATE, OLD_STEEL));
+        return play("the works town", g, () -> g.getOldMetal().arise(OldMetal.Source.DEMOLITIONS, Sectors.REAL_ESTATE, OLD_STEEL), setup);
     }
 
     /**
@@ -237,8 +241,13 @@ public class IndustryViewCheck {
 
     /** Hands a town its workers, plays SETTLE_MONTHS, notes every industry's stock, and plays the month it is read on - `each` before every month. */
     static Town play(String name, Game g, Runnable each) {
-        SubstationCheck.generationWires(g); // PW5: these views isolate the works' flows, with physical wires for their generation.
+        return play(name, g, each, null);
+    }
+
+    static Town play(String name, Game g, Runnable each, java.util.function.Consumer<Game> setup) {
         MaterialsCheck.handWorkers(g);
+        SubstationCheck.peakWires(g);
+        if (setup != null) setup.accept(g);
         for (int m = 0; m < SETTLE_MONTHS; m++) {
             if (each != null) each.run();
             quietly(() -> g.simulateMonths(1));

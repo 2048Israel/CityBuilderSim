@@ -26,7 +26,7 @@ public final class SubstationCheck {
     static void wiresFor(Game g, double peakKw) {
         if (!Double.isFinite(peakKw) || peakKw < 0) throw new IllegalArgumentException("fixture peak " + peakKw);
         BuildingManager b = g.getBuildingManager();
-        long wanted = Math.max(1, (long) Math.ceil(peakKw / 100_000)); // the study's 100 MW district
+        long wanted = Math.max(1, (long) Math.ceil(peakKw / CARRY));
         long standing = b.getQuantity(Substations.ID);
         if (wanted > standing) b.addStack(b.getTemplate(Substations.ID), wanted - standing, true);
     }
@@ -38,6 +38,13 @@ public final class SubstationCheck {
         for (BuildingsTemplate t : b.getTemplates())
             if (t.getCategory() == BuildingType.ELECTRICITY) kw += b.getQuantity(t.getId()) * t.getProduction1();
         wiresFor(g, kw);
+    }
+
+    /** Districts for the standing draw before steam/electrolyser savings, at its highest season; unused generation needs no wires. */
+    static void peakWires(Game g) {
+        double draw = g.getBuildingManager().getTotalDouble(BuildingsTemplate::powerBought);
+        double peak = Substations.peak(draw, Arrays.stream(PowerDispatch.SEASON).max().orElseThrow());
+        if (peak > g.getServicesManager().getUtilitiesHandler().getFoundingGridKw()) wiresFor(g, peak);
     }
 
     static Game city(String label, int substations) {
@@ -216,8 +223,96 @@ public final class SubstationCheck {
         check("a native format-61 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeGrid61Refusal(false));
     }
 
+    record WireFinding(long districts, double peak, double cents, double energyCents,
+                       double ratio, double dieselBid, double cokingHome,
+                       double thermalMargin, double cokingMargin, Substations.Costs costs, boolean literals) { }
+
+    /** PW5-F1: whole districts have a utilization cost; omitted wires cause a different, physical squeeze. */
+    static void smallTownFinding() {
+        OUT.println("--- PW5-F1: low-utilization wires and the honest works fixture ---");
+        WireFinding right = townFinding("works-peak-sized", IndustryViewCheck.works().game());
+        WireFinding three = townFinding("works-overbuilt", IndustryViewCheck.works(g -> wiresFor(g, 3 * CARRY)).game());
+        WireFinding flatThree = townFinding("works-overbuilt-flat", IndustryViewCheck.works(g -> {
+            wiresFor(g, 3 * CARRY);
+            g.getServicesManager().getUtilitiesHandler().setGridCostSource(null);
+        }).game());
+        WireFinding main = townFinding("works-main-flat", IndustryViewCheck.works(g -> {
+            g.getBuildingManager().retire(g.getBuildingManager().getTemplate(Substations.ID), g.getBuildingManager().getQuantity(Substations.ID));
+            g.getServicesManager().getUtilitiesHandler().setGridCostSource(null);
+        }).game());
+        check("PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working",
+                right.districts == 1 && right.peak < CARRY && !right.literals && right.ratio == 1
+                        && right.dieselBid > 0 && right.cokingHome > 0);
+        check("PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load",
+                right.cents > main.cents && near(three.costs.capital(), 3 * right.costs.capital())
+                        && near(three.peak, right.peak) && three.cents > right.cents);
+        check("PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain",
+                three.thermalMargin < 0 && three.cokingMargin < 0 && three.dieselBid == 0 && three.cokingHome == 0
+                        && flatThree.thermalMargin > 0 && flatThree.cokingMargin > 0
+                        && flatThree.dieselBid > 0 && flatThree.cokingHome > 0);
+
+        double[] tonnes = new double[3];
+        WireFinding[] rail = new WireFinding[3];
+        String[] kinds = {"actual", "flat", "peak-sized"};
+        for (int i = 0; i < kinds.length; i++) {
+            String kind = kinds[i];
+            Game g = new Game(GameFiles.scratch("pw5-rail-wire-finding"));
+            RailCheck.prepareTradeTown(g, x -> {
+                if (kind.equals("flat")) x.getServicesManager().getUtilitiesHandler().setGridCostSource(null);
+                if (kind.equals("peak-sized")) peakWires(x);
+            });
+            rail[i] = townFinding("rail-" + kind, g);
+            var f = g.getSectors().freight();
+            tonnes[i] = f.getTradeTonnes();
+            OUT.printf("RAIL %s m%d tonnes=%.6f truckBill=%.6f%n", kind, g.getMonth(), tonnes[i], f.getTruckBill());
+            LongPlaytest.cleanUp(g.getGameFiles().getDirectory().getParent());
+        }
+        check("PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade",
+                rail[0].districts == 0 && rail[0].cents == 0 && rail[0].ratio < 1
+                        && rail[0].energyCents > rail[1].energyCents
+                        && rail[2].districts == 1 && rail[2].ratio == 1 && tonnes[2] > tonnes[0]);
+        for (GameFiles f : IndustryViewCheck.FILES) LongPlaytest.cleanUp(f.getDirectory().getParent());
+        IndustryViewCheck.FILES.clear();
+    }
+
+    static WireFinding townFinding(String label, Game g) {
+        UtilitiesHandler.Book b = g.getServicesManager().getUtilitiesHandler().getStruckBook();
+        double flat = (PowerDispatch.TRANSMISSION_A_KWH + PowerDispatch.DISTRIBUTION_A_KWH) / PowerPriceCheck.unitOf(g);
+        double dollars = 1000 * PowerPriceCheck.unitOf(g) / PriceLevel.FACTOR;
+        double cents = (b.transmissionPrice + b.distributionPrice) * dollars * 100;
+        double peak = Arrays.stream(b.load).max().orElse(0), delivered = b.servedKwh * (1 - PowerDispatch.GRID_LOSSES);
+        Substations.Costs c = b.gridCosts;
+        OUT.printf("WIRES %s m%d pop=%d n=%d peak=%.6f delivered=%.6f cents=%.9f flat=%.9f ratio=%.9f energyCents=%.9f capitalUSD=%.6f repairsUSD=%.6f payrollUSD=%.6f%n",
+                label, g.getMonth(), g.getPopulationManager().getPopulation(), g.getBuildingManager().getQuantity(Substations.ID),
+                peak, delivered, cents, flat * dollars * 100, b.ratio, b.energyPrice * dollars * 100,
+                c == null ? 0 : c.capital() * dollars, c == null ? 0 : c.repairs() * dollars, c == null ? 0 : c.payroll() * dollars);
+        var coal = g.getSectors().coalMining();
+        double[] local = new double[2];
+        Good[] goods = {Good.THERMAL_COAL, Good.COKING_COAL};
+        for (int i = 0; i < goods.length; i++) {
+            Good good = goods[i];
+            double marginal = coal.getMarginalCostPerUnit(good);
+            local[i] = g.getMarkets().get(good).getLocalPrice() - marginal;
+            OUT.printf("MARGIN %s %s costUSD=%.6f localUSD=%.6f exportUSD=%.6f homeMarginUSD=%.6f exportMarginUSD=%.6f%n", label, good,
+                    marginal * dollars, g.getMarkets().get(good).getLocalPrice() * dollars,
+                    g.getMarkets().get(good).netExportPrice() * dollars, local[i] * dollars,
+                    (g.getMarkets().get(good).netExportPrice() - marginal) * dollars);
+        }
+        var cm = IndustryView.of(g, coal);
+        var diesel = cm.feed(Good.DIESEL);
+        var heavy = IndustryView.of(g, g.getSectors().heavyIndustry());
+        var coking = heavy.feed(Good.COKING_COAL);
+        var coke = heavy.product(Good.MET_COKE);
+        double bid = coal.inputRow(Good.DIESEL).bid, home = coking == null ? 0 : coking.home();
+        OUT.printf("CHAIN %s dieselNeed=%.6f dieselBought=%.6f dieselBid=%.6f cokingHome=%.6f cokeMade=%.6f cokeCaptive=%.6f%n", label,
+                diesel == null ? 0 : diesel.needed(), diesel == null ? 0 : diesel.received(), bid, home,
+                coke == null ? 0 : coke.made(), coke == null ? 0 : coke.captive());
+        return new WireFinding(g.getBuildingManager().getQuantity(Substations.ID), peak, cents, b.energyPrice * dollars * 100,
+                b.ratio, bid, home, local[0], local[1], c, g.isOnLiterals());
+    }
+
     public static void main(String[] args) throws Exception {
-        carry(); tariff(); workedTariff(); order(); reform();
+        carry(); tariff(); workedTariff(); order(); reform(); smallTownFinding();
         if (args.length == 0) saved();
         OUT.println("SubstationCheck: " + fails + " failures");
         if (fails > 0) System.exit(1);

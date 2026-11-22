@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**243 harness files, 27,848 labelled assertions.** AllChecks runs 243 of them.
+**243 harness files, 27,852 labelled assertions.** AllChecks runs 243 of them.
 
 ## Which harnesses read which class
 
@@ -148,7 +148,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck, GroundInputCheck |
 | [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperBufferCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GapOrderCheck, GdpCheck, GoldMiningCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
@@ -174,7 +174,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Icons](map/Icons.md) | **none** |
 | [Inbox](map/Inbox.md) | DiscoveryCheck, InboxCheck, LandmassCheck, PlaytestFixCheck, PrizeCheck |
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
-| [IndustryView](map/IndustryView.md) | IndustryViewCheck, KeptCheck, OilCheck |
+| [IndustryView](map/IndustryView.md) | IndustryViewCheck, KeptCheck, OilCheck, SubstationCheck |
 | [InflationLinkedBond](map/InflationLinkedBond.md) | CapitalGainsCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck |
 | [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, EssentialWorksCheck, FoodProcessingCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, KeptCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckRouteCheck, WorksFinanceCheck |
 | [InfrastructureScreen](map/InfrastructureScreen.md) | **none** |
@@ -9794,7 +9794,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L817 the carts' gain is the room's tonnes a month at the teams' price a tonne less the trucks' running price
   - L819 ...less than nothing where the trucks cost more to run than the teams
 - **L859 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that ...**
-  - L867 fixture: a Bakery is unfitted, a month is played, and it is 1900
+  - L867 fixture: a Bakery is unfitted, dispatch and settlement are played, and it is 1900
   - L871 fixture: the prices are real (coal, power, machinery and a building point all more than nothing)
   - L873 the verdict is for this building and this piece, with the piece's life, and is priced (PAYS or NOT_YET)
   - L876 its gain is steamGain() at the city's coal price and the grid's price a unit, to the bit
@@ -16923,73 +16923,73 @@ _(this harness does not label its checks through a helper - it prints its findin
 > nothing, a product whose parts do not add to what was made, a gate in
 > ...
 
-- **L275 1. the nine industries, each under its roof, and no other**
-  - L284 it covers the nine materials industries of Sectors.KEYS, and reads no other sector (null for each)
-  - L286 ...each under its roof: the four that dig a pit, Forestry its camp, the smelters a furnace, the kilns a kiln,
-  - L310 every town reads all nine, counted, each its sector's own and its buildings standing
-- **L317 2. the fields by type, each a vessel filled to what remains**
-  - L359 fixture: the works town's Surface Coal Mine works a thermal site and its Underground Coal Mine a coking one, each
-  - L367 ...and its Iron Mine a hematite site
-  - L372 ...and its two Quarries, which stand on ANY stone, on its two limestone sites by fiat, where the packing put them
-  - L378 the forest town's forest is one vessel: its full stock, and what stands of it
-  - L384 a works has no fields
-- **L390 3. every good balances: made = kept + sold + shipped + carried + lost + what the warehouse moved**
-  - L414 ...and each industry's tonnes made to its tonnes out, the warehouse's move in them
-- **L443 4. every figure is the model's: rows, fills, counts, appraisals and the plan's order**
-  - L508 ...its buyers and sellers are the month's fills, by party, adding to what the rows sold and bought at home
-  - L511 ...one more of each is its sector's own appraisal - a works' from the plan's list, a mine's the plan's
-  - L513 ...a works' last earnings and idle months are the idle book's
-  - L514 ...and the book counted each kind standing idle this month exactly where the view's last one loses money
-  - L516 ...and the kind the view would order is the one each sector's plan orders, or none where it orders none
-  - L520 ...and its power and lorries are its sector's reads
-- **L605 5. from where: imported feed, captive chains, old metal, sold across industries, carried**
-  - L609 a works on imported feed: the copper smelter takes far more concentrate than the town's one mine digs, the rest
-  - L618 a captive chain: the smelter's anode to the refinery, the refinery's cathode to the rod mill, each its own works'
-  - L628 old metal bought: the scrap refinery takes the city's old copper first, its feed's old-metal part the pool's
-  - L637 sold at home across industries: the leach plant's acid bought from Copper Refining's smelter
-  - L648 the works town's chain: coking coal bought from Coal Mining, its ovens' coke to the blast furnace first, captive
-  - L653 ...the blast furnace's ore from Iron Mining at home, the rest landed, and its limestone from Quarrying
-  - L663 ...old steel bought at the yard: the pool's month the view's, the yard's scrap to the arc furnace first, captive,
-  - L673 ...the limestone no buyer took carried into aggregate: out of the one, into the other, the quarry's carry
-  - L682 ...the coking mine's raw coal through the wash plant: the view's wash the sector's lift, the plant run on what it
-  - L690 ...and its coking coal the month's: what the rows made and idled is the lift's, the ground holding plenty
-  - L699 the wood town: the sawmill's residues to the pellet and pulp mills first, captive, the rest of their need landed;
-- **L711 6. the power: made less drawn is sold less bought**
-  - L719 in every industry of every town, the power its works make less what they draw is what they sell the grid less
-  - L724 fixture: the works town's Coke Ovens make 8,000 kW of their gas: Iron & Steel makes them, and sells their surplus
-  - L731 ...and the wood town's Pulp Mill its 13,500 kW, all of it sold, the sawmill's and the pellet mill's draws bought
-- **L739 7. the forest: what stands, the cut, the planting line, where it settles**
-  - L745 fixture: the forest town's Logging Camp cut this month
-  - L748 its figures are the forest's own reads: full, standing, protected, cuttable, cleared
-  - L752 ...and Forestry's: the crews with those on site, the salvage, the stands, the planting word
-  - L757 the planting line is the regrowth Forestry's planting weighs the cut against, its stands on site counted as
-  - L761 it settles where Forestry.settlesAt() says, and with no law at the regrowth rule's depletion - the same here, the
-  - L768 the camp's run is the forest's cut over the crews' ask at the rate
-  - L773 with 40% of the forest protected, it settles at no less than 40% - Forestry.settlesAt() under the law - and with no
-- **L784 8. the words and the colours**
-  - L800 every good the nine make or use has a colour of its own
-  - L806 ...and every origin and every field type, the world's hatched
-  - L841 every headline, kind, gate, vessel, part, power line and forest line has its words
-  - L842 ...a good's figure in its own unit: tonnes, cubic metres, litres
-  - L850 ...and a gate one more fails, in the plan's words: its first refusal
-- **L857 9. pure**
-  - L859 read twice, the same views, figure for figure and word for word
-  - L863 ...and reading them makes no production row (asked of a sector that buys and makes none of the goods)
-  - L868 the city saved before the nine are read and after is the same save, byte for byte but its time stamp
-- **L908 11. the plan's order, in towns at their founding where kinds pass**
-  - L936 fixture: in each town the plan orders the kind the view would - the best that passes every gate, Coal Mining's
-- **L944 10. after a load**
-  - L952 the loaded twin reads its month as not counted, drawing nothing, its rows not saved
-  - L955 ...and its picture is empty, saying a month must run
-  - L959 ...and a month on, it is counted and drawn again
-- **L981 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868**
-  - L1197 every ribbon leaves one node's right edge and reaches another's left, inside each
-  - L1199 ribbons to scale: each pair's ribbons are its flows' quantity times the picture's one scale, and each node's
-  - L1202 every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells
-  - L1204 nothing off the frame at the 1,389 x 868 window's
-  - L1209 fixture: the towns draw works in two ranks or more, a flow in a band through a works' column, imports hatched, and
-  - L1212 each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)
-  - L1217 fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so
+- **L284 1. the nine industries, each under its roof, and no other**
+  - L293 it covers the nine materials industries of Sectors.KEYS, and reads no other sector (null for each)
+  - L295 ...each under its roof: the four that dig a pit, Forestry its camp, the smelters a furnace, the kilns a kiln,
+  - L319 every town reads all nine, counted, each its sector's own and its buildings standing
+- **L326 2. the fields by type, each a vessel filled to what remains**
+  - L368 fixture: the works town's Surface Coal Mine works a thermal site and its Underground Coal Mine a coking one, each
+  - L376 ...and its Iron Mine a hematite site
+  - L381 ...and its two Quarries, which stand on ANY stone, on its two limestone sites by fiat, where the packing put them
+  - L387 the forest town's forest is one vessel: its full stock, and what stands of it
+  - L393 a works has no fields
+- **L399 3. every good balances: made = kept + sold + shipped + carried + lost + what the warehouse moved**
+  - L423 ...and each industry's tonnes made to its tonnes out, the warehouse's move in them
+- **L452 4. every figure is the model's: rows, fills, counts, appraisals and the plan's order**
+  - L517 ...its buyers and sellers are the month's fills, by party, adding to what the rows sold and bought at home
+  - L520 ...one more of each is its sector's own appraisal - a works' from the plan's list, a mine's the plan's
+  - L522 ...a works' last earnings and idle months are the idle book's
+  - L523 ...and the book counted each kind standing idle this month exactly where the view's last one loses money
+  - L525 ...and the kind the view would order is the one each sector's plan orders, or none where it orders none
+  - L529 ...and its power and lorries are its sector's reads
+- **L614 5. from where: imported feed, captive chains, old metal, sold across industries, carried**
+  - L618 a works on imported feed: the copper smelter takes far more concentrate than the town's one mine digs, the rest
+  - L627 a captive chain: the smelter's anode to the refinery, the refinery's cathode to the rod mill, each its own works'
+  - L637 old metal bought: the scrap refinery takes the city's old copper first, its feed's old-metal part the pool's
+  - L646 sold at home across industries: the leach plant's acid bought from Copper Refining's smelter
+  - L657 the works town's chain: coking coal bought from Coal Mining, its ovens' coke to the blast furnace first, captive
+  - L662 ...the blast furnace's ore from Iron Mining at home, the rest landed, and its limestone from Quarrying
+  - L672 ...old steel bought at the yard: the pool's month the view's, the yard's scrap to the arc furnace first, captive,
+  - L682 ...the limestone no buyer took carried into aggregate: out of the one, into the other, the quarry's carry
+  - L691 ...the coking mine's raw coal through the wash plant: the view's wash the sector's lift, the plant run on what it
+  - L699 ...and its coking coal the month's: what the rows made and idled is the lift's, the ground holding plenty
+  - L708 the wood town: the sawmill's residues to the pellet and pulp mills first, captive, the rest of their need landed;
+- **L720 6. the power: made less drawn is sold less bought**
+  - L728 in every industry of every town, the power its works make less what they draw is what they sell the grid less
+  - L733 fixture: the works town's Coke Ovens make 8,000 kW of their gas: Iron & Steel makes them, and sells their surplus
+  - L740 ...and the wood town's Pulp Mill its 13,500 kW, all of it sold, the sawmill's and the pellet mill's draws bought
+- **L748 7. the forest: what stands, the cut, the planting line, where it settles**
+  - L754 fixture: the forest town's Logging Camp cut this month
+  - L757 its figures are the forest's own reads: full, standing, protected, cuttable, cleared
+  - L761 ...and Forestry's: the crews with those on site, the salvage, the stands, the planting word
+  - L766 the planting line is the regrowth Forestry's planting weighs the cut against, its stands on site counted as
+  - L770 it settles where Forestry.settlesAt() says, and with no law at the regrowth rule's depletion - the same here, the
+  - L777 the camp's run is the forest's cut over the crews' ask at the rate
+  - L782 with 40% of the forest protected, it settles at no less than 40% - Forestry.settlesAt() under the law - and with no
+- **L793 8. the words and the colours**
+  - L809 every good the nine make or use has a colour of its own
+  - L815 ...and every origin and every field type, the world's hatched
+  - L850 every headline, kind, gate, vessel, part, power line and forest line has its words
+  - L851 ...a good's figure in its own unit: tonnes, cubic metres, litres
+  - L859 ...and a gate one more fails, in the plan's words: its first refusal
+- **L866 9. pure**
+  - L868 read twice, the same views, figure for figure and word for word
+  - L872 ...and reading them makes no production row (asked of a sector that buys and makes none of the goods)
+  - L877 the city saved before the nine are read and after is the same save, byte for byte but its time stamp
+- **L917 11. the plan's order, in towns at their founding where kinds pass**
+  - L945 fixture: in each town the plan orders the kind the view would - the best that passes every gate, Coal Mining's
+- **L953 10. after a load**
+  - L961 the loaded twin reads its month as not counted, drawing nothing, its rows not saved
+  - L964 ...and its picture is empty, saying a month must run
+  - L968 ...and a month on, it is counted and drawn again
+- **L990 12. the picture: ribbons to scale, every label's figure the view's, nothing off the frame at 1,389 x 868**
+  - L1206 every ribbon leaves one node's right edge and reaches another's left, inside each
+  - L1208 ribbons to scale: each pair's ribbons are its flows' quantity times the picture's one scale, and each node's
+  - L1211 every label's figure is the view's, in its words: bands, vessels, sources, kinds and runs, takers, power, notes, cells
+  - L1213 nothing off the frame at the 1,389 x 868 window's
+  - L1218 fixture: the towns draw works in two ranks or more, a flow in a band through a works' column, imports hatched, and
+  - L1221 each picture under its industry's roof, the five roofs each its own outline (CAMP Forestry's)
+  - L1226 fixture: an industry with nothing standing (the works town's Forestry) draws nothing, and says so
 
 ## InfrastructureCheck.java - 101 labelled assertions
 
@@ -27234,51 +27234,51 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L247 ...and a city with no railway is back where it started, to the bit
 - **L252 4. THE SECTOR, IN A CITY**
 - **L256 and the business, in a city that trades**
-  - L328 a city that trades steel has freight to move
-  - L338 with no railway, the whole lorry bill is paid abroad
-  - L343 ...and the band agrees with what the railway says it is carrying
-  - L377 track laid and no trains bought yet carries nothing
-  - L382 ...and the month after it has the trains, it carries
-  - L402 every dollar the railway billed is on a shipper's cost line
-  - L405 ...and every dollar its trucks billed (FR2), on the shippers' Haulage line
-  - L409 ...and the shippers' opened cost line still adds to the closed one
-  - L413 with the railway carrying, the lorry bill is billed at home, paid abroad and kept
-  - L437 the railway's fuel and its locomotives are both imports, and with the trucks they are all of them
-  - L455 ...and the Trade tab's goods name the fuel as the railway's, the trains as rolling stock
-  - L461 ...with every other good bought, the city's imports
-  - L466 ...and it bought the fleet its track needs
-  - L471 it is carrying what it built to carry
-  - L477 ...and the band moved for it
-- **L505 and the quote prices the track**
-  - L524 a railway sized to its city bills about what the rule allows it
-  - L530 ...and is inside its own bounds while it does
-  - L548 four times the track it needs, and it cannot charge for it
-  - L557 ...so it pins at the lorries' price, which is its ceiling
-  - L561 ...and earns LESS on four times the capital
-  - L566 ...but never quotes below its floor, because freight needs profit
-- **L571 5. AND IT SURVIVES A RELOAD**
-- **L575 and what it was charging survives a reload**
-  - L599 the quote came back
-  - L606 ...and so did what it was carrying, stream by stream
-  - L612 ...and so did what it was allowed to bill, and what went abroad
-  - L628 a save from before them loads them as not known, not as nothing
-  - L633 ...and saving it again writes no guess for the next load to take as a figure
-  - L639 ...but with nothing billed at home, the whole lorry bill went abroad
-  - L644 ...and its locomotives came back with it
-  - L654 ...and its tonnes by kind, which the map's trains are counted from (0.8.2)
-  - L656 ...and the band the reloaded city quotes is the one it was saved with
-- **L661 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46)**
-- **L665 the month's trade across a save**
-  - L678 fixture: the railway hauled in the month the city was saved
-  - L683 a reloaded railway bills the month the live one bills
-- **L693 and a wagon set moved with the steel in it, the Locomotive Works' margin a set to the cent (0.7.120)**
-  - L694 a wagon set is the world's at 2,302.2: 2,400 less 120 t of fabricated steel at .665 and 20 t of machinery at .9
-  - L700 ...so the Locomotive Works makes of a set over the parts in it what it did, to the cent
-- **L704 7. ITS TONNES BY KIND, THE MAP'S TRAINS' (0.8.2, batch FR1)**
-- **L716 its tonnes by kind, the map's trains' (0.8.2)**
-  - L727 its tonnes by kind, both ways, come to the tonnes it hauled
-  - L730 ...and no kind rails more than crossed of it, either way
-  - L733 ...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())
+  - L266 a city that trades steel has freight to move
+  - L276 with no railway, the whole lorry bill is paid abroad
+  - L281 ...and the band agrees with what the railway says it is carrying
+  - L315 track laid and no trains bought yet carries nothing
+  - L320 ...and the month after it has the trains, it carries
+  - L340 every dollar the railway billed is on a shipper's cost line
+  - L343 ...and every dollar its trucks billed (FR2), on the shippers' Haulage line
+  - L347 ...and the shippers' opened cost line still adds to the closed one
+  - L351 with the railway carrying, the lorry bill is billed at home, paid abroad and kept
+  - L375 the railway's fuel and its locomotives are both imports, and with the trucks they are all of them
+  - L393 ...and the Trade tab's goods name the fuel as the railway's, the trains as rolling stock
+  - L399 ...with every other good bought, the city's imports
+  - L404 ...and it bought the fleet its track needs
+  - L409 it is carrying what it built to carry
+  - L415 ...and the band moved for it
+- **L443 and the quote prices the track**
+  - L462 a railway sized to its city bills about what the rule allows it
+  - L468 ...and is inside its own bounds while it does
+  - L486 four times the track it needs, and it cannot charge for it
+  - L495 ...so it pins at the lorries' price, which is its ceiling
+  - L499 ...and earns LESS on four times the capital
+  - L504 ...but never quotes below its floor, because freight needs profit
+- **L509 5. AND IT SURVIVES A RELOAD**
+- **L513 and what it was charging survives a reload**
+  - L537 the quote came back
+  - L544 ...and so did what it was carrying, stream by stream
+  - L550 ...and so did what it was allowed to bill, and what went abroad
+  - L566 a save from before them loads them as not known, not as nothing
+  - L571 ...and saving it again writes no guess for the next load to take as a figure
+  - L577 ...but with nothing billed at home, the whole lorry bill went abroad
+  - L582 ...and its locomotives came back with it
+  - L592 ...and its tonnes by kind, which the map's trains are counted from (0.8.2)
+  - L594 ...and the band the reloaded city quotes is the one it was saved with
+- **L599 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46)**
+- **L603 the month's trade across a save**
+  - L616 fixture: the railway hauled in the month the city was saved
+  - L621 a reloaded railway bills the month the live one bills
+- **L631 and a wagon set moved with the steel in it, the Locomotive Works' margin a set to the cent (0.7.120)**
+  - L632 a wagon set is the world's at 2,302.2: 2,400 less 120 t of fabricated steel at .665 and 20 t of machinery at .9
+  - L638 ...so the Locomotive Works makes of a set over the parts in it what it did, to the cent
+- **L642 7. ITS TONNES BY KIND, THE MAP'S TRAINS' (0.8.2, batch FR1)**
+- **L654 its tonnes by kind, the map's trains' (0.8.2)**
+  - L665 its tonnes by kind, both ways, come to the tonnes it hauled
+  - L668 ...and no kind rails more than crossed of it, either way
+  - L671 ...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())
 
 ## RailDepotCheck.java - 75 labelled assertions
 
@@ -32068,32 +32068,37 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L201 the fund press moves a leading unit or its tenth
   - L204 the actual fund has exactly two positive magnitude steps
 
-## SubstationCheck.java - 14 labelled assertions
+## SubstationCheck.java - 18 labelled assertions
 
 > Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5).
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
 > the dispatch's demand input, and automation's demand input; each rule also fails against the pre-PW5 model.
 
-- **L78 the carry's two edges and the shared shortfall**
-  - L85 a peak below one substation is served; above it only the two peak halves brown out at its carry
-  - L92 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
-  - L96 a city without substations carries only its existing free 10 MW starter grid
-- **L107 the substations' own costs, struck once**
-  - L120 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
-  - L128 changing the substation's cost changes the next bill; the previously struck book keeps its price
-- **L133 currency reform preserves the wires' breakdown**
-  - L149 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
-- **L155 independent worked study tariff**
-  - L168 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
-  - L175 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
-- **L181 the same order machinery as the roads**
-  - L186 peak growth orders the missing substation, counts its site once, and does not order below the edge
-  - L199 peak growth orders the missing substation, counts its site once, and does not order below the edge
-- **L204 closing costs survive the load rebuild**
-  - L211 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
-  - L214 the first post-load strike bills exactly the same grid costs as the uninterrupted city
-  - L215 a native format-60 city and history are refused without changing either file or a running twin
-  - L216 a native format-61 city and history are refused without changing either file or a running twin
+- **L85 the carry's two edges and the shared shortfall**
+  - L92 a peak below one substation is served; above it only the two peak halves brown out at its carry
+  - L99 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
+  - L103 a city without substations carries only its existing free 10 MW starter grid
+- **L114 the substations' own costs, struck once**
+  - L127 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
+  - L135 changing the substation's cost changes the next bill; the previously struck book keeps its price
+- **L140 currency reform preserves the wires' breakdown**
+  - L156 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
+- **L162 independent worked study tariff**
+  - L175 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
+  - L182 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
+- **L188 the same order machinery as the roads**
+  - L193 peak growth orders the missing substation, counts its site once, and does not order below the edge
+  - L206 peak growth orders the missing substation, counts its site once, and does not order below the edge
+- **L211 closing costs survive the load rebuild**
+  - L218 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
+  - L221 the first post-load strike bills exactly the same grid costs as the uninterrupted city
+  - L222 a native format-60 city and history are refused without changing either file or a running twin
+  - L223 a native format-61 city and history are refused without changing either file or a running twin
+- **L232 PW5-F1: low-utilization wires and the honest works fixture**
+  - L243 PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working
+  - L246 PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load
+  - L249 PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain
+  - L270 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
 
 ## SulphideLeachCheck.java - 32 labelled assertions
 

@@ -651,7 +651,7 @@ public class BuildAdviceCheck {
         switch (m.kind()) {
             case GRID: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
-                double carry = Math.max(u.getFoundingGridKw(), bm.getQuantity(Substations.ID) * 100_000.0);
+                double carry = Math.max(u.getFoundingGridKw(), bm.getQuantity(Substations.ID) * Substations.SUBSTATION_MW * 1000);
                 double season = PowerDispatch.season(CityCalendar.monthOfYear(twin.getMonth()));
                 return u.getConsumption() * season * PowerDispatch.PLAN_PEAK / carry;
             }

@@ -1,4 +1,4 @@
-# IndustryViewCheck.java - 1,230 lines · 32 methods · 6 constants · harnesses
+# IndustryViewCheck.java - 1,239 lines · 34 methods · 6 constants · harnesses
 
 `ham/citybuildersim/IndustryViewCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,25 +64,27 @@
 >      each pair's its flows' quantity times one scale and each node's the
 > ... (4 more lines in the source)
 
-**Uses:** [IndustryView](IndustryView.md) (245), [Good](Good.md) (76), [IndustryPicture](IndustryPicture.md) (60), [Game](Game.md) (31), [Resource](Resource.md) (18), [RefineryView](RefineryView.md) (16), [Sectors](Sectors.md) (11), [Sector](Sector.md) (9), [SpreadPlanner](SpreadPlanner.md) (8), [CoalMining](CoalMining.md) (7), [HeavyIndustry](HeavyIndustry.md) (7), [Forestry](Forestry.md) (7), [Deposit](Deposit.md) (7), [BusinessInvestment](BusinessInvestment.md) (6), [LandManager](LandManager.md) (5), [BuildingManager](BuildingManager.md) (5), [OldMetal](OldMetal.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [CopperRefining](CopperRefining.md) (4), [WoodProducts](WoodProducts.md) (4), [SectorFlow](SectorFlow.md) (4), [Quarrying](Quarrying.md) (3), [MaterialsCheck](MaterialsCheck.md) (3), [GameFiles](GameFiles.md) (2), [CoalMiningCheck](CoalMiningCheck.md) (2), [CopperMining](CopperMining.md) (2), [ForestryCheck](ForestryCheck.md) (2), [ExtractionSector](ExtractionSector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [Trade](Trade.md) (2)... and 5 more
+**Uses:** [IndustryView](IndustryView.md) (245), [Good](Good.md) (68), [IndustryPicture](IndustryPicture.md) (60), [Game](Game.md) (34), [Resource](Resource.md) (18), [RefineryView](RefineryView.md) (16), [Sectors](Sectors.md) (11), [Sector](Sector.md) (9), [SpreadPlanner](SpreadPlanner.md) (8), [CoalMining](CoalMining.md) (7), [HeavyIndustry](HeavyIndustry.md) (7), [Forestry](Forestry.md) (7), [Deposit](Deposit.md) (7), [BusinessInvestment](BusinessInvestment.md) (6), [LandManager](LandManager.md) (5), [BuildingManager](BuildingManager.md) (5), [OldMetal](OldMetal.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [CopperRefining](CopperRefining.md) (4), [WoodProducts](WoodProducts.md) (4), [SectorFlow](SectorFlow.md) (4), [Quarrying](Quarrying.md) (3), [MaterialsCheck](MaterialsCheck.md) (3), [GameFiles](GameFiles.md) (2), [CoalMiningCheck](CoalMiningCheck.md) (2), [CopperMining](CopperMining.md) (2), [ForestryCheck](ForestryCheck.md) (2), [ExtractionSector](ExtractionSector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [Trade](Trade.md) (2)... and 5 more
+
+**Used by (1):** [SubstationCheck](SubstationCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 165 | the towns |
-| 272 | 1. THE NINE |
-| 314 | 2. THE FIELDS |
-| 387 | 3. EVERY GOOD BALANCES |
-| 440 | 4. EVERY FIGURE IS THE MODEL'S |
-| 602 | 5. FROM WHERE |
-| 708 | 6. THE POWER |
-| 736 | 7. THE FOREST |
-| 781 | 8. THE WORDS AND COLOURS |
-| 854 | 9. PURE |
-| 898 | 11. THE PLAN'S ORDER |
-| 941 | 10. AFTER A LOAD |
-| 963 | 12. THE PICTURE |
+| 281 | 1. THE NINE |
+| 323 | 2. THE FIELDS |
+| 396 | 3. EVERY GOOD BALANCES |
+| 449 | 4. EVERY FIGURE IS THE MODEL'S |
+| 611 | 5. FROM WHERE |
+| 717 | 6. THE POWER |
+| 745 | 7. THE FOREST |
+| 790 | 8. THE WORDS AND COLOURS |
+| 863 | 9. PURE |
+| 907 | 11. THE PLAN'S ORDER |
+| 950 | 10. AFTER A LOAD |
+| 972 | 12. THE PICTURE |
 
 ## Constants
 
@@ -92,8 +94,8 @@
 | 126 | `IndustryViewCheck.OLD_STEEL` | `14_000` | Old metal arisen before the month read, tonnes before recovery: enough for one Scrap Yard's 10,500 t and some to landfill. |
 | 128 | `IndustryViewCheck.OLD_COPPER` | `4_000` | ...and old copper, for one Scrap Copper Refinery's 4,400 t. |
 | 133 | `IndustryViewCheck.FILES` | `new ArrayList<>()` |  |
-| 966 | `IndustryViewCheck.FRAME_WIDTH` | `1_200` | The picture's width at the 1,389 x 868 window: the Operations card's inside (RefineryViewCheck's 1,200). |
-| 969 | `IndustryViewCheck.PX` | `1e-6` | The slack a laid-out pixel is held to. |
+| 975 | `IndustryViewCheck.FRAME_WIDTH` | `1_200` | The picture's width at the 1,389 x 868 window: the Operations card's inside (RefineryViewCheck's 1,200). |
+| 978 | `IndustryViewCheck.PX` | `1e-6` | The slack a laid-out pixel is held to. |
 
 ## Fields (state)
 
@@ -107,7 +109,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 1136 | **type** `public class IndustryViewCheck` | The materials pictograms' model, checked (0.7.141, batch I11; docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's I11 row): IndustryView's figures held to the model's own reads in three played town... |
+| 95 | 1145 | **type** `public class IndustryViewCheck` | The materials pictograms' model, checked (0.7.141, batch I11; docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's I11 row): IndustryView's figures held to the model's own reads in three played town... |
 | 101 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 106 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 111 | 5 | `static void quietly(Runnable r)` |  |
@@ -115,95 +117,97 @@
 | 131 | 1 | **type** `record Town(String name, Game game, Map<String, Map<Good, Double>> stockBefore)` | A town, what its industries' stock was before the month read, and its files. |
 | 135 | 29 | `public static void main(String[] args) throws Exception` |  |
 
-### the towns (lines 165-271)
+### the towns (lines 165-280)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 175 | 24 | `static Town works()` | The works town: CoalMiningCheck's coal town (its founding coking field and a thermal site by fiat), a hematite and a limestone site by fiat on it, and a chain on them - an Iron Mine, a Surface and an Underground Coal ... |
-| 210 | 14 | `static Town copper()` | The copper town: CopperMiningCheck's (its founding oxide field and a sulphide site by fiat) with a Copper Mine & Mill and a Leach & SX-EW Plant on them, and every works of Copper Refining - a smelter far bigger than t... |
-| 226 | 11 | `static Town wood()` | The wood town: ForestryCheck's forest town with a Logging Camp on its forest, and a Sawmill, a Pulp Mill and a Wood Pellet Mill. |
-| 239 | 18 | `static Town play(String name, Game g, Runnable each)` | Hands a town its workers, plays SETTLE_MONTHS, notes every industry's stock, and plays the month it is read on - `each` before every month. |
-| 258 | 13 | `static void printTown(Town t)` |  |
+| 180 | 3 | `static Town works()` | The works town: CoalMiningCheck's coal town (its founding coking field and a thermal site by fiat), a hematite and a limestone site by fiat on it, and a chain on them - an Iron Mine, a Surface and an Underground Coal ... |
+| 185 | 18 | `static Town works(java.util.function.Consumer<Game> setup)` | The same physical town, with a pre-month setup for the wires counterfactuals. |
+| 214 | 14 | `static Town copper()` | The copper town: CopperMiningCheck's (its founding oxide field and a sulphide site by fiat) with a Copper Mine & Mill and a Leach & SX-EW Plant on them, and every works of Copper Refining - a smelter far bigger than t... |
+| 230 | 11 | `static Town wood()` | The wood town: ForestryCheck's forest town with a Logging Camp on its forest, and a Sawmill, a Pulp Mill and a Wood Pellet Mill. |
+| 243 | 3 | `static Town play(String name, Game g, Runnable each)` | Hands a town its workers, plays SETTLE_MONTHS, notes every industry's stock, and plays the month it is read on - `each` before every month. |
+| 247 | 19 | `static Town play(String name, Game g, Runnable each, java.util.function.Consumer<Game> setup)` |  |
+| 267 | 13 | `static void printTown(Town t)` |  |
 
-### 1. THE NINE (lines 272-313)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 274 | 39 | `static void theNine(List<Town> towns)` |  |
-
-### 2. THE FIELDS (lines 314-386)
+### 1. THE NINE (lines 281-322)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 316 | 70 | `static void theFields(Town works, Town copper, Town wood)` |  |
+| 283 | 39 | `static void theNine(List<Town> towns)` |  |
 
-### 3. EVERY GOOD BALANCES (lines 387-439)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 389 | 50 | `static void everyGoodBalances(List<Town> towns)` |  |
-
-### 4. EVERY FIGURE IS THE MODEL'S (lines 440-601)
+### 2. THE FIELDS (lines 323-395)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 442 | 81 | `static void everyFigure(List<Town> towns)` |  |
-| 525 | 7 | `static boolean sold(Game g, Good good, String key, List<IndustryView.Part> parts)` | Whether `parts` are exactly the month's fills of `g` that `key` sold in the city, by buyer. |
-| 534 | 7 | `static boolean bought(Game g, Good good, String key, List<IndustryView.Part> parts)` | ...and the fills `key` bought in the city, by seller. |
-| 542 | 9 | `static boolean matches(Map<String, Double> by, List<IndustryView.Part> parts)` |  |
-| 553 | 5 | `static boolean same(SpreadPlanner.Candidate a, SpreadPlanner.Candidate b)` | Whether two appraisals of a building are the same: its template, earnings, cost, first gate and every refusal. |
-| 559 | 3 | `static boolean same(double a, double b)` |  |
-| 570 | 31 | `static String planAgrees(Game g, IndustryView.View v, int[] tally)` | Whether the sector's plan orders what the view says it would (null) or why not, `tally` counting {ordered, none, waiting}: with an order in flight the plan waits; Coal Mining washes first (planWash()), so a passing wa... |
+| 325 | 70 | `static void theFields(Town works, Town copper, Town wood)` |  |
 
-### 5. FROM WHERE (lines 602-707)
+### 3. EVERY GOOD BALANCES (lines 396-448)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 604 | 103 | `static void fromWhere(Town works, Town copper, Town wood)` |  |
+| 398 | 50 | `static void everyGoodBalances(List<Town> towns)` |  |
 
-### 6. THE POWER (lines 708-735)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 710 | 25 | `static void thePower(List<Town> towns, Town works, Town wood)` |  |
-
-### 7. THE FOREST (lines 736-780)
+### 4. EVERY FIGURE IS THE MODEL'S (lines 449-610)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 738 | 42 | `static void theForest(Town wood)` |  |
+| 451 | 81 | `static void everyFigure(List<Town> towns)` |  |
+| 534 | 7 | `static boolean sold(Game g, Good good, String key, List<IndustryView.Part> parts)` | Whether `parts` are exactly the month's fills of `g` that `key` sold in the city, by buyer. |
+| 543 | 7 | `static boolean bought(Game g, Good good, String key, List<IndustryView.Part> parts)` | ...and the fills `key` bought in the city, by seller. |
+| 551 | 9 | `static boolean matches(Map<String, Double> by, List<IndustryView.Part> parts)` |  |
+| 562 | 5 | `static boolean same(SpreadPlanner.Candidate a, SpreadPlanner.Candidate b)` | Whether two appraisals of a building are the same: its template, earnings, cost, first gate and every refusal. |
+| 568 | 3 | `static boolean same(double a, double b)` |  |
+| 579 | 31 | `static String planAgrees(Game g, IndustryView.View v, int[] tally)` | Whether the sector's plan orders what the view says it would (null) or why not, `tally` counting {ordered, none, waiting}: with an order in flight the plan waits; Coal Mining washes first (planWash()), so a passing wa... |
 
-### 8. THE WORDS AND COLOURS (lines 781-853)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 783 | 70 | `static void wordsAndColours(List<Town> towns)` |  |
-
-### 9. PURE (lines 854-897)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 856 | 16 | `static void pure(Town town) throws Exception` |  |
-| 874 | 14 | `static String words(Game g)` | Every view of the town and its words, as text - and since batch I12 each picture's words and its strip. |
-| 890 | 7 | `static String saved(Game g, int slot) throws Exception` | The town saved to a slot of its scratch folder, as text without the save's time stamp. |
-
-### 11. THE PLAN'S ORDER (lines 898-940)
+### 5. FROM WHERE (lines 611-716)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 907 | 33 | `static void thePlansOrder()` | Towns at their founding, where kinds pass every gate - a sector with nothing running weighs one more at nameplate - and each plan orders: CoalMiningCheck's longwall with its raw coal unwashed, ForestryCheck's forest w... |
+| 613 | 103 | `static void fromWhere(Town works, Town copper, Town wood)` |  |
 
-### 10. AFTER A LOAD (lines 941-962)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 943 | 19 | `static void afterALoad(Town town)` |  |
-
-### 12. THE PICTURE (lines 963-1230)
+### 6. THE POWER (lines 717-744)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 980 | 241 | `static void thePicture(List<Town> towns)` | The picture of every industry drawn in the three towns, at the 1,389 x 868 window's width: every ribbon from one node's right edge to another's left, its height its flow's quantity times the picture's one scale; each ... |
-| 1223 | 3 | `static double drawnPart(double units)` | A part as the picture draws it: nothing under IndustryPicture.LEAST_PART. |
-| 1227 | 3 | `static boolean inside(double x0, double y0, double x1, double y1, double w, double h)` |  |
+| 719 | 25 | `static void thePower(List<Town> towns, Town works, Town wood)` |  |
+
+### 7. THE FOREST (lines 745-789)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 747 | 42 | `static void theForest(Town wood)` |  |
+
+### 8. THE WORDS AND COLOURS (lines 790-862)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 792 | 70 | `static void wordsAndColours(List<Town> towns)` |  |
+
+### 9. PURE (lines 863-906)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 865 | 16 | `static void pure(Town town) throws Exception` |  |
+| 883 | 14 | `static String words(Game g)` | Every view of the town and its words, as text - and since batch I12 each picture's words and its strip. |
+| 899 | 7 | `static String saved(Game g, int slot) throws Exception` | The town saved to a slot of its scratch folder, as text without the save's time stamp. |
+
+### 11. THE PLAN'S ORDER (lines 907-949)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 916 | 33 | `static void thePlansOrder()` | Towns at their founding, where kinds pass every gate - a sector with nothing running weighs one more at nameplate - and each plan orders: CoalMiningCheck's longwall with its raw coal unwashed, ForestryCheck's forest w... |
+
+### 10. AFTER A LOAD (lines 950-971)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 952 | 19 | `static void afterALoad(Town town)` |  |
+
+### 12. THE PICTURE (lines 972-1239)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 989 | 241 | `static void thePicture(List<Town> towns)` | The picture of every industry drawn in the three towns, at the 1,389 x 868 window's width: every ribbon from one node's right edge to another's left, its height its flow's quantity times the picture's one scale; each ... |
+| 1232 | 3 | `static double drawnPart(double units)` | A part as the picture draws it: nothing under IndustryPicture.LEAST_PART. |
+| 1236 | 3 | `static boolean inside(double x0, double y0, double x1, double y1, double w, double h)` |  |
 

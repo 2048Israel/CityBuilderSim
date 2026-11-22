@@ -864,7 +864,7 @@ public class EquipmentCheck {
         play(g, 2); // PW5: dispatch the substations' costs, then strike that saved month into the tariff.
         bakery.setUnfitted(DRIVE, 1);
         g.getEquipmentForms().apply(g);
-        check("fixture: a Bakery is unfitted, a month is played, and it is 1900", bakery.getUnfitted(DRIVE) == 1 && yearOf(g) == 1900 && drive.knownAt(g.getMonth()), "year " + yearOf(g));
+        check("fixture: a Bakery is unfitted, dispatch and settlement are played, and it is 1900", bakery.getUnfitted(DRIVE) == 1 && yearOf(g) == 1900 && drive.knownAt(g.getMonth()), "year " + yearOf(g));
 
         double coal = cityPrice(g, Good.THERMAL_COAL), power = g.getEconomyManager().getPricePerWatt(), point = g.getBuildingManager().nonMaterialPricePerPoint();
         EquipmentFit.Verdict v = EquipmentFit.verdict(g, bakery, drive);

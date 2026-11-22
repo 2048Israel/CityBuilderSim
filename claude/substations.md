@@ -13,3 +13,12 @@ payroll. Power bills recover them for the treasury without paying them twice. In
 still pays the transmission share and other billed businesses the whole wires share.
 The closing dispatch keeps its cost snapshot in the save so a load cannot reprice a bill
 using buildings or wages from a different month.
+
+The study prices a whole 100 MW district, so an underused one costs more per kWh
+than the 5.94¢ typical-load benchmark. PW5-F1 traces this explicitly: a town with
+a 45 MW billed peak pays 11.38¢ for one district. Three unnecessary districts
+would charge 33.99¢ and stop its coal chain. The view fixture now supplies the
+one district its load needs and runs at the native commodity prices. The game's
+automatic builder already sizes from peak demand, including forecast growth.
+The steel-town test's much larger trade fall has a different cause: it owns no
+districts, exceeds its free founding carry and pays the shortage-cap energy price.

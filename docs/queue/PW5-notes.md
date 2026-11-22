@@ -338,16 +338,11 @@ oracles remain unchanged.
   is 20,506.5168 litres plus 34.6410 fleet litres, all it actually buys. Its
   unprofitable mines correctly fail THE ORDER, make no product roof, and sell no
   local coking coal. The fixture must cause a working chain for these cases.
-  ★ Use the literals, as the adjacent copper fixture already does, then raise
-  thermal coal, coking coal, coke, pig iron, steel and lime's world quotes together by
-  100 in this fixture, retaining their relative goods prices while
-  covering fixed costs at the new tariff. Keep every feed, captive-flow, roof,
-  money and save assertion. New failure diagnostics report the bid and the
-  unroofed industry instead of merely the aggregate mismatch. Setting quotes
-  on the world-market path alone has no effect: its cached quotes replace them.
-  Lime is included because its kiln also burns the repriced thermal coal: leaving
-  its sale price behind caused its own loss hold and stock write-off, outside
-  the working-chain premise. No inventory or ribbon equality is relaxed.
+  The first mends put it on literals and multiplied six quotes by 100. REV-PW5-2
+  correctly rejected that untraced premise change. That choice is withdrawn:
+  the current fixture keeps the native world market and its unmodified quotes.
+  PW5-F1 below traces the actual cause and the correction. Every feed,
+  captive-flow, inventory, roof, money and save assertion is retained.
 
 The four moved-city pins below belong to queued HT1-H, assigned by the
 orchestrator's mail 20261122-135841-230-orchestrator-a442 and main db9b1fd99.
@@ -385,10 +380,10 @@ line changes after the final 80-run ensemble; its exact model and M1/F1 PASS
 remain the final-model evidence. A new ALL dry run is still owed after review
 SHIP and a new box-slot grant.
 
-The final IndustryViewCheck is green: all nine feed equalities, 3,641 tonnes of
+At the first mends tip 004aba039, IndustryViewCheck was green: all nine feed equalities, 3,641 tonnes of
 coke made with 614 captive and coking coal bought locally, and nine roofs on nine
 pictures. All original inventory, mass, input, layout, read-purity and save
-assertions remain. Its controlled prices change this fixture alone.
+assertions remained, but the review rejected its controlled-price premise.
 
 Final mends verification (one named call at a time, no laptop full pick):
 
@@ -419,3 +414,128 @@ comparison to ensemble 069504753 finds changes only in *Check.java, plus the
 documentation/ownership records. Main's latest pre-mends fetch is still db9b1fd99.
 The provisional marker stays: send mends for the requested fresh review, then
 ask for the next dry-run slot on its SHIP. No own check or gate process remains.
+
+### REV-PW5-2: PW5-F1, utilization cost and an overbuilt fixture
+
+Mail 20261122-145535-083-orchestrator-13c1 requires a trace before changing the
+fixture's prices. It also confirms the other wires mends and all nine HT1-H
+pins. This section supersedes the rejected IndustryView price adjustment above.
+
+★ Keep the study's whole 100 MW district and its capital/repairs/posts split.
+Spec-electricity 2.7 says one Substation per 100 MW of peak, prices a district's
+lines/transformers/meters at about 440M, and says 5.94¢ is its cost at a typical
+load. Section 6 names the 100 MW step and its split as estimates; it specifies
+no fractional ownership or utilization discount. A built district's whole
+cost therefore remains in the tariff even before it fills. The free 10 MW
+founding grid remains. This is a named model finding, **PW5-F1: underused
+districts cost more per kWh**. It is now an asserted, reproducible counterfactual
+in SubstationCheck, rather than a price cap or a hidden subsidy.
+
+The rejected helper had sized the IndustryView town's wires to 260 MW of
+standing generation, building **three districts**. That was the error: its
+standing draw before savings is 40,551 kW; the highest seasonal peak is 61,108 kW,
+so it needs **one** 100 MW district. Its struck book observed at m4 asks a
+45,024 kW peak and delivers 25,663,917 kWh. Unused generation needs no extra
+district. Default GRID advice already sizes from forecast peak demand; no game
+model, building row, bill formula or saved field changes in this mend.
+
+The trace uses native world quotes throughout. Values below strip denomination
+and the struck local price-level shift using PowerPriceCheck.unitOf; dollar
+figures are equivalent baseline-price dollars. Mine margins are current local
+or export prices less the model's marginal cost per tonne, not a new mine's
+capital-return estimate or a not-yet-settled startup income statement.
+
+| Same works stock at m4 | Districts | People | Wires ¢/kWh | Thermal coal home margin/t | Coking coal home margin/t |
+| --- | --- | --- | --- | --- | --- |
+| Native market, corrected wires | 1 | 840 | 11.382486 | +8.839134 | +35.592793 |
+| Native market, rejected generation-sized wires | 3 | 978 | 33.989438 | -20.700447 | -83.221346 |
+| Same three districts, PW1 flat-wire counterfactual | 3 | 978 | 5.938000 | +13.884554 | +55.819629 |
+| Main counterfactual, no district and flat wires | 0 | 776 | 5.938000 | positive | positive |
+
+All four serve the same 45,024 kW peak in full, with the same 2.866213¢/kWh
+energy price. The one-district book captures monthly capital 2,284,748.58,
+repairs 452,215.12 and actual filled-post payroll 184,228.07: total 2,921,191.77
+over its delivered kWh is 11.382486¢. The catalogue's base 440.004M/140-post
+district is unchanged; these closing costs read the existing current replacement
+quote, builders' tax and filled wages, as the independently worked tariff check
+already proves. Three districts triple its capital and repairs at the same
+load, while payroll follows the different fills. The model's home prices versus
+marginal costs show the cause directly:
+
+- One district: thermal 34.812312 versus 25.973178/t; coking 140.179727 versus 104.586934/t.
+- Three: thermal 34.877053 versus 55.577500/t; coking 140.215098 versus 223.436443/t.
+- The same three with flat wires: thermal 34.877053 versus 20.992499/t;
+  coking 140.215098 versus 84.395469/t.
+
+The overbuilt town bids zero process diesel and sells no coking coal locally.
+Flat wires restore that same-stock chain. One correctly sized district also
+restores it at the native market quotes: 21,857.041 process litres bid,
+21,893.963 litres received including its fleet, 2,965.571 t of local coking coal,
+3,842.089 t coke made and 648.352 t captive. Its export margins remain negative
+(-1.072196/t thermal and -5.780804/t coking); the trace does not pretend all exports
+or a new investment pay. The home chain the view fixture needs works without
+changing a single commodity quote. **The least price factor is 1: no factor at all.**
+
+works()'s javadoc now says why this town needs one district. The shared view
+preparation sizes wires from the buildings' powerBought draw at the highest
+season, conservatively before steam/electrolyser savings. It reads stock and
+adds real districts; it does not dispatch a fictitious preceding month or force
+a ratio. The copper town retains its original, separately explained literals
+choice. Every original IndustryView assertion stays and passes.
+
+**RailCheck m37 is chiefly a different squeeze.** It owns zero substations, so
+its wires charge is zero. Its peak exceeds the free founding carry; the current
+struck energy price reaches 315.268782¢ and only 29.545060% of its energy is served.
+It cannot be losing trade because it was charged for a whole owned district.
+The unchanged steel-town setup is extracted into a shared harness method so
+these counterfactuals run the exact same 36-month construction/hold sequence:
+
+| m37 steel town | Districts | Served ratio | Wires ¢/kWh | Energy ¢/kWh | Trade tonnes | Lorry bill, model thousands |
+| --- | --- | --- | --- | --- | --- | --- |
+| PW5 as the pin found it | 0 | .295450596 | 0 | 315.268782 | 15,327.013293 | 77.698418 |
+| Main's flat wires and unlimited carry | 0 | 1 | 5.938000 | 3.753717 | 48,543.036587 | 217.796984 |
+| One real district for its demand | 1 | 1 | 14.361365 | 3.751932 | 45,369.229275 | 203.127264 |
+
+Thus the 68% trade fall comes with missing carry and the shortage-cap price;
+one real district restores all supply and most of the trade. The residual
+versus the main counterfactual includes the real wires charge and its posts;
+it is not attributed to price alone. The HT1-H premise record remains valid.
+The trace uses the existing grid-cost-source seam's PW1 fallback to isolate
+the flat-wire counterfactual, without changing production code.
+
+The new PW5-F1 lines assert native quotes/minimum districts/working chain,
+whole capital at an unchanged load, loss under three unnecessary districts
+and recovery at flat wires, and RailCheck's distinct carry/VOLL cause.
+Reinstating 004aba039's generation-sized wires plus literals and 100× quotes
+makes all three new works-finding lines fail (named runner exit 4), while the
+existing core checks pass. The original good source was restored by SHA-256.
+Mutation log: target/PW5-review3/old-fixture-mutation.log. Initial diagnostic
+records: target/PW5-wires-finding-overbuilt.log and PW5-wires-finding-peak.log.
+These trace-only diagnostics are not claimed as normal verification runs.
+
+Minor mends: EquipmentCheck's label now names dispatch and settlement instead
+of one month; BuildAdviceCheck and the fixture carry helper use
+Substations.SUBSTATION_MW (through CARRY in the helper), not a literal 100,000.
+Normal verification and its final commit are recorded next. Production sources
+remain byte-identical to ensemble 069504753, so the existing 80-run M1/F1 PASS
+and 24/26 score remain the final-model evidence; no replacement ensemble is owed.
+
+The final normal runs pass SubstationCheck (including all four PW5-F1 lines,
+the independent tariff and both real old-save refusals), IndustryViewCheck
+at native quotes, and EquipmentCheck, all exit 0. BuildAdviceCheck exits 3
+only for its existing FS12 line. RailCheck's selection runs serially with
+cbs.parallel=1 and exits 3 only for the existing HT1-H rail/home premises;
+its other selected rail harnesses pass. Final --fast exits 0 with zero firm
+Stale findings (196 soft). Logs: target/PW5-review3/; final-status.txt records
+the normal checks, and the final SubstationCheck.txt/log are refreshed after
+the last trace-format edit. No trace-only property is left in the source.
+
+The extracted RailCheck setup is checked textually against004aba039: removing
+only its optional pre-month callback gives the exact original quiet block,
+including all orders, cash, holds and36 monthly advances. No other RailCheck
+assertion or threshold changes. The nine HT1-H patterns remain unchanged; only
+the first cause now states the measured carry/VOLL mechanism. The known-reds
+parser passes and the pick remains ALL243 with its saves review line. The latest
+main is stilldb9b1fd99; format/floor62 and the native60/61 pairs remain unchanged.
+Keep the provisional marker and send these mends to the same reviewer. No own
+JVM or gate process remains; the next ALL dry-run slot is requested only on SHIP.
