@@ -2423,15 +2423,17 @@ public final class CityRuns {
     /**
      * (TN1) Lays the freight station's yard, the first, again at a longer box where the ground now allows one: of the boxes on the track
      * longer along than its own (the tiers, THE RAILWAY'S YARDS), the nearest a mine that fits (on home's ground with the railway in
-     * pieces), off every other yard; it keeps its ask. A station that holds no train (shorter than every tier's length) may go too, after
-     * every box on the quarter line, where the spine runs straight beside it (spotsOffLine()). Weighed in each month reweighDue() names while
-     * it is short of YARD_LONG.
+     * pieces), off every other yard; it keeps its ask. After every box on the quarter line it may go too where the spine runs straight
+     * beside it (spotsOffLine(); TN1 kept this to a station that holds no train, STY1 to any short of YARD_LONG). Weighed in each month
+     * reweighDue() names while it is short of YARD_LONG.
      * WHY: a yard is laid at the longest tier the ground allows the month it is laid and kept at its box after (keepYards()), so a young
      * city's station, laid where its ground ran short of a train's length, or one read from a sidecar before FORMAT 10, laid at its
      * footprint, stays short for good, and since FX5 a train runs only onto a siding that holds it (TrainSchedule.unfit()): Jerus's city
      * at month 1,204 had its station's Rail Depot laid at its 8-plot footprint, a siding of one plot, and 29 trains a month, every one
      * unfit; the Bergen playtest's, laid a mixed train's 15 plots long at month 840, never held a unit train. Only the station's yard: a
-     * further yard stands beside its works (placeFurther()), which a box nearer a mine would leave.
+     * further yard stands beside its works (placeFurther()), which a box nearer a mine would leave. (STY1) A station laid at a mixed
+     * train's 15 plots, which holds a train, was never weighed beside the quarter line, where a spine's straight stretch off it may run
+     * a unit train's length (MainLineCheck 17 (c)); its unit trains, 41.4 plots, were unfit every month.
      */
     private void lengthenStation(List<int[]> sizes, Ground g, List<long[]> mines, Pieces pieces, boolean inPieces) {
         if (sizes.isEmpty() || !reweighDue()) return;
@@ -2440,10 +2442,9 @@ public final class CityRuns {
         int[] asked = yardAsked(0);
         List<long[]> others = yards.subList(1, yards.size());
         List<List<long[]>> tiers = spotsOnTrack(asked[0], asked[1]);
-        // A station that holds no train (shorter than the shortest train's tier) may go too where the spine runs straight off the quarter line (spotsOffLine()).
-        int shortest = Integer.MAX_VALUE;
-        for (int l : TIER_LENGTHS) shortest = Math.min(shortest, l);
-        if (had < shortest) tiers.addAll(spotsOffLine(asked[0], asked[1]));
+        // A station short of YARD_LONG (reweighDue()) may go too where the spine runs straight off the quarter line (spotsOffLine(); TN1
+        // weighed these only for a station that holds no train, so a mixed train's station beside such a stretch held no unit train, STY1).
+        tiers.addAll(spotsOffLine(asked[0], asked[1]));
         for (List<long[]> tier : tiers) {
             List<long[]> fit = new ArrayList<>();
             for (long[] b : tier) {
@@ -2595,7 +2596,7 @@ public final class CityRuns {
      * (TN1) The boxes a yard of footprint w x h could take on the spine's straight stretches that run off a cell's quarter line, by tier
      * (TIER_LENGTHS, the longest first; not the footprint's own): spotsOnTrack()'s boxes, across the stretch's own line and on either side of it - a spine arm that
      * turned a corner round water or a highway's verge and went on straight a plot or two beside the quarter line - where the track runs
-     * the box's whole length. Only lengthenStation()'s, for a station whose yard holds no train: Jerus's city's main line left the quarter
+     * the box's whole length. Only lengthenStation()'s, for a station short of YARD_LONG (TN1: one whose yard holds no train): Jerus's city's main line left the quarter
      * line two plots west of its hub and ran 219 plots on beside it, and the track on the quarter line had room only for its station's
      * 8-plot footprint.
      */

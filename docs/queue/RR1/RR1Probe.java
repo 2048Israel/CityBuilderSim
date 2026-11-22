@@ -19,6 +19,14 @@ public class RR1Probe {
     static final PrintStream QUIET = new PrintStream(OutputStream.nullOutputStream());
 
     public static void main(String[] a) throws Exception {
+        if (a[0].equals("bergen")) {
+            String[] ms = a[1].split(",");
+            int[] at = new int[ms.length];
+            for (int i = 0; i < ms.length; i++) at[i] = Integer.parseInt(ms[i]);
+            Files.createDirectories(Path.of(a[2]));
+            bergen(at, Path.of(a[2]));
+            System.exit(0);
+        }
         Game g = load(Path.of(a[1]));
         for (int k = 0, n = Integer.getInteger("rr1.months", 0); k < n; k++) { System.setOut(QUIET); g.toggleNextMonth(); System.setOut(REAL); }
         REAL.println("at m" + g.getMonth());
@@ -40,6 +48,126 @@ public class RR1Probe {
         sidings(g.getCityMap());
         REAL.printf("after: train routes %d, truck routes %d%n", g.getCityMap().trainRoutes().size(), g.getCityMap().truckRoutes().size());
         System.exit(0);
+    }
+
+    /**
+     * STY1: Bergen as the playtest plays it (LongPlaytest.earthCity's loop, as TN1Probe's earth mode), the station and its
+     * candidates printed at each month in `at`, saved to the scratch files' slot 10 at the first of them (a scratch folder, never a
+     * player's), and the station's ground rendered at the last.
+     */
+    static void bergen(int[] at, Path out) throws Exception {
+        GameFiles files = GameFiles.scratch("rr1-bergen");
+        Game g = LongPlaytest.earthCity("bergen", 12, files, QUIET);
+        int stop = 0, k = 0, months = at[at.length - 1];
+        PrintStream was = LongPlaytest.out;
+        while (g.getMonth() < months) {
+            LongPlaytest.out = QUIET;
+            System.setOut(QUIET);
+            stop++;
+            int skip = switch (stop % 6) { case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120; };
+            skip = Math.min(skip, months - g.getMonth());
+            while (skip > 0) {
+                int step = Math.min(skip, Math.max(1, at[k] - g.getMonth()));
+                LongPlaytest.run(g, step);
+                skip -= step;
+                if (k < at.length && g.getMonth() >= at[k]) {
+                    System.setOut(REAL);
+                    station(g);
+                    if (k == 0) REAL.println("saved m" + g.getMonth() + ": " + g.saveGame(10) + " in " + files.savesDirectory());
+                    System.setOut(QUIET);
+                    if (k < at.length - 1) k++;
+                }
+            }
+            if (g.getMonth() < months) {
+                for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
+                    if (LongPlaytest.advise(g) == null) break;
+                    LongPlaytest.run(g, 1);
+                }
+                LongPlaytest.run(g, 2);
+            }
+            System.setOut(REAL);
+        }
+        LongPlaytest.out = was;
+        station(g);
+        extension(g);
+        CityRuns runs = g.getCityMap().runs();
+        if (!runs.yards().isEmpty()) {
+            long[] y = runs.yards().get(0);
+            render(g.getCityMap(), y[0] - 96, y[1] - 96, 192, 192, 4, out.resolve("bergen-m" + g.getMonth() + ".png"));
+        }
+    }
+
+    /** STY1: the 48-plot boxes on a line through the hub (its row and its column, the line on the box's first or last row/column), each with why yardFits() takes it or not. */
+    static void extension(Game g) {
+        CityMap m = g.getCityMap();
+        CityRuns runs = m.runs();
+        long hx = runs.rail().hubX, hy = runs.rail().hubY;
+        int L = CityRuns.YARD_LONG, W = 7;
+        List<long[]> others = new java.util.ArrayList<>(runs.yards().subList(1, runs.yards().size()));
+        for (int col = 0; col < 2; col++) {
+            for (int side = 0; side < 2; side++) {
+                StringBuilder sb = new StringBuilder();
+                for (long a0 = (col == 0 ? hx : hy) - L + 1; a0 <= (col == 0 ? hx : hy); a0++) {
+                    long[] b = col == 0 ? new long[] { a0, side == 0 ? hy - W + 1 : hy, L, W } : new long[] { side == 0 ? hx - W + 1 : hx, a0, W, L };
+                    boolean fits = runs.yardFits(b, m.runGround(), new java.util.ArrayList<>(), others);
+                    int hw = 0, wet = 0, unowned = 0;
+                    for (long yy = b[1]; yy < b[1] + b[3]; yy++) for (long xx = b[0]; xx < b[0] + b[2]; xx++) {
+                        if (CityRuns.covered(runs.highways(), xx, yy)) hw++;
+                        int gr = m.runGround().at(xx, yy, -1);
+                        if (gr == -1) unowned++; else if (!World.dry(gr)) wet++;
+                    }
+                    if (col == 0 && side == 0 && a0 >= hx - 32 && a0 <= hx - 24) { StringBuilder why = new StringBuilder(); for (long yy = b[1] - 1; yy <= b[1] + b[3]; yy++) { why.append(" r").append(yy).append(':'); for (long xx = b[0] - 1; xx <= b[0] + 1; xx++) { int gr = m.runGround().at(xx, yy, -1); why.append(gr == -1 ? 'o' : World.dry(gr) ? (CityRuns.covered(runs.highways(), xx, yy) ? 'H' : '.') : '~'); } } REAL.println("    x0 " + a0 + " " + (fits ? "FIT" : "no") + " west edge" + why); }
+                    if (fits || a0 % 8 == 0) sb.append(String.format(" %d:%s/hw%d/wet%d/out%d", a0, fits ? "FIT" : "no", hw, wet, unowned));
+                }
+                REAL.printf("  through the hub, %s, line on the box's %s: %s%n", col == 0 ? "a row" : "a column", side == 0 ? "last" : "first", sb);
+            }
+        }
+    }
+
+    /** STY1: the railway's arms, the yards, every station candidate on and off the quarter line by length and why it fails, and the train routes and the month's schedule. */
+    static void station(Game g) {
+        CityMap m = g.getCityMap();
+        CityRuns runs = m.runs();
+        REAL.printf("m%d pop %,d gateway %d mainArm %d hub %d,%d%n", g.getMonth(), g.getPopulationManager().getPopulation(), runs.gateway(), runs.mainArm(), runs.rail().hubX, runs.rail().hubY);
+        CityRuns.Net n = runs.rail();
+        for (int i = 0; i < n.arms.size(); i++) {
+            CityRuns.Arm r = n.arms.get(i);
+            StringBuilder sb = new StringBuilder();
+            for (int s = 0; s < r.segs; s++) sb.append(String.format(" [h%d x%d from %d,%d]", r.segHead[s], r.segSteps[s], r.segX[s], r.segY[s]));
+            REAL.printf("  arm %d corr %d start %d,%d end %d,%d head %d steps %d joined %s stop %d%s%n", i, r.corridor, r.sx, r.sy, r.x, r.y, r.head, r.steps, r.joined, r.stoppedBy, sb);
+        }
+        for (CityMap.WorldLine l : m.worldLines()) REAL.printf("  worldline net %d at %.1f,%.1f way %d arm %d reach %.1f%n", l.net(), l.x(), l.y(), l.way(), l.arm(), l.reach());
+        for (int i = 0; i < runs.yards().size(); i++) {
+            long[] y = runs.yards().get(i);
+            int[] asked = runs.yardAsked(i);
+            REAL.printf("  yard %d box %s asked %dx%d active %s%n", i, Arrays.toString(y), asked[0], asked[1], i < runs.yardsActive());
+        }
+        REAL.printf("  tiers %s YARD_LONG %d%n", Arrays.toString(CityRuns.TIER_LENGTHS), CityRuns.YARD_LONG);
+        if (!runs.yards().isEmpty()) {
+            int[] asked = runs.yardAsked(0);
+            List<long[]> others = new java.util.ArrayList<>(runs.yards().subList(1, runs.yards().size()));
+            java.util.Map<Long, int[]> by = new java.util.TreeMap<>();
+            List<long[]> cands = new java.util.ArrayList<>(runs.yardSpots(asked[0], asked[1], new java.util.ArrayList<>()));
+            for (List<long[]> t : runs.spotsOffLine(asked[0], asked[1])) for (long[] b : t) cands.add(new long[] { b[0], b[1], b[2], b[3], 1 });
+            for (long[] b : cands) {
+                int[] c = by.computeIfAbsent(Math.max(b[2], b[3]) * (b.length > 4 ? -1 : 1), q -> new int[5]);
+                c[0]++;
+                if (runs.yardFits(b, m.runGround(), new java.util.ArrayList<>(), others)) { c[1]++; continue; }
+                boolean hw = false, wet = false;
+                for (long yy = b[1] - 1; yy <= b[1] + b[3]; yy++) for (long xx = b[0] - 1; xx <= b[0] + b[2]; xx++) {
+                    if (CityRuns.covered(runs.highways(), xx, yy)) hw = true;
+                    boolean in = xx >= b[0] && yy >= b[1] && xx < b[0] + b[2] && yy < b[1] + b[3];
+                    if (in && !World.dry(m.runGround().at(xx, yy, -1))) wet = true;
+                }
+                if (hw) c[2]++;
+                if (wet) c[3]++;
+                if (!hw && !wet) c[4]++;
+            }
+            for (var e : by.entrySet()) REAL.printf("  station boxes %d long (negative: off the quarter line): %d, fit %d; failing on a highway %d, on ground not owned dry %d, other %d%n", e.getKey(), e.getValue()[0], e.getValue()[1], e.getValue()[2], e.getValue()[3], e.getValue()[4]);
+        }
+        List<TrainSchedule.Route> routes = m.trainRoutes();
+        for (TrainSchedule.Route r : routes)
+            REAL.printf("  route yard %d station %s siding %d works %s holds %.1f length %.1f%n", r.yard(), r.station(), r.siding(), r.works(), r.holds(), r.length());
     }
 
     static Game load(Path saves) throws Exception {

@@ -129,7 +129,10 @@ import java.util.Set;
  *      ask, and then stays; a station
  *      laid at its footprint, which holds no train, on a main line that runs
  *      off the quarter line (salt water on it) is laid again YARD_LONG along
- *      that stretch, the track its whole length, where the trains' way reaches it.
+ *      that stretch, the track its whole length, where the trains' way reaches it;
+ *      (STY1) and so is one laid at the mixed train's tier, which holds a
+ *      train: its routes held no unit train and the month's hoppers were all
+ *      unfit; laid YARD_LONG a route holds one and the schedule runs them.
  *
  * WHY THIS EXISTS: batch FR0 slice M sets the main-line marks that the painter
  * already draws. A fixture CAUSES each condition, and every assertion is
@@ -1836,6 +1839,92 @@ public class MainLineCheck {
                 whole && by >= 0 && Math.floorMod(by, CityRuns.CELL) != CityRuns.RAIL_AT);
         check("...on owned dry ground, off every highway: it fits", c.yardFits(beside, canal, new ArrayList<>(), new ArrayList<>()));
         check("...and the trains' way reaches it (wayTo())", c.wayTo(beside) != null);
+
+        // (c) (STY1) The canal further east, STY1_CANAL plots from the hub: the track on the quarter line holds a mixed train's box, so the
+        // station is laid at that tier - it holds a train, as the Bergen playtest's did from its first station to month 1,322 - and before
+        // STY1 it was never weighed beside the quarter line, where the stretch runs a unit train's length.
+        JunctionCheck.PatchGround mixed = longGround();
+        for (long x = hubX + STY1_CANAL; x <= mixed.x1; x++) {
+            mixed.with(x, lineY, World.SALT);
+            mixed.with(x, lineY + 1, World.SALT);
+        }
+        CityRuns u = new CityRuns();
+        u.setGateway(0);
+        u.setMonth(0);
+        layYards(u, mixed, sizes, 0);
+        long[] tier = u.yards().isEmpty() ? null : u.yards().get(0);
+        int mixedTier = (int) Math.ceil(TrainSchedule.Kind.MIXED.length()) + 2 * TileRaster.YARD_LADDER;
+        System.out.printf("  the canal %d plots east of the hub: the station's box %s%n", STY1_CANAL, tier == null ? "none" : Arrays.toString(tier));
+        check("fixture (STY1): with the canal " + STY1_CANAL + " plots east of the hub the station's yard is laid at the mixed train's tier, " + mixedTier
+                + " plots, at least the shortest train's tier: it holds a train", tier != null && alongOf(tier) == mixedTier && alongOf(tier) >= shortest);
+        if (tier == null) return;
+        List<TrainSchedule.Route> mixedRoutes = stationRoutes(u, tier);
+        TrainSchedule held = unitSchedule(mixedRoutes);
+        System.out.printf("  at the mixed tier: %d route(s), holding at most %.1f; of %d unit trains of hoppers drawn %d run, %d unfit%n", mixedRoutes.size(),
+                mostHeld(mixedRoutes), held.callsOf(TrainSchedule.Kind.HOPPER), running(held, TrainSchedule.Kind.HOPPER), held.unfit());
+        check("...its routes hold the mixed train and no unit train, and none of the month's unit trains of hoppers runs: every one unfit",
+                mostHeld(mixedRoutes) >= TrainSchedule.Kind.MIXED.length() && mostHeld(mixedRoutes) < TrainSchedule.Kind.HOPPER.length()
+                        && held.callsOf(TrainSchedule.Kind.HOPPER) > 0 && running(held, TrainSchedule.Kind.HOPPER) == 0);
+        u.setMonth(CityRuns.YARD_REWEIGH_MONTHS);
+        layYards(u, mixed, sizes, 0);
+        long[] unit = u.yards().get(0);
+        long uy = -1;
+        if (unit[2] == CityRuns.YARD_LONG) {
+            for (long y = unit[1]; y < unit[1] + unit[3]; y++) {
+                boolean all = true;
+                for (long x = unit[0]; x < unit[0] + unit[2]; x++) all &= CityRuns.covered(u.rail, x, y);
+                if (all) uy = y;
+            }
+        }
+        System.out.printf("  weighed: the station's box %s%n", Arrays.toString(unit));
+        check("weighed in January, the station's yard is laid again YARD_LONG along the stretch off the quarter line, the track its whole length (red before STY1: kept at the mixed tier)",
+                alongOf(unit) == CityRuns.YARD_LONG && uy >= 0 && Math.floorMod(uy, CityRuns.CELL) != CityRuns.RAIL_AT);
+        check("...on owned dry ground, off every highway: it fits", u.yardFits(unit, mixed, new ArrayList<>(), new ArrayList<>()));
+        List<TrainSchedule.Route> unitRoutes = stationRoutes(u, unit);
+        TrainSchedule runs = unitSchedule(unitRoutes);
+        System.out.printf("  at YARD_LONG: %d route(s), holding at most %.1f; of %d unit trains of hoppers drawn %d run, %d unfit%n", unitRoutes.size(), mostHeld(unitRoutes),
+                runs.callsOf(TrainSchedule.Kind.HOPPER), running(runs, TrainSchedule.Kind.HOPPER), runs.unfit());
+        check("...a route of it holds a unit train, " + TrainSchedule.Kind.HOPPER.length() + " plots, and the month's unit trains of hoppers run on it (red before STY1: none)",
+                mostHeld(unitRoutes) >= TrainSchedule.Kind.HOPPER.length() && running(runs, TrainSchedule.Kind.HOPPER) > 0);
+    }
+
+    /** Section 17 (c)'s canal: salt water on the quarter line's row and the row south of it from this many plots east of the hub, so its track on the quarter line holds a mixed train's box and no longer (STY1). */
+    static final int STY1_CANAL = 24;
+
+    /** Section 17 (c)'s month of dry bulk in, in tonnes: unit trains of hoppers, as GatewayCheck's TN1 coast is given (TN1_DRY_IN). */
+    static final double STY1_DRY_IN = GatewayCheck.TN1_DRY_IN;
+
+    /**
+     * A station's routes as CityMap.trainRoutes() lays them (CityMap.trainRoutesInto(), the box's track as CityMap.yardRail() reads it),
+     * from the first point of the trains' way (wayTo()), the main line's end, as from TN1's portal; none where the way does not reach it.
+     */
+    static List<TrainSchedule.Route> stationRoutes(CityRuns r, long[] yard) {
+        List<TrainSchedule.Route> out = new ArrayList<>();
+        double[][] way = r.wayTo(yard);
+        if (way == null || way[0].length < 2) return out;
+        CityMap.trainRoutesInto(out, 0, true, yard, way, way[0][0], way[1][0], way[0][0], way[1][0], CityMap.yardRail(r, yard));
+        return out;
+    }
+
+    /** How many of the month's trains of kind k run: drawn with a route (TrainSchedule.calls(); an unfit one has none). */
+    static int running(TrainSchedule s, TrainSchedule.Kind k) {
+        int n = 0;
+        for (TrainSchedule.Call c : s.calls()) if (c.kind() == k && c.route() >= 0) n++;
+        return n;
+    }
+
+    /** The most any of the routes' sidings holds, in plots (0 for none). */
+    static double mostHeld(List<TrainSchedule.Route> routes) {
+        double most = 0;
+        for (TrainSchedule.Route rt : routes) most = Math.max(most, rt.holds());
+        return most;
+    }
+
+    /** The month's schedule on the routes with STY1_DRY_IN tonnes of dry bulk in and nothing else: unit trains of hoppers. */
+    static TrainSchedule unitSchedule(List<TrainSchedule.Route> routes) {
+        double[] in = new double[Ports.Cargo.values().length], out = new double[in.length];
+        in[Ports.Cargo.DRY_BULK.ordinal()] = STY1_DRY_IN;
+        return TrainSchedule.of(1, in, out, routes);
     }
 
     static boolean marksCarry(CityMap m, int bits) {

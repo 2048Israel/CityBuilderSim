@@ -51,3 +51,25 @@ plays it four months on to 1,208 where a shot needs it.
    moves: track, ground, a January). **Harness**: `MainLineCheck` "(RR1) a main line that reaches no edge", an island of owned
    salt water with a station: on main three arms of 55 steps run on to the sea; with the mend none, the line 109 plots of 221,
    the same a month later on moved ground; the control open west keeps FX2's arm to the edge.
+
+## HWW1, the highways' way to the world on his city
+
+4. **No highway line, so no world truck** (probe `hww`, `trucks`; his copy at month 1,204, gateway 90): all 749 of the
+   highways' plots are laid (none short, none undrawn), and every arm with steps ends at the city's own water - read on from
+   its end along its heading as `CityMap.worldLine()` reads it, an owned plot that is not dry before any plot the city does not
+   own: the gate arm (arm 0, corridor 0, south) at its first step, arms 1-6 within 6 to 10 - except the link arm 7 (corridor 3,
+   south past the fjord), whose end is 12 plots and more from the edge: the city's ground runs on 336 plots south of the hub
+   (owned dry to 20, owned water to 69, owned dry to 336). No arm offers a way out, so `worldLines()` has no highway line, and
+   `truckRoutes()` and `tripsDrawn()` made their world part only inside `line != null`: no world truck route, no world trip,
+   each drawn road FR5's access route alone. The trucks of a city of 421,561 never came or went.
+   ★ **Mend** (`CityMap.highwayPortal()`, `truckGate()`): as TN1's railway portal, the trucks come out of the ground where the
+   highways' gate arm ends when it ends at the city's own water and there is no highway line; the world routes and trips run
+   from that plot's middle along the highways as they do from a line's point, faded in over `PORTAL_FADE` (2 plots). Only that
+   cause: an arm on its dry way to the edge still has its line to come and no truck (`TruckRouteCheck` 1's five highways, unchanged),
+   and a line where one is found is as it was (an arm at the edge whose land beyond gives no line is not his case, and is left).
+   His copy: truck routes 0 to 7; drawn (the hub's 512-plot window), 4 districts' trips with 5 world trips, 4 home, and the
+   month's schedule 432 world calls (main: 0, the access routes alone). Map only: `TruckSchedule` and the trips are read by the
+   screen alone, nothing in the model reads them. **Harness**: `TruckRouteCheck` 11, TN1's coast with no works laid 50 Elevated
+   Highways and 6 Truck Depots (its gate arm runs west 161 plots to its own water, 6 plots on, and no arm reaches the edge): on
+   main no route, no world trip, no world call (5 FAIL); with the mend 3 routes from the portal on highway plots to their ramps,
+   4 world trips and 80 calls; the control laid 150 has its line and no portal, every route from the line as before.
