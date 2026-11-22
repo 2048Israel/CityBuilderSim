@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**243 harness files, 27,854 labelled assertions.** AllChecks runs 243 of them.
+**243 harness files, 27,856 labelled assertions.** AllChecks runs 243 of them.
 
 ## Which harnesses read which class
 
@@ -10902,7 +10902,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L469 ...and it is less than the buildings' posts would have cost at the same rates: the operators struck are paid no more, the watch added is paid
   - L471 ...by exactly the operators' wages less the watch's
 
-## FitoutCheck.java - 75 labelled assertions
+## FitoutCheck.java - 76 labelled assertions
 
 > A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e):
 > Fitout, BuildingsStacks' lots, Game.fitWhatFinished().
@@ -10918,81 +10918,82 @@ _(this harness does not label its checks through a helper - it prints its findin
 > of the points; a piece with no work is carried in and in no price), the price is BuildingManager.nonMaterialCost()'s
 > ...
 
-  - L273 1. the split, sourced: a built-in piece's goods at the import price and its work; a carried-in piece in no price
-  - L303 fixture: the catalogue carries both kinds of piece
-  - L304 each piece's part of its template's cash is its goods at the import price over the founding cash, with work; none without
-  - L306 no template's pieces come to more than its price; the shell without every piece is that cash and those points, never below nothing
-  - L308 the whole template is its own cash and points, to the bit, and chosen by no one
-  - L328 a point of work costs the same with or without a piece: each built-in piece left off takes its goods and its work's cash, the shell's cash a point (its piece...
-  - L333 the 25% pieces read a quarter: the Vehicle Works's carbide tools and the Grain Farm's combine, at a tenth of the points' work
-  - L339 the Grain Farm without its combine (the catalogue's 1,200 of cash for 100 points, the combine 300 of goods and 10 points): 840 for 90, the 600 the whole farm...
-  - L344 a carried-in piece is bought apart: a Truck Depot without its trucks costs what the depot does
-  - L346 an id the template does not carry is dropped
-  - L352 the split does not move with the machinery market: the shell's cash at a hundred times the import price is what it was, while the fitting quote moves
-  - L362 2. a city founded the default way: the whole template, chosen by no one, priced as before, no lot, no key
-  - L371 fixture: a city founded the default way, with templates that carry equipment
-  - L372 every template's fitout there is the whole template and chosen by no one
-  - L377 an order's buildings are priced as before: nonMaterialCost(t) on the template's points, to the bit
-  - L379 ...and the money test's multiple reads the template's points
-  - L384 the order, placed, leaves its buildings loose on site: no lot
-  - L387 ...and nothing is saved for it
-  - L390 the save carries no lotsById key
-  - L396 3. two orders for one template, with and without a piece: each priced, kept and owed on its own set
-  - L405 fixture: a 1900 town; at cheap machinery a new farm keeps its combine, not its autonomy kit (not yet found); at dear it goes without the combine
-  - L408 fixture: the nonMaterialCost() arithmetic written out here reads the whole template as the model does
-  - L420 the quote with every piece that pays is the shell plus its pieces (the kit, carried in, no part of it): with every built-in piece, the template's price
-  - L423 the quote without the combine is the shell plus the pieces it keeps, at the multiple on its own points
-  - L426 ...its fitout is the set fittedForNew() keeps at the quote
-  - L428 the investors' estimate prices each set as the quote does: its fall is the quote's
-  - L430 ...and the money test's multiple reads each set's points
-  - L444 premise: the farm's labour is under its cash (nonMaterialCost() does not cap it)
-  - L446 the twin: a farm without the combine, and the combine's goods at the import price with its work at the whole farm's own price a point (its pieces' goods apar...
-  - L453 both orders placed: the city's two at cheap machinery, the farmers' three at dear
-  - L454 the site keeps each order's set, front first
-  - L455 ...and owes each building the points its set takes
-  - L460 the quote's wait reads the work its set owes: three without the combine, on the same site, wait what that work waits, no longer than three with it
-  - L463 ...and the investors' lead time reads it too
-  - L469 4. a discovery and a price change while both are on site: a new order's set moves, the orders on site deliver theirs
-  - L480 fixture: both on site; now a new farm would come with every piece (the kit found, machinery cheap)
-  - L483 a new order is quoted on the new set, the whole template
-  - L485 ...and the orders on site keep theirs
-  - L487 the new order joins the site behind them with its own set
-  - L504 the site finishes first placed first: A's two open first, with A's set, B's behind them
-  - L510 every order's buildings came with the set it froze: the unfitted counts rose by A's two and B's three, C's none
-  - L512 ...which the rule asked at the finish would not have given: every piece pays now
-  - L520 fixture: two put on site with no order's set are loose
-  - L524 ...and come with what the rule keeps at their finish, as before R1e
-  - L530 5. a save and load mid-build: the sets come back and the twins finish alike; a save without the key reads as main
-  - L539 fixture: mid-build, one of A's open, the next part worked, B's three behind
-  - L543 the save carries the sites' sets
-  - L546 loaded, the site holds the same sets, the same progress and owes the same points
-  - L561 the twins, finishing after a discovery and a price change, deliver the frozen sets alike
-  - L571 a save without the key loads its site whole: every building loose, owing the template's points, as it was paid
-  - L581 ...and its buildings come with what the rule keeps at the finish, as main delivers them
-  - L588 6. the builders' receipts, investment and VAT entries are each order's own set's price
-  - L606 fixture: the farmers order three without the combine; the yard covers the material, so nothing is bought
-  - L608 the builders' order book took the set's price, taxed
-  - L609 ...for the points the set takes, three times the shell's
-  - L611 the farmers paid it and their ground
-  - L612 their contract on the site is the set's price
-  - L613 the sales tax in the quote, the builders' VAT, is their rate on the set's price
-  - L621 the work recognised as the builders' revenue, the accounts' investment, is the set's price, earned to the last as the farms open
-  - L623 the farmers' capital purchases from the builders, the base of their VAT credit, are the set's price at their share (no escalation: no material bought)
-  - L630 7. a stopped site's shell keeps its orders' sets; its restart is priced on them and delivers them
-  - L648 fixture: the city stops the site with both orders on it
-  - L649 the shell keeps both orders' sets
-  - L654 its restart is priced on the sets' work left: their price a point, at the multiple
-  - L661 restarted, the site holds the sets again
-  - L666 ...and delivers them after a discovery and a price change
-  - L672 8. R1d's rules kept: the builders credited what the treasury paid; a delivered building without a piece, scrapped mid-fitting, refunds nothing
-  - L681 the city's order without the combine: the builders' book took what the treasury paid (to the rounding of the city's cash), the set's price
-  - L689 fixture: three farms delivered without the combine, and the city pays for a fitting on one
-  - L693 a farm scrapped while the job is on site, with an unfitted farm left for it: the job goes on and nothing is refunded
-  - L700 9. a run's invoice is its orders placed one by one: each queued on its set's points, as bill() is handed them
-  - L710 fixture: the builders are short, the queue past the knee, and a new farm goes without its combine
-  - L713 premise: the depot's multiple moves with the farms' points ahead of it, their set's against the template's
-  - L725 fixture: the run's two orders placed in turn
-  - L726 the run's invoice is what placing its orders in turn charged: the depot priced on the farms' sets' points ahead of it
+  - L204 fixture: the builders leave positive site output after the standing town and its wires are repaired
+  - L276 1. the split, sourced: a built-in piece's goods at the import price and its work; a carried-in piece in no price
+  - L306 fixture: the catalogue carries both kinds of piece
+  - L307 each piece's part of its template's cash is its goods at the import price over the founding cash, with work; none without
+  - L309 no template's pieces come to more than its price; the shell without every piece is that cash and those points, never below nothing
+  - L311 the whole template is its own cash and points, to the bit, and chosen by no one
+  - L331 a point of work costs the same with or without a piece: each built-in piece left off takes its goods and its work's cash, the shell's cash a point (its piece...
+  - L336 the 25% pieces read a quarter: the Vehicle Works's carbide tools and the Grain Farm's combine, at a tenth of the points' work
+  - L342 the Grain Farm without its combine (the catalogue's 1,200 of cash for 100 points, the combine 300 of goods and 10 points): 840 for 90, the 600 the whole farm...
+  - L347 a carried-in piece is bought apart: a Truck Depot without its trucks costs what the depot does
+  - L349 an id the template does not carry is dropped
+  - L355 the split does not move with the machinery market: the shell's cash at a hundred times the import price is what it was, while the fitting quote moves
+  - L365 2. a city founded the default way: the whole template, chosen by no one, priced as before, no lot, no key
+  - L374 fixture: a city founded the default way, with templates that carry equipment
+  - L375 every template's fitout there is the whole template and chosen by no one
+  - L380 an order's buildings are priced as before: nonMaterialCost(t) on the template's points, to the bit
+  - L382 ...and the money test's multiple reads the template's points
+  - L387 the order, placed, leaves its buildings loose on site: no lot
+  - L390 ...and nothing is saved for it
+  - L393 the save carries no lotsById key
+  - L399 3. two orders for one template, with and without a piece: each priced, kept and owed on its own set
+  - L408 fixture: a 1900 town; at cheap machinery a new farm keeps its combine, not its autonomy kit (not yet found); at dear it goes without the combine
+  - L411 fixture: the nonMaterialCost() arithmetic written out here reads the whole template as the model does
+  - L423 the quote with every piece that pays is the shell plus its pieces (the kit, carried in, no part of it): with every built-in piece, the template's price
+  - L426 the quote without the combine is the shell plus the pieces it keeps, at the multiple on its own points
+  - L429 ...its fitout is the set fittedForNew() keeps at the quote
+  - L431 the investors' estimate prices each set as the quote does: its fall is the quote's
+  - L433 ...and the money test's multiple reads each set's points
+  - L447 premise: the farm's labour is under its cash (nonMaterialCost() does not cap it)
+  - L449 the twin: a farm without the combine, and the combine's goods at the import price with its work at the whole farm's own price a point (its pieces' goods apar...
+  - L456 both orders placed: the city's two at cheap machinery, the farmers' three at dear
+  - L457 the site keeps each order's set, front first
+  - L458 ...and owes each building the points its set takes
+  - L463 the quote's wait reads the work its set owes: three without the combine, on the same site, wait what that work waits, no longer than three with it
+  - L466 ...and the investors' lead time reads it too
+  - L472 4. a discovery and a price change while both are on site: a new order's set moves, the orders on site deliver theirs
+  - L483 fixture: both on site; now a new farm would come with every piece (the kit found, machinery cheap)
+  - L486 a new order is quoted on the new set, the whole template
+  - L488 ...and the orders on site keep theirs
+  - L490 the new order joins the site behind them with its own set
+  - L507 the site finishes first placed first: A's two open first, with A's set, B's behind them
+  - L513 every order's buildings came with the set it froze: the unfitted counts rose by A's two and B's three, C's none
+  - L515 ...which the rule asked at the finish would not have given: every piece pays now
+  - L523 fixture: two put on site with no order's set are loose
+  - L527 ...and come with what the rule keeps at their finish, as before R1e
+  - L533 5. a save and load mid-build: the sets come back and the twins finish alike; a save without the key reads as main
+  - L542 fixture: mid-build, one of A's open, the next part worked, B's three behind
+  - L546 the save carries the sites' sets
+  - L549 loaded, the site holds the same sets, the same progress and owes the same points
+  - L564 the twins, finishing after a discovery and a price change, deliver the frozen sets alike
+  - L574 a save without the key loads its site whole: every building loose, owing the template's points, as it was paid
+  - L584 ...and its buildings come with what the rule keeps at the finish, as main delivers them
+  - L591 6. the builders' receipts, investment and VAT entries are each order's own set's price
+  - L609 fixture: the farmers order three without the combine; the yard covers the material, so nothing is bought
+  - L611 the builders' order book took the set's price, taxed
+  - L612 ...for the points the set takes, three times the shell's
+  - L614 the farmers paid it and their ground
+  - L615 their contract on the site is the set's price
+  - L616 the sales tax in the quote, the builders' VAT, is their rate on the set's price
+  - L624 the work recognised as the builders' revenue, the accounts' investment, is the set's price, earned to the last as the farms open
+  - L626 the farmers' capital purchases from the builders, the base of their VAT credit, are the set's price at their share (no escalation: no material bought)
+  - L633 7. a stopped site's shell keeps its orders' sets; its restart is priced on them and delivers them
+  - L651 fixture: the city stops the site with both orders on it
+  - L652 the shell keeps both orders' sets
+  - L657 its restart is priced on the sets' work left: their price a point, at the multiple
+  - L664 restarted, the site holds the sets again
+  - L669 ...and delivers them after a discovery and a price change
+  - L675 8. R1d's rules kept: the builders credited what the treasury paid; a delivered building without a piece, scrapped mid-fitting, refunds nothing
+  - L684 the city's order without the combine: the builders' book took what the treasury paid (to the rounding of the city's cash), the set's price
+  - L692 fixture: three farms delivered without the combine, and the city pays for a fitting on one
+  - L696 a farm scrapped while the job is on site, with an unfitted farm left for it: the job goes on and nothing is refunded
+  - L703 9. a run's invoice is its orders placed one by one: each queued on its set's points, as bill() is handed them
+  - L713 fixture: the builders are short, the queue past the knee, and a new farm goes without its combine
+  - L716 premise: the depot's multiple moves with the farms' points ahead of it, their set's against the template's
+  - L728 fixture: the run's two orders placed in turn
+  - L729 the run's invoice is what placing its orders in turn charged: the depot priced on the farms' sets' points ahead of it
 
 ## FittingCheck.java - 237 labelled assertions
 
@@ -23585,52 +23586,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L608 premise: only the two plants are on site, and the fleet's posts would give the landlords another head shortage
   - L610 the landlords' head shortage counts the actual new plants' posts on site, not the fleet's
   - L647 9. the power ahead: two queued Cement Plants without their rotary kiln draw the shaft kilns' power, from their completion
-  - L667 fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's
-  - L672 fixture: nothing on site and nothing pending
-  - L683 fixture: two queued on the plant's own stack, the first finishing before the last
-  - L688 the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last
-  - L690 ...and not the fleet's draw
-  - L728 13. held for one pass (AP1): inside WorksValue.hold() the power ahead is the bare figure to the bit; an order, a rush
-  - L737 fixture: no scope open, two plants queued on the city's own site, and the power ahead some draw by the last horizon
-  - L754 inside a scope the power ahead at each of
-  - L756 one schedule is built for the scope's
-  - L762 premise: outside a scope each reading builds its own schedule
-  - L775 premise: a second city, g saved and loaded, a third plant ordered there: its power ahead is its own, not g's
-  - L789 the second city read inside g's scope reads its own bare figure to the bit, built afresh at each reading, and g's scope
-  - L804 g read on a second thread while g's scope is open on this one: the bare figure, from a schedule of its own
-  - L822 the second city's hold nested in g's is g's scope one deeper: the second city reads bare, built afresh at each
-  - L839 premise: a third plant ordered moves the power ahead
-  - L841 an order inside a scope: the next reading is the bare one after the order, to the bit, from a schedule built anew
-  - L855 premise: the city's site is rushed, and the rush moves the power ahead
-  - L857 a rush inside a scope: the readings after it are the bare ones to the bit
-  - L874 premise: a second city site, the kilns moved past it in the city's order, and the priority moves the power ahead
-  - L877 a priority inside a scope: the readings after it are the bare ones to the bit
-  - L892 premise: the kilns' work half done moves the power ahead
-  - L894 progress moved inside a scope: the readings after it are the bare ones to the bit, from a schedule built anew
-  - L907 builders first turned off inside a scope: the readings after it are the bare ones to the bit, from a schedule
-  - L917 closed, nothing is held: no scope open, and a reading after a fourth plant ordered reads it, as a scope opened then does
-  - L936 premise: on the rationed grid a Coal Power Plant prevents some output loss, with the plants on site drawing ahead
-  - L939 ...and its avoided loss read inside a scope, from the held schedule and draws, is the bare figure to the bit
-  - L946 10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes
-  - L963 fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet
-  - L973 fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts
-  - L979 fixture: two queued on the centre's own stack
-  - L982 the colleges' places grow by the queued centres' own college posts, not the fleet's
-  - L986 the landlords' head shortage counts the queued centres' own posts, not the fleet's
-  - L1000 11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
-  - L1015 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
-  - L1024 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
-  - L1052 fixture: the utilities have posts and a fill, and a base to supply from
-  - L1054 premise: the fleet's generation would read a different figure than the actual new plant's
-  - L1056 the power measure reads the actual new plant's generation (and its draw)
-  - L1063 12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so
-  - L1081 fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not
-  - L1087 fixture: a new camp rejects the chainsaw and cuts other figures than the fleet
-  - L1098 the camp's card lists its outlets at the actual new camp's cut, not the fleet's
-  - L1125 tripwire: no piece changes which goods a building makes, nor what a building on typed ground makes (the group heading's made words and stands() read alike fo...
-  - L1137 the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them
-  - L1150 the furnace's group heading says its cards are made from fuel oil, which only the actual new furnaces burn
-  - L1167 the camp's card says it makes the actual new camp's cut a month, not the fleet's
+  - L668 fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's
+  - L673 fixture: nothing on site and nothing pending
+  - L684 fixture: two queued on the plant's own stack, the first finishing before the last
+  - L689 the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last
+  - L691 ...and not the fleet's draw
+  - L729 13. held for one pass (AP1): inside WorksValue.hold() the power ahead is the bare figure to the bit; an order, a rush
+  - L738 fixture: no scope open, two plants queued on the city's own site, and the power ahead some draw by the last horizon
+  - L755 inside a scope the power ahead at each of
+  - L757 one schedule is built for the scope's
+  - L763 premise: outside a scope each reading builds its own schedule
+  - L776 premise: a second city, g saved and loaded, a third plant ordered there: its power ahead is its own, not g's
+  - L790 the second city read inside g's scope reads its own bare figure to the bit, built afresh at each reading, and g's scope
+  - L805 g read on a second thread while g's scope is open on this one: the bare figure, from a schedule of its own
+  - L823 the second city's hold nested in g's is g's scope one deeper: the second city reads bare, built afresh at each
+  - L840 premise: a third plant ordered moves the power ahead
+  - L842 an order inside a scope: the next reading is the bare one after the order, to the bit, from a schedule built anew
+  - L856 premise: the city's site is rushed, and the rush moves the power ahead
+  - L858 a rush inside a scope: the readings after it are the bare ones to the bit
+  - L877 premise: a second city site, the kilns moved past it in the city's order, and the priority moves the power ahead
+  - L880 a priority inside a scope: the readings after it are the bare ones to the bit
+  - L896 premise: the kilns' work half done moves the power ahead
+  - L898 progress moved inside a scope: the readings after it are the bare ones to the bit, from a schedule built anew
+  - L911 builders first turned off inside a scope: the readings after it are the bare ones to the bit, from a schedule
+  - L921 closed, nothing is held: no scope open, and a reading after a fourth plant ordered reads it, as a scope opened then does
+  - L940 premise: on the rationed grid a Coal Power Plant prevents some output loss, with the plants on site drawing ahead
+  - L943 ...and its avoided loss read inside a scope, from the held schedule and draws, is the bare figure to the bit
+  - L950 10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes
+  - L967 fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet
+  - L977 fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts
+  - L983 fixture: two queued on the centre's own stack
+  - L986 the colleges' places grow by the queued centres' own college posts, not the fleet's
+  - L990 the landlords' head shortage counts the queued centres' own posts, not the fleet's
+  - L1004 11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
+  - L1019 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
+  - L1028 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
+  - L1056 fixture: the utilities have posts and a fill, and a base to supply from
+  - L1058 premise: the fleet's generation would read a different figure than the actual new plant's
+  - L1060 the power measure reads the actual new plant's generation (and its draw)
+  - L1067 12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so
+  - L1085 fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not
+  - L1091 fixture: a new camp rejects the chainsaw and cuts other figures than the fleet
+  - L1102 the camp's card lists its outlets at the actual new camp's cut, not the fleet's
+  - L1129 tripwire: no piece changes which goods a building makes, nor what a building on typed ground makes (the group heading's made words and stands() read alike fo...
+  - L1141 the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them
+  - L1154 the furnace's group heading says its cards are made from fuel oil, which only the actual new furnaces burn
+  - L1171 the camp's card says it makes the actual new camp's cut a month, not the fleet's
 
 ## ObservationCheck.java - 5 labelled assertions
 
@@ -26225,7 +26226,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2397 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
   - L2413 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
-## PostwarRecipeCheck.java - 63 labelled assertions
+## PostwarRecipeCheck.java - 64 labelled assertions
 
 > The postwar engineering and business discoveries run their sourced earlier
 > figures, compose in either order, retain saved decisions and leave default
@@ -26304,17 +26305,18 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L820 the shared PE4 code loses one entry fee in both fitting increments
   - L830 the positive real bill charges the shared PE4 code once
 - **L836 13. a Cement Plant standing before PE4 refits the long kiln on its works' order and earns PE4's royalty**
-  - L856 fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known
-  - L863 in PE4's month the plant's long kiln is a paying refit on a positive coal saving
-  - L868 the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant
-  - L873 ...the order is taken, and one long kiln is on site for the plant
-  - L878 the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form
-  - L884 its positive production in PE4's patent pays a royalty, E2 still unknown
-  - L898 ...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate
-- **L915 2. two entries compose in either fitting or discovery order**
-  - L916 Vehicle Works
-  - L917 Steel Mini-Mill
-  - L918 Commercial Bank
+  - L850 fixture: the wired town's real depots leave the site's monthly share of the long kiln's work within the existing guard
+  - L861 fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known
+  - L868 in PE4's month the plant's long kiln is a paying refit on a positive coal saving
+  - L873 the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant
+  - L878 ...the order is taken, and one long kiln is on site for the plant
+  - L889 the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form
+  - L895 its positive production in PE4's patent pays a royalty, E2 still unknown
+  - L909 ...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate
+- **L926 2. two entries compose in either fitting or discovery order**
+  - L927 Vehicle Works
+  - L928 Steel Mini-Mill
+  - L929 Commercial Bank
 
 ## PowerDispatchCheck.java - 69 labelled assertions
 
@@ -32076,31 +32078,31 @@ _(this harness does not label its checks through a helper - it prints its findin
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
 > the dispatch's demand input, and automation's demand input; each rule also fails against the pre-PW5 model.
 
-- **L85 the carry's two edges and the shared shortfall**
-  - L92 a peak below one substation is served; above it only the two peak halves brown out at its carry
-  - L99 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
-  - L103 a city without substations carries only its existing free 10 MW starter grid
-- **L114 the substations' own costs, struck once**
-  - L127 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
-  - L135 changing the substation's cost changes the next bill; the previously struck book keeps its price
-- **L140 currency reform preserves the wires' breakdown**
-  - L156 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
-- **L162 independent worked study tariff**
-  - L175 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
-  - L182 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
-- **L188 the same order machinery as the roads**
-  - L193 peak growth orders the missing substation, counts its site once, and does not order below the edge
-  - L206 peak growth orders the missing substation, counts its site once, and does not order below the edge
-- **L211 closing costs survive the load rebuild**
-  - L218 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
-  - L221 the first post-load strike bills exactly the same grid costs as the uninterrupted city
-  - L222 a native format-60 city and history are refused without changing either file or a running twin
-  - L223 a native format-61 city and history are refused without changing either file or a running twin
-- **L252 PW5-F1: low-utilization wires and the honest works fixture**
-  - L263 PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working
-  - L266 PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load
-  - L269 PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain
-  - L291 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
+- **L104 the carry's two edges and the shared shortfall**
+  - L111 a peak below one substation is served; above it only the two peak halves brown out at its carry
+  - L118 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
+  - L122 a city without substations carries only its existing free 10 MW starter grid
+- **L133 the substations' own costs, struck once**
+  - L146 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
+  - L154 changing the substation's cost changes the next bill; the previously struck book keeps its price
+- **L159 currency reform preserves the wires' breakdown**
+  - L175 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
+- **L181 independent worked study tariff**
+  - L194 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
+  - L201 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
+- **L207 the same order machinery as the roads**
+  - L212 peak growth orders the missing substation, counts its site once, and does not order below the edge
+  - L225 peak growth orders the missing substation, counts its site once, and does not order below the edge
+- **L230 closing costs survive the load rebuild**
+  - L237 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
+  - L240 the first post-load strike bills exactly the same grid costs as the uninterrupted city
+  - L241 a native format-60 city and history are refused without changing either file or a running twin
+  - L242 a native format-61 city and history are refused without changing either file or a running twin
+- **L271 PW5-F1: low-utilization wires and the honest works fixture**
+  - L282 PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working
+  - L285 PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load
+  - L288 PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain
+  - L310 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
 
 ## SulphideLeachCheck.java - 32 labelled assertions
 

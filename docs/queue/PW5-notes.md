@@ -825,3 +825,94 @@ The initial post-mend normal runs of all three exit 0. The final serial
 fixture-caller sweep, including the helper's added failure bound, follows.
 Diagnostics and those first runs are in target/PW5-dry2-mends/; the final
 complete coverage logs are in target/PW5-fixture-coverage/.
+
+### The changed fixtures' callers
+
+Mail 20261122-172150-041-orchestrator-ae4f requires every direct and transitive
+fixture caller before another dry-run request. The source audit follows
+qualified calls and local wrappers, checks static imports and method
+references with git grep, and checks the one constructor call outside the
+method-body extraction: ModernEngineeringCheck.Fx initializes its city with
+HistoricalLicenceCheck.town at line 91. Its SaveFile/ReadPath users are
+included. The method-reference search finds only the already covered
+HomeRailCheck::doubleTown; there are no relevant bare static imports.
+BuildAdviceCheck's own changed GRID fixture is included explicitly.
+
+| Fixture entry | Direct and transitive harnesses |
+| --- | --- |
+| Wire-stock helpers | SubstationCheck, CopperRefiningCheck, ElectrolyserCheck, IndustryViewCheck, LicenceFeesCheck |
+| HistoricalLicenceCheck.town / stand | HistoricalLicenceCheck, FitoutCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PowerPriceCheck, PublicLicenceCheck, ReadPathCheck, SaveFileCheck |
+| HaulageCheck.base / played | HaulageCheck, EquipmentCheck, Forms1900Check, HomeRailCheck, LandlordPortCheck, RailDepotCheck, TradeBandCheck, TruckRouteCheck, FittingCheck, FreightViewCheck, PolicyPreviewCheck |
+| RailCheck.prepareTradeTown | RailCheck and SubstationCheck (already listed) |
+| EssentialWorksCheck.serveGrid / serveOtherEssentials | EssentialWorksCheck, WorksFinanceCheck |
+| Own GRID advice fixture | BuildAdviceCheck |
+
+That is 29 distinct harnesses. The less direct paths include
+FittingCheck.sectionNine -> EquipmentCheck.cartTown -> HaulageCheck.base;
+FreightViewCheck.full -> HomeRailCheck.railed -> HaulageCheck.base;
+PolicyPreviewCheck.portCity -> LandlordPortCheck.seaHanded ->
+HaulageCheck.played -> base; ReadPathCheck.main ->
+HistoricalLicenceCheck.readChecks -> closedSteamInvoice -> stand; and
+SaveFileCheck.main -> PowerPriceCheck.saveChecks -> HistoricalLicenceCheck.stand.
+WorksFinanceCheck's pavingHold uses serveOtherEssentials, whose remit now
+includes GRID even though that helper's body did not change, so it is covered
+too. The detailed source-call paths and audit script are retained in
+target/PW5-dry2-mends/; the canonical selected names are
+target/PW5-fixture-coverage/callers.txt.
+
+The final sweep runs one name per batch-check call, cbs.parallel=1. The
+RailCheck substring also selects HomeRailCheck, QuayRailCheck and
+IslandRailCheck, serially; HomeRail is therefore covered there rather than
+run twice. Its siblings' individual logs are retained as well. Results are
+recorded below when the complete sweep ends.
+
+The complete serial sweep finishes successfully on source c34ab27e6. All 29
+fixture callers are covered, with no new reds. The four exit-3 results have
+only their existing named assertions; no new exemption is added.
+
+| Harness | Final result |
+| --- | --- |
+| BuildAdviceCheck | 3; existing FS12 streets-card line only |
+| CopperRefiningCheck | 3; existing FS8 played cut only; its seed-1 child finishes 2400 months, exit 0, in 9.7 minutes |
+| ElectrolyserCheck | 0 |
+| EquipmentCheck | 0 |
+| EssentialWorksCheck | 0 |
+| FitoutCheck | 0; all 66 original assertions plus seven strict fixture premises |
+| FittingCheck | 0 |
+| Forms1900Check | 3; the two existing FS8 lamp-oil/door-count lines only |
+| FreightViewCheck | 0 |
+| HaulageCheck | 0 |
+| HistoricalLicenceCheck | 0 |
+| HomeRailCheck | 0, in the serial RailCheck selection |
+| IndustryViewCheck | 0 |
+| LandlordPortCheck | 0 |
+| LicenceFeesCheck | 0 |
+| ModernEngineeringCheck | 0 |
+| NewUnitCheck | 0; all 83 original assertions |
+| PolicyPreviewCheck | 0 |
+| PostwarRecipeCheck | 0; all 230 original assertions plus the strict site premise |
+| PowerPriceCheck | 0 |
+| PublicLicenceCheck | 3; the four existing PW1-W desalination lines only |
+| RailCheck | 0; all four matched rail harnesses pass |
+| RailDepotCheck | 0 |
+| ReadPathCheck | 0 |
+| SaveFileCheck | 0 |
+| SubstationCheck | 0 |
+| TradeBandCheck | 0 |
+| TruckRouteCheck | 0 |
+| WorksFinanceCheck | 0 |
+
+QuayRailCheck and IslandRailCheck also pass in that RailCheck selection.
+The final --fast exits 0, maps regenerated, zero firm Stale findings and
+196 soft. Every selected suite and individual log is retained under
+target/PW5-fixture-coverage/, with return codes in status.txt. The complete
+sweep's shell has exited; no own JVM or gate process remains.
+
+The final fetch finds origin/main 591fc92d8. Since the dry run's main
+7b60b9a8d, it adds only QUEUE.md and docs/queue/FC2.md; no production,
+harness, build or save source changes. The documentation update is merged
+before sending these mends. Format/floor 62 remains next after main's 61,
+the canonical native-60 and native-61 pairs remain valid, and the 069504753
+final-model ensemble remains applicable. The failed run is not reused; send
+these mends with the provisional marker for review, then request another
+dry-run slot on its SHIP.
