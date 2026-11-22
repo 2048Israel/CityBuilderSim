@@ -1,5 +1,7 @@
 # Ensemble baseline: {next}
 
+Named disposition (orchestrator b856, Jerus's 2026-11-04 rule): the raw score below remains FAIL6/10. Its four F1 failures are the exact shared AUTO2 seed14/m456 ?households with no home? path, reproduced byte for byte and traced to main's untouched cash-share/whole-offer growth-land funding class. They pass by name with FB11H queued alongside FB11; see docs/queue/HT1-notes.md and docs/queue/FB11H.md. No score, threshold, CSV, M1 result or model was altered.
+
 The ensemble on the model of **{next}**: classes snapshot of commit b56fa666b (2026-11-22T05:13Z), label HT1-final181-20261122-0115, 80 of 80 runs.
 Data files named for this snapshot — `-Dcbs.earth=/home/jerus/cbs/main/data/earth-2.bin -Dcbs.world=/home/jerus/cbs/main/data/world-1.bin`.
 Run on gatebox, openjdk version "21.0.13" 2026-10-20 LTS.
