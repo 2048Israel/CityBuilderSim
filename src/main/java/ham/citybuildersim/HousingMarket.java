@@ -57,6 +57,8 @@ public final class HousingMarket {
     /** Descriptive pooled compatibility getter; it is never an independently traded quote. */
     public double paidPerCapacity(boolean family){double money=0,weight=0;
         for(var l:leases){ClassState c=classes.get(l.home());if((c.capacity>FamilyModel.STUDIO_MAX_SIZE)==family){money+=l.bill();weight+=l.count()*c.capacity;}}
+        if(weight>0)return money/weight;
+        for(ClassState c:classes.values())if(c.available&&(c.capacity>FamilyModel.STUDIO_MAX_SIZE)==family){money+=c.ask;weight+=c.capacity;}
         return weight>0?money/weight:0;
     }
     /** Reads the existing builder's taxed work/material/land quote; no second construction timer. */
@@ -172,7 +174,8 @@ public final class HousingMarket {
     public void reprice(double expectedMonthly){
         for(ClassState c:classes.values()){
             if(!c.available)continue;
-            double pressure=c.homes>0?c.demand/c.homes:c.demand>0?2:0;
+            // An unbuilt class keeps its opening supply quote until it has a market.
+            double pressure=c.homes>0?c.demand/c.homes:c.demand>0?2:1;
             double anchor=c.capital*RealEstate.LANDLORD_YIELD/12;
             c.target=anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY);
             if(pressure>=RealEstate.GLUT_PRESSURE&&c.occupied>0)c.target=Math.max(c.target,c.carry*c.homes/c.occupied);
@@ -198,9 +201,26 @@ public final class HousingMarket {
         for(ClassState c:s.classes)if(Math.abs(c.occupied-occupied.getOrDefault(c.key(),0.0))>FamilyModel.packingRounding(c.homes))
             throw new IllegalArgumentException("Saved housing leases do not reconcile to occupancy");
         for(double n:new double[]{s.kept,s.suitable,s.crowded,s.unaffordable,s.noSuitable,s.unplaced})nonnegative(n);
+        double assigned=s.leases.stream().mapToDouble(HousingChoice.Lease::count).sum();
+        double requested=s.demand.stream().mapToDouble(HousingChoice.Demand::count).sum();
+        double rounding=FamilyModel.packingRounding(Math.max(assigned,requested));
+        if(Math.abs(assigned-(s.kept+s.suitable+s.crowded))>rounding
+                ||Math.abs(s.unplaced-(s.unaffordable+s.noSuitable))>rounding
+                ||Math.abs(requested-assigned-s.unplaced)>rounding)
+            throw new IllegalArgumentException("Saved housing allocation flows do not reconcile");
     }
     public void restore(State s){if(s!=null)validate(s);reset();if(s==null)return;month=s.month;for(ClassState c:s.classes)classes.put(c.key(),c.copy());leases=List.copyOf(s.leases);demand=List.copyOf(s.demand);pipeline=List.copyOf(s.pipeline);
         result=new HousingChoice.Result(leases,s.kept,s.suitable,s.crowded,s.unaffordable,s.noSuitable,s.unplaced);}
+    /** The native load additionally checks the complete physical catalogue, including unavailable quotes. */
+    public void restore(State s,BuildingManager buildings){
+        if(s!=null)validate(s);
+        if(s!=null)for(ClassState c:s.classes){
+            BuildingsTemplate t=buildings.getTemplate(c.recipe);
+            if(t==null||t.getHousingRecipe()==null||t.getHousingRecipe().mix().stream().noneMatch(d->d.id().equals(c.dwelling)&&d.capacity()==c.capacity))
+                throw new IllegalArgumentException("Unknown saved housing class "+c.key());
+        }
+        restore(s);
+    }
     public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
     public void redenominate(double scale){for(ClassState c:classes.values()){c.ask*=scale;c.capital*=scale;c.carry*=scale;c.target*=scale;c.lastTrade*=scale;c.tradeValue*=scale;}
         leases=leases.stream().map(l->new HousingChoice.Lease(l.cell(),l.home(),l.count(),l.bill()*scale)).toList();

@@ -99,7 +99,7 @@ public final class HousingChoice {
         for(int i=0;i<h;i++){
             left+=need[i]; boolean compatible=false,canPay=false;
             for(int j=0;j<t;j++){
-                if(suitable(ds.get(i),os.get(j),false)){compatible=true;canPay|=affordable(ds.get(i),os.get(j));}
+                if(free[j]>0&&suitable(ds.get(i),os.get(j),false)){compatible=true;canPay|=affordable(ds.get(i),os.get(j));}
                 if(x[i][j]>0)leases.add(new Lease(ds.get(i).key(),os.get(j).key(),x[i][j],x[i][j]*os.get(j).rent()));
             }
             if(compatible&&!canPay)poor+=need[i];else noSuitable+=need[i];

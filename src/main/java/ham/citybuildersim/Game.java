@@ -21913,7 +21913,7 @@ public class Game {
             // reads every building on site as the whole template, its pieces decided at the finish, as it was ordered.
             buildingManager.restoreLots(loaded.getLotsById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
-            getSectors().realEstate().housingMarket().restore(loaded.getHousingMarket());
+            getSectors().realEstate().housingMarket().restore(loaded.getHousingMarket(),buildingManager);
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
             // ...and the city's research (R3): its grants, the posts the month struck, the work piled and the finds, with the bill that month paid.
@@ -22411,7 +22411,7 @@ public class Game {
             // counted them: saved apart (DataSave.getOwnerAdults), since the line may have gained or lost a
             // family after the census.
             families.restoreOwnerAdults(restoredFlows.getOwnerAdults());
-            getSectors().realEstate().housingMarket().restore(restoredFlows.getHousingMarket());
+            getSectors().realEstate().housingMarket().restore(restoredFlows.getHousingMarket(),buildingManager);
             populationManager.setOwners(families.getOwnerAdults());
             health.restore(restoredFlows.getHealth());
             // ...and the causes of death of 1900 (R0b): a save from before has

@@ -284,7 +284,7 @@
    "electricity": 8,
    "water": 2,
    "land": 25000,
-   "roadLoad": 64,
+   "roadLoad": 35,
    "makes": {
     "HOUSING": 80
    },
@@ -323,7 +323,7 @@
    "electricity": 25,
    "water": 6,
    "land": 60000,
-   "roadLoad": 101,
+   "roadLoad": 100,
    "makes": {
     "HOUSING": 63
    },

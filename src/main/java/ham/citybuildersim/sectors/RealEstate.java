@@ -919,6 +919,16 @@ public final class RealEstate extends Sector {
      */
     @Override
     public boolean mayRetire(BuildingsTemplate t) {
+        if(housingMarket.active()&&t!=null&&t.getHousingRecipe()!=null){
+            var standing=buildings.getStack(t);
+            if(standing==null||standing.getQuantity()==0)return false;
+            var inventory=buildings.getHousingInventory();
+            for(var d:t.getHousingRecipe().mix()){
+                var key=new ham.citybuildersim.HousingInventory.Key(t.getId(),d.id());
+                if(inventory.owned(key,ham.citybuildersim.HousingInventory.Owner.REAL_ESTATE)-d.count()
+                        <inventory.occupied(key,ham.citybuildersim.HousingInventory.Owner.REAL_ESTATE))return false;
+            }
+        }
         if (game != null && game.getFamilies() != null) {
             ham.citybuildersim.FamilyModel f = game.getFamilies();
             if (f.getStillUnplaced() > 0 || f.getDoubledUpHouseholds() > 0) return false;

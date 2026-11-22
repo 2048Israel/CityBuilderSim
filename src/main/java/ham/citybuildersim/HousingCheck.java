@@ -679,6 +679,7 @@ public class HousingCheck {
 
         Game staffed = new Game(GameFiles.scratch("housing-landlords-staff"));
         staffed.run();
+        legacyHousingMenu(staffed);
         ham.citybuildersim.sectors.RealEstate landlords = staffed.getSectors().realEstate();
         staffed.getGovernmentInvestor().spend(-4_000_000);
         staffed.getLandManager().setOwnedSqFt(staffed.getLandManager().getOwnedSqFt() + 200_000_000L);
@@ -797,6 +798,7 @@ public class HousingCheck {
         System.out.println("\n--- homes keep headroom over demand ---");
         Game g = new Game(GameFiles.scratch("housing-headroom"));
         g.run();
+        legacyHousingMenu(g);
         BuildingManager built = g.getBuildingManager();
         built.clearStacks();
         BuildingsTemplate house = template(g, "House");
@@ -885,6 +887,15 @@ public class HousingCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /** These controlled HD1/RN1-H fixtures retain their original three-form choice set. */
+    static void legacyHousingMenu(Game g) {
+        var b=g.getBuildingManager();
+        java.util.Set<Integer> known=new java.util.HashSet<>();
+        for(var t:b.getKnownTemplates())known.add(t.getId());
+        b.setTemplateKnown(t -> known.contains(t.getId())&&(t.getCategory()!=BuildingType.RESIDENTIAL
+                ||t.getId()==0||t.getId()==1||t.getId()==6));
     }
 
     /**

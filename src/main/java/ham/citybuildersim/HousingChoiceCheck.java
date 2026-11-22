@@ -58,6 +58,18 @@ public final class HousingChoiceCheck {
         var huge=clear(List.of(d("a",2e9,1,0,0,100),d("b",6e9,1,0,0,100)),List.of(o("x",2e9,2,40,1,0,false,10),o("y",2e9,2,40,1,0,false,10)));
         check("count scaling creates no additional assignment rows",huge.leases().size()==4);
         near("scaled equivalent allocation is still pro rata",count(huge,"a",null),1e9);
+        List<HousingChoice.Demand> fractional=new ArrayList<>();
+        for(int i=0;i<64;i++)fractional.add(d("fraction-"+i,.1*(i+1),1,0,0,100));
+        r=clear(fractional,List.of(o("four",4,2,40,1,0,false,10)));
+        check("decimal pro-rata quantities never exceed four physical homes",count(r,null,null)<=4);
+        double total=fractional.stream().mapToDouble(HousingChoice.Demand::count).sum();
+        check("decimal allocations and residual demand conserve the source",Math.abs(count(r,null,null)+r.unplaced()-total)<=FamilyModel.packingRounding(total));
+        boolean first=false,second=false;
+        for(int month=0;month<24;month++){
+            var rotated=HousingChoice.clear(List.of(d("first",1,1,0,0,100),d("second",1,1,0,1,100)),List.of(o("one",1,2,40,1,0,false,10)),List.of(),month);
+            first|=count(rotated,"first",null)>0;second|=count(rotated,"second",null)>0;
+        }
+        check("incomparable ties rotate across months without enum entitlement",first&&second);
 
         System.out.println("--- emergency crowding is explicit, suitable placements happen first ---");
         r=clear(List.of(d("large",1,6,3,0,100)),List.of(home));near("smaller family home is emergency crowding",r.crowded(),1);near("crowding still occupies one real door",count(r,null,null),1);

@@ -1717,9 +1717,12 @@ public class FamilyModel implements HouseholdBalance.Census {
         }
         crowdedHouseholds=result.crowded();
         refusedByStudio=0;
+        double compactFree=0;
+        for(var stock:inventory.stock())if(stock.dwelling().capacity()<=STUDIO_MAX_SIZE)
+            compactFree+=inventory.vacant(stock.key(),HousingInventory.Owner.REAL_ESTATE);
         for(var d:demand)if(d.children()>0){
             double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
-            refusedByStudio+=Math.max(0,d.count()-placed);
+            refusedByStudio+=Math.min(compactFree,Math.max(0,d.count()-placed));
         }
         noteUnplaced(result.unplaced());
     }

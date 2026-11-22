@@ -19,6 +19,10 @@ public final class HousingForms {
                        int staff, int power, double water, int roadLoad, HousingRecipe recipe,
                        double[] structureShares, double[] landShares) {
         public double footprint() { return grossArea / floors * SQFT_PER_M2; }
+        /** Fixed basement geometry from the selected catalogue, in square feet. */
+        public double basementFootprint(){return switch(code){case "C10"->15000;case "C12"->30000;case "C13"->40000;case "C14"->22000;default->0;};}
+        /** Basement levels belonging to the same fixed parking recipe. */
+        public int basementLevels(){return switch(code){case "C10","C14"->2;case "C12"->3;case "C13"->5;default->0;};}
         public double garden() { return floors <= 3 && recipe.doors() <= 6
                 ? Math.max(0, plot-footprint()-recipe.mix().stream().mapToDouble(d -> d.count()*d.privateParking()*BAY_SQFT).sum()) / recipe.doors() / SQFT_PER_M2 : 0; }
         /** Only explicit ground-level homes have step-free layouts in this catalogue. */
@@ -54,7 +58,7 @@ public final class HousingForms {
                 new HousingRecipe("C05", List.of(new HousingRecipe.Dwelling("T100", 6, 6, 100, 3, 1, 1.0, 0, 460152.99823633156)), 0),
                 new double[] {0.16666666666666669}, new double[] {0.16666666666666666}));
         add(out, new Form("C06", 1, "Studio Apartments", 4, 4000.0, 25000, 1900,
-                8692.0, 700, 322, 2, 8, 2, 64,
+                8692.0, 700, 322, 2, 8, 2, 35,
                 new HousingRecipe("C06", List.of(new HousingRecipe.Dwelling("S", 80, 2, 40, 0, 1, 0.0, 0, 196725.0)), 20),
                 new double[] {0.012413721700717835}, new double[] {0.009}));
         add(out, new Form("C07", 159, "Mixed walk-up", 3, 2160, 22000, 1900,
@@ -62,7 +66,7 @@ public final class HousingForms {
                 new HousingRecipe("C07", List.of(new HousingRecipe.Dwelling("S", 8, 2, 40, 0, 1, 0.0, 0, 209832.77299674888), new HousingRecipe.Dwelling("F", 12, 4, 75, 2, 1, 0.0, 0, 325773.25492445973), new HousingRecipe.Dwelling("L", 4, 6, 110, 3, 1, 0.0, 1, 464213.73685217055)), 12),
                 new double[] {0.029007967307585827, 0.0437255781118577, 0.059231236293838134}, new double[] {0.019496166484118293, 0.036555312157721793, 0.0695235487404162}));
         add(out, new Form("C08", 6, "Low-Rise Apartments", 3, 5906.25, 60000, 1900,
-                10284.0, 2432, 381, 2, 25, 6, 101,
+                10284.0, 2432, 381, 2, 25, 6, 100,
                 new HousingRecipe("C08", List.of(new HousingRecipe.Dwelling("F", 63, 4, 75, 2, 1, 0.0, 0, 319714.28571428574)), 32),
                 new double[] {0.01572486031708993}, new double[] {0.01291005291005291}));
         add(out, new Form("C09", 160, "Mixed mid-rise", 8, 5650.0, 24000, 1900,

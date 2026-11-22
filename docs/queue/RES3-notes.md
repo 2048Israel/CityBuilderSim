@@ -83,3 +83,28 @@ sites, allocate its carried interest once; class rent targets then cover only
 their own allocated carry when tight. A glut class cannot pass its shortfall
 to another class. The 0.058 rate is an initialization comparator, not a forced
 actual return. BO1-H's absent owner-family seeker group remains its queued seam.
+
+## Current mends (not ready)
+
+Latest focused results: HousingChoiceCheck, HousingMarketCheck,
+BuildingDataCheck, HouseholdCheck and OwnerCheck green. HousingCheck green
+after retaining the controlled three-form HD1/RN1-H fixture menu. Its assertions
+are unchanged; the separate catalogue fixture exercises all fourteen forms.
+InvestCheck is red: prospective workers currently inherit the budgets of the
+city's current unemployed/retired residents. Its jobs-ahead-of-housing finding
+is retained. The mend will use actual unfilled/funded jobs and the current
+wage/tax schedule for incoming workers, with one-count demand reserved against
+standing and funded pipeline supply before a candidate earns any forecast rent.
+
+Own flow review also identified that the live legacy pooled-price sharing pass
+runs before typed matching. It must be replaced by normal/crowding allocation
+first, then actually affordable sharing groups on remaining physical vacancies.
+Only unplaced singles may move into the existing shared household cells; valid
+incumbents remain. Save bounded sharing transfers as monthly flows, preserving
+the existing household stock/card-transfer path. This is still one quote and
+one monthly clearing, with internal emergency phases and no price equilibrium.
+
+The report fixture is being strengthened to observe completion events directly
+from BuildLog each month, rather than calling a net stock change a completion.
+Its large-city supporting infrastructure/workforce/equity are explicit initial
+fixture inputs; residential work and settlement remain the actual paid path.
