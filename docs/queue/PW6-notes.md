@@ -561,3 +561,23 @@ remain retained with their limits. This new harness delta/native suffix premise 
 independent review; a final ALL-238 dry and readiness need separate GO. Pick remains
 ALL 238; review floor `review    needed - saves: HistorySave.java`. Provisional marker
 retained, no success gate-run comment, no owned helper live; local named slot released.
+
+## Independent history-suffix delta review — SHIP
+
+Independent reviewer `b6ad` returned **SHIP, no blockers**, for the immutable delta
+`7f13c4c1c..ab17aafd400df6ac8783fc5f0014575ef611a36f`. Original whole money/save
+SHIP8541 stands. Root's `PW6-history-suffix-mend-root-receipt.json` independently
+verifies all 65 evidence hashes, source `407f0485`, loaded class `a6c28d27`, captured
+zero exits, HistoryCheck-only Java delta and native process termination.
+
+Coverage stays bounded: the original 30-month fixture proves suffix shape, readers
+and latest values; the separate four native months independently capture actual
+first-emission and per-emission chronology. No late-id, partial-year or new fold
+coverage is claimed. Original model/save/UI sources, .180 ensemble and SCREENae95
+verdict/limits remain unchanged, with the provisional marker retained.
+
+Root separately authorized one new normal BOX-only dry after this notes checkpoint,
+because the harness source changed. `WFrYyVkw` remains failed and cannot supply a
+pass/reuse verdict or success gate comment. Reviewed source/harness trees remain
+exactly `ab17aafd`; new dry and eventual readiness are distinct steps, without any
+ready/publication action here.
