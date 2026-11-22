@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,513 constants in 620 files.**
+**6,551 constants in 620 files.**
 
 ## model (3002 constants)
 
@@ -5912,7 +5912,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2015 constants)
+## harnesses (2053 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5993,16 +5993,39 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 4796 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
+| 152 | `BankCheck.BOOKING_MONTHS` | `1` | The months a town is played after a loan is written by hand, for the bank to read its books at the close of one: a month, which is when refreshBank() reads them. |
+| 155 | `BankCheck.LOAN_BY_HAND` | `50` | What each sector is lent by hand, $k, in the towns that read a bank's books: more than the books' rounding and less than a sector's assets, so nobody defaults in the month. |
+| 158 | `BankCheck.CARRY_HEADROOM_BY_HAND` | `3_000` | The bank's spare book the carry's own rule may lend from when foreigners borrow by hand, $k: wide enough that the rule's target, a share of it, is more than the stock it moves in a month. |
+| 161 | `BankCheck.ALLOWANCE_BY_HAND` | `10` | What the families' allowance is raised by, by hand, before a reload between two months, $k: more than a reload could round away. |
+| 164 | `BankCheck.SLICE_TOWN_MONTHS` | `1` | The months the town of the slice section is played before the claim is first taken on: the first, which gives each sector its books and the lender its assets to read. |
+| 167 | `BankCheck.SLICE_LEVERAGE` | `1.2` | What retail owes against what it owns, taken on again between each month of the slice section: past the watch line and under the default point, so a slice defaults each month and no month is news. |
+| 170 | `BankCheck.PAST_THE_LINE_LEVERAGE` | `2` | What retail owes against what it owns when its month is to be news, after the slice section's quiet months: twice what it owns, past the default point (BusinessDebtManager.INSOLVENCY_TRIGGER). |
+| 173 | `BankCheck.FAMILIES_WITHIN_MONTHS` | `12` | The most months a new town is waited for its families to arrive and want groceries, before retail is put in distress: the capacity rule reads no demand until they have, and past this the wait fails... |
+| 176 | `BankCheck.CHARTER_COVER_UNDER` | `.1` | How far the town's fees leave the charter under its cost, as a share of it, for the law that it never closes "however far": under a tenth. |
+| 179 | `BankCheck.BUILDERS_CASH_FOR_A_SALE` | `100_000` | What the builders hold, at least, before a sale of plant, $k: more than the material of the shop retail holds at the day's price, so they can pay for all of it. |
+| 182 | `BankCheck.PARTS_TOWN_MONTHS` | `1` | The months the town of the rate-parts section is played before its lender is handed a record and a concentration: the first, which prices every sector. |
+| 185 | `BankCheck.CONCENTRATION_BY_HAND` | `.004` | The concentration charge the rate-parts section hands one sector, a year: more than the rates' own rounding and less than a spread. |
+| 188 | `BankCheck.TAB_LEND_MONTH` | `2` | The month of the tab city, counted from the first played, in which a claim on retail is written by hand (BusinessDebtManager.issueLoan) and paid out by the bank: after the founding month, with reta... |
+| 191 | `BankCheck.TAB_LEND_SHARE` | `.5` | The share of the room retail has under the lender's ceiling (MAX_LOAN_TO_ASSETS of its assets, less what it owes) that the tab city's by-hand claim takes: half, so retail is lent to and stays far f... |
+| 194 | `BankCheck.TAB_CAPITAL_MONTH` | `5` | The month of the tab city in which its owners put the bank one top of its band's equity in by hand (Bank.injectCapital), between two presses, so that the next month it holds that over the top and i... |
+| 197 | `BankCheck.TAB_BUYBACK_MONTH` | `9` | The month of the tab city in which the bank's desk buys its own shares back by hand (Bank.buyBackOwnShares), between two presses and after the capital above, so there is spare capital over its targ... |
+| 200 | `BankCheck.TAB_BUYBACK_SHARE` | `.5` | The share of its spare capital over its target that the tab city's by-hand buyback spends: half, so the bank ends the month over its target, as the desk's own rule would leave it. |
+| 203 | `BankCheck.TAB_LOSS_MONTH` | `20` | The month of the tab city in which a claim past the default point is written on retail by hand (the section-14 dial PAST_THE_LINE_LEVERAGE), so its firms default in the month after, whole: a year a... |
+| 206 | `BankCheck.TAB_BOND_MONTH` | `12` | The month of the tab city in which the city borrows on a bond that the bank buys at the next settle. |
+| 209 | `BankCheck.TAB_TREASURY_BUYBACK_MONTH` | `30` | The month of the tab city in which the treasury buys that bond back between two presses, which is in no income statement. |
+| 212 | `BankCheck.TAB_RESCUE_MONTH` | `45` | The month of the tab city in which the city puts capital into the bank that stands, between two presses: its preferred, since 0.7.14. |
+| 215 | `BankCheck.TAB_PLAYED` | `TAB_RESCUE_MONTH + 1 + Bank.YEAR_MONTHS` | The months the tab city is played: through its last caused event, the rescue, and the year after it that a year ago on the Balance sheet page needs to read a sheet that has the rescue in it. |
+| 223 | `BankCheck.DESK_MONTHS` | `6` | The months the trading desk is stepped after the leavers sell it their shares, so it goes on to hold, re-mark and sell what it bought. |
+| 5044 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
 
 ### BankFailureCheck.java ([map](map/BankFailureCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 20 | `BankFailureCheck.out` | `System.out` |  |
-| 21 | `BankFailureCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 358 | `BankFailureCheck.BAND_OWED` | `1_000_000, BAND_OWNED = 100_000_000, BAND_EXPOSURE = 10_000_000` | What the landlords and the works owe before the month, what each owns, and the hand-built banks' exposure. |
-| 544 | `BankFailureCheck.BAND_EDGE` | `1e-6` | The margin, a share of the room, by which section 9 lends either side of the room to the minimum. |
+| 27 | `BankFailureCheck.out` | `System.out` |  |
+| 28 | `BankFailureCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 365 | `BankFailureCheck.BAND_OWED` | `1_000_000, BAND_OWNED = 100_000_000, BAND_EXPOSURE = 10_000_000` | What the landlords and the works owe before the month, what each owns, and the hand-built banks' exposure. |
+| 551 | `BankFailureCheck.BAND_EDGE` | `1e-6` | The margin, a share of the room, by which section 9 lends either side of the room to the minimum. |
 
 ### BasketYearCheck.java ([map](map/BasketYearCheck.md))
 
@@ -6116,6 +6139,12 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 410 | `CallCheck.CB_DIAL` | `.3` | FS14: the central bank's dial in section 5: a share of the city's term paper to hold, 30%. |
 | 413 | `CallCheck.CB_BUYS_WITHIN_MONTHS` | `1` | FS14: the most months section 5 presses, after the dial is set, for the central bank to hold part of the line: its holdings step moves it in the first. |
 
+### CapitalFlowCheck.java ([map](map/CapitalFlowCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 803 | `CapitalFlowCheck.AUDITED_MONTHS` | `10 * CapitalFlows.PANIC_MONTHS` | The months the hot city is played with an audit each: ten panic windows (PANIC_MONTHS), so the money arrives, runs home in a stop and comes back over the audit. |
+
 ### CapitalGainsCheck.java ([map](map/CapitalGainsCheck.md))
 
 | line | constant | value | says |
@@ -6129,6 +6158,12 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 132 | `CarCheck.CARS_WAS_IN` | `44 * PriceLevel.FACTOR, CARS_WAS_OUT = 36 * PriceLevel.FACTOR, VANS_WAS_IN = 72 * Price...` | The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. |
 | 1351 | `CarCheck.IMPORT_BITS_TRIED` | `256` | How many steps of the import price, a bit each, importsArePaid() walks for a month whose two roundings part (CI1). |
+
+### CarryTradeCheck.java ([map](map/CarryTradeCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 420 | `CarryTradeCheck.AUDITED_MONTHS` | `36` | The months the built city is played with an audit each: the book builds a share of its gap a month (CARRY_BORROW_SPEED), so a longer play audits more of its build. |
 
 ### CausesOfDeathCheck.java ([map](map/CausesOfDeathCheck.md))
 
@@ -6327,23 +6362,24 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 20 | `CreditCheck.IND` | `Sectors.INDUSTRY` |  |
+| 34 | `CreditCheck.IND` | `Sectors.INDUSTRY` |  |
 
 ### CreditCrunchCheck.java ([map](map/CreditCrunchCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `CreditCrunchCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 82 | `CreditCrunchCheck.OWED` | `1_000_000, OWNED = 100_000_000` | What the landlords owe before the month, and what they own: room to spare under the default point. |
-| 207 | `CreditCrunchCheck.SEED` | `13` | The ensemble's seed CU2 found the crunch on (SHOCK seed 13, the AUTO2 path before its shock). |
-| 209 | `CreditCrunchCheck.FROM` | `150, TO = 270` | The crunch, months already run: from the city's first years of growth, before its bank's leverage first binds on its own. |
-| 211 | `CreditCrunchCheck.HOLD` | `.5` | Where the bank is held: halfway from its leverage minimum to its target. |
-| 213 | `CreditCrunchCheck.MARGIN` | `12` | ★ The households the placement may still take when the crunch starts: the homes cut to the doubling valve's last few. |
-| 215 | `CreditCrunchCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
-| 222 | `CreditCrunchCheck.months` | `new ArrayList<>()` |  |
-| 371 | `CreditCrunchCheck.ORDER` | `6` | ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). |
-| 373 | `CreditCrunchCheck.TILL` | `1.5` | ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. |
-| 375 | `CreditCrunchCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for the order's ground. |
+| 86 | `CreditCrunchCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 107 | `CreditCrunchCheck.OWED` | `1_000_000, OWNED = 100_000_000` | What the landlords owe before the month, and what they own: room to spare under the default point. |
+| 232 | `CreditCrunchCheck.SEED` | `13` | The ensemble's seed CU2 found the crunch on (SHOCK seed 13, the AUTO2 path before its shock). |
+| 234 | `CreditCrunchCheck.FROM` | `150, TO = 270` | The crunch, months already run: from the city's first years of growth, before its bank's leverage first binds on its own. |
+| 236 | `CreditCrunchCheck.HOLD` | `.5` | Where the bank is held: halfway from its leverage minimum to its target. |
+| 238 | `CreditCrunchCheck.MARGIN` | `12` | ★ The households the placement may still take when the crunch starts: the homes cut to the doubling valve's last few. |
+| 240 | `CreditCrunchCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
+| 247 | `CreditCrunchCheck.months` | `new ArrayList<>()` |  |
+| 256 | `CreditCrunchCheck.BINDS_BY` | `1.25` | ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. |
+| 413 | `CreditCrunchCheck.ORDER` | `6` | ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). |
+| 415 | `CreditCrunchCheck.TILL` | `1.5` | ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. |
+| 417 | `CreditCrunchCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for the order's ground. |
 
 ### CrossingCheck.java ([map](map/CrossingCheck.md))
 
@@ -6489,14 +6525,17 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 68 | `DistressBleedCheck.CONTACT` | `"Contact Centre"` |  |
-| 71 | `DistressBleedCheck.CENTRES` | `8` | The centres the town founds the sector with: eight held is one sold every three months at the dial's pace, so the pace shows. |
-| 77 | `DistressBleedCheck.FLOOR_TIMES` | `1.8` | How many times the founding minimum wage the floor is lifted to: past the point the sector's operations lose money, short of the three times at which the desk refuses within two years (measured: x3... |
-| 84 | `DistressBleedCheck.LIFT_AT` | `12` | The net count at which section 5 lifts the floor: wages come back down over about a dozen months, so lifted this far ahead of DISTRESS_LOSS_MONTHS the sector's operating income crosses zero just as... |
-| 87 | `DistressBleedCheck.RECOVERED_MONTHS` | `3` | Months running the plant's own result must have held at or above zero (the operating streak at 0, the net count still climbing on interest) before section 5 raises the floor again. |
-| 90 | `DistressBleedCheck.MOST_MONTHS` | `120` | Months a run may take before it is given up, whatever the sector does. |
-| 92 | `DistressBleedCheck.DISTRESS` | `BusinessInvestment.DISTRESS_LOSS_MONTHS` |  |
-| 93 | `DistressBleedCheck.BLEED` | `BusinessInvestment.BLEED_MONTHS` |  |
+| 72 | `DistressBleedCheck.CONTACT` | `"Contact Centre"` |  |
+| 75 | `DistressBleedCheck.CENTRES` | `8` | The centres the town holds: eight held is one sold every two months at the dial's pace, so the pace shows. |
+| 77 | `DistressBleedCheck.DISTRESS` | `BusinessInvestment.DISTRESS_LOSS_MONTHS` |  |
+| 78 | `DistressBleedCheck.BLEED` | `BusinessInvestment.BLEED_MONTHS` |  |
+| 81 | `DistressBleedCheck.NET_PAST` | `DISTRESS + BLEED` | The net-loss streak sections 1 to 4 set beside the operating streak: past the dial and the whole pace after it, so the rule's first question (the net count) is answered yes and only the operating s... |
+| 84 | `DistressBleedCheck.LOAN` | `1_000` | What the shortfall desk is lent against the sector: the rule reads only that the principal is above zero. |
+| 87 | `DistressBleedCheck.CASH` | `1_000` | The cash a solvent sector is set at: the rule reads only that it is at or above zero. |
+| 90 | `DistressBleedCheck.OVERDRAWN` | `- 1_000` | The cash an overdrawn sector is set at: below zero, which is all the quarter's rule reads. |
+| 93 | `DistressBleedCheck.LOSS` | `- 50` | The operating income, in thousands, of a month the plant loses money on its operations. |
+| 96 | `DistressBleedCheck.PROFIT` | `10` | The operating income, in thousands, of a month the plant's own result is above zero. |
+| 99 | `DistressBleedCheck.INTEREST` | `40` | The interest, in thousands, a month's statement carries: more than PROFIT, so a month of operating profit can still lose money in net. |
 
 ### DriverlessTruckCheck.java ([map](map/DriverlessTruckCheck.md))
 
@@ -7237,7 +7276,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 2034 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
+| 2055 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
 
 ### IslandLinkCheck.java ([map](map/IslandLinkCheck.md))
 
@@ -7879,8 +7918,11 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 112 | `MortgageCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 113 | `MortgageCheck.FEE` | `Bank.LOAN_FEE` |  |
+| 128 | `MortgageCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 129 | `MortgageCheck.FEE` | `Bank.LOAN_FEE` |  |
+| 1188 | `MortgageCheck.PAYOUT_FIXTURE_RATE` | `.005` | The insured rate section 12's by-hand mortgages are written at: low enough that a mortgage's interest leaves the landlords' income standing while its principal can still pass it. |
+| 1191 | `MortgageCheck.HOMES_STANDING` | `50` | The homes section 12 stands for the landlords to let (buildStack, noConstruction): enough that the month's rent is more than its costs once their tenants have moved in. |
+| 1200 | `MortgageCheck.START_UP_MONTHS` | `6` | The most months section 12 plays for those homes to earn, the first month of a founded town being its start-up: a fixture bound, and the fixture fails past it. |
 
 ### NationsCheck.java ([map](map/NationsCheck.md))
 
@@ -8631,7 +8673,8 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 85 | `SupplierCreditCheck.FARM` | `Sectors.AGRICULTURE, LORRIES = Sectors.AUTOMOTIVE` | The two local suppliers the rule's fixtures name: the farms, which fill the shelf's meat, and the car makers, which fill the fleet's vans. |
+| 98 | `SupplierCreditCheck.FARM` | `Sectors.AGRICULTURE, LORRIES = Sectors.AUTOMOTIVE` | The two local suppliers the rule's fixtures name: the farms, which fill the shelf's meat, and the car makers, which fill the fleet's vans. |
+| 190 | `SupplierCreditCheck.WARM_AT_MOST` | `12` | The most months the town is played for its shops to expect a sale: a bound, not a count - the fixture fails when it passes. |
 
 ### TimingCheck.java ([map](map/TimingCheck.md))
 
@@ -8958,10 +9001,15 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 55 | `YoungBankCheck.MONTHS` | `120` | The young town's first ten years: the months the bank is watched for. |
-| 58 | `YoungBankCheck.WEIGHED_BY` | `24` | By this month the town has weighed its first works (BankCheck 19's Lime Kiln was weighed from month 9). |
-| 61 | `YoungBankCheck.RUN_MONTHS` | `12` | The months a first plant's run is read over: its first year standing alone in its sector. |
-| 64 | `YoungBankCheck.RUN_MONTHS_AT_LEAST` | `3` | ...and the fewest of them that make a run to weigh it against. |
+| 107 | `YoungBankCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 110 | `YoungBankCheck.FOUNDING_MONTHS` | `12` | The months the young town is played, with only its lone sector held, before that sector is lent for: the bank has opened its first branch and carries the town's own lending, so its minimum stands a... |
+| 113 | `YoungBankCheck.LOAN_PER_EQUITY` | `2` | What the lone plant's loan is, in times the bank's equity as the founding ends: above the whole of it, and small enough that the largest loss sized below (LOSS_PAST_EQUITY of equity) is less than t... |
+| 116 | `YoungBankCheck.LOSS_UNDER_CUSHION` | `.5` | Side (a)'s loss, in times the cushion the control's close leaves over Bank.CAPITAL_RATIO: under it. |
+| 119 | `YoungBankCheck.LOSS_PAST_EQUITY` | `1.5` | Side (c)'s loss, in times the control's equity at its close: past all of it. |
+| 122 | `YoungBankCheck.LABOUR_MONTHS` | `2` | The months section 3's all-held town is played before its first plant is weighed: the labour market has read the town's people (until it has, every tier's fill reads 1). |
+| 125 | `YoungBankCheck.RUN_MONTHS_AT_LEAST` | `3` | The fewest months a first plant's rate is read over, standing alone: a run to weigh it against. |
+| 128 | `YoungBankCheck.LONE` | `Sectors.CEMENT_CONCRETE, LONE_PLANT = "Lime Kiln"` | The sector with nothing in the founding that borrows alone, and the plant BankCheck 19's loan was for. |
+| 131 | `YoungBankCheck.FIRST_PLANT` | `"Wire & Cable Works"` | Section 3's first plant: Manufacturing's wire works, whose posts are more than the young town's people fill. |
 
 ### ZoningCheck.java ([map](map/ZoningCheck.md))
 
