@@ -450,3 +450,51 @@ unchanged. Smallest recommendation: correct only the target helper path to forwa
 slashes, then fresh helper compilation/render evidence under new root ordering,
 without another unchanged fast or production edit. Final render/independent eyes
 and ALL-238 dry remain owed; marker retained, all owned processes terminal.
+
+## Final native render passed — provisional UI mends
+
+Under the separate path-only GO, the target driver changed exactly line 21: its
+output path is now an absolute forward-slash `C:/.../target/PW6-ui-final-20261121-2008`.
+The failed helper archive remains immutable. Fixture, assertions and every other
+driver line are identical, proved by `driver-path-only.diff`. No production edit,
+main compilation or fast replay occurred; the prior final-source fast remains valid.
+
+Corrected target compilation exited 0. The one native render launcher 33908/native
+JVM 15984 completed in 5.357295 seconds, launcher exit 0, with exactly one advance.
+Native Oracle 21.0.4+8-LTS-274/JavaFX 21+31 used the production Services class from
+this worktree's `target/classes`, not a substitute. Actual loaded class SHA256 is
+`d727e3e26ac89ba7823a0ea167fab6ba42a4df86a5745c41ee2e51e11a24975e`, matching the
+selected compiled bytes; Services source remains
+`294e75e5987e2536ba73a8cf939c5f488003e15d98e3dd0237e519ee544aeb67`.
+All 835 protected source/proof/resource/tool/baseline files retain the same recorded
+before/after digest `12135b4c46d78d68a0e8c7e5253a170ba81b44e1400faed1add02a9304ac20c4`.
+
+The full real Services graph fits the unchanged 480×900 Scene/body 470 and wide
+1180×1000/body 1170, before and after retained monthly redraw. All six real marks fit
+the viewport in every case. The actual Roads label measures **105×15 pixels** versus
+104.21 natural preferred width, inside full-page and horizontal viewport bounds at
+both sizes, before/after the advance and mixed/redraw; hard checks reject the old
+zero-width condition. Capacity prose, rows, prices and units are visually readable.
+The wide Roads door wraps below its paragraph and remains visible. Both graphs keep
+their scroller/content and scroll 0.53 (212 kept/0 new each). Native May→June period,
+payment, energy unit and six half-price labels match actual retained model values.
+The same five native mixed colours remain distinct, match row/stack identities and
+stay stable after redraw. No additional model case/year, user save/window or clock
+was used; full-window/DPI and all-catalogue visual coverage remain unclaimed.
+
+Fresh `target/PW6-ui-final-20261121-2008/` contains `report.txt`, `manifest.json`,
+`verification-receipt.json`, `geometry.json`, `png-manifest.json`, effective classpath,
+native/launcher/compiler identities and exit receipts, raw logs, exact source/class,
+facts/labels and the path-only diff. Inspect `02-final-narrow-content.png`,
+`03-final-wide-content.png`, `05-final-month-narrow-content.png`,
+`06-final-month-wide-content.png` and `07-final-mixed-content.png`. Native stdout is
+cp1252; the seal reader corrected an initial UTF8 decode assumption without changing
+raw bytes or running another JVM. All 70 original proof, 44 screen-worker, 57 earlier
+UI and 20 failed-helper evidence entries and their manifests verify unchanged.
+
+All owned compiler/launcher/native PIDs are absent, with a scoped empty process scan
+retained. Generated indices are current; model/save/phase proofs and the .180 80/80,
+hard 10/10 ensemble remain valid. This is provisional UI mends for separately ordered
+independent image eyes and ALL-238 dry, not readiness. Pick ALL 238; review floor
+`review    needed - saves: HistorySave.java`; original save reviews retained and marker
+unchanged. No new source design, model/save change, extra fast or suite was performed.
