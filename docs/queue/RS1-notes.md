@@ -16,8 +16,8 @@ rule buying that company for the month, so it neither advertises an
 unavailable self-bid nor buys back what the hand just sold. The bank's own
 capital-policy buyback remains a buyer too. A -99% limit authorizes a real
 sale that cheaply: a buyer arriving at the resting ask pays that ask, and
-the fund receives precisely that cash. Unsold shares stay in the rescue book. Actual sale receipts can fund the
-rule's usual purchases of other companies in that step; only the company
+the fund receives precisely that cash. Unsold shares stay in the rescue
+book. Actual sale receipts can fund the rule's usual purchases of other companies in that step; only the company
 being sold is paused.
 
 ★ A genuinely crossed book (self-trade and new-issue restrictions can leave
@@ -45,11 +45,12 @@ Under the old-saves rule no save-format bump is owed.
 
 The final regression was run with the original `4a6af0baa` Exchange and
 TreasuryFund sources and the final ExchangeCheck fixtures: 15 expected
-failures, including findings 0, 1, 2, the household ?, the prior-real-trade crossed quote,
+failures, including findings 0, 1, 2, the household ★, the prior-real-trade
+crossed quote,
 and both desk and bank last-price assertions twice (normal scale and
 money multiplied by 1e9, HN1's unit 1e-9). All fixture premises and the
-positive controls passed. The positive room was explicitly above OrderBook.DUST in shares but below the money
-sums' resolution. Kept locally: `target/RS1-before-star.txt` and
+positive controls passed. The positive room was explicitly above
+OrderBook.DUST in shares but below the money sums' resolution. Kept locally: `target/RS1-before-star.txt` and
 `target/RS1-before-star-suite.txt`. The rest of ExchangeCheck and its picked
 DebtExchangeCheck were green. A first attempt to compile the harness used
 a nonexistent indexed getter; corrected to the existing aggregate getter
@@ -103,8 +104,15 @@ before that and the enabled run's audit and register assertions passed:
 1.22e-14. The final log records the timeout; it is not called a green run.
 The historical sweep mapping names FS14, which has shipped, so no timeout
 exception is assigned to that shipped row. A complete run of the unchanged
-named harness will be kept separately, with the same 2 GiB heap and soft
-timing and a two-hour process watchdog; no fixture or assertion is edited.
+named harness was kept separately, with the same 2 GiB heap and soft timing
+and a two-hour process watchdog; no fixture or assertion was edited. It
+passed in full, exit 0 (`target/RS1-short-direct.log` and
+`target/RS1-short-direct.exit`): 851 seconds with shorts enabled and
+1,063 seconds with them off. The enabled run reproduced exactly the first
+attempt's 716 samples, residual and register drift; the off run also passed
+its audit, register and no-short-order laws. The command is kept in
+`target/RS1-short-direct.sh`. No timeout exception or new queue row is needed
+for an assertion run that has now completed green.
 
 While this run was active, R6e shipped as 0.9.186 (`7751e845c`).
 This run still measures RS1 on `4a6af0baa`; main will be merged after the
@@ -114,11 +122,11 @@ and therefore does not contend with R6e's format 60.
 The household fixture was tightened after reviewing the original red log:
 with a zero deposit rate it could already rest a bid at fair value on main,
 so its positive household-purchase assertion did not prove the answered
-?. The household case now offers the deposit rate HURDLE: fair value fails
+★. The household case now offers the deposit rate HURDLE: fair value fails
 its deposit-plus-premium-and-band hurdle, while the half-fair ask clears it.
 That is an input premise that must be green on both models; the purchase
-itself must fail on main and pass with the early ask. The repeated main-red run gives 15 expected failures, including that
-household assertion; its hurdle premise is green on main. No game class or
+itself must fail on main and pass with the early ask. The repeated main-red
+run gives 15 expected failures, including that household assertion; its hurdle premise is green on main. No game class or
 borrowed fixture helper was changed for this stronger regression. The
 mended ExchangeCheck and selected DebtExchangeCheck then passed in full
 (`target/RS1-final-exchange.txt`); final `--fast` also passed with 0 firm
@@ -146,7 +154,16 @@ YoungBankCheck also reproduces its two FS9 bank-resolution premises.
 LongPlaytest's named finding is CL7's industry farther out than homes at
 m2400; CopperRefiningCheck's child exit is covered by the existing CL7 row.
 Raw results: `target/RS1-pick-check.txt` and `target/RS1-pick-suite.txt`.
-The timeout will not be represented as a green pick or assigned to shipped
-FS14; the unchanged full named harness is to be completed separately.
+The timeout is not represented as a green pick or assigned to shipped
+FS14. The later complete named run supersedes that incomplete harness
+execution; the raw picked-run result remains recorded unchanged above.
+The household fixture tightening changed no borrowed helper or game class;
+its final ExchangeCheck and DebtExchangeCheck rerun was green.
 
-Publication evidence will be recorded after the remaining runs.
+The provisional ship file is the review handoff. The money review must read
+Exchange.java and TreasuryFund.java, especially the early sale, settlement,
+self-bid pause, quote age and capital-room guards. After its SHIP: merge
+origin/main, run the owed ensemble once on that final pushed model against
+the newest baseline, record the score and any named main class, then remove
+the provisional marker last in its own commit. The pick is not ALL and no
+publisher code changed, so no dry run is owed.
