@@ -717,3 +717,46 @@ that encoding without modifying any raw bytes or rerunning the model.
 
 Fresh monetary review and the final-model ensemble/dry remain owed. Price,
 layout and both-loader verification on this integrated tree are in progress.
+
+## Final .183 source checkpoint, 2026-11-22
+
+Root107a published main2149ca45c/.183 (OG1) and requires its ensemble as the
+new baseline. Normal merge d92ad9e847dbdf8b525b9139c180d89a29275283 has
+source dd6d53436dddd65815ba0dcb7f0207ea5adebe0b. No source conflict;
+ten generated-index conflicts were regenerated. OG1's nullable buildersWork
+and buildersOwedAfterAdvance, both capture/restore hooks and both sites-
+advance hooks remain. The two aggregate quantities join ScaleCheck's
+existing TOP list; no production OG1 logic is modified. Published VERSION
+is0.9.183; SAVE_FORMAT/OLDEST remain59. Native changed-source fast0,
+compile42s, maps/Stale0firm/194soft. Pick is now ALL240, including main's
+new GapOrderCheck; money/save review floor is unchanged.
+
+On this frozen source, normal CapitalGainsCheck wrapper0:5402 OK lines,
+0 FAIL, including all eight exact serialized coupon record-map/flag/cash
+phase-load equalities and the reached120-month audits. The stricter tiny
+extinction-loss accumulator check passes. Sequential normal wrappers then
+pass0: BusinessServicesCheck, SaveFileCheck, ReadPathCheck, ScaleCheck,
+BuildingStackCheck and OrderSearchCheck. Scale's two established path
+observations remain separately OBSERVED. Every wrapper regenerated maps
+and reports Stale0firm/194soft; every owned process is actually terminal.
+Source stayed unchanged during these runs, with main C:/earth-2/world-1
+and scratch/TempDirs. All complete raw/pre-check/source/class/exit/terminal
+receipts are retained under the focused-merged183-* archives. Earlier
+PriceLevelCheck passes its complete371.9s native run on integrated .182;
+the final .183 ALL dry still owes its complete replay.
+
+No new own hard red remains in the completed affected checks. The full
+CentralBankCheck after its final fixture-only correction still belongs to
+the final ALL dry; only its actual changed native cases were rerun locally,
+with72 closed audit months and the two named main rounding predicates.
+No old red or component diagnostic is reclassified as a full green run.
+
+The new four-line monetary production delta is BondMarket.takeMonth's
+actual household-position extinction and noncash loss. The independently
+cleared b499 target did not contain it; a fresh stranger follow-up is
+required before ready. Remaining source changes since that clearance are
+causing fixture/scaling/layout corrections described above and published
+main integration. This checkpoint retains the provisional marker and makes
+no source-SHIP/readiness claim. Final ensemble must use the pushed final
+source against docs/ensemble/0.9.183.md, followed by the versioned ALL dry;
+old .181 ensemble evidence cannot certify this model. L7 remains Pending.
