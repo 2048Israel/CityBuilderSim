@@ -21,7 +21,7 @@
 
 **Uses:** [GameVersion](GameVersion.md) (2), [Founding](Founding.md) (1)
 
-**Used by (12):** [Format60SaveFixture](Format60SaveFixture.md), [Game](Game.md), [GameFiles](GameFiles.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ReloadCheck](ReloadCheck.md), [ReplayCheck](ReplayCheck.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SavedCities](SavedCities.md), [ScaleCheck](ScaleCheck.md), [UserInterface](UserInterface.md)
+**Used by (11):** [Game](Game.md), [GameFiles](GameFiles.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ReloadCheck](ReloadCheck.md), [ReplayCheck](ReplayCheck.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SavedCities](SavedCities.md), [ScaleCheck](ScaleCheck.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 

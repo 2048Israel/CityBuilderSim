@@ -194,7 +194,7 @@ public final class SubstationCheck {
         quietly(() -> { g.simulateMonths(1); back.simulateMonths(1); });
         UtilitiesHandler x = g.getServicesManager().getUtilitiesHandler(), y = back.getServicesManager().getUtilitiesHandler();
         check("the first post-load strike bills exactly the same grid costs as the uninterrupted city", JSON.toJson(x.getStruckBook()).equals(JSON.toJson(y.getStruckBook())));
-        check("a native format-60 city and history are refused without changing either file or a running twin", Format60SaveFixture.checks(false));
+        check("a native format-60 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeCard60Refusal());
     }
 
     public static void main(String[] args) throws Exception {

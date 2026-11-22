@@ -1,4 +1,4 @@
-# Construction.java - 1,219 lines · 67 methods · 4 constants · sectors
+# Construction.java - 1,231 lines · 68 methods · 4 constants · sectors
 
 `ham/citybuildersim/sectors/Construction.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -85,12 +85,13 @@
 | 530 | `private double salvageCutThisMonth` | ...this month's: booked at the month's market after recogniseWork() cleared it, named at the next strike (nameOtherRevenue()). |
 | 553 | `private double fittingThisMonth` | ...booked since the last strike banked its ledger, named at the next strike (nameOtherRevenue()) and read once for the national accounts. |
 | 673 | `private double salvageCost` | What the builders paid for the salvage on hand, in money: its cost basis. |
+| 1123 | `private double loadedWorkFill` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1170 | **type** `public final class Construction extends Sector` | The builders. |
+| 50 | 1182 | **type** `public final class Construction extends Sector` | The builders. |
 | 158 | 13 | `public void strikeCrews(double work, double depots)` | Strikes the month's crews. |
 | 173 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 180 | 1 | `public boolean isIdleAtCoreCrew()` | Whether the builders stand idle at the core crew: the work this month's strike saw needs no more than the core crew, so they offer IDLE_PAYROLL_FLOOR of their posts and lay the rest off (strikeCrews()). |
@@ -190,12 +191,13 @@
 | 1039 | 1 | `public boolean hasPlantBlock()` |  |
 | 1042 | 76 | `public List<Line> ownLines(Game game)` |  |
 
-### SAVE (lines 1119-1219)
+### SAVE (lines 1119-1231)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1124 | 34 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 1160 | 31 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 1193 | 12 | `protected void resetExtras()` |  |
-| 1208 | 11 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 1126 | 4 | `public void restoreLoadedWorkFill()` | The previous period's work input, restored after the load rebuild's current wage count (RES2). |
+| 1132 | 36 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 1170 | 32 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 1204 | 13 | `protected void resetExtras()` |  |
+| 1220 | 11 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

@@ -1,8 +1,8 @@
-# gate of Merge batch/RS1: the city can sell the bank it rescued (Jerus, 2026-11-20): the rescue book's only buyer is the bank's own buyback at a tenth a year; a world bid above his ask never fills; a crossed book's midpoint halves the quote; a dust trade sets the last price; Jerus: the world and the households may buy the rescue book ("Yes they may", 2026-11-20) (not beside RB3, DK1), 0.9.188
+# gate of Merge batch/RES2: aggregate housing inventory before RES3/RES4/HO1: physical dwelling mixes, ownership/occupancy authority, non-saleable founding capacity and reload invariants, 0.9.189
 # date: 2026-11-22
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 234 harnesses run in 1048s: 222 passed, 12 failed
+# suite: 237 harnesses run in 827s: 225 passed, 12 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -33,7 +33,7 @@ KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free      
 KeptCheck | 3 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 1.5 minutes; its output: /tmp/citybuildersim-tmp/1415835/copperrefiningcheck-rodmills8339995939408333459/seed1.log
+CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 1.6 minutes; its output: /tmp/citybuildersim-tmp/1773002/copperrefiningcheck-rodmills5812707374451881386/seed1.log
 CopperRefiningCheck | 2 FAILED
 LongPlaytest | exit 1
 LongPlaytest | FAIL industry stands farther out than the homes         1 time(s), months 2400-2400

@@ -6,7 +6,7 @@
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
 > the dispatch's demand input, and automation's demand input; each rule also fails against the pre-PW5 model.
 
-**Uses:** [UtilitiesHandler](UtilitiesHandler.md) (17), [Game](Game.md) (14), [PowerDispatch](PowerDispatch.md) (11), [PriceLevel](PriceLevel.md) (8), [Substations](Substations.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [JobType](JobType.md) (3), [BuildAdvice](BuildAdvice.md) (3), [GameFiles](GameFiles.md) (1), [BuildCard](BuildCard.md) (1), [BuildingManager](BuildingManager.md) (1), [AutoBuilder](AutoBuilder.md) (1), [CityCalendar](CityCalendar.md) (1), [Format60SaveFixture](Format60SaveFixture.md) (1)
+**Uses:** [UtilitiesHandler](UtilitiesHandler.md) (17), [Game](Game.md) (14), [PowerDispatch](PowerDispatch.md) (11), [PriceLevel](PriceLevel.md) (8), [Substations](Substations.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [JobType](JobType.md) (3), [BuildAdvice](BuildAdvice.md) (3), [GameFiles](GameFiles.md) (1), [BuildCard](BuildCard.md) (1), [BuildingManager](BuildingManager.md) (1), [AutoBuilder](AutoBuilder.md) (1), [CityCalendar](CityCalendar.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
 
 ## Constants
 

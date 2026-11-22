@@ -5110,6 +5110,10 @@ public class BuildingManager {
     }
 
     private java.util.function.Consumer<BuildingsStacks> onScrap = s -> { };
+    private final HousingInventory housing = new HousingInventory(() -> stacks, () -> foundingEndowments);
+
+    /** Physical recipe cohorts and their aggregate titles/occupants (RES2). */
+    public HousingInventory getHousingInventory() { return housing; }
 
     /** The fitting queue follows every stack's removals, told the stack after its counts fell; installed again by Game when its world is rebuilt (R1d). */
     public void setOnScrap(java.util.function.Consumer<BuildingsStacks> listener) {
@@ -5153,6 +5157,7 @@ public class BuildingManager {
         BuildingsStacks newStack = new BuildingsStacks(template, 0);
         newStack.setOnScrap(s -> onScrap.accept(s));
         stacks.add(newStack);
+        newStack.bindHousing(n -> housing.mayRemove(newStack, n), housing::physicalChanged);
 
         if (noConstruction) {
             newStack.addQuantity(quantity);
@@ -5613,7 +5618,7 @@ public class BuildingManager {
                 if (stack.getLastFinished() > 0) {
                     // ...with what each order's buildings come without, as their lots froze it (R1e), and those no order fitted out.
                     finished.add(new Completion(stack.getBuilding().getName(), stack.getLastFinished(),
-                            stack.getLastFinishedLoose(), stack.getLastFinishedWithout()));
+                            stack.getLastFinishedLoose(), stack.getLastFinishedWithout(), stack.getBuilding().getHousingRecipe()));
                 }
                 // ...and the gravel roads whose paving opened with them (0.7.70).
                 retirePaved(stack);
@@ -7059,6 +7064,8 @@ public class BuildingManager {
 
         public final String building;
         public final long quantity;
+        /** This one completion delivers quantity times this mix; null for non-housing. */
+        public final HousingRecipe housingRecipe;
         /** Of those, the ones no order fitted out (loose on site, BuildingsStacks): what they come with is decided at the finish (R1e). */
         public final long loose;
         /** ...and of the rest, how many came without each piece, by id, as their orders froze them: unmodifiable (R1e). */
@@ -7070,6 +7077,11 @@ public class BuildingManager {
         }
 
         Completion(String building, long quantity, long loose, java.util.Map<String, Long> without) {
+            this(building, quantity, loose, without, null);
+        }
+
+        Completion(String building, long quantity, long loose, java.util.Map<String, Long> without, HousingRecipe housingRecipe) {
+            this.housingRecipe = housingRecipe;
             this.building = building;
             this.quantity = quantity;
             this.loose = Math.max(0, Math.min(quantity, loose));
@@ -7384,17 +7396,7 @@ public class BuildingManager {
      * surprising guess available.
      */
     public long getTotalHomes() {
-        long homes = 0;
-        for (BuildingsStacks stack : stacks) {
-            BuildingsTemplate t = stack.getBuilding();
-            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
-
-            int per = t.getDwellings() > 0
-                    ? t.getDwellings()
-                    : Math.max(1, t.getCapacity() / 4);
-            homes += (long) stack.getQuantity() * per;
-        }
-        return homes;
+        return housing.homes();
     }
 
     /**
@@ -7405,40 +7407,12 @@ public class BuildingManager {
      * against one pooled count that let a family of six into a studio.
      */
     public long[] homesBySize() {
-        int widest = 1;
-        for (BuildingsStacks stack : stacks) {
-            BuildingsTemplate t = stack.getBuilding();
-            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
-            widest = Math.max(widest, t.homeSize());
-        }
-
-        long[] out = new long[widest + 1];
-        for (BuildingsStacks stack : stacks) {
-            BuildingsTemplate t = stack.getBuilding();
-            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
-
-            int per = t.getDwellings() > 0
-                    ? t.getDwellings()
-                    : Math.max(1, t.getCapacity() / 4);
-            int size = Math.max(1, t.homeSize());
-            out[size] += (long) stack.getQuantity() * per;
-        }
-        return out;
+        return housing.homesBySize();
     }
 
     /** Homes that will exist once everything on site is finished. */
     public long getHomesUnderConstruction() {
-        long homes = 0;
-        for (BuildingsStacks stack : getStacksUnderConstruction()) {
-            BuildingsTemplate t = stack.getBuilding();
-            if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
-
-            int per = t.getDwellings() > 0
-                    ? t.getDwellings()
-                    : Math.max(1, t.getCapacity() / 4);
-            homes += (long) stack.getUnderConstruction() * per;
-        }
-        return homes;
+        return housing.pipelineHomes();
     }
 
     /** How many founding endowments the city holds: 1 for a founded city, K for a harness's copy K times over (FW9; see the field). */
@@ -7449,9 +7423,7 @@ public class BuildingManager {
 
     /** The household places: the founding hundred (per endowment, FW9) and every residential building's. */
     public long getTotalHouseCapacity() {
-        // was a hand-rolled loop over RESIDENTIAL stacks summing quantity*capacity;
-        // that's exactly what getTotalByCategoryInteger already does.
-        return 100 * foundingEndowments + getTotalByCategoryInteger(BuildingType.RESIDENTIAL, BuildingsTemplate::getCapacity);
+        return housing.capacity();
     }
 
     /*Commercial Methods
@@ -7745,6 +7717,8 @@ public class BuildingManager {
 
     /** People a sector's buildings hold, sites included. See getCapacityInPortfolio. */
     public long getCapacityInPortfolioBySector(String sector) {
+        if (Sectors.REAL_ESTATE.equals(sector))
+            return (long) housing.ownedCapacity(HousingInventory.Owner.REAL_ESTATE, true);
         long total = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
@@ -8737,6 +8711,7 @@ public class BuildingManager {
     }
 
     public void clearStacks() {
+        housing.clear();
         stacks.clear();
     }
 

@@ -1,4 +1,4 @@
-# BuildingsStacks.java - 724 lines · 68 methods · 0 constants · model
+# BuildingsStacks.java - 739 lines · 69 methods · 0 constants · model
 
 `ham/citybuildersim/BuildingsStacks.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -7,7 +7,7 @@
 
 **Uses:** [Fitout](Fitout.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (4), [JobType](JobType.md) (1)
 
-**Used by (66):** [AdviceValueOracle](AdviceValueOracle.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BuildingStackCheck](BuildingStackCheck.md), [BusinessInvestment](BusinessInvestment.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionControl](ConstructionControl.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [LicenceFees](LicenceFees.md), [LongPlaytest](LongPlaytest.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [Oil](Oil.md), [OilView](OilView.md), [OutsideCheck](OutsideCheck.md), [Ports](Ports.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RealEstate](RealEstate.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [Refining](Refining.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SlopeCheck](SlopeCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (67):** [AdviceValueOracle](AdviceValueOracle.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BuildingStackCheck](BuildingStackCheck.md), [BusinessInvestment](BusinessInvestment.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionControl](ConstructionControl.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HousingInventory](HousingInventory.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [LicenceFees](LicenceFees.md), [LongPlaytest](LongPlaytest.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [Oil](Oil.md), [OilView](OilView.md), [OutsideCheck](OutsideCheck.md), [Ports](Ports.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RealEstate](RealEstate.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [Refining](Refining.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SlopeCheck](SlopeCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Fields (state)
 
@@ -41,12 +41,14 @@
 | 369 | `private final java.util.ArrayList<Lot> lots` |  |
 | 372 | `private long lastFinishedLoose` | Finished in the most recent advanceConstruction() call with no lot: loose, theirs to be decided at the finish. |
 | 374 | `private final java.util.TreeMap<String, Long> lastFinishedWithout` | ...and of those that finished in lots, how many came without each piece, by id. |
+| 483 | `private java.util.function.LongPredicate mayRemove` | for immediate add |
+| 484 | `private java.util.function.Consumer<BuildingsStacks> physicalChanged` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9 | 716 | **type** `public class BuildingsStacks` | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. |
+| 9 | 731 | **type** `public class BuildingsStacks` | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. |
 | 81 | 19 | **type** `public static final class Contract` | WHO PAID FOR THE CONTRACT, AND FOR THE MATERIAL IN IT (0.7.19). |
 | 89 | 1 | `Contract(String payer, boolean creditable)` _(in BuildingsStacks.Contract)_ |  |
 | 90 | 5 | `Contract(String payer, double recovered)` _(in BuildingsStacks.Contract)_ |  |
@@ -94,28 +96,29 @@
 | 457 | 14 | `private void finishFront(long k)` | Takes k finished buildings off the front, the loose first, and counts what they come without. |
 | 473 | 3 | `public long getLastFinishedLoose()` | Of the buildings the most recent advanceConstruction() call finished, those with no lot: their pieces are decided at the finish. |
 | 478 | 3 | `public java.util.Map<String, Long> getLastFinishedWithout()` | ...and of those it finished in lots, how many came without each piece, by id: unmodifiable, empty when every one came with all. |
-| 483 | 5 | `public void addQuantity(long n)` | for immediate add |
-| 489 | 108 | `public void advanceConstruction(double constructionOutput)` |  |
-| 607 | 3 | `public long getLastFinished()` | How many finished in the most recent advanceConstruction() call. |
-| 612 | 3 | `public double getLastApplied()` | Points the most recent advanceConstruction() call put into buildings. |
-| 622 | 7 | `public double clearBankedProgress()` | Drops progress past what the stack owes - all of it with nothing on site - and returns how many points that was. |
-| 631 | 3 | `public long getTotalJobs(JobType type)` | getters |
-| 635 | 3 | `public long getQuantity()` |  |
-| 640 | 5 | `public void removeQuantity(long amount)` | Scraps finished buildings. |
-| 646 | 3 | `public long getUnderConstruction()` |  |
-| 650 | 3 | `public String getName()` |  |
-| 654 | 3 | `public double getConstructionProgress()` |  |
-| 658 | 5 | `public void increaseQuantity(long amount)` |  |
-| 664 | 3 | `public BuildingsTemplate getBuilding()` |  |
-| 668 | 6 | `public boolean getIfUnderConstruction()` |  |
-| 676 | 3 | `public double getMaterialsOwed()` | Units the sites still have to draw. |
-| 681 | 3 | `public double getMaterialsDue()` | Units this month's work drew on, per the last advanceConstruction() call. |
-| 686 | 3 | `public double getContractValue()` | The builders' contract still on site. |
-| 691 | 3 | `public double getRevenueDue()` | What this month's work earned of it, per the last advanceConstruction() call. |
-| 695 | 3 | `public void setContractValue(double amount)` |  |
-| 700 | 4 | `public void redenominate(double scale)` | A reform: the contract is money. |
-| 706 | 3 | `public void setConstructionProgress(double progress)` | setters |
-| 710 | 4 | `public void setUnderConstruction(long quantity)` |  |
-| 715 | 3 | `public void setMaterialsOwed(double units)` |  |
-| 720 | 3 | `public void deliverMaterials(double units)` | Material that reached the sites without a purchase - the city's yard, on the order day. |
+| 487 | 4 | `void bindHousing(java.util.function.LongPredicate guard, java.util.function.Consumer<BuildingsStacks> changed)` | Inventory hooks protect conveyed titles; stacks remain physical authority. |
+| 492 | 7 | `public void addQuantity(long n)` |  |
+| 500 | 109 | `public void advanceConstruction(double constructionOutput)` |  |
+| 619 | 3 | `public long getLastFinished()` | How many finished in the most recent advanceConstruction() call. |
+| 624 | 3 | `public double getLastApplied()` | Points the most recent advanceConstruction() call put into buildings. |
+| 634 | 7 | `public double clearBankedProgress()` | Drops progress past what the stack owes - all of it with nothing on site - and returns how many points that was. |
+| 643 | 3 | `public long getTotalJobs(JobType type)` | getters |
+| 647 | 3 | `public long getQuantity()` |  |
+| 652 | 8 | `public void removeQuantity(long amount)` | Scraps finished buildings. |
+| 661 | 3 | `public long getUnderConstruction()` |  |
+| 665 | 3 | `public String getName()` |  |
+| 669 | 3 | `public double getConstructionProgress()` |  |
+| 673 | 5 | `public void increaseQuantity(long amount)` |  |
+| 679 | 3 | `public BuildingsTemplate getBuilding()` |  |
+| 683 | 6 | `public boolean getIfUnderConstruction()` |  |
+| 691 | 3 | `public double getMaterialsOwed()` | Units the sites still have to draw. |
+| 696 | 3 | `public double getMaterialsDue()` | Units this month's work drew on, per the last advanceConstruction() call. |
+| 701 | 3 | `public double getContractValue()` | The builders' contract still on site. |
+| 706 | 3 | `public double getRevenueDue()` | What this month's work earned of it, per the last advanceConstruction() call. |
+| 710 | 3 | `public void setContractValue(double amount)` |  |
+| 715 | 4 | `public void redenominate(double scale)` | A reform: the contract is money. |
+| 721 | 3 | `public void setConstructionProgress(double progress)` | setters |
+| 725 | 4 | `public void setUnderConstruction(long quantity)` |  |
+| 730 | 3 | `public void setMaterialsOwed(double units)` |  |
+| 735 | 3 | `public void deliverMaterials(double units)` | Material that reached the sites without a purchase - the city's yard, on the order day. |
 

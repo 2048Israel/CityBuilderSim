@@ -96,6 +96,11 @@ public class DataSave implements Cloneable {
     //save variables
     private double cash;
     private long[] buildings;
+
+    /** RES2 bounded title/occupancy/listing cohorts; physical stock stays in buildings[]. */
+    private java.util.List<HousingInventory.Holding> housingInventory;
+    public void setHousingInventory(java.util.List<HousingInventory.Holding> holdings) { housingInventory = holdings; }
+    public java.util.List<HousingInventory.Holding> getHousingInventory() { return housingInventory; }
     private int month = 1;
     private JsonArray debts;
 
@@ -177,7 +182,7 @@ public class DataSave implements Cloneable {
     /**
      * The utility's struck book (PW1; UtilitiesHandler, THE MERIT ORDER): the prices this month's power is billed at, the ratio it served
      * and the fuel bought at the next strike, and the month's fuel paid. PW5 also keeps the closing dispatch's grid costs here;
-     * the load rebuild restores them with that dispatch, never from the ending stock (format 61).
+     * the load rebuild restores them with that dispatch, never from the ending stock (format 62 after RES2).
      */
     private UtilitiesHandler.PowerState powerBooks;
 

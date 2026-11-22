@@ -1120,6 +1120,14 @@ public final class Construction extends Sector {
        SAVE
        =================================================================== */
 
+    private double loadedWorkFill = Double.NaN;
+
+    /** The previous period's work input, restored after the load rebuild's current wage count (RES2). */
+    public void restoreLoadedWorkFill() {
+        if (!Double.isNaN(loadedWorkFill)) averageFill = loadedWorkFill;
+        loadedWorkFill = Double.NaN;
+    }
+
     @Override
     protected void saveExtras(Map<String, Double> extras) {
         extras.put("unearnedRevenue", unearnedRevenue);
@@ -1132,6 +1140,8 @@ public final class Construction extends Sector {
         extras.put("postsOfferedShare", postsOfferedShare);
         extras.put("crewsNeeded", crewsNeeded);
         extras.put("fillStruckOn", fillStruckOn);
+        // Site work precedes the next wage count: rebuilding that count cannot replace this input.
+        extras.put("workFill", averageFill);
         // ...and the overtime (0.7.22), only when there is some, so a city
         // that has rushed nothing saves what it always saved.
         if (overtimeThisMonth != 0) extras.put("overtimeThisMonth", overtimeThisMonth);
@@ -1168,6 +1178,7 @@ public final class Construction extends Sector {
         postsOfferedShare = extras.getOrDefault("postsOfferedShare", 1.0);
         crewsNeeded = extras.getOrDefault("crewsNeeded", 1.0);
         fillStruckOn = extras.getOrDefault("fillStruckOn", 1.0);
+        loadedWorkFill = extras.getOrDefault("workFill", Double.NaN);
         overtimeThisMonth = extras.getOrDefault("overtimeThisMonth", 0.0);
         salvageCutThisMonth = extras.getOrDefault("salvageCutThisMonth", 0.0);
         fittingThisMonth = extras.getOrDefault("fittingThisMonth", 0.0);
@@ -1196,6 +1207,7 @@ public final class Construction extends Sector {
         recognisedThisMonth = repairsThisMonth = salvageCost = escalationThisMonth = 0;
         fittingThisMonth = 0;
         postsOfferedShare = crewsNeeded = fillStruckOn = 1;
+        loadedWorkFill = Double.NaN;
         overtimeThisMonth = 0;
         overtimeWages = null;
         foreignBook = foreignPointsThisMonth = foreignBillThisMonth = 0;

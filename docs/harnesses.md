@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**242 harness files, 27,763 labelled assertions.** AllChecks runs 242 of them.
+**243 harness files, 27,842 labelled assertions.** AllChecks runs 243 of them.
 
 ## Which harnesses read which class
 
@@ -38,11 +38,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck, FitoutCheck, GapOrderCheck, SaveFileCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PowerDispatchCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck, WorldMarketCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, UndemandedFeedCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, UndemandedFeedCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HousingInventoryCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, MedicineCheck, ModernEngineeringCheck, NewUnitCheck, OutsideCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, CreditCrunchCheck, DistressBleedCheck, FittingCheck, FundLedgerCheck, HistoryCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
@@ -84,7 +84,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Credits](map/Credits.md) | CreditsCheck, PackagingCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, EssentialWorksCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
-| [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LandmassCheck, LicenceFeesCheck, MapCheck, ModernEngineeringCheck, MoneyDatesCheck, MoneySignCheck, PolicyOpenCheck, PopulationCheck, PostwarRecipeCheck, PublicLicenceCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
+| [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HousingInventoryCheck, LandmassCheck, LicenceFeesCheck, MapCheck, ModernEngineeringCheck, MoneyDatesCheck, MoneySignCheck, PolicyOpenCheck, PopulationCheck, PostwarRecipeCheck, PublicLicenceCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalGainsCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck, WorksFinanceCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CreditCrunchCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FB13Check, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, GovernmentViewCheck, HoldersCheck, HousingCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneyWordsCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyOpenCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, PriceLevelCheck, StepsCheck, WorksFinanceCheck |
@@ -126,7 +126,6 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, ForeignCheck, ForeignDebtCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PolicyOpenCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ShortSellingCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [ForeignCouponView](map/ForeignCouponView.md) | FB13Check |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
-| [Format60SaveFixture](map/Format60SaveFixture.md) | ReadPathCheck, SaveFileCheck, SubstationCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, FormatsCheck, LandCheck, MoneySignCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, SulphideLeachCheck, TradeCostCheck, WellCheck, ZoningCheck |
 | [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DriverlessTruckCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GridCheck, GroceryCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HydroCheck, HydrogenSteelCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyOpenCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PowerPriceCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorksFinanceCheck, WorldCheck, WorldMoneysCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
@@ -137,8 +136,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | CapitalGainsCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | MapCheck, ReplayCheck, TruckRouteCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, CapitalGainsCheck, ChartCheck, ConstructionControlCheck, CreditsCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, GoldMiningCheck, LandmassCheck, MaterialsCheck, ModernEngineeringCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -169,6 +168,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Household](map/Household.md) | AuctionCheck, BankCheck, BasketYearCheck, BondCheck, BusinessServicesCheck, CapitalGainsCheck, CarCheck, CentralBankCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, Forms1900Check, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdStageCheck, InvestCheck, LongPlaytest, MarketCheck, MoneyWordsCheck, OutsideCheck, OwnerCheck, PrizeCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ShortSellingCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, Forms1900Check, HealthCheck, HouseholdCheck, HousingCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BasketYearCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalGainsCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, FundCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdStageCheck, LongPlaytest, LuxuryRetailCheck, MarketCheck, MaterialsCheck, MoneyWordsCheck, OutsideCheck, OwnerCheck, PolicyOpenCheck, PolicyPreviewCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, WoodProductsCheck |
+| [HousingInventory](map/HousingInventory.md) | HousingInventoryCheck, ReadPathCheck |
+| [HousingRecipe](map/HousingRecipe.md) | BuildingDataCheck, HousingInventoryCheck |
 | [HydroSites](map/HydroSites.md) | ElectrolyserCheck, EquipmentCheck, Forms1900Check, HydroCheck, HydrogenSteelCheck |
 | [Icons](map/Icons.md) | **none** |
 | [Inbox](map/Inbox.md) | DiscoveryCheck, InboxCheck, LandmassCheck, PlaytestFixCheck, PrizeCheck |
@@ -321,7 +322,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, GoldMiningCheck, HistoricalLicenceCheck, HomeRailCheck, HousingCheck, LicenceFeesCheck, PortCheck, RailCheck, SectorStatementCheck, TradeBandCheck, TruckRouteCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FitoutCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, OutsideCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPriceCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FitoutCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, OutsideCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPriceCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
@@ -3047,85 +3048,85 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L68 same number of buildings (
   - L70 PW5 appends Substation, a city utility carrying the study's peak MW, without generation
 - **L76 every field of every building**
-- **L235 care types line up with the category**
-- **L242 care types**
-  - L253 healthcare declares a care type, nothing else does
-  - L267 education declares what it teaches, nothing else does
-  - L284 safety declares police or prison, nothing else does
-  - L286 two police buildings and two prisons
-- **L288 the sea is drawn by water works, and one of them (0.7.59)**
-- **L295 water sources**
-  - L306 only a water works draws the sea
-  - L307 one water plant on fresh water and one on the sea (
-  - L312 id 73 is the Desalination Plant
-- **L315 fuel (0.7.62, batch K; spec-land 2.7)**
-- **L328 fuel**
-  - L334 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
-  - L338 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
-  - L346 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
-- **L349 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
-- **L358 the refinery's units**
-  - L361 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
-  - L394 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
-  - L396 ...each pair named for its kind, the small taking less feed for less money and more money a litre
-- **L398 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
-- **L409 the phase-1 buyers and the forecourt**
-  - L426 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
-  - L430 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
-  - L436 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
-  - L441 ...the only building with a pump
-  - L445 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
-- **L450 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
-- **L456 the oil storage**
-  - L462 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
-  - L467 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
-  - L474 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
-- **L483 the ports (0.7.86, batch O9; spec-oil 2.9)**
-- **L488 the ports**
-  - L501 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
-  - L503 ...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)
-- **L505 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
-- **L514 the oil at sea**
-  - L531 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
-  - L533 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
-  - L539 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
-  - L544 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
-  - L547 ...and the only buildings at sea
-- **L549 the site each stands on (0.7.110, batch I1)**
-- **L579 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
-  - L625 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
-  - L628 ...eighteen stand on sites, including GD4 gold - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
-  - L632 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
-  - L638 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
-  - L644 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
-  - L651 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
-  - L666 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
-- **L670 a works' own power and its consumables (0.7.112, batch I2)**
-- **L684 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
-  - L696 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
-  - L700 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
-  - L705 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
-  - L707 ...and every other building buys its whole draw and sells the grid none, to the bit
-  - L721 forty-four buy consumables, including GD4 gold and R6b's Sulphide Leach & SX-EW Plant (153) and Hydrogen Steel Works (154), the materials chains' rows: the E...
-- **L729 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
-- **L741 the old steel a yard takes, and the year each new row first existed (0.7.123)**
-  - L751 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
-  - L755 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
-  - L820 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
-- **L842 the raw coal a preparation plant washes (0.7.126, batch I6)**
-- **L849 the raw coal a preparation plant washes (0.7.126)**
-  - L853 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
-- **L859 and every profession has exactly one school**
-  - L876 every gated profession has exactly one school
-- **L878 every list of recipes is one the model can run (R1c)**
-- **L884 recipes**
-  - L909 every list of recipes (
-- **L912 ids are unique, which the saves depend on**
-  - L923 every id is unique
-- **L925 the manager actually uses the file**
-  - L929 initializeTemplates() produced the same count
-  - L931 lookup by id still works
-  - L934 lookup by name still works
+- **L242 care types line up with the category**
+- **L249 care types**
+  - L260 healthcare declares a care type, nothing else does
+  - L274 education declares what it teaches, nothing else does
+  - L291 safety declares police or prison, nothing else does
+  - L293 two police buildings and two prisons
+- **L295 the sea is drawn by water works, and one of them (0.7.59)**
+- **L302 water sources**
+  - L313 only a water works draws the sea
+  - L314 one water plant on fresh water and one on the sea (
+  - L319 id 73 is the Desalination Plant
+- **L322 fuel (0.7.62, batch K; spec-land 2.7)**
+- **L335 fuel**
+  - L341 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
+  - L345 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
+  - L353 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
+- **L356 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
+- **L365 the refinery's units**
+  - L368 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
+  - L401 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
+  - L403 ...each pair named for its kind, the small taking less feed for less money and more money a litre
+- **L405 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
+- **L416 the phase-1 buyers and the forecourt**
+  - L433 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
+  - L437 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
+  - L443 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
+  - L448 ...the only building with a pump
+  - L452 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
+- **L457 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
+- **L463 the oil storage**
+  - L469 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
+  - L474 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
+  - L481 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
+- **L490 the ports (0.7.86, batch O9; spec-oil 2.9)**
+- **L495 the ports**
+  - L508 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
+  - L510 ...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)
+- **L512 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
+- **L521 the oil at sea**
+  - L538 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
+  - L540 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
+  - L546 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
+  - L551 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
+  - L554 ...and the only buildings at sea
+- **L556 the site each stands on (0.7.110, batch I1)**
+- **L586 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
+  - L632 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
+  - L635 ...eighteen stand on sites, including GD4 gold - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
+  - L639 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
+  - L645 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
+  - L651 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
+  - L658 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
+  - L673 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
+- **L677 a works' own power and its consumables (0.7.112, batch I2)**
+- **L691 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
+  - L703 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
+  - L707 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
+  - L712 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
+  - L714 ...and every other building buys its whole draw and sells the grid none, to the bit
+  - L728 forty-four buy consumables, including GD4 gold and R6b's Sulphide Leach & SX-EW Plant (153) and Hydrogen Steel Works (154), the materials chains' rows: the E...
+- **L736 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
+- **L748 the old steel a yard takes, and the year each new row first existed (0.7.123)**
+  - L758 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
+  - L762 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
+  - L827 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
+- **L849 the raw coal a preparation plant washes (0.7.126, batch I6)**
+- **L856 the raw coal a preparation plant washes (0.7.126)**
+  - L860 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
+- **L866 and every profession has exactly one school**
+  - L883 every gated profession has exactly one school
+- **L885 every list of recipes is one the model can run (R1c)**
+- **L891 recipes**
+  - L916 every list of recipes (
+- **L919 ids are unique, which the saves depend on**
+  - L930 every id is unique
+- **L932 the manager actually uses the file**
+  - L936 initializeTemplates() produced the same count
+  - L938 lookup by id still works
+  - L941 lookup by name still works
 
 ## BuildingStackCheck.java - 132 labelled assertions
 
@@ -16526,6 +16527,95 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L253 5. the households' identity through the mortgage door (HL1)**
   - L255 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
 
+## HousingInventoryCheck.java - 75 labelled assertions
+
+> Aggregate housing inventory, caused through recipes, construction and transfers.
+> WHY (RES2): title/listing quantities must conserve homes independently of the
+> represented population, and a load must restore them without a second completion.
+
+  - L65 REV-RES2 P1: one retained occupant consumes the whole one-home match
+  - L66 REV-RES2 P1: no second class occupant is invented
+  - L67 REV-RES2 P1: existing title occupants are retained
+  - L69 REV-RES2 P1: only residual demand reaches the other class
+  - L71 REV-RES2 P1: repeated matching conserves the fractional total
+  - L105 REV-RES2 P2:
+  - L107 REV-RES2 P2:
+- **L115 retained occupants precede equal-size residual matching**
+  - L127 all three physical door totals derive from the registry
+  - L128 founding places add capacity without saleable doors
+  - L129 endowment is separately named
+  - L130 RE owns the structures, without the endowment
+  - L131 the endowment cannot be conveyed as a title
+- **L133 mixed recipe delivered by one real completion**
+  - L136 sites contain the whole mixed pipeline
+  - L137 sites create no finished homes
+  - L138 zero work emits no completion
+  - L140 one aggregate event carries both structures and their immutable mix
+  - L142 completion delivers each small home once
+  - L143 completion delivers each family home once
+  - L144 mixed capacity remains physical capacity plus the endowment
+  - L145 pipeline has emptied
+  - L146 repeating work cannot finish the same homes twice
+  - L147 size two doors are the mixed recipe's small class
+  - L148 size four doors are the mixed recipe's family class
+- **L150 fractional titles, occupancy, listings and split/merge**
+  - L153 actual size match assigns fractional lets to the family class
+  - L154 zero class lets create no phantom occupants
+  - L157 fractional title arrives once
+  - L158 occupied transfer retains the tenants
+  - L159 ownership sums to physical homes
+  - L160 occupancy is conserved through a sale
+  - L161 listings are subsets and add no homes
+  - L162 a transferred occupied offer leaves the seller's listing once
+  - L163 a transferred vacant offer leaves the seller's listing once
+  - L164 owned capacity excludes conveyed capacity
+  - L166 overselling is atomic
+  - L167 occupied offer cannot exceed occupants
+  - L168 non-finite quantities are refused
+  - L169 every refused operation leaves all cohorts unchanged
+  - L172 equivalent title parts merge back into one quantity
+  - L173 equivalent occupant parts merge too
+  - L174 empty estate cohort is coalesced away
+  - L176 zero transfer creates no cohort
+  - L177 a physical removal cannot destroy a conveyed title
+  - L178 refused removal leaves physical homes whole
+- **L180 fixed book and collateral allocation**
+  - L184 partial structure book allocations sum
+  - L185 partial land allocations sum
+  - L186 partial collateral release sums
+  - L192 all titles allocate the project structure book once
+  - L193 all titles allocate the project land book once
+  - L194 all titles allocate the project collateral once
+- **L196 represented stock scaling leaves dimensions fixed**
+  - L202 1000x structures still have exactly two physical class rows
+  - L203 1000x titles/listings still have the same saved cohort count
+  - L204 1000x stock counts whole
+  - L205 1000x fractional owned share scales
+- **L207 bounded matrix serialization and pure reads**
+  - L212 fractional owners survive DataSave serialization
+  - L213 occupied owners survive DataSave serialization
+  - L214 occupied listings survive DataSave serialization
+  - L221 quotes and compatibility reads never advance saved state
+  - L223 invalid save cannot replace a valid matrix
+  - L224 failed restore is atomic
+  - L227 save cannot claim more titles than physical homes
+  - L228 refused excess titles preserve the old matrix
+- **L230 actual game save/rebuild preserves titles and RN2's debt baseline**
+  - L243 REV-RES2 P2: real reload fixture contains pipeline, mixed titles, occupied/vacant homes, both listing subsets and the endowment
+  - L253 fixture changed the capacity baseline and stranded debt share
+  - L254 fixture wrote only its scratch save
+  - L256 actual game loader accepted its inventory save
+  - L264 load rebuild restores conveyed quantity
+  - L265 load rebuild restores occupancy
+  - L266 load rebuild restores listing subsets
+  - L267 RN2 load keeps the changed saved count
+  - L268 RN2 load keeps the saved stranded share
+  - L274 REV-RES2 P2: both next-month cities still exercise the pipeline and conveyed title
+  - L279 first month allocates debt from the same changed baseline
+  - L280 first month counts the same RE-owned capacity
+  - L281 first month retains the conveyed title
+  - L283 a new city clears both physical and assignment cohorts
+
 ## HydroCheck.java - 102 labelled assertions
 
 > The Hydro Station and the river it needs (HY1, 2026-10-26; docs/queue/HY1-notes.md): the physics of a drop against
@@ -27800,73 +27890,73 @@ _(this harness does not label its checks through a helper - it prints its findin
 >                              reloaded city collected $0 where the live one
 > ...
 
-  - L1594 HT1 appended household stocks and struck flows survive both read paths
-- **L1596 XR7: reads keep the support already bought under a peg**
-  - L1599 fixture: a chosen peg has nonzero support and an unpaid nonlinear purchase
-  - L1603 reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit
-- **L1604 R2c: IP service flows and planner reads**
-  - L1605 reading paid IP charges and net planner gains keeps the money still
-  - L1606 reading the public works' licence and its planners keeps the money still
-  - L1607 live and loaded rail reads keep the saved steam period when its depot is gone
-  - L1608 R6e current E21 loads keep physical choices through real reads; formats58/59 are refused without changing a running city
-  - L1609 native format60 refusal preserves both files and a running loaded twin through real readers
-- **L1610 R0f: the dated Money readers keep the saved rule still**
-  - L1611 reading dated Money keeps the gold episode, its exit and the inherited rate unchanged
-- **L1616 a city with money moving in every sector**
-  - L1694 fixture: the bond desk prices a bond for the builders
-  - L1712 fixture: the issue is on the books, and somebody other than the fund holds part of it
-  - L1721 fixture: the fund's hand holds part of the issue, and the ask rests on its book
-  - L1733 fixture: the fund holds a share of a company the world sold it
-  - L1737 fixture: the businesses owe bonds, and orders rest on their books
-  - L1739 fixture: the city's fund holds shares and bonds
-  - L1748 every sector is actually trading
-- **L1754 the FIRST read, which is the hard one**
-  - L1810 one pass over the screens moved nothing
-  - L1827 the live sale figure IS the one in the ledger
-- **L1831 read it, and read it again**
-  - L1860 reading the city fifty times changed nothing
-- **L1862 and the specific one item 7 was about**
-  - L1918 every one of the thirteen pantries fell by what sold and rose by what arrived
-  - L1925 ...and the statement never sold more than was in stock
-  - L1927 ...and the shelf never goes negative
-- **L1930 the tax the city takes is the tax it shows**
-  - L1938 business tax collected == business tax printed
-  - L1942 ...and it is the companies taxed separately, not netted
-- **L1947 a rate change reaches the treasury at once**
-  - L1977 doubling the rate moves the very next month's commercial tax
-- **L1980 the build advice's reads, after a load (0.7.51)**
-- **L1996 reading acute influenza shares leaves them and the ring alone (R0h)**
-  - L2005 fixture: influenza acute shares and chronic sickness are both present
-  - L2016 fifty reads leave every acute share, ring slot and Health component unchanged
-  - L2117 fixture: the offers have sellers by hand (two named in the first, one in the second, none in the rest), and the tally has figures where the world file sizes it
-  - L2121 fixture: the city holds hills by hand - the centre,
-  - L2130 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
-  - L2140 fixture: the city has suggestions to compare
-  - L2141 every one of them the same after a load, to the bit
-  - L2142 ...the high schools' leavers a number, not NaN
-  - L2144 the land on the world is the same after a load: its centre, its blocks and purchases
-  - L2146 ...its offers, field for field
-  - L2148 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
-  - L2159 ...with who sells each of them (WN5): the offers' sellers back to the bit, the first two named and the rest not, every offer the same field for field
-  - L2168 ...and what the city has bought from whom (WN5): every nation's area and dollars back to the bit
-  - L2181 the save carries who sells each offer, and the tally where the file sizes it, in keys of their own (WN5)
-  - L2182 the save carries the three keys of the ground by relief, and they are what the load read
-  - L2194 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
-  - L2199 ...and a save without WN5's three keys loads every offer the host's whole, at the price it was listed at, and nothing bought from anyone
-  - L2201 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
-  - L2206 the saved file reads:
-  - L2208 ...and what was taken out of its ground
-  - L2210 ...and out of its offshore pool (0.7.93)
-  - L2212 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
-- **L2227 and a city on the real Earth: reading its world fifty times**
-  - L2229 fixture: EarthCheck's fixture is beside the classes
-  - L2255 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
-  - L2261 fixture: a plot of the North Sea west of it
-  - L2288 reading an Earth city's world fifty times changed nothing (
-- **L2299 the world market and the trade by partner: reading them changes nothing (WN3)**
-  - L2301 fixture: the twelve-nation world file is beside the classes
-  - L2327 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
-  - L2347 reading the world market and the trade by partner fifty times changed nothing (
+  - L1608 HT1 appended household stocks and struck flows survive both read paths
+- **L1610 XR7: reads keep the support already bought under a peg**
+  - L1613 fixture: a chosen peg has nonzero support and an unpaid nonlinear purchase
+  - L1617 reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit
+- **L1618 R2c: IP service flows and planner reads**
+  - L1619 reading paid IP charges and net planner gains keeps the money still
+  - L1620 reading the public works' licence and its planners keeps the money still
+  - L1621 live and loaded rail reads keep the saved steam period when its depot is gone
+  - L1622 R6e current E21 loads keep physical choices through real reads; formats58/59 are refused without changing a running city
+  - L1623 native format60 refusal and repeated reads preserve an actual running loaded twin and both files
+- **L1624 R0f: the dated Money readers keep the saved rule still**
+  - L1625 reading dated Money keeps the gold episode, its exit and the inherited rate unchanged
+- **L1630 a city with money moving in every sector**
+  - L1708 fixture: the bond desk prices a bond for the builders
+  - L1726 fixture: the issue is on the books, and somebody other than the fund holds part of it
+  - L1735 fixture: the fund's hand holds part of the issue, and the ask rests on its book
+  - L1747 fixture: the fund holds a share of a company the world sold it
+  - L1751 fixture: the businesses owe bonds, and orders rest on their books
+  - L1753 fixture: the city's fund holds shares and bonds
+  - L1762 every sector is actually trading
+- **L1768 the FIRST read, which is the hard one**
+  - L1824 one pass over the screens moved nothing
+  - L1841 the live sale figure IS the one in the ledger
+- **L1845 read it, and read it again**
+  - L1874 reading the city fifty times changed nothing
+- **L1876 and the specific one item 7 was about**
+  - L1932 every one of the thirteen pantries fell by what sold and rose by what arrived
+  - L1939 ...and the statement never sold more than was in stock
+  - L1941 ...and the shelf never goes negative
+- **L1944 the tax the city takes is the tax it shows**
+  - L1952 business tax collected == business tax printed
+  - L1956 ...and it is the companies taxed separately, not netted
+- **L1961 a rate change reaches the treasury at once**
+  - L1991 doubling the rate moves the very next month's commercial tax
+- **L1994 the build advice's reads, after a load (0.7.51)**
+- **L2010 reading acute influenza shares leaves them and the ring alone (R0h)**
+  - L2019 fixture: influenza acute shares and chronic sickness are both present
+  - L2030 fifty reads leave every acute share, ring slot and Health component unchanged
+  - L2131 fixture: the offers have sellers by hand (two named in the first, one in the second, none in the rest), and the tally has figures where the world file sizes it
+  - L2135 fixture: the city holds hills by hand - the centre,
+  - L2144 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
+  - L2154 fixture: the city has suggestions to compare
+  - L2155 every one of them the same after a load, to the bit
+  - L2156 ...the high schools' leavers a number, not NaN
+  - L2158 the land on the world is the same after a load: its centre, its blocks and purchases
+  - L2160 ...its offers, field for field
+  - L2162 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
+  - L2173 ...with who sells each of them (WN5): the offers' sellers back to the bit, the first two named and the rest not, every offer the same field for field
+  - L2182 ...and what the city has bought from whom (WN5): every nation's area and dollars back to the bit
+  - L2195 the save carries who sells each offer, and the tally where the file sizes it, in keys of their own (WN5)
+  - L2196 the save carries the three keys of the ground by relief, and they are what the load read
+  - L2208 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
+  - L2213 ...and a save without WN5's three keys loads every offer the host's whole, at the price it was listed at, and nothing bought from anyone
+  - L2215 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
+  - L2220 the saved file reads:
+  - L2222 ...and what was taken out of its ground
+  - L2224 ...and out of its offshore pool (0.7.93)
+  - L2226 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
+- **L2241 and a city on the real Earth: reading its world fifty times**
+  - L2243 fixture: EarthCheck's fixture is beside the classes
+  - L2269 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
+  - L2275 fixture: a plot of the North Sea west of it
+  - L2302 reading an Earth city's world fifty times changed nothing (
+- **L2313 the world market and the trade by partner: reading them changes nothing (WN3)**
+  - L2315 fixture: the twelve-nation world file is beside the classes
+  - L2341 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
+  - L2361 reading the world market and the trade by partner fifty times changed nothing (
 
 ## RealDollarCheck.java - 62 labelled assertions
 
@@ -29701,7 +29791,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1302 a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries
   - L1308 ...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone
 
-## SaveFileCheck.java - 804 labelled assertions
+## SaveFileCheck.java - 808 labelled assertions
 
 > Verifies where saves go and how they are written.
 > 
@@ -29721,845 +29811,849 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L69 XR7: support already bought under a peg crosses the save**
   - L70 nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again
   - L71 R6e current E21 choices survive immediate and next-month loads; native pre-E21 formats58/59 are refused intact
-- **L72 R2c: paid IP service flows cross the save objects**
-  - L73 nonzero IP charges survive DataSave, HistorySave and the load restorers
-  - L74 the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment
-  - L75 the prior steam rail period survives the actual load after its last unfitted depot closes
-- **L77 R0f: the exhausted gold episode through DataSave and the load path**
-  - L78 Canadian gold's exhausted episode and inherited interest cross JSON and the next month
-- **L80 PW1: a save from before the struck book loads at the ratio its load computes (REV-PW1c)**
-  - L81 a city short of power saved without its book (format 58, before PW1) loads with the ratio its load dispatched in its book, not the founding book's 1, and run...
-  - L82 power dispatch observations and history survive the actual save/load
-  - L83 completed pending power survives repeated saves, the actual load, next native month and currency reform
-- **L86 1. where it goes**
-  - L91 Windows follows %APPDATA%
-  - L98 ...and falls back when it is missing
-  - L103 ...blank counts as missing, not as a folder named nothing
-  - L108 macOS uses Application Support
-  - L113 Linux uses the XDG default
-  - L118 ...and honours XDG_DATA_HOME when set
-  - L124 an unrecognised platform still resolves
-  - L128 no home directory still resolves rather than throwing
-  - L131 it is never the old folder
-- **L134 2. writing safely**
-  - L143 save file
-  - L144 history file
-  - L147 folder does not exist yet
-  - L150 first write succeeds
-  - L151 ...and says where
-  - L152 ...and the contents are right
-  - L155 no .tmp left behind
-  - L157 nothing to back up on the first write
-  - L161 second write succeeds
-  - L162 ...the new city is on disk
-  - L164 ...and the previous one survives as .bak
-- **L167 3. a write that cannot possibly work**
-  - L178 a failed write is reported as failed
-  - L179 ...with a reason attached
-  - L181 ...and the message says so plainly
-  - L183 ...and does not claim to have saved
-  - L186 no .tmp litter after a failure
-  - L191 the existing save is untouched by a later failure
-- **L194 4. the old folder**
-  - L208 both files came over, both hops
-  - L209 the save arrived in Slot 1
-  - L211 the history arrived with it
-  - L213 ...and the intermediate flat save is left behind too
-  - L218 the originals are still there
-  - L221 ...and unchanged
-  - L225 running it again copies nothing
-- **L227 5. it never overwrites a newer save**
-  - L237 the save being played is untouched
-  - L239 ...and the old history still came over
-  - L241 ...without the old save overwriting Slot 1
-  - L247 no old folder, nothing to do
-  - L255 no file copied onto itself
-  - L257 ...but the flat save was promoted to Slot 1
-  - L259 ...and the original is intact
-- **L262 6. a real round trip**
-  - L288 DataSave wrote itself
-  - L293 cash survived
-  - L294 month survived
-  - L295 population survived
-  - L296 buildings survived
-  - L297 household savings survived
-  - L298 land survived
-  - L299 tax rates survived
-  - L301 the city's name survived
-  - L302 ...its money, all five of its names
-  - L303 ...the treasury it was founded with
-  - L304 ...and the vault
-  - L305 ...and the world's mean is handed back, not saved twice
-  - L307 ...and the world it stands on, its seed (0.7.56)
-  - L308 ...saved under worldSeed
-  - L309 fixture: Arden's path and seed are not the defaults, so a default read back could not pass
-  - L311 ...and the path of the world beyond it (WN1; spec-nations 7)
-  - L312 ...and the seed that draws it, not the ground's
-  - L313 ...saved under worldPath, by the enum's name
-  - L314 ...and under pathSeed
-  - L315 ...with the ground's seed still its own
-  - L332 fixture: the land wrote itself
-  - L335 the centre survived, every field
-  - L336 ...its blocks (0.7.67)
-  - L337 ...the purchase, its rectangle and all (0.7.67)
-  - L338 ...the twenty-four offers
-  - L339 ...and the ground by relief beside them (ET1): a generated city's all flat, its dry ground flat in the centre and every holding and offer
-  - L346 a generated city's offers name no seller, and its save carries neither the sellers nor the tally (WN5)
-  - L365 fixture: the sellers and the tally wrote themselves
-  - L368 the offers' sellers survived, a row for each offer, to the bit (WN5)
-  - L369 ...and the tally, every nation's area and dollars
-  - L377 ...and the offers restored from them are the offers written, sellers and all (LandParcel.same())
-  - L380 an offer's record is not wider for its sellers (a wider row is passed over by every save before): GD4's widened resource row
-  - L384 ...and a row of sellers of the wrong shape, or with a figure that is not a number or a seller that is no nation's number, reads as none
-  - L390 ...and a save without the keys restores every offer the host's whole, as every save before WN5 is
-  - L392 ...and no lanes, which only a format-31 save is read for (0.7.67)
-  - L394 ...the next offer's id
-  - L395 ...what was taken out
-  - L396 ...the offshore pool's E null on a save without it, as one from before 0.7.93 (the load charges its one pool to
-  - L398 ...the world's totals
-  - L399 ...and its sea's level
-  - L402 fixture: the offshore pool's E wrote itself
-  - L404 the offshore pool's E survived, to the bit (0.7.93)
-  - L406 ...E by type absent on a city that dug nothing by type, as on a save from before 0.7.110 (the walk's reading)
-  - L411 fixture: E by type wrote itself
-  - L413 E by type survived, to the bit, its rows of the resources nothing dug by type still null (0.7.110)
-  - L419 ...and back in a land office, the same E by type
-  - L423 fixture: the rights wrote themselves
-  - L424 the water rights survived (0.7.59)
-  - L428 fixture: the map's stamp wrote itself
-  - L429 the city map's stamp survived, every bit (0.7.60)
-  - L434 fixture: the fuel month wrote itself
-  - L435 the drivers' fuel month survived, every figure (0.7.62)
-  - L440 fixture: the homes' fuel sale wrote itself
-  - L441 the homes' fuel sale survived, every figure (R0e)
-  - L445 fixture: ...and a save with no sale wrote itself
-  - L446 ...and a month that struck none writes no homeFuelSale (R0e)
-  - L447 fixture: ...and a save with no map wrote itself
-  - L448 ...and a save with no map carries no stamp
-  - L451 ...and the land it rebuilds is the land written
-  - L452 a save written now carries no parcels and no iron pool, which only an older save is read for
-  - L456 ...and an older save's iron pool reads, for the conversion: its sites
-  - L457 ...and its tonnes
-  - L458 ...and no land of its own
-  - L459 ...and no water rights, which the load derives (0.7.59)
-  - L460 ...and no city map, which waits to be asked for (0.7.60)
-  - L461 ...and no fuel month, which the load derives as that build struck it (0.7.62)
-  - L463 ...and no homes' fuel sale, which holds nothing to charge (R0e)
-  - L464 the slot list reads the same name off the same file
-  - L468 a save with none of the eight reads as the founding every city had before 0.7.10
-  - L473 ...and its header says Danzik
-  - L475 ...and its world is the one its name, treasury, ground and month make (0.7.56)
-  - L480 a save from 0.7.10 to 0.7.55 reads the seed its own fields make
-  - L483 a save from before the path reads Nations.DEFAULT_PATH and DEFAULT_SEED, and carries neither key (WN1)
-  - L489 ...and a path this build does not know reads the default path, and a missing seed the default seed
-  - L496 no file paths leaked into the save
-  - L508 two months recorded
-  - L509 HistorySave wrote itself
-  - L510 ...to its own file, not over the save
-- **L513 7. construction survives a save**
-  - L570 fixture: the depots were ordered, three of the builders' months and one over (
-  - L573 fixture: the order is more than the sites' month can build
-  - L585 fixture: something is genuinely mid-build
-  - L611 saved
-  - L620 depots still under construction
-  - L622 stores still under construction
-  - L624 and the part-finished work came back
-  - L631 land committed to unfinished sites is still committed
-- **L634 7b. the warning survives a save**
-  - L683 an unprotected city with a fresh shed IS warned
-  - L693 the month construction last shed came back
-  - L695 ...and the capacity it has sold since
-  - L697 ...and it is still unprotected
-  - L699 ...so the player is still being warned
-  - L704 protecting construction takes the warning down
-  - L715 a dismissed warning stays dismissed across a reload
-- **L718 8. a save with nothing else built**
-  - L731 nothing is finished yet
-  - L733 but one is being built
-  - L735 saved
-  - L739 it did not vanish
-- **L742 8b. a stack emptied keeps its place (0.7.103)**
-  - L757 fixture: the gravel road's stack stands empty, ahead of the houses
-  - L762 saved
-  - L765 ...and the loaded city stands the same stacks in the same order, the empty one in its place
-  - L769 ...with nothing in it
-- **L772 9. the headline income does not move**
-  - L779 property tax survived the round trip
-  - L794 the city actually charges retail something
-  - L796 retail's property tax expense came back
-  - L799 real estate's did too
-  - L802 ...and the line on the statement with it
-  - L809 the sector charges are part of the city's total
-- **L812 10. the whole figure, to the cent**
-  - L827 the city has people at all
-  - L828 population is not invented by loading
-  - L870 goods reached the shops, which the mills had to make first
-  - L872 ...so the figures compared below are not all zero
-  - L876 business tax
-  - L878 wage tax
-  - L880 retail cost of goods
-  - L883 ...and the month in progress
-  - L899 next-month income is identical across a save
-  - L902 sales tax
-  - L904 monthly GDP
-  - L923 fixture: the city kept more than a year of GDP
-  - L924 a loaded city has the months its history kept, up to ten years
-  - L927 ...and its year is the live city's to the bit: the rolling year saved exactly (0.7.81)
-  - L932 fixture: the save carries the rolling year
-  - L937 ...and a save without it (before 0.7.81) reads its year from the history's last twelve months
-  - L943 construction backlog
-  - L945 construction unearned revenue
-  - L948 construction cash
-  - L960 the city did lose something
-  - L961 the demolition log came back
-  - L963 ...with its entries intact
-  - L966 the write-off record came back
-  - L981 the city did finish something
-  - L982 the build log came back
-  - L984 ...with its entries intact
-  - L987 ...and the merged quantities unchanged
-- **L991 11. a city that is still MOVING**
-  - L1058 fixture: the order's month moved the town's people
-  - L1059 fixture: the city really is still growing
-  - L1061 fixture: ...and its statement describes a smaller month than the one in progress
-  - L1074 saved mid-growth
-  - L1082 the workforce that worked the month came back
-  - L1084 wage tax
-  - L1086 retail gross revenue
-  - L1089 ...and the month the shops are in
-  - L1092 industrial gross revenue
-  - L1095 sales tax
-  - L1097 monthly GDP
-  - L1099 and next month's income, to the cent
-- **L1102 12. a city that OWES money**
-  - L1133 the city really does owe something
-  - L1135 ...and has interest on the books waiting to be charged
-  - L1141 saved in debt
-  - L1150 the debt came back
-  - L1160 fixture: the households hold some of it
-  - L1162 ...and still do after the reload, cell by cell
-  - L1165 ...which is what the paper says they hold
-  - L1168 ...and the discount still to accrete on it came back
-  - L1171 ...and so did the interest it had already accrued
-  - L1174 ...so next month's income still shows the deficit
-  - L1178 fixture: the bond really booked some interest in the month
-  - L1180 ...and each kind's interest booked came back with the save
-  - L1185 fixture: the city kept a curve for six months, and the bond a path and a sale
-  - L1188 ...and the curve book came back with the save
-  - L1190 ...and the bond's price path and its sale
-  - L1203 and a month later both cities have paid the same bill
-- **L1207 12b. ...AND ONE THAT OWES ABROAD (2026-09-21)**
-- **L1225 and a city with dollars owed abroad**
-  - L1251 fixture: the rate was moved for the revaluing month
-  - L1255 fixture: the city really does owe dollars
-  - L1257 fixture: ...and the rate really did move them this month
-  - L1260 saved owing abroad
-  - L1263 what the currency did to the debt this month reloads (CD7's booked line)
-  - L1265 ...and what it has done to it since founding (the history's sum of the line)
-  - L1267 fixture: ...which is not nothing after a month with a move
-  - L1272 fixture: the city paid a coupon abroad this month, and EARNED's expenses carry it
-  - L1275 the month's coupons abroad reload with the save
-  - L1276 ...and the reloaded city's EARNED expenses carry it
-  - L1281 fixture: the month's move booked an exchange gain or loss on the dollar bond
-  - L1283 the month's exchange gain on the foreign debt reloads, in the government block
-  - L1285 ...and the result with it
-  - L1288 fixture: the history kept the line, a month for a month, and it is in the last
-  - L1290 ...and the history's series reloads
-  - L1295 fixture: the dollar bond remembers the rate it was sold at
-  - L1297 ...and each sale's rate reloads with the piece, so what the exchange has done since the sale reads the same
-  - L1306 fixture: the city has a full year of rates, and the D$ moved over it
-  - L1308 the year of rates reloads, so a run on the currency fires in the loaded city as in its original
-- **L1311 13. AND NOTHING READS ZERO ON A FRESHLY LOADED CITY**
-- **L1364 and a freshly loaded city reads what the live one reads**
-  - L1516 fixture: the city has a household cell to leave without means
-  - L1527 fixture: another household cell receives the poor cell's securities
-  - L1559 fixture: the bank opened and started paying its savers
-  - L1673 fixture: the world is short of a company the households hold, lent by the cells, with collateral held against it and a record stamped
-  - L1678 saved a city with one of everything in it
-  - L1686 fixture: savers really were being paid something
-  - L1688 fixture: the schools really were running
-  - L1691 fixture: the dial really did pay out
-  - L1694 fixture: somebody really was hungry
-  - L1696 fixture: the tiers really were shopping
-  - L1707 fixture: the city really was paying for repairs
-  - L1709 what the city paid to keep its buildings up
-  - L1712 ...the budget's repairs line, which is what it paid
-  - L1715 ...and the line is the bill it paid, not nothing
-  - L1717 ...so the budget's spending, with it, is the same
-  - L1726 fixture: the investors left a word on some sector
-  - L1728 the investors' last word survives a save, slot for slot, word for word
-  - L1732 what savers are paid
-  - L1736 the founding record reads the same: the name
-  - L1737 ...the money
-  - L1738 ...the treasury it was founded with
-  - L1739 ...the vault
-  - L1740 ...and the world it was founded into
-  - L1742 ...and the ground it stands on (0.7.56)
-  - L1743 fixture: the whole city was founded on a path and seed that are not the defaults (WN1)
-  - L1745 ...and the path of the world beyond it (WN1)
-  - L1746 ...and the seed that draws it
-  - L1747 the refinery's crude mix, light, medium and heavy (0.7.79)
-  - L1753 the refiners' idle months by kind, the spread planner's (0.7.82)
-  - L1755 the wells' vintages, each batch's month, count and kind (0.7.84)
-  - L1757 the oil at sea's platforms - each one's field, wells and month - and pipelines, each one's field,
-  - L1762 fixture: the reserve really did hold crude, with a release standing and a month to settle
-  - L1764 the strategic reserve's crude (0.7.85)
-  - L1765 ...its book
-  - L1766 ...its release
-  - L1767 ...what it bought at home and abroad, for the strike
-  - L1769 ...what it sold and shipped
-  - L1771 ...and what the last strike settled abroad
-  - L1775 fixture: the city held old steel from three sellers, and a month of the yards' record
-  - L1777 the old steel standing to be bought (0.7.123)
-  - L1778 ...the households' of it
-  - L1779 ...the offcuts' of it, by source
-  - L1780 ...what arose in the yards' last month, and from cars
-  - L1782 ...what they bought and sent to landfill
-  - L1783 ...the price they paid a tonne
-  - L1784 ...and who was paid what
-  - L1787 fixture: the city held old copper from two sellers, and a month of the scrap refineries' record
-  - L1789 the old copper standing to be bought (0.7.133)
-  - L1790 ...a seller's of it, and by source
-  - L1792 ...what arose in the refineries' last month, bought, to landfill, and the price
-  - L1794 ...and who was paid what for it
-  - L1807 the ports' month: each kind's share in force and whether it goes before the railway, crude's class,
-  - L1811 fixture: the forecourts really were selling the drivers' petrol
-  - L1813 the forecourts' litres at the pump (0.7.83)
-  - L1814 ...past the stations
-  - L1815 ...what the stations could sell
-  - L1816 ...the pump price
-  - L1817 ...the queue's
-  - L1818 ...the wholesale a litre
-  - L1819 ...the drivers' bill
-  - L1820 ...and what of the wholesale the world was paid
-  - L1833 fixture: the bank really had a price with every part in it
-  - L1836 the bank's prime
-  - L1837 ...what a household pays it
-  - L1839 ...what the carry trade is lent at
-  - L1841 ...its running costs per dollar lent
-  - L1843 ...what it expects to lose
-  - L1845 ...and how much of its money came from the window
-  - L1853 its year of costs came back whole
-  - L1854 the profit it booked after its close
-  - L1864 fixture: the bank really had set something aside
-  - L1865 what the bank has set aside against its loans
-  - L1876 
-  - L1877 ...and its assets
-  - L1878 ...and the risk its next loan is priced at, over prime
-  - L1889 fixture: the city's landlords owe insured mortgages, and paid them down this month
-  - L1891 what the landlords owe on their mortgages
-  - L1893 ...at the rate each was written at for its term
-  - L1895 ...their next payment
-  - L1896 ...their next renewal
-  - L1897 ...the principal the month's payments took
-  - L1899 ...the premiums the insurance has taken over the city's life
-  - L1901 ...and the claims it has paid
-  - L1902 ...the budget's premium line
-  - L1904 ...and its claims line
-  - L1906 ...and the bank's book of them
-  - L1917 fixture: the city's businesses owe bonds, and orders rest on their books
-  - L1919 the bonds outstanding
-  - L1920 ...their face
-  - L1921 ...the households' of it
-  - L1922 ...the bank's
-  - L1923 ...the companies'
-  - L1924 ...the world's
-  - L1925 ...their coupon, weighted
-  - L1932 ...the orders resting on their books
-  - L1933 the households' bonds
-  - L1942 ...each cell's own, bond by bond, by its name (
-  - L1952 the shares' last trades and fair values
-  - L1953 ...and the orders resting on their books
-  - L1957 the world's short of
-  - L1958 ...the collateral held against it
-  - L1959 ...the shares the cells lend
-  - L1960 ...the shares the fund lends
-  - L1961 ...the month's fee the cells were paid
-  - L1962 ...and the fund
-  - L1963 ...the fund's own income from it, the month's and the life's (LF1)
-  - L1968 ...and its ledger's LENDING_FEE rows
-  - L1969 ...which are the fee it was paid, so the comparison is not of two zeros
-  - L1970 ...what the short has paid at the dividends over the city's life
-  - L1972 ...the quote it is short at
-  - L1981 ...every company's together
-  - L1982 ...shares sold short and what they fetched, over the city's life
-  - L1984 ...shares covered and what that cost
-  - L1986 ...the asks posted and the months a short stood open
-  - L1988 ...the margin calls and the recalls
-  - L1990 ...and the fees paid
-  - L1991 ...and what a unit of them is worth this month
-  - L1993 the bank's bonds, at what they cost it
-  - L1994 ...weighed as loans
-  - L1995 ...and the capital its book's concentration adds
-  - L1997 the month's issues, for the Bonds page
-  - L1998 ...the coupons paid abroad, for the Trade tab
-  - L1999 ...the world's purchases
-  - L2000 ...last month's book
-  - L2001 ...and over the city's life, the coupons the households were paid
-  - L2004 
-  - L2005 ...what bondholders have lost on them
-  - L2006 ...its month's bond lines on the sector screen
-  - L2012 ...how long the bank's book has not kept its branches' staff
-  - L2014 ...and its capital against everything it has lent
-  - L2016 the builders' salvage at what they paid for it
-  - L2018 ...the month's provision
-  - L2019 ...the capital target it chose
-  - L2020 ...its interest income, on the reloaded Profit page
-  - L2021 ...its fees
-  - L2022 ...its profit before tax
-  - L2023 ...what it kept
-  - L2024 ...what it paid its owners, this month and over the year
-  - L2026 ...and the equity it opened the month with
-  - L2032 its month's
-  - L2040 ...and its allowance, book by book
-  - L2047 fixture: the bank had last month on file
-  - L2048 last month's profit, beside this month's, on the reloaded Bank tab
-  - L2050 ...the last twelve months' interest
-  - L2052 ...this month's interest from the businesses
-  - L2054 ...and its year of statements came back whole
-  - L2061 fixture: the bank had a year of balance sheets on file
-  - L2062 its equity a year ago, on the reloaded Balance sheet page
-  - L2064 ...what the businesses owed it then
-  - L2066 ...and the year of sheets came back whole
-  - L2068 ...and this month's sheet leaves the same unexplained
-  - L2075 fixture: the bank keeps its equity in two parts
-  - L2076 its paid-in capital, on the reloaded Balance sheet page
-  - L2078 ...its retained earnings
-  - L2079 ...and the two still add up to its equity
-  - L2087 the rollover's setting survives a save
-  - L2089 ...its ledger and its record with it
-  - L2092 ...and what a reloaded city says falls due next month
-  - L2094 ...and the year's surplus it would net from
-  - L2096 fixture: the households really paid account fees
-  - L2098 what the households paid in account fees
-  - L2101 tier
-  - L2104 what the dial paid out
-  - L2106 the schools' payroll
-  - L2108 ...their upkeep
-  - L2110 ...the fees they waived
-  - L2112 ...and the fees they collected
-  - L2114 the hunger inside the sick rate
-  - L2117 fixture: the health premium really was collected
-  - L2119 the fee scale
-  - L2121 ...and the health premium
-  - L2123 ...the scale the service charges at
-  - L2125 ...what the premium raised
-  - L2127 ...what the households paid of it
-  - L2129 ...the treatment bill at full service
-  - L2143 fixture: the live city's care charged fees, and they add up to its line
-  - L2153 just loaded, care's fees by kind add up to its line as the live city's do
-  - L2155 row
-  - L2157 row
-  - L2166 households doubled up
-  - L2168 ...and the ones a studio turned away
-  - L2172 tier
-  - L2174 tier
-  - L2177 the government's surplus
-  - L2180 ...and the business tax inside it
-  - L2195 fixture: the treasury's journal had lines in it
-  - L2196 the treasury's journal has as many lines as it had
-  - L2198 ...line
-  - L2200 ...and still says
-  - L2203 ...and what the journal left unexplained
-  - L2216 fixture: the city drew people and somebody moved this month
-  - L2218 the draw the People page shows
-  - L2219 ...its jobs' half
-  - L2220 ...and its homes' half
-  - L2221 ...the posts it was struck on
-  - L2222 ...the people the homes hold
-  - L2223 ...the residents a post supports
-  - L2224 ...senior care's pull
-  - L2225 ...the rent's
-  - L2226 ...and crime's
-  - L2227 how much of the draw housing let in
-  - L2228 the payroll in trades whose people may leave
-  - L2230 the month's arrivals
-  - L2231 ...and the brake they took (WG2-R)
-  - L2232 ...and its departures
-  - L2233 ...the ones the work pushed out
-  - L2234 ...the ones who went broke
-  - L2236 ...and the ones crime drove out
-  - L2238 who arrived:
-  - L2240 who left:
-  - L2247 ...and which of the arrivals held a licence
-  - L2250 fixture: people died this month
-  - L2251 the dead of age
-  - L2252 ...the killed
-  - L2253 ...and the ones who aged out at 120
-  - L2255 fixture: people died of the causes of 1900 this month
-  - L2256 ...the dead of the causes of 1900
-  - L2259 ...the dead of
-  - L2260 ...and in the last twelve months
-  - L2261 ...and since the city began
-  - L2263 fixture: the causes' book holds the month's dead
-  - L2264 ...the people sick of TB
-  - L2265 the people off sick with the influenza
-  - L2268 ...which with illness's and the causes' are the month's dead
-  - L2273 fixture: the shops handed over less than the households planned
-  - L2275 the share the shops handed over
-  - L2280 fixture: somebody could not afford a basket even at full shelves
-  - L2282 ...the hungry even at full shelves
-  - L2283 ...who are some of the hungry, never more
-  - L2294 fixture: the migration array is longer than the history it opens with
-  - L2300 a format-29 migration array loads its wage history
-  - L2301 ...with the month's draw at 0
-  - L2302 ...and its arrivals at 0
-  - L2305 ...and a length it does not know is refused whole
-  - L2316 fixture: the city's migration saved a room, the doors counted
-  - L2318 fixture: ...and months of wage history, and a draw
-  - L2328 a migration array from before the room loads its wage history and its streaks
-  - L2329 ...and the month's draw
-  - L2330 ...with no room read: NaN, no census
-  - L2334 ...and every other slot as it was saved, the months recorded and the mixes with them
-  - L2347 a migration array from before the brake (WG2-R) loads all else, the brake read as 1
-  - L2353 a format-29 pyramid loads its people
-  - L2354 ...and its dead
-  - L2355 ...with no cause under them
-  - L2360 a format-29 row array loads the shelves as full
-  - L2361 ...and nobody hungry at full shelves
-  - L2362 ...but still its hungry
-  - L2383 fixture: the city shipped goods and landed goods this month
-  - L2384 every sector's units shipped and landed this month cross a save
-  - L2393 fixture: the city sold abroad and bought from abroad this month
-  - L2395 a freshly loaded city reads the month's balance of payments the live one read
-  - L2404 the month is counted after a load of a save that carried it
-  - L2421 fixture: hot money arrived in the month the city is saved in (
-  - L2422 a freshly loaded city reads the hot money's month the live one read: arrived, departed, on doubt and the doubt's lifetime, to the bit
-  - L2428 ...and what ran home in a risk-off, the hot money's and the carry's, the month's and since founding, and the months it did, as they were
-  - L2449 fixture: the city's households had incomes after their fixed bills
-  - L2450 each cell's income after its fixed bills crosses a save (
-- **L2453 13b. a bond in the saved history (HD1, 2026-10-29)**
-- **L2463 a bond in the saved history**
-  - L2467 fixture: the city's businesses owe bonds, and the series has its months
-  - L2469 the series' last point is the face outstanding, to the cent of a thousand
-  - L2471 ...and it is above zero, one point per month of the axis
-  - L2474 fixture: the reloaded history has the points to compare
-  - L2475 a reloaded city's history reads the same points, month by month
-  - L2481 fixture: the city owes loans and mortgages too, to be scaled beside the bonds
-  - L2489 a hundred-for-one reform scales the bonds' series, every month, as it scales the debt beside it
-- **L2492 14. a reloaded city PLAYS ON as the one it was saved from**
-  - L2551 fixture: the price index is four shopping months short of its basing when the city is saved
-  - L2554 fixture: the shops handed over less than the households asked for
-  - L2556 fixture: the price index has not been based yet
-  - L2558 saved a city in its first two years
-  - L2563 the share the shops handed over came back
-  - L2569 fixture: the index was based in those six months, in the city saved
-  - L2570 ...and in its reload
-  - L2571 six months on: the price index
-  - L2573 ...the sick rate
-  - L2574 ...the treasury
-  - L2575 ...the households' savings
-  - L2577 ...the bank's equity
-  - L2579 
-  - L2623 fixture: the town laid a spur and a depot of its own
-  - L2633 fixture: the railway hauled in the month the city was saved
-  - L2635 fixture: ...its groceries among the freight, and its price index based
-  - L2637 saved a city whose railway hauls
-  - L2660 fixture: every sector's save carried the month's units, and the copy carries none, as before 0.7.46
-  - L2675 a reloaded city's first month is its unsaved twin's: population, arrivals and the price index
-  - L2683 ...and from its save without the month's units, the first haul is the month's: its tonnes and its bill
-  - L2694 ...a month on, every pool the money audit reads, and the people
-  - L2741 fixture: the college town is short of power, and its services have struck next month's ratio over the one its month ran at
-  - L2743 fixture: ...and students who finished a course wait for the next census to carry what they borrowed
-  - L2745 saved the college town
-  - L2749 the reload holds the month's power ratio and the graduates waiting
-  - L2758 fixture: the town's month struck flows for the next census to carry (HS1)
-  - L2759 ...and the reload holds them, slot by slot
-  - L2771 a month on, its twin is the town that never reloaded: every pool the money audit reads, and the people, to the bit
-  - L2773 ...the student loans repaid
-  - L2774 ...the households' savings, which the flows carried at the census (HS1)
-  - L2806 fixture: the buses carried people and their staff drew wages
-  - L2808 fixture: ...and its households own cars, and their drivers burn fuel
-  - L2810 saved a city with buses
-  - L2815 a reloaded city has the month's transit bill
-  - L2821 a reloaded city has the same riders, fuel price and bill
-  - L2829 fixture: the save carries the bill and the commute by name
-  - L2837 ...and a save from before 0.7.49 derives it, as the load always did
-- **L2843 a recording's switch and id cross a save (TR1, 2026-10-31)**
-  - L2858 fixture: the played city is recording, with an id, and its three months are kept
-  - L2860 saved with recording on
-  - L2863 the switch and the id cross a save: both back
-  - L2867 fixture: the save holds the two keys
-  - L2878 a save written without the keys reads back off: no switch, no id
-- **L2881 the city's fund, its rescue setting and the bank's preferred (0.7.14)**
-  - L2894 fixture: the city has a bank to ask it for preferred
-  - L2899 fixture: the bank is open, not in resolution, before it is put under its minimum
-  - L2906 fixture: the bank is under its minimum and its offer waits
-  - L2908 saved it with the offer waiting
-  - L2911 a pending offer survives a save, with the month it was made
-  - L2914 ...asking for the same
-  - L2916 fixture: the city bought the preferred
-  - L2939 fixture: the fund holds a share of a company the world sells and somebody stands bid for
-  - L2946 fixture: the desk carries its inventory at other than today's quote, as after a share traded since the step
-  - L2948 saved it with the preferred bought and an order waiting
-  - L2951 the dial and the rescue setting survive a save
-  - L2953 ...the fund's cash
-  - L2954 ...what the hand paid in
-  - L2955 ...the hand's order, waiting for the step
-  - L2957 ...the answer and its month
-  - L2960 ...the preferred outstanding
-  - L2961 ...its arrears
-  - L2964 fixture: the preferred the city bought is on the bank's books, live and reloaded
-  - L2967 ...its anniversary, its cap on the dividend and its warrants
-  - L2972 ...the desk's inventory as the bank carried it, not re-marked from the quote
-  - L2973 ...and the bank's equity with it in
-  - L2974 ...its three parts still adding up
-  - L2975 ...and what the fund is worth
-  - L2984 fixture: the fund's record has rows to keep
-  - L2985 its cost basis survives a save: lots, rows, its start
-  - L2990 ...what its holdings cost
-  - L2991 ...what they realized
-  - L2995 fixture: its buys were worth something at the step's value
-  - L2996 ...what its buys were worth at the step, a bargain's measure
-  - L2998 ...and the fund's worth on the history, month by month
-  - L3020 the new price model's twenty-three series come back on the history, month by month
-  - L3021 ...the month's move in credibility, the anchor's eighth slot
-  - L3028 ...and every price component's chained level, the index's tail
-  - L3031 fixture: the save carries the ledger inside the fund
-  - L3038 a 0.7.38 save's ledger is seeded at its load
-  - L3043 ...its holdings and cash what they were
-  - L3068 fixture: the month's cash ran short and the fund owes what it sells for
-  - L3083 fixture: the step asked the market book for shares to pay the withdrawal with, and the world bought them (
-  - L3089 fixture: over the default it owes what it sells for, and paid some late
-  - L3091 saved it drawing 10% a month
-  - L3094 the withdrawal and what it owes cross a save
-  - L3104 fixture: the save carries the dial and the month's two new slots
-  - L3113 ...an older save loads Norway's rule, owing nothing
-  - L3130 saved it with its treasury gone into deficit since the market's strike
-  - L3139 fixture: re-struck off the saved cash, the city's rate would come back different
-  - L3141 the city's rate comes back as the month struck it
-  - L3142 ...and its ten-year rate, which the fund's bonds are marked on
-  - L3143 ...and the overdraft the market priced
-  - L3154 a quote is not a sale: previewed twice, the tally has not moved
-  - L3157 fixture: a booked sale is counted, and is the last
-  - L3159 saved it with the sale counted
-  - L3162 the tally crosses a save, every slot of it
-  - L3165 ...the last sale's figures with it
-  - L3168 fixture: the save carries the tally
-  - L3172 a save from before it loads an empty tally, over a city that had a count
-  - L3198 fixture: the register was saved at this build's length
-  - L3202 an older save loads with an empty fund, the dial at 0 and the rescue on the button
-  - L3206 ...no preferred and nothing owed on it
-  - L3213 ...and no city shares or bonds
-  - L3214 ...and its ledger begins at the load, nothing to seed
-  - L3217 ...and its register otherwise the save's: the bank's shares in issue
-- **L3220 the oldest format this build loads (0.7.108)**
-  - L3222 a native format-60 city and its history are refused without changing either file or a running twin
-  - L3259 fixture: three saves and their histories in the folder
-  - L3263 fixture: its header reads, a format one below the floor
-  - L3265 the header says this build can no longer read it, not that it is newer
-  - L3267 ...so the slot list marks it and offers no load: there, not damaged, not loadable
-  - L3276 the load refuses it, in the words naming the build that saved it
-  - L3278 ...which name that build twice, this one, and that this one cannot read it
-  - L3283 ...and the log says the same, with the save's format and this build's
-  - L3287 ...and nothing of it is applied
-  - L3292 a save stamped by no build is refused too, naming none
-  - L3294 ...\"an older build\"
-  - L3298 a newer build's save is still marked newer, not older, and not loadable
-  - L3303 ...and still refused as before, as from a newer version
-  - L3312 every refused save byte for byte as it was, and nothing written beside it
-  - L3318 a save at the floor is loadable
-  - L3322 ...and loads, at the month it was saved
-- **L3428 acute influenza shares beside the saved sickness ring (R0h)**
-  - L3436 fixture: each age band has an acute influenza share to save
-  - L3438 the acute fixture saved
-  - L3441 the acute shares are written separately from the ring
-  - L3445 every acute share and every ring slot cross the actual load to the bit
-  - L3449 ...the visible sick share of
-  - L3451 ...the youngest sick bar
-  - L3453 ...the chronic Health rate
-  - L3457 an old save without acute shares loads none, even over a city that had them
-- **L3471 allocated land survives an ordinary load (AW2)**
-  - L3487 fixture: the injected footprint exceeds owned land but the live ledger has room for a house
-  - L3490 saved the discrepant live city in scratch
-  - L3494 the ordinary load succeeded
-  - L3495 the live allocation came back
-  - L3496 the live free ground came back
-  - L3497 the live building footprint came back
-  - L3499 the live ground price came back
-  - L3500 the next building quote is unchanged
-  - L3504 the live city orders its next house
-  - L3505 the ordinary load orders the same house
-  - L3506 both orders consume the same ground
-  - L3507 both orders leave the same free ground
-  - L3508 both orders leave the same treasury
-  - L3509 both orders leave the same number on site
-  - L3519 a save without the allocation key still reads its building footprint
-  - L3521 fixture: that reconstruction refuses the very same house for land
-  - L3524 saved an explicit zero allocation in scratch
-  - L3527 an explicit zero allocation comes back as zero
-- **L3532 a saved land ledger follows changed catalogue plots (AW2)**
-  - L3544 fixture: an old-catalogue house is placed with its ground allocated
-  - L3550 saved the old catalogue plot and its allocation
-  - L3555 fixture: the plot changed between save and ordinary load
-  - L3556 changed plots adjust the counter by their footprint delta
-  - L3558 changed plots retain the source city's unallocated gap
-- **L3565 private and automatic construction continue after a load (AW2)**
-  - L3586 fixture: the short retailer can staff a new shop
-  - L3595 fixture: no free ground, services need works and an unallocated site remains
-  - L3598 saved the town before construction resumes
-  - L3619 every template has the same standing and ordered count
-  - L3620 private planner decisions match after the month
-  - L3621 owned ground matches after the month
-  - L3622 allocated ground matches after the month
-  - L3623 free ground matches after the month
-  - L3624 automatic orders match after the month
-  - L3625 automatic land purchases match after the month
-  - L3626 the automatic order details match after the month
-  - L3630 the continuation actually placed private orders outside the automatic builder's remit (Retail:
-  - L3632 the continuation actually placed automatic orders
-  - L3633 the continuation actually bought ground for those orders
-- **L3653 every id crosses a save, the highest past a gap in the ids too**
-  - L3676 fixture: the highest id,
-  - L3678 fixture: two of it stand
-  - L3681 fixture: the city saved
-  - L3686 the highest id's buildings came back
-  - L3691 ...and every id's count is the one saved
-- **L3722 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
-  - L3739 fixture: a generated city saved
-  - L3743 a generated city writes none of the four Earth fields
-  - L3755 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
-  - L3759 ...its land and map the city's that wrote it
-  - L3761 saved again
-  - L3764 ...and writes its own bytes back, but for this build's stamp: its format, version and time
-  - L3767 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
-  - L3774 fixture: EarthCheck's fixture is beside the classes
-  - L3790 fixture: a city founded on the real Earth, played four months
-  - L3792 saved
-  - L3794 the save carries its kind, its spot and its data, and its seed (0.7.121)
-  - L3799 ...read back as the same key
-  - L3803 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
-  - L3806 saved again
-  - L3809 ...and writes the same bytes but its time
-  - L3812 two months on: the treasury
-  - L3813 ...the households' savings
-  - L3816 ...and every sector's till
-  - L3817 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
-  - L3823 the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)
-  - L3828 ...and no row of the land's own is wider for it: GD4's centre 26, a holding 33, an offer 31
-  - L3832 ...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit
-  - L3839 the Earth city's save carries who sells each offer, a row for each, where the world file names the sellers - and no key where it does not (WN5)
-  - L3849 ...and reloaded the Earth city stands the same offers, sellers and all, and the same nations sell its ground
-  - L3859 fixture: Perth's window
-  - L3869 fixture: Perth's city holds a purchase with foothill in it and one with shallow sea
-  - L3875 fixture: the land with its relief wrote itself
-  - L3880 a holding with foothill and shallow sea round-trips: the land rebuilt from the file is the land written, every relief figure of it
-  - L3888 ...each holding's own row, the foothill in this one and the shallow sea in that
-  - L3895 an offer whose relief row is set by hand reads it back through its record, and the record is still 29 wide
-  - L3901 a save without the three keys has none of them
-  - L3911 ...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)
-  - L3918 a relief row of the wrong width reads that holding flat and leaves the rest as saved
-  - L3927 a land office restoring an offer reads its relief row, and with none reads it all flat
-  - L3937 a city on one landmass writes no \"landmasses\" key (its save is the old bytes)
-  - L3942 fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader
-  - L3955 fixture: a terminal stands on the island, which owns shore the city bought and no port at home links
-  - L3957 saved
-  - L3960 the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving
-  - L3967 read back, the terminal stands on the island again and the land is the same
-  - L3970 saved again
-  - L3973 ...and writes the same bytes but its time
-  - L3981 a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed
-  - L3996 a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone
-  - L4008 an Earth save of the format before the landmasses (
-  - L4010 an Earth save of the format before the landmasses (
-  - L4019 a city with no bridge writes no \"bridges\" key (its save is the old bytes), and the island city of the landmasses' block writes none either
-  - L4039 fixture: a Road Bridge stands (built at once) and a Rail Bridge is on site, over a crossing the survey found; the island is linked by the one that stands
-  - L4042 saved
-  - L4044 the save carries the key \"bridges\", a row for each bridge, and the format of every Earth save of this build (no bump)
-  - L4048 read back, the bridges run where they ran, the one that stands links the island, and the land is the same
-  - L4052 saved again
-  - L4055 ...and writes the same bytes but its time
-  - L4062 a save without the key loads - it is not refused - and reads no bridge: none recorded, the island unlinked
-  - L4077 a row of a template that is no bridge, and one of a kind the game does not know, are passed over (not refused): the two real bridges stand alone
-  - L4102 a save with
-  - L4104 ...nothing of it applied, and every file as it was
-- **L4122 and a refused save loaded into a running city leaves that city as it was**
-  - L4133 fixture: the city is loaded and running, past month 1
-  - L4134 fixture: slot 2 is below the floor and slot 5 from a newer build
-  - L4142 the save below the floor is refused, naming the build that still opens it
-  - L4144 ...and the city in play is the same city: its managers the same objects, its month and cash
-  - L4149 the newer build's save is refused, naming the build that opens it
-  - L4151 ...words that name that build and this one
-  - L4154 ...and the city in play is still the same city
-  - L4163 ...and what it saves after both refusals is what it saved before them, key for key
-- **L4248 the world market and the trade by partner cross a save; a format-47 save is refused (WN3)**
-  - L4250 fixture: the twelve-nation world file is beside the classes
-  - L4307 the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit
-  - L4308 ...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (
-  - L4311 fixture: with the file named, the city built a market and solved the year it is in (
-  - L4315 fixture: it tallied its trade by partner, and one year turned into the history (
-  - L4318 fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry):
-  - L4323 fixture: the house order past the yard was placed (
-  - L4327 saved
-  - L4329 the save writes the market's year, its prices and scales, and the trade by partner
-  - L4334 fixture: the city built the world's moneys with the market, in the city's month
-  - L4339 the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (
-  - L4343 fixture: the city built the policy rates with the moneys, in the city's month
-  - L4347 the save writes the policy rates' state (policyRates), as many numbers as PolicyRates.toSaveArray() gives (
-  - L4349 fixture: the city's price of money is the US's policy rate (
-  - L4351 ...and the foreign accounts' array runs to slot 104, the world's (95-104)
-  - L4354 ...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b), gold's balance, price ...
-  - L4355 fixture: the vault holds gold, bought by name, at a price, with a share of the chosen mix, and slots 149-151 are its balance, its price and that share (
-  - L4360 ...a city off gold saves slots 152-155 as the getters say: no mint price, no mint rate, not following, no event
-  - L4371 a bare currency on Gold, following the dollar with a date open: slots 152-155 are the getters (
-  - L4384 ...and its next six reprices (the rate and the mint price, gold moving, following the dollar) are the live currency's to the bit
-  - L4389 a GD2-length array (152 slots) restores GD3's defaults: no mint price, no mint rate, not following, no event; no Canada episode and no gold's last break (156...
-  - L4392 ...and its gold as GD2 saved it: the balance and the price (slots 149-150)
-  - L4395 ...and saved again it is a full array (
-  - L4404 a currency whose gold broke (
-  - L4408 ...an array from before FB14 (158 slots) reads the last break a peg's, as every break was worded before
-  - L4409 ...and the city's own, which never broke off gold, saves 0
-  - L4416 the central bank's array ends with the gold's two figures: due back at the next top (
-  - L4421 ...a restore returns both to the bit, and what it saves is what it read
-  - L4425 ...and an array from before FB14, two slots shorter, reads nothing due and nothing retired for gold
-  - L4427 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
-  - L4431 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
-  - L4436 ...and the history writes each finished year's table by partner and good (1)
-  - L4444 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
-  - L4450 a load builds the market and restores its year
-  - L4453 ...its mill prices and supply scales bit for bit
-  - L4460 ...restored and not solved again: no sweeps in the loaded market (
-  - L4463 a load restores the world's moneys in the month they were saved in, the very same state to the bit
-  - L4465 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
-  - L4468 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
-  - L4471 ...and the history's policy series as they were
-  - L4488 ...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cros...
-  - L4489 ...the trade by partner, the month and the year to date, as it was
-  - L4490 ...the finished years in the history
-  - L4492 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
-  - L4505 ...and every good's market stands at the band it was struck at (
-  - L4508 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
-  - L4510 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
-  - L4515 ...and the policy rates and the city's price of money to the bit (the US's rate
-  - L4519 the month after runs the same in both: the cash to the cent and the trade by partner
-  - L4532 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
-  - L4545 a save with no world moneys loads, and they are caught up from the first January to the saved month (
-  - L4547 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
-  - L4556 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
-  - L4571 fixture: with no world file the city has no market and no partner record
-  - L4573 ...no moneys either, and its D$ has no world (WN4)
-  - L4575 saved
-  - L4577 ...and its save writes none of the new keys, in the markets or beside them
-  - L4581 ...no policy rates, and its price of money is the constant (XR4)
-  - L4585 ...every market on the goods' literals
-- **L4610 current-format land repair and refusal**
-  - L4626 a current-format save's changed land figure loads and redraws its actual ground
-  - L4650 ...and the refused save is untouched
-- **L4775 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT**
-  - L4807 
-  - L4813 ...and matches the city that was saved
-  - L4839 
-  - L4842 ...and it is back at month one
-- **L4844 5. WHAT A RELOAD MUST NOT FORGET**
-  - L4883 the mine has a payroll at all after a load
-  - L4884 ...and it is the payroll it was working
-  - L4888 utility income survives a load
-  - L4890 the residents' statement is not blank after a load
-  - L4892 ...and the government's revenue block is not either
-  - L4900 ...and rebuilding it does not book the month twice
-  - L4908 the population trend survives, so forecasts are not flat
-  - L4916 every sector's losing streak survives a load
-  - L4923 every sector's operating-loss streak (AQ1, the one the bleed reads) survives a load
+  - L72 native format60 save/history refusal preserves both files and a running loaded twin
+- **L73 R2c: paid IP service flows cross the save objects**
+  - L74 nonzero IP charges survive DataSave, HistorySave and the load restorers
+  - L75 the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment
+  - L76 the prior steam rail period survives the actual load after its last unfitted depot closes
+- **L78 R0f: the exhausted gold episode through DataSave and the load path**
+  - L79 Canadian gold's exhausted episode and inherited interest cross JSON and the next month
+- **L81 PW1: a save from before the struck book loads at the ratio its load computes (REV-PW1c)**
+  - L82 a city short of power saved without its book (format 58, before PW1) loads with the ratio its load dispatched in its book, not the founding book's 1, and run...
+  - L83 power dispatch observations and history survive the actual save/load
+  - L84 completed pending power survives repeated saves, the actual load, next native month and currency reform
+- **L87 1. where it goes**
+  - L92 Windows follows %APPDATA%
+  - L99 ...and falls back when it is missing
+  - L104 ...blank counts as missing, not as a folder named nothing
+  - L109 macOS uses Application Support
+  - L114 Linux uses the XDG default
+  - L119 ...and honours XDG_DATA_HOME when set
+  - L125 an unrecognised platform still resolves
+  - L129 no home directory still resolves rather than throwing
+  - L132 it is never the old folder
+- **L135 2. writing safely**
+  - L144 save file
+  - L145 history file
+  - L148 folder does not exist yet
+  - L151 first write succeeds
+  - L152 ...and says where
+  - L153 ...and the contents are right
+  - L156 no .tmp left behind
+  - L158 nothing to back up on the first write
+  - L162 second write succeeds
+  - L163 ...the new city is on disk
+  - L165 ...and the previous one survives as .bak
+- **L168 3. a write that cannot possibly work**
+  - L179 a failed write is reported as failed
+  - L180 ...with a reason attached
+  - L182 ...and the message says so plainly
+  - L184 ...and does not claim to have saved
+  - L187 no .tmp litter after a failure
+  - L192 the existing save is untouched by a later failure
+- **L195 4. the old folder**
+  - L209 both files came over, both hops
+  - L210 the save arrived in Slot 1
+  - L212 the history arrived with it
+  - L214 ...and the intermediate flat save is left behind too
+  - L219 the originals are still there
+  - L222 ...and unchanged
+  - L226 running it again copies nothing
+- **L228 5. it never overwrites a newer save**
+  - L238 the save being played is untouched
+  - L240 ...and the old history still came over
+  - L242 ...without the old save overwriting Slot 1
+  - L248 no old folder, nothing to do
+  - L256 no file copied onto itself
+  - L258 ...but the flat save was promoted to Slot 1
+  - L260 ...and the original is intact
+- **L263 6. a real round trip**
+  - L289 DataSave wrote itself
+  - L294 cash survived
+  - L295 month survived
+  - L296 population survived
+  - L297 buildings survived
+  - L298 household savings survived
+  - L299 land survived
+  - L300 tax rates survived
+  - L302 the city's name survived
+  - L303 ...its money, all five of its names
+  - L304 ...the treasury it was founded with
+  - L305 ...and the vault
+  - L306 ...and the world's mean is handed back, not saved twice
+  - L308 ...and the world it stands on, its seed (0.7.56)
+  - L309 ...saved under worldSeed
+  - L310 fixture: Arden's path and seed are not the defaults, so a default read back could not pass
+  - L312 ...and the path of the world beyond it (WN1; spec-nations 7)
+  - L313 ...and the seed that draws it, not the ground's
+  - L314 ...saved under worldPath, by the enum's name
+  - L315 ...and under pathSeed
+  - L316 ...with the ground's seed still its own
+  - L333 fixture: the land wrote itself
+  - L336 the centre survived, every field
+  - L337 ...its blocks (0.7.67)
+  - L338 ...the purchase, its rectangle and all (0.7.67)
+  - L339 ...the twenty-four offers
+  - L340 ...and the ground by relief beside them (ET1): a generated city's all flat, its dry ground flat in the centre and every holding and offer
+  - L347 a generated city's offers name no seller, and its save carries neither the sellers nor the tally (WN5)
+  - L366 fixture: the sellers and the tally wrote themselves
+  - L369 the offers' sellers survived, a row for each offer, to the bit (WN5)
+  - L370 ...and the tally, every nation's area and dollars
+  - L378 ...and the offers restored from them are the offers written, sellers and all (LandParcel.same())
+  - L381 an offer's record is not wider for its sellers (a wider row is passed over by every save before): GD4's widened resource row
+  - L385 ...and a row of sellers of the wrong shape, or with a figure that is not a number or a seller that is no nation's number, reads as none
+  - L391 ...and a save without the keys restores every offer the host's whole, as every save before WN5 is
+  - L393 ...and no lanes, which only a format-31 save is read for (0.7.67)
+  - L395 ...the next offer's id
+  - L396 ...what was taken out
+  - L397 ...the offshore pool's E null on a save without it, as one from before 0.7.93 (the load charges its one pool to
+  - L399 ...the world's totals
+  - L400 ...and its sea's level
+  - L403 fixture: the offshore pool's E wrote itself
+  - L405 the offshore pool's E survived, to the bit (0.7.93)
+  - L407 ...E by type absent on a city that dug nothing by type, as on a save from before 0.7.110 (the walk's reading)
+  - L412 fixture: E by type wrote itself
+  - L414 E by type survived, to the bit, its rows of the resources nothing dug by type still null (0.7.110)
+  - L420 ...and back in a land office, the same E by type
+  - L424 fixture: the rights wrote themselves
+  - L425 the water rights survived (0.7.59)
+  - L429 fixture: the map's stamp wrote itself
+  - L430 the city map's stamp survived, every bit (0.7.60)
+  - L435 fixture: the fuel month wrote itself
+  - L436 the drivers' fuel month survived, every figure (0.7.62)
+  - L441 fixture: the homes' fuel sale wrote itself
+  - L442 the homes' fuel sale survived, every figure (R0e)
+  - L446 fixture: ...and a save with no sale wrote itself
+  - L447 ...and a month that struck none writes no homeFuelSale (R0e)
+  - L448 fixture: ...and a save with no map wrote itself
+  - L449 ...and a save with no map carries no stamp
+  - L452 ...and the land it rebuilds is the land written
+  - L453 a save written now carries no parcels and no iron pool, which only an older save is read for
+  - L457 ...and an older save's iron pool reads, for the conversion: its sites
+  - L458 ...and its tonnes
+  - L459 ...and no land of its own
+  - L460 ...and no water rights, which the load derives (0.7.59)
+  - L461 ...and no city map, which waits to be asked for (0.7.60)
+  - L462 ...and no fuel month, which the load derives as that build struck it (0.7.62)
+  - L464 ...and no homes' fuel sale, which holds nothing to charge (R0e)
+  - L465 the slot list reads the same name off the same file
+  - L469 a save with none of the eight reads as the founding every city had before 0.7.10
+  - L474 ...and its header says Danzik
+  - L476 ...and its world is the one its name, treasury, ground and month make (0.7.56)
+  - L481 a save from 0.7.10 to 0.7.55 reads the seed its own fields make
+  - L484 a save from before the path reads Nations.DEFAULT_PATH and DEFAULT_SEED, and carries neither key (WN1)
+  - L490 ...and a path this build does not know reads the default path, and a missing seed the default seed
+  - L497 no file paths leaked into the save
+  - L509 two months recorded
+  - L510 HistorySave wrote itself
+  - L511 ...to its own file, not over the save
+- **L514 7. construction survives a save**
+  - L571 fixture: the depots were ordered, three of the builders' months and one over (
+  - L574 fixture: the order is more than the sites' month can build
+  - L586 fixture: something is genuinely mid-build
+  - L612 saved
+  - L621 RES2 inventory cohorts survive the actual load rebuild
+  - L624 depots still under construction
+  - L626 stores still under construction
+  - L628 and the part-finished work came back
+  - L635 land committed to unfinished sites is still committed
+- **L638 7b. the warning survives a save**
+  - L687 an unprotected city with a fresh shed IS warned
+  - L697 the month construction last shed came back
+  - L699 ...and the capacity it has sold since
+  - L701 ...and it is still unprotected
+  - L703 ...so the player is still being warned
+  - L708 protecting construction takes the warning down
+  - L719 a dismissed warning stays dismissed across a reload
+- **L722 8. a save with nothing else built**
+  - L735 nothing is finished yet
+  - L737 but one is being built
+  - L739 saved
+  - L743 it did not vanish
+- **L746 8b. a stack emptied keeps its place (0.7.103)**
+  - L761 fixture: the gravel road's stack stands empty, ahead of the houses
+  - L766 saved
+  - L769 ...and the loaded city stands the same stacks in the same order, the empty one in its place
+  - L773 ...with nothing in it
+- **L776 9. the headline income does not move**
+  - L783 property tax survived the round trip
+  - L798 the city actually charges retail something
+  - L800 retail's property tax expense came back
+  - L803 real estate's did too
+  - L806 ...and the line on the statement with it
+  - L813 the sector charges are part of the city's total
+- **L816 10. the whole figure, to the cent**
+  - L831 the city has people at all
+  - L832 population is not invented by loading
+  - L874 goods reached the shops, which the mills had to make first
+  - L876 ...so the figures compared below are not all zero
+  - L880 business tax
+  - L882 wage tax
+  - L884 retail cost of goods
+  - L887 ...and the month in progress
+  - L903 next-month income is identical across a save
+  - L906 sales tax
+  - L908 monthly GDP
+  - L927 fixture: the city kept more than a year of GDP
+  - L928 a loaded city has the months its history kept, up to ten years
+  - L931 ...and its year is the live city's to the bit: the rolling year saved exactly (0.7.81)
+  - L936 fixture: the save carries the rolling year
+  - L941 ...and a save without it (before 0.7.81) reads its year from the history's last twelve months
+  - L947 construction backlog
+  - L949 construction unearned revenue
+  - L952 construction cash
+  - L964 the city did lose something
+  - L965 the demolition log came back
+  - L967 ...with its entries intact
+  - L970 the write-off record came back
+  - L985 the city did finish something
+  - L986 the build log came back
+  - L988 ...with its entries intact
+  - L991 ...and the merged quantities unchanged
+- **L995 11. a city that is still MOVING**
+  - L1062 fixture: the order's month moved the town's people
+  - L1063 fixture: the city really is still growing
+  - L1065 fixture: ...and its statement describes a smaller month than the one in progress
+  - L1078 saved mid-growth
+  - L1086 the workforce that worked the month came back
+  - L1088 wage tax
+  - L1090 retail gross revenue
+  - L1093 ...and the month the shops are in
+  - L1096 industrial gross revenue
+  - L1099 sales tax
+  - L1101 monthly GDP
+  - L1103 and next month's income, to the cent
+- **L1106 12. a city that OWES money**
+  - L1137 the city really does owe something
+  - L1139 ...and has interest on the books waiting to be charged
+  - L1145 saved in debt
+  - L1154 the debt came back
+  - L1164 fixture: the households hold some of it
+  - L1166 ...and still do after the reload, cell by cell
+  - L1169 ...which is what the paper says they hold
+  - L1172 ...and the discount still to accrete on it came back
+  - L1175 ...and so did the interest it had already accrued
+  - L1178 ...so next month's income still shows the deficit
+  - L1182 fixture: the bond really booked some interest in the month
+  - L1184 ...and each kind's interest booked came back with the save
+  - L1189 fixture: the city kept a curve for six months, and the bond a path and a sale
+  - L1192 ...and the curve book came back with the save
+  - L1194 ...and the bond's price path and its sale
+  - L1207 and a month later both cities have paid the same bill
+- **L1211 12b. ...AND ONE THAT OWES ABROAD (2026-09-21)**
+- **L1229 and a city with dollars owed abroad**
+  - L1255 fixture: the rate was moved for the revaluing month
+  - L1259 fixture: the city really does owe dollars
+  - L1261 fixture: ...and the rate really did move them this month
+  - L1264 saved owing abroad
+  - L1267 what the currency did to the debt this month reloads (CD7's booked line)
+  - L1269 ...and what it has done to it since founding (the history's sum of the line)
+  - L1271 fixture: ...which is not nothing after a month with a move
+  - L1276 fixture: the city paid a coupon abroad this month, and EARNED's expenses carry it
+  - L1279 the month's coupons abroad reload with the save
+  - L1280 ...and the reloaded city's EARNED expenses carry it
+  - L1285 fixture: the month's move booked an exchange gain or loss on the dollar bond
+  - L1287 the month's exchange gain on the foreign debt reloads, in the government block
+  - L1289 ...and the result with it
+  - L1292 fixture: the history kept the line, a month for a month, and it is in the last
+  - L1294 ...and the history's series reloads
+  - L1299 fixture: the dollar bond remembers the rate it was sold at
+  - L1301 ...and each sale's rate reloads with the piece, so what the exchange has done since the sale reads the same
+  - L1310 fixture: the city has a full year of rates, and the D$ moved over it
+  - L1312 the year of rates reloads, so a run on the currency fires in the loaded city as in its original
+- **L1315 13. AND NOTHING READS ZERO ON A FRESHLY LOADED CITY**
+- **L1368 and a freshly loaded city reads what the live one reads**
+  - L1520 fixture: the city has a household cell to leave without means
+  - L1531 fixture: another household cell receives the poor cell's securities
+  - L1563 fixture: the bank opened and started paying its savers
+  - L1677 fixture: the world is short of a company the households hold, lent by the cells, with collateral held against it and a record stamped
+  - L1682 saved a city with one of everything in it
+  - L1690 fixture: savers really were being paid something
+  - L1692 fixture: the schools really were running
+  - L1695 fixture: the dial really did pay out
+  - L1698 fixture: somebody really was hungry
+  - L1700 fixture: the tiers really were shopping
+  - L1711 fixture: the city really was paying for repairs
+  - L1713 what the city paid to keep its buildings up
+  - L1716 ...the budget's repairs line, which is what it paid
+  - L1719 ...and the line is the bill it paid, not nothing
+  - L1721 ...so the budget's spending, with it, is the same
+  - L1730 fixture: the investors left a word on some sector
+  - L1732 the investors' last word survives a save, slot for slot, word for word
+  - L1736 what savers are paid
+  - L1740 the founding record reads the same: the name
+  - L1741 ...the money
+  - L1742 ...the treasury it was founded with
+  - L1743 ...the vault
+  - L1744 ...and the world it was founded into
+  - L1746 ...and the ground it stands on (0.7.56)
+  - L1747 fixture: the whole city was founded on a path and seed that are not the defaults (WN1)
+  - L1749 ...and the path of the world beyond it (WN1)
+  - L1750 ...and the seed that draws it
+  - L1751 the refinery's crude mix, light, medium and heavy (0.7.79)
+  - L1757 the refiners' idle months by kind, the spread planner's (0.7.82)
+  - L1759 the wells' vintages, each batch's month, count and kind (0.7.84)
+  - L1761 the oil at sea's platforms - each one's field, wells and month - and pipelines, each one's field,
+  - L1766 fixture: the reserve really did hold crude, with a release standing and a month to settle
+  - L1768 the strategic reserve's crude (0.7.85)
+  - L1769 ...its book
+  - L1770 ...its release
+  - L1771 ...what it bought at home and abroad, for the strike
+  - L1773 ...what it sold and shipped
+  - L1775 ...and what the last strike settled abroad
+  - L1779 fixture: the city held old steel from three sellers, and a month of the yards' record
+  - L1781 the old steel standing to be bought (0.7.123)
+  - L1782 ...the households' of it
+  - L1783 ...the offcuts' of it, by source
+  - L1784 ...what arose in the yards' last month, and from cars
+  - L1786 ...what they bought and sent to landfill
+  - L1787 ...the price they paid a tonne
+  - L1788 ...and who was paid what
+  - L1791 fixture: the city held old copper from two sellers, and a month of the scrap refineries' record
+  - L1793 the old copper standing to be bought (0.7.133)
+  - L1794 ...a seller's of it, and by source
+  - L1796 ...what arose in the refineries' last month, bought, to landfill, and the price
+  - L1798 ...and who was paid what for it
+  - L1811 the ports' month: each kind's share in force and whether it goes before the railway, crude's class,
+  - L1815 fixture: the forecourts really were selling the drivers' petrol
+  - L1817 the forecourts' litres at the pump (0.7.83)
+  - L1818 ...past the stations
+  - L1819 ...what the stations could sell
+  - L1820 ...the pump price
+  - L1821 ...the queue's
+  - L1822 ...the wholesale a litre
+  - L1823 ...the drivers' bill
+  - L1824 ...and what of the wholesale the world was paid
+  - L1837 fixture: the bank really had a price with every part in it
+  - L1840 the bank's prime
+  - L1841 ...what a household pays it
+  - L1843 ...what the carry trade is lent at
+  - L1845 ...its running costs per dollar lent
+  - L1847 ...what it expects to lose
+  - L1849 ...and how much of its money came from the window
+  - L1857 its year of costs came back whole
+  - L1858 the profit it booked after its close
+  - L1868 fixture: the bank really had set something aside
+  - L1869 what the bank has set aside against its loans
+  - L1880 
+  - L1881 ...and its assets
+  - L1882 ...and the risk its next loan is priced at, over prime
+  - L1893 fixture: the city's landlords owe insured mortgages, and paid them down this month
+  - L1895 what the landlords owe on their mortgages
+  - L1897 ...at the rate each was written at for its term
+  - L1899 ...their next payment
+  - L1900 ...their next renewal
+  - L1901 ...the principal the month's payments took
+  - L1903 ...the premiums the insurance has taken over the city's life
+  - L1905 ...and the claims it has paid
+  - L1906 ...the budget's premium line
+  - L1908 ...and its claims line
+  - L1910 ...and the bank's book of them
+  - L1921 fixture: the city's businesses owe bonds, and orders rest on their books
+  - L1923 the bonds outstanding
+  - L1924 ...their face
+  - L1925 ...the households' of it
+  - L1926 ...the bank's
+  - L1927 ...the companies'
+  - L1928 ...the world's
+  - L1929 ...their coupon, weighted
+  - L1936 ...the orders resting on their books
+  - L1937 the households' bonds
+  - L1946 ...each cell's own, bond by bond, by its name (
+  - L1956 the shares' last trades and fair values
+  - L1957 ...and the orders resting on their books
+  - L1961 the world's short of
+  - L1962 ...the collateral held against it
+  - L1963 ...the shares the cells lend
+  - L1964 ...the shares the fund lends
+  - L1965 ...the month's fee the cells were paid
+  - L1966 ...and the fund
+  - L1967 ...the fund's own income from it, the month's and the life's (LF1)
+  - L1972 ...and its ledger's LENDING_FEE rows
+  - L1973 ...which are the fee it was paid, so the comparison is not of two zeros
+  - L1974 ...what the short has paid at the dividends over the city's life
+  - L1976 ...the quote it is short at
+  - L1985 ...every company's together
+  - L1986 ...shares sold short and what they fetched, over the city's life
+  - L1988 ...shares covered and what that cost
+  - L1990 ...the asks posted and the months a short stood open
+  - L1992 ...the margin calls and the recalls
+  - L1994 ...and the fees paid
+  - L1995 ...and what a unit of them is worth this month
+  - L1997 the bank's bonds, at what they cost it
+  - L1998 ...weighed as loans
+  - L1999 ...and the capital its book's concentration adds
+  - L2001 the month's issues, for the Bonds page
+  - L2002 ...the coupons paid abroad, for the Trade tab
+  - L2003 ...the world's purchases
+  - L2004 ...last month's book
+  - L2005 ...and over the city's life, the coupons the households were paid
+  - L2008 
+  - L2009 ...what bondholders have lost on them
+  - L2010 ...its month's bond lines on the sector screen
+  - L2016 ...how long the bank's book has not kept its branches' staff
+  - L2018 ...and its capital against everything it has lent
+  - L2020 the builders' salvage at what they paid for it
+  - L2022 ...the month's provision
+  - L2023 ...the capital target it chose
+  - L2024 ...its interest income, on the reloaded Profit page
+  - L2025 ...its fees
+  - L2026 ...its profit before tax
+  - L2027 ...what it kept
+  - L2028 ...what it paid its owners, this month and over the year
+  - L2030 ...and the equity it opened the month with
+  - L2036 its month's
+  - L2044 ...and its allowance, book by book
+  - L2051 fixture: the bank had last month on file
+  - L2052 last month's profit, beside this month's, on the reloaded Bank tab
+  - L2054 ...the last twelve months' interest
+  - L2056 ...this month's interest from the businesses
+  - L2058 ...and its year of statements came back whole
+  - L2065 fixture: the bank had a year of balance sheets on file
+  - L2066 its equity a year ago, on the reloaded Balance sheet page
+  - L2068 ...what the businesses owed it then
+  - L2070 ...and the year of sheets came back whole
+  - L2072 ...and this month's sheet leaves the same unexplained
+  - L2079 fixture: the bank keeps its equity in two parts
+  - L2080 its paid-in capital, on the reloaded Balance sheet page
+  - L2082 ...its retained earnings
+  - L2083 ...and the two still add up to its equity
+  - L2091 the rollover's setting survives a save
+  - L2093 ...its ledger and its record with it
+  - L2096 ...and what a reloaded city says falls due next month
+  - L2098 ...and the year's surplus it would net from
+  - L2100 fixture: the households really paid account fees
+  - L2102 what the households paid in account fees
+  - L2105 tier
+  - L2108 what the dial paid out
+  - L2110 the schools' payroll
+  - L2112 ...their upkeep
+  - L2114 ...the fees they waived
+  - L2116 ...and the fees they collected
+  - L2118 the hunger inside the sick rate
+  - L2121 fixture: the health premium really was collected
+  - L2123 the fee scale
+  - L2125 ...and the health premium
+  - L2127 ...the scale the service charges at
+  - L2129 ...what the premium raised
+  - L2131 ...what the households paid of it
+  - L2133 ...the treatment bill at full service
+  - L2147 fixture: the live city's care charged fees, and they add up to its line
+  - L2157 just loaded, care's fees by kind add up to its line as the live city's do
+  - L2159 row
+  - L2161 row
+  - L2170 households doubled up
+  - L2172 ...and the ones a studio turned away
+  - L2176 tier
+  - L2178 tier
+  - L2181 the government's surplus
+  - L2184 ...and the business tax inside it
+  - L2199 fixture: the treasury's journal had lines in it
+  - L2200 the treasury's journal has as many lines as it had
+  - L2202 ...line
+  - L2204 ...and still says
+  - L2207 ...and what the journal left unexplained
+  - L2220 fixture: the city drew people and somebody moved this month
+  - L2222 the draw the People page shows
+  - L2223 ...its jobs' half
+  - L2224 ...and its homes' half
+  - L2225 ...the posts it was struck on
+  - L2226 ...the people the homes hold
+  - L2227 ...the residents a post supports
+  - L2228 ...senior care's pull
+  - L2229 ...the rent's
+  - L2230 ...and crime's
+  - L2231 how much of the draw housing let in
+  - L2232 the payroll in trades whose people may leave
+  - L2234 the month's arrivals
+  - L2235 ...and the brake they took (WG2-R)
+  - L2236 ...and its departures
+  - L2237 ...the ones the work pushed out
+  - L2238 ...the ones who went broke
+  - L2240 ...and the ones crime drove out
+  - L2242 who arrived:
+  - L2244 who left:
+  - L2251 ...and which of the arrivals held a licence
+  - L2254 fixture: people died this month
+  - L2255 the dead of age
+  - L2256 ...the killed
+  - L2257 ...and the ones who aged out at 120
+  - L2259 fixture: people died of the causes of 1900 this month
+  - L2260 ...the dead of the causes of 1900
+  - L2263 ...the dead of
+  - L2264 ...and in the last twelve months
+  - L2265 ...and since the city began
+  - L2267 fixture: the causes' book holds the month's dead
+  - L2268 ...the people sick of TB
+  - L2269 the people off sick with the influenza
+  - L2272 ...which with illness's and the causes' are the month's dead
+  - L2277 fixture: the shops handed over less than the households planned
+  - L2279 the share the shops handed over
+  - L2284 fixture: somebody could not afford a basket even at full shelves
+  - L2286 ...the hungry even at full shelves
+  - L2287 ...who are some of the hungry, never more
+  - L2298 fixture: the migration array is longer than the history it opens with
+  - L2304 a format-29 migration array loads its wage history
+  - L2305 ...with the month's draw at 0
+  - L2306 ...and its arrivals at 0
+  - L2309 ...and a length it does not know is refused whole
+  - L2320 fixture: the city's migration saved a room, the doors counted
+  - L2322 fixture: ...and months of wage history, and a draw
+  - L2332 a migration array from before the room loads its wage history and its streaks
+  - L2333 ...and the month's draw
+  - L2334 ...with no room read: NaN, no census
+  - L2338 ...and every other slot as it was saved, the months recorded and the mixes with them
+  - L2351 a migration array from before the brake (WG2-R) loads all else, the brake read as 1
+  - L2357 a format-29 pyramid loads its people
+  - L2358 ...and its dead
+  - L2359 ...with no cause under them
+  - L2364 a format-29 row array loads the shelves as full
+  - L2365 ...and nobody hungry at full shelves
+  - L2366 ...but still its hungry
+  - L2387 fixture: the city shipped goods and landed goods this month
+  - L2388 every sector's units shipped and landed this month cross a save
+  - L2397 fixture: the city sold abroad and bought from abroad this month
+  - L2399 a freshly loaded city reads the month's balance of payments the live one read
+  - L2408 the month is counted after a load of a save that carried it
+  - L2425 fixture: hot money arrived in the month the city is saved in (
+  - L2426 a freshly loaded city reads the hot money's month the live one read: arrived, departed, on doubt and the doubt's lifetime, to the bit
+  - L2432 ...and what ran home in a risk-off, the hot money's and the carry's, the month's and since founding, and the months it did, as they were
+  - L2453 fixture: the city's households had incomes after their fixed bills
+  - L2454 each cell's income after its fixed bills crosses a save (
+- **L2457 13b. a bond in the saved history (HD1, 2026-10-29)**
+- **L2467 a bond in the saved history**
+  - L2471 fixture: the city's businesses owe bonds, and the series has its months
+  - L2473 the series' last point is the face outstanding, to the cent of a thousand
+  - L2475 ...and it is above zero, one point per month of the axis
+  - L2478 fixture: the reloaded history has the points to compare
+  - L2479 a reloaded city's history reads the same points, month by month
+  - L2485 fixture: the city owes loans and mortgages too, to be scaled beside the bonds
+  - L2493 a hundred-for-one reform scales the bonds' series, every month, as it scales the debt beside it
+- **L2496 14. a reloaded city PLAYS ON as the one it was saved from**
+  - L2555 fixture: the price index is four shopping months short of its basing when the city is saved
+  - L2558 fixture: the shops handed over less than the households asked for
+  - L2560 fixture: the price index has not been based yet
+  - L2562 saved a city in its first two years
+  - L2567 the share the shops handed over came back
+  - L2573 fixture: the index was based in those six months, in the city saved
+  - L2574 ...and in its reload
+  - L2575 six months on: the price index
+  - L2577 ...the sick rate
+  - L2578 ...the treasury
+  - L2579 ...the households' savings
+  - L2581 ...the bank's equity
+  - L2583 
+  - L2627 fixture: the town laid a spur and a depot of its own
+  - L2637 fixture: the railway hauled in the month the city was saved
+  - L2639 fixture: ...its groceries among the freight, and its price index based
+  - L2641 saved a city whose railway hauls
+  - L2664 fixture: every sector's save carried the month's units, and the copy carries none, as before 0.7.46
+  - L2679 a reloaded city's first month is its unsaved twin's: population, arrivals and the price index
+  - L2687 ...and from its save without the month's units, the first haul is the month's: its tonnes and its bill
+  - L2698 ...a month on, every pool the money audit reads, and the people
+  - L2745 fixture: the college town is short of power, and its services have struck next month's ratio over the one its month ran at
+  - L2747 fixture: ...and students who finished a course wait for the next census to carry what they borrowed
+  - L2749 saved the college town
+  - L2753 the reload holds the month's power ratio and the graduates waiting
+  - L2762 fixture: the town's month struck flows for the next census to carry (HS1)
+  - L2763 ...and the reload holds them, slot by slot
+  - L2775 a month on, its twin is the town that never reloaded: every pool the money audit reads, and the people, to the bit
+  - L2777 ...the student loans repaid
+  - L2778 ...the households' savings, which the flows carried at the census (HS1)
+  - L2810 fixture: the buses carried people and their staff drew wages
+  - L2812 fixture: ...and its households own cars, and their drivers burn fuel
+  - L2814 saved a city with buses
+  - L2819 a reloaded city has the month's transit bill
+  - L2825 a reloaded city has the same riders, fuel price and bill
+  - L2833 fixture: the save carries the bill and the commute by name
+  - L2841 ...and a save from before 0.7.49 derives it, as the load always did
+- **L2847 a recording's switch and id cross a save (TR1, 2026-10-31)**
+  - L2862 fixture: the played city is recording, with an id, and its three months are kept
+  - L2864 saved with recording on
+  - L2867 the switch and the id cross a save: both back
+  - L2871 fixture: the save holds the two keys
+  - L2882 a save written without the keys reads back off: no switch, no id
+- **L2885 the city's fund, its rescue setting and the bank's preferred (0.7.14)**
+  - L2898 fixture: the city has a bank to ask it for preferred
+  - L2903 fixture: the bank is open, not in resolution, before it is put under its minimum
+  - L2910 fixture: the bank is under its minimum and its offer waits
+  - L2912 saved it with the offer waiting
+  - L2915 a pending offer survives a save, with the month it was made
+  - L2918 ...asking for the same
+  - L2920 fixture: the city bought the preferred
+  - L2943 fixture: the fund holds a share of a company the world sells and somebody stands bid for
+  - L2950 fixture: the desk carries its inventory at other than today's quote, as after a share traded since the step
+  - L2952 saved it with the preferred bought and an order waiting
+  - L2955 the dial and the rescue setting survive a save
+  - L2957 ...the fund's cash
+  - L2958 ...what the hand paid in
+  - L2959 ...the hand's order, waiting for the step
+  - L2961 ...the answer and its month
+  - L2964 ...the preferred outstanding
+  - L2965 ...its arrears
+  - L2968 fixture: the preferred the city bought is on the bank's books, live and reloaded
+  - L2971 ...its anniversary, its cap on the dividend and its warrants
+  - L2976 ...the desk's inventory as the bank carried it, not re-marked from the quote
+  - L2977 ...and the bank's equity with it in
+  - L2978 ...its three parts still adding up
+  - L2979 ...and what the fund is worth
+  - L2988 fixture: the fund's record has rows to keep
+  - L2989 its cost basis survives a save: lots, rows, its start
+  - L2994 ...what its holdings cost
+  - L2995 ...what they realized
+  - L2999 fixture: its buys were worth something at the step's value
+  - L3000 ...what its buys were worth at the step, a bargain's measure
+  - L3002 ...and the fund's worth on the history, month by month
+  - L3024 the new price model's twenty-three series come back on the history, month by month
+  - L3025 ...the month's move in credibility, the anchor's eighth slot
+  - L3032 ...and every price component's chained level, the index's tail
+  - L3035 fixture: the save carries the ledger inside the fund
+  - L3042 a 0.7.38 save's ledger is seeded at its load
+  - L3047 ...its holdings and cash what they were
+  - L3072 fixture: the month's cash ran short and the fund owes what it sells for
+  - L3087 fixture: the step asked the market book for shares to pay the withdrawal with, and the world bought them (
+  - L3093 fixture: over the default it owes what it sells for, and paid some late
+  - L3095 saved it drawing 10% a month
+  - L3098 the withdrawal and what it owes cross a save
+  - L3108 fixture: the save carries the dial and the month's two new slots
+  - L3117 ...an older save loads Norway's rule, owing nothing
+  - L3134 saved it with its treasury gone into deficit since the market's strike
+  - L3143 fixture: re-struck off the saved cash, the city's rate would come back different
+  - L3145 the city's rate comes back as the month struck it
+  - L3146 ...and its ten-year rate, which the fund's bonds are marked on
+  - L3147 ...and the overdraft the market priced
+  - L3158 a quote is not a sale: previewed twice, the tally has not moved
+  - L3161 fixture: a booked sale is counted, and is the last
+  - L3163 saved it with the sale counted
+  - L3166 the tally crosses a save, every slot of it
+  - L3169 ...the last sale's figures with it
+  - L3172 fixture: the save carries the tally
+  - L3176 a save from before it loads an empty tally, over a city that had a count
+  - L3202 fixture: the register was saved at this build's length
+  - L3206 an older save loads with an empty fund, the dial at 0 and the rescue on the button
+  - L3210 ...no preferred and nothing owed on it
+  - L3217 ...and no city shares or bonds
+  - L3218 ...and its ledger begins at the load, nothing to seed
+  - L3221 ...and its register otherwise the save's: the bank's shares in issue
+- **L3224 the oldest format this build loads (0.7.108)**
+  - L3248 REV-RES2 P3: the format60 fixture has its native pre-inventory schema and original build
+  - L3273 fixture: exactly one below the floor still reads as an older, unloadable header
+  - L3278 the exact one-below-floor boundary is refused without applying it or rewriting its bytes
+  - L3281 fixture: three saves and their histories in the folder
+  - L3285 fixture: its native format60 header reads below the floor
+  - L3287 the header says this build can no longer read it, not that it is newer
+  - L3289 ...so the slot list marks it and offers no load: there, not damaged, not loadable
+  - L3298 the load refuses it, in the words naming the build that saved it
+  - L3300 ...which name that build twice, this one, and that this one cannot read it
+  - L3305 ...and the log says the same, with the save's format and this build's
+  - L3309 ...and nothing of it is applied
+  - L3314 a save stamped by no build is refused too, naming none
+  - L3316 ...\"an older build\"
+  - L3320 a newer build's save is still marked newer, not older, and not loadable
+  - L3325 ...and still refused as before, as from a newer version
+  - L3334 every refused save byte for byte as it was, and nothing written beside it
+  - L3340 a save at the floor is loadable
+  - L3344 ...and loads, at the month it was saved
+- **L3504 acute influenza shares beside the saved sickness ring (R0h)**
+  - L3512 fixture: each age band has an acute influenza share to save
+  - L3514 the acute fixture saved
+  - L3517 the acute shares are written separately from the ring
+  - L3521 every acute share and every ring slot cross the actual load to the bit
+  - L3525 ...the visible sick share of
+  - L3527 ...the youngest sick bar
+  - L3529 ...the chronic Health rate
+  - L3533 an old save without acute shares loads none, even over a city that had them
+- **L3547 allocated land survives an ordinary load (AW2)**
+  - L3563 fixture: the injected footprint exceeds owned land but the live ledger has room for a house
+  - L3566 saved the discrepant live city in scratch
+  - L3570 the ordinary load succeeded
+  - L3571 the live allocation came back
+  - L3572 the live free ground came back
+  - L3573 the live building footprint came back
+  - L3575 the live ground price came back
+  - L3576 the next building quote is unchanged
+  - L3580 the live city orders its next house
+  - L3581 the ordinary load orders the same house
+  - L3582 both orders consume the same ground
+  - L3583 both orders leave the same free ground
+  - L3584 both orders leave the same treasury
+  - L3585 both orders leave the same number on site
+  - L3595 a save without the allocation key still reads its building footprint
+  - L3597 fixture: that reconstruction refuses the very same house for land
+  - L3600 saved an explicit zero allocation in scratch
+  - L3603 an explicit zero allocation comes back as zero
+- **L3608 a saved land ledger follows changed catalogue plots (AW2)**
+  - L3620 fixture: an old-catalogue house is placed with its ground allocated
+  - L3626 saved the old catalogue plot and its allocation
+  - L3631 fixture: the plot changed between save and ordinary load
+  - L3632 changed plots adjust the counter by their footprint delta
+  - L3634 changed plots retain the source city's unallocated gap
+- **L3641 private and automatic construction continue after a load (AW2)**
+  - L3662 fixture: the short retailer can staff a new shop
+  - L3671 fixture: no free ground, services need works and an unallocated site remains
+  - L3674 saved the town before construction resumes
+  - L3695 every template has the same standing and ordered count
+  - L3696 private planner decisions match after the month
+  - L3697 owned ground matches after the month
+  - L3698 allocated ground matches after the month
+  - L3699 free ground matches after the month
+  - L3700 automatic orders match after the month
+  - L3701 automatic land purchases match after the month
+  - L3702 the automatic order details match after the month
+  - L3706 the continuation actually placed private orders outside the automatic builder's remit (Retail:
+  - L3708 the continuation actually placed automatic orders
+  - L3709 the continuation actually bought ground for those orders
+- **L3729 every id crosses a save, the highest past a gap in the ids too**
+  - L3752 fixture: the highest id,
+  - L3754 fixture: two of it stand
+  - L3757 fixture: the city saved
+  - L3762 the highest id's buildings came back
+  - L3767 ...and every id's count is the one saved
+- **L3798 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
+  - L3815 fixture: a generated city saved
+  - L3819 a generated city writes none of the four Earth fields
+  - L3831 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
+  - L3835 ...its land and map the city's that wrote it
+  - L3837 saved again
+  - L3840 ...and writes its own bytes back, but for this build's stamp: its format, version and time
+  - L3843 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
+  - L3850 fixture: EarthCheck's fixture is beside the classes
+  - L3866 fixture: a city founded on the real Earth, played four months
+  - L3868 saved
+  - L3870 the save carries its kind, its spot and its data, and its seed (0.7.121)
+  - L3875 ...read back as the same key
+  - L3879 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
+  - L3882 saved again
+  - L3885 ...and writes the same bytes but its time
+  - L3888 two months on: the treasury
+  - L3889 ...the households' savings
+  - L3892 ...and every sector's till
+  - L3893 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
+  - L3899 the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)
+  - L3904 ...and no row of the land's own is wider for it: GD4's centre 26, a holding 33, an offer 31
+  - L3908 ...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit
+  - L3915 the Earth city's save carries who sells each offer, a row for each, where the world file names the sellers - and no key where it does not (WN5)
+  - L3925 ...and reloaded the Earth city stands the same offers, sellers and all, and the same nations sell its ground
+  - L3935 fixture: Perth's window
+  - L3945 fixture: Perth's city holds a purchase with foothill in it and one with shallow sea
+  - L3951 fixture: the land with its relief wrote itself
+  - L3956 a holding with foothill and shallow sea round-trips: the land rebuilt from the file is the land written, every relief figure of it
+  - L3964 ...each holding's own row, the foothill in this one and the shallow sea in that
+  - L3971 an offer whose relief row is set by hand reads it back through its record, and the record is still 29 wide
+  - L3977 a save without the three keys has none of them
+  - L3987 ...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)
+  - L3994 a relief row of the wrong width reads that holding flat and leaves the rest as saved
+  - L4003 a land office restoring an offer reads its relief row, and with none reads it all flat
+  - L4013 a city on one landmass writes no \"landmasses\" key (its save is the old bytes)
+  - L4018 fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader
+  - L4031 fixture: a terminal stands on the island, which owns shore the city bought and no port at home links
+  - L4033 saved
+  - L4036 the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving
+  - L4043 read back, the terminal stands on the island again and the land is the same
+  - L4046 saved again
+  - L4049 ...and writes the same bytes but its time
+  - L4057 a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed
+  - L4072 a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone
+  - L4084 an Earth save of the format before the landmasses (
+  - L4086 an Earth save of the format before the landmasses (
+  - L4095 a city with no bridge writes no \"bridges\" key (its save is the old bytes), and the island city of the landmasses' block writes none either
+  - L4115 fixture: a Road Bridge stands (built at once) and a Rail Bridge is on site, over a crossing the survey found; the island is linked by the one that stands
+  - L4118 saved
+  - L4120 the save carries the key \"bridges\", a row for each bridge, and the format of every Earth save of this build (no bump)
+  - L4124 read back, the bridges run where they ran, the one that stands links the island, and the land is the same
+  - L4128 saved again
+  - L4131 ...and writes the same bytes but its time
+  - L4138 a save without the key loads - it is not refused - and reads no bridge: none recorded, the island unlinked
+  - L4153 a row of a template that is no bridge, and one of a kind the game does not know, are passed over (not refused): the two real bridges stand alone
+  - L4178 a save with
+  - L4180 ...nothing of it applied, and every file as it was
+- **L4198 and a refused save loaded into a running city leaves that city as it was**
+  - L4209 fixture: the city is loaded and running, past month 1
+  - L4210 fixture: slot 2 is below the floor and slot 5 from a newer build
+  - L4218 the save below the floor is refused, naming the build that still opens it
+  - L4220 ...and the city in play is the same city: its managers the same objects, its month and cash
+  - L4225 the newer build's save is refused, naming the build that opens it
+  - L4227 ...words that name that build and this one
+  - L4230 ...and the city in play is still the same city
+  - L4239 ...and what it saves after both refusals is what it saved before them, key for key
+- **L4324 the world market and the trade by partner cross a save; a format-47 save is refused (WN3)**
+  - L4326 fixture: the twelve-nation world file is beside the classes
+  - L4383 the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit
+  - L4384 ...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (
+  - L4387 fixture: with the file named, the city built a market and solved the year it is in (
+  - L4391 fixture: it tallied its trade by partner, and one year turned into the history (
+  - L4394 fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry):
+  - L4399 fixture: the house order past the yard was placed (
+  - L4403 saved
+  - L4405 the save writes the market's year, its prices and scales, and the trade by partner
+  - L4410 fixture: the city built the world's moneys with the market, in the city's month
+  - L4415 the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (
+  - L4419 fixture: the city built the policy rates with the moneys, in the city's month
+  - L4423 the save writes the policy rates' state (policyRates), as many numbers as PolicyRates.toSaveArray() gives (
+  - L4425 fixture: the city's price of money is the US's policy rate (
+  - L4427 ...and the foreign accounts' array runs to slot 104, the world's (95-104)
+  - L4430 ...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b), gold's balance, price ...
+  - L4431 fixture: the vault holds gold, bought by name, at a price, with a share of the chosen mix, and slots 149-151 are its balance, its price and that share (
+  - L4436 ...a city off gold saves slots 152-155 as the getters say: no mint price, no mint rate, not following, no event
+  - L4447 a bare currency on Gold, following the dollar with a date open: slots 152-155 are the getters (
+  - L4460 ...and its next six reprices (the rate and the mint price, gold moving, following the dollar) are the live currency's to the bit
+  - L4465 a GD2-length array (152 slots) restores GD3's defaults: no mint price, no mint rate, not following, no event; no Canada episode and no gold's last break (156...
+  - L4468 ...and its gold as GD2 saved it: the balance and the price (slots 149-150)
+  - L4471 ...and saved again it is a full array (
+  - L4480 a currency whose gold broke (
+  - L4484 ...an array from before FB14 (158 slots) reads the last break a peg's, as every break was worded before
+  - L4485 ...and the city's own, which never broke off gold, saves 0
+  - L4492 the central bank's array ends with the gold's two figures: due back at the next top (
+  - L4497 ...a restore returns both to the bit, and what it saves is what it read
+  - L4501 ...and an array from before FB14, two slots shorter, reads nothing due and nothing retired for gold
+  - L4503 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
+  - L4507 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
+  - L4512 ...and the history writes each finished year's table by partner and good (1)
+  - L4520 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
+  - L4526 a load builds the market and restores its year
+  - L4529 ...its mill prices and supply scales bit for bit
+  - L4536 ...restored and not solved again: no sweeps in the loaded market (
+  - L4539 a load restores the world's moneys in the month they were saved in, the very same state to the bit
+  - L4541 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
+  - L4544 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
+  - L4547 ...and the history's policy series as they were
+  - L4564 ...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cros...
+  - L4565 ...the trade by partner, the month and the year to date, as it was
+  - L4566 ...the finished years in the history
+  - L4568 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
+  - L4581 ...and every good's market stands at the band it was struck at (
+  - L4584 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
+  - L4586 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
+  - L4591 ...and the policy rates and the city's price of money to the bit (the US's rate
+  - L4595 the month after runs the same in both: the cash to the cent and the trade by partner
+  - L4608 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
+  - L4621 a save with no world moneys loads, and they are caught up from the first January to the saved month (
+  - L4623 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
+  - L4632 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
+  - L4647 fixture: with no world file the city has no market and no partner record
+  - L4649 ...no moneys either, and its D$ has no world (WN4)
+  - L4651 saved
+  - L4653 ...and its save writes none of the new keys, in the markets or beside them
+  - L4657 ...no policy rates, and its price of money is the constant (XR4)
+  - L4661 ...every market on the goods' literals
+- **L4686 current-format land repair and refusal**
+  - L4702 a current-format save's changed land figure loads and redraws its actual ground
+  - L4726 ...and the refused save is untouched
+- **L4851 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT**
+  - L4883 
+  - L4889 ...and matches the city that was saved
+  - L4915 
+  - L4918 ...and it is back at month one
+- **L4920 5. WHAT A RELOAD MUST NOT FORGET**
+  - L4959 the mine has a payroll at all after a load
+  - L4960 ...and it is the payroll it was working
+  - L4964 utility income survives a load
+  - L4966 the residents' statement is not blank after a load
+  - L4968 ...and the government's revenue block is not either
+  - L4976 ...and rebuilding it does not book the month twice
+  - L4984 the population trend survives, so forecasts are not flat
+  - L4992 every sector's losing streak survives a load
+  - L4999 every sector's operating-loss streak (AQ1, the one the bleed reads) survives a load
 
 ## SaveSlotCheck.java - 226 labelled assertions
 

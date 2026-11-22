@@ -224,3 +224,19 @@ The model remains exactly the scored one: src tree c1977ce96c8ea099ad09cb6d3c309
 and format remain 0.9.188/60; PW5's floor is 61 and the native fixture remains single.
 No dry run has started. The dry-run slot is requested after this result is committed;
 re-fetch main again on the orchestrator's go and reconcile a newly shipped batch then.
+
+### RES2 landed before the dry-run request
+
+The final pre-request fetch found shipped RES2, 7e484c4da/0.9.189, at format/floor 61.
+Merge that main, raise PW5 to format/floor 62, and retain the shipped native format60
+fixture and SaveFileCheck.nativeCard60Refusal helper. Drop PW5's duplicate helper,
+pair and provenance; SubstationCheck delegates to the shipped helper, while SaveFileCheck
+and ReadPathCheck keep one shipped native-refusal hook each. No save assertion is
+weakened. The merge preserves the appended Substation id 155 and RES2's housing data.
+
+Generated-map conflicts are resolved by regeneration. Two small source conflicts keep
+the shipped shared refusal hook and raise the format above the shipped value. A shell
+quoting error in a first merge-edit command changed no source; direct patches resolved
+the conflicts before checking or committing. The complete first ensemble above remains
+valid evidence for its earlier model, but is superseded for shipping by the merged model's
+checks and a new full ensemble. No dry-run request has been sent yet.
