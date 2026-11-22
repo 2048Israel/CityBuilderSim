@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**239 harness files, 27,466 labelled assertions.** AllChecks runs 239 of them.
+**239 harness files, 27,504 labelled assertions.** AllChecks runs 239 of them.
 
 ## Which harnesses read which class
 
@@ -4036,238 +4036,274 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L707 ...and a load puts it back
   - L721 every month of it is conserved: the money audit closes
 
-## CapitalGainsCheck.java - 217 labelled assertions
+## CapitalGainsCheck.java - 252 labelled assertions
 
 > Household average-cost stocks and investment taxes, through the real fills, census and city (HT1).
 > WHY: the fund already tracked average cost, but a household sale previously lost its acquisition cost.
 
-  - L68 the real order book fills
-- **L73 average-cost purchases, partial and full sales, loss carry**
-  - L78 two purchases add the actual 600 paid to basis
-  - L79 the buyer has paid exactly its basis
-  - L82 a partial sale leaves 450 of average cost
-  - L83 the 100 realised gain reaches the treasury
-  - L84 cash held plus tax is the actual purchase and sale money
-  - L86 the month's loss refunds its earlier gain tax
-  - L87 only the net loss carries
-  - L90 the final sale releases all remaining basis
-  - L91 the loss offsets the later 150 gain, leaving 50 taxable
-  - L92 the carried loss is consumed
-  - L93 a full sale leaves no share
-  - L94 all proceeds and actual taxes conserve the money
-- **L98 a loss before the gain in the same month**
-  - L102 the first sale carries its actual loss
-  - L104 the later gain uses the earlier loss
-  - L105 fill order leaves the month's net gain untaxed
-- **L109 founders, offerings, splits and integration**
-  - L116 the actual quote crosses the model's split trigger
-  - L118 a share split leaves total basis standing
-  - L119 a share split changes the units
-  - L122 default integration transfers no dividend tax
-  - L123 investment income receives the whole default dividend
-  - L128 the raised band actually pays integrated dividend tax
-  - L129 the raised-band investment income is net
-  - L134 the bank integrates the Retail profit rate it actually pays
-  - L136 the inclusion dial stops at the whole gain
-  - L138 the inclusion dial stops at zero
-  - L140 a staged policy copy keeps the inclusion
-  - L146 founders receive their actual founding book as cost
-  - L150 offerings add only the actual paid amount to basis
-- **L154 the spending waterfall receives proceeds after the actual tax**
-  - L163 the waterfall actually sells shares and pays tax
-  - L164 its released cost has the purchased average
-  - L165 net spending, surplus banked and tax equal buyer payment
-- **L169 census and stage stocks**
-  - L178 stage ageing carries the original average basis
-  - L179 stage ageing carries the original loss stock
-  - L180 stage ageing conserves basis
-  - L188 the census conserves shares
-  - L189 basis follows the shares through the pool
-  - L190 loss carry is a census stock
-  - L191 the receiving cell takes the average basis
-- **L195 real months: actual assessments and both money identities**
-  - L211 the live city actually assesses sales
-  - L212 the live city actually assesses dividends
-  - L213 the default city actually transfers gain tax
-  - L214 every played month's pool audit holds
-  - L215 every played month's household identity holds
-  - L216 the budget and journal account for the actual transfers
-  - L217 every actual government claim has a debtor or unhanded transit counterpart
-  - L234 the save fixture actually transfers its foreign collateral
-  - L250 the nonzero saved domestic and foreign claims match their government asset
-  - L257 both investment receipts are declared monthly flows
-  - L268 basis survives
-  - L269 tagged units survive
-  - L270 secured liability survives
-  - L271 matching government/transit snapshot survives
-  - L273 foreign attribution snapshot survives
-  - L275 loss carry survives
-  - L276 the current month's taxable gain survives
-  - L277 every appended cell slot survives
-  - L278 the inclusion policy survives
-  - L279 the struck transfers and call counts survive
-  - L281 restored claims retain matching government and debtor stocks
-  - L283 budget gain revenue survives
-  - L284 budget dividend revenue survives
-  - L285 the recorded gain-tax history survives
-  - L287 the recorded dividend-tax history survives
-  - L291 the save floor rises past the last zero-basis format
-  - L299 an old zero-basis save is actually refused before rebuild
-  - L302 the scratch save can be read for the incompatible-format proof
-- **L330 cash-first secured estate: assessment is distinct from collection**
-  - L332 the accepted 1000 value / 400 basis estate assesses 45
-  - L333 only the actual ten cash is collected
-  - L334 the remaining 35 is a saved government claim
-  - L335 the heirs carry the claim with their tagged shares
-  - L336 the stepped-up inherited basis is 1000
-  - L337 the surviving source households keep their 400 basis
-  - L338 matching receivable equals domestic and transit liabilities
-  - L340 a real attributable net dividend of twenty pays twenty old tax
-  - L341 fifteen remains, without repeating the assessment
-  - L342 assessment is still the original 45
-  - L344 collection caps at the old claim
-  - L345 paid security is released
-  - L347 a later unencumbered receipt cannot pay the cleared claim
-  - L349 cash-sufficient estate pays the actual 45
-  - L350 cash-sufficient heirs get the remaining 55
-  - L351 a fully paid estate creates no claim
-  - L353 the existing revolving debt gets its fifteen first
-  - L354 tax takes only the five remaining cash
-  - L355 the rest is secured, not written off for cash shortage
-  - L359 between-press common extinction saves its pending noncash claim loss
-  - L360 common extinction never receives tax cash
-  - L362 the next window records the saved pending loss once
-  - L364 the transferred loss reduces the assessed gain
-  - L365 the inherited loss stock is consumed only in that fraction
-  - L366 the living source keeps its own loss carry
-  - L376 a survivor rolls the original basis untaxed
-  - L377 a survivor carries the secured liability
-  - L378 survivor rollover does not assess a deemed gain
-  - L379 survivor claims conserve exactly
-- **L383 persistent foreign security through actual unfilled and filled orders**
-  - L388 departure is assessed once before cash leaves
-  - L389 departure cash first collects ten
-  - L390 no negative departing savings is created
-  - L394 a repeated handoff cannot add gross foreign holdings again
-  - L395 all hundred unpaid tagged units remain attributed
-  - L396 the 35 is foreign, not erased with the cell
-  - L398 the tagged order really rests with no bid
-  - L406 the first step actually records a finite automatic split
-  - L408 the first cumulative factor records the native step split
-  - L409 the actual monthly reset preserves the unfilled tagged holding in its recorded units
-  - L410 the actual monthly reset preserves the unpaid claim
-  - L411 unfilled is not a tax receipt
-  - L414 an unrelated WORLD purchase does not pay old foreign tax
-  - L417 the unrelated new departure adds no older tagged units
-  - L423 the second step actually records a finite automatic split
-  - L425 the second cumulative factor records the native step split
-  - L426 both native steps preserve the original tagged holding in recorded units
-  - L427 automatic splits leave the older nominal claim unchanged
-  - L430 the ordinary new leaver actually sells ten units
-  - L431 ordinary new-leaver proceeds do not pay the older tagged claim
-  - L434 a real partial tagged fill delivers twenty units
-  - L435 the partial receipt collects twenty and leaves fifteen
-  - L436 native tagged gross settlement is twenty
-  - L437 retained tax is a separate actual amount
-  - L438 the tagged holder has no net cash from that fill
-  - L442 partial foreign attribution is copied by value
-  - L444 the twenty-unit fill releases exactly twenty current tagged units
-  - L445 the native stock identity holds before the explicit split
-  - L448 split multiplies foreign tagged units
-  - L449 the explicit split preserves its actual nominal claim
-  - L450 split preserves the nominal claim
-  - L451 the native stock identity holds after the explicit split
-  - L454 currency scales the foreign claim
-  - L455 government claim still matches the debtor after currency reform
-  - L457 genuine old-common extinction writes off the unpaid claim
-  - L458 extinction never collects invented cash
-  - L459 a saved government snapshot contains the outstanding claim
-  - L498 no eligible working heir exists before the census
-  - L503 the estate repays existing revolving debt first
-  - L504 only actual remaining cash reaches treasury as property
-  - L505 the unchanged pool identity sees only the actual inherited cash edge
-  - L506 household savings conserve estate cash plus the native debt repayment
-  - L508 no cash is labelled capital tax on a self-claim
-  - L509 new and old secured assessments consolidate after receipt
-  - L512 loss carry is consumed or retained by this actual assessment
-  - L513 the government has no remaining self-claim
-  - L514 no estate cash enters either emigration leg
-  - L515 the receiver retains actual USD
-  - L516 the receiver retains actual idle cars
-  - L517 city paper is reserved, not silently redeemed
-  - L518 the precise holder discount follows the reservation
-  - L519 reserved face cannot be traded as private face
-  - L520 unpaid auction entitlement never enters the paid household estate stock
-  - L521 all real own-paper holder counterparts including custody add to the issuer
-  - L524 the no-heir event really occurs during an unsettled sale
-  - L525 no coupon is lost or duplicated at the holder handoff
-  - L526 the already-recorded source coupon reaches custody
-  - L527 inheritance creates no bought-cash fiction
-  - L528 inheritance creates no disposal-proceeds fiction
-  - L530 custody retains every domestic share
-  - L531 issuer and custody quantities match
-  - L532 the complete share identity holds
-  - L537 all actual corporate holders add to face
-  - L538 the capsule is the actual new bond holder
-  - L540 no paper counterpart was invented
-  - L700 every recorded issuer bill is still unpaid before its one actual charge
-  - L705 actual issuer pays its own recorded coupon
-  - L709 all issuer debits fund the exact aggregate recorded bill
-  - L711 actual issuer charges and clearing conserve whole cash
-  - L716 actual bank coupon credit matches its clearing debit
-  - L717 actual bank booking and clearing conserve whole cash
-- **L741 coupon cash clearing before/after charge, bank booking and partial custody transfer**
-  - L748 the warmed book has no pending record to replace
-  - L750 the appended issue uses an unused native nextId
-  - L764 the complete warmed register plus one new issue remains live
-  - L767 the new issue contributes exactly its own coupon
-  - L768 the new source face contributes exactly its own entitlement
-  - L769 preserved baseline and new private obligations are fully recorded
-  - L770 preserved baseline and new bank obligations are fully recorded
-  - L772 an uncharged record-date promise is zero clearing cash
-  - L775 the uncharged promise cannot pay custody or disappear
-  - L776 the uncharged promise remains fully recorded
-  - L785 the complete source bundle transfers its quarter
-  - L786 only the source quarter leaves private ownership
-  - L787 the original issuer face is preserved
-  - L788 the unrelated bank retains its position
-  - L789 the unrelated world retains its position
-  - L790 the ordinary city fund retains its position
-  - L791 every unrelated company retains its position
-  - L794 partial custody transfer preserves the complete holder sum
-  - L795 the new inherited issue contributes exactly ten face
-  - L796 only the deceased complete source fraction receives its recorded coupon
-  - L797 the new inherited issue contributes exactly its own recorded coupon
-  - L798 the live source retains its full record-date fraction
-  - L799 other private record-date holders are preserved
-  - L803 the real issuer debit moves to cash clearing
-  - L804 charged clearing includes the still-unpaid bank
-  - L808 a missing issuer debit is caught by the actual pool identity
-  - L811 bank-booked clearing excludes the paid bank
-  - L812 post-payment cash clearing is empty
-  - L820 all record-date maps/flags/cash survive phase
-  - L827 the bank's once-only credit survives phase
-  - L829 native charges/bookings conserve pooled cash
-  - L834 actual partial inherited coupon reaches treasury once
-  - L835 the live source keeps its original record-date fraction
-  - L836 every preserved private holder receives its recorded entitlement
-  - L838 final clearing is discharged
-  - L839 the actual debit, bank credit and remaining payments conserve cash
-  - L842 post-payment cannot create a duplicate receipt
-- **L850 actual all-stock no-heir estate, pending settlement and both loaders**
-  - L858 every custody owner slot survives loader
-  - L860 saved holder discount survives loader
-  - L861 recorded coupon entitlement survives loader
-  - L862 noncash ownership history survives loader
-  - L869 post-settlement custody snapshot survives
-  - L872 post-settlement load cannot repeat retirement
-  - L873 post-settlement reservation remains cleared
-  - L879 a real unrelated heir receives its stepped basis
-  - L880 ordinary real heirs still carry the unpaid 35 claim
-  - L883 the loss-only estate retains a positive exact memo stock
-  - L891 reservation uses the native schedule
-  - L892 reservation uses the native issuer carrying operation
-  - L893 nonzero reserved discount is retired with its exact holder
+  - L72 the real order book fills
+- **L77 average-cost purchases, partial and full sales, loss carry**
+  - L82 two purchases add the actual 600 paid to basis
+  - L83 the buyer has paid exactly its basis
+  - L86 a partial sale leaves 450 of average cost
+  - L87 the 100 realised gain reaches the treasury
+  - L88 cash held plus tax is the actual purchase and sale money
+  - L90 the month's loss refunds its earlier gain tax
+  - L91 only the net loss carries
+  - L94 the final sale releases all remaining basis
+  - L95 the loss offsets the later 150 gain, leaving 50 taxable
+  - L96 the carried loss is consumed
+  - L97 a full sale leaves no share
+  - L98 all proceeds and actual taxes conserve the money
+- **L102 a loss before the gain in the same month**
+  - L106 the first sale carries its actual loss
+  - L108 the later gain uses the earlier loss
+  - L109 fill order leaves the month's net gain untaxed
+- **L113 actual gain fills and zero-proceeds common surrender, both orders and closed window**
+  - L122 both actual purchases pay exactly their basis
+  - L123 the cancellable common has actual paid basis
+  - L124 the holder starts with no prior taxable gain
+  - L127 loss-first native surrender removes the actual hundred units
+  - L129 loss-first surrender has no sale cash or premature refund
+  - L130 loss-first cancellation carries the actual hundred loss
+  - L131 loss-first cancellation creates no market sale
+  - L135 the actual profitable fill first pays the accepted default tax
+  - L136 the profitable fill has a hundred current taxable gain
+  - L139 native surrender removes the actual hundred remaining units
+  - L141 common surrender never invents market sale proceeds
+  - L142 the cancellation's only cash movement is an actual tax refund
+  - L144 a closed window cannot refund a stale month's cash tax
+  - L145 closed-window cancellation leaves household cash unchanged
+  - L146 the closed-window loss carries in full
+  - L147 closed cancellation does not consume stale taxed gains
+  - L149 closed cancellation saves no pending tax refund
+  - L150 closed cancellation saves no pending assessment
+  - L152 opening the next window cannot replay a stale refund
+  - L153 the closed loss remains available for later gains
+  - L155 open-window surrender refunds the actual seven-fifty
+  - L158 surrender releases all cancelled basis
+  - L159 surrender leaves no old common with the household
+  - L160 native takeover's holder identity remains complete
+  - L163 repeating surrender has no remaining common to remove
+  - L164 repeating surrender cannot repeat a cash refund
+  - L165 repeating surrender cannot change treasury receipts
+  - L166 repeating surrender cannot assess the same loss twice
+  - L167 repeating surrender makes no extra assessment call
+  - L169 net-zero gain and cancellation leave no current tax
+  - L170 net-zero gain and cancellation leave no net assessment
+  - L171 the hundred loss is fully used in either operation order
+  - L172 no current taxable gain survives the net-zero result
+  - L173 actual purchase/sale cash and tax conserve both balances
+  - L179 both native operation orders have the same closing result
+- **L183 founders, offerings, splits and integration**
+  - L190 the actual quote crosses the model's split trigger
+  - L192 a share split leaves total basis standing
+  - L193 a share split changes the units
+  - L196 default integration transfers no dividend tax
+  - L197 investment income receives the whole default dividend
+  - L202 the raised band actually pays integrated dividend tax
+  - L203 the raised-band investment income is net
+  - L208 the bank integrates the Retail profit rate it actually pays
+  - L210 the inclusion dial stops at the whole gain
+  - L212 the inclusion dial stops at zero
+  - L214 a staged policy copy keeps the inclusion
+  - L220 founders receive their actual founding book as cost
+  - L224 offerings add only the actual paid amount to basis
+- **L228 the spending waterfall receives proceeds after the actual tax**
+  - L237 the waterfall actually sells shares and pays tax
+  - L238 its released cost has the purchased average
+  - L239 net spending, surplus banked and tax equal buyer payment
+- **L243 census and stage stocks**
+  - L252 stage ageing carries the original average basis
+  - L253 stage ageing carries the original loss stock
+  - L254 stage ageing conserves basis
+  - L262 the census conserves shares
+  - L263 basis follows the shares through the pool
+  - L264 loss carry is a census stock
+  - L265 the receiving cell takes the average basis
+- **L269 real months: actual assessments and both money identities**
+  - L285 the live city actually assesses sales
+  - L286 the live city actually assesses dividends
+  - L287 the default city actually transfers gain tax
+  - L288 every played month's pool audit holds
+  - L289 every played month's household identity holds
+  - L290 the budget and journal account for the actual transfers
+  - L291 every actual government claim has a debtor or unhanded transit counterpart
+  - L308 the save fixture actually transfers its foreign collateral
+  - L324 the nonzero saved domestic and foreign claims match their government asset
+  - L331 both investment receipts are declared monthly flows
+  - L342 basis survives
+  - L343 tagged units survive
+  - L344 secured liability survives
+  - L345 matching government/transit snapshot survives
+  - L347 foreign attribution snapshot survives
+  - L349 loss carry survives
+  - L350 the current month's taxable gain survives
+  - L351 every appended cell slot survives
+  - L352 the inclusion policy survives
+  - L353 the struck transfers and call counts survive
+  - L355 restored claims retain matching government and debtor stocks
+  - L357 budget gain revenue survives
+  - L358 budget dividend revenue survives
+  - L359 the recorded gain-tax history survives
+  - L361 the recorded dividend-tax history survives
+  - L365 the save floor rises past the last zero-basis format
+  - L373 an old zero-basis save is actually refused before rebuild
+  - L376 the scratch save can be read for the incompatible-format proof
+- **L404 cash-first secured estate: assessment is distinct from collection**
+  - L406 the accepted 1000 value / 400 basis estate assesses 45
+  - L407 only the actual ten cash is collected
+  - L408 the remaining 35 is a saved government claim
+  - L409 the heirs carry the claim with their tagged shares
+  - L410 the stepped-up inherited basis is 1000
+  - L411 the surviving source households keep their 400 basis
+  - L412 matching receivable equals domestic and transit liabilities
+  - L414 a real attributable net dividend of twenty pays twenty old tax
+  - L415 fifteen remains, without repeating the assessment
+  - L416 assessment is still the original 45
+  - L418 collection caps at the old claim
+  - L419 paid security is released
+  - L421 a later unencumbered receipt cannot pay the cleared claim
+  - L423 cash-sufficient estate pays the actual 45
+  - L424 cash-sufficient heirs get the remaining 55
+  - L425 a fully paid estate creates no claim
+  - L427 the existing revolving debt gets its fifteen first
+  - L428 tax takes only the five remaining cash
+  - L429 the rest is secured, not written off for cash shortage
+  - L433 between-press common extinction saves its pending noncash claim loss
+  - L434 common extinction never receives tax cash
+  - L436 the next window records the saved pending loss once
+  - L438 the transferred loss reduces the assessed gain
+  - L439 the inherited loss stock is consumed only in that fraction
+  - L440 the living source keeps its own loss carry
+  - L450 a survivor rolls the original basis untaxed
+  - L451 a survivor carries the secured liability
+  - L452 survivor rollover does not assess a deemed gain
+  - L453 survivor claims conserve exactly
+- **L457 persistent foreign security through actual unfilled and filled orders**
+  - L462 departure is assessed once before cash leaves
+  - L463 departure cash first collects ten
+  - L464 no negative departing savings is created
+  - L468 a repeated handoff cannot add gross foreign holdings again
+  - L469 all hundred unpaid tagged units remain attributed
+  - L470 the 35 is foreign, not erased with the cell
+  - L472 the tagged order really rests with no bid
+  - L480 the first step actually records a finite automatic split
+  - L482 the first cumulative factor records the native step split
+  - L483 the actual monthly reset preserves the unfilled tagged holding in its recorded units
+  - L484 the actual monthly reset preserves the unpaid claim
+  - L485 unfilled is not a tax receipt
+  - L488 an unrelated WORLD purchase does not pay old foreign tax
+  - L491 the unrelated new departure adds no older tagged units
+  - L497 the second step actually records a finite automatic split
+  - L499 the second cumulative factor records the native step split
+  - L500 both native steps preserve the original tagged holding in recorded units
+  - L501 automatic splits leave the older nominal claim unchanged
+  - L504 the ordinary new leaver actually sells ten units
+  - L505 ordinary new-leaver proceeds do not pay the older tagged claim
+  - L508 a real partial tagged fill delivers twenty units
+  - L509 the partial receipt collects twenty and leaves fifteen
+  - L510 native tagged gross settlement is twenty
+  - L511 retained tax is a separate actual amount
+  - L512 the tagged holder has no net cash from that fill
+  - L516 partial foreign attribution is copied by value
+  - L518 the twenty-unit fill releases exactly twenty current tagged units
+  - L519 the native stock identity holds before the explicit split
+  - L522 split multiplies foreign tagged units
+  - L523 the explicit split preserves its actual nominal claim
+  - L524 split preserves the nominal claim
+  - L525 the native stock identity holds after the explicit split
+  - L528 currency scales the foreign claim
+  - L529 government claim still matches the debtor after currency reform
+  - L531 genuine old-common extinction writes off the unpaid claim
+  - L532 extinction never collects invented cash
+  - L533 a saved government snapshot contains the outstanding claim
+  - L572 no eligible working heir exists before the census
+  - L577 the estate repays existing revolving debt first
+  - L578 only actual remaining cash reaches treasury as property
+  - L579 the unchanged pool identity sees only the actual inherited cash edge
+  - L580 household savings conserve estate cash plus the native debt repayment
+  - L582 no cash is labelled capital tax on a self-claim
+  - L583 new and old secured assessments consolidate after receipt
+  - L586 loss carry is consumed or retained by this actual assessment
+  - L587 the government has no remaining self-claim
+  - L588 no estate cash enters either emigration leg
+  - L589 the receiver retains actual USD
+  - L590 the receiver retains actual idle cars
+  - L591 city paper is reserved, not silently redeemed
+  - L592 the precise holder discount follows the reservation
+  - L593 reserved face cannot be traded as private face
+  - L594 unpaid auction entitlement never enters the paid household estate stock
+  - L595 all real own-paper holder counterparts including custody add to the issuer
+  - L598 the no-heir event really occurs during an unsettled sale
+  - L599 no coupon is lost or duplicated at the holder handoff
+  - L600 the already-recorded source coupon reaches custody
+  - L601 inheritance creates no bought-cash fiction
+  - L602 inheritance creates no disposal-proceeds fiction
+  - L604 custody retains every domestic share
+  - L605 issuer and custody quantities match
+  - L606 the complete share identity holds
+  - L611 all actual corporate holders add to face
+  - L612 the capsule is the actual new bond holder
+  - L614 no paper counterpart was invented
+  - L774 every recorded issuer bill is still unpaid before its one actual charge
+  - L779 actual issuer pays its own recorded coupon
+  - L783 all issuer debits fund the exact aggregate recorded bill
+  - L785 actual issuer charges and clearing conserve whole cash
+  - L790 actual bank coupon credit matches its clearing debit
+  - L791 actual bank booking and clearing conserve whole cash
+- **L815 coupon cash clearing before/after charge, bank booking and partial custody transfer**
+  - L822 the warmed book has no pending record to replace
+  - L824 the appended issue uses an unused native nextId
+  - L838 the complete warmed register plus one new issue remains live
+  - L841 the new issue contributes exactly its own coupon
+  - L842 the new source face contributes exactly its own entitlement
+  - L843 preserved baseline and new private obligations are fully recorded
+  - L844 preserved baseline and new bank obligations are fully recorded
+  - L846 an uncharged record-date promise is zero clearing cash
+  - L849 the uncharged promise cannot pay custody or disappear
+  - L850 the uncharged promise remains fully recorded
+  - L859 the complete source bundle transfers its quarter
+  - L860 only the source quarter leaves private ownership
+  - L861 the original issuer face is preserved
+  - L862 the unrelated bank retains its position
+  - L863 the unrelated world retains its position
+  - L864 the ordinary city fund retains its position
+  - L865 every unrelated company retains its position
+  - L868 partial custody transfer preserves the complete holder sum
+  - L869 the new inherited issue contributes exactly ten face
+  - L870 only the deceased complete source fraction receives its recorded coupon
+  - L871 the new inherited issue contributes exactly its own recorded coupon
+  - L872 the live source retains its full record-date fraction
+  - L873 other private record-date holders are preserved
+  - L877 the real issuer debit moves to cash clearing
+  - L878 charged clearing includes the still-unpaid bank
+  - L882 a missing issuer debit is caught by the actual pool identity
+  - L885 bank-booked clearing excludes the paid bank
+  - L886 post-payment cash clearing is empty
+  - L894 all record-date maps/flags/cash survive phase
+  - L901 the bank's once-only credit survives phase
+  - L903 native charges/bookings conserve pooled cash
+  - L908 actual partial inherited coupon reaches treasury once
+  - L909 the live source keeps its original record-date fraction
+  - L910 every preserved private holder receives its recorded entitlement
+  - L912 final clearing is discharged
+  - L913 the actual debit, bank credit and remaining payments conserve cash
+  - L916 post-payment cannot create a duplicate receipt
+- **L924 actual all-stock no-heir estate, pending settlement and both loaders**
+  - L932 every custody owner slot survives loader
+  - L934 saved holder discount survives loader
+  - L935 recorded coupon entitlement survives loader
+  - L936 noncash ownership history survives loader
+  - L943 post-settlement custody snapshot survives
+  - L946 post-settlement load cannot repeat retirement
+  - L947 post-settlement reservation remains cleared
+  - L953 a real unrelated heir receives its stepped basis
+  - L954 ordinary real heirs still carry the unpaid 35 claim
+  - L957 the loss-only estate retains a positive exact memo stock
+  - L965 reservation uses the native schedule
+  - L966 reservation uses the native issuer carrying operation
+  - L967 nonzero reserved discount is retired with its exact holder
 
 ## CarCheck.java - 70 labelled assertions
 
@@ -30748,7 +30784,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1265 Construction's struck materials are the row as it stood at the strike, and cross a save
   - L1276 ...and a save from before them loads them as not counted, not as nothing
 
-## ShortSellingCheck.java - 279 labelled assertions
+## ShortSellingCheck.java - 282 labelled assertions
 
 > Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that
 > causes it, not on a city that happens to show it.
@@ -30994,56 +31030,59 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1247 ...the fund's, which holds them all
   - L1248 ...and the cells', which hold none, nothing
   - L1249 ...and the step recalls the 10 the lenders do not hold
-  - L1263 fixture: the town holds
-  - L1268 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
-  - L1270 ...as the one-argument form, which knows of no short, caps them at the shares in issue
-  - L1276 fixture: 40 short, held by the desk, and the register is whole
-  - L1285 fixture: the quote is over the last trade,
-  - L1286 fixture: the month's listing comes first and finds no book to list against, so the company is still with no shares in issue, the world holding
-  - L1289 the short is closed
-  - L1290 ...the world's own shares in it, wiped for nothing, are the month's valuation at the quote the company stood at
-  - L1292 ...and the short closed for nothing, the shares it owed at that quote
-  - L1293 ...the world holds none of it after
-  - L1294 ...and what it sold goes with the company: nobody holds a share of it
-  - L1295 ...the desk's 40 among them
-  - L1298 ...and the fund's lot is closed in its ledger, the shares it held gone
-  - L1300 ...and a month after the figures are cleared, a company with no short wiping nothing
-  - L1302 a listing of the company later, when its book is back, holds the founders' shares alone: the holdings are the shares in issue
-  - L1312 fixture: fair value is minFair now, and the quote is over the short's collateral
-  - L1314 a short open at a company under minFair is still margin-called when its account is under water
-  - L1319 fixture: the same quote, no short open, and over the band above minFair
-  - L1320 ...opens no new short at a company under minFair
-  - L1337 9. the cells' share trades with the world: each a pair of lines in the audit, a financial flow and its domestic half (LF1b)
-  - L1351 fixture: the town's cells hold shares in a company
-  - L1359 fixture: an ordinary cell holds
-  - L1394 fixture: no cell had traded a share with the world that month before the fixture's two trades
-  - L1395 fixture: a cell sold the world half its
-  - L1396 ...and the exchange's sale abroad rose by it, at that price
-  - L1397 ...the money in its savings
-  - L1398 fixture: the same cell bought half of that back from the world, at the same price
-  - L1399 ...and the exchange's purchase abroad rose by it
-  - L1400 ...the money out of its savings
-  - L1401 ...the world holding what it bought less what it sold
-  - L1405 the month's two figures hold the fixture's trades
-  - L1406 fixture: both trades are over the audit's cent, so a line that was left out would show
-  - L1407 the month foots with both declared: residual
-  - L1409 the audit's line for the cells' sale abroad is the exchange's figure
-  - L1410 ...with its half into their savings, the same size
-  - L1411 the audit's line for the cells' purchase abroad is the exchange's figure
-  - L1412 ...with its half out of their savings, the same size
-  - L1413 fixture: the sale is over ten times the town's whole financial inflow the month before, the purchase ten times its outflow
-  - L1415 the balance of payments' financial inflow holds the sale: $
-  - L1416 ...and its financial outflow the purchase: $
-  - L1418 ForeignAccounts' month, which the rate reads, is that financial account
-  - L1423 7. how often, in a real run:
-  - L1429 fixture: in month
-  - L1431 fixture: ...over the audit's cent each, so a line left out of that month's audit would show
-  - L1440 the cells traded shares with the world in the real run: they sold to it in
-  - L1442 ...and every month the audit's four lines for them were the exchange's two figures (
-  - L1445 every month passed the audit: worst residual $
-  - L1446 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
-  - L1451 ...and with them off the world posted no ask and sold nothing short, as the switch says
-  - L1453 ...and that city passed the audit and kept its register whole too
+  - L1265 fixture: the town holds
+  - L1267 fixture: this register's real departure batch has not been handed off
+  - L1270 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
+  - L1273 ...as the one-argument form, which knows of no short, caps them at the shares in issue
+  - L1275 the receiving register consumes the departure batch once
+  - L1278 another handoff cannot add the same departing shares again
+  - L1285 fixture: 40 short, held by the desk, and the register is whole
+  - L1294 fixture: the quote is over the last trade,
+  - L1295 fixture: the month's listing comes first and finds no book to list against, so the company is still with no shares in issue, the world holding
+  - L1298 the short is closed
+  - L1299 ...the world's own shares in it, wiped for nothing, are the month's valuation at the quote the company stood at
+  - L1301 ...and the short closed for nothing, the shares it owed at that quote
+  - L1302 ...the world holds none of it after
+  - L1303 ...and what it sold goes with the company: nobody holds a share of it
+  - L1304 ...the desk's 40 among them
+  - L1307 ...and the fund's lot is closed in its ledger, the shares it held gone
+  - L1309 ...and a month after the figures are cleared, a company with no short wiping nothing
+  - L1311 a listing of the company later, when its book is back, holds the founders' shares alone: the holdings are the shares in issue
+  - L1321 fixture: fair value is minFair now, and the quote is over the short's collateral
+  - L1323 a short open at a company under minFair is still margin-called when its account is under water
+  - L1328 fixture: the same quote, no short open, and over the band above minFair
+  - L1329 ...opens no new short at a company under minFair
+  - L1346 9. the cells' share trades with the world: each a pair of lines in the audit, a financial flow and its domestic half (LF1b)
+  - L1360 fixture: the town's cells hold shares in a company
+  - L1368 fixture: an ordinary cell holds
+  - L1403 fixture: no cell had traded a share with the world that month before the fixture's two trades
+  - L1404 fixture: a cell sold the world half its
+  - L1405 ...and the exchange's sale abroad rose by it, at that price
+  - L1406 ...the money in its savings
+  - L1407 fixture: the same cell bought half of that back from the world, at the same price
+  - L1408 ...and the exchange's purchase abroad rose by it
+  - L1409 ...the money out of its savings
+  - L1410 ...the world holding what it bought less what it sold
+  - L1414 the month's two figures hold the fixture's trades
+  - L1415 fixture: both trades are over the audit's cent, so a line that was left out would show
+  - L1416 the month foots with both declared: residual
+  - L1418 the audit's line for the cells' sale abroad is the exchange's figure
+  - L1419 ...with its half into their savings, the same size
+  - L1420 the audit's line for the cells' purchase abroad is the exchange's figure
+  - L1421 ...with its half out of their savings, the same size
+  - L1422 fixture: the sale is over ten times the town's whole financial inflow the month before, the purchase ten times its outflow
+  - L1424 the balance of payments' financial inflow holds the sale: $
+  - L1425 ...and its financial outflow the purchase: $
+  - L1427 ForeignAccounts' month, which the rate reads, is that financial account
+  - L1432 7. how often, in a real run:
+  - L1438 fixture: in month
+  - L1440 fixture: ...over the audit's cent each, so a line left out of that month's audit would show
+  - L1449 the cells traded shares with the world in the real run: they sold to it in
+  - L1451 ...and every month the audit's four lines for them were the exchange's two figures (
+  - L1454 every month passed the audit: worst residual $
+  - L1455 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
+  - L1460 ...and with them off the world posted no ask and sold nothing short, as the switch says
+  - L1462 ...and that city passed the audit and kept its register whole too
 
 ## SicknessCheck.java - 68 labelled assertions
 

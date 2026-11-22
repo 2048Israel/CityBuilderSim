@@ -1,4 +1,4 @@
-# ShortSellingCheck.java - 1,456 lines · 52 methods · 7 constants · harnesses
+# ShortSellingCheck.java - 1,465 lines · 52 methods · 7 constants · harnesses
 
 `ham/citybuildersim/ShortSellingCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -50,7 +50,7 @@
 > Every claim is CAUSED: a book emptied and given one trade, then the orders a line names and no others; a bid or an ask put on it by a participant
 > with the means to stand behind it.
 
-**Uses:** [Exchange](Exchange.md) (110), [Equity](Equity.md) (40), [OrderBook](OrderBook.md) (40), [MarketCheck](MarketCheck.md) (23), [Game](Game.md) (21), [MoneyAudit](MoneyAudit.md) (21), [KeptBench](KeptBench.md) (21), [FundLedger](FundLedger.md) (19), [ExchangeCheck](ExchangeCheck.md) (17), [Household](Household.md) (17), [FundView](FundView.md) (15), [LongPlaytest](LongPlaytest.md) (10), [HouseholdBalance](HouseholdBalance.md) (8), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [OwnerHousehold](OwnerHousehold.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Exchange](Exchange.md) (110), [OrderBook](OrderBook.md) (40), [Equity](Equity.md) (39), [MarketCheck](MarketCheck.md) (23), [Game](Game.md) (21), [MoneyAudit](MoneyAudit.md) (21), [KeptBench](KeptBench.md) (21), [FundLedger](FundLedger.md) (19), [Household](Household.md) (17), [ExchangeCheck](ExchangeCheck.md) (15), [FundView](FundView.md) (15), [LongPlaytest](LongPlaytest.md) (10), [HouseholdBalance](HouseholdBalance.md) (8), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [OwnerHousehold](OwnerHousehold.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1)
 
 **Used by (4):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [HoldersCheck](HoldersCheck.md), [RefineryCheck](RefineryCheck.md)
 
@@ -61,7 +61,7 @@
 | 150 | THE BENCH (sections 2 to 5): the same market as Table, but valued on its record, with holders to lend and a fund to b... |
 | 244 | · 1. the quote |
 | 340 | THE LINES OF SECTIONS 2 TO 5 |
-| 1324 | THE CELLS' SHARES ABROAD (LF1b), SECTION 9 |
+| 1333 | THE CELLS' SHARES ABROAD (LF1b), SECTION 9 |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 1398 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
+| 59 | 1407 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
 | 66 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 72 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 85 | 4 | `static void section(String title)` |  |
@@ -151,7 +151,7 @@
 | 231 | 5 | `static double rateAt(double utilisation)` | The fee a year the lenders are paid at this many shares short of this many lendable (Exchange.lendingRate()), as the dials say. |
 | 240 | 99 | `public static void main(String[] args) throws Exception` |  |
 
-### THE LINES OF SECTIONS 2 TO 5 (lines 340-1323)
+### THE LINES OF SECTIONS 2 TO 5 (lines 340-1332)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -177,12 +177,12 @@
 | 1103 | 14 | **type** `static final class Run` | What a run of the playtest's city counted. |
 | 1122 | 3 | `static Run play(boolean shorts, String label)` | The playtest's city (the default founding, its player's rhythm) played to RUN_MONTHS, with the world's shorts on or off, every month audited and every company's register checked: the holdings against the shares in iss... |
 | 1127 | 68 | `static Run play(boolean shorts, boolean tradeAbroad, String label)` | ...and with SX2's trades with the world caused in TRADE_ABROAD_MONTH when `tradeAbroad`. |
-| 1202 | 121 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
+| 1202 | 130 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
 
-### THE CELLS' SHARES ABROAD (LF1b), SECTION 9 (lines 1324-1456)
+### THE CELLS' SHARES ABROAD (LF1b), SECTION 9 (lines 1333-1465)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1336 | 85 | `static void theCellsAbroad()` | Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month (Game.settleProbeForTest: after the exchange's month has opened, before its step and the a... |
-| 1422 | 34 | `static void howOften()` |  |
+| 1345 | 85 | `static void theCellsAbroad()` | Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month (Game.settleProbeForTest: after the exchange's month has opened, before its step and the a... |
+| 1431 | 34 | `static void howOften()` |  |
 
