@@ -2170,13 +2170,13 @@ final class BuildScreen {
         return s.toString();
     }
 
-    /** Its own power: "makes 60,000 kW of its own power: its 51,400 kW draw, and 8,600 kW sold to the grid, $X a month at the tariff". */
+    /** Its own power: "makes 60,000 kW of its own power: its 51,400 kW draw, and 8,600 kW sold to the grid, $X a month at the works' price". */
     static String powerWords(BuildCard.Power p) {
         String made = "makes " + formatter.format(Math.round(p.gen())) + " kW of its own power: ";
         if (p.sold() > 0) {
             return made + (p.draw() > 0 ? "its " + formatter.format(p.draw()) + " kW draw, and " : "")
                     + formatter.format(Math.round(p.sold())) + " kW sold to the grid"
-                    + (Double.isFinite(p.soldValue()) ? ", " + money(p.soldValue()) + " a month at the tariff" : "");
+                    + (Double.isFinite(p.soldValue()) ? ", " + money(p.soldValue()) + " a month at the works' price" : "");
         }
         return made + "it buys " + formatter.format(Math.round(p.bought())) + " kW of its " + formatter.format(p.draw()) + " kW draw";
     }
@@ -2797,38 +2797,41 @@ final class BuildScreen {
      * market row's tiles by category - so a section that comes and goes (the total, the open asks) slides nothing.
      */
     void drawOverview() {
-        Kept.scope(BuildAdvice.OVERVIEW, () -> {
-            // The keyboard's page: nothing on it to build or clear.
-            pageCards.clear();
-            pendingHint = null;
+        // The site's completion schedule and draws held for the draw (AP1, WorksValue.hold()): its advice asks the power ahead hundreds of times.
+        try (WorksValue.Scope works = WorksValue.hold(ui.game)) {
+            Kept.scope(BuildAdvice.OVERVIEW, () -> {
+                // The keyboard's page: nothing on it to build or clear.
+                pageCards.clear();
+                pendingHint = null;
 
-            List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
-            List<BuildAdvice.Suggestion> advice = BuildAdvice.suggest(ui.game, all);
+                List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+                List<BuildAdvice.Suggestion> advice = BuildAdvice.suggest(ui.game, all);
 
-            VBox page = widePage();
-            page.getChildren().add(Kept.scope("head", () -> {
-                HBox head = buildHead(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
-                head.setStyle("-fx-padding: 0 0 4 0;");
-                return head;
-            }));
-            page.getChildren().addAll(Kept.scope("lead", this::overviewLead),
-                    Kept.scope("job head", () -> sectionHead("THE CITY'S JOB", hint("tap one to build for it"))),
-                    Kept.scope("job", () -> cityJob(all)),
-                    Kept.scope("advice head", () -> sectionHead("WHAT WOULD HELP MOST",
-                            Kept.scope("total", () -> adviceTotal(advice)))),
-                    Kept.scope("advice", () -> adviceRow(advice)));
-            // AN ISLAND TO LINK (FB13, AL1-W): the card for the link the rule would order, only while it has an island to link - with none, nothing.
-            page.getChildren().addAll(Kept.scope("link", this::linkSection));
-            page.getChildren().addAll(
-                    Kept.scope("auto head", () -> sectionHead("AUTOMATIC BUILDING", AUTO_INFO, hint(autoHint(ui.game.getAutoBuilder())))),
-                    Kept.scope("auto", this::autoRow));
-            // THE OPEN ASKS (CD2, D30): only while some order waits for its money - with none, nothing, not an empty card.
-            page.getChildren().addAll(Kept.scope("asks", this::autoAsks));
-            page.getChildren().addAll(
-                    Kept.scope("market head", () -> sectionHead("THE MARKET BUILDS THESE", hint("investors decide; you can add"))),
-                    Kept.scope("market", this::marketRow));
-            ui.setPage(page);
-        });
+                VBox page = widePage();
+                page.getChildren().add(Kept.scope("head", () -> {
+                    HBox head = buildHead(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
+                    head.setStyle("-fx-padding: 0 0 4 0;");
+                    return head;
+                }));
+                page.getChildren().addAll(Kept.scope("lead", this::overviewLead),
+                        Kept.scope("job head", () -> sectionHead("THE CITY'S JOB", hint("tap one to build for it"))),
+                        Kept.scope("job", () -> cityJob(all)),
+                        Kept.scope("advice head", () -> sectionHead("WHAT WOULD HELP MOST",
+                                Kept.scope("total", () -> adviceTotal(advice)))),
+                        Kept.scope("advice", () -> adviceRow(advice)));
+                // AN ISLAND TO LINK (FB13, AL1-W): the card for the link the rule would order, only while it has an island to link - with none, nothing.
+                page.getChildren().addAll(Kept.scope("link", this::linkSection));
+                page.getChildren().addAll(
+                        Kept.scope("auto head", () -> sectionHead("AUTOMATIC BUILDING", AUTO_INFO, hint(autoHint(ui.game.getAutoBuilder())))),
+                        Kept.scope("auto", this::autoRow));
+                // THE OPEN ASKS (CD2, D30): only while some order waits for its money - with none, nothing, not an empty card.
+                page.getChildren().addAll(Kept.scope("asks", this::autoAsks));
+                page.getChildren().addAll(
+                        Kept.scope("market head", () -> sectionHead("THE MARKET BUILDS THESE", hint("investors decide; you can add"))),
+                        Kept.scope("market", this::marketRow));
+                ui.setPage(page);
+            });
+        }
     }
 
     /** The one line: whose job the city's works are. */

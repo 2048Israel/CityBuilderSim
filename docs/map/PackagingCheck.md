@@ -1,6 +1,6 @@
 # PackagingCheck.java - 380 lines · 9 methods · 1 constants · harnesses
 
-`ham/citybuildersim/PackagingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PackagingCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime
 > files, the libraries' texts and the complete corresponding source archives, unchanged, and a

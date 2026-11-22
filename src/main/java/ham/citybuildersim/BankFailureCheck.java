@@ -11,6 +11,10 @@ import java.util.Arrays;
  * WHY. BF1 follows LD2's sawmill loans: a warehouse with no buyers, an empty
  * borrower still owing its plant, growth credit after losses, and an apparent
  * disappearance of shares which must be distinguished from a consolidation.
+ * MC2 (section 9): BF1's room to the target is none under it, so a bank in
+ * its band lent no growth; under the target the growth limit's share now
+ * is the room, never past the room to the minimum; over it the room to the
+ * target, and none while a default takes it under before the settle.
  */
 public final class BankFailureCheck {
     static final PrintStream out = System.out;
@@ -339,6 +343,253 @@ public final class BankFailureCheck {
                 && BusinessDebtManager.MORTGAGE_CAPITAL.equals(insured.getMortgageRefusal()));
     }
 
+    /* ----- 9. THE BAND'S SHARE UNDER THE LEVERAGE TARGET (MC2, 2026-11-20) -----
+       BF1 bounded growth by the room to the bank's target, which is none
+       anywhere under it: a bank in its band, between its minimum and its
+       target, wrote no building's loan and, while its leverage ratio binds, no
+       mortgage, though its growth limit allows each borrower a share. Banks by
+       hand at the minimum, halfway down the band, just under the target and
+       just over it; a landlord owing a mortgage and a works owing a loan.
+       REV-MC2 added a default that takes a bank over its target under it
+       (none until the settle, its bond bid too), the cap at the room to the
+       minimum near the target, and a bank whose risk weights bind. */
+
+    /** What the landlords and the works owe before the month, what each owns, and the hand-built banks' exposure. */
+    static final double BAND_OWED = 1_000_000, BAND_OWNED = 100_000_000, BAND_EXPOSURE = 10_000_000;
+
+    /**
+     * A bank of one branch whose exposure is its cash, funded from abroad:
+     * nothing weighs, so its leverage requirement is the larger, and its
+     * leverage ratio stands x of the way from LEVERAGE_RATIO_MIN to its
+     * leverage target (over it past 1), held by its restore setters.
+     */
+    static Bank leverageBankAt(double x, double exposure) {
+        Bank bank = new Bank();
+        bank.refresh(1, 0, 0, 0, 0, 0);
+        bank.setCash(exposure);
+        double ratio = Bank.LEVERAGE_RATIO_MIN + x * (bank.leverageTarget() - Bank.LEVERAGE_RATIO_MIN);
+        bank.setForeignDeposits(exposure * (1 - ratio));
+        return bank;
+    }
+
+    /** The landlords owing an insured mortgage and the works a loan, under this bank's capital rule for the month, as Game hands it to them. */
+    static BusinessDebtManager deskOn(Bank bank) {
+        BusinessDebtManager desk = new BusinessDebtManager();
+        desk.setInsuredMortgageRate(.04);
+        desk.setAssets(Sectors.REAL_ESTATE, BAND_OWNED);
+        desk.setAssets(Sectors.MANUFACTURING, BAND_OWNED);
+        desk.issueMortgage(Sectors.REAL_ESTATE, BAND_OWED, 0);
+        desk.issueLoan(Sectors.MANUFACTURING, BAND_OWED, 0);
+        desk.startAuditMonth();
+        desk.setCapitalRule(bank.lendingGrowthLimit(), bank.lendsOnlyToKeepBorrowersGoing(), bank.leverageBinds());
+        desk.setProjectBudget(bank);
+        return desk;
+    }
+
+    /** The mortgage door's answer for the landlords on this shortfall, on a building costing ten times it. */
+    static boolean mortgage(BusinessDebtManager desk, double shortfall) {
+        return desk.canFundMortgage(Sectors.REAL_ESTATE, shortfall, shortfall * 10);
+    }
+
+    static boolean near(double a, double b) {
+        return Math.abs(a - b) <= MoneyAudit.tolerance(Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    static void band() {
+        out.println("--- 9. a bank in its leverage band lends each borrower the band's share; over its target, the room to it (MC2) ---");
+        String re = Sectors.REAL_ESTATE, works = Sectors.MANUFACTURING;
+        Bank floor = leverageBankAt(0, BAND_EXPOSURE), half = leverageBankAt(.5, BAND_EXPOSURE),
+                under = leverageBankAt(.9, BAND_EXPOSURE), over = leverageBankAt(1.1, BAND_EXPOSURE);
+        out.printf("   leverage ratio at the minimum %.6f, halfway %.6f, under %.6f, over %.6f; target %.6f; growth limit halfway %.6f, under %.6f%n",
+                floor.leverageRatio(), half.leverageRatio(), under.leverageRatio(), over.leverageRatio(),
+                under.leverageTarget(), half.lendingGrowthLimit(), under.lendingGrowthLimit());
+        boolean binds = floor.leverageBinds() && half.leverageBinds() && under.leverageBinds() && over.leverageBinds();
+        check("fixture: four banks whose leverage ratio binds, at the minimum, halfway down the band, just under the target and just over it",
+                binds && near(floor.lendingGrowthLimit() * floor.exposure(), 0)
+                && half.leverageRatio() < half.leverageTarget() && under.leverageRatio() < under.leverageTarget()
+                && under.leverageRatio() > half.leverageRatio() && over.leverageRatio() > over.leverageTarget()
+                && half.lendingGrowthLimit() > 0 && under.lendingGrowthLimit() > half.lendingGrowthLimit()
+                && Double.isInfinite(over.lendingGrowthLimit()));
+
+        double share = under.lendingGrowthLimit() * under.exposure();
+        check("the band's share rises from none at the minimum to RATIONED_GROWTH of the exposure halfway down the band",
+                near(floor.leverageHeadroom(), 0) && near(floor.projectHeadroom(), 0)
+                && near(half.leverageHeadroom(), Bank.RATIONED_GROWTH * half.exposure()));
+        check("just under the target the insured room is the growth limit's share of the exposure, more than none",
+                share > 0 && near(under.leverageHeadroom(), share) && near(under.projectLeverageHeadroom(), share));
+        check("...and every building's loan reads the same share, before the book settles and after",
+                near(under.projectHeadroom(), share) && near(under.settledProjectHeadroom(), share));
+
+        BusinessDebtManager underDesk = deskOn(under);
+        double landlordShare = underDesk.capitalRoom(re), owedBefore = underDesk.getPrincipal(re);
+        check("fixture: the leverage rule rations the landlords, and its growth limit allows their debt a share smaller than the bank's",
+                underDesk.isInsuredRationed() && !underDesk.isKeepGoingOnly()
+                && near(landlordShare, under.lendingGrowthLimit() * owedBefore) && landlordShare < share);
+        double asked = landlordShare * .25;
+        boolean yes = mortgage(underDesk, asked);
+        Mortgage written = yes ? underDesk.issueMortgage(re, asked, 1) : null;
+        check("just under the target the door writes a mortgage within the landlords' share of the band",
+                written != null && underDesk.getPrincipal(re) > owedBefore);
+        double left = underDesk.capitalRoom(re);
+        check("...what it wrote comes off their share, and one past what is left is refused for the bank's capital",
+                written != null && near(left, landlordShare - (underDesk.getPrincipal(re) - owedBefore))
+                && !mortgage(underDesk, left * 2)
+                && BusinessDebtManager.MORTGAGE_CAPITAL.equals(underDesk.getMortgageRefusal()));
+        BusinessDebtManager halfDesk = deskOn(half);
+        check("halfway down the band the landlords' share is RATIONED_GROWTH of their debt, and a mortgage within it is written",
+                near(halfDesk.capitalRoom(re), Bank.RATIONED_GROWTH * halfDesk.getPrincipal(re))
+                && mortgage(halfDesk, halfDesk.capitalRoom(re) * .25));
+
+        BusinessDebtManager building = deskOn(under);
+        double worksShare = building.capitalRoom(works);
+        check("just under the target a building's loan within the works' share is lent, and one past it refused",
+                worksShare > 0 && building.canFundProject(works, worksShare * .5)
+                && !building.canFundProject(works, worksShare * 2) && building.wasRefusedForCapital(works));
+
+        BusinessDebtManager sharing = deskOn(under);
+        sharing.setAssets(Sectors.WOOD_PRODUCTS, BAND_OWNED);
+        sharing.issueProjectLoan(Sectors.WOOD_PRODUCTS, share * .95, 1);
+        double rest = share * .05;
+        check("the band's share is one allowance: another sector's loan this month leaves the rest of it",
+                near(sharing.projectRoom(), rest));
+        double between = (rest + sharing.capitalRoom(re)) / 2;
+        check("...so a mortgage within the landlords' own share but past that rest is refused, and one within the rest written",
+                sharing.capitalRoom(re) > rest && !mortgage(sharing, between)
+                && BusinessDebtManager.MORTGAGE_CAPITAL.equals(sharing.getMortgageRefusal())
+                && mortgage(sharing, rest * .5));
+
+        Bank hit = leverageBankAt(.9, BAND_EXPOSURE);
+        double loss = hit.equity() * .02;
+        hit.writeOffSector(re, loss);
+        Bank poorer = leverageBankAt(.9, BAND_EXPOSURE);
+        poorer.setForeignDeposits(BAND_EXPOSURE - (poorer.equity() - loss));
+        double shareLeft = poorer.lendingGrowthLimit() * poorer.exposure();
+        check("fixture: the month's default is the bank's loss before its book settles, and leaves it in its band",
+                near(hit.equity() - loss, poorer.equity()) && shareLeft > 0 && shareLeft < share);
+        check("the month's known losses come off the band's share before the book settles: the share on the equity they leave",
+                near(hit.projectLeverageHeadroom(), shareLeft) && near(hit.projectHeadroom(), shareLeft)
+                && near(hit.leverageHeadroom(), share));
+
+        BusinessDebtManager overDesk = deskOn(over), sideDesk = deskOn(under);
+        double toTarget = over.equity() / over.leverageTarget() - over.exposure();
+        out.printf("   just over the target the room to it %.2f; just under, the landlords' share %.2f of the bank's %.2f%n",
+                toTarget, sideDesk.capitalRoom(re), share);
+        check("on both sides of the target the door writes what the rule allows and refuses past it: the room to the target just over it (BF1's bound, kept), the band's share just under it",
+                toTarget > 0 && near(over.leverageHeadroom(), toTarget) && Double.isInfinite(overDesk.getCapitalGrowth())
+                && mortgage(overDesk, toTarget * .25) && !mortgage(overDesk, toTarget * 2)
+                && BusinessDebtManager.MORTGAGE_CAPITAL.equals(overDesk.getMortgageRefusal())
+                && mortgage(sideDesk, sideDesk.capitalRoom(re) * .25) && !mortgage(sideDesk, sideDesk.capitalRoom(re) * 2));
+
+        // REV-MC2 P1: a bank over its target when the month's rule is struck, its
+        // growth limit none, that the month's default takes just under the target
+        // before its book settles: BF1's room, none, never the band's share.
+        Bank within = leverageBankAt(1.1, BAND_EXPOSURE), past = leverageBankAt(1.1, BAND_EXPOSURE);
+        double cushion = within.equity() - within.targetEquity();
+        BusinessDebtManager pastDesk = deskOn(past);
+        within.writeOffSector(re, cushion * .5);
+        past.writeOffSector(re, cushion * 1.05);
+        pastDesk.setProjectBudget(past);
+        check("fixture: two banks over their target and lending freely, the month's default leaving one over it and taking the other just under it",
+                cushion > 0 && Double.isInfinite(within.lendingGrowthLimit()) && Double.isInfinite(past.lendingGrowthLimit())
+                && Double.isInfinite(pastDesk.getCapitalGrowth())
+                && within.equity() - cushion * .5 > within.targetEquity() && past.equity() - cushion * 1.05 < past.targetEquity());
+        check("a default never raises the room: one within the bank's cushion leaves the room to the target, one past it none, insured and not",
+                within.projectHeadroom() > 0 && within.projectLeverageHeadroom() > 0
+                && near(past.projectHeadroom(), 0) && near(past.projectLeverageHeadroom(), 0));
+        check("...so a bank the default takes under its target writes no building's loan and no mortgage before its book settles",
+                !pastDesk.canFundProject(works, cushion * .1) && !mortgage(pastDesk, cushion * .1)
+                && BusinessDebtManager.MORTGAGE_CAPITAL.equals(pastDesk.getMortgageRefusal()));
+
+        // REV-MC2 P3: ...and its bond bid, which reads the same room (BondMarket.bankClaimRoom()).
+        double face = within.projectHeadroom() * .25;
+        double boughtWithin = bankBuysOf(within, face), boughtPast = bankBuysOf(past, face);
+        check("fixture: the bank its default leaves over the target buys part of a works' issue",
+                boughtWithin > 0);
+        check("...and the bank its default takes under the target bids nothing for the same issue before its book settles",
+                near(boughtPast, 0));
+
+        // REV-MC2 P2: near the target the curve rises without bound; the share stops at the minimum.
+        Bank edge = leverageBankAt(.99, BAND_EXPOSURE);
+        double toMinimum = edge.equity() / Bank.LEVERAGE_RATIO_MIN - edge.exposure();
+        double room = edge.leverageHeadroom();
+        // Lent a margin either side of the room, never on its edge: the minimum's test is a strict <.
+        Bank lent = lentFrom(edge, room * (1 - BAND_EDGE)), overLent = lentFrom(edge, room * (1 + BAND_EDGE));
+        out.printf("   at x = .99 the growth limit %.4f a month, %.0f of the exposure; the room to the minimum %.0f; lent, the leverage ratio %.6f%n",
+                edge.lendingGrowthLimit(), edge.lendingGrowthLimit() * edge.exposure(), toMinimum, lent.leverageRatio());
+        out.printf("   lent the room less %.0e of it, the leverage ratio %.9f; %.0e past it, %.9f; the minimum %.9f%n",
+                BAND_EDGE, lent.leverageRatio(), BAND_EDGE, overLent.leverageRatio(), Bank.LEVERAGE_RATIO_MIN);
+        check("at x = .99, where the growth limit's share would pass the bank's minimum, the room is the room to the minimum, insured and not",
+                edge.lendingGrowthLimit() * edge.exposure() > toMinimum && toMinimum > 0
+                && near(room, toMinimum) && near(edge.projectHeadroom(), toMinimum));
+        check("...so the bank lent all but a hair of it stands over its minimum, the next month not one of keeping borrowers going, and a hair past it would stand under",
+                near(lent.equity(), edge.equity()) && near(overLent.equity(), edge.equity()) && !lent.isInsolvent()
+                && lent.leverageRatio() > Bank.LEVERAGE_RATIO_MIN && !lent.lendsOnlyToKeepBorrowersGoing()
+                && overLent.leverageRatio() < Bank.LEVERAGE_RATIO_MIN && overLent.lendsOnlyToKeepBorrowersGoing());
+
+        // REV-MC2 P4: a bank whose risk weights bind reads the band on the weighted book.
+        Bank risk = riskBankAt(.5, BAND_EXPOSURE);
+        BusinessDebtManager riskDesk = deskOn(risk);
+        double riskShare = risk.lendingGrowthLimit() * risk.getWeightedBook();
+        check("fixture: a bank whose risk weights bind, halfway down its band on them and over its leverage target",
+                !risk.leverageBinds() && risk.getWeightedBook() > 0
+                && risk.capitalRatio() < risk.capitalTarget() && risk.leverageRatio() > risk.leverageTarget()
+                && near(risk.lendingGrowthLimit(), Bank.RATIONED_GROWTH) && !riskDesk.isInsuredRationed());
+        check("its uninsured room is RATIONED_GROWTH of its weighted book, and a works' loan within the works' share is lent",
+                near(risk.projectHeadroom(), riskShare) && near(risk.settledProjectHeadroom(), riskShare)
+                && riskDesk.canFundProject(works, riskDesk.capitalRoom(works) * .5)
+                && !riskDesk.canFundProject(works, riskDesk.capitalRoom(works) * 2));
+    }
+
+    /** The margin, a share of the room, by which section 9 lends either side of the room to the minimum. */
+    static final double BAND_EDGE = 1e-6;
+
+    /** A bank with this one's equity and its exposure grown by what it lent, by its restore setters. */
+    static Bank lentFrom(Bank bank, double lent) {
+        Bank after = new Bank();
+        after.refresh(1, 0, 0, 0, 0, 0);
+        after.setCash(bank.exposure() + lent);
+        after.setForeignDeposits(bank.exposure() + lent - bank.equity());
+        return after;
+    }
+
+    /**
+     * A bank whose whole exposure is a business book weighing in full, funded
+     * from abroad: its risk weights bind, and its capital ratio stands x of
+     * the way from CAPITAL_RATIO to its capital target.
+     */
+    static Bank riskBankAt(double x, double book) {
+        Bank bank = new Bank();
+        bank.refresh(1, 0, 0, book, 0, 0);
+        bank.setCash(0);
+        double ratio = Bank.CAPITAL_RATIO + x * (bank.capitalTarget() - Bank.CAPITAL_RATIO);
+        bank.setForeignDeposits(book * (1 - ratio));
+        return bank;
+    }
+
+    /** What this bank buys of a works' issue of this face, its desk's allowance struck on the bank as Game strikes it after the month's defaults. */
+    static double bankBuysOf(Bank bank, double face) {
+        EconomyManager economy = new EconomyManager(new BuildingManager());
+        BusinessDebtManager desk = economy.getBusinessDebtManager();
+        desk.setAssets(Sectors.MANUFACTURING, BAND_OWNED);
+        desk.setProjectBudget(bank);
+        BondMarket bonds = new BondMarket();
+        bonds.attach(new BondMarket.Readings() {
+            public int month() { return 1; }
+            public double curve(int months) { return .04; }
+            public double policyRate() { return .04; }
+            public double depositRate() { return .02; }
+            public double worldRate() { return .04; }
+            public double countryPremium() { return 0; }
+            public double monthlyGdp() { return 0; }
+            public double localPerUsd() { return 1; }
+            public boolean worldRunning() { return false; }
+            public double unit() { return 1; }
+        }, null, bank, economy, null);
+        bonds.issue(new BusinessDebtManager.Plan(Sectors.MANUFACTURING, face, face, 1, 1,
+                0, 1, 1, bonds.issueCost(face), 1, BAND_OWNED, face, face), 1);
+        return bonds.faceHeldByBank();
+    }
+
     static double issueAfterSettlement(BusinessDebtManager claims, double room, int month) {
         claims.issueProjectLoan(Sectors.MANUFACTURING, room * .25, month);
         return claims.projectRoom();
@@ -466,7 +717,7 @@ public final class BankFailureCheck {
     public static void main(String[] args) throws Exception {
         System.setOut(quiet);
         try {
-            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); refineryClosing(); writtenOffRetirement(); credit(); shares(); rounding(); bondDust(); }
+            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); refineryClosing(); writtenOffRetirement(); credit(); band(); shares(); rounding(); bondDust(); }
             if (!Arrays.asList(args).contains("--fixtures")) seeds();
         } finally { System.setOut(out); }
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");

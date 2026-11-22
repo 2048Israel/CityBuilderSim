@@ -1,6 +1,6 @@
 # EquipmentFit.java - 403 lines · 23 methods · 1 constants · model
 
-`ham/citybuildersim/EquipmentFit.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EquipmentFit.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > What a piece of equipment would earn a building and what it would cost, and whether that pays: research-design 2.2's rule, steps 1 to 4, and
 > each piece's verdict, read on demand and never in the month.
@@ -79,7 +79,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 186 | 4 | `private static double cityPrice(Game game, Good good)` | The city's price of a good: what the planners weigh it at (SpreadPlanner.cityValue() of its market); 0 for none. |
-| 198 | 14 | `private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, Set<String> proposed)` | One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's fr... |
+| 198 | 14 | `private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, Set<String> proposed)` | One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the sectors are billed, EconomyManager.getPowerPriceFor(t)), the motor truck's ... |
 | 214 | 35 | `static double grossGainOf(Game game, BuildingsTemplate t, Equipment piece)` | Gain before patent rent, also used to bill the pieces actually fitted (R2c). |
 | 258 | 3 | `public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece)` | The verdict on ONE building of a stack for a piece: FITTED when no building of the stack lacks it, NOT_KNOWN when it is not known in the city's month, else its gain and cost at the city's prices (the cost's work at wh... |
 | 268 | 11 | `public static Verdict verdictForNew(Game game, BuildingsTemplate t, Equipment piece)` | The verdict on a NEW building for a piece (R1b; research-design 2.2 step 6, "New buildings come with every piece that pays"): the same judgement as verdict() for one building that lacks the piece, pricing scoped chang... |

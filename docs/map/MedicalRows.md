@@ -1,6 +1,6 @@
 # MedicalRows.java - 64 lines · 5 methods · 2 constants · model
 
-`ham/citybuildersim/MedicalRows.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MedicalRows.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Which of the research catalogue's medical rows (M, PM) a city knows in a
 > month, and how far ahead of the world it found each (R2f).

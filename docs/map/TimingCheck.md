@@ -1,6 +1,6 @@
-# TimingCheck.java - 728 lines · 32 methods · 8 constants · harnesses
+# TimingCheck.java - 781 lines · 35 methods · 9 constants · harnesses
 
-`ham/citybuildersim/TimingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimingCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Checks hard and soft timing, JVM forwarding, suite coverage and paired medians.
 > 
@@ -11,21 +11,22 @@
 > recorded figures and paired margins, with both passing and failing fixtures.
 > The harness restores its timing properties before returning.
 
-**Uses:** [Timing](Timing.md) (85), [AllChecks](AllChecks.md) (18), [TempDirs](TempDirs.md) (3)
+**Uses:** [Timing](Timing.md) (85), [AllChecks](AllChecks.md) (21), [TempDirs](TempDirs.md) (3), [FollowBench](FollowBench.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 182 | 1. HARD |
-| 202 | 2. SOFT |
-| 239 | 3. ONLY A CLOCK IS SOFT |
-| 283 | 4. THE PROPERTY'S VALUES |
-| 297 | 5. ACROSS THE JVM BOUNDARY |
-| 355 | 6. THE SUITE GOES THROUGH IT |
-| 504 | 7. THE REST OF THE SUITE IS UNTOUCHED |
-| 518 | 8. THE FIGURES' RECORD (TM3) |
-| 608 | 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk |
+| 183 | 1. HARD |
+| 203 | 2. SOFT |
+| 240 | 3. ONLY A CLOCK IS SOFT |
+| 284 | 4. THE PROPERTY'S VALUES |
+| 298 | 5. ACROSS THE JVM BOUNDARY |
+| 361 | 6. THE SUITE GOES THROUGH IT |
+| 510 | 7. THE REST OF THE SUITE IS UNTOUCHED |
+| 524 | 8. THE FIGURES' RECORD (TM3) |
+| 614 | 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk |
+| 734 | 10. THE DISPLAY (GB5) |
 
 ## Constants
 
@@ -38,7 +39,8 @@
 | 55 | `TimingCheck.ALLOWED_TEXT` | `"cpuStepMs()<= CPU_STEP_MS"` | The one line the dial rule allows outside Timing: MapCheck deciding whether the thread-CPU clock is fine enough to time with at all (a test of the clock's resolution, not an assertion). |
 | 58 | `TimingCheck.FIXTURE_HARNESS` | `"TimingCheck$Fixture"` | What a child JVM is started as: the fixture's own main, below. |
 | 61 | `TimingCheck.ALL_SOURCES` | `Paths.get("src", "main", "java")` | Where the walk of every source starts. |
-| 612 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
+| 618 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
+| 739 | `TimingCheck.DISPLAY_FIXTURE` | `"ChartFitCheck", NO_PIPELINE = "nonesuch"` | GB5: the display harness the children run (its toolkit start is its first act), and the pipeline Prism has none of. |
 
 ## Fields (state)
 
@@ -46,92 +48,100 @@
 |---:|---|---|
 | 32 | `static int fails` |  |
 | 64 | `private static volatile long sunk` | Kept so the measured work cannot be optimised away. |
-| 95 | `int fails` |  |
-| 96 | `private final ByteArrayOutputStream bytes` |  |
-| 97 | `private final PrintStream out` |  |
+| 96 | `int fails` |  |
+| 97 | `private final ByteArrayOutputStream bytes` |  |
+| 98 | `private final PrintStream out` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 699 | **type** `public class TimingCheck` | Checks hard and soft timing, JVM forwarding, suite coverage and paired medians. |
+| 30 | 752 | **type** `public class TimingCheck` | Checks hard and soft timing, JVM forwarding, suite coverage and paired medians. |
 | 35 | 4 | `static void check(String label, boolean ok)` | This harness's own assertion line: never Timing.verdict, so its own lines are never soft. |
-| 66 | 25 | `public static void main(String[] args) throws Exception` |  |
-| 93 | 40 | **type** `public static final class Fixture` | A miniature timing harness that writes to a buffer locally or stdout in a child JVM. |
-| 99 | 4 | `Fixture()` _(in TimingCheck.Fixture)_ |  |
-| 104 | 4 | `Fixture(PrintStream to)` _(in TimingCheck.Fixture)_ |  |
-| 109 | 4 | `void check(String label, boolean ok)` _(in TimingCheck.Fixture)_ |  |
-| 115 | 3 | `String text()` _(in TimingCheck.Fixture)_ | Everything printed so far (empty when it prints to a stream). |
-| 120 | 5 | `String last()` _(in TimingCheck.Fixture)_ | The last line printed, without its line end. |
-| 127 | 5 | `public static void main(String[] args)` _(in TimingCheck.Fixture)_ | What a child JVM runs: one timing assertion of a measured figure against FIXTURE_BUDGET_MS, to System.out; exits with its failure count. |
-| 135 | 12 | `static double measured()` | A small piece of work timed on the nanosecond clock, in milliseconds, repeated at double the size until the clock has moved: always above zero. |
-| 149 | 4 | `static void setMode(String value)` | Sets the property this run's mode is read from; null clears it. |
-| 154 | 3 | `static String modeName(String value)` |  |
-| 158 | 3 | `static boolean endsOk(Fixture fx)` |  |
-| 162 | 3 | `static boolean endsFail(Fixture fx)` |  |
-| 166 | 5 | `static int count(String text, String part)` |  |
-| 173 | 4 | `static void none(String label, List<String> offenders)` | One assertion for a rule that has offenders: it holds when there are none, and each offender is a failing line of its own, so -f names it. |
-| 178 | 3 | `static String readSource(Path p) throws IOException` |  |
+| 66 | 26 | `public static void main(String[] args) throws Exception` |  |
+| 94 | 40 | **type** `public static final class Fixture` | A miniature timing harness that writes to a buffer locally or stdout in a child JVM. |
+| 100 | 4 | `Fixture()` _(in TimingCheck.Fixture)_ |  |
+| 105 | 4 | `Fixture(PrintStream to)` _(in TimingCheck.Fixture)_ |  |
+| 110 | 4 | `void check(String label, boolean ok)` _(in TimingCheck.Fixture)_ |  |
+| 116 | 3 | `String text()` _(in TimingCheck.Fixture)_ | Everything printed so far (empty when it prints to a stream). |
+| 121 | 5 | `String last()` _(in TimingCheck.Fixture)_ | The last line printed, without its line end. |
+| 128 | 5 | `public static void main(String[] args)` _(in TimingCheck.Fixture)_ | What a child JVM runs: one timing assertion of a measured figure against FIXTURE_BUDGET_MS, to System.out; exits with its failure count. |
+| 136 | 12 | `static double measured()` | A small piece of work timed on the nanosecond clock, in milliseconds, repeated at double the size until the clock has moved: always above zero. |
+| 150 | 4 | `static void setMode(String value)` | Sets the property this run's mode is read from; null clears it. |
+| 155 | 3 | `static String modeName(String value)` |  |
+| 159 | 3 | `static boolean endsOk(Fixture fx)` |  |
+| 163 | 3 | `static boolean endsFail(Fixture fx)` |  |
+| 167 | 5 | `static int count(String text, String part)` |  |
+| 174 | 4 | `static void none(String label, List<String> offenders)` | One assertion for a rule that has offenders: it holds when there are none, and each offender is a failing line of its own, so -f names it. |
+| 179 | 3 | `static String readSource(Path p) throws IOException` |  |
 
-### 1. HARD (lines 182-201)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 186 | 15 | `static void hard()` |  |
-
-### 2. SOFT (lines 202-238)
+### 1. HARD (lines 183-202)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 206 | 32 | `static void soft()` |  |
+| 187 | 15 | `static void hard()` |  |
 
-### 3. ONLY A CLOCK IS SOFT (lines 239-282)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 243 | 39 | `static void onlyAClock()` |  |
-
-### 4. THE PROPERTY'S VALUES (lines 283-296)
+### 2. SOFT (lines 203-239)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 287 | 9 | `static void propertyValues()` |  |
+| 207 | 32 | `static void soft()` |  |
 
-### 5. ACROSS THE JVM BOUNDARY (lines 297-354)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 301 | 1 | **type** `private record Run(int exit, String output)` |  |
-| 304 | 12 | `static Run runFixture(String javaExe, String classpath) throws Exception` | A child JVM started exactly as AllChecks starts a harness, with the parent's property the only source of its mode. |
-| 317 | 37 | `static void acrossTheJvm() throws Exception` |  |
-
-### 6. THE SUITE GOES THROUGH IT (lines 355-503)
+### 3. ONLY A CLOCK IS SOFT (lines 240-283)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 359 | 17 | `static void skippedSections()` |  |
-| 377 | 26 | `static void suiteOrder() throws IOException` |  |
-| 404 | 99 | `static void suiteGoesThroughIt() throws IOException` |  |
+| 244 | 39 | `static void onlyAClock()` |  |
 
-### 7. THE REST OF THE SUITE IS UNTOUCHED (lines 504-517)
+### 4. THE PROPERTY'S VALUES (lines 284-297)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 508 | 9 | `static void restUntouched()` |  |
+| 288 | 9 | `static void propertyValues()` |  |
 
-### 8. THE FIGURES' RECORD (TM3) (lines 518-607)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 523 | 6 | `static List<String[]> rows(Path file) throws IOException` | A figures file's rows, each split on tabs (a trailing empty column kept); none when the file is not there. |
-| 530 | 77 | `static void theFiguresRecord() throws Exception` |  |
-
-### 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk (lines 608-728)
+### 5. ACROSS THE JVM BOUNDARY (lines 298-360)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 615 | 17 | `static List<String> awk(List<String> args) throws Exception` | awk with these arguments, the repository root as its folder; its output lines, or null when awk cannot be started here. |
-| 634 | 8 | `static String pairRows(String harness, String label, double[] main, double[] batch)` | The pairs file's rows for one label: the figures of each side in turn, one per round. |
-| 644 | 9 | `static List<String> judge(Path dir, String pairs, String hard, String residual, String margin) throws Exception` | The judge's answer for these files: one "VERDICT\tline\twhy" per residual line. |
-| 654 | 74 | `static void theMarginsArithmetic() throws Exception` |  |
+| 302 | 1 | **type** `private record Run(int exit, String output)` |  |
+| 305 | 3 | `static Run runFixture(String javaExe, String classpath) throws Exception` | A child JVM started exactly as AllChecks starts a harness, with the parent's property the only source of its mode. |
+| 310 | 12 | `static Run run(List<String> command) throws Exception` | A child JVM on this command alone: JDK_JAVA_OPTIONS (the gate box's display, the data files) is not passed down. |
+| 323 | 37 | `static void acrossTheJvm() throws Exception` |  |
+
+### 6. THE SUITE GOES THROUGH IT (lines 361-509)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 365 | 17 | `static void skippedSections()` |  |
+| 383 | 26 | `static void suiteOrder() throws IOException` |  |
+| 410 | 99 | `static void suiteGoesThroughIt() throws IOException` |  |
+
+### 7. THE REST OF THE SUITE IS UNTOUCHED (lines 510-523)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 514 | 9 | `static void restUntouched()` |  |
+
+### 8. THE FIGURES' RECORD (TM3) (lines 524-613)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 529 | 6 | `static List<String[]> rows(Path file) throws IOException` | A figures file's rows, each split on tabs (a trailing empty column kept); none when the file is not there. |
+| 536 | 77 | `static void theFiguresRecord() throws Exception` |  |
+
+### 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk (lines 614-733)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 621 | 17 | `static List<String> awk(List<String> args) throws Exception` | awk with these arguments, the repository root as its folder; its output lines, or null when awk cannot be started here. |
+| 640 | 8 | `static String pairRows(String harness, String label, double[] main, double[] batch)` | The pairs file's rows for one label: the figures of each side in turn, one per round. |
+| 650 | 9 | `static List<String> judge(Path dir, String pairs, String hard, String residual, String margin) throws Exception` | The judge's answer for these files: one "VERDICT\tline\twhy" per residual line. |
+| 660 | 74 | `static void theMarginsArithmetic() throws Exception` |  |
+
+### 10. THE DISPLAY (GB5) (lines 734-781)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 742 | 7 | `static Run onMonocle(String...options) throws Exception` | The gate box draws on Monocle; the children do too, on this machine, with only these options (the box's own not passed down). |
+| 750 | 31 | `static void noDisplayHarnessSkips() throws Exception` |  |
 

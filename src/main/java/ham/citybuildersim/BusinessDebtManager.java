@@ -2570,12 +2570,13 @@ public class BusinessDebtManager {
         setProjectBudget(bank.projectHeadroom());
     }
 
-    /** New borrowing and claims already on the bank's books consume one allowance. */
+    /** New borrowing and claims already on the bank's books consume one allowance: the room to the target over it, the band's share under it (MC2, Bank.projectHeadroom()). */
     public double projectRoom() {
         double room = projectBudget - Math.max(0, lentThisMonth - projectBudgetLent);
-        if (projectBank != null) room = Math.min(room, (projectBookSettled ? projectBank.headroom() : projectBank.projectHeadroom()) - pendingProjectLoans());
+        if (projectBank != null) room = Math.min(room, (projectBookSettled ? projectBank.settledProjectHeadroom() : projectBank.projectHeadroom()) - pendingProjectLoans());
         return Math.max(0, room);
     }
+    /** ...and the insured mortgages' own, while the leverage ratio binds: the exposure room to the leverage target over it, the band's share under it, net of pending loans (BF1, MC2); capitalRoom() binds beside it. */
     private double insuredProjectRoom() {
         if (projectBank == null) return projectRoom();
         double room = projectBookSettled ? projectBank.leverageHeadroom() : projectBank.projectLeverageHeadroom();
@@ -2677,6 +2678,13 @@ public class BusinessDebtManager {
     public void takeBackCapitalRefusal(String sector, boolean refusedBefore, boolean mortgageRefusedBefore) {
         if (!refusedBefore) refusedForCapital.remove(sector);
         if (!mortgageRefusedBefore) refusedMortgageForCapital.remove(sector);
+    }
+
+    /** ...and a project's order trimmed at the door the same way (FB15, HN1-B): its project mark too, which the playtest counts. */
+    public void takeBackCapitalRefusal(String sector, boolean refusedBefore, boolean mortgageRefusedBefore,
+                                       boolean projectRefusedBefore) {
+        takeBackCapitalRefusal(sector, refusedBefore, mortgageRefusedBefore);
+        if (!projectRefusedBefore) refusedProjectForCapital.remove(sector);
     }
 
     /* =====================================================================

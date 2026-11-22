@@ -76,6 +76,11 @@ public class SaveFileCheck {
         System.out.println("--- R0f: the exhausted gold episode through DataSave and the load path ---");
         assertTrue("Canadian gold's exhausted episode and inherited interest cross JSON and the next month", MoneyDatesCheck.saveChecks());
 
+        System.out.println("--- PW1: a save from before the struck book loads at the ratio its load computes (REV-PW1c) ---");
+        assertTrue("a city short of power saved without its book (format 58, before PW1) loads with the ratio its load dispatched in its book, not the founding book's 1, and runs and bills its first month at the ratio it saved and the founding tariff, as before PW1", PowerPriceCheck.saveChecks());
+        assertTrue("power dispatch observations and history survive the actual save/load", PowerViewCheck.saveChecks());
+        assertTrue("completed pending power survives repeated saves, the actual load, next native month and currency reform", PowerViewCheck.pendingSaveChecks());
+
 
         /* ==================== 1. where it goes ==================== */
         System.out.println("--- the folder, per platform ---");

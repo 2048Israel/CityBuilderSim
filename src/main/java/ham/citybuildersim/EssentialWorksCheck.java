@@ -76,6 +76,23 @@ public final class EssentialWorksCheck {
                         && g.getLandManager().getOwnedSqFt() > owned) && AutoBuilder.debt(g) == debt && ab.getBonds() == 0);
     }
 
+    /**
+     * Sets the city's power draw so the advice's demand is `share` of its supply (BuildAdvice.supplyDemand(), read at two draws and solved, the
+     * works pending in it): served with a margin under 1, short over it. PW1, 2026-11-20: the advice plans power for the calm peak, the draw
+     * times PowerDispatch.PLAN_PEAK over the firm supply, so a draw set as a share of the utility's production no longer says served or short.
+     */
+    static void powerDrawAt(Game g, double share) {
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        double c1 = u.getProduction(), c2 = 2 * c1;
+        u.setWattsConsumption(c1);
+        double[] one = BuildAdvice.supplyDemand(g, power, Map.of());
+        u.setWattsConsumption(c2);
+        double[] two = BuildAdvice.supplyDemand(g, power, Map.of());
+        double perKw = (two[1] - one[1]) / (c2 - c1);
+        u.setWattsConsumption(Math.max(0, c1 + (share * one[0] - one[1]) / perKw));
+    }
+
     /** Give unrelated essential services their operating capacity before isolating an ahead-of-need order. */
     static boolean serveOtherEssentials(Game g, BuildAdvice.Measure except) {
         BuildingManager bm = g.getBuildingManager();
@@ -240,7 +257,8 @@ public final class EssentialWorksCheck {
         // A physical surplus below the reserve target caused the original false credit.
         g.getHistorySave().getPopulation().clear();
         g.getHistorySave().getMonth().clear();
-        u.setWattsConsumption(u.getProduction() / 1.05);
+        // ...the draw 5% inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
+        powerDrawAt(g, 1 / 1.05);
         for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(1);
         double[] surplus = BuildAdvice.supplyDemand(g, power, Map.of());
         check("fixture: physical power is sufficient, fifteen-percent reserve is not, and the projection has no growth",
@@ -353,7 +371,8 @@ public final class EssentialWorksCheck {
                 - g.getBuildingOutputAtEveryPost() * .25));
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
-        utilities.setWattsConsumption(utilities.getProduction() * .8);
+        // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
+        powerDrawAt(g, .8);
         double first = bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost());
         check("fixture: a paid mill opens within the planning horizon while current power has its reserve",
                 stack.getUnderConstruction() == 1 && first > 0 && first < BuildAdvice.HORIZON
@@ -362,8 +381,9 @@ public final class EssentialWorksCheck {
         BuildAdvice.Ahead after = new BuildAdvice.Ahead(first + .01, 1, 0);
         double early = BuildAdvice.supplyDemand(g, power, Map.of(), before)[1];
         double late = BuildAdvice.supplyDemand(g, power, Map.of(), after)[1];
+        // ...at the calm peak (PW1: the advice's demand is the draw x PowerDispatch.PLAN_PEAK).
         check("the forecast adds the mill's physical electrical draw only once it opens",
-                Math.abs(late - early - mill.getElectricityConsumption()) < 1e-8
+                Math.abs(late - early - PowerDispatch.PLAN_PEAK * mill.getElectricityConsumption()) < 1e-8
                         && WorksValue.pendingPowerLoad(g, before.months()) == 0);
         BuildAdvice.Suggestion card = BuildAdvice.suggestFor(g, null, power, g.getCash(),
                 g.getLandManager().getAvailableSqFt());
@@ -785,6 +805,11 @@ public final class EssentialWorksCheck {
         quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 8, true));
         BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
         BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
+        // THE FIXTURE CAUSES IT (PW1): the advice credits a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, the calm peak), so
+        // wind built for the peak needs three times the farms, and over the twenty years coal is the cheaper plan even opening later
+        // (coal $193M against wind $285M on this town, the prevented loss $1.5M against $1.8M). The section is the timing, not that price:
+        // the fixture's farm is built 1 / WIND_FIRM larger, firm at the nameplate the section was written against.
+        wind.setProduction1(wind.getProduction1() / PowerDispatch.WIND_FIRM);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         AutoBuilder ab = g.getAutoBuilder();
         g.setCashForTest(1e14);
@@ -813,7 +838,8 @@ public final class EssentialWorksCheck {
             months.add(g.getMonth() - 12 + i);
         }
         g.getBusinessInvestment().restorePopulationHistory(people);
-        utilities.setWattsConsumption(utilities.getProduction() * .8);
+        // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
+        powerDrawAt(g, .8);
         check("fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner",
                 BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.opening(g, windLead, ab.getSlack()))
@@ -999,7 +1025,8 @@ public final class EssentialWorksCheck {
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
         quietly(() -> g.buildStack(bm.getTemplateByName("Construction Depot"), 8, true));
-        quietly(() -> g.buildStack(wind, 100, false));
+        // ...a hundred Wind Farms' firm kW pending (PW1: a farm counts PowerDispatch.WIND_FIRM of its average at the calm peak).
+        quietly(() -> g.buildStack(wind, (long) Math.ceil(100 / PowerDispatch.WIND_FIRM), false));
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * 1.2);

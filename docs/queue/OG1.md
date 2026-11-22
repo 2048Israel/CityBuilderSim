@@ -21,6 +21,12 @@ a month is simply not enough in big cities".
   quantity. For housing Jerus sees the same: check whether RealEstate's quantity is held by the
   builders' queue rather than its own rule.
 
+- **The real-estate study's probe** (2026-11-21, on a9bfcd070, a scratch city through
+  `LongPlaytest.probeCity`/`probePlay`): Real Estate's planner proposed housing quantities of 1, 2 and
+  142 at months 65, 245 and 605. That is planner demand, not completed orders, so look for what holds
+  housing in the shared gates (the builders, the finance, the land), not in a one-a-month rule in
+  RealEstate. Coordinate with the study (study/real-estate; HO1 and the housing batches wait on it).
+
 ## What it does
 
 1. **Measure first**, on a big city (a copy of slot 10 through GameFiles.scratch, never the slot) and

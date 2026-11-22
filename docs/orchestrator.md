@@ -6,28 +6,14 @@ becomes once MemWatch dispatches is still Jerus's to decide (`docs/queue/WC1.md`
 
 ## The session
 
-**One orchestrator, compacting in place** (OL1, 2026-11-08: BP1's fresh one a
-day did not happen on 11-06 or 11-07), bus name `orchestrator`: headless
-through MemWatch's launcher since 2026-11-13, resumed by its mail, or the app
-environment "CBS orchestrator" (the main checkout, `CBS_ORCHESTRATOR=1`,
-`CLAUDE_CODE_AUTO_COMPACT_WINDOW=300000`; hooks in the untracked
-`.claude/settings.local.json` put its hand-off note back after a compaction).
-The note is kept current at every decision. Replaced only if a turn fails
-beyond carrying on, a compaction loses what mattered, or Jerus says so.
-
-`sh tools/day.sh` is the morning in about fifteen lines: main's `VERSION`
-against the last version tag, main's recorded reds, the next queued ids, the
-Pending ids, and each unmerged `batch/` branch on origin as ready (a ship file
-pushed without its provisional marker; with the conflicts a merge would meet),
-working, stuck (no commit for a day) or off-queue. `--due` prints only the
-ready and the stuck, and `nightly due` (below).
-
-**Waking** (lesson b: batches sat unshipped 9 hours on 2026-10-24): mail
-resumes a headless orchestrator, and MemWatch draws the batches' and the gate's
-state (BW1). An app session no mail wakes keeps an hourly CronCreate check-in
-on `sh tools/day.sh --due`, its turn ended when that prints nothing (deleted
-when replaced: two may gate one branch), and `sh tools/wait.sh --ship [--skip
-HELD...]` running, which ends when a ship file lands without its marker.
+**One orchestrator, compacting in place**, bus `orchestrator`, headless through
+MemWatch and resumed by mail; main checkout, `CBS_ORCHESTRATOR=1`, compaction
+threshold 300000. Keep the short handoff current at every decision and re-read
+the recovery brief after compaction; Claude hooks/settings do not carry over
+to Codex. Replace only after unrecoverable failure, lost continuity, or Jerus's
+instruction (OL1, 2026-11-08). On waking, reconcile mail, launcher records,
+origin/main, `sh tools/day.sh`, queue and kept runs before dispatch; failed
+sessions may already have shipped. Never duplicate a live worker or erase mends.
 
 **The nightly**, `sh tools/nightly.sh` on main's tip (4,000 months, the nightly
 tier, hard timing; GT1, GR1), starts by itself: the laptop's task "CBS nightly"
@@ -44,15 +30,42 @@ the batch (BW1).
 
 ## Dispatch
 
-- Builders start through the launcher (`cbs-bus start <ID> --runtime claude|codex
-  --model ... --effort xhigh`), the runtime chosen by the plans' usage. Each
-  prompt carries the batch, the batches in flight and their files, and the
-  contract's state lines and mail protocol (3, 5). A launcher name is never
-  reused: a takeover is `<ID>c`.
-- How many build at once is Jerus's setting; his latest word (2026-11-17):
-  three builders, and a fourth on study, docs or process rows while the plan
-  is behind pace: the week's % used plus the last six hours' rate times the
-  hours to the reset under 95 (2026-11-07: "Yes, standing rule").
+- **Read live budget at the start of EVERY turn and immediately before every
+  builder/reviewer/agent launch, budget-consuming resume instruction, or
+  substantial orchestration:** `C:/Users/Jerus/cbs/state/usage.txt` and
+  `headroom.txt`. Handoff figures are historical, never dispatch authority.
+  WHY (OB1, 2026-11-21): stale advice and explicit Claude launches exhausted
+  the controller despite Codex headroom; the last reading was 197 turns old.
+- Jerus's window target is **projected total 98-99% at reset; never
+  intentionally 100%**. This is not daily smooth burn: 20% left for four days
+  is fine when it covers the remaining work and orchestration. Do not waste
+  tokens or start needless work to reach 98%.
+- Reserve conservative orchestration cost through reset BEFORE allocating
+  builders, using recent comparable work; include running jobs' likely
+  remaining use, pending resumes/reviews, observation lag and uncertainty.
+  New work plus these commitments and reserve must fit below 99%; 1% left
+  is not automatically enough. If unclear, use another fresh, safe provider
+  or defer. A controller nearing its safe ceiling checkpoints and arranges
+  an alternate-provider handoff BEFORE exhaustion; a Claude controller
+  delegates purely to Codex early enough to preserve its reserve.
+- Current MemWatch advice is the routing default, subject to that ceiling
+  and reserve. Missing readings or ones older than 15 minutes permit no work
+  on the uncertain provider; another provider needs its own fresh, safe
+  reading. Reassess live usage and commitments after reset. API-equivalent
+  dollar estimates authorize neither spending nor an exact subscription quota.
+- While Claude is exhausted, all new builders/reviewers use explicit
+  `--runtime codex --model gpt-6.1-sol --effort xhigh`; never start Claude,
+  revive its failed sessions or instruct idle Claude workers before reset.
+  Reassess routing after reset rather than making that choice permanent.
+- Alongside EACH dispatch, log the reading timestamp, provider used%, reset,
+  chosen runtime/reason and forecast reserve/commitments in compact state.
+  This is an operational rule; MemWatch has no hard budget admission guard.
+- Launch through `cbs-bus start`; prompts name concurrent batches/files and
+  the contract's state/mail protocol. Never reuse a launcher name: takeovers
+  use a fresh suffix on the same verified-inactive worker's branch/worktree.
+- Three builders; a fourth study/docs/process lane only while behind pace
+  (2026-11-17; projection: used% plus last-six-hours rate through reset under
+  95). The launcher's session ceiling does not expand those lanes.
 - **The heavy slot:** the gate box keeps its own (GB3; Jerus, 2026-11-20,
   "Gatebox first"): gates and the nightly first, an ensemble behind them and
   giving way to one that comes while it plays, the runs it started finishing
@@ -92,43 +105,25 @@ Each ready branch, one at a time:
    script's self-test, but not beside the whole suite: there, run it by hand
    (GF1, TM3: a merge rewrites scripts while their shell reads them).
 
-**Before saying a change works:** the gate green but for main's recorded reds,
-the maps regenerated, the ensemble scored if the trace moved, the write-up
-written, the docs pass run, the batch's row out of `QUEUE.md`.
-
 ## The screen-check session
 
 BP1 item 10 (2026-10-23): when a batch needs a screen looked at, renders or
 the game on slots 7-10, the orchestrator starts one session for that alone, or
 reuses the one running. It takes a list of what to look at, returns what it
-saw and the images' paths in 15 lines, edits no source, and runs on Sonnet
-unless a check needs judgement. Slots 7-9 are its to write (the contract, 1).
+saw and the images' paths in 15 lines, edits no source, and follows Dispatch
+for runtime. Slots 7-9 are its to write (the contract, 1).
 
 ## The docs pass
 
-On Opus (Jerus, 2026-09-21: the implementer and the docs pass run on Opus,
-whatever the job's size), by a fresh agent, at most once a day, over
-everything merged since the last. `docs/docs-pass.md` is its brief,
-`docs/docs-pass-agent.md` it as a subagent, and `Docs pass.bat` runs it
-headless (a bare `claude -p` takes the CLI's default effort: check it, lesson
-e). It ships `--no-tag` with a ship file named from its branch, each `/` a `-`
-(`docs-pass-2026-10-26-ship.md`). A manual edition only at a milestone or when
-Jerus asks.
+A fresh agent, at most daily, covers merges since the last pass using
+`docs/docs-pass.md`; runtime follows Dispatch above (OB1 supersedes the
+Opus-only default during exhaustion). Ship `--no-tag`, the ship-file name
+from its branch with `/` replaced by `-`. A manual edition only at a
+milestone or Jerus's request.
 
 ## Other assistants' branches
 
-A `chatgpt/` or `gemini/` branch is reviewed by the `assistant-review` agent
-or a fresh session, never a long conversation (RV1), and shipped with
-`./ship.sh --no-tag <branch>` (their branches take no `{next}`); the names its
-text uses that the tree does not declare (`tools.Names`) are a warning only.
-
-## On the PC
-
-`Batch check.bat` is Jerus's double-click (`--maps` regenerates the maps;
-without it it writes nothing git tracks, as the PC's copy pulls `main` and must
-stay clean); it times soft while another JVM or the game runs, decided once at
-its start (lesson d). Each gate run is a `cbs-gate-ID-*` folder (or
-`CBS_GATE_DIRECTORY`'s name) in `~/cbs/runs` on the gate box, its files but the
-clone copied to the temp directory here at the end (GB1; here alone when the box
-is down); a green run's clone is removed, its log, refs and checks kept, a
-stopped one kept whole (GF1, LM1: deleting gate clones erased the evidence of stops).
+A `chatgpt/` or `gemini/` branch takes a fresh `assistant-review` review
+(RV1), then the normal untagged gate; `tools.Names` is advisory. Preserve
+kept gate logs/refs/checks and stopped clones (GF1, LM1); run locations and
+the publication checks are in the contract.

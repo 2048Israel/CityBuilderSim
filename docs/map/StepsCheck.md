@@ -1,6 +1,6 @@
-# StepsCheck.java - 215 lines · 7 methods · 0 constants · harnesses
+# StepsCheck.java - 212 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/StepsCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StepsCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Magnitude controls follow the figure and bond lots follow the month's money.
 > 
@@ -14,7 +14,7 @@
 >    large figures, and the card's next labels follow the new magnitude.
 > Restoring the old fixed lots or fixed UI steps must fail this harness.
 
-**Uses:** [BondMarket](BondMarket.md) (16), [PriceIndex](PriceIndex.md) (7), [KeptBench](KeptBench.md) (7), [PriceLevel](PriceLevel.md) (7), [MagnitudeSteps](MagnitudeSteps.md) (6), [Game](Game.md) (5), [Rollover](Rollover.md) (3), [Auction](Auction.md) (3), [GameFiles](GameFiles.md) (2), [DebtQuote](DebtQuote.md) (1), [BuildAdvice](BuildAdvice.md) (1)
+**Uses:** [BondMarket](BondMarket.md) (16), [PriceIndex](PriceIndex.md) (7), [KeptBench](KeptBench.md) (7), [PriceLevel](PriceLevel.md) (7), [MagnitudeSteps](MagnitudeSteps.md) (6), [Game](Game.md) (5), [Rollover](Rollover.md) (3), [Auction](Auction.md) (3), [GameFiles](GameFiles.md) (2), [DebtQuote](DebtQuote.md) (1), [KeptCheck](KeptCheck.md) (1), [BuildAdvice](BuildAdvice.md) (1)
 
 ## Fields (state)
 
@@ -27,12 +27,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 191 | **type** `public final class StepsCheck` | Magnitude controls follow the figure and bond lots follow the month's money. |
+| 25 | 188 | **type** `public final class StepsCheck` | Magnitude controls follow the figure and bond lots follow the month's money. |
 | 29 | 4 | `static void check(String label, boolean ok)` |  |
 | 34 | 4 | `static void close(String label, double actual, double expected)` |  |
 | 39 | 3 | `static void steps(String label, double value, double least, double...expected)` |  |
 | 43 | 5 | `static boolean round(double lot)` |  |
 | 49 | 5 | `static<T> T fx(java.util.concurrent.Callable<T> call) throws Exception` |  |
 | 56 | 9 | `static void uniformPrices(Game game, double level, int month)` | Every component changes equally, so the model's actual basket has this price ratio regardless of its weights. |
-| 66 | 149 | `public static void main(String[] args) throws Exception` |  |
+| 66 | 146 | `public static void main(String[] args) throws Exception` |  |
 

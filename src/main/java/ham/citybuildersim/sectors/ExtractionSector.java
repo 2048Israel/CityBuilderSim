@@ -254,7 +254,7 @@ public abstract class ExtractionSector extends Sector {
         if (t == null) return super.estimatedMonthlyProfit(u, plans);
         double maker = plans.estimatedMakerProfit(this, u);
         double rate = plannedRate(u);
-        return maker - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), pricePerWatt) - freightRunning(u, rate);
+        return maker - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), powerPriceFor(t)) - freightRunning(u, rate);
     }
 
     /*

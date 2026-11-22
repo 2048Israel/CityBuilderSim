@@ -1,6 +1,6 @@
-# ForeignDebtCheck.java - 1,057 lines · 15 methods · 3 constants · harnesses
+# ForeignDebtCheck.java - 1,071 lines · 15 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Borrowing in somebody else's money.
 > 
@@ -72,9 +72,9 @@
 | 501 | · 5. the window shuts |
 | 525 | · 6. and the price of walking away |
 | 576 | · 7. across a reload |
-| 700 | 8. the world's paper on the world's curve (0.7.2) |
-| 784 | 9. the ladder, by the calendar year it is paid in (0.7.32) |
-| 950 | 10. the test player takes the cheaper money by the quote for the sale (CC1-S) |
+| 714 | 8. the world's paper on the world's curve (0.7.2) |
+| 798 | 9. the ladder, by the calendar year it is paid in (0.7.32) |
+| 964 | 10. the test player takes the cheaper money by the quote for the sale (CC1-S) |
 
 ## Constants
 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 996 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
+| 62 | 1010 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
 | 68 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 83 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -106,25 +106,25 @@
 | 135 | 19 | `private static Game tradingCity(Path dir, int depotsStanding, boolean levers) throws Exception` | ...the one builder of both: `levers` puts the defaults back before a month (every lever is open since OP1; tradingCityTaxed()). |
 | 162 | 3 | `static Game tradingCityTaxed(Path dir, int depotsStanding) throws Exception` | ...THE SAME CITY WITH EVERY LEVER OPEN (R0), for section 10 alone: tradingCity() is BuybackCheck's, CurveCheck's and RestructureCheck's as well and is left as it was. |
 | 183 | 3 | `static void earnsAbroad(DebtManager dm, double owedLocal, double stressShare)` | THE EXPORTS A FIXTURE HANDS THE WORLD (FS13, 2026-11-20). |
-| 187 | 512 | `public static void main(String[] args) throws Exception` |  |
+| 187 | 526 | `public static void main(String[] args) throws Exception` |  |
 
-### 8. the world's paper on the world's curve (0.7.2) (lines 700-783)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 701 | 82 | `static void theWorldsCurve(Path dir) throws Exception` |  |
-
-### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 784-949)
+### 8. the world's paper on the world's curve (0.7.2) (lines 714-797)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 798 | 151 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
+| 715 | 82 | `static void theWorldsCurve(Path dir) throws Exception` |  |
 
-### 10. the test player takes the cheaper money by the quote for the sale (CC1-S) (lines 950-1057)
+### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 798-963)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 971 | 71 | `static void theCheaperMoney(Path dir) throws Exception` | The long playtest's build borrows abroad only when the quote for the sale is the cheaper. |
-| 1044 | 4 | `private static double[] books(Game g)` | What quoting must leave alone: cash, the debts at home and abroad, and the two rates. |
-| 1050 | 7 | `private static void quotes(String state, Game g, double small, double big)` | Both sales' quotes, abroad (the 20-year dollar bond, as the build asks it) and at home. |
+| 812 | 151 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
+
+### 10. the test player takes the cheaper money by the quote for the sale (CC1-S) (lines 964-1071)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 985 | 71 | `static void theCheaperMoney(Path dir) throws Exception` | The long playtest's build borrows abroad only when the quote for the sale is the cheaper. |
+| 1058 | 4 | `private static double[] books(Game g)` | What quoting must leave alone: cash, the debts at home and abroad, and the two rates. |
+| 1064 | 7 | `private static void quotes(String state, Game g, double small, double big)` | Both sales' quotes, abroad (the 20-year dollar bond, as the build asks it) and at home. |
 

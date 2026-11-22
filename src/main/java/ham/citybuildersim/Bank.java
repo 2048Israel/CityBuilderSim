@@ -4970,6 +4970,11 @@ public class Bank {
     public double lendingGrowthLimit() {
         if (branches <= 0) return Double.POSITIVE_INFINITY;
         if (isInsolvent()) return 0;
+        return growthLimitOn(equity());
+    }
+
+    /** lendingGrowthLimit()'s curve on this much equity and the book as it stands: equity() for the month's rule, less the month's known losses for the band's share (MC2, bandShare()). */
+    private double growthLimitOn(double equity) {
         /*
          * ON THE MEASURE THAT BINDS (0.7.11, round 2): the leverage ratio
          * between LEVERAGE_RATIO_MIN and leverageTarget() when the leverage
@@ -4978,7 +4983,8 @@ public class Bank {
          * (leverageTarget()), so x means the same thing on either.
          */
         if (leverageBinds()) {
-            double ratio = leverageRatio(), target = leverageTarget();
+            double e = exposure();
+            double ratio = e > 0 ? equity / e : Double.MAX_VALUE, target = leverageTarget();
             if (ratio >= target) return Double.POSITIVE_INFINITY;
             if (ratio <= LEVERAGE_RATIO_MIN) return 0;
             double x = (ratio - LEVERAGE_RATIO_MIN) / (target - LEVERAGE_RATIO_MIN);
@@ -4986,7 +4992,7 @@ public class Bank {
         }
         double weighted = getWeightedBook();
         if (weighted <= 0) return Double.POSITIVE_INFINITY;
-        double ratio = equity() / weighted;
+        double ratio = equity / weighted;
         double target = capitalTarget();
         if (ratio >= target) return Double.POSITIVE_INFINITY;
         if (ratio <= CAPITAL_RATIO) return 0;
@@ -5583,25 +5589,79 @@ public class Bank {
      * known before the month's loan book settles: remove the losses not
      * covered by that borrower's existing allowance from the capital room.
      * Working-capital lines remain commitments already made.
+     *
+     * UNDER THE TARGET, THE BAND'S SHARE (MC2, 2026-11-20). Between its
+     * minimum and its target the room to the target is none, and BF1's bound
+     * read there refused every building's loan and, while the leverage ratio
+     * binds, every new mortgage: a bank a loss put in its band lent no growth
+     * at all, though its growth limit (lendingGrowthLimit()) allows each
+     * borrower a share. BF1's own note has the leverage rule ration insured
+     * mortgages "through capitalRoom as before", and "even above it" says the
+     * bound was added over the target. So the room has two sides:
+     *   - at or over the target, the room to it (BF1, as before), within
+     *     headroom();
+     *   - under it, the band's share (bandShare()): what the growth limit lets
+     *     the book grow this month, on the equity the month's known losses
+     *     leave, and never past the growth that takes the bank to its minimum
+     *     (REV-MC2 P2: near the target the curve rises without bound, and a
+     *     bank lent its whole share there would fall under its minimum, to
+     *     lend only to keep borrowers going the next month). Each borrower's
+     *     own share (BusinessDebtManager.capitalRoom()) still binds beside it,
+     *     and this is the allowance they share; at or under the minimum it is
+     *     none, as the growth limit is.
+     * A bank over its target on its books - its growth limit none, as the
+     * month's rule was struck - that a default not yet on them takes under the
+     * target reads BF1's room, none (REV-MC2 P1: the band's share there would
+     * grow as the loss did, beside a rule struck unlimited). Its bond bid (BondMarket) reads
+     * the same room.
+     * Not headroom()'s strain cap under the target: that is the carry trade's
+     * room (EASY_STRAIN), which a bank in its band lends nothing.
      */
-    public double projectHeadroom() {
+    public double projectHeadroom() { return growthHeadroom(unsettledCreditLoss()); }
+
+    /** ...once the month's loan book has settled and its losses are on it: headroom() at or over the target, the band's share under it (MC2). */
+    public double settledProjectHeadroom() { return growthHeadroom(0); }
+
+    private double growthHeadroom(double loss) {
         if (branches <= 0) return Double.POSITIVE_INFINITY;
-        double loss = unsettledCreditLoss();
-        return Math.max(0, Math.min(headroom(), Math.min(
-                (equity() - loss) / capitalTarget() - getWeightedBook(),
-                (equity() - loss) / leverageTarget() - exposure())));
+        double equityLeft = equity() - loss;
+        double toTarget = Math.min(equityLeft / capitalTarget() - getWeightedBook(),
+                equityLeft / leverageTarget() - exposure());
+        if (toTarget >= 0) return Math.min(headroom(), toTarget);
+        return bandShare(equityLeft, Math.min(equityLeft / CAPITAL_RATIO - getWeightedBook(),
+                equityLeft / LEVERAGE_RATIO_MIN - exposure()));
     }
 
-    /** Insured growth consumes exposure, with no risk weight or assumed business-loan mix. */
-    public double leverageHeadroom() {
-        return branches <= 0 ? Double.POSITIVE_INFINITY
-                : Math.max(0, equity() / leverageTarget() - exposure());
-    }
+    /** Insured growth consumes exposure, with no risk weight or assumed business-loan mix: the room to the leverage target over it, the band's share under it (MC2, projectHeadroom()). */
+    public double leverageHeadroom() { return insuredHeadroom(0); }
 
     /** The same leverage room before the month's known losses have reached the loan book. */
-    public double projectLeverageHeadroom() {
-        return branches <= 0 ? Double.POSITIVE_INFINITY
-                : Math.max(0, (equity() - unsettledCreditLoss()) / leverageTarget() - exposure());
+    public double projectLeverageHeadroom() { return insuredHeadroom(unsettledCreditLoss()); }
+
+    private double insuredHeadroom(double loss) {
+        if (branches <= 0) return Double.POSITIVE_INFINITY;
+        double equityLeft = equity() - loss;
+        double toTarget = equityLeft / leverageTarget() - exposure();
+        if (toTarget >= 0) return toTarget;
+        return bandShare(equityLeft, equityLeft / LEVERAGE_RATIO_MIN - exposure());
+    }
+
+    /**
+     * THE BAND'S SHARE IN MONEY (MC2): the growth limit's share of the book the
+     * binding measure counts, as lendingLimit() takes it, on this much equity -
+     * RATIONED_GROWTH x x/(1-x) of the exposure while the leverage ratio binds,
+     * of the weighted book otherwise - and no more than toMinimum, the room to
+     * the minimum on the same measures (BF1's room to the target, at the
+     * minimum's ratios). None failed or at the minimum; none while the bank is over
+     * its target on its books, its growth limit none, and under it only by
+     * the known losses (projectHeadroom()); none if the curve reads the bank at
+     * its target, where the room to it is what is left.
+     */
+    private double bandShare(double equityLeft, double toMinimum) {
+        if (isInsolvent() || Double.isInfinite(lendingGrowthLimit())) return 0;
+        double g = growthLimitOn(equityLeft);
+        if (!(g > 0) || Double.isInfinite(g)) return 0;
+        return Math.max(0, Math.min(toMinimum, g * (leverageBinds() ? exposure() : getWeightedBook())));
     }
 
     private double unsettledCreditLoss() {

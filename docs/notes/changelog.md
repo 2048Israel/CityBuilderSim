@@ -18,6 +18,96 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.181 — PW6, the recorded power month — 2026-11-21, ready, see docs/queue/PW6-notes.md
+Services › Utilities shows the recorded month's six supply stacks, each plant's run,
+fuel and clearing receipts, clearing prices and bill parts, firm capacity against
+peak load, curtailed and unserved energy, with the dispatch and billing periods named.
+Power observations and history survive saves; the completed closing dispatch is retained
+for the following tariff instead of being rebuilt from ending fleet, draw or fuel prices.
+
+### 0.9.180 — PW1, power by the merit order at the market's price — 2026-11-21, ready, see docs/queue/PW1-notes.md
+Power clears by the merit order at the market's price (Jerus: "Market price"): three load blocks, each a windy and calm half, with the works' surplus first, then wind, hydro and fuelled plants.
+Short half-blocks clear at the cap. Coal plants burn thermal coal bought from the market. Commerce pays energy and both wires; Heavy Industry and Mining pay energy and transmission.
+A saved monthly book holds the ratio, prices and fuel; the works receive their half-block prices, and licences and recipes price power at their building's class. Pre-PW1 saves seed the ratio from their loaded dispatch.
+Advice plans for the calm peak, counting a Wind Farm's firm third, and the playtest player follows it. Founded cities count the free grid immediately. Services shows prices and dispatch; Trade shows plant fuel and upkeep.
+The final gate-box ensemble on the .179 merge passes all 10 M1/F1 hard criteria, 25/26 overall, with no changed verdicts against .179 (`docs/ensemble/PW1.md`). AUTO2 T2 now passes; PW1d's .174 miss stays archived.
+New checks: PowerDispatchCheck, PowerPriceCheck and BuildAdviceCheck 14-15. Existing power fixtures, class-price licence/recipe checks and the pre-PW1 load check follow the market book.
+OilCheck establishes real fuel demand before its observed year (recovery check: first fuel month 16, limit 36); its original assertions stay hard. Named reds are traced to PW1-W, HL2 and FS9.
+PW5, PW8, the planner gaps, water tariff and remaining licence/recipe valuations stay pending.
+
+### 0.9.179 — MC2, BF1's band share under the leverage target — 2026-11-20, ready, see docs/queue/MC2-notes.md
+A bank in its band, between its minimum and its target, lends growth again. BF1 bounded new
+buildings' loans and, while the leverage ratio binds, new mortgages by the bank's room to its
+target, which is none anywhere under it: a bank a loss put in its band lent no growth at all.
+Under the target the room is now the growth limit's share (Bank.lendingGrowthLimit(): 1% a month
+halfway, rising toward the target) of each borrower's debt and, as one allowance, of the bank's
+book, on the equity the month's known defaults leave, and never past the room to its minimum.
+At or over the target it is BF1's room to the target, as before, and none while the month's
+default takes the bank under it before its book settles; the carry trade still gets nothing under
+it. BankFailureCheck section 9 causes both sides, the cap and the default with hand-built banks,
+and 14 of its 17 assertions fail on the old rule. In MC1's played crunch the landlords took 6
+mortgages, where none were written before.
+
+### 0.9.178 — TN1, the trains run again — 2026-11-21, ready, see docs/queue/TN1-notes.md
+Jerus: "trains no longer show up... sometimes only briefly for a few years and then disappear forever". The tonnes were railed; the
+trains had no way in. As a fjord city grows, every railway arm comes to wait at its own water, or the land past its edge is water
+within 64 plots toward the gateway and straight on, the only two ways a line to the world was tried: no line, no route, every train
+unfit. And a station laid early at its 8-plot footprint is kept at that box for good, and since FX5 holds no train. Now a railway arm
+at the edge also tries its heading turned a 45-degree corner; with no line the trains come out of a portal at the main line's end;
+and a station laid short is laid again longer each January where the ground allows, beside the quarter line for one that holds no
+train. Jerus's city (month 1,204: 29 trains, none run) runs 4 a month from the next January; the Bergen playtest 5 to 7 from its first
+station at month 840, where main ran none. MainLineCheck 17 and GatewayCheck 22 cause each and fail on main. Map only:
+the default playtest's eight trace files are byte-identical to main's.
+
+### GB5 (untagged) — the gate box runs the harnesses that need a display — 2026-11-21, ready, see docs/queue/GB5-notes.md
+The gate box has no screen, so since GB1 every gate skipped the nine harnesses that start the JavaFX toolkit, KeptCheck and KeptTimingCheck among them.
+Its gates and nights now draw them on JavaFX's Monocle, headless and in software (pom.xml, test scope), which tools/gate-box.sh names to every JVM they
+start; Linux lays text out through Pango (libpangoft2-1.0-0, which Jerus installed), and a box without it says so in one line.
+Every display harness starts the toolkit through ui.FollowBench.startJavaFx. With no display named it skips as it did, on the PC and in the cloud;
+with one named (-Dcbs.display) a toolkit that cannot start is a FAIL and exit 1, never a skip. The summary's display line lists those a run started
+(AllChecks.DISPLAY), and TimingCheck 10 guards the one start, the list and the skip. On the box KeptCheck prints the PC's 4,034 lines but its heap
+line, and KeptTimingCheck meets all 29 budgets, the worst at 0.42 of its own. The PC's runs are as they were.
+
+### OB1 — live provider budget and orchestration reserve — 2026-11-21, ready, see docs/queue/OB1-notes.md
+The orchestrator reads live usage and warnings every turn and before dispatch, reserves its cost through reset plus running and pending commitments,
+and targets projected subscription use of 98-99% at reset without intentionally exhausting a plan. Stale readings forbid uncertain-provider launches;
+current MemWatch advice routes within the ceiling, with explicit Codex workers while Claude is exhausted and reassessment after reset. Dispatches
+record readings and reserve forecasts, and controller handoff precedes exhaustion. This is operational policy, not a hard MemWatch launcher guard.
+
+### 0.9.177 — FB15, HN1's three leftovers — 2026-11-21, ready, see docs/queue/FB15-notes.md
+A landlord's order is sized at the door's own price (HN1-A): `Game.doorPriceOf()`, the quote and the land as
+`buildFor()` charges them, prices its equity raise, the lender's test and the build card, so a down payment raised
+to the plan's figure no longer fails at the door (HousingDoorCheck's seed 12 window: nine such cuts on main, none
+now). A project's order the lender refuses for the bank's capital or a ban is asked again of half (HN1-B): the till
+builds what it buys, the line says why it was trimmed, and the capital marks are taken back (seed 12 to m900: 18
+such month-ends, none on main); past the default point or with the bank shut it holds, as before.
+`tools/ensemble/stop.ps1` makes the Git Bash form of the run's folder itself, since Git Bash hands it C:/..., then
+looks once more and names what outlived the stop, exit 1; with no folder or label it stops nothing, exit 2 (HN1-C,
+its selftest). The new OrderDoorCheck causes HN1-A and HN1-B, eight lines red on main. HousingDoorCheck names the
+landlords' homes by the door's price too (68 orders with the segment short, none cut for the down payment), and
+CreditCrunchCheck 4 causes an order the owners' issue falls short of. The played cities of MortgageCheck 12 and
+CreditCrunchCheck 2 moved, their fixtures known reds under FS9. ForeignDebtCheck 7 asserts a reloaded city's first
+month against its twin's, not 5% of the principal, which a month's own move crossed in the moved city.
+
+### 0.9.176 — RB3, the fund's over-limit sale and the fixed point — 2026-11-20, ready, see docs/queue/RB3-notes.md
+FS13 found FundCheck 9e's town holding 11.17% of Construction against the fixed point of 10.92%. The book had last traded under fair value,
+the leavers asked 230 to 400 shares a month at the desk's bid, a buyback buying 200 took theirs first, and the fund's over-limit ask at fair
+value rested 34 months running. That ask is now the market's (Exchange.limitAsk()): the last trade held between the desk's bid and fair value,
+so fair value while the book trades at or over it or on a trade older than the fund's stale mark, and it is posted before the leavers, so
+a buyback meets it first at its price. The fixed
+point does not bend, since an unsold tenth has no rest. ExchangeCheck 7c causes the month (20 owners leaving with 2,000 shares, the fund at the
+fixed point, the last trade under fair value), and each of its lines but the other sides fails on main's rule. FundCheck 9e drops FS13's
+world bid and holds 10.28% on the town's own sale (10.31% and 10.30% on 60 and 84 months of founding, where main reached 11.17% and 11.14%).
+The default playtest never puts the fund over its cap, and its eight trace files are byte-identical to main's, at the base and merged.
+
+### 0.9.175 — AP1, the auto-builder's month at 400,000 people — 2026-11-21, ready, see docs/queue/AP1-notes.md
+On Jerus's slot 10 (421,561 people, 57 stacks on site) the auto-builder's search asked the power ahead (`WorksValue.pendingPowerLoad`) about 1,100 times a month, and each call rebuilt the site's whole completion schedule, with the builders' staffing for every stack and every template's new-unit draw.
+`WorksValue.hold()` holds the schedule and the draws in a scope, for one city on its own thread, opened by `AutoBuilder.pass` around its loop and by the Build screen's Overview around its draw.
+What is held is keyed on `BuildingManager.siteStamp()` with the month and the output on site, read at every call, so an order, a cancel, a rush or a priority is read afresh at the next call. Closed, every call computes as before.
+The same order and products are kept, so every figure is the same to the bit. NewUnitCheck 13 proves it at every horizon and for `relief`'s avoided loss, and proves that an order, a rush and a priority inside a scope are read, one schedule is built a scope (a count), and nothing is held once it is closed.
+On slot 10 over 24 months the month went from a mean of 43.6 s and a median of 40.1 s to 4.5 s and 4.3 s, on a busy laptop, and the schedules built from 38,262 to 24. The cash, people and spending at the end are equal to the bit.
+The default trace does not move: all eight playtest CSVs are byte-identical to main's over 2,405 months. The run took 660 s, against 1,116 s.
+
 ### FS4 (untagged) — KeptCheck I causes what its pages read — 2026-11-20, ready, see docs/queue/FS4-notes.md
 KeptCheck's sections below 55 (the city, the chrome, People, History and the KP2-KP4 pages) cause what they read on its scratch city, not what Danzik's months happen to hold.
 Each page's kept rule is the identity, its share taken against what each redraw draws again, at HANDED_BACK: a page that grows or shrinks loses nothing it did not draw.

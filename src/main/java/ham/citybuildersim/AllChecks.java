@@ -38,9 +38,9 @@ public class AllChecks {
 
     /** Every harness: the gate and nightly selections together cover this registry. */
     static final String[] HARNESSES = {
-        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck",
+        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck", "PowerDispatchCheck", "PowerPriceCheck", "PowerViewCheck",
         "EarthCheck", "WorldDataCheck", "NationsCheck", "WorldMeasuresCheck", "RankingsCheck", "WorldMarketCheck", "WorldMoneysCheck", "RealDollarCheck", "PartnersCheck", "VaultMoneysCheck", "PegAnchorCheck", "InterestAbroadCheck", "GoldPriceCheck", "GoldStandardCheck", "EarthTerrainCheck", "EarthFoundingCheck", "EarthDepositsCheck", "GlobeCheck",
-        "PolicyCheck", "PolicyOpenCheck", "MoneyDatesCheck", "LandCheck", "SlopeCheck", "LandClassCheck", "LandmassCheck", "LandNationsCheck", "BridgeCheck", "RunWorksCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck", "HousingDoorCheck", "CreditCrunchCheck",
+        "PolicyCheck", "PolicyOpenCheck", "MoneyDatesCheck", "LandCheck", "SlopeCheck", "LandClassCheck", "LandmassCheck", "LandNationsCheck", "BridgeCheck", "RunWorksCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck", "HousingDoorCheck", "CreditCrunchCheck", "OrderDoorCheck",
         "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "ConstructionTrapCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "EssentialWorksCheck", "WorksFinanceCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",
         "RestructureCheck", "BuybackCheck", "CallCheck", "FloatLinkCheck", "DeskCheck", "GdpCheck", "HistoryCheck",
         "BankCheck", "ForeignCheck", "CurrencyCheck", "ExchangeRateCheck", "InterventionCheck", "CurrencyRegimeCheck", "PassThroughCheck", "ForeignDebtCheck", "DebtExchangeCheck", "DebtMoneysCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "ShortSellingCheck", "MarketCheck", "MonetaryCheck", "ExpectationsCheck", "CurveCheck", "GroceryCheck", "SupplierCreditCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "FormatsCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
@@ -83,6 +83,9 @@ public class AllChecks {
 
     /** Average three CPU samples, covering six seconds between starts (MG1). */
     static final int CPU_SAMPLES = 3;
+
+    /** GB5: the harnesses that start the JavaFX toolkit (ui.FollowBench.startJavaFx; TimingCheck 10 keeps the list whole). */
+    static final List<String> DISPLAY = List.of("ChartFitCheck", "KeptCheck", "KeptTimingCheck", "MapCheck", "MoneyWordsCheck", "NewUnitCheck", "ReplayCheck", "StepsCheck", "ToastCheck");
 
     /** Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). */
     static final List<String> LONGEST_FIRST = List.of("KeptCheck", "KeptTimingCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "CopperRefiningCheck", "EarthTerrainCheck");
@@ -253,6 +256,8 @@ public class AllChecks {
         }
         System.out.println();
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
+        String display = System.getProperty(ham.citybuildersim.ui.FollowBench.DISPLAY_PROPERTY, "");   // GB5: the gate box's runs
+        if (!display.isEmpty()) System.out.println(displayLine(display, order));
         if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed â€” free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
@@ -437,6 +442,13 @@ public class AllChecks {
     static String summaryLine(int ran, int failed, double seconds) {
         return String.format("%d harness%s run in %.0fs: %d passed, %d failed",
                 ran, ran == 1 ? "" : "es", seconds, ran - failed, failed);
+    }
+
+    /** GB5: under the summary where -Dcbs.display names a display: the display harnesses the run started, none of which skips there. */
+    static String displayLine(String display, List<String> started) {
+        List<String> ran = DISPLAY.stream().filter(started::contains).toList();
+        return "display: " + display + ": " + (ran.isEmpty() ? "no display harness in this run" : ran.size() + " display harness"
+                + (ran.size() == 1 ? "" : "es") + " started, none can skip here (red if the toolkit cannot start): " + String.join(", ", ran));
     }
 
     /** The named combined record, or the default gate and repository parts. */

@@ -1,6 +1,6 @@
 # HistoricalLicenceCheck.java - 590 lines · 20 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HistoricalLicenceCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoricalLicenceCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > R2d's independent discoveries meet R2c's captured patent service.
 > WHY (R2d): a net fitting estimate could charge for a patent whose real
@@ -9,7 +9,7 @@
 
 **Uses:** [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (80), [LicenceFees](LicenceFees.md) (61), [Good](Good.md) (49), [Game](Game.md) (31), [ResearchCatalog](ResearchCatalog.md) (17), [RecipeChanges](RecipeChanges.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (14), [ResearchCheck](ResearchCheck.md) (12), [FittingCheck](FittingCheck.md) (11), [EquipmentFit](EquipmentFit.md) (8), [SectorState](SectorState.md) (8), [LicenceFeesCheck](LicenceFeesCheck.md) (7), [Recipes](Recipes.md) (7), [RecipeCheck](RecipeCheck.md) (6), [Founding](Founding.md) (6), [MoneyAudit](MoneyAudit.md) (6), [RefineryFlow](RefineryFlow.md) (5), [BuildingsStacks](BuildingsStacks.md) (5), [Resource](Resource.md) (4), [Freight](Freight.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [Forms1900Check](Forms1900Check.md) (4), [Equipment](Equipment.md) (3), [DataSave](DataSave.md) (3), [MaterialsCheck](MaterialsCheck.md) (2), [Trade](Trade.md) (2), [NewGameCheck](NewGameCheck.md) (2), [LandManager](LandManager.md) (1), [Refining](Refining.md) (1), [BuildAdvice](BuildAdvice.md) (1)... and 4 more
 
-**Used by (6):** [FitoutCheck](FitoutCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (7):** [FitoutCheck](FitoutCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Fields (state)
 

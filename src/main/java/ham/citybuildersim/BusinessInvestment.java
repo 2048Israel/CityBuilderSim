@@ -1579,7 +1579,7 @@ public class BusinessInvestment {
         }
         if (fee != 0) payroll += fee;
         return payroll
-                + t.getElectricityConsumption() * economyManager.getPricePerWatt()
+                + t.getElectricityConsumption() * economyManager.getPowerPriceFor(t.template())
                 + t.getWaterConsumption() * economyManager.getPricePerWaterUnit();
     }
 

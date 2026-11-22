@@ -916,10 +916,10 @@ final class TradeScreen {
         }
         for (Map.Entry<String, Double> e : t.services().entrySet()) {
             if (!(e.getValue() > 0)) continue;
-            out.add(new GoodRow(Icons.ofSector(sector(e.getKey())), "Bought abroad by " + e.getKey(),
+            out.add(new GoodRow(Icons.ofSector(sector(e.getKey())), "Bought abroad by " + who(e.getKey()),
                     e.getValue(), 0, -e.getValue(),
-                    "Bought abroad by " + e.getKey() + "\n" + dFull(e.getValue())
-                            + "\nAn import with no good behind it.", null, e.getKey()));
+                    "Bought abroad by " + who(e.getKey()) + "\n" + dFull(e.getValue())
+                            + "\nAn import with no good behind it.", null, hasPage(e.getKey()) ? e.getKey() : null));
         }
         return out;
     }
@@ -945,14 +945,15 @@ final class TradeScreen {
         return s.toString();
     }
 
-    /** A buyer's or seller's name in words: a sector's key, "the households", and since 0.7.85 "the city's reserve" (Sectors.CITY: its crude). */
+    /** A buyer's or seller's name in words: a sector's key, "the households", since 0.7.85 "the city's reserve" (Sectors.CITY: its crude), and since PW1 "the power plants" (Sectors.UTILITY: their coal and upkeep). */
     static String who(String key) {
-        return Sectors.HOUSEHOLDS.equals(key) ? "the households" : Sectors.CITY.equals(key) ? "the city's reserve" : key;
+        return Sectors.HOUSEHOLDS.equals(key) ? "the households" : Sectors.CITY.equals(key) ? "the city's reserve"
+                : Sectors.UTILITY.equals(key) ? "the power plants" : key;
     }
 
-    /** ...and whether it has a sector's page to open: not the households, not the city (0.7.85). */
+    /** ...and whether it has a sector's page to open: not the households, not the city (0.7.85), not the power plants (PW1). */
     static boolean hasPage(String key) {
-        return !Sectors.HOUSEHOLDS.equals(key) && !Sectors.CITY.equals(key);
+        return !Sectors.HOUSEHOLDS.equals(key) && !Sectors.CITY.equals(key) && !Sectors.UTILITY.equals(key);
     }
 
     /**

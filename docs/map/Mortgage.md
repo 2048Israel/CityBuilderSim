@@ -1,6 +1,6 @@
 # Mortgage.java - 556 lines · 40 methods · 10 constants · model
 
-`ham/citybuildersim/Mortgage.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Mortgage.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > An insured mortgage on a new residential building: a level payment every
 > month over a forty-year amortization, at a rate fixed for a ten-year term
@@ -66,7 +66,7 @@
 
 **Uses:** [Bank](Bank.md) (2), [BusinessDebt](BusinessDebt.md) (1), [Formats](Formats.md) (1)
 
-**Used by (22):** [Bank](Bank.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessInvestment](BusinessInvestment.md), [CorporateBond](CorporateBond.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HousingDoorCheck](HousingDoorCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md)
+**Used by (23):** [Bank](Bank.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessInvestment](BusinessInvestment.md), [CorporateBond](CorporateBond.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HousingDoorCheck](HousingDoorCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

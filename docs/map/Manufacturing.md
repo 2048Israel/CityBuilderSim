@@ -1,6 +1,6 @@
 # Manufacturing.java - 382 lines · 16 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > What the city makes out of its own steel, and ships.
 > 

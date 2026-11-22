@@ -1052,9 +1052,11 @@ public class FundCheck {
                 inIssueO, ro.getShares(company));
         close("over 10% of a company, it offers a tenth of the excess (LIMIT_SALE_SHARE) a month", offeredO,
                 TreasuryFund.limitSale(over, inIssueO), 1e-6 * inIssueO);
-        check("...at fair value", o.getExchange().bookOf(listedO).asks().stream()
-                .filter(a -> a.who().equals(Exchange.FUND)).allMatch(a -> Math.abs(a.price() - o.getExchange().fair(listedO)) < 1e-12)
-                && (filledUnits <= 0 || Math.abs(filledMoney / filledUnits / o.getExchange().fair(listedO) - 1) < 1e-9)
+        // RB3: at the market - the book's last trade held between the desk's bid and fair value (ExchangeCheck 7c holds each side of it).
+        double fairO = o.getExchange().fair(listedO), bidO = fairO * (1 - TreasuryFund.RULE_PREMIUM);
+        check("...at the market: the last trade, held between the desk's bid and fair value (RB3)", o.getExchange().bookOf(listedO).asks().stream()
+                .filter(a -> a.who().equals(Exchange.FUND)).allMatch(a -> a.price() >= bidO * (1 - 1e-12) && a.price() <= fairO * (1 + 1e-12))
+                && (filledUnits <= 0 || (filledMoney / filledUnits >= bidO * (1 - 1e-9) && filledMoney / filledUnits <= fairO * (1 + 1e-9)))
                 && (askedO > 0 || filledUnits > 0));
     }
 
@@ -1637,34 +1639,37 @@ public class FundCheck {
         double most = 0;
         long t0 = System.nanoTime();
         for (int m = 0; m < MONTHS_9E; m++) {
+            double heldBefore = reg.getCityMarketShares(buyer), splitBefore = g.getExchange().getSplitFactor(buyer);
             if (play(g)) closedMonths++;
             if (g.getExchange().getFundLimitAsked() > 0) capMonths++;
             if (g.getFund().getTransferFromIdle() > 0) idleMonths++;
             Exchange ex = g.getExchange();
-            if (ex.getBuybackToHouseholds(buyer) + ex.getBuybackToDesk(buyer) + ex.getBuybackAbroad(buyer) > 0) buybackMonths++;
-            // FS13, 2026-11-20: A BID FOR WHAT THE FUND ASKS AT FAIR VALUE IS CAUSED, EVERY MONTH (PK1), as section 9b's. The fixed point is the rule's tenth of the excess
-            // sold a month against a buyback's pace, and the sale fills only if somebody pays fair value for it. Left to the town, nobody did on 60 months of founding and on 84:
-            // the book's last trade stood under fair value (0.01039 against 0.01050) with no bid resting at the months' ends, the fund's ask grew unfilled (68 to 83 shares
-            // a month) while the company retired its shares from other holders, and the fund's holding of it rose to 11.17% of the shares on 60, 11.14% on 84, past the
-            // fixed point of 10.92% - the model's buyback outrunning a sale nobody bought. The world pays fair value for what is asked at it and under it (the asks of others
-            // ahead of the fund's at that price too, as they stand ahead of it), so the law is the rule's against the buyback's pace: the sale is made and the holding is held.
-            double bidAt = ex.fair(buyer), standing = 0;
-            for (OrderBook.Order ask : ex.bookOf(buyer).asks()) if (ask.price() <= bidAt) standing += ask.quantity();
-            if (standing > 0) ex.tradeForCheck(buyer, Exchange.WORLD, OrderBook.Side.BUY, bidAt, standing);
-            if (ex.bookOf(buyer).resting(Exchange.FUND, OrderBook.Side.SELL) > 0) unmet++;
+            // ...what the company retired, from whoever sold it: the register's count (the exchange's counts leave out a sale of the fund's).
+            double retiredM = reg.getBoughtBackThisMonth(buyer), askedM = ex.getFundLimitAsked(buyer);
+            if (retiredM > 0) buybackMonths++;
+            // RB3, 2026-11-20: THE TOWN'S OWN SALE, AS THE MODEL MAKES IT. FS13 had the world bid fair value for every ask at or under it each month, since left to the
+            // town nobody bought the fund's ask at fair value on 60 months of founding and on 84: the book's last trade stood under fair value (0.01039 against 0.01050),
+            // the leavers asked 270 to 400 shares a month at the desk's bid, the buyback took theirs first, the fund's ask grew unfilled (68 to 83 shares a month), and
+            // its holding rose to 11.17% of the company on 60, 11.14% on 84, past the fixed point of 10.92% (FS13's notes, ★g). The over-limit sale now asks the market,
+            // first (Exchange.limitAsk(), ExchangeCheck 7c), and that premise is gone: in a month the company buys back, the fund's ask is the first it meets, so the fund
+            // sells what it asked, or all the buyback's money bought where that was less (on 72 months of founding, m182: 8.94 shares of 17.14 asked, all 8.94 retired).
+            // ...a month the company split or consolidated counts its shares in two units, and is left out.
+            boolean split = ex.getSplitFactor(buyer) != splitBefore;
+            if (askedM > 0 && retiredM > 0 && !split && heldBefore - reg.getCityMarketShares(buyer) < Math.min(askedM, retiredM) * (1 - 1e-9)) unmet++;
             for (int c = 0; c < Equity.COMPANIES.length; c++) {
                 double shares = g.getEquity().getShares(c);
                 if (shares > 0) most = Math.max(most, g.getEquity().getCityMarketShares(c) / shares);
             }
         }
         double seconds = (System.nanoTime() - t0) / 1e9;
-        out.printf("   %d months in %.1fs: the cap sale asked in %d, the idle cash paid in %d, %s bought back in %d; the most of any company the fund held %.4f%%, the fixed point %.4f%%%n",
-                MONTHS_9E, seconds, capMonths, idleMonths, Equity.COMPANIES[buyer], buybackMonths, most * 100, fixedPoint * 100);
+        out.printf("   %d months in %.1fs: the cap sale asked in %d, the idle cash paid in %d, %s bought back in %d; the most of any company the fund held %.4f%%, the fixed point %.4f%%; the fund short of its ask in %d%n",
+                MONTHS_9E, seconds, capMonths, idleMonths, Equity.COMPANIES[buyer], buybackMonths, most * 100, fixedPoint * 100, unmet);
         check("the dial stayed at the default", g.getFund().getWithdrawalSteps() == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS);
         check("every month's audit closed", closedMonths == MONTHS_9E);
         check("the cap sale fired: the rule asked shares past the limit in some month", capMonths > 0);
         check("the idle transfer fired: a month's transfer had a part struck on the idle cash", idleMonths > 0);
-        check("fixture: a bid took every share the fund asked of the company, in every month", unmet == 0);
+        check("in every month the company bought back over the limit, it met the fund's ask first: the fund sold what it asked, or all that was retired (RB3)",
+                unmet == 0);
         check("no company was held past the fixed point", most <= fixedPoint * (1 + 1e-9));
     }
 
