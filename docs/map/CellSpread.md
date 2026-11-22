@@ -8,7 +8,7 @@
 
 **Uses:** [BusinessDebtManager](BusinessDebtManager.md) (4)
 
-**Used by (4):** [CardCheck](CardCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [Household](Household.md)
+**Used by (5):** [CardCheck](CardCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [Household](Household.md), [OutsideCheck](OutsideCheck.md)
 
 ## Constants
 

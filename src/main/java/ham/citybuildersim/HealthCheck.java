@@ -1415,11 +1415,11 @@ public class HealthCheck {
                 hungerAtEnd[k] = town.getHouseholdBalance().getHungerRate();
             } finally { System.setOut(out); }
             Healthcare hc = town.getHealthcare();
-            System.out.printf("  fees x%.2f: %,.0f people, served %.1f%% of those offered care over %d months,"
+            System.out.printf("  fees x%.2f at m%d: %,.0f people, served %.6f%% of those offered care over %d months,"
                     + " sick %.2f%% (baseline %.2f%%), %,.0f died (%,.0f over seventy), priced out in %.0f months,"
                     + " %,.0f last month (childcare %,.0f / general %,.0f / senior %,.0f), hunger %.0f%%"
                     + " (%.1f%% over the last year: %.1f priced out of a basket, %.1f short on the shelf)%n",
-                    scales[k], town.getCohorts().total(), meanAffordable[k] * 100, window,
+                    scales[k], town.getMonth(), town.getCohorts().total(), meanAffordable[k] * 100, window,
                     meanSick[k] * 100, meanBaseline[k] * 100, deathsOver[k], eldersLost[k], pricedOutMonths[k],
                     hc.getPricedOutTotal(), hc.getPricedOut(CareType.CHILDCARE),
                     hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),

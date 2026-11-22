@@ -1587,7 +1587,7 @@ public class KeptCheck {
     }
 
     static void pageKept(Game g, KeptBench bench, KeptBench.Page page, int n, boolean eventful, boolean again) throws Exception {
-        System.out.println("\n--- " + n + ": " + page.name() + " is kept ---");
+        System.out.println("\n--- " + n + ": " + page.name() + " is kept at month " + g.getMonth() + " ---");
         int[] first = fx(() -> {
             bench.home(page);
             bench.drawKept(page);

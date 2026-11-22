@@ -770,8 +770,8 @@ public class HoldersCheck {
                         && bond.bankPrincipal() < 2 * cb.stepFor(ledger.termPrincipal()));
         // ...and nobody short of money in the months watched, which is what sends a sliver of the households' paper to the bank's desk.
         setSpare(hb);
-        out.printf("   the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
-                bond.householdPrincipal(), face, bond.bankPrincipal());
+        out.printf("   at m%d the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
+                city.getMonth(), bond.householdPrincipal(), face, bond.bankPrincipal());
 
         boolean bankFirst = true, deskQuiet = true;
         int months = 0;
@@ -779,6 +779,8 @@ public class HoldersCheck {
             double bankBefore = bond.bankPrincipal(), step = cb.stepFor(ledger.termPrincipal());
             play(city);
             months++;
+            out.printf("   m%d: households sold the desk %.12g of paper; departures took %.12g; bank face %.12g, household face %.12g%n",
+                    city.getMonth(), bank.getPaperBoughtFromHouseholds(), hb.getTakenAway(), bond.bankPrincipal(), bond.householdPrincipal());
             deskQuiet &= bank.getPaperBoughtFromHouseholds() == 0 && hb.getTakenAway() == 0;
             // The dial's rule, month by month: the bank's paper is sold first, and the households' bought only once it has none left.
             bankFirst &= bankBefore >= step ? cb.getBoughtFromHouseholds() == 0 : cb.getBoughtFromHouseholds() > 0;
