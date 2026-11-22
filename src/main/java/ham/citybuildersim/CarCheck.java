@@ -33,7 +33,10 @@ package ham.citybuildersim;
  *   4. A CAR IS PAID FOR. What the households' savings lose is exactly what the
  *      sellers and the world were paid, in the same month - the money identity
  *      this codebase exists to keep - and the imported half is declared to the
- *      audit, because Markets.draw() has no sector to book it against. The
+ *      audit, because Markets.draw() has no sector to book it against; since CI1
+ *      the declared half is struck from what the households paid, so a month of
+ *      cars all off a ship whose two roundings part (caused, at the end: the
+ *      import price walked a bit at a time) declares what they paid. The
  *      fixture is a built town played two years whose households are then GIVEN
  *      the money (a car's price over their cushion, and no car): the month the car
  *      market runs (Motoring.month) is read at once, so no played rate or output
@@ -1185,6 +1188,7 @@ public class CarCheck {
                 marginsHeld(catalogue, Good.CARS, CARS_WAS_IN, CARS_WAS_OUT, carLines), String.join("; ", carLines));
 
         drawnIsPaid(game, homes, carMarket);
+        importsArePaid(game, homes, carMarket);
 
         System.out.println();
         if (fails == 0) {
@@ -1290,6 +1294,7 @@ public class CarCheck {
         double heldBefore = MoneyAudit.householdsHeld(game);
         double ceilingThen = ceiling[0];
         double[] drawn = new double[1], spend = new double[1], imports = new double[1], credit = new double[1], read = new double[1];
+        int rowsBefore = carMarket.monthsDraws().size();
         quietly(() -> {
             game.getMotoring().month(game);
             drawn[0] = game.getHouseholdCarsBought();
@@ -1299,9 +1304,15 @@ public class CarCheck {
             read[0] = game.getMotoring().getOwnershipCeiling();
         });
         double moved = MoneyAudit.householdsHeld(game) - heldBefore;
+        // The world's price is read off the ship's own row: since CI1 the import declared is what the households paid, a rounding apart.
+        double shipUnits = 0, shipPrice = Double.NaN;
+        java.util.List<Trade> rows = carMarket.monthsDraws();
+        for (Trade t : rows.subList(rowsBefore, rows.size()))
+            if (t.isImport() && Trade.HOUSEHOLDS.equals(t.buyer())) { shipUnits += t.units(); shipPrice = t.price(); }
         report("...and the month is the one found: its ceiling the probe's, one car drawn from the world at the edge's price",
-                read[0] == ceilingThen && drawn[0] == 1 && imports[0] == edgePrice,
-                String.format("ceiling %.6f against %.6f, %.0f drawn, $%.4f imported", read[0], ceilingThen, drawn[0], imports[0]));
+                read[0] == ceilingThen && drawn[0] == 1 && shipUnits == 1 && shipPrice == edgePrice,
+                String.format("ceiling %.6f against %.6f, %.0f drawn, %.0f off the ship at $%.4f", read[0], ceilingThen, drawn[0],
+                        shipUnits, shipPrice));
         report("every car drawn is a car placed: the take places the car the draw was sized for",
                 homes.getCarsBought() == drawn[0] && homes.totalCars() > 0,
                 String.format("%.6f placed of %.0f drawn", homes.getCarsBought(), drawn[0]));
@@ -1332,5 +1343,63 @@ public class CarCheck {
             x = got < p ? Math.nextUp(x) : Math.nextDown(x);
         }
         return false;
+    }
+
+    /* ===== THE IMPORTS DECLARED ARE WHAT THE HOUSEHOLDS PAID (CI1, 2026-11-22) ========================================== */
+
+    /** How many steps of the import price, a bit each, importsArePaid() walks for a month whose two roundings part (CI1). */
+    static final int IMPORT_BITS_TRIED = 256;
+
+    /**
+     * Causes a month of cars all off a ship in which the two roundings of its one sum part, and reads what the month declares.
+     *
+     * WHY: Motoring declared the households' car imports as the draw's importCost(), the ship's one product (the cars short
+     * times the import price), and charged them takeCars()' sum of the cells' cars at cost / units: one sum rounded two
+     * ways. OE1's city, all 11 cars off a ship, read 13.07876547080566 paid against 13.078765470805662 imported (OE1's notes,
+     * section 10), so "a month of car sales is a month of real money" took imported over paid; the town above on 0.9.181
+     * reads the two alike. Since CI1 the declared half is the spend times the draw's import share, which is one when the
+     * shelf sold none. The month is found, not waited for: no maker in this town holds a car, every household is given two
+     * cars' price past its cushion and no car, and the import price is walked a bit at a time (importAt()) until the cells'
+     * sum and the ship's product, read off the market's own draw, part. The buying city above, at the end of the harness.
+     */
+    static void importsArePaid(Game game, HouseholdBalance homes, GoodsMarket carMarket) {
+        System.out.println("\n--- and the imports declared are what the households paid, to the bit (CI1) ---");
+        double carsOnShelves = 0;
+        for (Sector s : game.getSectors().all()) if (s.isMaker(Good.CARS)) carsOnShelves += s.getStock(Good.CARS);
+        double p = carMarket.importPrice();
+        double[] spend = new double[1], declared = new double[1], drawn = new double[1];
+        double ship = Double.NaN;
+        boolean found = false;
+        int trials = 0;
+        for (; trials < IMPORT_BITS_TRIED && !found; trials++) {
+            if (trials > 0) {
+                p = Math.nextUp(p);
+                if (!importAt(carMarket, p)) continue;
+            }
+            for (Household c : homes.cells()) {
+                if (c.isEmpty()) continue;
+                c.cars = 0;
+                c.debt = 0;
+                c.lockout = 0;
+                c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * p;
+            }
+            int before = carMarket.monthsDraws().size();
+            quietly(() -> {
+                game.getMotoring().month(game);
+                drawn[0] = game.getHouseholdCarsBought();
+                spend[0] = game.getHouseholdCarSpend();
+                declared[0] = game.getHouseholdCarImports();
+            });
+            ship = 0;
+            java.util.List<Trade> rows = carMarket.monthsDraws();
+            for (Trade t : rows.subList(before, rows.size())) if (t.isImport() && Trade.HOUSEHOLDS.equals(t.buyer())) ship += t.value();
+            found = drawn[0] > 0 && Double.compare(spend[0], ship) != 0;
+        }
+        report("fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product",
+                found && carsOnShelves == 0,
+                String.format("%.0f cars, %d step(s) of the import price; paid %.17g, the ship's product %.17g; %.1f cars on the makers' shelves",
+                        drawn[0], trials, spend[0], ship, carsOnShelves));
+        report("...and the imports declared are what the households paid, not the ship's product: to the bit",
+                found && same(declared[0], spend[0]), String.format("declared %.17g, paid %.17g", declared[0], spend[0]));
     }
 }
