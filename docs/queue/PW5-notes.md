@@ -746,3 +746,13 @@ dealt. Its strict interior holds by only 856 tonnes (1.3%). The unchanged
 guarded search finds this month; parity is restored, and HT1-H retains the
 latent search fixture to cause more robustly. The trace is not a proof that
 the initial sizing preserves the room bound as the town plays.
+
+Merged origin/main 7b60b9a8d in fc9e72c48. Since the previous reviewed main
+db9b1fd99, only the orchestrator's QUEUE.md ownership record changed; no
+production source moved. Main still ships save format/floor 61, so PW5's
+62 remains the next format, with the one shared native-60 fixture and the
+native-61 fixture unchanged. The production-source comparison to final-model
+ensemble 069504753 still finds only *Check.java differences. Its completed
+80 runs, M1/F1 10/10 and 24/26 against 0.9.188, remain applicable; no model
+change calls for another ensemble. The slot is explicitly granted for the
+ALL dry run by the same SHIP mail.
