@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — RR1, the map's roads and rails — 2026-11-22, ready, see docs/queue/RR1-notes.md
 Jerus's city drawn as he saw it (slot 10's copy, months 1,204 to 1,208). A works siding drawn square from the first draw after
