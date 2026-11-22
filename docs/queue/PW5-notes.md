@@ -654,9 +654,12 @@ iron sites/reserves, with real substations sized again from their peak draw.
 This makes the home offer wider than one spur's indivisible capacity step.
 After the town plays, its actual boundary offer sizes the count of real spurs
 beside its one depot: the first whole count putting their room above that
-offer. The excess is at most one spur's step, short of the larger home offer.
-The existing sixty-month guard still waits for the actual model's strictly
-partial share, including its normal fleet purchases and monthly trade drift.
+offer. At sizing only, the excess is at most one spur's step, short of the
+larger home offer. That bound does not survive subsequent traffic and fleet
+drift. The existing sixty-month guard still searches for the actual model's
+strictly partial share, including its normal fleet purchases and trade drift;
+this restores parity in main's own guarded fixture, not a guaranteed interior
+throughout the following months.
 A new strict fixture line requires the observed home offer to exceed that
 step before laying the spurs. No share, trade row, capacity reading or market
 price is assigned to manufacture the answer. The existing literals/pellet
@@ -731,3 +734,15 @@ production code, format/floor 62, native save fixtures and the ensemble's
 M1/F1 10/10 and 24/26 result remain unchanged. The serial check loop ended
 with no own JVM or gate process left. Send this delta for the same reviewer's
 verdict with the provisional marker, then request the dry-run slot on SHIP.
+
+### Final delta SHIP and second ALL dry run
+
+Mail 20261122-165801-090-orchestrator-9e2f grants SHIP on 9fd267c7d and the
+dry-run slot, with the sizing qualification corrected above. The m17 played
+offer used for sizing leaves 20,502 tonnes of room against 76,785 home tonnes.
+At the actually asserted m33, room is instead 63,012 tonnes, exceeding the
+50,000-tonne step: boundary traffic has drifted from 427,623 offered to 385,113
+dealt. Its strict interior holds by only 856 tonnes (1.3%). The unchanged
+guarded search finds this month; parity is restored, and HT1-H retains the
+latent search fixture to cause more robustly. The trace is not a proof that
+the initial sizing preserves the room bound as the town plays.
