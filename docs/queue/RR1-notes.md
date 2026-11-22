@@ -73,3 +73,71 @@ plays it four months on to 1,208 where a shot needs it.
    Highways and 6 Truck Depots (its gate arm runs west 161 plots to its own water, 6 plots on, and no arm reaches the edge): on
    main no route, no world trip, no world call (5 FAIL); with the mend 3 routes from the portal on highway plots to their ramps,
    4 world trips and 80 calls; the control laid 150 has its line and no portal, every route from the line as before.
+
+## STY1, the station that stays a mixed train's length
+
+5. **The station weighed beside the quarter line only while it holds no train** (TN1's follow-up; probe `bergen`, Bergen as the
+   playtest plays it, at months 960 and 1,322). TN1's `lengthenStation()` weighed the boxes off the quarter line
+   (`spotsOffLine()`) only for a station shorter than the shortest train's tier; a station laid at the mixed train's tier (15
+   plots, holding 8.9) was weighed again each January on the track alone, and where the track held nothing longer it stayed a
+   mixed train's length for good, every unit train (hoppers, 41.4 plots) unfit. ★ **Mend** (`CityRuns.lengthenStation()`): the
+   boxes beside the quarter line are weighed for any station short of `YARD_LONG`, after every box on the track, as TN1's
+   order has them. **Harness**: `MainLineCheck` 17 (c), section 17's long ground with a canal of salt water on the quarter line
+   and the row south of it from `STY1_CANAL` (24) plots east of the hub: the station is laid at the mixed tier, 15 plots, its
+   routes holding 9.0 and the month's 22 unit trains of hoppers (`STY1_DRY_IN` of dry bulk) all unfit; weighed in January it is
+   laid again `YARD_LONG` (48) along the stretch off the line, the track its whole length, its routes holding 42.0, and the 22
+   run. On main (TN1's condition put back) the two assertions after the January weighing fail.
+   **Bergen is unchanged** (15 x 7 at [376840, 376834], holding 9.0, months 960 to 1,322), measured, not mended: its railway
+   in the city is one arm of 18 plots on the quarter line from the hub east to the city's edge, with no stretch off the line;
+   the only boxes of 48 on its owned dry ground run along the hub's row from the city's boundary at x 376812, through the hub,
+   to 1 to 5 plots past the arm's end. A station there needs track laid 28 plots back past the hub, where no arm runs, and on
+   past the gate arm's end, which waits `LOOK` short of the edge; the yard's sidings follow its own track (FX3,
+   `TileRaster.yardLayout()`), so a box laid there without that track draws no fan and runs no train (tried and taken back:
+   a box through the hub got a 33-plot station that never reached 48 and lost its route). Laying the line back past the hub
+   for a station is a change to how the railway is grown, left for a batch of its own.
+
+## The shots diagnosed and not mended
+
+6. **Shot 4's dark stub where the diagonal highway meets the east-west one**: highway arm 3 (corridor 1, west 149 plots from
+   the hub) waits at the lake at x 376667; the link arm 4 (CL5, `openLink()`) leaves it 2 plots short of that end, at 376669,
+   north-west (its search's source plot: a way from the arm's end would run over the lake). Every arm with steps has a ramp at
+   its end (`highwayRamps()`), and an arm's last plot with a ramp and no street beneath is drawn as an open end that narrows
+   (`JunctionCheck` 4): the 2 plots past the bend, the dark stub (`z-corner`). The same at the gate arm's end (arm 0, south
+   then south-west, 1 plot past link arm 7's start at 376806, 376839; shot 6, bottom). A mend takes the arm back to the link's
+   start (as `cutDeadSpine()` does the rail's), but the highways are laid to the model's count of plots: the 2 plots taken back
+   are laid nowhere while every arm waits at water, so the legend's "highway not laid" would read 2, or another arm grows
+   them. Which, and whether a ramp may stand at a bend, is a design call.
+7. **Shot 6, the east-west highway ending in the housing**: arm 2 (corridor 1, east 11 plots) waits `LOOK` short of the sea,
+   its end the same open end with no street beneath (`JunctionCheck` 4, by design for an arm still to grow). At the city's
+   own water it never grows: a street the plan lays under each waiting arm's ramp, or the arm taken back, is the same call as 6.
+8. **Shots 2 and 4, the stair-stepped stubs with junction marks to nowhere**: FA1's frontage avenues (`DistrictPlan`'s
+   `frontage()`, `frontageArm()`), each `FRONTAGE_GAP` (4) plots off the diagonal highway, cross the street at the diagonal's
+   end and run on one step past it (his copy: rows 376799, one north of the boulevard on 376800-376801, at x 376647-376648 and
+   376655-376656), ending there. `frontageTails()` takes up a new tip with fewer than two street neighbours, but a step's two
+   plots neighbour each other and the street they have crossed, so the stub stays. A mend takes up a frontage arm's steps past
+   its last crossing; FA1's own harness (`PlanCheck` 20, "no new street dead end") is where its line goes. Left: FA1's
+   frontage passes keep old grid and dated extents, and the change is the plan's, not this batch's map.
+9. **Shot 4's avenue into the water**: not a fault on his copy. It is the south-west frontage avenue of 8, crossing the inlet
+   on a bridge (`AVENUE_BRIDGE_STEPS`) and landing beside the stub of 6, then on to the boulevard (`z-corner`); at the shot's
+   scale the stub's narrowing end beside the bridge's landing reads as the avenue stopping.
+
+## The two that may be intended
+
+- **Shot 6, the main line's level crossings at nearly every street**: intended. The main line runs at grade on the quarter
+  line (`RAIL_AT`); FR0's D18 (0.8.1, `spec-freight-and-infrastructure.md`, `GameVersion`): "level crossings with crossbucks and half barriers; an arterial or
+  boulevard over the main line a bridge". Each street crossing is drawn as one; the arterials and boulevards bridge it.
+- **Shot 1, the diagonal highway across two junctions beside the roundabouts**: intended, elevated. `TileRaster`: "A highway
+  is drawn over a street that passes beneath it, dark with its dashed centre line"; the junctions and roundabouts are the
+  streets' own, beneath, and the highway meets the streets only at its ramps.
+
+## The model
+
+Every mend is the map's: `CityMap`, `CityRuns`, `TileRaster`. Nothing in the model reads them (the map's train and truck
+routes, the station's box and the highways' portal are read by the screen alone), so the default trace cannot move.
+
+## The renders
+
+In `docs/queue/RR1/`, each of his copy drawn as the screen draws it (the probe), named by the finding: `1-siding-main`
+against `1-siding-mended` (the siding a month on, square on main, its arcs mended), `2-s-bend-main` against
+`2-s-bend-mended`, `3-hub-rail-main` against `3-hub-rail-mended` (a month on), `5-bergen-station-m1322` (the playtest's
+station's ground), `6-corner-stub` (findings 6, 8 and 9 at 12 px a plot).
