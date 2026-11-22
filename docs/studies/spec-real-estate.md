@@ -3,7 +3,9 @@
 RES1, opened 2026-11-20; extended during review on 2026-11-21. **Design
 study and numerical proposal; catalogue calibration remains unfinished.**
 The earlier completed-study label overstated that work. Section 12 now puts
-the complete numerical proposal, assumptions and reproducer together. Branch
+the complete numerical proposal, assumptions and reproducer together. Section 13
+adds measured aggregate kernels and current-game month timings, with integration
+slowdown still to be measured. Branch
 `study/real-estate`, model base `a9bfcd070`; fetched `origin/main` through
 `e9dadb540` before measuring. The later queue clarification at `4f1056f11`
 records RES1 as docs only and carries the planner finding into OG1. Only
@@ -1704,3 +1706,501 @@ split/merge checks remain green. Full-game funding, completions,
 household budget/tenure behavior, actual prices/parking use and historical
 availability still require calibration. No model/UI implementation or
 shipping approval is implied by this numerical draft.
+
+## 13. Monthly compute measurements
+
+Measured 2026-11-21 on this laptop: Intel Core i7-13650HX, 14 cores / 20 logical processors, Java 21.0.4, maximum heap 1536 MiB. This is a study-only Java prototype and a separate unmodified-game baseline using this study's existing compiled model snapshot (source base `a9bfcd070`). Full integration remains unimplemented. Times are elapsed milliseconds per simulated month; CPU demand is primarily on the calling thread.
+
+### Proposed aggregate kernels
+
+The fourteen candidate building recipes contain 32 form/dwelling offers. More detailed tests repeat those offers with cost/vintage bands. Household groups are synthetic active groups. Every row represents counts and money stocks; there are no per-person, per-home, per-building or per-loan identities. Static recipe/geometry results load once before timing; floor packing is offline work. A tower's floor count and number of homes are quantities and recipe attributes, not new monthly loop dimensions.
+
+| Aggregate detail | One quote + one allocation | 12 quotes + one allocation | One quote + 12 allocations |
+|---|---|---|---|
+| 180 groups × 32 offers | 0.864 ms | 6.002 ms | 2.785 ms |
+| 180 × 96 | 2.671 ms | 18.249 ms | 10.495 ms |
+| 540 × 96 | 7.825 ms | 54.685 ms | 29.182 ms |
+| 1,080 × 192 | 34.548 ms | 225.017 ms | 165.620 ms |
+
+Each complete prototype month includes aggregate mortgage payments/arrears, listings, parking, common-cost allocation, affordability demand and compatible household placement. The maximum-flow solver moves cohort quantities and can reassign earlier matches to fit more households. Its preference-ordered edges do not solve a globally optimal utility assignment. The greedy alternative is timed separately and can leave compatible households unplaced.
+
+### Component costs
+
+| Aggregate detail | Books, parking and fees | One quote | Ranked greedy placement | Maximum-flow placement | Books with uncached loan factors |
+|---|---|---|---|---|---|
+| 180 groups × 32 offers | 0.154 ms | 0.476 ms | 0.082 ms | 0.170 ms | 0.430 ms |
+| 180 × 96 | 0.549 ms | 1.397 ms | 0.341 ms | 0.682 ms | 1.172 ms |
+| 540 × 96 | 1.521 ms | 4.267 ms | 1.065 ms | 2.122 ms | 3.399 ms |
+| 1,080 × 192 | 6.161 ms | 16.962 ms | 5.599 ms | 11.494 ms | 13.369 ms |
+
+Components and complete months were timed independently, after warm-up, so their medians need not add exactly. Cache tests conservatively rebuild 8 × 360 annuity factors every month. An implementation could rebuild them only when rates change. The uncached alternative evaluates the annuity power for each bounded loan cohort.
+
+### Current game on the same laptop
+
+| Months measured | Population start → end | Household cells total / active at end | Median per month | 95th percentile | Mean |
+|---|---|---|---|---|---|
+| 65–125 | 568 → 863 | 141 / 60 | 25.799 ms | 61.611 ms | 30.117 ms |
+| 605–665 | 3,299 → 3,625 | 141 / 69 | 14.767 ms | 46.887 ms | 17.685 ms |
+| 1205–1265 | 12,390 → 17,092 | 141 / 98 | 39.162 ms | 69.814 ms | 44.066 ms |
+| 1805–1865 | 69,129 → 73,033 | 141 / 107 | 16.648 ms | 50.474 ms | 19.873 ms |
+
+One scratch city, seed 48213, present-day founding, explicit existing Earth/world files. `probePlay` prepares each age; 60 consecutive direct private `Game.nextMonth()` calls are then timed via one cached reflective method, with no new advisor orders during that window. This cadence changes the city's path from the earlier section 3 city probe. Reflection lookup, preparation, advisor decisions, reporting and LongPlaytest audit loops are outside each timed sample. Normal code inside the month remains included. This measures simulation stepping without GUI rendering. It is a bounded observation on this model snapshot and machine; population alone does not explain the nonmonotonic timings.
+
+### Estimated added work relative to the baseline
+
+| Current-game window | Current median | + 180 × 32 kernel | + 540 × 96 kernel | + 1,080 × 192 kernel |
+|---|---|---|---|---|
+| m65–125 | 25.799 ms | +3.3% | +30.3% | +133.9% |
+| m605–665 | 14.767 ms | +5.8% | +53.0% | +234.0% |
+| m1205–1265 | 39.162 ms | +2.2% | +20.0% | +88.2% |
+| m1805–1865 | 16.648 ms | +5.2% | +47.0% | +207.5% |
+
+These percentages divide a measured prototype median by a measured existing-game median. They estimate added work if that kernel were added once; they are not measurements of an integrated upgrade. They exclude replacing existing housing calculations, cataloguing effects in existing planners, new lifecycle transitions, snapshot/UI work and changes to the city's growth. Allocation/GC costs depend on the implementation; this prototype reuses primitive buffers. The final full-game slowdown still needs an integrated before/after run.
+
+### Population scaling and state size
+
+With 540 groups and 96 offers, multiplying represented household/home/loan quantities by 1,000 gave **7.964 ms** versus **7.825 ms** at the original quantities (ratio 1.018). That is about 40,000 versus 40 million represented homes with the same array dimensions. A count-scaling placement invariant also passes. The observed timing ratio includes measurement variability and any floating-point solver path differences.
+
+| Aggregate detail | Occupancy/ownership rows | Loan rows | Listing rows | Maximum household/offer pairs | Primitive array payload |
+|---|---|---|---|---|---|
+| 180 groups × 32 offers | 720 | 5,760 | 3,072 | 5,760 | 0.550 MiB |
+| 180 × 96 | 2,160 | 17,280 | 9,216 | 17,280 | 1.566 MiB |
+| 540 × 96 | 6,480 | 51,840 | 9,216 | 51,840 | 4.340 MiB |
+| 1,080 × 192 | 25,920 | 207,360 | 18,432 | 207,360 | 16.865 MiB |
+
+Memory figures count allocated primitive array payloads, including the preallocated flow workspace, and exclude array/object headers, catalogue references, JVM and current game. The synthetic row counts are workload choices, not a proposed final schema. In particular the largest case deliberately has many small fractional cohorts.
+
+The meaningful cost drivers are distinct household groups H, offer groups T, active occupancy rows A, bounded loan rows M, bounded listing rows L, and the number of demand/clearing passes. Quote work scans H × T. Bookkeeping scans A + M + L plus the small common-cost pools. Placement also constructs up to H × T compatibility edges, sorts T preferences per household group, then performs augmenting flow passes; adversarial matching graphs may cost more than these fixtures. The number of people represented by a group does not define an iteration count.
+
+Keep the catalogue and stock bands bounded, merge compatible cohorts, cache invariant factors, reuse work buffers, and use a bounded monthly quote/clearing cadence. A routine twelve full allocation solves every month has the measured cost shown above; the study has not selected it. Housing choice, sale-price formation, emergency crowding and integration rules still need calibration and final implementation choices.
+
+### Measurement and reproduction
+
+Each kernel warms for at least 0.5 seconds and a minimum call count; fifteen batches follow, with adaptive repeats. Ordinary cases have at least five repeats, the largest case two, and repeated-solve sensitivities at least one; exact counts are in the raw records. The raw `p95_batch_ms` is a percentile of batch averages, not an individual-month tail latency. Baseline percentiles use the 60 individual monthly samples. Checks pass for augmenting-path reassignment, placement count scaling, maximum flow at least greedy on the fixture, finite books, shared cash conservation and nonnegative parking. These checks validate the workload; they do not calibrate the housing economy.
+
+Only one measuring JVM ran in the coordinated laptop slot, with `-Xmx1536m`. Committed-memory checks were 47.9% before the 256 MiB compiler and 47.8% before the measuring JVM, below the 75% guard. The JVM exited 0 and the slot was released. No gate, ensemble or user save was run or changed. Hardware, background desktop activity, JVM warm-up and fixture choices limit portability of absolute timings.
+
+Source SHA-256: `39230acc2658f7bb3cc3d4cd18dcfe34a0d1d50b72be433730a0fec0320768c3`. Baseline Game.class SHA-256: `f16662e745f7ea7579eb574d8bb951aa7b6be459438403a1b446949cba43a9d2`. The exact executed source is provided beside this report as `HousingTimingProbe.java`, and section 13 of the study embeds it. Use the existing model base/classpath from section 11 and section 12's generated `catalogue-data.json`. Compile into `target/res1/classes`, prepend that directory to the existing runtime classpath, and run `ham.citybuildersim.HousingTimingProbe` with the JSON path. The optional second argument `kernels`, `model` or `pilot` selects a subset. The full command and raw records follow in the study.
+
+### Exact reproduction command
+
+```powershell
+# Save the executed Java below and section 12's generated JSON under target/res1.
+# Respect the coordinated local JVM slot as well as the section 11 memory guard.
+$cp = 'target/classes;' + (Get-Content target/classpath.txt -Raw).Trim()
+Assert-ProbeMemory
+javac -J-Xmx256m -cp $cp -d target/res1/classes target/res1/HousingTimingProbe.java
+if ($LASTEXITCODE -ne 0) { throw 'Timing probe compilation failed' }
+$runCp = 'target/res1/classes;' + $cp
+Assert-ProbeMemory
+java -Xmx1536m '-Dstdout.encoding=UTF-8' `
+  '-Dplaytest.founded=today' '-Dplaytest.pathSeed=48213' `
+  '-Dcbs.earth=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin' `
+  '-Dcbs.world=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/world-1.bin' `
+  -cp $runCp ham.citybuildersim.HousingTimingProbe target/res1/catalogue-data.json `
+  > target/res1/timing-full.txt 2>&1
+if ($LASTEXITCODE -ne 0) { throw 'Timing probe failed' }
+```
+
+### Executed timing source
+
+```java
+package ham.citybuildersim;
+
+import com.google.gson.*;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+/** Study-only timing kernels. Not an implemented housing model or calibration. */
+public class HousingTimingProbe {
+  static final PrintStream REPORT = System.out;
+  static final PrintStream QUIET = new PrintStream(OutputStream.nullOutputStream());
+  static volatile double sink;
+  static void row(String s, Object... x) { REPORT.printf(Locale.ROOT,"RES1TIME "+s+"%n",x); REPORT.flush(); }
+  static double median(double[] a) { double[] b=a.clone();Arrays.sort(b);return b[b.length/2]; }
+  static double percentile(double[] a,double p) { double[] b=a.clone();Arrays.sort(b);return b[Math.min(b.length-1,(int)Math.ceil(b.length*p)-1)]; }
+  static double cdf(double z) {
+    double a=Math.abs(z),t=1/(1+.2316419*a);
+    double q=.3989422804014327*Math.exp(-.5*a*a)*t*(.319381530+t*(-.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
+    return z>=0?1-q:q;
+  }
+  static double annuity(double rate,int months) {
+    if(months<=0)return 1;
+    double r=rate/12;
+    return r/(1-Math.pow(1+r,-months));
+  }
+  record Offer(double area,int beds,int capacity,double quality,double rent,double price,double fee,double parking,int included,int building,double weight,double sharedRatio,int sharedRight) {}
+  static Offer[] offers(Path file) throws Exception {
+    JsonObject doc=JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+    JsonObject units=doc.getAsJsonObject("unit_types");
+    List<Offer> found=new ArrayList<>();int bi=0;
+    for(JsonElement e:doc.getAsJsonArray("buildings")) {
+      JsonObject b=e.getAsJsonObject(),q=b.getAsJsonObject("quotes");
+      // `included` in report is a count; per-type rights are in original input map,
+      // so infer them from named large/penthouse variants for this timing fixture.
+      for(Map.Entry<String,JsonElement> kv:q.entrySet()) {
+        String key=kv.getKey();JsonObject quote=kv.getValue().getAsJsonObject();
+        JsonArray u=units.getAsJsonArray(key);
+        int sharedRight=(key.startsWith("P")||key.equals("L")&&b.get("included").getAsDouble()>0||b.get("code").getAsString().equals("C14"))?1:0;
+        int inc=(b.get("private").getAsInt()>0||sharedRight>0)?1:0;
+        found.add(new Offer(u.get(0).getAsDouble(),u.get(1).getAsInt(),u.get(2).getAsInt(),u.get(3).getAsDouble(),
+          quote.get("rent").getAsDouble(),quote.get("asset").getAsDouble(),b.get("fee_zero_park").getAsDouble(),
+          b.get("park_rent").getAsDouble(),inc,bi,quote.get("count").getAsDouble(),b.get("shared").getAsDouble()/b.get("N").getAsDouble(),sharedRight));
+      } bi++;
+    }
+    return found.toArray(Offer[]::new);
+  }
+
+  /** Double-capacity cohort flow, augmenting batches rather than residents. */
+  static final class Flow {
+    final int n; final int[] head,to,next,level,it,queue;final double[] cap;
+    int used;double eps;
+    Flow(int n,int edges) {
+      this.n=n;head=new int[n];to=new int[edges*2];next=new int[edges*2];cap=new double[edges*2];
+      level=new int[n];it=new int[n];queue=new int[n];clear(1e-9);
+    }
+    void clear(double e) { Arrays.fill(head,-1);used=0;eps=e; }
+    void edge(int a,int b,double c) {
+      to[used]=b;cap[used]=c;next[used]=head[a];head[a]=used++;
+      to[used]=a;cap[used]=0;next[used]=head[b];head[b]=used++;
+    }
+    boolean bfs(int s,int t) {
+      Arrays.fill(level,-1);int lo=0,hi=0;queue[hi++]=s;level[s]=0;
+      while(lo<hi) { int v=queue[lo++];for(int e=head[v];e>=0;e=next[e])
+        if(cap[e]>eps&&level[to[e]]<0){level[to[e]]=level[v]+1;queue[hi++]=to[e];}}
+      return level[t]>=0;
+    }
+    double dfs(int v,int t,double f) {
+      if(v==t)return f;
+      while(it[v]>=0){int e=it[v],w=to[e];
+        if(cap[e]>eps&&level[w]==level[v]+1){double sent=dfs(w,t,Math.min(f,cap[e]));
+          if(sent>eps){cap[e]-=sent;cap[e^1]+=sent;return sent;}}
+        it[v]=next[e];
+      }return 0;
+    }
+    double max(int s,int t){double total=0;while(bfs(s,t)){System.arraycopy(head,0,it,0,n);
+      for(double f;(f=dfs(s,t,Double.MAX_VALUE))>eps;)total+=f;}return total;}
+  }
+
+  static final class Kernel {
+    final int H,T,A,M,L;
+    final double scale;
+    final Offer[] base;
+    final double[] gross,budget,savings,need,targetArea,qualityWeight,gardenWeight;
+    final int[] heads,dependants;
+    final double[] price,rent,fee,park,area,quality,stock,available,demand,maxAfford,shapeUtility;
+    final int[] beds,capacity,rights;
+    final int[] aCell,aType,loanMonth,loanRate;
+    final double[] aCount,owned,loan,loanBase,loanCount,loanArrears;
+    final double[] listQty,listAsk;
+    final int pools;final int[] poolOf;final double[] pSupply,pIncluded,pWeight,pOwnedWeight,pExpense,pTariff,pDemand;
+    final double[][] factors=new double[8][361];
+    final long[] rank;
+    final Flow flow;
+    int month;
+    double checksum;
+    Kernel(int h,int t,double multiplier,Offer[] base) {
+      H=h;T=t;scale=multiplier;this.base=base;
+      gross=new double[H];budget=new double[H];savings=new double[H];need=new double[H];
+      targetArea=new double[H];qualityWeight=new double[H];gardenWeight=new double[H];heads=new int[H];dependants=new int[H];
+      price=new double[T];rent=new double[T];fee=new double[T];park=new double[T];area=new double[T];quality=new double[T];
+      stock=new double[T];available=new double[T];demand=new double[T];maxAfford=new double[T];beds=new int[T];capacity=new int[T];rights=new int[T];
+      shapeUtility=new double[H*T];rank=new long[T];
+      FamilyStructure[] shapes=FamilyStructure.values();PayTier[] tiers=PayTier.values();
+      for(int i=0;i<H;i++) {
+        FamilyStructure s=shapes[i%shapes.length];int tier=(i/shapes.length)%tiers.length;
+        heads[i]=s.size();dependants[i]=s.dependants();
+        gross[i]=tiers[tier].getTodaysWage()*1000*Math.max(.7,s.earners())*(.85+.05*(i%7));
+        budget[i]=gross[i]*(.28+.04*(i%5));savings[i]=gross[i]*(6+4*(i%17));
+        need[i]=40000.*multiplier/H*.07*(.8+.05*(i%9));
+        targetArea[i]=30+heads[i]*16;qualityWeight[i]=.15+.12*tier;gardenWeight[i]=.15*(i%3);
+      }
+      double weights=0;for(int j=0;j<T;j++)weights+=base[j%base.length].weight;
+      for(int j=0;j<T;j++) {
+        Offer o=base[j%base.length];int band=j/base.length;double vintage=1+.08*band;
+        area[j]=o.area;beds[j]=o.beds;capacity[j]=o.capacity;quality[j]=o.quality;rights[j]=o.included;
+        price[j]=o.price*vintage;rent[j]=o.rent*vintage;fee[j]=o.fee*vintage;park[j]=o.parking;
+        stock[j]=40000.*multiplier*o.weight/weights;available[j]=stock[j]*.07;
+        maxAfford[j]=annuity(.08,300)*.95*price[j]+price[j]*.015/12+.5*fee[j];
+      }
+      pools=14*((T+base.length-1)/base.length);poolOf=new int[T];
+      pSupply=new double[pools];pIncluded=new double[pools];pWeight=new double[pools];pOwnedWeight=new double[pools];
+      pExpense=new double[pools];pTariff=new double[pools];pDemand=new double[pools];
+      for(int j=0;j<T;j++){
+        Offer o=base[j%base.length];int p=o.building+14*(j/base.length);poolOf[j]=p;
+        pSupply[p]+=stock[j]*o.sharedRatio;pIncluded[p]+=stock[j]*o.sharedRight;
+        pWeight[p]+=stock[j]*area[j];pExpense[p]+=stock[j]*fee[j];pTariff[p]=park[j];
+      }
+      for(int i=0;i<H;i++)for(int j=0;j<T;j++) {
+        double roomPenalty=Math.max(0,(heads[i]+1)/2.-beds[j])*.1;
+        shapeUtility[i*T+j]=-Math.abs(Math.log(area[j]/targetArea[i]))+qualityWeight[i]*Math.log(quality[j])
+          +(base[j%base.length].building<5?gardenWeight[i]:0)-roomPenalty;
+      }
+      A=Math.max(1,H*T/8);aCell=new int[A];aType=new int[A];aCount=new double[A];owned=new double[A];
+      int[] occurrences=new int[T];
+      for(int k=0;k<A;k++){aCell[k]=(k*17)%H;aType[k]=(k*31)%T;occurrences[aType[k]]++;owned[k]=.25+.1*(k%6);}
+      for(int k=0;k<A;k++){
+        int j=aType[k];aCount[k]=stock[j]*.93/occurrences[j];
+        pOwnedWeight[poolOf[j]]+=aCount[k]*owned[k]*area[j];
+      }
+      M=A*8;loan=new double[M];loanBase=new double[M];loanCount=new double[M];loanArrears=new double[M];loanMonth=new int[M];loanRate=new int[M];
+      for(int k=0;k<M;k++){int a=k/8;loanCount[k]=aCount[a]*owned[a]/8;loanBase[k]=price[aType[a]]*.8*loanCount[k];loan[k]=loanBase[k];loanMonth[k]=60+k%301;loanRate[k]=k%8;loanArrears[k]=loanCount[k]*.001;}
+      L=T*8*4*3;listQty=new double[L];listAsk=new double[L];
+      for(int k=0;k<L;k++){listQty[k]=40000.*multiplier/L*.03;listAsk[k]=price[k%T]*(.8+.01*(k%31));}
+      refreshFactors();flow=new Flow(H+T+2,H*T+H+T+4);
+    }
+    void refreshFactors(){for(int r=0;r<8;r++)for(int m=1;m<=360;m++)factors[r][m]=annuity(.03+.005*r,m);}
+    void book(boolean uncached) {
+      month++;double x=0;
+      // Cache is conservatively refreshed every benchmark month.
+      refreshFactors();
+      for(int k=0;k<M;k++){
+        int m=loanMonth[k],r=loanRate[k];double rate=.03+.005*r;
+        double payment=loan[k]*(uncached?annuity(rate,m):factors[r][m]);
+        double interest=loan[k]*rate/12,principal=Math.min(loan[k],Math.max(0,payment-interest));
+        loan[k]-=principal;loanArrears[k]=loanArrears[k]*.98+loanCount[k]*.00002;
+        if(--loanMonth[k]<=0||loan[k]<.01*scale){loanMonth[k]=300;loan[k]=loanBase[k];}
+        x+=payment+principal+loan[k]*rate+loan[k]*loanMonth[k]+loanArrears[k];
+      }
+      // Aggregate listings retain ask/value quantities; no individual sales.
+      for(int k=0;k<L;k++){
+        listAsk[k]*=.99;
+        if(month%24==0)listAsk[k]=price[k%T]*(.8+.01*(k%31));
+        x+=listAsk[k]*listQty[k];
+      }
+      Arrays.fill(pDemand,0);
+      for(int k=0;k<A;k++){
+        int j=aType[k];double cars=aCount[k]*(.1+.1*(aCell[k]%6));
+        pDemand[poolOf[j]]+=Math.max(0,cars-aCount[k]*rights[j]);
+      }
+      for(int p=0;p<pools;p++){
+        double supply=pSupply[p],included=pIncluded[p];
+        double let=Math.min(Math.max(0,supply-included),pDemand[p]);
+        double vacant=supply-included-let;
+        if(vacant<-1e-7*scale)throw new AssertionError("negative bays");
+        double receipts=let*pTariff[p],expenses=pExpense[p];
+        double call=Math.max(0,expenses-receipts);
+        double hh=call*(pWeight[p]>0?pOwnedWeight[p]/pWeight[p]:0),re=call-hh;
+        double surplus=Math.max(0,receipts-expenses);
+        if(Math.abs(hh+re+receipts-expenses-surplus)>1e-5*scale)throw new AssertionError("common cash does not balance");
+        x+=hh+re+receipts+surplus+vacant;
+      }
+      for(int k=0;k<A;k++){
+        double charge=aCount[k]*fee[aType[k]];
+        x+=charge*owned[k]+charge*(1-owned[k]);
+      }
+      checksum=x;
+    }
+    void quote(int passes) {
+      double x=0;
+      for(int p=0;p<passes;p++){
+        Arrays.fill(demand,0);
+        for(int j=0;j<T;j++)available[j]=stock[j]*.07;
+        for(int i=0;i<H;i++) {
+          double logIncome=Math.log(gross[i]),logSavings=Math.log(savings[i]);
+          for(int j=0;j<T;j++) {
+            if(capacity[j]<heads[i]||(dependants[i]>0&&beds[j]==0))continue;
+            double required=(maxAfford[j]+gross[i]*.01)/.39;
+            double financeShare=(1-cdf((Math.log(required)-logIncome)/.35))
+              *(1-cdf((Math.log(.065*price[j])-logSavings)/1.5));
+            double rentShare=1-cdf(Math.log((rent[j]+(rights[j]>0?0:park[j]))/budget[i])/.35);
+            demand[j]+=need[i]*(.4*financeShare+.6*rentShare);
+          }
+        }
+        for(int j=0;j<T;j++){
+          double pressure=demand[j]/Math.max(.01*scale,available[j]);
+          double target=base[j%base.length].rent*(.8+.4*Math.min(3,pressure));
+          // Prototype quote formation only; no transaction is manufactured.
+          rent[j]+=(target-rent[j])/(12*passes);
+          x+=demand[j]+rent[j];
+        }
+      }
+      checksum+=x;
+    }
+    boolean eligible(int i,int j) {
+      if(capacity[j]<heads[i]||(dependants[i]>0&&beds[j]==0))return false;
+      boolean renting=rent[j]+(rights[j]>0?0:park[j])<=budget[i];
+      boolean buying=savings[i]>=price[j]*.065&&(maxAfford[j]+gross[i]*.01)/gross[i]<=.39;
+      return renting||buying;
+    }
+    void ranked(int i) {
+      for(int j=0;j<T;j++){
+        double utility=shapeUtility[i*T+j]-rent[j]/budget[i];
+        int score=(int)Math.rint(utility*1000000);
+        rank[j]=((long)(1000000000-score)<<32)|j;
+      }Arrays.sort(rank);
+    }
+    double greedy() {
+      for(int j=0;j<T;j++)available[j]=stock[j]*.07;
+      double total=0;int offset=month%H;
+      for(int k=0;k<H;k++){
+        int i=(k+offset)%H;ranked(i);double left=need[i];
+        for(long key:rank){int j=(int)key;if(!eligible(i,j))continue;
+          double q=Math.min(left,available[j]);available[j]-=q;left-=q;total+=q;if(left<1e-9*scale)break;}
+      }checksum+=total;return total;
+    }
+    double allocate() {
+      flow.clear(1e-9*scale);int source=H+T,sink=source+1;
+      for(int j=0;j<T;j++)flow.edge(H+j,sink,stock[j]*.07);
+      int offset=month%H;
+      for(int k=0;k<H;k++) {
+        int i=(k+offset)%H;flow.edge(source,i,need[i]);ranked(i);
+        // Reverse insertion retains preference order in linked adjacency.
+        for(int r=T-1;r>=0;r--){int j=(int)rank[r];if(eligible(i,j))flow.edge(i,H+j,need[i]);}
+      }
+      double sent=flow.max(source,sink);checksum+=sent;return sent;
+    }
+    void month(int pricePasses,int allocationPasses,boolean uncached) {
+      book(uncached);quote(pricePasses);
+      for(int p=0;p<allocationPasses;p++)allocate();
+      sink=checksum;
+    }
+    long primitiveBytes() {
+      // Payload only: excludes array headers, objects, base catalogue and JVM.
+      long doubles=7L*H+10L*T+(long)H*T+2L*A+4L*M+2L*L+7L*pools+8L*361;
+      long ints=2L*H+4L*T+2L*A+2L*M;
+      long flowEdges=(long)H*T+H+T+4;
+      return doubles*8+ints*4+8L*T+16L*(H+T+2)+32L*flowEdges;
+    }
+  }
+
+  interface Work { void run(); }
+  static void measure(String config,String part,Work w,int warm,int batches,int reps) {
+    long until=System.nanoTime()+500_000_000L;int warmRuns=0;
+    do{w.run();warmRuns++;}while(warmRuns<warm||System.nanoTime()<until);
+    long trial=System.nanoTime();w.run();long ns=Math.max(1,System.nanoTime()-trial);
+    reps=Math.max(reps,Math.min(64,(int)(5_000_000L/ns)));
+    double[] samples=new double[batches];
+    for(int b=0;b<batches;b++){
+      long t=System.nanoTime();for(int r=0;r<reps;r++)w.run();samples[b]=(System.nanoTime()-t)/1e6/reps;
+    }
+    row("kernel,%s,%s,median_ms=%.6f,p95_batch_ms=%.6f,reps=%d,batches=%d,checksum=%.4f",
+      config,part,median(samples),percentile(samples,.95),reps,batches,sink);
+  }
+  static void laws(Offer[] base) {
+    Flow g=new Flow(6,10);g.edge(4,0,1);g.edge(4,1,1);g.edge(0,2,1);g.edge(0,3,1);g.edge(1,2,1);g.edge(2,5,1);g.edge(3,5,1);
+    if(Math.abs(g.max(4,5)-2)>1e-9)throw new AssertionError("reassignment failed");
+    Kernel a=new Kernel(30,32,1,base),b=new Kernel(30,32,1000,base);
+    double x=a.allocate(),y=b.allocate();
+    if(Math.abs(y/1000-x)>1e-7)throw new AssertionError("count scaling changed placement");
+    double greedy=a.greedy();if(x+1e-7<greedy)throw new AssertionError("max flow below greedy");
+    a.book(false);b.book(false);
+    if(!Double.isFinite(a.checksum)||!Double.isFinite(b.checksum))throw new AssertionError("nonfinite books");
+    row("laws,augmenting-path=pass,scale-1000=pass,max>=greedy=pass,finite-books=pass,offers=%d",base.length);
+  }
+  static void kernels(Offer[] base,boolean pilot) {
+    laws(base);
+    int[][] configs=pilot?new int[][]{{180,32}}:new int[][]{{180,32},{180,96},{540,96},{1080,192}};
+    for(int[] c:configs){
+      Kernel k=new Kernel(c[0],c[1],1,base);String label="H"+c[0]+"_T"+c[1];
+      row("dimensions,%s,assignment_rows=%d,loan_rows=%d,listing_rows=%d,max_graph_pairs=%d,primitive_payload_mib=%.3f",label,k.A,k.M,k.L,k.H*k.T,k.primitiveBytes()/1048576.);
+      int warm=c[0]>540?20:60,reps=c[0]>540?2:5,batches=15;
+      measure(label,"bookkeeping_cached",()->{k.book(false);sink=k.checksum;},warm,batches,reps);
+      measure(label,"bookkeeping_uncached",()->{k.book(true);sink=k.checksum;},warm,batches,reps);
+      measure(label,"quote_1",()->{k.quote(1);sink=k.checksum;},warm,batches,reps);
+      measure(label,"greedy_allocation",()->{k.greedy();sink=k.checksum;},warm,batches,reps);
+      measure(label,"maxflow_allocation",()->{k.allocate();sink=k.checksum;},warm,batches,reps);
+      measure(label,"month_1quote_1flow",()->k.month(1,1,false),warm,batches,reps);
+      measure(label,"month_12quote_1flow",()->k.month(12,1,false),Math.min(warm,20),batches,1);
+      measure(label,"month_1quote_12flow",()->k.month(1,12,false),Math.min(warm,20),batches,1);
+      if(c[0]==540){
+        Kernel bigger=new Kernel(c[0],c[1],1000,base);
+        measure(label+"_1000x_people","month_1quote_1flow",()->bigger.month(1,1,false),warm,batches,reps);
+      }
+    }
+  }
+  static void model() throws Exception {
+    System.setOut(QUIET);
+    try {
+      // Cache the private month entry point once; do not include harness audits.
+      java.lang.reflect.Method step=Game.class.getDeclaredMethod("nextMonth");
+      step.setAccessible(true);
+      long setup=System.nanoTime();Game g=LongPlaytest.probeCity(GameFiles.scratch("res1-timing"),null);
+      row("model_setup,ms=%.3f",(System.nanoTime()-setup)/1e6);
+      for(int target:new int[]{60,600,1200,1800}){
+        row("model_prepare,target=%d",target);
+        long prep=System.nanoTime();LongPlaytest.probePlay(g,target);
+        row("model_prepared,month=%d,pop=%d,prepare_ms=%.3f",g.getMonth(),g.getPopulationManager().getPopulation(),(System.nanoTime()-prep)/1e6);
+        int start=g.getMonth();long popStart=g.getPopulationManager().getPopulation();
+        double[] samples=new double[60];
+        for(int m=0;m<samples.length;m++){
+          int before=g.getMonth();long t=System.nanoTime();step.invoke(g);samples[m]=(System.nanoTime()-t)/1e6;
+          if(g.getMonth()!=before+1)throw new AssertionError("not one month");
+        }
+        int active=0;for(Household h:g.getHouseholdBalance().cells())if(h.households()>=.5)active++;
+        double sum=0;for(double x:samples)sum+=x;
+        row("model_months,from=%d,to=%d,pop_start=%d,pop_end=%d,cells=%d,active_cells=%d,median_ms=%.6f,p95_ms=%.6f,mean_ms=%.6f",
+          start,g.getMonth(),popStart,g.getPopulationManager().getPopulation(),g.getHouseholdBalance().cellCount(),active,
+          median(samples),percentile(samples,.95),sum/samples.length);
+      }
+    }finally{System.setOut(REPORT);}
+  }
+  public static void main(String[] args)throws Exception {
+    Locale.setDefault(Locale.ROOT);
+    row("environment,java=%s,processors=%d,max_heap_mb=%d",System.getProperty("java.version"),Runtime.getRuntime().availableProcessors(),Runtime.getRuntime().maxMemory()/1048576);
+    Offer[] o=offers(Path.of(args[0]));
+    if(args.length>1&&args[1].equals("pilot")){kernels(o,true);return;}
+    if(args.length>1&&args[1].equals("kernels")){kernels(o,false);return;}
+    if(args.length>1&&args[1].equals("model")){model();return;}
+    model();kernels(o,false);
+  }
+}
+```
+
+### Raw timing records
+
+```text
+RES1TIME environment,java=21.0.4,processors=20,max_heap_mb=1536
+RES1TIME model_setup,ms=2912.628
+RES1TIME model_prepare,target=60
+RES1TIME model_prepared,month=65,pop=568,prepare_ms=2301.744
+RES1TIME model_months,from=65,to=125,pop_start=568,pop_end=863,cells=141,active_cells=60,median_ms=25.798600,p95_ms=61.611300,mean_ms=30.116760
+RES1TIME model_prepare,target=600
+RES1TIME model_prepared,month=605,pop=3299,prepare_ms=11406.911
+RES1TIME model_months,from=605,to=665,pop_start=3299,pop_end=3625,cells=141,active_cells=69,median_ms=14.766900,p95_ms=46.887100,mean_ms=17.685090
+RES1TIME model_prepare,target=1200
+RES1TIME model_prepared,month=1205,pop=12390,prepare_ms=23469.523
+RES1TIME model_months,from=1205,to=1265,pop_start=12390,pop_end=17092,cells=141,active_cells=98,median_ms=39.161700,p95_ms=69.813800,mean_ms=44.065527
+RES1TIME model_prepare,target=1800
+RES1TIME model_prepared,month=1805,pop=69129,prepare_ms=13444.445
+RES1TIME model_months,from=1805,to=1865,pop_start=69129,pop_end=73033,cells=141,active_cells=107,median_ms=16.647600,p95_ms=50.473700,mean_ms=19.873077
+RES1TIME laws,augmenting-path=pass,scale-1000=pass,max>=greedy=pass,finite-books=pass,offers=32
+RES1TIME dimensions,H180_T32,assignment_rows=720,loan_rows=5760,listing_rows=3072,max_graph_pairs=5760,primitive_payload_mib=0.550
+RES1TIME kernel,H180_T32,bookkeeping_cached,median_ms=0.153697,p95_batch_ms=0.192419,reps=32,batches=15,checksum=740293571341.1083
+RES1TIME kernel,H180_T32,bookkeeping_uncached,median_ms=0.430257,p95_batch_ms=0.528100,reps=7,batches=15,checksum=657917353710.9127
+RES1TIME kernel,H180_T32,quote_1,median_ms=0.475620,p95_batch_ms=0.583340,reps=10,batches=15,checksum=658186877684.7115
+RES1TIME kernel,H180_T32,greedy_allocation,median_ms=0.081536,p95_batch_ms=0.098898,reps=61,batches=15,checksum=658198385035.1804
+RES1TIME kernel,H180_T32,maxflow_allocation,median_ms=0.169750,p95_batch_ms=0.190563,reps=30,batches=15,checksum=658204501425.1804
+RES1TIME kernel,H180_T32,month_1quote_1flow,median_ms=0.863680,p95_batch_ms=0.914920,reps=5,batches=15,checksum=649462827447.6594
+RES1TIME kernel,H180_T32,month_12quote_1flow,median_ms=6.001700,p95_batch_ms=6.139700,reps=1,batches=15,checksum=739364308990.8839
+RES1TIME kernel,H180_T32,month_1quote_12flow,median_ms=2.784600,p95_batch_ms=4.126800,reps=1,batches=15,checksum=656163488089.0846
+RES1TIME dimensions,H180_T96,assignment_rows=2160,loan_rows=17280,listing_rows=9216,max_graph_pairs=17280,primitive_payload_mib=1.566
+RES1TIME kernel,H180_T96,bookkeeping_cached,median_ms=0.548856,p95_batch_ms=0.607622,reps=9,batches=15,checksum=767636189573.1501
+RES1TIME kernel,H180_T96,bookkeeping_uncached,median_ms=1.171960,p95_batch_ms=1.303980,reps=5,batches=15,checksum=752531319655.4059
+RES1TIME kernel,H180_T96,quote_1,median_ms=1.396880,p95_batch_ms=1.492560,reps=5,batches=15,checksum=752847509187.7660
+RES1TIME kernel,H180_T96,greedy_allocation,median_ms=0.340515,p95_batch_ms=0.464985,reps=13,batches=15,checksum=752850057374.4935
+RES1TIME kernel,H180_T96,maxflow_allocation,median_ms=0.682286,p95_batch_ms=0.712943,reps=7,batches=15,checksum=752851611080.5697
+RES1TIME kernel,H180_T96,month_1quote_1flow,median_ms=2.670920,p95_batch_ms=2.760960,reps=5,batches=15,checksum=755913562942.3379
+RES1TIME kernel,H180_T96,month_12quote_1flow,median_ms=18.249200,p95_batch_ms=19.211600,reps=1,batches=15,checksum=753826038515.4965
+RES1TIME kernel,H180_T96,month_1quote_12flow,median_ms=10.495100,p95_batch_ms=11.025700,reps=1,batches=15,checksum=760772244485.8936
+RES1TIME dimensions,H540_T96,assignment_rows=6480,loan_rows=51840,listing_rows=9216,max_graph_pairs=51840,primitive_payload_mib=4.340
+RES1TIME kernel,H540_T96,bookkeeping_cached,median_ms=1.521080,p95_batch_ms=1.593520,reps=5,batches=15,checksum=764601324441.6531
+RES1TIME kernel,H540_T96,bookkeeping_uncached,median_ms=3.398920,p95_batch_ms=3.483440,reps=5,batches=15,checksum=752569844172.4229
+RES1TIME kernel,H540_T96,quote_1,median_ms=4.267120,p95_batch_ms=4.589340,reps=5,batches=15,checksum=752712045356.1465
+RES1TIME kernel,H540_T96,greedy_allocation,median_ms=1.065100,p95_batch_ms=1.251100,reps=5,batches=15,checksum=752712918424.8147
+RES1TIME kernel,H540_T96,maxflow_allocation,median_ms=2.121980,p95_batch_ms=2.500900,reps=5,batches=15,checksum=752713530954.3605
+RES1TIME kernel,H540_T96,month_1quote_1flow,median_ms=7.825240,p95_batch_ms=8.103820,reps=5,batches=15,checksum=767185184558.4446
+RES1TIME kernel,H540_T96,month_12quote_1flow,median_ms=54.684900,p95_batch_ms=64.358100,reps=1,batches=15,checksum=764092545231.2056
+RES1TIME kernel,H540_T96,month_1quote_12flow,median_ms=29.181900,p95_batch_ms=30.794900,reps=1,batches=15,checksum=759241634860.9198
+RES1TIME kernel,H540_T96_1000x_people,month_1quote_1flow,median_ms=7.963820,p95_batch_ms=8.230340,reps=5,batches=15,checksum=771276242358698.0000
+RES1TIME dimensions,H1080_T192,assignment_rows=25920,loan_rows=207360,listing_rows=18432,max_graph_pairs=207360,primitive_payload_mib=16.865
+RES1TIME kernel,H1080_T192,bookkeeping_cached,median_ms=6.161100,p95_batch_ms=6.836400,reps=2,batches=15,checksum=867739832760.2122
+RES1TIME kernel,H1080_T192,bookkeeping_uncached,median_ms=13.368550,p95_batch_ms=14.496350,reps=2,batches=15,checksum=843466072090.2056
+RES1TIME kernel,H1080_T192,quote_1,median_ms=16.961550,p95_batch_ms=18.134700,reps=2,batches=15,checksum=843552190346.5793
+RES1TIME kernel,H1080_T192,greedy_allocation,median_ms=5.598950,p95_batch_ms=6.428400,reps=2,batches=15,checksum=843552383280.4136
+RES1TIME kernel,H1080_T192,maxflow_allocation,median_ms=11.493550,p95_batch_ms=12.901700,reps=2,batches=15,checksum=843552532925.9536
+RES1TIME kernel,H1080_T192,month_1quote_1flow,median_ms=34.548000,p95_batch_ms=42.030400,reps=2,batches=15,checksum=840637279332.2778
+RES1TIME kernel,H1080_T192,month_12quote_1flow,median_ms=225.017000,p95_batch_ms=229.329200,reps=1,batches=15,checksum=841413694537.0369
+RES1TIME kernel,H1080_T192,month_1quote_12flow,median_ms=165.620500,p95_batch_ms=172.277900,reps=1,batches=15,checksum=842192170701.3174
+```
