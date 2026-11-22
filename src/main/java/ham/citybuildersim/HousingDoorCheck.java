@@ -106,6 +106,7 @@ public final class HousingDoorCheck {
         long[][] sizes = new long[1][];
         double[] worstUnplaced = { 0 };
         int[] worstMonth = { -1 };
+        String[] worstHousing = { "" };
         long[] finished = new long[16];
         // HL1: the same played path must close the households' cash books, including accepted trimmed orders.
         int[] householdMonths = { 0, 0 };
@@ -135,7 +136,7 @@ public final class HousingDoorCheck {
                 sizes[0] = now;
                 if (m <= FROM) { pending = null; return; }
                 double still = g.getFamilies().getStillUnplaced();
-                if (still > worstUnplaced[0]) { worstUnplaced[0] = still; worstMonth[0] = m; }
+                if (still > worstUnplaced[0]) { worstUnplaced[0] = still; worstMonth[0] = m; worstHousing[0]=housingSnapshot(g); }
                 if (pending != null) {
                     pending.month = m;
                     pending.line = g.getLastInvestment(RE);
@@ -247,6 +248,7 @@ public final class HousingDoorCheck {
         }
         out.printf("   homes finished in months %d-%d:%s%n", FROM + 1, TO, by.length() > 0 ? by.toString() : " none");
         out.printf(Locale.ROOT, "   the most households with no door: %.3f (month %d)%n", worstUnplaced[0], worstMonth[0]);
+        if(worstUnplaced[0]>1)out.print(worstHousing[0]);
         check("no month of the window leaves more than one household with no door (LongPlaytest's watch)",
                 worstUnplaced[0] <= 1);
 
@@ -300,6 +302,18 @@ public final class HousingDoorCheck {
         if (line == null || !line.startsWith("Built ")) return 0;
         String n = line.substring(6, line.indexOf(' ', 6)).replace(",", "");
         try { return Long.parseLong(n); } catch (NumberFormatException e) { return 0; }
+    }
+
+    /** A failed played finding keeps the actual budgets, occupancy and posted rents that caused it. */
+    private static String housingSnapshot(Game g){
+        var market=g.getSectors().realEstate().housingMarket();var result=market.result();
+        StringBuilder text=new StringBuilder(String.format(Locale.ROOT,"   typed result kept %.3f normal %.3f emergency %.3f poor %.3f shortage %.3f; %s%n",result.kept(),result.suitable(),result.crowded(),result.unaffordable(),result.noSuitable(),g.getLastInvestment(RE)));
+        for(var d:market.demands()){
+            double taken=market.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            if(d.count()-taken>1)text.append(String.format(Locale.ROOT,"     %s: %.3f missing of %.3f, budget %.6f, size %d children %d%n",d.key(),d.count()-taken,d.count(),d.budget(),d.size(),d.children()));
+        }
+        for(var c:market.classes())if(c.homes>0)text.append(String.format(Locale.ROOT,"     class %d/%s: %.3f doors, %.3f occupied, ask %.6f, carry %.6f%n",c.recipe,c.dwelling,c.homes,c.occupied,c.ask,c.carry));
+        return text.toString();
     }
 
     /* =====================================================================

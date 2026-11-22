@@ -45,8 +45,11 @@ public final class HousingChoice {
                 throw new IllegalArgumentException("Invalid housing offer");
         }
     }
-    public record Lease(String cell, HousingInventory.Key home, double count, double bill) {
-        public Lease { quantity(count);quantity(bill);if(cell==null||cell.isBlank()||home==null)throw new IllegalArgumentException("Invalid lease"); }
+    /** count is occupied door-equivalents; households also counts the second household in a doubled home. */
+    public record Lease(String cell, HousingInventory.Key home, double count, double bill, double households) {
+        public Lease(String cell,HousingInventory.Key home,double count,double bill){this(cell,home,count,bill,count);}
+        public Lease { quantity(count);quantity(bill);quantity(households);
+            if(cell==null||cell.isBlank()||home==null||households<count||households>2*count+FamilyModel.packingRounding(households))throw new IllegalArgumentException("Invalid lease"); }
     }
     public record Result(List<Lease> leases, double kept, double suitable, double crowded,
                          double unaffordable, double noSuitable, double unplaced) { }
@@ -79,7 +82,7 @@ public final class HousingChoice {
         for(int j=0;j<t;j++){ oi.put(os.get(j).key(),j);free[j]=os.get(j).count(); }
         // Retained demand shrinks with its cell, then each depleted class is rationed pro rata.
         for(Lease l:incumbents){ Integer i=di.get(l.cell()),j=oi.get(l.home());
-            if(i!=null&&j!=null&&suitable(ds.get(i),os.get(j),false)&&affordable(ds.get(i),os.get(j))) x[i][j]+=l.count(); }
+            if(i!=null&&j!=null&&l.households()==l.count()&&suitable(ds.get(i),os.get(j),false)&&affordable(ds.get(i),os.get(j))) x[i][j]+=l.count(); }
         for(int i=0;i<h;i++){double sum=Arrays.stream(x[i]).sum();if(sum>need[i])for(int j=0;j<t;j++)x[i][j]*=need[i]/sum;}
         double kept=0;
         for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];double ratio=sum>free[j]?free[j]/sum:1;
@@ -116,7 +119,7 @@ public final class HousingChoice {
                                    Map<String,Double> remainingBudgets){
         Map<HousingInventory.Key,Double> used=new HashMap<>();for(var l:leases)used.merge(l.home(),l.count(),Double::sum);
         double poor=0,shortage=0,left=0;
-        for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(Lease::count).sum();
+        for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(Lease::households).sum();
             double missing=Math.max(0,d.count()-taken);if(missing<=FamilyModel.packingRounding(d.count()))continue;
             Demand budget=new Demand(d.key(),d.count(),d.size(),d.children(),d.retired(),d.tier(),d.young(),remainingBudgets.getOrDefault(d.key(),d.budget()));
             boolean compatible=false,affordable=false;

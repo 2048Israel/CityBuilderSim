@@ -980,13 +980,17 @@ public class BusinessInvestment {
                 return Decision.no(key, String.format("%d months of operating losses its lender covered: one %s every %d months of them",
                         opLosses, worst.getName(), every));
             }
-            return new Decision(key, worst, Math.max(1, mostHeld / BLEED_MONTHS),
+            long quantity=sector.limitSpareRetirement(worst,Math.max(1,mostHeld/BLEED_MONTHS),0);
+            if(quantity<=0)return Decision.no(key,sector.noRetirementReason(true));
+            return new Decision(key, worst, quantity,
                     String.format("%d months of operating losses its lender covered", opLosses),
                     true);
         }
 
         long quantity = Math.min(mostHeld,
                 Math.max(1, (long) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));
+        quantity=sector.limitSpareRetirement(worst,quantity,0);
+        if(quantity<=0)return Decision.no(key,sector.noRetirementReason(true));
 
         return new Decision(key, worst, quantity,
                 String.format("%d months of losses, %s overdrawn and no lender", losses, Currency.writing().write(String.format("%,.0fk", -cash))),

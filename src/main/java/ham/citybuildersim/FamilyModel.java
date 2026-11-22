@@ -1721,11 +1721,16 @@ public class FamilyModel implements HouseholdBalance.Census {
         for(Household c:cells)byKey.put(c.key(),c);
         java.util.Arrays.fill(unplacedByShape,0);java.util.Arrays.fill(seekersUnplaced,0);
         java.util.Arrays.fill(seekersUnplacedHomes,0);
+        doubledUp=0;java.util.Arrays.fill(seekersDoubled,0);
         for(var d:demand){
-            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double left=Math.max(0,d.count()-placed);boolean sharing=d.key().endsWith("#sharing");
             Household c=byKey.get(sharing?d.key().substring(0,d.key().length()-8):d.key());
             if(c==null)continue;
+            double guests=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(l->l.households()-l.count()).sum();
+            if(c instanceof StudentHousehold)seekersDoubled[Seeker.STUDENT.ordinal()]+=guests*(sharing?5:1);
+            else if(c instanceof UnemployedHousehold)seekersDoubled[Seeker.UNEMPLOYED.ordinal()]+=guests*(sharing?5:1);
+            else doubledUp+=guests;
             if(c instanceof StudentHousehold){seekersUnplaced[Seeker.STUDENT.ordinal()]+=left*(sharing?5:1);seekersUnplacedHomes[Seeker.STUDENT.ordinal()]+=left;}
             else if(c instanceof UnemployedHousehold){seekersUnplaced[Seeker.UNEMPLOYED.ordinal()]+=left*(sharing?5:1);seekersUnplacedHomes[Seeker.UNEMPLOYED.ordinal()]+=left;}
             else if(c.shape()!=null)unplacedByShape[c.shape().ordinal()]+=left;
@@ -1741,10 +1746,14 @@ public class FamilyModel implements HouseholdBalance.Census {
         for(var stock:inventory.stock())if(stock.dwelling().capacity()<=STUDIO_MAX_SIZE)
             compactFree+=inventory.vacant(stock.key(),HousingInventory.Owner.REAL_ESTATE);
         for(var d:demand)if(d.children()>0){
-            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             refusedByStudio+=Math.min(compactFree,Math.max(0,d.count()-placed));
         }
-        noteUnplaced(result.unplaced());
+        // These guests already have actual doors and divided bills. The legacy
+        // noteUnplaced valve would infer another, unfunded round of doubling.
+        stillUnplaced=result.unplaced();
+        System.arraycopy(unplacedByShape,0,unhousedByShape,0,unplacedByShape.length);
+        System.arraycopy(seekersUnplaced,0,seekersUnhoused,0,seekersUnplaced.length);
     }
 
     private void bill(int unitSize, double homes) {

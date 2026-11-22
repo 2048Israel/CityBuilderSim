@@ -27,6 +27,7 @@ public final class HousingMarketCheck {
         var market=g.getSectors().realEstate().housingMarket();
         check("exactly fourteen form recipes",HousingForms.ALL.size()==14);
         check("exactly thirty-two comparable class quotes",market.classes().size()==HousingRecipe.MAX_CLASSES);
+        check("retired dependants are not misclassified as children",market.demands().stream().filter(HousingChoice.Demand::retired).allMatch(d->d.children()==0));
         for(var f:HousingForms.ALL){
             double privateBays=f.recipe().mix().stream().mapToDouble(d->d.count()*d.privateParking()).sum();
             double surface=f.basementLevels()>0?0:f.recipe().sharedParking();
@@ -122,6 +123,43 @@ public final class HousingMarketCheck {
             }
         }
     }
+    static void doubledDoors(){
+        out.println("--- actual doubled doors and divided rent, including a vacant affordable pair ---");
+        Game g=new Game(GameFiles.scratch("res3-doubled-doors"));g.run();
+        double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
+        g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
+        double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;g.getFamilies().rebuild(g.getCohorts(),jobs);
+        var c=g.getHouseholdBalance().cells().stream().filter(h->h instanceof WorkingHousehold w&&w.shape()==FamilyStructure.COUPLE
+                &&g.getFamilies().get(w.shape(),w.tier(),w.stage())>0).map(h->(WorkingHousehold)h).findFirst().orElseThrow();
+        var bm=g.getBuildingManager();var t=bm.getTemplate(0);bm.addStack(t,100,true);
+        double structure=g.quoteBuild(t,1).total,full=g.doorPriceOf(t,1);
+        double ask=HousingForms.of(0).homeCapital(t.getHousingRecipe().mix().getFirst().id(),structure,full-structure)*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
+        double count=g.getFamilies().get(c.shape(),c.tier(),c.stage());
+        var d=new HousingChoice.Demand(c.key(),count,c.size(),c.shape().dependants(),false,c.tier().ordinal(),c.stage()==AdultStage.YOUNG,ask*.75);
+        var market=g.getSectors().realEstate().housingMarket();var result=market.clear(g,List.of(d));
+        near("full rent is unaffordable, two actual households fund one door",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),count);
+        near("doubled households occupy half as many real doors",market.occupied(),count/2);
+        near("each doubled door earns one rent, not two",market.receipts(),count*ask/2);
+        near("actual doubled placements leave no fictional unplaced residual",result.unplaced(),0);
+        g.getFamilies().acceptTypedHousing(market.demands(),result,g.getHouseholdBalance().cells(),bm.getHousingInventory());
+        near("the existing crowding reader sees actual guest equivalents",g.getFamilies().getDoubledUpFamilies(),count/2);
+        near("the existing unplaced reader sees the actual allocation",g.getFamilies().getStillUnplaced(),0);
+        long spare=g.getSectors().realEstate().limitSpareRetirement(t,100,0);
+        check("a multi-structure retirement cannot cut into typed occupied doors",spare<=100-market.occupied()&&spare>0);
+        var copy=new HousingMarket();copy.restore(JSON.fromJson(JSON.toJson(market.forSave()),HousingMarket.State.class));
+        check("doubled door and household quantities round-trip",JSON.toJson(copy.forSave()).equals(JSON.toJson(market.forSave())));
+    }
+    static void studentFacility(){
+        HouseholdBalance balances=new HouseholdBalance();FamilyModel families=new FamilyModel();HouseholdAccounts accounts=new HouseholdAccounts();
+        balances.setOutsideCensus(c->c instanceof StudentHousehold?1:0);
+        var student=balances.cells().stream().filter(c->c instanceof StudentHousehold).findFirst().orElseThrow();
+        student.studentLoansOpen=false;
+        double shut=balances.strikeHousingBudgets(families,accounts,1,c->0).get(student.key()).budget();
+        student.studentLoansOpen=true;
+        double open=balances.strikeHousingBudgets(families,accounts,1,c->0).get(student.key()).budget();
+        check("student housing counts only the existing open treasury facility",open>shut&&open-shut==student.planningRoom());
+        near("quoting a funded student budget itself borrows nothing",student.studentDebt(),0);
+    }
     static void writeReport(StringBuilder report,Game g,String label,Map<Integer,Long> starts,Map<Integer,Long> completions,int months,double ms){
         var market=g.getSectors().realEstate().housingMarket();var bm=g.getBuildingManager();var em=g.getEconomyManager();
         report.append("\n## ").append(label).append("\n\nIntegrated month: ").append(String.format(Locale.ROOT,"%.3f",ms)).append(" ms. H/T/A/M/L = ")
@@ -142,8 +180,12 @@ public final class HousingMarketCheck {
             report.append(String.format(Locale.ROOT,"| %s / %s | %.0f / %d / %d / %.2f | %.2f / %.2f | %.6f | %.4f | %s | %.3f / %.3f | %.3f / %.6f / %.6f / %d |%n",f.code(),d.id(),d.area(),d.bedrooms(),d.capacity(),d.quality(),d.privateParking(),d.includedParking(),c.ask,gross>0?c.ask/gross:0,net>0?String.format(Locale.ROOT,"%.4f",c.ask/net):"no take-home",c.homes,c.homes-c.occupied,c.tradeQuantity,c.tradeValue,c.lastTrade,c.stale));}
         report.append("\n| Form | Floorplate ft² | Shared bays | Basement levels / footprint ft² |\n|---|---:|---:|---|\n");
         for(var f:HousingForms.ALL)report.append(String.format(Locale.ROOT,"| %s | %.1f | %.0f | %d / %.0f |%n",f.code(),f.footprint(),f.recipe().sharedParking(),f.basementLevels(),f.basementFootprint()));
-        report.append("\n| Form / class | Allocated home capital | 0.058 gross cost-return comparator / month |\n|---|---:|---:|\n");
-        for(var c:market.classes())report.append(String.format(Locale.ROOT,"| %d / %s | %.6f | %.6f |%n",c.recipe,c.dwelling,c.capital,c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12));
+        report.append("\nReference home capital is section 12's present-day benchmark dollars, before the game's live price, tax and construction quote. Its 0.058 monthly comparator is also benchmark dollars; actual allocated capital and its comparator are current model thousands.\n\n| Form / class | Reference home capital / monthly comparator | Actual allocated capital / monthly comparator |\n|---|---:|---:|\n");
+        for(var f:HousingForms.ALL)for(var d:f.recipe().mix()){
+            var c=market.classes().stream().filter(s->s.recipe==f.id()&&s.dwelling.equals(d.id())).findFirst().orElseThrow();
+            report.append(String.format(Locale.ROOT,"| %s / %s | %.2f / %.2f | %.6f / %.6f |%n",f.code(),d.id(),d.costWeight(),d.costWeight()*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12,c.capital,c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12));
+        }
+        report.append(String.format(Locale.ROOT,"%nActual accepted occupied rent this month: %.6f; last settled class trade value total: %.6f; vacant RE doors: %.3f.%n",market.receipts(),market.classes().stream().mapToDouble(c->c.tradeValue).sum(),market.classes().stream().mapToDouble(c->c.homes-c.occupied).sum()));
     }
     static void city(StringBuilder report,boolean historical)throws Exception{
         String label=historical?"Historical founding (1900)":"Present-day equipment founding";
@@ -175,6 +217,7 @@ public final class HousingMarketCheck {
         for(var f:HousingForms.ALL){var t=bm.getTemplate(f.id());var s=bm.getStack(t);
             long before=s==null?0:s.getUnderConstruction();LongPlaytest.build(g,t.getName(),1);
             s=bm.getStack(t);starts.put(f.id(),(s==null?0:s.getUnderConstruction())-before);
+            check("catalogue order follows actual availability "+f.code(),starts.get(f.id())==(bm.isTemplateKnown(t)?1:0));
             if(historical&&f.since()>1900)check("modern form unavailable in 1900 "+f.code(),starts.get(f.id())==0&&!t.knownAt(g.getMonth(),g.getResearch()));
         }
         double ms=0;
@@ -206,8 +249,8 @@ public final class HousingMarketCheck {
     }
     public static void main(String[] args)throws Exception{
         out=System.out;PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
-        StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n");
-        try{System.setOut(silent);classPrices();sharingOrder();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
+        StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
+        try{System.setOut(silent);classPrices();sharingOrder();doubledDoors();studentFacility();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
         out.println("Report: "+target);out.println(fails==0?"HousingMarketCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }

@@ -124,3 +124,41 @@ work and settlement use the paid builder path. All fourteen present-day orders
 and all historically available orders complete through actual work, and both
 cities close the monthly money identities and native continuation exactly.
 Final focused checks and the committed report follow.
+
+HousingDoorCheck's first typed run found a real omission: 1,081.827 households
+were still unplaced at month 703. Smaller-home crowding was present, but the
+original two-households-to-a-door emergency valve was absent. Worse, the legacy
+noteUnplaced projection still inferred guests without actual class assignments.
+The finding and its threshold remain intact; it now retains actual budgets and
+class occupancy at the worst month when it fails.
+
+★ A lease now carries both household quantity and occupied door-equivalents.
+Normal placements and valid incumbents precede emergency sharing and doubling.
+Doubling joins one guest to a real occupied door or funds two households in a
+vacant door, with half of the one rent charged to each. Existing hosts' bills
+fall by the corresponding share. Seekers keep their own-kind rule; the emergency
+groups rotate access to shared vacancies. Equal class/cell nodes still coalesce.
+No additional permanent preference or identity axis is introduced. The actual
+allocation, rather than the legacy inferred valve, sets the crowding, unplaced
+and reason readers. Separate household/door quantities and bills are saved and
+validated together. HousingMarketCheck causes an otherwise unaffordable pair,
+proves one physical door and one rent, and round-trips those quantities.
+
+★ Retirement quantities are bounded by vacant RE titles in every class of the
+actual mix, including the distress path. The existing spare-retirement hook is
+also consulted for distress with a zero keep floor; other sectors retain their
+existing result (Freight's zero floor permits the requested quantity). This
+protects incumbents when a multi-structure order follows the one-structure
+eligibility test. The caused double-door fixture asserts that cap.
+
+The repeated lender run's retained inputs found two further real integration
+errors. FamilyStructure.dependants includes retired adults; treating it as a
+child count barred retired singles from compact homes. Retired shapes now have
+zero children, while working and outside dependants retain the adults-only rule.
+The student budget also omitted its existing open treasury facility, although
+StudentHousehold actually funds the rent shortfall through that loan. Housing
+now reads that actual planning room only while the facility is open; quoting
+does not borrow anything. Ordinary households still receive no assumed new
+credit. Caused checks assert both facility states, unchanged debt while quoting,
+and retired input classification in the actual city. The lender finding is
+being repeated without changing its people, rhythm or unplaced threshold.

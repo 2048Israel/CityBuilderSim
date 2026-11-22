@@ -940,6 +940,17 @@ public final class RealEstate extends Sector {
         return hasDoorsToSpare(t);
     }
 
+    /** Every class of a retired structure must come from actual vacant RE titles. */
+    @Override public long limitSpareRetirement(BuildingsTemplate t,long quantity,double keepAtLeast){
+        if(!housingMarket.active()||t==null||t.getHousingRecipe()==null)return quantity;
+        var inventory=buildings.getHousingInventory();long allowed=quantity;
+        for(var d:t.getHousingRecipe().mix()){
+            var key=new ham.citybuildersim.HousingInventory.Key(t.getId(),d.id());
+            allowed=Math.min(allowed,(long)Math.floor(inventory.vacant(key,ham.citybuildersim.HousingInventory.Owner.REAL_ESTATE)/d.count()));
+        }
+        return Math.max(0,allowed);
+    }
+
     @Override
     public String noRetirementReason(boolean distress) {
         return distress ? "overdrawn, but every door it owns is wanted"

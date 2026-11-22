@@ -708,6 +708,9 @@ public class HouseholdBalance {
             double projected=bills[i]+Math.max(0,accountFee)+c.interest()+c.studentInterest()+c.studentRepaid();
             double budget=Math.max(0,pay[i]-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
                     +c.savings()/HousingMarket.SAVINGS_MONTHS);
+            // The existing student facility funds housing shortfalls too, while open.
+            // It is settled as treasury lending in the normal household strike.
+            if(c instanceof StudentHousehold)budget+=Math.max(0,c.planningRoom());
             result.put(c.key(),new HousingResources(fresh[i],budget));
         }
         return result;

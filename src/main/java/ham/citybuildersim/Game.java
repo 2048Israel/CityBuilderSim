@@ -16554,7 +16554,7 @@ public class Game {
             double count=resources.get(c.key()).count();if(count<=0)continue;
             double budget=resources.get(c.key()).budget();
             int size=c.shape()==null?Math.max(1,(int)Math.ceil(c.headcount())):c.shape().size();
-            int children=c.shape()==null?(int)Math.ceil(c.getDependants()):c.shape().dependants();
+            int children=c.shape()==null?(int)Math.ceil(c.getDependants()):c.isRetired()?0:c.shape().dependants();
             FamilyModel.Seeker seeker=c instanceof StudentHousehold?FamilyModel.Seeker.STUDENT:
                     c instanceof UnemployedHousehold?FamilyModel.Seeker.UNEMPLOYED:null;
             double sharing=seeker==null?0:Math.min(count,families.getSeekersSharing(seeker));
