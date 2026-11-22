@@ -1,8 +1,8 @@
-# gate of Merge batch/FB16: oE1's four follow-ups in one batch (the orchestrator, 2026-11-22, the queue's bundling practice): AS1 (AuctionCheck 11 causes the sale it counts), CI1 (Motoring strikes car imports from the spend's own sum), PT2 (PassThroughCheck 3 causes the shops' hand-over), RN2 (RealEstate saves its owned housing capacity); each row verbatim in the brief, 0.9.182
+# gate of Merge batch/OG1: a planner orders to the gap, not one building a month (Jerus, 2026-11-20: "one a month is simply not enough in big cities"): the builders' backlog past 9 months brings no depot, and 12 makers order one building a month; measure on slot 10's copy, then size the order to the gap, rationed as BA1 meant (not beside R1g, CY1), 0.9.183
 # date: 2026-11-22
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 225 harnesses run in 657s: 216 passed, 9 failed
+# suite: 225 harnesses run in 640s: 215 passed, 10 failed
 MortgageCheck | exit 1
 MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not FAIL
 MortgageCheck | ...and a month that earned 0.00 against 0.00 of principal pays nothing, where the old rule paid 0.00 FAIL
@@ -28,6 +28,10 @@ BankCheck | 1 FAILED
 DenominationCheck | exit 1
 DenominationCheck | the same shops' till                                           FAIL  0.1783334236 != 0.1783334232  (2.42e-09 apart)
 DenominationCheck | 1 FAILED
+ReloadCheck | exit 1
+ReloadCheck | fixture 3k: the live city exercised it                                                                           FAIL  5 landlords with a closed homes' share, 1 ...with a count under the places they own, 0 landlords counting no place while they own some, their share whole, 4 landlords whose count moved in the month on, their share with it
+ReloadCheck | fixture 3k, every home closed, by hand: the caused point's own city exercised it                                 FAIL  0 landlords counting no place while they own some, their share whole, 0 landlords whose count moved in the month on, their share with it
+ReloadCheck | 2 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.2, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.153980 != 378.187926

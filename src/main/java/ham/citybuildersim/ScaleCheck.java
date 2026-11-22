@@ -1603,6 +1603,8 @@ public class ScaleCheck {
             "lotsById",
             "materialsOwedById", "contractValueById", "cohorts", "skilledWorkforce", "housingOccupancy",
             "populationTrend", "treasuryJournalAmounts", "governmentMonth", "householdStatement",
+            // OG1's saved aggregate site-work demand and outstanding work grow with the copied city.
+            "buildersWork", "buildersOwedAfterAdvance",
             "sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefore", "creditStatements",
             "salesTax", "mortgageRepaid", "insuranceClaims", "subsidyPaid", "writeOffTotals",
             // ...and the drivers' fuel as 6d drew it (0.7.62): the bill, its imported part and the litres, all
