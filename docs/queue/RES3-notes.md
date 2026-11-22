@@ -423,3 +423,20 @@ host space explicitly as crowding. Only actual occupied host slots are offered,
 and each funded host retains its original bill. No income, credit or capacity
 is invented. The caused case also checks actual family-member conservation,
 sharing, the exact three occupied doors, receipts and the two-household cap.
+
+The final allocation replay passed HousingDoorCheck through m900: 36,625 people,
+8,603 homes, no material unplaced household (worst prints 0.000, m802), and all
+899 household cash identities closed. The bank-capital premise is real again:
+49 capital-short orders were offered to the owners whole, none offered less;
+the original down-payment, halving, advisor and no-stranded-cash checks pass.
+HousingChoiceCheck and HousingMarketCheck are green with both caused mends.
+
+The committed [catalogue report](RES3-catalogue.md) is generated from those model
+inputs. Small city: 210 people, 60.963 ms, H/T/A/M/L 65/32/113/0/0. Present-day:
+44.360 ms, 84/32/340/0/0; larger 147,122-person case 46.531 ms,
+84/32/351/0/0. Historical: 28.892 ms, 46/32/137/0/0; larger 132,369-person
+case 30.773 ms, 46/32/138/0/0. These are entire integrated months, not solver
+microbenchmarks. All retain 141 permanent household cells. Modern physical
+classes are 32; historical known stock is 16 classes, with all 32 quoted and
+availability reported. M is new typed loan cohorts (HO1), L live listing cohorts;
+both are zero here. Paid starts and BuildLog completions are observed separately.

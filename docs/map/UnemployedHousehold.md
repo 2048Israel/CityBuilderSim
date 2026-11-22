@@ -31,7 +31,7 @@
 
 **Uses:** [PayTier](PayTier.md) (2), [Household](Household.md) (1)
 
-**Used by (8):** [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md)
+**Used by (10):** [FamilyModel](FamilyModel.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HousingMarket](HousingMarket.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md)
 
 ## Enum constants
 

@@ -1,4 +1,4 @@
-# HousingDoorCheck.java - 393 lines · 6 methods · 5 constants · harnesses
+# HousingDoorCheck.java - 407 lines · 7 methods · 5 constants · harnesses
 
 `ham/citybuildersim/HousingDoorCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -46,13 +46,13 @@
 >      with no door - and the homes that finish are counted by size;
 >   5. every played month's households' cash identity closes beside the accepted and refused mortgage orders (HL1).
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (29), [Game](Game.md) (6), [MoneyAudit](MoneyAudit.md) (3), [Mortgage](Mortgage.md) (3), [GameFiles](GameFiles.md) (2), [FamilyModel](FamilyModel.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Equity](Equity.md) (1), [LandManager](LandManager.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (29), [Game](Game.md) (7), [MoneyAudit](MoneyAudit.md) (3), [Mortgage](Mortgage.md) (3), [GameFiles](GameFiles.md) (2), [FamilyModel](FamilyModel.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Equity](Equity.md) (1), [LandManager](LandManager.md) (1), [HousingChoice](HousingChoice.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 305 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
+| 319 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
 
 ## Constants
 
@@ -83,23 +83,24 @@
 | 86 | `boolean shortBeforeOwners` |  |
 | 88 | `boolean quoteShut` | The landlord's quote supported no issue this month, so consider() offered nothing (Exchange.quoteSupportsIssue()). |
 | 91 | `static Ask pending` |  |
-| 310 | `static boolean stuck` |  |
+| 324 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 340 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
+| 54 | 354 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
 | 67 | 4 | `static void check(String label, boolean ok)` |  |
 | 73 | 17 | **type** `static final class Ask` | One month's order at the door: what the plan passed, the till it was judged on, and the door's price of one. |
-| 94 | 167 | `public static void main(String[] args) throws Exception` |  |
-| 263 | 34 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
-| 299 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
+| 94 | 169 | `public static void main(String[] args) throws Exception` |  |
+| 265 | 34 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
+| 301 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
+| 308 | 10 | `private static String housingSnapshot(Game g)` | A failed played finding keeps the actual budgets, occupancy and posted rents that caused it. |
 
-### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 305-393)
+### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 319-407)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 312 | 11 | `static void run(Game g, int months, Runnable after)` |  |
-| 324 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
+| 326 | 11 | `static void run(Game g, int months, Runnable after)` |  |
+| 338 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
 

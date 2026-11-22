@@ -36,7 +36,7 @@
 
 **Uses:** [PayTier](PayTier.md) (5), [FamilyStructure](FamilyStructure.md) (2), [AgeBand](AgeBand.md) (2), [Household](Household.md) (1)
 
-**Used by (3):** [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [PeopleScreen](PeopleScreen.md)
+**Used by (5):** [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [PeopleScreen](PeopleScreen.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Fields (state)
 

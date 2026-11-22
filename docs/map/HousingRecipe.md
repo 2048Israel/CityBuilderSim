@@ -8,7 +8,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (6):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [HousingInventory](HousingInventory.md), [HousingInventoryCheck](HousingInventoryCheck.md)
+**Used by (9):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [HousingForms](HousingForms.md), [HousingInventory](HousingInventory.md), [HousingInventoryCheck](HousingInventoryCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md)
 
 ## Constants
 
