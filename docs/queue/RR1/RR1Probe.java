@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * RR1's probe (not shipped in the game): a copy of slot 10 in a GameFiles.scratch folder, loaded headless, its nets printed and
@@ -25,6 +26,8 @@ public class RR1Probe {
         Files.createDirectories(out);
         info(g.getCityMap());
         for (int i = 3; i + 5 < a.length; i += 6) {
+            if (a[i].equals("hww")) { hww(g.getCityMap()); i -= 5; continue; }
+            if (a[i].equals("trucks")) { trucks(g); i -= 5; continue; }
             if (a[i].equals("why")) { why(g.getCityMap()); i -= 5; continue; }
             if (a[i].equals("dump")) { REAL.println("dump at m" + g.getMonth() + " routes " + g.getCityMap().trainRoutes().size()); sidings(g.getCityMap()); i -= 5; continue; }
             if (a[i].equals("flush")) { java.lang.reflect.Field c = CityMap.class.getDeclaredField("trainRoutesCache"); c.setAccessible(true); c.set(g.getCityMap(), null); REAL.println("flushed, routes " + g.getCityMap().trainRoutes().size()); i -= 5; continue; }
@@ -70,6 +73,67 @@ public class RR1Probe {
         for (int i = 0; i < runs.yards().size(); i++) REAL.printf("yard %d %s%n", i, Arrays.toString(runs.yards().get(i)));
         for (long[] s : runs.sidings()) REAL.printf("siding %s%n", Arrays.toString(s));
         REAL.printf("train routes %d, truck routes %d%n", m.trainRoutes().size(), m.truckRoutes().size());
+    }
+
+    /** HWW1: the highways' portal, their world routes, the trips drawn by kind and the month's truck calls on them, as MapView.trucks() makes them. */
+    static void trucks(Game g) {
+        CityMap m = g.getCityMap();
+        long[] hp = m.highwayPortal();
+        REAL.printf("trucks: highway portal %s, truck routes %d%n", hp == null ? "none" : hp[0] + "," + hp[1] + " arm " + hp[2], m.truckRoutes().size());
+        List<CityMap.DistrictTrips> trips = m.tripsDrawn();
+        var freight = g.getSectors().freight();
+        double[][] per = TruckSchedule.perBuilding(s -> TruckSchedule.truckedBy(freight, s), m.types(), m.totals());
+        double[] tonnes = { freight.truckedIn(), freight.truckedOut(), freight.truckedHome() };
+        java.util.Map<Long, double[]> shares = TruckSchedule.sharesByTrips(trips, m::district, per, tonnes);
+        int world = 0, home = 0, access = 0, worldCalls = 0, otherCalls = 0;
+        for (CityMap.DistrictTrips dt : trips) {
+            for (TruckSchedule.Route r : dt.trips()) { if (r.world()) world++; else if (r.home()) home++; else access++; }
+            TruckSchedule ts = TruckSchedule.of(g.getMonth(), freight, dt.trips(), shares.getOrDefault(dt.key(), new double[TruckSchedule.Load.values().length]), dt.key());
+            for (TruckSchedule.Call c : ts.calls()) { if (dt.trips().get(c.route()).world()) worldCalls++; else otherCalls++; }
+        }
+        REAL.printf("trucks: %d districts' trips: world %d, home %d, access %d; calls this month: world %d, other %d; trucked in %.1f out %.1f home %.1f%n",
+                trips.size(), world, home, access, worldCalls, otherCalls, tonnes[0], tonnes[1], tonnes[2]);
+    }
+
+    /** HWW1: each highway arm's way to the world as CityMap.worldLine() weighs it - the scan on from its end, the edge, and the dry runs. */
+    static void hww(CityMap m) throws Exception {
+        java.lang.reflect.Field fk = CityMap.class.getDeclaredField("worldKey"); fk.setAccessible(true);
+        World w = World.of((World.Key) fk.get(m));
+        java.lang.reflect.Method dr = CityMap.class.getDeclaredMethod("dryRun", World.class, double.class, double.class, int.class, double.class, int.class); dr.setAccessible(true);
+        CityRuns.Ground rg = m.runGround();
+        CityRuns.Net n = m.runs().highways();
+        int gateway = m.runs().gateway();
+        REAL.printf("hww: highwaysReach %s gateway %d world lines %d; highway plots laid %d, short %d, undrawn %d; corridors %s%n", m.runs().highwaysReach(), gateway, m.worldLines().size(), n.plots, m.runs().highwayShort(), m.runs().highwayUndrawn(), n.corridors.stream().map(Arrays::toString).toList());
+        for (int i = 0; i < n.arms.size(); i++) {
+            CityRuns.Arm a = n.arms.get(i);
+            if (a.steps <= 0) continue;
+            int dx = CityRuns.DX[a.head], dy = CityRuns.DY[a.head];
+            StringBuilder scan = new StringBuilder();
+            long ex = 0, ey = 0; boolean edge = false; String why = "no edge within " + CityMap.WORLD_GAP;
+            for (int s = 1; s <= CityMap.WORLD_GAP; s++) {
+                long px = a.x + (long) dx * s, py = a.y + (long) dy * s;
+                int gg = rg.at(px, py, -1);
+                if (gg == -1) { edge = World.dry(w.terrainAt(px, py)); ex = px; ey = py; why = "unowned at step " + s + (edge ? " dry" : " WET (terrain " + w.terrainAt(px, py) + ")"); break; }
+                if (!World.dry(gg)) { why = "owned water at step " + s + " (" + px + "," + py + ")"; break; }
+            }
+            REAL.printf("  hw arm %d piece %d corr %d head %d end %d,%d stop %d joined %s: %s%n", i, CityRuns.pieceOf(n, a), a.corridor, a.head * 45, a.x, a.y, a.stoppedBy, a.joined, why);
+            if (!edge) continue;
+            for (int deg = 0; deg < 360; deg += 45) {
+                double run = (double) dr.invoke(null, w, ex + 0.5, ey + 0.5, deg, 400.0, 0);
+                REAL.printf("      dry run toward %d: %.1f%s%n", deg, run, deg == gateway ? " (the bearing)" : deg == a.head * 45 ? " (the heading)" : "");
+            }
+        }
+        // Owned ground's edge: from the hub, along the bearing, the first unowned plot and the terrain past it.
+        long[] hub = { n.hubX, n.hubY };
+        int bdx = (int) Math.round(Math.cos(Math.toRadians(gateway))), bdy = (int) Math.round(Math.sin(Math.toRadians(gateway)));
+        StringBuilder line = new StringBuilder();
+        int last = -2;
+        for (int s = 0; s < 1200; s++) {
+            long px = hub[0] + (long) bdx * s, py = hub[1] + (long) bdy * s;
+            int gg = rg.at(px, py, -1), code = gg == -1 ? (World.dry(w.terrainAt(px, py)) ? 3 : 2) : World.dry(gg) ? 1 : 0;
+            if (code != last) { line.append(String.format(" %d:%s", s, code == 0 ? "owned-water" : code == 1 ? "owned-dry" : code == 2 ? "unowned-water" : "unowned-dry")); last = code; }
+        }
+        REAL.println("  from the hub along the bearing:" + line);
     }
 
     /** For each district with plan sidings: its band, how far the band holds now, and the first link in it that breaks, with why. */

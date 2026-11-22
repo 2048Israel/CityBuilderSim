@@ -38,7 +38,8 @@ import java.util.Map;
  *
  *   1. with no highway world line there is no world route: highways that
  *      reach no street (not drawn), highways that reach one but find no way
- *      out, and a railway alone;
+ *      out while their gate arm is on its dry way to the edge, and a railway
+ *      alone;
  *   2. in a city with a highway world line each world route starts
  *      TruckSchedule.WORLD_PLOTS out along the line's way, passes the line's point,
  *      runs on highway plots only (the points and the middles of every leg
@@ -100,9 +101,17 @@ import java.util.Map;
  *      truck's whole visit is inside the month on a route of 10 plots and on
  *      one of 5,000, a truck is at its gate at its arrival and at its route's
  *      start a leg before, and frame() finds exactly the trucks position()
- *      puts in the box.
+ *      puts in the box;
+ *  11. the highways' portal (HWW1): on a coast whose highways reach a street
+ *      and whose gate arm ends at the city's own water, so they have no line
+ *      to the world, the portal is the gate arm's end; the trucks have world
+ *      routes, each from the portal's middle, faded in over PORTAL_FADE, on
+ *      highway plots to a ramp; drawn, the districts have world trips from
+ *      the portal and the month's schedule calls world trucks on them; with
+ *      more highways an arm reaches the edge, the line is back and the
+ *      portal gone, and section 1's five highways have none.
  *
- * They run in the order 1, 2, 5, 3, 4, 6, 8, 7, 9, 10: section 5, like 1 and
+ * They run in the order 1, 2, 5, 3, 4, 6, 8, 7, 9, 10, 11: section 5, like 1 and
  * 2, plays on GatewayCheck's cities, 3, 4 and 6 share one access city built
  * after them, and 8 and 7 share a trips city built after that: 8 draws it a
  * district at a time and then 7 reads it whole (and the access city 4
@@ -163,6 +172,26 @@ public class TruckRouteCheck {
                 double t = n == 0 ? 0 : (double) k / n;
                 long px = (long) Math.floor(r.xs()[i] + t * (r.xs()[i + 1] - r.xs()[i])), py = (long) Math.floor(r.ys()[i] + t * (r.ys()[i + 1] - r.ys()[i]));
                 if (!CityRuns.covered(runs.highways(), px, py)) off++;
+            }
+        }
+        return off;
+    }
+
+    /**
+     * offHighway() from the route's first point, less the samples that fall on a plot's corner: a 45-degree step runs from its plot's
+     * middle to the next one's through their shared corner, and floor() gives that point to the plot below and right of it, which the
+     * step does not cover (a one-step arm's ramp, on section 11's coast).
+     */
+    static int offHighwayOffCorners(CityRuns runs, TruckSchedule.Route r) {
+        int off = 0;
+        for (int i = 0; i + 1 < r.xs().length; i++) {
+            double len = Math.hypot(r.xs()[i + 1] - r.xs()[i], r.ys()[i + 1] - r.ys()[i]);
+            int n = (int) Math.ceil(len / STEP);
+            for (int k = 0; k <= n; k++) {
+                double t = n == 0 ? 0 : (double) k / n;
+                double x = r.xs()[i] + t * (r.xs()[i + 1] - r.xs()[i]), y = r.ys()[i] + t * (r.ys()[i + 1] - r.ys()[i]);
+                if (Math.abs(x - Math.rint(x)) < EPS && Math.abs(y - Math.rint(y)) < EPS) continue;
+                if (!CityRuns.covered(runs.highways(), (long) Math.floor(x), (long) Math.floor(y))) off++;
             }
         }
         return off;
@@ -313,6 +342,127 @@ public class TruckRouteCheck {
         boolean ok = true;
         for (TruckSchedule.Route rt : small.truckRoutes()) ok &= offHighway(small.runs(), rt, 2) == 0 && rt.world();
         check("...every quarter plot on a highway plot", ok);
+    }
+
+    // ------------------------------------------------------------------ 11
+
+    /**
+     * Where the highways' gate arm (CityRuns.gateArm()) ends at the city's own water, read ahead along its heading as
+     * CityMap.worldLine() reads an arm: the step at which an owned plot that is not dry ground is met before any plot the city does not
+     * own, up to CityMap.WORLD_GAP; 0 where the read meets the city's edge or dry ground all the way.
+     */
+    static int gateAtWater(CityMap m) {
+        CityRuns.Net n = m.runs().highways();
+        int gate = CityRuns.gateArm(n, m.gateway());
+        if (gate < 0 || n.arms.get(gate).steps <= 0) return 0;
+        CityRuns.Arm a = n.arms.get(gate);
+        for (int s = 1; s <= CityMap.WORLD_GAP; s++) {
+            int g = m.runGround().at(a.x + (long) CityRuns.DX[a.head] * s, a.y + (long) CityRuns.DY[a.head] * s, -1);
+            if (g == -1) return 0;
+            if (!World.dry(g)) return s;
+        }
+        return 0;
+    }
+
+    /**
+     * Section 11's coast: GatewayCheck's TN1 coast with no works, laid HWW1_HIGHWAYS Elevated Highways - their gate arm runs west to the
+     * city's own water and no arm reaches the city's edge, so they have no line to the world; laid HWW1_LINE_HIGHWAYS, an arm of the third
+     * corridor reaches the edge and they have one (the control). HWW1_DEPOTS Truck Depots more give its districts access roads to drive
+     * to (with none it has one, and no trip); HWW1_LOADS loads in and out a month are the schedule's, by hand.
+     */
+    static final int HWW1_HIGHWAYS = 50, HWW1_LINE_HIGHWAYS = 150, HWW1_DEPOTS = 6, HWW1_LOADS = 40;
+
+    /** Section 11's coast city, its Elevated Highways set to `highways`. */
+    static CityMap hww1Coast(BuildingVisual.Type[] types, long highways) {
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] bare = GatewayCheck.coastCounts(types);
+        for (BuildingVisual.Type t : types) if (t != null && t.shore()) bare[t.id()] = 0;
+        bare[GatewayCheck.highwayType(types)] = highways;
+        bare[MapCheck.depotType(types)] += HWW1_DEPOTS;
+        return MapCheck.coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, bare);
+    }
+
+    /**
+     * Section 11 (HWW1): where the highways have no line to the world because their gate arm ends at the city's own water, the
+     * trucks come in at the portal there (CityMap.highwayPortal()), as the trains do at the railway's (TN1). Jerus's fjord city at
+     * month 1,204 (0.9.181, 421,561 people) had all 749 of its highway plots laid and every arm at its own water or short of its
+     * edge, so no highway line, no world truck route and no world trip. The fixture is section 11's coast (hww1Coast()).
+     */
+    static void portal() {
+        System.out.println();
+        System.out.println("--- 11. the trucks come in where the highways' line to the world is hard to find (HWW1) ---");
+        BuildingVisual.Type[] types = GatewayCheck.gatewayTypes();
+        CityMap m = hww1Coast(types, HWW1_HIGHWAYS);
+        CityRuns runs = m.runs();
+        CityRuns.Net hw = runs.highways();
+        int gate = CityRuns.gateArm(hw, m.gateway()), water = gateAtWater(m);
+        CityRuns.Arm arm = gate >= 0 ? hw.arms.get(gate) : null;
+        long[] portal = m.highwayPortal();
+        List<TruckSchedule.Route> routes = m.truckRoutes();
+        List<long[]> ramps = runs.highwayRamps();
+        System.out.printf("      gateway %d, gate arm %s, its own water %d plot(s) on, portal %s, %d ramps, %d routes%n", m.gateway(),
+                GatewayCheck.armText(hw, gate), water, Arrays.toString(portal), ramps.size(), routes.size());
+        check("fixture: the coast's highways reach a street, it has a gateway, and they have no line to the world",
+                runs.highwaysReach() && m.gateway() >= 0 && !hasHighwayLine(m));
+        check("...because their gate arm ends at the city's own water, within WORLD_GAP straight on", arm != null && arm.steps > 0 && water > 0);
+        check("the portal is the gate arm's end", portal != null && arm != null && portal[0] == arm.x && portal[1] == arm.y && portal[2] == gate);
+        check("the trucks have world routes though the highways have no line (red before HWW1: none without the line)", !routes.isEmpty());
+        boolean world = true, starts = true, faded = true, onHighways = true, endsAtRamp = true, distinct = true;
+        Set<String> ends = new HashSet<>();
+        for (TruckSchedule.Route rt : routes) {
+            int n = rt.xs().length;
+            world &= rt.world();
+            starts &= portal != null && Math.abs(rt.xs()[0] - (portal[0] + 0.5)) < EPS && Math.abs(rt.ys()[0] - (portal[1] + 0.5)) < EPS;
+            faded &= Math.abs(rt.fadeTo() - Math.min(CityMap.PORTAL_FADE, rt.length())) < EPS;
+            onHighways &= offHighwayOffCorners(runs, rt) == 0;
+            for (int i = 0; i < n; i++) onHighways &= CityRuns.covered(hw, (long) Math.floor(rt.xs()[i]), (long) Math.floor(rt.ys()[i]));
+            boolean ramp = false;
+            for (long[] p : ramps) ramp |= Math.abs(rt.xs()[n - 1] - (p[0] + 0.5)) < EPS && Math.abs(rt.ys()[n - 1] - (p[1] + 0.5)) < EPS;
+            endsAtRamp &= ramp;
+            distinct &= ends.add(rt.xs()[n - 1] + "," + rt.ys()[n - 1]);
+        }
+        check("...every one a world route that starts at the portal, in the middle of its plot", world && starts && !routes.isEmpty());
+        check("...faded in over PORTAL_FADE (" + CityMap.PORTAL_FADE + " plots), no more than its length", faded);
+        check("...on highway plots all the way: its points and every quarter plot of its legs (but a 45-degree step's corner)", onHighways);
+        check("...to a ramp, no two to one", endsAtRamp && distinct);
+
+        // The trips, once the districts are drawn: whole from the portal, and the month's schedule calls trucks on them.
+        for (CityMap.District d : m.districts()) m.drawn(d);
+        int worldTrips = 0, worldCalls = 0;
+        boolean tripStarts = true, tripFaded = true;
+        for (CityMap.DistrictTrips dt : m.tripsDrawn()) {
+            for (TruckSchedule.Route rt : dt.trips()) {
+                if (!rt.world()) continue;
+                worldTrips++;
+                tripStarts &= portal != null && Math.abs(rt.xs()[0] - (portal[0] + 0.5)) < EPS && Math.abs(rt.ys()[0] - (portal[1] + 0.5)) < EPS;
+                tripFaded &= Math.abs(rt.fadeTo() - Math.min(CityMap.PORTAL_FADE, rt.length())) < EPS;
+            }
+            double[] loads = new double[Load.values().length];
+            loads[Load.IMPORT.ordinal()] = HWW1_LOADS;
+            loads[Load.EXPORT.ordinal()] = HWW1_LOADS;
+            TruckSchedule sched = TruckSchedule.of(1, loads, dt.trips(), 1.0, dt.key());
+            for (Call c : sched.calls()) if (dt.trips().get(c.route()).world()) worldCalls++;
+        }
+        System.out.printf("      drawn whole: %d world trip(s), %d world call(s) at %d loads in and out a district%n", worldTrips, worldCalls, HWW1_LOADS);
+        check("drawn, the districts have world trips (red before HWW1: FR5's access routes alone)", worldTrips > 0);
+        check("...each from the portal, faded in over PORTAL_FADE", tripStarts && tripFaded);
+        check("...and the month's schedule calls world trucks on them", worldCalls > 0);
+
+        // The control: once an arm reaches the city's edge the highways have their line, and no portal.
+        CityMap more = hww1Coast(types, HWW1_LINE_HIGHWAYS);
+        CityMap.WorldLine line = highwayLine(more);
+        boolean fromLine = line != null && !more.truckRoutes().isEmpty();
+        if (line != null) {
+            double r = Math.toRadians(line.way());
+            double fx = line.x() + Math.cos(r) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TruckSchedule.WORLD_PLOTS;
+            for (TruckSchedule.Route rt : more.truckRoutes())
+                fromLine &= Math.abs(rt.xs()[0] - fx) < EPS && Math.abs(rt.ys()[0] - fy) < EPS && Math.abs(rt.fadeTo() - TruckSchedule.WORLD_PLOTS) < EPS;
+        }
+        check("control: laid " + HWW1_LINE_HIGHWAYS + ", the highways have their line and no portal, every route from the line's far point as before",
+                fromLine && more.highwayPortal() == null);
+        CityMap five = GatewayCheck.gatewayCity(types, 5, 0);
+        check("control: section 1's five highways, their gate arm on its dry way to the edge, have no portal and no route",
+                five.runs().highwaysReach() && gateAtWater(five) == 0 && five.highwayPortal() == null && five.truckRoutes().isEmpty());
     }
 
     // ------------------------------------------------------------------ 3
@@ -1386,6 +1536,7 @@ public class TruckRouteCheck {
         tripsKept(trips, types());
         shares(types(), trips);
         pace();
+        portal();
         System.out.println();
         TruckDrawing.run(args);
         fails += TruckDrawing.fails;
