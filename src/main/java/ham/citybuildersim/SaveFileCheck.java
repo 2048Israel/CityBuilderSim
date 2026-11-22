@@ -3221,6 +3221,9 @@ public class SaveFileCheck {
         com.google.gson.JsonObject below = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
         below.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
         below.addProperty("gameVersion", olderBuild);
+        assertTrue("REV-RES2 P3: the format60 fixture has its native pre-inventory schema and original build",
+                below.get("saveFormat").getAsInt() == 60 && !below.has("housingInventory")
+                        && below.get("gameVersion").getAsString().equals("0.9.188"));
         Files.writeString(oldest.saveFile(2), new com.google.gson.Gson().toJson(below));
         com.google.gson.JsonObject unstamped = below.deepCopy();
         unstamped.remove("gameVersion");

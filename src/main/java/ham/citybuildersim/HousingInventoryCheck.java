@@ -48,11 +48,70 @@ public final class HousingInventoryCheck {
         return sum;
     }
 
+    static void equalSizeMatch() {
+        BuildingManager b = new BuildingManager();
+        BuildingsTemplate t = new BuildingsTemplate("Equal-size fixture", BuildingType.RESIDENTIAL)
+                .setId(901).setSector(Sectors.REAL_ESTATE).setCapacity(8).setDwellings(2)
+                .setHousingRecipe(new HousingRecipe("Equal-size fixture", List.of(
+                        new HousingRecipe.Dwelling("a", 1, 4, 80, 2, 1, 0, 0, 80),
+                        new HousingRecipe.Dwelling("b", 1, 4, 80, 2, 1, 0, 0, 80)), 0));
+        b.addStack(t, 1, true);
+        var h = b.getHousingInventory();
+        var a = new HousingInventory.Key(901, "a");
+        var other = new HousingInventory.Key(901, "b");
+        h.occupy(a, REAL_ESTATE, 1);
+        h.transfer(a, REAL_ESTATE, HOUSEHOLD, 1, 1);
+        h.match(new double[] {0, 0, 0, 0, 1});
+        near("REV-RES2 P1: one retained occupant consumes the whole one-home match", sumOccupied(h, a) + sumOccupied(h, other), 1);
+        near("REV-RES2 P1: no second class occupant is invented", h.occupied(other, REAL_ESTATE), 0);
+        near("REV-RES2 P1: existing title occupants are retained", h.occupied(a, HOUSEHOLD), 1);
+        h.match(new double[] {0, 0, 0, 0, 1.5});
+        near("REV-RES2 P1: only residual demand reaches the other class", h.occupied(other, REAL_ESTATE), .5);
+        h.match(new double[] {0, 0, 0, 0, 1.5});
+        near("REV-RES2 P1: repeated matching conserves the fractional total", sumOccupied(h, a) + sumOccupied(h, other), 1.5);
+    }
+
+    static java.util.Map<String, Double> figures(Game city) {
+        BuildingManager b = city.getBuildingManager();
+        var h = b.getHousingInventory();
+        java.util.Map<String, Double> values = new java.util.TreeMap<>();
+        values.put("endowment", (double) h.foundingCapacity());
+        values.put("homes", (double) h.homes());
+        values.put("capacity", (double) h.capacity());
+        values.put("pipeline homes", (double) h.pipelineHomes());
+        for (var s : h.stock()) {
+            String key = s.key().recipe() + "/" + s.key().dwelling();
+            values.put(key + " structures", (double) s.structures());
+            values.put(key + " pipeline structures", (double) s.pipelineStructures());
+            values.put(key + " homes", s.homes());
+            values.put(key + " pipeline homes", s.pipeline());
+            values.put(key + " site progress", b.getConstructionProgressById()[s.key().recipe()]);
+            for (var owner : HousingInventory.Owner.values()) {
+                values.put(key + "/" + owner + " owned", h.owned(s.key(), owner));
+                values.put(key + "/" + owner + " occupied", h.occupied(s.key(), owner));
+                values.put(key + "/" + owner + " vacant", h.vacant(s.key(), owner));
+                values.put(key + "/" + owner + " listed occupied", h.listed(s.key(), owner, true));
+                values.put(key + "/" + owner + " listed vacant", h.listed(s.key(), owner, false));
+            }
+        }
+        return values;
+    }
+
+    static void twins(String when, Game live, Game loaded) {
+        var before = figures(live);
+        var after = figures(loaded);
+        check("REV-RES2 P2: " + when + " registry dimensions agree", before.keySet().equals(after.keySet()));
+        for (var entry : before.entrySet())
+            near("REV-RES2 P2: " + when + " " + entry.getKey(), after.getOrDefault(entry.getKey(), Double.NaN), entry.getValue());
+    }
+
     public static void main(String[] args) throws Exception {
         out = System.out;
         PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
         System.setOut(quiet);
         try {
+            out.println("--- retained occupants precede equal-size residual matching ---");
+            equalSizeMatch();
             out.println("--- compatibility and named founding endowment ---");
             BuildingManager b = new BuildingManager();
             b.initializeTemplates();
@@ -176,6 +235,11 @@ public final class HousingInventoryCheck {
             var ch = cb.getHousingInventory();
             ch.occupy(home, REAL_ESTATE, 4.5); ch.list(home, REAL_ESTATE, 1, 1);
             ch.transfer(home, REAL_ESTATE, HOUSEHOLD, .5, .25);
+            check("REV-RES2 P2: real reload fixture contains pipeline, mixed titles, occupied/vacant homes, both listing subsets and the endowment",
+                    ch.pipelineHomes() > 0 && ch.owned(home, REAL_ESTATE) > 0 && ch.owned(home, HOUSEHOLD) > 0
+                            && ch.occupied(home, HOUSEHOLD) > 0 && ch.vacant(home, REAL_ESTATE) > 0
+                            && ch.listed(home, REAL_ESTATE, true) > 0 && ch.listed(home, REAL_ESTATE, false) > 0
+                            && ch.foundingCapacity() == HousingInventory.FOUNDING_PLACES * cb.getFoundingEndowments());
             city.getEconomyManager().updateHousing();
             var re = city.getSectors().realEstate();
             double current = re.getOwnedHousingCapacity();
@@ -186,6 +250,7 @@ public final class HousingInventoryCheck {
             Game back = new Game(files); back.loadGameSave(10);
             check("actual game loader accepted its inventory save", back.getLoadFailure() == null);
             var bh = back.getBuildingManager().getHousingInventory();
+            twins("immediately after load", city, back);
             near("load rebuild restores conveyed quantity", bh.owned(home, HOUSEHOLD), ch.owned(home, HOUSEHOLD));
             near("load rebuild restores occupancy", bh.occupied(home, HOUSEHOLD), ch.occupied(home, HOUSEHOLD));
             near("load rebuild restores listing subsets", bh.listed(home, REAL_ESTATE, true), ch.listed(home, REAL_ESTATE, true));
@@ -195,6 +260,7 @@ public final class HousingInventoryCheck {
             city.simulateMonths(1);
             double monthMs = (System.nanoTime() - monthStarted) / 1e6;
             back.simulateMonths(1);
+            twins("after both next months", city, back);
             out.printf(java.util.Locale.ROOT, "   integrated scratch month %.3f ms; %d physical class rows, %d saved cohorts; scaled fixture %d/%d rows%n",
                     monthMs, ch.stock().size(), ch.forSave().size(), huge.stock().size(), huge.forSave().size());
             near("first month allocates debt from the same changed baseline", back.getSectors().realEstate().strandedDebtShare(), re.strandedDebtShare());
