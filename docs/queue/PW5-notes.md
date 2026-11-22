@@ -85,3 +85,34 @@ stocks and bond faces, preserving issuer debt and holder totals. Its chosen cell
 without means before both strikes. Every nonzero hunger assertion and every
 save/continuation comparison remains. Kept diagnostic:
 target/PW5-results/SaveFileCheck-premise.txt. No production household rule changes.
+
+## Final checks before review
+
+One harness per batch-check invocation, sequentially, with the required Earth/world paths:
+PowerPriceCheck (77 assertions), BuildingDataCheck, PowerDispatchCheck, SubstationCheck
+(all nine assertions), SaveFileCheck (including the repaired premise and every save identity),
+ReadPathCheck, GdpCheck and PowerViewCheck all exit 0. Raw named logs and batch summaries
+are retained under target/PW5-results/. No known-red waiver was needed for these runs.
+AutoBuildCheck also exits 0; its one existing path assertion remains OBSERVED, and no
+assertion was changed for PW5. The new substation rules are nine strict assertions.
+
+Visual cues: Utilities' Power grid ring and Substation card say what peak kW the wires
+carry; the yard appears through the existing utility building drawing. Services' existing
+unserved-energy and short-half-block lines include a grid shortage.
+
+The default trace changes: the city builds substations and its bills follow their costs.
+The 80-run ensemble against the newest versioned baseline, and the ALL dry run, remain
+for the stranger's SHIP/go, as the brief orders. No local full suite or ensemble was run.
+
+Final `--fast` exits 0: compile, regenerated maps, zero firm Stale findings (196 soft,
+unchanged from the initial main build), and the tree check. Source/notes whitespace and
+LF checks pass; the generated month-order Markdown retains its intended hard breaks.
+`known-reds.sh PW5 docs/queue/PW5-ship.md` exits 0 with no branch waiver rows.
+`pick.sh origin/main HEAD`: ALL, 242 harnesses. Its review floor is saves: DataSave.java,
++SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT; money review is also explicitly owed for the
+changed grid tariff and treasury receipts. There are no threading changes.
+
+At the review tip origin/main is still 01e6c2d4b (0.9.188); save format and its floor are
+61, raised from main's 60. Merge main again on SHIP/go, reconciling that number above
+HC1/RES2's shipped value before the ensemble and dry run. The provisional ship marker
+stays in place for that review and the remaining checks.

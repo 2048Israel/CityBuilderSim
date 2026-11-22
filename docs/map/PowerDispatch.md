@@ -1,4 +1,4 @@
-# PowerDispatch.java - 279 lines · 16 methods · 19 constants · model
+# PowerDispatch.java - 288 lines · 17 methods · 19 constants · model
 
 `ham/citybuildersim/PowerDispatch.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -18,7 +18,7 @@
 
 **Uses:** [Good](Good.md) (5), [PriceLevel](PriceLevel.md) (3)
 
-**Used by (14):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PowerView](PowerView.md), [PowerViewCheck](PowerViewCheck.md), [UtilitiesHandler](UtilitiesHandler.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PowerView](PowerView.md), [PowerViewCheck](PowerViewCheck.md), [SubstationCheck](SubstationCheck.md), [Substations](Substations.md), [UtilitiesHandler](UtilitiesHandler.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 
@@ -86,7 +86,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 23 | 257 | **type** `public final class PowerDispatch` | One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks, and the price each half-block clears at. |
+| 23 | 266 | **type** `public final class PowerDispatch` | One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks, and the price each half-block clears at. |
 | 25 | 1 | `private PowerDispatch()` |  |
 
 ### FIGURES (lines 27-87)
@@ -119,11 +119,12 @@
 | 171 | 3 | `public static double season(int monthOfYear)` | The calendar month's load over the year's mean, for 1..12; 1 for anything else (a fixture with no calendar). |
 | 176 | 3 | `public static double windAt(int s)` | Wind's output over its average in half-block s: its block's share, windy in the first half and calm in the second. |
 
-### THE MONTH (lines 180-279)
+### THE MONTH (lines 180-288)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 182 | 1 | `private static double nonNegative(double x)` |  |
-| 200 | 72 | `public static Month dispatch(List<Row> rows, double drawKw, double season, double voll)` | One month's merit order: drawKw the grid's draw (kW, before losses), season the calendar month's load over the year's mean, voll what a short half-block clears at. |
-| 274 | 5 | `private static double use(double[] residual, double cap, double level)` | The water kWh a hydro row of this cap runs above this level of the residual, half-block by half-block. |
+| 200 | 3 | `public static Month dispatch(List<Row> rows, double drawKw, double season, double voll)` | One month's merit order: drawKw the grid's draw (kW, before losses), season the calendar month's load over the year's mean, voll what a short half-block clears at. |
+| 205 | 76 | `public static Month dispatch(List<Row> rows, double drawKw, double season, double voll, double carryKw)` | The same dispatch, with the city's wires limiting generation before fuel or water is spent. |
+| 283 | 5 | `private static double use(double[] residual, double cap, double level)` | The water kWh a hydro row of this cap runs above this level of the residual, half-block by half-block. |
 
