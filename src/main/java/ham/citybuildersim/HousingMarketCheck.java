@@ -174,6 +174,9 @@ public final class HousingMarketCheck {
         near("the host retains its actual funded bill",market.rentFor(host,1),ask);
         near("the guest owes no invented rent or credit",market.rentFor(guest,1),0);
         near("emergency hosting has an explicit reason count",market.hosted(),1);
+        String beforeRoom=JSON.toJson(market.forSave());
+        near("a doubled home offers migration no fictional extra guest slot",market.roomLeft(g,new FamilyModel.Room(0,0,0,2,1,0,2)).households(),0);
+        check("reading actual migration room does not quote or clear",beforeRoom.equals(JSON.toJson(market.forSave())));
         double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
         g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
         double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;g.getFamilies().rebuild(g.getCohorts(),jobs);
@@ -185,6 +188,10 @@ public final class HousingMarketCheck {
         near("hosting a sharing group still earns just the one funded rent",market.receipts(),ask);
         check("a sharing group consumes the host slot before further guests",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()
                 <=2*market.occupied()+FamilyModel.packingRounding(2*market.occupied()));
+        beforeRoom=JSON.toJson(market.forSave());bm.addStack(t,1,true);
+        near("migration room sees a real completion and first reserves current unplaced demand",
+                market.roomLeft(g,new FamilyModel.Room(0,0,0,2,1,0,2)).households(),2-result.unplaced());
+        check("a completion projection leaves the one monthly quote untouched",beforeRoom.equals(JSON.toJson(market.forSave())));
     }
     static void writeReport(StringBuilder report,Game g,String label,Map<Integer,Long> starts,Map<Integer,Long> completions,int months,double ms){
         var market=g.getSectors().realEstate().housingMarket();var bm=g.getBuildingManager();var em=g.getEconomyManager();

@@ -508,6 +508,7 @@ public class Game {
         buildLog = new BuildLog();
         cohorts = new PopulationCohorts();
         families = new FamilyModel();
+        families.setTypedRoom(legacy->getSectors().realEstate().housingMarket().roomLeft(this,legacy));
         families.rememberHouseholds(true);   // see FamilyModel: THE HOUSEHOLDS REMEMBER
         migration = new Migration();
         labourMarket = new LabourMarket();
@@ -16476,6 +16477,7 @@ public class Game {
     {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
         householdBalance.setRentShares(this::rentShareOf);
+        families.setTypedRoom(legacy->getSectors().realEstate().housingMarket().roomLeft(this,legacy));
         householdBalance.setRentBills(c -> getSectors().realEstate().housingMarket().active()
                 ? getSectors().realEstate().housingMarket().rentFor(c.key(),housingCellCount(c)) : Double.NaN);
         householdBalance.setHousedShares(this::housedShareOf);

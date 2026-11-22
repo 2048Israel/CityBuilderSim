@@ -2057,6 +2057,9 @@ public class FamilyModel implements HouseholdBalance.Census {
      * Touches nothing. Null before the model has any households, or with no
      * census to match against.
      */
+    private java.util.function.Function<Room,Room> typedRoom;
+    /** Derived city context; bare fixtures keep the size-only projection. No prices or assignments are struck here. */
+    public void setTypedRoom(java.util.function.Function<Room,Room> projection){typedRoom=projection;}
     public Room roomLeft(long[] homesBySize) {
         double households = totalHouseholds();
         if (homesBySize == null || homesBySize.length < 2 || households <= 0) return null;
@@ -2081,8 +2084,10 @@ public class FamilyModel implements HouseholdBalance.Census {
         }
         people += getOrphansTotal();
 
-        return new Room(familyDoors, studios, doubling, seeking, Math.max(0, seeking - left[0]),
+        Room legacy=new Room(familyDoors, studios, doubling, seeking, Math.max(0, seeking - left[0]),
                 withChild / households, people / households);
+        Room actual=typedRoom==null?null:typedRoom.apply(legacy);
+        return actual==null?legacy:actual;
     }
 
     /* =====================================================================

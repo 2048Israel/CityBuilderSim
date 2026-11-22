@@ -59,6 +59,32 @@ public final class HousingMarket {
     public double rentFor(String cell,double count) { return count>0?leases.stream().filter(l->l.cell().equals(cell)||l.cell().startsWith(cell+"#")).mapToDouble(HousingChoice.Lease::bill).sum()/count:0; }
     public double receipts() { return leases.stream().mapToDouble(HousingChoice.Lease::bill).sum(); }
     public double occupied() { return leases.stream().mapToDouble(HousingChoice.Lease::count).sum(); }
+    /** Read-only migration bound: actual remaining door/guest capacity, with the raw incoming household mix. */
+    public FamilyModel.Room roomLeft(Game game,FamilyModel.Room legacy){
+        if(!active())return null;
+        var inventory=game.getBuildingManager().getHousingInventory();double family=0,compact=0,homes=0;
+        for(var stock:inventory.stock()){
+            var c=classes.get(stock.key());if(c==null||!c.available)continue;
+            double owned=inventory.owned(c.key(),HousingInventory.Owner.REAL_ESTATE);homes+=owned;
+            double assigned=leases.stream().filter(l->l.home().equals(c.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            double slots=Math.max(0,2*owned-assigned);
+            if(c.capacity>FamilyModel.STUDIO_MAX_SIZE)family+=slots;else compact+=slots;
+        }
+        double children=0,adults=0;
+        for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            double missing=Math.max(0,d.count()-taken);if(d.children()>0)children+=missing;else adults+=missing;}
+        family=Math.max(0,family-children);double inCompact=Math.min(compact,adults);compact-=inCompact;family=Math.max(0,family-(adults-inCompact));
+        double incoming=0,heads=0,parents=0;
+        for(Household c:game.getHouseholdBalance().cells())if(c instanceof WorkingHousehold w){
+            double n=game.getFamilies().getFormed(w.shape(),w.tier(),w.stage());incoming+=n;heads+=n*c.size();
+            if(c.shape().dependants()>0)parents+=n;
+        }
+        double seeking=demand.stream().mapToDouble(HousingChoice.Demand::count).sum();
+        // The approach ramp measures physical crowding; affordability already has its own migration pull.
+        // Counting only paid leases here would freeze an empty founding city's workers out of its vacant homes.
+        return new FamilyModel.Room(family,compact,0,seeking,Math.min(homes,legacy.withADoor),incoming>0?parents/incoming:legacy.withDependants,
+                incoming>0?heads/incoming:legacy.peoplePerHousehold);
+    }
     public double price(HousingInventory.Key key) { ClassState c=classes.get(key);return c==null?0:c.ask; }
     /** A posted class ask can change without inventing a lease or a trade. */
     public void setAsk(HousingInventory.Key key,double ask){nonnegative(ask);ClassState c=classes.get(key);

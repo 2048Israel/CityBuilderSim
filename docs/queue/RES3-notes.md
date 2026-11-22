@@ -1,6 +1,7 @@
 # RES3 — home choice, typed rents and the 14-form catalogue
 
-Work in progress on batch/RES3, based on shipped RES2 (7e484c4da).
+Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through main's
+db9b1fd99 queue correction. Final verification and publication status are below.
 No user city or save slot 1–9 is opened or written.
 
 The implementation adds the section 12 recipe catalogue, aggregate cell/class
@@ -188,3 +189,41 @@ group count, not a proposal, changes the source census. Both emergency phases
 use the remaining capacity 2 x door-equivalents minus household units, so the
 later phase cannot add a third household unit to an already doubled home. The
 caused host fixture also covers this combination, one rent and the two-unit cap.
+
+## Actual migration room and the played proof
+
+The next lender run had 137.346 unplaced household units at month 720. Every
+physical door and its one guest slot was occupied. Migration still asked the
+old size-only projection for room, using an already squeezed household mix as
+its model of new arrivals. That could admit more raw new households than the
+typed ledger could place.
+
+★ In a live city FamilyModel.roomLeft now derives the remaining normal/guest
+capacity from the actual class assignments and current physical inventory,
+reserves all existing unplaced demand first, and uses the raw formed working
+household mix for incoming size/children. It is a read-only projection: no new
+quote, clearing, trade or saved counter. Current completions enter its room
+without rewriting last month's quote. The existing migration lastRoom save
+continues to carry the resulting bound. Bare FamilyModel fixtures retain their
+original API. The callback is wired both at initial construction and the new-city
+rebuild, and native continuation proves the load context.
+
+The crowding approach ramp remains a physical measure, with the existing
+separate affordability pull. Using only paid occupancy for that ramp froze an
+empty founding city before workers could earn their first wages; the fixture
+correctly failed both its growth and mortgage-door premises. The hard arrival
+bound still uses actual remaining physical slots. Quote-only classes are never
+queried as physical inventory; its Unknown-class guard remains strict.
+
+HousingDoorCheck now passes the unchanged AUTO2 seed 12 city to month 900:
+15,093 people, 3,192 homes; the worst unplaced value prints 0.000, and all 899
+household cash identities close. The original mortgage-order, capital-issue,
+trimming and no-land checks are intact. HousingMarketCheck passes the actual
+room/host/paired-door invariants, both historical and present-day paid catalogue
+construction, monthly pool/household money, native state and next-month parity.
+
+Current SAVE_FORMAT and OLDEST_LOADABLE_FORMAT are 62, above shipped main's 61.
+If HC1/PW5 publishes its 62 before RES3, RES3 merges it and advances from that
+shipped value; no conversion is introduced. Its new form IDs likewise follow
+any shipped Substation row. Neither concurrent batch has shipped as of the
+latest main refresh recorded above.
