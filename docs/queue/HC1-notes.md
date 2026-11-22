@@ -489,3 +489,17 @@ Direct mends so far, with the original assertions/bounds retained:
 CardCheck, PriceLevelCheck, EquityCheck, OutsideCheck, OwnerCheck and
 SectorStatementCheck pass on these mends. Additional controlled input mends
 and the trace of remaining played/load premises are in progress.
+
+The controlled HoldersCheck waterfall now settles zero income against its
+20/40 bills. That causes the original paper-then-shares sale without making
+an unrelated positive-income emergency loan in the first settlement. Its
+unchanged 24-share-sale identity passes; four later played-paper premises
+still fail and are traced separately. PrizeCheck's `creditOwners` now funds
+the same debt-free participating share that `subscribe` accepts, weighted
+by eligible households, rather than rejecting every household in a cell
+with any card debt. The required funding amount and every lab/loan limit
+are unchanged; all 286 assertions pass.
+
+The complete GoldStandardCheck passes on the broker mend (38.4s), including
+the two lines red in the stopped dry run. Those lines will not be entered
+as known reds. Fast compilation and stale checking pass (0 firm findings).

@@ -378,12 +378,18 @@ public class OutsideCheck {
             // A student's rent is two, the grant a half, and a new student arrives
             // with a month and a half of the grant saved.
             StudentHousehold st = bal.students();
-            double shortAfterSavings = (2 - .5) - .5 * HouseholdBalance.OPENING_BUFFER_MONTHS;
+            double livingGap = 2 - .5;
+            double shortAfterSavings = CellSpread.shortfall(livingGap,
+                    .5 * HouseholdBalance.OPENING_BUFFER_MONTHS, CellSpread.SAVINGS_SIGMA);
             check("a student is paid the grant", st.disposable(), .5, 1e-9);
             assertTrue("...cannot run out: nothing unfunded (Jerus: \"can't run out, for now\")", st.unfunded() == 0);
             check("...because the student loan covered what the savings could not", st.studentBorrowed(),
                     shortAfterSavings, 1e-9);
-            check("...and it is a student loan, not the bank's credit", st.debt(), 0, 0);
+            double emergencySavings = st.drawn() - (livingGap - shortAfterSavings);
+            check("...the bank lends only the unexpected bill, not the living gap",
+                    st.borrowed(), st.emergencyBill() - emergencySavings, 1e-9);
+            check("...its card balance is that emergency draw and its fee",
+                    st.debt(), st.borrowed() + st.loanFee, 1e-9);
             check("the treasury lent it", bal.totalStudentBorrowed(), 20 * shortAfterSavings, 1e-9);
 
             OrphanHousehold baby = bal.orphans(AgeBand.BABY);

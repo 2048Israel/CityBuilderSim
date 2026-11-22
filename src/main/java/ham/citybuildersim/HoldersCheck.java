@@ -393,12 +393,14 @@ public class HoldersCheck {
                 return cash;
             }
         };
-        family.settle(100, 30, 0, 90, 1, .03, desk, 0);        // short by 20: the paper covers it
+        // Cause exactly these ordinary gaps with no income-scaled emergency
+        // bill between the two liquidations. Both still run the real waterfall.
+        family.settle(0, 0, 0, 20, 1, .03, desk, 0);           // short by 20: the paper covers it
         assertTrue("short by less than its paper is worth, it sells paper and nothing else",
                 order.toString().equals("P") && family.shares[0] == 20);
         close("...for exactly what it was short", family.paperSold(), 20, 1e-9);
         order.setLength(0);
-        family.settle(100, 30, 0, 110, 1, .03, desk, 0);       // short by 40: more than the paper left
+        family.settle(0, 0, 0, 40, 1, .03, desk, 0);           // short by 40: more than the paper left
         assertTrue("short by more, it sells all of its paper first and its shares after",
                 order.toString().equals("PS") && family.paper() <= 1e-12 && family.shares[0] < 20);
         close("...the shares covering what the paper could not", family.sold(),
