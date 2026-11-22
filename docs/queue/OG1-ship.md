@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-OG1-cTu7Sk2M -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — OG1, a planner orders to the gap — 2026-11-22, ready, see docs/queue/OG1-notes.md
 Past a nine-month backlog the builders no longer order one depot a month. They order the gap between their
