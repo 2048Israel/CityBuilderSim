@@ -581,3 +581,51 @@ because the harness source changed. `WFrYyVkw` remains failed and cannot supply 
 pass/reuse verdict or success gate comment. Reviewed source/harness trees remain
 exactly `ab17aafd`; new dry and eventual readiness are distinct steps, without any
 ready/publication action here.
+
+## Reviewed final-source BOX dry — passed, readiness separately ordered
+
+The new normal BOX-only `sh tools/gate.sh PW6 --dry-run` ran the pushed notes-only
+snapshot `2b0a6454afc0224bc4b13d1bcefa466046b1ed5c` against unchanged main
+`6b52db7a2d1ef6bb6e3856b843d571a3f71b3882` / .180. Ten protected source/harness/tool/
+baseline trees match reviewed `ab17aafd` exactly. Run:
+`jerus@192.168.0.16:/home/jerus/cbs/runs/cbs-gate-PW6-aSoQEt9r`.
+No reuse/branch-gate/no-tag/override was used; failed `WFrYyVkw` stays failed.
+
+Actual gate and client exited **0**. Compile took 8s; the suite took 705s and exited
+3 for exact main-known reds only. The ALL-238 pick executed 225 harnesses in 689s:
+213 passed, 12 main-known-only failed, 26 exact judge patterns, **zero new and zero
+unnamed lines**. Those known-only harnesses were BankCheck, BuildAdviceCheck,
+CopperRefiningCheck, CreditCrunchCheck, DenominationCheck, Forms1900Check,
+MortgageCheck, PassThroughCheck, PublicLicenceCheck, ReloadCheck, RoadCheck and
+YoungBankCheck. No new classification or waiver was added. Eight Monocle display
+harnesses started; existing soft timing/path-observation limits remain in raw suite.
+HistoryCheck passed on native BOX Temurin 21.0.13+9, with loaded class
+`a6c28d27b685effd3bd8be369a363de6208a684dc7c73310baf94a1499761d1f`, including the
+recorded 30/29/1 suffix and four-month/42-key native first-observation/save-load proof.
+
+The client ran 2026-11-22 01:19:00Z–01:31:01Z. Original serve 3071107, gate 3071315
+and guardian 3071316 were verified gone, owned Java zero, inactive/uncancelled, with
+`checks.complete`. Every one of 861 remote sealed hashes, 861 homecopy hashes and
+16 remote auxiliary receipts matched. All 838 source/record entries and refs/tree
+stayed frozen through actual terminal and homecopy verification. Only afterward did
+notes/ship advance; the exact BOX `gate-run` comment is first, marker retained second.
+
+The original unchanged BOX-only guard/proof was reused without rerunning its probes;
+its log stayed `7506db26891130d6312320a33bde8dfbc0bc0b60a62b45d1489f2ba4d2eb5f6d`.
+Local command resolution remained on the refusal stubs; remote native PATH/gate.env
+stayed normal/unchanged. No fallback, local model JVM, fake fallback mail, extra
+named/fast/probe/ensemble or second attempt occurred. An extra nested-shell data-hash
+capture failed in setup; known approved refs were retained and actual BOX hashes
+were captured read-only 36 seconds after start, matching approved earth-2/world-1
+and terminal hashes. That receipt is not relabelled prelaunch; no job restart occurred.
+
+Evidence: `target/pw6-dry-final/report.txt`, `terminal-receipt.json`,
+`remote-terminal.txt`, protected-tree/source/ref/guard/data/ownership records and
+`homecopy/cbs-gate-PW6-aSoQEt9r/`; full original client log `target/PW6-final-dry.txt`.
+All original 70/44/57/20/46/65 proof entries and manifests remain identical, as do
+failed `WFrYyVkw`'s 861 hashes and 34 controls. No kept run/copy/manifest was edited.
+Preview 0.9.181 was not published; VERSION/QUEUE/changelog/gate records stay publisher
+owned. Original .180 model ensemble, whole/scoped SHIP8541, delta SHIPb6ad and final
+SCREENae95 visual verdict/limits remain unchanged. Pick ALL 238; review floor
+`review    needed - saves: HistorySave.java`, covered. Every owned job is terminal.
+This completes the authorized dry and records; **ROOT READINESS GO remains required**.
