@@ -1604,6 +1604,10 @@ public class SaveFileCheck {
         portState.billedCrudeShip = "SUEZMAX";
         portState.heldBack = 123.5; portState.crudeSeaIn = 900.25; portState.crudeSeaOut = 100.125; portState.crudeTrade = 9_999.5;
         full.getPorts().restore(portState);
+        // The fixture has replaced the ports' in-force shares between ticks.
+        // Hand those shares to the markets as the native haul and the loader do,
+        // before saving: otherwise the live twin buys its next diesel at the old band.
+        full.getSectors().freight().reapplyBand(full.getPorts());
 
         /*
          * THE WORLD'S SHORT (EM2): a position the exchange carries beside the register's holdings, the shares the cells and the fund lend against
@@ -3314,7 +3318,13 @@ public class SaveFileCheck {
 
         refusedIntoARunningCity(oldest, atFloor, olderBuild, newer);
 
-        assertTrue("REV-HC1 P5: the populated format-61 city continues its card stocks, services, loan book and capital", CardCheck.continues(full, back));
+        // 'back' became fundCity above and was deliberately changed by those
+        // separate rescue/fund fixtures. Load the untouched populated save
+        // again so this continuation compares actual twins.
+        Game continued = new Game(full.getGameFiles());
+        quietly(() -> continued.loadGameSave(1));
+        assertTrue("REV-HC1 P5: the populated continuation starts from its actual format-61 save", continued.getLoadFailure() == null);
+        assertTrue("REV-HC1 P5: the populated format-61 city continues its card stocks, services, loan book and capital", CardCheck.continues(full, continued));
         onEarth(root);
         everyIdCrossesASave(root);
         worldMarketCrossesASave(root);
@@ -3350,8 +3360,12 @@ public class SaveFileCheck {
                             .equals("9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186")
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history))
                             .equals("96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
-            Game running = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("hc1-refuse-native60"), null));
-            GameFiles files = running.getGameFiles();
+            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("hc1-refuse-native60"), null));
+            GameFiles files = source.getGameFiles();
+            if (!source.prepareSaveForChecks(10, "HC1 current before refusal").write().whole()) return false;
+            Game running = new Game(files);
+            quietly(() -> running.loadGameSave(10));
+            if (running.getLoadFailure() != null || running.getMonth() != source.getMonth()) return false;
             Files.createDirectories(files.saveFile(10).getParent());
             Files.write(files.saveFile(10), save); Files.write(files.historyFile(10), history);
             var gson = new com.google.gson.Gson();

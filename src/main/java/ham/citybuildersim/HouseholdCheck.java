@@ -704,6 +704,17 @@ public class HouseholdCheck {
         income[U] = 100 * 1.0;   // $1.00 a household, in the game's thousands
         double rentEach = .60;   // more than half of it, so the shop cannot be covered
         double basket = .25;     // per head, so a household of two needs .50
+        // Follow this poor cohort's survivors. Holding its census at 100
+        // would silently replace each bankruptcy departure with a newcomer
+        // carrying the opening cash buffer, changing the poverty premise.
+        Runnable poorMonth = () -> {
+            fixtureMix[FamilyStructure.COUPLE.ordinal()][U] = Math.max(0,
+                    fixtureMix[FamilyStructure.COUPLE.ordinal()][U] - bal.getLeavingCity());
+            bal.censusOnly(census);
+            income[U] = fixtureMix[FamilyStructure.COUPLE.ordinal()][U];
+            spent[U] = shop(bal, basket, 1);
+            bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
+        };
 
         /*
          * THE SPEND FOLLOWS WHAT THE SHOPS HANDED OVER, as it does in the
@@ -721,9 +732,8 @@ public class HouseholdCheck {
         assertTrue("...by about the buffer the dial names",
                 opening >= 1.0 * HouseholdBalance.OPENING_BUFFER_MONTHS - 1e-9);
 
-        spent[U] = shop(bal, basket, 1);
         double savingsBefore = bal.getSavings(U);
-        bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
+        poorMonth.run();
         assertTrue("SAVINGS GO FIRST", bal.getSavings(U) < savingsBefore);
         assertTrue("...while the thin-buffered share borrows and its neighbours retain savings",
                 bal.getDebt(U) > 0 && bal.getSavings(U) > 0);
@@ -732,8 +742,7 @@ public class HouseholdCheck {
 
         // Run it until the savings are gone.
         for (int m = 0; m < 40; m++) {
-            spent[U] = shop(bal, basket, 1);
-            bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
+            poorMonth.run();
         }
         assertTrue("the savings run out", bal.getSavings(U) < 1e-9);
         assertTrue("...THEN THEY BORROW", bal.getDebt(U) > 0);
@@ -758,8 +767,7 @@ public class HouseholdCheck {
          */
         double shortMonths = 0, fullMonths = 0, plannedTotal = 0, subsistenceTotal = 0;
         for (int m = 0; m < 400; m++) {
-            spent[U] = shop(bal, basket, 1);
-            bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
+            poorMonth.run();
             if (m >= 100) {   // past the savings and the first slide into debt
                 plannedTotal += bal.getPlanned(U);
                 subsistenceTotal += bal.getSubsistence(U);
@@ -780,6 +788,7 @@ public class HouseholdCheck {
         System.out.println("\n--- and a household with money to spare pays it down, then banks it ---");
 
         HouseholdBalance rich = new HouseholdBalance();
+        fixtureMix[FamilyStructure.COUPLE.ordinal()][U] = 100; // this separate fixture is a fresh hundred households
         income[U] = 100 * 4.0;
         spent[U] = 0;
         for (int m = 0; m < 6; m++) {
@@ -913,6 +922,7 @@ public class HouseholdCheck {
         cellsBal.advanceMonth(who, pay, .50, noFees, bought, .20, .05, 1);
         Household child = cellsBal.cell(FamilyStructure.COUPLE_CHILD, PayTier.UNSKILLED);
         Household teen  = cellsBal.cell(FamilyStructure.COUPLE_TEEN, PayTier.UNSKILLED);
+        cellsBal.censusOnly(who); // settle the prior month's queued departures before this separate birthday case
         double familyEach = child.savings();
         assertTrue("fifty new families arrived with the buffer", familyEach > 0);
         double before = cellsBal.totalSavings();
@@ -935,6 +945,7 @@ public class HouseholdCheck {
          * would inherit a fifth of their money. Weighed by the adults in them
          * it is five for five.
          */
+        cellsBal.censusOnly(who);
         double singleEach = one.savings();
         double singlesTotal = one.totalSavings();
         city[single][U] = 50;
@@ -955,6 +966,7 @@ public class HouseholdCheck {
          * because the pool runs within the tier first and then across the
          * city.
          */
+        cellsBal.censusOnly(who);
         double coupleNow = two.savings();
         city[couple][U] = 60;
         city[couple][S] = 40;
@@ -987,6 +999,7 @@ public class HouseholdCheck {
             eat[U] = 100 * 2 * .25;
             leaving.advanceMonth(townCensus, thin, 1.0, noFees, eat, .25, .05, 1);
         }
+        leaving.censusOnly(townCensus);
         double savingsEach = broke.savings();
         double comfortableDebtEach = broke.debt();
         assertTrue("the fixture saved something - or the next line proves nothing", savingsEach > 0);
@@ -1009,6 +1022,7 @@ public class HouseholdCheck {
             leaving.advanceMonth(townCensus, thin, 1.0, noFees, eat, .25, .05, 1);
         }
         assertTrue("the fixture reached a debt - or the next line proves nothing", broke.debt() >= 3.0);
+        leaving.censusOnly(townCensus);
         double debtEach = broke.debt();
         town[couple][U] = 60;
         thin[U] = 60 * 1.2;
@@ -1028,6 +1042,7 @@ public class HouseholdCheck {
          * per-household debt is diluted and the savings are the old total plus
          * what they brought.
          */
+        leaving.censusOnly(townCensus);
         double owedTotal = broke.totalDebt();
         double savedTotal = broke.totalSavings();
         double buffer = 1.2 * HouseholdBalance.OPENING_BUFFER_MONTHS;
@@ -1090,6 +1105,7 @@ public class HouseholdCheck {
          * with a teen: the shares move with them.
          */
         int retail = Equity.indexOf(Sectors.RETAIL);
+        street.censusOnly(blockCensus);
         big.shares[retail] = 10;
         big.abroad = 3;   // ...and US$3k of the world's paper each, since the next day
         double sharesBefore = street.sharesHeld(retail);
@@ -1234,6 +1250,7 @@ public class HouseholdCheck {
         for (int m = 0; m < 3; m++) monthly.advanceMonth(folkCensus, wages, .50, noFees, noShopping, .20, .05, 1);
         Household thinning = monthly.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
         Household couples  = monthly.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        monthly.censusOnly(folkCensus);
         thinning.shares[retail] = 10;
         thinning.abroad = 3;
         double sharesIn = monthly.sharesHeld(retail);

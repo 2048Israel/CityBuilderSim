@@ -250,16 +250,18 @@ of that default fixture.
    detached worktree, through scratch slot 10. Its producer, exact hashes
    and 128-slot layout are recorded beside the compressed bytes. Nothing
    is relabelled or converted. Both CardCheck and SaveFileCheck verify
-   provenance, refusal, identical save/history bytes and the running city's
-   complete saved state, history, managers, month and cash. The existing
+   provenance, refusal, identical save/history bytes and the running loaded
+   twin's complete saved state, history, managers, month and cash. ReadPathCheck
+   runs this same native fixture against a running loaded city too. The existing
    loader already refused format 60 correctly; this mends the missing real
    fixture, with no invented loader change or claim that refusal was broken.
 5. **Continuation.** Both the normal card city and the populated save's
    original/reloaded twins advance one native month. The checks compare
    exact card positions and pending departures, minimums, emergency-service
    receipts/imports, household loan book and bank capital. The default
-   fixture passes. The populated fixture exposed a capital difference of
-   about 1.4e-8; that is being traced, with the assertion kept exact.
+   fixture and the populated fixture both pass to the bit, including capital.
+   The populated fixture is loaded afresh: its earlier `back` reference was
+   later deliberately mutated by the separate fund/rescue cases.
 
 The focused CardCheck passes all three model mends, the native old-save
 refusal and 24 measured months with every card mechanism firing. Its worst
@@ -267,3 +269,40 @@ pooled/household residuals are 7.25e-9 / 2.80e-9 of the unchanged tolerances;
 closing holders 7.337%, late households 0.293%, late balances 4.596%, annual
 net charge-offs 0.895%. Final checks and the review handoff remain. After
 the review SHIP, merge main and use `docs/ensemble/0.9.188.md` as ordered.
+
+The broad named run passed BankCheck, DebtStatisticsCheck, HouseholdFlowCheck,
+BusinessServicesCheck, CarCheck, DenominationCheck, MoneyWordsCheck (43 assertions)
+and ReadPathCheck. HouseholdCheck's movement cases were also letting prior
+bankruptcy departures occur inside a separately claimed birthday/promotion/arrival
+case. ★ Their held-census preparation now actually settles those queued departures
+and replacement arrivals before taking the next case's opening position; it does
+not erase a pending queue or change a monetary tolerance. The poor cohort now
+follows its surviving households and scales its total wage accordingly: keeping
+100 on the census had replaced each discharged leaver with a newcomer bringing
+the opening buffer. At the same income 1, rent .60 and basket .25 per head, it
+now eats short in 283 of the 300 measured months. The rich fixture resets its own
+separate census to 100. HouseholdCheck passes again. HouseholdStageCheck's expected
+moving-up count now uses the young survivors after the prior bankruptcy departures;
+its original bound and household money identity pass.
+
+P5's strict continuation first exposed a fixture inconsistency, not a missing
+card saved field. The populated fixture injects new ports shares with
+`Ports.restore` between ticks but had not applied them to the live market band.
+The loader correctly applies them (`Game.rebuildSimulationState`, calling
+`Freight.reapplyBand`); Freight's next native haul therefore bought diesel at
+different opening import prices. Its import was 12.19055100829861 live versus
+12.029371725183253 loaded. The 0.161179283115357 import difference changed GDP,
+then bond demand, the primary issue's fee and capital by about 1.4e-8.
+★ Immediately after injecting the fixture's ports state, apply its shares through
+`Freight.reapplyBand`, as both the native haul and loader do. The continuation
+also checks the opening diesel import price, the complete opening saved state
+(except its timestamp), then advances each city one native month and compares
+all requested closing fields with exact equality. The populated continuation now
+passes, with no new production save field and no tolerance change. An attempted
+business-quote snapshot did not affect the failure and was removed, as was all
+temporary tracing. No production quote or national-accounts logic was changed.
+
+The orchestrator's 10:53 and 11:42 coordination says RES2/PW5 also have the native
+format-60 fixture. Ours was already built, so it stays until integration; the
+second ship consolidates to one fixture and bumps save format/floor from the
+first ship's 61 to 62. That merge follows the review SHIP, before the ensemble.

@@ -351,15 +351,20 @@ public final class CardCheck {
     /** Advance both real cities; a matching reload must also make the same next month. */
     static boolean continues(Game live, Game loaded) {
         int month = live.getMonth();
-        double[] openingLive = live.getBank().monthLinesToSave(), openingLoaded = loaded.getBank().monthLinesToSave();
         var gson = new com.google.gson.Gson();
-        var beforeLive = gson.toJsonTree(live.prepareSaveForChecks(10, "continuation diagnostic").data()).getAsJsonObject();
-        var beforeLoaded = gson.toJsonTree(loaded.prepareSaveForChecks(10, "continuation diagnostic").data()).getAsJsonObject();
+        var beforeLive = gson.toJsonTree(live.prepareSaveForChecks(10, "continuation").data()).getAsJsonObject();
+        var beforeLoaded = gson.toJsonTree(loaded.prepareSaveForChecks(10, "continuation").data()).getAsJsonObject();
+        var openingFields = SaveFileCheck.jsonDiff(beforeLive, beforeLoaded, java.util.Set.of("savedAt"));
+        boolean same = openingFields.isEmpty();
+        // Freight buys fuel before the next goods clearing. Its opening band is
+        // derived from the saved shares, so a fixture that edits those shares must
+        // apply them before saving, just as the production haul does.
+        same &= live.getMarkets().get(Good.DIESEL).importPrice() == loaded.getMarkets().get(Good.DIESEL).importPrice();
         PrintStream out = System.out;
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         try { live.simulateMonths(1); loaded.simulateMonths(1); }
         finally { System.setOut(out); }
-        boolean same = live.getMonth() == month + 1 && loaded.getMonth() == month + 1;
+        same &= live.getMonth() == month + 1 && loaded.getMonth() == month + 1;
         for (Household c : live.getHouseholdBalance().cells()) {
             Household d = loaded.getHouseholdBalance().cellByKey(c.key());
             same &= d != null && c.households == d.households && c.debt == d.debt
@@ -372,20 +377,8 @@ public final class CardCheck {
         same &= a.householdServices == b.householdServices && a.salesToHouseholds == b.salesToHouseholds && a.imports == b.imports;
         same &= live.getBank().getHouseholdBook() == loaded.getBank().getHouseholdBook()
                 && live.getBank().equity() == loaded.getBank().equity();
-        if (!same) System.out.printf("Continuation bank: loans %.17g / %.17g, capital %.17g / %.17g%n",
-                live.getBank().getHouseholdBook(), loaded.getBank().getHouseholdBook(), live.getBank().equity(), loaded.getBank().equity());
-        if (!same) {
-            System.out.println("Continuation opening saved fields: " + SaveFileCheck.jsonDiff(beforeLive, beforeLoaded, java.util.Set.of("savedAt")));
-            for (int i = 0; i < openingLive.length; i++) if (openingLive[i] != openingLoaded[i])
-                System.out.printf("Opening bank month-line[%d] %.17g / %.17g%n", i, openingLive[i], openingLoaded[i]);
-            double[] endLive = live.getBank().monthLinesToSave(), endLoaded = loaded.getBank().monthLinesToSave();
-            for (int i = 0; i < endLive.length; i++) if (endLive[i] != endLoaded[i])
-                System.out.printf("Closing bank month-line[%d] %.17g / %.17g%n", i, endLive[i], endLoaded[i]);
-            System.out.printf("Closing cash %.17g / %.17g, book %.17g / %.17g, allowance %.17g / %.17g, assets %.17g / %.17g, liabilities %.17g / %.17g%n",
-                    live.getBank().getCash(), loaded.getBank().getCash(), live.getBank().getBook(), loaded.getBank().getBook(),
-                    live.getBank().getAllowance(), loaded.getBank().getAllowance(), live.getBank().totalAssets(), loaded.getBank().totalAssets(),
-                    live.getBank().totalLiabilities(), loaded.getBank().totalLiabilities());
-        }
+        if (!same) System.out.printf("Continuation: opening differences %s; loans %.17g / %.17g; capital %.17g / %.17g%n",
+                openingFields, live.getBank().getHouseholdBook(), loaded.getBank().getHouseholdBook(), live.getBank().equity(), loaded.getBank().equity());
         return same;
     }
 }
