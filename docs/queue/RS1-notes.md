@@ -23,26 +23,40 @@ one) has no meaningful midpoint. Use the last trade, or fair value before
 the first trade, and say the book is crossed in the quote caption. Keep the
 ordinary midpoint for an uncrossed two-sided book.
 
-Finding 3 is DK1's class: a desk at its aggregate cap can read a positive
-rounding residue as room and trade a dust quantity at a very cheap resting
-ask, making that ask the last price. Compare the money difference against
-`MoneyAudit.tolerance(0, larger sum)` before dividing by fair value, for
-both the position and aggregate cap. A tiny price is not by itself invalid;
-prevent the capacity error, rather than rewrite the recorded price.
+Finding 3 has the same arithmetic failure as DK1, but the bank's own
+book does not use `deskLimits()`: its buyer is the bank's buyback, whose
+`buybackRoom()` is spare equity over its capital requirements. A positive
+residue there can likewise buy a dust lot at a cheap resting ask and set
+the bank's last price. The bank fixture therefore causes this on a rescued
+bank as well as DK1's aggregate desk cap on another company. Reject spare
+buyback capital below `MoneyAudit.tolerance(0, larger capital sum)` and
+resolve both desk cap differences in money before dividing by fair value.
+The normal-scale and HN1-scale fixtures exercise both paths. A cheap price
+alone is valid: the positive control gives the desk resolved room and
+checks that it records the actual cheap trade price. The screenshots alone
+do not establish the historical source of that particular old last print;
+these fixtures prove and close the two dust-capacity paths.
 
 No new saved state or field is needed. The existing hand queue, posted
 orders, rescue holding, cash and ledger already carry the transaction.
 Under the old-saves rule no save-format bump is owed.
 
-The regression was run with the original `4a6af0baa` Exchange and
-TreasuryFund sources and the new ExchangeCheck fixtures: 10 expected
-failures, including findings 0, 1, 2 and the last-price assertion twice
-(normal scale and money multiplied by 1e9, HN1's unit 1e-9). The positive
+The final regression was run with the original `4a6af0baa` Exchange and
+TreasuryFund sources and the new ExchangeCheck fixtures: 14 expected
+failures, including findings 0, 1, 2, the prior-real-trade crossed quote,
+and both desk and bank last-price assertions twice (normal scale and
+money multiplied by 1e9, HN1's unit 1e-9). All fixture premises and the
+positive controls passed. The positive
 room was explicitly above OrderBook.DUST in shares but below the money
-sums' resolution. Kept locally: `target/RS1-before.txt` and
-`target/RS1-before-suite.txt`. The rest of ExchangeCheck and its picked
+sums' resolution. Kept locally: `target/RS1-before-final.txt` and
+`target/RS1-before-final-suite.txt`. The rest of ExchangeCheck and its picked
 DebtExchangeCheck were green. A first attempt to compile the harness used
 a nonexistent indexed getter; corrected to the existing aggregate getter
 before these regression results.
+
+The fresh default LongPlaytest on main's `4a6af0baa` model passed all
+2,400 months (`target/RS1-main-playtest.txt`, 350s harness time), with the
+trace under `target/RS1-main-trace-*`. Only the new ExchangeCheck fixtures
+were present in that build; the game sources were main's.
 
 Checks and publication evidence will be recorded here after the runs.

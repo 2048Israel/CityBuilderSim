@@ -581,6 +581,34 @@ public class ExchangeCheck {
             x.tradeForCheck(target, Exchange.DESK, OrderBook.Side.BUY, x.fair(target), 100);
             assertTrue("RS1-3 control: resolved room permits a real cheap trade", x.hasTraded(target));
             close("RS1-3 control: a real trade records the actual buyer's price", x.lastTrade(target), cheap, 1e-12 * scale);
+
+            // The screenshot is the bank's own book: its buyback uses spare capital,
+            // not deskLimits(), but the same difference-of-money-sums can leave dust.
+            Bank own = bankWith(0);
+            double loans = 1e12 * scale;
+            double required = own.capitalTarget() * loans;
+            own.injectCapital(required + MoneyAudit.tolerance(0, required) / 2);
+            own.lend(loans);
+            own.refresh(1, 100 * loans, 0, loans, 0, 0);
+            Equity rescued = withRecord(Equity.BANK, months(100 * scale));
+            rescued.takeAllForCity(Equity.BANK, 1_000);
+            Exchange bankBook = exchange();
+            TreasuryFund city = new TreasuryFund();
+            bankBook.attachFund(city);
+            step(bankBook, rescued, null, null, new Firms(), bookOf(Equity.BANK, own.equity()), W, 0, 1);
+            bankBook.attach(rescued, null, own, null, 1);
+            double spare = own.buybackRoom(0);
+            out.printf(java.util.Locale.ROOT, "   RS1 bank scale %.0e: spare %.12g, resolution %.12g, target %.12g%n",
+                    scale, spare, MoneyAudit.tolerance(0, own.targetEquity()), own.targetEquity());
+            assertTrue("RS1-3 bank fixture: spare is below money resolution but buys more than quantity dust",
+                    spare / cheap > OrderBook.DUST && spare <= MoneyAudit.tolerance(0, own.targetEquity()));
+            double realPrice = bankBook.fair(Equity.BANK);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.FUND_HAND, OrderBook.Side.SELL, realPrice, 10);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.WORLD, OrderBook.Side.BUY, realPrice, 10);
+            close("RS1-3 bank fixture: a real sale has set the last price", bankBook.lastTrade(Equity.BANK), realPrice, 1e-12 * scale);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.FUND_HAND, OrderBook.Side.SELL, cheap, 100);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.DESK, OrderBook.Side.BUY, bankBook.fair(Equity.BANK), 100);
+            close("RS1-3 bank: dust spare capital cannot replace a real last price", bankBook.lastTrade(Equity.BANK), realPrice, 1e-12 * scale);
         }
     }
 
