@@ -1,24 +1,8 @@
-# gate of Merge batch/R6e: research: the 1996-2024 engineering rows with something behind them, each held at the old figure until the row is known (R2e's undone pattern): E21 GM crops at the Grain Farm and the Mixed Farm; E22 the pressure exchanger at the Desalination Plant, after reverse osmosis (1977) as E33; E23 GPS autosteer at the farms; E24 the large-rotor turbine at the Wind Farm (after PW3); E26 driverless haul trucks at the open pits; E27 endless strip production at the mini-mill, only if its step against the thin-slab caster is found; E30 calcined-clay cement; E32 the battery-electric long-haul truck at the Truck Depot. On R6-G's recommended calls (★1, ★6) unless Jerus says otherwise, 0.9.186
+# gate of Merge batch/FS9: sweep: the bank and its borrowers (10 harnesses); takes HP2 item 4 and HL1's DistressBleedCheck 5 rows (not beside QR1, OE1), 0.9.186
 # date: 2026-11-22
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 236 harnesses run in 960s: 218 passed, 18 failed
-MortgageCheck | exit 1
-MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not FAIL
-MortgageCheck | ...and a month that earned 0.00 against 0.00 of principal pays nothing, where the old rule paid 0.00 FAIL
-MortgageCheck | 2 FAILED
-CreditCrunchCheck | exit 1
-CreditCrunchCheck | FAIL fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
-CreditCrunchCheck | FAIL fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
-CreditCrunchCheck | FAIL no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
-CreditCrunchCheck | FAIL fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
-CreditCrunchCheck | FAIL the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
-CreditCrunchCheck | FAIL fixture: ...and their issue fell short of it
-CreditCrunchCheck | FAIL the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
-CreditCrunchCheck | CreditCrunchCheck: 7 FAILED
-OrderDoorCheck | exit 1
-OrderDoorCheck | FAIL the ensemble's seed 12 reaches the edge between m200 and m420 (at m420)
-OrderDoorCheck | OrderDoorCheck: 1 FAILED
+# suite: 230 harnesses run in 766s: 219 passed, 11 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -29,9 +13,6 @@ RoadCheck | 2 FAILED
 AutoBuildCheck | exit 1
 AutoBuildCheck | fixture: ...and it placed orders in those months (0)                                                           FAIL
 AutoBuildCheck | 1 FAILED
-BankCheck | exit 1
-BankCheck | it pays its savers something                               FAIL
-BankCheck | 1 FAILED
 CentralBankCheck | exit 2
 CentralBankCheck | fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing FAIL
 CentralBankCheck | fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more FAIL
@@ -61,12 +42,6 @@ KeptCheck | Construction, Cash & debt as a statement: the redraw and the next eq
 KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 45 of 401; 11 of 25 months made none) FAIL
 KeptCheck | fixture: the Rankings tab with the city's drawer open: every cell the household grid opens before the month it opens after, the families held (2 closed; the month alone would have closed 2) FAIL
 KeptCheck | 3 FAILED
-DistressBleedCheck | exit 2
-DistressBleedCheck | fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in FAIL
-DistressBleedCheck | ...and the rule is not dead: the centres go when the operating streak reaches the dial FAIL
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.2, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.153980 != 378.187926
@@ -77,7 +52,6 @@ PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desal
 PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12882.1 with 12882.1 without 2139.0296982550963 gain -12.147956635350319
 PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -26.93446406507404 pending 0.0 then gain -12.147956635350319 pending 0.0
 PublicLicenceCheck | 64 passed, 4 FAILED
-YoungBankCheck | exit 2
-YoungBankCheck | FAIL no spell under Bank.CAPITAL_RATIO begins with the write-off of a sector of one plant
-YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | YoungBankCheck: 2 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED

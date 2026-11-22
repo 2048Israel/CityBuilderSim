@@ -1,4 +1,4 @@
-# MortgageCheck.java - 1,245 lines · 26 methods · 2 constants · harnesses
+# MortgageCheck.java - 1,320 lines · 30 methods · 5 constants · harnesses
 
 `ham/citybuildersim/MortgageCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -57,9 +57,14 @@
 >      principal is the larger (the cushion that counts the payments is
 >      ExchangeCheck's).
 > 
-> Every fixture causes its condition.
+> Every fixture causes its condition. FS9: the played landlords' town moved
+> with HN1-A (they order at the door's price): section 12's lean month no
+> longer came in the sixty months it searched, and the others waited on what
+> the played town happened to do. Each is set, not waited for:
+>   2 and 3 play one month of the founded town (short of doors from the
+> ... (12 more lines in the source)
 
-**Uses:** [Mortgage](Mortgage.md) (83), [Bank](Bank.md) (62), [BusinessDebtManager](BusinessDebtManager.md) (34), [Game](Game.md) (21), [LongPlaytest](LongPlaytest.md) (7), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (6), [Equity](Equity.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [BusinessDebt](BusinessDebt.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Sectors](Sectors.md) (2), [EconomyManager](EconomyManager.md) (2), [SectorBooks](SectorBooks.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [Formats](Formats.md) (1), [BusinessLoan](BusinessLoan.md) (1), [RealEstate](RealEstate.md) (1), [NationalAccounts](NationalAccounts.md) (1), [BondMarket](BondMarket.md) (1), [Ladder](Ladder.md) (1), [CentralBank](CentralBank.md) (1), [DebtManager](DebtManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [DemolitionLog](DemolitionLog.md) (1)
+**Uses:** [Mortgage](Mortgage.md) (87), [Bank](Bank.md) (62), [BusinessDebtManager](BusinessDebtManager.md) (38), [Game](Game.md) (24), [LongPlaytest](LongPlaytest.md) (7), [MoneyAudit](MoneyAudit.md) (7), [Equity](Equity.md) (7), [GameFiles](GameFiles.md) (6), [EconomyManager](EconomyManager.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (4), [BusinessDebt](BusinessDebt.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Sectors](Sectors.md) (2), [BusinessLoan](BusinessLoan.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [Formats](Formats.md) (1), [RealEstate](RealEstate.md) (1), [NationalAccounts](NationalAccounts.md) (1), [BondMarket](BondMarket.md) (1), [Ladder](Ladder.md) (1), [CentralBank](CentralBank.md) (1), [DebtManager](DebtManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [DemolitionLog](DemolitionLog.md) (1), [SectorBooks](SectorBooks.md) (1)
 
 **Used by (1):** [BuildersFirstCheck](BuildersFirstCheck.md)
 
@@ -67,123 +72,132 @@
 
 | line | section |
 |---:|---|
-| 201 | 1. THE ANNUITY |
-| 266 | 2. ORIGINATION |
-| 344 | 3. THE DOWN PAYMENT |
-| 406 | 4. THE LENDER'S TEST |
-| 433 | 5. FIXED FOR THE TERM |
-| 501 | 6. INSURANCE |
-| 593 | 7. THE BANK |
-| 715 | 8. SAVE AND LOAD |
-| 814 | 9. WHERE THE OLD RULE SAID NO |
-| 923 | 10. THE LEVERAGE RATIO (round 2) |
-| 1016 | 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) |
-| 1134 | 12. PAYOUTS AFTER PRINCIPAL (round 2) |
+| 217 | 1. THE ANNUITY |
+| 282 | 2. ORIGINATION |
+| 363 | 3. THE DOWN PAYMENT |
+| 421 | 4. THE LENDER'S TEST |
+| 448 | 5. FIXED FOR THE TERM |
+| 521 | 6. INSURANCE |
+| 623 | 7. THE BANK |
+| 745 | 8. SAVE AND LOAD |
+| 862 | 9. WHERE THE OLD RULE SAID NO |
+| 974 | 10. THE LEVERAGE RATIO (round 2) |
+| 1067 | 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) |
+| 1185 | 12. PAYOUTS AFTER PRINCIPAL (round 2) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 112 | `MortgageCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 113 | `MortgageCheck.FEE` | `Bank.LOAN_FEE` |  |
+| 128 | `MortgageCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 129 | `MortgageCheck.FEE` | `Bank.LOAN_FEE` |  |
+| 1188 | `MortgageCheck.PAYOUT_FIXTURE_RATE` | `.005` | The insured rate section 12's by-hand mortgages are written at: low enough that a mortgage's interest leaves the landlords' income standing while its principal can still pass it. |
+| 1191 | `MortgageCheck.HOMES_STANDING` | `50` | The homes section 12 stands for the landlords to let (buildStack, noConstruction): enough that the month's rent is more than its costs once their tenants have moved in. |
+| 1200 | `MortgageCheck.START_UP_MONTHS` | `6` | The most months section 12 plays for those homes to earn, the first month of a founded town being its start-up: a fixture bound, and the fixture fails past it. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 77 | `static int fails` |  |
-| 78 | `static PrintStream out` |  |
-| 79 | `static PrintStream quiet` |  |
+| 93 | `static int fails` |  |
+| 94 | `static PrintStream out` |  |
+| 95 | `static PrintStream quiet` |  |
+| 1204 | `double income, principal, paid, shortfall, till` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 1171 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
-| 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 86 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 92 | 6 | `static void same(String label, String actual, String expected)` |  |
-| 99 | 5 | `static void quietly(Runnable r)` |  |
-| 105 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 116 | 5 | `static double scheduleRate()` | The premium's rate from the schedule's own constants: the base and a surcharge for each step past the base years. |
-| 123 | 4 | `static double level(double balance, double annual, int months)` | The level payment, written out here rather than asked of the class under test. |
-| 133 | 3 | `static Game landlordCity(Path root, String name)` | A city whose landlords buy on mortgages: founded, funded, given ground and jobs, with a bank, and its housing left to the landlords - who are short of doors from the first month, so they order at once. |
-| 138 | 3 | `static Game landlordCity(Path root, String name, boolean worksStanding)` | ...with its works standing from the start when asked: see payoutsAfterPrincipal(). |
-| 149 | 29 | `static Game landlordCity(Path root, String name, boolean worksStanding, int depotsStanding)` | ...and, when its works stand, with that many more depots standing beside the founding yard (PT1-M4). |
-| 179 | 21 | `public static void main(String[] args) throws Exception` |  |
+| 91 | 1230 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
+| 97 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 102 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 108 | 6 | `static void same(String label, String actual, String expected)` |  |
+| 115 | 5 | `static void quietly(Runnable r)` |  |
+| 121 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 132 | 5 | `static double scheduleRate()` | The premium's rate from the schedule's own constants: the base and a surcharge for each step past the base years. |
+| 139 | 4 | `static double level(double balance, double annual, int months)` | The level payment, written out here rather than asked of the class under test. |
+| 149 | 3 | `static Game landlordCity(Path root, String name)` | A city whose landlords buy on mortgages: founded, funded, given ground and jobs, with a bank, and its housing left to the landlords - who are short of doors from the first month, so they order at once. |
+| 154 | 3 | `static Game landlordCity(Path root, String name, boolean worksStanding)` | ...with its works standing from the start when asked: see payoutsAfterPrincipal(). |
+| 165 | 29 | `static Game landlordCity(Path root, String name, boolean worksStanding, int depotsStanding)` | ...and, when its works stand, with that many more depots standing beside the founding yard (PT1-M4). |
+| 195 | 21 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE ANNUITY (lines 201-265)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 203 | 62 | `static void annuity()` |  |
-
-### 2. ORIGINATION (lines 266-343)
+### 1. THE ANNUITY (lines 217-281)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 268 | 75 | `static void origination(Path root) throws Exception` |  |
+| 219 | 62 | `static void annuity()` |  |
 
-### 3. THE DOWN PAYMENT (lines 344-405)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 346 | 59 | `static void downPayment(Path root)` |  |
-
-### 4. THE LENDER'S TEST (lines 406-432)
+### 2. ORIGINATION (lines 282-362)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 408 | 24 | `static void lendersTest()` |  |
+| 284 | 78 | `static void origination(Path root) throws Exception` |  |
 
-### 5. FIXED FOR THE TERM (lines 433-500)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 435 | 65 | `static void fixedForTheTerm(Path root)` |  |
-
-### 6. INSURANCE (lines 501-592)
+### 3. THE DOWN PAYMENT (lines 363-420)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 503 | 89 | `static void insurance(Path root)` |  |
+| 365 | 55 | `static void downPayment(Path root)` |  |
 
-### 7. THE BANK (lines 593-714)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 595 | 119 | `static void theBank(Path root)` |  |
-
-### 8. SAVE AND LOAD (lines 715-813)
+### 4. THE LENDER'S TEST (lines 421-447)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 717 | 87 | `static void saveAndLoad(Path root) throws Exception` |  |
-| 806 | 7 | `static String describe(BusinessDebt loan)` | A loan's fields, to the bit, as one string. |
+| 423 | 24 | `static void lendersTest()` |  |
 
-### 9. WHERE THE OLD RULE SAID NO (lines 814-922)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 816 | 106 | `static void whereTheOldRuleSaidNo(Path root)` |  |
-
-### 10. THE LEVERAGE RATIO (round 2) (lines 923-1015)
+### 5. FIXED FOR THE TERM (lines 448-520)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 930 | 9 | `static Bank mortgageBank(double equity)` | A bank by hand whose business book is $1M, $900k of it insured mortgages, and whose equity is `equity`: net borrowed, so the book is everything on its sheet and the exposure is the book. |
-| 940 | 75 | `static void leverageRatio()` |  |
+| 450 | 70 | `static void fixedForTheTerm(Path root)` |  |
 
-### 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) (lines 1016-1133)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1034 | 6 | `static void closeAMonth(Bank b, double interest, double payroll)` | One closed month of a hand-built bank: this interest, these costs. |
-| 1041 | 92 | `static void branchesClose(Path root)` |  |
-
-### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1134-1245)
+### 6. INSURANCE (lines 521-622)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1136 | 109 | `static void payoutsAfterPrincipal(Path root)` |  |
+| 523 | 99 | `static void insurance(Path root)` |  |
+
+### 7. THE BANK (lines 623-744)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 625 | 119 | `static void theBank(Path root)` |  |
+
+### 8. SAVE AND LOAD (lines 745-861)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 747 | 105 | `static void saveAndLoad(Path root) throws Exception` |  |
+| 854 | 7 | `static String describe(BusinessDebt loan)` | A loan's fields, to the bit, as one string. |
+
+### 9. WHERE THE OLD RULE SAID NO (lines 862-973)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 864 | 109 | `static void whereTheOldRuleSaidNo(Path root)` |  |
+
+### 10. THE LEVERAGE RATIO (round 2) (lines 974-1066)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 981 | 9 | `static Bank mortgageBank(double equity)` | A bank by hand whose business book is $1M, $900k of it insured mortgages, and whose equity is `equity`: net borrowed, so the book is everything on its sheet and the exposure is the book. |
+| 991 | 75 | `static void leverageRatio()` |  |
+
+### 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) (lines 1067-1184)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1085 | 6 | `static void closeAMonth(Bank b, double interest, double payroll)` | One closed month of a hand-built bank: this interest, these costs. |
+| 1092 | 92 | `static void branchesClose(Path root)` |  |
+
+### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1185-1320)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1194 | 4 | `static void standLandlords(Game g)` | HOMES_STANDING homes stand for the landlords to own (in a town whose works stand: the founding town builds none at once), and they are held from ordering: what a by-hand fixture owes against, and what keeps nothing bu... |
+| 1203 | 3 | **type** `static final class LandlordMonth` | One month of the landlords' books as the dividend step reads them: what it earned and repaid, what it paid its owners, what the desk lent it, and the till as the dividend found it. |
+| 1208 | 13 | `static LandlordMonth playLandlordMonth(Game g)` | One month played, the till read where the dividend step finds it (the settle probe, after the month's investment and before the owners are paid): nothing in the month moves. |
+| 1223 | 3 | `static double rolled(LandlordMonth books, LandlordMonth paying)` | What the shortfall desk rolled of a month's principal, in the month that pays on it (Game.dividendDue(): never more than what fell due). |
+| 1233 | 13 | `static Mortgage borrowByHand(Game g, double firstMonthPrincipal)` | A mortgage written by hand on the landlords whose first month repays `firstMonthPrincipal` of principal: the annuity less its interest at PAYOUT_FIXTURE_RATE, per dollar of shortfall, from a bare lender's own mortgage... |
+| 1247 | 73 | `static void payoutsAfterPrincipal(Path root)` |  |
 
