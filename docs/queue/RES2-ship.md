@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-RES2-OIFTyuGi -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — RES2, aggregate housing inventory — 2026-11-22, ready, see docs/queue/RES2-notes.md
 Separates completed residential structures from their immutable dwelling mixes,
