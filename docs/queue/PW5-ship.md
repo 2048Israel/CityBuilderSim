@@ -10,7 +10,7 @@ transmission-only share. Closing costs are saved with the dispatch, so reloading
 the next bill exact. Currency reforms scale every wires component once. Older saves
 are refused with both files and the running city intact under the raised format floor.
 ## known-reds
-RailCheck | a city that trades steel has freight to move | HT1-H | 2026-11-22 | At m37 the unchanged steel town offers 15,327 tonnes versus main's 48,543; it no longer fills the fixture's railway threshold. See PW5-notes, stopped first dry run.
+RailCheck | a city that trades steel has freight to move | HT1-H | 2026-11-22 | At m37 it owns zero districts, serves only29.545% at the shortage cap, and offers15,327 t versus main's48,543; it no longer fills the railway threshold. PW5-F1 reproduces this carry cause; its wires charge is zero.
 RailCheck | with the railway carrying, the lorry bill is billed at home, paid abroad and kept | HT1-H | 2026-11-22 | The m67 town no longer earns the boundary discount that covered FR6's additional home leg; the old three-way comparison's sizing premise is lost, not a lost money payment. See PW5-notes and Freight.java's existing TODO at getPaidAbroad.
 RailCheck | a railway sized to its city bills about what the rule allows it | HT1-H | 2026-11-22 | At m67 the moved town bills 86k against 253k allowed and its quote clips at 100%; the assumed interior target no longer exists. Main bills 252k against 244k with an 83.9% target.
 RailDepotCheck | fixture: the played city offers more than two spurs' sidings of bulk | HT1-H | 2026-11-22 | At m18 bulk is 61,825 tonnes versus main's 122,791; floor(bulk/50,000)-1 lays zero spurs instead of one.
