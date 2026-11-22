@@ -271,7 +271,7 @@ public final class CardCheck {
             }
         }
         check("all current statistics survive the loader", live.equals(loaded));
-        check("REV-HC1 P5: format-61 card, service, loan-book and capital continuation", continues(g, back));
+        check("REV-HC1 P5: format-62 card, service, loan-book and capital continuation", continues(g, back));
         DebtStatistics.Measure cards = live.perHousehold().get(DebtStatistics.Kind.CARD);
         System.out.printf("Closing card figures: holders %.3f%%, late households %.3f%%, late balances %.3f%%, annualised charge-off %.3f%%%n",
                 100 * cards.shareHolding(), 100 * cards.lateShare(), 100 * cards.delinquency(), 100 * cards.annualChargeOff());
@@ -281,6 +281,7 @@ public final class CardCheck {
     public static void main(String[] args) {
         spread(); month(); chargeOff(); save(); neighbours(); census(); reviewFlows();
         check("REV-HC1 P4: native format-60 save/history are refused with bytes and running city intact", SaveFileCheck.nativeCard60Refusal());
+        check("HC1 format62: native format61 refusal keeps bytes and the running loaded city intact", SaveFileCheck.nativeCard61Refusal(false));
         city();
         System.out.println("CardCheck: " + fails + " failures");
         System.exit(fails == 0 ? 0 : 1);

@@ -331,3 +331,35 @@ one authentic format-60 fixture. Then run the ensemble against
 `docs/ensemble/0.9.188.md` and the ALL dry run on the gate box. The provisional
 marker stays until those steps are green. No ensemble, dry-run result, or ready
 claim is made at this mends handoff.
+
+## SHIP review and main integration, 2026-11-22
+
+REV-HC1's delta review of `bc137e8be` is SHIP: all five findings mended;
+SaveFileCheck's ports-band fixture completion loosens nothing (orchestrator
+12:47 mail). This authorizes main integration and the ensemble. The same mail
+explicitly requires a new `HC1 dry run?` handoff and an ended turn before the
+ALL dry run; its reply is the dry-run go.
+
+Merged shipped `7e484c4da` (0.9.189) as `fb0407f`. Money and housing read
+coverage are combined. RES2's exact format-60 pair and enhanced helper are
+retained as the one shared fixture: native schema/hashes, refusal at the floor,
+fresh and running loaded cities, and repeated reads all remain checked.
+
+★ Both format and floor are now 62, from shipped RES2's 61. Its old
+128-slot household cells have no card holder/late/excluded shares or pending
+discharged departures, so reading that layout as HC1's would be wrong. No
+conversion is added. A second genuine pair was produced by the actual shipped
+`7e484c4da` classes, using the committed `tools/fixtures/CardFormat61Fixture.java`
+producer, scratch slot 10 and twelve native months (closing month 31). It has
+RES2 housing inventory, 141 old 128-slot cells and no HC2 surveys. Provenance and
+hashes are in `fixtures/hc1-format61/README.md`. Its detached source worktree was
+removed after production. The one refusal helper now checks both actual old
+formats, with unchanged file streams and the running loaded city/history;
+ReadPathCheck adds repeated reads. The current format-62 continuation remains
+an exact next-native-month comparison, including bank capital.
+
+The integrated fast check passes (compile 54s; Stale 0 firm, 199 soft).
+Focused integration checks are running serially: CardCheck, SaveFileCheck,
+ReadPathCheck, HousingInventoryCheck and ExchangeCheck. Logs are
+`target/hc1-integrated-fast.txt`, `target/hc1-integrated-named.txt` and
+`target/hc1-integrated-suite-status.txt`.
