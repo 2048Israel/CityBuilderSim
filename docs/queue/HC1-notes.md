@@ -1040,3 +1040,12 @@ The final fast-only run completes exit0 after every named run, controller
 `target/hc1-paper-last-fast.txt`: compile3s, maps regenerated, Stale0 firm
 and199 soft. No source changes follow it. The old native60 pair/helper,
 native61 refusal and next-month save comparisons are retained intact.
+
+Final source/trace record isee2e3eb0b, pushed after production74dc953ef.
+The pick against main591fc92d8 isALL244 harnesses (121 files in the
+cumulative batch). Exact review line:
+`review needed - money: Bank.java, DebtStatistics.java, ui/BankScreen.java; saves: HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT`.
+The new money delta is specifically Game.desksBuysHouseholdPaper and the
+HouseholdBalance PaperDesk callers, with ScaleCheck's native regression.
+Push the updated provisional ship record last; no ready or gate-run marker
+is claimed. Mail mends for this delta and wait for the orchestrator/reviewer.

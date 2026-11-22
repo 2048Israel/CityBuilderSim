@@ -10,7 +10,7 @@ Household money shows debt holders, medians, means, payment burdens, arrears
 and yearly surveys by tier and stage, per household or adult. Every new flow
 has one money and national-accounts path. Save format 62 refuses older saves
 without conversion; refusal of formats 60/61 and exact next-month continuation are checked.
-The final 80-run ensemble passes its money-audit and findings checks.
+The card-model 80-run ensemble passed its money-audit and findings checks.
 
 ## known-reds
 HoldersCheck | fixture: in those months no household left and none sold the bank's desk any paper | HT1-H | 2026-11-22 | m63-65 paper sales and m63-66 departures move the played issue after its quiet-desk premise; exact amounts in HC1-notes. Bank-first, holder books and money audits pass; FS14 shipped, owner assigned by orchestrator.
@@ -22,3 +22,4 @@ CurrencyCheck | the autopilot sets the rule's rate | HT1-H | 2026-11-22 | Same m
 CurrencyCheck | ...past the old stop of the dial | HT1-H | 2026-11-22 | Same m41 missing annual-rate premise leaves the3% dial; the intended45% inflation is not caused. No rate or threshold changed.
 EducationCheck | fixture: the two readings of this market really do differ | HT1-H | 2026-11-22 | m301 jobs7717, own1258, queue8767 give0.90 opportunity and about0.10 difference, below the fixture's0.15; actual queue-read law passes. FS16 shipped; owner assigned by orchestrator.
 KeptCheck | the city's fund: a month's redraw after each choice hands back nine in ten of the page's nodes, or more | FS5 | 2026-11-22 | Section63 at m2190, closed-lots fold:315 nodes made and1776 retained (84.9%); fresh-page comparisons pass. Native lot composition moved in the window starting m2130; fund renderer and90% bound unchanged. Label now includes its page to distinguish it from the Bank's older generic retention row.
+OrderDoorCheck | fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready | HT1-H | 2026-11-22 | Seed12 m200: card credit changes the native city from the closed-card control's NORMAL and2/2 to GOOD and1/2 at a5.227% tested rate. Door579.980369/1337.688808, NOI3.426674; bank capital suffices, its income/carry test refuses two. Asked0/passed0, no tested order lost; exact control and inputs in HC1-notes. Same PW5 premise/owner, one row.
