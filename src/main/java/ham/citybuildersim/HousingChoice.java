@@ -87,6 +87,8 @@ public final class HousingChoice {
         double kept=0;
         for(int j=0;j<t;j++){double sum=0;for(int i=0;i<h;i++)sum+=x[i][j];double ratio=sum>free[j]?free[j]/sum:1;
             for(int i=0;i<h;i++){x[i][j]*=ratio;need[i]=Math.max(0,need[i]-x[i][j]);free[j]-=x[i][j];kept+=x[i][j];}}
+        for(int i=0;i<h;i++)need[i]=residual(need[i],ds.get(i).count());
+        for(int j=0;j<t;j++)free[j]=residual(free[j],os.get(j).count());
         double[][] retained=new double[h][];for(int i=0;i<h;i++)retained[i]=x[i].clone();
         double suitable=allocate(ds,os,need,free,x,month,false);
         double crowded=emergency?completeEmergency(ds,os,need,free,x,retained,month):0;
@@ -138,6 +140,8 @@ public final class HousingChoice {
         return new Result(List.copyOf(leases),kept,normal,crowded,poor,shortage,left);
     }
     private record OfferSignature(int capacity,int bedrooms,double area,double quality,double garden,boolean stepFree,double rent,double recurring) { }
+    /** A subtraction residue is measured against its original source, before it can create a graph node. */
+    private static double residual(double left,double source){return left<=FamilyModel.packingRounding(source)?0:Math.max(0,left);}
     private static double allocate(List<Demand> ds,List<Offer> os,double[] need,double[] free,double[][] x,int month,boolean emergency){
         Map<DemandSignature,List<Integer>> dg=new LinkedHashMap<>(); Map<OfferSignature,List<Integer>> og=new LinkedHashMap<>();
         boolean freeOffers=true;for(int j=0;j<os.size();j++)if(free[j]>0&&os.get(j).rent()+os.get(j).recurring()>0)freeOffers=false;
@@ -167,8 +171,8 @@ public final class HousingChoice {
         double[] takeH=new double[ds.size()],takeT=new double[os.size()];
         for(int a=0;a<hn;a++)for(int b=0;b<tn;b++)if(links[a][b]!=null){double amount=links[a][b].reverse.left;
             for(int i:hs.get(a))for(int j:ts.get(b)){double n=amount*(need[i]/nh[a])*(free[j]/nt[b]);x[i][j]+=n;takeH[i]+=n;takeT[j]+=n;}}
-        for(int i=0;i<need.length;i++)need[i]=Math.max(0,need[i]-takeH[i]);
-        for(int j=0;j<free.length;j++)free[j]=Math.max(0,free[j]-takeT[j]);
+        for(int i=0;i<need.length;i++)need[i]=residual(need[i]-takeH[i],ds.get(i).count());
+        for(int j=0;j<free.length;j++)free[j]=residual(free[j]-takeT[j],os.get(j).count());
         return placed;
     }
     /**
@@ -181,11 +185,11 @@ public final class HousingChoice {
                                             double[][] x,double[][] retained,int month){
         if(Arrays.stream(need).sum()<=1e-12||Arrays.stream(free).sum()<=1e-12)return 0;
         double[] originalH=new double[ds.size()],originalT=new double[os.size()];
-        for(int i=0;i<ds.size();i++)originalH[i]=Math.max(0,ds.get(i).count()-Arrays.stream(retained[i]).sum());
+        for(int i=0;i<ds.size();i++)originalH[i]=residual(ds.get(i).count()-Arrays.stream(retained[i]).sum(),ds.get(i).count());
         boolean freeOffers=true;
         for(int j=0;j<os.size();j++){
             double kept=0;for(int i=0;i<ds.size();i++)kept+=retained[i][j];
-            originalT[j]=Math.max(0,os.get(j).count()-kept);
+            originalT[j]=residual(os.get(j).count()-kept,os.get(j).count());
             if(originalT[j]>0&&os.get(j).rent()+os.get(j).recurring()>0)freeOffers=false;
         }
         Map<DemandSignature,List<Integer>> dg=new LinkedHashMap<>();Map<OfferSignature,List<Integer>> og=new LinkedHashMap<>();
@@ -226,8 +230,8 @@ public final class HousingChoice {
         for(int i=0;i<ds.size();i++)System.arraycopy(retained[i],0,x[i],0,os.size());
         for(int a=0;a<hn;a++)for(int b=0;b<tn;b++)if(links[a][b]!=null){double amount=links[a][b].reverse.left;
             for(int i:hs.get(a))for(int j:ts.get(b))x[i][j]+=amount*(originalH[i]/nh[a])*(originalT[j]/nt[b]);}
-        for(int i=0;i<ds.size();i++)need[i]=Math.max(0,ds.get(i).count()-Arrays.stream(x[i]).sum());
-        for(int j=0;j<os.size();j++){double used=0;for(int i=0;i<ds.size();i++)used+=x[i][j];free[j]=Math.max(0,os.get(j).count()-used);}
+        for(int i=0;i<ds.size();i++)need[i]=residual(ds.get(i).count()-Arrays.stream(x[i]).sum(),ds.get(i).count());
+        for(int j=0;j<os.size();j++){double used=0;for(int i=0;i<ds.size();i++)used+=x[i][j];free[j]=residual(os.get(j).count()-used,os.get(j).count());}
         return added;
     }
     private static final class Edge { final int to,cost; double left; Edge reverse;Edge(int to,double left,int cost){this.to=to;this.left=left;this.cost=cost;} }

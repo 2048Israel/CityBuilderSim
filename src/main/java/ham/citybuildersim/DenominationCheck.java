@@ -1298,6 +1298,17 @@ public class DenominationCheck {
         if (!housingParted && countGap > 1e-8) {
             housingParted = true;
             for (var row : counts.entrySet()) if (Math.abs(row.getValue()) > 1e-8) out.printf("      flow %s plain-minus-reformed %.12g%n", row.getKey(), row.getValue());
+            var changed=left.demands().stream().filter(d->counts.entrySet().stream().anyMatch(e->e.getKey().startsWith(d.key()+"/")&&Math.abs(e.getValue())>1e-8)).toList();
+            for(Game city:new Game[]{a,b})for(var d:city.getSectors().realEstate().housingMarket().demands())
+                if(changed.stream().anyMatch(c->c.size()==d.size()&&c.children()==d.children()&&c.tier()==d.tier()&&c.young()==d.young()&&c.retired()==d.retired())){
+                    double unit=city==a?1:factor;
+                    out.printf("      %s demand %s count %.17g budget %.17g%n",city==a?"plain":"reformed",d.key(),d.count(),d.budget()*unit);
+                    for(var c:city.getSectors().realEstate().housingMarket().classes())if(c.homes>0){
+                        var form=HousingForms.of(c.recipe);var home=form.recipe().mix().stream().filter(h->h.id().equals(c.dwelling)).findFirst().orElseThrow();
+                        var offer=new HousingChoice.Offer(c.key(),c.homes,home.capacity(),home.bedrooms(),home.area(),home.quality(),form.garden(),form.stepFree(),c.ask,0);
+                        out.printf("         %s ask %.17g affordable %s suitable %s score %.17g%n",c.key(),c.ask*unit,HousingChoice.affordable(d,offer),HousingChoice.suitable(d,offer,false),HousingChoice.score(d,offer));
+                    }
+                }
         }
     }
 

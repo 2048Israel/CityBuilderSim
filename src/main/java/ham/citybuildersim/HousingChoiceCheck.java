@@ -93,6 +93,12 @@ public final class HousingChoiceCheck {
         near("emergency does not evict a valid incumbent",r.kept(),1);
         near("incumbent's family door stays occupied by that incumbent",count(r,"adult","smaller-family"),1);
         near("blocked family is counted when an incumbent cannot move",r.unplaced(),1);
+        var staying=d("staying",100,1,0,0,100);var moving=d("moving",1,1,0,0,100);
+        var occupied=o("occupied",100,2,40,1,0,false,10);var vacant=o("vacant",1,2,40,1,0,false,10);
+        r=HousingChoice.clear(List.of(staying,moving),List.of(occupied,vacant),
+                List.of(new HousingChoice.Lease("staying",occupied.key(),Math.nextDown(100.0),Math.nextDown(100.0)*10)),7);
+        check("an incumbent's one-ULP remainder creates no extra normal mover",r.suitable()==1);
+        check("rounding residual eligibility never invents an incumbent or a door",count(r,"staying",null)<=100&&count(r,null,null)<=101);
         System.out.println(fails==0?"HousingChoiceCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }
 }

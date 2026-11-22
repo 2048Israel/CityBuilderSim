@@ -468,3 +468,20 @@ respect that final classification. No assignment, title, bill, money tolerance
 or stock check is changed; physical occupancy and two-household limits remain
 strict. The genuine fractional shortage must still activate housing priority.
 This is RES3's integration fault and is mended here, not waived as DK1.
+
+The large unit fork disappeared, but the remaining eight small comparisons were
+also investigated rather than waived. Their first assignment split was m181,
+0.002825 household units, while budgets/asks still agreed within 1e-14/1e-15.
+The affected cells had identical affordability decisions and preference order in
+both currencies. A second caused kernel case failed: an incumbent's one-ULP
+retention remainder was counted as an extra suitable mover. ★ Residual need and
+free supply now use their original source's existing packing resolution before
+becoming graph nodes, and again after a phase. No capacity is rounded upward.
+That caused case passes; DenominationCheck is now fully green, all comparisons.
+At m181 the assignment difference is only 9e-13 households. This was another RES3
+residual-node defect, not the queued DK1 event. No money/save bound was changed.
+
+Modern ScaleCheck tracking is now green too. Its historical tracking still has
+five empirical savings/deposit findings after the changed played founding. The
+optional trace compares the native class quotes, free-material regime, bank,
+household stocks, audits and financial flows; that diagnosis follows below.

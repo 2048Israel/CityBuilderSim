@@ -702,6 +702,20 @@ public class ScaleCheck {
             out.printf("   1900 month %d: largest horse-post miss %d / K; people %.2e, savings %.2e, GDP %.2e, prices %.2e; the food basket D$%.6f and D$%.6f a person-month (FS2)%n",
                     month, most, miss[0], miss[2], miss[3], miss[5], small.getEconomyManager().getFoodLocalPrice(), big.getEconomyManager().getFoodLocalPrice());
             if (Boolean.getBoolean("scale.housingTrace")) {
+                for(Game city:new Game[]{small,big}){
+                    double k=city==small?1:TRACK_TIMES;var bank=city.getBank();var hb=city.getHouseholdBalance();var audit=city.getLastHouseholdsAudit();
+                    out.printf("      %s financial m%d bank equity %.12g cash %.12g deposits %.12g rate %.12g resolution %s loss %.12g; households savings %.12g abroad %.12g paper %.12g bonds %.12g debt %.12g; audit before %.12g after %.12g to %.12g from %.12g own %.12g%n",
+                            city==small?"small":"large",month,bank.equity()/k,bank.getCash()/k,bank.getDeposits()/k,bank.getChosenDepositRate(),bank.isInResolution(),bank.getResolutionLossThisMonth()/k,
+                            hb.totalSavings()/k,hb.totalAbroadValue()/k,hb.totalPaper()/k,hb.totalBonds()/k,hb.totalDebt()/k,audit.before/k,audit.after/k,audit.toHouseholds/k,audit.fromHouseholds/k,audit.own/k);
+                    if(month==4)for(var row:city.getLastMoneyAudit().figures.entrySet())
+                        if(row.getKey().matches(".*(desk|equity|shares|bonds|BroughtHome|InvestedAbroad).*"))
+                            out.printf("      %s flow %s %.17g%n",city==small?"small":"large",row.getKey(),row.getValue()/k);
+                }
+                if(month==4)for(Household cell:small.getHouseholdBalance().cells()){
+                    var other=big.getHouseholdBalance().cells().stream().filter(c->c.key().equals(cell.key())).findFirst().orElseThrow();
+                    double p=cell.totalSavings(),q=other.totalSavings()/TRACK_TIMES;
+                    if(Math.abs(p-q)>.01*Math.max(1e-6,Math.abs(p)))out.printf("      cell %s households %.12g / %.12g savings %.12g / %.12g%n",cell.key(),cell.households(),other.households()/TRACK_TIMES,p,q);
+                }
                 var smallRE=small.getSectors().realEstate();var bigRE=big.getSectors().realEstate();
                 out.printf("      housing m%d rent %.12g / %.12g; weight %.12g / %.12g; index %.12g / %.12g%n",month,
                         smallRE.getAverageRentPaid(),bigRE.getAverageRentPaid(),smallRE.getRentWeight(),bigRE.getRentWeight()/TRACK_TIMES,small.getPriceIndex().getIndex(),big.getPriceIndex().getIndex());
