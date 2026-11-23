@@ -1,4 +1,4 @@
-# MortgageCheck.java - 1,320 lines · 30 methods · 5 constants · harnesses
+# MortgageCheck.java - 1,327 lines · 30 methods · 5 constants · harnesses
 
 `ham/citybuildersim/MortgageCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -83,7 +83,7 @@
 | 862 | 9. WHERE THE OLD RULE SAID NO |
 | 974 | 10. THE LEVERAGE RATIO (round 2) |
 | 1067 | 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) |
-| 1185 | 12. PAYOUTS AFTER PRINCIPAL (round 2) |
+| 1192 | 12. PAYOUTS AFTER PRINCIPAL (round 2) |
 
 ## Constants
 
@@ -91,9 +91,9 @@
 |---:|---|---|---|
 | 128 | `MortgageCheck.RE` | `Sectors.REAL_ESTATE` |  |
 | 129 | `MortgageCheck.FEE` | `Bank.LOAN_FEE` |  |
-| 1188 | `MortgageCheck.PAYOUT_FIXTURE_RATE` | `.005` | The insured rate section 12's by-hand mortgages are written at: low enough that a mortgage's interest leaves the landlords' income standing while its principal can still pass it. |
-| 1191 | `MortgageCheck.HOMES_STANDING` | `50` | The homes section 12 stands for the landlords to let (buildStack, noConstruction): enough that the month's rent is more than its costs once their tenants have moved in. |
-| 1200 | `MortgageCheck.START_UP_MONTHS` | `6` | The most months section 12 plays for those homes to earn, the first month of a founded town being its start-up: a fixture bound, and the fixture fails past it. |
+| 1195 | `MortgageCheck.PAYOUT_FIXTURE_RATE` | `.005` | The insured rate section 12's by-hand mortgages are written at: low enough that a mortgage's interest leaves the landlords' income standing while its principal can still pass it. |
+| 1198 | `MortgageCheck.HOMES_STANDING` | `50` | The homes section 12 stands for the landlords to let (buildStack, noConstruction): enough that the month's rent is more than its costs once their tenants have moved in. |
+| 1207 | `MortgageCheck.START_UP_MONTHS` | `6` | The most months section 12 plays for those homes to earn, the first month of a founded town being its start-up: a fixture bound, and the fixture fails past it. |
 
 ## Fields (state)
 
@@ -102,13 +102,13 @@
 | 93 | `static int fails` |  |
 | 94 | `static PrintStream out` |  |
 | 95 | `static PrintStream quiet` |  |
-| 1204 | `double income, principal, paid, shortfall, till` |  |
+| 1211 | `double income, principal, paid, shortfall, till` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 91 | 1230 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
+| 91 | 1237 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
 | 97 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 102 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 108 | 6 | `static void same(String label, String actual, String expected)` |  |
@@ -183,21 +183,21 @@
 | 981 | 9 | `static Bank mortgageBank(double equity)` | A bank by hand whose business book is $1M, $900k of it insured mortgages, and whose equity is `equity`: net borrowed, so the book is everything on its sheet and the exposure is the book. |
 | 991 | 75 | `static void leverageRatio()` |  |
 
-### 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) (lines 1067-1184)
+### 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) (lines 1067-1191)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1085 | 6 | `static void closeAMonth(Bank b, double interest, double payroll)` | One closed month of a hand-built bank: this interest, these costs. |
-| 1092 | 92 | `static void branchesClose(Path root)` |  |
+| 1092 | 99 | `static void branchesClose(Path root)` |  |
 
-### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1185-1320)
+### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1192-1327)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1194 | 4 | `static void standLandlords(Game g)` | HOMES_STANDING homes stand for the landlords to own (in a town whose works stand: the founding town builds none at once), and they are held from ordering: what a by-hand fixture owes against, and what keeps nothing bu... |
-| 1203 | 3 | **type** `static final class LandlordMonth` | One month of the landlords' books as the dividend step reads them: what it earned and repaid, what it paid its owners, what the desk lent it, and the till as the dividend found it. |
-| 1208 | 13 | `static LandlordMonth playLandlordMonth(Game g)` | One month played, the till read where the dividend step finds it (the settle probe, after the month's investment and before the owners are paid): nothing in the month moves. |
-| 1223 | 3 | `static double rolled(LandlordMonth books, LandlordMonth paying)` | What the shortfall desk rolled of a month's principal, in the month that pays on it (Game.dividendDue(): never more than what fell due). |
-| 1233 | 13 | `static Mortgage borrowByHand(Game g, double firstMonthPrincipal)` | A mortgage written by hand on the landlords whose first month repays `firstMonthPrincipal` of principal: the annuity less its interest at PAYOUT_FIXTURE_RATE, per dollar of shortfall, from a bare lender's own mortgage... |
-| 1247 | 73 | `static void payoutsAfterPrincipal(Path root)` |  |
+| 1201 | 4 | `static void standLandlords(Game g)` | HOMES_STANDING homes stand for the landlords to own (in a town whose works stand: the founding town builds none at once), and they are held from ordering: what a by-hand fixture owes against, and what keeps nothing bu... |
+| 1210 | 3 | **type** `static final class LandlordMonth` | One month of the landlords' books as the dividend step reads them: what it earned and repaid, what it paid its owners, what the desk lent it, and the till as the dividend found it. |
+| 1215 | 13 | `static LandlordMonth playLandlordMonth(Game g)` | One month played, the till read where the dividend step finds it (the settle probe, after the month's investment and before the owners are paid): nothing in the month moves. |
+| 1230 | 3 | `static double rolled(LandlordMonth books, LandlordMonth paying)` | What the shortfall desk rolled of a month's principal, in the month that pays on it (Game.dividendDue(): never more than what fell due). |
+| 1240 | 13 | `static Mortgage borrowByHand(Game g, double firstMonthPrincipal)` | A mortgage written by hand on the landlords whose first month repays `firstMonthPrincipal` of principal: the annuity less its interest at PAYOUT_FIXTURE_RATE, per dollar of shortfall, from a bare lender's own mortgage... |
+| 1254 | 73 | `static void payoutsAfterPrincipal(Path root)` |  |
 

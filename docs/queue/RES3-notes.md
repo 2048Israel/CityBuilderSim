@@ -1273,3 +1273,192 @@ and exact decisions; each raw log retains ground looks/offers/holds/purchases
 and standing form counts. Both observed sources were restored byte-for-byte
 afterward. Only the notes change in this attribution follow-up, so the next
 step under the reviewer's go is the final-model ensemble against 0.9.192.
+
+## Third ensemble: own land exhaustion and blueprint/order integration
+
+RES3-host-final-20261123 ran b948e245e (model ff8ea23be) on gatebox against
+0.9.192: 80/80 complete, none missing/short, raw FAIL 16/26, hard 8/10.
+Every M1 passes with zero failed/unread audits. AUTO2 and ZERO_SLACK each have
+two F1 runs versus baseline one: seed 8 first flags m618, seed 12 m927.
+SHOCK and HIGH each have one and pass against baseline one; ZERO_HOT has none.
+All sixteen AUTO2 cities take off, median m1,040 versus 747. Final medians
+are 3,031,056 AUTO2, 1,634,084 ZERO_SLACK, 5,819 ZERO_HOT, 22,681 SHOCK and
+8,995 HIGH, beside baseline 4,649,724 / 2,883,284 / 7,632 / 67,498 / 32,356.
+Only ZERO_HOT passes the informational T2 bound. The raw FAIL stays unchanged
+in target/ensemble/RES3-host-final-20261123; no outside-class pass is used.
+
+The 633 native rows for seeds 3/14/9 match all four observed columns of this
+ensemble at CSV precision, zero differences. Seed 9's m605 rows have audit=1,
+findings_new=0, findings_distinct=0 and an empty finding in AUTO2, ZERO_SLACK,
+SHOCK and HIGH; ZERO_HOT ends before m605. Exact values and rent/wage/real-rent
+readings are retained in target/RES3-host-final-{readings.txt,rent-readings.json,
+seed9-m605.json}. The third-run F1s are new RES3 failures, not an extension of
+the withdrawn FB11 attribution.
+
+Read-only native observations reproduced seeds 8 and 12 and saved full native
+slot-10 checkpoints immediately before their first flagged presses. The
+observed source is restored afterward. Loading each checkpoint and taking one
+native player press reproduces the original population, index, rent, GDP and
+unplaced count at CSV precision, even after the read-only candidate quotes.
+The evidence is target/RES3-host-final-finding-{8,12}.*,
+target/RES3-host-final-{8,12}-before-{save,history}.json,
+target/RES3-host-final-{8,12}-bad-market.json and target/RES3-candidate-reads.*.
+Two temporary observer mistakes (uncaught file I/O, then a missing scratch
+save directory) were corrected; their failures are diagnostic setup, not
+accepted model checks. No observer or checkpoint changes a model input.
+
+At seed 8 m618, all 1,063 homes are fully doubled, 2.033377 households lack
+shelter, there is no home pipeline and only 1,393 ft2 is free. House/terrace
+stock consumes 5,354,000 ft2, 5,036.689 ft2 per home. At seed 12 m927, all
+3,458 homes are fully doubled, 13.241186 households lack shelter and there is
+no home pipeline. The remaining 7,279 ft2 fits a compact home, while the planner
+holds for an 18,000-ft2 terrace. These are actual physical shortages, not
+unfunded rents, and belong to RES3.
+
+The checkpoint's candidate readings identify the blueprint trap. At seed 8,
+unbuilt Low-Rise quotes 19.449 per project against a 34.778 operating build
+hurdle; mixed mid-rise quotes 15.960 against 33.710. Established houses and
+terraces quote roughly twice the neutral gross capital anchor. A new class
+was initialized at that gross anchor and had no operating-cost quote because
+it was absent from physical stock. It could not enter, while the established
+large-plot forms kept winning. Seed 12 also shows a profitable compact offer
+that fits the remaining land but loses to the preferred, non-fitting terrace.
+Finally, the typed order replaced the full door backlog with income from one
+project, capping its door-based quantity at one project when head-capacity
+shortfall did not dominate.
+
+★ The mend in progress quotes an unbuilt class's actual operation plus its
+capital-return anchor, with the existing lease update speed. Actual standing
+stock keeps its existing scarcity/glut and carry-floor rule. A blueprint cannot
+inherit debt from another class. All form quotes are prepared, including
+classes absent from physical stock; optional parking creates no lease receipts.
+★ Profitable candidates that fit the actual land compete before a preferred
+form that cannot fit. If none fits, the native land hold remains. Child-family
+eligibility and actual budgets remain hard constraints.
+★ Size the typed order from the compatible, affordable remaining demand and
+the actual recipe's per-class unit counts, reserving standing homes and funded
+sites once. The existing full-cost, build-margin, mortgage, quantity-halving,
+owner-funding and actual construction gates remain in the path.
+
+The controlled first-red HousingMarketCheck reports fourteen missing
+operating quotes, a stranded compact alternative and a one-project order for
+an eighty-household backlog (target/RES3-planner-first-red.*). Its child-family
+and zero-budget controls already pass. The first mend fixed selection/sizing
+but still missed unbuilt operating carry because it iterated physical stock;
+that intermediate failure is retained as target/RES3-planner-stock-only-carry.log.
+The corrected catalogue-wide cost preparation and native replays are being
+checked. This model moves money/quotes/orders: fresh named checks, REV-RES3's
+delta review and another final-model ensemble remain owed before any dry run.
+
+The corrected HousingMarketCheck now passes (target/RES3-planner-mend.*).
+The fractional-demand comparator is updated to the explicitly selected unbuilt
+supply quote (capital anchor plus actual operating carry); it retains the same
+exact near comparison and all zero-demand/phantom-scarcity assertions. The
+operating-return test uses allocated home capital, preserving optional parking's
+separate capital with no invented parking receipts. Neither a money/save
+comparison nor a quantity/conservation bound changed. Both loaded checkpoint
+controls reproduce the old failing press exactly in the four observed columns
+and the unplaced count. Fresh from-founding seed-8 and seed-12 mend replays are
+now running; their success is not assumed from the isolated fixtures.
+
+The fresh model ae8aad170 removes both native shortages: seed 8 has exactly
+zero unplaced households in all 151 observations m550-700, and seed 12 in
+all 151 observations m850-1000. At the former m618 failure seed 8 now has
+26,203 people, 7,688 homes and 184 funded doors on site; at m927 seed 12 has
+12,254 people, 4,418 homes, no doors on site and zero unplaced. The differing
+growth paths are retained rather than passed off as identical cities. Seed 12
+is smaller than its old path, while shelter is ample; growth remains an
+explicit informational comparison for the next ensemble.
+
+The raw evidence is target/RES3-planner-native-{8,12}.{log,txt}. Both observed
+source files are restored to their committed bytes and touched for compilation.
+The model changes are committed at ae8aad170; its full named-check pass,
+catalogue refresh and money-review handoff are in progress. No dry run has
+started, no F1 exception is requested, and another 80-run ensemble is owed
+after REV-RES3 reviews this actual model change.
+
+The normal HousingDoorCheck is green on this model: 61 capital-short orders,
+59 offered to owners whole and two behind unsupported quotes; 2,918 homes
+finish in its watched window, no household is unplaced and all 899 monthly
+household cash identities close. Its now-green FS11 pin is removed again.
+
+InvestCheck exposed two stale premises, retained in
+target/RES3-planner-InvestCheck-beforefix.*. Its land-negative case supplied
+one foot less than the preferred plot, although the new compact alternative
+could fit. It now supplies one foot less than the smallest known housing plot
+and asserts no known form fits; the original refusal and land-reason assertions
+remain. Its ten-house labour quote assumed a scarcity multiplier of one on a
+played construction queue. The exact work identity now includes the model's
+actual order multiplier, retaining the 1e-9 bound, wage-input checks and every
+tax, materials and settlement identity. No money or save check is removed or
+loosened; the resumed run must make both premises explicit.
+
+InvestCheck now exits 0 with those same exact bounds and identities.
+The model's latest catalogue/profile report is from HousingMarketCheck on
+ae8aad170, with both populated native reloads and next-month twins green:
+
+| Scratch city | Integrated month | H/T/A/M/L |
+| --- | --- | --- |
+| Small, 214 people | 48.813 ms | 63/32/124/0/0 |
+| Present-day catalogue | 44.496 ms | 84/32/274/0/0 |
+| Present-day larger, 148,943 people | 45.706 ms | 82/32/259/0/0 |
+| Historical catalogue | 38.753 ms | 62/32/126/0/0 |
+| Historical larger, 148,988 people | 37.317 ms | 62/32/135/0/0 |
+
+Both larger cities retain 141 permanent household cells. The report still
+lists all fourteen forms and thirty-two classes, their actual price/budget/
+availability/work outcomes, and the shipped IDs after Substation 155.
+
+CardCheck also selects BuildCardCheck by the runner's substring rule. The
+credit-card harness itself has zero failures, including the exact saved
+statistics and native continuation. The build-card harness finds three red
+assertions in its existing loss-first Rail Spur case. Read-only observations
+show a negative estimate, -28.13918112808416, and both LOSS and INTEREST
+correctly failing. Its first failure is STAFFING: 29% now, 70.7393422% with a
+year's arrivals, below the unchanged 80% bar. The standing railway already
+covers all 1,590 tonnes traded with 49,792 tonnes of capacity; lack of trade
+is not the missing premise. The fixture must cause enough labour to reach
+its loss-first assertion. These three moved played-town premises pass by
+name to queued FS12, the existing build/card sweep. Every original staffing,
+loss, interest and first-failure assertion stays intact; no UI or production
+code is changed for them. Evidence: target/RES3-planner-BuildCardCheck-observe.*
+and the restored-source target/RES3-planner-CardCheck.*. The two diagnostic
+prints also contain the word FAIL and are not accepted check lines. The
+observed source is restored byte-for-byte and compiled class files are
+checked to contain no RES3_CARD_DIAG remnants.
+
+LongPlaytest completes its normal 2,400 months, all subsequent material and
+household money fixtures passing. Its one raw finding is the map ring at
+m2400: industry 2.43 km, homes' band 1.78 km, outer kinds 3.35 km. The
+repository's existing LongPlaytest/CL7 record classifies that named finding;
+the raw result remains visible. There is no shelter finding in this run.
+This is not an exception to the pending monetary ensemble's M1/F1 verdict.
+
+Main cdbe83dc0 is merged at 30dd6a7e0. The only main delta from ecbc3b975
+is QUEUE.md's ownership record for FS5; no source, schema, catalogue IDs or
+baseline changes. Format and load floor remain 64; the planner algorithm
+adds no saved state. No new bump is owed by this delta. The batch's original
+bump remains owed under the old-saves rule, with all real previous-format
+pairs and intact-file/live-city refusal checks retained.
+
+MortgageCheck's original branch-reload premise also moved: the short closure
+window had zero paying customers while its homes and supporting works were
+still being built. All origination, lender, insurance, capital, closure timing,
+money and payout laws passed, but the nonzero customer assertion properly
+failed. FS9 has shipped, so that is not a usable queued owner. This fixture
+is mended through inputs: its existing landlordCity factory stands operating
+works and three depots, standLandlords stands fifty actual homes, and the
+town is given exactly seven branches before the six past the charter close.
+Two additional assertions require that starting count. The original six-at-once,
+first-cost-known, demolition, capital, bank-equity, money and exact reload
+comparisons remain unchanged. A trial with the full standing factory and six
+additional branches correctly failed: it had eight and closed seven. Standing
+homes alone still had no paying customers. Both intermediate failures are
+retained, not accepted checks. The final fixture passes with 84.023846119
+actual fee-paying customers and later-branch cost 6.411122386 restored exactly.
+No bank/customer field is stubbed, no fee is invented, no closure limit or
+save tolerance is loosened, and no production code changes for this fixture.
+Evidence: target/RES3-planner-MortgageCheck-beforefix.*,
+target/RES3-planner-MortgageCheck-standing-works.*,
+target/RES3-planner-MortgageCheck-homes-only.* and the final
+target/RES3-planner-MortgageCheck.*.

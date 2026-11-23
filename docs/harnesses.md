@@ -2,7 +2,7 @@
 
 Generated 2026-11-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**247 harness files, 28,288 labelled assertions.** AllChecks runs 247 of them.
+**247 harness files, 28,298 labelled assertions.** AllChecks runs 247 of them.
 
 ## Which harnesses read which class
 
@@ -45,7 +45,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, HoldersCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CardCheck, CreditCheck, CreditCrunchCheck, DistressBleedCheck, FittingCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HousingMarketCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, CardCheck, DistressBleedCheck, GdpCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
@@ -16883,7 +16883,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L281 first month retains the conveyed title
   - L283 a new city clears both physical and assignment cohorts
 
-## HousingMarketCheck.java - 147 labelled assertions
+## HousingMarketCheck.java - 154 labelled assertions
 
 > Integrated quotes, funded sites, rental receipts, budgets and reload evidence.
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project
@@ -16904,149 +16904,157 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L47 sector bills only actual occupied leases
   - L48 the compatibility occupancy reader counts actual typed lets
   - L51 one clearing per month
-- **L66 class-local debt carry, actual trades and zero-demand glut**
-  - L70 zero demand in standing stock has zero target despite debt
-  - L71 zero-demand glut walks down at the existing lease speed
-  - L72 a glut class's debt does not change another class's ask
-  - L73 the tight class covers only its own carry
-  - L79 one ULP of fully placed stock is not an economic glut
-  - L85 a genuine fractional vacancy still waives the carry lift
-  - L91 an unbuilt class has an opening quote, without a fictitious scarce market
-  - L93 repricing itself records no actual rent trade
-  - L94 repricing preserves last observed class trade
-  - L95 actual occupied proceeds remain the accepted lease bill
-  - L97 vacant class records no rent receipt
-  - L98 vacant class's last trade is retained
-  - L99 vacant class trade becomes stale
-  - L100 actual class quantity counts occupied homes only
-  - L101 actual class price is actual value over quantity
-  - L104 corrupt class prices are refused atomically
-  - L107 saved demand below actual occupied quantity is refused atomically
-  - L108 a monetary reform scales actual receipts
-  - L109 a monetary reform scales saved household budgets
-  - L110 a monetary reform scales committed pipeline asks
-  - L111 a monetary reform scales committed pipeline recurring costs
-- **L114 a founding worker's current wage funds the first actual home**
-  - L119 founding month
-  - L120 founding rent receipts are actual accepted bills
-  - L122 the founding premise really admits people and lets occupied homes
-- **L125 fully placed fractional demand creates no phantom blueprint scarcity**
-  - L131 fractional sources all find a real affordable door
-  - L132 no unbuilt class receives floating-point leftover demand
-  - L135 an unbuilt class keeps its opening comparator
-- **L138 affordable singles before emergency sharing; one quote and conserved existing cells**
-  - L149 fixture has an actual existing single-adult cell
-  - L166 sharing preserves the actual family members
-  - L167 all suitable affordable singles placed first
-  - L167 affordable singles are not forced to share
-  - L171 a five-to-one housing move preserves HC1's
-  - L172 five budgets fund a real remaining home
-  - L173 only actually placed sharing groups change the census
-  - L174 the actual sharing rent is one bill per occupied door
-  - L175 emergency sharing retains explicit affordability or hosted-guest reasons
-  - L177 saved sharing transfers and budgets round-trip exactly
-- **L182 actual doubled doors and divided rent, including a vacant affordable pair**
-  - L195 full rent is unaffordable, two actual households fund one door
-  - L196 doubled households occupy half as many real doors
-  - L197 each doubled door earns one rent, not two
-  - L198 a half-bill budget creates no unfunded full-rent pressure in that class
-  - L200 actual doubled placements leave no fictional unplaced residual
-  - L202 the existing crowding reader sees actual guest equivalents
-  - L203 the existing unplaced reader sees the actual allocation
-  - L205 a multi-structure retirement cannot cut into typed occupied doors
-  - L207 doubled door and household quantities round-trip
-- **L210 emergency shelter retains funded demand for a door of one's own**
-  - L223 two funded households find emergency shelter in one actual home
-  - L224 emergency shelter consumes one physical door
-  - L225 each sheltered household counts once in class demand for its own door
-  - L226 shelter does not erase scarcity in the occupied class
-  - L229 additional demand creates no additional rent receipt
-  - L230 the one actual door earns at most its one ask
-  - L240 student housing counts only the existing open treasury facility
-  - L242 the student's finite planning allowance follows a currency reform
-  - L243 quoting a funded student budget itself borrows nothing
-- **L246 scarce free host space goes to households that cannot fund a vacant share**
-  - L255 all three households have feasible emergency shelter
-  - L256 the poor household uses the already funded host
-  - L257 the other guest funds its actual vacant half door
-  - L258 the original host still funds its whole actual bill
-  - L259 one hosted guest is counted explicitly
-  - L260 occupied shares earn only their actual rent
-  - L261 actual occupied door equivalents are bounded
-  - L262 no temporary matching node reaches a saved lease
-  - L266 without a funded vacant share one household remains explicitly unplaced
-  - L267 unfunded vacancy creates no extra receipts
-  - L268 unfunded vacancy creates no extra occupied home
-  - L278 a zero-resource emergency guest has an actual funded host
-  - L279 a hosted guest creates no extra occupied door
-  - L280 a hosted guest creates no extra landlord proceeds
-  - L281 the host retains its actual funded bill
-  - L282 the guest owes no invented rent or credit
-  - L283 emergency hosting has an explicit reason count
-  - L285 a doubled home offers migration no fictional extra guest slot
-  - L286 reading actual migration room does not quote or clear
-  - L294 an emergency sharing group can join a funded host without a vacant door
-  - L295 hosting a sharing group still earns just the one funded rent
-  - L296 a sharing group consumes the host slot before further guests
-  - L299 migration room sees a real completion and first reserves current unplaced demand
-  - L301 a completion projection leaves the one monthly quote untouched
-  - L304 current domestic household formation reserves the last rooms before arrivals
-  - L306 the formation preview leaves actual families and the monthly market unchanged
-  - L310 real additional doors still admit arrivals after the formation reserve
-  - L311 arrivals who start work next press cannot use the working family's density
-  - L325 retirement fixture starts with two actually placed families
-  - L327 retirement removes the actual occupied form
-  - L329 migration room reserves doors for families displaced by retirement
-  - L331 the retirement room read does not strike a second quote or clearing
-  - L349 door-census fixture pays for active construction jobs
-  - L351 door-census fixture builds actual compact homes
-  - L355 door-census control preserves the exact family matrix
-  - L358 fixture has more family seekers than twice its family doors
-  - L360 family-door scarcity actually raises the migration floor
-  - L361 door-census fixture funds actual replacement homes before the next press
-  - L363 scarce-door fixture saves natively
-  - L368 running load starts with a different actual family-door census
-  - L373 fresh native load rebuilds the scarce family-door floor
-  - L374 running native load replaces the previous city's door census
-  - L376 fresh and running reloads preserve the crowding-floor reader
-  - L384 completed funded homes cause actual positive first-month arrivals
-  - L385 the migration crowding ramp is active before the physical-room cap
-  - L388 first native month after both loads preserves actual arrivals
-  - L390 first native month after both loads preserves the migration crowding factor
-  - L392 scarce-door native continuations keep the actual class market
-- **L397 the housing budget reserves HC1's fixed card minimum**
-  - L408 principal in the contractual card minimum is reserved before rent
-  - L411 the quoted minimum at the current price matches actual card settlement
-  - L412 a housing quote does not overwrite the saved settled minimum or interest
-  - L413 quoting a home moves no card position
-- **L416 the final shortage uses the existing whole-match packing resolution**
-  - L427 an ULP of the whole source is exactly zero final shortage
-  - L428 an ULP cannot activate the farm's housing-priority guard
-  - L429 a rounded complete match records no phantom affordability or suitability reason
-  - L431 a genuine fractional shortage is still explicit
-  - L432 a genuine shortage still activates housing priority
-  - L434 rounding the counter creates no door or extra guest slot
-- **L438 emergency adult groups leave compatible host space for child families**
-  - L456 host allocation preserves all actual family members
-  - L457 three funded hosts occupy exactly three real doors
-  - L458 actual single adults really form emergency sharing groups
-  - L459 compatible family host space is not consumed by adult soft preferences
-  - L460 the child guest obtains its whole compatible host slot
-  - L461 all emergency guests fit the actual two-household door limit
-  - L462 emergency hosts collect only the three funded lease bills
-  - L522 staged fixture completed real housing before catalogue-wide orders
-  - L526 catalogue order follows actual availability
-  - L527 modern form unavailable in 1900
-  - L535 fixture caused funded residential starts
-  - L536 fixture has actual household demand
-  - L537 fixture has actual occupied rental homes
-  - L539 funded form completes through actual builder work
-  - L543 native reload preserves asks, assignments, actual trades and staleness
-  - L545 next native month preserves the class market
-  - L548 larger population adds no permanent household cells
-  - L549 larger city's class count stays bounded
-  - L550 larger city's assignments stay bounded by H times T
-- **L564 small scratch-city integrated profile**
+- **L66 actual operating quotes, feasible plots and the full typed backlog**
+  - L73 unbuilt
+  - L75 unbuilt supply quotes earn no actual rent
+  - L81 a profitable compact alternative uses the available plot
+  - L83 the fixture selects the six-door terrace
+  - L84 the order covers the actual typed backlog rather than one project's income
+  - L87 a child family is not offered an unsuitable compact fallback
+  - L90 an unfunded backlog does not promise a profitable project
+- **L93 class-local debt carry, actual trades and zero-demand glut**
+  - L97 zero demand in standing stock has zero target despite debt
+  - L98 zero-demand glut walks down at the existing lease speed
+  - L99 a glut class's debt does not change another class's ask
+  - L100 the tight class covers only its own carry
+  - L106 one ULP of fully placed stock is not an economic glut
+  - L112 a genuine fractional vacancy still waives the carry lift
+  - L118 an unbuilt class has an opening quote, without a fictitious scarce market
+  - L120 repricing itself records no actual rent trade
+  - L121 repricing preserves last observed class trade
+  - L122 actual occupied proceeds remain the accepted lease bill
+  - L124 vacant class records no rent receipt
+  - L125 vacant class's last trade is retained
+  - L126 vacant class trade becomes stale
+  - L127 actual class quantity counts occupied homes only
+  - L128 actual class price is actual value over quantity
+  - L131 corrupt class prices are refused atomically
+  - L134 saved demand below actual occupied quantity is refused atomically
+  - L135 a monetary reform scales actual receipts
+  - L136 a monetary reform scales saved household budgets
+  - L137 a monetary reform scales committed pipeline asks
+  - L138 a monetary reform scales committed pipeline recurring costs
+- **L141 a founding worker's current wage funds the first actual home**
+  - L146 founding month
+  - L147 founding rent receipts are actual accepted bills
+  - L149 the founding premise really admits people and lets occupied homes
+- **L152 fully placed fractional demand creates no phantom blueprint scarcity**
+  - L158 fractional sources all find a real affordable door
+  - L159 no unbuilt class receives floating-point leftover demand
+  - L162 an unbuilt class keeps its opening cost quote
+- **L165 affordable singles before emergency sharing; one quote and conserved existing cells**
+  - L176 fixture has an actual existing single-adult cell
+  - L193 sharing preserves the actual family members
+  - L194 all suitable affordable singles placed first
+  - L194 affordable singles are not forced to share
+  - L198 a five-to-one housing move preserves HC1's
+  - L199 five budgets fund a real remaining home
+  - L200 only actually placed sharing groups change the census
+  - L201 the actual sharing rent is one bill per occupied door
+  - L202 emergency sharing retains explicit affordability or hosted-guest reasons
+  - L204 saved sharing transfers and budgets round-trip exactly
+- **L209 actual doubled doors and divided rent, including a vacant affordable pair**
+  - L222 full rent is unaffordable, two actual households fund one door
+  - L223 doubled households occupy half as many real doors
+  - L224 each doubled door earns one rent, not two
+  - L225 a half-bill budget creates no unfunded full-rent pressure in that class
+  - L227 actual doubled placements leave no fictional unplaced residual
+  - L229 the existing crowding reader sees actual guest equivalents
+  - L230 the existing unplaced reader sees the actual allocation
+  - L232 a multi-structure retirement cannot cut into typed occupied doors
+  - L234 doubled door and household quantities round-trip
+- **L237 emergency shelter retains funded demand for a door of one's own**
+  - L250 two funded households find emergency shelter in one actual home
+  - L251 emergency shelter consumes one physical door
+  - L252 each sheltered household counts once in class demand for its own door
+  - L253 shelter does not erase scarcity in the occupied class
+  - L256 additional demand creates no additional rent receipt
+  - L257 the one actual door earns at most its one ask
+  - L267 student housing counts only the existing open treasury facility
+  - L269 the student's finite planning allowance follows a currency reform
+  - L270 quoting a funded student budget itself borrows nothing
+- **L273 scarce free host space goes to households that cannot fund a vacant share**
+  - L282 all three households have feasible emergency shelter
+  - L283 the poor household uses the already funded host
+  - L284 the other guest funds its actual vacant half door
+  - L285 the original host still funds its whole actual bill
+  - L286 one hosted guest is counted explicitly
+  - L287 occupied shares earn only their actual rent
+  - L288 actual occupied door equivalents are bounded
+  - L289 no temporary matching node reaches a saved lease
+  - L293 without a funded vacant share one household remains explicitly unplaced
+  - L294 unfunded vacancy creates no extra receipts
+  - L295 unfunded vacancy creates no extra occupied home
+  - L305 a zero-resource emergency guest has an actual funded host
+  - L306 a hosted guest creates no extra occupied door
+  - L307 a hosted guest creates no extra landlord proceeds
+  - L308 the host retains its actual funded bill
+  - L309 the guest owes no invented rent or credit
+  - L310 emergency hosting has an explicit reason count
+  - L312 a doubled home offers migration no fictional extra guest slot
+  - L313 reading actual migration room does not quote or clear
+  - L321 an emergency sharing group can join a funded host without a vacant door
+  - L322 hosting a sharing group still earns just the one funded rent
+  - L323 a sharing group consumes the host slot before further guests
+  - L326 migration room sees a real completion and first reserves current unplaced demand
+  - L328 a completion projection leaves the one monthly quote untouched
+  - L331 current domestic household formation reserves the last rooms before arrivals
+  - L333 the formation preview leaves actual families and the monthly market unchanged
+  - L337 real additional doors still admit arrivals after the formation reserve
+  - L338 arrivals who start work next press cannot use the working family's density
+  - L352 retirement fixture starts with two actually placed families
+  - L354 retirement removes the actual occupied form
+  - L356 migration room reserves doors for families displaced by retirement
+  - L358 the retirement room read does not strike a second quote or clearing
+  - L376 door-census fixture pays for active construction jobs
+  - L378 door-census fixture builds actual compact homes
+  - L382 door-census control preserves the exact family matrix
+  - L385 fixture has more family seekers than twice its family doors
+  - L387 family-door scarcity actually raises the migration floor
+  - L388 door-census fixture funds actual replacement homes before the next press
+  - L390 scarce-door fixture saves natively
+  - L395 running load starts with a different actual family-door census
+  - L400 fresh native load rebuilds the scarce family-door floor
+  - L401 running native load replaces the previous city's door census
+  - L403 fresh and running reloads preserve the crowding-floor reader
+  - L411 completed funded homes cause actual positive first-month arrivals
+  - L412 the migration crowding ramp is active before the physical-room cap
+  - L415 first native month after both loads preserves actual arrivals
+  - L417 first native month after both loads preserves the migration crowding factor
+  - L419 scarce-door native continuations keep the actual class market
+- **L424 the housing budget reserves HC1's fixed card minimum**
+  - L435 principal in the contractual card minimum is reserved before rent
+  - L438 the quoted minimum at the current price matches actual card settlement
+  - L439 a housing quote does not overwrite the saved settled minimum or interest
+  - L440 quoting a home moves no card position
+- **L443 the final shortage uses the existing whole-match packing resolution**
+  - L454 an ULP of the whole source is exactly zero final shortage
+  - L455 an ULP cannot activate the farm's housing-priority guard
+  - L456 a rounded complete match records no phantom affordability or suitability reason
+  - L458 a genuine fractional shortage is still explicit
+  - L459 a genuine shortage still activates housing priority
+  - L461 rounding the counter creates no door or extra guest slot
+- **L465 emergency adult groups leave compatible host space for child families**
+  - L483 host allocation preserves all actual family members
+  - L484 three funded hosts occupy exactly three real doors
+  - L485 actual single adults really form emergency sharing groups
+  - L486 compatible family host space is not consumed by adult soft preferences
+  - L487 the child guest obtains its whole compatible host slot
+  - L488 all emergency guests fit the actual two-household door limit
+  - L489 emergency hosts collect only the three funded lease bills
+  - L549 staged fixture completed real housing before catalogue-wide orders
+  - L553 catalogue order follows actual availability
+  - L554 modern form unavailable in 1900
+  - L562 fixture caused funded residential starts
+  - L563 fixture has actual household demand
+  - L564 fixture has actual occupied rental homes
+  - L566 funded form completes through actual builder work
+  - L570 native reload preserves asks, assignments, actual trades and staleness
+  - L572 next native month preserves the class market
+  - L575 larger population adds no permanent household cells
+  - L576 larger city's class count stays bounded
+  - L577 larger city's assignments stay bounded by H times T
+- **L591 small scratch-city integrated profile**
 
 ## HydroCheck.java - 102 labelled assertions
 
@@ -17854,7 +17862,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L603 dealFactor() of a sale is the factor of its move, one or more
   - L605 ...and the move of a sale is dearer, a purchase's weaker
 
-## InvestCheck.java - 324 labelled assertions
+## InvestCheck.java - 325 labelled assertions
 
 > Verifies the private investment engine: forecasting, the demand tests, and
 > the brake. Not part of the game.
@@ -17974,256 +17982,257 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L706 12. land is the one thing that can say no**
   - L719 land short of the gap -> still builds
   - L720 ...but only what there are plots for
-  - L725 under one plot -> refuses
-  - L726 ...and says land is why
-  - L731 no land at all -> refuses
-  - L736 retail refuses without land
-  - L737 ...saying so
-  - L742 industry refuses without land
-  - L747 land no longer binding -> the order is back
-  - L766 one house on site does not hold the landlords
-  - L771 ...and the order says nothing of the builders' months of work
-  - L790 fixture: the landlords' best home has a smaller one below it, by points
-  - L805 fixture: a year's room is less than one of the best home, and more than the smallest
-  - L809 the best home does not fit in a year of the builders' work: they order it all the same, not the next smaller
-  - L812 ...an order that owes more than the year's room, which the rule it replaces cut to what fitted
-  - L814 ...and it does not say it would not fit in months of work
-  - L832 fixture: the landlords' sites owe more than a year of what they are left, and are left something
-  - L838 sites owing more than a year of their work do not hold the landlords: the homes on them do not cover the jobs, so they order
-  - L839 ...a home, on the ground there is
-  - L841 ...and it does not say anything of months of work on site
-  - L847 every other sector orders with one of its orders on site too: the shops, a store under construction
-- **L850 13. land is part of what a building costs**
-  - L858 house plus its plot at $3
-  - L859 dearer land makes a house dearer
-  - L863 four houses, four plots
-- **L869 14. distress**
-  - L894 a solvent sector is left alone however long it has lost
-  - L899 ...and an overdrawn one gets its two years first
-  - L903 after two years overdrawn it sheds, with nothing spare at all
-  - L904 ...its biggest holding
-  - L905 ...at the gradual rate, not all at once
-  - L907 ...and not while it is still building
-  - L917 a distressed retailer sells shops
-  - L918 ...and never the city's bank
-- **L920 15. every building gets the crew it can use**
-  - L955 fixture: no site is owed less than its share, so no cap binds
-  - L957 a site's crew is its buildings times the crew one can use, its points to CREW_SCALE_EXPONENT: the depot
-  - L959 ...the blocks
-  - L960 ...the universities
-  - L962 ...so a university gets a bigger crew than a block, by its points to CREW_SCALE_EXPONENT
-  - L964 ...more than one block's crew, and less than its points alone would give
-  - L965 ...and the shares spend the whole output
-  - L972 no site takes more than it owes: a depot a hundred points from done gets its hundred
-  - L973 ...and what it did not take goes to the others by the same rule
-  - L975 a crew does not shrink as its building nears completion: the universities' share is their buildings' crews'
-  - L981 output past everything owed is not handed out
-  - L984 the month built what the sites took
-  - L985 the depot opened
-  - L986 ...and nothing is parked on its empty stack
-  - L987 the university a point from done opened too
-  - L992 no stack carries progress past what it owes
-  - L996 a month with more than every site owes finishes every site
-  - L997 ...builds only what was owed, and the rest is idle
-  - L1001 ...and none of it is banked
-  - L1007 load: what a stack carries past what it owes is cleared, and counted
-  - L1009 ...all of it on a stack with nothing on site
-  - L1010 ...and down to what it owes on one with work on it
-- **L1012 16. the landlords' order is the gap, whatever is on site (BA1)**
-  - L1033 fixture: the ground holds a million houses and more
-  - L1034 nothing on site: the gap, a million houses of it
-  - L1037 ten universities on site: the same order, the city's queue is not the landlords' to wait out
-  - L1040 fifty of their own houses on site: the same order, a million
-  - L1042 months of work on site, for the screens: what their sites owe over the builders' site output
-  - L1057 a plant's wait: its points over its crew's share of the site output, beside everything on site
-  - L1060 ...and an order is the gap and the plots, whatever that wait: a gap of a billion is the ground for it
-  - L1062 fixture: that order waits far past a year at those crews (the months the old cap held it to)
-  - L1064 ...never below one, as before
-- **L1066 17. the builders keep what their repairs and queue need**
-  - L1083 fixture: the builders are staffed, have repairs to do and nothing queued
-  - L1086 with nothing queued the need is the repairs, read in staffed output
-  - L1088 ...against the nameplate the depots are sold in
-  - L1103 fixture: nothing on site, and the repairs need more than the core crew
-  - L1106 a builder busy with repairs keeps the crews doing them
-  - L1109 a queue longer than the sites are left keeps every depot
-  - L1112 ...so a builder losing money with that queue sells nothing
-- **L1115 18. a band nobody can fill (0.7.18)**
-- **L1130 a band nobody can fill**
-  - L1140 fixture: the city has no university workers and nobody above them
-  - L1142 fixture: the plant's other posts pass the share on their own
-  - L1143 with migrants who come for the band, its empty posts are friction - it passes
-  - L1149 with no spare, nobody above and no migrants, nobody can fill the band
-  - L1151 ...and the plant fails, whatever its share
-  - L1152 ...and the advisor says which posts
-  - L1154 spare workers alone make a band fillable
-  - L1155 somebody above who can step down alone makes it fillable
-  - L1156 migrants who come for it alone make it fillable
-  - L1157 ...and with none of the three, nobody can fill it
-  - L1163 in a default city every band has migrants who come for it
-  - L1175 ...so over five years of it no planner is refused for a band nobody can fill
-- **L1178 19. the builders' price (0.7.19)**
-- **L1194 the builders' price: labour at today's wages, the tax passed on, material at the price it is drawn (0.7.19)**
-  - L1211 before the labour market has priced anybody, the work is its cash cost
-  - L1254 fixture: the builders' wages have moved off the founding ladder
-  - L1255 ...by the rise that was set
-  - L1256 the builders' index is their depot's wage bill today over at the founding ladder
-  - L1258 ...and a House's work is its cash cost with only its labour moved by it
-  - L1264 fixture: the builders charge a sales tax
-  - L1267 the quote's work is ten Houses' work at today's wages
-  - L1268 the quote is the work and the material over one less the builders' rate
-  - L1270 ...its allowance the material in it, on the same terms
-  - L1272 ...and its sales tax what the total carries past the work and the material
-  - L1274 so what the builders keep of it, once they remit and buy, is the work
-  - L1288 fixture: the draw costs the builders something
-  - L1294 the city pays what the material cost the builders, grossed up, less its allowance
-  - L1296 ...and the builders earn it, beside the work
-  - L1298 ...on the investment line, as the work is
-  - L1305 a quote that allowed more than the draw cost is refunded the difference
-  - L1307 ...out of what the builders earn
-  - L1311 fixture: the shops claim the tax on their buildings, the landlords and the bank's branch do not
-  - L1325 each payer pays its units' share of the draw less its allowance: the shops
-  - L1327 ...and the landlords
-  - L1328 the shops are recorded as having bought the month's work on their premises and its escalation
-  - L1331 ...the landlords, who cannot claim, are not
-  - L1340 the next strike credits the shops the builders' rate on it, as a capital credit
-  - L1343 ...and the month closes the audit, the escalation and the credits in it
-  - L1356 the bank's repair bill is its branches' work at today's wages and their material, a year's 1%, with the tax
-  - L1365 fixture: a depot's posts cost something
-  - L1366 a depot's estimate is its points at the work's price, less its posts at today's wages and its standing costs
-  - L1374 fixture: the city reforms its currency
-  - L1375 a reform leaves the builders' index where it was
-  - L1376 ...and the work in today's money a tenth of what it was
-  - L1390 fixture: the city's Houses are on site under its own contract, material still to draw
-  - L1407 a save carries every payer's contract on site, field for field
-  - L1429 an older save's contract on site is read as its template's owner's - the landlords', for Houses,
-  - L1433 ...the whole contract left, and the material the sites still owe
-  - L1435 ...with an allowance of what is left past the work still owed at its cash cost
-  - L1454 fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older
-- **L1459 the rebates on a new rental home (0.7.19, revised)**
-  - L1461 the landlords' apartment buildings are purpose-built rental and get all the tax back; a House does not qualify
-  - L1464 ...and the city and the bank's branch get none of it back: the city's rebate is the tax coming home
-  - L1497 fixture: the three Houses fall under $350,000, between, and past $450,000
-  - L1499 ...so the rebate is the whole of A, part of it, and nothing
-  - L1505 a landlord's apartment building costs it its price before the tax
-  - L1506 ...a House its price and the tax less the rebate on it
-  - L1508 ...and the repairs on either the bill with all its tax: no rebate reaches a repair
-  - L1517 the landlords' new apartments are recorded as bought from the builders, the work and its escalation, for the rebate
-  - L1524 fixture: the landlords have a rebate coming
-  - L1526 the next strike pays the landlords the builders' rate on it, handed to them apart
-  - L1528 ...and their sales tax, on an exempt rent, is nothing: the rebate is not a tax on them
-  - L1531 ...and the month closes the audit with the rebate in it
-  - L1549 fixture: the landlords ordered an apartment building and five Houses
-  - L1552 an apartment building's contract is booked to get all its tax back, the Houses' the share the rule gives them
-- **L1582 an order is tested on its whole cost, whoever pays (0.7.113)**
-  - L1614 fixture: prime is struck, the restaurants own their till, a Diner costs something, and both bars are above nothing
-  - L1616 fixture: the wait is counted (BA1) - a Diner opens after a wait, so each bar is struck on a cost grown over it (carry over 1)
-  - L1618 fixture: the city is not under a borrowing ban for the restaurants
-  - L1623 fixture: the rule until 0.7.112 asked nothing of it from a till holding twice its cost
-  - L1626 A CASH-RICH SECTOR'S ORDER THAT EARNS LESS THAN ITS INTEREST ON ITS WHOLE COST IS REFUSED
-  - L1629 ...and the same order on a loan is refused alike
-  - L1631 ...and half from the till and half borrowed, alike
-  - L1634 from the till, earning PROFIT_OVER_INTEREST times a month's interest at the real rate on its whole cost
-  - L1636 ...and a hair under that is refused
-  - L1638 on a loan, the same bar at the rate the loan is judged at builds it
-  - L1640 ...and a hair under that is refused
-  - L1642 the refusal's rate is the one the whole order is judged at: the till's, then the loan's
-  - L1653 fixture: those earnings fail the order's own bar (half from the till)
-  - L1655 \"AT PRIME\" FOLLOWS THE WHOLE COST: earnings that would carry prime's interest on what it borrows,
-  - L1667 fixture: the luxury shops own nothing, so their loan is priced past prime
-  - L1669 ...and earnings over prime's bar on the whole cost, under the order's, are refused at prime
-  - L1681 an order of three, the till paying for one, earning each its share of the bar on all three's cost is
-  - L1684 ...and earning half the lower bar, none of it - the slice the till pays for included
-- **L1727 every business may build ahead: an order on site does not stop the next, and counts as supply (BA1)**
-  - L1756 fixture: the builders have a month for the sites, and the city could staff a store
-  - L1761 fixture: the shops are short by several stores, with nothing of theirs on site: they order
-  - L1771 A SECTOR SHORT OF CAPACITY WITH ITS OWN ORDER ON SITE ORDERS AGAIN (the cap held it to one: \"already building\")
-  - L1773 ...the stores on site counted as baskets to come: only what is still missing is ordered, not the whole shortage again
-  - L1780 A SECTOR WHOSE ORDER ON SITE COVERS THE SHORTAGE DOES NOT ORDER AGAIN, with the order on site
-  - L1782 ...the shops' own coverage on site is what holds it (Retail.storeCoverageOnSite())
-  - L1789 fixture: no kitchen on site
-  - L1791 the kitchens' seats on site are the Diners' under construction: three Diners' tables, and the seats standing unchanged
-- **L1799 an order is the gap and the plots; the horizon grows with the lead (BA1)**
-  - L1809 fixture: the ground holds a thousand stores
-  - L1810 a shortfall that needs 600 stores is 600
-  - L1811 ...one baskets under 600 stores' is still 600 (rounded up)
-  - L1812 ...and 599 stores' exactly is 599
-  - L1814 fixture: at a point of site output a store waits for years
-  - L1815 ...whatever the wait: 600 stores' shortfall, its wait years long, is 600 (the cut that read the wait is gone)
-  - L1818 a gap of nothing orders one: floored at one
-  - L1819 ...a negative gap, one
-  - L1820 ...a building that holds nothing to count, one
-  - L1822 the ground for seven stores caps the order at seven
-  - L1823 ...and the gap's own when it is under the plots
-  - L1825 ...and no ground, no order
-  - L1829 fixture: the horizon starts at six months and goes no further than twelve
-  - L1830 horizonFor(0) is the least, PLANNING_HORIZON
-  - L1831 ...(3), the least too
-  - L1832 ...(6), the least where it ends
-  - L1833 ...(9), the lead itself
-  - L1834 ...(12), the lead itself and the most
-  - L1835 ...(20), never past HORIZON_MOST
-  - L1836 ...a lead that is not a number, HORIZON_MOST
-  - L1837 ...an endless lead, HORIZON_MOST
-  - L1838 ...the longest wait Double.MAX_VALUE reads (no builders at all), HORIZON_MOST
-  - L1839 ...a lead under nothing, the least
-  - L1849 leadFor(lead + horizonFor(lead)) is the lead, within 1e-9, for leads from 0 to 100 by a quarter month (worst
-  - L1850 ...because lead + horizonFor(lead) rises strictly with the lead, so the sum says its lead
-  - L1851 leadFor() of the least, six months, is no lead
-  - L1852 ...of anything under it, none
-  - L1858 a building that opens in 30 months is sized to 30 + HORIZON_MOST months (the lead was clamped to twelve until BA1)
-  - L1860 ...its growth the businesses' growthFactor() over them
-  - L1861 one that opens in 9: 9 + 9
-  - L1862 ...in 3: 3 + the least
-  - L1863 ...in 0: the least
-  - L1864 ...a stalled one (NaN) counts as none: the least
-  - L1865 ...the order that opens in a year and a half is sized for the demand a year after it opens, not six months
-- **L1872 the interest on the wait: a cost grown over the months until the order opens (BA1)**
-  - L1882 exactly 1 at no wait
-  - L1883 ...for a wait under nothing
-  - L1884 ...for a wait that is not a number
-  - L1885 ...for a rate of nothing, however long the wait
-  - L1886 ...for a rate under nothing
-  - L1888 a year's wait at 9% with no inflation expected: (1 + .09 / 12)^12
-  - L1889 ...a wait of 30 months
-  - L1890 ...half a month, a fraction of a month's interest
-  - L1892 with 5% inflation expected the rate it grows at is the real one, 4%: (1 + .04 / 12)^12
-  - L1895 ...and never under REAL_HURDLE_FLOOR of the rate, however much is expected: (1 + .09 x .25 / 12)^12
-  - L1898 infinite for a wait that never ends: Double.MAX_VALUE, which leadTime() reads for no builders
-  - L1900 ...and for an infinite one
-  - L1908 it rises with every month of wait, from 1
-  - L1911 with no output supplier a bare fixture's carry is exactly 1
-  - L1913 with one, 5 stores' carry is waitCarry() over leadTime() at that output
-  - L1915 ...above 1, a store waiting for the builders
-  - L1916 ...1 for no template
-  - L1917 ...1 for fewer than one
-  - L1919 with the builders giving the sites nothing the wait never ends and the carry is infinite
-  - L1922 ...and 1 again once no output is handed in
-  - L1940 fixture: the carry is a finite one over 1 for a single store behind a queue
-  - L1941 carryOf() is never under 1 and never falls as the order grows, from 1 to 200 stores
-  - L1942 ...and does rise: 200 stores wait longer than one
-- **L1948 the wait counts: an order that carries its interest as though it opened tomorrow does not when the queue is long (BA1)**
-  - L1976 fixture: the queue lengthens the Diner's wait, and so its carry, and a Diner costs the same on it
-  - L1981 fixture: it earns more than the interest on its cost as though it opened tomorrow (the test before the wait counted), under the interest on the cost grown ov...
-  - L1983 it passes servicesItsOwnDebt() on its whole cost at carry 1
-  - L1985 fixture: the till pays it all and the restaurants are not under a ban
-  - L1986 ...but behind the queue its interest test does not carry: the carry is the long wait's and the cost is grown by it
-  - L1988 ...and consider()'s own search refuses the same order
-  - L1991 fixture: the universities' site is cleared
-  - L1993 with the queue gone the wait is the Diner's own and the same order carries its interest
-  - L1995 ...and consider()'s search builds it
-- **L2001 the posts of a sector's own buildings on site are spoken for: staffing counts them (BA1)**
-  - L2012 fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing
-  - L2027 fixture: the city's spare workers are enough for one store's posts and not for two's, in both bands it uses
-  - L2032 fixture: nothing of the shops' is on site
-  - L2033 with nothing of its own on site, a store passes the staffing test
-  - L2036 ...a Diner on site (another sector's) does not touch the shops' test
-  - L2041 with a store of its own on site, the workers it will need are not spare: the second store fails the test
-  - L2044 ...by the posts on site, band by band: the diploma band's spare falls by a store's diploma posts, the unskilled band's by its own and what came down to it
-  - L2048 ...the posts the sector has on site, BuildingManager.postsOnSite(), are the store's, job by job
-  - L2053 fixture: the store's site is cleared
-  - L2054 with the order gone the posts are not spoken for and the store passes again
-  - L2118 the run's tally is consistent: no more orders cleared than judged, none cleared ahead that was not cleared
-  - L2121 ...and no order is cleared for more than the business asked
+  - L728 fixture: no known housing form fits this ground
+  - L732 under one plot -> refuses
+  - L733 ...and says land is why
+  - L738 no land at all -> refuses
+  - L743 retail refuses without land
+  - L744 ...saying so
+  - L749 industry refuses without land
+  - L754 land no longer binding -> the order is back
+  - L773 one house on site does not hold the landlords
+  - L778 ...and the order says nothing of the builders' months of work
+  - L797 fixture: the landlords' best home has a smaller one below it, by points
+  - L812 fixture: a year's room is less than one of the best home, and more than the smallest
+  - L816 the best home does not fit in a year of the builders' work: they order it all the same, not the next smaller
+  - L819 ...an order that owes more than the year's room, which the rule it replaces cut to what fitted
+  - L821 ...and it does not say it would not fit in months of work
+  - L839 fixture: the landlords' sites owe more than a year of what they are left, and are left something
+  - L845 sites owing more than a year of their work do not hold the landlords: the homes on them do not cover the jobs, so they order
+  - L846 ...a home, on the ground there is
+  - L848 ...and it does not say anything of months of work on site
+  - L854 every other sector orders with one of its orders on site too: the shops, a store under construction
+- **L857 13. land is part of what a building costs**
+  - L865 house plus its plot at $3
+  - L866 dearer land makes a house dearer
+  - L870 four houses, four plots
+- **L876 14. distress**
+  - L901 a solvent sector is left alone however long it has lost
+  - L906 ...and an overdrawn one gets its two years first
+  - L910 after two years overdrawn it sheds, with nothing spare at all
+  - L911 ...its biggest holding
+  - L912 ...at the gradual rate, not all at once
+  - L914 ...and not while it is still building
+  - L924 a distressed retailer sells shops
+  - L925 ...and never the city's bank
+- **L927 15. every building gets the crew it can use**
+  - L962 fixture: no site is owed less than its share, so no cap binds
+  - L964 a site's crew is its buildings times the crew one can use, its points to CREW_SCALE_EXPONENT: the depot
+  - L966 ...the blocks
+  - L967 ...the universities
+  - L969 ...so a university gets a bigger crew than a block, by its points to CREW_SCALE_EXPONENT
+  - L971 ...more than one block's crew, and less than its points alone would give
+  - L972 ...and the shares spend the whole output
+  - L979 no site takes more than it owes: a depot a hundred points from done gets its hundred
+  - L980 ...and what it did not take goes to the others by the same rule
+  - L982 a crew does not shrink as its building nears completion: the universities' share is their buildings' crews'
+  - L988 output past everything owed is not handed out
+  - L991 the month built what the sites took
+  - L992 the depot opened
+  - L993 ...and nothing is parked on its empty stack
+  - L994 the university a point from done opened too
+  - L999 no stack carries progress past what it owes
+  - L1003 a month with more than every site owes finishes every site
+  - L1004 ...builds only what was owed, and the rest is idle
+  - L1008 ...and none of it is banked
+  - L1014 load: what a stack carries past what it owes is cleared, and counted
+  - L1016 ...all of it on a stack with nothing on site
+  - L1017 ...and down to what it owes on one with work on it
+- **L1019 16. the landlords' order is the gap, whatever is on site (BA1)**
+  - L1040 fixture: the ground holds a million houses and more
+  - L1041 nothing on site: the gap, a million houses of it
+  - L1044 ten universities on site: the same order, the city's queue is not the landlords' to wait out
+  - L1047 fifty of their own houses on site: the same order, a million
+  - L1049 months of work on site, for the screens: what their sites owe over the builders' site output
+  - L1064 a plant's wait: its points over its crew's share of the site output, beside everything on site
+  - L1067 ...and an order is the gap and the plots, whatever that wait: a gap of a billion is the ground for it
+  - L1069 fixture: that order waits far past a year at those crews (the months the old cap held it to)
+  - L1071 ...never below one, as before
+- **L1073 17. the builders keep what their repairs and queue need**
+  - L1090 fixture: the builders are staffed, have repairs to do and nothing queued
+  - L1093 with nothing queued the need is the repairs, read in staffed output
+  - L1095 ...against the nameplate the depots are sold in
+  - L1110 fixture: nothing on site, and the repairs need more than the core crew
+  - L1113 a builder busy with repairs keeps the crews doing them
+  - L1116 a queue longer than the sites are left keeps every depot
+  - L1119 ...so a builder losing money with that queue sells nothing
+- **L1122 18. a band nobody can fill (0.7.18)**
+- **L1137 a band nobody can fill**
+  - L1147 fixture: the city has no university workers and nobody above them
+  - L1149 fixture: the plant's other posts pass the share on their own
+  - L1150 with migrants who come for the band, its empty posts are friction - it passes
+  - L1156 with no spare, nobody above and no migrants, nobody can fill the band
+  - L1158 ...and the plant fails, whatever its share
+  - L1159 ...and the advisor says which posts
+  - L1161 spare workers alone make a band fillable
+  - L1162 somebody above who can step down alone makes it fillable
+  - L1163 migrants who come for it alone make it fillable
+  - L1164 ...and with none of the three, nobody can fill it
+  - L1170 in a default city every band has migrants who come for it
+  - L1182 ...so over five years of it no planner is refused for a band nobody can fill
+- **L1185 19. the builders' price (0.7.19)**
+- **L1201 the builders' price: labour at today's wages, the tax passed on, material at the price it is drawn (0.7.19)**
+  - L1218 before the labour market has priced anybody, the work is its cash cost
+  - L1261 fixture: the builders' wages have moved off the founding ladder
+  - L1262 ...by the rise that was set
+  - L1263 the builders' index is their depot's wage bill today over at the founding ladder
+  - L1265 ...and a House's work is its cash cost with only its labour moved by it
+  - L1271 fixture: the builders charge a sales tax
+  - L1275 the quote's work is ten Houses' work at today's wages and its actual order premium
+  - L1277 the quote is the work and the material over one less the builders' rate
+  - L1279 ...its allowance the material in it, on the same terms
+  - L1281 ...and its sales tax what the total carries past the work and the material
+  - L1283 so what the builders keep of it, once they remit and buy, is the work
+  - L1297 fixture: the draw costs the builders something
+  - L1303 the city pays what the material cost the builders, grossed up, less its allowance
+  - L1305 ...and the builders earn it, beside the work
+  - L1307 ...on the investment line, as the work is
+  - L1314 a quote that allowed more than the draw cost is refunded the difference
+  - L1316 ...out of what the builders earn
+  - L1320 fixture: the shops claim the tax on their buildings, the landlords and the bank's branch do not
+  - L1334 each payer pays its units' share of the draw less its allowance: the shops
+  - L1336 ...and the landlords
+  - L1337 the shops are recorded as having bought the month's work on their premises and its escalation
+  - L1340 ...the landlords, who cannot claim, are not
+  - L1349 the next strike credits the shops the builders' rate on it, as a capital credit
+  - L1352 ...and the month closes the audit, the escalation and the credits in it
+  - L1365 the bank's repair bill is its branches' work at today's wages and their material, a year's 1%, with the tax
+  - L1374 fixture: a depot's posts cost something
+  - L1375 a depot's estimate is its points at the work's price, less its posts at today's wages and its standing costs
+  - L1383 fixture: the city reforms its currency
+  - L1384 a reform leaves the builders' index where it was
+  - L1385 ...and the work in today's money a tenth of what it was
+  - L1399 fixture: the city's Houses are on site under its own contract, material still to draw
+  - L1416 a save carries every payer's contract on site, field for field
+  - L1438 an older save's contract on site is read as its template's owner's - the landlords', for Houses,
+  - L1442 ...the whole contract left, and the material the sites still owe
+  - L1444 ...with an allowance of what is left past the work still owed at its cash cost
+  - L1463 fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older
+- **L1468 the rebates on a new rental home (0.7.19, revised)**
+  - L1470 the landlords' apartment buildings are purpose-built rental and get all the tax back; a House does not qualify
+  - L1473 ...and the city and the bank's branch get none of it back: the city's rebate is the tax coming home
+  - L1506 fixture: the three Houses fall under $350,000, between, and past $450,000
+  - L1508 ...so the rebate is the whole of A, part of it, and nothing
+  - L1514 a landlord's apartment building costs it its price before the tax
+  - L1515 ...a House its price and the tax less the rebate on it
+  - L1517 ...and the repairs on either the bill with all its tax: no rebate reaches a repair
+  - L1526 the landlords' new apartments are recorded as bought from the builders, the work and its escalation, for the rebate
+  - L1533 fixture: the landlords have a rebate coming
+  - L1535 the next strike pays the landlords the builders' rate on it, handed to them apart
+  - L1537 ...and their sales tax, on an exempt rent, is nothing: the rebate is not a tax on them
+  - L1540 ...and the month closes the audit with the rebate in it
+  - L1558 fixture: the landlords ordered an apartment building and five Houses
+  - L1561 an apartment building's contract is booked to get all its tax back, the Houses' the share the rule gives them
+- **L1591 an order is tested on its whole cost, whoever pays (0.7.113)**
+  - L1623 fixture: prime is struck, the restaurants own their till, a Diner costs something, and both bars are above nothing
+  - L1625 fixture: the wait is counted (BA1) - a Diner opens after a wait, so each bar is struck on a cost grown over it (carry over 1)
+  - L1627 fixture: the city is not under a borrowing ban for the restaurants
+  - L1632 fixture: the rule until 0.7.112 asked nothing of it from a till holding twice its cost
+  - L1635 A CASH-RICH SECTOR'S ORDER THAT EARNS LESS THAN ITS INTEREST ON ITS WHOLE COST IS REFUSED
+  - L1638 ...and the same order on a loan is refused alike
+  - L1640 ...and half from the till and half borrowed, alike
+  - L1643 from the till, earning PROFIT_OVER_INTEREST times a month's interest at the real rate on its whole cost
+  - L1645 ...and a hair under that is refused
+  - L1647 on a loan, the same bar at the rate the loan is judged at builds it
+  - L1649 ...and a hair under that is refused
+  - L1651 the refusal's rate is the one the whole order is judged at: the till's, then the loan's
+  - L1662 fixture: those earnings fail the order's own bar (half from the till)
+  - L1664 \"AT PRIME\" FOLLOWS THE WHOLE COST: earnings that would carry prime's interest on what it borrows,
+  - L1676 fixture: the luxury shops own nothing, so their loan is priced past prime
+  - L1678 ...and earnings over prime's bar on the whole cost, under the order's, are refused at prime
+  - L1690 an order of three, the till paying for one, earning each its share of the bar on all three's cost is
+  - L1693 ...and earning half the lower bar, none of it - the slice the till pays for included
+- **L1736 every business may build ahead: an order on site does not stop the next, and counts as supply (BA1)**
+  - L1765 fixture: the builders have a month for the sites, and the city could staff a store
+  - L1770 fixture: the shops are short by several stores, with nothing of theirs on site: they order
+  - L1780 A SECTOR SHORT OF CAPACITY WITH ITS OWN ORDER ON SITE ORDERS AGAIN (the cap held it to one: \"already building\")
+  - L1782 ...the stores on site counted as baskets to come: only what is still missing is ordered, not the whole shortage again
+  - L1789 A SECTOR WHOSE ORDER ON SITE COVERS THE SHORTAGE DOES NOT ORDER AGAIN, with the order on site
+  - L1791 ...the shops' own coverage on site is what holds it (Retail.storeCoverageOnSite())
+  - L1798 fixture: no kitchen on site
+  - L1800 the kitchens' seats on site are the Diners' under construction: three Diners' tables, and the seats standing unchanged
+- **L1808 an order is the gap and the plots; the horizon grows with the lead (BA1)**
+  - L1818 fixture: the ground holds a thousand stores
+  - L1819 a shortfall that needs 600 stores is 600
+  - L1820 ...one baskets under 600 stores' is still 600 (rounded up)
+  - L1821 ...and 599 stores' exactly is 599
+  - L1823 fixture: at a point of site output a store waits for years
+  - L1824 ...whatever the wait: 600 stores' shortfall, its wait years long, is 600 (the cut that read the wait is gone)
+  - L1827 a gap of nothing orders one: floored at one
+  - L1828 ...a negative gap, one
+  - L1829 ...a building that holds nothing to count, one
+  - L1831 the ground for seven stores caps the order at seven
+  - L1832 ...and the gap's own when it is under the plots
+  - L1834 ...and no ground, no order
+  - L1838 fixture: the horizon starts at six months and goes no further than twelve
+  - L1839 horizonFor(0) is the least, PLANNING_HORIZON
+  - L1840 ...(3), the least too
+  - L1841 ...(6), the least where it ends
+  - L1842 ...(9), the lead itself
+  - L1843 ...(12), the lead itself and the most
+  - L1844 ...(20), never past HORIZON_MOST
+  - L1845 ...a lead that is not a number, HORIZON_MOST
+  - L1846 ...an endless lead, HORIZON_MOST
+  - L1847 ...the longest wait Double.MAX_VALUE reads (no builders at all), HORIZON_MOST
+  - L1848 ...a lead under nothing, the least
+  - L1858 leadFor(lead + horizonFor(lead)) is the lead, within 1e-9, for leads from 0 to 100 by a quarter month (worst
+  - L1859 ...because lead + horizonFor(lead) rises strictly with the lead, so the sum says its lead
+  - L1860 leadFor() of the least, six months, is no lead
+  - L1861 ...of anything under it, none
+  - L1867 a building that opens in 30 months is sized to 30 + HORIZON_MOST months (the lead was clamped to twelve until BA1)
+  - L1869 ...its growth the businesses' growthFactor() over them
+  - L1870 one that opens in 9: 9 + 9
+  - L1871 ...in 3: 3 + the least
+  - L1872 ...in 0: the least
+  - L1873 ...a stalled one (NaN) counts as none: the least
+  - L1874 ...the order that opens in a year and a half is sized for the demand a year after it opens, not six months
+- **L1881 the interest on the wait: a cost grown over the months until the order opens (BA1)**
+  - L1891 exactly 1 at no wait
+  - L1892 ...for a wait under nothing
+  - L1893 ...for a wait that is not a number
+  - L1894 ...for a rate of nothing, however long the wait
+  - L1895 ...for a rate under nothing
+  - L1897 a year's wait at 9% with no inflation expected: (1 + .09 / 12)^12
+  - L1898 ...a wait of 30 months
+  - L1899 ...half a month, a fraction of a month's interest
+  - L1901 with 5% inflation expected the rate it grows at is the real one, 4%: (1 + .04 / 12)^12
+  - L1904 ...and never under REAL_HURDLE_FLOOR of the rate, however much is expected: (1 + .09 x .25 / 12)^12
+  - L1907 infinite for a wait that never ends: Double.MAX_VALUE, which leadTime() reads for no builders
+  - L1909 ...and for an infinite one
+  - L1917 it rises with every month of wait, from 1
+  - L1920 with no output supplier a bare fixture's carry is exactly 1
+  - L1922 with one, 5 stores' carry is waitCarry() over leadTime() at that output
+  - L1924 ...above 1, a store waiting for the builders
+  - L1925 ...1 for no template
+  - L1926 ...1 for fewer than one
+  - L1928 with the builders giving the sites nothing the wait never ends and the carry is infinite
+  - L1931 ...and 1 again once no output is handed in
+  - L1949 fixture: the carry is a finite one over 1 for a single store behind a queue
+  - L1950 carryOf() is never under 1 and never falls as the order grows, from 1 to 200 stores
+  - L1951 ...and does rise: 200 stores wait longer than one
+- **L1957 the wait counts: an order that carries its interest as though it opened tomorrow does not when the queue is long (BA1)**
+  - L1985 fixture: the queue lengthens the Diner's wait, and so its carry, and a Diner costs the same on it
+  - L1990 fixture: it earns more than the interest on its cost as though it opened tomorrow (the test before the wait counted), under the interest on the cost grown ov...
+  - L1992 it passes servicesItsOwnDebt() on its whole cost at carry 1
+  - L1994 fixture: the till pays it all and the restaurants are not under a ban
+  - L1995 ...but behind the queue its interest test does not carry: the carry is the long wait's and the cost is grown by it
+  - L1997 ...and consider()'s own search refuses the same order
+  - L2000 fixture: the universities' site is cleared
+  - L2002 with the queue gone the wait is the Diner's own and the same order carries its interest
+  - L2004 ...and consider()'s search builds it
+- **L2010 the posts of a sector's own buildings on site are spoken for: staffing counts them (BA1)**
+  - L2021 fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing
+  - L2036 fixture: the city's spare workers are enough for one store's posts and not for two's, in both bands it uses
+  - L2041 fixture: nothing of the shops' is on site
+  - L2042 with nothing of its own on site, a store passes the staffing test
+  - L2045 ...a Diner on site (another sector's) does not touch the shops' test
+  - L2050 with a store of its own on site, the workers it will need are not spare: the second store fails the test
+  - L2053 ...by the posts on site, band by band: the diploma band's spare falls by a store's diploma posts, the unskilled band's by its own and what came down to it
+  - L2057 ...the posts the sector has on site, BuildingManager.postsOnSite(), are the store's, job by job
+  - L2062 fixture: the store's site is cleared
+  - L2063 with the order gone the posts are not spoken for and the store passes again
+  - L2127 the run's tally is consistent: no more orders cleared than judged, none cleared ahead that was not cleared
+  - L2130 ...and no order is cleared for more than the business asked
 
 ## IslandLinkCheck.java - 61 labelled assertions
 
@@ -23457,7 +23466,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L502 the redraw updates the estate line to the new month's model
   - L504 the redraw retains the month's disclosure nodes
 
-## MortgageCheck.java - 187 labelled assertions
+## MortgageCheck.java - 189 labelled assertions
 
 > The landlords' insured mortgages (0.7.11): the instrument, the lender's
 > tests, the city's insurance and the bank's book.
@@ -23664,22 +23673,24 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1103 ...and it closes the third that month, with no fuse to wait out
   - L1107 a month whose fees cover all three closes nothing
   - L1112 the last branch stays, however long its fees have not covered it
-  - L1154 fixture: the played bank closed its branches
-  - L1155 ...in the first month its rule had a branch's cost to read
-  - L1156 ...all six past the first, at once - the town's fees cover none of them
-  - L1157 ...sold as retired buildings, by their owner - on the city's list of what came down
-  - L1159 ...its founding capital left where it was
-  - L1160 the bank's equity moved by its income and its named causes that month
-  - L1161 ...and the month's money audit closes through the closure
-  - L1172 fixture: the bank has customers, and a branch past the charter would carry an operating cost the charter does not
-  - L1179 a reloaded bank has the same customers
-  - L1180 ...the same cost a branch past the charter carries, the operating cost in it
-  - L1182 ...and stands the same branches
-- **L1248 12. payouts after principal: a share of what the month leaves once the lender is paid**
-  - L1297 fixture: a month whose income beat the principal its mortgages took, and one it did not
-  - L1305 a landlord with a mortgage pays PAYOUT of its income less the principal it repaid
-  - L1316 no month paid the landlords past what their income left after the principal, net of what the desk rolled
-  - L1317 with nothing repaid the rule is the old one
+  - L1126 fixture: the standing town can be given exactly seven bank branches
+  - L1131 fixture: exactly seven branches stand before the six close
+  - L1161 fixture: the played bank closed its branches
+  - L1162 ...in the first month its rule had a branch's cost to read
+  - L1163 ...all six past the first, at once - the town's fees cover none of them
+  - L1164 ...sold as retired buildings, by their owner - on the city's list of what came down
+  - L1166 ...its founding capital left where it was
+  - L1167 the bank's equity moved by its income and its named causes that month
+  - L1168 ...and the month's money audit closes through the closure
+  - L1179 fixture: the bank has customers, and a branch past the charter would carry an operating cost the charter does not
+  - L1186 a reloaded bank has the same customers
+  - L1187 ...the same cost a branch past the charter carries, the operating cost in it
+  - L1189 ...and stands the same branches
+- **L1255 12. payouts after principal: a share of what the month leaves once the lender is paid**
+  - L1304 fixture: a month whose income beat the principal its mortgages took, and one it did not
+  - L1312 a landlord with a mortgage pays PAYOUT of its income less the principal it repaid
+  - L1323 no month paid the landlords past what their income left after the principal, net of what the desk rolled
+  - L1324 with nothing repaid the rule is the old one
 
 ## NationsCheck.java - 57 labelled assertions
 
