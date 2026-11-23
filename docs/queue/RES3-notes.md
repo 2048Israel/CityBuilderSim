@@ -604,11 +604,11 @@ months on this laptop (not solver-only timings):
 
 | Scratch city | People | Month ms | H/T/A/M/L |
 | --- | ---: | ---: | --- |
-| Small | 210 | 57.401 | 65/32/112/0/0 |
-| Present-day | supporting catalogue inputs above | 46.313 | 84/32/330/0/0 |
-| Larger present-day | 148,967 | 50.477 | 82/32/314/0/0 |
-| Historical | supporting catalogue inputs above | 39.727 | 62/32/193/0/0 |
-| Larger historical | 149,126 | 43.640 | 62/32/193/0/0 |
+| Small | 210 | 49.178 | 65/32/112/0/0 |
+| Present-day | supporting catalogue inputs above | 51.096 | 84/32/330/0/0 |
+| Larger present-day | 148,967 | 45.542 | 82/32/314/0/0 |
+| Historical | supporting catalogue inputs above | 31.336 | 62/32/193/0/0 |
+| Larger historical | 149,126 | 35.990 | 62/32/193/0/0 |
 
 Permanent household cells remain 141 in both larger cities; physical classes
 are 32 today and 16 in 1900. All 32 class quotes and 14 form availability rows
@@ -702,14 +702,14 @@ BuildCardCheck too.
 | HousingCheck, InvestCheck, CreditCrunchCheck | 0 each; all original laws retained |
 | HousingDoorCheck | 3; only its one FS11 played-opportunity premise; money and placement green |
 | DenominationCheck | 0; original 1e-9 comparisons and the nonzero used-trade transforms |
-| ScaleCheck | 3; two FS2 historical financial pins; strict native, count, flow-transform and money checks green |
+| ScaleCheck | 3; two HT1-H historical financial pins after REV-RES3; strict native, count, flow-transform and money checks green |
 | LongPlaytest | 0; full 2,400-month run, additional fixtures, no findings or unplaced households |
 | SaveFileCheck, ReloadCheck, ReadPathCheck | 0 each on the AP2-integrated source |
 | SaveSlotCheck | 0 in the post-HC1 native-writer repeat; one soft wall-clock observation |
 
 The earlier pre-HC1 five-pin ScaleCheck record is retained above as evidence,
 not as five current waivers. The final ship file keeps only month-four savings
-and month-five deposits under FS2, plus the single HousingDoorCheck FS11 row.
+and month-five deposits under HT1-H, plus the single HousingDoorCheck FS11 row.
 No money, conservation, save, numeric or carrier bound is widened.
 
 The final read-only ScaleCheck trace confirms the current FS2 class. At month
@@ -729,3 +729,94 @@ funding; DataSave, the load rebuild, SAVE_FORMAT and OLDEST_LOADABLE_FORMAT.
 There is no threading change. The pick is ALL 246. The provisional marker
 requests the stranger's review; the changed trace's 80-run ensemble and the ALL
 dry run on the gate box follow that review's go, before the marker is dropped.
+
+## REV-RES3: mends from 42c991099
+
+The review found two P1s and three further findings. All five are handled in
+this delta; the earlier FS2 ownership references above describe the superseded
+handoff, not an approval to pass a red under a shipped row.
+
+★ `acceptTypedHousing` now takes `lastHomesBySize` from the inventory on both
+the live and load paths. This is derived state, so it needs no saved field.
+The typed load previously skipped `house()` and left this input null, or kept
+the previous city's census during an in-place load. The caused scarce-door
+fixture first failed its fresh-load and in-place-load floor comparisons and
+its first-next-month migration crowding comparison. Its live floor is
+161.284185872; the same full family matrix without a census reads 100.769453876.
+The corrected basic case preserves the actual next-month crowding factor
+0.547229504882 in all three cities. The final fixture also funds replacement
+housing before the native save, to exercise the following construction and
+migration phase. Save/read/reload results are recorded below.
+
+★ The two ScaleCheck TRACK rows now name queued HT1-H. FS2 shipped on
+2026-11-20 and is not an eligible queued owner. The m4 trace establishes the
+cash-for-shares divergence, but does not establish an `Exchange.deskLimits`
+room threshold parting the controls; no DK1 cause is claimed. HT1-H is the
+review's specified fallback for that played premise. Its queue wording is the
+orchestrator's record. Both original TRACK assertions and all money identities
+remain. HousingDoorCheck retains its valid FS11 owner.
+
+The numeric IDs 0 (House), 1 (Studio Apartments) and 6 (Low-Rise Apartments)
+are retained while their specifications are revised to RES1 section 12:
+
+| Existing row | Specification changes |
+| --- | --- |
+| 0 / C02 | dwelling `legacy` to `H120`; one private bay; benchmark cost weight 846,000 |
+| 1 / C06 | cash 8,628 to 8,692; materials 320 to 322; points 680 to 700; dwelling `S`; 20 shared bays; benchmark cost weight 196,725 |
+| 6 / C08 | cash 10,196 to 10,284; materials 377 to 381; points 2,400 to 2,432; area 80 to 75 m²; dwelling `F`; 32 shared bays; benchmark cost weight 319,714.285714 |
+
+All three explicitly use the existing 1900 availability gate. Their door counts,
+capacities, bedrooms and qualities retain their previous values. Eleven new
+rows append at IDs 155-165; no numeric ID is renumbered. The catalogue's nextId
+and fallback comment now say 166. These recipe/dwelling-key changes are also
+part of why the format/floor bump is owed. PW5 remains unshipped at this mend;
+if it ships first, its 155 Substation must precede our unshipped rows 156-166,
+nextId 167, with format/floor raised from its shipped value and the report
+regenerated before gating.
+
+★ The services partition now includes only *unbilled* residential buildings in
+the homes category. Rental-building power/water already belong to Real Estate's
+billed draw. The existing screen's categories therefore count each unit once
+and retain the city's own draw. BuildingsTemplate, ServicesManager,
+EconomyManager and UtilitiesHandler documentation now agrees with that policy.
+The 40,000-house WaterCheck case first failed four assertions: it double-counted
+8,000 water units and 40,000 power units, reported the city's 20 water units as
+-7,980, and summed 64,170 units against the actual 56,170. The corrected test
+keeps actual draw, supply, rationing, payroll, revenue and city-use checks;
+billed homes add zero to the unbilled category. WaterCheck is green.
+
+★ The exact one-below-floor boundary uses the genuine shipped 0.9.191
+format-62 save/history pair, not current JSON re-stamped as old. Its producer
+ran alone against unedited shipped 1b89c5c4c classes, after that detached
+worktree's --fast compile. It wrote scratch slot 10 at month 31. The pair has
+141 native 144-field household cells and two HC2 surveys, with no RES3 market,
+home-pay history or used-trade tuple. Original schema, version and SHA-256
+hashes are pinned in the check and in
+src/main/resources/fixtures/res3-format62/README.md. No file is converted.
+The common refusal helper retains every previous format-60/61 byte, history,
+manager, month and cash guard, and additionally checks family identity and the
+migration floor. The new pair is refused in fresh and already-running cities,
+with both files byte-identical and the entire running city/history unchanged;
+ReadPathCheck repeats its reads after refusal. SaveFileCheck is green.
+
+The final caused reload fixture pays for twenty construction depots, holds
+new private/city orders, and saves one funded aggregate order of 100 Houses
+while family doors are scarce. Existing work and staffing complete 70 Houses
+on the next native press. The source floor is 189.183099038 versus
+122.097069387 in the identical family matrix without its door census. Fresh
+and in-place loads preserve that floor. All three cities then admit
+20.8935037267 people with crowding factor 0.470736722549 and identical class
+markets; their money audits close. A separate guard requires positive arrivals,
+an active crowding ramp strictly between zero and one, and arrivals below the
+physical-room cap, so the migration comparison cannot pass on a zero-flow or
+already-capped case. The earlier simpler fixture's zero-arrival outcome was
+retained as a finding of insufficient test inputs, not used as acceptance.
+
+Post-review checks: HousingMarketCheck (both eras, profiles, positive scarce-door
+reload twins), WaterCheck, SaveFileCheck, ReadPathCheck, ReloadCheck and
+BuildingDataCheck all exit 0. ScaleCheck exits 3 with only the same two original
+TRACK pins, now assigned to queued HT1-H. The fast check reports no firm Stale
+finding and 199 soft observations. The full playtest and other household/card
+acceptance results above remain the pre-review live-model record; no bound or
+assertion was widened in these mends. The changed main since the review is
+queue/measurement documentation only (through ea16576cd), merged locally.

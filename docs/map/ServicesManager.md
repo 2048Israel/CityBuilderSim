@@ -1,10 +1,10 @@
-# ServicesManager.java - 445 lines · 34 methods · 0 constants · model
+# ServicesManager.java - 444 lines · 34 methods · 0 constants · model
 
-`ham/citybuildersim/ServicesManager.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ServicesManager.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (19), [BuildingType](BuildingType.md) (14), [Traffic](Traffic.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [BuildingManager](BuildingManager.md) (2), [Good](Good.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (21), [BuildingType](BuildingType.md) (14), [Traffic](Traffic.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [BuildingManager](BuildingManager.md) (2), [Good](Good.md) (1)
 
 **Used by (7):** [BuildAdviceCheck](BuildAdviceCheck.md), [Game](Game.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md), [SimulationEngine](SimulationEngine.md), [WaterCheck](WaterCheck.md)
 
@@ -27,7 +27,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 435 | **type** `public class ServicesManager` |  |
+| 11 | 434 | **type** `public class ServicesManager` |  |
 | 27 | 5 | `public ServicesManager(BuildingManager buildingManager)` |  |
 | 43 | 3 | `public void setFreshCapSource(DoubleSupplier source)` |  |
 | 54 | 3 | `public void setSteamShareSource(java.util.function.ToDoubleFunction<String> source)` |  |
@@ -36,30 +36,30 @@
 | 78 | 1 | `public double getElectrolyserSaving()` |  |
 | 81 | 3 | `private double lessElectrolysers(double draw)` | A draw the grid is asked for, less the electrolysers' saving, kept at 0 or more; the draw itself, to the bit, while none is saved. |
 | 89 | 7 | `public void updateServices()` | =============================== MAIN UPDATE =============================== |
-| 101 | 86 | `private void updateProduction()` | =============================== UPDATE PHASES =============================== |
-| 216 | 54 | `public void updateInfrastructure()` | Recomputes the road network from what is standing right now. |
-| 272 | 3 | `public void updateTransitFare(double fare)` | The fare the player set, which decides how many of them ride. |
-| 276 | 5 | `private void updateLabor()` |  |
-| 282 | 3 | `private void updateHandlers()` |  |
-| 295 | 17 | `public void updateServiceWages(double[] wages)` | NOTE: this used to be named updateIndustrialWages() - a copy-paste of EconomyManager's method name that had nothing to do with what this does. |
-| 313 | 3 | `public void updateJobFillRate(double[] fillRate)` |  |
-| 321 | 3 | `public UtilitiesHandler getUtilitiesHandler()` | =============================== GETTERS =============================== |
-| 325 | 3 | `public InfrastructureManager getInfrastructureManager()` |  |
-| 329 | 3 | `public double getEnergyRatio()` |  |
-| 333 | 3 | `public double getWaterRatio()` |  |
-| 344 | 3 | `public double getRoadRatio()` | What congestion lets the city actually get done, 0.35 to 1. |
-| 357 | 3 | `public double getServiceNetIncome()` | What the CITY earns from the services it owns - now utilities only. |
-| 361 | 3 | `public double getPricePerWatt()` |  |
-| 366 | 3 | `public void setFuelPrice(ToDoubleFunction<Good> cityPrice)` | The city's price of a fuel the plants burn (PW1); null: the world's. |
-| 371 | 3 | `public void setExchangeRate(DoubleSupplier rate)` | City money per world thousand, for the plants' upkeep (PW1); null: 1, at par. |
-| 376 | 3 | `public void setCalendarMonth(IntSupplier month)` | The calendar month, 1 to 12, for the season of the month's load (PW1); null: none. |
-| 380 | 3 | `public double getPricePerWaterUnit()` |  |
-| 385 | 3 | `public void setPopulation(long population)` | The people's water draw. |
-| 394 | 3 | `public void printUtilityInfo()` | =============================== PRINTERS =============================== |
-| 402 | 9 | `public void updateByCategoryHandlerDouble(BuildingType category, DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> get...` | =============================== GENERIC BUILDING AGGREGATION =============================== |
-| 412 | 8 | `public void updateHandlerDouble(DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> getter)` |  |
-| 425 | 3 | `public void updateFromGame(DoubleConsumer setter, double value)` | =============================== GAME → HANDLER HELPERS =============================== |
-| 429 | 3 | `public void updateFromGameInt(IntConsumer setter, int value)` |  |
-| 437 | 3 | `private void copyArray(double[] source, double[] target)` | =============================== ARRAY HELPERS =============================== |
-| 441 | 3 | `private void copyArray(long[] source, long[] target)` |  |
+| 101 | 85 | `private void updateProduction()` | =============================== UPDATE PHASES =============================== |
+| 215 | 54 | `public void updateInfrastructure()` | Recomputes the road network from what is standing right now. |
+| 271 | 3 | `public void updateTransitFare(double fare)` | The fare the player set, which decides how many of them ride. |
+| 275 | 5 | `private void updateLabor()` |  |
+| 281 | 3 | `private void updateHandlers()` |  |
+| 294 | 17 | `public void updateServiceWages(double[] wages)` | NOTE: this used to be named updateIndustrialWages() - a copy-paste of EconomyManager's method name that had nothing to do with what this does. |
+| 312 | 3 | `public void updateJobFillRate(double[] fillRate)` |  |
+| 320 | 3 | `public UtilitiesHandler getUtilitiesHandler()` | =============================== GETTERS =============================== |
+| 324 | 3 | `public InfrastructureManager getInfrastructureManager()` |  |
+| 328 | 3 | `public double getEnergyRatio()` |  |
+| 332 | 3 | `public double getWaterRatio()` |  |
+| 343 | 3 | `public double getRoadRatio()` | What congestion lets the city actually get done, 0.35 to 1. |
+| 356 | 3 | `public double getServiceNetIncome()` | What the CITY earns from the services it owns - now utilities only. |
+| 360 | 3 | `public double getPricePerWatt()` |  |
+| 365 | 3 | `public void setFuelPrice(ToDoubleFunction<Good> cityPrice)` | The city's price of a fuel the plants burn (PW1); null: the world's. |
+| 370 | 3 | `public void setExchangeRate(DoubleSupplier rate)` | City money per world thousand, for the plants' upkeep (PW1); null: 1, at par. |
+| 375 | 3 | `public void setCalendarMonth(IntSupplier month)` | The calendar month, 1 to 12, for the season of the month's load (PW1); null: none. |
+| 379 | 3 | `public double getPricePerWaterUnit()` |  |
+| 384 | 3 | `public void setPopulation(long population)` | The people's water draw. |
+| 393 | 3 | `public void printUtilityInfo()` | =============================== PRINTERS =============================== |
+| 401 | 9 | `public void updateByCategoryHandlerDouble(BuildingType category, DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> get...` | =============================== GENERIC BUILDING AGGREGATION =============================== |
+| 411 | 8 | `public void updateHandlerDouble(DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> getter)` |  |
+| 424 | 3 | `public void updateFromGame(DoubleConsumer setter, double value)` | =============================== GAME → HANDLER HELPERS =============================== |
+| 428 | 3 | `public void updateFromGameInt(IntConsumer setter, int value)` |  |
+| 436 | 3 | `private void copyArray(double[] source, double[] target)` | =============================== ARRAY HELPERS =============================== |
+| 440 | 3 | `private void copyArray(long[] source, long[] target)` |  |
 

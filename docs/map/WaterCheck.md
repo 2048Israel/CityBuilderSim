@@ -1,6 +1,6 @@
-# WaterCheck.java - 529 lines · 10 methods · 0 constants · harnesses
+# WaterCheck.java - 532 lines · 10 methods · 0 constants · harnesses
 
-`ham/citybuildersim/WaterCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WaterCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > Sanity harness for water production, demand, throttling and billing - and,
 > since 0.7.59, the fresh water limit and the desalination plant (sections
@@ -22,12 +22,12 @@
 | 94 | · 3. the ratio bites |
 | 110 | · 4. a plant fixes it |
 | 122 | · 5. split books |
-| 163 | · 6. the ratio throttles output |
-| 177 | · 7. billing is symmetric with power |
-| 202 | · 8. household affordability |
-| 218 | 9-10. the fresh water limit, on a handler (0.7.59) |
-| 318 | 11. on a city: the limit is its land's, and the coast |
-| 456 | 12. the rights on a load |
+| 166 | · 6. the ratio throttles output |
+| 180 | · 7. billing is symmetric with power |
+| 205 | · 8. household affordability |
+| 221 | 9-10. the fresh water limit, on a handler (0.7.59) |
+| 321 | 11. on a city: the limit is its land's, and the coast |
+| 459 | 12. the rights on a load |
 
 ## Fields (state)
 
@@ -39,30 +39,30 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 13 | 517 | **type** `public class WaterCheck` | Sanity harness for water production, demand, throttling and billing - and, since 0.7.59, the fresh water limit and the desalination plant (sections 9 to 12; batch J2, spec-land 2.3). |
+| 13 | 520 | **type** `public class WaterCheck` | Sanity harness for water production, demand, throttling and billing - and, since 0.7.59, the fresh water limit and the desalination plant (sections 9 to 12; batch J2, spec-land 2.3). |
 | 17 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 24 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 30 | 5 | `static void near(String label, double actual, double expected)` | A check against a figure, to a part in a billion of it - for sums of land areas that are floating point. |
 | 36 | 5 | `static void quietly(Runnable work)` |  |
 | 42 | 5 | `static double[] wages()` |  |
-| 48 | 169 | `public static void main(String[] args) throws Exception` |  |
+| 48 | 172 | `public static void main(String[] args) throws Exception` |  |
 
-### 9-10. the fresh water limit, on a handler (0.7.59) (lines 218-317)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 219 | 98 | `static void freshWaterLimit(double[] fullFill)` |  |
-
-### 11. on a city: the limit is its land's, and the coast (lines 318-455)
+### 9-10. the fresh water limit, on a handler (0.7.59) (lines 221-320)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 319 | 130 | `static void onACity()` |  |
-| 450 | 5 | `static<T> T quiet(java.util.function.Supplier<T> work)` |  |
+| 222 | 98 | `static void freshWaterLimit(double[] fullFill)` |  |
 
-### 12. the rights on a load (lines 456-529)
+### 11. on a city: the limit is its land's, and the coast (lines 321-458)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 457 | 72 | `static void rightsOnALoad() throws Exception` |  |
+| 322 | 130 | `static void onACity()` |  |
+| 453 | 5 | `static<T> T quiet(java.util.function.Supplier<T> work)` |  |
+
+### 12. the rights on a load (lines 459-532)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 460 | 72 | `static void rightsOnALoad() throws Exception` |  |
 

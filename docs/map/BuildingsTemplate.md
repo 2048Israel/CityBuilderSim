@@ -1,6 +1,6 @@
 # BuildingsTemplate.java - 1,661 lines · 182 methods · 2 constants · model
 
-`ham/citybuildersim/BuildingsTemplate.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingsTemplate.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
 > One kind of building, and what it costs to put up.
 > 
@@ -170,7 +170,7 @@
 | 203 | 1 | `public String getSector()` | The owning sector's key, or "" for a building nobody in the private sector owns. |
 | 205 | 1 | `public boolean isOwnedBySector()` |  |
 | 220 | 3 | `public String getOperator()` | The key of the sector that WORKS the building and pays its posts: Freight for a sea terminal (BuildingType.PORTS), getSector() for every other building. |
-| 231 | 3 | `public static boolean isBilledForUtilities(BuildingsTemplate t)` | Whether a building's power and water are invoiced to anybody: the business buildings a sector owns. |
+| 231 | 3 | `public static boolean isBilledForUtilities(BuildingsTemplate t)` | Whether a building's power and water are invoiced to anybody: the buildings a sector owns, including rental homes billed to Real Estate. |
 | 239 | 3 | `public static boolean isHighVoltage(BuildingsTemplate t)` | Whether a building takes its power at high voltage (spec-electricity 2.6): Heavy Industry and Mining are the two classes that pay the energy and the long wires alone, not the street's, so the utility bills them at the... |
 | 244 | 1 | `public double makes(Good good)` | Units of a good this building makes a month at nameplate. |
 | 247 | 1 | `public double uses(Good good)` | Units of a good this building uses a month at nameplate. |
