@@ -49,20 +49,37 @@ public final class Recipes {
      * The prices a recipe is valued at, as the planners know them: a good's price a unit (the city's, SpreadPlanner.cityValue(); or a harness's own),
      * the wage of each band by JobType ordinal, the three units' prices and the exchange factor the works' consumables are paid abroad at.
      */
-    public record Prices(ToDoubleFunction<Good> good, double[] wages, double pricePerWatt, double pricePerWaterUnit, double exchange) {
+    public record Prices(ToDoubleFunction<Good> good, double[] wages, double pricePerWatt, double pricePerWaterUnit, double exchange,
+                         double worksPricePerWatt) {
+
+        /** Prices whose works' surplus is credited at the draw's own price: a harness's flat prices, as every recipe was weighed before PW1-G. */
+        public Prices(ToDoubleFunction<Good> good, double[] wages, double pricePerWatt, double pricePerWaterUnit, double exchange) {
+            this(good, wages, pricePerWatt, pricePerWaterUnit, exchange, pricePerWatt);
+        }
 
         /** The same prices with another price for the goods. */
         public Prices withGoods(ToDoubleFunction<Good> other) {
-            return new Prices(other, wages, pricePerWatt, pricePerWaterUnit, exchange);
+            return new Prices(other, wages, pricePerWatt, pricePerWaterUnit, exchange, worksPricePerWatt);
         }
     }
 
     /* ===== THE PURE CORE: figures in, figures out ===== */
 
     /**
+     * What one building running the recipe pays for its power a month at these prices (PW1-G): its draw past what it makes at its class's
+     * price, the power it does not buy netted at the price it would pay, and what it makes past its draw credited at the works' price,
+     * which the strike pays a surplus (Sector.getPowerSoldValue()); negative for a works that sells. It read the whole difference at the
+     * class's price, so a steelworks' surplus was weighed at the industry price PW1 never pays it.
+     */
+    public static double powerCost(Recipe r, Prices p) {
+        double net = r.getElectricity() - r.getGen();
+        return net >= 0 ? net * p.pricePerWatt() : net * p.worksPricePerWatt();
+    }
+
+    /**
      * What a month at nameplate is worth to one building running the recipe, at these prices: what it makes at their prices, less what it uses, less
      * its posts at the wage of each band (as BusinessInvestment.runningCostOf() reads them), less the power it draws past what it makes at the
-     * unit's price (a surplus sold at it), its water, and its consumables at the exchange factor (as every sector's consumables are paid abroad).
+     * unit's price and a surplus credited at the works' (powerCost(), PW1-G), its water, and its consumables at the exchange factor (as every sector's consumables are paid abroad).
      */
     public static double value(Recipe r, Prices p) {
         double v = 0;
@@ -72,7 +89,7 @@ public final class Recipes {
             int slot = type.ordinal();
             if (slot < p.wages().length) v -= r.getJobs(type) * p.wages()[slot];
         }
-        v -= (r.getElectricity() - r.getGen()) * p.pricePerWatt();
+        v -= powerCost(r, p);
         v -= r.getWater() * p.pricePerWaterUnit();
         v -= r.getConsumables() * p.exchange();
         return v;
@@ -156,7 +173,7 @@ public final class Recipes {
         Markets markets = game.getMarkets();
         EconomyManager economy = game.getEconomyManager();
         return new Prices(good -> SpreadPlanner.cityValue(markets == null ? null : markets.get(good)), economy.getWageRates(),
-                economy.getPricePerWatt(), economy.getPricePerWaterUnit(), markets == null ? 1 : markets.getExchangeRate());
+                economy.getPricePerWatt(), economy.getPricePerWaterUnit(), markets == null ? 1 : markets.getExchangeRate(), economy.getWorksPricePerWatt());
     }
 
     /**
@@ -170,7 +187,7 @@ public final class Recipes {
     /** The same prices with the power at the template's class (pricesOf(Game, BuildingsTemplate)); the same object where the two agree. */
     static Prices forTemplate(Prices p, Game game, BuildingsTemplate t) {
         double watt = game.getEconomyManager().getPowerPriceFor(t);
-        return watt == p.pricePerWatt() ? p : new Prices(p.good(), p.wages(), watt, p.pricePerWaterUnit(), p.exchange());
+        return watt == p.pricePerWatt() ? p : new Prices(p.good(), p.wages(), watt, p.pricePerWaterUnit(), p.exchange(), p.worksPricePerWatt());
     }
 
     /** The gain of the template's recipe piece at the city's prices and in the city's month (EquipmentFit.gainOf() for a piece that ends no form). */

@@ -1,6 +1,6 @@
 # HousingChoice.java - 244 lines · 17 methods · 11 constants · model
 
-`ham/citybuildersim/HousingChoice.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingChoice.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > A bounded household-cell to dwelling-class allocation, retaining valid leases first.
 > WHY (RES3): size-only packing hid premium vacancy and let an enum's first cell

@@ -2811,7 +2811,10 @@ final class ServicesScreen {
                             + "load and no revenue. One workforce runs power and water both."));
         }
         // The water's; the road's statement went with its row (0.7.29: Infrastructure › Roads has it).
+        double worksPower = uh.getWaterPowerPerUnit();
         return column(statementLine("Price per unit", cash(uh.getPricePerWaterUnit())),
+                // ...and the sea works' power in it, while the sea is needed (PW1-W): their draw at the market's price over the water the sea delivered.
+                worksPower != 0 ? Kept.scope("water price power", () -> statementLine("...of which the sea works' power", cash(worksPower))) : null,
                 statementLine("Residents", people(uh.getResidentWaterDraw()) + " units"),
                 statementLine("Buildings", people(uh.getBuildingWaterDraw()) + " units"),
                 statementTotal("Total draw", people(uh.getWaterConsumption()) + " units", null),
@@ -3441,8 +3444,14 @@ final class ServicesScreen {
         List<Slice> powerCosts = new ArrayList<>(List.of(new Slice("power wages", elecPay, Palette.MONEY)));
         if (uh.getPowerBought() != 0) powerCosts.add(new Slice("power bought", uh.getPowerBought(), Palette.MONEY_LIGHT));
         if (uh.getFuelBill() != 0) powerCosts.add(new Slice("fuel and upkeep", uh.getFuelBill(), Palette.MONEY_DARK));
+        // ...and the water works' power, which the water's books buy of the power's (PW1-W): a sale on one side, a cost on the other, when there is some.
+        double waterPower = uh.getWaterPowerPaid();
+        List<Slice> powerSales = new ArrayList<>(List.of(new Slice("power sales", elecSales, Palette.PEOPLE)));
+        if (waterPower != 0) powerSales.add(new Slice("sold to the water works", waterPower, Palette.PEOPLE_LIGHT));
+        List<Slice> waterCosts = new ArrayList<>(List.of(new Slice("water wages", waterPay, Palette.MONEY)));
+        if (waterPower != 0) waterCosts.add(new Slice("the works' power", waterPower, Palette.MONEY_LIGHT));
         page.getChildren().add(Kept.scope("power", () -> moneyBars("power: sales",
-                List.of(new Slice("power sales", elecSales, Palette.PEOPLE)),
+                powerSales,
                 "power: costs",
                 powerCosts,
                 bottomLine(tightMoney(toDollars(uh.getElectricityIncome())), "power's net income",
@@ -3450,9 +3459,9 @@ final class ServicesScreen {
                         Palette.TEXT_HEAD))));
         page.getChildren().add(Kept.scope("water", () -> moneyBars("water: sales",
                 List.of(new Slice("water sales", waterSales, Palette.PEOPLE)),
-                "water: wages",
-                List.of(new Slice("water wages", waterPay, Palette.MONEY)),
-                bottomLine(tightMoney(toDollars(waterSales - waterPay)), "water's net income",
+                waterPower != 0 ? "water: costs" : "water: wages",
+                waterCosts,
+                bottomLine(tightMoney(toDollars(uh.getWaterIncome())), "water's net income",
                         pct(billedShare(uh.getBilledWaterDraw(), uh.getWaterConsumption())) + " of it billed",
                         Palette.TEXT_HEAD))));
         page.getChildren().add(Kept.scope("both", () -> Kept.row(24,
@@ -3503,9 +3512,10 @@ final class ServicesScreen {
          */
         // What the plants bought, a line each only when there is some (a scope each, Kept): the works' power, the fuel at home and abroad, the upkeep paid abroad.
         double powerBought = uh.getPowerBought(), fuelHome = uh.getFuelLocal(), fuelAbroad = uh.getFuelImported(), upkeepAbroad = uh.getUpkeepPaid();
-        double fuelBill = uh.getFuelBill();
+        double fuelBill = uh.getFuelBill(), waterPower = uh.getWaterPowerPaid();
         return column(statementHead("Electric power"),
                 bookRow("Sales", elecSales, null),
+                waterPower != 0 ? Kept.scope("sold to the water", () -> bookRow("Sold to the water works", waterPower, null)) : null,
                 bookRow("Wages", -elecPay, null),
                 powerBought != 0 ? Kept.scope("power bought", () -> bookRow("Power bought from the works", -powerBought, null)) : null,
                 fuelHome != 0 ? Kept.scope("fuel home", () -> bookRow("Fuel, bought in the city", -fuelHome, null)) : null,
@@ -3520,7 +3530,8 @@ final class ServicesScreen {
                 statementHead("Water"),
                 bookRow("Sales", waterSales, null),
                 bookRow("Wages", -waterPay, null),
-                statementTotal("Net income", tightMoney(toDollars(waterSales - waterPay), false), null),
+                waterPower != 0 ? Kept.scope("water works power", () -> bookRow("The works' power, at the market's price", -waterPower, null)) : null,
+                statementTotal("Net income", tightMoney(toDollars(uh.getWaterIncome()), false), null),
                 statementNote(String.format("%s of %s units billed, %s of it. Households are not billed for "
                         + "power or water, so the rest is supplied and never paid for.",
                         people(uh.getBilledWaterDraw()), people(uh.getWaterConsumption()),

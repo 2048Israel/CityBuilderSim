@@ -1,8 +1,8 @@
-# gate of Merge batch/PW5: substations (Jerus, 2026-11-02: "Substations"): one per 100 MW of peak, built by the auto-builder, their cost the wires' part of the bills PW1 strikes. Back from Pending by its own recommendation, next in the power lane, 0.9.192
+# gate of Merge batch/PW1-W: water priced from its cost, as PW1 prices power: the desalination plant's power at the market's price inside the water's price, so its water covers its power again and a patented plant earns its licence (PublicLicenceCheck's four reds pass by name to this row). Takes PW1-L, a licence's power read from the dispatch's energy served and not the flat rule, and PW1-G, a recipe's own generation netted at its class's price and its surplus at the works price. After PW5, beside its wires; back from Pending by their recommendations, 0.9.193
 # date: 2026-11-23
 # earth-2.bin: named
-# nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 244 harnesses run in 1034s: 233 passed, 11 failed
+# nightly: 2026-11-23 02:51 0.9.192 f937d2c22 4,000 months: RED, exit 1 in 335 s: FAIL households with no home 16 time(s), months 792-807; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-23-f937d2c22-eGpFQhFj
+# suite: 240 harnesses run in 982s: 230 passed, 10 failed
 RoadCheck | exit 1
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
@@ -40,9 +40,3 @@ Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 380.4, litres 7493.7, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  403.049651 != 380.393694
 Forms1900Check | 2 FAILED
-PublicLicenceCheck | exit 1
-PublicLicenceCheck | FAIL fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive: demand 13055.200 with 13055.200 without 2759.168 gain -695.251342 (1 mills)
-PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge: pending 0.0 paid 0.0 expected -173.8128354718698
-PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12907.6 with 12907.6 without 2353.90245799367 gain -57.86352024591157
-PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -67.58663801425539 pending 0.0 then gain -57.86352024591157 pending 0.0
-PublicLicenceCheck | 64 passed, 4 FAILED
