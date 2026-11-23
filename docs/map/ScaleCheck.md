@@ -1,4 +1,4 @@
-# ScaleCheck.java - 2,295 lines · 68 methods · 31 constants · harnesses
+# ScaleCheck.java - 2,308 lines · 68 methods · 31 constants · harnesses
 
 `ham/citybuildersim/ScaleCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -82,8 +82,8 @@
 | 599 | · 8. the audit's floor at size |
 | 602 | · 9. a copy tracks its city month by month |
 | 1599 | THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON |
-| 1791 | · THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) |
-| 2184 | · the helpers the blocks above are written with |
+| 1804 | · THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) |
+| 2197 | · the helpers the blocks above are written with |
 
 ## Constants
 
@@ -117,9 +117,9 @@
 | 1192 | `ScaleCheck.Figures.WITHIN` | `{ TRACK_PEOPLE, TRACK_CASH, TRACK_SAVINGS, TRACK_GDP, TRACK_DEPOSITS, TRACK_P...` |  |
 | 1253 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
 | 1625 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 the seven ratios at i... |
-| 1654 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
-| 1661 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
-| 1685 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
+| 1659 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
+| 1671 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
+| 1698 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
 
 ## Fields (state)
 
@@ -148,7 +148,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 116 | 2180 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
+| 116 | 2193 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
 | 215 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 220 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 226 | 5 | `static void quietly(Runnable r)` |  |
@@ -199,42 +199,42 @@
 | 1589 | 3 | `static long last(List<Long> series)` |  |
 | 1593 | 5 | `static boolean quietlyGet(java.util.function.BooleanSupplier s)` |  |
 
-### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 1599-1790)
+### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 1599-1803)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1688 | 102 | `static void scale(Path in, Path to, long k) throws Exception` |  |
+| 1701 | 102 | `static void scale(Path in, Path to, long k) throws Exception` |  |
 
-### THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) (lines 1791-2183)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1822 | 126 | `static void registers(JsonObject d, long k)` |  |
-| 1956 | 37 | `static void bank(JsonObject d, long k)` | The bank: one bank for the city, so every figure it carries is K times, but for its rates, its months and flags and the per-branch figures (the upkeep a later branch carries and the pricing's months). |
-| 1995 | 17 | `static void registerOfShares(JsonObject d, long k)` | The register of shares (Equity.SLOTS a company, in toSaveArray()'s order): the shares and the money, K times; the price, the target share and the counts stay. |
-| 2014 | 11 | `static void book(JsonObject b, long k)` | One order book: the orders' quantities and the month's, K times; every price, the last trade's month and the counts stay. |
-| 2027 | 20 | `static void exchange(JsonObject d, long k)` | The exchange: every book, the leavers' shares and the buyback budgets, the money fair value was struck on (EM1), and the record's money and volumes; the fair values and split factors are per share. |
-| 2049 | 14 | `static void bonds(JsonObject d, long k)` | The corporate bond market: each bond's issue, face and holders, its books, and the month's and life's money; the coupons, months and ids stay. |
-| 2065 | 13 | `static void fund(JsonObject d, long k)` | The city's fund: its cash and what it paid in and drew, its resolutions, orders and ledger; its dial, its months and its limits and prices stay. |
-| 2080 | 6 | `static void ledger(JsonElement value, long k)` | The same average-cost ledger on either owner: book amounts and acquired units grow; months, IDs and prices stay. |
-| 2088 | 20 | `static void investmentTaxesAndCustody(JsonObject d, long k)` | HT1's aggregate stocks/receipts grow with the city; per-household cell basis/claims stay on the cells above. |
-| 2110 | 7 | `static void oldMetal(JsonObject m, long k)` | The old metal's tonnes and the money paid for them; the price and the months stay. |
-| 2122 | 61 | `static void people(JsonObject d, long k)` | The people and what is done with them: the care and the burials, the police and the prisoners, the schools' pipeline, the licensed heads and last month's migration. |
-
-### the helpers the blocks above are written with (lines 2184-2295)
+### THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) (lines 1804-2196)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2187 | 3 | `static void scalar(JsonObject d, String key, long k)` | One number at a key, K times; a key the save does not have is left. |
-| 2192 | 3 | `static void whole(JsonObject d, String key, long k)` | Every number under a key, K times: a number, an array of them or a map of them. |
-| 2197 | 12 | `static JsonElement everyTimes(JsonElement v, long k)` | Every number in a value K times (a flag or a name is not a number and stays). |
-| 2211 | 5 | `static void slots(JsonObject d, String key, long k, int...at)` | The slots of an array at a key that scale; the others stay. |
-| 2218 | 7 | `static void allBut(JsonObject d, String key, long k, int...stay)` | Every slot of an array at a key but the ones named. |
-| 2227 | 5 | `static void fromTo(JsonObject d, String key, long k, int first, int end)` | The slots of an array at a key from one to before another. |
-| 2234 | 5 | `static void fromSlot(JsonObject d, String key, long k, int first)` | Every slot of an array at a key from one on. |
-| 2241 | 13 | `static void named(JsonElement v, long k, String...names)` | Each number under one of the names, wherever an object holds one, K times (a name's array or map of numbers too); the rest of the object stays. |
-| 2256 | 4 | `static void expect(JsonArray a, int length, String key)` | A layout read by position has the length it was read at; a slot added to the model must be classed here, so the scaler stops and says so. |
-| 2261 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
-| 2280 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
-| 2288 | 7 | `static void cleanUp(Path root)` |  |
+| 1835 | 126 | `static void registers(JsonObject d, long k)` |  |
+| 1969 | 37 | `static void bank(JsonObject d, long k)` | The bank: one bank for the city, so every figure it carries is K times, but for its rates, its months and flags and the per-branch figures (the upkeep a later branch carries and the pricing's months). |
+| 2008 | 17 | `static void registerOfShares(JsonObject d, long k)` | The register of shares (Equity.SLOTS a company, in toSaveArray()'s order): the shares and the money, K times; the price, the target share and the counts stay. |
+| 2027 | 11 | `static void book(JsonObject b, long k)` | One order book: the orders' quantities and the month's, K times; every price, the last trade's month and the counts stay. |
+| 2040 | 20 | `static void exchange(JsonObject d, long k)` | The exchange: every book, the leavers' shares and the buyback budgets, the money fair value was struck on (EM1), and the record's money and volumes; the fair values and split factors are per share. |
+| 2062 | 14 | `static void bonds(JsonObject d, long k)` | The corporate bond market: each bond's issue, face and holders, its books, and the month's and life's money; the coupons, months and ids stay. |
+| 2078 | 13 | `static void fund(JsonObject d, long k)` | The city's fund: its cash and what it paid in and drew, its resolutions, orders and ledger; its dial, its months and its limits and prices stay. |
+| 2093 | 6 | `static void ledger(JsonElement value, long k)` | The same average-cost ledger on either owner: book amounts and acquired units grow; months, IDs and prices stay. |
+| 2101 | 20 | `static void investmentTaxesAndCustody(JsonObject d, long k)` | HT1's aggregate stocks/receipts grow with the city; per-household cell basis/claims stay on the cells above. |
+| 2123 | 7 | `static void oldMetal(JsonObject m, long k)` | The old metal's tonnes and the money paid for them; the price and the months stay. |
+| 2135 | 61 | `static void people(JsonObject d, long k)` | The people and what is done with them: the care and the burials, the police and the prisoners, the schools' pipeline, the licensed heads and last month's migration. |
+
+### the helpers the blocks above are written with (lines 2197-2308)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2200 | 3 | `static void scalar(JsonObject d, String key, long k)` | One number at a key, K times; a key the save does not have is left. |
+| 2205 | 3 | `static void whole(JsonObject d, String key, long k)` | Every number under a key, K times: a number, an array of them or a map of them. |
+| 2210 | 12 | `static JsonElement everyTimes(JsonElement v, long k)` | Every number in a value K times (a flag or a name is not a number and stays). |
+| 2224 | 5 | `static void slots(JsonObject d, String key, long k, int...at)` | The slots of an array at a key that scale; the others stay. |
+| 2231 | 7 | `static void allBut(JsonObject d, String key, long k, int...stay)` | Every slot of an array at a key but the ones named. |
+| 2240 | 5 | `static void fromTo(JsonObject d, String key, long k, int first, int end)` | The slots of an array at a key from one to before another. |
+| 2247 | 5 | `static void fromSlot(JsonObject d, String key, long k, int first)` | Every slot of an array at a key from one on. |
+| 2254 | 13 | `static void named(JsonElement v, long k, String...names)` | Each number under one of the names, wherever an object holds one, K times (a name's array or map of numbers too); the rest of the object stays. |
+| 2269 | 4 | `static void expect(JsonArray a, int length, String key)` | A layout read by position has the length it was read at; a slot added to the model must be classed here, so the scaler stops and says so. |
+| 2274 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
+| 2293 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
+| 2301 | 7 | `static void cleanUp(Path root)` |  |
 
