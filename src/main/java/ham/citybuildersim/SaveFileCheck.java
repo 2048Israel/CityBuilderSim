@@ -73,7 +73,7 @@ public class SaveFileCheck {
         assertTrue("native format61 save/history refusal preserves both files and a running loaded twin", nativeGrid61Refusal(false));
         assertTrue("HC1 native format61 refusal preserves bytes and the running loaded twin", nativeCard61Refusal(false));
         assertTrue("PW5 format63: native shipped format62 refusal preserves both files and the running loaded twin", nativeGrid62Refusal(false));
-        assertTrue("RES3 refuses the genuine shipped format62 pair with both files and the running city intact", nativeHousingBoundaryRefusal(false));
+        assertTrue("RES3 refuses the genuine shipped format62 and format63 pairs with both files and the running city intact", nativeHousingBoundaryRefusal(false));
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -1531,9 +1531,9 @@ public class SaveFileCheck {
                 // and its securities move to another cohort rather than disappearing.
                 Household receiver=null;
                 for(Household c:full.getHouseholdBalance().cells()){
-                    boolean same=c instanceof RetiredHousehold r&&r.formerTier()==former
+                    boolean sameFormerCohort=c instanceof RetiredHousehold r&&r.formerTier()==former
                             ||c instanceof WorkingHousehold w&&w.tier()==former;
-                    if(!same&&!c.isEmpty()&&(receiver==null||c.households()>receiver.households()))receiver=c;
+                    if(!sameFormerCohort&&!c.isEmpty()&&(receiver==null||c.households()>receiver.households()))receiver=c;
                 }
                 assertTrue("fixture: another household cohort receives the poor cohort's securities",receiver!=null);
                 for(Household donor:full.getHouseholdBalance().cells())if(
@@ -3459,27 +3459,36 @@ public class SaveFileCheck {
     }
 
     static byte[] nativeHousingBoundaryBytes(String name) throws IOException {
-        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/res3-format62/" + name + ".json.gz")) {
-            if (in == null) throw new IOException("Missing native format62 " + name);
-            try (var zipped = new java.util.zip.GZIPInputStream(in)) { return zipped.readAllBytes(); }
-        }
+        return nativeFixtureBytes("res3-format63", name);
     }
 
     static boolean nativeHousingBoundaryRefusal(boolean readPaths) {
+        return GameVersion.OLDEST_LOADABLE_FORMAT - 1 == 63
+                && nativeHousingFixtureRefusal(62, "0.9.191",
+                        "4c2d3ae2e2fd4c4168b24446ab06d0f6db158d0a0b71b0a7018a8a621ba8ad0c",
+                        "953d14f3113bf858b73f242370fcdb103fe76d818dcf001a6d4384fc8fa87a87", readPaths)
+                && nativeHousingFixtureRefusal(63, "0.9.192",
+                        "51f878c2b9bc9a635dfa1d7079cf9eee17615367ccd03c192289cef9e409a00c", "9bacc907f2c0c797e170208f39353ac9ab84d26e744ffb9d094f705c78cc1ad2", readPaths);
+    }
+
+    private static boolean nativeHousingFixtureRefusal(int format, String version, String saveHash,
+                                                        String historyHash, boolean readPaths) {
         try {
-            byte[] save = nativeHousingBoundaryBytes("save"), history = nativeHousingBoundaryBytes("history");
+            byte[] save = nativeFixtureBytes("res3-format" + format, "save");
+            byte[] history = nativeFixtureBytes("res3-format" + format, "history");
             var old = com.google.gson.JsonParser.parseString(new String(save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             var oldHistory = com.google.gson.JsonParser.parseString(new String(history, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
-            boolean genuine = GameVersion.OLDEST_LOADABLE_FORMAT - 1 == 62 && old.get("saveFormat").getAsInt() == 62
-                    && old.get("gameVersion").getAsString().equals("0.9.191") && old.has("housingInventory")
+            var power = old.getAsJsonObject("powerBooks");
+            boolean gridShape = power.has("pendingGridCosts") == (format >= 63)
+                    && power.getAsJsonObject("struck").has("gridCosts") == (format >= 63);
+            boolean genuine = format < GameVersion.OLDEST_LOADABLE_FORMAT && old.get("saveFormat").getAsInt() == format
+                    && old.get("gameVersion").getAsString().equals(version) && old.has("housingInventory") && gridShape
                     && !old.has("housingMarket") && !old.has("homePayIndices") && !old.has("usedCarTrade")
                     && old.getAsJsonArray("householdCells").size() == old.getAsJsonArray("householdCellKeys").size() * 144 + 3
                     && oldHistory.getAsJsonArray("debtSurveys").size() > 0
-                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save))
-                            .equals("4c2d3ae2e2fd4c4168b24446ab06d0f6db158d0a0b71b0a7018a8a621ba8ad0c")
-                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history))
-                            .equals("953d14f3113bf858b73f242370fcdb103fe76d818dcf001a6d4384fc8fa87a87");
-            return genuine && nativePairRefusal(62, "0.9.191", save, history, readPaths);
+                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save)).equals(saveHash)
+                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history)).equals(historyHash);
+            return genuine && nativePairRefusal(format, version, save, history, readPaths);
         } catch (Exception ex) { ex.printStackTrace(); return false; }
     }
 
