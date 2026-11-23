@@ -1338,3 +1338,51 @@ with the box and Windows measurements above and every bound retained.
 PriceLevel is still open: no row or waiver is added while its cash-writing
 phase is being traced. Temporary cash observation in Sector is diagnostic
 only and must be restored before final checks, review or ensemble capture.
+
+### The price-level onset's extremal controls
+
+The cash observer is restored out of Sector and the twin before a fresh
+`--fast` (exit 0) and full PriceLevelCheck. Its stored eight built-city
+digests resolve which pair the onset names: **both +1e-12 nudges**, factors
+0.025883463843004304 and 1.000000000001, not the unperturbed twin. The
+unperturbed pair's live series never part through all 120 months under
+the existing `parting()` bounds. Its m81 Agriculture cash is
+1181.7235830395964 against 1181.7235832180160, a 1.7841967e-7 gap.
+No numerical nondeterminism is inferred from the earlier observer: it
+recorded the unperturbed pair too, whose numbers match the fresh run.
+
+At m81 the four founding-level controls span 1181.7235830302513 to
+1181.7235841924300 (width 1.162178716e-6); today's four span
+1181.7235829937686 to 1181.7235840809797 (width 1.087211100e-6).
+The intervals overlap. Their one extremal cross-pair gap, 1.198661494e-6,
+exceeds the same 1.181723584e-6 onset band by only 1.4%, while each
+within-level diameter remains below it. Thus the sampling guard finds
+zero same-level pairs and one across; it does not find a failed live
+law between the two unperturbed cities. This is FS2's documented latent
+rounding-onset premise, exposed at a different balance-sheet edge, not
+evidence that a wires amount missed its scale factor. FS2 already shipped.
+
+The phase trace corroborates the class without changing inputs. The
+flagged pair's Agriculture-cash gap is 6.460822988e-10 entering m81,
+1.183479981e-9 after supplier credit, then 1.196799985e-6 at the equity
+raise in `Game.consider()` (the `Equity.raiseFor()` / `offer()` path).
+The same raise amplifies a **within-founding-level** nudge by
+1.151022389e-6. The two levels both have zero districts, free carry
+10,000 kW, the identical 6,432.322105263157 kW peak and service ratio 1;
+their native grid capital, repairs and payroll are all zero. That rules
+out either wire rationing or a mis-scaled district cost at this onset.
+The source's equity target is the existing income-variance ratio and its
+raise is a balance-sheet subtraction; neither is changed by PW5.
+
+**★ Retain every price-level bound and all three original nudges; name
+only this built-city onset line to HT1-H.** No extra nudge is chosen,
+no district is forced below the founding carry, and no comparison horizon
+is shortened to make the line pass. HT1-H already owns moved played
+premises whose sweeps shipped; its eventual cause must distinguish this
+overlapping, extremal-control case from a real factor error. The opt-in
+onset report now names each child's actual factor so that the pair cannot
+be mistaken for the unperturbed twins. The raw digests and independent
+pair readings are kept at target/PW5-restored-source/digests/ and
+target/PW5-restored-source/pair-readings.txt; the earlier cash phases are
+at target/PW5-pricecash-probe/. This classification and LP-G1 still need
+the stranger's delta review and the required merged-model ensemble.

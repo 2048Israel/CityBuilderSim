@@ -749,8 +749,8 @@ public class PriceLevelCheck {
                         || !exact && (Math.abs(x) < floor && Math.abs(y) < floor || Math.abs(x - y) <= tolerance * scale);
                 if (!same) {
                     if (Boolean.getBoolean("cbs.pw5.traceFixtures"))
-                        System.out.printf("PW5_ONSET month=%d key=%s x=%.17g y=%.17g todayX=%s todayY=%s nominal=%s scale=%.17g tolerance=%.17g%n",
-                                m, key, x, y, base.todays, other.todays, nominal, scale, tolerance);
+                        System.out.printf("PW5_ONSET month=%d key=%s x=%.17g y=%.17g todayX=%s todayY=%s factorX=%.17g factorY=%.17g nominal=%s scale=%.17g tolerance=%.17g%n",
+                                m, key, x, y, base.todays, other.todays, base.factor, other.factor, nominal, scale, tolerance);
                     if (Boolean.getBoolean("cbs.pw5.traceFixtures") && key.equals("sector.Agriculture.cash")) {
                         for (int traceMonth = 0; traceMonth <= m; traceMonth++) {
                             double traceX = a.v[traceMonth] / base.factor, traceY = b.v[traceMonth] / other.factor;
