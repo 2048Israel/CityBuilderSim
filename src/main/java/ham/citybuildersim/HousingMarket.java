@@ -205,14 +205,27 @@ public final class HousingMarket {
         leases=result.leases();month=game.getMonth();
         for(ClassState c:classes.values()){c.occupied=0;c.demand=0;}
         for(var l:leases){ClassState c=classes.get(l.home());c.occupied+=l.count();c.demand+=l.count();}
-        // One-count residual demand goes to its best compatible affordable class, never to every alternative.
-        if(result.unplaced()>0)for(var d:demand){double used=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
-            double left=Math.max(0,d.count()-used),best=Double.NEGATIVE_INFINITY;
-            if(left<=FamilyModel.packingRounding(d.count()))continue;
-            List<HousingChoice.Offer> tied=new ArrayList<>();
+        // Emergency shelter does not supply a door of one's own. Occupied physical shares
+        // plus the remaining funded demand count each household once, including guests.
+        // Send that residual to its best compatible affordable class, never every alternative.
+        for(var d:demand){
             HousingChoice.Demand willing=d;
             for(var shift:sharing)if(shift.target().equals(d.key()))willing=with(d,d.count(),shift.targetBudget());
             final var seeker=willing;
+            double used=0;
+            for(var l:leases)if(l.cell().equals(d.key())){
+                used+=l.count();
+                var home=offers.stream().filter(o->o.key().equals(l.home())).findFirst().orElseThrow();
+                // A guest who could fund this suitable home still wants a whole door
+                // in this class. A half bill alone does not establish that budget.
+                if(HousingChoice.suitable(seeker,home,false)&&HousingChoice.affordable(seeker,home)){
+                    double extra=Math.max(0,l.households()-l.count());
+                    classes.get(l.home()).demand+=extra;used+=extra;
+                }
+            }
+            double left=Math.max(0,d.count()-used),best=Double.NEGATIVE_INFINITY;
+            if(left<=FamilyModel.packingRounding(d.count()))continue;
+            List<HousingChoice.Offer> tied=new ArrayList<>();
             for(var o:offers)if(HousingChoice.suitable(seeker,o,false)&&HousingChoice.affordable(seeker,o)){
                 double score=HousingChoice.score(seeker,o);int order=Double.compare(score,best);
                 if(order>0){best=score;tied.clear();}if(order>=0)tied.add(o);
