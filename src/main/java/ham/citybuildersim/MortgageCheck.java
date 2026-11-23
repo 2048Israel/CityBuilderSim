@@ -1117,12 +1117,19 @@ public class MortgageCheck {
          * standing from the founding than its fees can cover. The month after
          * they stand, the rule closes all six at once.
          */
-        Game g = landlordCity(root, "branches");
+        // Cause paying, housed customers before the first closure, rather
+        // than hoping homes and their supporting works finish in this short window.
+        Game g = landlordCity(root, "branches", true, 3);
+        standLandlords(g);
         BuildingsTemplate branch = template(g, "Commercial Bank");
+        long extraBranches = 7 - g.getBuildingManager().countByName("Commercial Bank");
+        assertTrue("fixture: the standing town can be given exactly seven bank branches", extraBranches >= 0);
         quietly(() -> {
-            g.getBuildingManager().addStack(branch, 6, true);
-            g.getLandManager().allocate(branch.getLandSqFt() * 6);
+            g.getBuildingManager().addStack(branch, extraBranches, true);
+            g.getLandManager().allocate(branch.getLandSqFt() * extraBranches);
         });
+        assertTrue("fixture: exactly seven branches stand before the six close",
+                g.getBuildingManager().countByName("Commercial Bank") == 7);
         Bank bank = g.getBank();
         int closedAt = -1, firstCostKnown = -1, closedIn = -1; long before = -1, after = -1;
         double equityResidual = Double.NaN, audit = Double.NaN, capitalisedBefore = 0, capitalisedAfter = 0;
