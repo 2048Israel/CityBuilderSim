@@ -1,4 +1,4 @@
-# BusinessInvestment.java - 1,832 lines · 108 methods · 13 constants · model
+# BusinessInvestment.java - 1,833 lines · 108 methods · 13 constants · model
 
 `ham/citybuildersim/BusinessInvestment.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -115,15 +115,15 @@
 | 1594 | `private java.util.function.Function<BuildingsTemplate, NewUnit> newUnits` | A NEW BUILDING'S FIGURES (QN1, 2026-11-19): every estimate, gate and future total here reads one new building of a template as a NewUnit - the recipe, posts, draw, output and input the building would open with - resol... |
 | 1662 | `private java.util.function.ToDoubleFunction<NewUnit> licenceCost` |  |
 | 1663 | `private java.util.function.ToDoubleFunction<BuildingsTemplate> standingLicenceCost` |  |
-| 1743 | `private java.util.function.Function<BuildingsTemplate, Fitout> fitout` | The equipment a new building of a template would come with if ordered now (R1e; Fitout.of(), wired by Game): what the quote prices and the site keeps, so what a business reckons is what it is charged. |
-| 1760 | `private java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> runWorksCost` | What the cuts, viaducts and tunnels of an order of a run would cost the builders' customer before the builders' tax (ET4; Game.runWorksCost(), wired by Game): the Freight sector's investor sees what a rail line costs ... |
-| 1795 | `private DeepWaterPrice deepWaterPrice` |  |
+| 1744 | `private java.util.function.Function<BuildingsTemplate, Fitout> fitout` | The equipment a new building of a template would come with if ordered now (R1e; Fitout.of(), wired by Game): what the quote prices and the site keeps, so what a business reckons is what it is charged. |
+| 1761 | `private java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> runWorksCost` | What the cuts, viaducts and tunnels of an order of a run would cost the builders' customer before the builders' tax (ET4; Game.runWorksCost(), wired by Game): the Freight sector's investor sees what a rail line costs ... |
+| 1796 | `private DeepWaterPrice deepWaterPrice` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 1784 | **type** `public class BusinessInvestment` | Capacity planning for the private sector. |
+| 49 | 1785 | **type** `public class BusinessInvestment` | Capacity planning for the private sector. |
 | 66 | 4 | `public static double horizonFor(double lead)` | The months of demand growth a sector plans past an order's opening, for a building that takes {@code lead} months (BA1): a horizon that grows with how long its buildings take. |
 | 76 | 5 | `public static double leadFor(double months)` | The lead whose demand growth is planned over {@code months} (BA1): the inverse of {@code lead + horizonFor(lead)}, which rises strictly with the lead, so a figure that only carries the sum (BuildAdvice.Ahead.months())... |
 
@@ -242,7 +242,7 @@
 | 1507 | 7 | `public double waitCarry(double annualRate, double months)` | What a cost grows to over a wait of `months` at the real test rate of `annualRate`: (1 + i)^months for i the monthly real rate (realTestRate()). |
 | 1524 | 5 | `public double carryOf(BuildingsTemplate t, long n, double annualRate)` | The carry of an order of `n` of `t` (waitCarry() over leadTime(): the whole wait, the months until its last building opens, at this month's site output as Game hands it in), times dearOf() while contracts are dear (DE... |
 
-### DEAR CONTRACTS (BA1, 2026-11-04) (lines 1530-1832)
+### DEAR CONTRACTS (BA1, 2026-11-04) (lines 1530-1833)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -263,16 +263,16 @@
 | 1685 | 3 | `public double runningCostOf(NewUnit t)` | ...for one new building already resolved (QN1): its own posts, draw and water, and the rent LicenceFees.forNew() strikes on it. |
 | 1690 | 3 | `public double standingRunningCostOf(BuildingsTemplate t)` | The same operating costs with the installed entry's standing royalty (R2c). |
 | 1694 | 12 | `private double runningCostOf(NewUnit t, double fee)` |  |
-| 1720 | 18 | `private double totalCostOf(BuildingsTemplate t, long quantity, double deepFactor)` | Cash price of a building, matching what Game charges: the builders' price for the work - its labour at today's wages (0.7.19) - plus any materials that have to be bought beyond the city's yard, at the market price, wi... |
-| 1746 | 3 | `public void setFitout(java.util.function.Function<BuildingsTemplate, Fitout> fit)` | Hands in the fitout of a new building (Game: Fitout.of()); null clears it. |
-| 1750 | 4 | `private Fitout fitoutOf(BuildingsTemplate t)` |  |
-| 1763 | 3 | `public void setRunWorksCost(java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> price)` | Hands in the price of a run's works on the city's slopes (Game.runWorksCost()); null clears it. |
-| 1773 | 7 | `private double groundCostOf(BuildingsTemplate t, long quantity)` | The ground under an order, as Game.buildFor() charges it: the part its sector's zone holds at the zone's price, the rest at the going price (0.7.107, LandManager.priceFor(sqFt, sector)); with no zone, the going price. |
-| 1781 | 3 | `public double getCostOf(BuildingsTemplate t, long quantity)` |  |
-| 1791 | 3 | **type** `public interface DeepWaterPrice` | What the deep-water works of an order of `quantity` of a platform or its well cost the builders' customer before the builders' tax at `factor` times a jacket's price (DW1; Game.deepWater(), wired by Game): the quote's... |
-| 1792 | 1 | `double moneyBeforeTax(BuildingsTemplate t, long quantity, double factor)` _(in BusinessInvestment.DeepWaterPrice)_ |  |
-| 1798 | 3 | `public void setDeepWaterPrice(DeepWaterPrice price)` | Hands in the price of a floating platform's deep-water works (Game.deepWater()); null clears it. |
-| 1803 | 6 | `private double deepWaterFactorOf(BuildingsTemplate t)` | How many times a jacket's price the next unit of an order of this costs at sea (DW1; sectors.Oil.deepWaterFactor()): 1 for every template but an Offshore Platform and its well, and for those in a sea a jacket stands in. |
-| 1815 | 3 | `public double getCostOfAt(BuildingsTemplate t, long quantity, double deepFactor)` | getCostOf() with the deep-water works priced at `deepFactor` times a jacket's price rather than at the depth of the next unit (DW1): the Oil planner judges a platform and its wells together, on the field it would stan... |
-| 1826 | 6 | `public int yardCovers(BuildingsTemplate t)` | How many of this building the city's yard of construction materials covers before getCostOf() buys the rest at the market - where its cost turns steeper; Integer.MAX_VALUE for a building that needs none. |
+| 1720 | 19 | `private double totalCostOf(BuildingsTemplate t, long quantity, double deepFactor)` | Cash price of a building, matching what Game charges: the builders' price for the work - its labour at today's wages (0.7.19) - plus any materials that have to be bought beyond the city's yard, at the market price, wi... |
+| 1747 | 3 | `public void setFitout(java.util.function.Function<BuildingsTemplate, Fitout> fit)` | Hands in the fitout of a new building (Game: Fitout.of()); null clears it. |
+| 1751 | 4 | `private Fitout fitoutOf(BuildingsTemplate t)` |  |
+| 1764 | 3 | `public void setRunWorksCost(java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> price)` | Hands in the price of a run's works on the city's slopes (Game.runWorksCost()); null clears it. |
+| 1774 | 7 | `private double groundCostOf(BuildingsTemplate t, long quantity)` | The ground under an order, as Game.buildFor() charges it: the part its sector's zone holds at the zone's price, the rest at the going price (0.7.107, LandManager.priceFor(sqFt, sector)); with no zone, the going price. |
+| 1782 | 3 | `public double getCostOf(BuildingsTemplate t, long quantity)` |  |
+| 1792 | 3 | **type** `public interface DeepWaterPrice` | What the deep-water works of an order of `quantity` of a platform or its well cost the builders' customer before the builders' tax at `factor` times a jacket's price (DW1; Game.deepWater(), wired by Game): the quote's... |
+| 1793 | 1 | `double moneyBeforeTax(BuildingsTemplate t, long quantity, double factor)` _(in BusinessInvestment.DeepWaterPrice)_ |  |
+| 1799 | 3 | `public void setDeepWaterPrice(DeepWaterPrice price)` | Hands in the price of a floating platform's deep-water works (Game.deepWater()); null clears it. |
+| 1804 | 6 | `private double deepWaterFactorOf(BuildingsTemplate t)` | How many times a jacket's price the next unit of an order of this costs at sea (DW1; sectors.Oil.deepWaterFactor()): 1 for every template but an Offshore Platform and its well, and for those in a sea a jacket stands in. |
+| 1816 | 3 | `public double getCostOfAt(BuildingsTemplate t, long quantity, double deepFactor)` | getCostOf() with the deep-water works priced at `deepFactor` times a jacket's price rather than at the depth of the next unit (DW1): the Oil planner judges a platform and its wells together, on the field it would stan... |
+| 1827 | 6 | `public int yardCovers(BuildingsTemplate t)` | How many of this building the city's yard of construction materials covers before getCostOf() buys the rest at the market - where its cost turns steeper; Integer.MAX_VALUE for a building that needs none. |
 

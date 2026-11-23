@@ -1,4 +1,4 @@
-# ConstructionTrapCheck.java - 1,478 lines · 40 methods · 12 constants · harnesses
+# ConstructionTrapCheck.java - 1,563 lines · 43 methods · 12 constants · harnesses
 
 `ham/citybuildersim/ConstructionTrapCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      among it; and in a city with no contractor that part is the whole share, to the bit.
 > ... (12 more lines in the source)
 
-**Uses:** [BuildersShort](BuildersShort.md) (112), [Game](Game.md) (56), [BuildingManager](BuildingManager.md) (24), [ConstructionControl](ConstructionControl.md) (20), [Construction](Construction.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [MoneyAudit](MoneyAudit.md) (8), [DeathCareFirstCheck](DeathCareFirstCheck.md) (5), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (3), [Sectors](Sectors.md) (2), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [TempDirs](TempDirs.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Sector](Sector.md) (1)
+**Uses:** [BuildersShort](BuildersShort.md) (114), [Game](Game.md) (59), [BuildingManager](BuildingManager.md) (29), [ConstructionControl](ConstructionControl.md) (20), [Construction](Construction.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (15), [MoneyAudit](MoneyAudit.md) (8), [DeathCareFirstCheck](DeathCareFirstCheck.md) (5), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (3), [Sectors](Sectors.md) (2), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [TempDirs](TempDirs.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Sector](Sector.md) (1)
 
 **Used by (1):** [ForeignCrewsCheck](ForeignCrewsCheck.md)
 
@@ -74,16 +74,16 @@
 |---:|---|
 | 233 | 1. THE PRICE'S SHAPE |
 | 350 | 2. THE TRAP, CAUSED |
-| 454 | 3. THE PRICE RISES AS THE FREE POINTS FALL |
-| 612 | 4. THE FOREIGN CREWS TAKE THE DEPOT FIRST |
-| 705 | 5. THE CITY CLIMBS OUT AND THE CONTRACTOR STOPS |
-| 763 | 6. THE MONEY |
-| 829 | 7. A CITY THAT NEVER MEETS THE TRAP |
-| 859 | 8. SAVED AND LOADED |
-| 901 | 9. A CANCEL IN THE TRAP |
-| 1076 | 10. A RUSH BESIDE THE CONTRACTOR |
-| 1185 | 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME |
-| 1240 | 12. AN ORDER'S OWN BUILDINGS (BA1) |
+| 457 | 3. THE PRICE RISES AS THE FREE POINTS FALL |
+| 664 | 4. THE FOREIGN CREWS TAKE THE DEPOT FIRST |
+| 773 | 5. THE CITY CLIMBS OUT AND THE CONTRACTOR STOPS |
+| 834 | 6. THE MONEY |
+| 900 | 7. A CITY THAT NEVER MEETS THE TRAP |
+| 930 | 8. SAVED AND LOADED |
+| 972 | 9. A CANCEL IN THE TRAP |
+| 1150 | 10. A RUSH BESIDE THE CONTRACTOR |
+| 1263 | 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME |
+| 1318 | 12. AN ORDER'S OWN BUILDINGS (BA1) |
 
 ## Constants
 
@@ -113,13 +113,13 @@
 | 154 | `static int monthsAudited` |  |
 | 353 | `static int roadsAdded` | What the road loop left: the roads added, and the sites at every post before and after the one that tipped it. |
 | 354 | `static double sitesBeforeTheLastRoad, sitesAfterTheLastRoad` |  |
-| 703 | `static double billBeforeTheRows` | His bill in the month before the rows (FC2: the founding's, the Penitentiary's), which the first row's statement carries. |
+| 771 | `static double billBeforeTheRows` | His bill in the month before the rows (FC2: the founding's, the Penitentiary's), which the first row's statement carries. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 1392 | **type** `public class ConstructionTrapCheck` | The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work as the repairs leave the builders fewer points for the sites, the queue at home past the threshold t... |
+| 87 | 1477 | **type** `public class ConstructionTrapCheck` | The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work as the repairs leave the builders fewer points for the sites, the queue at home past the threshold t... |
 | 93 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 98 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 104 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -138,7 +138,7 @@
 |---:|---:|---|---|
 | 235 | 114 | `static void shape()` |  |
 
-### 2. THE TRAP, CAUSED (lines 350-453)
+### 2. THE TRAP, CAUSED (lines 350-456)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -146,80 +146,83 @@
 | 363 | 3 | `static void roads(Game g, int n)` | n standing Paved Roads, as DeathCareFirstCheck.sites() builds them. |
 | 372 | 16 | `static Game trapped(Path root, String name)` | DeathCareFirstCheck's city, then standing Paved Roads: two short of the model's own figure for the roads whose repairs leave the sites SLIVER of the builders' month, and then one at a time until they leave less - so t... |
 | 390 | 11 | `static void sites(Game g)` | ...and the sites DeathCareFirstCheck.sites() puts on it, less its cemetery: the city's University and Middle Schools, the landlords' Houses; nobody lies unburied. |
-| 402 | 51 | `static Game trap(Path root)` |  |
+| 402 | 54 | `static Game trap(Path root)` |  |
 
-### 3. THE PRICE RISES AS THE FREE POINTS FALL (lines 454-611)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 461 | 25 | `static Game calm(Path root, String name)` | A twin that never met the trap: the trap's city (DeathCareFirstCheck.city()) with its Penitentiary cancelled - its queue was the only thing in the way of a premium of none - and, in its place, the landlords' Houses on... |
-| 491 | 2 | **type** `record State(String name, double sites, double months, double premium, double multiple, double sticker, dou...` | A House's quote at a state of the city: the free points, the months queued, the premium, the multiple, the sticker and the planners' cost; whether an order goes abroad, and (FC2) the foreign crews' first share and the... |
-| 494 | 1 | `static State state(Game g, String name)` |  |
-| 497 | 10 | `static State state(Game g, String name, boolean print)` | ...printed or not: the walk to the threshold reads a state at every road and prints the last. |
-| 508 | 8 | `static void printState(Game g, State s)` |  |
-| 518 | 5 | `static int roadsFor(Game g, double months)` | The standing roads that bring the months queued to `months` at the points the builders have now. |
-| 524 | 87 | `static void priceRises(Path root)` |  |
-
-### 4. THE FOREIGN CREWS TAKE THE DEPOT FIRST (lines 612-704)
+### 3. THE PRICE RISES AS THE FREE POINTS FALL (lines 457-663)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 614 | 87 | `static void depotFirst(Game g, List<Row> rows)` |  |
+| 464 | 25 | `static Game calm(Path root, String name)` | A twin that never met the trap: the trap's city (DeathCareFirstCheck.city()) with its Penitentiary cancelled - its queue was the only thing in the way of a premium of none - and, in its place, the landlords' Houses on... |
+| 494 | 2 | **type** `record State(String name, double sites, double months, double premium, double multiple, double sticker, dou...` | A House's quote at a state of the city: the free points, the months queued, the premium, the multiple, the sticker and the planners' cost; whether an order goes abroad, and (FC2) the foreign crews' first share and the... |
+| 497 | 1 | `static State state(Game g, String name)` |  |
+| 500 | 10 | `static State state(Game g, String name, boolean print)` | ...printed or not: the walk to the threshold reads a state at every road and prints the last. |
+| 517 | 15 | `static boolean identity(Game g, double[] aheads, double[] eachs, int[] abroad)` | orderPriceMultiplier(x, each, 1) against FC1's one-building form for every pair (REV-FC2): to the bit orderPriceMultiplier(x) where the building stands within the threshold, and past it one and the share with its own ... |
+| 538 | 4 | `static double abroadShare(BuildingManager bm, BuildingManager.ForeignTerms now, double points)` | The supply curve's share for {@code points} more on his book, from the terms as the city stands (REV-FC2): his month the book and them in the threshold's months, never under the largest depot - what an order wholly pa... |
+| 544 | 4 | `static double ownShare(Game g, BuildingsTemplate t, long n)` | The foreign crews' share for an order of n of t placed now (REV-FC2, Game.abroadOfOrder()); NaN with no trade on. |
+| 549 | 8 | `static void printState(Game g, State s)` |  |
+| 559 | 5 | `static int roadsFor(Game g, double months)` | The standing roads that bring the months queued to `months` at the points the builders have now. |
+| 565 | 98 | `static void priceRises(Path root)` |  |
 
-### 5. THE CITY CLIMBS OUT AND THE CONTRACTOR STOPS (lines 705-762)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 707 | 55 | `static void climbsOut(Game g, List<Row> rows)` |  |
-
-### 6. THE MONEY (lines 763-828)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 765 | 6 | `static void audited(String where)` |  |
-| 772 | 56 | `static void money(List<Row> rows)` |  |
-
-### 7. A CITY THAT NEVER MEETS THE TRAP (lines 829-858)
+### 4. THE FOREIGN CREWS TAKE THE DEPOT FIRST (lines 664-772)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 831 | 27 | `static Game never(Path root)` |  |
+| 666 | 103 | `static void depotFirst(Game g, List<Row> rows)` |  |
 
-### 8. SAVED AND LOADED (lines 859-900)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 861 | 39 | `static void saved(Path root, Game never) throws Exception` |  |
-
-### 9. A CANCEL IN THE TRAP (lines 901-1075)
+### 5. THE CITY CLIMBS OUT AND THE CONTRACTOR STOPS (lines 773-833)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 909 | 5 | `static int cityDepots(Game g, BuildingsTemplate depot)` | The Construction Depots the city orders in the trap: more points than the month has, the city's and the contractor's, so one is still on site when the month ends and the cancel has something to stop. |
-| 916 | 4 | `static ConstructionControl.Refund refundOf(Game g, String building)` | The refund the month's stop made for the building of that name (ConstructionControl.Refund), or null when it stopped none. |
-| 922 | 15 | `static void sameStart(String where, Game a, Game b)` | Two trapped cities that stand alike to the bit: the free points, the repairs, the queue, his book, his threshold and the overflow at home, and the treasury's cash. |
-| 938 | 73 | `static void cancelInTheTrap(Path root)` |  |
-| 1013 | 7 | `static void moreHouses(Game g)` | The landlords' Houses ordered again, LANDLORDS_HOUSES of them, out of cash the quote sizes: the same in twins that stand alike. |
-| 1026 | 49 | `static void cancelADepotFirst(Path root)` | A depot of the builders' ordered by the city and served first, and cancelled: FC1 never had it on his book, so the cancel took nothing off; since FC2 his book is the queue's points handed him, not orders, and a cancel... |
+| 775 | 58 | `static void climbsOut(Game g, List<Row> rows)` |  |
 
-### 10. A RUSH BESIDE THE CONTRACTOR (lines 1076-1184)
+### 6. THE MONEY (lines 834-899)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1079 | 4 | `static ConstructionControl.Overtime overtimeOf(Game g, String key)` | The overtime of the rushed site the month struck, with the plan it was struck in. |
-| 1084 | 100 | `static void rushBesideTheContractor(Path root)` |  |
+| 836 | 6 | `static void audited(String where)` |  |
+| 843 | 56 | `static void money(List<Row> rows)` |  |
 
-### 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME (lines 1185-1239)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1187 | 52 | `static void nextMonthTheSame(Path root) throws Exception` |  |
-
-### 12. AN ORDER'S OWN BUILDINGS (BA1) (lines 1240-1478)
+### 7. A CITY THAT NEVER MEETS THE TRAP (lines 900-929)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1243 | 5 | `static double explicitMean(double from, double step, long n)` | The sums an order of n buildings is priced by, in the order the model sums them (BuildersShort.meanPremium() up to EXACT_SUM_MOST). |
-| 1250 | 6 | `static double integralTolerance(double stepMonths)` | The tolerance meanPremium()'s javadoc states for the integral past EXACT_SUM_MOST, by the step in months (its MEASURED figures). |
-| 1266 | 212 | `static void ordersOwnBuildings(Path root)` | AN ORDER'S OWN BUILDINGS (BA1). |
+| 902 | 27 | `static Game never(Path root)` |  |
+
+### 8. SAVED AND LOADED (lines 930-971)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 932 | 39 | `static void saved(Path root, Game never) throws Exception` |  |
+
+### 9. A CANCEL IN THE TRAP (lines 972-1149)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 980 | 5 | `static int cityDepots(Game g, BuildingsTemplate depot)` | The Construction Depots the city orders in the trap: more points than the month has, the city's and the contractor's, so one is still on site when the month ends and the cancel has something to stop. |
+| 987 | 4 | `static ConstructionControl.Refund refundOf(Game g, String building)` | The refund the month's stop made for the building of that name (ConstructionControl.Refund), or null when it stopped none. |
+| 993 | 15 | `static void sameStart(String where, Game a, Game b)` | Two trapped cities that stand alike to the bit: the free points, the repairs, the queue, his book, his threshold and the overflow at home, and the treasury's cash. |
+| 1009 | 74 | `static void cancelInTheTrap(Path root)` |  |
+| 1085 | 7 | `static void moreHouses(Game g)` | The landlords' Houses ordered again, LANDLORDS_HOUSES of them, out of cash the quote sizes: the same in twins that stand alike. |
+| 1098 | 51 | `static void cancelADepotFirst(Path root)` | A depot of the builders' ordered by the city and served first, and cancelled: FC1 never had it on his book, so the cancel took nothing off; since REV-FC2 an order's buildings past the threshold go on it as it is bille... |
+
+### 10. A RUSH BESIDE THE CONTRACTOR (lines 1150-1262)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1153 | 4 | `static ConstructionControl.Overtime overtimeOf(Game g, String key)` | The overtime of the rushed site the month struck, with the plan it was struck in. |
+| 1158 | 104 | `static void rushBesideTheContractor(Path root)` |  |
+
+### 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME (lines 1263-1317)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1265 | 52 | `static void nextMonthTheSame(Path root) throws Exception` |  |
+
+### 12. AN ORDER'S OWN BUILDINGS (BA1) (lines 1318-1563)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1321 | 5 | `static double explicitMean(double from, double step, long n)` | The sums an order of n buildings is priced by, in the order the model sums them (BuildersShort.meanPremium() up to EXACT_SUM_MOST). |
+| 1328 | 6 | `static double integralTolerance(double stepMonths)` | The tolerance meanPremium()'s javadoc states for the integral past EXACT_SUM_MOST, by the step in months (its MEASURED figures). |
+| 1344 | 219 | `static void ordersOwnBuildings(Path root)` | AN ORDER'S OWN BUILDINGS (BA1). |
 

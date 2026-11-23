@@ -32,7 +32,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (8), [Equipment](Equipment.md) (5), [Game](Game.md) (1), [NewUnit](NewUnit.md) (1), [LicenceFees](LicenceFees.md) (1), [EquipmentFit](EquipmentFit.md) (1), [Good](Good.md) (1)
 
-**Used by (5):** [BuildingManager](BuildingManager.md), [BuildingsStacks](BuildingsStacks.md), [BusinessInvestment](BusinessInvestment.md), [FitoutCheck](FitoutCheck.md), [Game](Game.md)
+**Used by (6):** [BuildingManager](BuildingManager.md), [BuildingsStacks](BuildingsStacks.md), [BusinessInvestment](BusinessInvestment.md), [FitoutCheck](FitoutCheck.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md)
 
 ## Fields (state)
 

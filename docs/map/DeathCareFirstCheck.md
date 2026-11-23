@@ -1,4 +1,4 @@
-# DeathCareFirstCheck.java - 537 lines · 18 methods · 5 constants · harnesses
+# DeathCareFirstCheck.java - 534 lines · 18 methods · 5 constants · harnesses
 
 `ham/citybuildersim/DeathCareFirstCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -63,11 +63,11 @@
 |---:|---|
 | 148 | 1. THE RULE'S ARITHMETIC |
 | 196 | 2. THE TRAP, CAUSED |
-| 326 | 3. BEFORE AND WITH |
-| 387 | 4. THE LOOP BREAKS |
-| 455 | 5. THE PLAYER'S ORDER |
-| 495 | 6. ONCE NOBODY LIES UNBURIED |
-| 527 | 7. CONSERVED |
+| 323 | 3. BEFORE AND WITH |
+| 384 | 4. THE LOOP BREAKS |
+| 452 | 5. THE PLAYER'S ORDER |
+| 492 | 6. ONCE NOBODY LIES UNBURIED |
+| 524 | 7. CONSERVED |
 
 ## Constants
 
@@ -93,7 +93,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 476 | **type** `public class DeathCareFirstCheck` | Death care first while the dead wait (0.7.129, batch T1-B): the rule that serves the city's own cemeteries and crematoria first out of its share of the crews while anybody lies unburied, held on a city that is caught ... |
+| 62 | 473 | **type** `public class DeathCareFirstCheck` | Death care first while the dead wait (0.7.129, batch T1-B): the rule that serves the city's own cemeteries and crematoria first out of its share of the crews while anybody lies unburied, held on a city that is caught ... |
 | 68 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 79 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -109,42 +109,42 @@
 | 151 | 3 | `static double crew(double points, int buildings)` | A site's crew by the rule (BuildingManager.weightOf()): its buildings times one's points to CREW_SCALE_EXPONENT. |
 | 155 | 40 | `static void arithmetic()` |  |
 
-### 2. THE TRAP, CAUSED (lines 196-325)
+### 2. THE TRAP, CAUSED (lines 196-322)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 210 | 30 | `static Game city(Path root, String name)` | A city caught in the trap: works, homes, a clinic for everybody, one depot, every sector held so no planner builds or scraps anything but by this fixture's hand - the founding churchyard full and no crematorium, so th... |
 | 248 | 10 | `static void toTheCap(Game without, Game with)` | ...and on until the backlog is at its cap (R0b), both twins month for month: on 1900's causes of death the month's dead rise through the three years (2.7 a month at the end, a cap of 64, against a backlog of 56), so t... |
 | 260 | 16 | `static void sites(Game g)` | ...and the roads and the sites: the half of the fixture that follows the trap. |
-| 277 | 48 | `static Game[] trap(Path root)` |  |
+| 277 | 45 | `static Game[] trap(Path root)` |  |
 
-### 3. BEFORE AND WITH (lines 326-386)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 328 | 58 | `static void beforeAndWith(Game without, Game with)` |  |
-
-### 4. THE LOOP BREAKS (lines 387-454)
+### 3. BEFORE AND WITH (lines 323-383)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 389 | 65 | `static void loopBreaks(Game without, Game with)` |  |
+| 325 | 58 | `static void beforeAndWith(Game without, Game with)` |  |
 
-### 5. THE PLAYER'S ORDER (lines 455-494)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 457 | 37 | `static void playersOrder(Path root)` |  |
-
-### 6. ONCE NOBODY LIES UNBURIED (lines 495-526)
+### 4. THE LOOP BREAKS (lines 384-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 497 | 29 | `static void onceBuried(Game g)` |  |
+| 386 | 65 | `static void loopBreaks(Game without, Game with)` |  |
 
-### 7. CONSERVED (lines 527-537)
+### 5. THE PLAYER'S ORDER (lines 452-491)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 529 | 8 | `static void conserved()` |  |
+| 454 | 37 | `static void playersOrder(Path root)` |  |
+
+### 6. ONCE NOBODY LIES UNBURIED (lines 492-523)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 494 | 29 | `static void onceBuried(Game g)` |  |
+
+### 7. CONSERVED (lines 524-534)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 526 | 8 | `static void conserved()` |  |
 
