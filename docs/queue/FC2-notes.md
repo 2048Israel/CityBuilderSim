@@ -21,20 +21,30 @@ currency". The brief is `docs/queue/FC2.md`; FC2b (the next row) is left its sea
   KNEE + SURE_MONTHS = 21 months, whatever the currency (the cap). At par, 20.5 months.
 - **The queue at home** (`BuildingManager.queueAtHome()`) is the queue less the contractor's book. `monthsQueued()`,
   the premium and the depot's earnings read it; the book is in neither.
-- **The handover, at the payer's price (REV-FC2's P1).** An order's buildings past the threshold go to the contractor
+- **The handover, at the payer's price (REV-FC2's P1).** An order's work past the threshold goes to the contractor
   as it is billed (`Game.processBuildOrder()` and `buildFor()`, after `Construction.bill()`, ->
-  `Construction.handAbroad()`), counted building by building by BA1's rule (`BuildersShort.homeBuildings()`, the one
-  `meanShare()` prices by), at the price a point its payer's quote charged for them: the order's own base a point and
+  `Construction.handAbroad()`), counted by the point (`BuildersShort.homeUnits()`, the one `meanShare()` prices by:
+  BA1's buildings within the threshold whole, and since the second review the one it falls in split there, its
+  points past it abroad), at the price a point its payer's quote charged for them: the order's own base a point and
   his excess at the month the order itself makes him run (`BuildingManager.abroadOfOrder()`: his book, the work ahead
   of it abroad in the same run, and its own points past the threshold, in the threshold's months, never under the
-  largest depot; the threshold struck on the base with the order on site). The book holds money as well as points
-  (`foreignBookShare`, `foreignBookPrice`, means by the point) and is drawn in proportion, so what he bills over its
-  life is what its payers paid for that work. Each month, before the sites advance, `Game.foreignCrewsOffer()` caps
-  the book at what is owed on site (FC1b), counts the points handed since the last offer as the month's
-  (`closeHandovers()`) and strikes his month on the book; it hands nothing. Work quoted at home stays at home: an
-  order within the threshold; a building that starts within it, however far its points run past; work at home that
-  a moving threshold falls under; a restart's shell (`Game.quoteRestart()`); and an order placed with no trade on (the
-  founding's first, before any depot's output).
+  largest depot). The threshold is struck with the order on site, on the base a point and, since the second review,
+  on the world's price a point too (`pricePerPointWith()`), so the threshold an order is quoted on is the one read
+  once it stands. The book holds money as well as points (`foreignBookShare`, `foreignBookPrice`, means by the point)
+  and is drawn in proportion, so what he bills over its life is what its payers paid for that work. Each month,
+  before the sites advance, `Game.foreignCrewsOffer()` caps the book at what is owed on site (FC1b), counts the points
+  handed since the last offer as the month's (`closeHandovers()`) and strikes his month on the book; it hands
+  nothing. Work quoted at home stays at home: an order within the threshold; the part of a building within it; work
+  at home that a moving threshold falls under; a restart's shell (`Game.quoteRestart()`), a demolition and the
+  paving, priced at home (section 3); and an order placed with no trade on (the founding's first, before any depot's
+  output).
+- **Each site's claim on his book (REV-FC2, the second review).** The book is one sum, drawn by his month; each stack
+  holds a claim on it (`BuildingsStacks.abroadClaim`), raised as its order is handed him in proportion to the book
+  (`BuildingManager.noteAbroad()`), so a site's work still on the book is the book times its claim over the claims of
+  the stacks still owing (`abroadOwedOf()`), and his month draws every site's in proportion as it draws the book's
+  money. A cancel takes the cancelled site's share, struck at the stop (`ConstructionControl.Refund.bookShare()`) and
+  cut once his month is off the book (`Game.settleConstructionControl()`, after `settleForeignCrews()`), never more
+  than the points the order had left (section 3).
 - **The contractor's month, a supply curve.** `foreignMonth()`: his book in the threshold's months, never under the
   builders' largest depot (FC1's rule) nor over the book - so the work abroad waits no longer than the work at home at
   the threshold. His excess rises with it (`excessAt()`): r and the rest of the way to CEILING times m / (1 + m), m his
@@ -47,10 +57,13 @@ currency". The brief is `docs/queue/FC2.md`; FC2b (the next row) is left its sea
   "+ construction Exports" (TRADE), the national accounts' exports (EconomyManager sums every statement's) and the
   current account (`ForeignAccounts`: tradeIn). Only idle points: the sites take theirs first, so the city's queue is
   never starved.
-- **An order's price** (`orderPriceMultiplier(ahead, abroadAhead, each, n, base)`, `BuildersShort.meanShare()`): BA1's
+- **An order's price** (`orderPriceMultiplier(ahead, abroadAhead, each, n, of)`, `BuildersShort.meanShare()`): BA1's
   buildings, each in the queue at home the ones before it leave; within the threshold at the premium, past it at the
-  share `abroadOfOrder()` strikes for the order - the share it is handed at. One building past the threshold pays 1
-  and that share; a long order's own points raise its month, so it pays the curve's dearer price for them.
+  share `abroadOfOrder()` strikes for the order - the share it is handed at; the building the threshold falls in, its
+  part within at the premium where it begins and the rest at the share. One building past the threshold pays 1 and
+  that share; a long order's own points raise its month, so it pays the curve's dearer price for them. Its prep,
+  works, bridge and deep water (`Game.quoteBuild()`) go abroad in its buildings' share of points and are priced at
+  their blend, home and abroad (`abroadWork()`), so each part is priced where it is built.
 - **The wait an order is read at** (`Game.orderWaitOutput()`): the sites' month and his month as the next offer would
   strike it (`foreignMonthNow()`); where the sites get nothing, never under the largest depot, so the trap's waits stay
   finite as FC1 made them.
@@ -98,6 +111,9 @@ currency". The brief is `docs/queue/FC2.md`; FC2b (the next row) is left its sea
   surge after disasters, when the work is a fraction to a few times the local trade, raised reconstruction costs
   10-40% after Katrina and 20-50% after earthquakes (Olsen and Porter, USGS 2011; WCEE 2012; CEB 2025). From r = 0.15
   the curve gives +22% at a quarter of the city's month, +37% at one and +54% at three, never CEILING.
+- **AT_THRESHOLD = 1e-9 months (REV-FC2, the second review).** A queue split at the threshold stands at it to the
+  rounding of the months' sum; within this of it, it reads as at it, so the next order goes abroad whole
+  (`ordersGoAbroad()`, `homeUnits()`) and not a sliver of a building at home with the rest abroad.
 
 Sources:
 
@@ -115,18 +131,24 @@ Sources:
 
 ## 3. The calls
 
-- ★ **The backlog settles at the threshold.** An order's buildings past the threshold go to him as it is billed, so a
-  240-month order leaves the queue at home at the threshold, over it by no more than the building its last at home
-  stands in, and his month is his book in the threshold's months: it is built at the threshold's pace, near KNEE + N
+- ★ **The backlog settles at the threshold.** An order's work past the threshold goes to him as it is billed, so a
+  240-month order leaves the queue at home at the threshold (since the second review exactly: the building it falls
+  in is split there), and his month is his book in the threshold's months: it is built at the threshold's pace, near KNEE + N
   (at par 20.5, at the weakest D$ 21). The threshold moves with the base once the order is billed, so the backlog
   read at both paces stays within a month of it, either side.
 - ★ **An order sent abroad still counts in the backlog that orders a depot.** `Construction.plan()` reads the whole
   queue (`getRemainingConstructionPoints()`), the book in it. The depots that bring the work home are what end the
   import, and the builders know the work is theirs to deliver - they are its general contractor. OG1's sizing is capped
   at 1 + CEILING, so the count cannot run away.
-- ★ **A cancel cuts the foreign book first** (`cancelOrder(back, r.points(), r.points())`): the builders, losing a job,
-  cut the work they pay a stranger's excess for before their own crews'. A depot served first is no exception: since REV-FC2
-  an order's buildings past the threshold are on the book from its billing, a depot's as any.
+- ★ **A cancel cuts his book by the site's own work on it (REV-FC2, the second review; FC2 cut the order's points
+  left from the book first).** The builders lose the job and the stranger his part of it: the cancelled site's claim
+  on the book, struck at the stop and cut after his month, never more than the points it had left; the rest of its
+  points were the city's builders' and leave the queue at home. FC2's form cut other sites' work off the book where
+  the cancelled order had little or none on it (ForeignCrewsCheck section 7: a Middle School ordered within the
+  threshold, 1,658.6 points left and none on his book, which FC2 would have cut from the plant's work; the plant's
+  share 0.983221, his book 108,113.0 after his month and 1,814.1 after both cancels). ConstructionTrapCheck
+  section 9's University, 0.681261 of the book, cuts 24,361.90 of its 25,459.29 points left. A depot served first is
+  no exception: its work past the threshold is on the book from its billing, a depot's as any.
 - ★ **The payer pays (REV-FC2's P1; FC2 as first reviewed had the builders bear the gap).** That form quoted an
   order's abroad part at his excess before the order and billed it at the curve's excess at the month the whole
   overflow at home made him run, so the builders paid the difference: 1,389.92 in the first month of
@@ -134,11 +156,28 @@ Sources:
   orders were quoted 54,170 points abroad for 7,958, the crews handed 208,555. Jerus's "a huge backlog costs more
   abroad" means the payer pays it: an order is quoted at the curve's month it makes and handed him at that price as
   it is billed, so the bill is the quote (4,370.0443 and 4,370.0443 in that first month; the town to 1.25e-16).
-- ★ **Work quoted at home stays at home.** The work abroad is only what an order's quote put there. Work its payers
-  were quoted at home stays with the city's builders when the threshold later falls under it, or when a building
-  starts within it and runs far past (ForeignCheck: the coal plant, 70.4 months queued at home after it against a
-  threshold of 20.53), so orders after it go abroad until the city's builders work it down; FC2 as first reviewed
-  handed it on at the curve's price, which is where the builders' gap came from.
+- ★ **The giant building: a defect of the rule's spirit, mended by splitting it at the threshold (REV-FC2, the
+  second review).** FC2 counted an order by whole buildings, BA1's rule: a building that began within the threshold
+  stayed at home however far its points ran past it. The reviewer's lead is PW5's Substation, 132,000 points (its
+  template in `BuildingManager`), years of a middling city's sites: ordered with the queue at home under the
+  threshold, it stood whole in that queue, and every order after it went abroad until the city's crews had worked
+  it down. In ForeignCrewsCheck section 7's city a Coal Power Plant of 120,000 points is 338.03 months of the sites'
+  355 a month; whole, it would have left 351.13 months queued at home, 330.13 past the threshold, every later order
+  abroad for as long. In ForeignCheck's founded town the coal plant left 70.40 months against a threshold of 20.53.
+  That is not Jerus's rule working: "at a certain premium they do go for it" makes the crews reachable once the
+  queue is long, and it does not hand them the city's builders' every later order for as long as one building sits
+  in the queue, with no way for the city's crews to win any back until it is built. Now the threshold splits the
+  building it falls in: its part within is the city's, the rest goes abroad at the share, the queue at home stands
+  at the threshold after it, and the next order within it is built at home. Section 7: the plant's 117,195 points
+  past it abroad at +0.7123 (the queue at home 13.0986 months before it, the threshold 21), a month on 20.6444
+  months and a House ordered then wholly at home; the town's coal plant leaves exactly 20.5292 months against
+  20.5292. Work quoted at home still stays at home when the threshold later falls under it: its payer was quoted
+  that.
+- ★ **Home work is priced at home (REV-FC2, the second review).** A restart, a demolition and the paving are built by
+  the city's crews and never handed abroad, so they are priced at the premium at home
+  (`BuildingManager.homePriceMultiplier()`, 1 + `scarcityPremium()`), not the order's multiple, which past the
+  threshold is the crews' share: past it a restart costs what the city's own month charges for it. An order's prep,
+  works, bridge and deep water follow its buildings, abroad in their share of points and priced at the blend.
 - ★ **The export covers idle points only.** Hiring crews for work abroad is not built: the spare points are the city's
   crews' own month that no site took.
 - ★ **The threshold is struck at the curve's first point** (r), the brief's "an order goes abroad exactly when the
@@ -148,8 +187,8 @@ Sources:
   the premium passed his first share, not because he is the dearer.
 - ★ **The trap's fixture stays FC1's depth.** ConstructionTrapCheck causes the trap to 5% of the builders' month
   (`SLIVER`, FC1's floor), though the model reads no floor now, so every section starts where FC1's did; its Row's
-  trap is that depth. Since REV-FC2 the queue at home may stand past the threshold, holding the work quoted at home:
-  in section 4 the depot lifts the city's own sites over the sliver in its month while orders still go abroad.
+  trap is that depth. Since the second review the queue at home stands at the threshold, the building it fell in
+  split there: in section 4 the depot's month works it down to 0.1387 months, and orders stay at home after it.
 
 ## 4. Saves
 
@@ -164,8 +203,24 @@ REV-FC2 adds three more of Construction's extras: `foreignBookShare` and `foreig
 price a point, means by the point, and `handedSinceOffer`, the points the orders billed since the last offer handed
 him. A save before REV-FC2 (FC1's, whose book carried no price) loads its book with both means NaN
 (`foreignBookUnpriced()`), and the first offer strikes them at the curve's share at his month on it and the base then
-(`priceUnpricedBook()`), the price that book would have been billed at under the form it was saved in;
-`handedSinceOffer` loads 0, nothing having been handed since. No save reads wrongly, so still no bump.
+(`priceUnpricedBook()`); `handedSinceOffer` loads 0, nothing having been handed since. ★ Corrected in the second
+review: that is not the price the book would have been billed at under the form it was saved in. FC1 billed its book
+at `FOREIGN_PRICE`, 2.0 times the base a point; those points now bill at the base times one and the share (under 1 +
+CEILING, 1.8), so the builders pay the crews less for that work than FC1 would have and keep the difference. Money
+still goes from the builders to the crews, only less of it, once; no save reads wrongly, so still no bump.
+
+The second review adds one key, `DataSave.abroadOwedById`: each site's work still on his book, in points by template
+id (its claim, `BuildingsStacks.abroadClaim`, saved as the points it reads; the stacks are restored by id). A save
+before it has none, a null map: every site's claim is then struck at the points it still owes
+(`BuildingManager.restoreAbroadOwed()`), so his book is shared out by the work owed on site, which is what an FC2
+save's claims would have read wherever every site was handed him in the same share. Only a cancel reads the claims,
+and in such a city it takes that share. No save reads wrongly, so no bump (ForeignCrewsCheck section 7 reads a save
+both ways: the plant 112,936.4 of its 120,000 owed, the Houses 4,282.2 of their 4,550, read as a save from before).
+
+A currency reform (`Construction.redenominateExtras()`) now scales the book's price a point with the rest of the
+builders' money (the second review's P1; FC2 left it in the old D$): ForeignCrewsCheck section 8 reforms a thousand
+to one with his book on, 58,014 points at 1.174893464 a point after it 0.001174893464, and the next offer's price is
+the same. The book's share and its points are not money and stay.
 
 ## 5. Checks
 
@@ -174,7 +229,7 @@ were measured with the crews on under FC2 as first reviewed, which handed the ov
 REV-FC2 an order hands only its own buildings past the threshold, so with the crews on those cities would send less
 abroad; each section's claim is the city's own builders', and it is still run with the crews off, as written.
 
-- **ForeignCrewsCheck** (new; a Sonnet slice, reviewed; 109 assertions of its own since REV-FC2, green). Each bound is caused
+- **ForeignCrewsCheck** (new; a Sonnet slice, reviewed; 145 assertions of its own since the second review, green). Each bound is caused
   through the model's inputs (the rate, the queue, the level, standing roads) on both sides of its edge:
   1. The strongest D$ (`ForeignAccounts.MIN_RATE`): threshold 9.000326 against the knee's 9; 8.854 months queued
      not abroad, 9.075 abroad.
@@ -183,30 +238,48 @@ abroad; each section's claim is the city's own builders', and it is still run wi
   3. The weakest (`MAX_RATE`): the share is the cap, 0.16, the threshold exactly 21; crossed between 19.92 and 21.07.
   4. The level doubled (1.0217 to 2.0434): p 0.7008 to 1.3918; x 0.103275 and E x 0.070084 unchanged; r 0.10 to
      0.05035; the threshold 18.07 to 15.22.
-  5. The export, after 8 months with the queue at 0.047 months: the sites' month 23, 6.0 points sold for 5.6884 and
-     17.0 built (no site starved). The month after, the statement, the audit's "+ construction Exports", the trade in,
-     the national and the foreign accounts carry it. A point fetches 0.9191 at 8.85 months queued and nothing at 9.07;
-     a month played at 10.85 sold nothing.
-  6. 240 months (REV-FC2): the sites' month 343; the order's 75,380 points past the threshold quoted at +0.6767 (+0.1434
-     his share without it), 1.173166 a point on the House's base 0.699684, and on his book at exactly that as it was
-     billed; the queue at home 20.23 months against a threshold of 20.2170; his month 3,729 at that price. 120 months:
-     1,693 at +0.5785. The first month he built 3,725 points and billed 4,370.0443, the payer's price for them, the
-     gap in the builders' cash 0 where the form first reviewed left 1,389.9198. For months 2 to 6 the backlog at both
-     paces ran -0.2277 to 0.2862 months from the threshold (at most 20.4095), nothing more was handed him, and the
-     book's price stayed the order's to the bit; the save round-trip carries the book's share and price. A twin with
-     `buildersShortOn` false for its first month: every sector's workers and every tier's posts the same, his 3,725
-     points built in one and none in the other. ★ Not "the jobs filled the same" (516 against 513): the fill rate is
-     the households' side, which the month moves through what it built.
-  7. 29 months audited here, the worst residual 1.15e-13.
-- **ConstructionTrapCheck** (moved to the new truth, 319 OK): FC2's pure shape; since REV-FC2 his book before the
-  trap's sites is empty (the founding's Penitentiary was quoted at home and its work stays there) and the trap's
-  sites, ordered past the threshold, go on it whole as they are billed (30,600 points); sold abroad in 3 of 35
-  months, 21.87; the worst residual over its 59 months 1.15e-13. REV-FC2's moves, each with its reason in a comment: the depot on his book
-  as billed at its quote's share and price (section 4), the offer handing nothing, the city's own sites over the
-  sliver while orders still go abroad, the plan ordering the Builders' Yard or a depot (section 5), a restart's
-  points staying at home (section 9), his month as the month struck it within a point of the offer read before it
-  (sections 4 and 10: the book is fixed and the threshold restruck at the month's top), and section 3's ordering
-  (the call above).
+  5. The export, after 8 months with the queue at home at 0.088 months: the sites' month 23, 23.0 points sold for
+     4.2612 and none built (no site starved). The month after, the statement, the audit's "+ construction Exports",
+     the trade in, the national and the foreign accounts carry it. A point fetches 0.9198 at 8.85 months queued and
+     nothing at 9.07; a month played at 10.85 sold nothing.
+  6. 240 months (REV-FC2): the sites' month 355; the order's 77,745 points past the threshold quoted at +0.6764
+     (+0.1600 his share without it), 1.174893 a point on the House's base 0.700838, and on his book at exactly that
+     as it was billed; the queue at home at the threshold, 21.0000 months (to 1e-9 since the second review, the House
+     it fell in split); his month 3,702 at that price. 120 months: 1,674 at +0.5785. The first month he built 3,702
+     points and billed 4,349.4556, the payer's price for them, the gap in the builders' cash 0 where the form first
+     reviewed left 1,339.8321. For months 2 to 6 the backlog at both paces ran -0.2560 to 0.1111 months from the
+     threshold (at most 21.0000), nothing more was handed him, and the book's price stayed the order's to the bit;
+     the save round-trip carries the book's share and price. A twin with `buildersShortOn` false for its first
+     month: every sector's workers and every tier's posts the same, his 3,702 points built in one and none in the
+     other. ★ Not "the jobs filled the same" (513 against 511): the fill rate is the households' side, which the
+     month moves through what it built.
+  7. The building the threshold falls in (the second review): a Coal Power Plant of 120,000 points, 338.03 months
+     of the sites' 355, ordered with the queue at home at 13.0986 months against a threshold of 21: 117,195 points
+     past it abroad at +0.7123 (the multiple 1.696194), the rest at home, where whole buildings would have left
+     351.13 months queued (330.13 past it). A month on, the queue at home 20.6444 months and a House quoted wholly at
+     home. The claims: his book 113,519.0, the plant's 111,614.2 and the Houses' 1,904.8, carried through a save; read
+     as a save from before the key, the plant's struck at its 112,936.4 owed of 120,000. Cancelled after his month: a
+     Middle School with none on the book cuts none of it (FC2 cut its 1,658.6 left), the plant its share 0.983221 of
+     his book after his month, 108,113.0 to 1,814.1.
+  8. A currency reform, a thousand to one, with his book on: 58,014 points at 1.174893464 a point, after it
+     0.001174893464; the month after he built 6,199 points and billed 7.283165, at the new unit's price.
+  9. 43 months audited here, the worst residual 1.71e-13.
+- **ConstructionTrapCheck** (moved to the new truth, 324 OK): FC2's pure shape. Since the second review the
+  founding's Penitentiary (62,000 points) is split at the threshold and its work past it went on his book as it was
+  billed, 7,716 points of it still there before the trap's sites; they were ordered from under the threshold (the
+  queue they joined 7,368 to 37,968) and went on his book as billed, all but the threshold's room, 768 points (struck
+  unclamped: his book stood over the queue at home by 348). The queue at home stands at the threshold, 21.000000000000
+  months, and the city's own premium is the crews' first share, 0.16, far under its ceiling, where FC2's whole
+  Penitentiary left it within a hair of it. Sold abroad in 4 of 24 months, 77.11; every month audited, the worst
+  residual 1.71e-13. The second review's moves, each with its reason in a comment: section 1's straddle priced by
+  the split; section 2's queue at the threshold, its premium and the book before the trap; section 4's depot leaving
+  the queue at home at 0.1387 months, orders at home after it; section 9's cancel cutting the University's share of
+  his book (0.681261: 24,361.90 of its 25,459.29 points left), the restart built at home, and the landlords' Houses
+  all abroad in the cancelled twin (400 points) and 170 in the kept; the identity's split building (15 of 24 queues
+  and sizes past the threshold or split by it). REV-FC2's first moves stand: the depot on his book as billed at its
+  quote's share and price (section 4), the offer handing nothing, the plan ordering the Builders' Yard or a depot
+  (section 5), his month as the month struck it within a point of the offer read before it (sections 4 and 10: the
+  book is fixed and the threshold restruck at the month's top), and section 3's ordering (the call above).
 - **DeathCareFirstCheck**: main's, unchanged. FC2 as first reviewed had moved "the Penitentiary still owing most of
   its points" to "still owing points", the founding handing its work past the threshold abroad; since REV-FC2 the
   Penitentiary is quoted at home and its work stays there, so main's assertion holds again and is back.
@@ -278,13 +351,16 @@ abroad; each section's claim is the city's own builders', and it is still run wi
     precedent's form (HoldersCheck, MonetaryCheck), and `BuildingManager.buildersShortOn`'s javadoc now lists every
     harness and section that turns it off. Green: 11 of 11 years swamped, 140 of 180 months sold, the premise 0.9708.
 - **ForeignCheck's founded town with the crews on** (REV-FC2's third item, a section of its own, the switch on for it
-  alone): section 2's town ordered whole on day one, played 36 months. 52,410 of its points stood past the threshold
-  at their orders (321 of 500 Houses at +0.4481, 0.9970 a point; 2 of 3 grocers; the water works, 44,000 points at
-  +0.4145; both bakeries; none of the coal plant), quoted abroad for 7,260.50; the first offer counted exactly those
-  handed; for the 7 months before a later order handed him work, what he billed and his book still held at its
-  price came to the quote within 1.25e-16; the coal plant built at home though it left 70.4 months queued there
-  against a threshold of 20.53; the 500 Houses stood whole at month 32 with 1,822 people (before REV-FC2: month 10,
-  ahead of its people). Its first year the crews billed 3,143.25.
+  alone): section 2's town ordered whole on day one, played 36 months. Since the second review every order is placed
+  (the fixture tops up the cash an order needs, and asserts the threshold it was quoted on is the one read after
+  it), and the buildings the threshold falls in are split: 139,931 points stood past the threshold at their orders
+  (180 of 500 Houses, 1,797 points at +0.5111; the 8 convenience stores, 3 grocers and 4 depots; the coal plant's
+  87,174 points at +0.5146; the water works' 44,000 at +0.5748; both bakeries), quoted abroad for 37,152.30; the first
+  offer counted exactly those handed; for the 6 months before a later order handed him work, what he billed and his
+  book still held at its price came to the quote within 1.96e-16; the coal plant left the queue at home at 20.5292
+  months against a threshold of 20.5292 (before the second review, whole at home, 70.4 against 20.53); the 500 Houses
+  stood whole at month 13 with 1,253 people (month 32 with 1,822 before the second review; month 10, ahead of its
+  people, as FC2 was first reviewed). Its first year the crews billed 15,725.65.
 - **FitoutCheck** (2 red) **and WellCheck** (1 red), moved by REV-FC2: their reference multiple read no base a point
   (`orderPriceMultiplier(ahead, each, n)`), while the quote, `dearOf()` and `getCostOfAt()` strike the foreign crews'
   threshold and share on the order's own base a point (`basePerPointOf()`, the threshold with the order on site); in

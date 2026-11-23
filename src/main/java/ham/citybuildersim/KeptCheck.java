@@ -3431,6 +3431,10 @@ public class KeptCheck {
      */
     static void sectorsPictures(Game g, KeptBench bench, String works, String worksName) throws Exception {
         System.out.println("\n--- 50: the pictures on a business's page are kept ---");
+        // REV-FC2, the second review: the picture needs a counted materials month with works to draw here, not only at section
+        // 47 (sectors(), ensureWorks()): on the played city at m1442 the wood products month had stopped counting three
+        // sections on, and the page drew none. Caused again where it is read, as section 31 buys the plot it reads.
+        System.out.println("  " + fx(() -> ensureWorks(g)));
         final String ops = KeptBench.sectorPages().get(0);
         KeptBench.Page industry = fx(() -> bench.sectors(possessive(worksName) + " Operations page", works, ops, false));
         picturesKept(g, bench, industry, "a materials industry's picture (" + worksName + ")",
