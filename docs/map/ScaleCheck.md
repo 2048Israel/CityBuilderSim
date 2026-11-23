@@ -1,4 +1,4 @@
-# ScaleCheck.java - 2,289 lines · 67 methods · 31 constants · harnesses
+# ScaleCheck.java - 2,372 lines · 69 methods · 31 constants · harnesses
 
 `ham/citybuildersim/ScaleCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      whole and adding up, money conserved to RELATIVE_RESIDUAL of what
 > ... (36 more lines in the source)
 
-**Uses:** [Game](Game.md) (48), [LongPlaytest](LongPlaytest.md) (37), [MoneyAudit](MoneyAudit.md) (28), [GameFiles](GameFiles.md) (27), [CityLand](CityLand.md) (10), [JobType](JobType.md) (9), [Sector](Sector.md) (7), [TreasuryCheck](TreasuryCheck.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [PriceIndex](PriceIndex.md) (6), [PopulationManager](PopulationManager.md) (5), [BuildingManager](BuildingManager.md) (4), [HistorySave](HistorySave.md) (4), [WageLadder](WageLadder.md) (4), [Haulage](Haulage.md) (4), [Equity](Equity.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [LandManager](LandManager.md) (3), [Formats](Formats.md) (3), [Bank](Bank.md) (3), [Crime](Crime.md) (3), [EducationType](EducationType.md) (3), [Timing](Timing.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (2), [SaveHeader](SaveHeader.md) (2), [Fittings](Fittings.md) (2), [Observation](Observation.md) (2), [BuildingType](BuildingType.md) (2), [Mortgage](Mortgage.md) (2)... and 19 more
+**Uses:** [Game](Game.md) (50), [LongPlaytest](LongPlaytest.md) (38), [GameFiles](GameFiles.md) (29), [MoneyAudit](MoneyAudit.md) (28), [CityLand](CityLand.md) (10), [JobType](JobType.md) (9), [Sector](Sector.md) (7), [TreasuryCheck](TreasuryCheck.md) (7), [Motoring](Motoring.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [PriceIndex](PriceIndex.md) (6), [PopulationManager](PopulationManager.md) (5), [Equity](Equity.md) (5), [BuildingManager](BuildingManager.md) (4), [HistorySave](HistorySave.md) (4), [WageLadder](WageLadder.md) (4), [Haulage](Haulage.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [HouseholdBalance](HouseholdBalance.md) (3), [LandManager](LandManager.md) (3), [Formats](Formats.md) (3), [Bank](Bank.md) (3), [Crime](Crime.md) (3), [EducationType](EducationType.md) (3), [Timing](Timing.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (2), [Household](Household.md) (2), [Debt](Debt.md) (2), [SaveHeader](SaveHeader.md) (2)... and 22 more
 
 **Used by (2):** [BuildingStackCheck](BuildingStackCheck.md), [OrderSearchCheck](OrderSearchCheck.md)
 
@@ -72,18 +72,18 @@
 
 | line | section |
 |---:|---|
-| 326 | · 1. the fixture, and its copy K times over |
-| 371 | · 2. the counts read back whole |
-| 414 | · 3. posts, doors and household places |
-| 424 | · 4. three months at that size |
-| 445 | · 5. the save round-trips them |
-| 479 | · 6. the sectors free, at 5 and 10 billion |
-| 540 | · 7. money at that size reads |
-| 543 | · 8. the audit's floor at size |
-| 546 | · 9. a copy tracks its city month by month |
-| 1580 | THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON |
-| 1785 | · THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) |
-| 2178 | · the helpers the blocks above are written with |
+| 390 | · 1. the fixture, and its copy K times over |
+| 437 | · 2. the counts read back whole |
+| 484 | · 3. posts, doors and household places |
+| 494 | · 4. three months at that size |
+| 515 | · 5. the save round-trips them |
+| 549 | · 6. the sectors free, at 5 and 10 billion |
+| 610 | · 7. money at that size reads |
+| 613 | · 8. the audit's floor at size |
+| 616 | · 9. a copy tracks its city month by month |
+| 1659 | THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON |
+| 1868 | · THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) |
+| 2261 | · the helpers the blocks above are written with |
 
 ## Constants
 
@@ -112,14 +112,14 @@
 | 213 | `ScaleCheck.REGISTER_WITHIN` | `1e-9` | The most a register may stand from what its holders hold of it, as a share of the larger: the shares, the corporate bonds and the city's paper against the households' own (section 9). |
 | 246 | `ScaleCheck.OWN_PROPERTY_TAX` | `.04` | The property tax rate, a year, that section 6's town sets in place of the founding's .015 (ST3). |
 | 249 | `ScaleCheck.OWN_PRESSURE` | `1.0` | The landlords' family pressure past which section 6's town builds Low-Rise Apartments (ST3). |
-| 1170 | `ScaleCheck.Figures.NAMES` | `{ "people", "cash", "savings", "gdp", "deposits", "prices", "unemployment", "...` |  |
-| 1172 | `ScaleCheck.Figures.EXTENSIVE` | `{ true, true, true, true, true, false, false, false }` | Whether each figure is a quantity (K times the city's) or a level (the city's own). |
-| 1173 | `ScaleCheck.Figures.WITHIN` | `{ TRACK_PEOPLE, TRACK_CASH, TRACK_SAVINGS, TRACK_GDP, TRACK_DEPOSITS, TRACK_P...` |  |
-| 1234 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
-| 1606 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 the seven ratios at i... |
-| 1635 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
-| 1642 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
-| 1666 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
+| 1249 | `ScaleCheck.Figures.NAMES` | `{ "people", "cash", "savings", "gdp", "deposits", "prices", "unemployment", "...` |  |
+| 1251 | `ScaleCheck.Figures.EXTENSIVE` | `{ true, true, true, true, true, false, false, false }` | Whether each figure is a quantity (K times the city's) or a level (the city's own). |
+| 1252 | `ScaleCheck.Figures.WITHIN` | `{ TRACK_PEOPLE, TRACK_CASH, TRACK_SAVINGS, TRACK_GDP, TRACK_DEPOSITS, TRACK_P...` |  |
+| 1313 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
+| 1685 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 the seven ratios at i... |
+| 1714 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMo...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
+| 1721 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxC...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
+| 1745 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "secto...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
 
 ## Fields (state)
 
@@ -128,27 +128,27 @@
 | 118 | `static int fails` |  |
 | 119 | `static PrintStream out` |  |
 | 120 | `static PrintStream quiet` |  |
-| 1175 | `final long people` |  |
-| 1176 | `final double[] v` |  |
-| 1243 | `final double crowding, premium, ground, sale, homesBuilt` |  |
-| 1244 | `final long peopleBefore, peopleAfter` |  |
-| 1245 | `final double[] affordability` |  |
-| 1289 | `final java.util.Map<String, double[]> worst` | {worst miss, the largest figure, months the old tolerance missed, misses of the new} for each identity, by name. |
-| 1290 | `final java.util.Map<String, Double> old` |  |
-| 1291 | `final java.util.Set<String> missedThisMonth` |  |
-| 1292 | `double previousClosing` |  |
-| 1293 | `int arrearsMonths` |  |
-| 1440 | `int orders, passed, heldForDownPayment, declinedOnRent` |  |
-| 1459 | `int invested, mortgaged, mostDesk` |  |
-| 1459 | `long largestInvested, largestMortgage` |  |
-| 1460 | `int overDesk` |  |
-| 1461 | `final Lender lender` |  |
+| 1254 | `final long people` |  |
+| 1255 | `final double[] v` |  |
+| 1322 | `final double crowding, premium, ground, sale, homesBuilt` |  |
+| 1323 | `final long peopleBefore, peopleAfter` |  |
+| 1324 | `final double[] affordability` |  |
+| 1368 | `final java.util.Map<String, double[]> worst` | {worst miss, the largest figure, months the old tolerance missed, misses of the new} for each identity, by name. |
+| 1369 | `final java.util.Map<String, Double> old` |  |
+| 1370 | `final java.util.Set<String> missedThisMonth` |  |
+| 1371 | `double previousClosing` |  |
+| 1372 | `int arrearsMonths` |  |
+| 1519 | `int orders, passed, heldForDownPayment, declinedOnRent` |  |
+| 1538 | `int invested, mortgaged, mostDesk` |  |
+| 1538 | `long largestInvested, largestMortgage` |  |
+| 1539 | `int overDesk` |  |
+| 1540 | `final Lender lender` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 116 | 2174 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
+| 116 | 2257 | **type** `public class ScaleCheck` | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them all back. |
 | 215 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 220 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 226 | 5 | `static void quietly(Runnable r)` |  |
@@ -158,82 +158,84 @@
 | 293 | 12 | `static void keepAhead(Game g)` | One month of the plan (ST3): the ground, then each service, and the apartments, whose own need is on and none on site. |
 | 306 | 3 | `static void ahead(Game g, boolean need, String name)` |  |
 | 310 | 13 | `public static void main(String[] args) throws Exception` |  |
-| 324 | 226 | `static void run(Path root) throws Exception` |  |
-| 552 | 93 | `static void historicalScale(Path root) throws Exception` | R1f: keep this historical fixture separate from the all-fitted scale laws above. |
-| 647 | 99 | `static void historicalTracks(Path root, GameFiles saved) throws Exception` | Whole posts have an absolute rounding bound, not today's town's empirical relative tolerances. |
-| 754 | 26 | `static void auditFloor()` | Section 8 (0.7.64, batch L; the floor itself since 0.7.63, at 8 steps; fixK-notes 7 d): MoneyAudit.tolerance()'s floor at the size of the figures. |
-| 782 | 14 | `static void reads()` | Section 7: Formats at ten billion - the quadrillion step, and cash() past the whole dollars a double holds. |
-| 797 | 5 | `static void sameText(String label, String actual, String expected)` |  |
-| 874 | 77 | `static void free(Path root, GameFiles small, long pop1, double target, Original original) throws Exception` | Section 6: a city's save (`small`, of `pop1` people) copied to `target` people and played with every sector free to build. |
-| 1037 | 50 | `static void tracks(Path root, GameFiles grown) throws Exception` | Section 9 (FW9, 2026-10-25): a copy K = TRACK_TIMES times over plays its city's months. |
-| 1094 | 17 | `static Game trackCopy(Path root, GameFiles sites, long k, String name, java.util.function.Consumer<JsonObject> fault) throws Ex...` | A copy section 9 reads (FW9; FS2 made it one method for the city side, its copy and the fault): the sites-empty save through scale() at k, the save then changed by fault where one is given, loaded on the literals with... |
-| 1117 | 24 | `static GameFiles emptySites(Path root, GameFiles grown) throws Exception` | The grown city saved again with nothing under construction (BA1, 2026-11-04; tracks() says why): its save is loaded at K = 1, every sector held, and played until its building sites are empty, at most TRACK_SITE_MONTHS... |
-| 1153 | 10 | `static double registersMiss(Game g)` | The worst a register stands from what the households hold of it: the shares of each company, the corporate bonds' face and the city's paper, as a share of the larger - a company's shares as a share of its issue. |
-| 1164 | 3 | `static double apart(double a, double b)` |  |
-| 1169 | 32 | **type** `static final class Figures` | The figures section 9 reads each month, by the getters a screen reads them by. |
-| 1178 | 11 | `Figures(Game g)` _(in ScaleCheck.Figures)_ |  |
-| 1191 | 9 | `double[] missAgainst(Figures city, long k)` _(in ScaleCheck.Figures)_ | Each figure's miss: a quantity's as a share of K times the city's, the price level's as a share of the city's, a rate's in rate points. |
-| 1203 | 23 | `static boolean sumsAgree(Game g)` | addsUp()'s sums, as a verdict rather than a list of lines: section 6 asks it every month. |
-| 1242 | 36 | **type** `static final class Original` | THE CITY THE COPIES ARE READ AGAINST (0.7.55): the town at FREE_FIXTURE_MONTHS, played its own FREE_MONTHS after it was saved - its ground as its first month struck it, its affordability pull each month, the homes it ... |
-| 1247 | 24 | `Original(Game city)` _(in ScaleCheck.Original)_ |  |
-| 1273 | 4 | `boolean calm()` _(in ScaleCheck.Original)_ | Whether the city's own rents priced nobody out in any of its months (0.7.62; FREE_FIXTURE_MONTHS). |
-| 1287 | 146 | **type** `static final class Books` | THE CITY'S BOOKS AT TEN BILLION (0.7.54): the identities the harnesses hold a played city to every month, read here at this size, each against the absolute tolerance its harness held it to before 0.7.54 and against Mo... |
-| 1304 | 3 | `static double roundedToTheCent(double half, double size)` _(in ScaleCheck.Books)_ | A figure the history rounds to the cent (HistorySave's round2()) misses its own by up to `half` and the steps of the double it was rounded in, which past 2^27 units are no longer under the floor's old 1e-9 (0.7.105, b... |
-| 1314 | 9 | `void miss(String name, double oldTolerance, double newFloor, double miss, double size)` _(in ScaleCheck.Books)_ | One reading of an identity: what it missed by, the size of the figures it is made of, the tolerance its harness held it to before 0.7.54 (oldTolerance; for one already relative, that at this size) and the floor MoneyA... |
-| 1324 | 5 | `void month(Game g, double opening)` _(in ScaleCheck.Books)_ |  |
-| 1330 | 89 | `void readings(Game g)` _(in ScaleCheck.Books)_ |  |
-| 1420 | 12 | `void verdicts()` _(in ScaleCheck.Books)_ |  |
-| 1439 | 17 | **type** `static final class Lender implements BusinessInvestment.OrderWatch` | The landlords' orders as the mortgage lender meets them (SC1): how many were decided, how many the lender passed, how many it held for the down payment and how many it declined on the rent. |
-| 1443 | 7 | `public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annual...` _(in ScaleCheck.Lender)_ |  |
-| 1451 | 4 | `void verdicts(String whose)` _(in ScaleCheck.Lender)_ |  |
-| 1458 | 32 | **type** `static final class Orders implements BusinessInvestment.OrderWatch` | Every order the free copy decides: how big, and how many times it asked the bond desk (the order's size reads no wait since BA1). |
-| 1464 | 1 | `long largestNeeded()` _(in ScaleCheck.Orders)_ | The largest order decided, whichever way it is judged: what a sector's shortfall asked for and the plots allowed (BusinessInvestment.orderSize()), the size the old "needed" counted. |
-| 1467 | 6 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in ScaleCheck.Orders)_ |  |
-| 1475 | 6 | `public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annual...` _(in ScaleCheck.Orders)_ |  |
-| 1482 | 7 | `void verdicts()` _(in ScaleCheck.Orders)_ |  |
-| 1498 | 22 | `static void orderSizeAtScale(Game g)` | ORDER SIZE AT SCALE (BA1). |
-| 1526 | 30 | `static void addsUp(Game g, String when)` | Every way of adding up the posts, the doors and the household places agrees, to the last one - a long sum of K-times counts is exact where an int sum would have wrapped. |
-| 1558 | 5 | `static long everyPost(Game g)` | Every post the buildings have, offered or not. |
-| 1564 | 5 | `static long postsPast(BuildingManager bm)` |  |
-| 1570 | 3 | `static long last(List<Long> series)` |  |
-| 1574 | 5 | `static boolean quietlyGet(java.util.function.BooleanSupplier s)` |  |
+| 325 | 43 | `static void paperDeskRemainder(Path root) throws Exception` | The desk drains a book through its native spread rule, including its last small holdings. |
+| 369 | 17 | `static void usedTradeScale(Path root, Path nativeSource) throws Exception` |  |
+| 387 | 233 | `static void run(Path root) throws Exception` |  |
+| 622 | 93 | `static void historicalScale(Path root) throws Exception` | R1f: keep this historical fixture separate from the all-fitted scale laws above. |
+| 717 | 99 | `static void historicalTracks(Path root, GameFiles saved) throws Exception` | Whole posts have an absolute rounding bound, not today's town's empirical relative tolerances. |
+| 824 | 26 | `static void auditFloor()` | Section 8 (0.7.64, batch L; the floor itself since 0.7.63, at 8 steps; fixK-notes 7 d): MoneyAudit.tolerance()'s floor at the size of the figures. |
+| 852 | 14 | `static void reads()` | Section 7: Formats at ten billion - the quadrillion step, and cash() past the whole dollars a double holds. |
+| 867 | 5 | `static void sameText(String label, String actual, String expected)` |  |
+| 944 | 77 | `static void free(Path root, GameFiles small, long pop1, double target, Original original) throws Exception` | Section 6: a city's save (`small`, of `pop1` people) copied to `target` people and played with every sector free to build. |
+| 1107 | 50 | `static void tracks(Path root, GameFiles grown) throws Exception` | Section 9 (FW9, 2026-10-25): a copy K = TRACK_TIMES times over plays its city's months. |
+| 1164 | 17 | `static Game trackCopy(Path root, GameFiles sites, long k, String name, java.util.function.Consumer<JsonObject> fault) throws Ex...` | A copy section 9 reads (FW9; FS2 made it one method for the city side, its copy and the fault): the sites-empty save through scale() at k, the save then changed by fault where one is given, loaded on the literals with... |
+| 1187 | 24 | `static GameFiles emptySites(Path root, GameFiles grown) throws Exception` | The grown city saved again with nothing under construction (BA1, 2026-11-04; tracks() says why): its save is loaded at K = 1, every sector held, and played until its building sites are empty, at most TRACK_SITE_MONTHS... |
+| 1223 | 19 | `static double registersMiss(Game g)` | The worst a register stands from what the households hold of it: the shares of each company, the corporate bonds' face and the city's paper, as a share of the larger - a company's shares as a share of its issue. |
+| 1243 | 3 | `static double apart(double a, double b)` |  |
+| 1248 | 32 | **type** `static final class Figures` | The figures section 9 reads each month, by the getters a screen reads them by. |
+| 1257 | 11 | `Figures(Game g)` _(in ScaleCheck.Figures)_ |  |
+| 1270 | 9 | `double[] missAgainst(Figures city, long k)` _(in ScaleCheck.Figures)_ | Each figure's miss: a quantity's as a share of K times the city's, the price level's as a share of the city's, a rate's in rate points. |
+| 1282 | 23 | `static boolean sumsAgree(Game g)` | addsUp()'s sums, as a verdict rather than a list of lines: section 6 asks it every month. |
+| 1321 | 36 | **type** `static final class Original` | THE CITY THE COPIES ARE READ AGAINST (0.7.55): the town at FREE_FIXTURE_MONTHS, played its own FREE_MONTHS after it was saved - its ground as its first month struck it, its affordability pull each month, the homes it ... |
+| 1326 | 24 | `Original(Game city)` _(in ScaleCheck.Original)_ |  |
+| 1352 | 4 | `boolean calm()` _(in ScaleCheck.Original)_ | Whether the city's own rents priced nobody out in any of its months (0.7.62; FREE_FIXTURE_MONTHS). |
+| 1366 | 146 | **type** `static final class Books` | THE CITY'S BOOKS AT TEN BILLION (0.7.54): the identities the harnesses hold a played city to every month, read here at this size, each against the absolute tolerance its harness held it to before 0.7.54 and against Mo... |
+| 1383 | 3 | `static double roundedToTheCent(double half, double size)` _(in ScaleCheck.Books)_ | A figure the history rounds to the cent (HistorySave's round2()) misses its own by up to `half` and the steps of the double it was rounded in, which past 2^27 units are no longer under the floor's old 1e-9 (0.7.105, b... |
+| 1393 | 9 | `void miss(String name, double oldTolerance, double newFloor, double miss, double size)` _(in ScaleCheck.Books)_ | One reading of an identity: what it missed by, the size of the figures it is made of, the tolerance its harness held it to before 0.7.54 (oldTolerance; for one already relative, that at this size) and the floor MoneyA... |
+| 1403 | 5 | `void month(Game g, double opening)` _(in ScaleCheck.Books)_ |  |
+| 1409 | 89 | `void readings(Game g)` _(in ScaleCheck.Books)_ |  |
+| 1499 | 12 | `void verdicts()` _(in ScaleCheck.Books)_ |  |
+| 1518 | 17 | **type** `static final class Lender implements BusinessInvestment.OrderWatch` | The landlords' orders as the mortgage lender meets them (SC1): how many were decided, how many the lender passed, how many it held for the down payment and how many it declined on the rent. |
+| 1522 | 7 | `public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annual...` _(in ScaleCheck.Lender)_ |  |
+| 1530 | 4 | `void verdicts(String whose)` _(in ScaleCheck.Lender)_ |  |
+| 1537 | 32 | **type** `static final class Orders implements BusinessInvestment.OrderWatch` | Every order the free copy decides: how big, and how many times it asked the bond desk (the order's size reads no wait since BA1). |
+| 1543 | 1 | `long largestNeeded()` _(in ScaleCheck.Orders)_ | The largest order decided, whichever way it is judged: what a sector's shortfall asked for and the plots allowed (BusinessInvestment.orderSize()), the size the old "needed" counted. |
+| 1546 | 6 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in ScaleCheck.Orders)_ |  |
+| 1554 | 6 | `public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annual...` _(in ScaleCheck.Orders)_ |  |
+| 1561 | 7 | `void verdicts()` _(in ScaleCheck.Orders)_ |  |
+| 1577 | 22 | `static void orderSizeAtScale(Game g)` | ORDER SIZE AT SCALE (BA1). |
+| 1605 | 30 | `static void addsUp(Game g, String when)` | Every way of adding up the posts, the doors and the household places agrees, to the last one - a long sum of K-times counts is exact where an int sum would have wrapped. |
+| 1637 | 5 | `static long everyPost(Game g)` | Every post the buildings have, offered or not. |
+| 1643 | 5 | `static long postsPast(BuildingManager bm)` |  |
+| 1649 | 3 | `static long last(List<Long> series)` |  |
+| 1653 | 5 | `static boolean quietlyGet(java.util.function.BooleanSupplier s)` |  |
 
-### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 1580-1784)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1669 | 115 | `static void scale(Path in, Path to, long k) throws Exception` |  |
-
-### THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) (lines 1785-2177)
+### THE STUDY'S SCALING (scale_save.py, 2026-10-06), on a save's JSON (lines 1659-1867)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1816 | 126 | `static void registers(JsonObject d, long k)` |  |
-| 1950 | 37 | `static void bank(JsonObject d, long k)` | The bank: one bank for the city, so every figure it carries is K times, but for its rates, its months and flags and the per-branch figures (the upkeep a later branch carries and the pricing's months). |
-| 1989 | 17 | `static void registerOfShares(JsonObject d, long k)` | The register of shares (Equity.SLOTS a company, in toSaveArray()'s order): the shares and the money, K times; the price, the target share and the counts stay. |
-| 2008 | 11 | `static void book(JsonObject b, long k)` | One order book: the orders' quantities and the month's, K times; every price, the last trade's month and the counts stay. |
-| 2021 | 20 | `static void exchange(JsonObject d, long k)` | The exchange: every book, the leavers' shares and the buyback budgets, the money fair value was struck on (EM1), and the record's money and volumes; the fair values and split factors are per share. |
-| 2043 | 14 | `static void bonds(JsonObject d, long k)` | The corporate bond market: each bond's issue, face and holders, its books, and the month's and life's money; the coupons, months and ids stay. |
-| 2059 | 13 | `static void fund(JsonObject d, long k)` | The city's fund: its cash and what it paid in and drew, its resolutions, orders and ledger; its dial, its months and its limits and prices stay. |
-| 2074 | 6 | `static void ledger(JsonElement value, long k)` | The same average-cost ledger on either owner: book amounts and acquired units grow; months, IDs and prices stay. |
-| 2082 | 20 | `static void investmentTaxesAndCustody(JsonObject d, long k)` | HT1's aggregate stocks/receipts grow with the city; per-household cell basis/claims stay on the cells above. |
-| 2104 | 7 | `static void oldMetal(JsonObject m, long k)` | The old metal's tonnes and the money paid for them; the price and the months stay. |
-| 2116 | 61 | `static void people(JsonObject d, long k)` | The people and what is done with them: the care and the burials, the police and the prisoners, the schools' pipeline, the licensed heads and last month's migration. |
+| 1748 | 119 | `static void scale(Path in, Path to, long k) throws Exception` |  |
 
-### the helpers the blocks above are written with (lines 2178-2289)
+### THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25) (lines 1868-2260)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2181 | 3 | `static void scalar(JsonObject d, String key, long k)` | One number at a key, K times; a key the save does not have is left. |
-| 2186 | 3 | `static void whole(JsonObject d, String key, long k)` | Every number under a key, K times: a number, an array of them or a map of them. |
-| 2191 | 12 | `static JsonElement everyTimes(JsonElement v, long k)` | Every number in a value K times (a flag or a name is not a number and stays). |
-| 2205 | 5 | `static void slots(JsonObject d, String key, long k, int...at)` | The slots of an array at a key that scale; the others stay. |
-| 2212 | 7 | `static void allBut(JsonObject d, String key, long k, int...stay)` | Every slot of an array at a key but the ones named. |
-| 2221 | 5 | `static void fromTo(JsonObject d, String key, long k, int first, int end)` | The slots of an array at a key from one to before another. |
-| 2228 | 5 | `static void fromSlot(JsonObject d, String key, long k, int first)` | Every slot of an array at a key from one on. |
-| 2235 | 13 | `static void named(JsonElement v, long k, String...names)` | Each number under one of the names, wherever an object holds one, K times (a name's array or map of numbers too); the rest of the object stays. |
-| 2250 | 4 | `static void expect(JsonArray a, int length, String key)` | A layout read by position has the length it was read at; a slot added to the model must be classed here, so the scaler stops and says so. |
-| 2255 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
-| 2274 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
-| 2282 | 7 | `static void cleanUp(Path root)` |  |
+| 1899 | 126 | `static void registers(JsonObject d, long k)` |  |
+| 2033 | 37 | `static void bank(JsonObject d, long k)` | The bank: one bank for the city, so every figure it carries is K times, but for its rates, its months and flags and the per-branch figures (the upkeep a later branch carries and the pricing's months). |
+| 2072 | 17 | `static void registerOfShares(JsonObject d, long k)` | The register of shares (Equity.SLOTS a company, in toSaveArray()'s order): the shares and the money, K times; the price, the target share and the counts stay. |
+| 2091 | 11 | `static void book(JsonObject b, long k)` | One order book: the orders' quantities and the month's, K times; every price, the last trade's month and the counts stay. |
+| 2104 | 20 | `static void exchange(JsonObject d, long k)` | The exchange: every book, the leavers' shares and the buyback budgets, the money fair value was struck on (EM1), and the record's money and volumes; the fair values and split factors are per share. |
+| 2126 | 14 | `static void bonds(JsonObject d, long k)` | The corporate bond market: each bond's issue, face and holders, its books, and the month's and life's money; the coupons, months and ids stay. |
+| 2142 | 13 | `static void fund(JsonObject d, long k)` | The city's fund: its cash and what it paid in and drew, its resolutions, orders and ledger; its dial, its months and its limits and prices stay. |
+| 2157 | 6 | `static void ledger(JsonElement value, long k)` | The same average-cost ledger on either owner: book amounts and acquired units grow; months, IDs and prices stay. |
+| 2165 | 20 | `static void investmentTaxesAndCustody(JsonObject d, long k)` | HT1's aggregate stocks/receipts grow with the city; per-household cell basis/claims stay on the cells above. |
+| 2187 | 7 | `static void oldMetal(JsonObject m, long k)` | The old metal's tonnes and the money paid for them; the price and the months stay. |
+| 2199 | 61 | `static void people(JsonObject d, long k)` | The people and what is done with them: the care and the burials, the police and the prisoners, the schools' pipeline, the licensed heads and last month's migration. |
+
+### the helpers the blocks above are written with (lines 2261-2372)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2264 | 3 | `static void scalar(JsonObject d, String key, long k)` | One number at a key, K times; a key the save does not have is left. |
+| 2269 | 3 | `static void whole(JsonObject d, String key, long k)` | Every number under a key, K times: a number, an array of them or a map of them. |
+| 2274 | 12 | `static JsonElement everyTimes(JsonElement v, long k)` | Every number in a value K times (a flag or a name is not a number and stays). |
+| 2288 | 5 | `static void slots(JsonObject d, String key, long k, int...at)` | The slots of an array at a key that scale; the others stay. |
+| 2295 | 7 | `static void allBut(JsonObject d, String key, long k, int...stay)` | Every slot of an array at a key but the ones named. |
+| 2304 | 5 | `static void fromTo(JsonObject d, String key, long k, int first, int end)` | The slots of an array at a key from one to before another. |
+| 2311 | 5 | `static void fromSlot(JsonObject d, String key, long k, int first)` | Every slot of an array at a key from one on. |
+| 2318 | 13 | `static void named(JsonElement v, long k, String...names)` | Each number under one of the names, wherever an object holds one, K times (a name's array or map of numbers too); the rest of the object stays. |
+| 2333 | 4 | `static void expect(JsonArray a, int length, String key)` | A layout read by position has the length it was read at; a slot added to the model must be classed here, so the scaler stops and says so. |
+| 2338 | 17 | `static JsonElement sc(JsonElement v, String name, long k)` |  |
+| 2357 | 6 | `static JsonElement times(JsonElement v, long k)` | A number times K: a whole number stays whole and exact, a fraction is a double. |
+| 2365 | 7 | `static void cleanUp(Path root)` |  |
 

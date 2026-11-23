@@ -8,7 +8,7 @@
 
 **Uses:** [PayTier](PayTier.md) (21), [Bank](Bank.md) (21), [FamilyStructure](FamilyStructure.md) (19), [HouseholdBalance](HouseholdBalance.md) (17), [Household](Household.md) (16), [WorkingHousehold](WorkingHousehold.md) (15), [CellSpread](CellSpread.md) (12), [Game](Game.md) (7), [HouseholdFlowCheck](HouseholdFlowCheck.md) (6), [DebtStatistics](DebtStatistics.md) (5), [BusinessServices](BusinessServices.md) (4), [MoneyAudit](MoneyAudit.md) (4), [Good](Good.md) (3), [SaveFileCheck](SaveFileCheck.md) (3), [GameVersion](GameVersion.md) (2), [Sector](Sector.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [DebtManager](DebtManager.md) (1), [Equity](Equity.md) (1), [LongPlaytest](LongPlaytest.md) (1), [GameFiles](GameFiles.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (1), [AdultStage](AdultStage.md) (1), [AgeBand](AgeBand.md) (1)
 
-**Used by (1):** [SaveFileCheck](SaveFileCheck.md)
+**Used by (2):** [HousingMarketCheck](HousingMarketCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Fields (state)
 

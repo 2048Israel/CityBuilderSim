@@ -1,4 +1,4 @@
-# CreditCrunchCheck.java - 637 lines · 18 methods · 13 constants · harnesses
+# CreditCrunchCheck.java - 651 lines · 18 methods · 13 constants · harnesses
 
 `ham/citybuildersim/CreditCrunchCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >   4. an order of six caused at the crunch's end (REV-FB15), since the
 > ... (10 more lines in the source)
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (31), [Bank](Bank.md) (20), [BusinessDebtManager](BusinessDebtManager.md) (20), [Game](Game.md) (17), [Mortgage](Mortgage.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (6), [BusinessInvestment](BusinessInvestment.md) (3), [FamilyModel](FamilyModel.md) (2), [GameFiles](GameFiles.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [BuildingManager](BuildingManager.md) (1), [EconomyManager](EconomyManager.md) (1), [Equity](Equity.md) (1), [Investor](Investor.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (31), [Bank](Bank.md) (20), [BusinessDebtManager](BusinessDebtManager.md) (20), [Game](Game.md) (18), [Mortgage](Mortgage.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (7), [BusinessInvestment](BusinessInvestment.md) (3), [FamilyModel](FamilyModel.md) (2), [GameFiles](GameFiles.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [BuildingManager](BuildingManager.md) (1), [EconomyManager](EconomyManager.md) (1), [Equity](Equity.md) (1), [Investor](Investor.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
 
 ## Sections
 
@@ -73,7 +73,7 @@
 | 103 | 1. THE DOOR'S CAPITAL TEST, ASKED FIRST - a desk and a bank by hand |
 | 228 | 2-3. A PLAYED CITY, ITS BANK HELD IN ITS BAND |
 | 436 | 4. AN ORDER THE OWNERS' ISSUE FALLS SHORT OF - caused at TO |
-| 547 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as |
+| 561 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as |
 
 ## Constants
 
@@ -106,13 +106,13 @@
 | 254 | `static long cutHomes` |  |
 | 259 | `static double heldRatio` | The leverage ratio the last hold left, which is what the month's rule is struck on (the month's end reads the hot money's reset). |
 | 281 | `static int groundMonths, groundPlots` | The crunch months that began with ground for GROUND_BLOCKS blocks, and the plots bought for it. |
-| 553 | `static boolean stuck` |  |
+| 567 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 556 | **type** `public final class CreditCrunchCheck` | A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose leverage ratio binds, standing in its band between its leverage minimum and its target, the landlords' insured mortgages refused at its door for its... |
+| 82 | 570 | **type** `public final class CreditCrunchCheck` | A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose leverage ratio binds, standing in its band between its leverage minimum and its target, the landlords' insured mortgages refused at its door for its... |
 | 89 | 4 | `static void check(String label, boolean ok)` |  |
 | 94 | 8 | `public static void main(String[] args) throws Exception` |  |
 
@@ -137,19 +137,19 @@
 | 305 | 13 | `static void cutToTheValve(Game g)` | The landlords' homes retired, blocks then houses, while what is left still leaves MARGIN households of room. |
 | 319 | 116 | `static void thePlayedCrunch() throws Exception` |  |
 
-### 4. AN ORDER THE OWNERS' ISSUE FALLS SHORT OF - caused at TO (lines 436-546)
+### 4. AN ORDER THE OWNERS' ISSUE FALLS SHORT OF - caused at TO (lines 436-560)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 462 | 61 | `static void theShortIssue(Game g) throws Exception` | Since FB15 the played crunch asks for one block at a time while the bank is short, and an order of one has no half to trim to: the door's trim for the capital where the owners' issue fell short (MC1, HN1) would be wat... |
-| 525 | 12 | `static void strikeTheRule(Game g) throws Exception` | The desks' capital rule struck from the bank as it stands, by the calls Game.startOfMonthUpdate() makes (strikeBankBonds() is its own). |
-| 539 | 3 | `static double door(Game g, BuildingsTemplate t, long n)` | What buildFor() charges for n: the builders' quote and the ground at its zone's price (Game.doorPriceOf() since FB15). |
-| 543 | 3 | `static boolean ground(Game g, BuildingsTemplate t, long n)` |  |
+| 462 | 75 | `static void theShortIssue(Game g) throws Exception` | Since FB15 the played crunch asks for one block at a time while the bank is short, and an order of one has no half to trim to: the door's trim for the capital where the owners' issue fell short (MC1, HN1) would be wat... |
+| 539 | 12 | `static void strikeTheRule(Game g) throws Exception` | The desks' capital rule struck from the bank as it stands, by the calls Game.startOfMonthUpdate() makes (strikeBankBonds() is its own). |
+| 553 | 3 | `static double door(Game g, BuildingsTemplate t, long n)` | What buildFor() charges for n: the builders' quote and the ground at its zone's price (Game.doorPriceOf() since FB15). |
+| 557 | 3 | `static boolean ground(Game g, BuildingsTemplate t, long n)` |  |
 
-### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as (lines 547-637)
+### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as (lines 561-651)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 555 | 12 | `static void run(Game g, int months, Runnable after, Runnable before)` |  |
-| 568 | 69 | `static void foundAndPlay(Game g, Runnable after, Runnable before)` |  |
+| 569 | 12 | `static void run(Game g, int months, Runnable after, Runnable before)` |  |
+| 582 | 69 | `static void foundAndPlay(Game g, Runnable after, Runnable before)` |  |
 

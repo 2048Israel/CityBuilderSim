@@ -25,7 +25,7 @@
 
 **Uses:** [FamilyStructure](FamilyStructure.md) (1)
 
-**Used by (15):** [CapitalGainsCheck](CapitalGainsCheck.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [KeptBench](KeptBench.md), [MoneyWordsCheck](MoneyWordsCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCohorts](PopulationCohorts.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (18):** [CapitalGainsCheck](CapitalGainsCheck.md), [CardCheck](CardCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [KeptBench](KeptBench.md), [MoneyWordsCheck](MoneyWordsCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCohorts](PopulationCohorts.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Enum constants
 
