@@ -1,6 +1,6 @@
 # AutoBuilder.java - 2,698 lines · 168 methods · 13 constants · model
 
-`ham/citybuildersim/AutoBuilder.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AutoBuilder.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > Automatic building (0.7.73): the city's own works ordered for the player
 > once a month - power, water, the roads and their lines, care, schools and
@@ -66,7 +66,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (178), [Game](Game.md) (89), [BuildingsTemplate](BuildingsTemplate.md) (33), [DecisionLog](DecisionLog.md) (19), [LandParcel](LandParcel.md) (19), [DebtQuote](DebtQuote.md) (17), [CityNeeds](CityNeeds.md) (15), [LandManager](LandManager.md) (12), [Auction](Auction.md) (10), [CapSetting](CapSetting.md) (8), [LandMarket](LandMarket.md) (8), [Landmasses](Landmasses.md) (7), [WorksValue](WorksValue.md) (6), [Currency](Currency.md) (5), [GameLog](GameLog.md) (5), [BuildingManager](BuildingManager.md) (3), [NationalAccounts](NationalAccounts.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [ConstructionControl](ConstructionControl.md) (3), [Ports](Ports.md) (2), [NewUnit](NewUnit.md) (2), [BridgeView](BridgeView.md) (2), [StrategicReserve](StrategicReserve.md) (1), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [Sector](Sector.md) (1), [Statement](Statement.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingType](BuildingType.md) (1)... and 4 more
 
-**Used by (23):** [AdviceValueOracle](AdviceValueOracle.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [DataSave](DataSave.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [HydroCheck](HydroCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
+**Used by (24):** [AdviceValueOracle](AdviceValueOracle.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [DataSave](DataSave.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [HydroCheck](HydroCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SubstationCheck](SubstationCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
 
 ## Sections
 

@@ -395,7 +395,7 @@ public final class PublicLicenceCheck {
     static void noGain() throws Exception {
         System.out.println("--- 6. no gain, no fee ---");
         wire();
-        Game g = HistoricalLicenceCheck.town("pl-nogain", true);
+        Game g = HistoricalLicenceCheck.pricedTown("pl-nogain", true);
         allExcept(g, "PE6");
         ResearchCheck.atMonth(g, ResearchCatalog.knownFrom("PE6"));
         BuildingsTemplate plant = HistoricalLicenceCheck.stand(g, "Coal Power Plant", 1);

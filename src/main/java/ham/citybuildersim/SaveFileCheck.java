@@ -69,8 +69,10 @@ public class SaveFileCheck {
         System.out.println("--- XR7: support already bought under a peg crosses the save ---");
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
         assertTrue("R6e current E21 choices survive immediate and next-month loads; native pre-E21 formats58/59 are refused intact", ModernEngineeringCheck.saveChecks());
-        assertTrue("REV-HC1 P4: native format-60 save/history are refused without changing their bytes or a running city", nativeCard60Refusal());
-        assertTrue("HC1 format62: native format61 refusal preserves bytes and the running loaded twin", nativeCard61Refusal(false));
+        assertTrue("native format60 save/history refusal preserves both files and a running loaded twin", nativeCard60Refusal());
+        assertTrue("native format61 save/history refusal preserves both files and a running loaded twin", nativeGrid61Refusal(false));
+        assertTrue("HC1 native format61 refusal preserves bytes and the running loaded twin", nativeCard61Refusal(false));
+        assertTrue("PW5 format63: native shipped format62 refusal preserves both files and the running loaded twin", nativeGrid62Refusal(false));
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -1527,6 +1529,29 @@ public class SaveFileCheck {
                 withoutMeans.savings = 0;
                 withoutMeans.abroad = 0;
                 withoutMeans.paper = 0;
+                // PW5: the waterfall can still sell this cell's securities. Give them to another populated cell,
+                // preserving every issuer's shares, debt, holder totals and acquisition/tax stocks for the save checks.
+                Household receiver = null;
+                for (Household c : full.getHouseholdBalance().cells()) {
+                    if (c != withoutMeans && !c.isEmpty() && (receiver == null || c.households() > receiver.households())) receiver = c;
+                }
+                assertTrue("fixture: another household cell receives the poor cell's securities", receiver != null);
+                if (receiver != null) {
+                    double per = withoutMeans.households() / receiver.households();
+                    for (int company = 0; company < withoutMeans.shares.length; company++) {
+                        receiver.shares[company] += withoutMeans.shares[company] * per;
+                        receiver.basis[company] += withoutMeans.basis[company] * per;
+                        receiver.taxShares[company] += withoutMeans.taxShares[company] * per;
+                        receiver.taxClaim[company] += withoutMeans.taxClaim[company] * per;
+                        withoutMeans.shares[company] = withoutMeans.basis[company] = 0;
+                        withoutMeans.taxShares[company] = withoutMeans.taxClaim[company] = 0;
+                    }
+                    for (var bond : withoutMeans.bondFace.entrySet())
+                        receiver.putBondFace(bond.getKey(), receiver.bondFace(bond.getKey()) + bond.getValue() * per);
+                    receiver.recountBonds();
+                    withoutMeans.bondFace.clear();
+                    withoutMeans.recountBonds();
+                }
                 withoutMeans.debt += withoutMeans.creditRoom(withoutMeans.disposable());
             }
             full.simulateMonths(1);
@@ -3378,11 +3403,17 @@ public class SaveFileCheck {
     }
 
     /** Exact native .188 bytes, shared with HC1; no current JSON is converted. */
-    static byte[] native60Bytes(String name) throws IOException { return nativeCardBytes(60, name); }
+    static byte[] native60Bytes(String name) throws IOException {
+        return nativeFixtureBytes("hc1-format60", name);
+    }
 
     static byte[] nativeCardBytes(int format, String name) throws IOException {
-        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/hc1-format" + format + "/" + name + ".json.gz")) {
-            if (in == null) throw new IOException("Missing native format" + format + " " + name);
+        return nativeFixtureBytes("hc1-format" + format, name);
+    }
+
+    private static byte[] nativeFixtureBytes(String directory, String name) throws IOException {
+        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/" + directory + "/" + name + ".json.gz")) {
+            if (in == null) throw new IOException("Missing native fixture " + directory + "/" + name);
             try (var zipped = new java.util.zip.GZIPInputStream(in)) { return zipped.readAllBytes(); }
         }
     }
@@ -3391,45 +3422,68 @@ public class SaveFileCheck {
     static boolean nativeCard60Refusal() { return nativeCard60Refusal(false); }
 
     static boolean nativeCard60Refusal(boolean readPaths) {
-        return nativeCardRefusal(60, "0.9.188",
+        return nativeOldFormatRefusal(readPaths, 60, "0.9.188", "hc1-format60",
                 "9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186",
-                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf", readPaths);
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
     }
 
-    /** Shipped RES2's real layout must be refused too, without converting its cells. */
+    /** Native RES2 saves carry housing inventory but no PW5 closing grid costs. */
+    static boolean nativeGrid61Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 61, "0.9.189", "pw5-format61",
+                "f94833347a6e7bbd16cd151899b7c3984e729e96012a80d948198cf3cf97572a",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
+    }
+
+    /** Keep HC1's independently captured RES2 pair and its refusal assertion. */
     static boolean nativeCard61Refusal(boolean readPaths) {
-        return nativeCardRefusal(61, "0.9.189",
+        return nativeOldFormatRefusal(readPaths, 61, "0.9.189", "hc1-format61",
                 "1d352d140f18d816e3f3f81797ab23805e719677905cf306fb35fee782a464de",
-                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf", readPaths);
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
     }
 
-    private static boolean nativeCardRefusal(int format, String version, String saveHash, String historyHash, boolean readPaths) {
+    /** HC1's published native card layout still has no PW5 closing grid costs. */
+    static boolean nativeGrid62Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 62, "0.9.190", "pw5-format62",
+                "c28b7a4c3e30b7cb90686a93e6d3832d33717532cb85ba040d511fbcdd5721a3",
+                "c12d06bde4e5844f4c4e260175f5e51f7828b77a126dc610fbb21a6dca712a6b");
+    }
+
+    private static boolean nativeOldFormatRefusal(boolean readPaths, int format, String version, String directory,
+                                                 String saveHash, String historyHash) {
         try {
-            byte[] save = nativeCardBytes(format, "save"), history = nativeCardBytes(format, "history");
+            byte[] save = nativeFixtureBytes(directory, "save"), history = nativeFixtureBytes(directory, "history");
             var old = com.google.gson.JsonParser.parseString(new String(save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             var oldHistory = com.google.gson.JsonParser.parseString(new String(history, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             int keys = old.getAsJsonArray("householdCellKeys").size();
-            boolean genuine = old.has("housingInventory") == (format >= 61)
-                    && old.get("saveFormat").getAsInt() == format && old.get("gameVersion").getAsString().equals(version)
-                    && old.getAsJsonArray("householdCells").size() == keys * 128 + 3 && !oldHistory.has("debtSurveys")
+            boolean housingShape = old.has("housingInventory") == (format >= 61);
+            // The native pre-card records have 128 slots; HC1 adds sixteen.
+            boolean cellShape = old.getAsJsonArray("householdCells").size() == keys * (format >= 62 ? 144 : 128) + 3
+                    && oldHistory.has("debtSurveys") == (format >= 62);
+            boolean genuine = housingShape && cellShape && old.get("saveFormat").getAsInt() == format && old.get("gameVersion").getAsString().equals(version)
+                    && oldHistory.getAsJsonArray("month").size() > 0
+                    && !old.getAsJsonObject("powerBooks").has("pendingGridCosts")
+                    && !old.getAsJsonObject("powerBooks").getAsJsonObject("struck").has("gridCosts")
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save))
                             .equals(saveHash)
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history))
                             .equals(historyHash);
-            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("hc1-refuse-native" + format), null));
+            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("refuse-native" + format), null));
             GameFiles files = source.getGameFiles();
             if (!source.prepareSaveForChecks(10, "HC1 current before refusal").write().whole()) return false;
             Game running = new Game(files);
             quietly(() -> running.loadGameSave(10));
             if (running.getLoadFailure() != null || running.getMonth() != source.getMonth()) return false;
+            if (readPaths) for (int i = 0; i < 3; i++) ReadPathCheck.readEverything(running);
             Files.createDirectories(files.saveFile(10).getParent());
             Files.write(files.saveFile(10), save); Files.write(files.historyFile(10), history);
             Game fresh = new Game(files);
             quietly(() -> fresh.loadGameSave(10));
-            boolean floor = refusedAtTheFloor(files, 10, fresh, save);
+            boolean floor = refusedAtTheFloor(files, 10, fresh, save)
+                    && java.util.Arrays.equals(history, Files.readAllBytes(files.historyFile(10)));
             var gson = new com.google.gson.Gson();
             var before = gson.toJsonTree(running.prepareSaveForChecks(10, "HC1 refusal unchanged").data()).getAsJsonObject();
             String beforeHistory = gson.toJson(running.getHistorySave());
+            var historyObject = running.getHistorySave();
             var managers = running.getBuildingManager();
             var economy = running.getEconomyManager();
             int month = running.getMonth(); double cash = running.getCash();
@@ -3439,6 +3493,7 @@ public class SaveFileCheck {
             boolean untouched = java.util.Arrays.equals(save, Files.readAllBytes(files.saveFile(10)))
                     && java.util.Arrays.equals(history, Files.readAllBytes(files.historyFile(10)));
             boolean intact = running.getBuildingManager() == managers && running.getEconomyManager() == economy
+                    && running.getHistorySave() == historyObject
                     && running.getMonth() == month && running.getCash() == cash
                     && beforeHistory.equals(gson.toJson(running.getHistorySave())) && jsonDiff(before, after, java.util.Set.of("savedAt")).isEmpty();
             boolean refused = !files.slotIsLoadable(10) && GameVersion.noLongerReadable(version).equals(running.getLoadFailure());

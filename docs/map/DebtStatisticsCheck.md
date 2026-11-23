@@ -1,6 +1,6 @@
 # DebtStatisticsCheck.java - 120 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/DebtStatisticsCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtStatisticsCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The statistics office's debt figures against distributions and their component sums (HC2).
 > WHY: holders' medians and adults' denominators cannot be recovered from a city average.

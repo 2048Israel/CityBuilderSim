@@ -4082,6 +4082,7 @@ final class BuildScreen {
     String measureSubtitle(BuildAdvice.Measure m) {
         switch (m.kind()) {
             case POWER:   return "generation for every building and home";
+            case GRID:    return "wires and transformers to carry the peak";
             case WATER:   return "treatment for every tap";
             case ROADS:   return "the trips to every building, on the streets";
             case HIGHWAYS: return "the long trips across the city and the freight to its gates";
@@ -4142,7 +4143,7 @@ final class BuildScreen {
     /** What a measure is counted in, for a ring's "short by N ..." - only care reaches it since 0.7.25, when the cards' "serves N ..." moved to BuildCard.doesWords(). */
     static String unitWords(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER:   return "kW";
+            case POWER: case GRID: return "kW";
             case WATER:   return "units a month";
             case ROADS: case HIGHWAYS: return "trips a month";
             case TRANSIT: return "riders";
@@ -4184,10 +4185,10 @@ final class BuildScreen {
         CityNeeds.Served served = BuildAdvice.verdict(game, m, java.util.Map.of());
         String says = served == null ? null : servedWords(served) + " · ";
         switch (m.kind()) {
-            case POWER: case WATER: {
+            case POWER: case WATER: case GRID: {
                 figure = CityNeeds.servedPct(served.share());
                 arc = arc(served);
-                shortLine = says + (m.kind() == BuildAdvice.Kind.POWER
+                shortLine = says + (m.kind() == BuildAdvice.Kind.POWER || m.kind() == BuildAdvice.Kind.GRID
                         ? (gap > 0 ? power(gap) + " short" : power(-gap) + " spare")
                         : gap > 0 ? shortNumber(gap) + " units short" : shortNumber(-gap) + " units spare");
                 break;

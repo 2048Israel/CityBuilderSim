@@ -1,6 +1,6 @@
 # Construction.java - 1,272 lines · 72 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/Construction.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Construction.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The builders. Every build order in the city is theirs, and they bill it.
 > 

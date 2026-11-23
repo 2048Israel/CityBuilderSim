@@ -9,6 +9,8 @@ adds its line here, not in `CLAUDE.md`.
 
 
     src/main/java/ham/citybuildersim/
+        Substations.java           the city's 100 MW district grids and their capital, repair and filled-post costs in the wires' tariff (PW5)
+        SubstationCheck.java       both carry edges, grid shortages, peak-growth orders, cost-based bills and the saved closing costs (PW5)
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
         Game.java                  the month, the seam every system meets at; over 17,000 lines, 45 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java

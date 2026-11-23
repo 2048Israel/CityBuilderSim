@@ -1,6 +1,8 @@
 package ham.citybuildersim;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -125,6 +127,14 @@ import java.util.TreeSet;
  *      when earth-2.bin is named, whose arm meets water within WORLD_PLOTS
  *      toward the gateway and straight on, has a line on its heading turned a
  *      corner, over dry land. Both had no train before TN1.
+ *  23. A LINK'S SEARCH KEEPS EVERY TILE IT READS, AND READS THE SAME GROUND
+ *      (AP2): a city that owns more tiles than the usual keep
+ *      (CityMap.RUN_TILES_KEPT) draws every one again on each pass round them;
+ *      between searching(true) and searching(false) (CityRuns.Ground) a second
+ *      pass draws none, every plot reads as it did, and when the search ends
+ *      the keep goes back to its usual size and the ground still reads the
+ *      same; linkWay() opens and closes the search itself and finds the way a
+ *      ground that keeps no more finds.
  *
  * WHY THIS EXISTS: batch FR0 finds the land's mirror of SeaRoutes' offing,
  * so the highway and railway know which way the world is. A fixture CAUSES
@@ -158,9 +168,29 @@ public class GatewayCheck {
     /** The tolerance of a position in plots or pixels, well below anything either measures. */
     static final double EPS = 1e-9;
 
+    /** Where quietly() sends what the code under it prints, as section 23 lays its city: nowhere. */
+    static final PrintStream QUIET = new PrintStream(OutputStream.nullOutputStream());
+
+    /** Highways and railway lines the section 23 city is laid with, as the large fixtures here (gatewayCity(types, 100, 10)). */
+    static final long HIGHWAYS = 100, TRACKS = 10;
+
+    /** How many tiles of the section 23 city are read plot by plot, both ways: a handful, spread over the city. */
+    static final int HANDFUL = 4;
+
     static void check(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-78s %s%n", label, ok ? "ok" : "FAIL");
+    }
+
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        System.out.printf("%-78s %s  %s%n", label, ok ? "ok" : "FAIL", detail);
+    }
+
+    static void quietly(Runnable r) {
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try { r.run(); } finally { System.setOut(real); }
     }
 
     /** A square of owned dry ground the runs may lay on, -1 outside: a harness fixture for the spine. */
@@ -571,10 +601,181 @@ public class GatewayCheck {
         togetherSection();
         coastAcrossASave();
         trainsWithoutALine();
+        theLinksTiles();
 
         System.out.println();
         System.out.println(fails == 0 ? "The gateways are found." : fails + " FAILED");
         System.exit(fails);
+    }
+
+    /* ============ AP2: a link's search keeps every tile it reads ============ */
+
+    /** One owned plot of every owned tile of the ground's box, in the order the tiles lie (rows from the north-west). */
+    static long[][] onePlotATile(CityRuns.Ground g) {
+        long[] box = g.box();
+        List<long[]> plots = new ArrayList<>();
+        for (long ty = Math.floorDiv(box[1], World.TILE); ty <= Math.floorDiv(box[3], World.TILE); ty++) {
+            for (long tx = Math.floorDiv(box[0], World.TILE); tx <= Math.floorDiv(box[2], World.TILE); tx++) {
+                long[] one = null;
+                for (int iy = 0; iy < World.TILE && one == null; iy++) {
+                    for (int ix = 0; ix < World.TILE && one == null; ix++) {
+                        long x = tx * World.TILE + ix, y = ty * World.TILE + iy;
+                        if (g.at(x, y, -1) >= 0) one = new long[] { x, y };
+                    }
+                }
+                if (one != null) plots.add(one);
+            }
+        }
+        return plots.toArray(new long[0][]);
+    }
+
+    /** What the ground reads at each plot, in order. */
+    static int[] pass(CityRuns.Ground g, long[][] plots) {
+        int[] v = new int[plots.length];
+        for (int i = 0; i < plots.length; i++) v[i] = g.at(plots[i][0], plots[i][1], -1);
+        return v;
+    }
+
+    /** What the ground reads at every plot of tile (tx, ty), row by row. */
+    static int[] wholeTile(CityRuns.Ground g, long tx, long ty) {
+        int[] v = new int[World.TILE * World.TILE];
+        for (int iy = 0; iy < World.TILE; iy++) {
+            for (int ix = 0; ix < World.TILE; ix++) v[iy * World.TILE + ix] = g.at(tx * World.TILE + ix, ty * World.TILE + iy, -1);
+        }
+        return v;
+    }
+
+    static void theLinksTiles() {
+        System.out.println("--- a link's search keeps every tile it reads, and reads the same ground (AP2) ---");
+        World world = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] place = MapCheck.dryPlace(world);
+        BuildingVisual.Type[] types = gatewayTypes();
+        long[] counts = new long[types.length];
+        int highway = highwayType(types), track = trackType(types);
+        if (highway >= 0) counts[highway] = HIGHWAYS;
+        if (track >= 0) counts[track] = TRACKS;
+        // The smallest square of districts whose tiles are more than the usual keep.
+        int tilesADistrict = CityMap.TILES_A_SIDE * CityMap.TILES_A_SIDE;
+        int side = (int) Math.ceil(Math.sqrt((CityMap.RUN_TILES_KEPT + 1.0) / tilesADistrict));
+        CityMap[] made = new CityMap[1];
+        quietly(() -> made[0] = CityMap.square(Founding.DEFAULT_WORLD_SEED, place[0], place[1], types, side, CityMap.DISTRICT * CityMap.DISTRICT, counts));
+        CityMap map = made[0];
+        CityRuns.Ground ground = map.runGround();
+
+        long[][] plots = onePlotATile(ground);
+        int tiles = plots.length;
+        report("fixture: the city owns more tiles than the usual keep, and fewer than the search's",
+                tiles > CityMap.RUN_TILES_KEPT && tiles <= CityMap.RUN_SEARCH_TILES_KEPT,
+                tiles + " tiles owned on a " + side + " x " + side + " districts square (keep " + CityMap.RUN_TILES_KEPT
+                        + ", search " + CityMap.RUN_SEARCH_TILES_KEPT + ")");
+        report("fixture: the keep in a search is above the usual keep, as the model's two constants stand",
+                CityMap.RUN_SEARCH_TILES_KEPT > CityMap.RUN_TILES_KEPT, CityMap.RUN_TILES_KEPT + " then " + CityMap.RUN_SEARCH_TILES_KEPT);
+
+        // A plot the city does not own reads -1 and draws no tile.
+        long[] box = ground.box();
+        long drawnBefore = map.runTilesDrawn();
+        check("a plot the city does not own reads -1 and draws no tile",
+                ground.at(box[0] - 1, box[1], -1) == -1 && ground.at(box[2] + 1, box[3], -1) == -1 && map.runTilesDrawn() == drawnBefore);
+
+        /* (a) the usual keep: a pass round more tiles than it holds draws every tile again. */
+        int[] a1 = pass(ground, plots);
+        long d0 = map.runTilesDrawn();
+        int[] a2 = pass(ground, plots);
+        long drawnAgain = map.runTilesDrawn() - d0;
+        report("with the usual keep a second pass round every tile draws them again (the keep thrashes on this many)",
+                drawnAgain > CityMap.RUN_TILES_KEPT, drawnAgain + " tiles drawn on the second pass of " + tiles);
+        check("...and reads what the first pass read", Arrays.equals(a1, a2));
+        check("...every plot read is ground (not -1) on a city that owns it all", allOwned(a1));
+        check("...and the keep held no more than the usual size", map.runTilesHeld() <= CityMap.RUN_TILES_KEPT);
+
+        /* (b) a search: every tile kept. */
+        ground.searching(true);
+        long drawnFirst = map.runTilesDrawn();
+        int[] b1 = pass(ground, plots);
+        drawnFirst = map.runTilesDrawn() - drawnFirst;
+        long d1 = map.runTilesDrawn();
+        int[] b2 = pass(ground, plots);
+        long drawnSecond = map.runTilesDrawn() - d1;
+        int held = map.runTilesHeld();
+        report("in a search the second pass draws no tile", drawnSecond == 0,
+                drawnFirst + " tiles drawn on its first pass, " + drawnSecond + " on its second");
+        check("...every value equals the usual keep's", Arrays.equals(a1, b1) && Arrays.equals(a1, b2));
+        report("...and the keep holds more than the usual size, all the tiles read", held > CityMap.RUN_TILES_KEPT && held == tiles,
+                held + " tiles held of " + tiles);
+        int ownedIn = map.runOwnedHeld()[0];
+        report("...and so does the keep of what the city owns, every tile read", ownedIn > CityMap.RUN_TILES_KEPT && ownedIn == tiles,
+                ownedIn + " tiles' ownership held of " + tiles);
+
+        // Every plot of a handful of tiles, in the search and after it, against the world's own terrain.
+        int[][] inSearch = new int[HANDFUL][];
+        long[][] handful = new long[HANDFUL][];
+        for (int i = 0; i < HANDFUL; i++) {
+            long[] p = plots[(int) ((long) i * (tiles - 1) / (HANDFUL - 1))];
+            handful[i] = new long[] { Math.floorDiv(p[0], World.TILE), Math.floorDiv(p[1], World.TILE) };
+            inSearch[i] = wholeTile(ground, handful[i][0], handful[i][1]);
+        }
+
+        /* (c) the search ends: the keep goes back to its usual size and the ground reads the same. */
+        ground.searching(false);
+        report("when the search ends the keep goes back to the usual size", map.runTilesHeld() <= CityMap.RUN_TILES_KEPT,
+                map.runTilesHeld() + " tiles held after, of " + held + " in the search");
+        int[] ownedAfter = map.runOwnedHeld();
+        report("...and so do both keeps of what the city owns, the masked and the raw",
+                ownedAfter[0] <= CityMap.RUN_TILES_KEPT && ownedAfter[1] <= CityMap.RUN_TILES_KEPT,
+                ownedAfter[0] + " tiles' ownership held after, of " + ownedIn + " in the search; " + ownedAfter[1]
+                        + " raw (kept only while the city holds a picture of its landmasses)");
+        int[] c1 = pass(ground, plots);
+        check("...and a pass reads the same values again", Arrays.equals(a1, c1));
+
+        boolean whole = true, world1 = true;
+        byte[] terrain = new byte[World.TILE * World.TILE];
+        for (int i = 0; i < HANDFUL; i++) {
+            int[] after = wholeTile(ground, handful[i][0], handful[i][1]);
+            world.tileTerrain(handful[i][0], handful[i][1], terrain);
+            whole &= Arrays.equals(inSearch[i], after);
+            for (int k = 0; k < terrain.length; k++) world1 &= after[k] == terrain[k] && inSearch[i][k] == terrain[k];
+        }
+        check("every plot of " + HANDFUL + " tiles reads the same in a search as out of one", whole);
+        check("...and is the world's own terrain for it (World.tileTerrain())", world1);
+
+        /* (d) linkWay() itself opens the search on the ground it is given and closes it, and finds the way a ground that keeps no more finds. */
+        int[] calls = new int[2];
+        CityRuns.Ground counted = new CityRuns.Ground() {
+            @Override public int at(long x, long y, int dir) { return ground.at(x, y, dir); }
+            @Override public long version() { return ground.version(); }
+            @Override public long[] box() { return ground.box(); }
+            @Override public void searching(boolean on) { calls[on ? 0 : 1]++; ground.searching(on); }
+        };
+        CityRuns.Ground plain = new CityRuns.Ground() {
+            @Override public int at(long x, long y, int dir) { return ground.at(x, y, dir); }
+            @Override public long version() { return ground.version(); }
+            @Override public long[] box() { return ground.box(); }
+        };
+        CityRuns.Net hw = map.runs().highways();
+        long drawnSearch = map.runTilesDrawn();
+        CityRuns.LinkWay kept = CityRuns.linkWay(hw, map.runs().rail(), counted, 0, CityRuns.plotsOf(hw, 0), -1, 0, CityRuns.hubOf(hw, 0), LINK_DISTRICTS);
+        drawnSearch = map.runTilesDrawn() - drawnSearch;
+        report("linkWay() opens a search on its ground and closes it, once each", calls[0] == 1 && calls[1] == 1,
+                calls[0] + " opened, " + calls[1] + " closed; " + drawnSearch + " tiles drawn");
+        check("...and the ground keeps its usual size after it", map.runTilesHeld() <= CityMap.RUN_TILES_KEPT);
+        CityRuns.LinkWay bare = CityRuns.linkWay(hw, map.runs().rail(), plain, 0, CityRuns.plotsOf(hw, 0), -1, 0, CityRuns.hubOf(hw, 0), LINK_DISTRICTS);
+        report("...and the way it finds is the way found on a ground that keeps no more (searching() not passed on)", sameWay(kept, bare),
+                kept == null ? "no way, both" : "from (" + kept.sx() + ", " + kept.sy() + ") to " + (kept.kind() == 0 ? "row " : "column ") + kept.v()
+                        + ", " + kept.legs().length + " legs");
+    }
+
+    /** How many districts out from the hub section 23's link looks for a line (linkWay()'s `most`): one, the nearest ring of candidates. */
+    static final long LINK_DISTRICTS = 1;
+
+    /** Two planned ways are one way: the same start, line and legs (null, no way, is one only with null). */
+    static boolean sameWay(CityRuns.LinkWay a, CityRuns.LinkWay b) {
+        if (a == null || b == null) return a == b;
+        return a.sx() == b.sx() && a.sy() == b.sy() && a.kind() == b.kind() && a.v() == b.v() && Arrays.deepEquals(a.legs(), b.legs());
+    }
+
+    static boolean allOwned(int[] v) {
+        for (int x : v) if (x < 0) return false;
+        return true;
     }
 
     /* ============ FX2: the line to the world on land, the label in view, the undrawn highway ============ */

@@ -5899,9 +5899,26 @@
       "MACHINERY": 26200
      },
      "work": 0,
-     "lifeMonths": 110
+      "lifeMonths": 110
     }
    ]
+  },
+  {
+   "id": 155,
+   "name": "Substation",
+   "category": "ELECTRICITY",
+   "capacity": 100000,
+   "cashCost": 264000,
+   "constructionPoints": 132000,
+   "constructionMaterials": 9778,
+   "land": 217800,
+   "roadLoad": 140,
+   "jobs": {
+    "DIPLOMA": 100,
+    "COLLEGE_ENGINEERING": 30,
+    "UNIV_HIGHTECH_ENG": 10
+   },
+   "since": 1900
   }
  ]
 }

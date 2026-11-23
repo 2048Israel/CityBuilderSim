@@ -186,6 +186,8 @@ public class HaulageCheck {
             // out of its own revenue and its lender's credit, so without it these sections would read a fleet that never grew
             // (FR2-notes, the financing finding; Pending).
             g.getSectors().freight().setCash(1_000_000);
+            // PW5: the built plant's load needs real wires before the fixture starts its months.
+            SubstationCheck.peakWires(g);
         });
         return g;
     }

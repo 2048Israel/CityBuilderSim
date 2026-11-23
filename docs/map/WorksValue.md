@@ -1,12 +1,12 @@
 # WorksValue.java - 575 lines · 35 methods · 2 constants · model
 
-`ham/citybuildersim/WorksValue.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorksValue.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > A work's discounted cost and the output its service prevents losing (HW1).
 > WHY. A plant's cheap used kW hid its land and a shortage's lost work. These
 > are comparisons at today's prices, never entries in the city's money books.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (62), [BuildingsTemplate](BuildingsTemplate.md) (52), [Game](Game.md) (31), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [LandManager](LandManager.md) (9), [NewUnit](NewUnit.md) (7), [CityLand](CityLand.md) (5), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Zoning](Zoning.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (63), [BuildingsTemplate](BuildingsTemplate.md) (52), [Game](Game.md) (31), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [LandManager](LandManager.md) (9), [NewUnit](NewUnit.md) (7), [CityLand](CityLand.md) (5), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Zoning](Zoning.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
 
 **Used by (8):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [NewUnitCheck](NewUnitCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 

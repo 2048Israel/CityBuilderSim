@@ -154,6 +154,7 @@ public final class BuildCard {
     /** The words before the figure and after it, for a city building on a measure. */
     public static String[] doesWords(BuildAdvice.Measure m, BuildingsTemplate t) {
         switch (m.kind()) {
+            case GRID:    return new String[] {"carries ", " kW at the peak"};
             case POWER:   return new String[] {"generates ", KILOWATTS};
             case WATER:   return new String[] {"makes ", " units a month"};
             case ROADS: case HIGHWAYS: return new String[] {"carries ", " trips a month"};
@@ -173,7 +174,7 @@ public final class BuildCard {
     /** ...the one of it a cost is per: "cost per patient", "cheapest per child". */
     public static String perWords(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER:   return "kW";
+            case POWER: case GRID: return "kW";
             case WATER:   return "unit";
             case ROADS: case HIGHWAYS: return "trip";
             case TRANSIT: return "rider";
@@ -189,7 +190,7 @@ public final class BuildCard {
     /** ...and many of it, for the staff bar's "per 10,000 patients". */
     public static String perPlural(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER:   return "kW";
+            case POWER: case GRID: return "kW";
             case WATER:   return "units";
             case ROADS: case HIGHWAYS: return "trips";
             case TRANSIT: return "riders";

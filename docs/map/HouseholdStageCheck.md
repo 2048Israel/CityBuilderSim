@@ -1,6 +1,6 @@
 # HouseholdStageCheck.java - 564 lines · 11 methods · 1 constants · harnesses
 
-`ham/citybuildersim/HouseholdStageCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdStageCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The two adult stages: the young, 18-34, and the established, 35-69, each
 > with a pyramid compartment, households and books of its own (HS2).

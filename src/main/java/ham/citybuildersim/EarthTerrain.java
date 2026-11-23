@@ -1451,10 +1451,34 @@ public final class EarthTerrain {
      * box widened by LANDMASS_REACH cells every way. A pure read of a window of cells - no plot of the tile is drawn - and a
      * superset of what landmassAt() gives any plot of the tile, which is why a tile whose ids are all one landmass can be
      * counted without reading it (Landmasses.recount()). Empty off the world and for data with no landmass layer.
+     * Kept a tile since AP2 (IDS_KEPT): shared, do not write into it.
      */
     int[] idsNear(long tx, long ty) {
         int n = World.TILE;
         if (!relief || tx < 0 || ty < 0 || tx >= World.SIDE / n || ty >= World.SIDE / n) return new int[0];
+        // (AP2) Kept a tile (IDS_KEPT): a bridge's survey asks it again for every tile of its corridor at every land purchase.
+        long key = (tx << 32) | ty;
+        synchronized (idsKept) {
+            int[] hit = idsKept.get(key);
+            if (hit != null) return hit;
+        }
+        int[] out = idsNearDrawn(tx, ty);
+        synchronized (idsKept) {
+            if (idsKept.size() >= IDS_KEPT) idsKept.clear();
+            idsKept.put(key, out);
+        }
+        return out;
+    }
+
+    /** Tiles whose landmass ids (idsNear()) are kept before the memory is cleared: 100,000 (about 8 MB), Landmasses.NEAR_KEPT's size. */
+    static final int IDS_KEPT = 100_000;
+
+    /** idsNear() by tile, (tx << 32 | ty): the data is frozen, so a tile's window of cells never changes; shared, do not write into one. */
+    private final Map<Long, int[]> idsKept = new HashMap<>();
+
+    /** idsNear() read from the cells, never kept: a harness's (LandmassCheck, AP2) beside idsNear(). */
+    int[] idsNearDrawn(long tx, long ty) {
+        int n = World.TILE;
         long x0 = tx * n, y0 = ty * n;
         EarthProj.Blend b = proj.blend(x0, y0, n);
         double[] ll = new double[2];

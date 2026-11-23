@@ -49,6 +49,7 @@ public final class LicenceFeesCheck {
                     "Industrial Bakery", "Bakery", "Coal Power Plant", "Water Treatment Plant" };
             int[] counts = { 6, 400, 4, 2, 1, 2, 2, 1, 1 };
             for (int n = 0; n < names.length; n++) g.buildStack(b.getTemplateByName(names[n]), counts[n], true);
+            SubstationCheck.generationWires(g); // PW5: Mining's transmission-only comparison needs a real wires bill.
             // The new village starts at zero residents and zero staffed
             // power. Let workers arrive and the grid run before standing a
             // patented plant: a nameplate alone is not production.

@@ -1,6 +1,6 @@
 # CellSpread.java - 64 lines · 7 methods · 4 constants · model
 
-`ham/citybuildersim/CellSpread.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CellSpread.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > Closed forms for the amounts among a cell's holders (HC1).
 > WHY: a cell average cannot say who has a thin buffer or a large balance.
