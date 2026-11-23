@@ -201,11 +201,17 @@ Harnesses PW2 moved, each mended by a fixture that causes its condition; no prem
   months) and finish it, so an Industrial Bakery was fitted in the month observed and the steam share read 0.5
   against 0.8125. A sector fits one at a time (EquipmentFit.choose()), so the fixture now holds a job of
   Industry's on site, too long to finish, and asserts it is there: the counts hold because the fixture makes them.
-- **PlanCheck 1 and 10: the boxes those plans were made from.** The prototype's plan (digests from 0.7.90) and
-  0.8.11's comb were made from a catalogue in which the Coal Power Plant (id 9) stood on 2,000,000 sq ft; PW2's
-  200 acres made its box over four times larger and moved every box after it (32,907 plots of buildings against the
-  table's 32,217). The two sections draw it on its ground of then (PlanCheck.typesAsDrawn(), as GatewayCheck 21
-  holds the terminals' ground from before SL1); every other type and the planner are today's. Both sections green.
+  The held job is cleared after the month, so sections 4, 6 and 7 play on main's town (REV-PW2b).
+- **PlanCheck 1 and 10 (b): the boxes those plans were made from.** The prototype's plan (digests from 0.7.90)
+  and 0.8.11's comb, pinned in section 10 (b), were made from a catalogue in which the Coal Power Plant (id 9)
+  stood on 2,000,000 sq ft; PW2's 200 acres made its box over four times larger and moved every box after it
+  (32,907 plots of buildings against the table's 32,217). Those plans draw it on its ground of then
+  (PlanCheck.typesAsDrawn(), as GatewayCheck 21 holds the terminals' ground from before SL1); every other type,
+  the planner and the rest of section 10 are today's (REV-PW2b). On today's ground (a)'s SQUARED fixture no
+  longer caused its condition: its roads, 0.7 of his, sat on the ladder's step, squaring 1 of 17 homes cells on
+  the old ground and none of 16 on the new (0.75 squares 10 of 17 on the new, 11 of 17 on the old, no boulevards), so
+  SQUARED_ROADS is 0.75, as its sentence says ("most of the homes cells and not ... boulevards"), and (b)'s
+  pinned plan keeps 0.8.11's 0.7 (SQUARED_ROADS_0811). Sections 1 and 10 green.
 - **HousingCheck** (the landlords build before anyone can staff them): the yard's materials set to none, as main's
   city had them. The refigured coal plants are placed on less material (14,373 each, not 19,848), and 36 were left
   after the two years: a House's 10 come from the yard and a Studio's 320 do not, so the House's price fell to 8.5
@@ -237,7 +243,9 @@ The known reds (the ship file's rows), each a moved played city, none a PW2 mech
   plant's site, and PW2's plant is cheaper and held to its 60 months, so at month 62 the town takes 153.1 a month
   against main's 241.7; the sale capped at a third of a year's tax (612) is under the least the fee needs (653).
 - **DeskCheck**, the same line seven times (HT1-H; FS14 shipped): it is FloatLinkCheck's own assertion
-  (FloatLinkCheck.java:741) in FloatLinkCheck.preparedCity(), the town above, and DeskCheck counts its fails.
+  (FloatLinkCheck.java:741) in FloatLinkCheck.readyCity(), on the town above. Each of DeskCheck's seven sections
+  asks readyCity() for its city and returns on its null, so their laws are unasserted, not broken; DeskCheck counts
+  FloatLinkCheck's fails as its own.
 
 Main's latent faults, which PW2's moved fixture cities are the first to read (queued as PW2-T and PW2-B, §6):
 
@@ -303,3 +311,10 @@ by a probe on both trees (not committed):
 - DeskCheck: FloatLinkCheck's town and line, a known red with FloatLinkCheck's (HT1-H).
 - RailDrawCheck 29 and PlanCheck 14 (g): main's faults, read for the first time in fixture cities PW2 moved. Known
   reds, each with its queued fix in the ship file, PW2-T and PW2-B (§4).
+
+The third (`cbs-gate-PW2-FZfbf78Z`, 7f5c8d1ea): the suite in 996 s, exit 0, no unnamed line; known red only in 14
+harnesses (BankCheck, CurrencyCheck, DeathRecordCheck, DeskCheck, FloatLinkCheck, Forms1900Check, FundCheck,
+HoldersCheck, InvestCheck, KeptCheck, PlanCheck, RailDrawCheck, RoadCheck, ScaleCheck); timing soft (MapCheck 2).
+REV-PW2b (SHIP, no P1) ran alongside; its three folds came after it, on the orchestrator's word ("the gate's suite
+covers the fold"): EquipmentCheck clears the held job, PlanCheck holds only 10 (b) on the old ground (and SQUARED's
+roads, traced above), the DeskCheck row names readyCity(). EquipmentCheck green and PlanCheck known red only, alone.
