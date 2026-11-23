@@ -3312,7 +3312,7 @@ public class SaveFileCheck {
                 Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(slot));
             }
         }
-        // The exact boundary is a real save/history pair from shipped 0.9.191,
+        // The exact boundary is res3-format63's real save/history pair from shipped 0.9.192,
         // not today's schema with yesterday's format number pasted onto it.
         byte[] boundaryBytes = nativeHousingBoundaryBytes("save");
         Files.write(oldest.saveFile(10), boundaryBytes);

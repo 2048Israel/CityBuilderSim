@@ -1049,3 +1049,13 @@ ship marker stays in place. A fresh 80-run ensemble against the newest
 0.9.192 baseline and the ALL dry run remain owed after that review; the failed
 first ensemble is evidence, not the final ensemble verdict. No dry run has
 started, and the orchestrator's dry-run go is still required.
+
+REV-RES3 reviewed 47764c061..8c7a470ff and returned SHIP with no P1. Its two P2s
+are folded without another review: main ecbc3b975 now gives HT1-H the remaining
+free-growth premise, and SaveFileCheck's boundary comment names the actual
+res3-format63 pair from shipped 0.9.192. The native bytes and assertions are
+unchanged. The final ensemble is scored against docs/ensemble/0.9.192.md,
+with rents, affordability and growth read alongside the hard gates.
+The comment-only follow-up's --fast exits 0 (0 firm/199 soft); the six
+generated map changes were dates only and were discarded. The named model
+checks above remain the validation of the unchanged reviewed model.
