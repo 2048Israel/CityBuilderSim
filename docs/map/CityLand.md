@@ -229,7 +229,7 @@
 | 678 | 1 | `public boolean ownsPlot(long x, long y)` | Whether the city owns a plot. |
 | 681 | 3 | `public boolean owns(double dx, double dy)` | Whether the city owns the point (dx, dy) from the site plot's centre: the plot it lies in. |
 | 686 | 10 | `public long centreStamp()` | The stamp of the centre's blocks: what a map tells a restatement by (CityMap.syncLand()). |
-| 698 | 5 | `long centreStampDrawn()` | centreStamp() hashed from the blocks, never kept: a harness's (KeptReadsCheck). |
+| 698 | 5 | `long centreStampDrawn()` | centreStamp() hashed from the blocks, never kept: a harness's (LandCheck, AP2). |
 | 705 | 1 | `public long stamp()` | The stamp of all its ground: the centre's blocks, then every purchase's rectangle, in order (the sidecar's land stamp, spec-grid 2.4). |
 | 708 | 8 | `public long stamp(int n)` | ...of the centre and its first n purchases: the ground a map has measured when it has seen n of them. |
 

@@ -459,7 +459,7 @@
 | 6257 | `private int tripSearches` | How many street searches were made: a harness's, to tell legs kept from legs made again. |
 | 6541 | `private final Map<Long, byte[]> lines` |  |
 | 6545 | `private int tilesKept` | How many tiles the three maps below keep: RUN_TILES_KEPT, or RUN_SEARCH_TILES_KEPT while a link's search runs (searching(), AP2). |
-| 6547 | `private long drawn` | The tiles whose terrain it has drawn (a miss of `tiles`): a harness's (KeptReadsCheck). |
+| 6547 | `private long drawn` | The tiles whose terrain it has drawn (a miss of `tiles`): a harness's (GatewayCheck, AP2). |
 | 6548 | `private final Map<Long, byte[]> tiles` |  |
 | 6551 | `private final Map<Long, boolean[]> owned` |  |
 | 6555 | `private final Map<Long, boolean[]> rawOwned` | ET5: ownership with no mask (atRaw()), kept only while the city holds a picture of its landmasses; the same size and the same version as `owned`. |
@@ -1094,7 +1094,7 @@
 | 6698 | 6 | `public long version()` _(in CityMap.RunGround)_ |  |
 | 6705 | 5 | `public long[] box()` _(in CityMap.RunGround)_ |  |
 | 6715 | 1 | `CityRuns.Ground runGround()` | The ground the runs read: a harness's, to lay runs of its own on the city's ground. |
-| 6718 | 1 | `int runTilesHeld()` | (AP2) The tiles the runs' ground keeps now, and the tiles' terrain it has drawn since the map was made: a harness's (KeptReadsCheck). |
+| 6718 | 1 | `int runTilesHeld()` | (AP2) The tiles the runs' ground keeps now, and the tiles' terrain it has drawn since the map was made: a harness's (GatewayCheck, AP2). |
 | 6719 | 1 | `long runTilesDrawn()` |  |
 
 ### THE CITY'S GROUND IN PIECES (batch CL5, slice B) (lines 6721-7604)

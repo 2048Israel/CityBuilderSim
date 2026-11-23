@@ -102,7 +102,46 @@ So the paused window is slow when a screen is drawn again, Build above all, not 
 
 ## 5. The checks
 
-(filled at the end)
+Each kept read gets a section in the harness that owns its mechanic. Every kept figure is compared
+with the read afresh (the `*Drawn` hooks), and every fixture causes what it tests:
+
+- **`GatewayCheck`**, "a link's search keeps every tile it reads, and reads the same ground (AP2)",
+  15 assertions. A square city owning 576 tiles, over `RUN_TILES_KEPT`. Two passes, one plot a tile:
+  the usual keep draws all 576 again; inside `searching(true)` the second pass draws none and
+  holds 576. `searching(false)` gives back to 256 or fewer, with the same values, also against
+  `World.tileTerrain`. A `linkWay()` on a counted ground opens and closes the search once and finds
+  the same way as on a plain ground.
+- **`LandCheck`** 31, "the centre's stamp is kept between its changes and moves with them (AP2)",
+  10 assertions. A founding, its copy, a restatement to more ground and one back to less: the kept
+  stamp equals `centreStampDrawn()` each time and moves with each change.
+- **`LandmassCheck`** 14, "a tile's landmass ids are kept, the same as read from the cells (AP2)",
+  8 assertions. On main's Earth fixture, the 9,409 tiles round Rotterdam: the same ids as read from
+  the cells, the same array asked twice, tiles with one id and with two. The clear at `IDS_KEPT` is
+  forced, and the answers after it are still the same.
+- **`HoldersCheck`** 16, "what each sector owes, from one pass over the book, is getPrincipal() to
+  the bit (AP2)", 9 assertions. `theBusinesses()`'s city after 24 months: every sector's figure
+  equals `getPrincipal()` in its raw bits, and stays equal in each of the 12 months after (34 loans
+  in 5 sectors at the last). Both sides of `owed > 0` occur.
+
+Each mutation of the model turns its section red (`AP2-evidence/mutations/`):
+
+| mutation | FAILs |
+|---|---:|
+| `centreEdits` not raised | 5 |
+| the ids' key a wrong tile | 4 |
+| the book summed backwards | 1 (Industry, last bit) |
+| no trim after the search | 1 |
+
+The playtest's trace (`-Dplaytest.trace`, its eight CSVs over 2,405 months) is byte for byte the same
+on main and on AP2: main 196 s, AP2 191 s.
+
+The pick (`tools/pick.sh origin/main HEAD`): 81 of 244 harnesses. `./batch-check.sh --pick` exits 3
+(compile OK, maps regenerated, Stale 0 firm). The only reds are main's known reds, in
+OrderDoorCheck, FundCheck, HoldersCheck, ReloadCheck and KeptCheck. Not ALL, so no dry run is owed. Review: "needed - threading:
++volatile in CityLand.java, +synchronized in EarthTerrain.java". The count and the kept pair are
+volatile, and the pair is one array written whole, so any thread reads a count with the hash taken
+at it. The ids' map is under a lock, as the terrain's other memories (`tiles`, `reliefTiles`,
+`resolved`) are, since a world's terrain is read from more than one thread.
 
 ## 6. The months on slot 9
 
