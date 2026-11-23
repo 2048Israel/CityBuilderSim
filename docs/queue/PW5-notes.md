@@ -1074,3 +1074,20 @@ normal runs. The final-model ensemble 069504753 remains applicable, M1/F1
 Keep the provisional marker and send this one-pass delta and the complete
 caller list to the same reviewer. HC1 holds the dry-run slot; a fresh slot
 is requested after this delta's SHIP. Neither stopped ALL run is reused.
+
+### Final delta SHIP and the granted ALL run
+
+REV-PW5-2 gives d091e79e5 SHIP. Its earlier comparison of 110 repair points
+against 87 is corrected to **110 against the measured 120** spare points
+in the ordinary, peak-sized NewUnit town; the arithmetic distinction above
+remains the reason. The changelog now says explicitly that 110 of the
+default city's 420 standing repair points belongs to its first district.
+
+The orchestrator grants the ALL dry-run slot on 2026-11-22. HC1's gate may
+run beside it. The final-model ensemble at 069504753 was run once before
+HC1's merge; it does not measure that later combined model. On HC1's ship
+mail, merge its shipped format 62, raise PW5's format and floor to 63 under
+the old-saves rule, prove refusal of a real native previous-format pair,
+then run --fast and the save checks. The orchestrator accepts this merge
+after the dry run without a second ALL if conflicts are confined to
+GameVersion and records; any broader conflict requires another granted run.
