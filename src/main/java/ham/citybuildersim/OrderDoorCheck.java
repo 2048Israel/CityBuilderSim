@@ -81,6 +81,8 @@ public class OrderDoorCheck {
     static final int MAX_PLOTS = 60;
     /** What the households' means for an offering stand at, over the order's down payment, once the fixture has lifted them: the offering is taken whole, never pro rata of a shortfall. */
     static final double OWNERS_COVER = 2;
+    /** The rounds the fixture lifts the households' savings in, each reading the model's means after it (liftOwnersMeans()). */
+    static final int LIFT_ROUNDS = 30;
 
     static void check(String label, boolean ok) {
         out.println((ok ? "  ok   " : "  FAIL ") + label);
@@ -124,28 +126,21 @@ public class OrderDoorCheck {
     }
 
     /**
-     * What the households would put into an offering today, as HouseholdBalance.subscribe() weighs it: a share (SHARE_OF_EXCESS)
-     * of what a cell that may buy shares holds past SHARE_CUSHION_MONTHS of its take-home, by its debt-free share. When lift
-     * is above zero the cells' savings are raised so that the means stand at lift: the eligible cells, each by the same sum
-     * over its weight, from the cushion where it held less. The households' means are the owners' means on this order (the
-     * world's side of the offering buys only on a trailing yield, which is the town's own and not the fixture's to cause).
+     * Lifts the households' savings until their means for an offering, the model's own (HouseholdBalance.offeringMeans(),
+     * subscribe()'s weighing), stand at `lift` or over it: every cell with households in it by the same sum a household,
+     * the shortfall over the share of the excess a household puts in, doubled each round after the first (a cell's
+     * cushion and its debt-free share take part of each), the model's figure read after every round. The households' means
+     * are the owners' means on this order (the world's side of the offering buys only on a trailing yield, which is the
+     * town's own and not the fixture's to cause).
      */
-    static double ownersMeans(Game g, double lift) {
+    static void liftOwnersMeans(Game g, double lift) {
         HouseholdBalance hb = g.getHouseholdBalance();
-        double weight = 0, total = 0;
-        for (Household c : hb.cellsForMarket()) {
-            if (c.isEmpty() || !c.canInvest() || hb.debtFreeShare(c) <= 0 || c.isGoingShort() || !c.tradesShares()) continue;
-            double w = HouseholdBalance.SHARE_OF_EXCESS * c.households * hb.debtFreeShare(c);
-            weight += w;
-            total += Math.max(0, c.savings - HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * w;
+        double people = 0;
+        for (Household c : hb.cells()) if (!c.isEmpty()) people += c.households;
+        for (int round = 0; round < LIFT_ROUNDS && people > 0 && hb.offeringMeans() < lift; round++) {
+            double per = (lift - hb.offeringMeans()) / (HouseholdBalance.SHARE_OF_EXCESS * people) * Math.pow(2, round);
+            for (Household c : hb.cells()) if (!c.isEmpty()) c.savings += per;
         }
-        if (lift <= total || !(weight > 0)) return total;
-        double per = (lift - total) / weight;
-        for (Household c : hb.cellsForMarket()) {
-            if (c.isEmpty() || !c.canInvest() || hb.debtFreeShare(c) <= 0 || c.isGoingShort() || !c.tradesShares()) continue;
-            c.savings = Math.max(c.savings, HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) + per;
-        }
-        return lift;
     }
 
     /** HN1-A's landlord at its edge, its ground apart (bought: buyGround()), read and never acted on. */
@@ -403,9 +398,10 @@ public class OrderDoorCheck {
             // and only where the means fall short of its down payment, until they stand at OWNERS_COVER times the down payment
             // the door's own price asks, so the owners are able to raise it whatever the price.
             double down = Mortgage.ownFundsFor(doorN);
-            if (ownersMeans(orderGame, 0) < down) ownersMeans(orderGame, OWNERS_COVER * down);
-            check("fixture: the households' means for the offering cover the order's down payment (" + n + ")",
-                    ownersMeans(orderGame, 0) >= down);
+            HouseholdBalance owners = orderGame.getHouseholdBalance();
+            if (owners.offeringMeans() < down) liftOwnersMeans(orderGame, OWNERS_COVER * down);
+            check("fixture: the households' means for the offering, the model's (HouseholdBalance.offeringMeans()), cover the order's down payment (" + n + ")",
+                    owners.offeringMeans() >= down);
             int written = orderCredit.getMortgagesWrittenThisMonth();
             asked = passed = 0;
             consider(orderGame, new BusinessInvestment.Decision(RE, orderBlock, n, "FB15's order of " + n, true));

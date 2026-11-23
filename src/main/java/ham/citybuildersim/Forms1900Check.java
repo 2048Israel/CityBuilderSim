@@ -468,6 +468,9 @@ public class Forms1900Check {
     /** The months the cart cities are played: the fleet and the money audit are held over them. */
     static final int CART_MONTHS = 12;
 
+    /** Half a cent, in the model's thousands: the allowance is the haul's own sums, so it covers them to the cent (Forms1900Check 11). */
+    static final double ALLOWANCE_CENT = .000005;
+
     /** One month of a city's Haulage, as the sections read it, taken the moment the month was played. */
     static final class Month {
         double need, carried, truckTonnes, teamTonnes, litres, diesel, teams, feedTonnes, feedTonnesImported, feed, feedImported;
@@ -735,15 +738,16 @@ public class Forms1900Check {
         Month m = f[6];
         check("the city leg's price after 6 months at a share of 1 is a quote struck from the month's carriage (not the estimate), finite and positive",
                 m.quoteKnown && Double.isFinite(m.quote) && m.quote > 0, String.format("D$%.6f a tonne, known %b", m.quote, m.quoteKnown));
-        // The pay is read after the month, when the labour market has moved the fill since the haul priced it (a few percent in a growing city): hence the 0.9.
         // FC2, 2026-11-23: on FC2's path the carters' tier filled from 0.19 to 0.25 in month 6 (a third more in a month, the labour market not yet having filled the 30,456 carters),
         // so the pay read after the month was D$1,372.10 against the D$1,019.24 the haul priced it at, and the allowance,
         // D$1,156.95, was the haul's own pay plus the feed D$71.59 and the teams' hire D$66.12 to the cent. The rule prices the payroll as the month before
-        // closed it (Haulage.closeMonth() reads Freight.haulagePayroll() at the haul), so the pay it must cover is that month's, and that is the figure read.
+        // closed it (Haulage.closeMonth() reads Freight.haulagePayroll() at the haul), so the pay it must cover is that month's, and that is the figure read: with it
+        // the allowance covers the three to the cent (REV-FC2b), and the 0.9 the read after the month needed is gone.
         Month before = f[5];
-        check("...and the rule's allowance covers the month's feed and (to within the fill moved since the haul) the carters' pay",
-                m.feed > 0 && before.haulagePay > 0 && m.allowed >= m.feed + 0.9 * before.haulagePay,
-                String.format("allowed D$%.4f, feed D$%.4f, carters D$%.4f as the month before closed them (D$%.4f after this month)", m.allowed, m.feed, before.haulagePay, m.haulagePay));
+        check("...and the rule's allowance covers the month's feed, the teams' hire and the carters' pay the haul priced (the month before), to the cent",
+                m.feed > 0 && m.hire > 0 && before.haulagePay > 0 && m.allowed >= m.feed + m.hire + before.haulagePay - ALLOWANCE_CENT,
+                String.format("allowed D$%.4f, feed D$%.4f, hire D$%.4f, carters D$%.4f as the month before closed them (D$%.4f after this month)",
+                        m.allowed, m.feed, m.hire, before.haulagePay, m.haulagePay));
         check("...and the quote is finite and positive in every one of the " + CART_MONTHS + " months", allMonths(f, x -> x.quoteKnown && Double.isFinite(x.quote) && x.quote > 0));
     }
 

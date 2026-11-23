@@ -45,7 +45,7 @@ import static ham.citybuildersim.ui.Levers.*;
  * Since 0.7.5 the shell's key filter also calls buildPending() and
  * clearPending(): Enter, and Backspace or Delete, on the page showing.
  */
-final class BuildScreen {
+public final class BuildScreen {
 
     /** The window this screen draws into: its game, its root, its clearMenu(). */
     private final UserInterface ui;
@@ -1590,17 +1590,18 @@ final class BuildScreen {
     /**
      * What the builders' premium and the foreign contractor are, in two sentences, from the model's own constants
      * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i). The city's
-     * money by its name, never a typed sign (FM1; MoneyWordsCheck).
+     * money by its name, never a typed sign (FM1; MoneyWordsCheck), and as an argument of the format, never inside its
+     * template (REV-FC2b: a typed "100% Crown" threw; MoneyWordsCheck 4).
      */
-    static String buildersShortInfo(Currency money) {
+    public static String buildersShortInfo(Currency money) {
         return String.format("The builders charge more for a point of work as their queue grows past %.0f months at the pace "
                 + "the repairs leave the sites, up to +%.0f%% with none left. Foreign crews are always on offer at the "
                 + "city's own price for the work and an excess in the world's money, %.0f%% of the world's price at par: "
-                + "a strong " + money.name() + " makes them cheaper, a weak one dearer, but never more than +%.0f%% to begin with, so the "
+                + "a strong %s makes them cheaper, a weak one dearer, but never more than +%.0f%% to begin with, so the "
                 + "work queued past %.0f months at the latest is theirs, paid abroad. They bring their own crews, as "
                 + "many as the work wants, and ask more a point the more they take, never more than +%.0f%%. While the "
                 + "queue is under %.0f months the builders sell the points no site took abroad.",
-                BuildersShort.KNEE_MONTHS, BuildersShort.CEILING * 100, BuildersShort.FOREIGN_EXCESS * 100,
+                BuildersShort.KNEE_MONTHS, BuildersShort.CEILING * 100, BuildersShort.FOREIGN_EXCESS * 100, money.name(),
                 BuildersShort.capShare() * 100, BuildersShort.KNEE_MONTHS + BuildersShort.SURE_MONTHS,
                 BuildersShort.CEILING * 100, BuildersShort.KNEE_MONTHS);
     }

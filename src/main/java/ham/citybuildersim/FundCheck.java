@@ -1715,17 +1715,27 @@ public class FundCheck {
 
     static void theHand() {
         out.println("\n--- 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus ---");
-        Game a = copy();
+        Game a = copy(), b = copy();
         double x = 50_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
         a.setCashForTest(a.getCash() + x);
+        b.setCashForTest(b.getCash() + x);
         a.fundPayIn(x);
         play(a);
-        // FC2, 2026-11-23: THE TWINS OF THE LAW DO NOT LET THE FUND TRADE WITH THE HOUSEHOLDS. Twins at the default dial differed by D$0.0341 of capital gains tax on
-        // FC2's path (a: 0.0826, b: 0.1167, the national accounts' balance 39.7115 against 0.6149 where the transfer paid was 39.1307): a's fund bought 5,016 Industry
-        // shares, 3.66 of Retail and a sliver of Freight with its pay-in, and the households who sold it 3,884 Industry shares were taxed on the gain their sale realised
-        // (or refunded on its loss), which b's households, who sold none to the fund, were not. That is the market's effect of the fund's buying, not the pay-in's on
-        // the budget. Over the default the rule buys nothing (sellsToPay(): the dial spends the fund), so the twins' markets are alike and the pay-in is all that
-        // is between them; the cash x is far over the month's due at the dial, so the fund sells nothing either (the fixture below). The twins are two more copies
+        play(b);
+        // FC2 and REV-FC2b, 2026-11-23: AT THE DEFAULT DIAL, THE PLAYER'S CASE, THE TWINS DIFFER BY THE TRANSFER AND BY THE HOUSEHOLDS' TAXES ON WHAT THE FUND'S
+        // BUYING MOVED. On FC2's path a's fund bought 5,016 Industry shares, 3.66 of Retail and a sliver of Freight with its pay-in, and the households' sales
+        // realised other gains than b's: the capital gains tax was D$0.0826 in a and D$0.1167 in b, so the balance differed by D$39.0966 where the transfer
+        // paid differed by D$39.1307. That is the market's effect of the fund's buying, booked as the households' tax, not the pay-in's on the budget: the
+        // law reads both taxes on the shares (NationalAccounts.getCapitalGainsTax(), getDividendTax()) from the model and asserts the pay-in moves nothing more.
+        NationalAccounts na = a.getEconomyManager().getNationalAccounts(), nb = b.getEconomyManager().getNationalAccounts();
+        double gainsMoved = na.getCapitalGainsTax() - nb.getCapitalGainsTax(), dividendsMoved = na.getDividendTax() - nb.getDividendTax();
+        out.printf("  at the default: the balance %,.6f and %,.6f, the transfer paid %,.6f and %,.6f, the households' capital gains tax %,.6f and %,.6f, their dividend tax %,.6f and %,.6f%n",
+                na.getBalance(), nb.getBalance(), a.getFund().getTransferPaid(), b.getFund().getTransferPaid(),
+                na.getCapitalGainsTax(), nb.getCapitalGainsTax(), na.getDividendTax(), nb.getDividendTax());
+        close("a pay-in is not spending: at the default dial the budget moves by the fund's transfer on it and by the households' taxes on the shares its buying moved, read from the model, and nothing more",
+                na.getBalance() - nb.getBalance(), (a.getFund().getTransferPaid() - b.getFund().getTransferPaid()) + gainsMoved + dividendsMoved, 1e-6);
+        // ...and over the default the rule buys nothing (sellsToPay(): the dial spends the fund), so the twins' markets are alike and the transfer is all that is
+        // between them; the cash x is far over the month's due at the dial, so the fund sells nothing either (the fixture below). These twins are two more copies
         // of the founding; a itself plays on at the default for what follows.
         Game pa = copy(), pb = copy();
         for (Game t : java.util.List.of(pa, pb)) {
@@ -1745,7 +1755,7 @@ public class FundCheck {
                         && pa.getFund().getToRaise() == 0 && pb.getFund().getToRaise() == 0);
         double surplusA = pa.getEconomyManager().getNationalAccounts().getBalance();
         double surplusB = pb.getEconomyManager().getNationalAccounts().getBalance();
-        close("a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more",
+        close("...and over the default, where the fund buys nothing, the budget moves by the fund's transfer on the pay-in and nothing more",
                 surplusA - surplusB, pa.getFund().getTransferPaid() - pb.getFund().getTransferPaid(), 1e-6);
         check("...and the journal names it", journalHas(a, "Paid into the fund", -x));
         double drawn = a.fundDrawOut(1_000 * PriceLevel.FACTOR);

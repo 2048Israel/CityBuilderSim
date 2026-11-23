@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import ham.citybuildersim.sectors.Construction;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -155,6 +156,7 @@ public class SectorStatementCheck {
         Game young = youngCity(root);
         everyMonth();
         savedAndLoaded(root, player);
+        theWorkSoldAbroadSaved(root);
         anOlderSave(player);
         theFormats(player);
         theSchedule();
@@ -598,6 +600,75 @@ public class SectorStatementCheck {
         if (x == null || y == null) return x == y;
         if (x.length != y.length) return false;
         for (int i = 0; i < x.length; i++) if (!(Math.abs(x[i] - y[i]) <= CENT)) return false;
+        return true;
+    }
+
+    /** The months the calm town is given to sell its builders' spare points abroad (ForeignCrewsCheck 5 gives it 24 to run its queue down, and 24 more). */
+    static final int SOLD_MONTHS = 48;
+    /** The scratch slots the builders' sale is saved in: the month it is pending, and the month it is struck. */
+    static final int SOLD_SLOT = 11, STRUCK_SLOT = 12;
+
+    /**
+     * REV-FC2b: the builders' spare points sold abroad (FC2) are an export with no good behind it, named on the opened
+     * revenue line (Sector.Ledger.servicesSold, struck into Statement.servicesSold). The month's ledger holds the sale at
+     * every save, and until the review neither the ledger's names nor the statement's were saved, so a load struck the
+     * receipts into revenue with no line naming them and "revenue by good" missed by the sale. ConstructionTrapCheck's calm
+     * town, its queue let run down under a month of the sites (ForeignCrewsCheck 5's way), sells the points no site took:
+     * it is saved in that month and loaded through the game's own load, the twins play the month that strikes it, and the
+     * struck statement is saved and loaded again.
+     */
+    static void theWorkSoldAbroadSaved(Path root) {
+        out.println("\n--- 6a. the builders' work sold abroad survives a save: pending in the month, and struck the month after (FC2, REV-FC2b) ---");
+        ConstructionTrapCheck.out = out;
+        ConstructionTrapCheck.quiet = quiet;
+        DeathCareFirstCheck.out = out;
+        DeathCareFirstCheck.quiet = quiet;
+        Game g = ConstructionTrapCheck.calm(root, "sectorstatement-worksold");
+        Construction c = g.getSectors().construction();
+        boolean sold = false;
+        for (int k = 0; k < SOLD_MONTHS && !sold; k++) {
+            quietly(() -> g.simulateMonths(1));
+            sold = c.getExportPointsThisMonth() > 0;
+        }
+        Map<String, Double> pending = new LinkedHashMap<>(c.pending().servicesSold);
+        double work = pending.getOrDefault(Construction.WORK_SOLD_ABROAD, 0.0);
+        assertTrue(String.format("fixture: a month sold the builders' spare points abroad (%,.1f points for %,.6f), and the month's ledger names the sale, pending (%,.6f)",
+                c.getExportPointsThisMonth(), c.getExportReceiptsThisMonth(), work),
+                sold && work > 0 && Math.abs(work - c.getExportReceiptsThisMonth()) <= CENT);
+        if (!sold) return;
+        quietly(() -> g.saveGame(SOLD_SLOT));
+        Game back = new Game(g.getGameFiles());
+        quietly(() -> back.loadGameSave(SOLD_SLOT));
+        Construction cb = back.getSectors().construction();
+        assertTrue("fixture: the town loads through the game's own load", back.getLoadFailure() == null);
+        assertTrue(String.format("after a load the month's ledger names the same work sold abroad (%,.6f), and holds the same exports, to the cent",
+                        cb.pending().servicesSold.getOrDefault(Construction.WORK_SOLD_ABROAD, 0.0)),
+                sameParts(pending, cb.pending().servicesSold) && Math.abs(cb.pending().exports - c.pending().exports) <= CENT);
+        quietly(() -> g.simulateMonths(1));
+        quietly(() -> back.simulateMonths(1));
+        Sector.Statement st = cb.statement();
+        double goods = 0, services = 0;
+        for (Sector.Split x : st.sold.values()) goods += x.total();
+        for (double v : cb.servicesSoldParts().values()) services += v;
+        out.printf("  struck the month after: the saved town names %,.6f of work sold abroad, the loaded one %,.6f; the loaded one's revenue %,.6f, its goods %,.6f, other %,.6f%n",
+                c.servicesSoldParts().getOrDefault(Construction.WORK_SOLD_ABROAD, 0.0),
+                cb.servicesSoldParts().getOrDefault(Construction.WORK_SOLD_ABROAD, 0.0), st.revenue, goods, st.otherRevenue);
+        assertTrue("the month after, the loaded town's statement names the work sold abroad as the saved one's does, to the cent",
+                cb.servicesSoldParts().getOrDefault(Construction.WORK_SOLD_ABROAD, 0.0) > 0
+                        && sameParts(c.servicesSoldParts(), cb.servicesSoldParts()));
+        assertTrue("...so its revenue is its goods, its other revenue and the work sold abroad, to the cent (\"revenue by good\")",
+                Math.abs(goods + st.otherRevenue + services - st.revenue) <= CENT);
+        quietly(() -> back.saveGame(STRUCK_SLOT));
+        Game again = new Game(back.getGameFiles());
+        quietly(() -> again.loadGameSave(STRUCK_SLOT));
+        assertTrue("...and the struck statement's names are saved too: loaded again, it names the same work sold abroad",
+                again.getLoadFailure() == null && sameParts(cb.servicesSoldParts(), again.getSectors().construction().servicesSoldParts()));
+    }
+
+    /** Two named maps the same to the cent, name by name. */
+    static boolean sameParts(Map<String, Double> x, Map<String, Double> y) {
+        if (!x.keySet().equals(y.keySet())) return false;
+        for (Map.Entry<String, Double> e : x.entrySet()) if (!(Math.abs(e.getValue() - y.get(e.getKey())) <= CENT)) return false;
         return true;
     }
 
