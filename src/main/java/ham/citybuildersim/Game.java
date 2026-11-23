@@ -9495,6 +9495,10 @@ public class Game {
      * the city's own premium and a times the crews' share, a the share of its buildings' points abroad, is the price of
      * each part where it is built. {points, share, price a point}: the buildings at their base a point and the share, the
      * parts at their own base ({@code extrasBase}, before the multiple) and the share, the mean of the two by the point.
+     * The parts are owed on the order's own site with its buildings, abroad and at home alike (BuildingsStacks.
+     * addPreparation(): progress below nothing, placed by processBuildOrder() and buildFor()), so the queue counts them
+     * (BuildingManager.getRemainingConstructionPoints(), queueAtHome()) and the cut of his book to what the sites owe
+     * (Construction.capForeignBook()) stands on them (the third review; ForeignCrewsCheck section 7's foothill works).
      */
     private double[] abroadWork(BuildingManager.OrderAbroad abroad, Fitout fit, long quantity, double prepPoints,
                                        double worksPoints, double bridgePoints, double deepPoints, double extrasBase) {
