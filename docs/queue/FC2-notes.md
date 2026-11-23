@@ -49,6 +49,11 @@ currency". The brief is `docs/queue/FC2.md`; FC2b (the next row) is left its sea
   card's line under the price row gives both offers; its info text is written from the constants. CityNeeds' BUILDERS
   flag: "overflow abroad: +x% a point", severe only where the sites get nothing. Every figure through a public getter,
   drawn through Kept.
+- **The Trade tab** (`Sectors.TradeByGood.servicesSold()`): an export with no good behind it, by the sector that sold
+  it, as the imports' `services()` were: a sector's export line less its goods sold abroad. `sold()` counts it, so the
+  tab's sold abroad is the balance of payments' exports again (ForeignCheck's footing read 0.39 off with the builders
+  selling abroad); `TradeScreen.goodRows()` draws it as "Sold abroad by Construction", the row beside "Bought abroad
+  by". Before FC2 no sector exported anything but goods.
 - **Removed:** FC1's `FOREIGN_FLOOR`, `FOREIGN_PRICE`, `FOREIGN_CAPACITY_SHARE`, `foreignTakesOrders()`,
   `foreignCapacity()`, `BuildingManager.foreignCrewsTakeOrders()`, `Construction.bill(.., t)` and the offer's
   `depotPoints`.
@@ -118,4 +123,89 @@ screens read for the month last played; a save before FC2 lacks them, and nothin
 
 ## 5. Checks
 
-(to come)
+- **ForeignCrewsCheck** (new; a Sonnet slice, reviewed; 88 assertions of its own, green). Each bound is caused
+  through the model's inputs (the rate, the queue, the level, standing roads) on both sides of its edge:
+  1. The strongest D$ (`ForeignAccounts.MIN_RATE`): threshold 9.000326 against the knee's 9; 8.854 months queued
+     not abroad, 9.075 abroad.
+  2. r = 0.05 (E 0.3393): threshold 15.1968, crossed between 15.18 and 15.84 months. r = 0.10 (E 0.6786): 18.0711,
+     crossed between 17.23 and 18.09. The share is FOREIGN_EXCESS E x / p computed in the harness, to 1e-12.
+  3. The weakest (`MAX_RATE`): the share is the cap, 0.16, the threshold exactly 21; crossed between 19.92 and 21.07.
+  4. The level doubled (1.0217 to 2.0434): p 0.7008 to 1.3918; x 0.103275 and E x 0.070084 unchanged; r 0.10 to
+     0.05035; the threshold 18.07 to 15.22.
+  5. The export, after 8 months with the queue at 0.047 months: the sites' month 23, 6.0 points sold for 5.6884 and
+     17.0 built (no site starved). The month after, the statement, the audit's "+ construction Exports", the trade in,
+     the national and the foreign accounts carry it. A point fetches 0.9191 at 8.85 months queued and nothing at 9.07;
+     a month played at 10.85 sold nothing.
+  6. 240 months: the sites' month 355; the 77,745-point overflow handed to the bit; his month 3,702 (ten of the
+     sites'); his excess 0.6764. 120 months: 1,674 at 0.5785. For six months the backlog at both paces stayed 0 to
+     0.257 months under 21. A twin with `buildersShortOn` false for its first month: every sector's workers and every
+     tier's posts the same, his 3,702 points built in one and none in the other. ★ Not "the jobs filled the same"
+     (512 against 511): the fill rate is the households' side, which the month moves through what it built - 370 more
+     of the landlords' Houses finished, 1,402 people against 1,328.
+  7. 36 months audited, the worst residual 1.22e-13.
+- **ConstructionTrapCheck** (moved to the new truth, 315 OK): FC2's pure shape; his book before the trap's sites is
+  5,174 points, the founding's Penitentiary overflow; sold abroad in 3 of 24 months, 14.88; worst residual 1.22e-13.
+  Each moved assertion carries its reason in a comment.
+- **DeathCareFirstCheck**: "the Penitentiary still owing most of its points" moved to "still owing points" - the
+  founding hands its work past the threshold abroad, and it stays on site, which is what keeps every post offered.
+- **BuildersFirstCheck** (22 red with the foreign crews on): they finish the stall's depot in its first month with
+  BF1's rule or without it (section 4: 1,120 of nameplate without the rule, not the 560 it held). The rule is shown
+  where it is the only way out, the city's crews alone: `buildersShortOn` false for its JVM, as HoldersCheck,
+  MonetaryCheck and RunWorksCheck have it. Green.
+- **SaveFileCheck** (4 red), two moved:
+  - The brake town (WG2-R) is caught in the builders' trap on main (23.8% out of work, 0.1 arrivals) and FC2 frees
+    it (647 people, 612 posts, none out of work). That section reads Migration's months recorded through a save, so
+    the town is played as written, the switch off for that section alone. Green (29.9% out of work).
+  - REV-HC1 P5's continuation: FC2's populated city consolidates Real Estate to 1e-28 of its founding shares (main's
+    run, about 1e-7), and the load put it back at 1e-12 (`Exchange`, since 0.7.12). ★ The load now carries every
+    positive factor (`Exchange.carriedSplitFactor()`; 1e-12 only for none, a negative or a NaN), asserted directly.
+    No save reads differently unless its factor is under 1e-12, which was wrong before. ★ Real Estate's deeper slide
+    in that city (its cash -234 at month 153) is FC2's economy, not its save: the ensemble reads it.
+- **LongPlaytest** (green, every month audited). ★ The played city's path moved: FC2's grows faster from the
+  founding, dips around m750-m1300, and ends 57% larger. Population at its checkpoints against main's (AP2's tree,
+  the same day):
+
+  | month | FC2 | main |
+  |---|---|---|
+  | ~255 | 2,826 | 1,413 |
+  | ~600 | 14,831 | 7,027 |
+  | ~1,050 | 28,684 (cash $694k, GDP $36.9M a month) | 35,771 (cash $255.8M, GDP $89.6M) |
+  | ~1,300 | 47,577 | 159,044 |
+  | ~1,510 | 268,294 | 269,905 |
+  | ~2,350 | 2,819,538 | 1,796,799 |
+
+  The dip is the ensemble's to judge; every harness that reads the played city at a month reads a different city.
+- **KeptCheck**: the played city in its dip at m1043 cannot pay for the land office's best offer (section 31, before
+  FS5's range): the fixture gives it the gap first (`KeptCheck.buyTheBestOffer()`), so the receipt's page is caused.
+  From section 55 on, the reds are FS5's played-city classes (rows 39, 42-45, 54-56 and 104 of
+  `docs/notes/known-reds.txt` pass them by name); one is new, the ship file's known-reds row: section 55's Bank
+  Overview made no node in 23 of 25 months, but its lists shrank from the first draw's 721 nodes (590 handed back a
+  month), KBP1's class - the measure is the first draw, not the page drawn again.
+- **ConstructionControlCheck** (8 red, moved): its rush city's queue is past the threshold, so the foreign crews'
+  points join the month the plan shares out (419-423 of 619-1,744 a month). The rush's work and premium move from
+  the share to the city's own crews' part of it, ConstructionTrapCheck section 10's truth (FC1b's rule: only the
+  city's crews work overtime): own = share x (month - his points) / month, asserted to 1e-12 each month; the work
+  (share - own) + own x 50/40 x the factor; the premium 0.375 of the own part's bill. With nothing of his in the month
+  own is the share and each line is the one it was.
+- **GapOrderCheck** (2 red in section 6, moved by scope): the stalled city's year of orders is built abroad with the
+  crews on (41,486 owed at its end against 109,675 off), and the city it leaves can staff 0 of 2 depots (sites 0 and
+  275 a depot, against 69 and 400 off), the plan holding on staff. The section's claim is the depot plan's cut
+  (`Construction.depotsForTheQueue()`, which reads `BuildersShort.premium()` itself, so the switch leaves it be): run
+  with the switch off for that section and on after, SaveFileCheck's brake-town shape; 2 of 2 staffable, one ordered.
+- **ForeignCheck** (5 red; one mend in the model, the rest by the switch for its JVM):
+  - "the goods the businesses sold abroad are the month's exports" read 0.39: the builders' export was in the balance
+    of payments and on no row of the Trade tab. Mended in the model (the Trade tab above); 0.00e+00 after it, and
+    ForeignCrewsCheck section 5 asserts it with the crews on (5.6884 on the builders' row; 68.9176 sold against
+    68.9176 of exports).
+  - Every city here is ordered its town and programme whole on day one, years of its four depots' work, which the
+    crews now build abroad within the year. Measured with them on: section 2's town finished at month 10 with nobody
+    in it, the first two years' payroll $677k and $366k against trade deficits of $20,859k and $12,689k (the crews
+    billed $35,333k and $9,805k) - a town being bought, not the swamp law's town paying its people - and its bakery
+    stood two months with nothing sold abroad (3 of 3 years and 74 of 76 months); section 6's twins bought part of the
+    programme at p/E + x a point, whose p/E falls and whose threshold rises with a weaker D$ (Construction's imports
+    $99,022k at parity, $78,545k at 1.40): the premise read 0.8040 and not every order of the 1.40 city's was placed. That is
+    the hinge Manufacturing and Cement already sit out of the twins for. The switch is off for ForeignCheck's JVM, the
+    precedent's form (HoldersCheck, MonetaryCheck), and `BuildingManager.buildersShortOn`'s javadoc now lists every
+    harness and section that turns it off. Green: 11 of 11 years swamped, 140 of 180 months sold, the premise 0.9708.
+- Green after FC2, run one at a time: ManufacturingCheck, FitoutCheck, InvestCheck, WellCheck, RunWorksCheck,
+  MortgageCheck, FittingCheck, AuctionCheck; HoldersCheck its known red only. `./batch-check.sh --fast` green.
