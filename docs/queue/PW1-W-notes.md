@@ -53,10 +53,19 @@ f937d2c22 (0.9.192, PW5, SAVE_FORMAT 63). The row: [PW1 notes §6](PW1-notes.md)
   the price is the plant's power to 1e-12, the bills the billed part of it), but over no more than half the sea's
   output, so a unit pays at most the plant's power over the water served (at least the land's water) or over half
   its output (WaterPowerCheck 8). At half the two divisors are one, so the price has no step there.
-  Each alternative fails one ask. Spread over the water served everywhere, the berth's plant earns sea/served of its
-  power and loses its licence; an average over all the water failed it the same way (about 617 against 709). The
+  Each of these alternatives fails one ask. Spread over the water served everywhere, the berth's plant earns
+  sea/served of its power and loses its licence; an average over all the water failed it the same way (about 617
+  against 709). The
   divisor floored at half the output alone recovers billed/(half the output) times the plant's power on a sliver,
   short of it or past it, once only by chance. A price on the output at full use fails the berth (about 407).
+  **An option for Jerus, not built** (REV-PW1-W, P2): a bound continuous from the sliver to the share, the divisor
+  interpolated from the water served as the sea goes to 0 up to half the output at the share, served + (half the
+  output - served) x sea / (half the output). It recovers the plant's power once on the thinnest sliver and meets the
+  margin at the share, so the berth does not move; between them a small town's water recovers less than once and a
+  large city's from once up to the margin's at the share, where the rule built recovers served/(half the output)
+  times. Both rules step once, as the sea first becomes needed: at sea = 0+ the rule built goes from the tariff to
+  the tariff and the plant's power over min(the water served, half its output), bounded; the interpolation to the
+  tariff and the plant's power over the water served.
   What stays: where the city serves past half the plant's output, a sliver pays the plant's power over half its
   output, more than once (WaterPowerCheck 8: 78.60 against 27.44); that is what a plant delivering just half would
   price its water at, and the margin recovers more than once wherever the plant is the margin (the berth), as PW1's
