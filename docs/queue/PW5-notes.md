@@ -1154,3 +1154,92 @@ the source and PW5 record diffs pass whitespace checks, and the edited
 source and records retain LF. No repair, conservation, tariff or save bound
 has been weakened. The provisional marker remains. Request the required
 second ALL slot on this pushed integration; do not reuse RnLpjOXm for it.
+
+### The merged ALL: new findings and fixture causes
+
+The second ALL is retained at
+`/home/jerus/cbs/runs/cbs-gate-PW5-MozBD0WW`, copied to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW5-MozBD0WW`. Its exact commits
+are PW5 `5544037a0dcdfa9f7498cddc7b782535dd21a1f9` and main
+`efca2c5fd718895fae43ac4e05c73a9cd71f5933`. In 1,013 seconds, ALL 245 exits
+4 and the gate exits 1. The 19 unnamed lines include OrderDoorCheck's three
+assertions, PriceLevelCheck's one, ScaleCheck's one, KeptCheck's two and
+LongPlaytest's two, their count/exit lines, and a separate default-city F1
+finding. The sealed logs are not changed or reused. The marker stays.
+REV-PW5-2 gives the merged save side SHIP: main's refusals are retained,
+the format-62 pair is genuine, the bump is owed and continuation is asserted.
+That SHIP does not turn this red ALL green.
+
+**OrderDoor's cases spent each other's inputs.** The previously accepted
+played-city edge now holds on the HC1 merge. Its later cases instead fail:
+after the first mortgage, the two-block case raises 252.2893 against
+278.1498 down, and properly trims to one. The later supposed short till
+holds 105.4207 and actually buys a store. These are distinct from the old
+edge's free-grid premise. Each mortgage now starts from an independent
+native snapshot of the same prepared town, with its own original cash,
+materials and holdings. The short-till bank case is likewise independent
+of the earlier successful store order. The existing explicit dear-material
+inputs and order observer are installed on the loaded copy; the snapshot
+uses scratch slot 10 and both real files. No shareholder cash is topped up.
+All original assertions pass. The two-block door now quotes 1,538.2090,
+the owners raise its exact 244.5579 down, and both blocks are mortgaged.
+The independent short till is 10.3809 and is held for bank capital.
+
+**Scale's custom player never bought wires.** At its original m225 strike,
+it has zero districts, 14,855.754 kW closing peak, only 80.7768% served;
+the billed peak is 16,317.140 kW, 73.5423% served, at 315.311027 cents/kWh.
+Its keepAhead plan adds wind farms whenever power is short, but no wires.
+The plan now orders the missing districts through LongPlaytest.build, using
+the standing draw at its highest season, the free founding carry and
+Substations.SUBSTATION_MW; standing and on-site districts are counted once.
+These are paid, grounded native construction orders, with the same player
+build path as its other works. At m225 it now has one real district,
+13,595.444 kW closing peak, full service and 32.934782 cents/kWh wires.
+The original 60-month search, m225 start, six-month comparison and every
+bound remain. It causes the calm growing town at m237 on its third try,
+and the full named ScaleCheck exits 0. OrderDoorCheck also exits 0.
+
+**The HL1 bond town also lacks physical wires.** The read-only trace at
+m121 shows zero districts, peak 12,477.069 kW, 85.4336% served; by m182,
+peak 17,077.776 kW is 70.2668% served, with the billed month only 64.2249%
+served. Its energy price is about 315 cents/kWh. Retail's selected bond,
+due m184, is written off completely at m182: face zero, cumulative writeoff
+28.070412087. The fixture treats any removal as maturity and consequently
+mistakes a 0.004 orphaned coupon for the principal. Every monthly household
+identity still closes; the native maturity and principal assertions remain.
+Calling peakWires only before the warmup is insufficient: its private stock
+grows past the free carry during the original 120 preparation months.
+The added SubstationCheck warmup guard demonstrates this directly (one
+failure). Preparation now supplies real peak wires before each of those
+same 120 months, with native capital tariffs, repairs and filled posts.
+It neither supplies nameplate-sized wires nor adds a district below the
+free threshold. The new guard and the full HL1 run are being rechecked.
+
+**PriceLevel's first differing field is traced, without changing tolerance.**
+For --twin-built at m81 it is Agriculture cash, scaled to
+1181.7235841924300 versus 1181.7235829937686. The 1.1986614e-6 difference
+is just above the existing 1e-9 relative onset bound, with zero same-level
+and one across-level pair. The native bounds and nudge cases remain; this
+FS2 classification must retain that exact field and figure. Read-only
+diagnostics are opt-in under cbs.pw5.traceFixtures. Initial diagnostic
+results are kept in target/PW5-post-HC1-traces/; fixture-mend results are
+separate in target/PW5-post-HC1-mends/.
+
+**Kept's two lines remain under investigation.** The held household grid
+closes one cell in both the held and ordinary month; all 106 retained
+tooltip identities match. Its box heap is 1673.2 MiB against the unchanged
+1536 MiB limit. FS5's existing queued row already records main's box
+Monocle/SW heap class at 1711.9 MiB, against Windows SW 1502.8 MiB. The
+standalone Windows named rerun is in progress; no heap bound is relaxed.
+
+**The default F1 is a separate model finding.** It reports households with
+no home for 16 months, m792-807, peaking at 12.283 beside 1,496 homes at
+m807. The pre-HC1 ALL had no such finding. On 2026-11-22 the orchestrator
+therefore requires a new 80-run ensemble on the merged final model before
+the next dry run, with M1/F1 stopping a ship. This supersedes the earlier
+acceptance of the once-run pre-HC1 ensemble for the combined model. Trace
+the actual power service, standing and charged repairs, builder output,
+home pipeline, mortgage capital and landlords' orders through m760-825;
+mend PW5's model if it caused the hold, and name only a class main also
+shows with a queued owner, following CU2-notes lines 263-290. No merged
+ensemble or green F1 verdict is claimed yet.

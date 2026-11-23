@@ -249,6 +249,51 @@ public class OrderDoorCheck {
         edgeParts(closed, LongPlaytest.template(closed, BLOCK));
     }
 
+    /** Independent orders start with the prepared town's real cash, material stock and holdings. */
+    static Game independent(Game prepared, String label) throws Exception {
+        if (!prepared.prepareSaveForChecks(10, "order-door independent case").write().whole())
+            throw new AssertionError("The prepared order-door snapshot was not written whole");
+        GameFiles from = prepared.getGameFiles(), files = GameFiles.scratch("orderdoor-" + label);
+        java.nio.file.Files.createDirectories(files.saveFile(10).getParent());
+        java.nio.file.Files.createDirectories(files.historyFile(10).getParent());
+        java.nio.file.Files.copy(from.saveFile(10), files.saveFile(10));
+        java.nio.file.Files.copy(from.historyFile(10), files.historyFile(10));
+        Game copy = new Game(files);
+        PrintStream real = System.out;
+        try (PrintStream silence = new PrintStream(OutputStream.nullOutputStream())) {
+            System.setOut(silence);
+            copy.loadGameSave(10);
+        } finally {
+            System.setOut(real);
+        }
+        if (copy.getLoadFailure() != null || copy.getMonth() != prepared.getMonth())
+            throw new AssertionError("The independent order-door snapshot did not load");
+        // These are the fixture's explicit price inputs, not a month's settled market.
+        shortAndDear(copy, LongPlaytest.template(copy, BLOCK));
+        Method refreshLand = Game.class.getDeclaredMethod("refreshLand");
+        refreshLand.setAccessible(true);
+        refreshLand.invoke(copy);
+        watch(copy);
+        return copy;
+    }
+
+    static void watch(Game g) {
+        g.watchOrders(new BusinessInvestment.OrderWatch() {
+            @Override public void invested(BusinessInvestment.Decision decision, double cash, double perUnitProfit, Game.Afford found) {
+                tillAtProject = cash;
+                carried = found.quantity();
+            }
+            @Override public void mortgaged(long a, java.util.function.LongToDoubleFunction costOf, double cash,
+                                            double noiPerUnit, double annualRate, Mortgage.Decision found) {
+                asked = a;
+                priceOne = costOf.applyAsDouble(1);
+                priceAsked = costOf.applyAsDouble(a);
+                tillAtOrder = cash;
+                passed = found.quantity();
+            }
+        });
+    }
+
     public static void main(String[] args) throws Exception {
         out = System.out;
         Locale.setDefault(Locale.ROOT);   // as the ensemble plays it; the advisor's counts read "1,234"
@@ -281,20 +326,7 @@ public class OrderDoorCheck {
             LongPlaytest.out = was;
             System.setOut(out);
         }
-        g.watchOrders(new BusinessInvestment.OrderWatch() {
-            @Override public void invested(BusinessInvestment.Decision decision, double cash, double perUnitProfit, Game.Afford found) {
-                tillAtProject = cash;
-                carried = found.quantity();
-            }
-            @Override public void mortgaged(long a, java.util.function.LongToDoubleFunction costOf, double cash,
-                                            double noiPerUnit, double annualRate, Mortgage.Decision found) {
-                asked = a;
-                priceOne = costOf.applyAsDouble(1);
-                priceAsked = costOf.applyAsDouble(a);
-                tillAtOrder = cash;
-                passed = found.quantity();
-            }
-        });
+        watch(g);
 
         out.println("--- 1. the fixture: a landlord at HN1-A's edge, and a shopkeeper ---");
         BuildingsTemplate block = LongPlaytest.template(g, BLOCK), store = LongPlaytest.template(g, STORE);
@@ -329,23 +361,27 @@ public class OrderDoorCheck {
 
         out.println("--- 2. HN1-A: a landlord's order at the door's own price ---");
         for (long n = 1; n <= 2; n++) {
-            em.setSectorCash(RE, 0);
-            double doorN = door(g, block, n), raisedBefore = em.getEquityRaised(RE);
-            int written = credit.getMortgagesWrittenThisMonth();
+            Game orderGame = independent(g, "mortgage-" + n);
+            EconomyManager orderEm = orderGame.getEconomyManager();
+            BusinessDebtManager orderCredit = orderEm.getBusinessDebtManager();
+            BuildingsTemplate orderBlock = LongPlaytest.template(orderGame, BLOCK);
+            orderEm.setSectorCash(RE, 0);
+            double doorN = door(orderGame, orderBlock, n), raisedBefore = orderEm.getEquityRaised(RE);
+            int written = orderCredit.getMortgagesWrittenThisMonth();
             asked = passed = 0;
-            consider(g, new BusinessInvestment.Decision(RE, block, n, "FB15's order of " + n, true));
-            String line = g.getLastInvestment(RE);
+            consider(orderGame, new BusinessInvestment.Decision(RE, orderBlock, n, "FB15's order of " + n, true));
+            String line = orderGame.getLastInvestment(RE);
             out.printf("  an order of %d: price %.4f against the door's %.4f; the owners put in %.4f, the down payment at"
                     + " that price %.4f; the lender passed %d; \"%s\"%n", n, priceAsked, doorN,
-                    em.getEquityRaised(RE) - raisedBefore, Mortgage.ownFundsFor(priceAsked), passed, line);
+                    orderEm.getEquityRaised(RE) - raisedBefore, Mortgage.ownFundsFor(priceAsked), passed, line);
             check("fixture: the owners put in the order's down payment, all the till held at the order (" + n + ")",
                     asked == n && near(tillAtOrder, Mortgage.ownFundsFor(priceAsked))
-                            && near(em.getEquityRaised(RE) - raisedBefore, tillAtOrder) && passed == n);
+                            && near(orderEm.getEquityRaised(RE) - raisedBefore, tillAtOrder) && passed == n);
             if (n == 1) check("the order's price of one is the door's", near(priceOne, door1));
             else check("the order's price of two is the door's", near(priceAsked, doorN));
             check(n == 1 ? "an order of one, its down payment raised to the order's own figure, is built on a mortgage at the door"
                             : "an order of two the same way is built whole, not halved at the door",
-                    credit.getMortgagesWrittenThisMonth() == written + 1
+                    orderCredit.getMortgagesWrittenThisMonth() == written + 1
                             && line.startsWith(String.format("Built %d %s on an insured mortgage", n, BLOCK))
                             && !line.contains("trimmed"));
         }
@@ -362,6 +398,7 @@ public class OrderDoorCheck {
         for (int k = 1; k <= SIX; k++) doors[k] = door(g, store, k);
         // The till is set so that, with what its register raises and it brings home, it holds TILL stores at the door.
         em.setSectorCash(shop, Math.max(0, TILL * one - shopBrings(g, store)));
+        Game shortSide = independent(g, "short-till");
         boolean groundForSix = ground(g, store, SIX),
                 markedBefore = credit.wasRefusedForCapital(shop) || credit.wasProjectRefusedForCapital(shop);
         carried = 0;
@@ -396,15 +433,18 @@ public class OrderDoorCheck {
         out.printf("  the bank shut, with %.4f in the till at the door: \"%s\"%n", held, line);
         check("with the bank shut, the order is held whole, the till that holds one untouched, as on main (REV-FB15)",
                 groundAgain && held >= door(g, store, 1) && !line.startsWith("Built") && near(em.getSectorCash(shop), held));
-        em.setSectorCash(shop, Math.max(0, SHORT_TILL * door(g, store, 1) - shopBrings(g, store)));
+        EconomyManager shortEm = shortSide.getEconomyManager();
+        shortSide.getEconomyManager().getBusinessDebtManager().setCapitalRule(0, false);
+        BuildingsTemplate shortStore = LongPlaytest.template(shortSide, STORE);
+        shortEm.setSectorCash(shop, Math.max(0, SHORT_TILL * door(shortSide, shortStore, 1) - shopBrings(shortSide, shortStore)));
         tillAtProject = -1;
-        consider(g, new BusinessInvestment.Decision(shop, store, SIX, "FB15's order of " + SIX, true));
-        line = g.getLastInvestment(shop);
+        consider(shortSide, new BusinessInvestment.Decision(shop, shortStore, SIX, "FB15's order of " + SIX, true));
+        line = shortSide.getLastInvestment(shop);
         held = tillAtProject;
         out.printf("  with %.4f in the till at the door: \"%s\"%n", held, line);
         check("from the other side, a till short of one at the door is held whole, in the bank's words",
-                held >= 0 && held < door(g, store, 1) && line.startsWith("Holding: the bank is rebuilding its capital")
-                        && near(em.getSectorCash(shop), held));
+                held >= 0 && held < door(shortSide, shortStore, 1) && line.startsWith("Holding: the bank is rebuilding its capital")
+                        && near(shortEm.getSectorCash(shop), held));
         finish();
     }
 
