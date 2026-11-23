@@ -5342,17 +5342,21 @@ public class BuildingManager {
             BuildingsStacks s = stacks.get(k);
             long building = s.getUnderConstruction();
             double points = s.getBuilding().getConstructionPoints();
+            double extraPoints = 0;
             if (extra != null && extraCount > 0 && s.getBuilding() == extra) {
                 extraHasStack = true;
                 building += extraCount;
-                owed[k] = extraCount * points;
+                owed[k] = extraPoints = extraCount * points;
             }
             if (building <= 0) continue;
             owed[k] += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+            // ...never more in a month than its build time allows (PW2): its points on site, the extra's with them, over its months.
+            owed[k] = capped(owed[k], monthCap(s.getBuilding(), s.pointsOnSite() + extraPoints));
             weight[k] = weightOf(s.getBuilding(), building);
         }
         if (extra != null && extraCount > 0 && !extraHasStack) {
             owed[n] = extraCount * (double) extra.getConstructionPoints();
+            owed[n] = capped(owed[n], monthCap(extra, owed[n]));
             weight[n] = weightOf(extra, extraCount);
         }
         for (int j = 0; j < d; j++) {
@@ -5451,8 +5455,50 @@ public class BuildingManager {
         return priorityWait(waitWith(t, 0, 0, siteOutput), siteOutput);
     }
 
-    /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2). */
+    /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2); never sooner than its build time allows (PW2, floorWait()). */
     private double waitWith(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
+        double months = crewWait(t, quantity, extraPoints, siteOutput);
+        return months == Double.MAX_VALUE ? months : Math.max(months, floorWait(t, quantity, extraPoints));
+    }
+
+    /* ----- the build-time floor (PW2) -----
+       Bromilow's rule gives a building the crew its points can use, and a city
+       with builders to spare could stand a coal plant in a month. A power
+       plant has a build time no crew beats (BuildingsTemplate.buildMonths(),
+       spec-electricity 2.3): a stack of one is worked no faster than its
+       points over its months a month, so one building stands in its months at
+       the soonest. Its site is pooled and finishes front first, as every
+       stack does: an order of n stands whole in no fewer than its months, its
+       first building sooner, and a building added to a site already begun
+       shares the site's pace. The cap is a site's demand in the crews' rule,
+       not a crew of its own: what it cannot take this month goes to the other
+       sites by the same water-filling. A building with no build time is
+       uncapped, to the bit. */
+
+    /** The most a site of this building may be worked in a month: its points on site over its build time; unbounded for a building with none (PW2). */
+    static double monthCap(BuildingsTemplate t, double pointsOnSite) {
+        int months = t == null ? 0 : t.buildMonths();
+        return months > 0 ? Math.max(0, pointsOnSite) / months : Double.POSITIVE_INFINITY;
+    }
+
+    /** What a site may take this month: all it owes when that is within its cap (a hair over is rounding, and taken, so the last month finishes it rather than holding it a month for the hair), else the cap. */
+    static double capped(double owed, double cap) {
+        return owed <= cap * (1 + 1e-9) ? owed : cap;
+    }
+
+    /** The months its build time holds an order's site to at the least (PW2): its months x what the site would owe with the order over its points with it; 0 for a building with none. */
+    double floorWait(BuildingsTemplate t, long quantity, double extraPoints) {
+        if (t == null || t.buildMonths() <= 0) return 0;
+        BuildingsStacks s = getStack(t);
+        boolean on = s != null && s.getUnderConstruction() > 0;
+        double order = quantity > 0 ? orderPoints(t, quantity, extraPoints) : 0;
+        double points = (on ? s.pointsOnSite() : 0) + (quantity > 0 ? quantity * (double) t.getConstructionPoints() : 0);
+        double owed = (on ? Math.max(0, s.pointsOnSite() - s.getConstructionProgress()) : 0) + order;
+        return points > 0 ? t.buildMonths() * owed / points : 0;
+    }
+
+    /** waitWith() before PW2: the crews' wait alone, no build time counted. */
+    private double crewWait(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         // ...the first group's, with a depot served first on site or a depot
         // weighed that would be (0.7.130).
@@ -5811,6 +5857,8 @@ public class BuildingManager {
             if (s.getUnderConstruction() > 0) {
                 owed[k] = Math.max(0, s.pointsOnSite()
                         - s.getConstructionProgress());
+                // ...and no more than its build time allows in a month, in the player's order or on overtime (PW2).
+                owed[k] = capped(owed[k], monthCap(s.getBuilding(), s.pointsOnSite()));
             }
         }
         keys.add("");
@@ -6544,10 +6592,16 @@ public class BuildingManager {
         BuildingsStacks s = d == null ? stackOfKey(key) : null;
         if (d == null && (s == null || s.getUnderConstruction() <= 0)) return 0;
         // ...the first group's, with a depot on site (0.7.130).
-        if (firstOn(null, 0)) return priorityWait(firstWait(key, null, false, false, siteOutput), siteOutput);
+        double floor = s == null ? 0 : floorWait(s.getBuilding(), 0, 0);
+        if (firstOn(null, 0)) return priorityWait(floored(firstWait(key, null, false, false, siteOutput), floor), siteOutput);
         // The rule's wait, to the bit, with the player's hand off the site.
         if (s != null && !handOn(key)) return priorityWait(waitWith(s.getBuilding(), 0, 0, siteOutput), siteOutput);
-        return priorityWait(handWait(key, null, false, siteOutput), siteOutput);
+        return priorityWait(floored(handWait(key, null, false, siteOutput), floor), siteOutput);
+    }
+
+    /** A wait no sooner than its build time's floor (PW2); NaN and MAX_VALUE pass as they are. */
+    private static double floored(double wait, double floor) {
+        return Double.isNaN(wait) || wait == Double.MAX_VALUE ? wait : Math.max(wait, floor);
     }
 
     /**
