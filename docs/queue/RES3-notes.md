@@ -1574,3 +1574,67 @@ months are small 49.316 ms, present-day 45.067 ms, present-day larger 46.302 ms,
 historical 36.216 ms and historical larger 37.092 ms. No additional money/save
 review is owed under the explicit P2 go: only the harnesses, reports and main's
 ownership record move. The final-model ensemble runs next against 0.9.192.
+
+The final run is RES3-planner-final-20261123, pushed snapshot 2d9a79aea,
+against docs/ensemble/0.9.192.md with no extra JAVA_OPTS. Gatebox accepts it
+at /home/jerus/cbs/tools/2d9a79aeafeb004bdad67b532fdf4a929b1ec1a2/target/ensemble/RES3-planner-final-20261123,
+queued behind FC2's dry run under the runner's gate-first rule. Its controller
+log is target/RES3-planner-final-ensemble.txt. No laptop fallback is used.
+
+## Final ensemble: all M1/F1 criteria green
+
+RES3-planner-final-20261123 finishes 80/80, no missing or short run, on
+the pushed 2d9a79aea snapshot (0.9.193), gatebox, OpenJDK 21.0.13, eight
+jobs. It exits 0: PASS, hard 10/10, total 19/25 with one vacuous and one
+retired criterion excluded. Beside it 0.9.192's recorded raw score is 20/26,
+hard 6/10. Every policy has zero failed/unread audits and zero findings in
+all sixteen runs. Pairing is 64/64. No known-class exception is used for a
+single run. The earlier three raw FAIL ensembles remain unchanged above.
+
+The complete baseline is committed as [RES3](../ensemble/RES3.md), with
+publisher version placeholders only in its heading and model introductory version, and the raw score,
+summary JSON and provenance preserved. The residential comparison is appended
+there beside the scored results: final populations, last-120-month real paid
+rents, the paid-rent/average-worker-wage comparison, and the exact seed-9
+month-605 rows. The ratio is descriptive, not a household disposable-budget
+share; actual eligibility remains the matching checks' hard constraint.
+
+Late real rents are higher than baseline in every policy. Paid rent divided
+by worker wage moves AUTO2 8.44% -> 9.07%, ZERO_SLACK 10.08% -> 10.29%,
+ZERO_HOT 9.97% -> 12.39%, SHOCK 8.86% -> 11.25%, HIGH 9.67% -> 12.54%.
+Final population medians are 4,431,240.5 / 2,188,964 / 5,805.5 / 30,798.5 /
+15,385.5 against 4,649,724.5 / 2,883,284.5 / 7,632.5 / 67,498 / 32,356.
+T2 passes for AUTO2, ZERO_SLACK and ZERO_HOT, and fails for SHOCK and HIGH.
+T1 still passes its stated bound, but only 15/16 AUTO2 cities reach 40,000,
+median m977 against baseline 16/16 and m747. Seed 4 ends at 32,259, far
+below baseline's smallest AUTO2 city, 2,459,618. That growth outlier belongs
+in the comparison and is not attributed to an outside class.
+
+The other changed informational verdicts remain explicit: AUTO2 A1 fails
+(2.89% median inflation, eleven of sixteen in band); HIGH R2 fails (0.47
+unemployment points versus its 0.50 bound); HIGH R3 fails (three seeds above
+one inflation point); ZERO_HOT H2 is vacuous because there is no burst to
+stop, with the scorer retaining that the numbers alone would fail.
+★ Keep the reviewed costs, budget eligibility and real funding rules, and
+publish these informational rent/growth outcomes under contract section 4.
+The comparison covers the full RES3 catalogue and match; it does not isolate
+one price-rule change. No calibration or model change follows this run.
+
+At seed 9 m605, AUTO2 is 17,841 people, mean paid rent 0.164557612 and
+average worker wage 1.358492740, with audit=1 and new/distinct findings=0/0.
+The baseline witness has 21,605, 0.155366776, 1.089396160 and a homelessness
+finding. ZERO_SLACK, SHOCK and HIGH also have passing audits and empty
+findings at m605; ZERO_HOT ends at m402. Seeds 3, 14, 8 and 12 finish with
+no findings in any policy. All 302 rows of the two prior native AUTO2
+replays (8 m550-700, 12 m850-1000) match the final ensemble's population,
+index, rent and GDP at CSV precision, zero differences.
+
+Evidence: target/ensemble/RES3-planner-final-20261123/{score.md,baseline.md,
+summary.json,snapshot.txt,progress.txt}; target/RES3-planner-final-ensemble.txt;
+target/RES3-planner-final-{readings.txt,rent-readings.json,seed9-m605.json}.
+The gatebox run path above is an ensemble, not a dry-run reuse directory.
+Main is still 86359b9d4 after the final fetch. The model remains 2d9a79aea;
+only the baseline, notes and ship record follow it. Pick ALL 248 still owes
+the dry run, which is requested from the orchestrator after these records
+are pushed. No dry run has started; the provisional marker stays until the
+explicit go and a green kept dry run.
