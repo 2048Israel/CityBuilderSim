@@ -1,4 +1,4 @@
-# DebtMoneysCheck.java - 611 lines · 17 methods · 6 constants · harnesses
+# DebtMoneysCheck.java - 637 lines · 19 methods · 7 constants · harnesses
 
 `ham/citybuildersim/DebtMoneysCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -41,7 +41,7 @@
 >  12. The cost of issue is taken in the paper's money, the US$ too: with the D$ off 1, a US$ bill raises its face at the curve less the fixed cost over
 >      the D$'s rate (Game.costOfIssuance() / localPer), and not the unconverted figure.
 
-**Uses:** [Debt](Debt.md) (30), [Game](Game.md) (19), [DebtManager](DebtManager.md) (19), [DebtQuote](DebtQuote.md) (10), [YieldCurve](YieldCurve.md) (9), [ForeignAccounts](ForeignAccounts.md) (8), [WorldMoneys](WorldMoneys.md) (8), [MoneyAudit](MoneyAudit.md) (7), [Rollover](Rollover.md) (4), [Buyback](Buyback.md) (2), [LongTermBond](LongTermBond.md) (2), [InterestAbroadCheck](InterestAbroadCheck.md) (1), [PolicyRates](PolicyRates.md) (1), [Auction](Auction.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [Debt](Debt.md) (30), [DebtManager](DebtManager.md) (22), [Game](Game.md) (21), [DebtQuote](DebtQuote.md) (10), [YieldCurve](YieldCurve.md) (9), [ForeignAccounts](ForeignAccounts.md) (8), [WorldMoneys](WorldMoneys.md) (8), [MoneyAudit](MoneyAudit.md) (7), [Rollover](Rollover.md) (4), [Buyback](Buyback.md) (2), [LongTermBond](LongTermBond.md) (2), [InterestAbroadCheck](InterestAbroadCheck.md) (1), [PolicyRates](PolicyRates.md) (1), [Auction](Auction.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 **Used by (2):** [FB13Check](FB13Check.md), [PartnersCheck](PartnersCheck.md)
 
@@ -49,18 +49,18 @@
 
 | line | section |
 |---:|---|
-| 196 | · 1. without the world file |
-| 219 | · 2. the curves |
-| 249 | · 3. a sale in each of two moneys |
-| 320 | · 4. a month |
-| 335 | · 5. a rate move |
-| 357 | · 6. held as reserves |
-| 374 | · 7. the buyback |
-| 395 | · 8. the rollover |
-| 421 | · 9. across a save and a load |
-| 464 | · 10. US$ paper as before |
-| 502 | · 11. a money under zero |
-| 578 | · 12. the cost of issue in the paper's money |
+| 220 | · 1. without the world file |
+| 243 | · 2. the curves |
+| 273 | · 3. a sale in each of two moneys |
+| 344 | · 4. a month |
+| 359 | · 5. a rate move |
+| 381 | · 6. held as reserves |
+| 398 | · 7. the buyback |
+| 419 | · 8. the rollover |
+| 445 | · 9. across a save and a load |
+| 490 | · 10. US$ paper as before |
+| 528 | · 11. a money under zero |
+| 604 | · 12. the cost of issue in the paper's money |
 
 ## Constants
 
@@ -72,6 +72,7 @@
 | 69 | `DebtMoneysCheck.KEEPS` | `0.90` | The share of its worth in US$ the D$ keeps in a fall: 0.90 is a D$ 10% weaker (DebtExchangeCheck.KEEPS). |
 | 72 | `DebtMoneysCheck.FRANC_RATE` | `- 0.0075` | The franc's policy rate handed in section 11, a fraction a year: the Swiss National Bank's of February 2015 (InterestAbroadCheck.SPOTS), under zero and under the city's MIN_RATE. |
 | 75 | `DebtMoneysCheck.TENORS` | `{ 1, 12, 60, 120, 360 }` | The tenors, in months, the curves are read at. |
+| 116 | `DebtMoneysCheck.ROLLOVER_ROOM` | `2` | How many times what the window abroad asks of the month's exports (its two limits, WINDOW_SHUT_SERVICE_SHARE and WINDOW_SHUT_EXPORT_YEARS) the rollover section hands the debt, so the window is open with room to spare ... |
 
 ## Fields (state)
 
@@ -81,30 +82,32 @@
 | 55 | `static int asserted` |  |
 | 56 | `static PrintStream out` |  |
 | 57 | `static PrintStream quiet` |  |
-| 167 | `double line, byRule, rateBefore, rateAfter` |  |
-| 168 | `boolean eachPieceAtItsRate` |  |
+| 191 | `double line, byRule, rateBefore, rateAfter` |  |
+| 192 | `boolean eachPieceAtItsRate` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 560 | **type** `public class DebtMoneysCheck` | The city's paper in any of the eight moneys (CD8, Jerus 2026-10-23): the city sells bills and bonds abroad in the euro, the yen, the pound, the yuan, the Canadian and Australian dollars and the franc as well as the US... |
+| 52 | 586 | **type** `public class DebtMoneysCheck` | The city's paper in any of the eight moneys (CD8, Jerus 2026-10-23): the city sells bills and bonds abroad in the euro, the yen, the pound, the yuan, the Canadian and Australian dollars and the franc as well as the US... |
 | 77 | 5 | `static void check(String label, boolean ok)` |  |
 | 83 | 3 | `static void near(String label, double actual, double expected)` |  |
 | 87 | 10 | `static void near(String label, double actual, double expected, double tolerance)` |  |
 | 98 | 5 | `static void quietly(Runnable work)` |  |
 | 105 | 4 | `static void press(Game g)` | One press, its printing thrown away, the window abroad held open for it (the rollover reads it at the top of the press). |
 | 111 | 3 | `static void open(Game g)` | The month's exports handed to the debt, so the window abroad is open and the country premium is the same figure every read: the press hands the real (nil) ones again. |
-| 116 | 5 | `static Game town(String label, boolean literals)` | A trading town on the default founding (InterestAbroadCheck.town), played three months so the world's moneys are handed to the debt. |
-| 122 | 5 | `static List<Debt> foreignPieces(Game g)` |  |
-| 128 | 5 | `static double[] ratesOf(List<Debt> pieces)` |  |
-| 135 | 5 | `static Debt newest(Game g, Set<Debt> had)` | The one foreign piece on the books that was not there before. |
-| 142 | 3 | `static double askIn(Game g, String code)` | What the asked amount is in this money's own units: USD_ASK at the day's cross. |
-| 146 | 6 | `static String sell(Game g, String type, String money, double ask, int duration, boolean hold)` |  |
-| 154 | 5 | `static double localPer(Game g, String code)` | D$ per unit of this money by the vault's own figures: the D$'s rate to the US$ times the money's US$ per unit. |
-| 160 | 4 | `static boolean closes(Game g)` |  |
-| 166 | 4 | **type** `static final class Move` | What a press left that the rate sections read afterwards. |
-| 172 | 19 | `static Move move(Game g, double factorOfTheRate)` | Moves the D$ by this factor of its rate before the press (pinned, so the reprice leaves it where it is) and presses; the crosses move on their own path. |
-| 192 | 413 | `public static void main(String[] args)` |  |
-| 607 | 4 | `static Game playedMonth(Game g)` | A month played, the audit of it left for the caller to read. |
+| 127 | 5 | `static void openWide(Game g)` | FC2, 2026-11-23: ...the window abroad held open for the rollover of section 8, whatever the town owes. |
+| 134 | 4 | `static void pressWide(Game g)` | One press with the window held open as openWide() holds it, for the rollover it reads at the press's top (FC2, 2026-11-23): press() hands EXPORTS again there. |
+| 140 | 5 | `static Game town(String label, boolean literals)` | A trading town on the default founding (InterestAbroadCheck.town), played three months so the world's moneys are handed to the debt. |
+| 146 | 5 | `static List<Debt> foreignPieces(Game g)` |  |
+| 152 | 5 | `static double[] ratesOf(List<Debt> pieces)` |  |
+| 159 | 5 | `static Debt newest(Game g, Set<Debt> had)` | The one foreign piece on the books that was not there before. |
+| 166 | 3 | `static double askIn(Game g, String code)` | What the asked amount is in this money's own units: USD_ASK at the day's cross. |
+| 170 | 6 | `static String sell(Game g, String type, String money, double ask, int duration, boolean hold)` |  |
+| 178 | 5 | `static double localPer(Game g, String code)` | D$ per unit of this money by the vault's own figures: the D$'s rate to the US$ times the money's US$ per unit. |
+| 184 | 4 | `static boolean closes(Game g)` |  |
+| 190 | 4 | **type** `static final class Move` | What a press left that the rate sections read afterwards. |
+| 196 | 19 | `static Move move(Game g, double factorOfTheRate)` | Moves the D$ by this factor of its rate before the press (pinned, so the reprice leaves it where it is) and presses; the crosses move on their own path. |
+| 216 | 415 | `public static void main(String[] args)` |  |
+| 633 | 4 | `static Game playedMonth(Game g)` | A month played, the audit of it left for the caller to read. |
 

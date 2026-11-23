@@ -1,4 +1,4 @@
-# OrderDoorCheck.java - 544 lines · 22 methods · 10 constants · harnesses
+# OrderDoorCheck.java - 583 lines · 23 methods · 11 constants · harnesses
 
 `ham/citybuildersim/OrderDoorCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -53,13 +53,13 @@
 >      whole with the till holding one, as on main (REV-FB15: there the till is
 >      the sector's last money).
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (42), [Game](Game.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (15), [Mortgage](Mortgage.md) (13), [BusinessInvestment](BusinessInvestment.md) (10), [Equity](Equity.md) (7), [EconomyManager](EconomyManager.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (5), [GameFiles](GameFiles.md) (5), [GoodsMarket](GoodsMarket.md) (2), [Good](Good.md) (2), [SubstationCheck](SubstationCheck.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [SectorBooks](SectorBooks.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Household](Household.md) (1), [Investor](Investor.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (42), [Game](Game.md) (38), [BuildingsTemplate](BuildingsTemplate.md) (15), [Mortgage](Mortgage.md) (14), [BusinessInvestment](BusinessInvestment.md) (10), [Equity](Equity.md) (7), [HouseholdBalance](HouseholdBalance.md) (5), [EconomyManager](EconomyManager.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (5), [GameFiles](GameFiles.md) (5), [Household](Household.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Good](Good.md) (2), [SubstationCheck](SubstationCheck.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [SectorBooks](SectorBooks.md) (1), [Investor](Investor.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 456 | THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge |
+| 495 | THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge |
 
 ## Constants
 
@@ -75,6 +75,7 @@
 | 78 | `OrderDoorCheck.SIX` | `6` | The project's order, and its till in stores at the door's price: one, and not two. |
 | 79 | `OrderDoorCheck.TILL` | `1.5, SHORT_TILL =.5` |  |
 | 81 | `OrderDoorCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for its ground. |
+| 83 | `OrderDoorCheck.OWNERS_COVER` | `2` | What the households' means for an offering stand at, over the order's down payment, once the fixture has lifted them: the offering is taken whole, never pro rata of a shortfall. |
 
 ## Fields (state)
 
@@ -82,42 +83,43 @@
 |---:|---|---|
 | 62 | `static PrintStream out` |  |
 | 63 | `static int fails` |  |
-| 213 | `static long asked, passed` | What the landlord's order told the door: asked, its price of one and of the order, the till, what the lender passed. |
-| 214 | `static double priceOne, priceAsked, tillAtOrder` |  |
-| 216 | `static double tillAtProject` | What the project's order told the door: the till, and the slice that carries its interest. |
-| 217 | `static long carried` |  |
-| 460 | `static boolean stuck` |  |
+| 240 | `static long asked, passed` | What the landlord's order told the door: asked, its price of one and of the order, the till, what the lender passed. |
+| 241 | `static double priceOne, priceAsked, tillAtOrder` |  |
+| 243 | `static double tillAtProject` | What the project's order told the door: the till, and the slice that carries its interest. |
+| 244 | `static long carried` |  |
+| 499 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 485 | **type** `public class OrderDoorCheck` | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the lender says no to asked again of half, down to one. |
-| 83 | 4 | `static void check(String label, boolean ok)` |  |
-| 88 | 3 | `static boolean near(double a, double b)` |  |
-| 93 | 3 | `static double door(Game g, BuildingsTemplate t, long n)` | What buildFor() charges for n of these, read as HousingDoorCheck reads the door: the quote and the plot. |
-| 97 | 3 | `static boolean ground(Game g, BuildingsTemplate t, long n)` |  |
-| 102 | 6 | `static double raise(Game g, String sector, double cost)` | What its register would ask its owners for on this cost (Equity.raiseFor()); nothing for a sector not listed. |
-| 110 | 5 | `static boolean raisesNothing(Game g, String sector, double cost)` | Past its first year and asking its register for nothing on this cost. |
-| 117 | 6 | `static boolean lenderPasses(Game g, BuildingsTemplate t, long n)` | The lender's test of n blocks with the down payment at the door's price in hand, as lenderReads() asks it. |
-| 125 | 13 | `static boolean landlordAtTheEdge(Game g)` | HN1-A's landlord at its edge, its ground apart (bought: buyGround()), read and never acted on. |
-| 140 | 4 | `static double shopBrings(Game g, BuildingsTemplate store)` | What the shopkeeper's register raises on SIX and it holds abroad: what reaches its till before the door. |
-| 146 | 7 | `static boolean shopkeeperReady(Game g)` | A shopkeeper HN1-B's order can be put to: lending open, not banned, and bringing under half a store to its till. |
-| 155 | 5 | `static int buyGround(Game g, BuildingsTemplate t, long n)` | Free ground for n of these, bought the cheapest plot at a time while the city can pay; how many plots it took. |
-| 166 | 7 | `static void shortAndDear(Game g, BuildingsTemplate block)` | HN1-A's two prices, by hand: the yard left YARD_SHARE of a block, and the market's materials, the makers' and the world's landed, at DEAR over what the planner prices them at (BuildingManager.getConstructionMaterialPr... |
-| 175 | 3 | `static double dearPrice(Game g)` | What the fixture prices the market's materials at: DEAR over the planner's price. |
-| 180 | 31 | `static void edgeParts(Game g, BuildingsTemplate block)` | Each condition of the edge, printed, so a fixture that misses it says which. |
-| 219 | 7 | `static void consider(Game g, BusinessInvestment.Decision d) throws Exception` |  |
-| 228 | 23 | `static void traceClosedCards() throws Exception` | A failed played premise gets a native input control, without moving the tested city's edge. |
-| 253 | 26 | `static Game independent(Game prepared, String label) throws Exception` | Independent orders start with the prepared town's real cash, material stock and holdings. |
-| 280 | 16 | `static void watch(Game g)` |  |
-| 297 | 153 | `public static void main(String[] args) throws Exception` |  |
-| 451 | 4 | `static void finish()` |  |
+| 60 | 524 | **type** `public class OrderDoorCheck` | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the lender says no to asked again of half, down to one. |
+| 85 | 4 | `static void check(String label, boolean ok)` |  |
+| 90 | 3 | `static boolean near(double a, double b)` |  |
+| 95 | 3 | `static double door(Game g, BuildingsTemplate t, long n)` | What buildFor() charges for n of these, read as HousingDoorCheck reads the door: the quote and the plot. |
+| 99 | 3 | `static boolean ground(Game g, BuildingsTemplate t, long n)` |  |
+| 104 | 6 | `static double raise(Game g, String sector, double cost)` | What its register would ask its owners for on this cost (Equity.raiseFor()); nothing for a sector not listed. |
+| 112 | 5 | `static boolean raisesNothing(Game g, String sector, double cost)` | Past its first year and asking its register for nothing on this cost. |
+| 119 | 6 | `static boolean lenderPasses(Game g, BuildingsTemplate t, long n)` | The lender's test of n blocks with the down payment at the door's price in hand, as lenderReads() asks it. |
+| 133 | 17 | `static double ownersMeans(Game g, double lift)` | What the households would put into an offering today, as HouseholdBalance.subscribe() weighs it: a share (SHARE_OF_EXCESS) of what a cell that may buy shares holds past SHARE_CUSHION_MONTHS of its take-home, by its de... |
+| 152 | 13 | `static boolean landlordAtTheEdge(Game g)` | HN1-A's landlord at its edge, its ground apart (bought: buyGround()), read and never acted on. |
+| 167 | 4 | `static double shopBrings(Game g, BuildingsTemplate store)` | What the shopkeeper's register raises on SIX and it holds abroad: what reaches its till before the door. |
+| 173 | 7 | `static boolean shopkeeperReady(Game g)` | A shopkeeper HN1-B's order can be put to: lending open, not banned, and bringing under half a store to its till. |
+| 182 | 5 | `static int buyGround(Game g, BuildingsTemplate t, long n)` | Free ground for n of these, bought the cheapest plot at a time while the city can pay; how many plots it took. |
+| 193 | 7 | `static void shortAndDear(Game g, BuildingsTemplate block)` | HN1-A's two prices, by hand: the yard left YARD_SHARE of a block, and the market's materials, the makers' and the world's landed, at DEAR over what the planner prices them at (BuildingManager.getConstructionMaterialPr... |
+| 202 | 3 | `static double dearPrice(Game g)` | What the fixture prices the market's materials at: DEAR over the planner's price. |
+| 207 | 31 | `static void edgeParts(Game g, BuildingsTemplate block)` | Each condition of the edge, printed, so a fixture that misses it says which. |
+| 246 | 7 | `static void consider(Game g, BusinessInvestment.Decision d) throws Exception` |  |
+| 255 | 23 | `static void traceClosedCards() throws Exception` | A failed played premise gets a native input control, without moving the tested city's edge. |
+| 280 | 26 | `static Game independent(Game prepared, String label) throws Exception` | Independent orders start with the prepared town's real cash, material stock and holdings. |
+| 307 | 16 | `static void watch(Game g)` |  |
+| 324 | 165 | `public static void main(String[] args) throws Exception` |  |
+| 490 | 4 | `static void finish()` |  |
 
-### THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge (lines 456-544)
+### THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge (lines 495-583)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 463 | 10 | `static void run(Game g, int months)` | ...and stopped at the month-end FROM, every later step a no-op (FS9: the edge is then caused, not searched for). |
-| 474 | 70 | `static void foundAndPlay(Game g)` |  |
+| 502 | 10 | `static void run(Game g, int months)` | ...and stopped at the month-end FROM, every later step a no-op (FS9: the edge is then caused, not searched for). |
+| 513 | 70 | `static void foundAndPlay(Game g)` |  |
 

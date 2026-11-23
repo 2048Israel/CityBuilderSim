@@ -2,7 +2,7 @@
 
 Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,632 constants in 633 files.**
+**6,640 constants in 633 files.**
 
 ## model (3032 constants)
 
@@ -5968,7 +5968,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2103 constants)
+## harnesses (2111 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6055,24 +6055,25 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 161 | `BankCheck.ALLOWANCE_BY_HAND` | `10` | What the families' allowance is raised by, by hand, before a reload between two months, $k: more than a reload could round away. |
 | 164 | `BankCheck.SLICE_TOWN_MONTHS` | `1` | The months the town of the slice section is played before the claim is first taken on: the first, which gives each sector its books and the lender its assets to read. |
 | 167 | `BankCheck.SLICE_LEVERAGE` | `1.2` | What retail owes against what it owns, taken on again between each month of the slice section: past the watch line and under the default point, so a slice defaults each month and no month is news. |
-| 170 | `BankCheck.PAST_THE_LINE_LEVERAGE` | `2` | What retail owes against what it owns when its month is to be news, after the slice section's quiet months: twice what it owns, past the default point (BusinessDebtManager.INSOLVENCY_TRIGGER). |
-| 173 | `BankCheck.FAMILIES_WITHIN_MONTHS` | `12` | The most months a new town is waited for its families to arrive and want groceries, before retail is put in distress: the capacity rule reads no demand until they have, and past this the wait fails... |
-| 176 | `BankCheck.CHARTER_COVER_UNDER` | `.1` | How far the town's fees leave the charter under its cost, as a share of it, for the law that it never closes "however far": under a tenth. |
-| 179 | `BankCheck.BUILDERS_CASH_FOR_A_SALE` | `100_000` | What the builders hold, at least, before a sale of plant, $k: more than the material of the shop retail holds at the day's price, so they can pay for all of it. |
-| 182 | `BankCheck.PARTS_TOWN_MONTHS` | `1` | The months the town of the rate-parts section is played before its lender is handed a record and a concentration: the first, which prices every sector. |
-| 185 | `BankCheck.CONCENTRATION_BY_HAND` | `.004` | The concentration charge the rate-parts section hands one sector, a year: more than the rates' own rounding and less than a spread. |
-| 188 | `BankCheck.TAB_LEND_MONTH` | `2` | The month of the tab city, counted from the first played, in which a claim on retail is written by hand (BusinessDebtManager.issueLoan) and paid out by the bank: after the founding month, with reta... |
-| 191 | `BankCheck.TAB_LEND_SHARE` | `.5` | The share of the room retail has under the lender's ceiling (MAX_LOAN_TO_ASSETS of its assets, less what it owes) that the tab city's by-hand claim takes: half, so retail is lent to and stays far f... |
-| 194 | `BankCheck.TAB_CAPITAL_MONTH` | `5` | The month of the tab city in which its owners put the bank one top of its band's equity in by hand (Bank.injectCapital), between two presses, so that the next month it holds that over the top and i... |
-| 197 | `BankCheck.TAB_BUYBACK_MONTH` | `9` | The month of the tab city in which the bank's desk buys its own shares back by hand (Bank.buyBackOwnShares), between two presses and after the capital above, so there is spare capital over its targ... |
-| 200 | `BankCheck.TAB_BUYBACK_SHARE` | `.5` | The share of its spare capital over its target that the tab city's by-hand buyback spends: half, so the bank ends the month over its target, as the desk's own rule would leave it. |
-| 203 | `BankCheck.TAB_LOSS_MONTH` | `20` | The month of the tab city in which a claim past the default point is written on retail by hand (the section-14 dial PAST_THE_LINE_LEVERAGE), so its firms default in the month after, whole: a year a... |
-| 206 | `BankCheck.TAB_BOND_MONTH` | `12` | The month of the tab city in which the city borrows on a bond that the bank buys at the next settle. |
-| 209 | `BankCheck.TAB_TREASURY_BUYBACK_MONTH` | `30` | The month of the tab city in which the treasury buys that bond back between two presses, which is in no income statement. |
-| 212 | `BankCheck.TAB_RESCUE_MONTH` | `45` | The month of the tab city in which the city puts capital into the bank that stands, between two presses: its preferred, since 0.7.14. |
-| 215 | `BankCheck.TAB_PLAYED` | `TAB_RESCUE_MONTH + 1 + Bank.YEAR_MONTHS` | The months the tab city is played: through its last caused event, the rescue, and the year after it that a year ago on the Balance sheet page needs to read a sheet that has the rescue in it. |
-| 223 | `BankCheck.DESK_MONTHS` | `6` | The months the trading desk is stepped after the leavers sell it their shares, so it goes on to hold, re-mark and sell what it bought. |
-| 5010 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
+| 170 | `BankCheck.SLICE_TILL_MONTHS` | `4` | The months of its bills (the larger of last month's, and the interest on the claim just taken on) that retail's till is topped up to before each month of the slice section, so that no month's bill ... |
+| 173 | `BankCheck.PAST_THE_LINE_LEVERAGE` | `2` | What retail owes against what it owns when its month is to be news, after the slice section's quiet months: twice what it owns, past the default point (BusinessDebtManager.INSOLVENCY_TRIGGER). |
+| 176 | `BankCheck.FAMILIES_WITHIN_MONTHS` | `12` | The most months a new town is waited for its families to arrive and want groceries, before retail is put in distress: the capacity rule reads no demand until they have, and past this the wait fails... |
+| 179 | `BankCheck.CHARTER_COVER_UNDER` | `.1` | How far the town's fees leave the charter under its cost, as a share of it, for the law that it never closes "however far": under a tenth. |
+| 182 | `BankCheck.BUILDERS_CASH_FOR_A_SALE` | `100_000` | What the builders hold, at least, before a sale of plant, $k: more than the material of the shop retail holds at the day's price, so they can pay for all of it. |
+| 185 | `BankCheck.PARTS_TOWN_MONTHS` | `1` | The months the town of the rate-parts section is played before its lender is handed a record and a concentration: the first, which prices every sector. |
+| 188 | `BankCheck.CONCENTRATION_BY_HAND` | `.004` | The concentration charge the rate-parts section hands one sector, a year: more than the rates' own rounding and less than a spread. |
+| 191 | `BankCheck.TAB_LEND_MONTH` | `2` | The month of the tab city, counted from the first played, in which a claim on retail is written by hand (BusinessDebtManager.issueLoan) and paid out by the bank: after the founding month, with reta... |
+| 194 | `BankCheck.TAB_LEND_SHARE` | `.5` | The share of the room retail has under the lender's ceiling (MAX_LOAN_TO_ASSETS of its assets, less what it owes) that the tab city's by-hand claim takes: half, so retail is lent to and stays far f... |
+| 197 | `BankCheck.TAB_CAPITAL_MONTH` | `5` | The month of the tab city in which its owners put the bank one top of its band's equity in by hand (Bank.injectCapital), between two presses, so that the next month it holds that over the top and i... |
+| 200 | `BankCheck.TAB_BUYBACK_MONTH` | `9` | The month of the tab city in which the bank's desk buys its own shares back by hand (Bank.buyBackOwnShares), between two presses and after the capital above, so there is spare capital over its targ... |
+| 203 | `BankCheck.TAB_BUYBACK_SHARE` | `.5` | The share of its spare capital over its target that the tab city's by-hand buyback spends: half, so the bank ends the month over its target, as the desk's own rule would leave it. |
+| 206 | `BankCheck.TAB_LOSS_MONTH` | `20` | The month of the tab city in which a claim past the default point is written on retail by hand (the section-14 dial PAST_THE_LINE_LEVERAGE), so its firms default in the month after, whole: a year a... |
+| 209 | `BankCheck.TAB_BOND_MONTH` | `12` | The month of the tab city in which the city borrows on a bond that the bank buys at the next settle. |
+| 212 | `BankCheck.TAB_TREASURY_BUYBACK_MONTH` | `30` | The month of the tab city in which the treasury buys that bond back between two presses, which is in no income statement. |
+| 215 | `BankCheck.TAB_RESCUE_MONTH` | `45` | The month of the tab city in which the city puts capital into the bank that stands, between two presses: its preferred, since 0.7.14. |
+| 218 | `BankCheck.TAB_PLAYED` | `TAB_RESCUE_MONTH + 1 + Bank.YEAR_MONTHS` | The months the tab city is played: through its last caused event, the rescue, and the year after it that a year ago on the Balance sheet page needs to read a sheet that has the rescue in it. |
+| 226 | `BankCheck.DESK_MONTHS` | `6` | The months the trading desk is stepped after the leavers sell it their shares, so it goes on to hold, re-mark and sell what it bought. |
+| 5029 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
 
 ### BankFailureCheck.java ([map](map/BankFailureCheck.md))
 
@@ -6199,7 +6200,8 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 803 | `CapitalFlowCheck.AUDITED_MONTHS` | `10 * CapitalFlows.PANIC_MONTHS` | The months the hot city is played with an audit each: ten panic windows (PANIC_MONTHS), so the money arrives, runs home in a stop and comes back over the audit. |
+| 840 | `CapitalFlowCheck.AUDITED_MONTHS` | `10 * CapitalFlows.PANIC_MONTHS` | The months the hot city is played with an audit each: ten panic windows (PANIC_MONTHS), so the money arrives, runs home in a stop and comes back over the audit. |
+| 843 | `CapitalFlowCheck.LOAN_BY_HAND` | `100` | The claim written by hand on the builders in each coupon twin (FC2, 2026-11-23), D$100k: a tenth of the till the twins are topped up with, so the builders owe the bank and send no dollars abroad. |
 
 ### CapitalGainsCheck.java ([map](map/CapitalGainsCheck.md))
 
@@ -6213,7 +6215,8 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 132 | `CarCheck.CARS_WAS_IN` | `44 * PriceLevel.FACTOR, CARS_WAS_OUT = 36 * PriceLevel.FACTOR, VANS_WAS_IN = 72 * Price...` | The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. |
-| 1354 | `CarCheck.IMPORT_BITS_TRIED` | `256` | How many steps of the import price, a bit each, importsArePaid() walks for a month whose two roundings part (CI1). |
+| 1209 | `CarCheck.EDGE_HOUSEHOLDS` | `1024` | The households in each cell the edge is searched in: a power of two, so the take's count of cars is exact, and enough to want seven whole cars at a free ceiling. |
+| 1369 | `CarCheck.IMPORT_BITS_TRIED` | `256` | How many steps of the import price, a bit each, importsArePaid() walks for a month whose two roundings part (CI1). |
 
 ### CarryTradeCheck.java ([map](map/CarryTradeCheck.md))
 
@@ -6259,17 +6262,18 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 301 | `CentralBankCheck.seen` | `new boolean [ KINDS.length ]` |  |
 | 1289 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
 | 1292 | `CentralBankCheck.SERIAL_OF_SURPLUS` | `.10` | The face of section 20's serial against last year's unused surplus: a tenth of it, small against the surplus the town ran. |
-| 1598 | `CentralBankCheck.LINE_YEARS` | `2` | The term of the fixture's bonds, in years: the shortest term bond the lineup sells, so the city's own sales build the whole fixture in two years. |
-| 1601 | `CentralBankCheck.TAKE_ALL_MONTHS` | `14` | The most months the dial at all of the paper is given to take the whole of the first bond into the central bank's book (HoldersCheck 11 reaches it in a year or so). |
-| 1638 | `CentralBankCheck.RATES_UP` | `.04` | How far the policy rate is put up after the line is sold, so that the line stands at the coupon of lower rates and its reopening comes in under par (HoldersCheck 12 puts it up the same four points). |
-| 2012 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
-| 2015 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
-| 2025 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path ... |
-| 2028 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
-| 2031 | `CentralBankCheck.PROBE_HOUSES` | `43` | The probe city's houses before the next twenty: seed 7's shape since FR7 (probeCity()). |
-| 2034 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
-| 2042 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, { 41, 4, 2...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
-| 2055 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.1... |
+| 1326 | `CentralBankCheck.ESTATE_OF_PAPER` | `.001` | What a month's dead leave of the city's paper, as a share of what the households hold of it: an estate the fixture hands to the treasury's custody. |
+| 1630 | `CentralBankCheck.LINE_YEARS` | `2` | The term of the fixture's bonds, in years: the shortest term bond the lineup sells, so the city's own sales build the whole fixture in two years. |
+| 1633 | `CentralBankCheck.TAKE_ALL_MONTHS` | `14` | The most months the dial at all of the paper is given to take the whole of the first bond into the central bank's book (HoldersCheck 11 reaches it in a year or so). |
+| 1670 | `CentralBankCheck.RATES_UP` | `.04` | How far the policy rate is put up after the line is sold, so that the line stands at the coupon of lower rates and its reopening comes in under par (HoldersCheck 12 puts it up the same four points). |
+| 2051 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
+| 2054 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
+| 2064 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path ... |
+| 2067 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
+| 2070 | `CentralBankCheck.PROBE_HOUSES` | `43` | The probe city's houses before the next twenty: seed 7's shape since FR7 (probeCity()). |
+| 2073 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
+| 2081 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, { 41, 4, 2...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
+| 2094 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.1... |
 
 ### ChartFitCheck.java ([map](map/ChartFitCheck.md))
 
@@ -6537,6 +6541,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 69 | `DebtMoneysCheck.KEEPS` | `0.90` | The share of its worth in US$ the D$ keeps in a fall: 0.90 is a D$ 10% weaker (DebtExchangeCheck.KEEPS). |
 | 72 | `DebtMoneysCheck.FRANC_RATE` | `- 0.0075` | The franc's policy rate handed in section 11, a fraction a year: the Swiss National Bank's of February 2015 (InterestAbroadCheck.SPOTS), under zero and under the city's MIN_RATE. |
 | 75 | `DebtMoneysCheck.TENORS` | `{ 1, 12, 60, 120, 360 }` | The tenors, in months, the curves are read at. |
+| 116 | `DebtMoneysCheck.ROLLOVER_ROOM` | `2` | How many times what the window abroad asks of the month's exports (its two limits, WINDOW_SHUT_SERVICE_SHARE and WINDOW_SHUT_EXPORT_YEARS) the rollover section hands the debt, so the window is open... |
 
 ### DenominationCheck.java ([map](map/DenominationCheck.md))
 
@@ -6987,8 +6992,9 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 153 | `FundCheck.FOUNDING_MONTHS` | `72` | The months the fixture town is played before it is saved: a stage of the founding, never a month picked because the town's path passes at it (PK1). |
-| 1588 | `FundCheck.MONTHS_9E` | `240` | How many months 9e plays: 240 is twenty years, 5 seconds; the counts (the cap sale in 230 months, the idle transfer in 90) would allow 120 with margin, and the longer run gives the fixed point more... |
-| 1591 | `FundCheck.PROBE_MONTHS_9E` | `24` | How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). |
+| 1512 | `FundCheck.BOND_ROOM_MARGIN` | `3` | How many times the bond room before the month 9d lifts the fund's first month's due (all of it short) to, so the room a month on, which may be over it by the month's new bonds, is still under the t... |
+| 1603 | `FundCheck.MONTHS_9E` | `240` | How many months 9e plays: 240 is twenty years, 5 seconds; the counts (the cap sale in 230 months, the idle transfer in 90) would allow 120 with margin, and the longer run gives the fixed point more... |
+| 1606 | `FundCheck.PROBE_MONTHS_9E` | `24` | How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). |
 
 ### FundLedgerCheck.java ([map](map/FundLedgerCheck.md))
 
@@ -7364,7 +7370,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 2055 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
+| 2071 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
 
 ### IslandLinkCheck.java ([map](map/IslandLinkCheck.md))
 
@@ -8100,6 +8106,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 78 | `OrderDoorCheck.SIX` | `6` | The project's order, and its till in stores at the door's price: one, and not two. |
 | 79 | `OrderDoorCheck.TILL` | `1.5, SHORT_TILL =.5` |  |
 | 81 | `OrderDoorCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for its ground. |
+| 83 | `OrderDoorCheck.OWNERS_COVER` | `2` | What the households' means for an offering stand at, over the order's down payment, once the fixture has lifted them: the offering is taken whole, never pro rata of a shortfall. |
 
 ### OrderSearchCheck.java ([map](map/OrderSearchCheck.md))
 
@@ -8205,8 +8212,9 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 55 | `PegAnchorCheck.out` | `System.out` |  |
 | 57 | `PegAnchorCheck.LEAN` | `ForeignAccounts.Regime.LEAN, PEG = ForeignAccounts.Regime.PEG, FLOAT = ForeignAccounts....` |  |
 | 59 | `PegAnchorCheck.TRADE` | `CurrencyRegimeCheck.TRADE, DEEP = CurrencyRegimeCheck.DEEP` |  |
-| 62 | `PegAnchorCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). |
-| 65 | `PegAnchorCheck.SLOTS` | `ForeignAccounts.SAVE_SLOTS` | The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2) and the mint in 152-155 (GD3), Canada's episode and exit... |
+| 62 | `PegAnchorCheck.PEG_VAULT_MONTHS` | `2 * ForeignAccounts.COMFORTABLE_COVER` | The months of the town's imports its vault is made deeper by before section 9's peg (FC2, 2026-11-23): twice the cover at which reserves fully absorb the month's deficit, as CurrencyRegimeCheck.PEG... |
+| 65 | `PegAnchorCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). |
+| 68 | `PegAnchorCheck.SLOTS` | `ForeignAccounts.SAVE_SLOTS` | The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2) and the mint in 152-155 (GD3), Canada's episode and exit... |
 
 ### PlanCheck.java ([map](map/PlanCheck.md))
 
@@ -8698,8 +8706,8 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 155 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
 | 238 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
 | 353 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 1060 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
-| 1068 | `ShortSellingCheck.TRADE_ABROAD_MONTH` | `RUN_START + 1` | SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the ordinary cell holding the most of the company the cells hold mo... |
+| 1085 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 1093 | `ShortSellingCheck.TRADE_ABROAD_MONTH` | `RUN_START + 1` | SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the ordinary cell holding the most of the company the cells hold mo... |
 
 ### SlopeCheck.java ([map](map/SlopeCheck.md))
 

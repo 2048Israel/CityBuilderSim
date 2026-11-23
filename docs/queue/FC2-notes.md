@@ -463,3 +463,57 @@ abroad; each section's claim is the city's own builders', and it is still run wi
   PowerPriceCheck, LongPlaytest; HoldersCheck its known red only; KeptCheck its rows above.
 - Green after FC2, run one at a time: ManufacturingCheck, FitoutCheck, InvestCheck, WellCheck, RunWorksCheck,
   MortgageCheck, FittingCheck, AuctionCheck; HoldersCheck its known red only. `./batch-check.sh --fast` green.
+
+## 6. The dry run's mends (2026-11-23)
+
+The first dry run (e90eb0b93, gate box run cbs-gate-FC2-0uEcU2DO) was red in 27 harnesses, 168 NEW lines. Fourteen of them were red on
+RES3's dry run too; by the orchestrator's call (08:28) FC2 owns the mends to those fixtures, and RES3 verifies them after merging.
+The rule: a fixture causes its condition on any played path, a broken law is mended in the model, and a premise traced and not
+causable in FC2's scope passes by name to HT1-H. No law's assertion was changed. Each mend's comment in its harness carries the figures.
+
+Model (for the delta review):
+- SectorStatementCheck: Construction's work sold abroad is a revenue line of its own, `Sector.Ledger/Statement.servicesSold` and
+  `bookExportedService()` (struck, restored and scaled with the rest), named `Construction.WORK_SOLD_ABROAD` in SectorFlow and the
+  sector screen's revenue detail (d241790cc). Before, the export's money reached the till without a line, and the statement did not add up.
+- MoneyWordsCheck: the builders-short line names the city's money by `Currency.name()` (BuildScreen, ConstructionScreen; f7043a5c7).
+
+Fixtures, each caused between months by a lever the model has:
+- ScaleCheck: the builders' saved fill (`workFill`) is a share, left unscaled; the K-times copy worked K times its posts and sold the
+  phantom crews' month abroad.
+- FundLedgerCheck, FundCheck: the founding hands the bank's quote where the town's orders left the cash short. FundCheck 9d lifts
+  the rescue book until the month's due is BOND_ROOM_MARGIN times the bond room. Section 10's pay-in twins play one step over the
+  default dial, where the fund trades with nobody: at the default, a's fund bought 5,016 Industry shares and the sellers' gains tax
+  moved the budget 0.0341. The law's `close` is unchanged. Its domain is now a pay-in with no trade behind it.
+- FloatLinkCheck, DeskCheck: every played order is funded at its quote, and the town is still building at the sale, so the tax
+  covers the sale's fee.
+- CallCheck: the bank's capital is kept over its share desk's book between months.
+- GoldStandardCheck 9: a pinned month makes its quiet top, and M0 is brought to M0_FLOOR by an advance.
+- CurrencyCheck: the vault is read as the lean sold on it, and since-founding as every sale since founding.
+- ShortSellingCheck: the desk is given the means for the short (its position and book limits).
+- BankCheck 14: retail's till is lifted to SLICE_TILL_MONTHS of its bills, so only the slice defaults.
+- CentralBankCheck 19: an heirless estate of the households' paper goes to custody before the press. The two par-alone and add-on
+  plans read nothing netted within 1e-9: the central bank's whole par is one ulp over the principal, against the exact `== 0` the
+  fixture had.
+- OrderDoorCheck 2: the households' means for the offering are OWNERS_COVER times the down payment at the door's price.
+- CarCheck OE1: the edge's cells hold EDGE_HOUSEHOLDS = 1024, so the take's count is exact. At 333.54 households, one car read an
+  ulp under. The `==` is unchanged.
+- EssentialWorksCheck: the later priority work is one Container Terminal. The foreign crews had built the 10,000 roads, and their
+  repairs took the builders' output to 0.
+- RailCheck: every sector is held from the track's laying, so the freight stays what the track was sized to.
+- CapitalFlowCheck: the builders hold no dollars or bonds, and owe the bank, in both twins.
+- ForeignDebtCheck: twenty-year paper is sold until "later" is the heaviest rung.
+- PegAnchorCheck 9: the euro town holds a vault of PEG_VAULT_MONTHS of imports.
+- DebtMoneysCheck: the window abroad is held open at the euro bill's roll, and at the save's quotes.
+- Forms1900Check: the carters' pay is read as the haul priced it (the month before), and the homes beside the bill. The lamp-lit
+  cells get half a car a grown-up.
+- GdpCheck: the railway is handed the cash for its sets.
+- InvestCheck: the House is priced out by its materials, and the crews are thinned to 95% of the best home, none of it past the
+  threshold.
+- ER1Check: the restored cash is sized from the offer the cash brings.
+- CreditCheck: the banned retailer keeps a till of two shops for a statement's months, and Freight's founding is one month.
+
+Passed to HT1-H: DeathRecordCheck, `the orphan section does not fill behind it`. The row and its trace are in the ship file's
+known-reds; it is OX2's family.
+
+Found, not FC2's: `Game.Slices.passes()` returns before `judged()` for a banned sector that borrows, so `consider()` prints
+"at NaN%" in the refusal (CreditCheck's banned retailer). A message only; the fix is to set firstRate before the early return.
