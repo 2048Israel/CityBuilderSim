@@ -1,4 +1,4 @@
-# PowerPlantsCheck.java - 629 lines · 23 methods · 16 constants · harnesses
+# PowerPlantsCheck.java - 642 lines · 23 methods · 16 constants · harnesses
 
 `ham/citybuildersim/PowerPlantsCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -33,7 +33,7 @@
 > fiat, a seller is stocked with half the month's burn, a dry city is founded where its rings hold no water, and a site's crews are
 > handed more than it can use. Every city is a scratch game (GameFiles.scratch); none is saved.
 
-**Uses:** [PowerDispatch](PowerDispatch.md) (49), [Game](Game.md) (27), [BuildAdvice](BuildAdvice.md) (17), [UtilitiesHandler](UtilitiesHandler.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (14), [Good](Good.md) (12), [World](World.md) (11), [Sectors](Sectors.md) (8), [BuildingManager](BuildingManager.md) (8), [BuildingType](BuildingType.md) (6), [BuildCard](BuildCard.md) (6), [MoneyAudit](MoneyAudit.md) (4), [LandManager](LandManager.md) (3), [Founding](Founding.md) (2), [CityLand](CityLand.md) (2), [Substations](Substations.md) (2), [AutoBuilder](AutoBuilder.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [Sector](Sector.md) (1), [PowerPriceCheck](PowerPriceCheck.md) (1), [SubstationCheck](SubstationCheck.md) (1)
+**Uses:** [PowerDispatch](PowerDispatch.md) (51), [Game](Game.md) (27), [UtilitiesHandler](UtilitiesHandler.md) (20), [BuildAdvice](BuildAdvice.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [Good](Good.md) (12), [World](World.md) (11), [Sectors](Sectors.md) (8), [BuildingManager](BuildingManager.md) (8), [BuildingType](BuildingType.md) (6), [BuildCard](BuildCard.md) (6), [MoneyAudit](MoneyAudit.md) (4), [LandManager](LandManager.md) (3), [Founding](Founding.md) (2), [CityLand](CityLand.md) (2), [Substations](Substations.md) (2), [AutoBuilder](AutoBuilder.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [Sector](Sector.md) (1), [PowerPriceCheck](PowerPriceCheck.md) (1), [SubstationCheck](SubstationCheck.md) (1)
 
 ## Sections
 
@@ -42,11 +42,11 @@
 | 145 | THE FIXTURES |
 | 229 | 1. THE ROWS ARE THE STUDY'S |
 | 283 | 2. THE SUN RUNS AT ITS HOURS |
-| 331 | 3. EACH FUEL IS BOUGHT FROM A REAL SELLER AND PAID ONCE |
-| 409 | 4. THE COOLING GATE |
-| 492 | 5. THE BUILD-TIME FLOOR |
-| 567 | 6. EACH ROW FROM ITS YEAR |
-| 608 | 7. THE SUN IN A SAVE |
+| 344 | 3. EACH FUEL IS BOUGHT FROM A REAL SELLER AND PAID ONCE |
+| 422 | 4. THE COOLING GATE |
+| 505 | 5. THE BUILD-TIME FLOOR |
+| 580 | 6. EACH ROW FROM ITS YEAR |
+| 621 | 7. THE SUN IN A SAVE |
 
 ## Constants
 
@@ -80,7 +80,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 586 | **type** `public class PowerPlantsCheck` | The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the Oil-Fired Turbine, the Biomass Plant and the Solar Farm, and the Coal Power Plant and the ... |
+| 44 | 599 | **type** `public class PowerPlantsCheck` | The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the Oil-Fired Turbine, the Biomass Plant and the Solar Farm, and the Coal Power Plant and the ... |
 | 78 | 2 | **type** `record Study(String name, double usdPerKw, double nameplateKw, double runs, int months, boolean cooling, Go...` | One row of spec-electricity 2.3, as the study prints it. |
 | 98 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 104 | 1 | `static void check(String label, boolean ok)` |  |
@@ -108,41 +108,41 @@
 |---:|---:|---|---|
 | 236 | 46 | `static void rows()` |  |
 
-### 2. THE SUN RUNS AT ITS HOURS (lines 283-330)
+### 2. THE SUN RUNS AT ITS HOURS (lines 283-343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 287 | 43 | `static void sun()` |  |
+| 287 | 56 | `static void sun()` |  |
 
-### 3. EACH FUEL IS BOUGHT FROM A REAL SELLER AND PAID ONCE (lines 331-408)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 335 | 73 | `static void fuels()` |  |
-
-### 4. THE COOLING GATE (lines 409-491)
+### 3. EACH FUEL IS BOUGHT FROM A REAL SELLER AND PAID ONCE (lines 344-421)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 419 | 15 | `static void shortOfPower(Game g)` | A city short of power with its wires standing, ready for the automatic builder's pass (EssentialWorksCheck.scarceCash()'s levers, with cash to spare): its homes draw past the founding grid, the substations its forecas... |
-| 435 | 8 | `static AutoBuilder.Step powerStep(Game g)` |  |
-| 444 | 47 | `static void cooling()` |  |
+| 348 | 73 | `static void fuels()` |  |
 
-### 5. THE BUILD-TIME FLOOR (lines 492-566)
+### 4. THE COOLING GATE (lines 422-504)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 496 | 70 | `static void floor()` |  |
+| 432 | 15 | `static void shortOfPower(Game g)` | A city short of power with its wires standing, ready for the automatic builder's pass (EssentialWorksCheck.scarceCash()'s levers, with cash to spare): its homes draw past the founding grid, the substations its forecas... |
+| 448 | 8 | `static AutoBuilder.Step powerStep(Game g)` |  |
+| 457 | 47 | `static void cooling()` |  |
 
-### 6. EACH ROW FROM ITS YEAR (lines 567-607)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 571 | 36 | `static void years()` |  |
-
-### 7. THE SUN IN A SAVE (lines 608-629)
+### 5. THE BUILD-TIME FLOOR (lines 505-579)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 612 | 17 | `static void save()` |  |
+| 509 | 70 | `static void floor()` |  |
+
+### 6. EACH ROW FROM ITS YEAR (lines 580-620)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 584 | 36 | `static void years()` |  |
+
+### 7. THE SUN IN A SAVE (lines 621-642)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 625 | 17 | `static void save()` |  |
 

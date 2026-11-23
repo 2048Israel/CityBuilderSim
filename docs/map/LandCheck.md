@@ -1,4 +1,4 @@
-# LandCheck.java - 3,893 lines · 64 methods · 4 constants · harnesses
+# LandCheck.java - 3,900 lines · 64 methods · 5 constants · harnesses
 
 `ham/citybuildersim/LandCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -88,38 +88,39 @@
 | 731 | · 9. reset |
 | 746 | · 10. every building fits on a starting city |
 | 820 | · 11. the price is a density policy |
-| 876 | LM1: THE FOUNDING'S WATER IS ONE PATCH (2026-11-11, Jerus's city 7.8 km |
-| 1102 | 18. CROWDED, NOT BIG, AND THE DOLLAR'S OWN INFLATION (0.7.55) |
-| 1225 | 12. LAND IS PRICED IN DOLLARS (0.7.6) |
-| 1285 | 13. THE TWO WAYS TO PAY (0.7.6) |
-| 1296 | · the coal plant buys its ground (PW2, 2026-11-23) |
-| 1563 | 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) |
-| 1593 | 24. THE UNITS THE PLAYER READS (0.7.68, batch M4) |
-| 1656 | 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) |
-| 1785 | 16. THE NEXT N PLOTS, AT ONCE (0.7.13) |
-| 1905 | 17. THE OFFICE'S OWN FIGURES, IN THE MODEL (0.7.26) |
-| 2004 | · the grid's own tests (0.7.67) |
-| 2052 | 19. THE LAND ON THE WORLD (0.7.57) |
-| 2417 | 20. A CITY SAVED AND LOADED IS THE SAME LAND (0.7.57) |
-| 2481 | 21. AN OLDER SAVE'S LAND IS CONVERTED (0.7.57) |
-| 2611 | 22. THE TEST PLAYER KEEPS ITS GROUND AHEAD (0.7.58, batch J1d) |
-| 2694 | 23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L) |
-| 2855 | 25. THE LEDGER WITH ZONES AND THE FOREST LAW (0.7.107, batch Z1) |
-| 2901 | 26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
-| 3133 | 27. WHERE THE CUT AND THE CLEARING MEET (0.7.138, batch I9; |
-| 3178 | 28. THE BOOKS BY RELIEF (ET1, spec-earth2-terrain 3.3) |
-| 3377 | 29. THE PLAYER'S GROUND: A DRAFT BOUGHT AS AN OFFER IS (BL1) |
-| 3743 | 30. THE ORE CARD, EVERY ORE (I13-L) |
-| 3852 | 31. THE CENTRE'S STAMP (AP2) |
+| 876 | 10b. A COAL PLANT BUYS ITS GROUND (PW2, 2026-11-23) |
+| 963 | LM1: THE FOUNDING'S WATER IS ONE PATCH (2026-11-11, Jerus's city 7.8 km |
+| 1189 | 18. CROWDED, NOT BIG, AND THE DOLLAR'S OWN INFLATION (0.7.55) |
+| 1312 | 12. LAND IS PRICED IN DOLLARS (0.7.6) |
+| 1372 | 13. THE TWO WAYS TO PAY (0.7.6) |
+| 1570 | 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) |
+| 1600 | 24. THE UNITS THE PLAYER READS (0.7.68, batch M4) |
+| 1663 | 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) |
+| 1792 | 16. THE NEXT N PLOTS, AT ONCE (0.7.13) |
+| 1912 | 17. THE OFFICE'S OWN FIGURES, IN THE MODEL (0.7.26) |
+| 2011 | · the grid's own tests (0.7.67) |
+| 2059 | 19. THE LAND ON THE WORLD (0.7.57) |
+| 2424 | 20. A CITY SAVED AND LOADED IS THE SAME LAND (0.7.57) |
+| 2488 | 21. AN OLDER SAVE'S LAND IS CONVERTED (0.7.57) |
+| 2618 | 22. THE TEST PLAYER KEEPS ITS GROUND AHEAD (0.7.58, batch J1d) |
+| 2701 | 23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L) |
+| 2862 | 25. THE LEDGER WITH ZONES AND THE FOREST LAW (0.7.107, batch Z1) |
+| 2908 | 26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
+| 3140 | 27. WHERE THE CUT AND THE CLEARING MEET (0.7.138, batch I9; |
+| 3185 | 28. THE BOOKS BY RELIEF (ET1, spec-earth2-terrain 3.3) |
+| 3384 | 29. THE PLAYER'S GROUND: A DRAFT BOUGHT AS AN OFFER IS (BL1) |
+| 3750 | 30. THE ORE CARD, EVERY ORE (I13-L) |
+| 3859 | 31. THE CENTRE'S STAMP (AP2) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 2063 | `LandCheck.IRON_IN_THE_GROUND` | `.0004 * PriceLevel.FACTOR` | Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). |
-| 2507 | `LandCheck.RESEARCH` | `{ new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450....` | The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. |
-| 2609 | `LandCheck.DEAL` | `7` | Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. |
-| 3855 | `LandCheck.DRY_KM2` | `1.0, MORE_KM2 = 4 * DRY_KM2` | The dry ground a section 31 city is founded on, in km2, and what a restatement draws it again to: four times as much, so more blocks. |
+| 889 | `LandCheck.BLOCKS_AFTER_POWER_AND_WATER` | `9` | The blocks of the starting land's thirty that power and water leave, to the nearest block: nine (PW2: the Oil-Fired Plant's 30 acres and the water works' 800,000 sq ft). |
+| 2070 | `LandCheck.IRON_IN_THE_GROUND` | `.0004 * PriceLevel.FACTOR` | Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). |
+| 2514 | `LandCheck.RESEARCH` | `{ new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450....` | The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. |
+| 2616 | `LandCheck.DEAL` | `7` | Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. |
+| 3862 | `LandCheck.DRY_KM2` | `1.0, MORE_KM2 = 4 * DRY_KM2` | The dry ground a section 31 city is founded on, in km2, and what a restatement draws it again to: four times as much, so more blocks. |
 
 ## Fields (state)
 
@@ -131,7 +132,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 3816 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
+| 78 | 3823 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
 | 82 | 7 | `static void check(String label, double actual, double expected)` |  |
 | 90 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 95 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -139,174 +140,177 @@
 | 107 | 5 | `static void quietly(Runnable work)` |  |
 | 113 | 762 | `public static void main(String[] args) throws Exception` |  |
 
-### LM1: THE FOUNDING'S WATER IS ONE PATCH (2026-11-11, Jerus's city 7.8 km (lines 876-1101)
+### 10b. A COAL PLANT BUYS ITS GROUND (PW2, 2026-11-23) (lines 876-962)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 894 | 3 | `static java.util.function.LongBinaryOperator painted(java.util.Map<Long, Long> map)` | A painted map of fresh plots a block (by CityLand.blockKey()), as CityLand.freshPatch() reads one. |
-| 899 | 16 | `static boolean onePiece(java.util.Collection<Long> blocks)` | Whether the blocks (CityLand.blockKey()s) are one piece, each edge to edge with another. |
-| 917 | 5 | `static long freshOn(java.util.Collection<Long> blocks, java.util.Map<Long, Long> map)` | The fresh plots the blocks (CityLand.blockKey()s) hold on a map. |
-| 924 | 5 | `static boolean inSquareOfFirst(java.util.List<Long> blocks, long patch)` | Whether every block lies within `patch` blocks of the first, L-infinity: the square the patch grew in. |
-| 934 | 18 | `static long bestSquareHolds(java.util.Map<Long, Long> map, long patch)` | What the best patch on a map holds, worked out apart from the model: from each fresh block as a seed, the fresh blocks edge to edge with it inside its square of `patch` blocks, which is all a patch takes when no targe... |
-| 953 | 148 | `static void theFoundingsWaterIsOnePatch(CityLand opening, int r0)` |  |
+| 891 | 71 | `static void coalBuysItsGround()` |  |
 
-### 18. CROWDED, NOT BIG, AND THE DOLLAR'S OWN INFLATION (0.7.55) (lines 1102-1224)
+### LM1: THE FOUNDING'S WATER IS ONE PATCH (2026-11-11, Jerus's city 7.8 km (lines 963-1188)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1118 | 80 | `static void crowdedNotBig()` |  |
-| 1205 | 19 | `static LandManager timesOver(LandManager town, long k)` | A land office holding a city's land k times over, by its records (0.7.67): the town's blocks, holdings and offers, each holding's five areas and its forest's timber times k, and the figure times k - a copy K times ove... |
+| 981 | 3 | `static java.util.function.LongBinaryOperator painted(java.util.Map<Long, Long> map)` | A painted map of fresh plots a block (by CityLand.blockKey()), as CityLand.freshPatch() reads one. |
+| 986 | 16 | `static boolean onePiece(java.util.Collection<Long> blocks)` | Whether the blocks (CityLand.blockKey()s) are one piece, each edge to edge with another. |
+| 1004 | 5 | `static long freshOn(java.util.Collection<Long> blocks, java.util.Map<Long, Long> map)` | The fresh plots the blocks (CityLand.blockKey()s) hold on a map. |
+| 1011 | 5 | `static boolean inSquareOfFirst(java.util.List<Long> blocks, long patch)` | Whether every block lies within `patch` blocks of the first, L-infinity: the square the patch grew in. |
+| 1021 | 18 | `static long bestSquareHolds(java.util.Map<Long, Long> map, long patch)` | What the best patch on a map holds, worked out apart from the model: from each fresh block as a seed, the fresh blocks edge to edge with it inside its square of `patch` blocks, which is all a patch takes when no targe... |
+| 1040 | 148 | `static void theFoundingsWaterIsOnePatch(CityLand opening, int r0)` |  |
 
-### 12. LAND IS PRICED IN DOLLARS (0.7.6) (lines 1225-1284)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1235 | 49 | `static void inDollars()` |  |
-
-### 13. THE TWO WAYS TO PAY (0.7.6) (lines 1285-1295)
-
-### the coal plant buys its ground (PW2, 2026-11-23) (lines 1296-1562)
+### 18. CROWDED, NOT BIG, AND THE DOLLAR'S OWN INFLATION (0.7.55) (lines 1189-1311)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1304 | 71 | `static void coalBuysItsGround()` |  |
-| 1376 | 6 | `static Game dollarCity(String label)` |  |
-| 1383 | 5 | `static double[] moved(double[] before, double[] after)` |  |
-| 1389 | 173 | `static void bothWays() throws Exception` |  |
+| 1205 | 80 | `static void crowdedNotBig()` |  |
+| 1292 | 19 | `static LandManager timesOver(LandManager town, long k)` | A land office holding a city's land k times over, by its records (0.7.67): the town's blocks, holdings and offers, each holding's five areas and its forest's timber times k, and the figure times k - a copy K times ove... |
 
-### 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) (lines 1563-1592)
+### 12. LAND IS PRICED IN DOLLARS (0.7.6) (lines 1312-1371)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1571 | 21 | `static void inSquareKilometres()` |  |
+| 1322 | 49 | `static void inDollars()` |  |
 
-### 24. THE UNITS THE PLAYER READS (0.7.68, batch M4) (lines 1593-1655)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1604 | 43 | `static void inThePlayersUnits()` |  |
-| 1649 | 6 | `static boolean readsAs(String words, double squareMetres)` | Whether words like "7,430 m2" or "0.0301 km2" read `squareMetres` to half a percent, never as nothing. |
-
-### 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) (lines 1656-1784)
+### 13. THE TWO WAYS TO PAY (0.7.6) (lines 1372-1569)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1671 | 113 | `static void whenShort() throws Exception` |  |
+| 1383 | 6 | `static Game dollarCity(String label)` |  |
+| 1390 | 5 | `static double[] moved(double[] before, double[] after)` |  |
+| 1396 | 173 | `static void bothWays() throws Exception` |  |
 
-### 16. THE NEXT N PLOTS, AT ONCE (0.7.13) (lines 1785-1904)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1800 | 104 | `static void severalAtOnce() throws Exception` |  |
-
-### 17. THE OFFICE'S OWN FIGURES, IN THE MODEL (0.7.26) (lines 1905-2003)
+### 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) (lines 1570-1599)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1920 | 71 | `static void theOfficesFigures()` |  |
-| 1993 | 10 | `static java.util.List<LandParcel> handMade(double[] perSqFt, double[] sizes, int n)` | A listing of `n` offers by hand: dry ground of each size at its dollars a square foot, ids from 1, each in its own place on no ground of the grid, no ore. |
+| 1578 | 21 | `static void inSquareKilometres()` |  |
 
-### the grid's own tests (0.7.67) (lines 2004-2051)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2007 | 3 | `static boolean touchesOwned(LandGrid g, LandParcel p)` | Whether an offer's rectangle holds or borders ground the city owns (GridCheck.touches()). |
-| 2012 | 17 | `static double[] recountOn(CityLand land, Resource kind, java.util.function.BiPredicate<Long, Long> on)` | Every field of a resource whose centre plot passes `on`, within the nine cells round a city's site and its owned box's: its sites and amount, whole - read off the world's cells. |
-| 2031 | 3 | `static double[] offerFields(CityLand land, LandParcel offer, Resource kind)` | An offer's fields of one resource, recounted from the world: every field whose centre plot is one of its rectangle's free plots, whole (spec-land star 12 on the grid). |
-| 2036 | 15 | `static double[] freePlotsCounted(CityLand land, LandParcel p)` | An offer's five areas counted again, plot by plot from the world's tiles: the plots of its rectangle the city does not own (0.7.67, the books to the plot). |
-
-### 19. THE LAND ON THE WORLD (0.7.57) (lines 2052-2416)
+### 24. THE UNITS THE PLAYER READS (0.7.68, batch M4) (lines 1600-1662)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2065 | 351 | `static void onTheWorld()` |  |
+| 1611 | 43 | `static void inThePlayersUnits()` |  |
+| 1656 | 6 | `static boolean readsAs(String words, double squareMetres)` | Whether words like "7,430 m2" or "0.0301 km2" read `squareMetres` to half a percent, never as nothing. |
 
-### 20. A CITY SAVED AND LOADED IS THE SAME LAND (0.7.57) (lines 2417-2480)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2427 | 53 | `static void savedAndLoaded() throws Exception` |  |
-
-### 21. AN OLDER SAVE'S LAND IS CONVERTED (0.7.57) (lines 2481-2610)
+### 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) (lines 1663-1791)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2504 | 1 | **type** `record Research(String name, long seed, double landOwned, int ironSites, double ironTonnes, int mines)` | One research city's land as its save carries it: its name, its world's seed, its square feet, iron sites and tonnes, and its Iron Mines. |
-| 2514 | 35 | `static void converted() throws Exception` |  |
-| 2551 | 18 | `static Deposit nearestUnowned(CityLand land, Resource kind)` | The iron field nearest a city's site, in the nine cells round it, whose centre the city does not own; null when none. |
-| 2571 | 19 | `static Deposit nearestOnDryGround(CityLand land, Resource kind)` | The field of a resource nearest a city's site, in the nine cells round it, whose centre plot is dry ground and not the city's (0.7.99): where foundedOn() puts a fixture's city. |
-| 2600 | 7 | `static LandManager foundedOn(long x, long y)` | A land office whose city is founded on the default world at plot (x, y) rather than its founding site (0.7.99, batch W1): a centre of whole blocks round it holding a new city's dry ground (CityLand.found()), nothing t... |
+| 1678 | 113 | `static void whenShort() throws Exception` |  |
 
-### 22. THE TEST PLAYER KEEPS ITS GROUND AHEAD (0.7.58, batch J1d) (lines 2611-2693)
+### 16. THE NEXT N PLOTS, AT ONCE (0.7.13) (lines 1792-1911)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2625 | 68 | `static void groundKeptAhead()` |  |
+| 1807 | 104 | `static void severalAtOnce() throws Exception` |  |
 
-### 23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L) (lines 2694-2854)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2724 | 92 | `static void ironAWholeFieldAtATime()` |  |
-| 2823 | 3 | `static void ironPays(Game g)` | WN3: iron ore at the goods' literal band (Good.worldImportPrice(), worldExportPrice()), set on its market by hand as CopperRefiningCheck sets copper's. |
-| 2828 | 11 | `static Game ironListed(String label)` | A new city at 1.6 to the dollar grown, by hand, toward the iron field nearest its site (nearestUnowned(); its founding field until 0.7.98) - the offer nearest it each time - until an offer holds iron. |
-| 2841 | 13 | `static double[] recount(CityLand land, Resource kind, double out, java.util.function.BiPredicate<Double, Double> in)` | Every field of a resource centred within `out` plots of a city's site (L-infinity) whose centre, seen from the site, passes `in`: its sites and its amount, whole - read off the world's cells, with none of CityLand's s... |
-
-### 25. THE LEDGER WITH ZONES AND THE FOREST LAW (0.7.107, batch Z1) (lines 2855-2900)
+### 17. THE OFFICE'S OWN FIGURES, IN THE MODEL (0.7.26) (lines 1912-2010)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2866 | 34 | `static void zonesOnTheLedger()` |  |
+| 1927 | 71 | `static void theOfficesFigures()` |  |
+| 2000 | 10 | `static java.util.List<LandParcel> handMade(double[] perSqFt, double[] sizes, int n)` | A listing of `n` offers by hand: dry ground of each size at its dollars a square foot, ids from 1, each in its own place on no ground of the grid, no ore. |
 
-### 26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 2901-3132)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2923 | 196 | `static void byType()` |  |
-| 3121 | 10 | `static boolean wByType(LandManager land)` | Unowned + the remaining by type + E by type is the world's total, every resource, to the tonne. |
-
-### 27. WHERE THE CUT AND THE CLEARING MEET (0.7.138, batch I9; (lines 3133-3177)
+### the grid's own tests (0.7.67) (lines 2011-2058)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3145 | 31 | `static void cutAndCleared()` |  |
+| 2014 | 3 | `static boolean touchesOwned(LandGrid g, LandParcel p)` | Whether an offer's rectangle holds or borders ground the city owns (GridCheck.touches()). |
+| 2019 | 17 | `static double[] recountOn(CityLand land, Resource kind, java.util.function.BiPredicate<Long, Long> on)` | Every field of a resource whose centre plot passes `on`, within the nine cells round a city's site and its owned box's: its sites and amount, whole - read off the world's cells. |
+| 2038 | 3 | `static double[] offerFields(CityLand land, LandParcel offer, Resource kind)` | An offer's fields of one resource, recounted from the world: every field whose centre plot is one of its rectangle's free plots, whole (spec-land star 12 on the grid). |
+| 2043 | 15 | `static double[] freePlotsCounted(CityLand land, LandParcel p)` | An offer's five areas counted again, plot by plot from the world's tiles: the plots of its rectangle the city does not own (0.7.67, the books to the plot). |
 
-### 28. THE BOOKS BY RELIEF (ET1, spec-earth2-terrain 3.3) (lines 3178-3376)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3202 | 17 | `static long[] reliefCounted(CityLand land, long x0, long y0, long x1, long y1, java.util.function.BiPredicate<Long, Long> counted)` | Plots by relief counted by another road: {flat, foothill, steep, very steep, shallow sea, dry, sea} over the plots of [x0, x1) x [y0, y1) that `counted` takes - World.terrainAt() and reliefAt() a plot at a time. |
-| 3221 | 8 | `static boolean booked(double[] relief, double dryKm2, double seaKm2, long[] counted)` | Whether a record's relief figures (flat to shallow, km2) are the plots counted again, to the bit, add up to its dry area, and its shallow sea lies in its sea. |
-| 3231 | 3 | `static int hilly(double[] relief)` | 1 where a relief record holds foothill or steeper ground. |
-| 3240 | 32 | `static int[] reliefBooks(String name, CityLand land, java.util.List<LandParcel> offers)` | One city's books by relief held to the plots: the centre's, each purchase's (over the plots the grid gives that holding), the total's, and each of `offers` (over the plots of its rectangle no holding owns). |
-| 3278 | 33 | `static void handBuy(CityLand land, int hills, int shallow)` | Holdings bought by hand on the Earth: windows of 16 x 16 plots round the founding site that hold the most foothill or steeper ground (`hills`) or the most shallow sea (`shallow`), the best that leave the ground they t... |
-| 3312 | 44 | `static void byRelief() throws Exception` |  |
-| 3362 | 14 | `static void earthRelief(String name, World.Key key, boolean coast, boolean steep)` | An Earth city's books by relief held to the plots: a land office's centre and its twenty-four offers as it lists them, then a city founded the same way with holdings bought by hand where the ground has hills (and shal... |
-
-### 29. THE PLAYER'S GROUND: A DRAFT BOUGHT AS AN OFFER IS (BL1) (lines 3377-3742)
+### 19. THE LAND ON THE WORLD (0.7.57) (lines 2059-2423)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3397 | 3 | `static long[] rectOf(LandParcel p)` | An offer's rectangle as plots {x0, y0, x1, y1}. |
-| 3402 | 3 | `static long plotsOf(LandParcel p)` | An offer's rectangle in plots. |
-| 3407 | 7 | `static boolean sameGround(LandParcel a, LandParcel b)` | Whether two parcels hold the same ground to the plot's figures: the five areas, the sites and amounts of every resource. |
-| 3416 | 11 | `static java.util.Set<Integer> bittenBy(CityLand land, java.util.List<LandParcel> listing, long[] r)` | The standing offers whose free ground the rectangle meets, counted plot by plot: what a draft of it must take off the shelf. |
-| 3428 | 314 | `static void playersGround() throws Exception` |  |
+| 2072 | 351 | `static void onTheWorld()` |  |
 
-### 30. THE ORE CARD, EVERY ORE (I13-L) (lines 3743-3851)
+### 20. A CITY SAVED AND LOADED IS THE SAME LAND (0.7.57) (lines 2424-2487)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3746 | 6 | `static Object landScreen(Game g) throws ReflectiveOperationException` | The land office's screen on the interface bound to the city (no window), by reflection, as ZoningViewCheck reaches Policy's: its `ore()` and `otherOres()` words. |
-| 3754 | 5 | `static Object component(Object record, String name) throws ReflectiveOperationException` | A package-private record's component, by name: the card's words are the ui package's own. |
-| 3761 | 7 | `static java.util.Map<String, Object> otherOres(Object screen) throws ReflectiveOperationException` | The screen's other-ore lines, by name: {name -> record}. |
-| 3769 | 5 | `static Object ironLine(Object screen) throws ReflectiveOperationException` |  |
-| 3775 | 69 | `static void theOreCard() throws Exception` |  |
-| 3846 | 5 | `static boolean listingsAlike(java.util.List<LandParcel> a, java.util.List<LandParcel> b)` | Whether two shelves hold the same offers, field for field, in the same order. |
+| 2434 | 53 | `static void savedAndLoaded() throws Exception` |  |
 
-### 31. THE CENTRE'S STAMP (AP2) (lines 3852-3893)
+### 21. AN OLDER SAVE'S LAND IS CONVERTED (0.7.57) (lines 2488-2617)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3857 | 35 | `static void theCentresStamp()` |  |
+| 2511 | 1 | **type** `record Research(String name, long seed, double landOwned, int ironSites, double ironTonnes, int mines)` | One research city's land as its save carries it: its name, its world's seed, its square feet, iron sites and tonnes, and its Iron Mines. |
+| 2521 | 35 | `static void converted() throws Exception` |  |
+| 2558 | 18 | `static Deposit nearestUnowned(CityLand land, Resource kind)` | The iron field nearest a city's site, in the nine cells round it, whose centre the city does not own; null when none. |
+| 2578 | 19 | `static Deposit nearestOnDryGround(CityLand land, Resource kind)` | The field of a resource nearest a city's site, in the nine cells round it, whose centre plot is dry ground and not the city's (0.7.99): where foundedOn() puts a fixture's city. |
+| 2607 | 7 | `static LandManager foundedOn(long x, long y)` | A land office whose city is founded on the default world at plot (x, y) rather than its founding site (0.7.99, batch W1): a centre of whole blocks round it holding a new city's dry ground (CityLand.found()), nothing t... |
+
+### 22. THE TEST PLAYER KEEPS ITS GROUND AHEAD (0.7.58, batch J1d) (lines 2618-2700)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2632 | 68 | `static void groundKeptAhead()` |  |
+
+### 23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L) (lines 2701-2861)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2731 | 92 | `static void ironAWholeFieldAtATime()` |  |
+| 2830 | 3 | `static void ironPays(Game g)` | WN3: iron ore at the goods' literal band (Good.worldImportPrice(), worldExportPrice()), set on its market by hand as CopperRefiningCheck sets copper's. |
+| 2835 | 11 | `static Game ironListed(String label)` | A new city at 1.6 to the dollar grown, by hand, toward the iron field nearest its site (nearestUnowned(); its founding field until 0.7.98) - the offer nearest it each time - until an offer holds iron. |
+| 2848 | 13 | `static double[] recount(CityLand land, Resource kind, double out, java.util.function.BiPredicate<Double, Double> in)` | Every field of a resource centred within `out` plots of a city's site (L-infinity) whose centre, seen from the site, passes `in`: its sites and its amount, whole - read off the world's cells, with none of CityLand's s... |
+
+### 25. THE LEDGER WITH ZONES AND THE FOREST LAW (0.7.107, batch Z1) (lines 2862-2907)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2873 | 34 | `static void zonesOnTheLedger()` |  |
+
+### 26. THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 2908-3139)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2930 | 196 | `static void byType()` |  |
+| 3128 | 10 | `static boolean wByType(LandManager land)` | Unowned + the remaining by type + E by type is the world's total, every resource, to the tonne. |
+
+### 27. WHERE THE CUT AND THE CLEARING MEET (0.7.138, batch I9; (lines 3140-3184)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3152 | 31 | `static void cutAndCleared()` |  |
+
+### 28. THE BOOKS BY RELIEF (ET1, spec-earth2-terrain 3.3) (lines 3185-3383)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3209 | 17 | `static long[] reliefCounted(CityLand land, long x0, long y0, long x1, long y1, java.util.function.BiPredicate<Long, Long> counted)` | Plots by relief counted by another road: {flat, foothill, steep, very steep, shallow sea, dry, sea} over the plots of [x0, x1) x [y0, y1) that `counted` takes - World.terrainAt() and reliefAt() a plot at a time. |
+| 3228 | 8 | `static boolean booked(double[] relief, double dryKm2, double seaKm2, long[] counted)` | Whether a record's relief figures (flat to shallow, km2) are the plots counted again, to the bit, add up to its dry area, and its shallow sea lies in its sea. |
+| 3238 | 3 | `static int hilly(double[] relief)` | 1 where a relief record holds foothill or steeper ground. |
+| 3247 | 32 | `static int[] reliefBooks(String name, CityLand land, java.util.List<LandParcel> offers)` | One city's books by relief held to the plots: the centre's, each purchase's (over the plots the grid gives that holding), the total's, and each of `offers` (over the plots of its rectangle no holding owns). |
+| 3285 | 33 | `static void handBuy(CityLand land, int hills, int shallow)` | Holdings bought by hand on the Earth: windows of 16 x 16 plots round the founding site that hold the most foothill or steeper ground (`hills`) or the most shallow sea (`shallow`), the best that leave the ground they t... |
+| 3319 | 44 | `static void byRelief() throws Exception` |  |
+| 3369 | 14 | `static void earthRelief(String name, World.Key key, boolean coast, boolean steep)` | An Earth city's books by relief held to the plots: a land office's centre and its twenty-four offers as it lists them, then a city founded the same way with holdings bought by hand where the ground has hills (and shal... |
+
+### 29. THE PLAYER'S GROUND: A DRAFT BOUGHT AS AN OFFER IS (BL1) (lines 3384-3749)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3404 | 3 | `static long[] rectOf(LandParcel p)` | An offer's rectangle as plots {x0, y0, x1, y1}. |
+| 3409 | 3 | `static long plotsOf(LandParcel p)` | An offer's rectangle in plots. |
+| 3414 | 7 | `static boolean sameGround(LandParcel a, LandParcel b)` | Whether two parcels hold the same ground to the plot's figures: the five areas, the sites and amounts of every resource. |
+| 3423 | 11 | `static java.util.Set<Integer> bittenBy(CityLand land, java.util.List<LandParcel> listing, long[] r)` | The standing offers whose free ground the rectangle meets, counted plot by plot: what a draft of it must take off the shelf. |
+| 3435 | 314 | `static void playersGround() throws Exception` |  |
+
+### 30. THE ORE CARD, EVERY ORE (I13-L) (lines 3750-3858)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3753 | 6 | `static Object landScreen(Game g) throws ReflectiveOperationException` | The land office's screen on the interface bound to the city (no window), by reflection, as ZoningViewCheck reaches Policy's: its `ore()` and `otherOres()` words. |
+| 3761 | 5 | `static Object component(Object record, String name) throws ReflectiveOperationException` | A package-private record's component, by name: the card's words are the ui package's own. |
+| 3768 | 7 | `static java.util.Map<String, Object> otherOres(Object screen) throws ReflectiveOperationException` | The screen's other-ore lines, by name: {name -> record}. |
+| 3776 | 5 | `static Object ironLine(Object screen) throws ReflectiveOperationException` |  |
+| 3782 | 69 | `static void theOreCard() throws Exception` |  |
+| 3853 | 5 | `static boolean listingsAlike(java.util.List<LandParcel> a, java.util.List<LandParcel> b)` | Whether two shelves hold the same offers, field for field, in the same order. |
+
+### 31. THE CENTRE'S STAMP (AP2) (lines 3859-3900)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3864 | 35 | `static void theCentresStamp()` |  |
 
