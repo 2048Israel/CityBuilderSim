@@ -129,11 +129,11 @@ Sources:
   an order's buildings past the threshold are on the book from its billing, a depot's as any.
 - ★ **The payer pays (REV-FC2's P1; FC2 as first reviewed had the builders bear the gap).** That form quoted an
   order's abroad part at his excess before the order and billed it at the curve's excess at the month the whole
-  overflow at home made him run, so the builders paid the difference: 1,389.94 in the first month of
+  overflow at home made him run, so the builders paid the difference: 1,389.92 in the first month of
   ForeignCrewsCheck's 240-month backlog, and in ForeignCheck's founded town 46,753 billed in three years where its
   orders were quoted 54,170 points abroad for 7,958, the crews handed 208,555. Jerus's "a huge backlog costs more
   abroad" means the payer pays it: an order is quoted at the curve's month it makes and handed him at that price as
-  it is billed, so the bill is the quote (4,370.0454 and 4,370.0454 in that first month; the town to 1.25e-16).
+  it is billed, so the bill is the quote (4,370.0443 and 4,370.0443 in that first month; the town to 1.25e-16).
 - ★ **Work quoted at home stays at home.** The work abroad is only what an order's quote put there. Work its payers
   were quoted at home stays with the city's builders when the threshold later falls under it, or when a building
   starts within it and runs far past (ForeignCheck: the coal plant, 70.4 months queued at home after it against a
@@ -144,7 +144,7 @@ Sources:
 - ★ **The threshold is struck at the curve's first point** (r), the brief's "an order goes abroad exactly when the
   premium passes E x / p"; the price paid is the curve's at his month, so a quote past the threshold is over the
   premium at the threshold - though not always over the premium at home a road past it, which keeps rising: there
-  one House's share is +0.1509 against the queue's 0.1519 (ConstructionTrapCheck section 3). It goes abroad because
+  one House's share is +0.1510 against the queue's 0.1519 (ConstructionTrapCheck section 3). It goes abroad because
   the premium passed his first share, not because he is the dearer.
 - ★ **The trap's fixture stays FC1's depth.** ConstructionTrapCheck causes the trap to 5% of the builders' month
   (`SLIVER`, FC1's floor), though the model reads no floor now, so every section starts where FC1's did; its Row's
@@ -188,27 +188,28 @@ abroad; each section's claim is the city's own builders', and it is still run wi
      the national and the foreign accounts carry it. A point fetches 0.9191 at 8.85 months queued and nothing at 9.07;
      a month played at 10.85 sold nothing.
   6. 240 months (REV-FC2): the sites' month 343; the order's 75,380 points past the threshold quoted at +0.6767 (+0.1434
-     his share without it), 1.173167 a point on the House's base 0.699684, and on his book at exactly that as it was
-     billed; the queue at home 20.23 months against a threshold of 20.2165; his month 3,729 at that price. 120 months:
-     1,693 at +0.5785. The first month he built 3,725 points and billed 4,370.0454, the payer's price for them, the
-     gap in the builders' cash 0 where the form first reviewed left 1,389.9440. For months 2 to 6 the backlog at both
-     paces ran -0.2277 to 0.2862 months from the threshold (at most 20.409), nothing more was handed him, and the
+     his share without it), 1.173166 a point on the House's base 0.699684, and on his book at exactly that as it was
+     billed; the queue at home 20.23 months against a threshold of 20.2170; his month 3,729 at that price. 120 months:
+     1,693 at +0.5785. The first month he built 3,725 points and billed 4,370.0443, the payer's price for them, the
+     gap in the builders' cash 0 where the form first reviewed left 1,389.9198. For months 2 to 6 the backlog at both
+     paces ran -0.2277 to 0.2862 months from the threshold (at most 20.4095), nothing more was handed him, and the
      book's price stayed the order's to the bit; the save round-trip carries the book's share and price. A twin with
      `buildersShortOn` false for its first month: every sector's workers and every tier's posts the same, his 3,725
      points built in one and none in the other. ★ Not "the jobs filled the same" (516 against 513): the fill rate is
      the households' side, which the month moves through what it built.
-  7. 29 months audited here, the worst residual 2.19e-13.
+  7. 29 months audited here, the worst residual 1.15e-13.
 - **ConstructionTrapCheck** (moved to the new truth, 319 OK): FC2's pure shape; since REV-FC2 his book before the
   trap's sites is empty (the founding's Penitentiary was quoted at home and its work stays there) and the trap's
   sites, ordered past the threshold, go on it whole as they are billed (30,600 points); sold abroad in 3 of 35
-  months, 21.87; the worst residual 9.24e-14. REV-FC2's moves, each with its reason in a comment: the depot on his book
+  months, 21.87; the worst residual over its 59 months 1.15e-13. REV-FC2's moves, each with its reason in a comment: the depot on his book
   as billed at its quote's share and price (section 4), the offer handing nothing, the city's own sites over the
   sliver while orders still go abroad, the plan ordering the Builders' Yard or a depot (section 5), a restart's
   points staying at home (section 9), his month as the month struck it within a point of the offer read before it
   (sections 4 and 10: the book is fixed and the threshold restruck at the month's top), and section 3's ordering
   (the call above).
-- **DeathCareFirstCheck**: "the Penitentiary still owing most of its points" moved to "still owing points" - the
-  founding hands its work past the threshold abroad, and it stays on site, which is what keeps every post offered.
+- **DeathCareFirstCheck**: main's, unchanged. FC2 as first reviewed had moved "the Penitentiary still owing most of
+  its points" to "still owing points", the founding handing its work past the threshold abroad; since REV-FC2 the
+  Penitentiary is quoted at home and its work stays there, so main's assertion holds again and is back.
 - **BuildersFirstCheck** (22 red with the foreign crews on): they finish the stall's depot in its first month with
   BF1's rule or without it (section 4: 1,120 of nameplate without the rule, not the 560 it held). The rule is shown
   where it is the only way out, the city's crews alone: `buildersShortOn` false for its JVM, as HoldersCheck,

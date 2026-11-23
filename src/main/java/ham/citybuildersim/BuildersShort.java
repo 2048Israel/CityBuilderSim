@@ -241,14 +241,6 @@ public final class BuildersShort {
     }
 
     /**
-     * The mean share an order of {@code n} buildings carries over its base price with the foreign crews on offer: the
-     * building i (from 0) stands in {@code fromMonths + i * stepMonths} months queued (meanPremium()); it is the city's
-     * own while that is no more than {@code thresholdMonths}, at premium(), and abroad past it, at {@code foreignShare}.
-     * The first k at home are meanPremium(fromMonths, stepMonths, k), exact or the integral as it says. With no step
-     * (zero, negative or NaN) every building stands where the first does; with a queue already endless all are abroad,
-     * unless the threshold is endless too (no foreign crews at all: every building at home, FC1's meanPremium()).
-     */
-    /**
      * How many of an order's {@code n} buildings (at least one) stand within {@code thresholdMonths} (REV-FC2): the
      * building i (from 0) in {@code fromMonths + i * stepMonths} months queued, at home while that is at or under the
      * threshold. meanShare() prices those at the premium and the rest at the foreign crews' share, and the order hands
@@ -264,6 +256,14 @@ public final class BuildersShort {
         return k >= count ? count : (long) Math.max(0, k);
     }
 
+    /**
+     * The mean share an order of {@code n} buildings carries over its base price with the foreign crews on offer: the
+     * building i (from 0) stands in {@code fromMonths + i * stepMonths} months queued (meanPremium()); it is the city's
+     * own while that is no more than {@code thresholdMonths}, at premium(), and abroad past it, at {@code foreignShare}.
+     * The first k at home are meanPremium(fromMonths, stepMonths, k), exact or the integral as it says. With no step
+     * (zero, negative or NaN) every building stands where the first does; with a queue already endless all are abroad,
+     * unless the threshold is endless too (no foreign crews at all: every building at home, FC1's meanPremium()).
+     */
     public static double meanShare(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare) {
         long count = Math.max(1, n);
         double abroad = Math.max(0, Math.min(CEILING, Double.isNaN(foreignShare) ? 0 : foreignShare));
