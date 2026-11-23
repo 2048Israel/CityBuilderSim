@@ -80,7 +80,8 @@ public class DenominationCheck {
         buyer.disposable = 10;
         buyer.afterFixed = 8;
         buyer.subsistence = 3;
-        buyer.savings = 30;
+        buyer.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * buyer.disposable
+                + 100 * HouseholdBalance.USED_CAR_FLOOR * HouseholdBalance.CAR_DEPOSIT * HouseholdBalance.CAR_ADOPTION * 1.5;
         market.wearOutCars();
         double traded = market.clearUsedCars(100, 1);
         return new Motoring.UsedTrade(traded, market.getUsedCarsOffered(),
@@ -280,6 +281,7 @@ public class DenominationCheck {
         // The played twins need not offer a used car this month. Put the same
         // actual closed trade through their restore port before reforming one.
         Motoring.UsedTrade usedFixture = usedTradeFixture();
+        out.println("   caused closed used-car trade: " + usedFixture);
         assertTrue("fixture: a seller and buyer actually traded a financed used car",
                 usedFixture.traded() > 0 && usedFixture.spend() > 0 && usedFixture.credit() > 0);
         plain.getMotoring().restoreUsedTrade(usedFixture);

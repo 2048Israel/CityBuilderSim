@@ -586,6 +586,10 @@ then restores that same actual closed trade to both currency twins before the
 reform. ScaleCheck also sends that nonzero trade through its native JSON copier.
 This is an input for the flow-transform checks; SaveFileCheck independently
 causes the positive trade through the integrated played city's monthly market.
+The caused flow has 800 offered, 20 traded, price 15.679012345679013,
+spend 313.58024691358025 and credit 223.58024691358042. The buyer's deposit
+is above SHARE_CUSHION_MONTHS times income and derived from CAR_DEPOSIT,
+CAR_ADOPTION and the used-car floor; every saved tuple component is nonzero.
 
 ## Final integrated profile
 
