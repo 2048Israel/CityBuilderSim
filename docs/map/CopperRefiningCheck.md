@@ -1,4 +1,4 @@
-# CopperRefiningCheck.java - 1,456 lines · 31 methods · 24 constants · harnesses
+# CopperRefiningCheck.java - 1,457 lines · 31 methods · 24 constants · harnesses
 
 `ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > 
 > ... (57 more lines in the source)
 
-**Uses:** [Good](Good.md) (242), [CopperRefining](CopperRefining.md) (52), [Sector](Sector.md) (47), [OldMetal](OldMetal.md) (31), [Game](Game.md) (29), [Sectors](Sectors.md) (26), [BuildingManager](BuildingManager.md) (26), [SpreadPlanner](SpreadPlanner.md) (18), [LongPlaytest](LongPlaytest.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (16), [GoodsMarket](GoodsMarket.md) (13), [CopperMiningCheck](CopperMiningCheck.md) (12), [MaterialsCheck](MaterialsCheck.md) (10), [Manufacturing](Manufacturing.md) (8), [CopperMining](CopperMining.md) (8), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [BusinessInvestment](BusinessInvestment.md) (4), [Nations](Nations.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Trade](Trade.md) (3), [WorldData](WorldData.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PriceLevel](PriceLevel.md) (2), [MoneyAudit](MoneyAudit.md) (2), [NationalAccounts](NationalAccounts.md) (2), [Resource](Resource.md) (2), [Markets](Markets.md) (1)... and 10 more
+**Uses:** [Good](Good.md) (242), [CopperRefining](CopperRefining.md) (52), [Sector](Sector.md) (47), [OldMetal](OldMetal.md) (31), [Game](Game.md) (29), [Sectors](Sectors.md) (26), [BuildingManager](BuildingManager.md) (26), [SpreadPlanner](SpreadPlanner.md) (18), [LongPlaytest](LongPlaytest.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (16), [GoodsMarket](GoodsMarket.md) (13), [CopperMiningCheck](CopperMiningCheck.md) (12), [MaterialsCheck](MaterialsCheck.md) (10), [Manufacturing](Manufacturing.md) (8), [CopperMining](CopperMining.md) (8), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [BusinessInvestment](BusinessInvestment.md) (4), [Nations](Nations.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Trade](Trade.md) (3), [WorldData](WorldData.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PriceLevel](PriceLevel.md) (2), [MoneyAudit](MoneyAudit.md) (2), [NationalAccounts](NationalAccounts.md) (2), [Resource](Resource.md) (2), [Markets](Markets.md) (1)... and 11 more
 
 ## Sections
 
@@ -80,7 +80,7 @@
 | 651 | 8. a works buys inputs only for what it makes |
 | 799 | 9. a works making a flow good orders no input for exports that sell under it |
 | 1197 | 10. a mine and a smelter on the world market (CU2) |
-| 1380 | 11. seed 1's Rod Mills, played (CU2) |
+| 1381 | 11. seed 1's Rod Mills, played (CU2) |
 
 ## Constants
 
@@ -106,10 +106,10 @@
 | 1203 | `CopperRefiningCheck.PEAKS_HELD` | `3` | The large peaks of the charge the years played must hold: three, so the cycle is seen more than once. |
 | 1206 | `CopperRefiningCheck.CYCLE_SEEN` | `.95` | The least correlation of the smelter's margin over cathode with the treatment part over cathode, over the solves played: .98 measured (.9818 over the 41 solves of 1900-1940, 2026-11-16), this a little below it. |
 | 1209 | `CopperRefiningCheck.RANGE_KEPT` | `.5` | The share of the treatment part's range the margin's range must keep: half, so the market does not damp the swing away (1.28 of it measured, over the same 41 solves). |
-| 1383 | `CopperRefiningCheck.PLAYED` | `! "false".equalsIgnoreCase(System.getProperty("copperRefining.played"))` | Whether section 11 plays: -DcopperRefining.played=false skips it while section 10 is iterated on; the suite never sets it. |
-| 1386 | `CopperRefiningCheck.ROD_CHILD_MINUTES` | `28` | The minutes the child may take before it is ended and the section fails: the 12 to 14 the playtest took under the suite's load, doubled. |
-| 1389 | `CopperRefiningCheck.ROD_MILLS_STANDING` | `1` | The Rod Mills seed 1's 2,400 months may leave standing: one, as the study's chained seed 1 stood one, losing; main's 363 fails it (spec-world-prices.md 5). |
-| 1392 | `CopperRefiningCheck.WORKS_LINE` | `"copper works at the end:"` | The playtest's own line of the copper works it ended with. |
+| 1384 | `CopperRefiningCheck.PLAYED` | `! "false".equalsIgnoreCase(System.getProperty("copperRefining.played"))` | Whether section 11 plays: -DcopperRefining.played=false skips it while section 10 is iterated on; the suite never sets it. |
+| 1387 | `CopperRefiningCheck.ROD_CHILD_MINUTES` | `28` | The minutes the child may take before it is ended and the section fails: the 12 to 14 the playtest took under the suite's load, doubled. |
+| 1390 | `CopperRefiningCheck.ROD_MILLS_STANDING` | `1` | The Rod Mills seed 1's 2,400 months may leave standing: one, as the study's chained seed 1 stood one, losing; main's 363 fails it (spec-world-prices.md 5). |
+| 1393 | `CopperRefiningCheck.WORKS_LINE` | `"copper works at the end:"` | The playtest's own line of the copper works it ended with. |
 
 ## Fields (state)
 
@@ -125,7 +125,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 132 | 1325 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
+| 132 | 1326 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
 | 140 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 145 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 150 | 5 | `static void quietly(Runnable r)` |  |
@@ -200,17 +200,17 @@
 | 1116 | 6 | `static void play(Game g, int months, Cuts cuts)` | Plays months one at a time, each counted (LongPlaytest.run(g, 1) is the same month as a run of many). |
 | 1124 | 72 | `static void rotterdam()` | (f) how often the rule fires in a real run: a Rotterdam city played as LandmassCheck 13 plays it, each month counted. |
 
-### 10. a mine and a smelter on the world market (CU2) (lines 1197-1379)
+### 10. a mine and a smelter on the world market (CU2) (lines 1197-1380)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1212 | 17 | `static double correlation(double[] a, double[] b)` | Pearson's correlation of two series; NaN where either does not vary. |
 | 1231 | 8 | `static double range(double[] a)` | The largest less the smallest of a series. |
-| 1244 | 135 | `static void mineOnTheWorld()` | 10. |
+| 1244 | 136 | `static void mineOnTheWorld()` | 10. |
 
-### 11. seed 1's Rod Mills, played (CU2) (lines 1380-1456)
+### 11. seed 1's Rod Mills, played (CU2) (lines 1381-1457)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1398 | 58 | `static void rodMillsPlayed() throws Exception` | 11. |
+| 1399 | 58 | `static void rodMillsPlayed() throws Exception` | 11. |
 

@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.192 — PW5, substations — 2026-11-23, ready, see docs/queue/PW5-notes.md
+Substations carry 100 MW of the peak each, ordered by the automatic builder through the
+same funding, ground and construction rules as roads. Beyond the free founding 10 MW,
+a city short of wires browns out in the power dispatch's existing shortfall figures.
+The wires' bill now reads their capital over forty years at four percent real, repairs
+and filled posts, paid through the existing city books once; industry retains its
+transmission-only share. Closing costs are saved with the dispatch, so reloading keeps
+the next bill exact. Currency reforms scale every wires component once. Older saves
+are refused with both files and the running city intact under the raised format floor.
+PW5-F1: a 45 MW town pays 11.38 cents/kWh against 5.94; each district also needs
+110 repair points/month. Before HC1, seed 0's first stands at m576: builders 6,176,
+standing repairs 420 (110 for the district), leaving 5,756 points for sites.
+
 ### 0.9.191 — AP2, slot 9's slow months at 17 million people — 2026-11-22, ready, see docs/queue/AP2-notes.md
 On Jerus's slot 9 (17.3 million people, 321,345 buildings, 151 districts) the months the ground moved took 8-15 s. A highway piece's failed link search reruns at every purchase, and its 2-million-plot ring drew the same Earth tiles again, about 90,000 draws for 4,000 tiles, through a 256-tile memory.
 The runs' ground keeps every tile a link's search reads (`CityMap.RUN_SEARCH_TILES_KEPT`, 8,192, for the search alone; `CityRuns.Ground.searching()`), and gives back its usual 256 after.

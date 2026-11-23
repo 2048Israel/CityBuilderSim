@@ -1,11 +1,8 @@
-# gate of Merge batch/AP2: slot 9's slow months at 17 million people (Jerus, 2026-11-22, by a desktop side session): the runs' ground keeps every tile a link's search reads, CityLand's centre stamp and EarthTerrain's ids kept, the auction's debts read in one pass; every figure the same to the bit, 0.9.191
+# gate of Merge batch/PW5: substations (Jerus, 2026-11-02: "Substations"): one per 100 MW of peak, built by the auto-builder, their cost the wires' part of the bills PW1 strikes. Back from Pending by its own recommendation, next in the power lane, 0.9.192
 # date: 2026-11-23
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 240 harnesses run in 964s: 230 passed, 10 failed
-OrderDoorCheck | exit 1
-OrderDoorCheck | FAIL fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready
-OrderDoorCheck | OrderDoorCheck: 1 FAILED
+# suite: 244 harnesses run in 1034s: 233 passed, 11 failed
 RoadCheck | exit 1
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
@@ -24,27 +21,28 @@ HoldersCheck | ...until it has none: the dial past the bank's holding took all o
 HoldersCheck | fixture: ...and the step came from the households                        FAIL
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
 HoldersCheck | 4 FAILED
-ReloadCheck | exit 1
-ReloadCheck | fixture 3b, by hand: the caused point's own city exercised it                                                    FAIL  0 crews that drew materials
-ReloadCheck | 1 FAILED
-KeptCheck | exit 3
-KeptCheck | the city's fund: a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now: 0) FAIL
+PriceLevelCheck | exit 1
+PriceLevelCheck | --twin-built: the twins part only where rounding parts two cities of one level (month 81: 0 same-level pairs and 1 across) FAIL
+PriceLevelCheck | 1 FAILED
+KeptCheck | exit 2
+KeptCheck | fixture: Household money, all of them: every cell the household grid opens before the month it opens after, the families held (1 closed; the month alone would have closed 1) FAIL
 KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 3 FAILED
+KeptCheck | 2 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
+LongPlaytest | exit 1
+LongPlaytest | FAIL households with no home                           16 time(s), months 792-807
 Forms1900Check | exit 1
-Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 380.4, litres 7493.1, petrol duty 0.000000
-Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  403.048697 != 380.367644
+Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 380.4, litres 7493.7, petrol duty 0.000000
+Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  403.049651 != 380.393694
 Forms1900Check | 2 FAILED
 PublicLicenceCheck | exit 1
-PublicLicenceCheck | FAIL fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive: demand 13055.200 with 13055.200 without 2534.410 gain -645.220624 (1 mills)
-PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge: pending 0.0 paid 0.0 expected -161.30515589377555
-PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12884.2 with 12884.2 without 2140.314426053394 gain -12.14698139423472
-PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -26.93491686939178 pending 0.0 then gain -12.14698139423472 pending 0.0
+PublicLicenceCheck | FAIL fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive: demand 13055.200 with 13055.200 without 2759.168 gain -695.251342 (1 mills)
+PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge: pending 0.0 paid 0.0 expected -173.8128354718698
+PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12907.6 with 12907.6 without 2353.90245799367 gain -57.86352024591157
+PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -67.58663801425539 pending 0.0 then gain -57.86352024591157 pending 0.0
 PublicLicenceCheck | 64 passed, 4 FAILED
-EducationCheck | exit 1
-EducationCheck | fixture: the two readings of this market really do differ        FAIL
-EducationCheck | 1 FAILED

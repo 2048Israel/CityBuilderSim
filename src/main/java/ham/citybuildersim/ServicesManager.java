@@ -112,7 +112,7 @@ public class ServicesManager {
         // ...and the plants themselves, each with its count, for the month's merit order (PW1; UtilitiesHandler, THE MERIT ORDER).
         Map<BuildingsTemplate, Long> plants = new LinkedHashMap<>();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
-            if (t.getCategory() != BuildingType.ELECTRICITY) continue;
+            if (t.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(t)) continue;
             long n = buildingManager.getQuantity(t.getId());
             if (n > 0) plants.put(t, n);
         }

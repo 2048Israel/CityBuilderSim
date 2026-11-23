@@ -382,6 +382,9 @@ public class ElectrolyserCheck {
         double saved = HeavyIndustry.unitsSavedAWorks(t);
         Grid off = grid(g, 0, Double.NaN);
         Grid on = grid(g, GRID_WORKS, Double.NaN);
+        SubstationCheck.wiresFor(g, off.peak());
+        check("fixture: substations carry the unfitted peak, so only generation can ration this comparison",
+                Substations.costs(g).carryKw() >= off.peak());
         near("every works fitted, the city's demand falls by the saving of every one (ServicesManager reads what the sector is billed)", off.demand() - on.demand(), GRID_WORKS * saved, 1e-6);
         near("...and so does the draw the utility invoices", off.billed() - on.billed(), GRID_WORKS * saved, 1e-6);
         near("...the same units the sector's own bill falls by", off.drawn() - on.drawn(), GRID_WORKS * saved, 1e-6);

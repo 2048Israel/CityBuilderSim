@@ -38,7 +38,7 @@ public class AllChecks {
 
     /** Every harness: the gate and nightly selections together cover this registry. */
     static final String[] HARNESSES = {
-        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck", "PowerDispatchCheck", "PowerPriceCheck", "PowerViewCheck",
+        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck", "PowerDispatchCheck", "SubstationCheck", "PowerPriceCheck", "PowerViewCheck",
         "EarthCheck", "WorldDataCheck", "NationsCheck", "WorldMeasuresCheck", "RankingsCheck", "WorldMarketCheck", "WorldMoneysCheck", "RealDollarCheck", "PartnersCheck", "VaultMoneysCheck", "PegAnchorCheck", "InterestAbroadCheck", "GoldPriceCheck", "GoldStandardCheck", "EarthTerrainCheck", "EarthFoundingCheck", "EarthDepositsCheck", "GlobeCheck",
         "PolicyCheck", "PolicyOpenCheck", "MoneyDatesCheck", "LandCheck", "SlopeCheck", "LandClassCheck", "LandmassCheck", "LandNationsCheck", "BridgeCheck", "RunWorksCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck", "HousingDoorCheck", "CreditCrunchCheck", "OrderDoorCheck",
         "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "GapOrderCheck", "ConstructionTrapCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "EssentialWorksCheck", "WorksFinanceCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",
@@ -76,7 +76,7 @@ public class AllChecks {
     /** Keep 4 GB of RAM available, above the 2.9 GB left when two KeptChecks drove this 32 GB PC to 91% RAM (MG1). */
     static final double AVAILABLE_RAM_GB = 4;
 
-    /** Start beside another harness below 80% CPU, leaving room before MG1's measured 85â€“94% contention. */
+    /** Start beside another harness below 80% CPU, leaving room before MG1's measured 85Ã¢â‚¬â€œ94% contention. */
     static final double CPU_PCT = 80;
 
     /** Sample every two seconds so held starts can resume without busy waiting (MG1). */
@@ -191,7 +191,7 @@ public class AllChecks {
                         if (seen == 0) held.incrementAndGet();
                         if ((seen & (1 << block)) == 0) {
                             heldBy[block]++;
-                            System.out.println("memory: " + name + " start held â€” " + holdLine(reading, block));
+                            System.out.println("memory: " + name + " start held Ã¢â‚¬â€ " + holdLine(reading, block));
                             seen |= 1 << block;
                         }
                         live.wait(RESOURCE_SECONDS * 1000L);
@@ -259,7 +259,7 @@ public class AllChecks {
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
         String display = System.getProperty(ham.citybuildersim.ui.FollowBench.DISPLAY_PROPERTY, "");   // GB5: the gate box's runs
         if (!display.isEmpty()) System.out.println(displayLine(display, order));
-        if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed â€” free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
+        if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed Ã¢â‚¬â€ free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
         if (observed > 0) System.out.printf("%d path assertion%s OBSERVED, not counted: %s%n",

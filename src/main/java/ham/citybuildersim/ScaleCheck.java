@@ -269,6 +269,7 @@ public class ScaleCheck {
             System.setOut(real);
         }
         playTown(g, months);
+        if (Boolean.getBoolean("cbs.pw5.traceFixtures")) System.out.println("PW5_SCALE_BASE " + SubstationCheck.gridReading(g));
     }
 
     /** Section 6's town played on by keepAhead()'s plan to its month, a month at a time and quietly (ST3; FS2 split it from ownTown() for the strike). */
@@ -294,6 +295,13 @@ public class ScaleCheck {
         BuildingManager b = g.getBuildingManager();
         long people = g.getPopulationManager().getPopulation();
         LongPlaytest.keepGroundAhead(g);
+        double peak = Substations.peak(b.getTotalDouble(BuildingsTemplate::powerBought),
+                java.util.Arrays.stream(PowerDispatch.SEASON).max().orElseThrow());
+        if (peak > g.getServicesManager().getUtilitiesHandler().getFoundingGridKw()) {
+            long wanted = (long) Math.ceil(peak / (Substations.SUBSTATION_MW * 1000.0));
+            long missing = wanted - b.getQuantity(Substations.ID) - b.underConstructionByName("Substation");
+            if (missing > 0) LongPlaytest.build(g, "Substation", missing);
+        }
         ahead(g, g.getEnergyRatio() < 1, "Wind Farm");
         ahead(g, g.getWaterRatio() < 1, "Water Treatment Plant");
         ahead(g, g.getRoadRatio() < 1, "Paved Road");
@@ -592,6 +600,8 @@ public class ScaleCheck {
             long places = city.getHouseholdCapacity();
             quietly(() -> city.saveGame(10, "scalecheck grown"));
             tried++;
+            if (Boolean.getBoolean("cbs.pw5.traceFixtures"))
+                out.println("PW5_SCALE_CANDIDATE people=" + townPeople + " places=" + places + " " + SubstationCheck.gridReading(city));
             // ...and its own next FREE_MONTHS, which the copies are read against (0.7.55).
             Original o = new Original(city);
             if (o.calm()) {

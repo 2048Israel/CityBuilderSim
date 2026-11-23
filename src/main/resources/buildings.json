@@ -216,7 +216,7 @@
   "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures.",
   "R2e: optional after names another change on this template. Its undo applies only while that earlier change is present (E11 zeolite requires PE24 catalytic cracking); saved missing-change flags retain both decisions."
  ],
- "nextId": 166,
+ "nextId": 167,
  "buildings": [
   {
    "id": 0,
@@ -5950,6 +5950,23 @@
   },
   {
    "id": 155,
+   "name": "Substation",
+   "category": "ELECTRICITY",
+   "capacity": 100000,
+   "cashCost": 264000,
+   "constructionPoints": 132000,
+   "constructionMaterials": 9778,
+   "land": 217800,
+   "roadLoad": 140,
+   "jobs": {
+    "DIPLOMA": 100,
+    "COLLEGE_ENGINEERING": 30,
+    "UNIV_HIGHTECH_ENG": 10
+   },
+   "since": 1900
+  },
+  {
+   "id": 156,
    "name": "Compact house",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -5985,7 +6002,7 @@
    "since": 1900
   },
   {
-   "id": 156,
+   "id": 157,
    "name": "Large house",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6021,7 +6038,7 @@
    "since": 1900
   },
   {
-   "id": 157,
+   "id": 158,
    "name": "Duplex",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6057,7 +6074,7 @@
    "since": 1900
   },
   {
-   "id": 158,
+   "id": 159,
    "name": "Terrace",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6093,7 +6110,7 @@
    "since": 1900
   },
   {
-   "id": 159,
+   "id": 160,
    "name": "Mixed walk-up",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6154,7 +6171,7 @@
    }
   },
   {
-   "id": 160,
+   "id": 161,
    "name": "Mixed mid-rise",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6215,7 +6232,7 @@
    }
   },
   {
-   "id": 161,
+   "id": 162,
    "name": "Mixed tower",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6287,7 +6304,7 @@
    }
   },
   {
-   "id": 162,
+   "id": 163,
    "name": "Large apartment block",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6348,7 +6365,7 @@
    }
   },
   {
-   "id": 163,
+   "id": 164,
    "name": "Large high-rise",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6420,7 +6437,7 @@
    }
   },
   {
-   "id": 164,
+   "id": 165,
    "name": "Very tall tower",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",
@@ -6492,7 +6509,7 @@
    }
   },
   {
-   "id": 165,
+   "id": 166,
    "name": "Large-home luxury tower",
    "category": "RESIDENTIAL",
    "sector": "Real Estate",

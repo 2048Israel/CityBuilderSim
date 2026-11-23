@@ -198,11 +198,19 @@ public final class PowerDispatch {
      * (0 if none), or at voll when it is left short. Sets every row's gen, kwh, fuelUnits and earned.
      */
     public static Month dispatch(List<Row> rows, double drawKw, double season, double voll) {
+        return dispatch(rows, drawKw, season, voll, Double.POSITIVE_INFINITY);
+    }
+
+    /** The same dispatch, with the city's wires limiting generation before fuel or water is spent. */
+    public static Month dispatch(List<Row> rows, double drawKw, double season, double voll, double carryKw) {
         Month m = new Month();
         List<Integer> observedOrder = new ArrayList<>();
         double draw = nonNegative(drawKw) * nonNegative(season) / (1 - GRID_LOSSES), cap = nonNegative(voll);
         double[] residual = new double[HALVES];
-        for (int s = 0; s < HALVES; s++) m.load[s] = residual[s] = draw * BLOCK_LOAD[s / 2];
+        for (int s = 0; s < HALVES; s++) {
+            m.load[s] = draw * BLOCK_LOAD[s / 2];
+            residual[s] = Math.min(m.load[s], Math.max(0, carryKw));
+        }
         for (Row r : rows) { Arrays.fill(r.gen, 0); r.kwh = r.fuelUnits = r.earned = 0; }
 
         // 1. The works' surplus, then 2. the wind: what a half-block cannot take is curtailed.
@@ -249,7 +257,8 @@ public final class PowerDispatch {
                 if (out <= 0) continue;
                 r.gen[s] = out; residual[s] -= out; price = r.marginal;
             }
-            m.unserved[s] = residual[s] > SHORT_KW ? residual[s] : 0;
+            double shortfall = residual[s] + Math.max(0, m.load[s] - Math.max(0, carryKw));
+            m.unserved[s] = shortfall > SHORT_KW ? shortfall : 0;
             m.price[s] = m.unserved[s] > 0 ? cap : price;
         }
 

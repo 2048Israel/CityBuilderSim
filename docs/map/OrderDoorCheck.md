@@ -1,4 +1,4 @@
-# OrderDoorCheck.java - 497 lines · 20 methods · 10 constants · harnesses
+# OrderDoorCheck.java - 544 lines · 22 methods · 10 constants · harnesses
 
 `ham/citybuildersim/OrderDoorCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -53,13 +53,13 @@
 >      whole with the till holding one, as on main (REV-FB15: there the till is
 >      the sector's last money).
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (39), [Game](Game.md) (29), [BuildingsTemplate](BuildingsTemplate.md) (13), [Mortgage](Mortgage.md) (13), [BusinessInvestment](BusinessInvestment.md) (10), [Equity](Equity.md) (7), [BusinessDebtManager](BusinessDebtManager.md) (4), [EconomyManager](EconomyManager.md) (3), [GameFiles](GameFiles.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Good](Good.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [SectorBooks](SectorBooks.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Household](Household.md) (1), [Investor](Investor.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (42), [Game](Game.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (15), [Mortgage](Mortgage.md) (13), [BusinessInvestment](BusinessInvestment.md) (10), [Equity](Equity.md) (7), [EconomyManager](EconomyManager.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (5), [GameFiles](GameFiles.md) (5), [GoodsMarket](GoodsMarket.md) (2), [Good](Good.md) (2), [SubstationCheck](SubstationCheck.md) (2), [DebtManager](DebtManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (1), [SectorBooks](SectorBooks.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Household](Household.md) (1), [Investor](Investor.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Founding](Founding.md) (1), [LandParcel](LandParcel.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 409 | THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge |
+| 456 | THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge |
 
 ## Constants
 
@@ -86,13 +86,13 @@
 | 214 | `static double priceOne, priceAsked, tillAtOrder` |  |
 | 216 | `static double tillAtProject` | What the project's order told the door: the till, and the slice that carries its interest. |
 | 217 | `static long carried` |  |
-| 413 | `static boolean stuck` |  |
+| 460 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 438 | **type** `public class OrderDoorCheck` | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the lender says no to asked again of half, down to one. |
+| 60 | 485 | **type** `public class OrderDoorCheck` | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the lender says no to asked again of half, down to one. |
 | 83 | 4 | `static void check(String label, boolean ok)` |  |
 | 88 | 3 | `static boolean near(double a, double b)` |  |
 | 93 | 3 | `static double door(Game g, BuildingsTemplate t, long n)` | What buildFor() charges for n of these, read as HousingDoorCheck reads the door: the quote and the plot. |
@@ -109,13 +109,15 @@
 | 180 | 31 | `static void edgeParts(Game g, BuildingsTemplate block)` | Each condition of the edge, printed, so a fixture that misses it says which. |
 | 219 | 7 | `static void consider(Game g, BusinessInvestment.Decision d) throws Exception` |  |
 | 228 | 23 | `static void traceClosedCards() throws Exception` | A failed played premise gets a native input control, without moving the tested city's edge. |
-| 252 | 151 | `public static void main(String[] args) throws Exception` |  |
-| 404 | 4 | `static void finish()` |  |
+| 253 | 26 | `static Game independent(Game prepared, String label) throws Exception` | Independent orders start with the prepared town's real cash, material stock and holdings. |
+| 280 | 16 | `static void watch(Game g)` |  |
+| 297 | 153 | `public static void main(String[] args) throws Exception` |  |
+| 451 | 4 | `static void finish()` |  |
 
-### THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge (lines 409-497)
+### THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge (lines 456-544)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 416 | 10 | `static void run(Game g, int months)` | ...and stopped at the month-end FROM, every later step a no-op (FS9: the edge is then caused, not searched for). |
-| 427 | 70 | `static void foundAndPlay(Game g)` |  |
+| 463 | 10 | `static void run(Game g, int months)` | ...and stopped at the month-end FROM, every later step a no-op (FS9: the edge is then caused, not searched for). |
+| 474 | 70 | `static void foundAndPlay(Game g)` |  |
 

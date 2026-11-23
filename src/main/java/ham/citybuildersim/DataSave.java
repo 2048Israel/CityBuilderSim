@@ -192,7 +192,8 @@ public class DataSave implements Cloneable {
 
     /**
      * The utility's struck book (PW1; UtilitiesHandler, THE MERIT ORDER): the prices this month's power is billed at, the ratio it served
-     * and the fuel bought at the next strike, and the month's fuel paid. Absent on an older save, which loads the founding book. No format bump.
+     * and the fuel bought at the next strike, and the month's fuel paid. PW5 also keeps the closing dispatch's grid costs here;
+     * the load rebuild restores them with that dispatch, never from the ending stock (format 62 after RES2).
      */
     private UtilitiesHandler.PowerState powerBooks;
 

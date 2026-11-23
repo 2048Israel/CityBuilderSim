@@ -66,6 +66,12 @@ public class BuildingDataCheck {
 
         System.out.println("\n--- coverage ---");
         assertTrue("same number of buildings (" + data.size() + ")", data.size() == code.size());
+        BuildingsTemplate grid = byId(data, Substations.ID);
+        assertTrue("PW5 appends Substation, a city utility carrying the study's peak MW, without generation",
+                grid != null && "Substation".equals(grid.getName()) && grid.getCategory() == BuildingType.ELECTRICITY
+                        && !grid.isOwnedBySector() && grid.getCapacity() == Substations.SUBSTATION_MW * 1000
+                        && grid.getProduction1() == 0 && grid.getTotalJobs() == 140
+                        && near(todays(grid.getCashCost()) + todays(BuildingManager.MATERIALS_WORLD_PRICE) * grid.getConstructionMaterials(), 440004));
 
         /* ---------- every field of every building ---------- */
         System.out.println("\n--- field by field, against the built-in definitions ---");
@@ -817,6 +823,7 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL, 1900);
         years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
         years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
+        years.put(Substations.ID, 1900);   // PW5: the district grid is available at founding.
         for (HousingForms.Form form : HousingForms.ALL) years.put(form.id(),form.since());
         assertTrue("RES3's fourteen forms and the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
@@ -836,7 +843,7 @@ public class BuildingDataCheck {
                         + " Steel Mini-Mill E13 1969, the Walk-in Clinic B4 1973, the Wind Farm E16 1980, the Assisted Living Residence M8 1981 and the Shared"
                         + " Services Centre B6 1982) and R6b's two near-future buildings, the Sulphide Leach & SX-EW Plant 2025 (FE2) and the Hydrogen Steel Works 2028 (FE4, a projection); the Large Cement Plant, the Large Copper Mine, the pelletising and two magnetite works, the Large"
                         + " Mini-Mill, the Leach & SX-EW Plant and the Harvesting Operation keep their years, now as the codes PE4, PE8, E4, E13, E12 and E14,"
-                        + " their years here being their entries'; no row"
+                        + " their years here being their entries'; and PW5's Substation 1900; no row"
                         + " before them: " + dated,
                 dated.equals(years));
 

@@ -493,6 +493,7 @@ public class Game {
         });
         servicesManager.setExchangeRate(() -> getMarkets() == null ? 1 : getMarkets().getExchangeRate());
         servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
+        servicesManager.getUtilitiesHandler().setGridCostSource(() -> Substations.costs(this));
         servicesManager.getUtilitiesHandler().setPowerObservationSources(this::getMonth,
                 () -> BuildAdvice.supplyDemand(this, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of())[0]);
         // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).
