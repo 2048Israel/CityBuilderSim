@@ -1283,3 +1283,15 @@ trace the physical grid and cash divergence before naming an unshipped
 owner or making a mend. AP2 has now shipped 0.9.191 at 1b89c5c4c, speed
 only with every figure exact and format still 62; merge it before the
 required merged-model ensemble and next dry run. PW5's format stays 63.
+
+AP2 is merged from 1b89c5c4c with no source conflict; four generated-index
+conflicts are resolved by regenerating the indexes. The merged --fast exits
+0. VERSION is inherited as 0.9.191; PW5's format and floor stay 63 because
+the shipped format is still 62. The new read-only ground trace records
+the actual look, cash-share budget, chosen offer, price and hold reason at
+the buyer's own phase. The price digest now also compares native grid
+count, carry, peak, service, tariffs per MWh, capital, repairs and payroll;
+grid count is exact, and all old monetary/real tolerances remain. Its cash
+trace records the progression before the first Agriculture-cash mismatch.
+The replay through m830 and the full price-level harness are running on
+this merged source, serially; their results are not yet claimed.

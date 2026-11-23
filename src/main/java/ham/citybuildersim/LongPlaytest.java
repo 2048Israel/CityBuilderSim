@@ -4533,18 +4533,30 @@ public class LongPlaytest {
         // ...and while ground the city owns lies across the water, the island is linked as the AutoBuilder links it (AL1): the same rule, BuildAdvice.linkFor().
         if (land.getOwnedSqFt() > 0 && land.getUsedShare() > most && land.getLandmasses().anyUnlinked()) linkIslands(g);
         double budget = Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE;
+        boolean traceGround = Boolean.getBoolean("cbs.pw5.traceFixtures") && g.getMonth() >= 700 && g.getMonth() <= 835;
+        if (traceGround)
+            out.printf("PW5_GROUND_LOOK month=%d cash=%.9f budget=%.9f used=%.12f threshold=%.12f freeSqFt=%.9f%n",
+                    g.getMonth(), g.getCash(), budget, land.getUsedShare(), most, (double) land.getAvailableSqFt());
         int guard = 0;
         while (land.getOwnedSqFt() > 0 && land.getUsedShare() > most
                 && guard++ < 60) {
             LandParcel best = g.bestOffer(Game.LandNeed.room());
             // ...and none wholly across the water (ET5): the used share reads the linked ground, so it would not move and the loop would buy on.
-            if (best == null || !LandMarket.hasLinkedDry(best)) break;
+            if (best == null || !LandMarket.hasLinkedDry(best)) {
+                if (traceGround) out.printf("PW5_GROUND_NONE month=%d offer=%s%n", g.getMonth(), best == null ? "none" : "unlinked");
+                break;
+            }
             double local = best.localPrice(g.getForeignAccounts().getRate());
+            if (traceGround)
+                out.printf("PW5_GROUND_OFFER month=%d id=%s price=%.9f budget=%.9f sizeSqFt=%.9f%n",
+                        g.getMonth(), best.getId(), local, budget, (double) best.getSizeSqFt());
             if (local > budget || !g.canAffordParcel(best)) {
+                if (traceGround) out.printf("PW5_GROUND_HELD month=%d reason=%s%n", g.getMonth(), local > budget ? "cash-share" : "cannot-afford");
                 groundAheadShort++;
                 break;
             }
             if (!g.buyLandParcel(best.getId())) break;
+            if (traceGround) out.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f%n", g.getMonth(), best.getId(), local);
             budget -= local;
             groundAheadBought++;
             groundAheadSqFt += best.getSizeSqFt();

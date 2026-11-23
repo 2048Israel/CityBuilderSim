@@ -1,8 +1,8 @@
-# gate of Merge batch/HC1: credit cards (Jerus, 2026-11-02: "credit cards should be a thing... a thing population really does and struggles partially with"; "21.35%, 3% minimum (Recommended)"): a spread inside each cell (a share holding, a lognormal, every figure a closed form) under the households' credit line; unexpected bills put the thin-buffered on the card, a minimum as a fixed bill, falling behind, charge-offs per share in place of the cell-wide discharge (wiped, shut out a year, a quarter leave); the bank's card test; bumps SAVE_FORMAT. Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **HC2**: Debt statistics as StatCan and the Fed print them (after HC1): the share holding debt, median and mean among holders by kind, per household and per adult, by tier (by stage after HS2); debt to disposable income, the debt service ratio, the share paying over 40%, late and written off; struck yearly into history and on Household money, 0.9.190
+# gate of Merge batch/AP2: slot 9's slow months at 17 million people (Jerus, 2026-11-22, by a desktop side session): the runs' ground keeps every tile a link's search reads, CityLand's centre stamp and EarthTerrain's ids kept, the auction's debts read in one pass; every figure the same to the bit, 0.9.191
 # date: 2026-11-23
 # earth-2.bin: named
 # nightly: 2026-11-22 03:02 0.9.181 827bc03f7 4,000 months: OK in 218 s; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 1 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-22-827bc03f7-Ld6H2iwW
-# suite: 238 harnesses run in 1121s: 227 passed, 11 failed
+# suite: 240 harnesses run in 964s: 230 passed, 10 failed
 OrderDoorCheck | exit 1
 OrderDoorCheck | FAIL fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready
 OrderDoorCheck | OrderDoorCheck: 1 FAILED
@@ -24,9 +24,6 @@ HoldersCheck | ...until it has none: the dial past the bank's holding took all o
 HoldersCheck | fixture: ...and the step came from the households                        FAIL
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
 HoldersCheck | 4 FAILED
-EducationCheck | exit 1
-EducationCheck | fixture: the two readings of this market really do differ        FAIL
-EducationCheck | 1 FAILED
 ReloadCheck | exit 1
 ReloadCheck | fixture 3b, by hand: the caused point's own city exercised it                                                    FAIL  0 crews that drew materials
 ReloadCheck | 1 FAILED
@@ -48,7 +45,6 @@ PublicLicenceCheck | FAIL the berth adds nothing to the bill, which is the desal
 PublicLicenceCheck | FAIL fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost: demand 12884.2 with 12884.2 without 2140.314426053394 gain -12.14698139423472
 PublicLicenceCheck | FAIL (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water it pays the patent share of its gain over its running cost: idle gain -26.93491686939178 pending 0.0 then gain -12.14698139423472 pending 0.0
 PublicLicenceCheck | 64 passed, 4 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 1.6 minutes; its output: /tmp/citybuildersim-tmp/1773002/copperrefiningcheck-rodmills5812707374451881386/seed1.log
-CopperRefiningCheck | 2 FAILED
+EducationCheck | exit 1
+EducationCheck | fixture: the two readings of this market really do differ        FAIL
+EducationCheck | 1 FAILED

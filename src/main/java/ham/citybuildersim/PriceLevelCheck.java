@@ -740,7 +740,7 @@ public class PriceLevelCheck {
             if (b == null || a.v.length != b.v.length) continue;
             boolean nominal = a.kind == 'N';
             double scale = 0, tolerance = nominal ? TWIN_NOMINAL_TOLERANCE : TWIN_REAL_TOLERANCE;
-            boolean exact = List.of("pop", "workforce", "homes", "stores").contains(key);
+            boolean exact = List.of("pop", "workforce", "homes", "stores", "grid.count").contains(key);
             for (int m = 0; m < first && m < a.v.length; m++) {
                 double x = nominal ? a.v[m] / base.factor : a.v[m], y = nominal ? b.v[m] / other.factor : b.v[m];
                 scale = Math.max(scale, Math.max(Math.abs(x), Math.abs(y)));
@@ -751,6 +751,17 @@ public class PriceLevelCheck {
                     if (Boolean.getBoolean("cbs.pw5.traceFixtures"))
                         System.out.printf("PW5_ONSET month=%d key=%s x=%.17g y=%.17g todayX=%s todayY=%s nominal=%s scale=%.17g tolerance=%.17g%n",
                                 m, key, x, y, base.todays, other.todays, nominal, scale, tolerance);
+                    if (Boolean.getBoolean("cbs.pw5.traceFixtures") && key.equals("sector.Agriculture.cash")) {
+                        for (int traceMonth = 0; traceMonth <= m; traceMonth++) {
+                            double traceX = a.v[traceMonth] / base.factor, traceY = b.v[traceMonth] / other.factor;
+                            System.out.printf("PW5_CASH_DRIFT month=%d x=%.17g y=%.17g difference=%.17g%n",
+                                    traceMonth, traceX, traceY, traceX - traceY);
+                        }
+                        if (base.series.containsKey("grid.ratio"))
+                            for (String field : List.of("grid.count", "grid.carry", "grid.peak", "grid.ratio", "grid.capital", "grid.repairs", "grid.payroll"))
+                                System.out.printf("PW5_ONSET_GRID month=%d field=%s x=%.17g y=%.17g%n", m, field,
+                                        base.series.get(field).v[m], other.series.get(field).v[m]);
+                    }
                     first = m; break;
                 }
             }
@@ -1426,6 +1437,19 @@ public class PriceLevelCheck {
             put("unemployed", 'R', m, g.getPopulationManager().getUnemployed());
             put("homes", 'R', m, g.getBuildingManager().getTotalHomes());
             put("stores", 'R', m, g.getBuildingManager().getTotalStoreCoverage());
+            UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
+            UtilitiesHandler.Book power = utility.getStruckBook();
+            Substations.Costs grid = power.gridCosts;
+            put("grid.count", 'R', m, g.getBuildingManager().getQuantity(Substations.ID));
+            put("grid.carry", 'R', m, grid == null ? utility.getFoundingGridKw() : grid.carryKw());
+            put("grid.peak", 'R', m, java.util.Arrays.stream(power.load).max().orElse(0));
+            put("grid.ratio", 'R', m, power.ratio);
+            // Prices per MWh use the same nominal unit as the other cash series.
+            put("grid.wiresPerMWh", 'N', m, (power.transmissionPrice + power.distributionPrice) * 1_000);
+            put("grid.energyPerMWh", 'N', m, power.energyPrice * 1_000);
+            put("grid.capital", 'N', m, grid == null ? 0 : grid.capital());
+            put("grid.repairs", 'N', m, grid == null ? 0 : grid.repairs());
+            put("grid.payroll", 'N', m, grid == null ? 0 : grid.payroll());
             long[] jobs = g.getBuildingManager().getTotalJobs();
             for (int i = 0; i < jobs.length; i++) put("jobs." + i, 'R', m, jobs[i]);
             for (GoodsMarket k : g.getMarkets().all()) {

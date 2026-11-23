@@ -70,7 +70,10 @@ import ham.citybuildersim.sectors.Mining;
  * it was (30); and, since LM1, the founding's water as one patch of blocks,
  * never a strip along a river, the square widened a block at a time to
  * FRESH_PATCH_MOST where FRESH_PATCH holds too little (section 1,
- * theFoundingsWaterIsOnePatch()).
+ * theFoundingsWaterIsOnePatch()); and, since AP2, the centre's stamp kept
+ * between its changes - the hash CityMap's ground asks at every plot a search
+ * reads, the same as drawn afresh from the centre's blocks, moved by each
+ * restatement and carried by a copy (31, theCentresStamp()).
  */
 public class LandCheck {
 
@@ -87,6 +90,11 @@ public class LandCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-52s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        System.out.printf("%-52s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
     }
 
     /** ...and to a part in `relative` of the expected figure (0.7.55): prices a ten-thousandth of a unit, where check()'s 1e-6 is no test. */
@@ -846,6 +854,7 @@ public class LandCheck {
         byRelief();
         playersGround();
         theOreCard();
+        theCentresStamp();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -3745,6 +3754,47 @@ public class LandCheck {
         if (a.size() != b.size()) return false;
         for (int i = 0; i < a.size(); i++) if (!a.get(i).same(b.get(i))) return false;
         return true;
+    }
+
+    /* ============================ 31. THE CENTRE'S STAMP (AP2) ============================ */
+
+    /** The dry ground a section 31 city is founded on, in km2, and what a restatement draws it again to: four times as much, so more blocks. */
+    static final double DRY_KM2 = 1.0, MORE_KM2 = 4 * DRY_KM2;
+
+    static void theCentresStamp() {
+        System.out.println("\n--- 31. the centre's stamp is kept between its changes and moves with them (AP2) ---");
+        World world = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] place = MapCheck.dryPlace(world);
+        CityLand land = CityLand.found(world, place[0], place[1], DRY_KM2);
+        int blocks = land.centreRects().size();
+        long first = land.centreStamp();
+        long drawn = land.centreStampDrawn();
+        report("a founded centre's stamp is the hash drawn from its blocks", first == drawn, blocks + " blocks");
+        assertTrue("...and asked again, the same", land.centreStamp() == drawn && land.centreStamp() == first);
+
+        CityLand before = land.copy();
+        assertTrue("a restored copy has the original's stamp, kept and drawn", before.centreStamp() == first && before.centreStampDrawn() == first);
+
+        // A restatement with more ground, round the same site (LandDrawing.restate()).
+        LandDrawing.Result more = LandDrawing.draw(world, land.siteX(), land.siteY(), MORE_KM2, 0, 0, 0, false);
+        land.redraw(more);
+        long after = land.centreStamp();
+        report("after a restatement with more ground the stamp is the hash of the new blocks", after == land.centreStampDrawn(),
+                land.centreRects().size() + " blocks now");
+        assertTrue("...and is not the stamp it was", after != first && land.centreRects().size() != blocks);
+        assertTrue("...asked again, the same", land.centreStamp() == after);
+        assertTrue("a copy taken before it keeps the stamp it had", before.centreStamp() == first && before.centreStamp() != after);
+
+        CityLand later = land.copy();
+        assertTrue("a copy taken after it has the new stamp", later.centreStamp() == after && later.centreStampDrawn() == after);
+
+        // A second restatement on the heels of the first, the stamp kept from it: it moves again.
+        LandDrawing.Result less = LandDrawing.draw(world, land.siteX(), land.siteY(), DRY_KM2, 0, 0, 0, false);
+        land.redraw(less);
+        long third = land.centreStamp();
+        report("a second restatement, to less ground, moves the kept stamp again to the hash of its blocks",
+                third == land.centreStampDrawn() && third != after, land.centreRects().size() + " blocks now");
+        assertTrue("...asked again, the same", land.centreStamp() == third);
     }
 
 }
