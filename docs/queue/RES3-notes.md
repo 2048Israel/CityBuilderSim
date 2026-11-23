@@ -706,6 +706,7 @@ BuildCardCheck too.
 | LongPlaytest | 0; full 2,400-month run, additional fixtures, no findings or unplaced households |
 | SaveFileCheck, ReloadCheck, ReadPathCheck | 0 each on the AP2-integrated source |
 | SaveSlotCheck | 0 in the post-HC1 native-writer repeat; one soft wall-clock observation |
+| WaterCheck | Red at 42c991099 for the residential utility partition; 0 after REV-RES3 mends |
 
 The earlier pre-HC1 five-pin ScaleCheck record is retained above as evidence,
 not as five current waivers. The final ship file keeps only month-four savings
@@ -770,9 +771,11 @@ capacities, bedrooms and qualities retain their previous values. Eleven new
 rows append at IDs 155-165; no numeric ID is renumbered. The catalogue's nextId
 and fallback comment now say 166. These recipe/dwelling-key changes are also
 part of why the format/floor bump is owed. PW5 remains unshipped at this mend;
-if it ships first, its 155 Substation must precede our unshipped rows 156-166,
-nextId 167, with format/floor raised from its shipped value and the report
-regenerated before gating.
+if it ships first, its 155 Substation must precede our unshipped rows 156-166.
+Move `HousingForms.ALL`'s hard-coded IDs (HousingForms.java:40-96) with the JSON
+rows: otherwise `installFallback` rewrites PW5's 155 Substation as a Compact
+house. Set nextId 167, raise format/floor from its shipped value, and regenerate
+the report before gating.
 
 ★ The services partition now includes only *unbilled* residential buildings in
 the homes category. Rental-building power/water already belong to Real Estate's
@@ -784,6 +787,11 @@ The 40,000-house WaterCheck case first failed four assertions: it double-counted
 -7,980, and summed 64,170 units against the actual 56,170. The corrected test
 keeps actual draw, supply, rationing, payroll, revenue and city-use checks;
 billed homes add zero to the unbilled category. WaterCheck is green.
+WaterCheck was also red at the reviewed 42c991099 handoff; its omission from
+that handoff's acceptance list did not make it green. The Services screen's
+homes segment now reads 0, with the rented homes under "business, billed".
+The existing category labels need a later relabel to explain that partition;
+this batch changes no UI.
 
 ★ The exact one-below-floor boundary uses the genuine shipped 0.9.191
 format-62 save/history pair, not current JSON re-stamped as old. Its producer
@@ -820,3 +828,7 @@ finding and 199 soft observations. The full playtest and other household/card
 acceptance results above remain the pre-review live-model record; no bound or
 assertion was widened in these mends. The changed main since the review is
 queue/measurement documentation only (through ea16576cd), merged locally.
+
+REV-RES3's delta review of 47764c061 is SHIP (2026-11-22). Its three small
+follow-ups are folded in without another review: the fallback-ID warning
+above, one-space nextId indentation, and the WaterCheck/Services-label record.
