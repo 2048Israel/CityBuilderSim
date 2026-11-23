@@ -10,6 +10,7 @@ reports. Native class flows and wage indices use save format 64 and floor 64.
 Emergency shelter retains funded demand for separate doors without extra rent.
 Feasible paid and hosted emergency placements are matched together.
 Unbuilt supply quotes cover operations; feasible orders use the full affordable typed backlog.
+Rent CPI follows comparable class bills; funded housing bids read the real saving return.
 ## known-reds
 CurrencyRegimeCheck | fixture: the gap is past BREAK_GAP (0.064) | HT1-H | 2026-11-23 | The played reprice leaves gap 0.0641459260050 below BREAK_GAP 0.10. Its before-month fifth-under-shadow target does not cause the asserted after-month gap. Keep hazard and all FX laws; cause the gap at the tested phase. FS10 shipped. See RES3-notes.
 CurrencyRegimeCheck | fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow | HT1-H | 2026-11-23 | The save fixture has edge owed 450.353060385 and is held, but the gap has changed sign to -0.0763558615137 and doubt is correctly zero. Its positive-doubt premise is absent. See RES3-notes.

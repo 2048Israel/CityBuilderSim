@@ -226,7 +226,7 @@
 | 515 | 11 | `private double carryLift()` | How far short of the carry the two legs come, struck on their own costs, weighted by what is actually billed. |
 | 531 | 3 | `public void setExpectedMonthly(double monthly)` | Told by Game each month (Expectations.monthlyExpected()); anything not finite is ignored. |
 | 544 | 15 | `public void repriceRent()` | Moves each rent a lease-length closer to what its market says it should be - in logs since 0.7.43, and drifting with expected inflation as it goes: the one form every seller in the city prices by (Retail.stickyPrice()... |
-| 561 | 6 | `public double getAverageRentPaid()` | What one person of capacity actually cost on average this month - the price index's figure. |
+| 561 | 6 | `public double getAverageRentPaid()` | CPI rent level: like-for-like paid class prices, chained on the preceding month's occupied doors. |
 | 569 | 6 | `public double blendedRentTarget()` | Where that average is heading - the invariant HousingCheck asserts the break-even against. |
 | 581 | 7 | `public double getRentIncome()` | The month's rent, billed off the actual match: each segment's weight at its own price. |
 

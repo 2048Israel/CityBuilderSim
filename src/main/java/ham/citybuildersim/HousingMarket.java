@@ -37,6 +37,7 @@ public final class HousingMarket {
         public List<Sharing> sharing=new ArrayList<>();
         public double kept,suitable,crowded,unaffordable,noSuitable,unplaced;
         public double hosted;
+        public double rentPriceIndex;
     }
     private final Map<HousingInventory.Key,ClassState> classes=new LinkedHashMap<>();
     private List<HousingChoice.Lease> leases=List.of();
@@ -47,6 +48,8 @@ public final class HousingMarket {
     private List<HousingChoice.Offer> pipeline=List.of();
     private List<Sharing> sharing=List.of();
     private double hosted;
+    /** Chained comparable paid rent, opened at the first actual rent per capacity; saved through DataSave. */
+    private double rentPriceIndex;
     /** Derived pre-migration workspace, discarded by clearing and rebuilt after load. */
     private boolean arrivalProjection, arrivalsNeedFamily;
     private double formingFamilies, formingAdults;
@@ -61,6 +64,7 @@ public final class HousingMarket {
     public HousingChoice.Result result() { return result; }
     public double rentFor(String cell,double count) { return count>0?leases.stream().filter(l->l.cell().equals(cell)||l.cell().startsWith(cell+"#")).mapToDouble(HousingChoice.Lease::bill).sum()/count:0; }
     public double receipts() { return leases.stream().mapToDouble(HousingChoice.Lease::bill).sum(); }
+    public double rentPriceIndex() { return rentPriceIndex; }
     public double occupied() { return leases.stream().mapToDouble(HousingChoice.Lease::count).sum(); }
     /** Reserve this press's domestic formation before admitting people who start work next press. */
     public void prepareMigration(Game game){
@@ -421,7 +425,7 @@ public final class HousingMarket {
             for(JobType job:JobType.values())if(PayTier.of(job)==c.tier()){
                 net+=wages[job.ordinal()]*Math.max(0,1-tax.payslipShare(WageBand.of(job)));kinds++;
             }
-            double budget=game.getHouseholdBalance().incomingHousingBudget(c,kinds>0?net/kinds:0,game.getHouseholds(),game.getSectors().retail().getStoreSellPrice());
+            double budget=game.getHouseholdBalance().incomingHousingBudget(c,kinds>0?net/kinds:0,game.getHouseholds(),game.getSectors().retail().getStoreSellPrice(),game.spendFactor());
             planning.add(new HousingChoice.Demand(c.key()+"#incoming",n,c.size(),c.shape().dependants(),false,c.tier().ordinal(),w.stage()==AdultStage.YOUNG,budget));
         }
         List<HousingChoice.Offer> committed=new ArrayList<>();
@@ -475,6 +479,19 @@ public final class HousingMarket {
         return List.copyOf(before.values());
     }
     public void sold(){
+        double oldCost=0,currentCost=0,paid=0,capacity=0;
+        for(ClassState c:classes.values()){
+            double quantity=leases.stream().filter(l->l.home().equals(c.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            double value=leases.stream().filter(l->l.home().equals(c.key())).mapToDouble(HousingChoice.Lease::bill).sum();
+            paid+=value;capacity+=quantity*c.capacity;
+            if(c.tradeQuantity>0&&c.lastTrade>0){
+                // No paid observation carries its previous price; a newly occupied class joins next month's basket.
+                double price=quantity>0&&value>0?value/quantity:c.lastTrade;
+                oldCost+=c.tradeQuantity*c.lastTrade;currentCost+=c.tradeQuantity*price;
+            }
+        }
+        if(rentPriceIndex<=0){if(capacity>0&&paid>0)rentPriceIndex=paid/capacity;}
+        else if(oldCost>0)rentPriceIndex*=currentCost/oldCost;
         for(ClassState c:classes.values()){
             if(!c.available)continue;
             c.tradeQuantity=leases.stream().filter(l->l.home().equals(c.key())).mapToDouble(HousingChoice.Lease::count).sum();
@@ -499,10 +516,11 @@ public final class HousingMarket {
         }
     }
     public State forSave(){State s=new State();s.month=month;s.classes=classes();s.leases=new ArrayList<>(leases);s.demand=new ArrayList<>(demand);s.pipeline=new ArrayList<>(pipeline);s.sharing=new ArrayList<>(sharing);
-        s.hosted=hosted;
+        s.hosted=hosted;s.rentPriceIndex=rentPriceIndex;
         s.kept=result.kept();s.suitable=result.suitable();s.crowded=result.crowded();s.unaffordable=result.unaffordable();s.noSuitable=result.noSuitable();s.unplaced=result.unplaced();return s;}
     private static void nonnegative(double n){if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Invalid saved housing quantity");}
     private static void validate(State s){
+        nonnegative(s.rentPriceIndex);
         if(s.classes==null||s.leases==null||s.demand==null||s.pipeline==null||s.sharing==null||s.classes.size()>HousingRecipe.MAX_CLASSES)
             throw new IllegalArgumentException("Invalid saved housing dimensions");
         Map<HousingInventory.Key,ClassState> rows=new HashMap<>();
@@ -546,7 +564,7 @@ public final class HousingMarket {
             throw new IllegalArgumentException("Saved housing allocation flows do not reconcile");
     }
     public void restore(State s){if(s!=null)validate(s);reset();if(s==null)return;month=s.month;for(ClassState c:s.classes)classes.put(c.key(),c.copy());leases=List.copyOf(s.leases);demand=List.copyOf(s.demand);pipeline=List.copyOf(s.pipeline);sharing=List.copyOf(s.sharing);
-        hosted=s.hosted;
+        hosted=s.hosted;rentPriceIndex=s.rentPriceIndex;
         result=new HousingChoice.Result(leases,s.kept,s.suitable,s.crowded,s.unaffordable,s.noSuitable,s.unplaced);}
     /** The native load additionally checks the complete physical catalogue, including unavailable quotes. */
     public void restore(State s,BuildingManager buildings){
@@ -560,8 +578,9 @@ public final class HousingMarket {
         }
         restore(s);
     }
-    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;arrivalProjection=false;formingFamilies=formingAdults=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
+    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;rentPriceIndex=0;arrivalProjection=false;formingFamilies=formingAdults=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
     public void redenominate(double scale){for(ClassState c:classes.values()){c.ask*=scale;c.capital*=scale;c.carry*=scale;c.target*=scale;c.lastTrade*=scale;c.tradeValue*=scale;}
+        rentPriceIndex*=scale;
         leases=leases.stream().map(l->new HousingChoice.Lease(l.cell(),l.home(),l.count(),l.bill()*scale,l.households())).toList();
         sharing=sharing.stream().map(t->new Sharing(t.source(),t.target(),t.groups(),t.sourceCount(),t.targetCount(),t.sourceBudget()*scale,t.targetBudget()*scale)).toList();
         demand=demand.stream().map(d->new HousingChoice.Demand(d.key(),d.count(),d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()*scale)).toList();

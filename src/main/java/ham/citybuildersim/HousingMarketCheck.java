@@ -87,6 +87,50 @@ public final class HousingMarketCheck {
         near("the 20 budget still prices in every funded doubled-up household",funded.classes().getFirst().demand,10);
         near("striking price pressure does not spend or recreate the merged resources",funded.demands().stream().mapToDouble(d->d.count()*d.budget()).sum(),200);
     }
+    static void rentPriceIndex(){
+        out.println("--- comparable rents hold their basket when tenants change forms ---");
+        Game g=new Game(GameFiles.scratch("res3-rent-index"));g.run();
+        var re=g.getSectors().realEstate();var market=re.housingMarket();
+        var state=priceInputs(0);state.pipeline=List.of();
+        for(var c:state.classes){c.homes=10;c.occupied=c.demand=c.recipe==900?8:2;}
+        state.leases=List.of(new HousingChoice.Lease("studio",new HousingInventory.Key(900,"studio"),8,160),
+                new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),2,20));
+        state.demand=List.of(new HousingChoice.Demand("studio",8,1,0,false,0,false,100),
+                new HousingChoice.Demand("family",2,4,2,false,0,false,100));
+        market.restore(state);re.setRentWeight(16,8);market.sold();
+        near("the comparable rent index opens at the actual unit value",re.getAverageRentPaid(),7.5);
+        state=market.forSave();
+        for(var c:state.classes)c.occupied=c.demand=c.recipe==900?2:8;
+        state.leases=List.of(new HousingChoice.Lease("studio",new HousingInventory.Key(900,"studio"),2,40),
+                new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),8,80));
+        state.demand=List.of(new HousingChoice.Demand("studio",2,1,0,false,0,false,100),
+                new HousingChoice.Demand("family",8,4,2,false,0,false,100));
+        market.restore(state);re.setRentWeight(4,32);market.sold();
+        near("unchanged class bills read no inflation when the occupied mix changes",re.getAverageRentPaid(),7.5);
+        near("the changed mix still pays its actual unadjusted bills",market.receipts(),120);
+        state=market.forSave();state.leases=List.of(new HousingChoice.Lease("studio",new HousingInventory.Key(900,"studio"),2,44),
+                new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),8,88));
+        market.restore(state);market.sold();
+        near("a ten-percent rise in each comparable bill reads ten-percent inflation",re.getAverageRentPaid(),8.25);
+        near("the rent index does not replace the actual receipt",market.receipts(),132);
+        String saved=JSON.toJson(market.forSave());
+        for(int i=0;i<20;i++)re.getAverageRentPaid();
+        check("reading comparable rent leaves every saved figure unchanged",saved.equals(JSON.toJson(market.forSave())));
+        market.restore(JSON.fromJson(saved,HousingMarket.State.class));
+        near("the comparable rent level survives its saved state exactly",re.getAverageRentPaid(),8.25);
+        market.redenominate(.01);
+        near("a currency redenomination scales the saved rent level once",re.getAverageRentPaid(),.0825);
+        market.restore(JSON.fromJson(saved,HousingMarket.State.class));
+        var bad=market.forSave();bad.rentPriceIndex=-1;boolean refused=false;
+        try{market.restore(bad);}catch(IllegalArgumentException expected){refused=true;}
+        check("an invalid rent level is refused before changing the live market",refused&&saved.equals(JSON.toJson(market.forSave())));
+        state=market.forSave();for(var c:state.classes)c.occupied=c.demand=c.recipe==900?0:8;
+        state.leases=List.of(new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),8,88));
+        state.demand=List.of(new HousingChoice.Demand("family",8,4,2,false,0,false,100));state.suitable=8;
+        market.restore(state);market.sold();
+        near("a class with no new paid observation holds its previous price",re.getAverageRentPaid(),8.25);
+        near("a vacant class contributes no receipt while its price is carried",market.receipts(),88);
+    }
     static void plannerInputs(){
         out.println("--- actual operating quotes, feasible plots and the full typed backlog ---");
         Game g=new Game(GameFiles.scratch("res3-planner-inputs"));g.run();
@@ -448,6 +492,36 @@ public final class HousingMarketCheck {
                 &&JSON.toJson(g.getSectors().realEstate().housingMarket().forSave()).equals(JSON.toJson(running.getSectors().realEstate().housingMarket().forSave())));
         audits(g);audits(back);audits(running);
     }
+    static void savingHousingBudget(){
+        out.println("--- the real saving return reaches funded demand at the ask ---");
+        Game g=new Game(GameFiles.scratch("res3-saving-budget"));g.run();
+        double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
+        g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
+        double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;g.getFamilies().rebuild(g.getCohorts(),jobs);
+        var balances=g.getHouseholdBalance();balances.censusOnly(g.getFamilies());
+        var cell=balances.cells().stream().filter(c->c instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT&&c.households()>0).findFirst().orElseThrow();
+        cell.savings=0;balances.setSpendFactor(1);
+        double ordinary=balances.strikeHousingBudgets(g.getFamilies(),g.getHouseholds(),0,c->4,c->10).get(cell.key()).budget();
+        balances.setSpendFactor(HouseholdBalance.SPEND_FLOOR);
+        double saving=balances.strikeHousingBudgets(g.getFamilies(),g.getHouseholds(),0,c->4,c->10).get(cell.key()).budget();
+        near("saving scales only the bid above the committed rent",saving,4+HouseholdBalance.SPEND_FLOOR*(ordinary-4));
+        check("a higher saving return reduces the funded bid",saving<ordinary);
+        check("the current funded lease is protected",saving>=4);
+        balances.setSpendFactor(HouseholdBalance.SPEND_CEILING);
+        near("a spending stimulus cannot promise more cash than the cell can fund",balances.strikeHousingBudgets(g.getFamilies(),g.getHouseholds(),0,c->4,c->10).get(cell.key()).budget(),ordinary);
+        double[] targets=new double[2];int i=0;double ask=(ordinary+saving)/2;
+        for(double budget:new double[]{ordinary,saving}){
+            var state=priceInputs(0);var home=state.classes.get(1);home.occupied=home.demand=0;
+            state.leases=List.of();state.suitable=0;state.unplaced=state.noSuitable=20;
+            state.demand=List.of(new HousingChoice.Demand("family",20,4,2,false,0,false,budget));
+            HousingMarket market=new HousingMarket();market.restore(state);
+            market.strikePriceDemand(List.of(new HousingChoice.Offer(home.key(),10,4,2,75,1,0,false,ask,0)));
+            near("the ask admits only the funded bids at budget "+budget,market.classes().get(1).demand,i==0?20:0);
+            market.reprice(0);targets[i++]=market.classes().get(1).target;
+        }
+        check("the reduced bid lowers the class price target through demand",targets[1]<targets[0]);
+        near("striking bids moves no household savings",cell.savings(),0);
+    }
     static void cardHousingBudget(){
         out.println("--- the housing budget reserves HC1's fixed card minimum ---");
         Game g=new Game(GameFiles.scratch("res3-card-budget"));g.run();
@@ -611,7 +685,7 @@ public final class HousingMarketCheck {
     public static void main(String[] args)throws Exception{
         out=System.out;PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
-        try{System.setOut(silent);classPrices();mergedBudgetPressure();plannerInputs();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
+        try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
         out.println("Report: "+target);out.println(fails==0?"HousingMarketCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }

@@ -16572,7 +16572,7 @@ public class Game {
         var resources=householdBalance.strikeHousingBudgets(families,households,getSectors().retail().getStoreSellPrice(),
                 c -> market.active()?market.rentFor(c.key(),c.households()):households.rentPerHousehold()*c.rentShare(),
                 c -> c instanceof WorkingHousehold?netWages[c.tier().ordinal()]*c.earningWeight():
-                        c instanceof RetiredHousehold?tax.pensionPerSenior()*c.grownUps():Double.NaN,bank.householdRate(debtManager.getPolicyRate()));
+                        c instanceof RetiredHousehold?tax.pensionPerSenior()*c.grownUps():Double.NaN,bank.householdRate(debtManager.getPolicyRate()),spendFactor());
         for(Household c:householdBalance.cells()) {
             if(c instanceof OwnerHousehold || c instanceof OrphanHousehold || c instanceof PrisonerHousehold)continue;
             if(c instanceof UnemployedHousehold u && u.status()==UnemployedHousehold.Status.UNHOUSED)continue;
@@ -16822,11 +16822,11 @@ public class Game {
         double[] p = new double[PriceIndex.COMPONENTS];
         p[PriceIndex.GROCERIES] = getSectors().retail().getStoreSellPrice();
         /*
-         * The AVERAGE actually paid, not the family price. Rent is two prices
-         * now and the cost of living is what households handed over across
-         * both. Continuous with what the index used before the split: the two
-         * prices open equal, so the average opens on the same number the base
-         * was struck at.
+         * Comparable class bills chained on last month's occupied doors. The
+         * first paid month opens at rent per capacity; subsequent changes hold
+         * the class mix fixed, so moving into another form is not inflation.
+         * Receipts and household bills remain the actual unadjusted payments.
+         * A month without a paid observation carries its preceding price.
          */
         p[PriceIndex.RENT]   = getSectors().realEstate().getAverageRentPaid();
         /*

@@ -671,9 +671,18 @@ public class HouseholdBalance {
     public record HousingResources(double count,double budget) { }
     /** An incoming worker starts without the city's existing household debts; all recurring fees and food still have a payer. */
     public double incomingHousingBudget(Household c,double netWage,HouseholdAccounts accounts,double foodPrice) {
+        return incomingHousingBudget(c,netWage,accounts,foodPrice,spendFactor);
+    }
+    public double incomingHousingBudget(Household c,double netWage,HouseholdAccounts accounts,double foodPrice,double plannedFactor) {
         int r=c.row();double people=accounts.getRowPeople(r);
         double fees=accounts.getRowHealthcare(r)+accounts.getRowTuition(r)+accounts.getRowFares(r)+accounts.getRowFuel(r)+accounts.getRowHomeFuel(r);
-        return Math.max(0,netWage*c.earningWeight()-(people>0?fees*c.headcount()/people:0)-accountFee-c.baskets()*Math.max(0,foodPrice));
+        return housingBid(Math.max(0,netWage*c.earningWeight()-(people>0?fees*c.headcount()/people:0)-accountFee-c.baskets()*Math.max(0,foodPrice)),0,plannedFactor);
+    }
+    /** Saving changes an additional housing bid, while a funded current lease remains committed and cash is the ceiling. */
+    private static double housingBid(double resources,double committedRent,double factor){
+        if(!Double.isFinite(factor)||factor>=1||factor<=0)return resources;
+        double committed=Math.min(resources,Math.max(0,committedRent));
+        return committed+factor*Math.max(0,resources-committed);
     }
     /** Monthly housing uses the same staged census and income/fee splits as the cash strike, without moving any stocks. */
     public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
@@ -688,6 +697,11 @@ public class HouseholdBalance {
     /** Live housing reserves the opening card balance's contractual bill at the bank's current price. */
     public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
                                                                      ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome,double cardFundingRate) {
+        return strikeHousingBudgets(families,accounts,foodPrice,chargedRent,currentIncome,cardFundingRate,spendFactor);
+    }
+    /** Housing bids read this month's ex-ante saving response before the later household cash strike. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome,double cardFundingRate,double plannedFactor) {
         double[] fresh=takeCensus(families),income=new double[ROWS],fees=new double[ROWS];
         for(int r=0;r<ROWS;r++){
             income[r]=accounts.getRowDisposable(r);
@@ -705,6 +719,7 @@ public class HouseholdBalance {
             double projected=bills[i]+Math.max(0,accountFee)+cardService+c.studentInterest()+c.studentRepaid();
             double budget=Math.max(0,recurringIncome-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
                     +c.savings()/HousingMarket.SAVINGS_MONTHS);
+            budget=housingBid(budget,oldRent,plannedFactor);
             // The existing student facility funds housing shortfalls too, while open.
             // It is settled as treasury lending in the normal household strike.
             if(c instanceof StudentHousehold)budget+=Math.max(0,c.planningRoom());

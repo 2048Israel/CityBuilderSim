@@ -4,7 +4,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 637 files, 684,289 lines, 29,978 methods, 6,629 constants. `GameVersion.VERSION` is "0.9.193", `SAVE_FORMAT` 64.
+**The tree:** 637 files, 684,400 lines, 29,984 methods, 6,629 constants. `GameVersion.VERSION` is "0.9.193", `SAVE_FORMAT` 64.
 
 ## model (283 files)
 
@@ -133,11 +133,11 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HomeFuel.java](HomeFuel.md) | 171 | 20 | The homes' lamp oil and coal: what the households that light with a lamp and heat with a stove ask of the shops each month, as two shares of the ho... | 4 |
 | [Household.java](Household.md) | 1,601 | 139 | Every household of one shape at one pay tier, as one ledger. | 60 |
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,462 | 111 | The city's residents, treated as one household. | 22 |
-| [HouseholdBalance.java](HouseholdBalance.md) | 6,502 | 381 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 74 |
+| [HouseholdBalance.java](HouseholdBalance.md) | 6,517 | 384 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 74 |
 | [HousingChoice.java](HousingChoice.md) | 244 | 17 | A bounded household-cell to dwelling-class allocation, retaining valid leases first. | 10 |
 | [HousingForms.java](HousingForms.md) | 112 | 11 | The fourteen fixed forms, geometry and capital partitions of the RES1 catalogue. | 6 |
 | [HousingInventory.java](HousingInventory.md) | 304 | 34 | Aggregate housing titles, occupants and listings over the physical stacks. | 12 |
-| [HousingMarket.java](HousingMarket.md) | 570 | 42 | One monthly residential quote and clearing, with saved class prices and actual leases. | 5 |
+| [HousingMarket.java](HousingMarket.md) | 589 | 43 | One monthly residential quote and clearing, with saved class prices and actual leases. | 5 |
 | [HousingRecipe.java](HousingRecipe.md) | 55 | 6 | The fixed dwelling mix and rights delivered by one residential structure. | 9 |
 | [HydroSites.java](HydroSites.md) | 440 | 31 | The city's hydro sites: where a river and a drop lie on the ground it owns - the places a Hydro Station can be ordered (HY1, 2026-10-26; docs/queue... | 10 |
 | [Inbox.java](Inbox.md) | 949 | 40 | Everything the city has had to say for itself, newest first. | 8 |
@@ -510,7 +510,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HousingChoiceCheck.java](HousingChoiceCheck.md) | 104 | 7 | Caused cardinality, budget, preference, incumbent and fair-tie findings for typed housing. | 0 |
 | [HousingDoorCheck.java](HousingDoorCheck.md) | 407 | 7 | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed tho... | 0 |
 | [HousingInventoryCheck.java](HousingInventoryCheck.md) | 288 | 11 | Aggregate housing inventory, caused through recipes, construction and transfers. | 0 |
-| [HousingMarketCheck.java](HousingMarketCheck.md) | 627 | 28 | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. | 0 |
+| [HousingMarketCheck.java](HousingMarketCheck.md) | 701 | 30 | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. | 0 |
 | [HydroCheck.java](HydroCheck.md) | 619 | 17 | The Hydro Station and the river it needs (HY1, 2026-10-26; docs/queue/HY1-notes.md): the physics of a drop against its own constants, the sites on ... | 0 |
 | [HydrogenSteelCheck.java](HydrogenSteelCheck.md) | 510 | 22 | The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from ... | 1 |
 | [InboxCheck.java](InboxCheck.md) | 727 | 14 | Verifies the inbox: raising, refreshing, resolving, culling and the round trip. | 0 |
@@ -543,7 +543,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [MedicineCheck.java](MedicineCheck.md) | 605 | 34 | Proves the research catalogue's medical rows (R2f) move the constants they map to: a medical row a 1900 city finds ahead of the world brings its st... | 0 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 12 |
 | [ModernEngineeringCheck.java](ModernEngineeringCheck.md) | 594 | 28 | E21's crop-only historical undo, its actual farm production and patent bill, and the saved physical state on either side of the discovery. | 2 |
-| [MonetaryCheck.java](MonetaryCheck.md) | 1,149 | 16 | Money: what a basket costs, what the world charges, and what the rate does. | 3 |
+| [MonetaryCheck.java](MonetaryCheck.md) | 1,152 | 16 | Money: what a basket costs, what the world charges, and what the rate does. | 3 |
 | [MoneyDatesCheck.java](MoneyDatesCheck.md) | 268 | 10 | Proves Canada's dated gold in a city founded the 1900 way: both episodes, Money the player's from the first month, and a reserve exhaustion that su... | 2 |
 | [MoneySignCheck.java](MoneySignCheck.md) | 397 | 9 | The money's sign is the city's to choose and place, and with the default it writes what it always wrote (FM1). | 0 |
 | [MoneyWordsCheck.java](MoneyWordsCheck.md) | 522 | 19 | The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). | 0 |

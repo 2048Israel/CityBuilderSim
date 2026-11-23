@@ -557,9 +557,9 @@ public final class RealEstate extends Sector {
         }
     }
 
-    /** What one person of capacity actually cost on average this month - the price index's figure. */
+    /** CPI rent level: like-for-like paid class prices, chained on the preceding month's occupied doors. */
     public double getAverageRentPaid() {
-        if(housingMarket.active())return getRentWeight()>0?housingMarket.receipts()/getRentWeight():0;
+        if(housingMarket.active())return housingMarket.rentPriceIndex();
         double weight = studioRentWeight + familyRentWeight;
         if (weight <= 0) return rentPrice;
         return (studioRentWeight * studioRentPrice + familyRentWeight * rentPrice) / weight;

@@ -2195,3 +2195,129 @@ the reviewed source. `git diff --check`, LF checks and
 `target/RES3-block-fast.txt`. This is a blocked checkpoint, not a mends/SHIP
 or ready claim. The earlier 80-run report remains explicitly a snapshot of
 2d9a79aea, not validation of the new pooled-budget mend.
+
+### DX-RES3 monetary direction and the caused mends (2026-11-23)
+
+The orchestrator accepts DX-RES3's like-for-like CPI diagnosis and orders
+that defect mended, then the missing funded-demand channel, preserving
+MonetaryCheck's fixture, rates, calendar window, minimum effect and noise
+laws. DX mail `20261123-135707-894-DX-RES3-5da0`, call
+`20261123-135800-281-orchestrator-be0f`. Main's records-only LP-G1 ordering
+commit 5eae9afd4 is merged before the mends; FC2 has not shipped.
+
+The CPI regression fails on the previous calculation: eight studios at
+20 and two family homes at 10 open at 180/24 = 7.5 per capacity; switching
+the occupied counts to two/eight with unchanged class bills incorrectly
+reports 120/36 = 3.3333333333. A subsequent ten-percent rise in both class
+bills should read 8.25, but reads 3.6666666667. Raw
+`target/RES3-like-first-red.{txt,log}`. These are model snapshot inputs,
+not an adjusted CPI assertion or a different played-city premise.
+
+★ Chain the typed rent level on the preceding month's occupied doors at
+each class's previous and current actual paid bill per door. Open at the
+first paid unit value. Carry forward a class without a paid observation;
+a newly occupied class joins the next basket. `sold()` strikes the level
+before replacing the existing saved lastTrade/tradeQuantity fields, so
+there is one update at the actual monthly sale, none on a getter/load.
+The new scalar `HousingMarket.State.rentPriceIndex` travels through the
+existing DataSave housing snapshot and native restore; validation is
+atomic, reset clears it, and redenomination scales it once. The branch's
+unshipped format/floor 64 already covers this stored-meaning change, as
+the orchestrator specifies; no conversion or additional bump is added.
+Actual leases, weights, receipts, bills and money settlement are untouched.
+
+HousingMarketCheck passes the unchanged-mix-price regression, actual
+receipt controls, ten-percent comparable price rise, pure reads, saved
+level restore, redenomination, invalid-level atomic refusal and missing
+observation carry-forward. Full historical/modern paid build and native
+continuation cases pass too. `target/RES3-like-HousingMarketCheck.{txt,log}`.
+With this defect alone MonetaryCheck exactly reproduces DX's probe:
+6.77/2.99/4.52/2.47 percent; 4.299 points across the range, with the 20/10
+ordering and two noise assertions still red. Whole-window timing offsets
+are .000/1.254/.213/.094; calendar-year maxima .054/1.096/3.093.
+Raw `target/RES3-like-MonetaryCheck.{txt,log}`.
+
+The budget audit finds the omitted link: housing reads available income
+plus one year's liquid-savings support but never the existing ex-ante
+saving response used by household spending. The new regression starts
+with resources 10 and a current rent 4; SPEND_FLOOR .5 should leave a bid
+7. The old path still returns 10, admits the same twenty bidders at an ask
+between the two intended budgets, and leaves the price target unchanged.
+All four assertions fail first (`target/RES3-bid-first-red.{txt,log}`).
+
+★ Apply the existing spending response to resources above the committed
+funded rent, with available resources as the cash ceiling. Preserve a
+fundable current lease, every fixed fee, subsistence food and HC1's current
+card minimum; a stimulus cannot invent credit above that ceiling. Incoming
+workers have no current commitment. Live clearing and incoming forecasts
+receive `Game.spendFactor()` for this month's ex-ante real deposit return,
+not the previous plan's stored workspace. Bare model calls retain the
+existing factor-1 default. No new dial, saved budget axis or cash movement
+is introduced. The budget-to-affordable-demand-to-target regression now
+passes, as do the cash ceiling, current lease and untouched savings controls.
+
+The full HousingMarketCheck remains green. MonetaryCheck with both mends
+reads 6.77/2.99/4.11/2.26 percent, 4.515 points across the range. The higher
+20/40-percent dials now lower inflation through the restored bid channel,
+but the 20/10 ordering and both timing assertions still fail. Whole-window
+offsets .000/1.254/.095/1.426; calendar-year maxima .165/1.308/3.174.
+Raw `target/RES3-bid-<Harness>.{txt,log}`. SCARCITY_ELASTICITY stays at the
+existing value 1.0; no coefficient is fitted to the harness. A read-only
+monthly class/CPI/bid trace is running to determine whether the remaining
+laws fail on the lender-held supply timing alone, as the call requires.
+
+The monthly diagnostic reproduces those same three reds with no changed
+fixture input (`-Dres3.housingTrace=true`, a read-only reporting switch).
+Raw `target/RES3-bid-flow.{txt,log}`, parsed rows
+`target/RES3-bid-flow.json`, event table
+`target/RES3-bid-flow-summary.txt`. The remaining price comparison is now
+in the expected direction at a common supply: at m72, 10/20 percent have
+77.0897/64.6021 funded Compact demands and capital 5.0411358/4.9877745,
+with carry .020302509/.019131820. Both demand and holding costs are lower
+at 20 percent. Its stock, however, is only 40 Compacts against 52, so its
+target is .038935015 against .036121694. Holding its stock at the same 52
+doors would give .029950012 from its own observed capital and demand,
+below the 10-percent target. This is a direct scarcity calculation, not
+a changed simulation or a new target law. The actual 20/10 rent-component
+growth is 8.0790/3.4575 percent in year two, and 7.8860/6.0662 in year three.
+
+The worst timing pair is 40 percent. Its first new Compact completions
+after the common 14-door stock occur at m64 on time (five doors), but m66
+on the month-late run (four doors). At m66 it is 27 versus 18 doors; at m72
+50 versus 43. Capital at m72 is nearly identical, 4.9994720/5.0008834,
+but target rents are .027682695/.033510600 and asks .040079686/.042439961.
+The different completion path continues into year three: m84 stock is
+66/70 Compacts and 28/26 Duplexes, with CPI 1.030045117/1.071200417 and
+chained rent .007047656550/.007444763787. Year-three CPI inflation is
+2.405991/5.580067 percent, the 3.174-point timing failure. Year-two maxima
+are 1.308 points. DX's lender-held supply mechanism remains visible after
+both defect mends; the resulting population and bid feedback is recorded,
+not assumed identical across different construction paths.
+
+Following call 4, stop monetary model changes here and report these
+remaining supply-timing figures for the orchestrator's premise decision.
+The corrected index and funded saving channel have caused regression tests
+which fail before their respective fixes and pass after them;
+the full macro assertions remain red, unwaived and unassigned to another
+queue row. No scarcity exponent, lease speed, lender gate, fixture, rate,
+window, minimum effect or tolerance is changed. The pending conservation,
+native save and reload checks are completing before that checkpoint is
+pushed; no new ensemble or dry-run slot is requested.
+
+All eight serial invariant checks now pass on these model mends:
+HousingCheck, HousingDoorCheck, HouseholdCheck, BuildingDataCheck,
+InvestCheck, ReadPathCheck, SaveFileCheck and ReloadCheck. The housing cash
+identity closes for 899 months. The genuine shipped format-63 refusal and
+both-file/running-city preservation checks remain green. The long reload
+finishes in 53 seconds with 820,770 history values in 338 series and
+106,202 saved values equal in its autosave continuation. Raw
+`target/RES3-dx-<Harness>.{txt,log}`. HousingMarketCheck's complete catalogue,
+money, native round-trip and new caused regressions already pass under
+`target/RES3-bid-HousingMarketCheck.{txt,log}`.
+
+`./batch-check.sh --fast` passes (exit 0), with generated maps and zero firm
+Stale findings, 199 soft; raw `target/RES3-dx-fast.txt`. Authored source and
+queue notes pass `git diff --check`; generated month-order references keep
+Maps' existing Markdown hard-break spaces. No extra JVM or fixture probe
+remains running. The three MonetaryCheck lines stay owned and red; the
+provisional marker and the deferred combined review remain in place.
