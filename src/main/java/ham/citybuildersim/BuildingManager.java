@@ -6307,6 +6307,45 @@ public class BuildingManager {
     }
 
     /**
+     * What work built at home is multiplied by (REV-FC2, the second review): one and the builders' own premium on the
+     * queue at home, never the foreign crews' share - a restart's shell, a demolition and a paving, which no quote puts
+     * abroad (Game.quoteRestart(), demolitionPrice(), quotePaving()). Within the threshold it is orderPriceMultiplier().
+     */
+    public double homePriceMultiplier() { return 1 + scarcityPremium(); }
+
+    /**
+     * An order just billed on t's site (REV-FC2, the second review): {@code billed} points of it on site, {@code abroad}
+     * of them handed to the foreign crews (Game.processBuildOrder(), buildFor()) - the site's share abroad struck again,
+     * so a cancel cuts his book by the order's own abroad points (stopCancelled()); a restart's shell is billed at home.
+     */
+    public void noteAbroad(BuildingsTemplate t, double billed, double abroad) {
+        BuildingsStacks s = t == null ? null : getStack(t);
+        if (s != null) s.noteAbroad(billed, abroad);
+    }
+
+    /** Each site's share of its points owed that went abroad, by template id, for the save: only the sites with some. */
+    public java.util.Map<Integer, Double> getAbroadShareById() {
+        java.util.Map<Integer, Double> out = new java.util.TreeMap<>();
+        for (BuildingsStacks s : stacks) {
+            double share = s.getAbroadShare();
+            if (s.owedPoints() > 0 && !(share == 0)) out.put(s.getBuilding().getId(), share);
+        }
+        return out;
+    }
+
+    /**
+     * ...and restored from it. A save written before REV-FC2's second review has no key (null): every site with points
+     * owed reads all of them abroad, and a cancel there cuts his book by the points left (never below nothing), as FC1b
+     * and FC2 first cut it.
+     */
+    public void restoreAbroadShare(java.util.Map<Integer, Double> byId) {
+        for (BuildingsStacks s : stacks) {
+            Double v = byId == null ? null : byId.get(s.getBuilding().getId());
+            s.setAbroadShare(v != null ? v : byId == null && s.owedPoints() > 0 ? 1 : 0);
+        }
+    }
+
+    /**
      * Whether the builders' price and the foreign crews are in force (FC2): both months known (buildersMonthKnown()) and a
      * month of the builders' at all, every post offered. Off for a bare manager, a fixture town with the switch off
      * (buildersShortOn) and the founding's first month, when no depot works yet: no premium, nothing abroad, no export.
@@ -6330,13 +6369,14 @@ public class BuildingManager {
     }
 
     /**
-     * An order's work abroad (REV-FC2's P1): its buildings that stand past the threshold, their points, and the share
+     * An order's work abroad (REV-FC2's P1): its work past the threshold, point for point (BuildersShort.homeUnits(): the
+     * building the threshold falls in split, its points past it abroad), the buildings with any of it, and the share
      * the foreign crews take them at - what the quote prices them at (orderPriceMultiplier()) and what the order hands
      * the crews' book when it is billed (Game.processBuildOrder(), buildFor(); Construction.handAbroad()), so the payer
      * pays what its work costs abroad and the builders pass it on to the cent. The order on site in the base a point
      * ({@code basePerPoint}, basePerPointOf(); the base as it stands with none to read), and so in E x / p and the
      * threshold; its first building on the queue at home with {@code pointsAhead} more - what the orders before it in a
-     * run put there - less {@code abroadAhead} of them those orders hand abroad (homeBuildings()); his month on his book,
+     * run put there - less {@code abroadAhead} of them those orders hand abroad (homeUnits()); his month on his book,
      * those and this order's points abroad, and the share the supply curve gives it. Null with no trade on.
      */
     public record OrderAbroad(double fromMonths, double stepMonths, double thresholdMonths, long buildings, double points,
@@ -6356,8 +6396,9 @@ public class BuildingManager {
         double threshold = BuildersShort.thresholdMonths(first);
         double from = BuildersShort.monthsQueued(now.queueAtHome() + ahead - away, now.sites());
         double step = now.sites() > 0 ? each / now.sites() : Double.NaN;
-        long abroad = count - BuildersShort.homeBuildings(from, step, count, threshold);
-        double points = abroad * each;
+        double home = BuildersShort.homeUnits(from, step, count, threshold);
+        double points = Math.max(0, count - home) * each;
+        long abroad = points > 0 ? count - (long) Math.floor(home) : 0;
         double month = BuildersShort.foreignMonth(foreignBookPoints() + away + points, threshold, largestDepotPoints());
         return new OrderAbroad(from, step, threshold, abroad, points, month, BuildersShort.excessAt(first, month, now.output()));
     }
@@ -6664,13 +6705,16 @@ public class BuildingManager {
                     - s.getConstructionProgress());
             // ...read while it is still on site: a depot served first was never on the contractor's book (FC1b).
             boolean servedFirst = goesFirst(t, 0);
+            // ...and its points on the foreign crews' book, the site's share abroad of them (REV-FC2, the second review;
+            // noteAbroad()): none for an order quoted at home; the points left for a site whose share an old save lacks.
+            double abroadLeft = pointsLeft * s.getAbroadShare();
             // ...and the equipment its orders froze (R1e), before the stop clears it.
             List<BuildingsStacks.Lot> lots = s.getLots();
             double[] stopped = s.stopForShell();
             control.endRun(t.getId());
             ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0, lots);
             controlEvents.refunds.add(new ConstructionControl.Refund(t.getId(), t.getName(), (int) stopped[0],
-                    stopped[3], stopped[4], pointsLeft, shell, servedFirst));
+                    stopped[3], stopped[4], pointsLeft, shell, servedFirst, abroadLeft));
         }
         control.clearCancelling();
     }
@@ -6706,7 +6750,10 @@ public class BuildingManager {
             addStack(t, 0, true);
             s = getStack(t);
         }
+        double owedBefore = s.owedPoints();
         s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed, shell.lots);
+        // ...its points left built at home (REV-FC2, the second review: a restart is quoted at home), on the site's share.
+        s.noteAbroad(s.owedPoints() - owedBefore, 0);
         control.removeShell(shell);
     }
 

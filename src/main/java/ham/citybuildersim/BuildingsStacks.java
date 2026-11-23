@@ -442,6 +442,24 @@ public class BuildingsStacks {
         return points;
     }
 
+    /**
+     * The share of the points owed on this site that went to the foreign crews' book when its orders were billed (REV-FC2,
+     * the second review; BuildingManager.noteAbroad()), by the point: what a cancel cuts his book by. Saved
+     * (DataSave.abroadShareById); an old save's site, which recorded none, reads all of it abroad (restoreAbroadShare()).
+     */
+    private double abroadShare;
+
+    public double getAbroadShare() { return abroadShare; }
+    public void setAbroadShare(double share) { abroadShare = Double.isNaN(share) ? 0 : Math.max(0, Math.min(1, share)); }
+
+    /** An order of {@code billed} points just put on site, {@code abroad} of them handed abroad: the share struck again by the point. */
+    public void noteAbroad(double billed, double abroad) {
+        double b = Math.max(0, billed), a = Math.max(0, Math.min(b, abroad));
+        double before = Math.max(0, owedPoints() - b), total = before + b;
+        if (!(total > 0)) { abroadShare = 0; return; }
+        setAbroadShare((abroadShare * before + a) / total);
+    }
+
     /** Points still owed on site: every building's points less the progress made (a foothill's preparation owed reads as more). */
     public double owedPoints() {
         return pointsOnSite() - constructionProgress;

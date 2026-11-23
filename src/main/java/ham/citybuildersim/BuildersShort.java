@@ -241,25 +241,29 @@ public final class BuildersShort {
     }
 
     /**
-     * How many of an order's {@code n} buildings (at least one) stand within {@code thresholdMonths} (REV-FC2): the
-     * building i (from 0) in {@code fromMonths + i * stepMonths} months queued, at home while that is at or under the
-     * threshold. meanShare() prices those at the premium and the rest at the foreign crews' share, and the order hands
-     * the rest to the crews when it is billed (BuildingManager.abroadOfOrder()), one rule for both. All of them with no
-     * step or an endless threshold, none from a queue already past it; a NaN queue reads as nothing.
+     * How much of an order of {@code n} buildings (at least one) stands within {@code thresholdMonths}, in buildings
+     * (REV-FC2, the second review): the building i (from 0) takes the months {@code fromMonths + i * stepMonths} to the
+     * next step queued, and its work past the threshold goes abroad point for point, so the building the threshold falls
+     * in is split - its points within it at home, the rest abroad. meanShare() prices the part at home at the premium and
+     * the rest at the foreign crews' share, and the order hands the rest to the crews when it is billed
+     * (BuildingManager.abroadOfOrder()), one rule for both. WHY: FC2's whole buildings kept a building that began within
+     * the threshold at home however far its points ran past, and PW5's Substation, 132,000 points, ordered so, held the
+     * queue at home years past the threshold, every order after it abroad until the city's builders had worked it down.
+     * All of it with no step or an endless threshold, none from a queue at or past it; a NaN queue reads as nothing.
      */
-    public static long homeBuildings(double fromMonths, double stepMonths, long n, double thresholdMonths) {
+    public static double homeUnits(double fromMonths, double stepMonths, long n, double thresholdMonths) {
         long count = Math.max(1, n);
         double from = Double.isNaN(fromMonths) ? 0 : fromMonths;
-        if (!(from <= thresholdMonths)) return 0;
+        if (!(from < thresholdMonths)) return 0;
         if (!(stepMonths > 0) || thresholdMonths == Double.POSITIVE_INFINITY) return count;
-        double k = Math.floor((thresholdMonths - from) / stepMonths) + 1;
-        return k >= count ? count : (long) Math.max(0, k);
+        return Math.min(count, (thresholdMonths - from) / stepMonths);
     }
 
     /**
      * The mean share an order of {@code n} buildings carries over its base price with the foreign crews on offer: the
-     * building i (from 0) stands in {@code fromMonths + i * stepMonths} months queued (meanPremium()); it is the city's
-     * own while that is no more than {@code thresholdMonths}, at premium(), and abroad past it, at {@code foreignShare}.
+     * building i (from 0) stands in {@code fromMonths + i * stepMonths} months queued (meanPremium()); its work within
+     * {@code thresholdMonths} is the city's own, at premium(), and past it abroad, at {@code foreignShare} (homeUnits():
+     * the building the threshold falls in is split between them).
      * The first k at home are meanPremium(fromMonths, stepMonths, k), exact or the integral as it says. With no step
      * (zero, negative or NaN) every building stands where the first does; with a queue already endless all are abroad,
      * unless the threshold is endless too (no foreign crews at all: every building at home, FC1's meanPremium()).
@@ -268,10 +272,15 @@ public final class BuildersShort {
         long count = Math.max(1, n);
         double abroad = Math.max(0, Math.min(CEILING, Double.isNaN(foreignShare) ? 0 : foreignShare));
         double from = Double.isNaN(fromMonths) ? 0 : fromMonths;
-        long home = homeBuildings(fromMonths, stepMonths, n, thresholdMonths);
-        if (home == count) return meanPremium(from, stepMonths, count);
-        if (home == 0) return abroad;
-        return clamp((home * meanPremium(from, stepMonths, home) + (count - home) * abroad) / count);
+        double home = homeUnits(fromMonths, stepMonths, n, thresholdMonths);
+        if (home >= count) return meanPremium(from, stepMonths, count);
+        if (!(home > 0)) return abroad;
+        // ...the whole buildings at home at BA1's premium each, the one the threshold splits at its own for its part at home.
+        long whole = (long) Math.floor(home);
+        double part = home - whole;
+        double atHome = (whole > 0 ? whole * meanPremium(from, stepMonths, whole) : 0)
+                + (part > 0 ? part * premium(from + whole * stepMonths) : 0);
+        return clamp((atHome + (count - home) * abroad) / count);
     }
 
     /** ...and the multiple an order's non-material price is struck at: one and meanShare(). */

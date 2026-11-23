@@ -897,7 +897,7 @@ public final class ConstructionControl {
      * (FC1b; Construction.bill()).
      */
     public record Refund(int templateId, String building, long buildings, double value, double allowance,
-                         double points, Shell shell, boolean servedFirst) { }
+                         double points, Shell shell, boolean servedFirst, double abroadPoints) { }
 
     /**
      * A demolition finished this month - and, once Game has sold it, its

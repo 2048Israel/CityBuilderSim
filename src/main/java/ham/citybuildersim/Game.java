@@ -9208,12 +9208,15 @@ public class Game {
         }
 
         /**
-         * The order's buildings past the threshold (REV-FC2; BuildingManager.abroadOfOrder()): their points, the foreign
-         * crews' share on them and what the sticker charges a point for that work - the building's base a point and that
-         * share - which billing the order hands the crews' book (Construction.handAbroad()). All 0 for a quote with no
-         * trade on, with nothing past the threshold, or of no template's order.
+         * The order's work past the threshold (REV-FC2; BuildingManager.abroadOfOrder(), Game.abroadWork()): its points,
+         * its buildings' and the same share of its other parts', the foreign crews' share on them and what the sticker
+         * charges a point for that work - each part's base a point and that share - which billing the order hands the
+         * crews' book (Construction.handAbroad()). All 0 for a quote with no trade on, with nothing past the threshold,
+         * or of no template's order.
          */
         public double abroadPoints, abroadShare, abroadPricePerPoint;
+
+        BuildQuote withAbroad(double[] work) { return withAbroad(work[0], work[1], work[2]); }
 
         BuildQuote withAbroad(double points, double share, double pricePerPoint) {
             this.abroadPoints = Math.max(0, points);
@@ -9481,9 +9484,28 @@ public class Game {
                 need == null ? new double[4] : need.mix(),
                 span == null ? 0 : span.lengthM(), bridgePoints, bridgeCost,
                 deep == null ? 0 : deep.depthM(), deepPoints, deepCost).withFitout(fit)
-                .withAbroad(abroad == null ? 0 : abroad.points(), abroad == null ? 0 : abroad.share(),
-                        abroad == null || !(fit.points() > 0) ? 0
-                                : buildingManager.nonMaterialCost(fit) / fit.points() * (1 + abroad.share()));
+                .withAbroad(abroadWork(abroad, fit, quantity, prepPoints, worksPoints, bridgePoints, deepPoints,
+                        (prepPoints > 0 ? preparationCost(prepPoints) : 0) + (need == null ? 0 : need.cost())
+                                + (span == null ? 0 : span.cost()) + (deep == null ? 0 : deep.cost())));
+    }
+
+    /**
+     * An order's work abroad as its quote hands it (REV-FC2, the second review): its buildings' points past the threshold
+     * (BuildingManager.abroadOfOrder()) and the same share of its preparation, works, bridge and deep water - the order's
+     * every part goes abroad in the share its buildings do, so the multiple the quote prices them all at, (1 - a) times
+     * the city's own premium and a times the crews' share, a the share of its buildings' points abroad, is the price of
+     * each part where it is built. {points, share, price a point}: the buildings at their base a point and the share, the
+     * parts at their own base ({@code extrasBase}, before the multiple) and the share, the mean of the two by the point.
+     */
+    private double[] abroadWork(BuildingManager.OrderAbroad abroad, Fitout fit, long quantity, double prepPoints,
+                                       double worksPoints, double bridgePoints, double deepPoints, double extrasBase) {
+        double buildingPoints = fit.points() * (double) Math.max(1, quantity);
+        if (abroad == null || !(abroad.points() > 0) || !(buildingPoints > 0)) return new double[] {0, 0, 0};
+        double a = Math.min(1, abroad.points() / buildingPoints), s = abroad.share();
+        double extras = Math.max(0, prepPoints) + Math.max(0, worksPoints) + Math.max(0, bridgePoints) + Math.max(0, deepPoints);
+        double points = abroad.points() + a * extras;
+        double money = abroad.points() * buildingManager.nonMaterialCost(fit) / fit.points() * (1 + s) + a * Math.max(0, extrasBase) * (1 + s);
+        return new double[] {points, s, money / points};
     }
 
     /** One building's construction points as an order's quote froze them (R1e): its fitout's, the template's own without one. */
@@ -9991,8 +10013,9 @@ public class Game {
     private BuildQuote demolitionPrice(BuildingsTemplate t, double workPoints, double points, double months) {
         double perPoint = t.getConstructionPoints() > 0
                 ? buildingManager.nonMaterialCost(t) / t.getConstructionPoints() : 0;
-        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
-        double sticker = ConstructionControl.DEMOLITION_SHARE * workPoints * perPoint * buildingManager.orderPriceMultiplier();
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort), built at home and priced at
+        // home's (REV-FC2, the second review: never the foreign crews' share; BuildingManager.homePriceMultiplier()).
+        double sticker = ConstructionControl.DEMOLITION_SHARE * workPoints * perPoint * buildingManager.homePriceMultiplier();
         return new BuildQuote(1, sticker, 0, 0, new Markets.Draw(0, 0, 0, 0, 0), 0,
                 buildingManager.getConstructionMaterialPrice(), 0, landManager.getAvailableSqFt(), months,
                 buildersSalesRate(), plantSalesRate());
@@ -10273,12 +10296,13 @@ public class Game {
         BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
         if (t == null || t.getConstructionPoints() <= 0) return null;
         double pointsLeft = Math.max(0, shellPoints(shell, t) - shell.progress);
-        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort), built at home and priced at
+        // home's (REV-FC2, the second review: never the foreign crews' share; BuildingManager.homePriceMultiplier()).
         double sticker = shell.lots == null || shell.lots.isEmpty()
                 ? buildingManager.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints()
-                * buildingManager.orderPriceMultiplier()
+                * buildingManager.homePriceMultiplier()
                 // ...and a shell whose orders froze their equipment (R1e) at what its buildings, so fitted out, cost a point.
-                : shellValue(shell, t) * pointsLeft / Math.max(1e-9, shellPoints(shell, t)) * buildingManager.orderPriceMultiplier();
+                : shellValue(shell, t) * pointsLeft / Math.max(1e-9, shellPoints(shell, t)) * buildingManager.homePriceMultiplier();
         double needed = Math.max(0, shell.materialsOwed);
         double yard = buildingManager.getConstructionMaterials();
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
@@ -10397,10 +10421,11 @@ public class Game {
         double needed = Math.max(0, to.getConstructionMaterials() - from.getConstructionMaterials()) * (double) n;
         double yard = buildingManager.getConstructionMaterials();
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
-        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort), built at home and priced at
+        // home's (REV-FC2, the second review: never the foreign crews' share; BuildingManager.homePriceMultiplier()).
         double sticker = (buildingManager.nonMaterialCost(to)
                 + ConstructionControl.DEMOLITION_SHARE * buildingManager.nonMaterialCost(from)) * n
-                * buildingManager.orderPriceMultiplier();
+                * buildingManager.homePriceMultiplier();
         // ...and its surface's bitumen (0.7.83): a Paved Road's, the bed having none (bitumenForPaving()).
         Markets.Draw bitumen = getMarkets().quote(Good.BITUMEN, bitumenForPaving() * (double) n, getSectors());
         return new BuildQuote(n, sticker, needed, yard, boughtIn,
@@ -10572,8 +10597,9 @@ public class Game {
 
         // C. The cancelled orders, stopped: the city's contract left comes
         // back out of the builders' book, the work it was for off their order
-        // book's points - and off the foreign contractor's (FC1b), but for a
-        // depot of theirs served first, which he never had on it - or a
+        // book's points - and off the foreign contractor's (FC1b) the order's
+        // own points abroad (REV-FC2, the second review: the site's share
+        // abroad of its points left, none for an order quoted at home), or a
         // restart would put its points on his book a second time.
         for (ConstructionControl.Refund r : controlThisMonth.refunds) {
             double back = Math.max(0, r.value());
@@ -10581,8 +10607,7 @@ public class Game {
                 cash += back;
                 cityCapitalSpending -= back;
             }
-            // ...his book first (FC2): the builders cut the work they pay a stranger's excess for before their own crews'.
-            builders.cancelOrder(back, r.points(), r.points());
+            builders.cancelOrder(back, r.points(), r.abroadPoints());
             r.shell().month = month;
             r.shell().refunded += back;
             GameLog.note(String.format("The city's %d %s stopped: %s back, the shell kept.", r.buildings(),
@@ -10808,6 +10833,8 @@ public class Game {
                 // ...and its buildings past the threshold handed to the foreign crews now, at what the sticker charged a
                 // point for them (REV-FC2's P1): the builders bill on to the crews what the city paid for that work.
                 getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
+                // ...and the site's share of its points abroad struck again, what a cancel cuts his book by (REV-FC2, the second review).
+                buildingManager.noteAbroad(selected, billedPoints, quote.abroadPoints);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -11665,6 +11692,7 @@ public class Game {
         // ...and its buildings past the threshold handed to the foreign crews now, at what the payer's sticker charged a
         // point for them (REV-FC2's P1): the builders bill on to the crews what the payer paid for that work.
         getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
+        buildingManager.noteAbroad(template, billedPoints, quote.abroadPoints);
 
         return true;
     }
@@ -17726,6 +17754,8 @@ public class Game {
         dataSave.setContractRecords(buildingManager.getContractRecords());
         // ...and the buildings still without a piece of equipment, where a stack has any (R1; none in a played city).
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
+        // ...and each site's share of its points owed that went abroad (REV-FC2, the second review), what a cancel cuts his book by.
+        dataSave.setAbroadShareById(buildingManager.getAbroadShareById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
@@ -21937,6 +21967,9 @@ public class Game {
             // ...and the equipment each site's orders froze (R1e), after the sites' counts (restoreConstruction(), above): a save with none
             // reads every building on site as the whole template, its pieces decided at the finish, as it was ordered.
             buildingManager.restoreLots(loaded.getLotsById());
+            // ...and each site's share of its points owed abroad (REV-FC2, the second review), once the sites owe their points:
+            // a save from before the key reads all of a site's points owed abroad, as FC1b's cancel cut them.
+            buildingManager.restoreAbroadShare(loaded.getAbroadShareById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());

@@ -1191,6 +1191,21 @@ public class DataSave implements Cloneable {
     }
 
     /**
+     * Each site's share of its points owed that went to the foreign crews' book, by template id (REV-FC2, the second
+     * review; BuildingsStacks.abroadShare, BuildingManager.noteAbroad()), only the sites with some, and written always,
+     * an empty map when none: so a save without the key is a save from before it, whose sites with points owed read all
+     * of them abroad - a cancel cuts his book by its points left, never below nothing, as FC1b cut it. No format bump.
+     */
+    private java.util.Map<Integer, Double> abroadShareById;
+
+    public void setAbroadShareById(java.util.Map<Integer, Double> byId) {
+        this.abroadShareById = byId == null ? new java.util.TreeMap<>() : byId;
+    }
+
+    /** The share by template id, empty for a save with none abroad, null for a save from before the key. */
+    public java.util.Map<Integer, Double> getAbroadShareById() { return abroadShareById; }
+
+    /**
      * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written
      * only for the stacks that have any: null, or empty, is every building fitted. A save from before R1 has no key, which Gson leaves alone, and
      * so reads as every building fitted, as it ran: no format bump.
