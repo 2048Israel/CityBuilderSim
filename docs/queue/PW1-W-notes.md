@@ -17,11 +17,12 @@ f937d2c22 (0.9.192, PW5, SAVE_FORMAT 63). The row: [PW1 notes §6](PW1-notes.md)
 - **The water's price** (`UtilitiesHandler`, sub-banner THE WATER'S POWER). The city's water is of two kinds, the
   land's (the founding wells and the fresh works) first, then the sea's: the order `updateWaterRatio()` and
   `waterOutput()` already make it in. Each update records a `WaterDraw`: the fresh and sea works' draw (kW,
-  `ServicesManager`'s `gridDraw` over the WATER category, split by `isSeaWater()`) and the water each kind delivered.
-  The price a unit (`getPricePerWaterUnit()`) is the tariff (main's constant, `.05 x FACTOR`, now `getWaterTariff()`)
-  plus `getWaterPowerPerUnit()`: while the sea delivers, the sea works' draw over the water the sea delivers, at the
-  struck book's commerce price (energy and both wires); 0 while the land's water serves, its tariff paying its works'
-  power.
+  `ServicesManager`'s `gridDraw` over the WATER category, split by `isSeaWater()`), the water each kind delivered,
+  and the sea works' output at the fill. The price a unit (`getPricePerWaterUnit()`) is the tariff (main's constant,
+  `.05 x FACTOR`, now `getWaterTariff()`) plus `getWaterPowerPerUnit()`: while the sea delivers, the sea works' draw
+  at the struck book's commerce price (energy and both wires) over max(the sea's water, min(the water served,
+  `SEA_MARGIN_SHARE` (.5) x the sea's output at the fill)); 0 while the land's water serves, its tariff paying its
+  works' power.
 - **Its timing.** The struck book's prices bill month t's draws at the top of t+1; so does the water. The price is set
   in `finalUpdateEconomy()` after `updateServices()` (main already set it there) from book t and month t's record,
   and the statements strike it at the top of t+1. `SimulationEngine.updateEconomy()` also sets it after the strike, so
@@ -42,26 +43,36 @@ f937d2c22 (0.9.192, PW5, SAVE_FORMAT 63). The row: [PW1 notes §6](PW1-notes.md)
 
 ## 2. The calls (★), each taken as recommended
 
-- ★ **At the margin, the sea's, as PW1 prices power.** While the sea's water is needed the price carries the sea
-  works' power over the water the sea delivers. An average over all the water fails the brief: the land's cheap water
-  dilutes it, so a desalination plant never covers its power (the berth: about 617 against 709). A price on the
-  plant's output at full use fails too (the berth's plant delivers 56% of its output: about 407). At the margin the
-  plant's gain over its running cost is its tariff on its water less its running cost besides its power, whatever the
-  power costs: its water covers its power again, and the land's water earns the rest, as the inframarginal plants do
-  in PW1. The cost: a desalination plant standing for a sliver of the demand prices the sliver at its whole draw, so
-  the water's price can spike when one is barely needed. That is the sliver's cost at the market's price, as a short
-  half-block clears at the value of lost load; no cap was added, because any cap below it fails the brief's own
-  fixture (the berth). Flagged for the review and the ensemble.
-- ★ **The land's works' power is paid from the tariff, not put on top** (the finding: SubstationCheck PW5-F1, "the
-  ordinary works fixture uses one district and native world quotes, with its original coal chain working"). Priced
-  the same way, the fresh works turned it red twice. Its works town's lone Water Treatment Plant stands for 1,383
-  units past its wells, of 4,288, and draws its whole 900 kW: over the sliver the water was 2.33 times the tariff,
-  spread over the land's water with the wells' 1.43 times; the coal mines' water lifted their thermal marginal cost
-  from main's 25.97 USD/t to 28.89 and 26.91, their export margin fell further below zero and their diesel bid went
-  to 0 (the chain's diesel bought 37 of 21,857). The brief names the desalination plant's power; moving PW5-F1's
-  premise would be Jerus's. A fresh works draws 900 kW for 60,000 units against the sea's 10,880, and the tariff the
-  land's water always sold at pays it (in that town the fresh works' power is 0.43 of the water's bills at the
-  tariff). The water's books still pay the power's for every works' draw, the land's included.
+- ★ **At the margin, the sea's, as PW1 prices power, and bounded (REV-PW1-W 1).** While the sea delivers at least
+  half its output at the fill, the price carries the sea works' power over the water the sea delivers: the plant's
+  gain over its running cost is its tariff on its water less its running cost besides its power, whatever the power
+  costs, so its water covers its power again (the berth's plant at 56% untouched). Under half, the plant stands
+  mostly idle and that rule had no bound (one unit past the land's water paid the whole draw on every unit, then the
+  tariff at 0; on a 1,383-unit sliver about 17 times the tariff, the businesses paying served/sea times the plant's
+  power). There the power is spread over the water served, recovered once (WaterPowerCheck 7: the water served at
+  the price is the plant's power to 1e-12, the bills the billed part of it), but over no more than half the sea's
+  output, so a unit pays at most the plant's power over the water served (at least the land's water) or over half
+  its output (WaterPowerCheck 8). At half the two divisors are one, so the price has no step there.
+  Each alternative fails one ask. Spread over the water served everywhere, the berth's plant earns sea/served of its
+  power and loses its licence; an average over all the water failed it the same way (about 617 against 709). The
+  divisor floored at half the output alone recovers billed/(half the output) times the plant's power on a sliver,
+  short of it or past it, once only by chance. A price on the output at full use fails the berth (about 407).
+  What stays: where the city serves past half the plant's output, a sliver pays the plant's power over half its
+  output, more than once (WaterPowerCheck 8: 78.60 against 27.44); that is what a plant delivering just half would
+  price its water at, and the margin recovers more than once wherever the plant is the margin (the berth), as PW1's
+  power price does; the surplus stays inside the treasury's pool (the water's books). The share is a dial:
+  `SEA_MARGIN_SHARE` .5, under the berth's 56%.
+- ★ **The land's works' power is paid from the tariff, not put on top.** The reason is not the sliver's spike: the
+  bound would treat a fresh works' sliver as it treats the sea's, its power spread over the water served. In
+  SubstationCheck's works town (PW5-F1, "the ordinary works fixture uses one district and native world quotes, with
+  its original coal chain working") that is the rule measured red: its lone Water Treatment Plant's 900 kW over
+  the 4,288 units served is 0.43 of the tariff on top (1.43 times), the coal mines' thermal marginal cost rises from
+  main's 25.97 USD/t to 26.91, their export margin falls further below zero and their diesel bid goes to 0 (37
+  bought of 21,857). Over the sliver alone it was 2.33 times (28.89 USD/t). The fresh works' power recovered once is
+  itself what prices that chain out, so pricing it in is not harmless and the call stays: the brief names the
+  desalination plant's power, and moving PW5-F1's premise would be Jerus's. The tariff the land's water always sold
+  at pays it (in that town the fresh works' power is 0.43 of the water's bills at the tariff), and the water's books
+  still pay the power's for every works' draw.
 - ★ **The whole draw, not the month's ratio**, in the price and the bill. A short grid rations the works' power but
   not their water (`updateWaterRatio()` reads the staffing fill alone), so the water they make is costed at the
   power it needs, as `BuildAdvice.rawRunningCostAt()` costs every city works. At the served share the berth's plant
@@ -82,26 +93,38 @@ f937d2c22 (0.9.192, PW5, SAVE_FORMAT 63). The row: [PW1 notes §6](PW1-notes.md)
 
 ## 3. Old saves
 
-Two saved fields, in `DataSave.powerBooks` (`UtilitiesHandler.PowerState`): `pendingWater` (the month's `WaterDraw`,
-brought back by `restorePendingPower()` after the load's last rebuild) and `waterPowerPaid`. A save without them
-(the build before) loads with the record the load's rebuild makes from the same stock and nothing paid, which is what
-the old build paid (WaterPowerCheck 4 strikes them out of a saved file and loads it). No field is read differently:
-**no format bump owed** (SAVE_FORMAT stays 63).
+Two saved fields, in `DataSave.powerBooks` (`UtilitiesHandler.PowerState`): `pendingWater` (the month's
+`WaterDraw`, the sea's output at the fill among its fields, brought back by `restorePendingPower()` after the load's
+last rebuild) and `waterPowerPaid`. A save without them (the build before) loads with the record the load's rebuild
+makes from the same stock and nothing paid, which is what the old build paid (WaterPowerCheck 4 strikes them out of
+a saved file and loads it). No field is read differently: **no format bump owed** (SAVE_FORMAT stays 63).
 
 ## 4. The checks
 
+Each through `./batch-check.sh <name>`, one at a time, on the PC (2026-11-23), after the last code change (the bound,
+REV-PW1-W 1):
 
-Each through `./batch-check.sh <name>`, one at a time, on the PC (2026-11-23), after the last code change:
-
-- **WaterPowerCheck** (new, in `AllChecks` after PowerPriceCheck): 36 of 36. Its sections cause each case on both
-  sides: 1 a desalination town in surplus (the tariff exactly), 2 the same town short past every works (the sea's
-  power over its whole output), 3 every bill once, 4 the save and a save without the fields, 5 PW1-L in a copy in
-  surplus and one short in every half-block, 6 PW1-G in the short copy (a Pulp Mill's surplus at the works price, an
-  Oxygen Steel Shop netted at its class's), 7 a power price low and high, the sea at the margin in both.
-- **PublicLicenceCheck** 68 of 68: the four REV-PW1c reds pass on their own premises; their six known-reds rows are
-  deleted, and no assertion is restated but 6(a)'s expected fee (§2).
-- **SubstationCheck** green under the rule kept; red (PW5-F1) under both rules that priced the land's works (§2).
-- Green besides: PowerPriceCheck, WaterCheck (main's), LicenceFeesCheck, HistoricalLicenceCheck, SaveFileCheck,
+- **WaterPowerCheck** (new, in `AllChecks` after PowerPriceCheck): 41 of 41. Its sections cause each case on both
+  sides: 1 a desalination town in surplus (the tariff exactly); 2 the same town short past every works (the sea at
+  its whole output, past `SEA_MARGIN_SHARE`: its power over its water); 3 every bill once; 4 the save and a save
+  without the fields; 5 PW1-L in a copy in surplus and one short in every half-block; 6 PW1-G in the short copy (a
+  Pulp Mill's surplus at the works price, an Oxygen Steel Shop netted at its class's); 7 the sea on a sliver a
+  little past the wells (7,432 and 8,599 of 60,000, the water served 12,348 and 12,607): the price spread over the
+  water served, bounded below the old rule's, the water served recovering the plant's power once to 1e-12 and the
+  bills no more, the dear power's copy the dearer water; 8 the sea on a sliver of a city serving past half its
+  output (9,886 of 33,073, served 47,369): the plant's power over half its output.
+- **PublicLicenceCheck** 68 of 68: the four REV-PW1c reds pass on their own premises, the berth's plant at 56%
+  untouched by the bound; their six known-reds rows are deleted, and no assertion is restated but 6(a)'s expected fee.
+- **ReloadCheck** (the month after a reload), **SaveFileCheck**, **TreasuryCheck**: green. The review named a
+  MoneyCheck, which the tree does not have; TreasuryCheck holds the treasury's lines the water's money reaches, and
+  the money audit closes in WaterPowerCheck 3, PowerPriceCheck, PublicLicenceCheck and every month of LongPlaytest.
+- **LongPlaytest** (2,400 months): known red only (main's). Its count (new, beside the conservation line): the sea
+  delivered in **0 of 2,401 months**, under half its output in 0, under a tenth of the water served in 0. The
+  default city never needs a desalination plant (it ends with 154 km2 of lake and river), so the sea's rule and its
+  bound never fire in the default path; the price there is the tariff every month, as on main.
+- **SubstationCheck** green; red (PW5-F1) under both rules that priced the land's works (§2).
+- Green besides: WaterCheck (main's), PowerPriceCheck, LicenceFeesCheck, HistoricalLicenceCheck, EssentialWorksCheck,
+  LandmassCheck, BuildingDataCheck, ReadPathCheck. Before the bound (the sea's rule unbounded), also green:
   RecipeCheck, PowerDispatchCheck, BooksCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, HydroCheck,
   ElectrolyserCheck, HydrogenSteelCheck, WoodProductsCheck, BuildAdviceCheck, NewUnitCheck, HistoricalRecipeCheck;
   KeptCheck known red only (main's). `./batch-check.sh --fast` green.

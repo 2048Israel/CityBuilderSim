@@ -17,8 +17,9 @@ import java.util.Locale;
  *      the sea delivers nothing and the price is the tariff exactly, which pays the land's works' power; the plant's gain over its
  *      running cost is negative, and the water's books still pay the power's for all the works' draw.
  *   2. A TOWN SHORT OF WATER PRICES IT AT ITS SEA WORKS' POWER: its demand past what every works makes at full staffing, the sea
- *      works deliver their whole output, and the water's price is the tariff and their draw at the struck commerce price over that
- *      output, recomputed from the stacks, the book and UtilitiesHandler.waterOutput(); the sea's water pays the sea works' power.
+ *      works deliver their whole output, past SEA_MARGIN_SHARE of it, and the water's price is the tariff and their draw at the struck
+ *      commerce price over that output, recomputed from the stacks, the book and UtilitiesHandler.waterOutput(); the sea's water pays
+ *      the sea works' power.
  *   3. EVERY BILL ONCE: the water's books pay the power's the month's works' draw at the struck commerce price; the electricity's
  *      income gains it and the water's loses it, the services' net and the treasury's line are unmoved by it, the audit's utility
  *      revenue is the sectors' bills, and the money audit closes.
@@ -30,9 +31,14 @@ import java.util.Locale;
  *   6. A RECIPE'S OWN POWER IS WEIGHED AT WHAT THE STRIKE PAYS IT (PW1-G): in the short copy, whose works price is not its industry
  *      price, a Pulp Mill's surplus at the works price, what Wood Products' statement is paid for it, and not at the industry price;
  *      an Oxygen Steel Shop's own power netted at its class's.
- *   7. THE PRICE OF POWER MOVES THE PRICE OF WATER: the two copies, each its fresh works retired for a desalination plant so the sea
- *      takes the demand past the wells, one with its homes asking past its plant: its struck commerce price is the higher, and so is
- *      its water's, each the tariff and the sea works' draw at its own commerce price over the water the sea delivers.
+ *   7. THE SEA ON A SLIVER: the two copies, each its fresh works retired for a desalination plant and its demand a little past the
+ *      wells, so the sea delivers under SEA_MARGIN_SHARE of its output and the water served is within that share: the price is the
+ *      tariff and the sea works' draw spread over the water served, bounded below their draw over the sliver; the water served at it
+ *      recovers their power once and the bills no more; and the copy whose homes ask past its plant, its commerce price the higher,
+ *      prices the dearer water.
+ *   8. THE SEA ON A SLIVER OF A CITY THAT SERVES PAST THAT SHARE: the cheap copy's fresh works stood again and its demand a little
+ *      past the land's water: the price is the sea works' draw over that share of their output, what a plant delivering just the
+ *      share prices its water at, still below their draw over the sliver.
  *
  * Every fixture is a scratch city (HistoricalLicenceCheck.town(), PowerPriceCheck.town()) and CAUSES its condition through the
  * model's inputs: Pulp Mills for the water's demand, the homes' draw for the power's price. Every expected figure is a getter or a
@@ -61,9 +67,14 @@ public class WaterPowerCheck {
     static String f(double v) { return String.format("%.9g", v); }
 
     /** What the water works stand and deliver, worked from the stacks, the templates and waterOutput(): independent of the handler's record. */
-    record Works(double freshKw, double seaKw, double served, double withoutSea, double wellsAlone) {
+    record Works(double freshKw, double seaKw, double served, double withoutSea, double wellsAlone, double seaOutput) {
         double landDelivered() { return withoutSea; }
         double seaDelivered() { return served - withoutSea; }
+    }
+
+    /** The sea works' draw a unit, the rule stated from a record's fields: over the sea's water, or the water served under SEA_MARGIN_SHARE of their output. */
+    static double kwPerUnit(double seaKw, double land, double sea, double seaOutput) {
+        return sea <= 0 ? 0 : seaKw / Math.max(sea, Math.min(land + sea, UtilitiesHandler.SEA_MARGIN_SHARE * seaOutput));
     }
 
     static Works works(Game g) {
@@ -80,18 +91,23 @@ public class WaterPowerCheck {
         return new Works(fresh, sea,
                 Math.min(d, UtilitiesHandler.waterOutput(u.getFreshNameplate(), u.getDesalNameplate(), fill, cap, e)),
                 Math.min(d, UtilitiesHandler.waterOutput(u.getFreshNameplate(), 0, fill, cap, e)),
-                Math.min(d, UtilitiesHandler.waterOutput(0, 0, fill, cap, e)));
+                Math.min(d, UtilitiesHandler.waterOutput(0, 0, fill, cap, e)), u.getDesalNameplate() * fill);
     }
 
     /** Pulp Mills past what the city's water works make at full staffing, or past the founding wells alone: how many stood. */
     static int mills(Game g, boolean pastEveryWorks) {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
-        long e = g.getBuildingManager().getFoundingEndowments();
-        double ceiling = pastEveryWorks ? UtilitiesHandler.waterOutput(u.getFreshNameplate(), u.getDesalNameplate(), 1, u.getFreshCap(), e)
-                : UtilitiesHandler.waterOutput(0, 0, 1, u.getFreshCap(), e);
+        return millsPast(g, pastEveryWorks ? u.getDesalNameplate() : 0, pastEveryWorks ? u.getFreshNameplate() : 0);
+    }
+
+    /** Pulp Mills past what the given sea and fresh nameplates make with the wells at full staffing: how many more stood. */
+    static int millsPast(Game g, double desal, double fresh) {
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        double ceiling = UtilitiesHandler.waterOutput(fresh, desal, 1, u.getFreshCap(), g.getBuildingManager().getFoundingEndowments());
         BuildingsTemplate mill = g.getBuildingManager().getTemplateByName("Pulp Mill");
         int n = (int) Math.floor(Math.max(0, ceiling - u.getWaterConsumption()) / mill.getWaterConsumption()) + 1;
-        HistoricalLicenceCheck.stand(g, "Pulp Mill", n);
+        BuildingsStacks have = g.getBuildingManager().getStack(mill);
+        HistoricalLicenceCheck.stand(g, "Pulp Mill", (int) ((have == null ? 0 : have.getQuantity()) + n));
         return n;
     }
 
@@ -130,6 +146,18 @@ public class WaterPowerCheck {
             PublicLicenceCheck.months(g, 2);
         }
         dearPower(lo.g, hi.g, nlo, nhi);
+        // ...and in the cheap copy its fresh works stood again, and a Pulp Mill more a month until the sea first delivers: the mills' hiring
+        // lowers the works' fill as they come, so a count worked at full staffing overshoots into a shortage.
+        HistoricalLicenceCheck.stand(lo.g, "Water Treatment Plant", 1);
+        PublicLicenceCheck.months(lo.g, 1);
+        BuildingsTemplate mill = lo.g.getBuildingManager().getTemplateByName("Pulp Mill");
+        int nland = 0;
+        while (nland < 12 && works(lo.g).seaDelivered() <= 0) {
+            HistoricalLicenceCheck.stand(lo.g, "Pulp Mill", (int) lo.g.getBuildingManager().getStack(mill).getQuantity() + 1);
+            nland++;
+            PublicLicenceCheck.months(lo.g, 1);
+        }
+        wideSliver(lo.g, nland);
 
         System.out.println(fails == 0 ? "WaterPowerCheck: all ok (" + checks + " checks)" : "WaterPowerCheck: " + fails + " FAILED of " + checks);
         System.exit(fails);
@@ -171,8 +199,8 @@ public class WaterPowerCheck {
         double c = u.getStruckBook().commercePrice, tariff = u.getWaterTariff(), price = d.getEconomyManager().getPricePerWaterUnit();
         check("fixture: " + n + " Pulp Mills take the demand past every works at full staffing: the city is short of water",
                 u.getWaterRatio() < 1 && w.served() < u.getWaterConsumption() && c > 0, "ratio " + f(u.getWaterRatio()) + " commerce " + f(c));
-        check("the sea works deliver their whole output, the desalination nameplate at the fill",
-                w.seaDelivered() > 0 && near(w.seaDelivered(), u.getDesalNameplate() * u.getAverageUtilityFill(), 1e-9) && near(u.getLatestWaterDraw().seaDelivered(), w.seaDelivered(), 1e-12),
+        check("the sea works deliver their whole output, the desalination nameplate at the fill: past SEA_MARGIN_SHARE of it, the margin alone",
+                w.seaDelivered() > 0 && w.seaDelivered() >= UtilitiesHandler.SEA_MARGIN_SHARE * w.seaOutput() && near(w.seaDelivered(), u.getDesalNameplate() * u.getAverageUtilityFill(), 1e-9) && near(u.getLatestWaterDraw().seaDelivered(), w.seaDelivered(), 1e-12),
                 f(w.seaDelivered()) + " against " + f(u.getLatestWaterDraw().seaDelivered()));
         double want = tariff + w.seaKw() * c / w.seaDelivered();
         check("the water's price is the tariff and the sea works' draw at the struck commerce price over the water they deliver",
@@ -184,21 +212,55 @@ public class WaterPowerCheck {
     /* ---------- 7 ---------- */
 
     static void dearPower(Game lo, Game hi, int nlo, int nhi) {
-        System.out.println("--- 7. the price of power moves the price of water ---");
+        System.out.println("--- 7. the sea on a sliver: the price bounded, the sea works' power recovered once, and moved by the price of power ---");
         UtilitiesHandler a = lo.getServicesManager().getUtilitiesHandler(), b = hi.getServicesManager().getUtilitiesHandler();
         Works wa = works(lo), wb = works(hi);
-        double ca = a.getStruckBook().commercePrice, cb = b.getStruckBook().commercePrice;
+        double ca = a.getStruckBook().commercePrice, cb = b.getStruckBook().commercePrice, share = UtilitiesHandler.SEA_MARGIN_SHARE;
         double pa = lo.getEconomyManager().getPricePerWaterUnit(), pb = hi.getEconomyManager().getPricePerWaterUnit();
         check("fixture: each copy's fresh works are retired for a desalination plant, and its Pulp Mills (" + nlo + ", " + nhi + ") take its demand"
-                        + " past the wells: the sea is the margin",
-                wa.freshKw() == 0 && wb.freshKw() == 0 && wa.seaKw() > 0 && wb.seaKw() > 0 && wa.seaDelivered() > 0 && wb.seaDelivered() > 0,
-                f(wa.seaDelivered()) + ", " + f(wb.seaDelivered()));
+                        + " a little past the wells: the sea delivers a sliver, under SEA_MARGIN_SHARE of its output at the fill, and the water served is within that share",
+                wa.freshKw() == 0 && wb.freshKw() == 0 && wa.seaKw() > 0 && wb.seaKw() > 0 && wa.seaDelivered() > 0 && wb.seaDelivered() > 0
+                        && wa.served() <= share * wa.seaOutput() && wb.served() <= share * wb.seaOutput(),
+                "sea " + f(wa.seaDelivered()) + ", " + f(wb.seaDelivered()) + " served " + f(wa.served()) + ", " + f(wb.served())
+                        + " output " + f(wa.seaOutput()) + ", " + f(wb.seaOutput()));
         check("fixture: the copy whose homes ask past its plant is short of power and its struck commerce price is the higher",
                 b.getStruckBook().ratio < 1 && cb > ca && ca > 0, f(cb) + " against " + f(ca));
-        double wantA = a.getWaterTariff() + wa.seaKw() * ca / wa.seaDelivered(), wantB = b.getWaterTariff() + wb.seaKw() * cb / wb.seaDelivered();
-        check("each copy's water is the tariff and its sea works' draw at its own commerce price over the water the sea delivers",
+        double wantA = a.getWaterTariff() + wa.seaKw() * ca / wa.served(), wantB = b.getWaterTariff() + wb.seaKw() * cb / wb.served();
+        check("each copy's water is the tariff and its sea works' draw at its own commerce price spread over the water served, not over the sliver",
                 near(pa, wantA, 1e-12) && near(pb, wantB, 1e-12), f(pa) + ", " + f(pb) + " against " + f(wantA) + ", " + f(wantB));
+        check("the price stays bounded: below the sea works' draw over the sliver, the rule before the bound",
+                pa < a.getWaterTariff() + wa.seaKw() * ca / wa.seaDelivered() && pb < b.getWaterTariff() + wb.seaKw() * cb / wb.seaDelivered(), null);
+        boolean once = true, billedNoMore = true;
+        for (Game g : new Game[] { lo, hi }) {
+            UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+            Works w = g == lo ? wa : wb;
+            double adder = g.getEconomyManager().getPricePerWaterUnit() - u.getWaterTariff(), power = w.seaKw() * u.getStruckBook().commercePrice;
+            once &= near(w.served() * adder, power, 1e-12);
+            billedNoMore &= u.getBilledWaterDraw() * u.getWaterRatio() * adder <= power * (1 + 1e-12);
+        }
+        check("the water served at that price recovers the sea works' power once, and the bills, the billed part of it, no more", once && billedNoMore,
+                f(wa.served() * (pa - a.getWaterTariff())) + " against " + f(wa.seaKw() * ca));
         check("the dearer power prices the dearer water", pb > pa, f(pb) + " against " + f(pa));
+    }
+
+    /* ---------- 8 ---------- */
+
+    static void wideSliver(Game g, int n) {
+        System.out.println("--- 8. the sea on a sliver of a city that serves past that share: the price is the plant's power over the share ---");
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        Works w = works(g);
+        double c = u.getStruckBook().commercePrice, share = UtilitiesHandler.SEA_MARGIN_SHARE, tariff = u.getWaterTariff();
+        double price = g.getEconomyManager().getPricePerWaterUnit(), power = w.seaKw() * c;
+        check("fixture: the cheap copy's fresh works stood again beside its plant, and " + n + " Pulp Mills more take its demand a little past the land's"
+                        + " water: the sea delivers a sliver, under SEA_MARGIN_SHARE of its output at the fill, and the water served passes that share",
+                w.freshKw() > 0 && w.seaDelivered() > 0 && w.seaDelivered() < share * w.seaOutput() && w.served() > share * w.seaOutput() && c > 0,
+                "sea " + f(w.seaDelivered()) + " served " + f(w.served()) + " output " + f(w.seaOutput()));
+        double want = tariff + power / (share * w.seaOutput());
+        check("the water's price is the tariff and the sea works' draw at the struck commerce price over that share of their output, what a plant"
+                        + " delivering just the share would price its water at", near(price, want, 1e-12) && near(Recipes.pricesOf(g).pricePerWaterUnit(), want, 1e-12),
+                f(price) + " against " + f(want));
+        check("...bounded below the sea works' draw over the sliver, and the water served pays their power more than once, as the margin's does",
+                price < tariff + power / w.seaDelivered() && w.served() * (price - tariff) > power, f(w.served() * (price - tariff)) + " against " + f(power));
     }
 
     /* ---------- 5 ---------- */
@@ -314,7 +376,7 @@ public class WaterPowerCheck {
         UtilitiesHandler.WaterDraw rebuilt = o.getLatestWaterDraw();
         double c = o.getStruckBook().commercePrice;
         double want = rebuilt == null ? Double.NaN : o.getWaterTariff()
-                + (rebuilt.seaDelivered() > 0 ? rebuilt.seaKw() / rebuilt.seaDelivered() : 0) * c;
+                + kwPerUnit(rebuilt.seaKw(), rebuilt.landDelivered(), rebuilt.seaDelivered(), rebuilt.seaOutput()) * c;
         check("fixture: the save carried the record and the payment, struck out of the file to make the save of the build before", had, null);
         check("a save without them loads with nothing paid and the record its load rebuilt from the same stock, which prices the water by the same rule",
                 o.getWaterPowerPaid() == 0 && rebuilt != null && near(old.getEconomyManager().getPricePerWaterUnit(), want, 1e-12),
