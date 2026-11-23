@@ -533,7 +533,7 @@ public final class RecipeChanges {
         for (var e : r.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * LicenceFees.creditedOutputRate(t, owner, e.getKey(), rate));
         for (var e : r.uses().entrySet()) value -= values.out(e.getKey(), e.getValue() * rate);
         for (JobType type : JobType.values()) value -= r.getJobs(type) * p.wages()[type.ordinal()];
-        return value - (r.getElectricity() - r.getGen()) * p.pricePerWatt()
+        return value - Recipes.powerCost(r, p)
                 - r.getWater() * p.pricePerWaterUnit() - r.getConsumables() * p.exchange() * rate;
     }
 

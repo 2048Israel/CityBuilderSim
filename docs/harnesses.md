@@ -269,7 +269,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ChildcareCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, NewUnitCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, GatewayCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
-| [PowerDispatch](map/PowerDispatch.md) | BuildAdviceCheck, BuildCardCheck, ElectrolyserCheck, EssentialWorksCheck, HydroCheck, NewUnitCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, ScaleCheck, SubstationCheck, WorksFinanceCheck |
+| [PowerDispatch](map/PowerDispatch.md) | BuildAdviceCheck, BuildCardCheck, ElectrolyserCheck, EssentialWorksCheck, HydroCheck, NewUnitCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, PublicLicenceCheck, ScaleCheck, SubstationCheck, WorksFinanceCheck |
 | [PowerView](map/PowerView.md) | HistoryCheck, PowerViewCheck, ReadPathCheck |
 | [PriceIndex](map/PriceIndex.md) | CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, ScaleCheck, StepsCheck |
 | [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerPriceCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, StepsCheck, SubstationCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
@@ -27203,50 +27203,50 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L396 6. no gain, no fee**
   - L408 fixture (a): the grid asks no more than it makes without the steam turbine, the piece fitted inside PE6's term
   - L419 P2-1 surplus: with the grid asking no more than it makes without the steam turbine, the public fitting verdict of the piece is its whole gross gain while the...
-  - L436 (a) the turbine adds nothing the city was short of, so its gain and its bill are nothing though the patent runs; once the grid is short it pays its share
-  - L450 fixture (b): the Desalination Plant's entry is abroad inside its term and the city's supply covers its demand without the plant
-  - L464 fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost
-  - L466 (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water
-- **L475 7. the planners net the fee the capture would strike (REV-R2c-P-1)**
-  - L490 fixture: the served city: the works already meet the demand (one more fitted plant delivers nothing more) while its standing stack pays PE5's share
-  - L493 P2-1 surplus: in the served city the public fitting verdict of PE5's piece is its whole gross gain, no fee, the patent running; the same as with the discover...
-  - L523 fixture: the city asks more water than its works make even with the rapid sand, so one more fitted plant adds more than an unfitted one
-  - L526 P2-1 shortage: the public fitting verdict of PE5's piece is its gross gain less the fee worked independently for the new building
-  - L530 a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, weighted by the annuity share
-- **L539 7b. a new plant's licence is weighed by the term its patent has left, and is nothing past it (REV-R2c-P-1)**
-  - L547 fixture: a patent's term is not less than a building's life, so a whole life fits inside it only in the term's first month, and k months left is a short way ...
-  - L554 P2-2 term:
-  - L559 P2-2 term: in the patent's last month it carries the fee times one month's share of the life
-  - L563 P2-2 term: in the patent's first month, a whole life inside its term, it carries the whole fee
-  - L567 P2-2 term: past the patent's end it carries nothing
-  - L581 P2-2 term: an order of one plant opening before the patent ends is charged the fee, not weighted by a life (each month of the term counts alone)
-  - L582 P2-2 term: an order of one plant opening in or after the patent's last month is charged nothing, the same plant today being charged
-- **L588 7c. an order of three plants is charged the bill of three, not three times one's (REV-R2c-P-1)**
-  - L600 fixture: the works fall short, and three new fitted plants more than make up what is missing (the demand binds the delivered water)
-  - L602 fixture: three plants' fee, worked independently, is above nothing and under three times one plant's
-  - L605 fixture: the patent has run its term's first months only, so the order's months are inside it
-  - L609 P2-2 units: runningChange charges one plant the fee of one
-  - L610 P2-2 units: runningChange charges three plants the bill of three, worked independently, which is under three times one plant's fee
-- **L617 7d. the auto-builder's costs take out the licence the city paid, not one more's (REV-R2c-P-1)**
-  - L641 fixture: the served city: a patent bill is struck on the stack, the next plant would pay none, and the city is founded the 1900 way, its people many
-  - L644 the public bill of the stack is the month's bill the capture struck on it
-  - L646 P2-3: costs() for the water measure, over the people, is the spend less q x (running less licenceOf) less the stack's bill, plus the site's terms
-  - L648 P2-3: it is the spend's licence it leaves out, not q x running's: under what q x running would leave by the bill over the people
-- **L655 8. the month both ways: the same city live and loaded**
-  - L662 fixture: a bill is accrued and waiting, and the save was written
-  - L663 (a) the loaded city holds the saved bill to the bit
-  - L667 (b) the strike pays the same bill in both
-  - L669 the treasury's cash is the same to the bit in both after the month
-  - L670 the budget's licence line and its total expenses are the same to the bit
-  - L673 the month's next bill is the same to the bit in both
-- **L680 9. a city founded today pays nothing**
-  - L692 fixture: the works are short of water, PE5's term is open and its piece would earn a gain in a city founded the 1900 way
-  - L697 no bill is struck, and no new plant is charged, in a city founded today
-  - L700 two months leave nothing pending and nothing paid
-  - L703 its save carries neither key
-- **L772 10. the bill crosses a save, and a read leaves it still**
-  - L773 DataSave and HistorySave JSON, scratch slot 10 and the load keep the bill, the licence line and the series
-  - L774 repeated reads of the bill, the gain and the planners' figures keep every money pool and every figure still
+  - L443 (a) the turbine adds nothing the city was short of, so its gain and its bill are nothing though the patent runs; once the grid is short it pays its share
+  - L457 fixture (b): the Desalination Plant's entry is abroad inside its term and the city's supply covers its demand without the plant
+  - L472 fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost
+  - L474 (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water
+- **L483 7. the planners net the fee the capture would strike (REV-R2c-P-1)**
+  - L498 fixture: the served city: the works already meet the demand (one more fitted plant delivers nothing more) while its standing stack pays PE5's share
+  - L501 P2-1 surplus: in the served city the public fitting verdict of PE5's piece is its whole gross gain, no fee, the patent running; the same as with the discover...
+  - L531 fixture: the city asks more water than its works make even with the rapid sand, so one more fitted plant adds more than an unfitted one
+  - L534 P2-1 shortage: the public fitting verdict of PE5's piece is its gross gain less the fee worked independently for the new building
+  - L538 a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, weighted by the annuity share
+- **L547 7b. a new plant's licence is weighed by the term its patent has left, and is nothing past it (REV-R2c-P-1)**
+  - L555 fixture: a patent's term is not less than a building's life, so a whole life fits inside it only in the term's first month, and k months left is a short way ...
+  - L562 P2-2 term:
+  - L567 P2-2 term: in the patent's last month it carries the fee times one month's share of the life
+  - L571 P2-2 term: in the patent's first month, a whole life inside its term, it carries the whole fee
+  - L575 P2-2 term: past the patent's end it carries nothing
+  - L589 P2-2 term: an order of one plant opening before the patent ends is charged the fee, not weighted by a life (each month of the term counts alone)
+  - L590 P2-2 term: an order of one plant opening in or after the patent's last month is charged nothing, the same plant today being charged
+- **L596 7c. an order of three plants is charged the bill of three, not three times one's (REV-R2c-P-1)**
+  - L608 fixture: the works fall short, and three new fitted plants more than make up what is missing (the demand binds the delivered water)
+  - L610 fixture: three plants' fee, worked independently, is above nothing and under three times one plant's
+  - L613 fixture: the patent has run its term's first months only, so the order's months are inside it
+  - L617 P2-2 units: runningChange charges one plant the fee of one
+  - L618 P2-2 units: runningChange charges three plants the bill of three, worked independently, which is under three times one plant's fee
+- **L625 7d. the auto-builder's costs take out the licence the city paid, not one more's (REV-R2c-P-1)**
+  - L649 fixture: the served city: a patent bill is struck on the stack, the next plant would pay none, and the city is founded the 1900 way, its people many
+  - L652 the public bill of the stack is the month's bill the capture struck on it
+  - L654 P2-3: costs() for the water measure, over the people, is the spend less q x (running less licenceOf) less the stack's bill, plus the site's terms
+  - L656 P2-3: it is the spend's licence it leaves out, not q x running's: under what q x running would leave by the bill over the people
+- **L663 8. the month both ways: the same city live and loaded**
+  - L670 fixture: a bill is accrued and waiting, and the save was written
+  - L671 (a) the loaded city holds the saved bill to the bit
+  - L675 (b) the strike pays the same bill in both
+  - L677 the treasury's cash is the same to the bit in both after the month
+  - L678 the budget's licence line and its total expenses are the same to the bit
+  - L681 the month's next bill is the same to the bit in both
+- **L688 9. a city founded today pays nothing**
+  - L700 fixture: the works are short of water, PE5's term is open and its piece would earn a gain in a city founded the 1900 way
+  - L705 no bill is struck, and no new plant is charged, in a city founded today
+  - L708 two months leave nothing pending and nothing paid
+  - L711 its save carries neither key
+- **L780 10. the bill crosses a save, and a read leaves it still**
+  - L781 DataSave and HistorySave JSON, scratch slot 10 and the load keep the bill, the licence line and the series
+  - L782 repeated reads of the bill, the gain and the planners' figures keep every money pool and every figure still
 
 ## QuarryingCheck.java - 47 labelled assertions
 
