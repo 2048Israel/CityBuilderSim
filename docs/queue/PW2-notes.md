@@ -91,7 +91,9 @@ production1 = nameplate x availability x 730/720):
   any cap" by design, since a site finishing frees output for a month; a floor-held site is held for its whole build,
   so the quote counts it at its cap and shares what is left by weight (PowerPlantsCheck 5, both sides of the output at
   which the cap binds; with none held, to the bit). Without it the founding's 48-month oil-fired plant would have
-  weighed against every other quote for its whole build.
+  weighed against every other quote for its whole build. What this leaves (REV-PW2): a second plant added to a site
+  as the first finishes stands in about half its months (a coal plant in about 30 of 60). The floor per building is
+  queued as PW2-F (the ship file).
 - ★4 **Own load and road load scaled from the coal plant's per MW** where the study gives none: the posts in the
   table above are the study's (its ★ estimates); a fuelled row's own load and road load are the coal plant's per MW
   of nameplate (15 and 120 for 325 MW), rounded, and the solar farm's the wind farm's (1 and 5), a field of panels
@@ -132,7 +134,16 @@ Saved state added: `Book.solarKwh` (in the power books; absent in an old save, r
 `DataSave.usedCarPrice` (absent in an old save, read as 0: a month with no used car sold, the floor, as every load
 read it before).
 The new template fields are the catalogue's, not the save's. No field is read differently: **no format bump owed**
-(SAVE_FORMAT stays 63). PowerPlantsCheck 7 round-trips a book with and without `solarKwh`.
+(SAVE_FORMAT stays 63). PowerPlantsCheck 7 round-trips a book with and without `solarKwh`, and PowerPlantsCheck 2
+(REV-PW2) round-trips the power books (`UtilitiesHandler.PowerState`, through Gson as DataSave writes the save) of a
+town whose solar farm ran: the pending month's completed dispatch carries its SOLAR row, the kind by name and the
+kWh to the bit, and the books read back write the same JSON.
+
+An old city with a coal plant loads it on the refigured footprint, 8,712,000 sq ft where it was saved at 2,000,000.
+`readTheSave()` books the allocated ground as the saved figure plus the change in the standing buildings' footprint
+(`allocated + (built - saved footprint)`), so each old coal plant leaves the city about 6.7M sq ft over-full. It is
+over-full consistently booked, as any city whose buildings stand on more than it owns (`AutoBuilder.overFull()`
+holds its orders until ground is bought). No saved figure is read differently (REV-PW2).
 
 ## 4. The checks
 

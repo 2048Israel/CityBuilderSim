@@ -6412,12 +6412,14 @@ public class Game {
     }
 
     /**
-     * The fuel the plants burned, bought (PW1; UtilitiesHandler, THE MERIT ORDER), at the top of the month beside the railway's diesel:
-     * the struck book's fuel by good, drawn from the market for the city (Markets.draw(): the sellers' stock first, booked on their rows
-     * before the strike banks their ledgers, and the rest from the world), and the plants' variable upkeep, bought abroad at the
-     * exchange rate. What came to is told to the utility every month (zeros when there is nothing), which pays it out of its takings in
-     * the month's servicesNet, inside the audit's window; the coal from the world and the upkeep are told to the national accounts as
-     * imports. The local coal is a pool paying a pool (the treasury to Coal Mining), the sellers' sales the draw booked.
+     * The fuel the plants burned, bought (PW1; UtilitiesHandler, THE MERIT ORDER; PW2 for every fuel), at the top of the month beside
+     * the railway's diesel: the struck book's fuel by good - thermal coal, fuel oil, diesel and wood pellets, by the MWh their rows
+     * burned - drawn from the market for the city (Markets.draw(): the sellers' stock first, booked on their rows before the strike
+     * banks their ledgers, and the rest from the world), and the plants' variable upkeep, bought abroad at the exchange rate. What
+     * came to is told to the utility every month (zeros when there is nothing), which pays it out of its takings in the month's
+     * servicesNet, inside the audit's window; each fuel from the world and the upkeep are told to the national accounts as imports.
+     * The local fuel is a pool paying a pool (the treasury to its seller: Coal Mining, Refining, Wood Products), the sellers' sales
+     * the draw booked.
      */
     private void buyPowerFuel() {
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();

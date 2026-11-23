@@ -325,6 +325,19 @@ public class PowerPlantsCheck {
         check("...dark in the base's and the shoulder's dark halves, running in their sunny halves", darkInTown, row == null ? "" : java.util.Arrays.toString(row.gen));
         check("...and the book struck from its dispatch books the sun as the sun: solarKwh is its solar row's kWh",
                 recorded > 0 && near(book.solarKwh, recorded, 1e-12), f(book.solarKwh) + " against " + f(recorded));
+        // ...and the month pending in a save (REV-PW2, 2026-11-23): the power books as DataSave writes them (its Gson, the
+        // whole save one object), read back, carry the solar row of the completed dispatch the next strike prices, its kind
+        // by name and its energy to the bit.
+        com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
+        UtilitiesHandler.PowerState saved = u.toPowerState();
+        String written = gson.toJson(saved);
+        UtilitiesHandler.PowerState back = gson.fromJson(written, UtilitiesHandler.PowerState.class);
+        double pendingSun = 0, backSun = 0;
+        if (saved.pendingDispatch != null) for (UtilitiesHandler.RowRecord r : saved.pendingDispatch.rows()) if (r.kind() == PowerDispatch.Kind.SOLAR) pendingSun += r.kwh();
+        if (back.pendingDispatch != null) for (UtilitiesHandler.RowRecord r : back.pendingDispatch.rows()) if (r.kind() == PowerDispatch.Kind.SOLAR) backSun += r.kwh();
+        check("a save carries the pending month's solar row: the power books written and read back hold it, its kind by name and its kWh to the bit",
+                pendingSun > 0 && backSun == pendingSun && written.contains("\"SOLAR\"") && gson.toJson(back).equals(written),
+                f(backSun) + " against " + f(pendingSun));
         sectionEnd();
     }
 
