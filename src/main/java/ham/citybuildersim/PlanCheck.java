@@ -379,7 +379,7 @@ public class PlanCheck {
             }
         };
         BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
-        replay(types);
+        replay(typesAsDrawn());
         gameRules(types);
         highways(types);
         howFull(types);
@@ -387,7 +387,7 @@ public class PlanCheck {
         played();
         estateLines(types);
         sharedEstates(types);
-        streetLayouts(types);
+        streetLayouts(typesAsDrawn());
         arrivals(types);
         groundBought(types);
         floorBought(types);
@@ -849,6 +849,27 @@ public class PlanCheck {
     /* =====================================================================
        1. THE PORT: THE PROTOTYPE'S TEST DISTRICT, REPLAYED
        ===================================================================== */
+
+    /* ----- the boxes those plans were made from (PW2, 2026-11-23) -----
+       Sections 1 and 10 hold plans box for box: the prototype's (its digests from 0.7.90) and 0.8.11's comb.
+       Both were made from the catalogue of then, in which the Coal Power Plant (id 9, one of the test district's
+       buildings and of Jerus's city's) stood on 2,000,000 sq ft. PW2 gave it 200 acres (8,712,000), so its box
+       is over four times the one they were drawn with and every box placed after it moved (32,907 plots of buildings
+       against the table's 32,217). The two sections draw it on its ground of then, as GatewayCheck 21 draws the
+       terminals on theirs from before SL1; every other type, and the planner, is today's. */
+
+    /** The Coal Power Plant's ground as the prototype and 0.8.11 drew it, sq ft. */
+    static final double COAL_GROUND_DRAWN = 2_000_000;
+
+    /** The Coal Power Plant's catalogue id. */
+    static final int COAL_PLANT = 9;
+
+    /** Today's types with the Coal Power Plant on COAL_GROUND_DRAWN: sections 1's and 10's. */
+    static BuildingVisual.Type[] typesAsDrawn() {
+        List<BuildingsTemplate> catalogue = new BuildingCatalog().load();
+        for (BuildingsTemplate t : catalogue) if (t.getId() == COAL_PLANT) t.setLandSqFt(COAL_GROUND_DRAWN);
+        return BuildingVisual.table(catalogue);
+    }
 
     /** The prototype's test district: its ground (TEST_GROUND, the district's frame), its buildings, and one of its three budgets (0 his roads, 1 the same trips paved, 2 half that). */
     static DistrictPlan.Input testDistrict(BuildingVisual.Type[] types, int budget, boolean prototype) {
