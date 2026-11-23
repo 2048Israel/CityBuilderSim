@@ -1105,8 +1105,10 @@ already refuse the whole offer under the cash-share budget: at m591 price
 1,470.890 versus budget 46.142. Seed 14 flags m634 and two later months through
 m660, peak 2.442 at m651, 941 homes, no pipeline and 4,048 sq ft free. Its
 m592/593 ground looks also refuse the offer under the cash-share budget. These
-are FB11's queued whole-offer/land-funding class; LP-G1's long-skip diagnosis
-alone would not establish their cause. Neither funding limit is changed here.
+observations show the whole-offer/cash-share mechanism, but do not establish
+that its cause is outside RES3. REV-RES3 requires native main 0.9.192 twins
+before an FB11 attribution; the forms' land use, demand and smaller towns may
+instead be the cause. Neither seed passes by name on this evidence alone.
 The kept traces are target/RES3-reviewed-native-{3,9,14}.log, with the native
 market/inventory snapshots in target/RES3-shortage-<seed>-*.json.
 
@@ -1201,3 +1203,73 @@ The provisional marker stays while REV-RES3 reviews the delta after fd7071f54.
 Another final-model ensemble against the newest baseline remains owed after
 that go. The second ensemble's raw FAIL and land-funding evidence above remain
 unaltered; no F1 assertion is waived by this handoff. No dry run has started.
+
+## REV-RES3 attribution P1: native shipped-main counterfactual
+
+REV-RES3 returned SHIP for fd7071f54..ab8656288's code, and rejected the
+outside-cause attribution above. The presence of a cash-share hold alone
+does not make a new RES3 shortage main's fault. That attribution is withdrawn:
+neither seed 3 nor seed 14 is passed to FB11 or LP-G1 by name.
+
+Native shipped 0.9.192, f937d2c22, replayed AUTO2 seeds 3 and 14 through m660,
+observing every month m450-660. Its isolated worktree first passed pristine
+--fast with an empty source diff. The only temporary edits were read-only
+observations in HousingDoorCheck and LongPlaytest's existing ground-look trace;
+founding, controller rhythm, cash-share budget and all model code stayed native.
+Each case ran alone through the named harness with the shared Earth/world data.
+Both main traces have zero unplaced households in all 422 observations. Their
+population, index, rent and GDP match all 422 baseline CSV rows at the CSV's
+nine-significant-digit precision, zero differences. The baseline snapshot
+9c769adf3 differs from shipped f937d2c22 in source only by the version string.
+
+The already reviewed final model ff8ea23be was then replayed with the same
+observations: seeds 3, 14 and 9, each m450-660. All 633 observations have exactly
+zero unplaced households. Thus the failing fd7071f54 snapshot's new shortages
+belong to RES3; its later emergency-match mend already avoids those windows.
+No further model change is made on the strength of a missing main failure.
+These bounded replays do not establish later months or the final 80-run verdict.
+
+Land per home below is actual standing residential template plot area divided
+by its dwelling count, in square feet. Seeking is the model's current household
+door demand, including explicit sharing; sites counts actual funded home doors.
+Cash is the city's native cash in model thousands. Every displayed unplaced
+count is zero, rather than a tolerated finding or a changed threshold.
+
+| Seed | Model | Month | People | City cash | Homes / sites | Seeking | Plot ft2/home | Unplaced |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 3 | Main 0.9.192 | 450 | 24,511 | 9,870.534 | 6,504 / 269 | 6,719.764 | 1,414.668 | 0 |
+| 3 | Reviewed RES3 | 450 | 6,914 | 13,909.152 | 1,476 / 30 | 2,239.281 | 4,382.114 | 0 |
+| 3 | Main 0.9.192 | 609 | 33,642 | 48,050.688 | 9,635 / 0 | 9,614.121 | 1,211.313 | 0 |
+| 3 | Reviewed RES3 | 609 | 8,718 | 38,512.648 | 2,050 / 108 | 2,873.854 | 4,414.634 | 0 |
+| 3 | Main 0.9.192 | 660 | 36,499 | 3,018.449 | 10,458 / 0 | 10,458.000 | 1,193.632 | 0 |
+| 3 | Reviewed RES3 | 660 | 10,379 | 107,061.061 | 2,182 / 90 | 3,383.050 | 4,329.056 | 0 |
+| 14 | Main 0.9.192 | 450 | 5,897 | 10,170.548 | 1,014 / 160 | 1,708.487 | 5,642.012 | 0 |
+| 14 | Reviewed RES3 | 450 | 4,979 | 687.426 | 1,081 / 66 | 1,559.864 | 4,725.254 | 0 |
+| 14 | Main 0.9.192 | 634 | 25,055 | 86,170.114 | 7,025 / 63 | 7,025.000 | 1,625.907 | 0 |
+| 14 | Reviewed RES3 | 634 | 7,021 | 8,513.868 | 1,413 / 0 | 2,286.432 | 4,326.964 | 0 |
+| 14 | Main 0.9.192 | 660 | 25,686 | 150,685.552 | 7,340 / 0 | 7,271.894 | 1,597.003 | 0 |
+| 14 | Reviewed RES3 | 660 | 7,295 | 32,263.430 | 1,413 / 0 | 2,366.155 | 4,326.964 | 0 |
+
+The ground looks differ with the actual played paths. Main seed 3 looks at
+m467/468 with budgets 2,182.526/2,510.346; reviewed RES3 looks at m463/464
+with 1,900.179/2,095.244. Main seed 14 looks at m463/471 with
+1,256.883/1,443.203; reviewed RES3 looks at m456/464 with zero cash-share
+budget, and again at m586 with zero. Both may encounter exhausted land;
+only the actual observed shelter outcome establishes the finding. RES3's
+lower populations and different plot-per-home mix remain visible in the table.
+
+Seed 9's reviewed replay also covers the baseline's m605 window: m600, 605,
+609 and 660 all have zero unplaced households. At m605, 8,106 people seek
+2,626.395 doors beside 1,502 homes and 6 doors on site, with 424.505 city cash.
+The landlord is held for land, with 3,605 sq ft free, but nobody is unplaced.
+The final ensemble must still read this month in its own seed-9 CSVs.
+
+Evidence: target/RES3-main192-{3,14}.{log,txt},
+target/RES3-final-compare-{3,14,9}.{log,txt},
+target/RES3-main192-pristine-fast.txt and
+target/RES3-counterfactual-records.json. The JSON retains every observed field,
+including family/studio door shortfalls, latent head demand, city cash, land
+and exact decisions; each raw log retains ground looks/offers/holds/purchases
+and standing form counts. Both observed sources were restored byte-for-byte
+afterward. Only the notes change in this attribution follow-up, so the next
+step under the reviewer's go is the final-model ensemble against 0.9.192.
