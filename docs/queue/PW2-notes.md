@@ -121,6 +121,9 @@ production1 = nameplate x availability x 730/720):
   SaveFileCheck's HC2 line parted in `debtToAssets` by 3.7e-9 (3.5992070226573874e-10 against 3.59920703606054e-10).
   Main's fixture city sold no used car in the month it was saved; PW2's does. Its owner, FS17, has shipped, so the
   gap is mended here, the narrow way: one field, written and restored.
+- ★12 **The coal plant buys its ground; the starting land is not enlarged.** Jerus (desk chat, 2026-11-23): "Well
+  you just buy more land no? Obviously its not going to fit". The study's 200 acres stay, as do the 30 blocks, and
+  LandCheck's premise that the starting land holds the coal plant is retired (§4).
 
 ## 3. Old saves
 
@@ -202,16 +205,25 @@ The known reds (the ship file's rows), each a moved played city, none a PW2 mech
   plant's site, and PW2's plant is cheaper and held to its 60 months, so at month 62 the town takes 153.1 a month
   against main's 241.7; the sale capped at a third of a year's tax (612) is under the least the fee needs (653).
 
-**Waiting on a call (LandCheck, Jerus's: it moves a premise).** LandCheck asserts that the starting land's 30 blocks
-hold a power plant (it names the Coal Power Plant), that power and water fit with under 3 blocks to spare, and that
-a materials plant then does not: "the mechanic introducing itself". The study gives the coal plant 200 acres
-(8.7M sq ft; "today 46"), which no longer fits at all. The 1900 city's first plant is the Oil-Fired Plant (30
-acres), which fits; with water it leaves 9 blocks and a materials plant fits. Recommended: name the Oil-Fired Plant
-and restate the pair to the cited footprints (mailed to the orchestrator, 2026-11-23).
+**LandCheck, Jerus's call (desk chat, 2026-11-23 ~13:05): "Well you just buy more land no? Obviously its not going
+to fit".** LandCheck asserted that the starting land's 30 blocks hold a power plant (it named the Coal Power Plant),
+that power and water fit with under 3 blocks to spare, and that a materials plant then does not. The study gives the
+coal plant 200 acres for 325 MW (spec-electricity 2.3; 87 blocks), and the call keeps both it and the 30 blocks: the
+premise that the starting land holds the coal plant is retired. Restated in two parts. (1) The first plant the
+starting land holds is the Oil-Fired Plant (30 acres); with water it leaves 9 of the 30 blocks, a materials plant
+fits, and then the land binds (a second oil-fired plant does not). (2) New, coalBuysItsGround(): a coal plant ordered
+on a founded city's own ground is refused NO_LAND, with nothing placed, bought or paid. No offer covers 200 acres
+(the founding's are about 7 acres each), and the 24 standing hold less, so the city buys offer by offer as
+AutoBuilder's THE GROUND ITS ORDERS NEED picks them (AutoBuilder.shortcutOffer(): the most bare ground a dollar),
+the place's next offer listed after each, until the plant fits (18 offers, 6.16M sq ft). It pays the land office usd x rate once for each:
+its pool alone falls, the office is owed the dollars once, the month's budget carries it once and the audit closes.
+Then the same order is placed, a site on. A finding, not mended here (the orchestrator places it): AutoBuilder.groundFor() plans from the
+listing standing, so it returns null for a 200-acre order in a new city, and the auto-builder holds a coal plant
+there for want of bare ground on offer. The founding's first plant is the oil-fired one (★6).
 
 The full suite, one harness at a time on the PC (rounds 1 to 4, 2026-11-23, timing soft from round 4): every
-harness run; red only by the rows above, main's known reds (CurrencyCheck, DeathRecordCheck, Forms1900Check,
-FundCheck, HoldersCheck, RoadCheck) and LandCheck.
+harness run; red only by the rows above and main's known reds (CurrencyCheck, DeathRecordCheck, Forms1900Check,
+FundCheck, HoldersCheck, RoadCheck). LandCheck was restated to Jerus's call and rerun.
 
 ## 5. The trace
 

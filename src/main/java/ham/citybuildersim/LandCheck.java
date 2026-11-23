@@ -779,30 +779,43 @@ public class LandCheck {
 
         // The opening ten blocks have to be enough for the player's first moves,
         // or the mechanic is a wall rather than a constraint.
+        // THE OIL-FIRED PLANT, NOT THE COAL (PW2, 2026-11-23). Until PW2 the Coal Power Plant's 2M sq ft fitted here. The
+        // study gives it 200 acres for its 325 MW (spec-electricity 2.3), 87 blocks, which no starting land holds, and Jerus,
+        // asked whether the 30 blocks or the plant should move, kept both: "Well you just buy more land no? Obviously its not
+        // going to fit". So the first plant the starting land holds is the Oil-Fired Plant (30 acres), and a coal plant
+        // buys its ground (coalBuysItsGround(), below).
         LandManager fresh = new LandManager();
-        assertTrue("a power plant fits on the starting land",
-                fresh.canAllocate(bm.getTemplateByName("Coal Power Plant").getLandSqFt()));
+        BuildingsTemplate oilPlant = bm.getTemplateByName("Oil-Fired Plant");
+        assertTrue("a power plant fits on the starting land: the oil-fired plant",
+                fresh.canAllocate(oilPlant.getLandSqFt()));
+        assertTrue("...and the coal plant does not: its ground is bought",
+                !fresh.canAllocate(bm.getTemplateByName("Coal Power Plant").getLandSqFt()));
 
         double house = bm.getTemplateByName("House").getLandSqFt();
         check("the starting land holds this many houses",
                 Math.floor(LandManager.STARTING_SQ_FT / house), 375);
 
-        // Both utilities fit, and between them they take 28 of the 30 blocks -
-        // so a player who builds power and water first is out of land for
-        // housing on the very next turn. That is the mechanic introducing itself.
-        double bothUtilities = bm.getTemplateByName("Coal Power Plant").getLandSqFt()
+        // Both utilities fit, and between them they take 21 of the 30 blocks -
+        // so a player who builds power and water first has room for a materials
+        // plant, and is out of land for another plant a few orders later. That
+        // is the mechanic introducing itself.
+        double bothUtilities = oilPlant.getLandSqFt()
                 + bm.getTemplateByName("Water Treatment Plant").getLandSqFt();
 
         assertTrue("both utilities fit", fresh.canAllocate(bothUtilities));
-        assertTrue("...with almost nothing to spare",
-                LandManager.STARTING_SQ_FT - bothUtilities < 3 * LandManager.BLOCK_SQ_FT);
-
         fresh.allocate(bothUtilities);
-        assertTrue("...and then a materials plant does not fit",
-                !fresh.canAllocate(
-                        bm.getTemplateByName("Construction Materials Plant").getLandSqFt()));
+        check("...and leave nine of the thirty blocks, to the nearest block",
+                Math.round(fresh.getAvailableBlocks()), 9);
         System.out.printf("   after power + water: %,.0f sq ft left (%.1f blocks)%n",
                 fresh.getAvailableSqFt(), fresh.getAvailableBlocks());
+
+        double materials = bm.getTemplateByName("Construction Materials Plant").getLandSqFt();
+        assertTrue("...a materials plant then fits", fresh.canAllocate(materials));
+        fresh.allocate(materials);
+        assertTrue("...and then the land binds: a second oil-fired plant does not",
+                !fresh.canAllocate(oilPlant.getLandSqFt()));
+
+        coalBuysItsGround();
 
         /* ============ 11. the price is a density policy ============ */
         System.out.println("\n--- dear land should push developers upward ---");
@@ -1280,6 +1293,86 @@ public class LandCheck {
        and dollars differ - and neither currency defends itself with its
        vault, so the only difference between them is the way they paid.
        ================================================================== */
+    /* ----- the coal plant buys its ground (PW2, 2026-11-23) -----
+       Jerus, asked whether the starting land or the study's 200-acre coal plant should move: "Well you just buy more land
+       no? Obviously its not going to fit". A coal plant ordered on the starting land is short of ground: the order is
+       refused NO_LAND and nothing is placed. The city buys the shortfall from the land office's bare ground, offer by
+       offer as AutoBuilder's THE GROUND ITS ORDERS NEED picks them (AutoBuilder.shortcutOffer()): no offer covers 200
+       acres, and the 24 standing hold less, so the most bare ground a dollar, the place's next offer listed after
+       each, until what is left is covered. It pays the office once for each, and the same order is placed. Both sides
+       are caused through the model's inputs: the founding's own ground, then the offers bought. */
+    static void coalBuysItsGround() {
+        System.out.println("\n--- a coal plant on the starting land buys its ground ---");
+
+        Game g = new Game(GameFiles.scratch("landcheck-coal"));
+        quietly(() -> { g.newGame(); g.setCashForTest(Founding.WEALTHY_CASH); g.toggleNextMonth(); });
+        BuildingManager bm = g.getBuildingManager();
+        LandManager land = g.getLandManager();
+        BuildingsTemplate coal = bm.getTemplateByName("Coal Power Plant");
+        assertTrue("fixture: the founding owns water, so the cooling gate passes the plant", g.hasCoolingFor(coal));
+        assertTrue("fixture: the city pays for land from its cash, converting", !g.isLandPaidFromVault());
+
+        double lacking = g.landNeededFor(coal, 1) - land.getAvailableSqFt();
+        assertTrue("short of ground: the plant needs more than the starting land has free", lacking > 0);
+        System.out.printf("   the plant needs %,.0f sq ft; the city has %,.0f free%n",
+                g.landNeededFor(coal, 1), land.getAvailableSqFt());
+        int sites = bm.siteKeysOnSite().size();
+        double owned = land.getOwnedSqFt(), cashBefore = g.getCash();
+        Game.BuildResult[] r = new Game.BuildResult[1];
+        quietly(() -> r[0] = g.buildStack(coal, 1, false));
+        assertTrue("...so the order is refused NO_LAND", r[0] == Game.BuildResult.NO_LAND);
+        assertTrue("...and nothing is placed, bought or paid",
+                bm.siteKeysOnSite().size() == sites && land.getOwnedSqFt() == owned && g.getCash() == cashBefore);
+
+        // The 24 offers standing hold less than the shortfall, so the plan is bought in turn, as the office lists each
+        // place's next offer after a purchase (LandManager.buyParcel()): AutoBuilder.shortcutOffer(), the bare offer
+        // that covers what is left, or with none the most bare ground a dollar.
+        double rate = g.getForeignAccounts().getRate();
+        double pending = g.getForeignAccounts().getLandUsdPending();
+        double cash = g.getCash();
+        double[] pools = MoneyAudit.pools(g);
+        java.util.Set<Integer> ids = new java.util.HashSet<>();
+        double usd = 0, sqFt = 0;
+        int tries = 0, bought = 0;
+        boolean bare = true;
+        for (double lack = lacking; lack > 0 && tries < 4 * LandMarket.OFFERS; tries++) {
+            LandParcel p = AutoBuilder.shortcutOffer(g, lack, java.util.Set.of());
+            if (p == null) break;
+            bare &= LandMarket.bareGround(p);
+            ids.add(p.getId());
+            usd += p.getPriceUsd();
+            sqFt += p.getSizeSqFt();
+            int[] one = new int[1];
+            quietly(() -> one[0] = g.buyLandParcels(java.util.List.of(p.getId())));
+            bought += one[0];
+            if (one[0] != 1) break;
+            lack = g.landNeededFor(coal, 1) - land.getAvailableSqFt();
+        }
+        double[] shift = moved(pools, MoneyAudit.pools(g));
+        double paid = cash - g.getCash();
+        System.out.printf("   %d offers bought, %,.0f sq ft for the %,.0f lacking%n", bought, sqFt, lacking);
+        assertTrue("the land office's bare ground covers the shortfall, offer by offer",
+                g.landNeededFor(coal, 1) <= land.getAvailableSqFt());
+        assertTrue("...every offer bare ground, bought once", bare && bought == ids.size() && bought > 1);
+        check("...the city paying the office their price, usd x rate", paid, usd * rate);
+        check("...the office owed their dollars once", g.getForeignAccounts().getLandUsdPending() - pending, usd);
+        double others = 0;
+        for (int i = 1; i < shift.length; i++) others += Math.abs(shift[i]);
+        check("...the city's pool fell by exactly that - money across the edge", shift[0], -paid);
+        check("...and no other pool took it", others, 0);
+        check("...and the city owns their ground", land.getOwnedSqFt() - owned, sqFt);
+
+        quietly(() -> r[0] = g.buildStack(coal, 1, false));
+        assertTrue("on the ground bought, the same order is placed", r[0] == Game.BuildResult.SUCCESS);
+        assertTrue("...a site on", bm.siteKeysOnSite().size() == sites + 1);
+
+        quietly(g::toggleNextMonth);
+        assertTrue("the month after closes its audit", Math.abs(g.getLastMoneyAudit().relative()) < 1e-9);
+        check("...its budget carries the land once, at what the city paid",
+                g.getEconomyManager().getNationalAccounts().getLandPurchases(), paid);
+        check("...for their dollars, once", g.getForeignAccounts().getLandUsdThisMonth(), usd);
+    }
+
     static Game dollarCity(String label) {
         Game g = new Game(GameFiles.scratch(label));
         quietly(() -> { g.newGame(); g.toggleNextMonth(); });
