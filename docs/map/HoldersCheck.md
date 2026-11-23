@@ -1,4 +1,4 @@
-# HoldersCheck.java - 2,888 lines · 61 methods · 7 constants · harnesses
+# HoldersCheck.java - 2,892 lines · 61 methods · 7 constants · harnesses
 
 `ham/citybuildersim/HoldersCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -73,30 +73,30 @@
 | 288 | · 1. at the settle |
 | 349 | · 2. the coupon |
 | 374 | · 3. the waterfall |
-| 407 | · 4. selling after the curve rose |
-| 437 | · 5. a buyback |
-| 483 | · 6. the save |
-| 545 | · 7. an old save |
-| 608 | · 8. a dollar bond bought back |
-| 650 | 9. the whole of the paper (0.7.15) |
-| 863 | 10. the businesses (CD2, slice 4, D33) |
-| 1345 | 11. the world (CD2, slice 5, D7; star 2) |
-| 1772 | 12. the pooled discount re-struck (BK1) |
-| 2118 | 13. the discount released at an issue or a trade (BD1) |
-| 2490 | 14. the rounding floor on a holder's face (RT1) |
-| 2705 | 15. each holder's discount is its own (BK2) |
+| 409 | · 4. selling after the curve rose |
+| 439 | · 5. a buyback |
+| 485 | · 6. the save |
+| 547 | · 7. an old save |
+| 610 | · 8. a dollar bond bought back |
+| 652 | 9. the whole of the paper (0.7.15) |
+| 867 | 10. the businesses (CD2, slice 4, D33) |
+| 1349 | 11. the world (CD2, slice 5, D7; star 2) |
+| 1776 | 12. the pooled discount re-struck (BK1) |
+| 2122 | 13. the discount released at an issue or a trade (BD1) |
+| 2494 | 14. the rounding floor on a holder's face (RT1) |
+| 2709 | 15. each holder's discount is its own (BK2) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 195 | `HoldersCheck.SPARE_MONTHS` | `12` | How many months of its disposable income past its cushion every household is given to put into paper, so what they can spend on it is set, not found. |
-| 1364 | `HoldersCheck.CENT` | `MoneyAudit.CENT` | The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). |
-| 1775 | `HoldersCheck.MATERIAL_PART` | `.01` | A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on noise). |
-| 1781 | `HoldersCheck.HOUSEHOLDS_AT_FAIR` | `.75` | The households' share of an issue at the curve's fair yield, which splitTheSale() sets the deposit rate to give them: three quarters, so the bank, the step bidder at fair and the residual buyer, is left a quarter and ... |
-| 1797 | `HoldersCheck.BILL_FLOORS_CARRIED` | `2` | How many times the least discount a bill can carry the bank is made to carry on 13c's first sale, so the bill it sells back is not bigger than what the bank carries (the accretion of the month in between takes a part ... |
-| 1979 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", ...` |  |
-| 2148 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
+| 1368 | `HoldersCheck.CENT` | `MoneyAudit.CENT` | The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). |
+| 1779 | `HoldersCheck.MATERIAL_PART` | `.01` | A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on noise). |
+| 1785 | `HoldersCheck.HOUSEHOLDS_AT_FAIR` | `.75` | The households' share of an issue at the curve's fair yield, which splitTheSale() sets the deposit rate to give them: three quarters, so the bank, the step bidder at fair and the residual buyer, is left a quarter and ... |
+| 1801 | `HoldersCheck.BILL_FLOORS_CARRIED` | `2` | How many times the least discount a bill can carry the bank is made to carry on 13c's first sale, so the bill it sells back is not bigger than what the bank carries (the accretion of the month in between takes a part ... |
+| 1983 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", ...` |  |
+| 2152 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
 
 ## Fields (state)
 
@@ -111,7 +111,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 146 | 2743 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 146 | 2747 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 152 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 158 | 4 | `static boolean fixture(String label, boolean ok)` | A fixture's assertion that says whether it held, so a section stops on a fixture that failed (counted) instead of reading past it. |
 | 163 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -121,97 +121,97 @@
 | 188 | 5 | `static boolean booksAgree(Game g)` | The two books of the households' paper agree: the cells, and the paper. |
 | 203 | 7 | `static void setSpare(HouseholdBalance hb)` | The households' savings set by hand, between two months, and never lowered: every cell holds at least its cushion (HouseholdBalance.SHARE_CUSHION_MONTHS of its disposable income) and SPARE_MONTHS more, so the househol... |
 | 214 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
-| 225 | 424 | `public static void main(String[] args) throws Exception` |  |
+| 225 | 426 | `public static void main(String[] args) throws Exception` |  |
 
-### 9. the whole of the paper (0.7.15) (lines 650-862)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 653 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
-| 659 | 203 | `static void theWholeBook() throws Exception` |  |
-
-### 10. the businesses (CD2, slice 4, D33) (lines 863-1344)
+### 9. the whole of the paper (0.7.15) (lines 652-866)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 866 | 5 | `static boolean firmsAgree(Game g)` | The two books of the businesses' paper agree: the sectors', and the paper's. |
-| 873 | 5 | `static Debt newPiece(DebtManager ledger, java.util.List<Debt> before)` | The domestic piece on the books that was not there before. |
-| 880 | 5 | `static double[] tills(Game g)` | Every sector's till, in Sectors.KEYS order. |
-| 887 | 5 | `static double[] holdings(Game g)` | Every sector's paper, in Sectors.KEYS order. |
-| 894 | 8 | `static boolean booksExplain(Game g, java.util.List<String> sectors)` | True when these sectors' cash flow statements explain their tills to the cent this month (SectorBooks.SectorMonth.unexplained()). |
-| 904 | 3 | `static void near(String label, double actual, double expected)` | One close() with the tolerance a part in a billion of the figure, or a cent. |
-| 908 | 436 | `static void theBusinesses() throws Exception` |  |
+| 655 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
+| 661 | 205 | `static void theWholeBook() throws Exception` |  |
 
-### 11. the world (CD2, slice 5, D7; star 2) (lines 1345-1771)
+### 10. the businesses (CD2, slice 4, D33) (lines 867-1348)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1348 | 5 | `static boolean worldAgrees(Game g)` | The two books of the world's paper agree: CapitalFlows', and the paper's. |
-| 1355 | 3 | `static double auditLine(MoneyAudit.Result r, String label)` | One line of the month's audit by its label, as the model recorded it (EP2: the figure itself, not the printed detail's two places): 0 when the month has none. |
-| 1366 | 405 | `static void theWorld() throws Exception` |  |
+| 870 | 5 | `static boolean firmsAgree(Game g)` | The two books of the businesses' paper agree: the sectors', and the paper's. |
+| 877 | 5 | `static Debt newPiece(DebtManager ledger, java.util.List<Debt> before)` | The domestic piece on the books that was not there before. |
+| 884 | 5 | `static double[] tills(Game g)` | Every sector's till, in Sectors.KEYS order. |
+| 891 | 5 | `static double[] holdings(Game g)` | Every sector's paper, in Sectors.KEYS order. |
+| 898 | 8 | `static boolean booksExplain(Game g, java.util.List<String> sectors)` | True when these sectors' cash flow statements explain their tills to the cent this month (SectorBooks.SectorMonth.unexplained()). |
+| 908 | 3 | `static void near(String label, double actual, double expected)` | One close() with the tolerance a part in a billion of the figure, or a cent. |
+| 912 | 436 | `static void theBusinesses() throws Exception` |  |
 
-### 12. the pooled discount re-struck (BK1) (lines 1772-2117)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1790 | 5 | `static void splitTheSale(Game city, double ask, int years)` | FS14: the split of the next sale between the households and the bank, caused by the dial that places it and not found in the played city. |
-| 1807 | 11 | `static double firstSaleSize(Game city, double share, double billFloors)` | FS14: a first sale of this share of the households' purse, grown by a quarter at a time (so many times at most) until the model's own quote of it leaves the bank, the residual buyer, at least `billFloors` times the le... |
-| 1820 | 1 | **type** `record Reopening(Game city, Debt line, double splitStart, Edge[] firstSettle)` | One city of section 12 (BK1): the city, the line it sold once and settled, its split going in, and the line at the two edges of that first settle (BK2: Edge, null if no line was sold). |
-| 1827 | 3 | `static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception` | Section 12's fixture, made twice: a city founded, built and played as the other sections' cities were, then a twenty-year bond sold between the presses and settled. |
-| 1832 | 3 | `static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise) throws Exception` | ...its first sale made with the policy rate this much higher, so the line's coupon stands over the rates the city goes back to (13a, BD1). |
-| 1837 | 3 | `static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise, double firstSaleShare) throws Exception` | BK2b: a smaller first sale leaves less of the bank's own discount to cover the next sale's premium. |
-| 1846 | 58 | `static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise, double firstSaleShare, double billFl...` | FS14: ...and a first sale sized so that the bank, the residual buyer, carries on it at least this many times the least discount a bill can carry (firstSaleSize()); 0 for the share of the purse alone. |
-| 1906 | 2 | **type** `record Reopened(double faceBefore, double faceAfter, double perFaceBefore, double perFaceAfter, double held...` | What the reopening did to a line: its face and its discount per unit of face either side, whether it is the same line, and what the households held going in. |
-| 1910 | 17 | `static Reopened reopen(Game city, Debt line)` | The reopening, done the same way to the city and to its twin: the rates up four points and the same line sold again, to be settled the next month. |
-| 1929 | 3 | `static void closeRel(String label, double actual, double expected, double rel)` | Two of the model's own figures agree to this much of the larger of them (BK2's relative tolerances: 1e-9 for sums of a line's pieces, 1e-12 for a rate per face). |
-| 1934 | 4 | `static double perFace(Debt line, Debt.Holder h)` | This holder's own unaccreted discount per unit of the face it holds on the line (BK2); zero where it holds none. |
-| 1945 | 26 | **type** `record Edge(double due, double unsettledFace, double unsettledDiscount, double discountLeft, double[] disco...` | A line at one edge of the settle (BK2), read through Game.settleProbeForTest: before the households take their share and after the bank has been given the rest, both ahead of the month's accretion, so each holder's ow... |
-| 1947 | 10 | `static Edge of(Game city, Debt line)` _(in HoldersCheck.Edge)_ |  |
-| 1957 | 1 | `double discountOf(Debt.Holder h)` _(in HoldersCheck.Edge)_ |  |
-| 1958 | 1 | `double faceOf(Debt.Holder h)` _(in HoldersCheck.Edge)_ |  |
-| 1960 | 1 | `double bankPaid(Edge after)` _(in HoldersCheck.Edge)_ | What the bank paid for its face at the settle: what the market owed for the sale, less what the three outside payers paid. |
-| 1962 | 8 | `double paid(Debt.Holder h, Edge after)` _(in HoldersCheck.Edge)_ | What this outside holder paid at the settle. |
-| 1973 | 5 | `static Edge[] watchSettle(Game city, Debt line)` | Watches the next month's settle of this line: the two edges are filled as the month plays, and the caller clears city.settleProbeForTest after it. |
-| 1982 | 5 | `static double[] cityFigures(Game g)` | The figures of a month that the re-strike must not move (BK1): the bank's profit, tax, dividends and gains on the city's paper, the treasury's cash and the bank's equity. |
-| 1989 | 6 | `static String firstDifference(double[] city, double[] twin)` | The first figure of the two that is not the same, bit for bit, as a sentence; empty when every one is. |
-| 1996 | 121 | `static void theReopening() throws Exception` |  |
-
-### 13. the discount released at an issue or a trade (BD1) (lines 2118-2489)
+### 11. the world (CD2, slice 5, D7; star 2) (lines 1349-1775)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2121 | 1 | **type** `record Standing(double book, double carried, double restruck)` | What the book says the bank's unearned discount is, what the bank carries and what its movement has booked as re-struck, at a moment of section 13. |
-| 2123 | 3 | `static Standing standing(Game g)` |  |
-| 2128 | 1 | `static double movementTolerance(Bank b)` | Section 12's tolerance for the movement's residual, and for the split's. |
-| 2129 | 1 | `static double splitTolerance(Bank b)` |  |
-| 2132 | 7 | `static String linesApart(Game city, Game twin)` | The first of the statement's net income, tax and gains on the city's paper that is not the twin's, bit for bit, as a sentence; empty when all three are. |
-| 2141 | 1 | **type** `record Premium(boolean sameLine, double face, double proceeds, double discountBefore, double discountAfter,...` | What the premium reopening did to a line: whether it is the same line, the face sold, what it raised, and the line's discount left either side. |
-| 2151 | 17 | `static Premium reopenAtAPremium(Game city, Debt line)` | The reopening of 13a, done the same way to the city and to its twin: the policy rate taken back down by PREMIUM_RISE (to its floor, at most) and the same line sold again between the presses, at a premium. |
-| 2169 | 8 | `static void theDiscountReleased() throws Exception` |  |
-| 2179 | 88 | `static void thePremium() throws Exception` | 13a: the same line reopened at a premium between the presses: the premium is the unsettled sale's until the settle, which takes it off the bank's own discount on the line (BK2). |
-| 2269 | 47 | `static void thePremiumPastOwnDiscount() throws Exception` | BK2b: the bank's premium exceeds its own discount; the clamp's loss belongs to retained, outside income. |
-| 2318 | 89 | `static void theDeskOnAnUnsettledLine() throws Exception` | 13b: the desk buying the households' paper of a line with a sale unsettled is handed the households' own discount per face, which is what the book moves by (BK2). |
-| 2409 | 2 | **type** `record UnsettledBuyback(boolean fresh, double face, double discount, double book, double carried, double ta...` | What 13c's round trip did: whether the piece was new and all unsettled, its face and discount, the bank's book and carried discount going into the buyback, what the buyback took and the bank's share of it, and whether... |
-| 2413 | 4 | `static double billDiscount(Game city, double cash)` | BA1: the discount a year's bill raising this cash would carry, as the quote has it: its face less the cash it brings, the fixed fee of the issue in it. |
-| 2419 | 23 | `static UnsettledBuyback sellAndBuyBackBeforeTheSettle(Game city)` | 13c's round trip, done the same way to the city and to its twin: a year's bill of a fifth of the bank's book sold between the presses and bought straight back whole, before its settle. |
-| 2448 | 41 | `static void theBuybackBeforeTheSettle() throws Exception` | 13c: a fresh piece closed before its settle cancels its unpaid sale at the original proceeds (BS1). |
+| 1352 | 5 | `static boolean worldAgrees(Game g)` | The two books of the world's paper agree: CapitalFlows', and the paper's. |
+| 1359 | 3 | `static double auditLine(MoneyAudit.Result r, String label)` | One line of the month's audit by its label, as the model recorded it (EP2: the figure itself, not the printed detail's two places): 0 when the month has none. |
+| 1370 | 405 | `static void theWorld() throws Exception` |  |
 
-### 14. the rounding floor on a holder's face (RT1) (lines 2490-2704)
+### 12. the pooled discount re-struck (BK1) (lines 1776-2121)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2493 | 1 | `static LongTermBond loosePiece()` | A piece of term paper by itself, sold to nobody: 1,000 of face, all of it the bank's, for the moves below to take from and give back to. |
-| 2495 | 61 | `static void theHoldingFloor()` |  |
-| 2558 | 35 | `static void theBuybackDiscountFloor(double scale)` | BK2b: every seller hands over all its discount when an ulp-short partial buyback snaps its kept face to none. |
-| 2595 | 63 | `static void theHolderLedgers(double scale)` | Full pro-rata takes that leave positive rounding on main, with partial takes as a control (RT1b). |
-| 2660 | 44 | `static void theFirmDeskSplit(double scale, double share)` | Run the actual desk through its wired recall, and compare two independently kept books, never a residual sum (RT1b). |
+| 1794 | 5 | `static void splitTheSale(Game city, double ask, int years)` | FS14: the split of the next sale between the households and the bank, caused by the dial that places it and not found in the played city. |
+| 1811 | 11 | `static double firstSaleSize(Game city, double share, double billFloors)` | FS14: a first sale of this share of the households' purse, grown by a quarter at a time (so many times at most) until the model's own quote of it leaves the bank, the residual buyer, at least `billFloors` times the le... |
+| 1824 | 1 | **type** `record Reopening(Game city, Debt line, double splitStart, Edge[] firstSettle)` | One city of section 12 (BK1): the city, the line it sold once and settled, its split going in, and the line at the two edges of that first settle (BK2: Edge, null if no line was sold). |
+| 1831 | 3 | `static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception` | Section 12's fixture, made twice: a city founded, built and played as the other sections' cities were, then a twenty-year bond sold between the presses and settled. |
+| 1836 | 3 | `static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise) throws Exception` | ...its first sale made with the policy rate this much higher, so the line's coupon stands over the rates the city goes back to (13a, BD1). |
+| 1841 | 3 | `static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise, double firstSaleShare) throws Exception` | BK2b: a smaller first sale leaves less of the bank's own discount to cover the next sale's premium. |
+| 1850 | 58 | `static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise, double firstSaleShare, double billFl...` | FS14: ...and a first sale sized so that the bank, the residual buyer, carries on it at least this many times the least discount a bill can carry (firstSaleSize()); 0 for the share of the purse alone. |
+| 1910 | 2 | **type** `record Reopened(double faceBefore, double faceAfter, double perFaceBefore, double perFaceAfter, double held...` | What the reopening did to a line: its face and its discount per unit of face either side, whether it is the same line, and what the households held going in. |
+| 1914 | 17 | `static Reopened reopen(Game city, Debt line)` | The reopening, done the same way to the city and to its twin: the rates up four points and the same line sold again, to be settled the next month. |
+| 1933 | 3 | `static void closeRel(String label, double actual, double expected, double rel)` | Two of the model's own figures agree to this much of the larger of them (BK2's relative tolerances: 1e-9 for sums of a line's pieces, 1e-12 for a rate per face). |
+| 1938 | 4 | `static double perFace(Debt line, Debt.Holder h)` | This holder's own unaccreted discount per unit of the face it holds on the line (BK2); zero where it holds none. |
+| 1949 | 26 | **type** `record Edge(double due, double unsettledFace, double unsettledDiscount, double discountLeft, double[] disco...` | A line at one edge of the settle (BK2), read through Game.settleProbeForTest: before the households take their share and after the bank has been given the rest, both ahead of the month's accretion, so each holder's ow... |
+| 1951 | 10 | `static Edge of(Game city, Debt line)` _(in HoldersCheck.Edge)_ |  |
+| 1961 | 1 | `double discountOf(Debt.Holder h)` _(in HoldersCheck.Edge)_ |  |
+| 1962 | 1 | `double faceOf(Debt.Holder h)` _(in HoldersCheck.Edge)_ |  |
+| 1964 | 1 | `double bankPaid(Edge after)` _(in HoldersCheck.Edge)_ | What the bank paid for its face at the settle: what the market owed for the sale, less what the three outside payers paid. |
+| 1966 | 8 | `double paid(Debt.Holder h, Edge after)` _(in HoldersCheck.Edge)_ | What this outside holder paid at the settle. |
+| 1977 | 5 | `static Edge[] watchSettle(Game city, Debt line)` | Watches the next month's settle of this line: the two edges are filled as the month plays, and the caller clears city.settleProbeForTest after it. |
+| 1986 | 5 | `static double[] cityFigures(Game g)` | The figures of a month that the re-strike must not move (BK1): the bank's profit, tax, dividends and gains on the city's paper, the treasury's cash and the bank's equity. |
+| 1993 | 6 | `static String firstDifference(double[] city, double[] twin)` | The first figure of the two that is not the same, bit for bit, as a sentence; empty when every one is. |
+| 2000 | 121 | `static void theReopening() throws Exception` |  |
 
-### 15. each holder's discount is its own (BK2) (lines 2705-2888)
+### 13. the discount released at an issue or a trade (BD1) (lines 2122-2493)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2708 | 5 | `static double[] owned(Debt line)` | The five owners' unaccreted discount on a line, in Debt.Holder's order. |
-| 2714 | 5 | `static double sum(double[] a)` |  |
-| 2725 | 10 | `static LongTermBond ownedPiece()` | A loose piece of 1,000 sold for 900 and settled by hand, every holder at a price of its own: the households took 300 for 285 (their own discount 15), the businesses 100 for 96 (4), the world 50 for 47 (3), the bank is... |
-| 2736 | 152 | `static void theEachHoldersOwn() throws Exception` |  |
+| 2125 | 1 | **type** `record Standing(double book, double carried, double restruck)` | What the book says the bank's unearned discount is, what the bank carries and what its movement has booked as re-struck, at a moment of section 13. |
+| 2127 | 3 | `static Standing standing(Game g)` |  |
+| 2132 | 1 | `static double movementTolerance(Bank b)` | Section 12's tolerance for the movement's residual, and for the split's. |
+| 2133 | 1 | `static double splitTolerance(Bank b)` |  |
+| 2136 | 7 | `static String linesApart(Game city, Game twin)` | The first of the statement's net income, tax and gains on the city's paper that is not the twin's, bit for bit, as a sentence; empty when all three are. |
+| 2145 | 1 | **type** `record Premium(boolean sameLine, double face, double proceeds, double discountBefore, double discountAfter,...` | What the premium reopening did to a line: whether it is the same line, the face sold, what it raised, and the line's discount left either side. |
+| 2155 | 17 | `static Premium reopenAtAPremium(Game city, Debt line)` | The reopening of 13a, done the same way to the city and to its twin: the policy rate taken back down by PREMIUM_RISE (to its floor, at most) and the same line sold again between the presses, at a premium. |
+| 2173 | 8 | `static void theDiscountReleased() throws Exception` |  |
+| 2183 | 88 | `static void thePremium() throws Exception` | 13a: the same line reopened at a premium between the presses: the premium is the unsettled sale's until the settle, which takes it off the bank's own discount on the line (BK2). |
+| 2273 | 47 | `static void thePremiumPastOwnDiscount() throws Exception` | BK2b: the bank's premium exceeds its own discount; the clamp's loss belongs to retained, outside income. |
+| 2322 | 89 | `static void theDeskOnAnUnsettledLine() throws Exception` | 13b: the desk buying the households' paper of a line with a sale unsettled is handed the households' own discount per face, which is what the book moves by (BK2). |
+| 2413 | 2 | **type** `record UnsettledBuyback(boolean fresh, double face, double discount, double book, double carried, double ta...` | What 13c's round trip did: whether the piece was new and all unsettled, its face and discount, the bank's book and carried discount going into the buyback, what the buyback took and the bank's share of it, and whether... |
+| 2417 | 4 | `static double billDiscount(Game city, double cash)` | BA1: the discount a year's bill raising this cash would carry, as the quote has it: its face less the cash it brings, the fixed fee of the issue in it. |
+| 2423 | 23 | `static UnsettledBuyback sellAndBuyBackBeforeTheSettle(Game city)` | 13c's round trip, done the same way to the city and to its twin: a year's bill of a fifth of the bank's book sold between the presses and bought straight back whole, before its settle. |
+| 2452 | 41 | `static void theBuybackBeforeTheSettle() throws Exception` | 13c: a fresh piece closed before its settle cancels its unpaid sale at the original proceeds (BS1). |
+
+### 14. the rounding floor on a holder's face (RT1) (lines 2494-2708)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2497 | 1 | `static LongTermBond loosePiece()` | A piece of term paper by itself, sold to nobody: 1,000 of face, all of it the bank's, for the moves below to take from and give back to. |
+| 2499 | 61 | `static void theHoldingFloor()` |  |
+| 2562 | 35 | `static void theBuybackDiscountFloor(double scale)` | BK2b: every seller hands over all its discount when an ulp-short partial buyback snaps its kept face to none. |
+| 2599 | 63 | `static void theHolderLedgers(double scale)` | Full pro-rata takes that leave positive rounding on main, with partial takes as a control (RT1b). |
+| 2664 | 44 | `static void theFirmDeskSplit(double scale, double share)` | Run the actual desk through its wired recall, and compare two independently kept books, never a residual sum (RT1b). |
+
+### 15. each holder's discount is its own (BK2) (lines 2709-2892)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2712 | 5 | `static double[] owned(Debt line)` | The five owners' unaccreted discount on a line, in Debt.Holder's order. |
+| 2718 | 5 | `static double sum(double[] a)` |  |
+| 2729 | 10 | `static LongTermBond ownedPiece()` | A loose piece of 1,000 sold for 900 and settled by hand, every holder at a price of its own: the households took 300 for 285 (their own discount 15), the businesses 100 for 96 (4), the world 50 for 47 (3), the bank is... |
+| 2740 | 152 | `static void theEachHoldersOwn() throws Exception` |  |
 

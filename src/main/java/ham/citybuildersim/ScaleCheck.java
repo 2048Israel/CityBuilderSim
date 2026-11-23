@@ -321,7 +321,53 @@ public class ScaleCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
+    /** The desk drains a book through its native spread rule, including its last small holdings. */
+    static void paperDeskRemainder(Path root) throws Exception {
+        for (boolean fault : new boolean[]{false, true}) {
+            GameFiles files = new GameFiles(root.resolve("paper-" + fault), root.resolve("paper-" + fault + "-no-legacy"));
+            Game g = lineOff(new Game(files, LongPlaytest.founding()));
+            quietly(g::run);
+            HouseholdBalance hb = g.getHouseholdBalance();
+            int i = 0;
+            for (Household c : hb.cells()) {
+                c.households = (i % 5 + 1) * .5;
+                c.paper = c.canInvest() ? ((i + 3) % 13 + 1) / 7.0 : 0;
+                i++;
+            }
+            double opening = hb.totalPaper();
+            Debt first = g.getDebtManager().addLongTermBond(1000 * opening, 240, g.getMonth(), .03);
+            Debt second = g.getDebtManager().addLongTermBond(1000 * opening, 360, g.getMonth(), .04);
+            // Independent additions can differ by an ulp. The fault is real extra face, not rounding.
+            first.householdPrincipal = Math.nextUp(.4 * opening) * (fault ? 1.01 : 1);
+            second.householdPrincipal = Math.nextUp(.6 * opening);
+            double register0 = g.getDebtManager().householdPrincipal();
+            double bankFace0 = g.getBank().getCityBook(), bankCash0 = g.getBank().getCash();
+            double raised = 0, worst = 0, smallestFault = Double.POSITIVE_INFINITY;
+            for (int step = 0; step < 320; step++) {
+                raised += hb.sellPaperForSpread(0, 1);
+                double live = hb.totalPaper(), registered = g.getDebtManager().householdPrincipal();
+                // This fixture deliberately goes below apart()'s absolute floor:
+                // read the actual positive remainder, however small it becomes.
+                double miss = Math.abs(registered - live) / Math.max(Math.abs(registered), Math.abs(live));
+                worst = Math.max(worst, miss); smallestFault = Math.min(smallestFault, miss);
+            }
+            double remaining = hb.totalPaper(), register = g.getDebtManager().householdPrincipal();
+            out.printf("      paper desk %s: opening %.17g, remaining %.17g, register %.17g, worst relative %.3g%n",
+                    fault ? "fault" : "rounding", opening, remaining, register, worst);
+            assertTrue("fixture: native spread sales leave less than a billionth of the opening paper book, still above zero",
+                    opening > 0 && remaining > 0 && remaining < opening * 1e-9 && raised > 0);
+            if (!fault) {
+                assertTrue("the paper desk keeps its shrinking register equal to its holders through 320 native sales", worst <= REGISTER_WITHIN);
+                assertTrue("the desk's cash and face each move to the bank once, including the small remainder",
+                        apart(bankCash0 - g.getBank().getCash(), raised) <= REGISTER_WITHIN
+                        && apart(g.getBank().getCityBook() - bankFace0, register0 - register) <= REGISTER_WITHIN);
+            } else assertTrue("the fault: proportional sales preserve a real register mismatch instead of resetting it to the holders",
+                    smallestFault > REGISTER_WITHIN);
+        }
+    }
+
     static void run(Path root) throws Exception {
+        paperDeskRemainder(root);
 
         /* ============== 1. the fixture, and its copy K times over ============== */
         out.println("--- the founded city, and its copy K times over past 2^31 people ---");
@@ -1154,11 +1200,20 @@ public class ScaleCheck {
         double worst = 0;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double register = g.getEquity().getDomesticShares(c), held = g.getHouseholdBalance().sharesHeld(c);
-            worst = Math.max(worst, Math.abs(register - held) / Math.max(1e-9,
-                    Math.max(Math.abs(g.getEquity().getShares(c)), Math.max(Math.abs(register), Math.abs(held)))));
+            double miss = Math.abs(register - held) / Math.max(1e-9,
+                    Math.max(Math.abs(g.getEquity().getShares(c)), Math.max(Math.abs(register), Math.abs(held))));
+            if (miss > REGISTER_WITHIN) out.printf("      register mismatch m%d %s: issue %.17g, register %.17g, holders %.17g, relative %.17g%n",
+                    g.getMonth(), Equity.COMPANIES[c], g.getEquity().getShares(c), register, held, miss);
+            worst = Math.max(worst, miss);
         }
-        worst = Math.max(worst, apart(g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds()));
-        return Math.max(worst, apart(g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper()));
+        double bonds = apart(g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds());
+        if (bonds > REGISTER_WITHIN) out.printf("      register mismatch m%d corporate bonds: register %.17g, holders %.17g, relative %.17g%n",
+                g.getMonth(), g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds(), bonds);
+        worst = Math.max(worst, bonds);
+        double paper = apart(g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper());
+        if (paper > REGISTER_WITHIN) out.printf("      register mismatch m%d city paper: register %.17g, holders %.17g, relative %.17g%n",
+                g.getMonth(), g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper(), paper);
+        return Math.max(worst, paper);
     }
 
     static double apart(double a, double b) {

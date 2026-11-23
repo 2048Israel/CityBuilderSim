@@ -135,7 +135,7 @@ public class HouseholdBalance {
     public static final double RISK_SLOPE = .015;
 
     /** Nobody is charged more than this, however deep they are. */
-    public static final double MAX_RATE = .36;
+    public static final double MAX_RATE = Bank.CARD_RATE_CAP;
 
     /**
      * How much of the money above subsistence a household spends.
@@ -378,30 +378,12 @@ public class HouseholdBalance {
        could never be repaid - a permanent condition rather than an event, and
        nothing in the model ever closed it out.
 
-       Now it closes: the debt is written off against the bank, the savings go
-       with it, the cell cannot borrow for a year, and some of them leave. All
-       three parts matter. Without the lockout a broke cell cycles straight back
-       into debt and the bank bleeds on a loop; without the emigration poverty
-       costs the city nothing; and without the write-off the money vanishes
-       instead of landing on somebody, which is the whole reason the bank exists.
-
-       PER CELL, since the cells exist: an unskilled large family at its ceiling
-       discharges while the unskilled single adult next door keeps its credit
-       line, where before the whole tier was locked out together.
+       HC1 makes that consequence a share inside each cell. Late balances cure
+       or charge off; the charged-off share's savings repay its debt first,
+       the bank takes the remaining book loss, that share is shut out for a
+       year on the stock's decay, and a quarter leave. Its neighbours keep
+       their own cards. A cell-wide income ceiling no longer triggers discharge.
        ===================================================================== */
-
-    /**
-     * Months of income owed at which a household stops being able to carry it.
-     *
-     * The credit ceiling is six months; this is past it, because reaching the
-     * ceiling is not the same as failing - a household at the ceiling that can
-     * still service the interest is merely poor. What fails is the one that
-     * cannot, so the trigger is BOTH: at the ceiling, and short of the shop.
-     */
-    public static final double BANKRUPT_AT_MONTHS = CREDIT_LIMIT_MONTHS * .98;
-
-    /** Share of a stuck cell that goes under in a month. A trickle, not a purge. */
-    public static final double BANKRUPT_RATE = .04;
 
     /** Months a discharged household cannot borrow. */
     public static final int LOCKOUT_MONTHS = 12;
@@ -871,6 +853,17 @@ public class HouseholdBalance {
         for (Household c : cells) {
             c.capitalCeiling = free ? Double.POSITIVE_INFINITY : c.debt * (1 + growth);
         }
+    }
+
+    /**
+     * Harness-only lender input for a native window with no card offers or
+     * draws. This is not an exclusion stock: census and monthly cures must
+     * not reopen the fixture's lender. All cells exist from construction,
+     * including the empty cells that later receive arrivals. Not saved;
+     * a fixture loading another city must supply its lender again.
+     */
+    void setCardLenderOpenForHarness(boolean open) {
+        for (Household c : cells) c.cardLenderOpenForHarness = open;
     }
 
     /** What the bank sets aside against the families' debt (0.7.8), summed cell by cell - see Household.lossAllowance(). */
@@ -1490,7 +1483,7 @@ public class HouseholdBalance {
                 lastEvicted += c.evicted;
             }
 
-            lastWrittenOff += c.discharge();
+            lastWrittenOff += c.chargeOff();
             lastSeized += c.seizedSavings * c.households;
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
@@ -1775,6 +1768,10 @@ public class HouseholdBalance {
         default int securityCompany() { return -1; }
         default int securityPart() { return -1; }
         default boolean lossStock() { return false; }
+        /** Borrower status ends with the borrower; an estate settles the debt separately. */
+        default boolean borrowerStatus() { return false; }
+        /** A charged-off household leaves with no card debt or active card status. */
+        default double bankruptPosition(Household c) { return get(c); }
         default int custodyKind() { return 0; } // 1 USD, 2 cars, 3 city paper
         default int bondId() { return -1; }
     }
@@ -1791,10 +1788,15 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.savings; }
             public void set(Household c, double v) { c.savings = v; }
+            public double bankruptPosition(Household c) {
+                return c.bankruptcyLeaving > 0 ? Math.min(c.savings / c.bankruptcyLeaving,
+                        c.bankruptcyCash / c.bankruptcyLeaving) : 0;
+            }
         });
         stocks.add(new Stock() {
             public double get(Household c) { return c.debt; }
             public void set(Household c, double v) { c.debt = v; }
+            public double bankruptPosition(Household c) { return 0; }
             public boolean notAChildsToClaim() { return true; }
         });
         for (int k = 0; k < Equity.COMPANIES.length; k++) {
@@ -1900,6 +1902,34 @@ public class HouseholdBalance {
             public boolean lossStock() { return true; }
             public double get(Household c) { return c.lossCarried; }
             public void set(Household c, double v) { c.lossCarried = v; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.revolving; }
+            public void set(Household c, double v) { c.revolving = v; }
+            public double bankruptPosition(Household c) { return 0; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.lateDebt; }
+            public void set(Household c, double v) { c.lateDebt = v; }
+            public double bankruptPosition(Household c) { return 0; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.lateShare; }
+            public void set(Household c, double v) { c.lateShare = v; }
+            public double bankruptPosition(Household c) { return 0; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.shutOut; }
+            public void set(Household c, double v) { c.shutOut = v; }
+            public double bankruptPosition(Household c) { return 1; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
         });
         bondStockIds = order;
         return stocks;
@@ -2077,7 +2107,11 @@ public class HouseholdBalance {
         double paperGone = left[paperSlot];
         if (paperGone > 0 && paperDesk != null) {
             double cash = paperGone * paperRatio;
-            paperDesk.buy(paperGone, cash);
+            // The pool has moved the stocks but not yet the cell counts. Read the
+            // surviving book at the fresh counts, plus the face leaving it.
+            double heldBefore = paperGone;
+            for (int i = 0; i < n; i++) heldBefore += cells[i].paper * fresh[i];
+            paperDesk.buy(paperGone, cash, heldBefore);
             lastTakenAway += cash;
         }
         /*
@@ -2448,6 +2482,7 @@ public class HouseholdBalance {
     private static final class Move {
         final int kind, from, to, tier, heirs;
         double out, in;
+        boolean bankrupt;
         Move(int kind, int from, int to, int tier, double out, double in) {
             this(kind, from, to, tier, -1, out, in);
         }
@@ -2480,6 +2515,13 @@ public class HouseholdBalance {
         double[] b0 = new double[n];
         for (int i = 0; i < n; i++) b0[i] = cells[i].households;
         Plan plan = new Plan(b0.clone());
+        for (int i = 0; i < n; i++) {
+            double gone = Math.min(b0[i], Math.max(0, cells[i].bankruptcyLeaving) * b0[i]);
+            if (gone > 0) {
+                Move m = new Move(LEAVING, i, OUT_OF_THE_CITY, -1, gone, 0);
+                m.bankrupt = true; plan.moves.add(m);
+            }
+        }
         double retire = flows[FLOW_RETIRE], ageOn = flows[FLOW_AGE_ON], leave = flows[FLOW_LEAVE];
         double evicted = flows[FLOW_EVICTED];
         double retireEstablished = flows[FLOW_RETIRE_ESTABLISHED], ageUp = flows[FLOW_AGE_UP];
@@ -2490,7 +2532,7 @@ public class HouseholdBalance {
         if (useUp) java.util.Arrays.fill(flows, 0);
         if (retire + ageOn + leave + evicted + die[AgeBand.ADULT.ordinal()]
                 + die[AgeBand.SENIOR.ordinal()] + die[AgeBand.ELDER.ordinal()]
-                + retireEstablished + ageUp <= 0) return plan;
+                + retireEstablished + ageUp <= 0 && plan.moves.isEmpty()) return plan;
 
         double[] toSenior = shapeShares(census, b0, AgeBand.SENIOR);
         double[] toElder = shapeShares(census, b0, AgeBand.ELDER);
@@ -2498,7 +2540,7 @@ public class HouseholdBalance {
 
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
-            double h = b0[i];
+            double h = b0[i] * (1 - Math.min(1, Math.max(0, c.bankruptcyLeaving)));
             if (!(h > 0)) continue;
             int g = c.grownUps();
             if (c instanceof WorkingHousehold w) {
@@ -2536,10 +2578,12 @@ public class HouseholdBalance {
 
         // No cell loses more households than it has: a source's moves are scaled together.
         double[] out = new double[n];
+        double[] discharged = new double[n];
         for (Move m : plan.moves) out[m.from] += m.out;
+        for (Move m : plan.moves) if (m.bankrupt) discharged[m.from] += m.out;
         for (Move m : plan.moves) {
-            if (out[m.from] > b0[m.from]) {
-                double keep = b0[m.from] / out[m.from];
+            if (!m.bankrupt && out[m.from] > b0[m.from]) {
+                double keep = Math.max(0, b0[m.from] - discharged[m.from]) / (out[m.from] - discharged[m.from]);
                 m.out *= keep;
                 m.in *= keep;
             }
@@ -2661,8 +2705,32 @@ public class HouseholdBalance {
         double[] b = new double[n];
         for (int i = 0; i < n; i++) b[i] = cells[i].households;
         if (plan == null || plan.moves.isEmpty()) return b;
+        // Discharged households leave first, from their source cell and with
+        // their own zero card balance. Re-average only the survivors before
+        // ageing, estates and the anonymous census pools can move their books.
+        for (Move m : plan.moves) if (m.bankrupt) {
+            Household c = cells[m.from];
+            double count = b[m.from], remaining = count - m.out;
+            double[] departing = new double[k], opening = new double[k];
+            for (int s = 0; s < k; s++) {
+                opening[s] = stocks.get(s).get(c);
+                departing[s] = stocks.get(s).bankruptPosition(c) * m.out;
+            }
+            Deemed d = new Deemed(c, m.out, departing[0]);
+            for (int s = 0; s < k; s++) {
+                Stock st = stocks.get(s);
+                left[s] += st.securityCompany() >= 0 || st.lossStock()
+                        ? d.stock(st, c, m.out) : departing[s];
+                st.set(c, remaining > 0 ? Math.max(0, (opening[s] * count - departing[s]) / remaining) : 0);
+            }
+            left[0] -= d.cashTax; d.leave();
+            lastFlowHouseholds[LEAVING] += m.out;
+            lastFlowSavings[LEAVING] += departing[0];
+            b[m.from] = remaining;
+            c.bankruptcyLeaving = c.bankruptcyCash = 0;
+        }
         double[] after = b.clone(), arriving = new double[n];
-        for (Move m : plan.moves) { after[m.from] -= m.out; if (m.to >= 0) arriving[m.to] += m.in; }
+        for (Move m : plan.moves) if (!m.bankrupt) { after[m.from] -= m.out; if (m.to >= 0) arriving[m.to] += m.in; }
         for (int i = 0; i < n; i++) after[i] = Math.max(0, after[i]) + arriving[i];
         double[][] in = new double[n][];
         double[] inHouseholds = new double[n];
@@ -2671,6 +2739,7 @@ public class HouseholdBalance {
         double[][] estate = new double[PayTier.values().length * heirSlots][];
 
         for (Move m : plan.moves) {
+            if (m.bankrupt) continue;
             Household from = cells[m.from];
             lastFlowHouseholds[m.kind] += m.out;
             lastFlowSavings[m.kind] += from.savings * m.out;
@@ -2699,10 +2768,11 @@ public class HouseholdBalance {
                 e[0] += saved - repaid - d.cashTax;
                 left[1] += owed - repaid;
                 left[loanSlot] += from.studentDebt * m.out;
-                for (int s = 2; s < k; s++) if (s != loanSlot) e[s] += d.stock(stocks.get(s), from, m.out);
+                for (int s = 2; s < k; s++) if (s != loanSlot && !stocks.get(s).borrowerStatus())
+                    e[s] += d.stock(stocks.get(s), from, m.out);
             }
         }
-        for (Move m : plan.moves) b[m.from] -= m.out;
+        for (Move m : plan.moves) if (!m.bankrupt) b[m.from] -= m.out;
         for (int i = 0; i < n; i++) {
             if (b[i] < 0) b[i] = 0;
             if (in[i] == null) continue;
@@ -3420,7 +3490,7 @@ public class HouseholdBalance {
          * bars it: a family that cannot buy its groceries this month is not
          * signing a finance agreement this month either.
          */
-        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
         /*
@@ -3556,6 +3626,8 @@ public class HouseholdBalance {
             // ...and the bank's loan fee added to what is owed (0.7.7), as on
             // the credit line. See Household.fundShortfall().
             c.debt += lent * (1 + Bank.LOAN_FEE);
+            if (lent > 0) c.revolving += Math.min(Math.max(0, c.cardAccess(c.disposable) - c.revolving), got);
+            c.boundCards();
             financed += lent * c.households;
             carFees += lent * Bank.LOAN_FEE * c.households;
             spent += got * price * c.households;
@@ -3917,7 +3989,7 @@ public class HouseholdBalance {
      * which is the whole reason this good is here.
      */
     private double luxuryBudgetOf(Household c) {
-        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.luxuryWant > 0)) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
@@ -4024,7 +4096,7 @@ public class HouseholdBalance {
      * is measured elsewhere.
      */
     private double mealBudgetOf(Household c) {
-        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.mealWant > 0)) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
@@ -4414,6 +4486,14 @@ public class HouseholdBalance {
      */
     boolean owes(Household c) { return c.debt > minMove; }
 
+    /** Share whose cash may buy investments: cards/exclusion belong to their holders, not every neighbour (HC1). */
+    public double debtFreeShare(Household c) {
+        // A raw indebted fixture without a supplied holder distribution is
+        // conservatively ineligible; this does not invent or convert holders.
+        if (owes(c) && !(c.revolving > 0)) return 0;
+        return Math.max(0, Math.min(1, 1 - (owes(c) ? c.revolving : 0) - c.shutOut));
+    }
+
     /** Local currency per dollar, this month: what the paper abroad is worth here. Set by Game before the strike. */
     private double localPerUsd = ForeignAccounts.OPENING_RATE;
 
@@ -4432,8 +4512,8 @@ public class HouseholdBalance {
     /**
      * Every household decides where to keep its idle money: what is past the
      * cushion goes abroad towards the target share, a little a month; what
-     * is abroad comes home when the target falls. A household in debt, locked
-     * out or going short holds nothing abroad. The coupon is paid home; the
+     * is abroad comes home when the target falls. HC1 uses the debt-free,
+     * unexcluded share's cash budget, and none while going short. The coupon is paid home; the
      * USD principal stays abroad. Called once a month, after the shares have traded and before
      * the audit strikes.
      *
@@ -4491,11 +4571,12 @@ public class HouseholdBalance {
             if (!c.canInvest()) continue;
 
             double held = c.abroad * rate;
-            boolean eligible = !owes(c) && c.lockout <= 0 && !c.isGoingShort();
+            double freeShare = debtFreeShare(c);
+            boolean eligible = freeShare > 0 && !c.isGoingShort();
 
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double spare = c.savings - cushion;
-            double target = eligible && spare + held > 0 ? (spare + held) * targetShare : 0;
+            double target = eligible && spare + held > 0 ? (spare + held) * targetShare * freeShare : 0;
             double gap = target - held;
             double move;
             if (gap > 0) {
@@ -4600,8 +4681,8 @@ public class HouseholdBalance {
      * face off every piece of paper's household share pro rata.
      */
     public interface PaperDesk {
-        /** The desk buys this much face of the households' paper for this much cash. */
-        void buy(double face, double cash);
+        /** The desk buys face / heldBefore of the opening household book for this much cash. */
+        void buy(double face, double cash, double heldBefore);
     }
 
     private PaperDesk paperDesk;
@@ -4666,11 +4747,11 @@ public class HouseholdBalance {
     }
 
     private boolean mayBuyPaper(Household c) {
-        return !c.isEmpty() && c.canInvest() && !owes(c) && c.lockout <= 0 && !c.isGoingShort();
+        return !c.isEmpty() && c.canInvest() && debtFreeShare(c) > 0 && !c.isGoingShort();
     }
 
     private double spareFor(Household c) {
-        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * debtFreeShare(c);
     }
 
     /** What every eligible household could put into paper: savings past the cushion, in total. */
@@ -4763,8 +4844,9 @@ public class HouseholdBalance {
         double cashPer = Math.min(needPer, c.paper * paperRatio);
         double facePer = Math.min(c.paper, cashPer / paperRatio);
         cashPer = facePer * paperRatio;
+        double heldBefore = totalPaper();
         c.paper -= facePer;
-        paperDesk.buy(facePer * c.households, cashPer * c.households);
+        paperDesk.buy(facePer * c.households, cashPer * c.households, heldBefore);
         return cashPer;
     }
 
@@ -4779,7 +4861,7 @@ public class HouseholdBalance {
      */
     public double sellPaperForSpread(double bookYield, double depositRate) {
         if (paperDesk == null || bookYield > Math.max(0, depositRate)) return 0;
-        double raised = 0;
+        double raised = 0, faceSold = 0, heldBefore = totalPaper();
         for (Household c : cells) {
             if (c.isEmpty() || !c.canInvest() || c.paper <= 0) continue;
             double facePer = c.paper * OutwardInvestment.HOME_SPEED;
@@ -4788,9 +4870,10 @@ public class HouseholdBalance {
             c.paper -= facePer;
             c.savings += cashPer;
             c.paperSold += cashPer;
-            paperDesk.buy(facePer * c.households, cashPer * c.households);
+            faceSold += facePer * c.households;
             raised += cashPer * c.households;
         }
+        if (faceSold > 0) paperDesk.buy(faceSold, raised, heldBefore);
         return raised;
     }
 
@@ -5172,16 +5255,62 @@ public class HouseholdBalance {
 
     /** Households discharged this month, and the share of them leaving the city. */
     public double getBankrupt(int row) { return sumRow(row, Household::bankrupt); }
-    public double getLeavingCity()     { return lastLeaving; }
+    public double getLeavingCity()     { return sum(c -> c.bankruptcyLeaving * c.households); }
+
+    /** The actual source families, rather than a city-wide average household size. */
+    public record BankruptcyDepartures(double[] ages, double[] stages) {
+        public double people() { return java.util.Arrays.stream(ages).sum(); }
+    }
+
+    /** Bound one source-preserving departure plan to the people still alive this month. */
+    public BankruptcyDepartures prepareBankruptcyDepartures(PopulationCohorts cohorts) {
+        double[] ages = new double[AgeBand.values().length], stages = new double[AdultStage.values().length];
+        for (Household c : cells) {
+            double count = c.bankruptcyLeaving * c.households;
+            if (!(count > 0)) continue;
+            if (c.shape() != null) {
+                for (AgeBand a : AgeBand.values()) ages[a.ordinal()] += count * c.shape().membersOf(a);
+                ages[AgeBand.CHILD.ordinal()] += count * Math.max(0, c.headcount() - c.shape().size());
+            } else {
+                ages[AgeBand.ADULT.ordinal()] += count * c.grownUps();
+                ages[AgeBand.CHILD.ordinal()] += count * Math.max(0, c.headcount() - c.grownUps());
+            }
+            double adults = count * (c.shape() == null ? c.grownUps() : c.shape().membersOf(AgeBand.ADULT));
+            if (c instanceof WorkingHousehold w) stages[w.stage().ordinal()] += adults;
+            else for (AdultStage s : AdultStage.values()) stages[s.ordinal()] += adults
+                    * (cohorts.get(AgeBand.ADULT) > 0 ? cohorts.get(s) / cohorts.get(AgeBand.ADULT) : 0);
+        }
+        double keep = 1;
+        for (AgeBand a : AgeBand.values()) if (ages[a.ordinal()] > 0)
+            keep = Math.min(keep, cohorts.get(a) / ages[a.ordinal()]);
+        for (AdultStage s : AdultStage.values()) if (stages[s.ordinal()] > 0)
+            keep = Math.min(keep, cohorts.get(s) / stages[s.ordinal()]);
+        keep = Math.max(0, Math.min(1, keep));
+        for (Household c : cells) { c.bankruptcyLeaving *= keep; c.bankruptcyCash *= keep; }
+        for (int i = 0; i < ages.length; i++) ages[i] *= keep;
+        for (int i = 0; i < stages.length; i++) stages[i] *= keep;
+        return new BankruptcyDepartures(ages, stages);
+    }
+
+    /** Migration may cap total departures; apply that same cap to every source and its cash. */
+    public BankruptcyDepartures limitBankruptcyDepartures(BankruptcyDepartures plan, double admitted) {
+        double keep = plan.people() > 0 ? Math.max(0, Math.min(1, admitted / plan.people())) : 1;
+        if (keep == 1) return plan;
+        for (Household c : cells) { c.bankruptcyLeaving *= keep; c.bankruptcyCash *= keep; }
+        double[] ages = plan.ages().clone(), stages = plan.stages().clone();
+        for (int i = 0; i < ages.length; i++) ages[i] *= keep;
+        for (int i = 0; i < stages.length; i++) stages[i] *= keep;
+        return new BankruptcyDepartures(ages, stages);
+    }
 
     /** True when any cell of the row the bank has stopped lending to is still locked out. */
     public boolean isLockedOut(int row){ return getLockout(row) > 0; }
 
-    /** The longest lockout standing in the row. */
+    /** Legacy row indicator: a shut-out share exists; the actual position is Household.shutOut(). */
     public int getLockout(int row) {
         int longest = 0;
         for (Household c : cells) {
-            if (c.row() == row && !c.isEmpty()) longest = Math.max(longest, c.lockout);
+            if (c.row() == row && !c.isEmpty()) longest = Math.max(longest, c.lockout());
         }
         return longest;
     }
@@ -5358,13 +5487,15 @@ public class HouseholdBalance {
      * saving worth doing on its own.
      */
     public void creditDepositInterest(double total) {
+        for (Household c : cells) c.depositIncome = 0;
         if (total <= 0) return;
         double base = totalSavings();
         if (base <= 0) return;
         for (Household c : cells) {
             if (c.savings <= 0 || c.isEmpty()) continue;
             double share = c.totalSavings() / base;
-            c.savings += total * share / c.households;
+            c.depositIncome = total * share / c.households;
+            c.savings += c.depositIncome;
         }
         lastDepositInterest = total;
     }
@@ -5487,13 +5618,13 @@ public class HouseholdBalance {
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.isEmpty() || !c.canInvest() || owes(c) || c.lockout > 0 || c.isGoingShort()) continue;
+            if (c.isEmpty() || !c.canInvest() || debtFreeShare(c) <= 0 || c.isGoingShort()) continue;
             // The owner line takes no offering (BO1): its stakes dilute.
             if (!c.tradesShares()) continue;
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double excess = c.savings - cushion;
             if (excess <= 0) continue;
-            want[i] = excess * SHARE_OF_EXCESS * c.households;
+            want[i] = excess * SHARE_OF_EXCESS * c.households * debtFreeShare(c);
             total += want[i];
         }
         if (total <= 0) return 0;
@@ -5899,9 +6030,41 @@ public class HouseholdBalance {
     /** Basis by company, loss carry and the current month's taxable gains appended by HT1. */
     public static final int CELL_SLOTS_BEFORE_SECURED_TAX = CELL_SLOTS_BEFORE_BASIS + Equity.COMPANIES.length + 2;
     /** The tagged units and limited claims, appended after the basis checkpoint. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length;
+    public static final int CELL_SLOTS_BEFORE_CARDS = CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length;
+    /** Four card stocks, ten settled figures and two pending departure positions (HC1). */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARDS + 16;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
+    public double totalEmergencyBills() {
+        double sum = 0; for (Household c : cells) sum += c.emergencyBill * c.households; return sum;
+    }
+
+    public DebtStatistics.Snapshot debtStatistics() { return DebtStatistics.of(this, null, null); }
+
+    private java.util.function.DoubleSupplier carAssetPrice = () -> 0;
+    private java.util.function.DoubleSupplier assetExchangeRate = () -> localPerUsd;
+
+    /** The city's current used-car mark, injected like its rent/census readers. */
+    public void setCarAssetPrice(java.util.function.DoubleSupplier price) { carAssetPrice = price == null ? () -> 0 : price; }
+
+    /** Closing exchange rate for valuing assets, distinct from the settlement's opening rate. */
+    public void setAssetExchangeRate(java.util.function.DoubleSupplier rate) { assetExchangeRate = rate; }
+
+    /** The assets this model has: financial holdings and cars; owner homes arrive with HO1. */
+    public double assets(Household c) {
+        return financialAssets(c) + c.cars * Math.max(0, carAssetPrice.getAsDouble());
+    }
+
+    /** A cell's financial assets at this month's marks, per household (HC2). */
+    public double financialAssets(Household c) {
+        double assets = c.savings + c.abroad * Math.max(0, assetExchangeRate.getAsDouble())
+                + c.paper * Math.max(0, paperRatio) + c.bonds * Math.max(0, bondRatio);
+        if (exchange != null) for (int company = 0; company < c.shares.length; company++) {
+            assets += c.shares[company] * Math.max(0, exchange.price(company));
+        }
+        return Math.max(0, assets);
+    }
+
     public String[] cellKeys() {
         String[] keys = new String[cells.length];
         for (int i = 0; i < cells.length; i++) keys[i] = cells[i].key();
@@ -5915,7 +6078,7 @@ public class HouseholdBalance {
         for (Household c : cells) {
             out[i++] = c.savings;
             out[i++] = c.debt;
-            out[i++] = c.lockout;
+            out[i++] = 0; // reserved: former cell-wide countdown
             out[i++] = c.households;
             out[i++] = c.want;
             out[i++] = c.planned;
@@ -5941,6 +6104,14 @@ public class HouseholdBalance {
             out[i++] = c.taxedGains;
             for (double units : c.taxShares) out[i++] = units;
             for (double claim : c.taxClaim) out[i++] = claim;
+            out[i++] = c.revolving; out[i++] = c.lateDebt; out[i++] = c.lateShare; out[i++] = c.shutOut;
+            out[i++] = c.minimumPaid; out[i++] = c.emergencyBill; out[i++] = c.cardWrittenOff;
+            out[i++] = c.disposable; out[i++] = c.bankrupt;
+            out[i++] = c.minimumDue;
+            out[i++] = c.depositIncome;
+            out[i++] = c.studentRepaid; out[i++] = c.studentInterest;
+            out[i++] = c.rate;
+            out[i++] = c.bankruptcyLeaving; out[i++] = c.bankruptcyCash;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -6002,11 +6173,12 @@ public class HouseholdBalance {
         final int wasBeforeAfterFixed = wasBeforeMeans + 1;
         final int wasBeforeBasis   = wasBeforeAfterFixed + 1;
         final int wasBeforeSecured = wasBeforeBasis + savedShares + 2;
-        final int wasFull          = wasBeforeSecured + 2 * savedShares;
+        final int wasBeforeCards   = wasBeforeSecured + 2 * savedShares;
+        final int wasFull          = wasBeforeCards + 16;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeSecured && slots != wasBeforeBasis && slots != wasBeforeAfterFixed
+                || (slots != wasFull && slots != wasBeforeCards && slots != wasBeforeSecured && slots != wasBeforeBasis && slots != wasBeforeAfterFixed
                     && slots != wasBeforeMeans && slots != wasBeforeGroceries
                     && slots != wasBeforeBonds && slots != wasBeforePaper
                     && slots != wasBeforeCare && slots != wasBeforeMeals
@@ -6039,7 +6211,7 @@ public class HouseholdBalance {
             if (c == null) { i += slots; continue; }
             c.savings     = saved[i++];
             c.debt        = saved[i++];
-            c.lockout     = (int) Math.round(saved[i++]);
+            i++; // reserved: former cell-wide countdown
             c.households  = saved[i++];
             c.want        = saved[i++];
             c.planned     = saved[i++];
@@ -6111,9 +6283,19 @@ public class HouseholdBalance {
                 c.taxedGains = Math.max(0, saved[i++]);
             }
             java.util.Arrays.fill(c.taxShares, 0); java.util.Arrays.fill(c.taxClaim, 0);
-            if (slots >= wasFull) {
+            if (slots >= wasBeforeCards) {
                 for (int k = 0; k < savedShares; k++) { double value = saved[i++]; if (shareSlot[k] >= 0) c.taxShares[shareSlot[k]] = value; }
                 for (int k = 0; k < savedShares; k++) { double value = saved[i++]; if (shareSlot[k] >= 0) c.taxClaim[shareSlot[k]] = value; }
+            }
+            if (slots >= wasFull) {
+                c.revolving = saved[i++]; c.lateDebt = saved[i++]; c.lateShare = saved[i++]; c.shutOut = saved[i++];
+                c.minimumPaid = saved[i++]; c.emergencyBill = saved[i++]; c.cardWrittenOff = saved[i++];
+                c.disposable = saved[i++]; c.bankrupt = saved[i++];
+                c.minimumDue = saved[i++];
+                c.depositIncome = saved[i++];
+                c.studentRepaid = saved[i++]; c.studentInterest = saved[i++];
+                c.rate = saved[i++];
+                c.bankruptcyLeaving = saved[i++]; c.bankruptcyCash = saved[i++];
             }
         }
         plannedSpend = saved[i++];
@@ -6177,7 +6359,7 @@ public class HouseholdBalance {
              // a position is: a saved dust is still a dust. See moveStock().
             c.savings = Math.max(0, saved[r]);
             c.debt = Math.max(0, saved[rows + r]);
-            c.lockout = (int) Math.round(saved[rows * 2 + r]);
+            // Former row lockout has no role in the share-based card ledger.
             if (current) {
                 c.want        = saved[rows * 4 + r];
                 c.planned     = saved[rows * 5 + r];
