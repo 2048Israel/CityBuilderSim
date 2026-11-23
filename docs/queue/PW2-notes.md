@@ -185,6 +185,16 @@ Harnesses PW2 moved, each mended by a fixture that causes its condition; no prem
   (its equity -1,415). Without the order BuybackCheck's town is main's to the figure through month 97, and
   CurrencyCheck's defence month is main's to the cent. HoldersCheck 11 holds only two sectors, so PW2's other moves
   still reach its town (its auction cleared at 6.199%, main's at 3.813%); its lines are green.
+- **CurrencyRegimeCheck.town(): no coal plant (the first dry run's red, GoldStandardCheck 7).** The same class:
+  main refused the list's coal plant (six sites, 49,012 cash after the list) and PW2's was bought (site B9, 1,332
+  left). GoldStandardCheck 7 then buys GOLD_LOCAL (40,000) of gold, but `buyForeignCurrency()` spends at most the
+  cash, so the vault held a fraction, the cover ran about 30 times thinner (225 against 6,821 at month 3), and the
+  town broke off Gold on its cover at month 96 (world month 95, 1908), before the 1933 the section is about. Without
+  the order the town is main's: March 1933 at world month 398, cover 8.963, lowest 8.802, as main's export prints.
+  Section 7 now asserts as a fixture that the treasury paid all of GOLD_LOCAL, so a short purchase is caught at its
+  cause (the orchestrator: "makes the check stricter. No review is owed for it"). The town's other borrowers,
+  CurrencyRegimeCheck and InterventionCheck, are green on it. GoldStandardCheck was not among my one-at-a-time
+  rounds; the dry run, which runs every harness, found it.
 - **HousingCheck** (the landlords build before anyone can staff them): the yard's materials set to none, as main's
   city had them. The refigured coal plants are placed on less material (14,373 each, not 19,848), and 36 were left
   after the two years: a House's 10 come from the yard and a Studio's 320 do not, so the House's price fell to 8.5
@@ -253,4 +263,6 @@ had finished; the restart kept them and scored here.
 
 ## 6. The dry run
 
-(to come)
+The first, on the gate box (`cbs-gate-PW2-j2acbMKF`, 238f74368, 2026-11-23): stopped on twelve NEW lines, all
+GoldStandardCheck's, the batch's own (§4, CurrencyRegimeCheck.town()). Mended, the three harnesses on the town green
+one at a time, and run again on the orchestrator's go.
