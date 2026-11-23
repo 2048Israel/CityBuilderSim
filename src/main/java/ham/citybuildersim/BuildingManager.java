@@ -1113,14 +1113,36 @@ public class BuildingManager {
         templates.add(buildersYard);
 
         // ELECTRICTY buildings
+        /* ------------------------------------------------------------------
+           THE COAL POWER PLANT, refigured (PW2; spec-electricity 2.3). A 325 MW
+           unit, kept, at EIA's new coal plant, $3,271 a kW in 2023 dollars
+           [S8]: $1.06B all-in, 776,914 of cash at the Wind Farm's old cash
+           per dollar (HY1's rule, 23,240 for $31.8M), its points the old coal
+           plant's points to cash (120,000 over 1,071,816) and its materials
+           1.85% of cash. Available 85% (NETL's design capacity factor [S9]):
+           325,000 kW x 0.85 x 730 / 720 = 280,087 a month on average. 200
+           acres (400 for 650 MW [S10]), 60 months to build [S10]. It draws
+           its cooling once-through from the sea, a lake or a river the city
+           owns (cooling(), refused NO_WATER without one) and takes nothing
+           from the city's water: a tower would consume 500 gallons a MWh
+           [S5], 10,085 units a month, more than the city's fresh limit could
+           carry. Its posts and its own load are kept.
+           ------------------------------------------------------------------ */
         BuildingsTemplate coalPowerplant = new BuildingsTemplate("Coal Power Plant", BuildingType.ELECTRICITY)
-                .setCashCost(1071816)
-                .setConstructionPoints(120000)
-                .setConstructionMaterials(19848)
-                .setProduction1(280000) // electricity output
+                .setSince(1900)                     // a kind since before 1900; a 325 MW unit first ran in 1960 (Eddystone)
+                .setCashCost(776914)                // $1.06B all-in at $3,271/kW
+                .setConstructionPoints(86983)       // the old coal plant's points to cash
+                .setConstructionMaterials(14373)    // 1.85% of cash
+                .setProduction1(280087)             // 325 MW, available 85%
+                .setNameplate(325000)
+                .setFuel("THERMAL_COAL")
+                .setHeatRate(8490)                  // Btu a kWh, 40.2% [S8]
+                .setVariableUpkeep(9.37)            // $ a MWh [S8]
+                .setCooling(true)                   // once-through on owned water
+                .setBuildMonths(60)                 // [S10]
                 .setElectricityConsumption(15)
-                .setWaterConsumption(400) // cooling - the biggest single draw in the game
-                .setLandSqFt(2000000)
+                .setWaterConsumption(0)             // its cooling is the owned water's, not the city's
+                .setLandSqFt(8712000)               // 200 acres [S10]
                 .setRoadLoad(120)
                 .setJobs(JobType.NO_DIPLOMA, 40)
                 .setJobs(JobType.DIPLOMA, 20)
@@ -1180,18 +1202,23 @@ public class BuildingManager {
            450 kWh a tonne - see RealismCheck). Weather and storage are a
            different game.
            ------------------------------------------------------------------ */
+        // PW2 refigured it (spec-electricity 2.3): EIA's $1,712 a kW [S1], 33.8% a year [S3], 2 posts (wind employs
+        // 21.8 a TWh [S13] x 0.059 TWh), 36 months to build [S1]; land and nameplate kept. The weather is PW1's
+        // dispatch (PowerDispatch.windAt()); the paragraphs above are its first day, 2026-09-09.
         BuildingsTemplate windFarm = new BuildingsTemplate("Wind Farm", BuildingType.ELECTRICITY)
                 .setSince("E16")
-                .setCashCost(23240)                 // $31.8M all-in at $1,590/kW
-                .setConstructionPoints(1800)        // months, not years
-                .setConstructionMaterials(431)
-                .setProduction1(8100)               // 20 MW at a 40% capacity factor
+                .setCashCost(25023)                 // $34.2M all-in at $1,712/kW
+                .setConstructionPoints(2802)        // the coal plant's old points to cash
+                .setConstructionMaterials(463)      // 1.85% of cash
+                .setProduction1(6854)               // 20 MW at a 33.8% capacity factor
+                .setNameplate(20000)
+                .setVariable("wind")
+                .setBuildMonths(36)                 // [S1]
                 .setElectricityConsumption(1)       // its own parasitic load
                 .setWaterConsumption(0)             // none, which is half the point
                 .setLandSqFt(1742400)               // 40 acres - 2 per MW
                 .setRoadLoad(5)
-                .setJobs(JobType.NO_DIPLOMA, 2)
-                .setJobs(JobType.DIPLOMA, 4)        // turbine technicians, a real trade
+                .setJobs(JobType.DIPLOMA, 1)        // turbine technicians, a real trade
                 .setJobs(JobType.COLLEGE_ENGINEERING, 1)
                 .setId(41);
 
@@ -4863,6 +4890,8 @@ public class BuildingManager {
                 .setConstructionPoints(2450)        // the coal plant's points to cash
                 .setConstructionMaterials(406)      // 1.85% of cash, as both plants'
                 .setProduction1(4560)               // 10 MW at a 45% capacity factor
+                .setNameplate(10000)                // PW1: its sets' rating
+                .setVariableUpkeep(1.71)            // PW1: $ a MWh [S1]
                 .setElectricityConsumption(20)      // its own load
                 .setWaterConsumption(0)             // it takes nothing from the river
                 .setLandSqFt(435600)                // 10 acres: dam wings, powerhouse, yard
@@ -5068,7 +5097,59 @@ public class BuildingManager {
                 .setCapacity((int) (Substations.SUBSTATION_MW * 1000)).setLandSqFt(217800).setRoadLoad(140)
                 .setJobs(JobType.DIPLOMA, 100).setJobs(JobType.COLLEGE_ENGINEERING, 30)
                 .setJobs(JobType.UNIV_HIGHTECH_ENG, 10).setSince(1900).setId(Substations.ID));
-        //add more buildings; next Building ID is 156
+
+        /* ------------------------------------------------------------------
+           THE POWER PLANTS AND THEIR FUELS (PW2, ids 167 to 171; RES3 takes
+           156 to 166). Spec-electricity 2.3's rows, each today's plant, each
+           priced by HY1's rule (the all-in cost at 23,240 of cash for $31.8M,
+           the old coal plant's points to cash, materials 1.85% of cash), each
+           running at nameplate x its availability x 730 / 720 on average, and
+           each burning its fuel from the market by the MWh at its heat rate
+           (PowerDispatch.heatContentMJ(): 283 litres of fuel oil, 298 and 260
+           of diesel, 0.750 t of pellets). Each is offered from its year
+           (Q2), each stands no sooner than its months (buildMonths(), the
+           crews' cap), and the steam plants - the oil and the biomass, as
+           coal - stand only on owned sea, lake or river (cooling(),
+           NO_WATER). The starred figures are the study's own estimates,
+           named in its table; posts, own load and road load by coal's per MW.
+           ------------------------------------------------------------------ */
+        // A 100 MW oil steam plant from 1900: no source prices a new one, so NETL's subcritical coal plant [S9], $3,054/kW, is the upper bound.
+        templates.add(new BuildingsTemplate("Oil-Fired Plant", BuildingType.ELECTRICITY)
+                .setCashCost(223192).setConstructionPoints(24988).setConstructionMaterials(4129)
+                .setProduction1(86181).setNameplate(100000).setFuel("FUEL_OIL").setHeatRate(11227).setVariableUpkeep(9.68)
+                .setCooling(true).setBuildMonths(48).setElectricityConsumption(5).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 12).setJobs(JobType.DIPLOMA, 6).setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setLandSqFt(1306800).setRoadLoad(37).setSince(1900).setId(167));
+        // Four engines, 21 MW, from 1910 [S10, the gas-engine case, $1,810/kW in 2019 dollars], cooled in a closed loop: no water.
+        templates.add(new BuildingsTemplate("Diesel Station", BuildingType.ELECTRICITY)
+                .setCashCost(27778).setConstructionPoints(3110).setConstructionMaterials(514)
+                .setProduction1(19163).setNameplate(21000).setFuel("DIESEL").setHeatRate(10847).setVariableUpkeep(5.69)
+                .setBuildMonths(30).setElectricityConsumption(1).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 1).setJobs(JobType.DIPLOMA, 2)
+                .setLandSqFt(435600).setRoadLoad(8).setSince(1910).setId(168));
+        // Two aeroderivatives, 100 MW, from 1949 (Belle Isle) at EIA's $2,275/kW [S1], burning diesel at its gas heat rate [S10].
+        templates.add(new BuildingsTemplate("Oil-Fired Turbine", BuildingType.ELECTRICITY)
+                .setCashCost(166261).setConstructionPoints(18615).setConstructionMaterials(3076)
+                .setProduction1(91250).setNameplate(100000).setFuel("DIESEL").setHeatRate(9447).setVariableUpkeep(5.97)
+                .setBuildMonths(24).setElectricityConsumption(5).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 2).setJobs(JobType.DIPLOMA, 3).setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setLandSqFt(435600).setRoadLoad(37).setSince(1949).setId(169));
+        // 50 MW on wood pellets, from 1970 with the Wood Pellet Mill, at EIA's $4,843/kW and 13,300 Btu a kWh [S1].
+        templates.add(new BuildingsTemplate("Biomass Plant", BuildingType.ELECTRICITY)
+                .setCashCost(176967).setConstructionPoints(19813).setConstructionMaterials(3274)
+                .setProduction1(43090).setNameplate(50000).setFuel("WOOD_PELLETS").setHeatRate(13300).setVariableUpkeep(5.93)
+                .setCooling(true).setBuildMonths(60).setElectricityConsumption(2).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 15).setJobs(JobType.DIPLOMA, 7).setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setLandSqFt(4356000).setRoadLoad(18).setSince(1970).setId(170));
+        // 50 MW of panels, from 1982 (Lugo), at EIA's $1,484/kW [S1] and the US fleet's 24.0% a year [S3]; the sun's shape is PowerDispatch's.
+        templates.add(new BuildingsTemplate("Solar Farm", BuildingType.ELECTRICITY)
+                .setCashCost(54227).setConstructionPoints(6071).setConstructionMaterials(1003)
+                .setProduction1(12167).setNameplate(50000).setVariable("solar")
+                .setBuildMonths(24).setElectricityConsumption(1).setWaterConsumption(0)
+                .setJobs(JobType.DIPLOMA, 3).setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setLandSqFt(14505480).setRoadLoad(5).setSince(1982).setId(171));
+        //add more buildings; next Building ID is 172
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 
