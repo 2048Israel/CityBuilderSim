@@ -157,6 +157,8 @@ public final class SectorState {
         public double oldMetalSold;
         /** Sector.Ledger.upkeepSold (HL1): the upkeep sold to the city's services and the bank this month, in transit until the next strike. An older save reads none. */
         public double upkeepSold;
+        /** The pending household-service receipt, named and struck next month (HC1). */
+        public double householdServices;
         /** Sector.Ledger.paidToCity (FR3): the dues it pays the city this month, in its inputs. An older save reads none. */
         public double paidToCity;
 
@@ -177,6 +179,7 @@ public final class SectorState {
             s.capitalBySupplier = new LinkedHashMap<>(l.capitalBySupplier);
             s.oldMetalSold = l.oldMetalSold;
             s.upkeepSold = l.upkeepSold;
+            s.householdServices = l.householdServices;
             s.paidToCity = l.paidToCity;
             return s;
         }
@@ -204,6 +207,7 @@ public final class SectorState {
             if (capitalBySupplier != null) l.capitalBySupplier.putAll(capitalBySupplier);
             l.oldMetalSold = oldMetalSold;
             l.upkeepSold = upkeepSold;
+            l.householdServices = householdServices;
             l.paidToCity = paidToCity;
             return l;
         }

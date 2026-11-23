@@ -69,7 +69,8 @@ public class SaveFileCheck {
         System.out.println("--- XR7: support already bought under a peg crosses the save ---");
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
         assertTrue("R6e current E21 choices survive immediate and next-month loads; native pre-E21 formats58/59 are refused intact", ModernEngineeringCheck.saveChecks());
-        assertTrue("native format60 save/history refusal preserves both files and a running loaded twin", nativeCard60Refusal());
+        assertTrue("REV-HC1 P4: native format-60 save/history are refused without changing their bytes or a running city", nativeCard60Refusal());
+        assertTrue("HC1 format62: native format61 refusal preserves bytes and the running loaded twin", nativeCard61Refusal(false));
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -1607,6 +1608,10 @@ public class SaveFileCheck {
         portState.billedCrudeShip = "SUEZMAX";
         portState.heldBack = 123.5; portState.crudeSeaIn = 900.25; portState.crudeSeaOut = 100.125; portState.crudeTrade = 9_999.5;
         full.getPorts().restore(portState);
+        // The fixture has replaced the ports' in-force shares between ticks.
+        // Hand those shares to the markets as the native haul and the loader do,
+        // before saving: otherwise the live twin buys its next diesel at the old band.
+        full.getSectors().freight().reapplyBand(full.getPorts());
 
         /*
          * THE WORLD'S SHORT (EM2): a position the exchange carries beside the register's holdings, the shares the cells and the fund lend against
@@ -1912,6 +1917,20 @@ public class SaveFileCheck {
         }
         same("...the orders resting on their books", backOrders, liveOrders);
         same("the households' bonds", back.getHouseholdBalance().totalBonds(), full.getHouseholdBalance().totalBonds());
+        boolean cardsMatch = true;
+        for (Household c : full.getHouseholdBalance().cells()) {
+            Household t = back.getHouseholdBalance().cellByKey(c.key());
+            cardsMatch &= t != null && c.revolving == t.revolving && c.lateDebt == t.lateDebt
+                    && c.lateShare == t.lateShare && c.shutOut == t.shutOut
+                    && c.minimumPaid == t.minimumPaid && c.minimumDue == t.minimumDue
+                    && c.emergencyBill == t.emergencyBill && c.cardWrittenOff == t.cardWrittenOff && c.rate == t.rate;
+            cardsMatch &= t != null && c.bankruptcyLeaving == t.bankruptcyLeaving && c.bankruptcyCash == t.bankruptcyCash;
+        }
+        assertTrue("HC1 card positions and settled flows cross the loader", cardsMatch);
+        assertTrue("HC2 annual debt surveys cross the history loader",
+                full.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
+        assertTrue("HC2 current debt statistics cross the fully populated city loader exactly",
+                full.getHouseholdBalance().debtStatistics().equals(back.getHouseholdBalance().debtStatistics()));
         // ...each cell's own, bond by bond, by the cell's name (0.7.12 round 2).
         int cellsWithBonds = 0, cellsBack = 0;
         for (Household c : full.getHouseholdBalance().cells()) {
@@ -3323,6 +3342,13 @@ public class SaveFileCheck {
 
         refusedIntoARunningCity(oldest, atFloor, olderBuild, newer);
 
+        // 'back' became fundCity above and was deliberately changed by those
+        // separate rescue/fund fixtures. Load the untouched populated save
+        // again so this continuation compares actual twins.
+        Game continued = new Game(full.getGameFiles());
+        quietly(() -> continued.loadGameSave(1));
+        assertTrue("REV-HC1 P5: the populated continuation starts from its actual format-62 save", continued.getLoadFailure() == null);
+        assertTrue("REV-HC1 P5: the populated format-62 city continues its card stocks, services, loan book and capital", CardCheck.continues(full, continued));
         onEarth(root);
         everyIdCrossesASave(root);
         worldMarketCrossesASave(root);
@@ -3342,9 +3368,11 @@ public class SaveFileCheck {
     }
 
     /** Exact native .188 bytes, shared with HC1; no current JSON is converted. */
-    static byte[] native60Bytes(String name) throws IOException {
-        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/hc1-format60/" + name + ".json.gz")) {
-            if (in == null) throw new IOException("Missing native format60 " + name);
+    static byte[] native60Bytes(String name) throws IOException { return nativeCardBytes(60, name); }
+
+    static byte[] nativeCardBytes(int format, String name) throws IOException {
+        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/hc1-format" + format + "/" + name + ".json.gz")) {
+            if (in == null) throw new IOException("Missing native format" + format + " " + name);
             try (var zipped = new java.util.zip.GZIPInputStream(in)) { return zipped.readAllBytes(); }
         }
     }
@@ -3353,18 +3381,32 @@ public class SaveFileCheck {
     static boolean nativeCard60Refusal() { return nativeCard60Refusal(false); }
 
     static boolean nativeCard60Refusal(boolean readPaths) {
+        return nativeCardRefusal(60, "0.9.188",
+                "9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf", readPaths);
+    }
+
+    /** Shipped RES2's real layout must be refused too, without converting its cells. */
+    static boolean nativeCard61Refusal(boolean readPaths) {
+        return nativeCardRefusal(61, "0.9.189",
+                "1d352d140f18d816e3f3f81797ab23805e719677905cf306fb35fee782a464de",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf", readPaths);
+    }
+
+    private static boolean nativeCardRefusal(int format, String version, String saveHash, String historyHash, boolean readPaths) {
         try {
-            byte[] save = native60Bytes("save"), history = native60Bytes("history");
+            byte[] save = nativeCardBytes(format, "save"), history = nativeCardBytes(format, "history");
             var old = com.google.gson.JsonParser.parseString(new String(save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             var oldHistory = com.google.gson.JsonParser.parseString(new String(history, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             int keys = old.getAsJsonArray("householdCellKeys").size();
-            boolean genuine = !old.has("housingInventory") && old.get("saveFormat").getAsInt() == 60 && old.get("gameVersion").getAsString().equals("0.9.188")
+            boolean genuine = old.has("housingInventory") == (format >= 61)
+                    && old.get("saveFormat").getAsInt() == format && old.get("gameVersion").getAsString().equals(version)
                     && old.getAsJsonArray("householdCells").size() == keys * 128 + 3 && !oldHistory.has("debtSurveys")
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save))
-                            .equals("9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186")
+                            .equals(saveHash)
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history))
-                            .equals("96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
-            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("hc1-refuse-native60"), null));
+                            .equals(historyHash);
+            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("hc1-refuse-native" + format), null));
             GameFiles files = source.getGameFiles();
             if (!source.prepareSaveForChecks(10, "HC1 current before refusal").write().whole()) return false;
             Game running = new Game(files);
@@ -3389,8 +3431,8 @@ public class SaveFileCheck {
             boolean intact = running.getBuildingManager() == managers && running.getEconomyManager() == economy
                     && running.getMonth() == month && running.getCash() == cash
                     && beforeHistory.equals(gson.toJson(running.getHistorySave())) && jsonDiff(before, after, java.util.Set.of("savedAt")).isEmpty();
-            boolean refused = !files.slotIsLoadable(10) && GameVersion.noLongerReadable("0.9.188").equals(running.getLoadFailure());
-            if (!(genuine && floor && untouched && intact && refused)) System.out.printf("Native60: genuine=%s, floor=%s, bytes=%s, city=%s, refused=%s%n", genuine, floor, untouched, intact, refused);
+            boolean refused = !files.slotIsLoadable(10) && GameVersion.noLongerReadable(version).equals(running.getLoadFailure());
+            if (!(genuine && floor && untouched && intact && refused)) System.out.printf("Native%d: genuine=%s, floor=%s, bytes=%s, city=%s, refused=%s%n", format, genuine, floor, untouched, intact, refused);
             return genuine && floor && untouched && intact && refused;
         } catch (Exception ex) { ex.printStackTrace(); return false; }
     }

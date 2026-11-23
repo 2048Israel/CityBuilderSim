@@ -784,6 +784,7 @@ public class GoldStandardCheck {
          * is then asserted against it to the rounding, not inside a bracket.
          */
         CentralBank cb = g.getCentralBank();
+        out.printf("   held-cover fixture at m%d: cover %.12f, currency gap %.12f%n", g.getMonth(), cover, gap);
         assertTrue(String.format("fixture: the month's top moves no M0 before the dial: no paper redeemed (%.2f), no edge owed (%.2f), the gold's due (%.2f) within the reserves (%.2f)",
                         cb.getRedemptionDue(), fx.getEdgeOwedLocal(), cb.getGoldRedeemDue(), cb.getReserves()),
                 cb.getRedemptionDue() == 0 && fx.getEdgeOwedLocal() == 0 && cb.getGoldRedeemDue() <= Math.max(0, cb.getReserves()));

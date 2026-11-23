@@ -1,4 +1,4 @@
-# HouseholdStageCheck.java - 563 lines · 11 methods · 1 constants · harnesses
+# HouseholdStageCheck.java - 564 lines · 11 methods · 1 constants · harnesses
 
 `ham/citybuildersim/HouseholdStageCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -58,9 +58,9 @@
 |---:|---|
 | 151 | · 1. residence of 204 and 420 months |
 | 285 | · 2. ageing carries the money |
-| 391 | · 3. no teen shape among the young |
-| 479 | · 4. the pool's group is (tier, stage) |
-| 517 | · 5. 108 working cells |
+| 392 | · 3. no teen shape among the young |
+| 480 | · 4. the pool's group is (tier, stage) |
+| 518 | · 5. 108 working cells |
 
 ## Constants
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 504 | **type** `public class HouseholdStageCheck` | The two adult stages: the young, 18-34, and the established, 35-69, each with a pyramid compartment, households and books of its own (HS2). |
+| 60 | 505 | **type** `public class HouseholdStageCheck` | The two adult stages: the young, 18-34, and the established, 35-69, each with a pyramid compartment, households and books of its own (HS2). |
 | 69 | 5 | `static void check(String label, double got, double want)` |  |
 | 75 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 80 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -95,5 +95,5 @@
 | 117 | 6 | `Household cell(FamilyStructure shape, PayTier tier, AdultStage stage, double households, double expected)` _(in HouseholdStageCheck.Books)_ |  |
 | 124 | 4 | `Books expectRetired(FamilyStructure shape, double total)` _(in HouseholdStageCheck.Books)_ |  |
 | 130 | 11 | `void run()` _(in HouseholdStageCheck.Books)_ | The month's census alone, by stage, as the balance reads it. |
-| 143 | 420 | `public static void main(String[] args) throws Exception` |  |
+| 143 | 421 | `public static void main(String[] args) throws Exception` |  |
 

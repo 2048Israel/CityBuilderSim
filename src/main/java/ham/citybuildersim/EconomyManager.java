@@ -2225,6 +2225,7 @@ public class EconomyManager {
          * counter belongs here the day it is written.
          */
         double retailSales = retail.statement().salesToHouseholds
+                + sectors.businessServices().statement().salesToHouseholds
                 + sectors.luxuryRetail().statement().salesToHouseholds
                 // ...and a dinner, which is consumption bought over a counter
                 // like the other two. See the note above.

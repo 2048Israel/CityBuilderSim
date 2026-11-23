@@ -1,4 +1,4 @@
-# BankCheck.java - 5,131 lines · 35 methods · 24 constants · harnesses
+# BankCheck.java - 5,097 lines · 35 methods · 24 constants · harnesses
 
 `ham/citybuildersim/BankCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      reload reads the same month.
 > ... (75 more lines in the source)
 
-**Uses:** [Bank](Bank.md) (392), [BusinessDebtManager](BusinessDebtManager.md) (124), [HouseholdBalance](HouseholdBalance.md) (51), [Sectors](Sectors.md) (46), [Game](Game.md) (44), [MoneyAudit](MoneyAudit.md) (44), [ExchangeCheck](ExchangeCheck.md) (33), [Equity](Equity.md) (25), [FamilyStructure](FamilyStructure.md) (21), [PriceLevel](PriceLevel.md) (20), [Exchange](Exchange.md) (19), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (15), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [TempDirs](TempDirs.md) (8), [Household](Household.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sector](Sector.md) (4), [BusinessLoan](BusinessLoan.md) (3), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3)... and 15 more
+**Uses:** [Bank](Bank.md) (394), [BusinessDebtManager](BusinessDebtManager.md) (124), [HouseholdBalance](HouseholdBalance.md) (47), [Sectors](Sectors.md) (46), [Game](Game.md) (44), [MoneyAudit](MoneyAudit.md) (44), [ExchangeCheck](ExchangeCheck.md) (33), [Equity](Equity.md) (25), [PriceLevel](PriceLevel.md) (20), [Exchange](Exchange.md) (19), [FamilyStructure](FamilyStructure.md) (19), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (15), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [TempDirs](TempDirs.md) (8), [Household](Household.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sector](Sector.md) (4), [BusinessLoan](BusinessLoan.md) (3), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3)... and 16 more
 
 **Used by (2):** [BondCheck](BondCheck.md), [YoungBankCheck](YoungBankCheck.md)
 
@@ -77,25 +77,25 @@
 | 460 | · · ...and it does not open counters either |
 | 510 | · 2. STRAIN IS NOT A PRICE (0.7.7) |
 | 688 | · 3. WHAT IT PAYS, WHAT IT TAKES, WHAT IT KEEPS (0.7.7) |
-| 907 | · 4. a real city, and its money |
-| 1035 | · 5. the save carries the bank's cash |
-| 1096 | · 6. a family that cannot carry it |
-| 1272 | · 7. and the city opens its own |
-| 1527 | · 8. the accounting identities, on a played city |
-| 1866 | · 8b. the trading desk's statement foots |
-| 1975 | · 12. a reload reads the same month (0.7.8) |
-| 2196 | · 9. capital is the constraint, and it can run out |
-| 2288 | 14. A SECTOR DEFAULTS A SLICE AT A TIME (0.7.8) |
-| 2712 | 15. A FAILING SECTOR'S PLANT, SOLD TO THE BUILDERS (0.7.8) |
-| 2963 | 16. THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8) |
-| 3048 | 19. THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) |
-| 3271 | 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) |
-| 3424 | 13. WHAT THE BANK TAB READS (0.7.9) |
-| 4028 | 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) |
-| 4399 | 10. the bank pays for the city's paper (2026-09-21) |
-| 4647 | 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) |
-| 4826 | THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) |
-| 4993 | THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) |
+| 908 | · 4. a real city, and its money |
+| 1036 | · 5. the save carries the bank's cash |
+| 1097 | · 6. a family that cannot carry it |
+| 1228 | · 7. and the city opens its own |
+| 1483 | · 8. the accounting identities, on a played city |
+| 1822 | · 8b. the trading desk's statement foots |
+| 1931 | · 12. a reload reads the same month (0.7.8) |
+| 2152 | · 9. capital is the constraint, and it can run out |
+| 2244 | 14. A SECTOR DEFAULTS A SLICE AT A TIME (0.7.8) |
+| 2671 | 15. A FAILING SECTOR'S PLANT, SOLD TO THE BUILDERS (0.7.8) |
+| 2922 | 16. THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8) |
+| 3007 | 19. THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) |
+| 3230 | 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) |
+| 3383 | 13. WHAT THE BANK TAB READS (0.7.9) |
+| 3987 | 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) |
+| 4365 | 10. the bank pays for the city's paper (2026-09-21) |
+| 4613 | 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) |
+| 4792 | THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) |
+| 4959 | THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) |
 
 ## Constants
 
@@ -124,7 +124,7 @@
 | 212 | `BankCheck.TAB_RESCUE_MONTH` | `45` | The month of the tab city in which the city puts capital into the bank that stands, between two presses: its preferred, since 0.7.14. |
 | 215 | `BankCheck.TAB_PLAYED` | `TAB_RESCUE_MONTH + 1 + Bank.YEAR_MONTHS` | The months the tab city is played: through its last caused event, the rescue, and the year after it that a year ago on the Balance sheet page needs to read a sheet that has the rescue in it. |
 | 223 | `BankCheck.DESK_MONTHS` | `6` | The months the trading desk is stepped after the leavers sell it their shares, so it goes on to hold, re-mark and sell what it bought. |
-| 5044 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
+| 5010 | `BankCheck.OLD_ABSOLUTE` | `.005` | What the Bank page's three sites tested before BI2: an absolute $5 (.005 of a thousand). |
 
 ## Fields (state)
 
@@ -138,7 +138,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 145 | 4987 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
+| 145 | 4953 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
 | 218 | 3 | `static boolean parted(double drawn, double priced)` | Whether a rate drawn in its parts is the rate priced, to 1e-12 of it: the parts' arithmetic can part from the pricing's by an ulp on another path. |
 | 225 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 231 | 5 | `static double[] sheetOf(Bank bank)` | The bank's balance sheet as it stands, every line of it (0.7.13). |
@@ -148,85 +148,85 @@
 | 277 | 9 | `static double deskParts(Exchange exchange, Equity register, Bank bank)` | The trading desk's statement as the bank screen opens it, less the re-mark: sold to households and abroad, bought from both, dividends on the inventory, tendered into buybacks - the same getters BankScreen reads, with... |
 | 295 | 10 | `static double capitalMoved(Bank b)` | Everything that moves the bank's equity that is not its net income: capital put in (both halves), the treasury's, the founding settlement, less its dividend - and since 0.7.8 its own shares, issued or bought back, whi... |
 | 306 | 3 | `static double deskParts(Game game)` |  |
-| 310 | 1977 | `public static void main(String[] args) throws Exception` |  |
+| 310 | 1933 | `public static void main(String[] args) throws Exception` |  |
 
-### 14. A SECTOR DEFAULTS A SLICE AT A TIME (0.7.8) (lines 2288-2711)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2311 | 9 | `static double staged(double principal, double leverage)` | The allowance the round-2 brief writes down, staged firm by firm, computed here rather than by the model: principal x ((1 - s2) x EL12 + s2 x ELlife), s2 = N(ln(L / SECTOR_WATCH_LEVERAGE) / ASSET_VOLATILITY), EL12 = m... |
-| 2322 | 5 | `static double hazard(double leverage)` | The monthly hazard the brief writes down, 1 - (1 - PD)^(1/12), computed here rather than by the model. |
-| 2329 | 9 | `static BusinessDebtManager lender(String sector, double assets, double...loans)` | A lender with one sector owing these loans against these assets. |
-| 2339 | 372 | `static void theSectorDefaultsASliceAtATime() throws Exception` |  |
-
-### 15. A FAILING SECTOR'S PLANT, SOLD TO THE BUILDERS (0.7.8) (lines 2712-2962)
+### 14. A SECTOR DEFAULTS A SLICE AT A TIME (0.7.8) (lines 2244-2670)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2734 | 10 | `static void holdFromOrdering(Game city, String sector, double overdraft)` | Retail held from ordering a shop, as the first sale's loop holds it (BA1, 2026-11-05): credit shut for twelve months, the register's twelve losing months so the owners raise nothing, and the till overdrawn by `overdra... |
-| 2746 | 5 | `static void restoreStreak(BusinessInvestment plans, String sector, int months)` | Sets a sector's loss streak, the months the distress rule reads, and leaves every other sector's as it stands. |
-| 2752 | 210 | `static void aFailingSectorsPlantIsSoldToTheBuilders() throws Exception` |  |
+| 2267 | 9 | `static double staged(double principal, double leverage)` | The allowance the round-2 brief writes down, staged firm by firm, computed here rather than by the model: principal x ((1 - s2) x EL12 + s2 x ELlife), s2 = N(ln(L / SECTOR_WATCH_LEVERAGE) / ASSET_VOLATILITY), EL12 = m... |
+| 2278 | 5 | `static double hazard(double leverage)` | The monthly hazard the brief writes down, 1 - (1 - PD)^(1/12), computed here rather than by the model. |
+| 2285 | 9 | `static BusinessDebtManager lender(String sector, double assets, double...loans)` | A lender with one sector owing these loans against these assets. |
+| 2295 | 375 | `static void theSectorDefaultsASliceAtATime() throws Exception` |  |
 
-### 16. THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8) (lines 2963-3047)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2978 | 69 | `static void theBankReadsTheQuarter()` |  |
-
-### 19. THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) (lines 3048-3270)
+### 15. A FAILING SECTOR'S PLANT, SOLD TO THE BUILDERS (0.7.8) (lines 2671-2921)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3091 | 179 | `static void theBranchesByTheirCustomers() throws Exception` |  |
+| 2693 | 10 | `static void holdFromOrdering(Game city, String sector, double overdraft)` | Retail held from ordering a shop, as the first sale's loop holds it (BA1, 2026-11-05): credit shut for twelve months, the register's twelve losing months so the owners raise nothing, and the till overdrawn by `overdra... |
+| 2705 | 5 | `static void restoreStreak(BusinessInvestment plans, String sector, int months)` | Sets a sector's loss streak, the months the distress rule reads, and leaves every other sector's as it stands. |
+| 2711 | 210 | `static void aFailingSectorsPlantIsSoldToTheBuilders() throws Exception` |  |
 
-### 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) (lines 3271-3423)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3290 | 133 | `static void theDeskIsHeldToTheBanksCapital()` |  |
-
-### 13. WHAT THE BANK TAB READS (0.7.9) (lines 3424-4027)
+### 16. THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8) (lines 2922-3006)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3440 | 587 | `static void whatTheBankTabReads() throws Exception` |  |
+| 2937 | 69 | `static void theBankReadsTheQuarter()` |  |
 
-### 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 4028-4398)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4041 | 8 | `static Bank lentOut(double capital, double book)` | A bank with one branch, this much capital and this much lent - equity is the capital, its cash what it lent past it. |
-| 4051 | 5 | `static java.util.Map<String, double[]> owing(String sector, double principal, double assets)` | The sectors' positions as the bank's provide() reads them: one sector, owing this against these assets. |
-| 4057 | 341 | `static void theBankAsABusinessWithItsCapital()` |  |
-
-### 10. the bank pays for the city's paper (2026-09-21) (lines 4399-4646)
+### 19. THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) (lines 3007-3229)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4453 | 193 | `static void theBankPaysForTheCitysPaper() throws Exception` |  |
+| 3050 | 179 | `static void theBranchesByTheirCustomers() throws Exception` |  |
 
-### 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) (lines 4647-4825)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4665 | 160 | `static void theTabDrawsEachRateInItsParts() throws Exception` |  |
-
-### THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) (lines 4826-4992)
+### 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) (lines 3230-3382)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4846 | 12 | `static Bank bookOf(double scale, int k)` | A bank built by hand whose books are of this scale, k giving each figure its fraction so that their sums round (BI1): no city, no save. |
-| 4860 | 9 | `static void fileYearAgo(Bank bank, double off)` | Files the bank's own sheet as the one a year ago, its lines `off` more than its equity line (a residual of `off`): the save's own path (restoreSheetYear). |
-| 4871 | 4 | `static void splitEquity(Bank bank, double off)` | Splits the bank's equity into paid in and retained, `off` more than equity makes: what a save carries (restoreEquitySplit), the preferred being nothing here. |
-| 4877 | 7 | `static boolean aBankOfNoSplitOrYear()` | A bank that has kept no split (a save from before the bank kept it) and no year of sheets reads both as adding up. |
-| 4885 | 107 | `static void theIntegrityCardsReadTheBooksSize()` |  |
+| 3249 | 133 | `static void theDeskIsHeldToTheBanksCapital()` |  |
 
-### THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) (lines 4993-5131)
+### 13. WHAT THE BANK TAB READS (0.7.9) (lines 3383-3986)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5014 | 22 | `static double[] movementFigures(double scale, int k, double out)` | The seventeen figures of a movement by hand, in the record's order (opening ... |
-| 5037 | 3 | `static Bank.EquityMovement movementFrom(double[] f)` |  |
-| 5041 | 1 | `static Bank.EquityMovement movementOf(double scale, int k, double out)` |  |
-| 5046 | 85 | `static void theEquityMovementAlertReadsTheMovementsSize()` |  |
+| 3399 | 587 | `static void whatTheBankTabReads() throws Exception` |  |
+
+### 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 3987-4364)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4000 | 8 | `static Bank lentOut(double capital, double book)` | A bank with one branch, this much capital and this much lent - equity is the capital, its cash what it lent past it. |
+| 4010 | 5 | `static java.util.Map<String, double[]> owing(String sector, double principal, double assets)` | The sectors' positions as the bank's provide() reads them: one sector, owing this against these assets. |
+| 4016 | 348 | `static void theBankAsABusinessWithItsCapital()` |  |
+
+### 10. the bank pays for the city's paper (2026-09-21) (lines 4365-4612)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4419 | 193 | `static void theBankPaysForTheCitysPaper() throws Exception` |  |
+
+### 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) (lines 4613-4791)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4631 | 160 | `static void theTabDrawsEachRateInItsParts() throws Exception` |  |
+
+### THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) (lines 4792-4958)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4812 | 12 | `static Bank bookOf(double scale, int k)` | A bank built by hand whose books are of this scale, k giving each figure its fraction so that their sums round (BI1): no city, no save. |
+| 4826 | 9 | `static void fileYearAgo(Bank bank, double off)` | Files the bank's own sheet as the one a year ago, its lines `off` more than its equity line (a residual of `off`): the save's own path (restoreSheetYear). |
+| 4837 | 4 | `static void splitEquity(Bank bank, double off)` | Splits the bank's equity into paid in and retained, `off` more than equity makes: what a save carries (restoreEquitySplit), the preferred being nothing here. |
+| 4843 | 7 | `static boolean aBankOfNoSplitOrYear()` | A bank that has kept no split (a save from before the bank kept it) and no year of sheets reads both as adding up. |
+| 4851 | 107 | `static void theIntegrityCardsReadTheBooksSize()` |  |
+
+### THE EQUITY-MOVEMENT ALERT READS THE MOVEMENT'S SIZE (BI2, 2026-11-20) (lines 4959-5097)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4980 | 22 | `static double[] movementFigures(double scale, int k, double out)` | The seventeen figures of a movement by hand, in the record's order (opening ... |
+| 5003 | 3 | `static Bank.EquityMovement movementFrom(double[] f)` |  |
+| 5007 | 1 | `static Bank.EquityMovement movementOf(double scale, int k, double out)` |  |
+| 5012 | 85 | `static void theEquityMovementAlertReadsTheMovementsSize()` |  |
 

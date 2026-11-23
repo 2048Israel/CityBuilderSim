@@ -382,6 +382,8 @@ public final class CreditCrunchCheck {
         for (Month r : months) {
             if (r.rationed) rationed++;
             if (!r.keepGoing && r.growth > 0 && !Double.isInfinite(r.growth)) inBand++;
+            else out.printf(Locale.ROOT, "   out-of-band fixture at m%d: growth %.12g, keepGoing %s, leverage %.12g of %.12g%n",
+                    r.month, r.growth, r.keepGoing, r.ratio, r.target);
             if (r.asked > 0) asking++;
             if (r.shortOfCapital) shortMonths++;
         }

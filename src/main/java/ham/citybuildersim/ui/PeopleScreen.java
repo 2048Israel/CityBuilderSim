@@ -2978,7 +2978,7 @@ final class PeopleScreen {
             + "fees and the shopping.";
 
     /** The order a household pays in, and what happens when it comes up short: the verdict's (i). */
-    static final String PAID_IN_ORDER = "The order is fixed: the payslip first, then rent, then the fees, and "
+    static final String PAID_IN_ORDER = "The order is fixed: the payslip first, then rent, then the fees and the card minimum, and "
             + "the shop takes what is left. A household short of the last one "
             + "spends its savings, then borrows — at a rate that climbs with what "
             + "it already owes — and only when both are gone does it eat less. "
@@ -3189,6 +3189,9 @@ final class PeopleScreen {
     /** The books' pane as last drawn, for the scroll to hold the panel at the top of the view. */
     private Books books;
 
+    /** HC2's survey filters persist with this page, independently of the open household. */
+    final HouseholdDebtPanel debtPanel = new HouseholdDebtPanel();
+
     /** Whether the scroll listener is on the menu's scroller yet: once, for the window's life. */
     private boolean booksHooked = false;
 
@@ -3261,8 +3264,21 @@ final class PeopleScreen {
                 Kept.scope("put by head", () -> sectionHead("WHAT THEY HAVE PUT BY", hint("every household together"))),
                 Kept.scope("put by", () -> putByCards(bal)));
         page.getChildren().addAll(Kept.scope("put by chips", () -> putByChips(bal, families)));
+        page.getChildren().addAll(
+                Kept.scope("debt head", () -> sectionHead("HOUSEHOLD DEBT", hint("who carries a balance, and who struggles to pay"))),
+                Kept.scope("debt", this::debtCard));
 
         ui.setPage(page);
+    }
+
+    /** HC2: the current month or latest annual survey, by tier, stage and counting unit. */
+    VBox debtCard() {
+        VBox c = card(6);
+        c.getChildren().add(debtPanel.draw(ui.game, this::showHouseholdMenu, false));
+        VBox table = detailsOpen.contains("debt")
+                ? Kept.scope("debt table", () -> debtPanel.table(debtPanel.snapshot(ui.game))) : null;
+        c.getChildren().add(details("debt", "by debt kind, with income and payment burdens", table));
+        return c;
     }
 
     /** The four money vitals as a bar, centred. */
@@ -3626,8 +3642,8 @@ final class PeopleScreen {
         double cutOff = 0, lockedOut = 0;
         Household worst = null;
         for (Household c : bal.cells()) {
-            if (c.isLockedOut()) lockedOut += c.households();
-            else if (c.isCutOff()) cutOff += c.households();
+            lockedOut += c.households() * c.shutOut();
+            if (c.isCutOff()) cutOff += c.households() * (1 - c.shutOut());
             if ((c.isLockedOut() || c.isCutOff()) && c.households() >= .5
                     && (worst == null || c.households() > worst.households())) worst = c;
         }
@@ -4264,6 +4280,11 @@ final class PeopleScreen {
 
         panel.getChildren().add(statementLine("Owed to lenders", costMoney(owe),
                 own.debt() > 0 ? Palette.BAD : null));
+        panel.getChildren().add(statementLine("Holding a card balance / behind on payments",
+                String.format("%.2f%% / %.2f%%", 100 * own.revolving(), 100 * own.lateShare())));
+        panel.getChildren().add(statementLine("Minimum payment due this month", costMoney(toDollars(own.minimumDue()))));
+        panel.getChildren().add(statementLine("...minimum principal paid", tightMoney(toDollars(own.minimumPaid()), false)));
+        panel.getChildren().add(statementLine("Unexpected bills paid", costMoney(toDollars(own.emergencyBill()))));
         if (own.debt() > 0) {
             panel.getChildren().add(statementLine(
                     String.format("Interest at %.1f%% a year", own.rate() * 100),
@@ -4277,9 +4298,9 @@ final class PeopleScreen {
             panel.getChildren().add(statementLine("...paid off this month",
                     tightMoney(toDollars(own.repaid()), false), Palette.GOOD));
         }
-        if (own.bankrupt() > .005) {
+        if (own.cardWrittenOff() > .005) {
             panel.getChildren().add(statementLine("...written off this month",
-                    tightMoney(toDollars(own.bankrupt()), false), Palette.BAD));
+                    tightMoney(toDollars(own.cardWrittenOff()), false), Palette.BAD));
         }
 
         /*
@@ -4291,8 +4312,7 @@ final class PeopleScreen {
          */
         double room = toDollars(own.creditRoom(own.disposable()));
         panel.getChildren().add(statementLine("Room still to borrow",
-                own.isLockedOut() ? "none - locked out" : tightMoney(room, false),
-                own.isLockedOut() ? Palette.BAD : room > .5 ? null : Palette.WARN));
+                tightMoney(room, false), room > .5 ? null : Palette.WARN));
 
         if (own.studentDebt() > 0) {
             panel.getChildren().add(statementLine("Student loan outstanding",
@@ -4458,9 +4478,9 @@ final class PeopleScreen {
 
         if (own.isLockedOut()) {
             panel.getChildren().add(note(String.format(
-                    "Discharged: nothing will lend to them for another %d month%s, and what "
-                    + "they cannot pay for they go without.",
-                    own.lockout(), own.lockout() == 1 ? "" : "s")));
+                    "%.2f%% of this cell is excluded from card credit after a charge-off. "
+                    + "The excluded share returns over a year; neighbours retain their own access.",
+                    100 * own.shutOut())));
         } else if (own.isCutOff()) {
             panel.getChildren().add(note(
                     "At the credit ceiling: what they cannot fund, they go without."));

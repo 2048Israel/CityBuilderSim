@@ -363,7 +363,8 @@ public class HouseholdStageCheck {
             HouseholdBalance books = game.getHouseholdBalance();
             double youngHouseholds = 0;
             for (Household c : books.cells()) {
-                if (c instanceof WorkingHousehold w && w.stage() == young) youngHouseholds += c.households();
+                if (c instanceof WorkingHousehold w && w.stage() == young)
+                    youngHouseholds += c.households() * (1 - c.bankruptcyLeaving);
             }
             double share = game.getCohorts().promotedShare(young);
             quietly(() -> game.simulateMonths(1));

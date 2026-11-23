@@ -162,18 +162,18 @@ public class ExchangeCheck {
         return r;
     }
 
-    /** Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. */
+    /** A hundred debt-free savers at the exchange boundary, with the stated take-home and cash. */
     static HouseholdBalance savers(double savedEach, double takeHome) {
         HouseholdBalance hb = new HouseholdBalance();
         hb.seedConstants(TODAYS_DOLLAR);
         double[][] mix = new double[FamilyStructure.values().length][PayTier.values().length];
         mix[FamilyStructure.COUPLE.ordinal()][PayTier.UNSKILLED.ordinal()] = 100;
-        double[] income = new double[HouseholdBalance.ROWS];
-        income[PayTier.UNSKILLED.ordinal()] = 100 * takeHome;
-        double[] none = new double[HouseholdBalance.ROWS];
-        double[] spent = new double[HouseholdBalance.ROWS];
-        hb.advanceMonth((s, t) -> mix[s.ordinal()][t.ordinal()], income, 0, none, spent, .25, .05, 1);
-        hb.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED).savings = savedEach;
+        // Census the position without a preceding card/shock month: these
+        // cases start from savers, rather than borrowers whose cash alone was reset.
+        hb.censusOnly((shape, tier) -> mix[shape.ordinal()][tier.ordinal()]);
+        Household c = hb.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        c.disposable = takeHome;
+        c.savings = savedEach;
         return hb;
     }
 
@@ -1065,11 +1065,12 @@ public class ExchangeCheck {
         double[] pay6 = new double[HouseholdBalance.ROWS];
         pay6[PayTier.UNSKILLED.ordinal()] = 100 * 4.0;
         pay6[PayTier.SKILLED.ordinal()] = 100 * 4.0;
-        two.advanceMonth((s, t) -> mix6[s.ordinal()][t.ordinal()], pay6, 0, none, none, .25, .05, 1);
+        two.censusOnly((s, t) -> mix6[s.ordinal()][t.ordinal()]);
+        for (Household c : two.cells()) if (c.households() > 0) c.disposable = 4;
         Household poor = two.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household rich = two.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
         poor.savings = 12;                                   // at its cushion: nothing to rebalance at the step
-        rich.savings = 100;
+        rich.savings = 1_000; // a bid deep enough at the current card-priced reservation
         // It earns what it pays out, $480 a year on 10,000 shares (4.8%), and is worth $1 a share: the rest of that is money past its cushion (EM1).
         Equity reg6 = withPaid(RETAIL, 40, 40);
         reg6.listIfUnlisted(RETAIL, 10_000, two);            // the founders: fifty shares a household
@@ -1083,7 +1084,12 @@ public class ExchangeCheck {
         close("fixture: ...at the market, fair value", ex6.bestBid(RETAIL), 1.0, 1e-12);
         two.setMarket(ex6, reg6, dead);
         double[] shop6 = new double[HouseholdBalance.ROWS];
-        shop6[PayTier.UNSKILLED.ordinal()] = 100 * 18.0;     // $18k on $4k of pay and $12k saved: $2k short each
+        // Cause a pure $2k ordinary shortfall through the month's inputs.
+        // No cash and no income leave exactly that gap, without a separate
+        // income-scaled emergency bill or a distributed buffer to draw first.
+        poor.savings = 0;
+        pay6[PayTier.UNSKILLED.ordinal()] = 0;
+        shop6[PayTier.UNSKILLED.ordinal()] = 100 * 2.0;
         shop6[PayTier.SKILLED.ordinal()] = 100 * 1.0;
         double richShares = rich.shares(RETAIL), poorShares = poor.shares(RETAIL);
         two.advanceMonth((s, t) -> mix6[s.ordinal()][t.ordinal()], pay6, 0, none, shop6, .25, .05, 1);
@@ -1106,7 +1112,8 @@ public class ExchangeCheck {
         out.println("\n--- 6b. a cell over its target sells HOME_SPEED of the excess to a cell under it, which buys OUT_SPEED of the gap ---");
 
         HouseholdBalance two2 = new HouseholdBalance();
-        two2.advanceMonth((s, t) -> mix6[s.ordinal()][t.ordinal()], pay6, 0, none, none, .25, .05, 1);
+        two2.censusOnly((s, t) -> mix6[s.ordinal()][t.ordinal()]);
+        for (Household c : two2.cells()) if (c.households() > 0) c.disposable = 4;
         Household under = two2.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household over = two2.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
         Equity reg6b = withPaid(RETAIL, 40, 40);             // as above: $480 a year, worth $1 a share

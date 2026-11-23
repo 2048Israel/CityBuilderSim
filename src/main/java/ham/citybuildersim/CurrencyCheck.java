@@ -826,6 +826,8 @@ public class CurrencyCheck {
         PriceIndex prices = city.getPriceIndex();
         double[] saved = prices.toSaveArray();
         int seen = (int) Math.round(saved[4]);
+        out.printf("   restored-rule fixture at m%d: %d indexed months, %d until a rate, hasRate=%s%n",
+                city.getMonth(), seen, prices.monthsUntilRate(), prices.hasRate());
         double now = saved[5 + (seen - 1) % PriceIndex.WINDOW];
         saved[5 + seen % PriceIndex.WINDOW] = now / 1.45;
         prices.restore(saved);

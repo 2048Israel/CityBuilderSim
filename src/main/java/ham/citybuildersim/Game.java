@@ -4665,6 +4665,9 @@ public class Game {
             double feeEach = householdBalance.getAccountFee();
             bank.setCustomers(feeEach > 0 ? householdBalance.totalAccountFees() / feeEach : 0);
             bank.bookLoanFees(householdBalance.totalLoanFees());
+            // HC1: the bill settled in the household waterfall has one seller.
+            getSectors().businessServices().sellHouseholdEmergencies(householdBalance.totalEmergencyBills(),
+                    tax.effectiveSalesRate(Sectors.BUSINESS_SERVICES));
 
             /*
              * THE PEOPLE OUTSIDE THE FAMILIES' MONTH, on the city's side.
@@ -15877,8 +15880,8 @@ public class Game {
          * the month's migration rather than folded into it, because it is a
          * push from the balance sheet and has nothing to say about wages.
          */
-        migration.setBankruptcyDepartures(householdBalance.getLeavingCity()
-                * Math.max(1, families.averageHouseholdSize()));
+        HouseholdBalance.BankruptcyDepartures discharged = householdBalance.prepareBankruptcyDepartures(cohorts);
+        migration.setBankruptcyDepartures(discharged.people());
 
         /*
          * ...and what a flat costs here, which is a PULL rather than a push and
@@ -15901,7 +15904,7 @@ public class Game {
         // arrivals are drawn from. A city founded the default way holds none and draws from WageBand's ceilings alone, as it always did.
         migration.setYearMix(foundedUnfitted() ? ArrivalMix.at(month) : null);
 
-        cohorts.migrate(migration.monthlyNet(
+        double netMigration = migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),
                 getHouseholdCapacity(),
@@ -15914,7 +15917,9 @@ public class Game {
                 // ageing pyramid something to manage rather than merely endure.
                 seniorCoverage,
                 labourMarket,
-                populationManager));
+                populationManager);
+        discharged = householdBalance.limitBankruptcyDepartures(discharged, migration.getLastBankruptcyDepartures());
+        cohorts.migrate(netMigration, discharged);
 
         population = populationManager.applyPopulation(
                 Math.round(cohorts.total()), adultsAlreadyHere);
@@ -16504,6 +16509,9 @@ public class Game {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
         householdBalance.setRentShares(this::rentShareOf);
         householdBalance.setHousedShares(this::housedShareOf);
+        householdBalance.setCarAssetPrice(() -> motoring.getUsedCarPrice() > 0 ? motoring.getUsedCarPrice()
+                : getMarkets().get(Good.CARS).getLocalPrice() * HouseholdBalance.USED_CAR_FLOOR);
+        householdBalance.setAssetExchangeRate(() -> this.foreign.getRate());
         householdBalance.setOutsideDependants(this::outsideDependantsOf);
         // The owner line (BO1) runs in a city by its dial, on since BO1-S; a bare fixture, which never switches it, grants the founders' shares by grown-ups.
         householdBalance.setOwnerLine(OwnerHousehold.IN_CITIES);
@@ -18736,24 +18744,28 @@ public class Game {
 
     /**
      * THE BANK BUYS THE HOUSEHOLDS' PAPER (0.7.1), for the waterfall, the
-     * spread gone, or a household on its way out of the city: this much face
-     * for this much cash, off every piece's household share pro rata, onto
+     * spread gone, or a household on its way out of the city: the fraction
+     * face / heldBefore for this much cash, off each line's household face, onto
      * the bank's book with the unearned discount riding on it. The cash
      * leaves the bank's pool for a household - declared by MoneyAudit as
      * "- desk PaperBoughtFromHouseholds".
      */
-    private void desksBuysHouseholdPaper(double face, double cash) {
+    private void desksBuysHouseholdPaper(double face, double cash, double heldBefore) {
         double held = debtManager.householdPrincipal();
-        if (!(face > 0) || held <= 0) return;
-        double take = Math.min(face, held);
-        double unearned = 0;
+        if (!(face > 0) || !(heldBefore > 0) || held <= 0) return;
+        // The household ledger names the share sold. Apply that share to each
+        // line: repeated absolute subtractions otherwise leave old rounding on
+        // the register as a book of hundreds dwindles to a millionth of one.
+        // A real relative mismatch remains a mismatch; no register is reset.
+        double share = Math.min(1, face / heldBefore);
+        double take = 0, unearned = 0;
         // BD1: the book's figure and the carried one before any face moves, for the re-strike below.
         double carriedBefore = bank.getUnearnedDiscount(), bookBefore = debtManager.bankUnearnedDiscount();
         for (Debt d : debtManager.getDebt()) {
             double mine = d.householdPrincipal();
             if (mine <= 0) continue;
-            double off = mine >= held ? take : take * mine / held;
-            off = Math.min(off, mine);
+            double off = share >= 1 ? mine : mine * share;
+            take += off;
             unearned += d.pass(Debt.Holder.HOUSEHOLDS, Debt.Holder.BANK, off);
         }
         bank.buyPaperFromHouseholds(cash, take, unearned);

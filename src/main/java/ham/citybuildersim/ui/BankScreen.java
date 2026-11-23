@@ -1357,7 +1357,7 @@ final class BankScreen {
                 .ticks(List.of(prime))
                 .info(anyFamily
                         ? String.format("%s on prime, on average: their line starts at %s and adds %.2f points for "
-                                + "every month of income a family owes.", points(l.overPrime(families)),
+                                + "every month of income a cardholder owes.", points(l.overPrime(families)),
                                 ratePerYear(l.household()), HouseholdBalance.RISK_SLOPE * 100)
                         : "What a family's credit line starts from - no family owes it anything, so the bar is "
                           + "outlined: a quote nobody pays.")
@@ -3012,7 +3012,7 @@ final class BankScreen {
                         + "never catches up is discharged - the bank loses all of it.", null),
                 big(m(bank.getHouseholdBook()), Palette.TEXT_HEAD),
                 line("owed on their credit lines"),
-                cardLine(String.format("...by families owing more than %.0f months of their income", Bank.HOUSEHOLD_WATCH_MONTHS),
+                cardLine("...by families late on their card minimums",
                         mFull(bank.getHouseholdWatchedDebt()), bank.getHouseholdWatchedDebt() > 0 ? Palette.WARN : null),
                 cardLine("Stage", bank.getHouseholdStage() == 2 ? "2 - some are in trouble" : "1 - every family sound",
                         bank.getHouseholdStage() == 2 ? Palette.WARN : null),

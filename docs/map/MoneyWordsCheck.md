@@ -1,4 +1,4 @@
-# MoneyWordsCheck.java - 492 lines · 19 methods · 5 constants · harnesses
+# MoneyWordsCheck.java - 522 lines · 19 methods · 5 constants · harnesses
 
 `ham/citybuildersim/MoneyWordsCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -23,7 +23,7 @@
 > The city is the playtest's village founded by hand with the money (LongPlaytest.founding() and its first builds) and played
 > MONTHS months, no more: the pages need figures, not a history.
 
-**Uses:** [KeptBench](KeptBench.md) (20), [PayTier](PayTier.md) (15), [LongPlaytest](LongPlaytest.md) (14), [FamilyStructure](FamilyStructure.md) (11), [Currency](Currency.md) (10), [Game](Game.md) (9), [Household](Household.md) (7), [AdultStage](AdultStage.md) (6), [ExchangeCheck](ExchangeCheck.md) (5), [Exchange](Exchange.md) (4), [OrderBook](OrderBook.md) (4), [Money](Money.md) (4), [GameFiles](GameFiles.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [FamilyModel](FamilyModel.md) (2), [Equity](Equity.md) (2), [FundLedgerCheck](FundLedgerCheck.md) (2), [Founding](Founding.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [KeptCheck](KeptCheck.md) (1), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [Bank](Bank.md) (1), [DebtManager](DebtManager.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [KeptBench](KeptBench.md) (20), [PayTier](PayTier.md) (17), [LongPlaytest](LongPlaytest.md) (14), [FamilyStructure](FamilyStructure.md) (11), [Currency](Currency.md) (10), [Game](Game.md) (9), [DebtStatistics](DebtStatistics.md) (9), [Household](Household.md) (7), [AdultStage](AdultStage.md) (6), [ExchangeCheck](ExchangeCheck.md) (5), [Money](Money.md) (5), [Exchange](Exchange.md) (4), [OrderBook](OrderBook.md) (4), [GameFiles](GameFiles.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [FamilyModel](FamilyModel.md) (2), [Equity](Equity.md) (2), [FundLedgerCheck](FundLedgerCheck.md) (2), [Founding](Founding.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [KeptCheck](KeptCheck.md) (1), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [Bank](Bank.md) (1), [DebtManager](DebtManager.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 ## Sections
 
@@ -53,14 +53,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 438 | **type** `public class MoneyWordsCheck` | The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). |
+| 55 | 468 | **type** `public class MoneyWordsCheck` | The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). |
 | 59 | 1 | `static void check(String label, boolean ok)` |  |
 | 61 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 81 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
 | 88 | 1 | `static Currency krona()` | The Krona: the money of section 2's city, written "2.6M kr". |
 | 91 | 24 | `static Game city(String label, Currency money)` | The playtest's village founded with `money` (the founding's own when null), its first builds and months played, the game's narration off. |
 
-### reading the words (lines 116-492)
+### reading the words (lines 116-522)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -76,7 +76,7 @@
 | 265 | 4 | `static String showing(String s, int at)` | A string for a line: where the stray sign is, a window of it, its newlines shown. |
 | 270 | 16 | `public static void main(String[] args) throws Exception` |  |
 | 287 | 44 | `static void run() throws Exception` |  |
-| 333 | 144 | `static void householdMoney() throws Exception` | HS3: initial census/stocks, then native estates, fills and dividends; no displayed result is assigned. |
-| 478 | 5 | `static Set<String> pageWords(KeptBench bench)` |  |
-| 484 | 8 | `static boolean lineShows(KeptBench bench, String label, String amount)` |  |
+| 333 | 174 | `static void householdMoney() throws Exception` | HS3: initial census/stocks, then native estates, fills and dividends; no displayed result is assigned. |
+| 508 | 5 | `static Set<String> pageWords(KeptBench bench)` |  |
+| 514 | 8 | `static boolean lineShows(KeptBench bench, String label, String amount)` |  |
 

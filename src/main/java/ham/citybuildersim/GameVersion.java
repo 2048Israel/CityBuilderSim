@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.189";
+    public static final String VERSION = "0.9.190";
 
     /**
      * The save shape.
@@ -8361,7 +8361,10 @@ public final class GameVersion {
      * immediately, instead of 69/1.22 and 500/1.22. Next month's selection
      * repairs it too late. The floor rises with the format; no conversion.
      */
-    public static final int SAVE_FORMAT = 61;
+    // HC1 follows shipped RES2 format 61: the old card balance has no holder,
+    // late/excluded or debt-free departure positions. That old cell layout
+    // would read wrongly, so format and floor move together to 62; no conversion.
+    public static final int SAVE_FORMAT = 62;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8421,7 +8424,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 61;
+    public static final int OLDEST_LOADABLE_FORMAT = 62;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
