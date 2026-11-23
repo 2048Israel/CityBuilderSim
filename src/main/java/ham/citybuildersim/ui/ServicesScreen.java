@@ -2813,8 +2813,8 @@ final class ServicesScreen {
         // The water's; the road's statement went with its row (0.7.29: Infrastructure › Roads has it).
         double worksPower = uh.getWaterPowerPerUnit();
         return column(statementLine("Price per unit", cash(uh.getPricePerWaterUnit())),
-                // ...and the works' power in it, when the month struck some (PW1-W): their draw at the market's price over the water delivered.
-                worksPower != 0 ? Kept.scope("water price power", () -> statementLine("...of which the works' power", cash(worksPower))) : null,
+                // ...and the sea works' power in it, while the sea is needed (PW1-W): their draw at the market's price over the water the sea delivered.
+                worksPower != 0 ? Kept.scope("water price power", () -> statementLine("...of which the sea works' power", cash(worksPower))) : null,
                 statementLine("Residents", people(uh.getResidentWaterDraw()) + " units"),
                 statementLine("Buildings", people(uh.getBuildingWaterDraw()) + " units"),
                 statementTotal("Total draw", people(uh.getWaterConsumption()) + " units", null),

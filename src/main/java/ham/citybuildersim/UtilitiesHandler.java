@@ -93,8 +93,8 @@ public class UtilitiesHandler {
      *
      * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      * Since PW1-W the water's tariff before its works' power: the price a unit is
-     * this and the power of the dearest works the month needs, over the water that
-     * works delivers (THE WATER'S POWER, below).
+     * this and, while the sea's water is needed, the sea works' power over the water
+     * the sea delivers (THE WATER'S POWER, below).
      */
     private double pricePerWaterUnit = .05 * PriceLevel.FACTOR;
 
@@ -534,27 +534,28 @@ public class UtilitiesHandler {
      * The water works (the Water Treatment Plants, the Desalination Plants) drew their power as the city's own buildings, billed to
      * nobody: PW1 then billed every customer at the merit order's price and both wires while the water still sold at its constant tariff,
      * so a Desalination Plant's 10,880 kW cost more than its water earned and a patented one earned no licence (PublicLicenceCheck 5 and
-     * 6, REV-PW1c). Now the water is priced as PW1 prices power, at its margin: the city's water comes first from the founding wells
-     * (no power), then the fresh works, then the sea's (the order updateWaterRatio() and waterOutput() already make it in), and the
-     * water's price a unit is its tariff and the power of the dearest works the month needs, over the water that works delivers: its
-     * draw, whole, at the commerce price of the book struck (energy and both wires, what BuildAdvice costs the city's works at), so the
-     * water of the works at the margin covers its power, and a cheaper works' water earns the rest. The water's books buy all the works'
-     * power of the power's books at that price, paid at the top of the next month with the fuel (Game.buyPowerFuel()), inside the
-     * treasury's pool: the power's books take what the water's pay, so the utilities' net moves by nothing, and what reaches the treasury
-     * is the customers' water bills, which carry it. The draw is whole, not at the month's ratio: a short grid rations the works' power
-     * but not their water (updateWaterRatio() reads the staffing fill alone), so the water they make is costed at the power it needs.
+     * 6, REV-PW1c). Now the sea's water is priced as PW1 prices power, at its margin. The city's water is of two kinds, the land's (the
+     * founding wells and the fresh works) first and then the sea's, the order updateWaterRatio() and waterOutput() already make it in.
+     * While the sea's water is needed, the price a unit is the tariff and the sea works' draw, whole, at the commerce price of the book
+     * struck (energy and both wires, what BuildAdvice costs the city's works at), over the water the sea delivers: the water at the
+     * margin covers its works' power, and the land's water earns the rest. While the land's water serves, the price is the tariff, which
+     * pays the fresh works' power (900 kW for their 60,000 units, against the sea's 10,880): their draw put on top would land on the
+     * water a works the city has just outgrown its wells for delivers, and in SubstationCheck's works town even spread over the land's
+     * water, the wells' included, it is 1.43 times the tariff and prices the coal chain out (PW5-F1). The water's books buy all the
+     * works' power, the land's and the sea's, of the power's books at that commerce price, paid at the top of the next month with the
+     * fuel (Game.buyPowerFuel()), inside the treasury's pool: the power's books take what the water's pay, so the utilities' net moves by
+     * nothing, and what reaches the treasury is the customers' water bills. The draw is whole, not at the month's ratio: a short grid
+     * rations the works' power but not their water (updateWaterRatio() reads the staffing fill alone), so the water they make is costed
+     * at the power it needs.
      */
 
     /** kW the fresh works and the sea's works draw from the grid, standing (ServicesManager, the WATER category's power bought). */
     private double freshWorksDraw, seaWorksDraw;
 
-    /** One update's water works: their draw (kW) and the water each kind delivered (units), the founding wells' first, then the fresh, then the sea's. */
-    public record WaterDraw(double freshKw, double seaKw, double freshDelivered, double seaDelivered) {
-        /** The draw of the dearest works the month needs, over the water it delivers; 0 when the wells alone serve the demand. */
-        double marginalKwPerUnit() {
-            if (seaDelivered > 0) return seaKw / seaDelivered;
-            return freshDelivered > 0 ? freshKw / freshDelivered : 0;
-        }
+    /** One update's water works: their draw (kW), and the water each kind delivered (units): the land's, the founding wells' and the fresh works', first, then the sea's. */
+    public record WaterDraw(double freshKw, double seaKw, double landDelivered, double seaDelivered) {
+        /** The sea works' draw over the water the sea delivers, while it delivers; 0 while the land's water serves, its tariff paying its works' power. */
+        double marginalKwPerUnit() { return seaDelivered > 0 ? seaKw / seaDelivered : 0; }
     }
 
     /** The update last made, what the month's water is priced on, and the one a load brings back (restorePendingPower()). */
@@ -573,7 +574,7 @@ public class UtilitiesHandler {
     /** The last update's water works; null before the first update. */
     public WaterDraw getLatestWaterDraw() { return latestWater; }
 
-    /** The water's power a unit: the dearest needed works' draw over the water it delivers, at the struck commerce price; 0 before any update. */
+    /** The water's power a unit: the sea works' draw over the water the sea delivers, at the struck commerce price; 0 while the land's water serves and before any update. */
     public double getWaterPowerPerUnit() { return latestWater == null ? 0 : latestWater.marginalKwPerUnit() * struck.commercePrice; }
 
     /** All the water works' power at the struck commerce price, what the water's books owe the power's for the month of the last update. */
@@ -1099,11 +1100,10 @@ public class UtilitiesHandler {
         waterRatio = (waterConsumption > 0)
                 ? Math.min(waterProduction / waterConsumption, 1)
                 : 1;
-        // ...and the month's water works, which price the month's water (PW1-W, THE WATER'S POWER): the founding wells' water first, then
-        // the fresh works', then the sea's, each kind's delivered the demand it takes past the kinds before it.
-        double served = Math.min(waterConsumption, waterProduction), withoutSea = Math.min(waterConsumption, waterProduction - desalOutput);
-        double wellsAlone = Math.min(waterConsumption, waterProduction - desalOutput - freshDrawn);
-        latestWater = new WaterDraw(freshWorksDraw, seaWorksDraw, Math.max(0, withoutSea - wellsAlone), Math.max(0, served - withoutSea));
+        // ...and the month's water works, which price the month's water (PW1-W, THE WATER'S POWER) while the sea's is needed: the land's water first, the wells'
+        // and the fresh works', then the sea's, each kind's delivered the demand it takes past the kind before it.
+        double served = Math.min(waterConsumption, waterProduction), land = Math.min(waterConsumption, waterProduction - desalOutput);
+        latestWater = new WaterDraw(freshWorksDraw, seaWorksDraw, Math.max(0, land), Math.max(0, served - land));
     }
 
     /**
