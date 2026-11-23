@@ -1,4 +1,4 @@
-# GatewayCheck.java - 1,487 lines · 49 methods · 16 constants · harnesses
+# GatewayCheck.java - 1,495 lines · 49 methods · 16 constants · harnesses
 
 `ham/citybuildersim/GatewayCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >  16. THE LINE TO THE WORLD LEAVES ON LAND, ON A GENERATED COAST (FX2): a
 > ... (73 more lines in the source)
 
-**Uses:** [CityMap](CityMap.md) (105), [CityRuns](CityRuns.md) (101), [World](World.md) (55), [Gateways](Gateways.md) (52), [MapCheck](MapCheck.md) (42), [LandMap](LandMap.md) (37), [BuildingVisual](BuildingVisual.md) (27), [Founding](Founding.md) (17), [EarthData](EarthData.md) (12), [TrainSchedule](TrainSchedule.md) (11), [BuildingCatalog](BuildingCatalog.md) (3), [Ports](Ports.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [TrackCurves](TrackCurves.md) (2), [EarthTerrainCheck](EarthTerrainCheck.md) (2), [EarthTerrain](EarthTerrain.md) (2), [Mining](Mining.md) (2), [SeaRoutes](SeaRoutes.md) (1)
+**Uses:** [CityMap](CityMap.md) (108), [CityRuns](CityRuns.md) (101), [World](World.md) (55), [Gateways](Gateways.md) (52), [MapCheck](MapCheck.md) (42), [LandMap](LandMap.md) (37), [BuildingVisual](BuildingVisual.md) (27), [Founding](Founding.md) (17), [EarthData](EarthData.md) (12), [TrainSchedule](TrainSchedule.md) (11), [BuildingCatalog](BuildingCatalog.md) (3), [Ports](Ports.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [TrackCurves](TrackCurves.md) (2), [EarthTerrainCheck](EarthTerrainCheck.md) (2), [EarthTerrain](EarthTerrain.md) (2), [Mining](Mining.md) (2), [SeaRoutes](SeaRoutes.md) (1)
 
 **Used by (5):** [BridgeMapCheck](BridgeMapCheck.md), [IslandNetCheck](IslandNetCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -88,11 +88,11 @@
 | 545 | · 14. the world line |
 | 578 | · 15. the cache |
 | 611 | AP2: a link's search keeps every tile it reads |
-| 773 | FX2: the line to the world on land, the label in view, the undrawn highway |
-| 1059 | · the label (section 18) |
-| 1121 | · two lines leaving together (section 20) |
-| 1195 | · the highway that reaches no street (section 19) |
-| 1337 | · the trains where the line to the world is hard to find (section 22, TN1) |
+| 781 | FX2: the line to the world on land, the label in view, the undrawn highway |
+| 1067 | · the label (section 18) |
+| 1129 | · two lines leaving together (section 20) |
+| 1203 | · the highway that reaches no street (section 19) |
+| 1345 | · the trains where the line to the world is hard to find (section 22, TN1) |
 
 ## Constants
 
@@ -108,12 +108,12 @@
 | 175 | `GatewayCheck.HIGHWAYS` | `100, TRACKS = 10` | Highways and railway lines the section 23 city is laid with, as the large fixtures here (gatewayCity(types, 100, 10)). |
 | 178 | `GatewayCheck.HANDFUL` | `4` | How many tiles of the section 23 city are read plot by plot, both ways: a handful, spread over the city. |
 | 231 | `GatewayCheck.GROUND_BEFORE_SL1` | `{ 430_556, 2_368_060, 2_152_782, 107_639 }` | The four sea terminals' ground in square feet, ids 94-97, as it was before SL1 (2026-10-28, main at 0.8.66): a Tanker Terminal, a Bulk Terminal, a Container Terminal and a General Cargo Terminal. |
-| 760 | `GatewayCheck.LINK_DISTRICTS` | `1` | How many districts out from the hub section 23's link looks for a line (linkWay()'s `most`): one, the nearest ring of candidates. |
-| 1062 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
-| 1124 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.len...` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
-| 1340 | `GatewayCheck.HAUGESUND_LAT` | `59.4119, HAUGESUND_LON = 5.2775` | Section 22's Earth place: Haugesund, as the Earth's data names it, laid HAUGESUND_SIDE districts a side - its railway's arm runs south to the city's edge, and the land beyond is water within TrainSchedule.WORLD_PLOTS ... |
-| 1341 | `GatewayCheck.HAUGESUND_SIDE` | `4` |  |
-| 1344 | `GatewayCheck.TN1_DRY_IN` | `360_000, TN1_GENERAL_OUT = 120_000` | Tonnes a month for section 22's schedule, by Ports.Cargo: dry bulk landed and general cargo shipped, about Jerus's city's at month 1,204. |
+| 768 | `GatewayCheck.LINK_DISTRICTS` | `1` | How many districts out from the hub section 23's link looks for a line (linkWay()'s `most`): one, the nearest ring of candidates. |
+| 1070 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
+| 1132 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.len...` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
+| 1348 | `GatewayCheck.HAUGESUND_LAT` | `59.4119, HAUGESUND_LON = 5.2775` | Section 22's Earth place: Haugesund, as the Earth's data names it, laid HAUGESUND_SIDE districts a side - its railway's arm runs south to the city's edge, and the land beyond is water within TrainSchedule.WORLD_PLOTS ... |
+| 1349 | `GatewayCheck.HAUGESUND_SIDE` | `4` |  |
+| 1352 | `GatewayCheck.TN1_DRY_IN` | `360_000, TN1_GENERAL_OUT = 120_000` | Tonnes a month for section 22's schedule, by Ports.Cargo: dry bulk landed and general cargo shipped, about Jerus's city's at month 1,204. |
 
 ## Fields (state)
 
@@ -121,15 +121,15 @@
 |---:|---|---|
 | 151 | `static int fails` |  |
 | 198 | `final long x0, y0, x1, y1` |  |
-| 1199 | `final long x0, y0` |  |
-| 1200 | `final int w, h` |  |
-| 1201 | `final byte[] fixed, marks` |  |
+| 1207 | `final long x0, y0` |  |
+| 1208 | `final int w, h` |  |
+| 1209 | `final byte[] fixed, marks` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 149 | 1339 | **type** `public class GatewayCheck` | A city's gateway is the way the world is. |
+| 149 | 1347 | **type** `public class GatewayCheck` | A city's gateway is the way the world is. |
 | 180 | 4 | `static void check(String label, boolean ok)` |  |
 | 185 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 190 | 5 | `static void quietly(Runnable r)` |  |
@@ -147,68 +147,68 @@
 | 281 | 54 | `static void spineCase(int gateway, String toward, String opposite, boolean vertical, long siteX, long siteY, long cell)` | Lays a fresh spine toward `gateway` on a square box and proves the arm order: the toward arm first, the opposite arm only when it waits, and the opposite arm taken back first. |
 | 336 | 274 | `public static void main(String[] args)` |  |
 
-### AP2: a link's search keeps every tile it reads (lines 611-772)
+### AP2: a link's search keeps every tile it reads (lines 611-780)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 614 | 17 | `static long[][] onePlotATile(CityRuns.Ground g)` | One owned plot of every owned tile of the ground's box, in the order the tiles lie (rows from the north-west). |
 | 633 | 5 | `static int[] pass(CityRuns.Ground g, long[][] plots)` | What the ground reads at each plot, in order. |
 | 640 | 7 | `static int[] wholeTile(CityRuns.Ground g, long tx, long ty)` | What the ground reads at every plot of tile (tx, ty), row by row. |
-| 648 | 110 | `static void theLinksTiles()` |  |
-| 763 | 4 | `static boolean sameWay(CityRuns.LinkWay a, CityRuns.LinkWay b)` | Two planned ways are one way: the same start, line and legs (null, no way, is one only with null). |
-| 768 | 4 | `static boolean allOwned(int[] v)` |  |
+| 648 | 118 | `static void theLinksTiles()` |  |
+| 771 | 4 | `static boolean sameWay(CityRuns.LinkWay a, CityRuns.LinkWay b)` | Two planned ways are one way: the same start, line and legs (null, no way, is one only with null). |
+| 776 | 4 | `static boolean allOwned(int[] v)` |  |
 
-### FX2: the line to the world on land, the label in view, the undrawn highway (lines 773-1058)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 776 | 5 | `static String armText(CityRuns.Net n, int a)` | An arm as one line of text: its index, heading in degrees and end, or "none". |
-| 787 | 12 | `static int[] fr0Walk(CityMap m, CityRuns.Net n, int a)` | FR0's walk, written out: from net n's arm a's end (the hub while the arm has no steps) along its heading, up to CityMap.DISTRICT plots, to the first plot the city does not own. |
-| 801 | 10 | `static double nearestOnRoute(TrainSchedule.Route r, double x, double y)` | The least distance in plots from (x, y) to the route's polyline (FX5: a rounded route passes by its turns' points). |
-| 813 | 16 | `static int offTrack(World w, CityRuns runs, TrainSchedule.Route r, int[] samples)` | How many of a route's points, read every WORLD_STEP along each leg, lie on neither dry ground nor a plot the railway carries (track, track over a highway, a yard); the points read are in samples[0]. |
-| 837 | 91 | `static void worldLinesOnLand(String what, CityMap m)` | The checks every FX2 fixture runs: each of the map's world lines starts on a dry plot the city does not own, at the end of an arm's track within WORLD_GAP plots of it over the city's own dry ground, and runs out over ... |
-| 930 | 9 | `static long[] coastCounts(BuildingVisual.Type[] types)` | The coast fixture's counts: the shore's town with every track type's count times COAST_TRACK_TIMES and YARDS_ADDED more of each Rail Terminal. |
-| 941 | 39 | `static void coastSection()` | Section 16: the default world's founding site one district north, three districts a side, drawn canonically on its coast. |
-| 988 | 24 | `static void coastMonths()` | Section 16's coast over its months (FX2's "over a real run's months": the played city of MapCheck 1 lays no highway and no track in its 120): the same city from nothing, its counts rising evenly to coastCounts() over ... |
-| 1014 | 44 | `static void halifaxSection()` | Section 17: a square city at Jerus's founding site on the Earth, when earth-2.bin is named. |
-
-### the label (section 18) (lines 1059-1120)
+### FX2: the line to the world on land, the label in view, the undrawn highway (lines 781-1066)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1065 | 4 | `static boolean inView(double x, double y, double w, double h)` | Whether a label whose baseline starts at (x, y) lies inside a w x h view by LandMap.WORLD_LABEL_PAD on every side - the harness's own reading of the rule. |
-| 1071 | 5 | `static double offPart(double x, double y, double x0, double y0, double x1, double y1)` | How far (x, y) lies from the segment (x0, y0) to (x1, y1), in pixels. |
-| 1078 | 15 | `static void labelLeaving(String what, double x0, double y0, double x1, double y1)` | One line leaving the view: FR0's spot clips, and worldLabelAt() puts the label whole inside the view, its baseline's left end on the part, at the first place along it, from FR0's spot back, that fits. |
-| 1095 | 25 | `static void labelSection()` | Section 18: LandMap.worldLabelAt() on pure fixtures. |
+| 784 | 5 | `static String armText(CityRuns.Net n, int a)` | An arm as one line of text: its index, heading in degrees and end, or "none". |
+| 795 | 12 | `static int[] fr0Walk(CityMap m, CityRuns.Net n, int a)` | FR0's walk, written out: from net n's arm a's end (the hub while the arm has no steps) along its heading, up to CityMap.DISTRICT plots, to the first plot the city does not own. |
+| 809 | 10 | `static double nearestOnRoute(TrainSchedule.Route r, double x, double y)` | The least distance in plots from (x, y) to the route's polyline (FX5: a rounded route passes by its turns' points). |
+| 821 | 16 | `static int offTrack(World w, CityRuns runs, TrainSchedule.Route r, int[] samples)` | How many of a route's points, read every WORLD_STEP along each leg, lie on neither dry ground nor a plot the railway carries (track, track over a highway, a yard); the points read are in samples[0]. |
+| 845 | 91 | `static void worldLinesOnLand(String what, CityMap m)` | The checks every FX2 fixture runs: each of the map's world lines starts on a dry plot the city does not own, at the end of an arm's track within WORLD_GAP plots of it over the city's own dry ground, and runs out over ... |
+| 938 | 9 | `static long[] coastCounts(BuildingVisual.Type[] types)` | The coast fixture's counts: the shore's town with every track type's count times COAST_TRACK_TIMES and YARDS_ADDED more of each Rail Terminal. |
+| 949 | 39 | `static void coastSection()` | Section 16: the default world's founding site one district north, three districts a side, drawn canonically on its coast. |
+| 996 | 24 | `static void coastMonths()` | Section 16's coast over its months (FX2's "over a real run's months": the played city of MapCheck 1 lays no highway and no track in its 120): the same city from nothing, its counts rising evenly to coastCounts() over ... |
+| 1022 | 44 | `static void halifaxSection()` | Section 17: a square city at Jerus's founding site on the Earth, when earth-2.bin is named. |
 
-### two lines leaving together (section 20) (lines 1121-1194)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1127 | 4 | `static boolean clearOf(double[] a, double wa, double[] b, double wb, double gap)` | Whether two label boxes (baselines' left ends a and b, widths wa and wb, LABEL_H high above their baselines) are clear of each other by `gap` pixels, across or down - the harness's own reading of the rule. |
-| 1133 | 61 | `static void togetherSection()` | Section 20: two world lines leaving together. |
-
-### the highway that reaches no street (section 19) (lines 1195-1336)
+### the label (section 18) (lines 1067-1128)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1198 | 66 | **type** `static final class BoxFill` | A whole-box fill of a map's runs: the plots from (x0, y0), w x h, their codes and marks. |
-| 1203 | 10 | `BoxFill(CityMap m)` _(in GatewayCheck.BoxFill)_ |  |
-| 1215 | 3 | `boolean hw(int g)` _(in GatewayCheck.BoxFill)_ | Whether plot index g carries a highway (a railway over one included). |
-| 1220 | 5 | `long drawn()` _(in GatewayCheck.BoxFill)_ | Highway plots drawn. |
-| 1227 | 7 | `boolean rampOnCellLine(int g)` _(in GatewayCheck.BoxFill)_ | Whether plot g shows a ramp on a cell line: M_RAMP, and its coordinate along the highway (x on a row, y on a column) a multiple of CityRuns.CELL. |
-| 1236 | 27 | `long[] pieces()` _(in GatewayCheck.BoxFill)_ | {pieces of highway (8 neighbours), highway plots in a piece with no ramp on a cell line}. |
-| 1266 | 3 | `static long modelHighwayPlots(CityMap m)` | The highway plots the model has (its Elevated Highways' plots), as MapCheck counts them. |
-| 1271 | 4 | `static boolean hasHighwayLine(CityMap m)` | Whether a map has a world line for the highways. |
-| 1277 | 13 | `static void drawnWhole(String what, CityMap m)` | A reaching city's highways as the map draws them: every plot in a piece with a ramp on a cell line, and the drawn plots and the undrawn ones the model's. |
-| 1292 | 27 | `static void undrawnSection()` | Section 19: gatewayCity() with highways and no track. |
-| 1321 | 5 | `static CityMap readBack(CityMap m, byte[] sidecar, int month)` | A map read back from a sidecar, on the live map's ground, as section 12 reads one. |
-| 1328 | 8 | `static boolean sameStops(CityRuns a, CityRuns b)` | Whether every arm of both nets in two runs was last stopped by the same thing (CityRuns.Arm.stoppedBy). |
+| 1073 | 4 | `static boolean inView(double x, double y, double w, double h)` | Whether a label whose baseline starts at (x, y) lies inside a w x h view by LandMap.WORLD_LABEL_PAD on every side - the harness's own reading of the rule. |
+| 1079 | 5 | `static double offPart(double x, double y, double x0, double y0, double x1, double y1)` | How far (x, y) lies from the segment (x0, y0) to (x1, y1), in pixels. |
+| 1086 | 15 | `static void labelLeaving(String what, double x0, double y0, double x1, double y1)` | One line leaving the view: FR0's spot clips, and worldLabelAt() puts the label whole inside the view, its baseline's left end on the part, at the first place along it, from FR0's spot back, that fits. |
+| 1103 | 25 | `static void labelSection()` | Section 18: LandMap.worldLabelAt() on pure fixtures. |
 
-### the trains where the line to the world is hard to find (section 22, TN1) (lines 1337-1487)
+### two lines leaving together (section 20) (lines 1129-1202)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1354 | 73 | `static void trainsWithoutALine()` | Section 22 (TN1, 2026-11-21; Jerus: "trains no longer show up, they used too... |
-| 1434 | 53 | `static void coastAcrossASave()` | Section 21 (CC1-M): section 16's coast city built month by month to COAST_SAVED_AT, its sidecar written and read back, and the live map and the one read back reconciled together on to MapCheck.MONTHS and COAST_HELD mo... |
+| 1135 | 4 | `static boolean clearOf(double[] a, double wa, double[] b, double wb, double gap)` | Whether two label boxes (baselines' left ends a and b, widths wa and wb, LABEL_H high above their baselines) are clear of each other by `gap` pixels, across or down - the harness's own reading of the rule. |
+| 1141 | 61 | `static void togetherSection()` | Section 20: two world lines leaving together. |
+
+### the highway that reaches no street (section 19) (lines 1203-1344)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1206 | 66 | **type** `static final class BoxFill` | A whole-box fill of a map's runs: the plots from (x0, y0), w x h, their codes and marks. |
+| 1211 | 10 | `BoxFill(CityMap m)` _(in GatewayCheck.BoxFill)_ |  |
+| 1223 | 3 | `boolean hw(int g)` _(in GatewayCheck.BoxFill)_ | Whether plot index g carries a highway (a railway over one included). |
+| 1228 | 5 | `long drawn()` _(in GatewayCheck.BoxFill)_ | Highway plots drawn. |
+| 1235 | 7 | `boolean rampOnCellLine(int g)` _(in GatewayCheck.BoxFill)_ | Whether plot g shows a ramp on a cell line: M_RAMP, and its coordinate along the highway (x on a row, y on a column) a multiple of CityRuns.CELL. |
+| 1244 | 27 | `long[] pieces()` _(in GatewayCheck.BoxFill)_ | {pieces of highway (8 neighbours), highway plots in a piece with no ramp on a cell line}. |
+| 1274 | 3 | `static long modelHighwayPlots(CityMap m)` | The highway plots the model has (its Elevated Highways' plots), as MapCheck counts them. |
+| 1279 | 4 | `static boolean hasHighwayLine(CityMap m)` | Whether a map has a world line for the highways. |
+| 1285 | 13 | `static void drawnWhole(String what, CityMap m)` | A reaching city's highways as the map draws them: every plot in a piece with a ramp on a cell line, and the drawn plots and the undrawn ones the model's. |
+| 1300 | 27 | `static void undrawnSection()` | Section 19: gatewayCity() with highways and no track. |
+| 1329 | 5 | `static CityMap readBack(CityMap m, byte[] sidecar, int month)` | A map read back from a sidecar, on the live map's ground, as section 12 reads one. |
+| 1336 | 8 | `static boolean sameStops(CityRuns a, CityRuns b)` | Whether every arm of both nets in two runs was last stopped by the same thing (CityRuns.Arm.stoppedBy). |
+
+### the trains where the line to the world is hard to find (section 22, TN1) (lines 1345-1495)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1362 | 73 | `static void trainsWithoutALine()` | Section 22 (TN1, 2026-11-21; Jerus: "trains no longer show up, they used too... |
+| 1442 | 53 | `static void coastAcrossASave()` | Section 21 (CC1-M): section 16's coast city built month by month to COAST_SAVED_AT, its sidecar written and read back, and the live map and the one read back reconciled together on to MapCheck.MONTHS and COAST_HELD mo... |
 
