@@ -545,6 +545,8 @@ public class BuildAdviceCheck {
                 bm.addStack(mine, 1, true);
                 return bm.getStaffedSafetyCapacity(kind, fill) - before;
             }
+            case GRID:
+                return mine.getCapacity();
             case POWER: case WATER: {
                 // The utilities' generation, one more standing, at that building's own staffing.
                 return mine.getProduction1() * BuildAdvice.staffing(mine, fill);
@@ -647,6 +649,12 @@ public class BuildAdviceCheck {
         double[] fill = twin.getPopulationManager().getJobFillRate();
         BuildingManager bm = twin.getBuildingManager();
         switch (m.kind()) {
+            case GRID: {
+                UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
+                double carry = Math.max(u.getFoundingGridKw(), bm.getQuantity(Substations.ID) * Substations.SUBSTATION_MW * 1000);
+                double season = PowerDispatch.season(CityCalendar.monthOfYear(twin.getMonth()));
+                return u.getConsumption() * season * PowerDispatch.PLAN_PEAK / carry;
+            }
             case POWER: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
                 // PW1: the peak block's draw (PLAN_PEAK) over the production less what the standing wind does not deliver in its calmest half-block (WIND_FIRM).

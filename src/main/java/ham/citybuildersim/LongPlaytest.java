@@ -4533,18 +4533,30 @@ public class LongPlaytest {
         // ...and while ground the city owns lies across the water, the island is linked as the AutoBuilder links it (AL1): the same rule, BuildAdvice.linkFor().
         if (land.getOwnedSqFt() > 0 && land.getUsedShare() > most && land.getLandmasses().anyUnlinked()) linkIslands(g);
         double budget = Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE;
+        boolean traceGround = Boolean.getBoolean("cbs.pw5.traceFixtures") && g.getMonth() >= 700 && g.getMonth() <= 835;
+        if (traceGround)
+            out.printf("PW5_GROUND_LOOK month=%d cash=%.9f budget=%.9f used=%.12f threshold=%.12f freeSqFt=%.9f%n",
+                    g.getMonth(), g.getCash(), budget, land.getUsedShare(), most, (double) land.getAvailableSqFt());
         int guard = 0;
         while (land.getOwnedSqFt() > 0 && land.getUsedShare() > most
                 && guard++ < 60) {
             LandParcel best = g.bestOffer(Game.LandNeed.room());
             // ...and none wholly across the water (ET5): the used share reads the linked ground, so it would not move and the loop would buy on.
-            if (best == null || !LandMarket.hasLinkedDry(best)) break;
+            if (best == null || !LandMarket.hasLinkedDry(best)) {
+                if (traceGround) out.printf("PW5_GROUND_NONE month=%d offer=%s%n", g.getMonth(), best == null ? "none" : "unlinked");
+                break;
+            }
             double local = best.localPrice(g.getForeignAccounts().getRate());
+            if (traceGround)
+                out.printf("PW5_GROUND_OFFER month=%d id=%s price=%.9f budget=%.9f sizeSqFt=%.9f%n",
+                        g.getMonth(), best.getId(), local, budget, (double) best.getSizeSqFt());
             if (local > budget || !g.canAffordParcel(best)) {
+                if (traceGround) out.printf("PW5_GROUND_HELD month=%d reason=%s%n", g.getMonth(), local > budget ? "cash-share" : "cannot-afford");
                 groundAheadShort++;
                 break;
             }
             if (!g.buyLandParcel(best.getId())) break;
+            if (traceGround) out.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f%n", g.getMonth(), best.getId(), local);
             budget -= local;
             groundAheadBought++;
             groundAheadSqFt += best.getSizeSqFt();
@@ -6008,6 +6020,9 @@ public class LongPlaytest {
         run(g, months, true);
     }
 
+    /** Harness-only first-district census, enabled with -Dcbs.pw5.firstDistrict=true. */
+    private static boolean pw5DistrictReported;
+
     private static void run(Game g, int months, boolean playGovernmentPolicy) {
         for (int i = 0; i < months; i++) {
 
@@ -6031,6 +6046,28 @@ public class LongPlaytest {
             g.simulateMonths(1);
             // The player's annual move sees every completed January, including one crossed inside a long skip (GV1/GV2).
             if (playGovernmentPolicy && g.getMonth() > before) GovernmentPlayer.step(g);
+            if (Boolean.getBoolean("cbs.pw5.firstDistrict") && !pw5DistrictReported
+                    && g.getBuildingManager().getQuantity(Substations.ID) > 0) {
+                pw5DistrictReported = true;
+                BuildingsTemplate wire = g.getBuildingManager().getTemplate(Substations.ID);
+                out.printf("FIRST_DISTRICT seed=%d pathSeed=%d before=%d month=%d districts=%d builders=%d potentialBuilders=%d repairsStanding=%.6f repairsCharged=%.6f wireRepairsEach=%.6f site=%d potentialSite=%d%n",
+                        Integer.getInteger("playtest.seed", 0), PATH_SEED, before, g.getMonth(),
+                        g.getBuildingManager().getQuantity(Substations.ID), g.getConstructionOutput(), g.getConstructionOutputAtEveryPost(),
+                        g.getMaintenancePoints(), g.getEconomyManager().getMaintenancePointsTotal(),
+                        wire.getConstructionPoints() * wire.repairsPerYear() / 12, g.getBuildingOutput(), g.getBuildingOutputAtEveryPost());
+            }
+            if (Boolean.getBoolean("cbs.pw5.traceFixtures") && g.getMonth() >= 760 && g.getMonth() <= 825) {
+                BuildingsTemplate wire = g.getBuildingManager().getTemplate(Substations.ID);
+                double wireRepairPoints = g.getBuildingManager().getQuantity(Substations.ID)
+                        * wire.getConstructionPoints() * wire.repairsPerYear() / 12;
+                out.printf("PW5_HOMES month=%d unplaced=%.9f households=%.9f homes=%d pipeline=%.9f capacity=%d builders=%d repairsStanding=%.9f repairsCharged=%.9f standingWireRepairs=%.9f site=%d capitalRoom=%.9f %s order=%s%n",
+                        g.getMonth(), g.getFamilies().getStillUnplaced(), (double) g.getFamilies().totalHouseholds(),
+                        g.getBuildingManager().getTotalHomes(), (double) g.getBuildingManager().getHousingInventory().pipelineHomes(),
+                        g.getHouseholdCapacity(), g.getConstructionOutput(), g.getMaintenancePoints(),
+                        g.getEconomyManager().getMaintenancePointsTotal(), wireRepairPoints, g.getBuildingOutput(),
+                        g.getEconomyManager().getBusinessDebtManager().capitalRoom(Sectors.REAL_ESTATE),
+                        SubstationCheck.gridReading(g), g.getLastInvestment(Sectors.REAL_ESTATE));
+            }
             if (g.hasCityMap()) {
                 mapMonths++;
                 /*
@@ -8979,7 +9016,13 @@ public class LongPlaytest {
                 c.buildStack(t(c, "Paved Road"), 10, false);
                 c.buildStack(t(c, "Walk-in Clinic"), 2, false);
                 c.buildStack(t(c, "Elementary School"), 1, false);
-                c.simulateMonths(120);
+                // This hand-built preparation has no automatic city builder.
+                // Supply real wires as its private stock grows; every district's
+                // native capital tariff, filled payroll and repairs still apply.
+                for (int month = 0; month < 120; month++) {
+                    SubstationCheck.peakWires(c);
+                    c.simulateMonths(1);
+                }
             });
             return c;
         }
@@ -9708,6 +9751,13 @@ public class LongPlaytest {
             assertTrue("fixture: the bond town's households hold a corporate bond", soonest != null);
             if (soonest != null) {
                 final int bondId = soonest.id;
+                if (Boolean.getBoolean("cbs.pw5.traceFixtures")) {
+                    System.out.println("PW5_BOND " + SubstationCheck.gridReading(bondTown));
+                    System.out.printf("PW5_BOND issuer=%s cash=%.9f face=%.9f writtenOff=%.9f due=%d now=%d%n",
+                            soonest.issuer(), bondTown.getEconomyManager().getSectorCash(soonest.issuer()), soonest.face(),
+                            soonest.writtenOff(), soonest.maturityMonth(), bondTown.getMonth());
+                }
+                assertTrue("fixture: the bond town has real wires for its billed and closing peaks", SubstationCheck.gridCovered(bondTown));
                 final double monthlyCoupon = soonest.coupon / CorporateBond.COUPONS_A_YEAR;
                 java.util.List<Household> holders = new java.util.ArrayList<>();
                 for (Household c : gBooks.cellsForMarket()) if (c.bondFace(bondId) > 0 && c.households() > 0) holders.add(c);
@@ -9755,6 +9805,11 @@ public class LongPlaytest {
                     MoneyAudit.Households hh = bondTown.getLastHouseholdsAudit();
                     if (!householdsClose(hh)) breaches++;
                     if (!bondMarket.getBonds().contains(soonest)) {
+                        if (Boolean.getBoolean("cbs.pw5.traceFixtures"))
+                            System.out.printf("PW5_BOND_REMOVED month=%d due=%d issuer=%s cash=%.9f face=%.9f writtenOff=%.9f %s%n",
+                                    bondTown.getMonth(), soonest.maturityMonth(), soonest.issuer(),
+                                    bondTown.getEconomyManager().getSectorCash(soonest.issuer()), soonest.face(), soonest.writtenOff(),
+                                    SubstationCheck.gridReading(bondTown));
                         matured = true;
                         maturityMonth = hh;
                         maturityFigure = hh.figure(bondLine);

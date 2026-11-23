@@ -1,4 +1,4 @@
-# BuildingDataCheck.java - 942 lines · 6 methods · 0 constants · harnesses
+# BuildingDataCheck.java - 949 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/BuildingDataCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -11,7 +11,7 @@
 > Field-by-field equality against the built-ins is the only check that catches
 > that.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (49), [Good](Good.md) (22), [HeavyIndustry](HeavyIndustry.md) (18), [BuildingType](BuildingType.md) (15), [Resource](Resource.md) (14), [CopperMining](CopperMining.md) (14), [Sectors](Sectors.md) (10), [Mining](Mining.md) (10), [CoalMining](CoalMining.md) (10), [JobType](JobType.md) (9), [PriceLevel](PriceLevel.md) (7), [Refining](Refining.md) (7), [Game](Game.md) (7), [WoodProducts](WoodProducts.md) (7), [Quarrying](Quarrying.md) (6), [Forestry](Forestry.md) (6), [CementConcrete](CementConcrete.md) (6), [BuildingManager](BuildingManager.md) (5), [Manufacturing](Manufacturing.md) (5), [EducationType](EducationType.md) (3), [SafetyType](SafetyType.md) (3), [GoldMining](GoldMining.md) (3), [CopperRefining](CopperRefining.md) (3), [BuildingCatalog](BuildingCatalog.md) (2), [RefineryFlow](RefineryFlow.md) (2), [Automotive](Automotive.md) (2), [StrategicReserve](StrategicReserve.md) (2), [HousingRecipe](HousingRecipe.md) (1), [CareType](CareType.md) (1), [Sector](Sector.md) (1)... and 4 more
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (50), [Good](Good.md) (22), [HeavyIndustry](HeavyIndustry.md) (18), [BuildingType](BuildingType.md) (16), [Resource](Resource.md) (14), [CopperMining](CopperMining.md) (14), [Sectors](Sectors.md) (10), [Mining](Mining.md) (10), [CoalMining](CoalMining.md) (10), [JobType](JobType.md) (9), [PriceLevel](PriceLevel.md) (7), [Refining](Refining.md) (7), [Game](Game.md) (7), [WoodProducts](WoodProducts.md) (7), [BuildingManager](BuildingManager.md) (6), [Quarrying](Quarrying.md) (6), [Forestry](Forestry.md) (6), [CementConcrete](CementConcrete.md) (6), [Manufacturing](Manufacturing.md) (5), [Substations](Substations.md) (3), [EducationType](EducationType.md) (3), [SafetyType](SafetyType.md) (3), [GoldMining](GoldMining.md) (3), [CopperRefining](CopperRefining.md) (3), [BuildingCatalog](BuildingCatalog.md) (2), [RefineryFlow](RefineryFlow.md) (2), [Automotive](Automotive.md) (2), [StrategicReserve](StrategicReserve.md) (2), [HousingRecipe](HousingRecipe.md) (1), [CareType](CareType.md) (1)... and 5 more
 
 ## Sections
 
@@ -19,23 +19,23 @@
 |---:|---|
 | 50 | · · what the code says |
 | 55 | · · what the file says |
-| 70 | · · every field of every building |
-| 236 | · · care types line up with the category |
-| 289 | · · the sea is drawn by water works, and one of them (0.7.59) |
-| 316 | · · fuel (0.7.62, batch K; spec-land 2.7) |
-| 350 | · · the refinery's units (0.7.80, batch O4; spec-oil 2.3) |
-| 399 | · · the phase-1 buyers and the forecourt (0.7.83, batch O6) |
-| 451 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
-| 484 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
-| 506 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
-| 550 | · · the site each stands on (0.7.110, batch I1) |
-| 671 | · · a works' own power and its consumables (0.7.112, batch I2) |
-| 730 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
-| 842 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
-| 859 | · · and every profession has exactly one school |
-| 878 | · · every list of recipes is one the model can run (R1c) |
-| 912 | · · ids are unique, which the saves depend on |
-| 925 | · · the manager actually uses the file |
+| 76 | · · every field of every building |
+| 242 | · · care types line up with the category |
+| 295 | · · the sea is drawn by water works, and one of them (0.7.59) |
+| 322 | · · fuel (0.7.62, batch K; spec-land 2.7) |
+| 356 | · · the refinery's units (0.7.80, batch O4; spec-oil 2.3) |
+| 405 | · · the phase-1 buyers and the forecourt (0.7.83, batch O6) |
+| 457 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
+| 490 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
+| 512 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
+| 556 | · · the site each stands on (0.7.110, batch I1) |
+| 677 | · · a works' own power and its consumables (0.7.112, batch I2) |
+| 736 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
+| 849 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
+| 866 | · · and every profession has exactly one school |
+| 885 | · · every list of recipes is one the model can run (R1c) |
+| 919 | · · ids are unique, which the saves depend on |
+| 932 | · · the manager actually uses the file |
 
 ## Fields (state)
 
@@ -47,11 +47,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 928 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
+| 15 | 935 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
 | 19 | 7 | `static void check(String label, double actual, double expected)` |  |
 | 28 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> data, int id)` | The building with this id in a list of templates, or null. |
 | 33 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 39 | 3 | `static boolean near(double a, double b)` | Two money figures built differently (a sum of a price and a price times units, against the study's product) are the same to a billionth: floating point only. |
 | 44 | 3 | `static double todays(double atFounding)` | A building's cash in the thousands of today's prices, as the data file writes it: the pinned figures below are the study's (EP1: priced at the founding's level, times PriceLevel.FACTOR). |
-| 48 | 894 | `public static void main(String[] args)` |  |
+| 48 | 901 | `public static void main(String[] args)` |  |
 

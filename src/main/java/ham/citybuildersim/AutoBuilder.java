@@ -985,7 +985,7 @@ public final class AutoBuilder {
      */
     public static boolean essential(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS:
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS: case GRID:
             case SCHOOL: case POLICE: case CELLS: return true;
             default: return false;
         }

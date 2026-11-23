@@ -1264,6 +1264,7 @@ public class CopperRefiningCheck {
             b.addStack(b.getTemplate(CopperRefining.SMELTER), 1, true);
             b.addStack(b.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY), 1, true);
         });
+        SubstationCheck.generationWires(g); // PW5: this forty-year price-chain fixture needs wires for its standing generation.
         MaterialsCheck.handWorkers(g);
         // ...the two sectors out of the planner's hands: the works ramp up for most of a year on a town of a few hundred workers, losing, and the planner sells spare capacity
         // after BusinessInvestment.RETIREMENT_LOSS_MONTHS months of loss (it did, in the ninth month); the subject here is the chain's prices, not the planner's retiring.

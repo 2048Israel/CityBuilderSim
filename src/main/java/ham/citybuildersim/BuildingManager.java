@@ -5062,7 +5062,13 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_SCIENCE, 16)
                 .setSince("FE4")
                 .setId(154));
-        //add more buildings; next Building ID is 155
+        // PW5: a district's wires and transformers, $440M, with the study's 40% materials split.
+        templates.add(new BuildingsTemplate("Substation", BuildingType.ELECTRICITY)
+                .setCashCost(264000).setConstructionPoints(132000).setConstructionMaterials(9778)
+                .setCapacity((int) (Substations.SUBSTATION_MW * 1000)).setLandSqFt(217800).setRoadLoad(140)
+                .setJobs(JobType.DIPLOMA, 100).setJobs(JobType.COLLEGE_ENGINEERING, 30)
+                .setJobs(JobType.UNIV_HIGHTECH_ENG, 10).setSince(1900).setId(Substations.ID));
+        //add more buildings; next Building ID is 156
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 

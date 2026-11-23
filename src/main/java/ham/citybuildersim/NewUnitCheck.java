@@ -669,6 +669,8 @@ public final class NewUnitCheck {
                         && fleet.electricity == kiln.getElectricityConsumption() && actual.electricity > 0 && apart(actual.electricity, fleet.electricity),
                 "fleet " + fleet.electricity + " kW, actual new " + actual.electricity + " kW, rejected " + lacking);
         BuildingManager bm = g.getBuildingManager();
+        out.printf("CONSTRUCTION districts=%d builders=%d repairs=%.6f site=%d%n", bm.getQuantity(Substations.ID),
+                g.getConstructionOutputAtEveryPost(), g.getMaintenancePoints(), g.getBuildingOutputAtEveryPost());
         check("fixture: nothing on site and nothing pending", bm.getStacksUnderConstruction().isEmpty()
                 && WorksValue.pendingPowerLoad(g, 1000) == 0 && g.getBuildingOutputAtEveryPost() > 0,
                 "site output " + g.getBuildingOutputAtEveryPost() + ": builders " + g.getConstructionOutputAtEveryPost() + " (capacity "

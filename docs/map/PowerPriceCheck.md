@@ -1,4 +1,4 @@
-# PowerPriceCheck.java - 616 lines · 27 methods · 9 constants · harnesses
+# PowerPriceCheck.java - 625 lines · 27 methods · 9 constants · harnesses
 
 `ham/citybuildersim/PowerPriceCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -33,25 +33,25 @@
 > (UtilitiesHandler.BASE_GRID_KW, a fuelled row at marginal 0) and a town it covers clears at nothing, so the homes' draw is raised
 > as MoneyCheck does, and the fixture asserts the coal row did burn before a section reads a price.
 
-**Uses:** [PowerDispatch](PowerDispatch.md) (31), [UtilitiesHandler](UtilitiesHandler.md) (16), [Game](Game.md) (16), [Sectors](Sectors.md) (16), [Good](Good.md) (9), [MoneyAudit](MoneyAudit.md) (7), [Sector](Sector.md) (6), [Resource](Resource.md) (4), [PriceLevel](PriceLevel.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Founding](Founding.md) (2), [LandManager](LandManager.md) (2), [BuildingManager](BuildingManager.md) (2), [Trade](Trade.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (1)
+**Uses:** [PowerDispatch](PowerDispatch.md) (30), [Game](Game.md) (18), [UtilitiesHandler](UtilitiesHandler.md) (16), [Sectors](Sectors.md) (16), [Good](Good.md) (9), [MoneyAudit](MoneyAudit.md) (7), [Sector](Sector.md) (6), [Resource](Resource.md) (4), [Substations](Substations.md) (4), [PriceLevel](PriceLevel.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Founding](Founding.md) (2), [LandManager](LandManager.md) (2), [BuildingManager](BuildingManager.md) (2), [Trade](Trade.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (1)
 
-**Used by (3):** [HistoryCheck](HistoryCheck.md), [PowerViewCheck](PowerViewCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (4):** [HistoryCheck](HistoryCheck.md), [PowerViewCheck](PowerViewCheck.md), [SaveFileCheck](SaveFileCheck.md), [SubstationCheck](SubstationCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 96 | THE FIXTURES |
-| 249 | · the old save, for SaveFileCheck (REV-PW1c) |
-| 302 | MAIN |
-| 323 | · the fixture, before any section |
-| 338 | · 1 |
-| 388 | · 2 |
-| 422 | · 3 |
-| 460 | · 4 |
-| 526 | · 5 |
-| 552 | · 6 |
-| 586 | · 7 |
+| 255 | · the old save, for SaveFileCheck (REV-PW1c) |
+| 308 | MAIN |
+| 329 | · the fixture, before any section |
+| 344 | · 1 |
+| 397 | · 2 |
+| 431 | · 3 |
+| 469 | · 4 |
+| 535 | · 5 |
+| 561 | · 6 |
+| 595 | · 7 |
 
 ## Constants
 
@@ -91,7 +91,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 574 | **type** `public class PowerPriceCheck` | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what each class is billed at them, the coal the plants burn bought from th... |
+| 43 | 583 | **type** `public class PowerPriceCheck` | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what each class is billed at them, the coal the plants burn bought from th... |
 | 66 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 72 | 1 | `static void check(String label, boolean ok)` |  |
 | 75 | 3 | `static boolean near(double a, double b, double tol)` | Whether two figures agree to tol of the larger. |
@@ -100,7 +100,7 @@
 | 86 | 3 | `static void sectionEnd()` |  |
 | 90 | 5 | `static void quietly(Runnable work)` |  |
 
-### THE FIXTURES (lines 96-248)
+### THE FIXTURES (lines 96-254)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -108,72 +108,72 @@
 | 121 | 16 | **type** `static final class City` |  |
 | 128 | 6 | `City(String label, Game g, boolean mine)` _(in PowerPriceCheck.City)_ |  |
 | 135 | 1 | `Step last()` _(in PowerPriceCheck.City)_ |  |
-| 147 | 27 | `static City town(String label, boolean mine, double ask)` | A town: founded, the Wealthy preset's cash and ground, homes, shops, a coal plant, water and roads (MaterialsCheck.town()'s list), standing at once (buildStack(..., noConstruction): LongPlaytest.build() orders real co... |
-| 176 | 10 | `static double[] cityDraw(Game g, Good good)` | What the city drew of a good from the market this month, by the draw log the clearing kept with the month's fills: {units local, units imported, cost local, cost imported}. |
-| 187 | 4 | `static PowerDispatch.Row coalRow(UtilitiesHandler u)` |  |
-| 193 | 42 | `static Step run(City c)` | Runs one month of a city and keeps what the harness reads: the strike's book and the sectors' draws before, the statements and the fuel's money after. |
-| 236 | 4 | `static City play(City c, int months)` |  |
-| 242 | 6 | `static double unitOf(Game g)` | The unit the city's money constants are struck at: Game.restrikeMoneyConstants()'s own, the denomination's unit over the struck level. |
+| 147 | 33 | `static City town(String label, boolean mine, double ask)` | A town: founded, the Wealthy preset's cash and ground, homes, shops, a coal plant, water and roads (MaterialsCheck.town()'s list), standing at once (buildStack(..., noConstruction): LongPlaytest.build() orders real co... |
+| 182 | 10 | `static double[] cityDraw(Game g, Good good)` | What the city drew of a good from the market this month, by the draw log the clearing kept with the month's fills: {units local, units imported, cost local, cost imported}. |
+| 193 | 4 | `static PowerDispatch.Row coalRow(UtilitiesHandler u)` |  |
+| 199 | 42 | `static Step run(City c)` | Runs one month of a city and keeps what the harness reads: the strike's book and the sectors' draws before, the statements and the fuel's money after. |
+| 242 | 4 | `static City play(City c, int months)` |  |
+| 248 | 6 | `static double unitOf(Game g)` | The unit the city's money constants are struck at: Game.restrikeMoneyConstants()'s own, the denomination's unit over the struck level. |
 
-### the old save, for SaveFileCheck (REV-PW1c) (lines 249-301)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 259 | 42 | `static boolean saveChecks() throws Exception` | A save from before PW1 (format 58, no powerBooks) of a city short of power loads with the ratio its load dispatched in its book, as the load handed the sectors before PW1, not the founding book's 1, and its first mont... |
-
-### MAIN (lines 302-322)
+### the old save, for SaveFileCheck (REV-PW1c) (lines 255-307)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 306 | 16 | `public static void main(String[] args) throws Exception` |  |
+| 265 | 42 | `static boolean saveChecks() throws Exception` | A save from before PW1 (format 58, no powerBooks) of a city short of power loads with the ratio its load dispatched in its book, as the load handed the sectors before PW1, not the founding book's 1, and its first mont... |
 
-### the fixture, before any section (lines 323-337)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 325 | 12 | `static void fixture(City c)` |  |
-
-### 1 (lines 338-387)
+### MAIN (lines 308-328)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 341 | 9 | `static double energyPriceOf(UtilitiesHandler.Book b)` | The energy price recomputed from the book's own half-blocks: the prices weighted by the energy each served, over the energy served, over (1 - losses). |
-| 351 | 20 | `static void pricesOfBook(String who, Game g, UtilitiesHandler.Book b)` |  |
-| 372 | 15 | `static void struckPrice(City c)` |  |
+| 312 | 16 | `public static void main(String[] args) throws Exception` |  |
 
-### 2 (lines 388-421)
+### the fixture, before any section (lines 329-343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 390 | 31 | `static void classBills(City c)` |  |
+| 331 | 12 | `static void fixture(City c)` |  |
 
-### 3 (lines 422-459)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 424 | 35 | `static void shortCity()` |  |
-
-### 4 (lines 460-525)
+### 1 (lines 344-396)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 462 | 63 | `static void fuelShock()` |  |
+| 347 | 9 | `static double energyPriceOf(UtilitiesHandler.Book b)` | The energy price recomputed from the book's own half-blocks: the prices weighted by the energy each served, over the energy served, over (1 - losses). |
+| 357 | 23 | `static void pricesOfBook(String who, Game g, UtilitiesHandler.Book b)` |  |
+| 381 | 15 | `static void struckPrice(City c)` |  |
 
-### 5 (lines 526-551)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 528 | 23 | `static void margin(City c)` |  |
-
-### 6 (lines 552-585)
+### 2 (lines 397-430)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 554 | 31 | `static void fuelMoney(City c)` |  |
+| 399 | 31 | `static void classBills(City c)` |  |
 
-### 7 (lines 586-616)
+### 3 (lines 431-468)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 588 | 28 | `static void auditCloses(City c)` |  |
+| 433 | 35 | `static void shortCity()` |  |
+
+### 4 (lines 469-534)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 471 | 63 | `static void fuelShock()` |  |
+
+### 5 (lines 535-560)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 537 | 23 | `static void margin(City c)` |  |
+
+### 6 (lines 561-594)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 563 | 31 | `static void fuelMoney(City c)` |  |
+
+### 7 (lines 595-625)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 597 | 28 | `static void auditCloses(City c)` |  |
 

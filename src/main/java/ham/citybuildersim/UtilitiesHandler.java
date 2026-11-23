@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.ToDoubleFunction;
+import java.util.function.Supplier;
 
 /**
  *
@@ -71,6 +72,7 @@ public class UtilitiesHandler {
     public void setFoundingEndowments(long endowments) { this.foundingEndowments = Math.max(1, endowments); }
 
     private double baseGrid()  { return BASE_GRID_KW * foundingEndowments; }
+    public double getFoundingGridKw() { return baseGrid(); }
     private double baseWater() { return BASE_WATER_SUPPLY * foundingEndowments; }
 
     /**
@@ -511,6 +513,12 @@ public class UtilitiesHandler {
     private int fuelPaidMonth = -1;
     private PowerDispatch.Month pendingLoadedMonth;
     private DispatchRecord pendingLoadedRecord;
+    private Supplier<Substations.Costs> gridCostSource;
+    private Substations.Costs latestGridCosts, pendingLoadedGridCosts;
+
+    /** Real city grid costs; a bare dispatch fixture without a city keeps its unconstrained wires. */
+    public void setGridCostSource(Supplier<Substations.Costs> source) { gridCostSource = source; }
+
 
     public void setPowerObservationSources(IntSupplier month, DoubleSupplier firm) {
         observationMonth = month;
@@ -602,6 +610,8 @@ public class UtilitiesHandler {
         public DispatchRecord dispatch;
         public int struckMonth = -1;
         public double transmissionPrice, distributionPrice;
+        /** The grid costs captured with this dispatch; paid by existing city flows, recovered in the wires' tariff. */
+        public Substations.Costs gridCosts;
 
         /** The book before any month has cleared: the founding tariff, ratio 1, nothing made. */
         public static Book founding() {
@@ -622,12 +632,14 @@ public class UtilitiesHandler {
             b.fuel = new LinkedHashMap<>(fuel);
             b.cleared = cleared;
             b.dispatch = dispatch; b.struckMonth = struckMonth;
+            b.gridCosts = gridCosts;
             b.transmissionPrice = transmissionPrice; b.distributionPrice = distributionPrice;
             return b;
         }
     }
 
     private static void scale(Book b, double scale) {
+        if (b.gridCosts != null) b.gridCosts = b.gridCosts.scaled(scale);
         b.transmissionPrice *= scale; b.distributionPrice *= scale;
         if (b.dispatch != null) b.dispatch = b.dispatch.scaled(scale);
         b.energyPrice *= scale; b.commercePrice *= scale; b.industryPrice *= scale; b.worksPrice *= scale;
@@ -641,11 +653,16 @@ public class UtilitiesHandler {
         b.ratio = m.ratio;
         b.dispatch = latestRecord;
         b.struckMonth = observationMonth == null ? -1 : observationMonth.getAsInt();
-        b.transmissionPrice = transmission; b.distributionPrice = distribution;
+        b.gridCosts = latestGridCosts;
+        double wires = latestGridCosts != null && m.servedKwh > 0
+                ? latestGridCosts.total() / (m.servedKwh * (1 - PowerDispatch.GRID_LOSSES)) : 0;
+        double longWires = latestGridCosts == null ? transmission : wires * Substations.TRANSMISSION_SHARE;
+        double streetWires = latestGridCosts == null ? distribution : wires * (1 - Substations.TRANSMISSION_SHARE);
+        b.transmissionPrice = longWires; b.distributionPrice = streetWires;
         b.energyPrice = m.energyPrice;
         // Commerce and light industry pay the energy and all the wires; Heavy Industry and Mining take power at high voltage and pay the energy and the long wires alone (spec 2.6).
-        b.commercePrice = (m.energyPrice + transmission + distribution) * PowerDispatch.MONTH_HOURS;
-        b.industryPrice = (m.energyPrice + transmission) * PowerDispatch.MONTH_HOURS;
+        b.commercePrice = (m.energyPrice + longWires + streetWires) * PowerDispatch.MONTH_HOURS;
+        b.industryPrice = (m.energyPrice + longWires) * PowerDispatch.MONTH_HOURS;
         // The works are paid what their kWh cleared at; with none standing, the generation price (the energy less the losses it carries).
         PowerDispatch.Row works = null;
         for (PowerDispatch.Row r : latestRows) if (r.kind == PowerDispatch.Kind.MUST_RUN && WORKS_ROW.equals(r.name)) works = r;
@@ -748,6 +765,7 @@ public class UtilitiesHandler {
         /** The completed closing dispatch, still awaiting the next strike; optional in older saves. */
         public PowerDispatch.Month pendingMonth;
         public DispatchRecord pendingDispatch;
+        public Substations.Costs pendingGridCosts;
     }
 
     public PowerState toPowerState() {
@@ -758,6 +776,7 @@ public class UtilitiesHandler {
         s.paidDispatchMonth = paidDispatchMonth;
         s.fuelPaidMonth = fuelPaidMonth;
         s.pendingMonth = latest.copy(); s.pendingDispatch = latestRecord;
+        s.pendingGridCosts = latestGridCosts;
         return s;
     }
 
@@ -781,6 +800,7 @@ public class UtilitiesHandler {
         // Derived services have just rebuilt. Their new dispatch cannot replace the completed flow the next strike consumes.
         if (pendingLoadedMonth != null && pendingLoadedRecord != null) {
             latest = pendingLoadedMonth; latestRecord = pendingLoadedRecord;
+            latestGridCosts = pendingLoadedGridCosts;
             latestRows = new ArrayList<>();
             for (RowRecord r : latestRecord.rows().stream().sorted(java.util.Comparator.comparingInt(RowRecord::sourceIndex)).toList()) {
                 String name = r.id() == WORKS_ID ? WORKS_ROW : r.id() == GRID_ID ? GRID_ROW : "plants";
@@ -798,6 +818,7 @@ public class UtilitiesHandler {
             energyRatio = latest.ratio;
         }
         pendingLoadedMonth = null; pendingLoadedRecord = null;
+        pendingLoadedGridCosts = null;
     }
 
     /** Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. */
@@ -806,6 +827,7 @@ public class UtilitiesHandler {
         seedOnLoad = s == null || s.struck == null;
         pendingLoadedMonth = s == null || s.pendingMonth == null ? null : s.pendingMonth.copy();
         pendingLoadedRecord = s == null ? null : s.pendingDispatch;
+        pendingLoadedGridCosts = s == null ? null : s.pendingGridCosts;
         if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; paidDispatchMonth = fuelPaidMonth = -1; return; }
         setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
         paidDispatchMonth = s.paidDispatchMonth;
@@ -905,7 +927,9 @@ public class UtilitiesHandler {
                 }
             }
         }
-        latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(calendarMonth == null ? 0 : calendarMonth.getAsInt()), voll);
+        latestGridCosts = gridCostSource == null ? null : gridCostSource.get();
+        latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(calendarMonth == null ? 0 : calendarMonth.getAsInt()), voll,
+                latestGridCosts == null ? Double.POSITIVE_INFINITY : latestGridCosts.carryKw());
         latestRows = rows;
         energyRatio = latest.ratio;
         // Keep the dispatch's own order and figures; no screen runs the dispatch or reprices a row.
@@ -1152,6 +1176,8 @@ public class UtilitiesHandler {
         distribution *= scale;
         scale(struck, scale);
         if (latestRecord != null) latestRecord = latestRecord.scaled(scale);
+        if (latestGridCosts != null) latestGridCosts = latestGridCosts.scaled(scale);
+        if (pendingLoadedGridCosts != null) pendingLoadedGridCosts = pendingLoadedGridCosts.scaled(scale);
         // ...and the month last dispatched, which strikePower() would read in the old unit.
         latest.energyPrice *= scale;
         for (int s = 0; s < latest.price.length; s++) latest.price[s] *= scale;

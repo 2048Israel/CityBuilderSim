@@ -93,6 +93,22 @@ public final class EssentialWorksCheck {
         u.setWattsConsumption(Math.max(0, c1 + (share * one[0] - one[1]) / perKw));
     }
 
+    /** These cases isolate another essential order; physical wires cover even its longest forecast. */
+    static void serveGrid(Game g) {
+        BuildAdvice.Measure grid = BuildAdvice.Measure.of(BuildAdvice.Kind.GRID);
+        BuildAdvice.Ahead at = BuildAdvice.opening(g, BuildAdvice.LIFE_MONTHS, g.getAutoBuilder().getSlack());
+        double site = Math.max(1, g.getBuildingOutputAtEveryPost());
+        SubstationCheck.wiresFor(g, BuildAdvice.supplyDemand(g, grid, Map.of(), at)[1]);
+        // Wires need repairs as well as posts. Preserve the builders this isolated ordering case already had.
+        BuildingManager b = g.getBuildingManager();
+        for (int n = 0; n < 64 && g.getBuildingOutputAtEveryPost() < site; n++)
+            b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
+        check("fixture: standing substations carry the isolated order's entire forecast",
+                BuildAdvice.maintained(g, grid, Map.of(), at));
+        check("fixture: the wired town retains its construction output after the substations' repairs",
+                g.getBuildingOutputAtEveryPost() >= site);
+    }
+
     /** Give unrelated essential services their operating capacity before isolating an ahead-of-need order. */
     static boolean serveOtherEssentials(Game g, BuildAdvice.Measure except) {
         BuildingManager bm = g.getBuildingManager();
@@ -289,6 +305,7 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(u.getProduction() * 4);
+        serveGrid(g);
         BuildingsTemplate cheapest = null;
         double one = Double.POSITIVE_INFINITY, second = Double.POSITIVE_INFINITY;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (power.serves(t) && BuildAdvice.unit(g, power, t) > 0) {
@@ -373,6 +390,7 @@ public final class EssentialWorksCheck {
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
         powerDrawAt(g, .8);
+        serveGrid(g);
         double first = bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost());
         check("fixture: a paid mill opens within the planning horizon while current power has its reserve",
                 stack.getUnderConstruction() == 1 && first > 0 && first < BuildAdvice.HORIZON
@@ -627,6 +645,7 @@ public final class EssentialWorksCheck {
         }
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * .5);
+        serveGrid(g);
         g.getInfrastructureManager().setLoad(0);
         g.getInfrastructureManager().setBreakdown(new double[Traffic.values().length]);
         BuildingsTemplate elementary = bm.getTemplateByName("Elementary School");
@@ -771,6 +790,7 @@ public final class EssentialWorksCheck {
         g.getHistorySave().getMonth().clear();
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(u.getProduction() * 2);
+        serveGrid(g);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         check("overview cards require the NEEDS YOU row their screen reads",
                 BuildAdvice.suggest(g, java.util.List.of()).isEmpty());
@@ -840,6 +860,7 @@ public final class EssentialWorksCheck {
         g.getBusinessInvestment().restorePopulationHistory(people);
         // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
         powerDrawAt(g, .8);
+        serveGrid(g);
         check("fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner",
                 BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.opening(g, windLead, ab.getSlack()))
