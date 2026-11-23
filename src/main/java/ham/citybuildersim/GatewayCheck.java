@@ -702,6 +702,9 @@ public class GatewayCheck {
         check("...every value equals the usual keep's", Arrays.equals(a1, b1) && Arrays.equals(a1, b2));
         report("...and the keep holds more than the usual size, all the tiles read", held > CityMap.RUN_TILES_KEPT && held == tiles,
                 held + " tiles held of " + tiles);
+        int ownedIn = map.runOwnedHeld()[0];
+        report("...and so does the keep of what the city owns, every tile read", ownedIn > CityMap.RUN_TILES_KEPT && ownedIn == tiles,
+                ownedIn + " tiles' ownership held of " + tiles);
 
         // Every plot of a handful of tiles, in the search and after it, against the world's own terrain.
         int[][] inSearch = new int[HANDFUL][];
@@ -716,6 +719,11 @@ public class GatewayCheck {
         ground.searching(false);
         report("when the search ends the keep goes back to the usual size", map.runTilesHeld() <= CityMap.RUN_TILES_KEPT,
                 map.runTilesHeld() + " tiles held after, of " + held + " in the search");
+        int[] ownedAfter = map.runOwnedHeld();
+        report("...and so do both keeps of what the city owns, the masked and the raw",
+                ownedAfter[0] <= CityMap.RUN_TILES_KEPT && ownedAfter[1] <= CityMap.RUN_TILES_KEPT,
+                ownedAfter[0] + " tiles' ownership held after, of " + ownedIn + " in the search; " + ownedAfter[1]
+                        + " raw (kept only while the city holds a picture of its landmasses)");
         int[] c1 = pass(ground, plots);
         check("...and a pass reads the same values again", Arrays.equals(a1, c1));
 

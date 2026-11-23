@@ -106,10 +106,11 @@ Each kept read gets a section in the harness that owns its mechanic. Every kept 
 with the read afresh (the `*Drawn` hooks), and every fixture causes what it tests:
 
 - **`GatewayCheck`**, "a link's search keeps every tile it reads, and reads the same ground (AP2)",
-  15 assertions. A square city owning 576 tiles, over `RUN_TILES_KEPT`. Two passes, one plot a tile:
-  the usual keep draws all 576 again; inside `searching(true)` the second pass draws none and
-  holds 576. `searching(false)` gives back to 256 or fewer, with the same values, also against
-  `World.tileTerrain`. A `linkWay()` on a counted ground opens and closes the search once and finds
+  17 assertions. A square city owning 576 tiles, over `RUN_TILES_KEPT`. Two passes, one plot a tile:
+  the usual keep draws all 576 again; inside `searching(true)` the second pass draws none, and the
+  tiles' keep and the ownership keep each hold 576. `searching(false)` gives each keep back to 256
+  or fewer (the raw ownership keep too, `runOwnedHeld()`: empty here, since it is filled only while
+  the city holds a picture of its landmasses), with the same values, also against `World.tileTerrain`. A `linkWay()` on a counted ground opens and closes the search once and finds
   the same way as on a plain ground.
 - **`LandCheck`** 31, "the centre's stamp is kept between its changes and moves with them (AP2)",
   10 assertions. A founding, its copy, a restatement to more ground and one back to less: the kept
@@ -119,9 +120,11 @@ with the read afresh (the `*Drawn` hooks), and every fixture causes what it test
   the cells, the same array asked twice, tiles with one id and with two. The clear at `IDS_KEPT` is
   forced, and the answers after it are still the same.
 - **`HoldersCheck`** 16, "what each sector owes, from one pass over the book, is getPrincipal() to
-  the bit (AP2)", 9 assertions. `theBusinesses()`'s city after 24 months: every sector's figure
-  equals `getPrincipal()` in its raw bits, and stays equal in each of the 12 months after (34 loans
-  in 5 sectors at the last). Both sides of `owed > 0` occur.
+  the bit (AP2)", 11 assertions. `theBusinesses()`'s city after 24 months: every sector's figure
+  equals `getPrincipal()` in its raw bits, and stays equal in each of the 12 months after (25 loans
+  in 3 sectors at the last). Both sides of `owed > 0` occur. The city issues no business bonds, so
+  a face is laid over its own bond market for Retail, beside its loans, and for Construction, alone.
+  Both figures, bonds added, are `getPrincipal()`'s to the bit.
 
 Each mutation of the model turns its section red (`AP2-evidence/mutations/`):
 
@@ -133,7 +136,18 @@ Each mutation of the model turns its section red (`AP2-evidence/mutations/`):
 | no trim after the search | 1 |
 
 The playtest's trace (`-Dplaytest.trace`, its eight CSVs over 2,405 months) is byte for byte the same
-on main and on AP2: main 196 s, AP2 191 s.
+on main (efca2c5fd) and on AP2: main 196 s, AP2 191 s. The md5 of each, the same on both:
+
+| file | md5 |
+|---|---|
+| t-bank.csv | d2bdbc41eca459a745494dc64d21ee5c |
+| t-bonds.csv | 22fb7f806269e714190407c2da4739ae |
+| t-borrow.csv | 614258128cd4f1adedfe38318d310f82 |
+| t-build.csv | 3b2166462c519211374dedfa0a6a290c |
+| t-house.csv | dc1f903ac782cb7c9d41a5343b81eef0 |
+| t-labour.csv | f6c4ce6c8d7d0fd8f5e66804a6447f02 |
+| t-month.csv | 42cea75746b2cbdd2be1395063fd181f |
+| t-pop.csv | 13769b31a38a590e1613c9827aa987c8 |
 
 The pick (`tools/pick.sh origin/main HEAD`): 81 of 244 harnesses. `./batch-check.sh --pick` exits 3
 (compile OK, maps regenerated, Stale 0 firm). The only reds are main's known reds, in
@@ -159,7 +173,10 @@ Before, 0.9.189; after, 0.9.189 with AP2's six files. 12 months after 2 warm, th
 
 - Every month's population is the same in both runs. The whole log (the auto-builder's orders and
   their kr figures, the notices, the market's lines) has the same md5 once the timing lines are
-  taken out: the world market's solve time is the only line that differs.
+  taken out: the world market's solve time is the only line that differs. That md5 is
+  aa3edd1da5e26a46b2357f961b64ab0c in both, over 882 lines
+  (`AP2-evidence/perf/months-on.txt` and `months-ap2-final.txt`, filtered of the `month`,
+  `window`, JFR, load and "world market solved" lines).
 - What is left in a land month (1135, 4.8 s): the stuck link search, 36% (★3); the landmass
   re-measure, 34% (★4); the bridge surveys, about 7%.
 - The paused Overview's model: about 590 ms -> about 540 ms (★5).

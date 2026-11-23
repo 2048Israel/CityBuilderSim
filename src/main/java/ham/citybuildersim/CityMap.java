@@ -6717,6 +6717,8 @@ public final class CityMap {
     /** (AP2) The tiles the runs' ground keeps now, and the tiles' terrain it has drawn since the map was made: a harness's (GatewayCheck, AP2). */
     int runTilesHeld() { return runGround.tiles.size(); }
     long runTilesDrawn() { return runGround.drawn; }
+    /** (AP2) The tiles each ownership keep holds now, the masked and the raw (ET5), which searching(false) trims as it trims the tiles: a harness's (GatewayCheck, AP2). */
+    int[] runOwnedHeld() { return new int[] { runGround.owned.size(), runGround.rawOwned.size() }; }
 
     /* =====================================================================
        THE CITY'S GROUND IN PIECES (batch CL5, slice B)

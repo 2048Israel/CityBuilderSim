@@ -118,7 +118,8 @@ import java.util.Set;
  * 16. What each sector owes, from one pass over the book, is getPrincipal() to the bit (AP2): BusinessDebtManager.getPrincipalsByKey()
  *     gives every sector of Sectors.KEYS the figure getPrincipal() gives it, in a city whose bank holds loans in two sectors or more
  *     and several loans in one, and in each of the twelve months after, the book changing under it - the auction's bidders lend or hold
- *     on `owed > 0` (OutwardInvestment.mayHold()), so a figure off by a bit would tip a sector from one side to the other.
+ *     on `owed > 0` (OutwardInvestment.mayHold()), so a figure off by a bit would tip a sector from one side to the other. Then with
+ *     bonds laid over the city's own market for a sector with loans and one without, as the city here issues none.
  *
  * Each fixture causes its condition rather than finding a city in it. How sections 1 to 9 get theirs (FS14):
  *   1. the households' savings are set by hand (setSpare), so the purse and the split by the auction's rule are caused;
@@ -2991,6 +2992,38 @@ public class HoldersCheck {
         report("...and in each of the months after, every sector's figure is getPrincipal() to the bit", monthsApart == 0,
                 monthsLooked + " months, " + sectorsLooked + " figures, " + bank.getLoans().size() + " loans in " + sectorsLent(bank)
                         + " sectors at the last" + (first[0] == null ? "" : ", first apart: " + first[0]));
+
+        // Bonds on the book. This city's sectors issue none, so a face is laid over the city's own bond market for two sectors: one with
+        // loans (its bonds added after the loans' sum, as getPrincipal() adds them) and one with none (its bonds alone). Faces of a third
+        // and a twenty-first of the loans, so neither sum is exact and its order is in its bits.
+        BondMarket market = city.getBondMarket();
+        String withLoans = null, alone = null;
+        for (String k : Sectors.KEYS) {
+            if (withLoans == null && bank.getLoanPrincipal(k) > 0) withLoans = k;
+            if (alone == null && bank.getLoanPrincipal(k) == 0) alone = k;
+        }
+        if (withLoans == null || alone == null) {
+            report("fixture: a sector with loans and one without, for the bonds", false, withLoans + " with, " + alone + " without");
+            return;
+        }
+        final String lentKey = withLoans, bareKey = alone;
+        final double faceLent = bank.getLoanPrincipal(lentKey) / 3, faceBare = faceLent / 7;
+        BusinessDebtManager.BondBook laid = new BusinessDebtManager.BondBook() {
+            @Override public double principal(String s) { return market.principal(s) + (s.equals(lentKey) ? faceLent : s.equals(bareKey) ? faceBare : 0); }
+            @Override public double monthlyCoupon(String s) { return market.monthlyCoupon(s); }
+            @Override public double writeDown(String s, double scale) { return market.writeDown(s, scale); }
+        };
+        bank.setBondMarket(laid, market);
+        int bonded = 0;
+        for (String k : Sectors.KEYS) if (bank.getBondPrincipal(k) > 0) bonded++;
+        report("fixture: with bonds laid on, a sector holds bonds beside its loans and one holds bonds alone",
+                bonded >= 2 && bank.getBondPrincipal(lentKey) > 0 && bank.getBondPrincipal(bareKey) > 0,
+                bonded + " sectors hold bonds: " + lentKey + " " + bank.getBondPrincipal(lentKey) + " beside its loans, " + bareKey + " "
+                        + bank.getBondPrincipal(bareKey) + " alone");
+        int bondsApart = sectorsApart(bank, first);
+        report("...and every sector's figure, its bonds added, is getPrincipal() to the bit", bondsApart == 0,
+                (Sectors.KEYS.length - bondsApart) + " of " + Sectors.KEYS.length + (first[0] == null ? "" : ", first apart: " + first[0]));
+        bank.setBondMarket(market, market);
     }
 
     /** How many sectors' getPrincipalsByKey() figures are not getPrincipal() to the bit; `first` takes a line on the first that is not. */
