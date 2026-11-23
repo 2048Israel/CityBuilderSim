@@ -360,6 +360,16 @@ abroad; each section's claim is the city's own builders', and it is still run wi
   months, behind it from about m1,100 to m1,700, ahead again at m1,750 and m2,082, and within 5% at the end. The stall
   between m800 and m1,300 (the cash $36M down over it) is FC2's economy, not a check's: what drives it is the
   ensemble's to read, and its verdict goes to the orchestrator before any ship.
+- **The ensemble** (80 of 80 runs on the gate box, 22.0 min, the final model 348fdae18 merged with main 0.9.193,
+  committed as `docs/ensemble/FC2.md`, scored against `docs/ensemble/0.9.192.md`, the newest; PW1-W's trace was
+  unchanged): batch verdict PASS, the hard criteria 10/10. M1 0 in every policy. F1 0/16 in every policy, where the
+  baseline had 1/16 ('households with no home') in AUTO2, ZERO_SLACK, SHOCK and HIGH: four FAIL -> PASS. 25 of 26
+  criteria passed (H1 retired); the one FAIL is AUTO2's A2 (info), the longest spell of yoy over 10% from m240, 12
+  months [8 to 31] against the baseline's own FAIL of 14 [6 to 37]. The played city grows sooner and larger: T1 16/16
+  AUTO2 seeds reach 40,000 people at m678 [607 to 871] (baseline m747 [624 to 1,300]); final population (T2) AUTO2
+  5,627,582 (baseline 4,649,724), ZERO_SLACK 3,801,960 (2,883,284), ZERO_HOT 9,827 (7,632), SHOCK 94,822 (67,498; its
+  T2 FAIL -> PASS), HIGH 32,514 (32,356). Inflation unmoved: A1 2.69% [2.32% to 2.93%], 16/16 in band (2.67%,
+  14/16); S1 2.01% (2.14%); H2 -1.75% (-1.47%), 13/16 below; K1 15.14% (16.49%).
 - **KeptCheck**: the played city in its dip at m1043 cannot pay for the land office's best offer (section 31, before
   FS5's range): the fixture gives it the gap first (`KeptCheck.buyTheBestOffer()`), so the receipt's page is caused.
   From section 55 on, the reds are FS5's played-city classes (rows 39, 42-45, 54-56 and 104 of
