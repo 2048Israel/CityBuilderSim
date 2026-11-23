@@ -565,9 +565,6 @@ public class ResearchCheck {
     /* ==================== 7. buildings.json's codes (R2, slice B) ==================== */
 
     /** research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. */
-    /** The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. */
-    static final Map<Integer, String> POWER_YEARS = new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"));
-
     static final Map<Integer, String> CODED = new TreeMap<>(Map.ofEntries(
             Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, "PB1"), Map.entry(122, "PE8"),
             Map.entry(79, "PE11"), Map.entry(80, "PE11"), Map.entry(66, "PE13"), Map.entry(85, "PE23"), Map.entry(86, "PE23"),
@@ -578,6 +575,9 @@ public class ResearchCheck {
             Map.entry(47, "B6"), Map.entry(135, "E19"), Map.entry(138, "E20"),
             // ...and research-near-future's two (R6b): the Sulphide Leach & SX-EW Plant by FE2 and the Hydrogen Steel Works by FE4.
             Map.entry(153, "FE2"), Map.entry(154, "FE4")));
+
+    /** The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. */
+    static final Map<Integer, String> POWER_YEARS = new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"));
 
     static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id) {
         for (BuildingsTemplate t : templates) if (t.getId() == id) return t;
