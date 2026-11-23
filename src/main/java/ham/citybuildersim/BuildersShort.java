@@ -241,6 +241,13 @@ public final class BuildersShort {
     }
 
     /**
+     * The months within which the queue at home reads as at the threshold (REV-FC2, the second review): an order that
+     * crosses it leaves the queue there to the last bits of a double, read back from the points (homeUnits()), and the
+     * next order then goes abroad whole and not by a ten-billionth of a month of the sites.
+     */
+    public static final double AT_THRESHOLD = 1e-9;
+
+    /**
      * How much of an order of {@code n} buildings (at least one) stands within {@code thresholdMonths}, in buildings
      * (REV-FC2, the second review): the building i (from 0) takes the months {@code fromMonths + i * stepMonths} to the
      * next step queued, and its work past the threshold goes abroad point for point, so the building the threshold falls
@@ -249,12 +256,13 @@ public final class BuildersShort {
      * (BuildingManager.abroadOfOrder()), one rule for both. WHY: FC2's whole buildings kept a building that began within
      * the threshold at home however far its points ran past, and PW5's Substation, 132,000 points, ordered so, held the
      * queue at home years past the threshold, every order after it abroad until the city's builders had worked it down.
-     * All of it with no step or an endless threshold, none from a queue at or past it; a NaN queue reads as nothing.
+     * All of it with no step or an endless threshold, none from a queue at or past it (within AT_THRESHOLD); a NaN queue
+     * reads as nothing.
      */
     public static double homeUnits(double fromMonths, double stepMonths, long n, double thresholdMonths) {
         long count = Math.max(1, n);
         double from = Double.isNaN(fromMonths) ? 0 : fromMonths;
-        if (!(from < thresholdMonths)) return 0;
+        if (!(from < thresholdMonths - AT_THRESHOLD)) return 0;
         if (!(stepMonths > 0) || thresholdMonths == Double.POSITIVE_INFINITY) return count;
         return Math.min(count, (thresholdMonths - from) / stepMonths);
     }

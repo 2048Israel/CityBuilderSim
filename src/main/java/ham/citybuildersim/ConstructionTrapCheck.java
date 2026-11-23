@@ -341,8 +341,10 @@ public class ConstructionTrapCheck {
                 && BuildersShort.multiplier(Double.POSITIVE_INFINITY, 0.5, 1, threshold, share) == 1 + share;
         assertTrue("one building's multiple is one and the premium within the threshold, one and their excess past it", multiples);
         double from = threshold - 2.25, step = 0.5;
-        close("an order straddling it: the premium's mean over the five within, their excess over the five past",
-                BuildersShort.meanShare(from, step, 10, threshold, share), (5 * BuildersShort.meanPremium(from, step, 5) + 5 * share) / 10, 1e-15);
+        // REV-FC2, the second review: the threshold falls half way through the fifth building, which it splits.
+        close("an order straddling it: the premium's mean over the four within and the fifth's half within, at its own, their excess over the rest",
+                BuildersShort.meanShare(from, step, 10, threshold, share),
+                (4 * BuildersShort.meanPremium(from, step, 4) + 0.5 * BuildersShort.premium(from + 4 * step) + 5.5 * share) / 10, 1e-15);
         bits("...and with no foreign crews (an endless threshold) every building at home, FC1's mean premium",
                 BuildersShort.meanShare(from, step, 10, Double.POSITIVE_INFINITY, share), BuildersShort.meanPremium(from, step, 10));
     }
@@ -407,6 +409,7 @@ public class ConstructionTrapCheck {
         double output = g.getConstructionOutputAtEveryPost(), repairs = g.getMaintenancePoints();
         double floor = SLIVER * output;
         double queueBefore = bm.getRemainingConstructionPoints(), bookBefore = c.getForeignBook();
+        double homeBefore = bm.queueAtHome(), monthsBefore = bm.monthsQueued();
         sites(g);
         double sites = g.getBuildingOutputAtEveryPost();
         out.printf("  month %d: nameplate %,d, month at every post %,.0f, repairs %,.1f (%d roads added), sites %,.0f of a sliver of %,.1f;"
@@ -432,25 +435,41 @@ public class ConstructionTrapCheck {
         // FC2, moved from "the contractor takes orders": he is always on offer, and the queue at home is past his threshold.
         BuildingManager.ForeignTerms terms = bm.foreignTerms();
         assertTrue("the foreign crews are on offer: the builders have a month, every post offered", terms != null && bm.foreignTradeOn());
-        assertTrue("the queue at home is past the threshold: an order placed now goes abroad",
-                bm.ordersGoAbroad() && terms.monthsQueued() > terms.thresholdMonths());
+        // REV-FC2, the second review, moved from "past the threshold": the trap's sites that crossed it were split at it,
+        // so the queue at home stands at it, and an order placed now goes abroad whole.
+        out.printf("  the queue at home %.12f months against the threshold %.12f; before the trap's sites %.4f months, %,.1f points%n",
+                terms.monthsQueued(), terms.thresholdMonths(), monthsBefore, homeBefore);
+        assertTrue("the queue at home is at the threshold: an order placed now goes abroad",
+                bm.ordersGoAbroad() && Math.abs(terms.monthsQueued() - terms.thresholdMonths()) <= BuildersShort.AT_THRESHOLD);
         bits("...every order's work at his price: the multiple is one and his excess at his month", bm.orderPriceMultiplier(), 1 + bm.foreignExcessNow());
         assertTrue("...his excess at least his first share and under CEILING", terms.share() >= terms.firstShare() && terms.share() < BuildersShort.CEILING);
-        assertTrue("the months queued are far past the knee and the city's own premium is within a hair of its ceiling",
-                bm.monthsQueued() > 100 * BuildersShort.KNEE_MONTHS && bm.scarcityPremium() > 0.99 * BuildersShort.CEILING);
-        // REV-FC2, moved from FC2's "his book before the trap's sites is the founding's, the Penitentiary's overflow": an
-        // order's work goes abroad only as its quote put it there, and the Penitentiary was quoted with the queue at home
-        // within the threshold, so its work is the city's builders' still - nothing was on his book before the trap's sites.
-        out.printf("  his book before the trap's sites: %,.0f points; the queue they joined %,.0f -> %,.0f%n", bookBefore, queueBefore,
-                bm.getRemainingConstructionPoints());
-        bits("fixture: his book before the trap's sites is empty: the founding's Penitentiary was quoted at home, and its work stays there", bookBefore, 0);
-        // ...and moved from FC2's "the sites ordered in the trap went on no book when they were billed": each order's buildings
-        // past the threshold go on his book as it is billed, and the queue at home was past it, so all of theirs did.
-        close("the sites ordered in the trap went on his book as they were billed, whole: the queue at home was past the threshold",
-                c.getForeignBook(), bookBefore + bm.getRemainingConstructionPoints() - queueBefore, 1e-9);
+        // REV-FC2, the second review, moved from "far past the knee, the city's own premium within a hair of its ceiling":
+        // that was the Penitentiary's, kept whole at home by FC2's whole buildings however far its points ran past the
+        // threshold, read over the sliver the repairs leave. Split at the threshold, it left the city's queue there; the
+        // premium is the one the threshold is struck at, the foreign crews' first share, and the trap drives it no higher.
+        close("the months queued are the threshold's, and the city's own premium the foreign crews' first share, where the threshold is struck",
+                bm.scarcityPremium(), bm.foreignExcessShare(), 1e-9);
+        assertTrue("...far under its ceiling", bm.scarcityPremium() < 0.5 * BuildersShort.CEILING);
+        // REV-FC2, the second review, moved from "his book before the trap's sites is empty": the founding's Penitentiary
+        // crossed the threshold, and its work past it went on his book as it was billed; he has built some of it since.
+        BuildingsTemplate pen = template(g, "Penitentiary");
+        out.printf("  his book before the trap's sites: %,.0f points (the Penitentiary %,d points); the queue they joined %,.0f -> %,.0f%n", bookBefore,
+                pen.getConstructionPoints(), queueBefore, bm.getRemainingConstructionPoints());
+        assertTrue("fixture: his book before the trap's sites is the founding's Penitentiary's work past the threshold, what he has not built of it",
+                bookBefore > 0 && bookBefore < pen.getConstructionPoints());
+        // ...and moved from "went on his book as they were billed, whole: the queue at home was past the threshold": the
+        // queue at home was under it before them, so the one that crossed it was split, its work within it at home.
+        assertTrue("fixture: the queue at home was under the threshold before the trap's sites", monthsBefore < terms.thresholdMonths());
+        // ...the threshold's room the queue at home left them, read as BuildingManager.queueAtHome() reads it: the queue owed
+        // on site less his book, which may hold more than the queue (work for sites the city's crews finished, which the next
+        // offer cuts, Construction.capForeignBook()) - so the room is the threshold's months of the sites and that too.
+        double room = terms.thresholdMonths() * terms.sites() - (queueBefore - bookBefore);
+        out.printf("  the threshold's room before the trap's sites: %,.1f points (his book over the queue by %,.1f)%n", room, Math.max(0, bookBefore - queueBefore));
+        close("the sites ordered in the trap went on his book as they were billed, all but their work within the threshold's room",
+                c.getForeignBook(), bookBefore + (bm.getRemainingConstructionPoints() - queueBefore) - room, 1e-9);
         close("...the queue at home past the threshold's months of the sites is the work quoted at home, which the city's builders keep",
-                bm.overflowAtHome(), bm.queueAtHome() - terms.thresholdMonths() * terms.sites(), 1e-9);
-        assertTrue("...which is more than none", bm.overflowAtHome() > 0);
+                bm.overflowAtHome(), Math.max(0, bm.queueAtHome() - terms.thresholdMonths() * terms.sites()), 1e-9);
+        assertTrue("...which is none: what crossed the threshold went abroad as it was billed", bm.overflowAtHome() <= 1e-9 * terms.sites());
         return g;
     }
 
@@ -521,9 +540,19 @@ public class ConstructionTrapCheck {
         for (double ahead : aheads) {
             for (double each : eachs) {
                 double three = bm.orderPriceMultiplier(ahead, each, 1);
-                boolean home = now == null || BuildersShort.monthsQueued(now.queueAtHome() + ahead, now.sites()) <= now.thresholdMonths();
-                double expected = home ? bm.orderPriceMultiplier(ahead) : 1 + abroadShare(bm, now, each);
-                if (!home) abroad[0]++;
+                // REV-FC2, the second review: the part of the building within the threshold, by hand - all of it, none
+                // from a queue at it or past it, or the part the threshold splits off, its points past it abroad.
+                double expected;
+                if (now == null) expected = bm.orderPriceMultiplier(ahead);
+                else {
+                    double from = BuildersShort.monthsQueued(now.queueAtHome() + ahead, now.sites()), step = each / now.sites();
+                    double t = now.thresholdMonths();
+                    double h = !(from < t - BuildersShort.AT_THRESHOLD) ? 0 : !(step > 0) ? 1 : Math.min(1, (t - from) / step);
+                    if (h >= 1) expected = bm.orderPriceMultiplier(ahead);
+                    else if (!(h > 0)) expected = 1 + abroadShare(bm, now, each);
+                    else expected = 1 + (h * BuildersShort.premium(from) + (1 - h) * abroadShare(bm, now, (1 - h) * each)) / 1;
+                    if (h < 1) abroad[0]++;
+                }
                 equal &= Double.doubleToLongBits(three) == Double.doubleToLongBits(expected);
             }
         }
@@ -760,11 +789,13 @@ public class ConstructionTrapCheck {
         close("the builders' statement the month after carries that bill, named for the contractor, as an import", second.stmtForeign, first.bill, 1e-12);
         assertTrue("...in their imports line, which the audit's TRADE scope reads", second.stmtImports >= first.bill - 1e-9
                 && second.auditImports >= first.bill - MoneyAudit.CENT && Math.abs(second.auditImports - second.stmtImports) < MoneyAudit.CENT);
-        // REV-FC2, moved from "...and the city climbed out in the month: ... no order going abroad": the depot lifted the
-        // city's own sites over the sliver, but the work its payers were quoted at home stays there, past the threshold, so an
-        // order placed now still goes abroad - until the city's builders work it down (section 5).
-        assertTrue("...and the city's own sites at every post climbed over the sliver in the month, the work quoted at home still past the threshold",
-                first.sites >= SLIVER * first.output && bm.ordersGoAbroad() && bm.overflowAtHome() > 0);
+        // REV-FC2, the second review, moved from "...the work quoted at home still past the threshold": the trap's work past
+        // the threshold went abroad as it was billed (section 2), leaving the queue at home at the threshold's months of the
+        // sliver; the depot lifted the sites over it, and the same queue is fewer months of them - under the threshold, so an
+        // order placed now is built at home, and nothing quoted at home stands past it.
+        out.printf("  after the depot: the queue at home %.4f months of the sites against the threshold %.4f%n", bm.monthsQueued(), bm.thresholdMonths());
+        assertTrue("...and the city's own sites at every post climbed over the sliver in the month, the queue at home under the threshold with them",
+                first.sites >= SLIVER * first.output && !bm.ordersGoAbroad() && bm.overflowAtHome() == 0);
     }
 
     /** His bill in the month before the rows (FC2: the founding's, the Penitentiary's), which the first row's statement carries. */
@@ -1020,13 +1051,17 @@ public class ConstructionTrapCheck {
         sameStart("with the sites ordered", kept, gone);
         out.printf("  the sites ordered in the trap: the queue %,.0f -> %,.0f, his book %,.0f, the overflow at home %,.0f (the University is %,d points)%n",
                 queueBefore, bk.getRemainingConstructionPoints(), ck.getForeignBook(), bk.overflowAtHome(), university.getConstructionPoints());
-        assertTrue("fixture: the University is the city's own site, ordered with the queue at home past the threshold (an order goes abroad still)",
-                bg.isCitySite(key) && bg.ordersGoAbroad() && bk.ordersGoAbroad());
-        // REV-FC2, moved from FC2's "...on no book when billed": an order's buildings past the threshold go on his book as it is
-        // billed, and the queue at home was past it, so the sites' did, whole - the University's points among them.
-        close("...on his book as they were billed, whole: the queue at home was past the threshold", ck.getForeignBook(),
-                bookBefore + bk.getRemainingConstructionPoints() - queueBefore, 1e-9);
-        assertTrue("...the University's points among them", ck.getForeignBook() - bookBefore >= university.getConstructionPoints());
+        BuildingManager.ForeignTerms termsK = bk.foreignTerms();
+        // ...the room read as section 2 reads it: the queue owed on site less his book, which may hold more than the queue.
+        double room = termsK.thresholdMonths() * termsK.sites() - (queueBefore - bookBefore);
+        assertTrue("fixture: the University is the city's own site, ordered as the queue at home crossed the threshold (an order goes abroad still)",
+                bg.isCitySite(key) && bg.ordersGoAbroad() && bk.ordersGoAbroad() && room > 0 && room < university.getConstructionPoints());
+        // REV-FC2, moved from FC2's "...on no book when billed": an order's work past the threshold goes on his book as it is
+        // billed; since the second review the one that crossed it was split, its work within the threshold's room at home.
+        close("...on his book as they were billed, all but the threshold's room: the queue at home was under it before them", ck.getForeignBook(),
+                bookBefore + bk.getRemainingConstructionPoints() - queueBefore - room, 1e-9);
+        assertTrue("...the University's work past it among them", ck.getForeignBook() - bookBefore >= university.getConstructionPoints() - room);
+        double shareBefore = bg.abroadOwedOf(template(gone, "University")) / cg.getForeignBook();
 
         assertTrue("the city cancels the University in one twin", gone.cancelSite(key, true) && bg.getControl().isCancelling(key)
                 && !bk.getControl().isCancelling(key));
@@ -1046,8 +1081,16 @@ public class ConstructionTrapCheck {
         bits("...and his bill", stoppedMonth.bill, month.bill);
         close("the Refund's points are the shell's: the University's points less the progress it kept", refund.points(),
                 shell.buildings * (double) university.getConstructionPoints() - shell.progress, 1e-9);
-        close("his book is the other twin's less the University's points left at the stop", cg.getForeignBook(),
-                ck.getForeignBook() - refund.points(), 1e-9);
+        // REV-FC2, the second review, moved from "less the University's points left": a cancel takes the site's own work off
+        // his book, its claim's share of it (BuildingManager.noteAbroad()), struck at the stop and cut once his month is off.
+        double cut = ck.getForeignBook() - cg.getForeignBook();
+        out.printf("  the University's share of his book: %.6f before the month, %.6f at the stop; cut %,.2f of its %,.2f points left (FC2 cut them all)%n",
+                shareBefore, refund.bookShare(), cut, refund.points());
+        close("his book is the other twin's less the University's share of it at the stop, never more than its points left", cg.getForeignBook(),
+                ck.getForeignBook() - Math.min(refund.points(), refund.bookShare() * ck.getForeignBook()), 1e-9);
+        assertTrue("...its share its work's on his book before the month, or more where a site with a claim finished in it",
+                refund.bookShare() >= shareBefore - 1e-12 && refund.bookShare() < 1);
+        assertTrue("...which leaves the other sites' work on his book", cg.getForeignBook() > 0 && cut > 0);
 
         // ...restarted: the shell's points go back in the queue at home, and stay there (REV-FC2: only an order's quote puts work abroad).
         double stopped = cg.getForeignBook();
@@ -1057,12 +1100,16 @@ public class ConstructionTrapCheck {
                 && gone.getBuildingManager().getControl().shellOf(university.getId()) == null);
         bits("a restart puts nothing on his book itself: it is as the stop left it", cg.getForeignBook(), stopped);
         close("...the queue is the twin's again", bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints(), 1e-9);
-        close("...so the queue at home holds the order's points left over the twin's", bg.queueAtHome() - bk.queueAtHome(), refund.points(), 1e-9);
-        // The landlords' Houses, the same in both, go on his book as they are billed in both (REV-FC2), and the next offer counts them.
+        close("...so the queue at home holds the work the order had on his book over the twin's: the restart is built at home",
+                bg.queueAtHome() - bk.queueAtHome(), cut, 1e-9);
+        // The landlords' Houses, the same in both, go on his book as they are billed (REV-FC2), and the next offer counts them:
+        // all of them where the restart holds the queue at home past the threshold, past the threshold's room in the twin.
+        BuildingsTemplate house = template(kept, HOUSE);
+        double housePoints = LANDLORDS_HOUSES * (double) house.getConstructionPoints();
         moreHouses(kept);
         moreHouses(gone);
-        assertTrue("fixture: the landlords' Houses put the queue at home past the threshold in both twins", bk.overflowAtHome() > 0
-                && bg.overflowAtHome() > bk.overflowAtHome());
+        assertTrue("fixture: the landlords' Houses ordered in both twins, the restart's points keeping the cancelled twin's queue at home past the threshold",
+                bg.overflowAtHome() > 0 && bg.overflowAtHome() > bk.overflowAtHome());
         kept.foreignCrewsOffer();
         gone.foreignCrewsOffer();
         out.printf("  restarted and offered: his book %,.2f -> %,.2f, the twin that never cancelled %,.2f; handed %,.2f against %,.2f; the queue %,.0f against %,.0f%n",
@@ -1070,9 +1117,14 @@ public class ConstructionTrapCheck {
                 bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints());
         // REV-FC2, moved from FC2's "the next offer puts the restart's points on his book once": the offer hands nothing; the
         // restart's points stay in the queue at home, its payer quoted on the queue as it stood (Game.quoteRestart()).
-        close("the next offer puts none of the restart's points on his book: the book is the twin's less the points the order had left",
-                cg.getForeignBook(), ck.getForeignBook() - refund.points(), 1e-9);
-        bits("...the month's figures alike: the Houses' in both", cg.getHandedAbroadThisMonth(), ck.getHandedAbroadThisMonth());
+        // REV-FC2, the second review, moved from "the book is the twin's less the points the order had left" and "the Houses'
+        // in both alike": the Houses crossed nothing in the cancelled twin, its queue at home past the threshold.
+        close("the next offer puts none of the restart's points on his book: the book is the stop's and the Houses' handed",
+                cg.getForeignBook(), stopped + cg.getHandedAbroadThisMonth(), 1e-9);
+        close("...the Houses all abroad in the cancelled twin, the restart holding the queue at home past the threshold",
+                cg.getHandedAbroadThisMonth(), housePoints, 1e-9);
+        assertTrue("...and in the twin those past the threshold's room the month's work left", ck.getHandedAbroadThisMonth() > 0
+                && ck.getHandedAbroadThisMonth() < housePoints);
         assertTrue("...and not the billed twice case: the twin's book plus the order's points, as before FC1b",
                 Math.abs(cg.getForeignBook() - (ck.getForeignBook() + refund.points())) > refund.points() / 2);
         close("...and the queue is the twin's still", bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints(), 1e-9);
@@ -1501,8 +1553,9 @@ public class ConstructionTrapCheck {
         bitsEqual &= identity(g, aheads, eachs, abroad);
         // REV-FC2, moved from "...is orderPriceMultiplier(x, pointsEach, 1) to the bit": a building that stands within the
         // threshold is still FC1's quote, to the bit; past it its own points join his month, so it is one and the share
-        // with them - pointsEach nothing the one-argument form exactly.
-        out.printf("  of %d queues ahead and sizes, %d past the threshold%n", aheads.length * eachs.length, abroad[0]);
+        // with them - pointsEach nothing the one-argument form exactly. Since the second review a building the threshold
+        // falls in is split: its part within at the premium where it begins, the rest at the share with those points.
+        out.printf("  of %d queues ahead and sizes, %d past the threshold or split by it%n", aheads.length * eachs.length, abroad[0]);
         assertTrue("on the calm city, orderPriceMultiplier(x, pointsEach, 1) is orderPriceMultiplier(x) to the bit where the building stands within the threshold,"
                 + " and past it one and the share with its own points in his month, for queues ahead of it from nothing to ten million points", bitsEqual && abroad[0] > 0);
 

@@ -6537,10 +6537,11 @@ public class BuildingManager {
         return t.world() * (1 + BuildersShort.exportShare(t.world(), t.base()));
     }
 
-    /** Whether an order placed now sends work abroad (FC2): the queue at home is past the threshold; never with no trade on. */
+    /** Whether an order placed now sends work abroad (FC2): the queue at home is at the threshold or past it; never with no trade on. */
     public boolean ordersGoAbroad() {
         ForeignTerms t = foreignTerms();
-        return t != null && t.monthsQueued() > t.thresholdMonths();
+        // ...at or past it, as BuildersShort.homeUnits() reads it (REV-FC2, the second review: the split leaves it at it).
+        return t != null && !(t.monthsQueued() < t.thresholdMonths() - BuildersShort.AT_THRESHOLD);
     }
 
     /** What an order's non-material price (the work, the foothill's preparation, a run's works, a span, deep water) is multiplied by, struck once per quote on the queue as it stands: one and the premium at home, or the foreign crews' excess for the work past the threshold; exactly 1 with no trade on (foreignTradeOn()). Never the repairs' or a valuation's. */
