@@ -719,8 +719,15 @@ public class InvestCheck {
         assertTrue("land short of the gap -> still builds", d.build);
         check("...but only what there are plots for", d.quantity, 5);
 
-        // Not quite one plot is no plot.
-        tight.setLandAvailable(footprint - 1, 0);
+        // Not quite the smallest known housing plot is no plot. A preferred
+        // form's plot can still leave room for a legitimate smaller alternative.
+        double smallestHousingPlot = hb.getTemplatesBySector(landlords.key()).stream()
+                .filter(t -> t.getCapacity() > 0 && t.getLandSqFt() > 0)
+                .mapToDouble(BuildingsTemplate::getLandSqFt).min().orElseThrow();
+        tight.setLandAvailable(smallestHousingPlot - 1, 0);
+        assertTrue("fixture: no known housing form fits this ground",
+                hb.getTemplatesBySector(landlords.key()).stream().filter(t -> t.getCapacity() > 0)
+                        .noneMatch(t -> tight.plotsAvailableFor(t) > 0));
         d = landlords.plan(tight, housed);
         assertTrue("under one plot -> refuses", !d.build);
         assertTrue("...and says land is why", d.reason.startsWith("no land"));
@@ -1264,7 +1271,9 @@ public class InvestCheck {
         assertTrue("fixture: the builders charge a sales tax", rB19 > 0);
         Game.BuildQuote q19 = priced19.quoteBuild(house19, 10);
         double plantNet19 = q19.plantCost * (1 - rM19);
-        check("the quote's work is ten Houses' work at today's wages", q19.sticker, 10 * pb.nonMaterialCost(house19), 1e-9);
+        double scarcity19 = pb.orderPriceMultiplier(0, house19.getConstructionPoints(), 10);
+        check("the quote's work is ten Houses' work at today's wages and its actual order premium",
+                q19.sticker, 10 * pb.nonMaterialCost(house19) * scarcity19, 1e-9);
         check("the quote is the work and the material over one less the builders' rate",
                 q19.total, (q19.sticker + q19.importCost + plantNet19) / (1 - rB19), 1e-9);
         check("...its allowance the material in it, on the same terms",
