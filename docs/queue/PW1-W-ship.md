@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW1-W-3D5i6fZ2 -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — PW1-W, water priced from its cost — 2026-11-23, ready, see docs/queue/PW1-W-notes.md
 The sea's water is priced as PW1 prices power, at its margin: while the city needs it, a unit costs its tariff and the
