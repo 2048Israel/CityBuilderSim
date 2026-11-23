@@ -426,6 +426,10 @@ public class ScaleCheck {
         for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
         PopulationManager people = g.getPopulationManager();
         assertTrue("the copy loads", g.getLoadFailure() == null && g.getMonth() == one.getMonth());
+        Motoring.UsedTrade usedOne = one.getMotoring().usedTradeForSave();
+        assertTrue("used-car trades, offers, spending and credit scale; the asset mark stays per car",
+                g.getMotoring().usedTradeForSave().equals(new Motoring.UsedTrade(usedOne.traded() * k,
+                        usedOne.offered() * k, usedOne.spend() * k, usedOne.credit() * k, usedOne.price())));
         same("its population is K times the founded city's, past 2^31", people.getPopulation(), k * pop1);
         same("...its workforce too, not stuck at 2,147,483,647", people.getWorkforce(), k * workforce1);
         assertTrue("...both past the int ceiling",
@@ -1729,6 +1733,10 @@ public class ScaleCheck {
         // RES3: native titles and cell/class flows grow with the city. Per-home
         // prices, carry, capital, budgets, attributes and the wage indices stay.
         named(d.get("housingInventory"), k, "owned", "occupied", "listedVacant", "listedOccupied");
+        if (d.has("usedCarTrade") && !d.get("usedCarTrade").isJsonNull()) {
+            JsonObject usedTrade = d.getAsJsonObject("usedCarTrade");
+            for (String key : new String[] { "traded", "offered", "spend", "credit" }) scalar(usedTrade, key, k);
+        }
         if (d.has("housingMarket") && !d.get("housingMarket").isJsonNull()) {
             JsonObject market = d.getAsJsonObject("housingMarket");
             named(market.get("classes"), k, "demand", "homes", "occupied", "tradeQuantity", "tradeValue");

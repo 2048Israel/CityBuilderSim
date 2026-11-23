@@ -432,10 +432,11 @@ the original down-payment, halving, advisor and no-stranded-cash checks pass.
 HousingChoiceCheck and HousingMarketCheck are green with both caused mends.
 
 The committed [catalogue report](RES3-catalogue.md) is generated from those model
-inputs. Final repeat: small city 210 people, 43.863 ms, H/T/A/M/L 65/32/113/0/0.
-Present-day: 35.450 ms, 84/32/340/0/0; larger 147,122-person case 31.290 ms,
-84/32/351/0/0. Historical: 26.005 ms, 46/32/137/0/0; larger 132,369-person
-case 37.452 ms, 46/32/138/0/0. These are entire integrated months, not solver
+inputs. HC1-integrated repeat: small city 210 people, 55.842 ms,
+H/T/A/M/L 65/32/112/0/0. Present-day: 45.487 ms, 84/32/330/0/0;
+larger 148,967-person case 54.640 ms, 82/32/314/0/0. Historical:
+39.424 ms, 62/32/193/0/0; larger 149,126-person case 41.473 ms,
+62/32/193/0/0. These are entire integrated months, not solver
 microbenchmarks. All retain 141 permanent household cells. Modern physical
 classes are 32; historical known stock is 16 classes, with all 32 quoted and
 availability reported. M is new typed loan cohorts (HO1), L live listing cohorts;
@@ -534,3 +535,45 @@ minimum principal. The prediction is separate from HC1's saved settled flow:
 it matches actual card settlement, and neither the saved minimum/interest nor
 any card position changes when a home is quoted. HousingMarketCheck is green
 with these caused cases and both native-era continuations.
+
+The integrated 1,000-month diagnostic has no unplaced-household finding. Its
+three end-of-run own-line mean bounds are short-window findings and are not
+waived; the full 2,400-month acceptance run uses the original bounds.
+
+The integrated HousingDoorCheck's only red is its played capital-shortage
+opportunity: there are zero such orders in the m431-900 window. It observes
+157 lender-door months, with 70 short-segment orders written whole, no cut or
+held short-segment orders, no down-payment refusal, no stranded cash and zero
+unplaced households. All 899 household cash identities close. Population is
+15,168 and homes 2,656. ★ This missing played opportunity is recorded with
+FS11, the queued sweep that owns HousingDoorCheck, retaining the original
+assertion and all money/placement checks. The deliberately caused capital
+cases in CreditCrunchCheck are included in the final named verification.
+
+## Integrated native asset-mark finding
+
+The unchanged exact HC2 debt-statistics save assertion caught a real missing
+flow. Every financial holding, cell count, car stock and exchange rate matched,
+but debt/assets was 2.5883189261098205e-9 live versus 2.5883189268332515e-9
+loaded. The live used-car mark was 0.22470679371627045; load lost it and used
+the new-car-price floor, 0.17791977463721569, instead. This was not a housing
+or debt-stock rounding tolerance.
+
+★ The closed used-car trade is now one bounded citywide DataSave tuple: traded,
+offered, spend, credit and actual price. The late load restorer keeps the mark
+after the rebuild. Currency reform divides spend, credit and price; the K-city
+copier multiplies counts, spend and credit and leaves the unit price alone.
+SaveFileCheck causes a positive actual used-car trade, checks the tuple exactly,
+and retains the original exact debt-statistics assertion. Both reload assertions
+passed on the first mended run. DenominationCheck and ScaleCheck additionally
+check the tuple through their existing reform and native copy paths.
+
+The AW2 construction twin's staffing premise also failed after the played town
+moved: closing its ten shops and four medical schools left only 60.22% of a new
+shop's posts available, below the unchanged 80% gate. ★ Its fixture now also
+retires the actual university and releases its ground before the existing
+settling month. This causes spare workers through the model's workplace inputs;
+it changes neither the gate nor its staffing answer. The original staffing,
+automatic land buying, private-order and native continuation assertions all
+passed. SaveFileCheck is green, including the exact used-car and debt-survey
+checks (target/RES3-save-mends.txt and target/checks/SaveFileCheck.log).

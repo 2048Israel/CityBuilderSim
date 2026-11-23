@@ -63,6 +63,29 @@ public final class Motoring {
     /** The second-hand market's month: offered, traded, what it cost and what a lender found. */
     private double usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice;
 
+    /** The closed month's trades and asset mark, which cannot be rebuilt from its closing fleet. */
+    public record UsedTrade(double traded, double offered, double spend, double credit, double price) {}
+
+    public UsedTrade usedTradeForSave() {
+        return new UsedTrade(usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice);
+    }
+
+    public void restoreUsedTrade(UsedTrade saved) {
+        if (saved == null) return;
+        for (double value : new double[] { saved.traded(), saved.offered(), saved.spend(), saved.credit(), saved.price() })
+            if (!Double.isFinite(value) || value < 0) throw new IllegalArgumentException("Invalid saved used-car trade");
+        usedCarsTraded = saved.traded();
+        usedCarsOffered = saved.offered();
+        usedCarSpend = saved.spend();
+        usedCarCredit = saved.credit();
+        usedCarPrice = saved.price();
+    }
+
+    public void redenominateUsedTrade(double scale) {
+        restoreUsedTrade(new UsedTrade(usedCarsTraded, usedCarsOffered,
+                usedCarSpend * scale, usedCarCredit * scale, usedCarPrice * scale));
+    }
+
     /* ==================== THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) ====================
      *
      * A CAR COST NOTHING TO RUN until now: no fuel, upkeep or insurance

@@ -1937,6 +1937,10 @@ public class SaveFileCheck {
         assertTrue("HC1 card positions and settled flows cross the loader", cardsMatch);
         assertTrue("HC2 annual debt surveys cross the history loader",
                 full.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
+        assertTrue("used-car trade and asset mark cross the city loader exactly",
+                full.getMotoring().usedTradeForSave().equals(back.getMotoring().usedTradeForSave()));
+        assertTrue("fixture: the saved used-car mark is an actual positive trade price",
+                full.getMotoring().getUsedCarsTraded() > 0 && full.getMotoring().getUsedCarPrice() > 0);
         assertTrue("HC2 current debt statistics cross the fully populated city loader exactly",
                 full.getHouseholdBalance().debtStatistics().equals(back.getHouseholdBalance().debtStatistics()));
         // ...each cell's own, bond by bond, by the cell's name (0.7.12 round 2).
@@ -3698,14 +3702,21 @@ public class SaveFileCheck {
         BuildingsTemplate shop = template(live, "Convenience Store");
         long removed = live.getBuildingManager().retire(shop, live.getBuildingManager().countByName(shop.getName()));
         live.getLandManager().release(removed * shop.getLandSqFt(), shop.getSector(), Game.groundUse(shop));
-        // Free workers for the private order; this services fixture otherwise has nobody available to staff a shop.
+        // Free workers for the private order through actual workplace closures; retain the staffing gate.
         BuildingsTemplate school = template(live, "Medical School");
         long closed = live.getBuildingManager().retire(school, live.getBuildingManager().countByName(school.getName()));
         live.getLandManager().release(closed * school.getLandSqFt(), school.getSector(), Game.groundUse(school));
+        BuildingsTemplate university = template(live, "University");
+        long universitiesClosed = live.getBuildingManager().retire(university,
+                live.getBuildingManager().countByName(university.getName()));
+        live.getLandManager().release(universitiesClosed * university.getLandSqFt(), university.getSector(), Game.groundUse(university));
         quietly(() -> live.simulateMonths(1)); // Settle staffing and output after the fixture's closures, with its planners still held.
         for (String sector : Sectors.KEYS) live.getBusinessInvestment().releaseSector(sector);
         live.getSectors().retail().setCash(Founding.WEALTHY_CASH);
-        assertTrue("fixture: the short retailer can staff a new shop", live.getSectors().retail().staffing(shop).passes());
+        var res3RetailStaffing = live.getSectors().retail().staffing(shop);
+        System.out.printf("   AW2 staffing %.6f now, %.6f with migration; closed %d shops, %d medical schools and %d universities%n",
+                res3RetailStaffing.shareNow, res3RetailStaffing.share, removed, closed, universitiesClosed);
+        assertTrue("fixture: the short retailer can staff a new shop", res3RetailStaffing.passes());
         live.getBuildingManager().addStack(template(live, "House"), 1, false);
         live.getLandManager().setOwnedSqFt(Math.ceil(live.getLandManager().getAllocatedSqFt()));
         live.getAutoBuilder().setOn(true, null);

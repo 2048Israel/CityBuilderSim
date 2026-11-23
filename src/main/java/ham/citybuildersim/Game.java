@@ -17690,6 +17690,7 @@ public class Game {
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
         dataSave.setHousingMarket(getSectors().realEstate().housingMarket().forSave());
+        dataSave.setUsedCarTrade(motoring.usedTradeForSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
         dataSave.setHomePayIndices(recipes.payIndicesForSave(),recipes.payIndexMonth());
@@ -22401,6 +22402,7 @@ public class Game {
             // family after the census.
             families.restoreOwnerAdults(restoredFlows.getOwnerAdults());
             getSectors().realEstate().housingMarket().restore(restoredFlows.getHousingMarket(),buildingManager);
+            motoring.restoreUsedTrade(restoredFlows.getUsedCarTrade());
             populationManager.setOwners(families.getOwnerAdults());
             health.restore(restoredFlows.getHealth());
             // ...and the causes of death of 1900 (R0b): a save from before has
@@ -23215,6 +23217,7 @@ public class Game {
          */
         getInfrastructureManager().redenominateFuel(scale);
         motoring.restoreFuel(motoring.getFuelBill() * scale, motoring.getFuelImports() * scale, motoring.getFuelLitres());
+        motoring.redenominateUsedTrade(scale);
         // ...and the homes' held lamp oil and coal sale (R0c), a figure in money too; nothing to divide with both shares at 0.
         homeFuel.redenominate(scale);
 

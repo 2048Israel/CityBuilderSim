@@ -272,6 +272,14 @@ public class DenominationCheck {
         close("the shelf price divided",
                 shelf(lopped), shelf(plain) / factor, 1e-9);
         close("rent divided", rent(lopped), rent(plain) / factor, 1e-9);
+        Motoring.UsedTrade usedBefore = plain.getMotoring().usedTradeForSave();
+        Motoring.UsedTrade usedAfter = lopped.getMotoring().usedTradeForSave();
+        assertTrue("the used-car market has a positive mark to divide", usedBefore.price() > 0);
+        close("used-car trade count is unchanged", usedAfter.traded(), usedBefore.traded(), 1e-9);
+        close("used-car offered count is unchanged", usedAfter.offered(), usedBefore.offered(), 1e-9);
+        close("used-car spending divided", usedAfter.spend(), usedBefore.spend() / factor, 1e-9);
+        close("used-car credit divided", usedAfter.credit(), usedBefore.credit() / factor, 1e-9);
+        close("used-car asset mark divided", usedAfter.price(), usedBefore.price() / factor, 1e-9);
         close("the minimum wage divided",
                 lopped.getLabourMarket().getMinimumWage(),
                 plain.getLabourMarket().getMinimumWage() / factor, 1e-9);

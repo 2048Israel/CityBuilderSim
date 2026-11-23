@@ -107,6 +107,9 @@ public class DataSave implements Cloneable {
     private HousingMarket.State housingMarket;
     public void setHousingMarket(HousingMarket.State state) { housingMarket=state; }
     public HousingMarket.State getHousingMarket() { return housingMarket; }
+    private Motoring.UsedTrade usedCarTrade;
+    public void setUsedCarTrade(Motoring.UsedTrade state) { usedCarTrade = state; }
+    public Motoring.UsedTrade getUsedCarTrade() { return usedCarTrade; }
     public void setHousingInventory(java.util.List<HousingInventory.Holding> holdings) { housingInventory = holdings; }
     public java.util.List<HousingInventory.Holding> getHousingInventory() { return housingInventory; }
     private int month = 1;
