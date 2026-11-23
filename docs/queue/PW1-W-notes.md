@@ -139,3 +139,18 @@ REV-PW1-W 1):
   KeptCheck known red only (main's). `./batch-check.sh --fast` green.
 - `tools/pick.sh`: ALL (AllChecks changed). Its review line says "not needed"; the brief owes a stranger's money
   review, and saved state is added, so a saves review too.
+
+## 5. The trace: unchanged, so no ensemble
+
+The default playtest, traced (`-Dplaytest.trace`, both data files named, one JVM each, one after the other) on main
+ecbc3b975 (0.9.192) built apart and on this branch merged with it (82d5015aa, the code of e3bc5bc56):
+
+- All eight CSVs are byte-identical (`month`, `house`, `pop`, `bank`, `bonds`, `build`, `labour`: 2,402 lines each,
+  26 for `borrow`; 947,599 bytes `month`, 5,306,480 `bonds`).
+- The log differs in nine lines and nothing else: the run time (742 s against 758 s, in two lines), the wall-clock
+  stamps on two lines in each, and the branch's new count line (the sea's water: 0 months). Both exit 1 on main's
+  known red alone.
+- PW1-L and PW1-G move nothing in the default path: the city founded today pays no licence, and no recipe choice
+  there turns on a works' own surplus at a price the strike does not pay. The sea never delivers (§4), and the
+  water's power transfer stays inside the treasury's pool. So the ensemble does not run (docs/contract.md, section 4:
+  an unchanged trace is said in the notes).
