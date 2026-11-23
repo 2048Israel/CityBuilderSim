@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.192"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.193"` | Bump on release. |
 | 8366 | `GameVersion.SAVE_FORMAT` | `63` | PW5 after HC1's shipped format 62: closing grid costs are a saved flow absent from that native layout. |
 | 8426 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `63` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 8434 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |

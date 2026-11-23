@@ -132,6 +132,11 @@ public final class PowerDispatch {
         public static Row fuelled(String name, double kw, double marginal, Good fuel, double fuelPerKwh, double upkeepPerKwh) {
             return new Row(name, Kind.FUELLED, kw, 0, marginal, fuel, fuelPerKwh, upkeepPerKwh);
         }
+
+        /** The same row offering another kW and month of water, nothing run yet: a dispatch run again on it leaves this one as it ran (PW1-L). */
+        public Row offering(double kw, double waterKwh) {
+            return new Row(name, kind, kw, waterKwh, marginal, fuel, fuelPerKwh, upkeepPerKwh);
+        }
     }
 
     /** What a month's dispatch came to. */

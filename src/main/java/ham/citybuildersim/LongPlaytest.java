@@ -1336,6 +1336,10 @@ public class LongPlaytest {
     static double breadLow = Double.POSITIVE_INFINITY, breadHigh = Double.NEGATIVE_INFINITY;
     /** Months the utility had draw nobody is invoiced for - the premise of the electricity law. */
     static int unbilledMonths = 0;
+    /** PW1-W (REV-PW1-W 1): months the sea delivered water, the months it delivered under SEA_MARGIN_SHARE of its output (its power spread over
+     *  the water served), the months it was under a tenth of the water served, and its smallest share of the water served. */
+    static int seaMonths = 0, seaIdleMonths = 0, seaSmallMonths = 0;
+    static double seaShareLow = Double.POSITIVE_INFINITY;
 
     /* ===== THE HOUSEHOLDS' OWN LINES, OVER THE RUN (HL1, 2026-11-11) =====
 
@@ -1514,6 +1518,14 @@ public class LongPlaytest {
                     uh.getWaterRevenue(), waterCharged), waterGap);
         }
         if (uh.getUnbilledElectricityDraw() > 0) unbilledMonths++;
+        UtilitiesHandler.WaterDraw sea = uh.getLatestWaterDraw();
+        if (sea != null && sea.seaDelivered() > 0) {
+            double served = sea.landDelivered() + sea.seaDelivered();
+            seaMonths++;
+            if (sea.seaDelivered() < UtilitiesHandler.SEA_MARGIN_SHARE * sea.seaOutput()) seaIdleMonths++;
+            if (sea.seaDelivered() < .1 * served) seaSmallMonths++;
+            seaShareLow = Math.min(seaShareLow, sea.seaDelivered() / served);
+        }
     }
 
     /** AW2: actual played months whose land ledger differs from the catalogue footprint, counted without changing play. */
@@ -8375,6 +8387,9 @@ public class LongPlaytest {
                         + " electricity and water revenue %s the sectors' bills every month; unbilled draw in %,d month(s)%n",
                 breadMadeRun, breadSoldRun, foodMonths, foodMonths > 0 ? breadLow : 0, foodMonths > 0 ? breadHigh : 0,
                 findings.containsKey(POWER_BROKEN) || findings.containsKey(WATER_BROKEN) ? "did NOT match" : "matched", unbilledMonths);
+        out.printf("  the sea's water (PW1-W): delivered in %,d month(s); under SEA_MARGIN_SHARE of its output, its power spread over the water served,"
+                        + " in %,d; under a tenth of the water served in %,d; its smallest share of the water served %s%n",
+                seaMonths, seaIdleMonths, seaSmallMonths, seaMonths > 0 ? String.format("%.4f", seaShareLow) : "none");
         // The households' own lines over the run (HL1, 2026-11-11): flagged here, above the place the findings are printed and counted.
         ownLinesOverTheRun(out, endMonth);
 

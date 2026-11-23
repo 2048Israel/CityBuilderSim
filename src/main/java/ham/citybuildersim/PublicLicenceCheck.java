@@ -429,8 +429,15 @@ public final class PublicLicenceCheck {
         long need = (long) Math.floor(Math.max(0, u.getProduction() / fill - u.getConsumption()) / hungry.getElectricityConsumption()) + 1;
         HistoricalLicenceCheck.stand(g, hungry.getName(), (int) need);
         months(g, 2);
-        double short1 = LicenceFees.SHARE * Recipes.pricesOf(g).pricePerWatt()
-                * (Math.min(u.getConsumption(), u.getProduction()) - Math.min(u.getConsumption(), u.getProduction() - delta * u.getAverageUtilityFill()));
+        // PW1-L: the turbine's kW are served through the dispatch, not the flat rule's production over demand. With every half-block of
+        // the latest month short by more than the turbine makes, each of its kWh is served whether it runs or not, so it raises the share
+        // served by its kWh over the kWh asked (the losses and the season in), and the demand delivered by that share of the demand.
+        PowerDispatch.Month last = u.getLatestMonth();
+        double moved = delta * u.getAverageUtilityFill();
+        boolean shortThroughout = last != null && last.askedKwh > 0;
+        for (int s = 0; shortThroughout && s < PowerDispatch.HALVES; s++) shortThroughout = last.unserved[s] > moved;
+        double short1 = !shortThroughout ? 0 : LicenceFees.SHARE * Recipes.pricesOf(g).pricePerWatt()
+                * u.getConsumption() * moved * PowerDispatch.MONTH_HOURS / last.askedKwh;
         System.out.printf("   (a) demand %.1f over %.1f made, %.1f without; %d x %s; fee %.9f pending %.9f%n", u.getConsumption(), u.getProduction(),
                 u.getProduction() - delta * u.getAverageUtilityFill(), need, hungry.getName(), short1, g.getPublicIpPending());
         check("(a) the turbine adds nothing the city was short of, so its gain and its bill are nothing though the patent runs; once the grid is short it pays its share",
@@ -452,8 +459,9 @@ public final class PublicLicenceCheck {
                 && w.getWaterConsumption() <= supplyWithout, "demand " + w.getWaterConsumption() + " supply " + supplyWithout);
         double idle = LicenceFees.publicGain(d, sea, null);
         double idlePending = d.getPublicIpPending(), idlePaid = d.getPublicIpPaid();
-        System.out.println("   (c) the player's own tariff: none. The water and power prices are constants of UtilitiesHandler (.05 and .01 times PriceLevel.FACTOR);"
-                + " no policy, setting or screen moves them (Game only copies them from ServicesManager), so no lever makes a building entry's gain positive; the city's demand does.");
+        System.out.println("   (c) the player's own tariff: none. The power is priced by the dispatch and its wires (PW1, PW5) and the water by its tariff, a constant of"
+                + " UtilitiesHandler (.05 times PriceLevel.FACTOR), and its works' power at the margin (PW1-W); no policy, setting or screen moves them, so no lever"
+                + " makes a building entry's gain positive; the city's demand does.");
 
         // (c') the lever that does exist: demand. Water-hungry works past what the city's supply makes without the plant.
         long n = crowd(d, plate);

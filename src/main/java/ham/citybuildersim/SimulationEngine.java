@@ -218,6 +218,8 @@ public class SimulationEngine {
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
         utility.strikePower();
         economyManager.setPowerPrices(utility.getPricePerWatt(), utility.getIndustryPricePerWatt(), utility.getWorksPricePerWatt());
+        // ...and the water's, its tariff and the works' power the same book struck (PW1-W).
+        economyManager.setPricePerWaterUnit(utility.getPricePerWaterUnit());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
         economyManager.setWaterRatio(servicesManager.getWaterRatio());
         /*
