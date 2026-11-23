@@ -134,6 +134,10 @@ public final class CityLand {
     private final long siteX, siteY;
     private LandGrid grid = new LandGrid();
     private final List<LandGrid.Fill> centreRects = new ArrayList<>();
+    /** (AP2) Counts the changes to centreRects, each counted once it is made, so centreStamp() keeps its hash between them; never saved. */
+    private transient volatile int centreEdits;
+    /** (AP2) centreStamp() as last hashed, {centreEdits then, the stamp}: the map's ground asks it at every plot a highway's search reads (CityMap's RunGround.version()). */
+    private transient volatile long[] centreStampKept;
     private final double[] centreKm2 = new double[AREAS];
     /** The centre's dry ground by relief and its shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), km2: counted with the five areas, or all flat where a save has none. */
     private final double[] centreRelief = new double[RELIEF_AREAS];
@@ -272,6 +276,7 @@ public final class CityLand {
                 LandGrid.Fill f = new LandGrid.Fill(p[0] * b, p[1] * b, p[0] * b + b, p[1] * b + b, CENTRE);
                 land.grid.fill(f.x0(), f.y0(), f.x1(), f.y1(), CENTRE);
                 land.centreRects.add(f);
+                land.centreEdits++;
                 if (dry >= target) break outer;
             }
         }
@@ -295,6 +300,7 @@ public final class CityLand {
             long bx = k >> 32, by = (int) k;
             grid.fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE);
             centreRects.add(new LandGrid.Fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE));
+            centreEdits++;
         }
     }
 
@@ -472,6 +478,7 @@ public final class CityLand {
         grid = LandGrid.replay(r.fills());
         centreRects.clear();
         centreRects.addAll(r.fills());
+        centreEdits++;
         for (int a = 0; a < AREAS; a++) centreKm2[a] = r.km2(a);
         for (int i = 0; i < RELIEF_AREAS; i++) centreRelief[i] = r.relief(i);
         for (Resource res : Resource.values()) {
@@ -677,6 +684,18 @@ public final class CityLand {
 
     /** The stamp of the centre's blocks: what a map tells a restatement by (CityMap.syncLand()). */
     public long centreStamp() {
+        // (AP2) Kept between the centre's changes: the count is read before the blocks and raised after they change, so a hash
+        // kept is never older than its count (slot 9: every block hashed again at each of the millions of plots a highway's search read).
+        int edits = centreEdits;
+        long[] kept = centreStampKept;
+        if (kept != null && kept[0] == edits) return kept[1];
+        long h = centreStampDrawn();
+        centreStampKept = new long[] {edits, h};
+        return h;
+    }
+
+    /** centreStamp() hashed from the blocks, never kept: a harness's (KeptReadsCheck). */
+    long centreStampDrawn() {
         long h = World.mix(seed ^ World.mix(siteX * 0x9E3779B97F4A7C15L ^ siteY));
         for (LandGrid.Fill f : centreRects) h = World.mix(h ^ World.mix(f.x0() * 31 + f.y0()) ^ (f.x1() * 0xC2B2AE3D27D4EB4FL + f.y1()));
         return h;
@@ -1354,6 +1373,7 @@ public final class CityLand {
                 if (r == null || r.length != RECT_FIELDS) continue;
                 LandGrid.Fill f = new LandGrid.Fill((long) r[0], (long) r[1], (long) r[2], (long) r[3], CENTRE);
                 land.centreRects.add(f);
+                land.centreEdits++;
                 land.grid.fill(f.x0(), f.y0(), f.x1(), f.y1(), CENTRE);
             }
         }
