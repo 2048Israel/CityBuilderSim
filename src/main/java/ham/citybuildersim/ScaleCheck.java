@@ -695,6 +695,13 @@ public class ScaleCheck {
                     small.getLabourMarket().getLadder() == WageLadder.Y1901 && big.getLabourMarket().getLadder() == WageLadder.Y1901);
             assertTrue("1900 month " + month + ": registers still equal their holders", Math.max(registersMiss(small), registersMiss(big)) <= REGISTER_WITHIN);
             double[] miss = new Figures(big).missAgainst(new Figures(small), TRACK_TIMES);
+            if(month>0)for(Game city:new Game[]{small,big}){
+                var pools=city.getLastMoneyAudit();var households=city.getLastHouseholdsAudit();
+                assertTrue("1900 month "+month+": "+(city==small?"small":"large")+" pools conserve money beside the tracking comparison",
+                        Math.abs(pools.residual)<=MoneyAudit.tolerance(Math.abs(pools.before)+Math.abs(pools.after)+pools.inflows+pools.outflows));
+                assertTrue("1900 month "+month+": "+(city==small?"small":"large")+" households conserve money beside the tracking comparison",
+                        Math.abs(households.residual)<=MoneyAudit.tolerance(Math.abs(households.before)+Math.abs(households.after)+households.moved()));
+            }
             var smallMaterials=small.quoteBuild(small.getBuildingManager().getTemplate(0),1);
             var bigMaterials=big.quoteBuild(big.getBuildingManager().getTemplate(0),1);
             assertTrue("1900 month "+month+": both controls' home quotes draw the same free-material regime",

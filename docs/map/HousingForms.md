@@ -8,7 +8,7 @@
 
 **Uses:** [HousingRecipe](HousingRecipe.md) (47), [BuildingsTemplate](BuildingsTemplate.md) (3), [BuildingType](BuildingType.md) (1), [Good](Good.md) (1), [JobType](JobType.md) (1)
 
-**Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md)
+**Used by (5):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [DenominationCheck](DenominationCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md)
 
 ## Constants
 

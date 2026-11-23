@@ -432,10 +432,10 @@ the original down-payment, halving, advisor and no-stranded-cash checks pass.
 HousingChoiceCheck and HousingMarketCheck are green with both caused mends.
 
 The committed [catalogue report](RES3-catalogue.md) is generated from those model
-inputs. Small city: 210 people, 60.963 ms, H/T/A/M/L 65/32/113/0/0. Present-day:
-44.360 ms, 84/32/340/0/0; larger 147,122-person case 46.531 ms,
-84/32/351/0/0. Historical: 28.892 ms, 46/32/137/0/0; larger 132,369-person
-case 30.773 ms, 46/32/138/0/0. These are entire integrated months, not solver
+inputs. Final repeat: small city 210 people, 43.863 ms, H/T/A/M/L 65/32/113/0/0.
+Present-day: 35.450 ms, 84/32/340/0/0; larger 147,122-person case 31.290 ms,
+84/32/351/0/0. Historical: 26.005 ms, 46/32/137/0/0; larger 132,369-person
+case 37.452 ms, 46/32/138/0/0. These are entire integrated months, not solver
 microbenchmarks. All retain 141 permanent household cells. Modern physical
 classes are 32; historical known stock is 16 classes, with all 32 quoted and
 availability reported. M is new typed loan cohorts (HO1), L live listing cohorts;
@@ -485,3 +485,27 @@ Modern ScaleCheck tracking is now green too. Its historical tracking still has
 five empirical savings/deposit findings after the changed played founding. The
 optional trace compares the native class quotes, free-material regime, bank,
 household stocks, audits and financial flows; that diagnosis follows below.
+
+The historical source and K-copy agree at load on native stock and money, and
+the existing whole-horse-post rounding bounds pass. Every home quote draws the
+same free-material regime. Through the tracking window rent weights are exactly
+33464 at both sizes, rents agree to about 1e-6, GDP differs only about 1e-5 at
+the savings jump, and neither bank resolves or writes down deposits. Month four
+household cash is 18522.6861343 versus 19529.1947414 per city. The actual pool
+ledger isolates the transfer: desk shares bought from households are 0.8451357253
+versus 1073.4886562494. Purchases in the opposite direction are 320.8681100 versus
+349.2379038. These are cash-for-share transactions, not rent or invented income.
+The household cash identity closes on both actual sets of flows. The optional
+trace keeps their prior/closing savings, foreign holdings, bonds, debt and bank
+cash; the historical tracking loop now additionally asserts pool and household
+conservation at the existing MoneyAudit tolerances in both cities every month.
+
+★ The five changed historical empirical TRACK pins are recorded with FS2, the
+queued sweep that owns ScaleCheck's played fixtures. All existing bands and
+native/save/count/register checks remain. They are not labelled the earlier
+DK1 event: no precise desk-threshold fix is claimed here. The historical town's
+whole-post differences change a discrete financial trading outcome after the
+played founding moved. This batch changes no Exchange or OrderBook production
+code. RES3's own two unit-invariance defects above are mended and all currency
+comparisons pass. The final ScaleCheck repeat must also pass the added money
+identities and name only these five FS2 pins.

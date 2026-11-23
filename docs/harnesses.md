@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**244 harness files, 27,968 labelled assertions.** AllChecks runs 244 of them.
+**244 harness files, 27,978 labelled assertions.** AllChecks runs 244 of them.
 
 ## Which harnesses read which class
 
@@ -165,11 +165,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ChildcareCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, GovernmentPlayerCheck, GovernmentViewCheck, HistoryCheck, HouseholdMemoryCheck, InboxCheck, InterestAbroadCheck, LicenceFeesCheck, PartnersCheck, PowerViewCheck, PriceLevelCheck, PublicLicenceCheck, RankingsCheck, ReadPathCheck, ReplayCheck, ResearchViewCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [HomeFuel](map/HomeFuel.md) | BasketYearCheck, Forms1900Check, OilCheck |
-| [Household](map/Household.md) | AuctionCheck, BankCheck, BasketYearCheck, BondCheck, BusinessServicesCheck, CapitalGainsCheck, CarCheck, CentralBankCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, Forms1900Check, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdStageCheck, HousingMarketCheck, InvestCheck, LongPlaytest, MarketCheck, MoneyWordsCheck, OutsideCheck, OwnerCheck, PrizeCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ShortSellingCheck |
+| [Household](map/Household.md) | AuctionCheck, BankCheck, BasketYearCheck, BondCheck, BusinessServicesCheck, CapitalGainsCheck, CarCheck, CentralBankCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, Forms1900Check, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdStageCheck, HousingMarketCheck, InvestCheck, LongPlaytest, MarketCheck, MoneyWordsCheck, OutsideCheck, OwnerCheck, PrizeCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, Forms1900Check, HealthCheck, HouseholdCheck, HousingCheck, HousingMarketCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BasketYearCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalGainsCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, FundCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdStageCheck, HousingMarketCheck, LongPlaytest, LuxuryRetailCheck, MarketCheck, MaterialsCheck, MoneyWordsCheck, OutsideCheck, OwnerCheck, PolicyOpenCheck, PolicyPreviewCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, WoodProductsCheck |
-| [HousingChoice](map/HousingChoice.md) | HousingChoiceCheck, HousingDoorCheck, HousingMarketCheck, LongPlaytest |
-| [HousingForms](map/HousingForms.md) | BuildingDataCheck, HousingMarketCheck |
+| [HousingChoice](map/HousingChoice.md) | DenominationCheck, HousingChoiceCheck, HousingDoorCheck, HousingMarketCheck, LongPlaytest |
+| [HousingForms](map/HousingForms.md) | BuildingDataCheck, DenominationCheck, HousingMarketCheck |
 | [HousingInventory](map/HousingInventory.md) | HousingChoiceCheck, HousingInventoryCheck, HousingMarketCheck, InvestCheck, ReadPathCheck |
 | [HousingMarket](map/HousingMarket.md) | HousingMarketCheck |
 | [HousingRecipe](map/HousingRecipe.md) | BuildingDataCheck, HousingInventoryCheck, HousingMarketCheck |
@@ -16497,7 +16497,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L1116 an exact packing leaves nobody doubled up**
   - L1132 ...and the match places them all: nobody doubled up (
 
-## HousingChoiceCheck.java - 39 labelled assertions
+## HousingChoiceCheck.java - 41 labelled assertions
 
 > Caused cardinality, budget, preference, incumbent and fair-tie findings for typed housing.
 > WHY (RES3): neither a pooled price nor a catalogue table proves who obtains an actual home.
@@ -16546,6 +16546,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L93 emergency does not evict a valid incumbent
   - L94 incumbent's family door stays occupied by that incumbent
   - L95 blocked family is counted when an incumbent cannot move
+  - L100 an incumbent's one-ULP remainder creates no extra normal mover
+  - L101 rounding residual eligibility never invents an incumbent or a door
 
 ## HousingDoorCheck.java - 10 labelled assertions
 
@@ -16668,7 +16670,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L281 first month retains the conveyed title
   - L283 a new city clears both physical and assignment cohorts
 
-## HousingMarketCheck.java - 98 labelled assertions
+## HousingMarketCheck.java - 104 labelled assertions
 
 > Integrated quotes, funded sites, rental receipts, budgets and reload evidence.
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project
@@ -16758,27 +16760,34 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L248 the formation preview leaves actual families and the monthly market unchanged
   - L252 real additional doors still admit arrivals after the formation reserve
   - L253 arrivals who start work next press cannot use the working family's density
-- **L256 emergency adult groups leave compatible host space for child families**
-  - L274 host allocation preserves all actual family members
-  - L275 three funded hosts occupy exactly three real doors
-  - L276 actual single adults really form emergency sharing groups
-  - L277 compatible family host space is not consumed by adult soft preferences
-  - L278 the child guest obtains its whole compatible host slot
-  - L279 all emergency guests fit the actual two-household door limit
-  - L280 emergency hosts collect only the three funded lease bills
-  - L340 staged fixture completed real housing before catalogue-wide orders
-  - L344 catalogue order follows actual availability
-  - L345 modern form unavailable in 1900
-  - L353 fixture caused funded residential starts
-  - L354 fixture has actual household demand
-  - L355 fixture has actual occupied rental homes
-  - L357 funded form completes through actual builder work
-  - L361 native reload preserves asks, assignments, actual trades and staleness
-  - L363 next native month preserves the class market
-  - L366 larger population adds no permanent household cells
-  - L367 larger city's class count stays bounded
-  - L368 larger city's assignments stay bounded by H times T
-- **L382 small scratch-city integrated profile**
+- **L256 the final shortage uses the existing whole-match packing resolution**
+  - L267 an ULP of the whole source is exactly zero final shortage
+  - L268 an ULP cannot activate the farm's housing-priority guard
+  - L269 a rounded complete match records no phantom affordability or suitability reason
+  - L271 a genuine fractional shortage is still explicit
+  - L272 a genuine shortage still activates housing priority
+  - L274 rounding the counter creates no door or extra guest slot
+- **L278 emergency adult groups leave compatible host space for child families**
+  - L296 host allocation preserves all actual family members
+  - L297 three funded hosts occupy exactly three real doors
+  - L298 actual single adults really form emergency sharing groups
+  - L299 compatible family host space is not consumed by adult soft preferences
+  - L300 the child guest obtains its whole compatible host slot
+  - L301 all emergency guests fit the actual two-household door limit
+  - L302 emergency hosts collect only the three funded lease bills
+  - L362 staged fixture completed real housing before catalogue-wide orders
+  - L366 catalogue order follows actual availability
+  - L367 modern form unavailable in 1900
+  - L375 fixture caused funded residential starts
+  - L376 fixture has actual household demand
+  - L377 fixture has actual occupied rental homes
+  - L379 funded form completes through actual builder work
+  - L383 native reload preserves asks, assignments, actual trades and staleness
+  - L385 next native month preserves the class market
+  - L388 larger population adds no permanent household cells
+  - L389 larger city's class count stays bounded
+  - L390 larger city's assignments stay bounded by H times T
+- **L404 small scratch-city integrated profile**
 
 ## HydroCheck.java - 102 labelled assertions
 
@@ -31096,7 +31105,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1985 ...two months on, its history ends at the city's
   - L1986 ...with no month missing (
 
-## ScaleCheck.java - 107 labelled assertions
+## ScaleCheck.java - 109 labelled assertions
 
 > A city past 2^31 people (0.7.53): its counts read back whole, its posts,
 > doors and household places add up to the last one, and a save gives them
@@ -31181,56 +31190,58 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L694 1900 month
   - L696 1900 month
   - L700 1900 month
-  - L719 1900 month
-  - L723 fixture: whole horse posts actually break exact K scaling in the played twins
-- **L734 the audit's floor is never under the figures' own step (0.7.63)**
-  - L744 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L745 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L749 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L755 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L756 ...and a size that is not a number keeps the floor alone
-- **L762 money at that size reads in its own unit**
-  - L764 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L765 ...a thousand quadrillion and more is grouped
-  - L766 ...a negative one keeps its sign
-  - L767 ...and a trillion still reads as one
-  - L769 cash() prints every whole dollar a double holds, as before
-  - L771 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L772 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L863 the copy loads
-  - L899 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L900 ...and the posts, the doors and the household places add up exactly, every month
-  - L910 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L913 ...and its businesses pay the city's price for it
-  - L1027 the copy at K =
-  - L1105 fixture: the grown city loads, to have its building sites emptied
-  - L1116 fixture: ...and nothing is under construction when the copies are taken (within
-  - L1313 the month's money audit closes, to the cent (BankCheck and four more)
-  - L1322 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L1328 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L1333 the money the audit saw made is the central bank's (LongPlaytest)
-  - L1337 M0 moved by the money made (LongPlaytest, already relative)
-  - L1345 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L1350 the treasury's window opens where it closed (TreasuryCheck)
-  - L1354 the treasury's closing balance is its cash (TreasuryCheck)
-  - L1360 the treasury's bridge foots (TreasuryCheck)
-  - L1378 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L1381 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L1387 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L1394 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L1407 ...
-  - L1466 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L1487 fixture: the free copy has ground for some building
-  - L1491 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
-  - L1493 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
-  - L1496 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
-  - L1518 every post,
-  - L1521 ...the posts on offer by job type add up to the total
-  - L1522 ...and the total is every post less those withheld plus the posts past the buildings
-  - L1527 every home is the stacks' quantity times their doors
-  - L1528 ...and the homes by size add up to it
-  - L1530 ...and the landlords' studio and family doors to it too
-  - L1532 the household places are the city's hundred for each founding endowment and the stacks' places
+  - L702 1900 month
+  - L707 1900 month
+  - L740 1900 month
+  - L744 fixture: whole horse posts actually break exact K scaling in the played twins
+- **L755 the audit's floor is never under the figures' own step (0.7.63)**
+  - L765 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L766 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L770 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L776 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L777 ...and a size that is not a number keeps the floor alone
+- **L783 money at that size reads in its own unit**
+  - L785 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L786 ...a thousand quadrillion and more is grouped
+  - L787 ...a negative one keeps its sign
+  - L788 ...and a trillion still reads as one
+  - L790 cash() prints every whole dollar a double holds, as before
+  - L792 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L793 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L884 the copy loads
+  - L920 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L921 ...and the posts, the doors and the household places add up exactly, every month
+  - L931 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L934 ...and its businesses pay the city's price for it
+  - L1048 the copy at K =
+  - L1126 fixture: the grown city loads, to have its building sites emptied
+  - L1137 fixture: ...and nothing is under construction when the copies are taken (within
+  - L1334 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1343 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1349 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1354 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1358 M0 moved by the money made (LongPlaytest, already relative)
+  - L1366 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1371 the treasury's window opens where it closed (TreasuryCheck)
+  - L1375 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1381 the treasury's bridge foots (TreasuryCheck)
+  - L1399 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1402 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1408 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1415 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1428 ...
+  - L1487 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1508 fixture: the free copy has ground for some building
+  - L1512 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
+  - L1514 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
+  - L1517 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
+  - L1539 every post,
+  - L1542 ...the posts on offer by job type add up to the total
+  - L1543 ...and the total is every post less those withheld plus the posts past the buildings
+  - L1548 every home is the stacks' quantity times their doors
+  - L1549 ...and the homes by size add up to it
+  - L1551 ...and the landlords' studio and family doors to it too
+  - L1553 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorFlowCheck.java - 20 labelled assertions
 

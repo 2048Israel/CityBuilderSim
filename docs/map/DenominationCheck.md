@@ -1,4 +1,4 @@
-# DenominationCheck.java - 1,309 lines · 40 methods · 5 constants · harnesses
+# DenominationCheck.java - 1,356 lines · 41 methods · 5 constants · harnesses
 
 `ham/citybuildersim/DenominationCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 > given its month's trade (FS2, givePartner()): twice the plain city's floor,
 > the reformed city's divided, so a lane is there to draw on any path.
 
-**Uses:** [PartnerTrade](PartnerTrade.md) (52), [Game](Game.md) (37), [TradeLanes](TradeLanes.md) (32), [LongPlaytest](LongPlaytest.md) (17), [Sector](Sector.md) (8), [CityCalendar](CityCalendar.md) (8), [Good](Good.md) (7), [Denomination](Denomination.md) (6), [Equity](Equity.md) (6), [Nations](Nations.md) (6), [WorldData](WorldData.md) (5), [GameFiles](GameFiles.md) (4), [Household](Household.md) (4), [WorldMarket](WorldMarket.md) (4), [Founding](Founding.md) (3), [PriceLevel](PriceLevel.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Currency](Currency.md) (2), [HistorySave](HistorySave.md) (2), [Mining](Mining.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [TaxPolicy](TaxPolicy.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [WorldDataCheck](WorldDataCheck.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
+**Uses:** [PartnerTrade](PartnerTrade.md) (52), [Game](Game.md) (42), [TradeLanes](TradeLanes.md) (32), [LongPlaytest](LongPlaytest.md) (17), [Equity](Equity.md) (12), [Sector](Sector.md) (8), [CityCalendar](CityCalendar.md) (8), [Good](Good.md) (7), [Denomination](Denomination.md) (6), [Nations](Nations.md) (6), [WorldData](WorldData.md) (5), [GameFiles](GameFiles.md) (4), [Household](Household.md) (4), [WorldMarket](WorldMarket.md) (4), [HousingChoice](HousingChoice.md) (4), [Founding](Founding.md) (3), [PriceLevel](PriceLevel.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Currency](Currency.md) (2), [HistorySave](HistorySave.md) (2), [Mining](Mining.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [TaxPolicy](TaxPolicy.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [WorldDataCheck](WorldDataCheck.md) (1), [HousingForms](HousingForms.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
 ## Sections
 
@@ -95,13 +95,15 @@
 | 1202 | `static int emptyHolding` | Cells under half a household holding something, counted over every scan. |
 | 1204 | `static int emptyHeldAfterReform` | ...and the same, as it stood right after the reform. |
 | 1205 | `static int looks` |  |
-| 1218 | `static boolean housingParted, housingAsksParted, exchangeParted, exchangeBookParted` |  |
+| 1218 | `static boolean housingParted, housingAsksParted, exchangeParted, exchangeBookParted, exchangeQuoteParted` |  |
+| 1219 | `static boolean offeringParted` |  |
+| 1220 | `static String[] previousPlainInputs` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 1248 | **type** `public class DenominationCheck` | A currency reform is a change of units, and this is how we know. |
+| 62 | 1295 | **type** `public class DenominationCheck` | A currency reform is a change of units, and this is how we know. |
 | 68 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 84 | 23 | `static void sameCity(Game plain, Game lopped, double factor, double band)` | Everything real to the person, everything nominal to the factor. |
 | 109 | 11 | `static void relative(String label, double actual, double expected, double band)` | Equal to within a RELATIVE band, so one helper works at any scale. |
@@ -160,16 +162,17 @@
 | 1102 | 25 | `static void givePartner(Game plain, Game lopped, double scale)` | The lanes' fixture caused, not found (FS2): in the month the card and the lanes read, the partner with the most trade this year that stands apart from Halifax (else the first that does) is given exports of GIVEN_FLOOR... |
 | 1136 | 62 | `static void cardAndLanes(String when, Game plain, Game lopped, double scale, boolean reformed)` | What the screens read of two cities' trade by partner, the second the first reformed by 1 / scale (scale 1: the same city, before the reform): the nation card's year to date, the month's figures the lanes are made of,... |
 
-### helpers (lines 1199-1309)
+### helpers (lines 1199-1356)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1208 | 9 | `static void stepBoth(Game a, Game b, int months)` | Both cities a month at a time, each scanned after every month. |
-| 1220 | 47 | `static void housingTrace(Game a, Game b)` | First differing cell/class allocation, beside the existing money trace. |
-| 1269 | 11 | `static void scanEmpty(Game g)` | One look at a city: whether any cell is under half a household, and any of them holding something. |
-| 1282 | 5 | `static boolean force(Game g, double factor)` | Reforms regardless of the price-level gate, which is tested separately. |
-| 1289 | 7 | `static boolean same(Game a, Game b)` | The real city: who lives there and how much of everything there is. |
-| 1297 | 3 | `static double shelf(Game g)` |  |
-| 1301 | 3 | `static double rent(Game g)` |  |
-| 1305 | 4 | `static double cost(Game g, String name)` |  |
+| 1221 | 8 | `static String offeringInputs(Game city, int company, double factor)` |  |
+| 1230 | 84 | `static void housingTrace(Game a, Game b)` | First differing cell/class allocation, beside the existing money trace. |
+| 1316 | 11 | `static void scanEmpty(Game g)` | One look at a city: whether any cell is under half a household, and any of them holding something. |
+| 1329 | 5 | `static boolean force(Game g, double factor)` | Reforms regardless of the price-level gate, which is tested separately. |
+| 1336 | 7 | `static boolean same(Game a, Game b)` | The real city: who lives there and how much of everything there is. |
+| 1344 | 3 | `static double shelf(Game g)` |  |
+| 1348 | 3 | `static double rent(Game g)` |  |
+| 1352 | 4 | `static double cost(Game g, String name)` |  |
 

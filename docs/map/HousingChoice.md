@@ -1,4 +1,4 @@
-# HousingChoice.java - 233 lines · 16 methods · 11 constants · model
+# HousingChoice.java - 244 lines · 17 methods · 11 constants · model
 
 `ham/citybuildersim/HousingChoice.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -6,9 +6,9 @@
 > WHY (RES3): size-only packing hid premium vacancy and let an enum's first cell
 > win a rationed home. Residual paths maximize suitable placements before preferences.
 
-**Uses:** [HousingInventory](HousingInventory.md) (5), [FamilyModel](FamilyModel.md) (5)
+**Uses:** [FamilyModel](FamilyModel.md) (8), [HousingInventory](HousingInventory.md) (5)
 
-**Used by (8):** [FamilyModel](FamilyModel.md), [Game](Game.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [LongPlaytest](LongPlaytest.md), [RealEstate](RealEstate.md)
+**Used by (9):** [DenominationCheck](DenominationCheck.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [LongPlaytest](LongPlaytest.md), [RealEstate](RealEstate.md)
 
 ## Constants
 
@@ -30,15 +30,15 @@
 
 | line | field | says |
 |---:|---|---|
-| 226 | `final int to, cost` |  |
-| 226 | `double left` |  |
-| 226 | `Edge reverse` |  |
+| 237 | `final int to, cost` |  |
+| 237 | `double left` |  |
+| 237 | `Edge reverse` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 10 | 224 | **type** `public final class HousingChoice` | A bounded household-cell to dwelling-class allocation, retaining valid leases first. |
+| 10 | 235 | **type** `public final class HousingChoice` | A bounded household-cell to dwelling-class allocation, retaining valid leases first. |
 | 11 | 1 | `private HousingChoice()` |  |
 | 34 | 5 | **type** `public record Demand(String key, double count, int size, int children, boolean retired, int tier, boolean y...` |  |
 | 36 | 1 | `{ ... }` _(in HousingChoice.Demand)_ |  |
@@ -54,15 +54,16 @@
 | 61 | 1 | `public static boolean affordable(Demand d, Offer o)` |  |
 | 62 | 8 | `public static double score(Demand d, Offer o)` |  |
 | 71 | 3 | `public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month)` | Equivalent nodes share their allocation pro rata; input order confers no priority. |
-| 75 | 43 | `public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month, boolean emergency)` | Planning can reserve suitable homes without assuming emergency crowding in a new project. |
-| 118 | 1 | **type** `private record DemandSignature(int size, int children, boolean retired, int tier, boolean young, double bud...` |  |
-| 120 | 13 | `public static Result summarize(List<Demand> demand, List<Offer> offers, List<Lease> leases, double kept, double normal, double ...` | Books the outcome of internal emergency phases without clearing or pricing again. |
-| 133 | 1 | **type** `private record OfferSignature(int capacity, int bedrooms, double area, double quality, double garden, boole...` |  |
-| 134 | 33 | `private static double allocate(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, int month, boolean ...` |  |
-| 173 | 53 | `private static double completeEmergency(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, double[][]...` | Complete the maximum normal matching through its residual paths. |
-| 226 | 1 | **type** `private static final class Edge` |  |
-| 226 | 1 | `Edge(int to, double left, int cost)` _(in HousingChoice.Edge)_ |  |
-| 227 | 4 | `private static long rotatedKey(String key, int month)` |  |
-| 231 | 1 | `private static Edge edge(List<List<Edge>> g, int u, int v, double cap)` |  |
-| 232 | 1 | `private static Edge costEdge(List<List<Edge>> g, int u, int v, double cap, int cost)` |  |
+| 75 | 50 | `public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month, boolean emergency)` | Planning can reserve suitable homes without assuming emergency crowding in a new project. |
+| 125 | 1 | **type** `private record DemandSignature(int size, int children, boolean retired, int tier, boolean young, double bud...` |  |
+| 127 | 15 | `public static Result summarize(List<Demand> demand, List<Offer> offers, List<Lease> leases, double kept, double normal, double ...` | Books the outcome of internal emergency phases without clearing or pricing again. |
+| 142 | 1 | **type** `private record OfferSignature(int capacity, int bedrooms, double area, double quality, double garden, boole...` |  |
+| 144 | 1 | `private static double residual(double left, double source)` | A subtraction residue is measured against its original source, before it can create a graph node. |
+| 145 | 33 | `private static double allocate(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, int month, boolean ...` |  |
+| 184 | 53 | `private static double completeEmergency(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, double[][]...` | Complete the maximum normal matching through its residual paths. |
+| 237 | 1 | **type** `private static final class Edge` |  |
+| 237 | 1 | `Edge(int to, double left, int cost)` _(in HousingChoice.Edge)_ |  |
+| 238 | 4 | `private static long rotatedKey(String key, int month)` |  |
+| 242 | 1 | `private static Edge edge(List<List<Edge>> g, int u, int v, double cap)` |  |
+| 243 | 1 | `private static Edge costEdge(List<List<Edge>> g, int u, int v, double cap, int cost)` |  |
 
