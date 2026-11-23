@@ -241,49 +241,43 @@ public final class HousingMarket {
         return result;
     }
     private record LeaseKey(String cell,HousingInventory.Key home) { }
+    private record EmergencyRoom(HousingChoice.Offer home,boolean hosted) { }
     /** Guests and hosts retain separate household counts while sharing one actual door and rent bill. */
     private void emergencyDoubling(Game game){
-        Map<String,Integer> kinds=new HashMap<>();
-        for(Household c:game.getHouseholdBalance().cells())kinds.put(c.key(),c instanceof StudentHousehold?1:c instanceof UnemployedHousehold?2:0);
-        java.util.function.ToIntFunction<String> kind=key->kinds.getOrDefault(key.split("#",2)[0],0);
         List<HousingChoice.Lease> all=new ArrayList<>(result.leases());double extra=0;
         List<HousingChoice.Demand> without=new ArrayList<>();
         for(var d:demand){double used=all.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double n=Math.max(0,d.count()-used);if(n>FamilyModel.packingRounding(d.count()))without.add(with(d,n,d.budget()));}
-        List<HousingChoice.Offer> hostRooms=new ArrayList<>();
-        for(var o:offers){double n=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
-            hostRooms.add(new HousingChoice.Offer(o.key(),n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0));}
-        var shelter=HousingChoice.clear(without,hostRooms,List.of(),game.getMonth());
-        for(var o:offers){double n=shelter.leases().stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();
-            double hosts=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();if(!(n>0))continue;
-            for(int i=0;i<all.size();i++){var l=all.get(i);if(l.home().equals(o.key()))
-                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*hosts),l.bill(),l.households()));}
-            for(var l:shelter.leases())if(l.home().equals(o.key()))all.add(new HousingChoice.Lease(l.cell(),l.home(),l.count()/2,0,l.count()));
-            hosted+=n;extra+=n;
-        }
-        // Seekers retain their own-kind rule; rotate access to shared vacancies in the emergency phase.
-        for(int turn=0;turn<3;turn++){
-            int group=Math.floorMod(game.getMonth()+turn,3);
-            List<HousingChoice.Demand> missing=new ArrayList<>();
-            for(var d:demand)if(kind.applyAsInt(d.key())==group){
-                double used=all.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
-                double n=Math.max(0,d.count()-used);if(n>FamilyModel.packingRounding(d.count()))missing.add(with(d,n,d.budget()));
-            }
-            if(missing.isEmpty())continue;
-            List<HousingChoice.Offer> rooms=new ArrayList<>();
-            for(var o:offers){
-                double occupied=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();
-                rooms.add(new HousingChoice.Offer(o.key(),2*Math.max(0,o.count()-occupied),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent()/2,o.recurring()/2));
-            }
-            var guests=HousingChoice.clear(missing,rooms,List.of(),game.getMonth());
-            for(var o:offers){
-                double added=guests.leases().stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();
-                if(!(added>0))continue;
-                for(var l:guests.leases())if(l.home().equals(o.key()))
-                    all.add(new HousingChoice.Lease(l.cell(),l.home(),l.count()/2,l.bill(),l.count()));
-                extra+=added;
+        // Match free host places and paid vacant shares together. Otherwise a guest
+        // who can fund a vacant share can strand a poor guest in the free-host pass.
+        // Same-kind five-adult groups were formed in emergencySharing; these guests
+        // keep their existing household cells. Negative keys are local flow nodes,
+        // translated back to their actual comparable classes before any lease is kept.
+        List<HousingChoice.Offer> rooms=new ArrayList<>();
+        Map<HousingInventory.Key,EmergencyRoom> nodes=new HashMap<>();
+        Map<HousingInventory.Key,Double> hostSlots=new HashMap<>();
+        for(var o:offers){
+            double hosts=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
+            double occupied=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            hostSlots.put(o.key(),hosts);
+            for(boolean host:new boolean[]{true,false}){
+                double n=host?hosts:2*Math.max(0,o.count()-occupied);if(!(n>0))continue;
+                var key=new HousingInventory.Key(-1-rooms.size(),o.key().dwelling());
+                rooms.add(new HousingChoice.Offer(key,n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),host?0:o.rent()/2,host?0:o.recurring()/2));
+                nodes.put(key,new EmergencyRoom(o,host));
             }
         }
+        var guests=HousingChoice.clear(without,rooms,List.of(),game.getMonth());
+        Map<HousingInventory.Key,Double> takenHosts=new HashMap<>();
+        for(var l:guests.leases()){var node=nodes.get(l.home());if(node.hosted())takenHosts.merge(node.home().key(),l.count(),Double::sum);}
+        for(int i=0;i<all.size();i++){
+            var l=all.get(i);double n=takenHosts.getOrDefault(l.home(),0.0);if(!(n>0))continue;
+            all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*hostSlots.get(l.home())),l.bill(),l.households()));
+        }
+        for(var l:guests.leases()){
+            var node=nodes.get(l.home());all.add(new HousingChoice.Lease(l.cell(),node.home().key(),l.count()/2,l.bill(),l.count()));extra+=l.count();
+        }
+        hosted+=takenHosts.values().stream().mapToDouble(Double::doubleValue).sum();
         Map<LeaseKey,HousingChoice.Lease> merged=new LinkedHashMap<>();
         for(var l:all){var key=new LeaseKey(l.cell(),l.home());var previous=merged.get(key);
             merged.put(key,previous==null?l:new HousingChoice.Lease(l.cell(),l.home(),previous.count()+l.count(),previous.bill()+l.bill(),previous.households()+l.households()));}
