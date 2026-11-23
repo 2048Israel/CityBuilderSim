@@ -1462,3 +1462,84 @@ Evidence: target/RES3-planner-MortgageCheck-beforefix.*,
 target/RES3-planner-MortgageCheck-standing-works.*,
 target/RES3-planner-MortgageCheck-homes-only.* and the final
 target/RES3-planner-MortgageCheck.*.
+
+## Shipped PW1-W integration before the new money review
+
+Main b34277adc shipped 0.9.193 while the final fixture checks were running.
+It is merged at 17abb80ab. All source merges were clean; the generated map,
+dial, harness and month-order conflicts were resolved by regeneration from
+the combined compiled source. --fast exits 0, zero firm/199 soft Stale findings
+(target/RES3-PW1W-fast.txt). The merge retains typed rent collection, the
+unbilled-homes draw of zero, IDs 156-166 after Substation 155, nextId 167 and
+format/floor 64. VERSION 0.9.193 is inherited from the publisher, not edited.
+PW1-W's new pending-water record and internal water/power transfer coexist
+with the saved class market; its billed utility revenue stays the real payers'
+bills. No new RES3 saved field is added in this follow-up.
+
+PW1-W-notes section 5 retains all eight default trace CSVs byte-identical to
+native main 0.9.192, so it publishes no newer ensemble baseline. The newest
+baseline remains docs/ensemble/0.9.192.md. The new RES3 model still owes its
+own final 80-run ensemble after REV-RES3's delta review; the water integration
+does not excuse it or the new seeds' F1 findings.
+
+The merged HousingMarketCheck passes, including the controlled operating-quote,
+fit and backlog first-red cases, all original conservation/budget controls,
+both populated native reloads and next-month twins. The catalogue report is
+regenerated from this merged model. Its populations, class counts, assignments
+and cohorts are the previous report's; the measured integrated months are:
+
+| Scratch city | Integrated month | H/T/A/M/L |
+| --- | --- | --- |
+| Small, 214 people | 44.137 ms | 63/32/124/0/0 |
+| Present-day catalogue | 38.053 ms | 84/32/274/0/0 |
+| Present-day larger, 148,943 people | 48.567 ms | 82/32/259/0/0 |
+| Historical catalogue | 39.702 ms | 62/32/126/0/0 |
+| Historical larger, 148,988 people | 32.851 ms | 62/32/135/0/0 |
+
+Both larger cities retain 141 permanent household cells. The combined model's
+utility, native save/rebuild and banking checks finish one named call at a time:
+
+| Scope | Checks | Result |
+| --- | --- | --- |
+| Planner ae8aad170, with the fixture mends above | HousingChoiceCheck, HousingCheck, HousingDoorCheck, HouseholdCheck, HouseholdFlowCheck, BuildingDataCheck, InvestCheck, WaterCheck, SubstationCheck, SaveFileCheck, ReadPathCheck, ReloadCheck, DenominationCheck, CardCheck, MortgageCheck | All pass; exact comparisons and all money/conservation checks retained |
+| Same planner | ScaleCheck | 3, one HT1-H free-growth premise; six windows, all evaluated TRACK/count/money laws pass |
+| Same planner | LongPlaytest | 3, the one inherited CL7 map-ring line at m2400; all money fixtures pass, no shelter finding |
+| Combined 17abb80ab | HousingMarketCheck, WaterPowerCheck, WaterCheck, SubstationCheck, SaveFileCheck, ReadPathCheck, ReloadCheck, MortgageCheck | 0 each; WaterPowerCheck 41/41 |
+| Combined 17abb80ab | CardCheck selection | 3 only for the three BuildCardCheck/FS12 staffing premises; CardCheck itself has zero failures and exact native continuation passes |
+| Combined 17abb80ab | --fast | 0, zero firm/199 soft Stale findings |
+
+The combined reload compares 821,235 history numbers in 336 series after the
+autosave, then 185,156 save numbers exactly. Its log also retains an actual
+post-success warning: the Earth scratch city's asynchronous autosave history
+rename fails after "All checks passed." The tested month-1229 autosave/history
+and all continuation comparisons completed successfully before this message.
+ReloadCheck.main calls System.exit without draining all Earth/twin saves;
+TempDirs installs its deletion hook at shutdown. This ordering is consistent
+with a scratch teardown race, not proof of an exclusive cause. A harness
+lifecycle follow-up should drain its pending saves before exit. The warning
+is disclosed for the saves review; no save comparison is removed, no failure
+line is pinned for it, and no production save workaround is introduced.
+Raw evidence remains target/RES3-PW1W-ReloadCheck.{log,txt}.
+
+The pre-integration check evidence is target/RES3-planner-<name>.{log,txt}
+(HousingMarketCheck is target/RES3-planner-mend.*); the final integration
+evidence is target/RES3-PW1W-<name>.{log,txt}. All temporary observations are
+absent from source and compiled classes. Each named invocation uses the shared
+Earth/world files, cbs.parallel=1 and scratch/TempDirs city files. No full
+local pick or save slot in the player's data directory is used.
+
+tools/pick.sh origin/main HEAD selects ALL 248. Its review line is
+"needed - saves: DataSave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT".
+The changed quotes/orders also owe a stranger's money review. The provisional
+ship record retains only the diagnosed ScaleCheck/HT1-H and three
+BuildCardCheck/FS12 rows; HousingDoorCheck's FS11 row is removed because its
+opportunity, owner funding and 899 cash identities are green. The ship file
+passes tools/known-reds.sh. No F1 exception or outside attribution is requested
+for the new seeds: seeds 8 and 12 remain RES3's own mended findings.
+
+This checkpoint goes back to REV-RES3 before another ensemble, as ordered
+when the model changes. The new final 80 runs against docs/ensemble/0.9.192.md
+remain owed on the reviewed combined model, including seed 9 at m605 and all
+new F1 seeds, with rents, affordability and growth reported. All three earlier
+raw FAIL verdicts remain recorded above. No dry run has started, no kept
+dry-run directory is claimed, and the provisional readiness marker remains.
