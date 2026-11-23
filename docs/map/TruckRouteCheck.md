@@ -1,4 +1,4 @@
-# TruckRouteCheck.java - 1,997 lines · 65 methods · 4 constants · harnesses
+# TruckRouteCheck.java - 2,002 lines · 65 methods · 4 constants · harnesses
 
 `ham/citybuildersim/TruckRouteCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -64,18 +64,18 @@
 >      alone; the list is kept while nothing changes (the
 > ... (40 more lines in the source)
 
-**Uses:** [TruckSchedule](TruckSchedule.md) (221), [CityMap](CityMap.md) (187), [CityRuns](CityRuns.md) (30), [MapCheck](MapCheck.md) (19), [GatewayCheck](GatewayCheck.md) (18), [BuildingVisual](BuildingVisual.md) (16), [Good](Good.md) (15), [GamePrefs](GamePrefs.md) (11), [TilePainter](TilePainter.md) (10), [HaulageCheck](HaulageCheck.md) (10), [DistrictPlan](DistrictPlan.md) (9), [World](World.md) (8), [TrainSchedule](TrainSchedule.md) (7), [Game](Game.md) (7), [Freight](Freight.md) (7), [GameFiles](GameFiles.md) (7), [Sector](Sector.md) (5), [Haulage](Haulage.md) (5), [MapFrame](MapFrame.md) (5), [Founding](Founding.md) (3), [BuildingType](BuildingType.md) (3), [SectorState](SectorState.md) (3), [JunctionCheck](JunctionCheck.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Mining](Mining.md) (1), [CityShore](CityShore.md) (1), [Traffic](Traffic.md) (1)
+**Uses:** [TruckSchedule](TruckSchedule.md) (221), [CityMap](CityMap.md) (187), [CityRuns](CityRuns.md) (30), [MapCheck](MapCheck.md) (19), [GatewayCheck](GatewayCheck.md) (18), [BuildingVisual](BuildingVisual.md) (16), [Good](Good.md) (15), [GamePrefs](GamePrefs.md) (11), [TilePainter](TilePainter.md) (10), [HaulageCheck](HaulageCheck.md) (10), [DistrictPlan](DistrictPlan.md) (9), [World](World.md) (8), [TrainSchedule](TrainSchedule.md) (7), [Game](Game.md) (7), [Freight](Freight.md) (7), [GameFiles](GameFiles.md) (7), [Sector](Sector.md) (6), [Haulage](Haulage.md) (5), [MapFrame](MapFrame.md) (5), [Founding](Founding.md) (3), [BuildingType](BuildingType.md) (3), [SectorState](SectorState.md) (3), [JunctionCheck](JunctionCheck.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Mining](Mining.md) (1), [CityShore](CityShore.md) (1), [Traffic](Traffic.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 1666 | · 1. THE TALLY |
-| 1726 | · 2. THE COUNTS |
-| 1821 | · 3. A PURE FUNCTION |
-| 1911 | · 4. THE NEAR-ZOOM GATE |
-| 1923 | · 5. THE SETTING |
-| 1945 | · 6. NEVER SAVED |
+| 1731 | · 2. THE COUNTS |
+| 1826 | · 3. A PURE FUNCTION |
+| 1916 | · 4. THE NEAR-ZOOM GATE |
+| 1928 | · 5. THE SETTING |
+| 1950 | · 6. NEVER SAVED |
 
 ## Constants
 
@@ -97,7 +97,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 120 | 1878 | **type** `public class TruckRouteCheck` | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck drive, CityMap.truckRoutes() along the highways from their line to the wor... |
+| 120 | 1883 | **type** `public class TruckRouteCheck` | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck drive, CityMap.truckRoutes() along the highways from their line to the wor... |
 | 137 | 4 | `static void check(String label, boolean ok)` |  |
 | 143 | 4 | `static boolean same(TruckSchedule.Route a, TruckSchedule.Route b)` | Whether two routes are the same, point for point (a record holds arrays by reference, so equals() would not say). |
 | 148 | 5 | `static boolean same(List<TruckSchedule.Route> a, List<TruckSchedule.Route> b)` |  |
@@ -155,7 +155,7 @@
 | 1320 | 136 | `static void catchment(BuildingVisual.Type[] types, CityMap trips, double[][] per, double[] city, int a, int b)` | Section 9's catchment: a district's trips carry the tonnes of the works about it, not its own alone. |
 | 1459 | 61 | `static void pace()` | ------------------------------------------------------------------ 10 |
 | 1521 | 25 | `public static void main(String[] args)` |  |
-| 1589 | 408 | **type** `static final class TruckDrawing` | Proves that Haulage's loads are drawn as trucks on the map's roads, as a pure function of time, and that drawing them changes nothing in the game (0.8.8, batch FR5, slice A; docs/studies/spec-freight-and-infrastructur... |
+| 1589 | 413 | **type** `static final class TruckDrawing` | Proves that Haulage's loads are drawn as trucks on the map's roads, as a pure function of time, and that drawing them changes nothing in the game (0.8.8, batch FR5, slice A; docs/studies/spec-freight-and-infrastructur... |
 | 1593 | 4 | `static void check(String label, boolean ok)` _(in TruckRouteCheck.TruckDrawing)_ |  |
 | 1598 | 4 | `static void check(String label, boolean ok, String detail)` _(in TruckRouteCheck.TruckDrawing)_ |  |
 | 1603 | 3 | `static boolean near(double a, double b, double rel)` _(in TruckRouteCheck.TruckDrawing)_ |  |
@@ -165,5 +165,5 @@
 | 1635 | 7 | `static long walkedStands(double loads)` _(in TruckRouteCheck.TruckDrawing)_ | The N the rule gives for a month of `loads`, by a plain walk of the sequence 1, 2, 5, 10, 20, 50...: the first that brings loads / N to MOST_A_MONTH or under. |
 | 1644 | 8 | `static long stepBelow(long n)` _(in TruckRouteCheck.TruckDrawing)_ | The step of 1, 2, 5, 10, 20, 50... |
 | 1653 | 5 | `static void quietly(Runnable r)` _(in TruckRouteCheck.TruckDrawing)_ |  |
-| 1659 | 337 | `static void run(String[] args)` _(in TruckRouteCheck.TruckDrawing)_ |  |
+| 1659 | 342 | `static void run(String[] args)` _(in TruckRouteCheck.TruckDrawing)_ |  |
 

@@ -527,11 +527,12 @@ public class BuildersFirstCheck {
             final long topUp = mostHouses - (s == null ? 0 : s.getUnderConstruction());
             if (topUp <= 0) continue;
             BuildingsTemplate house = template(g, "House");
-            double price = g.quoteBuild(house, topUp).total;
+            double price = g.doorPriceOf(house, topUp);
             quietly(() -> {
                 g.getEconomyManager().setSectorCash(Sectors.REAL_ESTATE,
-                        g.getEconomyManager().getSectorCash(Sectors.REAL_ESTATE) + price);
-                g.buildFor(g.getSectorInvestor(Sectors.REAL_ESTATE), house, topUp);
+                        Math.max(0, g.getEconomyManager().getSectorCash(Sectors.REAL_ESTATE)) + price);
+                assertTrue("fixture: the funded private top-up, including its ground, is placed",
+                        g.buildFor(g.getSectorInvestor(Sectors.REAL_ESTATE), house, topUp));
             });
         }
         assertTrue("fixture: the landlords' Houses on site in both twins, alike",
@@ -550,8 +551,9 @@ public class BuildersFirstCheck {
             BuildingManager.Plan pg = bm.getLastPlan(), pu = ungated.getBuildingManager().getLastPlan();
             if (pg != null && !pg.buildersFirst.isEmpty()) firstG++;
             if (pu != null && !pu.buildersFirst.isEmpty()) firstU++;
-            floorG = Math.min(floorG, gated.getBuildingOutput());
-            floorU = Math.min(floorU, ungated.getBuildingOutput());
+            // Work is the advance just performed, including the foreign crews; getBuildingOutput() is next month's local capacity.
+            floorG = Math.min(floorG, bm.getPointsBuilt());
+            floorU = Math.min(floorU, bu.getPointsBuilt());
         }
         out.printf("  months the depots went first: %d in the town with the test, %d in the twin without it%n", firstG, firstU);
         assertTrue("in the town with the test its depots never went first", firstG == 0);

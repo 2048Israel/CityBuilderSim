@@ -1,4 +1,4 @@
-# TreasuryCheck.java - 1,874 lines · 45 methods · 5 constants · harnesses
+# TreasuryCheck.java - 1,884 lines · 45 methods · 5 constants · harnesses
 
 `ham/citybuildersim/TreasuryCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      line. The "Raised by issuing paper" row is asserted here too, because
 > ... (49 more lines in the source)
 
-**Uses:** [Game](Game.md) (86), [PriceLevel](PriceLevel.md) (38), [Debt](Debt.md) (34), [Rollover](Rollover.md) (27), [DebtManager](DebtManager.md) (23), [TreasuryJournal](TreasuryJournal.md) (15), [LongTermBond](LongTermBond.md) (12), [GameFiles](GameFiles.md) (5), [NationalAccounts](NationalAccounts.md) (5), [MoneyAudit](MoneyAudit.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [TaxPolicy](TaxPolicy.md) (2), [MediumTermBond](MediumTermBond.md) (2), [TreasuryFund](TreasuryFund.md) (1), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [Game](Game.md) (88), [PriceLevel](PriceLevel.md) (38), [Debt](Debt.md) (34), [Rollover](Rollover.md) (27), [DebtManager](DebtManager.md) (23), [TreasuryJournal](TreasuryJournal.md) (15), [LongTermBond](LongTermBond.md) (12), [GameFiles](GameFiles.md) (5), [NationalAccounts](NationalAccounts.md) (5), [MoneyAudit](MoneyAudit.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [TaxPolicy](TaxPolicy.md) (2), [MediumTermBond](MediumTermBond.md) (2), [TreasuryFund](TreasuryFund.md) (1), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (2):** [CallCheck](CallCheck.md), [ScaleCheck](ScaleCheck.md)
 
@@ -86,37 +86,37 @@
 | 575 | · THE REPORT. |
 | 595 | 7. ROLLING WHAT FALLS DUE (0.7.13). |
 | 626 | 8. FROM EARNED TO THE BUDGET (0.7.31). |
-| 1283 | 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). |
+| 1293 | 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 121 | `TreasuryCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
-| 1177 | `TreasuryCheck.OPEN_SHARE` | `.9` | The share of the share the window shuts at that the six-month dollar note's next year of service is, in the city whose window must be open: just under it (FS13: the exports are set by hand, so the share can be brought... |
-| 1180 | `TreasuryCheck.SHUT_SHARE` | `1.1` | ...and in its twin, whose window must be shut by that share alone: just over it. |
-| 1183 | `TreasuryCheck.DOLLAR_NOTE_IN_MINIMUMS` | `10` | The dollar note's size, in times the smallest issue the rollover makes (Game.minimumIssueSize()), so that what falls due abroad is an issue it can make. |
-| 1186 | `TreasuryCheck.NOTE_IN_SURPLUSES` | `3` | Each of the two notes falling due in the city in surplus has a cash of this many of the year's surplus, so that a surplus netted against it is part of it. |
+| 1187 | `TreasuryCheck.OPEN_SHARE` | `.9` | The share of the share the window shuts at that the six-month dollar note's next year of service is, in the city whose window must be open: just under it (FS13: the exports are set by hand, so the share can be brought... |
+| 1190 | `TreasuryCheck.SHUT_SHARE` | `1.1` | ...and in its twin, whose window must be shut by that share alone: just over it. |
+| 1193 | `TreasuryCheck.DOLLAR_NOTE_IN_MINIMUMS` | `10` | The dollar note's size, in times the smallest issue the rollover makes (Game.minimumIssueSize()), so that what falls due abroad is an issue it can make. |
+| 1196 | `TreasuryCheck.NOTE_IN_SURPLUSES` | `3` | Each of the two notes falling due in the city in surplus has a cash of this many of the year's surplus, so that a surplus netted against it is part of it. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 118 | `static int fails` |  |
-| 1325 | `static int booksAsserted` | How many things the books part asserted, for its report line. |
-| 1356 | `final DebtManager manager` |  |
-| 1357 | `final Game payer` |  |
-| 1358 | `final Debt piece` |  |
-| 1359 | `final java.util.List<double[]> rows` |  |
-| 1360 | `int months` |  |
-| 1361 | `double sumExpense, sumCoupon, sumAmortised` |  |
-| 1362 | `double worstPvGap, worstTotalsGap` |  |
+| 1335 | `static int booksAsserted` | How many things the books part asserted, for its report line. |
+| 1366 | `final DebtManager manager` |  |
+| 1367 | `final Game payer` |  |
+| 1368 | `final Debt piece` |  |
+| 1369 | `final java.util.List<double[]> rows` |  |
+| 1370 | `int months` |  |
+| 1371 | `double sumExpense, sumCoupon, sumAmortised` |  |
+| 1372 | `double worstPvGap, worstTotalsGap` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 116 | 1759 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 116 | 1769 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
 | 123 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 142 | 8 | `static void near(String what, int month, double actual, double expected, double size)` | ...and the journal's reconciliation, which subtracts one cash balance from another (0.7.54): MoneyAudit.tolerance(TOLERANCE, the treasury's size) - TOLERANCE exactly below 2^27 units (1.3e8), from there 64 of a double... |
 | 152 | 3 | `static double treasurySize(Game g)` | The treasury's size this month, for the journal's reconciliation: the larger of its opening and closing balances. |
@@ -131,7 +131,7 @@
 
 ### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 595-625)
 
-### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 626-1282)
+### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 626-1292)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -142,37 +142,37 @@
 | 782 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
 | 789 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
 | 798 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
-| 802 | 370 | `static void rolling()` |  |
-| 1192 | 4 | `static double serviceShare(Game g)` | What the window's own test reads (DebtManager.foreignWindowReason()): the next year's service on what the city owes abroad, as a share of a year's exports. |
-| 1198 | 3 | `static void sellsNothingAbroad(Game g)` | The city sells nothing abroad (FS13): its exports set by hand to nothing (DebtManager.setTrade(), the import cover as it stands), so that owing dollars shuts its window by that alone, whatever the path's exports are. |
-| 1203 | 3 | `static double dollarNoteUsd(Game g)` | The dollar note's face, in US$: DOLLAR_NOTE_IN_MINIMUMS of the smallest issue the rollover makes, at the month's D$. |
-| 1212 | 5 | `static void sellsAbroad(Game g)` | The city sells abroad (FS13): its exports set by hand (DebtManager.setTrade(), the import cover as it stands) to the level at which a year of the dollar note's face would be OPEN_SHARE of the share the window shuts at... |
-| 1223 | 5 | `static void tradeAtShare(Game g, double of)` | The exports set by hand so that the next year's service on what the city owes abroad is exactly {@code of} times WINDOW_SHUT_SERVICE_SHARE of a year of them (DebtManager.nextYearService(), the sum the window's own tes... |
-| 1230 | 4 | `static String pressAtShare(Game g, double of)` | One press with the exports set to the share first, its printing kept. |
-| 1241 | 7 | `static Debt dollarNoteAtShare(Game g, double of)` | A six-month dollar note on a city that sells abroad (sellsAbroad()), its size the fixture's (dollarNoteUsd()), and then its exports set so that the next year's service on it is {@code of} times WINDOW_SHUT_SERVICE_SHA... |
-| 1255 | 9 | `static void useOfTheYearsSurplus(Game g, double leavingUnused)` | The year's surplus used in the ledger, all but {@code leavingUnused} of it, by construction (FS13): the ledger is given, in this month, the netting that brings what it holds (Rollover.usedInYear()) up to the surplus l... |
-| 1270 | 5 | `static java.util.TreeSet<Integer> noteDueMonths(int term, int presses)` | The plan-months, counted from the first press, at which a note of {@code term} months falls due in a run of {@code presses}: when one month of it is left, and then again every term-1 months, as it rolls into a note of... |
-| 1277 | 5 | `static java.util.TreeSet<Integer> serialDueMonths(int remaining, int presses)` | ...and a serial's: its instalments fall due when its remaining months are one over a whole year, the harness's own reading of the paper's schedule. |
+| 802 | 380 | `static void rolling()` |  |
+| 1202 | 4 | `static double serviceShare(Game g)` | What the window's own test reads (DebtManager.foreignWindowReason()): the next year's service on what the city owes abroad, as a share of a year's exports. |
+| 1208 | 3 | `static void sellsNothingAbroad(Game g)` | The city sells nothing abroad (FS13): its exports set by hand to nothing (DebtManager.setTrade(), the import cover as it stands), so that owing dollars shuts its window by that alone, whatever the path's exports are. |
+| 1213 | 3 | `static double dollarNoteUsd(Game g)` | The dollar note's face, in US$: DOLLAR_NOTE_IN_MINIMUMS of the smallest issue the rollover makes, at the month's D$. |
+| 1222 | 5 | `static void sellsAbroad(Game g)` | The city sells abroad (FS13): its exports set by hand (DebtManager.setTrade(), the import cover as it stands) to the level at which a year of the dollar note's face would be OPEN_SHARE of the share the window shuts at... |
+| 1233 | 5 | `static void tradeAtShare(Game g, double of)` | The exports set by hand so that the next year's service on what the city owes abroad is exactly {@code of} times WINDOW_SHUT_SERVICE_SHARE of a year of them (DebtManager.nextYearService(), the sum the window's own tes... |
+| 1240 | 4 | `static String pressAtShare(Game g, double of)` | One press with the exports set to the share first, its printing kept. |
+| 1251 | 7 | `static Debt dollarNoteAtShare(Game g, double of)` | A six-month dollar note on a city that sells abroad (sellsAbroad()), its size the fixture's (dollarNoteUsd()), and then its exports set so that the next year's service on it is {@code of} times WINDOW_SHUT_SERVICE_SHA... |
+| 1265 | 9 | `static void useOfTheYearsSurplus(Game g, double leavingUnused)` | The year's surplus used in the ledger, all but {@code leavingUnused} of it, by construction (FS13): the ledger is given, in this month, the netting that brings what it holds (Rollover.usedInYear()) up to the surplus l... |
+| 1280 | 5 | `static java.util.TreeSet<Integer> noteDueMonths(int term, int presses)` | The plan-months, counted from the first press, at which a note of {@code term} months falls due in a run of {@code presses}: when one month of it is left, and then again every term-1 months, as it rolls into a note of... |
+| 1287 | 5 | `static java.util.TreeSet<Integer> serialDueMonths(int remaining, int presses)` | ...and a serial's: its instalments fall due when its remaining months are one over a whole year, the harness's own reading of the paper's schedule. |
 
-### 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). (lines 1283-1874)
+### 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). (lines 1293-1884)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1328 | 4 | `static void books(String what, boolean ok)` | One fact of the books, printed either way. |
-| 1334 | 10 | `static void booksNear(String what, double actual, double expected, double tolerance)` | Two figures of the books that must agree to a tolerance, printed either way with the figures on a failure. |
-| 1355 | 52 | **type** `static final class Life` | A piece's months on a manager's books, stepped by the manager's own processAllDebts() - the books, the accretion and the month's payments in the game's order - with what each month left: {expense, coupon, amortised, c... |
-| 1364 | 5 | `Life(DebtManager manager, Game payer, Debt piece)` _(in TreasuryCheck.Life)_ |  |
-| 1371 | 20 | `void step(int n)` _(in TreasuryCheck.Life)_ | Steps n months, or to the piece's end when n is negative. |
-| 1393 | 1 | `double[] month(int m)` _(in TreasuryCheck.Life)_ | The month's row, counted from 1. |
-| 1396 | 4 | `boolean falls(int from, int to)` _(in TreasuryCheck.Life)_ | True when the carrying value closed every month from..to lower than it opened. |
-| 1402 | 4 | `boolean rises(int from, int to)` _(in TreasuryCheck.Life)_ | ...and higher. |
-| 1408 | 13 | `static void books()` |  |
-| 1430 | 54 | `static void balance()` | g. |
-| 1494 | 61 | `static void buyback()` | f. |
-| 1563 | 49 | `static void playedCity()` | e. |
-| 1614 | 3 | `static Debt onlyPiece(Game g)` | The one piece of paper a city owes, or null when it owes none or several. |
-| 1630 | 80 | `static void dollarPaper()` | d. |
-| 1712 | 44 | `static void calmTenYear(Game payer)` | a. |
-| 1758 | 71 | `static void premiumBillAmortizing(Game payer)` | b. |
-| 1831 | 43 | `static void reopenedLine(Game payer)` | c. |
+| 1338 | 4 | `static void books(String what, boolean ok)` | One fact of the books, printed either way. |
+| 1344 | 10 | `static void booksNear(String what, double actual, double expected, double tolerance)` | Two figures of the books that must agree to a tolerance, printed either way with the figures on a failure. |
+| 1365 | 52 | **type** `static final class Life` | A piece's months on a manager's books, stepped by the manager's own processAllDebts() - the books, the accretion and the month's payments in the game's order - with what each month left: {expense, coupon, amortised, c... |
+| 1374 | 5 | `Life(DebtManager manager, Game payer, Debt piece)` _(in TreasuryCheck.Life)_ |  |
+| 1381 | 20 | `void step(int n)` _(in TreasuryCheck.Life)_ | Steps n months, or to the piece's end when n is negative. |
+| 1403 | 1 | `double[] month(int m)` _(in TreasuryCheck.Life)_ | The month's row, counted from 1. |
+| 1406 | 4 | `boolean falls(int from, int to)` _(in TreasuryCheck.Life)_ | True when the carrying value closed every month from..to lower than it opened. |
+| 1412 | 4 | `boolean rises(int from, int to)` _(in TreasuryCheck.Life)_ | ...and higher. |
+| 1418 | 13 | `static void books()` |  |
+| 1440 | 54 | `static void balance()` | g. |
+| 1504 | 61 | `static void buyback()` | f. |
+| 1573 | 49 | `static void playedCity()` | e. |
+| 1624 | 3 | `static Debt onlyPiece(Game g)` | The one piece of paper a city owes, or null when it owes none or several. |
+| 1640 | 80 | `static void dollarPaper()` | d. |
+| 1722 | 44 | `static void calmTenYear(Game payer)` | a. |
+| 1768 | 71 | `static void premiumBillAmortizing(Game payer)` | b. |
+| 1841 | 43 | `static void reopenedLine(Game payer)` | c. |
 

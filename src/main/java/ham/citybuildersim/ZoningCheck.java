@@ -463,16 +463,23 @@ public class ZoningCheck {
 
     static void theFields(Game g) {
         out.println("\n--- 8. zoned fields do not yield to homes: short of homes, the fields build in their zone alone ---");
-        // Somebody sleeping outside: most of the houses bought out and demolished.
-        BuildingsTemplate house = LongPlaytest.template(g, "House");
-        long houses = g.getBuildingManager().countByName("House");
+        // Somebody sleeping outside: remove most homes of every form, and hold replacement orders for this month.
+        // Removing Houses alone leaves the typed catalogue's other homes available to their displaced tenants.
+        boolean homesWereHeld = g.getBusinessInvestment().isHeld(g.getSectors().realEstate().key());
+        g.getBusinessInvestment().holdSector(g.getSectors().realEstate().key());
         g.setCashForTest(g.getCash() + 10_000_000);
         quietly(() -> {
-            g.buyOutAndDemolish(house, houses * 9 / 10);
+            for (BuildingsTemplate home : g.getBuildingManager().getTemplatesBySector(g.getSectors().realEstate().key())) {
+                long n = g.demolishable(home);
+                if (n <= 0) continue;
+                long remove = n - n / 10;
+                assertTrue("fixture: nine in ten or more " + home.getName() + " bought out for demolition",
+                        g.buyOutAndDemolish(home, remove));
+            }
             g.toggleNextMonth();
         });
         double outside = g.getFamilies().getStillUnplaced();
-        assertTrue("fixture: nine houses in ten demolished, households sleep outside", outside > 0);
+        assertTrue("fixture: nine homes in ten demolished across their forms, households sleep outside", outside > 0);
         ham.citybuildersim.sectors.Agriculture fields = (ham.citybuildersim.sectors.Agriculture)
                 g.getSectors().byKey(Sectors.AGRICULTURE);
         /*
@@ -525,6 +532,7 @@ public class ZoningCheck {
                 !tiny.build && tiny.reason.contains("zone holds too little"));
         people.restoreWorkforce(workforce);
         quietly(() -> g.removeZone(Sectors.AGRICULTURE));
+        if (!homesWereHeld) plans.releaseSector(g.getSectors().realEstate().key());
     }
 
     /* ============================ 9. SAVED AND RELOADED ============================ */

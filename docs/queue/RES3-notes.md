@@ -1898,3 +1898,105 @@ live investment/map case, and the separate 1,200-month Earth run and its
 audit. `target/RES3-dry-final-LandmassCheck.{txt,log}` reports suite OK.
 No diagnostic shortcut remains in the source. The full check retains
 `STAND_WORK = 2` and `STALL_MONTHS = 24` unchanged.
+
+The first-dry counts distinguish the suite from its uncovered list: 38
+harnesses are NEW against main, two already scoped by RES3's existing
+ScaleCheck/BuildCardCheck rows. `unnamed.txt` therefore names 36 uncovered
+harnesses, of which 14 are the agreed FC2 files. The disposition helper
+`target/RES3-dry-disposition.py` reports those 36; the mends list also
+includes the two previously named ones.
+
+The serial pass finds PolicyOpenCheck and TruckRouteCheck green. The
+follow-up fixes remain inputs/measurements, with their hard laws kept:
+
+- AuctionCheck's repeated-ask bound called `AutoSale.asked` cash, but
+  `noteSale()` supplies the offered face there. Compare actual net proceeds
+  with the repriced cash gap and count of lots, and principal growth with
+  actual face sold (the old bound used face offered), as the adjoining
+  conservation assertions do. The first retry's receipt shows offered and
+  sold face 168.276586140 against cash gap 74.9227378377 plus one lot
+  84.1382930699; the cash comparison must account for the issue by reading
+  net proceeds, not by lifting its allowance. Print each component. The separate
+  already-over-limit case now sets the zero limit, so its existing funded
+  paper actually exceeds it instead of assuming it exceeds 10% of GDP.
+- BuildersFirstCheck observes `getPointsBuilt()`, reset at each actual
+  advance and including the foreign crews. The previous post-month
+  `getBuildingOutput()` is next month's local capacity, not the work that
+  just built 28 homes. This keeps the every-month positive-work law.
+- ZoningCheck restores the prior home-investment hold before its later
+  save comparison. ForestryCheck reapplies the same unsaved harness holds
+  to its loaded twin. Their new controls had otherwise differed between
+  the live and loaded cities; keep the exact cash/stock comparisons.
+- CreditCrunchCheck reaches room 13.4 after retiring 309 actual homes.
+  The original one-house upper bound added one household of room, though
+  its trimming loop removes two household slots per door. Measure the
+  smallest actual positive room reduction from a single-door retirement
+  and require the remaining room above MARGIN to be smaller than that
+  quantum. Keep MARGIN, the all-form trimming inputs, every leverage,
+  mortgage, money and unplaced-household assertion unchanged.
+- TreasuryCheck's forty startup homes make the second annual surplus
+  positive (180.25) while the first is still zero. Step the three producing
+  twins together until a positive trailing-year surplus is actually
+  caused, bounded by another year, assert it, and only then size the first
+  note. Do not manufacture a surplus or silently skip a failed note case.
+
+CurrencyRegimeCheck's read-only reports reproduce all six new lines.
+After the first month the gap is .0641459260050 against BREAK_GAP .10;
+hazard is still .001 and the held peg has hot stock 2171.03138642, so its
+larger-gap predicate is absent. The purchase-save fixture at m40 has gap
+-.0763558615137, edge owed 450.353060385 and held=true, but doubt=0. The
+hot-money save at m40 has gap -.0505131416061, edge owed 296.720373641,
+stock 2323.19882352 and 2.32552434787 leaving on the previous .001 doubt,
+but no doubt for the next month. Its loaded twin reports the same negative
+gap, zero doubt, edge and stock. The subsequent stay/leave contrast and
+positive-departure assertion require a positive source doubt that the
+save never held. These six exact fixture/phase lines join the proposed
+HT1-H scope in the mends list (FS10 shipped). No FX rule or save equality
+changes; the source reports and assertion lines are in
+`target/RES3-dry-final-CurrencyRegimeCheck.{txt,log}`.
+
+The later full checks finish green for BuildersFirstCheck, ZoningCheck,
+ForestryCheck, TruckRouteCheck, PolicyOpenCheck and TreasuryCheck.
+Forestry's exact continuation now has city cash 30544.948813 on both
+twins, identical cut/forest/sector cash, and its money residual is
+1.63e-14 of what moved. Treasury's producing twins wait for the actual
+positive annual surplus before issuing their two notes; all note,
+netting, rollover, currency and conservation assertions pass. Raw final
+results are the `RES3-dry-retry-*` files, except the already-green
+PolicyOpenCheck and TruckRouteCheck in `RES3-dry-final-*`.
+
+CreditCrunchCheck's measured one-door quantum is initially absent
+(`Infinity`): the played town has only multi-home forms to retire. Stand
+one paid House at the trimming input, then measure its actual room
+reduction. This causes the stated one-house condition rather than assuming
+the catalogue still contains an old House. The unchanged bank and
+unplaced-household laws already pass; the corrected fixture is rerunning.
+
+The last AuctionCheck receipt confirms the unit correction: net proceeds
+139.295743191 fit the repriced cash gap 74.9227378377 plus one lot
+84.1382930699; offered and sold face are 168.276586140, exactly the
+principal increase. The cash bound has not been raised. Its full audited
+run is still completing, not yet reported green here.
+
+Native main's MonetaryCheck control at 86359b9d4 is green (exit 0), using
+the same JDK/data and only the read-only rent/component report additions
+to its harness. No production file differed. Its 3/10/20/40 percent rows
+have inflation 11.44/10.10/9.23/9.21 percent, a 2.231-point reduction, and
+calendar-year timing noise .044/.025/.110 points, within .650. Family
+rent per capacity at 3 percent goes .0112442786132 -> .0174763533338;
+at 40 percent .0113796763528 -> .0158280937670. Rent component growth is
+14.4974 versus 11.9776 percent a year, and groceries/services also slow
+with the dial. Its fixed D$ is .6991; each model pins its own common
+pre-treatment founding rate, so this is a native-model control, not a
+claim of identical cross-model opening states. Raw
+`target/RES3-native-policy.{txt,log}`. The scratch worktree was restored,
+checked clean and removed after its process ended.
+
+RES3's three monetary-curve lines are therefore an owned finding pending
+diagnosis, not attributed to main and not entered as known reds. Its
+3/10/20/40 percent rows are 6.46/8.64/9.16/8.15, with calendar-year timing
+noise .308/1.173/2.269 points. Business borrowing still falls (1,473 at
+3 percent versus 768 at 10), but higher-rate rent growth and other
+feedbacks can oppose that channel. The expanded component report is
+running on RES3 too. No rent, price-index, credit or macro calibration is
+changed to make the curve pass.

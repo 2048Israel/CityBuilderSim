@@ -1,4 +1,4 @@
-# BuildersFirstCheck.java - 683 lines · 17 methods · 8 constants · harnesses
+# BuildersFirstCheck.java - 685 lines · 17 methods · 8 constants · harnesses
 
 `ham/citybuildersim/BuildersFirstCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -78,8 +78,8 @@
 | 347 | 4. THE BUILDERS GROW |
 | 420 | 5. NEVER LAID OFF |
 | 435 | 6. ONLY WHAT IT COULD STAFF |
-| 589 | 7. ONE PRIORITY |
-| 673 | 8. CONSERVED |
+| 591 | 7. ONE PRIORITY |
+| 675 | 8. CONSERVED |
 
 ## Constants
 
@@ -109,7 +109,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 602 | **type** `public class BuildersFirstCheck` | The builders' own depots first (0.7.130, batch T1-C): the rule that serves a depot on site the crews' rule would starve - keep there past the months the builders expand at - off the top of their month, before the rule... |
+| 82 | 604 | **type** `public class BuildersFirstCheck` | The builders' own depots first (0.7.130, batch T1-C): the rule that serves a depot on site the crews' rule would starve - keep there past the months the builders expand at - off the top of their month, before the rule... |
 | 88 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 93 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 99 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -150,21 +150,21 @@
 |---:|---:|---|---|
 | 422 | 12 | `static void neverLaidOff()` |  |
 
-### 6. ONLY WHAT IT COULD STAFF (lines 435-588)
+### 6. ONLY WHAT IT COULD STAFF (lines 435-590)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 464 | 124 | `static void onlyWhatItCouldStaff(Path root)` |  |
+| 464 | 126 | `static void onlyWhatItCouldStaff(Path root)` |  |
 
-### 7. ONE PRIORITY (lines 589-672)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 591 | 81 | `static void onePriority(Path root)` |  |
-
-### 8. CONSERVED (lines 673-683)
+### 7. ONE PRIORITY (lines 591-674)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 675 | 8 | `static void conserved()` |  |
+| 593 | 81 | `static void onePriority(Path root)` |  |
+
+### 8. CONSERVED (lines 675-685)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 677 | 8 | `static void conserved()` |  |
 
