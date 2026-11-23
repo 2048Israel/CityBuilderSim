@@ -1581,7 +1581,7 @@ final class BuildScreen {
         line.setStyle(wordsAt(9.5, abroad || premiumPct > 0 ? Palette.WARN : Palette.TEXT_LABEL));
         line.setWrapText(true);
         line.setMinWidth(0);
-        Tooltip tip = Kept.tip(line, buildersShortInfo(), 1000);
+        Tooltip tip = Kept.tip(line, buildersShortInfo(ui.game.getCurrency()), 1000);
         tip.setWrapText(true);
         tip.setMaxWidth(320);
         return line;
@@ -1589,13 +1589,14 @@ final class BuildScreen {
 
     /**
      * What the builders' premium and the foreign contractor are, in two sentences, from the model's own constants
-     * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i).
+     * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i). The city's
+     * money by its name, never a typed sign (FM1; MoneyWordsCheck).
      */
-    static String buildersShortInfo() {
+    static String buildersShortInfo(Currency money) {
         return String.format("The builders charge more for a point of work as their queue grows past %.0f months at the pace "
                 + "the repairs leave the sites, up to +%.0f%% with none left. Foreign crews are always on offer at the "
                 + "city's own price for the work and an excess in the world's money, %.0f%% of the world's price at par: "
-                + "a strong D$ makes them cheaper, a weak one dearer, but never more than +%.0f%% to begin with, so the "
+                + "a strong " + money.name() + " makes them cheaper, a weak one dearer, but never more than +%.0f%% to begin with, so the "
                 + "work queued past %.0f months at the latest is theirs, paid abroad. They bring their own crews, as "
                 + "many as the work wants, and ask more a point the more they take, never more than +%.0f%%. While the "
                 + "queue is under %.0f months the builders sell the points no site took abroad.",

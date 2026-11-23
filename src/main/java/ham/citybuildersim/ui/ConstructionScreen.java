@@ -234,7 +234,7 @@ final class ConstructionScreen {
                 + "price and the interest on its wait, and stops ordering when they do not pay. "
                 + "The yard's material is free to the city's orders; the crews buy the rest as they build, from "
                 + "what they salvaged, then the plant, then the world - so no site in this model is ever short "
-                + "of it.\n\n" + BuildScreen.buildersShortInfo(), false));
+                + "of it.\n\n" + BuildScreen.buildersShortInfo(g.getCurrency()), false));
         VBox box = Kept.column(6, cells, bar, scale);
         // ...and, once a foreign contractor has built anything for the city, what it built, what it was paid and what is still its own (FC1).
         var contractor = g.getSectors().construction();
