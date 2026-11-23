@@ -747,7 +747,12 @@ public class PriceLevelCheck {
                 double floor = nominal ? TWIN_MONEY_FLOOR : TWIN_QUANTITY_FLOOR;
                 boolean same = Double.doubleToLongBits(x) == Double.doubleToLongBits(y)
                         || !exact && (Math.abs(x) < floor && Math.abs(y) < floor || Math.abs(x - y) <= tolerance * scale);
-                if (!same) { first = m; break; }
+                if (!same) {
+                    if (Boolean.getBoolean("cbs.pw5.traceFixtures"))
+                        System.out.printf("PW5_ONSET month=%d key=%s x=%.17g y=%.17g todayX=%s todayY=%s nominal=%s scale=%.17g tolerance=%.17g%n",
+                                m, key, x, y, base.todays, other.todays, nominal, scale, tolerance);
+                    first = m; break;
+                }
             }
         }
         return first;

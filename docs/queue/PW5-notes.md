@@ -1243,3 +1243,43 @@ home pipeline, mortgage capital and landlords' orders through m760-825;
 mend PW5's model if it caused the hold, and name only a class main also
 shows with a queued owner, following CU2-notes lines 263-290. No merged
 ensemble or green F1 verdict is claimed yet.
+
+The corrected growing-stock bond preparation now passes SubstationCheck's
+new full-warmup guard. In the m830 diagnostic, its selected bond stays until
+the real m184 maturity and the original principal and household-book
+assertions pass. Power generation can still be scarce early; the physical
+wires cover the billed and closing peaks, which is the guard's premise.
+The m830 replay is diagnostic, not a replacement for the normal 2,400-month
+run: it reproduces the exact m792-807 housing window (12.283026838 at m807),
+and its post-limit continuation separately flags three unsettled-line bounds
+at m834 that the retained normal run did not flag. No exception is added
+for those diagnostic-tail lines and no full-run verdict is inferred from it.
+
+**The housing orders wait on land.** The trace from m760 through m800 has
+zero home pipeline, unchanged 1,496 homes and an unlimited mortgage-capital
+room. Every sampled landlord order says "Holding: no land - needs 5,570 m²,
+922 m² free". Its grid is fully served in both billed and closing states,
+one district with 100,000 kW carry against roughly 10,000-13,600 kW peaks.
+Standing wire repairs are 110 points; total charged repairs are about 304-307.
+Actual builders rise from 418 to 446 and leave 114-139 points for sites.
+At m807, 568 homes are on site, builders are 1,648 and 1,341 points remain
+after repairs. At m808, homes rise to 1,559 and unplaced households fall to
+zero. This rules out missing wire capacity as the direct hold and shows
+that no home site was competing for points before the land hold broke.
+The land buyer's actual budget and offers are the next trace, before a
+model attribution or queued owner is decided.
+
+The standalone Windows KeptCheck completes with only the held-grid line
+red: its heap is **1,336.7 MiB** and the unchanged quarter-free bound passes.
+The grid still closes one cell in both held and ordinary months while all
+106 retained tooltip identities match. The box's heap line is the existing
+FS5 platform class recorded on main (1,711.9 MiB versus Windows 1,502.8);
+PW5's box figure is 1,673.2, with no UI or heap-rule change. Full results
+remain under target/PW5-post-HC1-mends/.
+
+FS2 has already shipped (2026-11-20). It cannot own a new known-red row.
+The price-level diagnosis therefore remains open; retain its bounds and
+trace the physical grid and cash divergence before naming an unshipped
+owner or making a mend. AP2 has now shipped 0.9.191 at 1b89c5c4c, speed
+only with every figure exact and format still 62; merge it before the
+required merged-model ensemble and next dry run. PW5's format stays 63.

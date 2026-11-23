@@ -4,7 +4,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 631 files, 680,221 lines, 29,754 methods, 6,597 constants. `GameVersion.VERSION` is "0.9.190", `SAVE_FORMAT` 63.
+**The tree:** 631 files, 680,313 lines, 29,757 methods, 6,597 constants. `GameVersion.VERSION` is "0.9.190", `SAVE_FORMAT` 63.
 
 ## model (280 files)
 
@@ -200,7 +200,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PopulationCohorts.java](PopulationCohorts.md) | 845 | 54 | The city's age pyramid, and since the switch, the city's POPULATION. | 42 |
 | [PopulationManager.java](PopulationManager.md) | 1,318 | 70 | The working population: the workforce by skill band, the city's posts and their wages by job type, and who fills which post (fillByBand()). | 44 |
 | [Ports.java](Ports.md) | 770 | 57 | The city's ports: the berths its sea terminals stand, the share of each kind of cargo they take off the lorries and the railway, and the tonnes tha... | 60 |
-| [PowerDispatch.java](PowerDispatch.md) | 288 | 17 | One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks, and the price each hal... | 16 |
+| [PowerDispatch.java](PowerDispatch.md) | 288 | 17 | One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks, and the price each hal... | 17 |
 | [PowerView.java](PowerView.md) | 95 | 4 | The power screen's pure projection of a retained dispatch and its struck tariff. | 5 |
 | [PriceIndex.java](PriceIndex.md) | 781 | 37 | What a month costs a household, against what it cost at founding. | 26 |
 | [PriceLevel.java](PriceLevel.md) | 84 | 5 | The price level a city is founded at, 1900's: the US consumer price index of the calendar's first year over its 2025, and the series it is read fro... | 129 |
@@ -250,7 +250,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [StrategicReserve.java](StrategicReserve.md) | 238 | 32 | The city's strategic reserve of crude oil: what it holds, what it paid for it, and what the player has told it to fill and release (0.7.85, batch O... | 15 |
 | [StreetCurves.java](StreetCurves.md) | 152 | 8 | A street's smooth line from the plots it is laid on, and the plots that line's band reaches: pure - plots in, points in plots out, no plan and no s... | 4 |
 | [StudentHousehold.java](StudentHousehold.md) | 61 | 10 | Full-time students, as one ledger. | 6 |
-| [Substations.java](Substations.md) | 51 | 6 | The city's wires: one substation for each 100 MW of peak, and their own costs in the power bill. | 13 |
+| [Substations.java](Substations.md) | 51 | 6 | The city's wires: one substation for each 100 MW of peak, and their own costs in the power bill. | 14 |
 | [SupplierCredit.java](SupplierCredit.md) | 255 | 21 | What a buyer owes its suppliers for stock they let it have on credit (0.7.44): the grocers' trade credit, struck and repaid a month at a time. | 8 |
 | [TaxPolicy.java](TaxPolicy.md) | 1,846 | 117 | The city's tax rates - the revenue half of what the player actually decides. | 69 |
 | [TempDirs.java](TempDirs.md) | 141 | 7 | The one place a harness, or a scratch city, gets a temporary folder from: one folder per JVM under the system temp folder, deleted when that JVM ex... | 99 |
@@ -528,7 +528,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 822 | 33 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 1 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,436 | 100 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 7 |
 | [LicenceFeesCheck.java](LicenceFeesCheck.md) | 546 | 15 | Licence fees leave a running firm's money and enter this month's current account. | 4 |
-| [LongPlaytest.java](LongPlaytest.md) | 9,854 | 184 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 78 |
+| [LongPlaytest.java](LongPlaytest.md) | 9,884 | 184 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 78 |
 | [LuxuryRetailCheck.java](LuxuryRetailCheck.md) | 249 | 10 | What a luxury shop's post sells: its payroll over its margin at BEA's mark (LX1, 2026-11-17). | 0 |
 | [MainLineCheck.java](MainLineCheck.md) | 2,032 | 67 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
@@ -550,7 +550,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [OilCheck.java](OilCheck.md) | 2,421 | 48 | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). | 2 |
 | [OilViewCheck.java](OilViewCheck.md) | 706 | 20 | The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): OilView's figures, words, chart and levers, held to the model's own rea... | 1 |
 | [OrderBookCheck.java](OrderBookCheck.md) | 353 | 18 | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. | 0 |
-| [OrderDoorCheck.java](OrderDoorCheck.md) | 504 | 20 | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the len... | 0 |
+| [OrderDoorCheck.java](OrderDoorCheck.md) | 544 | 22 | An order at the door (FB15, 2026-11-20): a landlord's order sized, and its owners asked, at the price buildFor() charges; a project's order the len... | 0 |
 | [OrderSearchCheck.java](OrderSearchCheck.md) | 947 | 23 | The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1). | 2 |
 | [OutsideCheck.java](OutsideCheck.md) | 783 | 5 | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). | 0 |
 | [OwnerCheck.java](OwnerCheck.md) | 995 | 28 | The owner families (BO1): one two-adult household per company that has listed and not gone broke, holding the company's founding stake alone. | 1 |
@@ -570,7 +570,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PowerDispatchCheck.java](PowerDispatchCheck.md) | 412 | 24 | The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the works first, the win... | 0 |
 | [PowerPriceCheck.java](PowerPriceCheck.md) | 625 | 27 | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what... | 4 |
 | [PowerViewCheck.java](PowerViewCheck.md) | 372 | 14 | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. | 1 |
-| [PriceLevelCheck.java](PriceLevelCheck.md) | 1,654 | 64 | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30:... | 13 |
+| [PriceLevelCheck.java](PriceLevelCheck.md) | 1,659 | 64 | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30:... | 13 |
 | [PrizeCheck.java](PrizeCheck.md) | 2,024 | 76 | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, ... | 1 |
 | [PublicLicenceCheck.java](PublicLicenceCheck.md) | 778 | 34 | The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the service it deli... | 2 |
 | [QuarryingCheck.java](QuarryingCheck.md) | 639 | 13 | Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-researc... | 1 |
@@ -597,7 +597,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RunWorksCheck.java](RunWorksCheck.md) | 1,310 | 40 | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's groun... | 2 |
 | [SaveFileCheck.java](SaveFileCheck.md) | 5,102 | 42 | Verifies where saves go and how they are written. | 13 |
 | [SaveSlotCheck.java](SaveSlotCheck.md) | 2,001 | 53 | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. | 1 |
-| [ScaleCheck.java](ScaleCheck.md) | 2,285 | 68 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 2 |
+| [ScaleCheck.java](ScaleCheck.md) | 2,295 | 68 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 2 |
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |
 | [SectorStatementCheck.java](SectorStatementCheck.md) | 1,289 | 28 | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every mon... | 3 |
 | [ShortSellingCheck.java](ShortSellingCheck.md) | 1,465 | 52 | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, ... | 4 |
@@ -608,7 +608,7 @@ Generated 2026-11-22 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [StaffingTieCheck.java](StaffingTieCheck.md) | 522 | 29 | The harness for TQ1's tie rule at the staffing gate: a planner whose buildings the gate refused hands WantedPosts one hold (LD1), and where two of ... | 0 |
 | [StaleCheck.java](StaleCheck.md) | 331 | 6 | The prose still describes the code: the firm half of `tools.Stale`, asserted, and `tools.Names` proved on a fixture. | 0 |
 | [StepsCheck.java](StepsCheck.md) | 212 | 7 | Magnitude controls follow the figure and bond lots follow the month's money. | 0 |
-| [SubstationCheck.java](SubstationCheck.md) | 368 | 23 | Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5). | 12 |
+| [SubstationCheck.java](SubstationCheck.md) | 375 | 24 | Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5). | 14 |
 | [SulphideLeachCheck.java](SulphideLeachCheck.md) | 404 | 18 | The Sulphide Leach & SX-EW Plant, checked (R6b, FE2: sulphide heap leaching, Johnson Camp, Arizona, Nov 2025): the near-future row that lets a sulp... | 0 |
 | [SupplierCreditCheck.java](SupplierCreditCheck.md) | 402 | 10 | The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit when the till cannot pay for it, owed for a month, repaid out of the s... | 0 |
 | [TimingCheck.java](TimingCheck.md) | 781 | 35 | Checks hard and soft timing, JVM forwarding, suite coverage and paired medians. | 0 |

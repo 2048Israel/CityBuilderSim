@@ -1,4 +1,4 @@
-# SubstationCheck.java - 368 lines · 23 methods · 3 constants · harnesses
+# SubstationCheck.java - 375 lines · 24 methods · 3 constants · harnesses
 
 `ham/citybuildersim/SubstationCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -6,9 +6,9 @@
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
 > the dispatch's demand input, and automation's demand input; each rule also fails against the pre-PW5 model.
 
-**Uses:** [Game](Game.md) (24), [UtilitiesHandler](UtilitiesHandler.md) (24), [Substations](Substations.md) (22), [PowerDispatch](PowerDispatch.md) (16), [PriceLevel](PriceLevel.md) (10), [Good](Good.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildAdvice](BuildAdvice.md) (7), [IndustryViewCheck](IndustryViewCheck.md) (6), [BuildingManager](BuildingManager.md) (3), [GameFiles](GameFiles.md) (3), [JobType](JobType.md) (3), [SaveFileCheck](SaveFileCheck.md) (3), [PowerPriceCheck](PowerPriceCheck.md) (3), [LongPlaytest](LongPlaytest.md) (2), [IndustryView](IndustryView.md) (2), [RecipeCheck](RecipeCheck.md) (2), [FittingCheck](FittingCheck.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (2), [BuildingType](BuildingType.md) (1), [BuildCard](BuildCard.md) (1), [AutoBuilder](AutoBuilder.md) (1), [CityCalendar](CityCalendar.md) (1), [RailCheck](RailCheck.md) (1)
+**Uses:** [Game](Game.md) (25), [UtilitiesHandler](UtilitiesHandler.md) (24), [Substations](Substations.md) (22), [PowerDispatch](PowerDispatch.md) (16), [PriceLevel](PriceLevel.md) (10), [Good](Good.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildAdvice](BuildAdvice.md) (7), [IndustryViewCheck](IndustryViewCheck.md) (6), [GameFiles](GameFiles.md) (4), [BuildingManager](BuildingManager.md) (3), [JobType](JobType.md) (3), [SaveFileCheck](SaveFileCheck.md) (3), [PowerPriceCheck](PowerPriceCheck.md) (3), [LongPlaytest](LongPlaytest.md) (3), [IndustryView](IndustryView.md) (2), [RecipeCheck](RecipeCheck.md) (2), [FittingCheck](FittingCheck.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (2), [BuildingType](BuildingType.md) (1), [BuildCard](BuildCard.md) (1), [AutoBuilder](AutoBuilder.md) (1), [CityCalendar](CityCalendar.md) (1), [RailCheck](RailCheck.md) (1)
 
-**Used by (12):** [CopperRefiningCheck](CopperRefiningCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HaulageCheck](HaulageCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md)
+**Used by (14):** [CopperRefiningCheck](CopperRefiningCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HaulageCheck](HaulageCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [OrderDoorCheck](OrderDoorCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Constants
 
@@ -28,7 +28,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 354 | **type** `public final class SubstationCheck` | Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5). |
+| 15 | 361 | **type** `public final class SubstationCheck` | Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5). |
 | 21 | 1 | `static void check(String label, boolean ok)` |  |
 | 22 | 1 | `static boolean near(double a, double b)` |  |
 | 23 | 1 | `static void quietly(Runnable work)` |  |
@@ -52,5 +52,6 @@
 | 252 | 47 | `static void smallTownFinding()` | PW5-F1: whole districts have a utilization cost; omitted wires cause a different, physical squeeze. |
 | 300 | 35 | `static WireFinding townFinding(String label, Game g)` |  |
 | 336 | 24 | `static void historicalTownFinding()` |  |
-| 361 | 7 | `public static void main(String[] args) throws Exception` |  |
+| 361 | 5 | `static void bondTownWires()` |  |
+| 367 | 8 | `public static void main(String[] args) throws Exception` |  |
 

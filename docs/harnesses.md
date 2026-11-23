@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**245 harness files, 28,015 labelled assertions.** AllChecks runs 245 of them.
+**245 harness files, 28,017 labelled assertions.** AllChecks runs 245 of them.
 
 ## Which harnesses read which class
 
@@ -269,7 +269,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ChildcareCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, NewUnitCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, GatewayCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
-| [PowerDispatch](map/PowerDispatch.md) | BuildAdviceCheck, BuildCardCheck, ElectrolyserCheck, EssentialWorksCheck, HydroCheck, NewUnitCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, SubstationCheck, WorksFinanceCheck |
+| [PowerDispatch](map/PowerDispatch.md) | BuildAdviceCheck, BuildCardCheck, ElectrolyserCheck, EssentialWorksCheck, HydroCheck, NewUnitCheck, PowerDispatchCheck, PowerPriceCheck, PowerViewCheck, ScaleCheck, SubstationCheck, WorksFinanceCheck |
 | [PowerView](map/PowerView.md) | HistoryCheck, PowerViewCheck, ReadPathCheck |
 | [PriceIndex](map/PriceIndex.md) | CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, ScaleCheck, StepsCheck |
 | [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerPriceCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, StepsCheck, SubstationCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
@@ -345,7 +345,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StrategicReserve](map/StrategicReserve.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, SaveFileCheck |
 | [StreetCurves](map/StreetCurves.md) | MapCheck, PlanCheck |
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
-| [Substations](map/Substations.md) | BuildAdviceCheck, BuildingDataCheck, ElectrolyserCheck, HistoricalLicenceCheck, LongPlaytest, NewUnitCheck, PowerPriceCheck, SubstationCheck |
+| [Substations](map/Substations.md) | BuildAdviceCheck, BuildingDataCheck, ElectrolyserCheck, HistoricalLicenceCheck, LongPlaytest, NewUnitCheck, PowerPriceCheck, ScaleCheck, SubstationCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CapitalGainsCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandlordPortCheck, LongPlaytest, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
@@ -21000,7 +21000,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L541 DataSave and HistorySave JSON and the load restorers keep the paid flow
   - L542 repeated screen and planner reads keep the paid flow and every money pool still
 
-## LongPlaytest.java - 77 labelled assertions
+## LongPlaytest.java - 78 labelled assertions
 
 > A city played for 2,400 months at the gate and 4,000 once a night on main
 > (tools/nightly.sh), the way a person plays.
@@ -21020,111 +21020,112 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L3603 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3658 AND EVERYTHING THAT IS A PURCHASE.**
 - **L4026 AND THE BEST OF THEM WINS.**
-- **L6748 founding: a few months at a time, by hand**
-- **L6845 then the real rhythm**
-- **L6978 the report**
-- **L7001 ==**
-- **L7098 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L8387 what the advisor tried, and what happened**
-- **L8393 findings**
-- **L8413 HA1 money audit fixtures**
-- **L9010 1. a city that prospers**
-  - L9032 a founding city conserves money to within 0.01% of what moved
-- **L9051 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L9074 an industrial city conserves money to within 0.01% of what moved
-  - L9076 ...and it really did carry passengers, so the fare was really charged
-  - L9093 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L9102 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L9112 land bought out of the vault: nothing moves the audit cannot see**
-  - L9122 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L9126 a city that paid for land out of the vault conserves money
-  - L9128 ...and nothing moved a pool after any month's audit
-- **L9131 2. a city under stress**
-  - L9158 a stressed city conserves money to within 0.01% of what moved
-  - L9189 fixture: retail went under whole, and was restructured
-  - L9191 a restructure moves no cash the audit cannot see
-- **L9194 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L9212 a city paying over the world: the money that arrives is audited**
-  - L9233 fixture: the rate actually brought money in
-  - L9235 ...and the audit saw it cross the border
-  - L9238 a city conserves money with hot money flowing
-  - L9241 ...and nothing moved after the audit struck
-- **L9243 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L9257 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L9287 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L9290 ...and bought consumables abroad, inside their imports
-  - L9292 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L9294 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L9298 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L9310 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L9348 fixture: the yard bought old steel from the households and from a sector
-  - L9350 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L9352 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9356 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-  - L9367 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
-  - L9369 the households' books close in every one of the yard's months (worst residual
-  - L9371 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
-- **L9374 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L9385 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L9416 fixture: the refinery bought old copper from the households and from a sector
-  - L9418 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L9420 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9430 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
-  - L9432 the households' books close in every one of the refinery's months (worst residual
-  - L9434 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
-- **L9437 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L9466 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L9492 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9538 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9539 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9541 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9543 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9545 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9547 ...and nothing moved a pool after any month's audit struck
-  - L9548 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9550 ...and it is the cash coupons the budget calls its cash interest
-- **L9552 12. the services' upkeep is bought of Business Services**
-  - L9573 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
-  - L9576 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
-  - L9578 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
-  - L9589 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
-  - L9601 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
-  - L9603 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
-  - L9606 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
-  - L9609 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
-  - L9614 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-  - L9617 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
-  - L9622 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
-  - L9635 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
-  - L9639 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
-  - L9644 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-- **L9646 13. the households' books close**
-  - L9655 fixture: the longest city this file plays gave at least 24 months to read
-  - L9657 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
-  - L9666 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
-- **L9670 14. a cent that vanishes from a household is seen**
-  - L9682 fixture: the city holds savings enough that 1% of them is a hundred cents or more
-  - L9687 the theft took what it was meant to: the savings fell by X, to the cent
-  - L9693 the game's own strike, whose opening figure was read after the theft, closes
-  - L9694 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
-- **L9697 15. a bond's face that no cell holds is named**
-  - L9721 fixture: the bond town's households hold a corporate bond
-  - L9741 fixture: the bond's record now exceeds the cells' own by D, over a cent
-  - L9749 the press that paid the coupon on D declares it orphaned:
-  - L9752 ...and the own line fired with that figure
-  - L9753 ...the households' books close
-  - L9756 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
-  - L9779 the bond matured within its term (m
-  - L9781 ...every month on the way closed its households' books
-  - L9782 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
-  - L9785 ...and the households' books close that month, the principal paid on a face no cell held
-- **L9789 16. what comes off the payslips is in transit a press**
-  - L9809 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
-  - L9831 fixture: the treasury banked all three that press
-  - L9834 ...by the lines the pools' identity reads
-  - L9845 fixture: what comes off the payslips moved by over a cent in at least three presses
-  - L9846 the households' books close in every one of the
-  - L9847 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
+- **L6760 founding: a few months at a time, by hand**
+- **L6857 then the real rhythm**
+- **L6990 the report**
+- **L7013 ==**
+- **L7110 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L8399 what the advisor tried, and what happened**
+- **L8405 findings**
+- **L8425 HA1 money audit fixtures**
+- **L9028 1. a city that prospers**
+  - L9050 a founding city conserves money to within 0.01% of what moved
+- **L9069 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L9092 an industrial city conserves money to within 0.01% of what moved
+  - L9094 ...and it really did carry passengers, so the fare was really charged
+  - L9111 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L9120 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L9130 land bought out of the vault: nothing moves the audit cannot see**
+  - L9140 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L9144 a city that paid for land out of the vault conserves money
+  - L9146 ...and nothing moved a pool after any month's audit
+- **L9149 2. a city under stress**
+  - L9176 a stressed city conserves money to within 0.01% of what moved
+  - L9207 fixture: retail went under whole, and was restructured
+  - L9209 a restructure moves no cash the audit cannot see
+- **L9212 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L9230 a city paying over the world: the money that arrives is audited**
+  - L9251 fixture: the rate actually brought money in
+  - L9253 ...and the audit saw it cross the border
+  - L9256 a city conserves money with hot money flowing
+  - L9259 ...and nothing moved after the audit struck
+- **L9261 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L9275 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L9305 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L9308 ...and bought consumables abroad, inside their imports
+  - L9310 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L9312 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L9316 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L9328 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L9366 fixture: the yard bought old steel from the households and from a sector
+  - L9368 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L9370 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9374 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+  - L9385 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
+  - L9387 the households' books close in every one of the yard's months (worst residual
+  - L9389 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
+- **L9392 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L9403 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L9434 fixture: the refinery bought old copper from the households and from a sector
+  - L9436 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L9438 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9448 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
+  - L9450 the households' books close in every one of the refinery's months (worst residual
+  - L9452 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
+- **L9455 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L9484 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L9510 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9556 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9557 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9559 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9561 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9563 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9565 ...and nothing moved a pool after any month's audit struck
+  - L9566 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9568 ...and it is the cash coupons the budget calls its cash interest
+- **L9570 12. the services' upkeep is bought of Business Services**
+  - L9591 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
+  - L9594 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
+  - L9596 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
+  - L9607 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
+  - L9619 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
+  - L9621 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
+  - L9624 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
+  - L9627 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
+  - L9632 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+  - L9635 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
+  - L9640 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
+  - L9653 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
+  - L9657 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
+  - L9662 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+- **L9664 13. the households' books close**
+  - L9673 fixture: the longest city this file plays gave at least 24 months to read
+  - L9675 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
+  - L9684 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
+- **L9688 14. a cent that vanishes from a household is seen**
+  - L9700 fixture: the city holds savings enough that 1% of them is a hundred cents or more
+  - L9705 the theft took what it was meant to: the savings fell by X, to the cent
+  - L9711 the game's own strike, whose opening figure was read after the theft, closes
+  - L9712 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
+- **L9715 15. a bond's face that no cell holds is named**
+  - L9739 fixture: the bond town's households hold a corporate bond
+  - L9748 fixture: the bond town has real wires for its billed and closing peaks
+  - L9766 fixture: the bond's record now exceeds the cells' own by D, over a cent
+  - L9774 the press that paid the coupon on D declares it orphaned:
+  - L9777 ...and the own line fired with that figure
+  - L9778 ...the households' books close
+  - L9781 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
+  - L9809 the bond matured within its term (m
+  - L9811 ...every month on the way closed its households' books
+  - L9812 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
+  - L9815 ...and the households' books close that month, the principal paid on a face no cell held
+- **L9819 16. what comes off the payslips is in transit a press**
+  - L9839 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
+  - L9861 fixture: the treasury banked all three that press
+  - L9864 ...by the lines the pools' identity reads
+  - L9875 fixture: what comes off the payslips moved by over a cent in at least three presses
+  - L9876 the households' books close in every one of the
+  - L9877 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
 
 ## LuxuryRetailCheck.java - 8 labelled assertions
 
@@ -24269,24 +24270,24 @@ _(this harness does not label its checks through a helper - it prints its findin
 > the door on the bank's capital, where HN1 had made the landlords' a halving.
 > ...
 
-- **L299 1. the fixture: a landlord at HN1-A's edge, and a shopkeeper**
-  - L308 fixture: the played city has the wire capacity its billed and closing peaks need at the order-door month
-  - L314 fixture: the market's materials, made here and landed, at DEAR over the planner's price, by hand
-  - L318 fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready
-  - L326 the planner's price of one is under the door's: the yard is short, the materials bought in
-  - L328 ...by more than the door's tolerance on the down payment
-- **L330 2. HN1-A: a landlord's order at the door's own price**
-  - L341 fixture: the owners put in the order's down payment, all the till held at the order (
-  - L344 the order's price of one is the door's
-  - L345 the order's price of two is the door's
-  - L353 the build card's lender test reads the door's price of one, as the order does
-- **L356 3. HN1-B: a project's order the lender says no to, asked again of half**
-  - L376 fixture: ground for six, the slice carried all six, and the till at the door held one at the door's price but not six
-  - L378 fixture: the bank's capital rule lets no borrower's debt grow this month
-  - L383 ...paid from the till at the door's price, with no loan
-  - L384 ...and the shopkeeper is not left marked as refused for capital, which the playtest counts
-  - L397 with the bank shut, the order is held whole, the till that holds one untouched, as on main (REV-FB15)
-  - L405 from the other side, a till short of one at the door is held whole, in the bank's words
+- **L331 1. the fixture: a landlord at HN1-A's edge, and a shopkeeper**
+  - L340 fixture: the played city has the wire capacity its billed and closing peaks need at the order-door month
+  - L346 fixture: the market's materials, made here and landed, at DEAR over the planner's price, by hand
+  - L350 fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready
+  - L358 the planner's price of one is under the door's: the yard is short, the materials bought in
+  - L360 ...by more than the door's tolerance on the down payment
+- **L362 2. HN1-A: a landlord's order at the door's own price**
+  - L377 fixture: the owners put in the order's down payment, all the till held at the order (
+  - L380 the order's price of one is the door's
+  - L381 the order's price of two is the door's
+  - L389 the build card's lender test reads the door's price of one, as the order does
+- **L392 3. HN1-B: a project's order the lender says no to, asked again of half**
+  - L413 fixture: ground for six, the slice carried all six, and the till at the door held one at the door's price but not six
+  - L415 fixture: the bank's capital rule lets no borrower's debt grow this month
+  - L420 ...paid from the till at the door's price, with no loan
+  - L421 ...and the shopkeeper is not left marked as refused for capital, which the playtest counts
+  - L434 with the bank shut, the order is held whole, the till that holds one untouched, as on main (REV-FB15)
+  - L445 from the other side, a till short of one at the door is held whole, in the bank's words
 
 ## OrderSearchCheck.java - 45 labelled assertions
 
@@ -26801,42 +26802,42 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L652 ...and a parting by the factor alone shows none, every pair apart across the levels (month
   - L666 homes
   - L679 ...and the city really lived (more people at the end than the start)
-  - L768 the child at the factor ran with the factor (
-  - L769 the child at today's prices ran with 1
-  - L848 ...the
-  - L973 the fault: a floor left at the board's figure as written (D$
-  - L981 the default founding shows lines at the factor that the old half-thousand would have hidden:
-  - L1407 wage1901.
-  - L1408 teamHire1900
-  - L1410 cash
-  - L1411 gdp.month
-  - L1412 bank.deposits
-  - L1413 retail.shelf
-  - L1414 rent
-  - L1415 wage.minimum
-  - L1416 rate
-  - L1417 world.level
-  - L1418 priceIndex
-  - L1419 pop
-  - L1420 workforce
-  - L1421 unemployed
-  - L1422 homes
-  - L1423 stores
-  - L1425 jobs.
-  - L1437 stock.
-  - L1439 sector.
-  - L1461 h.
+  - L773 the child at the factor ran with the factor (
+  - L774 the child at today's prices ran with 1
+  - L853 ...the
+  - L978 the fault: a floor left at the board's figure as written (D$
+  - L986 the default founding shows lines at the factor that the old half-thousand would have hidden:
+  - L1412 wage1901.
+  - L1413 teamHire1900
+  - L1415 cash
+  - L1416 gdp.month
+  - L1417 bank.deposits
+  - L1418 retail.shelf
+  - L1419 rent
+  - L1420 wage.minimum
+  - L1421 rate
+  - L1422 world.level
+  - L1423 priceIndex
+  - L1424 pop
+  - L1425 workforce
+  - L1426 unemployed
+  - L1427 homes
+  - L1428 stores
+  - L1430 jobs.
+  - L1442 stock.
+  - L1444 sector.
   - L1466 h.
-  - L1481 h.
-  - L1483 h.
-  - L1579 holdings.folded
-  - L1580 holdings.shown
-  - L1588 shown.
-  - L1591 band
-  - L1630 lanes
-  - L1631 arrows
-  - L1639 lanes.given
-  - L1640 lanes.feed
+  - L1471 h.
+  - L1486 h.
+  - L1488 h.
+  - L1584 holdings.folded
+  - L1585 holdings.shown
+  - L1593 shown.
+  - L1596 band
+  - L1635 lanes
+  - L1636 arrows
+  - L1644 lanes.given
+  - L1645 lanes.feed
 
 ## PrizeCheck.java - 217 labelled assertions
 
@@ -31135,128 +31136,128 @@ _(this harness does not label its checks through a helper - it prints its findin
 > model, the save, the history and the screens.
 > ...
 
-  - L357 fixture: native spread sales leave less than a billionth of the opening paper book, still above zero
-  - L360 the paper desk keeps its shrinking register equal to its holders through 320 native sales
-  - L361 the desk's cash and face each move to the bank once, including the small remainder
-  - L364 the fault: proportional sales preserve a real register mismatch instead of resetting it to the holders
-- **L372 1. the fixture, and its copy K times over**
-  - L409 fixture: the founded city has people, posts and homes
-  - L411 fixture: K times its people passes 2^31
-- **L417 2. the counts read back whole**
-  - L421 the slot header of a save past 2^31 people reads (an int could not parse it)
-  - L422 ...and its population is K times the founded city's
-  - L428 the copy loads
-  - L429 its population is K times the founded city's, past 2^31
-  - L430 ...its workforce too, not stuck at 2,147,483,647
-  - L431 ...both past the int ceiling
-  - L444 its ground is K times the founded city's
-  - L445 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
-  - L456 ...its iron as the founded city's: sites and tonnes
-- **L460 3. posts, doors and household places**
-  - L462 every post is K times the founded city's
-  - L463 every home is K times the founded city's
-  - L464 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
-  - L466 ...because the copy holds K founding endowments where the founded city holds one
-- **L470 4. three months at that size**
-  - L479 the months ran
-  - L480 the population is still past 2^31
-  - L481 ...and is the pyramid's, rounded once
-  - L482 the workforce is still past 2^31
-  - L485 the history's last population is the city's
-  - L486 ...its workforce
-  - L487 ...its posts
-  - L488 ...the people out of work
-  - L489 ...and its homes
-- **L491 5. the save round-trips them**
-  - L493 the city past 2^31 saves
-  - L495 its header reads
-  - L496 ...with the population it was saved with
-  - L502 it loads at the month it was saved
-  - L503 the population came back
-  - L504 ...the workforce
-  - L505 ...the posts
-  - L506 ...the posts filled
-  - L507 ...the people out of work
-  - L508 ...the homes
-  - L509 ...the household places
-  - L510 ...the founding endowments it holds (FW9)
-  - L513 ...and the history, month for month
-  - L520 the loaded city plays its next month to the same population
-  - L522 ...the same workforce
-  - L523 ...and the same people out of work
-- **L525 6. the sectors free, at 5 and 10 billion**
-  - L581 fixture: the town has, within
-- **L586 7. money at that size reads**
-- **L589 8. the audit's floor at size**
-- **L592 9. a copy tracks its city month by month**
-- **L599 10. the 1900 city: unfitted plant scales; whole horse posts are bounded**
-  - L625 fixture: the city keeps its 1900 founding and 1901 ladder
-  - L627 fixture: horse hands put posts past the buildings
-  - L642 fixture: the 1900 save carries unfitted pieces
-  - L643 every unfitted piece count is K times the city's, as its buildings are
-  - L653 horse hands differ from the model's factor by at most half a post per tier
-  - L662 fixture: the historical city's live haulage demand needs carters in the horse form
-  - L663 carters round by at most half a post at the model's team capacity
-  - L670 fixture: a historical Bakery's drive has positive work
-  - L674 a partial fitting delivers no fraction of a building
-  - L676 the remaining work delivers exactly one whole fitting
-  - L678 fixture: no indivisible fitting is on site when the tracking save is taken
-  - L703 the historical copy at K =
-  - L720 1900 month
-  - L729 1900 month
-  - L733 1900 month
-  - L734 1900 month
-  - L736 1900 month
-  - L740 1900 month
-  - L744 fixture: whole horse posts actually break exact K scaling in the played twins
-- **L755 the audit's floor is never under the figures' own step (0.7.63)**
-  - L765 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L766 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L770 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L776 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L777 ...and a size that is not a number keeps the floor alone
-- **L783 money at that size reads in its own unit**
-  - L785 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L786 ...a thousand quadrillion and more is grouped
-  - L787 ...a negative one keeps its sign
-  - L788 ...and a trillion still reads as one
-  - L790 cash() prints every whole dollar a double holds, as before
-  - L792 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L793 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L884 the copy loads
-  - L920 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L921 ...and the posts, the doors and the household places add up exactly, every month
-  - L931 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L934 ...and its businesses pay the city's price for it
-  - L1048 the copy at K =
-  - L1126 fixture: the grown city loads, to have its building sites emptied
-  - L1137 fixture: ...and nothing is under construction when the copies are taken (within
-  - L1343 the month's money audit closes, to the cent (BankCheck and four more)
-  - L1352 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L1358 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L1363 the money the audit saw made is the central bank's (LongPlaytest)
-  - L1367 M0 moved by the money made (LongPlaytest, already relative)
-  - L1375 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L1380 the treasury's window opens where it closed (TreasuryCheck)
-  - L1384 the treasury's closing balance is its cash (TreasuryCheck)
-  - L1390 the treasury's bridge foots (TreasuryCheck)
-  - L1408 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L1411 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L1417 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L1424 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L1437 ...
-  - L1496 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L1517 fixture: the free copy has ground for some building
-  - L1521 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
-  - L1523 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
-  - L1526 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
-  - L1548 every post,
-  - L1551 ...the posts on offer by job type add up to the total
-  - L1552 ...and the total is every post less those withheld plus the posts past the buildings
-  - L1557 every home is the stacks' quantity times their doors
-  - L1558 ...and the homes by size add up to it
-  - L1560 ...and the landlords' studio and family doors to it too
-  - L1562 the household places are the city's hundred for each founding endowment and the stacks' places
+  - L365 fixture: native spread sales leave less than a billionth of the opening paper book, still above zero
+  - L368 the paper desk keeps its shrinking register equal to its holders through 320 native sales
+  - L369 the desk's cash and face each move to the bank once, including the small remainder
+  - L372 the fault: proportional sales preserve a real register mismatch instead of resetting it to the holders
+- **L380 1. the fixture, and its copy K times over**
+  - L417 fixture: the founded city has people, posts and homes
+  - L419 fixture: K times its people passes 2^31
+- **L425 2. the counts read back whole**
+  - L429 the slot header of a save past 2^31 people reads (an int could not parse it)
+  - L430 ...and its population is K times the founded city's
+  - L436 the copy loads
+  - L437 its population is K times the founded city's, past 2^31
+  - L438 ...its workforce too, not stuck at 2,147,483,647
+  - L439 ...both past the int ceiling
+  - L452 its ground is K times the founded city's
+  - L453 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
+  - L464 ...its iron as the founded city's: sites and tonnes
+- **L468 3. posts, doors and household places**
+  - L470 every post is K times the founded city's
+  - L471 every home is K times the founded city's
+  - L472 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
+  - L474 ...because the copy holds K founding endowments where the founded city holds one
+- **L478 4. three months at that size**
+  - L487 the months ran
+  - L488 the population is still past 2^31
+  - L489 ...and is the pyramid's, rounded once
+  - L490 the workforce is still past 2^31
+  - L493 the history's last population is the city's
+  - L494 ...its workforce
+  - L495 ...its posts
+  - L496 ...the people out of work
+  - L497 ...and its homes
+- **L499 5. the save round-trips them**
+  - L501 the city past 2^31 saves
+  - L503 its header reads
+  - L504 ...with the population it was saved with
+  - L510 it loads at the month it was saved
+  - L511 the population came back
+  - L512 ...the workforce
+  - L513 ...the posts
+  - L514 ...the posts filled
+  - L515 ...the people out of work
+  - L516 ...the homes
+  - L517 ...the household places
+  - L518 ...the founding endowments it holds (FW9)
+  - L521 ...and the history, month for month
+  - L528 the loaded city plays its next month to the same population
+  - L530 ...the same workforce
+  - L531 ...and the same people out of work
+- **L533 6. the sectors free, at 5 and 10 billion**
+  - L591 fixture: the town has, within
+- **L596 7. money at that size reads**
+- **L599 8. the audit's floor at size**
+- **L602 9. a copy tracks its city month by month**
+- **L609 10. the 1900 city: unfitted plant scales; whole horse posts are bounded**
+  - L635 fixture: the city keeps its 1900 founding and 1901 ladder
+  - L637 fixture: horse hands put posts past the buildings
+  - L652 fixture: the 1900 save carries unfitted pieces
+  - L653 every unfitted piece count is K times the city's, as its buildings are
+  - L663 horse hands differ from the model's factor by at most half a post per tier
+  - L672 fixture: the historical city's live haulage demand needs carters in the horse form
+  - L673 carters round by at most half a post at the model's team capacity
+  - L680 fixture: a historical Bakery's drive has positive work
+  - L684 a partial fitting delivers no fraction of a building
+  - L686 the remaining work delivers exactly one whole fitting
+  - L688 fixture: no indivisible fitting is on site when the tracking save is taken
+  - L713 the historical copy at K =
+  - L730 1900 month
+  - L739 1900 month
+  - L743 1900 month
+  - L744 1900 month
+  - L746 1900 month
+  - L750 1900 month
+  - L754 fixture: whole horse posts actually break exact K scaling in the played twins
+- **L765 the audit's floor is never under the figures' own step (0.7.63)**
+  - L775 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L776 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L780 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L786 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L787 ...and a size that is not a number keeps the floor alone
+- **L793 money at that size reads in its own unit**
+  - L795 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L796 ...a thousand quadrillion and more is grouped
+  - L797 ...a negative one keeps its sign
+  - L798 ...and a trillion still reads as one
+  - L800 cash() prints every whole dollar a double holds, as before
+  - L802 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L803 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L894 the copy loads
+  - L930 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L931 ...and the posts, the doors and the household places add up exactly, every month
+  - L941 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L944 ...and its businesses pay the city's price for it
+  - L1058 the copy at K =
+  - L1136 fixture: the grown city loads, to have its building sites emptied
+  - L1147 fixture: ...and nothing is under construction when the copies are taken (within
+  - L1353 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1362 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1368 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1373 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1377 M0 moved by the money made (LongPlaytest, already relative)
+  - L1385 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1390 the treasury's window opens where it closed (TreasuryCheck)
+  - L1394 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1400 the treasury's bridge foots (TreasuryCheck)
+  - L1418 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1421 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1427 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1434 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1447 ...
+  - L1506 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1527 fixture: the free copy has ground for some building
+  - L1531 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
+  - L1533 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
+  - L1536 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
+  - L1558 every post,
+  - L1561 ...the posts on offer by job type add up to the total
+  - L1562 ...and the total is every post less those withheld plus the posts past the buildings
+  - L1567 every home is the stacks' quantity times their doors
+  - L1568 ...and the homes by size add up to it
+  - L1570 ...and the landlords' studio and family doors to it too
+  - L1572 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorFlowCheck.java - 20 labelled assertions
 
@@ -32255,7 +32256,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L201 the fund press moves a leading unit or its tenth
   - L204 the actual fund has exactly two positive magnitude steps
 
-## SubstationCheck.java - 21 labelled assertions
+## SubstationCheck.java - 22 labelled assertions
 
 > Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5).
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
@@ -32289,6 +32290,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L292 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
   - L346 the shared historical town's measured peak fits its free founding wires and GRID needs no district
   - L355 PW5-F1: the explicitly priced district adds the study's whole 110 repair points and a wires price to a town below its carry
+  - L364 the money audit's hand-built bond town carries its billed and closing peaks after its full warmup
 
 ## SulphideLeachCheck.java - 32 labelled assertions
 

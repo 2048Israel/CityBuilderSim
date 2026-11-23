@@ -358,9 +358,16 @@ public final class SubstationCheck {
                         && near(extra, 110));
     }
 
+    static void bondTownWires() {
+        Game g = LongPlaytest.MoneyFixtures.foundingCity(GameFiles.scratch("substation-bond-town"));
+        OUT.println("BOND_TOWN " + gridReading(g));
+        check("the money audit's hand-built bond town carries its billed and closing peaks after its full warmup", gridCovered(g));
+    }
+
     public static void main(String[] args) throws Exception {
         carry(); tariff(); workedTariff(); order(); reform(); smallTownFinding();
         historicalTownFinding();
+        bondTownWires();
         if (args.length == 0) saved();
         OUT.println("SubstationCheck: " + fails + " failures");
         if (fails > 0) System.exit(1);

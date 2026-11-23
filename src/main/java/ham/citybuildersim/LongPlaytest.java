@@ -6044,6 +6044,18 @@ public class LongPlaytest {
                         g.getMaintenancePoints(), g.getEconomyManager().getMaintenancePointsTotal(),
                         wire.getConstructionPoints() * wire.repairsPerYear() / 12, g.getBuildingOutput(), g.getBuildingOutputAtEveryPost());
             }
+            if (Boolean.getBoolean("cbs.pw5.traceFixtures") && g.getMonth() >= 760 && g.getMonth() <= 825) {
+                BuildingsTemplate wire = g.getBuildingManager().getTemplate(Substations.ID);
+                double wireRepairPoints = g.getBuildingManager().getQuantity(Substations.ID)
+                        * wire.getConstructionPoints() * wire.repairsPerYear() / 12;
+                out.printf("PW5_HOMES month=%d unplaced=%.9f households=%.9f homes=%d pipeline=%.9f capacity=%d builders=%d repairsStanding=%.9f repairsCharged=%.9f standingWireRepairs=%.9f site=%d capitalRoom=%.9f %s order=%s%n",
+                        g.getMonth(), g.getFamilies().getStillUnplaced(), (double) g.getFamilies().totalHouseholds(),
+                        g.getBuildingManager().getTotalHomes(), (double) g.getBuildingManager().getHousingInventory().pipelineHomes(),
+                        g.getHouseholdCapacity(), g.getConstructionOutput(), g.getMaintenancePoints(),
+                        g.getEconomyManager().getMaintenancePointsTotal(), wireRepairPoints, g.getBuildingOutput(),
+                        g.getEconomyManager().getBusinessDebtManager().capitalRoom(Sectors.REAL_ESTATE),
+                        SubstationCheck.gridReading(g), g.getLastInvestment(Sectors.REAL_ESTATE));
+            }
             if (g.hasCityMap()) {
                 mapMonths++;
                 /*
@@ -8992,7 +9004,13 @@ public class LongPlaytest {
                 c.buildStack(t(c, "Paved Road"), 10, false);
                 c.buildStack(t(c, "Walk-in Clinic"), 2, false);
                 c.buildStack(t(c, "Elementary School"), 1, false);
-                c.simulateMonths(120);
+                // This hand-built preparation has no automatic city builder.
+                // Supply real wires as its private stock grows; every district's
+                // native capital tariff, filled payroll and repairs still apply.
+                for (int month = 0; month < 120; month++) {
+                    SubstationCheck.peakWires(c);
+                    c.simulateMonths(1);
+                }
             });
             return c;
         }
@@ -9721,6 +9739,13 @@ public class LongPlaytest {
             assertTrue("fixture: the bond town's households hold a corporate bond", soonest != null);
             if (soonest != null) {
                 final int bondId = soonest.id;
+                if (Boolean.getBoolean("cbs.pw5.traceFixtures")) {
+                    System.out.println("PW5_BOND " + SubstationCheck.gridReading(bondTown));
+                    System.out.printf("PW5_BOND issuer=%s cash=%.9f face=%.9f writtenOff=%.9f due=%d now=%d%n",
+                            soonest.issuer(), bondTown.getEconomyManager().getSectorCash(soonest.issuer()), soonest.face(),
+                            soonest.writtenOff(), soonest.maturityMonth(), bondTown.getMonth());
+                }
+                assertTrue("fixture: the bond town has real wires for its billed and closing peaks", SubstationCheck.gridCovered(bondTown));
                 final double monthlyCoupon = soonest.coupon / CorporateBond.COUPONS_A_YEAR;
                 java.util.List<Household> holders = new java.util.ArrayList<>();
                 for (Household c : gBooks.cellsForMarket()) if (c.bondFace(bondId) > 0 && c.households() > 0) holders.add(c);
@@ -9768,6 +9793,11 @@ public class LongPlaytest {
                     MoneyAudit.Households hh = bondTown.getLastHouseholdsAudit();
                     if (!householdsClose(hh)) breaches++;
                     if (!bondMarket.getBonds().contains(soonest)) {
+                        if (Boolean.getBoolean("cbs.pw5.traceFixtures"))
+                            System.out.printf("PW5_BOND_REMOVED month=%d due=%d issuer=%s cash=%.9f face=%.9f writtenOff=%.9f %s%n",
+                                    bondTown.getMonth(), soonest.maturityMonth(), soonest.issuer(),
+                                    bondTown.getEconomyManager().getSectorCash(soonest.issuer()), soonest.face(), soonest.writtenOff(),
+                                    SubstationCheck.gridReading(bondTown));
                         matured = true;
                         maturityMonth = hh;
                         maturityFigure = hh.figure(bondLine);
