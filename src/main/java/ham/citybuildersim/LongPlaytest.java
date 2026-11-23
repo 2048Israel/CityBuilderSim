@@ -4617,6 +4617,19 @@ public class LongPlaytest {
        at no other time. The skip's length, the advisor's looks and moves,
        and every other rule are as they were. A look the share cannot cover
        still buys nothing and pays nothing, and the next is HORIZON months on.
+
+       WHO WATCHES. The player: main()'s loop, earthCity()'s and the
+       ensemble's controller (in tools/ensemble), the runs that judge the
+       city. Not probePlay(), nor the rhythms AuctionCheck, AutoBuildCheck,
+       HomeRailCheck and SectorStatementCheck copy by hand: those build the
+       towns their harnesses wrote premises on, and a town no longer held for
+       land is another town - measured, KeptCheck's town at m605 grew from
+       2,518 people to 21,945, its Bank Overview took a new sentence in
+       the month and its 2 GB heap ran out at section 63, none of it ground.
+       Held for land, the player's city grew slowly; watched, it grows as
+       fast as the rest of the model lets it: the default seed 0 ends at
+       5.7 million people where it ended at 1.3 million, in about twice the
+       time (docs/queue/LP-G1-notes.md).
        ===================================================================== */
 
     /** -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. */
@@ -4643,7 +4656,7 @@ public class LongPlaytest {
 
     /**
      * The skip, its ground watched (see the banner): `months` months run one at a time through `month` (the caller's own
-     * month: runPlayer(), the probe's, the ensemble's), a ground look before any month it falls due.
+     * month: runPlayer(), earthCity()'s, the ensemble's), a ground look before any month it falls due.
      */
     static void skipWatchingGround(Game g, int months, Runnable month) {
         for (int i = 0; i < months; i++) {
@@ -8889,8 +8902,8 @@ public class LongPlaytest {
                     case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120;
                 };
                 skip = Math.min(skip, longestSkip());
-                // ...its ground watched across the skip, as main()'s (LP-G1).
-                skipWatchingGround(g, Math.min(skip, Math.max(1, toMonth - g.getMonth())), () -> probeRun(g, 1));
+                // ...its skip NOT watched: the probe's town is the fixture its borrowers wrote their premises on (LP-G1, THE GROUND, WATCHED ACROSS A SKIP, who watches).
+                probeRun(g, Math.min(skip, Math.max(1, toMonth - g.getMonth())));
                 ensureSchools(g);
                 childcareWhenNeeded(g);
                 for (int move = 0; move < movesPerLook(); move++) {
