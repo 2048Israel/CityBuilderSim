@@ -2447,6 +2447,9 @@ final class BuildScreen {
             // ...a hydro station's (HY1): no river with a drop owned, or none of its slots left.
             case NO_RIVER:   return new Pieces.Press(Pieces.Look.HELD, "No river with a drop",
                     "a river comes with land: the Land office ›");
+            // ...a steam plant's (PW2): no sea, lake or river owned to cool it.
+            case NO_WATER:   return new Pieces.Press(Pieces.Look.HELD, "No water to cool it",
+                    "sea, a lake or a river comes with land: the Land office ›");
             // ...a long bridge's (ET6): no way across the water to the landmass chosen, in the words of the survey.
             case NO_BRIDGE:  return new Pieces.Press(Pieces.Look.HELD, "No way across the water",
                     "the reason is under the count: the Land office ›");
@@ -2477,6 +2480,7 @@ final class BuildScreen {
             case NO_DEPOSIT: return new String[] {"no " + BuildCard.depositWord(v.site()) + " deposit", Palette.BAD};
             case NO_COAST:   return new String[] {noCoastWhy(t, "no sea owned"), Palette.BAD};
             case NO_RIVER:   return new String[] {"no river with a drop owned", Palette.BAD};
+            case NO_WATER:   return new String[] {"no water owned to cool it", Palette.BAD};
             case NO_BRIDGE:  return new String[] {noBridgeWhy(t, "no way across the water"), Palette.BAD};
             case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
             case NO_LAND:    return new String[] {"short " + LandManager.areaWords(v.figure()) + " of land", Palette.BAD};
@@ -3154,6 +3158,7 @@ final class BuildScreen {
                         : "no " + ham.citybuildersim.sectors.ExtractionSector.oreWords(Game.siteOf(stopAt), null) + " left to dig";
                 case NO_COAST   -> noCoastWhy(stopAt, "no sea owned for it");
                 case NO_RIVER   -> "no river with a drop owned for it";
+                case NO_WATER   -> "no water owned to cool it";
                 case NO_BRIDGE  -> noBridgeWhy(stopAt, "no way across the water for it");
                 case NO_LICENCE -> "nobody licensed to practise";
                 default         -> "short of land - buy it at the land office first";
@@ -5856,6 +5861,42 @@ final class BuildScreen {
     }
 
     /**
+     * The city has the money and the land, and no water to cool a steam plant (PW2).
+     *
+     * Its own refusal for the reason the river has one: a coal, oil or biomass plant condenses its steam with water drawn
+     * from the sea, a lake or a river (BuildingsTemplate.cooling()), and the only thing that fixes a city with none is
+     * ground with some on it, so no loan would help, and the page says so.
+     */
+    void showNoWaterMenu(BuildingsTemplate selected, long quantity,
+                         String menuTitle, EnumSet<BuildingType> categories) {
+        ui.keepMenu("showNoWaterMenu", () -> showNoWaterMenu(selected, quantity, menuTitle, categories), pool,
+                () -> drawNoWater(selected, quantity, menuTitle, categories));
+    }
+
+    /** The no-water page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoWater(BuildingsTemplate selected, long quantity, String menuTitle, EnumSet<BuildingType> categories) {
+        Kept.scope("showNoWaterMenu", () -> {
+            Label title = refusalTitle("NO WATER TO COOL IT");
+
+            VBox explanation = Kept.scope("why", () -> reportSection("WHY",
+                    quantity + " x " + selected.getName() + " needs water to cool its steam on the ground the city owns.",
+                    "The city owns no sea, lake or river.",
+                    "",
+                    "A steam plant condenses its steam with water drawn from the sea, a",
+                    "lake or a river, so it stands only where the city owns some. A diesel",
+                    "station, an oil-fired turbine, a wind or a solar farm needs none.",
+                    "",
+                    "This is not a funding problem. A bond would not fix it."));
+
+            HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(menuTitle, categories));
+
+            ui.setPage(title, explanation, toLand, back);
+        });
+    }
+
+    /**
      * The city has the money and the land, and the model finds no way across the water (ET6).
      *
      * Its own refusal for the reason the river has one: a long bridge is not short of cash or ground, it is short of a
@@ -6206,6 +6247,7 @@ final class BuildScreen {
             case NO_DEPOSIT -> showNoDepositMenu(t, n, from.title(), from.categories());
             case NO_COAST   -> showNoCoastMenu(t, n, from.title(), from.categories());
             case NO_RIVER   -> showNoRiverMenu(t, n, from.title(), from.categories());
+            case NO_WATER   -> showNoWaterMenu(t, n, from.title(), from.categories());
             case NO_BRIDGE  -> showNoBridgeMenu(t, n, from.title(), from.categories());
             case NO_LICENCE -> showNoLicenceMenu(t, n, from.title(), from.categories());
             default -> {
@@ -6270,6 +6312,7 @@ final class BuildScreen {
                 case NO_DEPOSIT -> "no " + BuildCard.depositWord(Game.siteOf(at.getKey())) + " deposit is free for it";
                 case NO_COAST   -> noCoastWhy(at.getKey(), "the city owns no sea for it");
                 case NO_RIVER   -> "the city owns no river with a drop for it";
+                case NO_WATER   -> "the city owns no water to cool it";
                 case NO_BRIDGE  -> noBridgeWhy(at.getKey(), "the city has no way across the water for it");
                 case NO_LICENCE -> "nobody is licensed to work in it";
                 default         -> "not enough ground is free for it";

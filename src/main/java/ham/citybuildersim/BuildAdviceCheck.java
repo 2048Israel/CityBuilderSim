@@ -141,8 +141,8 @@ public class BuildAdviceCheck {
      * nine hundred houses on one paved road, no clinic or daycare (the
      * founding's own care only), a school of each basic stage, a college, a
      * university and four medical schools
-     * (so doctors are short: the schools take more than the city has), two
-     * police stations and home care - every sector held, so nothing is built
+     * (so doctors are short: the schools take more than the city has), no
+     * police and home care - every sector held, so nothing is built
      * but by this fixture's hand - played three years; then on site a gravel
      * road and three small childcare centres of the city's own (three Home
      * Daycares until 0.7.71 resized them), and with onSiteClinic
@@ -152,6 +152,15 @@ public class BuildAdviceCheck {
      * capacity, childcare 26%, a person caught and not held - and until
      * 0.7.51 the law school red with no seats for 28, a row NEEDS YOU no
      * longer lists: it wants no more students than the city would hire.
+     *
+     * NO POLICE, CAUSED (PW2, 2026-11-23). The list ordered two Police
+     * Stations, and until PW2 the treasury refused them (NEEDS_FUNDING: the
+     * Coal Power Plant at 1,071,816 of cash left too little), so the city
+     * calibrated above had none and its crime was red for that. PW2's coal
+     * plant at 776,914 left room, the stations stood, and crime read 0.2x
+     * Canada's with the cells enough: NEEDS YOU listed three needs a
+     * city-built building answers, not five. The fixture orders none, the
+     * city it was calibrated on (2.5x Canada's, one caught and not held).
      */
     static Game shortCity(Path root, String name, boolean onSiteClinic) {
         return shortCity(root, name, onSiteClinic, Set.of());
@@ -177,7 +186,7 @@ public class BuildAdviceCheck {
                     { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", "900" },
                     { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
                     { "Community College", "1" }, { "University", "1" }, { "Medical School", "4" },
-                    { "Construction Depot", "4" }, { "Paved Road", "1" }, { "Police Station", "2" },
+                    { "Construction Depot", "4" }, { "Paved Road", "1" },
                     { "Home Care Service", "2" } }) {
                 if (without.contains(w[0])) continue;
                 g.buildStack(template(g, w[0]), Integer.parseInt(w[1]), true);

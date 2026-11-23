@@ -1,4 +1,4 @@
-# GapOrderCheck.java - 403 lines · 14 methods · 4 constants · harnesses
+# GapOrderCheck.java - 405 lines · 14 methods · 4 constants · harnesses
 
 `ham/citybuildersim/GapOrderCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -51,7 +51,7 @@
 >      city eating k plants' worth of drinks - the n-th plant's fill counts
 >      the n - 1 before it, and the plan orders k.
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (18), [DeathCareFirstCheck](DeathCareFirstCheck.md) (16), [Game](Game.md) (13), [Construction](Construction.md) (11), [BuildersShort](BuildersShort.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [Good](Good.md) (6), [GameFiles](GameFiles.md) (5), [FoodProcessing](FoodProcessing.md) (3), [BuildersFirstCheck](BuildersFirstCheck.md) (2), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1), [NewUnit](NewUnit.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (18), [DeathCareFirstCheck](DeathCareFirstCheck.md) (16), [Game](Game.md) (13), [Construction](Construction.md) (11), [BuildersShort](BuildersShort.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [Good](Good.md) (6), [GameFiles](GameFiles.md) (5), [FoodProcessing](FoodProcessing.md) (3), [BuildersFirstCheck](BuildersFirstCheck.md) (2), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1), [EssentialWorksCheck](EssentialWorksCheck.md) (1), [NewUnit](NewUnit.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 ## Sections
 
@@ -59,12 +59,12 @@
 |---:|---|
 | 117 | 1. THE TARGET |
 | 141 | THE FIXTURE |
-| 174 | 2. THE MEDIAN |
-| 203 | 3. THE RECORD |
-| 232 | 4. THE SAVE |
-| 251 | 5. THE GAP |
-| 328 | 6. THE TRAP |
-| 365 | 7. A MAKER |
+| 176 | 2. THE MEDIAN |
+| 205 | 3. THE RECORD |
+| 234 | 4. THE SAVE |
+| 253 | 5. THE GAP |
+| 330 | 6. THE TRAP |
+| 367 | 7. A MAKER |
 
 ## Constants
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 341 | **type** `public class GapOrderCheck` | A planner orders to the gap, not one building a month (OG1, 2026-11-22). |
+| 63 | 343 | **type** `public class GapOrderCheck` | A planner orders to the gap, not one building a month (OG1, 2026-11-22). |
 | 69 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 74 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 79 | 3 | `static boolean near(double a, double b)` |  |
@@ -100,46 +100,46 @@
 |---:|---:|---|---|
 | 119 | 21 | `static void target()` |  |
 
-### THE FIXTURE (lines 141-173)
+### THE FIXTURE (lines 141-175)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 147 | 26 | `static Game city(Path root, String name)` | A town of 800 houses and eight depots, every sector held, a year played: the builders' month is a few thousand points, which the premium's share of can make several depots. |
+| 147 | 28 | `static Game city(Path root, String name)` | A town of 800 houses and eight depots, every sector held, a year played: the builders' month is a few thousand points, which the premium's share of can make several depots. |
 
-### 2. THE MEDIAN (lines 174-202)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 176 | 26 | `static void median(Game g)` |  |
-
-### 3. THE RECORD (lines 203-231)
+### 2. THE MEDIAN (lines 176-204)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 205 | 26 | `static void record(Game g)` |  |
+| 178 | 26 | `static void median(Game g)` |  |
 
-### 4. THE SAVE (lines 232-250)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 234 | 16 | `static void saved(Path root, Game g)` |  |
-
-### 5. THE GAP (lines 251-327)
+### 3. THE RECORD (lines 205-233)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 253 | 58 | `static void theGap(Game g)` |  |
-| 316 | 11 | `static double aYearOfOrders(Game g, int clinics)` | A year of the city's own orders, the same each month: so many clinics placed by the city, then the month played, the builders held. |
+| 207 | 26 | `static void record(Game g)` |  |
 
-### 6. THE TRAP (lines 328-364)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 335 | 29 | `static void trap(Path root)` | BuildersFirstCheck.stalled()'s city, given first a year of orders it cannot keep up with, so the typical month is read and the order passes the record's guard: the work coming in asks for depots the city could staff, ... |
-
-### 7. A MAKER (lines 365-403)
+### 4. THE SAVE (lines 234-252)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 374 | 29 | `static void food(Game g)` | The one restored input in this harness. |
+| 236 | 16 | `static void saved(Path root, Game g)` |  |
+
+### 5. THE GAP (lines 253-329)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 255 | 58 | `static void theGap(Game g)` |  |
+| 318 | 11 | `static double aYearOfOrders(Game g, int clinics)` | A year of the city's own orders, the same each month: so many clinics placed by the city, then the month played, the builders held. |
+
+### 6. THE TRAP (lines 330-366)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 337 | 29 | `static void trap(Path root)` | BuildersFirstCheck.stalled()'s city, given first a year of orders it cannot keep up with, so the typical month is read and the order passes the record's guard: the work coming in asks for depots the city could staff, ... |
+
+### 7. A MAKER (lines 367-405)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 376 | 29 | `static void food(Game g)` | The one restored input in this harness. |
 

@@ -302,18 +302,20 @@ public class BuildCardCheck {
                 }
             }
         }
-        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows.
-        int catalogue = 0, nearFuture = 0;
+        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows,
+        // and since PW2 less the power plants whose year has not come (Jerus's Q2: each from its since), shown on none either.
+        int catalogue = 0, nearFuture = 0, notYet = 0;
         boolean nearOnNone = true;
         Set<String> every = new HashSet<>(market);
         every.addAll(city);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (g.getBuildingManager().isTemplateKnown(t)) catalogue++;
             else if (ResearchCatalog.nearFuture(t.getSinceText())) { nearFuture++; nearOnNone &= !every.contains(t.getName()); }
+            else if (t.getCategory() == BuildingType.ELECTRICITY && !t.knownAt(g.getMonth())) { notYet++; nearOnNone &= !every.contains(t.getName()); }
         }
         assertTrue("every building in the catalogue the city knows (" + catalogue + ") is on a card", every.size() == catalogue);
-        assertTrue("...and the near future's (" + nearFuture + "), which a city founded today's way never knows, on none",
-                nearFuture > 0 && nearFuture == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
+        assertTrue("...and the near future's (" + nearFuture + ") and the power plants not yet built anywhere (" + notYet + "), which the city does not know, on none",
+                nearFuture > 0 && nearFuture + notYet == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
         assertTrue("...a market building on exactly one, in one group (" + market.size() + " market buildings)",
                 marketTwice == 0 && market.size() + city.size() == catalogue);
         assertTrue("...and every card and group has a name", named);

@@ -216,7 +216,7 @@
   "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures.",
   "R2e: optional after names another change on this template. Its undo applies only while that earlier change is present (E11 zeolite requires PE24 catalytic cracking); saved missing-change flags retain both decisions."
  ],
- "nextId": 155,
+ "nextId": 172,
  "buildings": [
   {
    "id": 0,
@@ -587,23 +587,26 @@
    "id": 9,
    "name": "Coal Power Plant",
    "category": "ELECTRICITY",
-   "cashCost": 1071816,
-   "constructionPoints": 120000,
-   "constructionMaterials": 19848,
-   "production1": 280000,
+   "since": 1900,
+   "cashCost": 776914,
+   "constructionPoints": 86983,
+   "constructionMaterials": 14373,
+   "production1": 280087,
    "nameplate": 325000,
    "fuel": "THERMAL_COAL",
    "heatRate": 8490,
    "variableUpkeep": 9.37,
+   "cooling": true,
+   "buildMonths": 60,
    "electricity": 15,
-   "water": 400,
+   "water": 0,
    "jobs": {
     "NO_DIPLOMA": 40,
     "DIPLOMA": 20,
     "COLLEGE_ENGINEERING": 6,
     "UNIV_SCIENCE": 2
    },
-   "land": 2000000,
+   "land": 8712000,
    "roadLoad": 120,
    "equipment": [
     {
@@ -632,7 +635,7 @@
      "entry": "PE6",
      "source": "research-1900 8.1 PE6 [P1.1,P1.3,P1.4,P1.6]: 3.6%->24.3%; PE16 [P1.5,P1.7] study estimate -40% fuel. R2d fixed-heat-input mapping: output stages 3.6/24.3, 0.6, 1 of modern. PE6 undo is first->middle; PE16 is middle->modern. No new coal invoice invented for the municipal utility. Capital/life: R1c call 10 estimate.",
      "without": {
-      "production1": -126518.51851851851
+      "production1": -126557.83703703704
      },
      "equipment": "steam-turbine"
     },
@@ -640,7 +643,7 @@
      "entry": "PE16",
      "source": "research-1900 PE16 [P1.5,P1.7,P1.3] study estimate -40% coal/kWh; fixed-heat-input output mapping and stage split described by PE6 source on this template. Capital/life: R1c call 10 estimate.",
      "without": {
-      "production1": -112000.0
+      "production1": -112034.8
      },
      "equipment": "pulverised-coal"
     }
@@ -651,18 +654,17 @@
    "name": "Wind Farm",
    "category": "ELECTRICITY",
    "since": "E16",
-   "cashCost": 23240,
-   "constructionPoints": 1800,
-   "constructionMaterials": 431,
-   "production1": 8100,
+   "cashCost": 25023,
+   "constructionPoints": 2802,
+   "constructionMaterials": 463,
+   "production1": 6854,
    "nameplate": 20000,
    "variable": "wind",
+   "buildMonths": 36,
    "electricity": 1,
    "water": 0,
    "jobs": {
-    "NO_DIPLOMA": 2,
-    "DIPLOMA": 4,
-    "COLLEGE_ENGINEERING": 1
+    "DIPLOMA": 2
    },
    "land": 1742400,
    "roadLoad": 5
@@ -5919,6 +5921,125 @@
     "UNIV_HIGHTECH_ENG": 10
    },
    "since": 1900
+  },
+  {
+   "id": 167,
+   "name": "Oil-Fired Plant",
+   "category": "ELECTRICITY",
+   "cashCost": 223192,
+   "constructionPoints": 24988,
+   "constructionMaterials": 4129,
+   "production1": 86181,
+   "nameplate": 100000,
+   "fuel": "FUEL_OIL",
+   "heatRate": 11227,
+   "variableUpkeep": 9.68,
+   "cooling": true,
+   "buildMonths": 48,
+   "electricity": 5,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 12,
+    "DIPLOMA": 6,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 1306800,
+   "roadLoad": 37,
+   "since": 1900
+  },
+  {
+   "id": 168,
+   "name": "Diesel Station",
+   "category": "ELECTRICITY",
+   "cashCost": 27778,
+   "constructionPoints": 3110,
+   "constructionMaterials": 514,
+   "production1": 19163,
+   "nameplate": 21000,
+   "fuel": "DIESEL",
+   "heatRate": 10847,
+   "variableUpkeep": 5.69,
+   "buildMonths": 30,
+   "electricity": 1,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 1,
+    "DIPLOMA": 2
+   },
+   "land": 435600,
+   "roadLoad": 8,
+   "since": 1910
+  },
+  {
+   "id": 169,
+   "name": "Oil-Fired Turbine",
+   "category": "ELECTRICITY",
+   "cashCost": 166261,
+   "constructionPoints": 18615,
+   "constructionMaterials": 3076,
+   "production1": 91250,
+   "nameplate": 100000,
+   "fuel": "DIESEL",
+   "heatRate": 9447,
+   "variableUpkeep": 5.97,
+   "buildMonths": 24,
+   "electricity": 5,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 2,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 435600,
+   "roadLoad": 37,
+   "since": 1949
+  },
+  {
+   "id": 170,
+   "name": "Biomass Plant",
+   "category": "ELECTRICITY",
+   "cashCost": 176967,
+   "constructionPoints": 19813,
+   "constructionMaterials": 3274,
+   "production1": 43090,
+   "nameplate": 50000,
+   "fuel": "WOOD_PELLETS",
+   "heatRate": 13300,
+   "variableUpkeep": 5.93,
+   "cooling": true,
+   "buildMonths": 60,
+   "electricity": 2,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 15,
+    "DIPLOMA": 7,
+    "COLLEGE_ENGINEERING": 2,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 4356000,
+   "roadLoad": 18,
+   "since": 1970
+  },
+  {
+   "id": 171,
+   "name": "Solar Farm",
+   "category": "ELECTRICITY",
+   "cashCost": 54227,
+   "constructionPoints": 6071,
+   "constructionMaterials": 1003,
+   "production1": 12167,
+   "nameplate": 50000,
+   "variable": "solar",
+   "buildMonths": 24,
+   "electricity": 1,
+   "water": 0,
+   "jobs": {
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 14505480,
+   "roadLoad": 5,
+   "since": 1982
   }
  ]
 }

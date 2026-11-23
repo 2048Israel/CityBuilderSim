@@ -73,6 +73,8 @@ public final class WorksFinanceCheck {
         Game g = new Game(new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy")));
         EssentialWorksCheck.quietly(() -> {
             g.run();
+            // PW2: these towns' power plans weigh a wind proposal, and a 1900 city knows the wind farm from its year; its research found it first.
+            EssentialWorksCheck.knowWind(g);
             g.getEconomyManager().getTaxPolicy().reset();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L);
@@ -858,7 +860,9 @@ public final class WorksFinanceCheck {
             if (reserve == null) return;
             double output = g.getBuildingOutputAtEveryPost();
             BuildingsStacks depotSite = bm.getStack(depot);
-            double depotOwed = Math.min(depot.getConstructionPoints() * .5, output * 5);
+            // THE FIXTURE CAUSES IT (PW2): three quarters of the depot owed, not half, so it owes more than a month: PW2's
+            // refigured coal plant, cheaper to repair, left the town's month at 201 points, past half the depot's 400.
+            double depotOwed = Math.min(depot.getConstructionPoints() * .75, output * 5);
             depotSite.setConstructionProgress(depot.getConstructionPoints() - depotOwed);
             double total = 0;
             for (BuildingsStacks site : bm.getStacksUnderConstruction())

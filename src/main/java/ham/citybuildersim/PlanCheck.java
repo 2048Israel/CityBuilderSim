@@ -379,7 +379,7 @@ public class PlanCheck {
             }
         };
         BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
-        replay(types);
+        replay(typesAsDrawn());
         gameRules(types);
         highways(types);
         howFull(types);
@@ -849,6 +849,28 @@ public class PlanCheck {
     /* =====================================================================
        1. THE PORT: THE PROTOTYPE'S TEST DISTRICT, REPLAYED
        ===================================================================== */
+
+    /* ----- the boxes those plans were made from (PW2, 2026-11-23) -----
+       Section 1 and section 10 (b) hold plans box for box: the prototype's (its digests from 0.7.90) and 0.8.11's
+       comb, pinned with latticeOnly. Both were made from the catalogue of then, in which the Coal Power Plant (id 9,
+       one of the test district's buildings and of Jerus's city's) stood on 2,000,000 sq ft. PW2 gave it 200 acres
+       (8,712,000), so its box is over four times the one they were drawn with and every box placed after it moved
+       (32,907 plots of buildings against the table's 32,217). Those plans draw it on its ground of then, as
+       GatewayCheck 21 draws the terminals on theirs from before SL1; every other type, and the planner, is today's,
+       and the rest of section 10 sees today's 200-acre plant (REV-PW2b). */
+
+    /** The Coal Power Plant's ground as the prototype and 0.8.11 drew it, sq ft. */
+    static final double COAL_GROUND_DRAWN = 2_000_000;
+
+    /** The Coal Power Plant's catalogue id. */
+    static final int COAL_PLANT = 9;
+
+    /** Today's types with the Coal Power Plant on COAL_GROUND_DRAWN: section 1's, and section 10 (b)'s pinned plans. */
+    static BuildingVisual.Type[] typesAsDrawn() {
+        List<BuildingsTemplate> catalogue = new BuildingCatalog().load();
+        for (BuildingsTemplate t : catalogue) if (t.getId() == COAL_PLANT) t.setLandSqFt(COAL_GROUND_DRAWN);
+        return BuildingVisual.table(catalogue);
+    }
 
     /** The prototype's test district: its ground (TEST_GROUND, the district's frame), its buildings, and one of its three budgets (0 his roads, 1 the same trips paved, 2 half that). */
     static DistrictPlan.Input testDistrict(BuildingVisual.Type[] types, int budget, boolean prototype) {
@@ -1578,8 +1600,11 @@ public class PlanCheck {
     /** LONG's roads, a factor of his (section 4's 75% fill): 0.5 - too little road for the ladder to square a homes cell, so all of them keep long blocks. */
     static final double LONG_ROADS = 0.5;
 
-    /** SQUARED's: 0.7 - road enough to square most of the homes cells and not to make boulevards of them. */
-    static final double SQUARED_ROADS = 0.7;
+    /** SQUARED's: 0.75 - road enough to square most of the homes cells (10 of 17) and not to make boulevards of them. PW2, 2026-11-23: it was 0.7, on the ladder's step, which squared 1 of 17 with the coal plant on 2,000,000 sq ft and none of 16 on PW2's 200 acres. */
+    static final double SQUARED_ROADS = 0.75;
+
+    /** SQUARED's factor as 0.8.11 drew it, 0.7: the plan (b) pins to 0.8.11's digests is made with it, on the ground of then (typesAsDrawn()). */
+    static final double SQUARED_ROADS_0811 = 0.7;
 
     /** BOULEVARD's: 1, his own - road enough for boulevards, squared cells among them. */
     static final double BOULEVARD_ROADS = 1;
@@ -1609,10 +1634,14 @@ public class PlanCheck {
 
     /** Section 10's fixture k (LAYOUT_FIXTURES): the flat district with his roads times a factor, or the test district's ground and budget k - 3; with combOnly when asked. */
     static DistrictPlan.Input layoutInput(BuildingVisual.Type[] types, int k, boolean combOnly) {
+        return layoutInput(types, k, combOnly, k == 0 ? LONG_ROADS : k == 1 ? SQUARED_ROADS : BOULEVARD_ROADS);
+    }
+
+    /** ...with the flat fixtures' roads at this factor of his (the test district's ground ignores it). */
+    static DistrictPlan.Input layoutInput(BuildingVisual.Type[] types, int k, boolean combOnly, double roads) {
         DistrictPlan.Input in;
         if (k < 3) {
             in = flatMix(types, FILLS[0], true, false);
-            double roads = k == 0 ? LONG_ROADS : k == 1 ? SQUARED_ROADS : BOULEVARD_ROADS;
             in.gravel *= roads;
             in.paved *= roads;
         } else {
@@ -1732,12 +1761,13 @@ public class PlanCheck {
         int[] dead = new int[n], deadOff = new int[n], deadVaried = new int[n];
         int[][] total = new int[2][3];
         long[][] share = new long[6][2];
+        BuildingVisual.Type[] asDrawn = typesAsDrawn();
         for (int k = 0; k < n; k++) {
             in[k] = layoutInput(types, k, false);
             on[k] = DistrictPlan.make(in[k]);
             off[k] = DistrictPlan.make(layoutInput(types, k, true));
-            // CL4: the digests below are 0.8.11's plans, from before the avenues - the same fixture with latticeOnly as well.
-            DistrictPlan.Input lattice = layoutInput(types, k, true);
+            // CL4: the digests below are 0.8.11's plans, from before the avenues - the same fixture with latticeOnly as well, on the ground and with the roads 0.8.11 drew (typesAsDrawn(), SQUARED_ROADS_0811).
+            DistrictPlan.Input lattice = layoutInput(asDrawn, k, true, k == 1 ? SQUARED_ROADS_0811 : k == 0 ? LONG_ROADS : BOULEVARD_ROADS);
             lattice.latticeOnly = true;
             pinned[k] = DistrictPlan.make(lattice);
             fig[k] = figures(on[k], in[k]);

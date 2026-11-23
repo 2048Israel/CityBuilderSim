@@ -1,4 +1,4 @@
-# HousingCheck.java - 1,128 lines · 11 methods · 1 constants · harnesses
+# HousingCheck.java - 1,133 lines · 11 methods · 1 constants · harnesses
 
 `ham/citybuildersim/HousingCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -97,16 +97,16 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 1062 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
+| 67 | 1067 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
 | 74 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 88 | 707 | `public static void main(String[] args)` |  |
-| 796 | 86 | `static void homesKeepHeadroomOverDemand()` |  |
-| 883 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 896 | 15 | `static boolean assertGlutLegsNotLifted(ham.citybuildersim.sectors.RealEstate re, int month)` | A leg under GLUT_PRESSURE is its own cost times its scarcity and is not lifted to cover the carry (RN1, 2026-11-09). |
-| 925 | 85 | `static void heldRateRentsItsGlutAtNoLift()` | RN1, 2026-11-09. |
-| 1019 | 63 | `static void aClosedHomesDebtIsTheLandlordsLoss()` | RN1, 2026-11-09. |
-| 1095 | 20 | `static void anExactPackingLeavesNobody()` | AN EXACT PACKING LEAVES NOBODY (OE1, 2026-11-20). |
-| 1116 | 3 | `static void isNear(String label, double actual, double expected)` |  |
-| 1120 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
+| 88 | 712 | `public static void main(String[] args)` |  |
+| 801 | 86 | `static void homesKeepHeadroomOverDemand()` |  |
+| 888 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 901 | 15 | `static boolean assertGlutLegsNotLifted(ham.citybuildersim.sectors.RealEstate re, int month)` | A leg under GLUT_PRESSURE is its own cost times its scarcity and is not lifted to cover the carry (RN1, 2026-11-09). |
+| 930 | 85 | `static void heldRateRentsItsGlutAtNoLift()` | RN1, 2026-11-09. |
+| 1024 | 63 | `static void aClosedHomesDebtIsTheLandlordsLoss()` | RN1, 2026-11-09. |
+| 1100 | 20 | `static void anExactPackingLeavesNobody()` | AN EXACT PACKING LEAVES NOBODY (OE1, 2026-11-20). |
+| 1121 | 3 | `static void isNear(String label, double actual, double expected)` |  |
+| 1125 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
 

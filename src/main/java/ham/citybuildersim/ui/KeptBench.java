@@ -2211,13 +2211,14 @@ public final class KeptBench {
     }
 
     /** The stopped pages' kinds, by the way the model refuses an order. */
-    public static final List<String> STOPPED = List.of("deposit", "coast", "river", "bridge", "licence", "land");
+    public static final List<String> STOPPED = List.of("deposit", "coast", "river", "bridge", "licence", "land", "water");
 
     private static Game.BuildResult refusalOf(String kind) {
         return switch (kind) {
             case "deposit" -> Game.BuildResult.NO_DEPOSIT;
             case "coast" -> Game.BuildResult.NO_COAST;
             case "river" -> Game.BuildResult.NO_RIVER;
+            case "water" -> Game.BuildResult.NO_WATER;
             case "bridge" -> Game.BuildResult.NO_BRIDGE;
             case "licence" -> Game.BuildResult.NO_LICENCE;
             case "land" -> Game.BuildResult.NO_LAND;
@@ -2231,6 +2232,7 @@ public final class KeptBench {
             case "deposit" -> Game.siteOf(t) != null;
             case "coast" -> ham.citybuildersim.Ports.isPort(t) || t.getName().equals("Desalination Plant");
             case "river" -> ham.citybuildersim.BuildCard.hydro(ui.game, t) != null;
+            case "water" -> t.cooling();
             case "bridge" -> t.isBridge();
             case "licence" -> t.getRequiresLicence() != null;
             default -> true;
@@ -2267,6 +2269,7 @@ public final class KeptBench {
             case "deposit" -> "showNoDepositMenu";
             case "coast" -> "showNoCoastMenu";
             case "river" -> "showNoRiverMenu";
+            case "water" -> "showNoWaterMenu";
             case "bridge" -> "showNoBridgeMenu";
             case "licence" -> "showNoLicenceMenu";
             case "land" -> "showNoLandMenu";
@@ -2276,6 +2279,7 @@ public final class KeptBench {
             case "deposit" -> () -> s.drawNoDeposit(t, quantity, title, types);
             case "coast" -> () -> s.drawNoCoast(t, quantity, title, types);
             case "river" -> () -> s.drawNoRiver(t, quantity, title, types);
+            case "water" -> () -> s.drawNoWater(t, quantity, title, types);
             case "bridge" -> () -> s.drawNoBridge(t, quantity, title, types);
             case "licence" -> () -> s.drawNoLicence(t, quantity, title, types);
             default -> () -> s.drawNoLand(t, quantity, title, types);

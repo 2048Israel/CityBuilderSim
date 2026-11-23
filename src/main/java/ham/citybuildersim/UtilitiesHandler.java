@@ -682,6 +682,8 @@ public class UtilitiesHandler {
         public double[] price = new double[PowerDispatch.HALVES], load = new double[PowerDispatch.HALVES], unserved = new double[PowerDispatch.HALVES];
         /** The month's kWh asked, served and curtailed, and made by the fuelled plants, the wind, the hydro, the works and the founding grid. */
         public double askedKwh, servedKwh, curtailedKwh, fuelledKwh, windKwh, hydroKwh, worksKwh, gridKwh;
+        /** ...and by the sun (PW2); absent in an older save, which had no solar farm. */
+        public double solarKwh;
         /** The variable upkeep the plants ran up, thousands of the WORLD's money. */
         public double upkeepWorld;
         /** Fuel burned: good name to units. */
@@ -710,6 +712,7 @@ public class UtilitiesHandler {
             b.price = price.clone(); b.load = load.clone(); b.unserved = unserved.clone();
             b.askedKwh = askedKwh; b.servedKwh = servedKwh; b.curtailedKwh = curtailedKwh;
             b.fuelledKwh = fuelledKwh; b.windKwh = windKwh; b.hydroKwh = hydroKwh; b.worksKwh = worksKwh; b.gridKwh = gridKwh;
+            b.solarKwh = solarKwh;
             b.upkeepWorld = upkeepWorld;
             b.fuel = new LinkedHashMap<>(fuel);
             b.cleared = cleared;
@@ -756,6 +759,7 @@ public class UtilitiesHandler {
             switch (r.kind) {
                 case MUST_RUN -> b.worksKwh += r.kwh;
                 case WIND -> b.windKwh += r.kwh;
+                case SOLAR -> b.solarKwh += r.kwh;
                 case HYDRO -> b.hydroKwh += r.kwh;
                 case FUELLED -> { if (GRID_ROW.equals(r.name)) b.gridKwh += r.kwh; else b.fuelledKwh += r.kwh; }
             }
@@ -894,6 +898,7 @@ public class UtilitiesHandler {
                 PowerDispatch.Row row = switch (r.kind()) {
                     case MUST_RUN -> PowerDispatch.Row.mustRun(name, r.offeredKw());
                     case WIND -> PowerDispatch.Row.wind(name, r.offeredKw());
+                    case SOLAR -> PowerDispatch.Row.solar(name, r.offeredKw());
                     case HYDRO -> PowerDispatch.Row.hydro(name, r.offeredKw(), r.waterKwh(), r.upkeepPerKwh());
                     case FUELLED -> PowerDispatch.Row.fuelled(name, r.offeredKw(), r.marginal(), r.fuel(), r.fuelPerKwh(), r.upkeepPerKwh());
                 };
@@ -1046,6 +1051,7 @@ public class UtilitiesHandler {
             return PowerDispatch.Row.hydro(t.getName(), (t.getNameplate() * n + extraCap) * fill, average * PowerDispatch.MONTH_HOURS, upkeep);
         }
         if (t.isWind()) return PowerDispatch.Row.wind(t.getName(), kw);
+        if (t.isSolar()) return PowerDispatch.Row.solar(t.getName(), kw);
         if (perKwh > 0) return PowerDispatch.Row.fuelled(t.getName(), kw, fuelPrice(t.getFuel()) * perKwh + upkeep * exchangeRate(),
                 t.getFuel(), perKwh, upkeep);
         return PowerDispatch.Row.fuelled(t.getName(), kw, 0, null, 0, 0);

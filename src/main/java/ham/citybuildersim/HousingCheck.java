@@ -715,6 +715,11 @@ public class HousingCheck {
             staffed.buildStack(template(staffed, o[0]), Integer.parseInt(o[1]), true);
         }
         staffed.simulateMonths(24);
+        // THE FIXTURE CAUSES IT (PW2, 2026-11-23): the yard's construction materials as the city this was written against had them,
+        // none. PW2's refigured coal plants are placed on less material (14,373 each, not 19,848), and 36 were left after the two
+        // years: a House's 10 come out of the yard and a Studio's 320 do not, so the House's price fell to 8.5 against 13.8 and
+        // the landlords' income for its cost put it over the blocks. With none in the yard they order six Studios, as on main.
+        staffed.getBuildingManager().setConstructionMaterials(0);
         double[] everyPost = new double[JobType.values().length];
         java.util.Arrays.fill(everyPost, 1.0);
         Sector crews = staffed.getSectors().construction();

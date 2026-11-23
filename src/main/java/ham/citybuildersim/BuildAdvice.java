@@ -451,8 +451,11 @@ public final class BuildAdvice {
             case POWER:
                 // A hydro station adds power only while a slot of the city's river is free (HY1: Game.hydroSlotsFree()).
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) return 0;
-                // PW1, 2026-11-11: power is planned for the calm peak, so a wind farm adds its firm kW (PowerDispatch.WIND_FIRM of its average), not the average.
-                return u.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1) * staffing(u, fill);
+                // ...and a steam plant only where the city owns water to cool it (PW2: Game.hasCoolingFor()).
+                if (!game.hasCoolingFor(t)) return 0;
+                // PW1, 2026-11-11: power is planned for the calm peak, so a wind farm adds its firm kW (PowerDispatch.WIND_FIRM of its average), not the average;
+                // PW2: a solar farm its darkest half-block's (SOLAR_FIRM), both the template's credit().
+                return u.getProduction1() * t.credit() * staffing(u, fill);
             case WATER: {
                 /*
                  * THE WATER UNIT (0.7.59, batch J2): a fresh plant adds no
@@ -496,7 +499,7 @@ public final class BuildAdvice {
         BuildingsTemplate t = u.template();
         switch (m.kind()) {
             // PW1, 2026-11-11: a wind farm's firm kW, as unit() counts it (the card sets the one beside the other).
-            case POWER: return u.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1);
+            case POWER: return u.getProduction1() * t.credit();
             case WATER: return u.getProduction1();
             case ROADS: case HIGHWAYS: return t.getCapacity();
             case TRANSIT:           return t.getTransitCapacity();
@@ -620,8 +623,8 @@ public final class BuildAdvice {
                 double nonFirm = 0;
                 if (power) {
                     for (BuildingsTemplate t : bm.getTemplates()) {
-                        if (t.getCategory() == BuildingType.ELECTRICITY && t.isWind()) {
-                            nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
+                        if (t.getCategory() == BuildingType.ELECTRICITY && t.credit() < 1) {
+                            nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - t.credit());
                         }
                     }
                 }
@@ -635,7 +638,7 @@ public final class BuildAdvice {
                     NewUnit nu = adding(game, t, n);
                     if (t.getCategory() == (power ? BuildingType.ELECTRICITY : BuildingType.WATER)) {
                         base += n * nu.getProduction1();
-                        if (power && t.isWind()) nonFirm += n * nu.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
+                        if (power && t.credit() < 1) nonFirm += n * nu.getProduction1() * (1 - t.credit());
                     }
                     if (t.isFreshWater()) fresh += n * nu.getProduction1();
                     if (t.isSeaWater()) desal += n * nu.getProduction1();

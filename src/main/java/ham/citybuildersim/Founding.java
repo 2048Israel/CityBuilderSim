@@ -574,9 +574,12 @@ public final class Founding {
        THE VILLAGE is the playtest's own, placed by hand before its advisor
        takes over: sixty houses, five shops, two farms and a depot. THE FIRST
        WORKS are the four things a town needs before it grows that the
-       treasury buys and nobody else will: power (a wind farm, the advisor's
-       own first choice; a coal plant is the price of a whole city), water, a
-       school and the police. The clinic is not among them: at D$1.8M it is
+       treasury buys and nobody else will: power (an oil-fired plant, the
+       smallest a 1900 city can order since PW2 offers each kind of plant
+       from its year - the wind farm, the advisor's first choice before it,
+       is 1980's, the diesel station 1910's, a hydro station needs a river
+       and a coal plant is the price of a whole city), water, a school and
+       the police. The clinic is not among them: at D$1.8M it is
        paid out of change and says nothing about an endowment.
        ===================================================================== */
 
@@ -586,7 +589,7 @@ public final class Founding {
 
     /** The first big works, in the order a young city tends to need them. */
     public static final String[] FIRST_WORKS = {
-            "Wind Farm", "Water Treatment Plant", "Elementary School", "Police Station" };
+            "Oil-Fired Plant", "Water Treatment Plant", "Elementary School", "Police Station" };
 
     /** One of the first works: what it is invoiced at on a new city, and whether the treasury pays it in cash after the village or needs a bond for the rest. */
     public record Work(String name, double cost, boolean fitsInCash, double bondNeeded) { }

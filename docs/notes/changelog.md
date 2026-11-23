@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.194 — PW2, the power plants and their fuels — 2026-11-23, ready, see docs/queue/PW2-notes.md
+Five new power plants, each burning its fuel from the market by the MWh: the Oil-Fired Plant (1900), the Diesel Station (1910), the
+Oil-Fired Turbine (1949), the Biomass Plant (1970) and the Solar Farm (1982); the Coal Power Plant and the Wind Farm refigured to
+spec-electricity §2.3 (coal 325 MW at $3,271 a kW, 60 months, 200 acres; wind 20 MW at 33.8%, from December 1980). Fuel oil and diesel
+are bought from Refining, pellets from Wood Products, the rest imported, each paid once in the money audit and the Trade tab. The sun
+runs after the wind, by its hours. A coal, oil-fired or biomass plant stands only where the city owns sea, a lake or a river (NO WATER
+TO COOL IT); a plant stands no sooner than its months, whatever the crews; each kind is offered from the year it was first built
+(Jerus: "the rec, later research will change this"), so a 1900 city's first power is the oil-fired plant. Natural gas (PW7) waits
+for the world file's re-bake. New harness PowerPlantsCheck.
+
 ### 0.9.193 — PW1-W, water priced from its cost — 2026-11-23, ready, see docs/queue/PW1-W-notes.md
 The sea's water is priced as PW1 prices power, at its margin: while the city needs it, a unit costs its tariff and the
 desalination works' power over the water the sea delivers, at the struck commerce price with PW5's wires. A plant under half
