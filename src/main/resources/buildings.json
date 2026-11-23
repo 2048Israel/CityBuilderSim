@@ -216,7 +216,7 @@
   "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures.",
   "R2e: optional after names another change on this template. Its undo applies only while that earlier change is present (E11 zeolite requires PE24 catalytic cracking); saved missing-change flags retain both decisions."
  ],
- "nextId": 155,
+  "nextId": 166,
  "buildings": [
   {
    "id": 0,

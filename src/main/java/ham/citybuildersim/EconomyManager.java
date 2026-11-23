@@ -225,13 +225,9 @@ public class EconomyManager {
      * Every sector's draw, off its own buildings. Billed to the sectors that
      * draw it, water exactly as power is.
      *
-     * EXCEPT THE HOMES. A house draws power and water and nobody is billed
-     * for it - the tenants are not charged for utilities in this model, and
-     * the landlords never were either (the old billing list was four
-     * categories, and RESIDENTIAL was not one of them). Charging the
-     * landlords for 40,000 houses' worth of water would be a rent rise
-     * dressed as a utility bill. A household utility bill is a change to the
-     * household model, not to the sectors, and it is on the list.
+     * Rental homes are billed to Real Estate once, like its other operating
+     * costs. Tenants pay their actual lease bill and no separate utility
+     * invoice. Buildings owned by the city or the bank remain unbilled here.
      */
     public void setElectricityConsumption() {
         for (Sector s : sectors.all()) {

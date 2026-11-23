@@ -379,10 +379,11 @@ public class UtilitiesHandler {
     }
 
     /**
-     * What the homes draw, power and water (0.7.28): the residential
-     * buildings' own draw, set beside the billed draws by ServicesManager,
-     * so the Services screen can say who the unbilled draw is - the homes,
-     * or the city's own buildings (in the 2,400-month playtest city the
+     * What unbilled homes draw, power and water: residential buildings not
+     * already invoiced to a sector. Real Estate's rental homes are in the
+     * billed category. ServicesManager sets this remaining draw so the
+     * Services screen can split the unbilled buildings between homes
+     * and the city's own buildings (in the 2,400-month playtest city the
      * water plants alone draw more power than every home). A read; nothing
      * is billed by it, and it is not saved - the month recomputes it from
      * the standing stock, as it does the billed draws.

@@ -5062,8 +5062,8 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_SCIENCE, 16)
                 .setSince("FE4")
                 .setId(154));
-        //add more buildings; next Building ID is 155
         HousingForms.installFallback(templates);
+        //add more buildings; next Building ID is 166
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 

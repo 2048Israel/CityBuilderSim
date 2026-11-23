@@ -280,6 +280,69 @@ public final class HousingMarketCheck {
                 market.roomLeft(g,new FamilyModel.Room(0,0,0,2,2,.5,4)).households(),2);
         check("the retirement room read does not strike a second quote or clearing",before.equals(JSON.toJson(market.forSave())));
     }
+    static void holdHousingFixture(Game g){
+        for(String sector:Sectors.KEYS)g.getBusinessInvestment().holdSector(sector);
+        g.getBusinessInvestment().holdBranches();g.getAutoBuilder().setOn(false,null);
+    }
+    static void loadedDoorCensus()throws Exception{
+        Game g=LongPlaytest.probeCity(GameFiles.scratch("res3-family-door-census"),null);
+        var bm=g.getBuildingManager();holdHousingFixture(g);
+        for(var t:bm.getTemplatesBySector(Sectors.REAL_ESTATE))if(t.getHousingRecipe()!=null
+                &&t.getHousingRecipe().mix().stream().anyMatch(d->d.capacity()>FamilyModel.STUDIO_MAX_SIZE)){
+            long removed=bm.retire(t,bm.getQuantity(t.getId()));
+            g.getLandManager().release(removed*t.getLandSqFt(),t.getSector(),Game.groundUse(t));
+        }
+        g.setCashForTest(2*SECTOR_ENDOWMENT);g.getSectors().realEstate().setCash(SECTOR_ENDOWMENT);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt()+20_000_000);
+        // Real jobs and an active builder make the next native migration draw
+        // positive once the funded replacement doors open.
+        check("door-census fixture pays for active construction jobs",
+                g.buildStack(bm.getTemplateByName("Construction Depot"),20,true)==Game.BuildResult.SUCCESS);
+        check("door-census fixture builds actual compact homes",g.buildStack(bm.getTemplateByName("Studio Apartments"),5,true)==Game.BuildResult.SUCCESS);
+        g.getCohorts().migrate(500);g.toggleNextMonth();
+        FamilyModel withoutCensus=new FamilyModel();withoutCensus.restore(PopulationCohorts.saveBands(),FamilyModel.saveShapes(),g.getFamilies().toSaveArray());
+        withoutCensus.adoptCarriedUnplaced();withoutCensus.adoptCarriedDoubling();
+        check("door-census control preserves the exact family matrix",Arrays.equals(g.getFamilies().toSaveArray(),withoutCensus.toSaveArray()));
+        long familyDoors=0;long[] doors=bm.getHousingInventory().homesBySize();
+        for(int size=FamilyModel.STUDIO_MAX_SIZE+1;size<doors.length;size++)familyDoors+=doors[size];
+        check("fixture has more family seekers than twice its family doors",g.getFamilies().familySeekers()>2*familyDoors);
+        double floor=g.getFamilies().minimumHomesTolerable();
+        check("family-door scarcity actually raises the migration floor",floor>withoutCensus.minimumHomesTolerable());
+        check("door-census fixture funds actual replacement homes before the next press",
+                g.buildStack(bm.getTemplateByName("House"),100,false)==Game.BuildResult.SUCCESS);
+        check("scarce-door fixture saves natively",g.saveGame(10,"RES3 family-door census").ok);
+        Game back=new Game(g.getGameFiles());back.loadGameSave(10);holdHousingFixture(back);
+        Game running=new Game(GameFiles.scratch("res3-old-door-census"));running.run();
+        running.getBuildingManager().addStack(running.getBuildingManager().getTemplateByName("House"),1000,true);
+        holdHousingFixture(running);running.toggleNextMonth();
+        check("running load starts with a different actual family-door census",running.getBuildingManager().getTotalHomes()>=1000);
+        Files.createDirectories(running.getGameFiles().saveFile(10).getParent());
+        Files.copy(g.getGameFiles().saveFile(10),running.getGameFiles().saveFile(10),StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(g.getGameFiles().historyFile(10),running.getGameFiles().historyFile(10),StandardCopyOption.REPLACE_EXISTING);
+        running.loadGameSave(10);holdHousingFixture(running);
+        check("fresh native load rebuilds the scarce family-door floor",back.getFamilies().minimumHomesTolerable()==floor);
+        check("running native load replaces the previous city's door census",running.getFamilies().minimumHomesTolerable()==floor);
+        double crowding=g.getMigration().crowdingFactor(bm.getTotalHomes(),g.getFamilies());
+        check("fresh and running reloads preserve the crowding-floor reader",
+                back.getMigration().crowdingFactor(bm.getTotalHomes(),back.getFamilies())==crowding
+                &&running.getMigration().crowdingFactor(bm.getTotalHomes(),running.getFamilies())==crowding);
+        out.printf("   scarce-door floor %.12g (without census %.12g), crowding %.12g%n",floor,withoutCensus.minimumHomesTolerable(),crowding);
+        g.toggleNextMonth();back.toggleNextMonth();running.toggleNextMonth();
+        out.printf("   replacement homes finished %d; migration target %.12g; population %d%n",bm.countByName("House"),g.getMigration().getLastTarget(),g.getPopulationManager().getPopulation());
+        out.printf("   next native arrivals %.12g / %.12g / %.12g; crowding %.12g / %.12g / %.12g%n",g.getMigration().getLastArrivals(),back.getMigration().getLastArrivals(),running.getMigration().getLastArrivals(),
+                g.getMigration().getLastCrowding(),back.getMigration().getLastCrowding(),running.getMigration().getLastCrowding());
+        check("completed funded homes cause actual positive first-month arrivals",g.getMigration().getLastArrivals()>0);
+        check("the migration crowding ramp is active before the physical-room cap",
+                g.getMigration().getLastCrowding()>0&&g.getMigration().getLastCrowding()<1
+                &&g.getMigration().getLastArrivals()<g.getMigration().getLastRoom());
+        check("first native month after both loads preserves actual arrivals",g.getMigration().getLastArrivals()==back.getMigration().getLastArrivals()
+                &&g.getMigration().getLastArrivals()==running.getMigration().getLastArrivals());
+        check("first native month after both loads preserves the migration crowding factor",g.getMigration().getLastCrowding()==back.getMigration().getLastCrowding()
+                &&g.getMigration().getLastCrowding()==running.getMigration().getLastCrowding());
+        check("scarce-door native continuations keep the actual class market",JSON.toJson(g.getSectors().realEstate().housingMarket().forSave()).equals(JSON.toJson(back.getSectors().realEstate().housingMarket().forSave()))
+                &&JSON.toJson(g.getSectors().realEstate().housingMarket().forSave()).equals(JSON.toJson(running.getSectors().realEstate().housingMarket().forSave())));
+        audits(g);audits(back);audits(running);
+    }
     static void cardHousingBudget(){
         out.println("--- the housing budget reserves HC1's fixed card minimum ---");
         Game g=new Game(GameFiles.scratch("res3-card-budget"));g.run();
@@ -443,7 +506,7 @@ public final class HousingMarketCheck {
     public static void main(String[] args)throws Exception{
         out=System.out;PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
-        try{System.setOut(silent);classPrices();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();studentFacility();fundedHost();retiredRoom();familyHostReservation();aggregatePackingRemainder();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
+        try{System.setOut(silent);classPrices();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();studentFacility();fundedHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
         out.println("Report: "+target);out.println(fails==0?"HousingMarketCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }

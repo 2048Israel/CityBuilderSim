@@ -1292,7 +1292,7 @@ public class FamilyModel implements HouseholdBalance.Census {
      * single adult CAN take a family door when the studios run out and
      * house() really does let them; the no runs one way only.
      *
-     * Zero before house() has ever been called, which is the old behaviour and
+     * Zero before a housing pass has supplied a door census, the old behaviour and
      * the right one: with no door census there is nothing to say.
      */
     private double doorsThatCannotHelp() {
@@ -1314,7 +1314,8 @@ public class FamilyModel implements HouseholdBalance.Census {
     }
 
     /**
-     * The door census house() was last handed. Kept only so the crowding floor
+     * The latest door census from house() or the typed clearing/load projection.
+     * Kept only so the crowding floor
      * can tell a studio from a family door - see doorsThatCannotHelp().
      */
     private long[] lastHomesBySize;
@@ -1717,6 +1718,9 @@ public class FamilyModel implements HouseholdBalance.Census {
     /** RES3 projects the single typed clearing into the existing crowding and rent readers. */
     public void acceptTypedHousing(java.util.List<HousingChoice.Demand> demand,HousingChoice.Result result,
                                    java.util.List<Household> cells,HousingInventory inventory) {
+        // The load rebuild comes here without beginTypedHousing: migration
+        // must read this city's physical door census, including on an in-place load.
+        lastHomesBySize=inventory.homesBySize();
         java.util.Map<String,Household> byKey=new java.util.HashMap<>();
         for(Household c:cells)byKey.put(c.key(),c);
         java.util.Arrays.fill(unplacedByShape,0);java.util.Arrays.fill(seekersUnplaced,0);
@@ -1735,7 +1739,7 @@ public class FamilyModel implements HouseholdBalance.Census {
             else if(c instanceof UnemployedHousehold){seekersUnplaced[Seeker.UNEMPLOYED.ordinal()]+=left*(sharing?5:1);seekersUnplacedHomes[Seeker.UNEMPLOYED.ordinal()]+=left;}
             else if(c.shape()!=null)unplacedByShape[c.shape().ordinal()]+=left;
         }
-        occupiedBySize=new double[inventory.homesBySize().length];rentWeight=studioRentWeight=familyRentWeight=0;
+        occupiedBySize=new double[lastHomesBySize.length];rentWeight=studioRentWeight=familyRentWeight=0;
         for(var stock:inventory.stock()){
             double homes=result.leases().stream().filter(l->l.home().equals(stock.key())).mapToDouble(HousingChoice.Lease::count).sum();
             bill(stock.dwelling().capacity(),homes);

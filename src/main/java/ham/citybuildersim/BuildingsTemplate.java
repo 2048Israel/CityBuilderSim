@@ -223,9 +223,9 @@ public class BuildingsTemplate {
 
     /**
      * Whether a building's power and water are invoiced to anybody: the
-     * business buildings a sector owns. A home is not - the tenants are not
-     * charged for utilities in this model and the landlords never were - and
-     * neither is anything the city or the bank owns. See
+     * buildings a sector owns, including rental homes billed to Real Estate.
+     * Tenants pay no separate household utility invoice. City buildings and
+     * the bank remain outside this billed category. See
      * EconomyManager.setElectricityConsumption().
      */
     public static boolean isBilledForUtilities(BuildingsTemplate t) {
