@@ -2,7 +2,7 @@
 
 Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,638 constants in 633 files.**
+**6,639 constants in 633 files.**
 
 ## model (3037 constants)
 
@@ -5972,7 +5972,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2105 constants)
+## harnesses (2106 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -8215,41 +8215,42 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 364 | `PlanCheck.TEST_PLACED_PAVED` | `9000504916410474359L, TEST_STREETS_PAVED = - 4283127041626870812L` | ...the same trips paved... |
 | 366 | `PlanCheck.TEST_PLACED_THIN` | `9000504916410474359L, TEST_STREETS_THIN = 4092048347058802282L` | ...and half that. |
 | 626 | `PlanCheck.ARM_DX` | `{ 1, - 1, - 1, 1 }, ARM_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings (dx, dy) by arm, CityRuns.diagCode()'s numbering: south-east 0, south-west 1, north-west 2, north-east 3. |
-| 862 | `PlanCheck.COAL_GROUND_DRAWN` | `2_000_000` | The Coal Power Plant's ground as the prototype and 0.8.11 drew it, sq ft. |
-| 865 | `PlanCheck.COAL_PLANT` | `9` | The Coal Power Plant's catalogue id. |
-| 915 | `PlanCheck.BUDGETS` | `{ "his roads", "the same trips paved", "half that" }` | The three budgets' names, as the sections print them. |
-| 1341 | `PlanCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` | A stream that drops what is written to it: the game's and the playtest's prose while a section plays or loads a city. |
-| 1412 | `PlanCheck.HOMES_ENOUGH` | `10` | The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. |
-| 1419 | `PlanCheck.ESTATE_FILL` | `0.4` | The share of a flat district's plots each estate-band type is set at, alone: 0.4 - room to spare, so what differs is the cells they take. |
-| 1513 | `PlanCheck.SPARE_FILL` | `FILLS [ 0 ], FULL_FILL = FILLS [ FILLS.length - 1 ]` | Section 4's fill with cells to spare (2.10's first, 75%) and its fullest (92%: every cell open, and outer kinds left without a place when the bands keep apart). |
-| 1600 | `PlanCheck.LONG_ROADS` | `0.5` | LONG's roads, a factor of his (section 4's 75% fill): 0.5 - too little road for the ladder to square a homes cell, so all of them keep long blocks. |
-| 1603 | `PlanCheck.SQUARED_ROADS` | `0.7` | SQUARED's: 0.7 - road enough to square most of the homes cells and not to make boulevards of them. |
-| 1606 | `PlanCheck.BOULEVARD_ROADS` | `1` | BOULEVARD's: 1, his own - road enough for boulevards, squared cells among them. |
-| 1609 | `PlanCheck.LAYOUT_FIXTURES` | `{ "LONG", "SQUARED", "BOULEVARD", "CUT0", "CUT1" }` | Section 10's fixtures: flat ground at his fill with his roads times a factor (the first three), and the test district's ground, a river and the sea cutting cells, on its first two budgets. |
-| 1612 | `PlanCheck.COMB_DIGESTS` | `{ { - 8123742265030361694L, - 580478996347052330L }, { 6065673935051394403L, 4482261714...` | Each fixture's plan with Input.combOnly, its buildings' and its streets' digests (placedDigest(), streetDigest()) as 0.8.11 drew them: the switch off is that plan, box for box and street for street. |
-| 1620 | `PlanCheck.SHARE_SIDE` | `200` | The cells on a side of the square of the lattice layoutOf() is asked about to measure its shares: 200, 40,000 cells. |
-| 1623 | `PlanCheck.SHARE_TOLERANCE` | `0.01` | How far a layout's share of those cells may stand from its dial: 0.01. |
-| 1626 | `PlanCheck.MORE_HOMES` | `0.1` | The part more of the homes band's largest type LONG is given, to see a cell keep its layout as its district grows: a tenth. |
-| 1629 | `PlanCheck.OTHER_SEED` | `Founding.DEFAULT_WORLD_SEED + 1` | Another world's seed, to see the layouts read it. |
-| 2171 | `PlanCheck.BATCHES` | `40` | The batches the dense screen's counts are dealt in (h): forty months. |
-| 2174 | `PlanCheck.COVER_LEAST` | `0.95` | What the order of arrival must cover of the ground today's plans cover on the dense screen: 95%. |
-| 2597 | `PlanCheck.HOUSES_A_MONTH` | `1000` | The houses each month from the first to the fifth brings: with the shops, works and farms beside them, enough to fill the old ground. |
-| 3238 | `PlanCheck.FAR_CELLS` | `(int) DistrictPlan.CRESCENT_FROM + 4` | How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. |
-| 3241 | `PlanCheck.CROWDED_FILL` | `0.90, CROWDED_ROADS = 0.7` | Section 14's crowded fixture: 90% of the ground, with 0.7 of his roads - the ladder takes several builds (the later ones from its turns), squares a few homes cells and leaves a few buildings out, a... |
-| 3244 | `PlanCheck.ROAD_RICH` | `BOULEVARD_ROADS` | The roads section 14's road-rich fixture is given, a factor of his: BOULEVARD_ROADS, 1 - road enough for the ladder to square cells and make boulevards. |
-| 3247 | `PlanCheck.MID_WEST` | `1.25` | Section 14 (b)'s site, in cells west of the frame's edge short of CRESCENT_FROM: 1.25 - the frame's first column of cells lies within CRESCENT_FROM of it and its second beyond. |
-| 3250 | `PlanCheck.ARM_SITE` | `21 * DistrictPlan.CELL` | Section 14 (c)'s site for an avenue across the frame: (-ARM_SITE, -ARM_SITE), 21 cells out along the diagonal, so its south-east arm runs through the frame's diagonal cells - the ones nearest it, w... |
-| 3738 | `PlanCheck.HOUSES_A_MONTH_FAR` | `3000` | The houses each month brings in (f): enough to open a homes cell or three a month beyond CRESCENT_FROM. |
-| 3855 | `PlanCheck.RIM_FROM` | `3` | The rim of the dense city (rimCurves()): districts this many or more from the one the founding site lies in, by the larger of their columns and rows. |
-| 3858 | `PlanCheck.RIM_EVERY` | `37` | ...and of those, one in this many is planned: 37, a stride that takes districts all round it. |
-| 4043 | `PlanCheck.RUN_HOUSES` | `250` | The houses each month of the runs' fixtures brings: with the shops, works and farms beside them, a district that grows by some hundreds of boxes a month. |
-| 4199 | `PlanCheck.Across.YW` | `8, YH = 7, HW = 40` |  |
-| 5178 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
-| 5246 | `PlanCheck.STRIP` | `TilePainter.JUNCTION_APART` | How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). |
-| 5256 | `PlanCheck.STRIP_MARGIN` | `0.02` | The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same fill, the same arrivals; the verge, which H5 bars t... |
-| 5259 | `PlanCheck.FRONTAGE_OFFSET` | `37` | The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). |
-| 5262 | `PlanCheck.MAIN_LATE_STRIP_USED` | `4373` | Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. |
-| 5432 | `PlanCheck.RR1_TURN_NW` | `100, RR1_TURN_SE = 200` | Section 20's turns (RR1): the diagonal highway turns at both ends of its run along a row - west at its north-west end, east at its south-east one, as Jerus's fjord city's (0.9.181, his shots 2 and ... |
+| 863 | `PlanCheck.COAL_GROUND_DRAWN` | `2_000_000` | The Coal Power Plant's ground as the prototype and 0.8.11 drew it, sq ft. |
+| 866 | `PlanCheck.COAL_PLANT` | `9` | The Coal Power Plant's catalogue id. |
+| 916 | `PlanCheck.BUDGETS` | `{ "his roads", "the same trips paved", "half that" }` | The three budgets' names, as the sections print them. |
+| 1342 | `PlanCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` | A stream that drops what is written to it: the game's and the playtest's prose while a section plays or loads a city. |
+| 1413 | `PlanCheck.HOMES_ENOUGH` | `10` | The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. |
+| 1420 | `PlanCheck.ESTATE_FILL` | `0.4` | The share of a flat district's plots each estate-band type is set at, alone: 0.4 - room to spare, so what differs is the cells they take. |
+| 1514 | `PlanCheck.SPARE_FILL` | `FILLS [ 0 ], FULL_FILL = FILLS [ FILLS.length - 1 ]` | Section 4's fill with cells to spare (2.10's first, 75%) and its fullest (92%: every cell open, and outer kinds left without a place when the bands keep apart). |
+| 1601 | `PlanCheck.LONG_ROADS` | `0.5` | LONG's roads, a factor of his (section 4's 75% fill): 0.5 - too little road for the ladder to square a homes cell, so all of them keep long blocks. |
+| 1604 | `PlanCheck.SQUARED_ROADS` | `0.75` | SQUARED's: 0.75 - road enough to square most of the homes cells (10 of 17) and not to make boulevards of them. |
+| 1607 | `PlanCheck.SQUARED_ROADS_0811` | `0.7` | SQUARED's factor as 0.8.11 drew it, 0.7: the plan (b) pins to 0.8.11's digests is made with it, on the ground of then (typesAsDrawn()). |
+| 1610 | `PlanCheck.BOULEVARD_ROADS` | `1` | BOULEVARD's: 1, his own - road enough for boulevards, squared cells among them. |
+| 1613 | `PlanCheck.LAYOUT_FIXTURES` | `{ "LONG", "SQUARED", "BOULEVARD", "CUT0", "CUT1" }` | Section 10's fixtures: flat ground at his fill with his roads times a factor (the first three), and the test district's ground, a river and the sea cutting cells, on its first two budgets. |
+| 1616 | `PlanCheck.COMB_DIGESTS` | `{ { - 8123742265030361694L, - 580478996347052330L }, { 6065673935051394403L, 4482261714...` | Each fixture's plan with Input.combOnly, its buildings' and its streets' digests (placedDigest(), streetDigest()) as 0.8.11 drew them: the switch off is that plan, box for box and street for street. |
+| 1624 | `PlanCheck.SHARE_SIDE` | `200` | The cells on a side of the square of the lattice layoutOf() is asked about to measure its shares: 200, 40,000 cells. |
+| 1627 | `PlanCheck.SHARE_TOLERANCE` | `0.01` | How far a layout's share of those cells may stand from its dial: 0.01. |
+| 1630 | `PlanCheck.MORE_HOMES` | `0.1` | The part more of the homes band's largest type LONG is given, to see a cell keep its layout as its district grows: a tenth. |
+| 1633 | `PlanCheck.OTHER_SEED` | `Founding.DEFAULT_WORLD_SEED + 1` | Another world's seed, to see the layouts read it. |
+| 2180 | `PlanCheck.BATCHES` | `40` | The batches the dense screen's counts are dealt in (h): forty months. |
+| 2183 | `PlanCheck.COVER_LEAST` | `0.95` | What the order of arrival must cover of the ground today's plans cover on the dense screen: 95%. |
+| 2606 | `PlanCheck.HOUSES_A_MONTH` | `1000` | The houses each month from the first to the fifth brings: with the shops, works and farms beside them, enough to fill the old ground. |
+| 3247 | `PlanCheck.FAR_CELLS` | `(int) DistrictPlan.CRESCENT_FROM + 4` | How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. |
+| 3250 | `PlanCheck.CROWDED_FILL` | `0.90, CROWDED_ROADS = 0.7` | Section 14's crowded fixture: 90% of the ground, with 0.7 of his roads - the ladder takes several builds (the later ones from its turns), squares a few homes cells and leaves a few buildings out, a... |
+| 3253 | `PlanCheck.ROAD_RICH` | `BOULEVARD_ROADS` | The roads section 14's road-rich fixture is given, a factor of his: BOULEVARD_ROADS, 1 - road enough for the ladder to square cells and make boulevards. |
+| 3256 | `PlanCheck.MID_WEST` | `1.25` | Section 14 (b)'s site, in cells west of the frame's edge short of CRESCENT_FROM: 1.25 - the frame's first column of cells lies within CRESCENT_FROM of it and its second beyond. |
+| 3259 | `PlanCheck.ARM_SITE` | `21 * DistrictPlan.CELL` | Section 14 (c)'s site for an avenue across the frame: (-ARM_SITE, -ARM_SITE), 21 cells out along the diagonal, so its south-east arm runs through the frame's diagonal cells - the ones nearest it, w... |
+| 3747 | `PlanCheck.HOUSES_A_MONTH_FAR` | `3000` | The houses each month brings in (f): enough to open a homes cell or three a month beyond CRESCENT_FROM. |
+| 3864 | `PlanCheck.RIM_FROM` | `3` | The rim of the dense city (rimCurves()): districts this many or more from the one the founding site lies in, by the larger of their columns and rows. |
+| 3867 | `PlanCheck.RIM_EVERY` | `37` | ...and of those, one in this many is planned: 37, a stride that takes districts all round it. |
+| 4052 | `PlanCheck.RUN_HOUSES` | `250` | The houses each month of the runs' fixtures brings: with the shops, works and farms beside them, a district that grows by some hundreds of boxes a month. |
+| 4208 | `PlanCheck.Across.YW` | `8, YH = 7, HW = 40` |  |
+| 5187 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
+| 5255 | `PlanCheck.STRIP` | `TilePainter.JUNCTION_APART` | How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). |
+| 5265 | `PlanCheck.STRIP_MARGIN` | `0.02` | The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same fill, the same arrivals; the verge, which H5 bars t... |
+| 5268 | `PlanCheck.FRONTAGE_OFFSET` | `37` | The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). |
+| 5271 | `PlanCheck.MAIN_LATE_STRIP_USED` | `4373` | Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. |
+| 5441 | `PlanCheck.RR1_TURN_NW` | `100, RR1_TURN_SE = 200` | Section 20's turns (RR1): the diagonal highway turns at both ends of its run along a row - west at its north-west end, east at its south-east one, as Jerus's fjord city's (0.9.181, his shots 2 and ... |
 
 ### PlaytestFixCheck.java ([map](map/PlaytestFixCheck.md))
 

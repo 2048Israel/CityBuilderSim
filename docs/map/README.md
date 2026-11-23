@@ -4,7 +4,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 633 files, 682,764 lines, 29,864 methods, 6,638 constants. `GameVersion.VERSION` is "0.9.193", `SAVE_FORMAT` 63.
+**The tree:** 633 files, 682,775 lines, 29,865 methods, 6,639 constants. `GameVersion.VERSION` is "0.9.193", `SAVE_FORMAT` 63.
 
 ## model (280 files)
 
@@ -458,7 +458,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EducationCheck.java](EducationCheck.md) | 1,810 | 16 | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. | 3 |
 | [ElectrolyserCheck.java](ElectrolyserCheck.md) | 475 | 24 | Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the ... | 0 |
 | [EnsembleCheck.java](EnsembleCheck.md) | 470 | 25 | Checks the ensemble runner, driver compilation, policy names and stored baseline. | 0 |
-| [EquipmentCheck.java](EquipmentCheck.md) | 1,198 | 46 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 19 |
+| [EquipmentCheck.java](EquipmentCheck.md) | 1,200 | 46 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 19 |
 | [EquityCheck.java](EquityCheck.md) | 390 | 5 | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. | 0 |
 | [EssentialWorksCheck.java](EssentialWorksCheck.md) | 1,189 | 36 | Essential works ordered for their unmet service, including their ground (HW1). | 4 |
 | [ExchangeCheck.java](ExchangeCheck.md) | 1,609 | 40 | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what ... | 7 |
@@ -559,7 +559,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PartnersCheck.java](PartnersCheck.md) | 838 | 18 | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md... | 0 |
 | [PassThroughCheck.java](PassThroughCheck.md) | 911 | 23 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
 | [PegAnchorCheck.java](PegAnchorCheck.md) | 648 | 22 | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. | 1 |
-| [PlanCheck.java](PlanCheck.md) | 5,560 | 187 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 5 |
+| [PlanCheck.java](PlanCheck.md) | 5,569 | 188 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 5 |
 | [PlaytestFixCheck.java](PlaytestFixCheck.md) | 224 | 9 | Verifies the small fixes of a played city (PT1): words and the log, nothing the month does. | 0 |
 | [PolicyCheck.java](PolicyCheck.md) | 479 | 5 | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. | 0 |
 | [PolicyOpenCheck.java](PolicyOpenCheck.md) | 425 | 15 | Every Policy lever is open from the city's first month, in every city, and nothing opens one later (OP1, 2026-11-19). | 1 |
