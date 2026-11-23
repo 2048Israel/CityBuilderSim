@@ -243,6 +243,14 @@ applies, after the stranger's money review. A 1,200-month playtest probe (2026-1
 served throughout; the founding grid's 10 MW carried the town to about month 700, when the automatic builder ordered
 two diesel stations, and two more at month 1,162.
 
+The ensemble (`docs/ensemble/PW2.md`, 80 of 80 runs of 2c8cadec1 on the gate box, 2026-11-23, against 0.9.192 after
+REV-PW2's SHIP): batch verdict PASS, hard criteria 10/10. M1: no month's audit failed in any policy. F1: no run
+has a LongPlaytest finding (0.9.192: one in AUTO2, ZERO_SLACK, SHOCK and HIGH each, "households with no home"), so four
+F1 verdicts go FAIL to PASS. 24 of 26 criteria pass; the two that fail, AUTO2 A2 (the longest spell of yoy over 10%
+from m240, 12 months [7 to 37] against 14) and SHOCK T2 (the final population, 44,720 against 67,498), are info and
+failed in the baseline too. The first start's ssh to the box dropped with the PC's network at 14:36 after all 80 runs
+had finished; the restart kept them and scored here.
+
 ## 6. The dry run
 
 (to come)
