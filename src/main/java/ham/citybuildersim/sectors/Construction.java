@@ -295,6 +295,9 @@ public final class Construction extends Sector {
     /** What the contractor's price is booked under, on the builders' input line and the money audit's "- construction Imports". */
     public static final String FOREIGN_CREWS = "Foreign crews";
 
+    /** The name of the builders' spare points sold abroad on their revenue line (FC2; Sector.Statement.servicesSold). */
+    public static final String WORK_SOLD_ABROAD = "Work sold abroad";
+
     /** Points the foreign contractor has taken and not yet built (FC1; handed to him by the month's offer since FC2). Saved when there are some. */
     private double foreignBook;
 
@@ -408,7 +411,7 @@ public final class Construction extends Sector {
         boolean any = points > 0 && receipts > 0 && Double.isFinite(receipts);
         exportPointsThisMonth = any ? points : 0;
         exportReceiptsThisMonth = any ? receipts : 0;
-        if (any) bookExportedService(receipts);
+        if (any) bookExportedService(WORK_SOLD_ABROAD, receipts);
     }
 
     /** The points the builders sold abroad in the month last settled (FC2). */

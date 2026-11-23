@@ -1107,10 +1107,13 @@ public class SectorStatementCheck {
                     Sector s = game.getSectors().byKey(sector);
                     if (s != null) {
                         Sector.Statement st = s.statement();
-                        double sold = 0, bought = 0;
+                        double sold = 0, bought = 0, servicesSold = 0;
                         for (Sector.Split x : st.sold.values())   sold += x.total();
                         for (Sector.Split x : st.bought.values()) bought += x.total();
-                        near("revenue by good", sector, m.month(), sold + st.otherRevenue, st.revenue);
+                        // ...and the services sold abroad with no good behind them (FC2: the builders' work sold abroad), named on
+                        // the opened line as the cost line names its services.
+                        for (double v : s.servicesSoldParts().values()) servicesSold += v;
+                        near("revenue by good", sector, m.month(), sold + st.otherRevenue + servicesSold, st.revenue);
                         // ...and the named lines beside the goods (FR2): since Freight's trucks bill every buyer of bulk its
                         // city leg (Sector.billForService(), "Haulage"), the opened cost line is the goods and the named
                         // services and stock together, as RailCheck.allInputsAddUp() reads it in a city with a railway.
@@ -1129,7 +1132,7 @@ public class SectorStatementCheck {
                         double abroadSold = 0, abroadBought = 0;
                         for (Sector.Split x : st.sold.values())   abroadSold += x.abroad;
                         for (Sector.Split x : st.bought.values()) abroadBought += x.abroad;
-                        near("exports by good", sector, m.month(), abroadSold, st.exports);
+                        near("exports by good", sector, m.month(), abroadSold + servicesSold, st.exports);
                         // ...and the imports are the goods bought abroad AND what a sector buys from the world with no good behind it, which
                         // belongs to no good's split and is named on the input line: a works' consumables (0.7.112) and the shuttle
                         // tankers (0.7.91). WN3: a city on the world's band builds the works that buy them by month 77, which the
@@ -1137,7 +1140,9 @@ public class SectorStatementCheck {
                         // (MaterialsCheck 5: st.imports == the consumables' bill) has always counted them in `imports`.
                         double abroadServices = st.otherInputs.getOrDefault(Sector.CONSUMABLES, 0.0)
                                 + st.otherInputs.getOrDefault(ham.citybuildersim.sectors.Oil.SHUTTLE_TANKERS, 0.0)
-                                + st.otherInputs.getOrDefault(Sector.HOUSEHOLD_SERVICES, 0.0);
+                                + st.otherInputs.getOrDefault(Sector.HOUSEHOLD_SERVICES, 0.0)
+                                // FC2: the foreign crews the builders pay for the work past the threshold, a service bought abroad.
+                                + st.otherInputs.getOrDefault(ham.citybuildersim.sectors.Construction.FOREIGN_CREWS, 0.0);
                         near("imports by good", sector, m.month(), abroadBought + abroadServices, st.imports);
 
                         /*

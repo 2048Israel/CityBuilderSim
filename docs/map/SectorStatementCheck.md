@@ -1,4 +1,4 @@
-# SectorStatementCheck.java - 1,289 lines · 28 methods · 5 constants · harnesses
+# SectorStatementCheck.java - 1,294 lines · 28 methods · 5 constants · harnesses
 
 `ham/citybuildersim/SectorStatementCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      lent after it and section 3 holds its debt, land and buildings to
 > ... (3 more lines in the source)
 
-**Uses:** [SectorStatements](SectorStatements.md) (148), [Game](Game.md) (34), [SectorBooks](SectorBooks.md) (22), [Sector](Sector.md) (22), [LongPlaytest](LongPlaytest.md) (18), [Bank](Bank.md) (15), [Sectors](Sectors.md) (15), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Debt](Debt.md) (8), [GameFiles](GameFiles.md) (5), [GameVersion](GameVersion.md) (5), [Construction](Construction.md) (4), [JobType](JobType.md) (2), [Good](Good.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1), [Statement](Statement.md) (1), [Oil](Oil.md) (1), [Founding](Founding.md) (1), [SectorState](SectorState.md) (1)
+**Uses:** [SectorStatements](SectorStatements.md) (148), [Game](Game.md) (34), [SectorBooks](SectorBooks.md) (22), [Sector](Sector.md) (22), [LongPlaytest](LongPlaytest.md) (18), [Bank](Bank.md) (15), [Sectors](Sectors.md) (15), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Debt](Debt.md) (8), [GameFiles](GameFiles.md) (5), [GameVersion](GameVersion.md) (5), [Construction](Construction.md) (5), [JobType](JobType.md) (2), [Good](Good.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1), [Statement](Statement.md) (1), [Oil](Oil.md) (1), [Founding](Founding.md) (1), [SectorState](SectorState.md) (1)
 
 **Used by (3):** [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
@@ -90,9 +90,9 @@
 | 1067 | · · the sheet |
 | 1072 | · · the income statement |
 | 1086 | · · the cash flow |
-| 1175 | · AND IT HAS TO SURVIVE A SAVE. |
-| 1207 | · · and the month after |
-| 1213 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
+| 1180 | · AND IT HAS TO SURVIVE A SAVE. |
+| 1212 | · · and the month after |
+| 1218 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
 
 ## Constants
 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 1204 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
+| 86 | 1209 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
 | 95 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 100 | 5 | `static void quietly(Runnable r)` |  |
 | 107 | 22 | **type** `static final class Tally` | One identity's tally over a run: how many times it was checked, how many missed by more than a cent, and the worst miss. |
@@ -192,15 +192,15 @@
 |---:|---:|---|---|
 | 848 | 18 | `static void theSchedule()` |  |
 
-### 9 (lines 867-1289)
+### 9 (lines 867-1294)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 878 | 63 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
-| 979 | 310 | **type** `static final class BooksAudit` | Plays a city and audits every sector's statements, every month. |
+| 979 | 315 | **type** `static final class BooksAudit` | Plays a city and audits every sector's statements, every month. |
 | 1002 | 10 | `static boolean isAFigure(String value)` _(in SectorStatementCheck.BooksAudit)_ |  |
 | 1013 | 14 | `static void pageIsReadable(Game game)` _(in SectorStatementCheck.BooksAudit)_ |  |
 | 1032 | 4 | `static void check(String label, boolean ok, String detail)` _(in SectorStatementCheck.BooksAudit)_ | One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. |
 | 1037 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` _(in SectorStatementCheck.BooksAudit)_ |  |
-| 1047 | 241 | `static void run(String[] args)` _(in SectorStatementCheck.BooksAudit)_ |  |
+| 1047 | 246 | `static void run(String[] args)` _(in SectorStatementCheck.BooksAudit)_ |  |
 
