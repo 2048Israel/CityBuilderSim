@@ -571,10 +571,14 @@ public class SaveFileCheck {
         city.buildStack(store, storesOrdered, false);
         assertTrue("fixture: the depots were ordered, three of the builders' months and one over (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
         // FS17: more points than the sites can have in the month at the very most - the builders' nameplate and the foreign contractor's
-        // month on top (BuildersShort.foreignCapacity()) - so the stack cannot finish in the one month and the work is on site by the model's rule.
+        // month on top - so the stack cannot finish in the one month and the work is on site by the model's rule. FC2: his month is
+        // the work he holds in the threshold's months, never under the largest depot (BuildersShort.foreignMonth()); struck on the
+        // whole queue at the shortest threshold there is, the knee, it is the most he could take this month.
+        BuildingManager orderedIn = city.getBuildingManager();
+        double orderPoints = depotsOrdered * (double) depot.getConstructionPoints();
         assertTrue("fixture: the order is more than the sites' month can build",
-                depotsOrdered * (double) depot.getConstructionPoints() > buildersMonth
-                        + BuildersShort.foreignCapacity(buildersMonth, city.getBuildingManager().largestDepotPoints()));
+                orderPoints > buildersMonth + BuildersShort.foreignMonth(orderedIn.getRemainingConstructionPoints(),
+                        BuildersShort.KNEE_MONTHS, orderedIn.largestDepotPoints()));
         city.simulateMonths(1);
 
         long depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];

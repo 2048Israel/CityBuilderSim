@@ -66,8 +66,8 @@ public class SimulationEngine {
          */
         // ...less the fittings the crews work first (R1b; Game.workTheFittings()): after the repairs, before the sites, struck here once and used for the advance and for the work the sector is paid for below. With no job on site it is getBuildingOutput(), to the bit.
         int siteOutput = game.workTheFittings();
-        // The foreign contractor's month beside the city's own (FC1): nothing unless the repairs took the
-        // builders' points and left the sites none - see Game, THE FOREIGN CREWS.
+        // The foreign contractor's month beside the city's own (FC1; FC2): the queue at home past the threshold
+        // handed to him, and his month on his book - see Game, THE FOREIGN CREWS.
         Game.ForeignOffer foreign = game.foreignCrewsOffer();
         // His points are in the month the sites take, and not on a rushed site's overtime (FC1b): his crews are not the city's.
         // ...and the work ordered of the builders since the last advance, read either side of this one (OG1; BusinessInvestment,

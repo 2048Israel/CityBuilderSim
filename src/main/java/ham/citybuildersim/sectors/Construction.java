@@ -273,40 +273,39 @@ public final class Construction extends Sector {
         unearnedRevenue += amount;
         backlogPoints += points;
         if (points > 0) billedPoints += points;
-        // ...and while the foreign contractor takes the orders (FC1) it has this one's points on its book, to build.
-        if (points > 0 && buildings != null && buildings.foreignCrewsTakeOrders()) foreignBook += points;
-    }
-
-    /**
-     * ...an order of `t` (FC1): as bill(), but a depot the builders serve first - one the contractor builds as theirs
-     * while it takes orders (Game.foreignCrewsOffer(), BuildingManager.buildersOwnOwed()) - is not put on its book too,
-     * or the contractor would build its points twice over: once as the depot, once more on the queue.
-     */
-    public void bill(double amount, double points, BuildingsTemplate t) {
-        bill(amount, points);
-        if (points > 0 && t != null && buildings != null && buildings.foreignCrewsTakeOrders()
-                && BuildingManager.addsToTheBuilders(t) && buildings.goesFirst(t, 0)) {
-            takeFromForeignBook(points);
-        }
+        // (Since FC2 no order goes on the foreign crews' book when it is billed: the month's offer hands them the queue
+        // at home past the threshold, whoever ordered it - Game.foreignCrewsOffer(), handAbroad().)
     }
 
     /* ===================================================================
-       THE FOREIGN CONTRACTOR'S BOOK (FC1)
+       THE FOREIGN CONTRACTOR'S BOOK (FC1; always on offer since FC2)
 
-       While the builders have no points left for the sites a foreign
-       contractor takes every order (BuildersShort), and the builders act
-       as general contractor: the order's money is in their book as any
+       The queue at home past the threshold is the foreign crews'
+       (BuildersShort, THE FOREIGN CREWS, ALWAYS ON OFFER): each month's
+       offer hands it to them (handAbroad()), and the builders act as
+       general contractor - the order's money is in their book as any
        order's, they earn it as the work is delivered, and they pay the
-       contractor for the points it built at its price - an import of
-       services, the current account's line (bookImportedService()). Game
-       settles the contractor's month (Game.settleForeignCrews()).
+       contractor for the points it built at its price, an import of
+       services, the current account's line (bookImportedService()). The
+       points their own crews had and no site took, while the queue at home
+       is under the knee, they sell abroad (sellPointsAbroad()), an export
+       of services. Game settles both (Game.settleForeignCrews()).
        =================================================================== */
 
     /** What the contractor's price is booked under, on the builders' input line and the money audit's "- construction Imports". */
     public static final String FOREIGN_CREWS = "Foreign crews";
 
-    /** Points the foreign contractor has taken and not yet built (FC1). Saved when there are some. */
+    /** Points the foreign contractor has taken and not yet built (FC1; handed to him by the month's offer since FC2). Saved when there are some. */
     private double foreignBook;
+
+    /** Points the month last offered handed him from the queue at home (FC2). Saved when there were some. */
+    private double handedAbroadThisMonth;
+
+    /** Points the builders' own crews had and no site took, sold abroad in the month last settled (FC2). Saved when there were some. */
+    private double exportPointsThisMonth;
+
+    /** What the world paid for them: the builders' export of services in that month (FC2). Saved when there was some. */
+    private double exportReceiptsThisMonth;
 
     /** Points the contractor built in the month last settled (FC1). Saved when there were some. */
     private double foreignPointsThisMonth;
@@ -325,8 +324,40 @@ public final class Construction extends Sector {
     }
 
     /**
-     * These points off the contractor's book, never below nothing: points he built, a depot he builds as the
-     * builders' own (bill()), or an order cancelled (cancelOrder(), FC1b).
+     * The queue at home past the threshold, handed to the contractor by the month's offer (FC2; Game.foreignCrewsOffer()):
+     * onto his book, and the month's figure set to it - called every month, so a month that handed nothing sets it to
+     * nothing. Never negative.
+     */
+    public void handAbroad(double points) {
+        double p = Double.isFinite(points) ? Math.max(0, points) : 0;
+        foreignBook += p;
+        handedAbroadThisMonth = p;
+    }
+
+    /** The points the month last offered handed the contractor (FC2). */
+    public double getHandedAbroadThisMonth() { return handedAbroadThisMonth; }
+
+    /**
+     * The builders' spare points sold abroad, settled after the sites advanced (FC2; Game.settleForeignCrews()): the
+     * points and what the world paid for them, an export of services (bookExportedService()). Called every month, so a
+     * month with none sets both to nothing.
+     */
+    public void sellPointsAbroad(double points, double receipts) {
+        boolean any = points > 0 && receipts > 0 && Double.isFinite(receipts);
+        exportPointsThisMonth = any ? points : 0;
+        exportReceiptsThisMonth = any ? receipts : 0;
+        if (any) bookExportedService(receipts);
+    }
+
+    /** The points the builders sold abroad in the month last settled (FC2). */
+    public double getExportPointsThisMonth() { return exportPointsThisMonth; }
+
+    /** What the world paid for them: the export of services in the month last settled (FC2). */
+    public double getExportReceiptsThisMonth() { return exportReceiptsThisMonth; }
+
+    /**
+     * These points off the contractor's book, never below nothing: points he built, or an order cancelled
+     * (cancelOrder(), FC1b).
      */
     public void takeFromForeignBook(double points) {
         foreignBook = Math.max(0, foreignBook - Math.max(0, points));
@@ -484,10 +515,11 @@ public final class Construction extends Sector {
      * what the city prepaid and the builders have not earned goes back out
      * of the book, and the work it was for off the order book's points.
      * Never below nothing. And (FC1b) `offTheBook` of it off the foreign
-     * contractor's book: the order's points, which bill() put there while
-     * he took orders, but nothing for a depot he builds as the builders'
-     * own. The book holds points, not orders, so an order he never had
-     * takes its points off it all the same (FC1b's notes, the calls).
+     * contractor's book: since FC2 the order's points, whoever ordered it -
+     * the builders, losing a job, cut the work they pay a stranger's excess
+     * for before their own crews' (FC2's notes, the calls). The book holds
+     * points, not orders, so an order he never had takes its points off it
+     * all the same (FC1b's notes).
      */
     public void cancelOrder(double refund, double points, double offTheBook) {
         unearnedRevenue = Math.max(0, unearnedRevenue - Math.max(0, refund));
@@ -1153,6 +1185,10 @@ public final class Construction extends Sector {
         if (foreignBook != 0) extras.put("foreignBook", foreignBook);
         if (foreignPointsThisMonth != 0) extras.put("foreignPointsThisMonth", foreignPointsThisMonth);
         if (foreignBillThisMonth != 0) extras.put("foreignBillThisMonth", foreignBillThisMonth);
+        // ...and FC2's: what the month handed him and what the builders sold abroad - flows a screen reads next month.
+        if (handedAbroadThisMonth != 0) extras.put("handedAbroadThisMonth", handedAbroadThisMonth);
+        if (exportPointsThisMonth != 0) extras.put("exportPointsThisMonth", exportPointsThisMonth);
+        if (exportReceiptsThisMonth != 0) extras.put("exportReceiptsThisMonth", exportReceiptsThisMonth);
         if (overtimeWages != null) {
             for (int i = 0; i < overtimeWages.length; i++) {
                 if (overtimeWages[i] != 0) extras.put("overtimeWages." + i, overtimeWages[i]);
@@ -1185,6 +1221,9 @@ public final class Construction extends Sector {
         foreignBook = extras.getOrDefault("foreignBook", 0.0);
         foreignPointsThisMonth = extras.getOrDefault("foreignPointsThisMonth", 0.0);
         foreignBillThisMonth = extras.getOrDefault("foreignBillThisMonth", 0.0);
+        handedAbroadThisMonth = extras.getOrDefault("handedAbroadThisMonth", 0.0);
+        exportPointsThisMonth = extras.getOrDefault("exportPointsThisMonth", 0.0);
+        exportReceiptsThisMonth = extras.getOrDefault("exportReceiptsThisMonth", 0.0);
         overtimeWages = null;
         for (java.util.Map.Entry<String, Double> e : extras.entrySet()) {
             if (!e.getKey().startsWith("overtimeWages.")) continue;
@@ -1211,6 +1250,7 @@ public final class Construction extends Sector {
         overtimeThisMonth = 0;
         overtimeWages = null;
         foreignBook = foreignPointsThisMonth = foreignBillThisMonth = 0;
+        handedAbroadThisMonth = exportPointsThisMonth = exportReceiptsThisMonth = 0;
         rDrawnLocal = rDrawnImported = 0;
         drawnKnown = true;
     }
@@ -1226,6 +1266,7 @@ public final class Construction extends Sector {
         salvageCost *= scale;
         overtimeThisMonth *= scale;
         foreignBillThisMonth *= scale;
+        exportReceiptsThisMonth *= scale;
         if (overtimeWages != null) for (int i = 0; i < overtimeWages.length; i++) overtimeWages[i] *= scale;
     }
 }

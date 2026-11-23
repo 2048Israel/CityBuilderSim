@@ -11,66 +11,78 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The builders short (FC1): what an order pays a point of work as the repairs leave the builders fewer points for the
- * sites, and the foreign contractor that takes the orders, builds the builders' own depots first and is paid abroad
- * when they leave none - held on a city whose repairs take the whole of the builders' month.
+ * The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work
+ * as the repairs leave the builders fewer points for the sites, the queue at home past the threshold that a foreign
+ * contractor takes, building it with his own crews and paid abroad, and the city that climbs out - held on a city whose
+ * repairs take all but a sliver of the builders' month.
  *
  * WHY. Jerus's city, 2026-11-01 (docs/queue/FC1.md): "in a sufficiently big city, on a specific sequence of events, a
  * city could end up, where there are no crews to build, they are all repairing. and it gets stuck, no way to fix it".
  * The repairs take the builders' points before the sites, the builders' own depot waits in the order book for points
  * the repairs never leave (BuildersFirstCheck's stall, but now to the last point), and the price of a point did not read
  * how short they were. The model is BuildersShort (the arithmetic), BuildingManager (the multiple every order's work
- * pays), Game.foreignCrewsOffer() and settleForeignCrews() (the contractor's month) and sectors.Construction (its book
- * and its bill). This is the evidence that the trap is met, that the price answers it and that the contractor lets the
- * city out: DeathCareFirstCheck's city with enough standing roads that the repairs take all but a sliver of the month.
+ * pays, and the foreign crews' terms, foreignTerms()), Game.foreignCrewsOffer() and settleForeignCrews() (the
+ * contractor's month) and sectors.Construction (his book, his bill and the builders' sales abroad). This is the
+ * evidence that the trap is met, that the price answers it and that the contractor lets the city out:
+ * DeathCareFirstCheck's city with enough standing roads that the repairs take all but SLIVER of the month. FC2's own
+ * bounds - the exchange rate, the weakest D$, the world's money under domestic inflation, the export and the long
+ * backlog - are ForeignCrewsCheck's.
  *
  * What this has to prove:
  *   1. THE PRICE'S SHAPE (BuildersShort alone): no premium to the knee, strictly rising past it, half the ceiling at
  *      the knee and HALF_MONTHS past it, under the ceiling for the month counts a city can have and exactly it
- *      with no points for the sites at all; the contractor takes orders under the floor of the month and not at it,
- *      never with no month; his price is above anything the city's own premium reaches; his capacity never under
- *      a depot's points.
+ *      with no points for the sites at all; the foreign crews' first share is FOREIGN_EXCESS of the world's price a
+ *      point over the city's, capped at the premium SURE_MONTHS past the knee; the threshold is where the premium
+ *      reaches it, never under the knee; the work past it is the overflow, none at it; their month is that work in
+ *      the threshold's months, never under a depot's points nor over the work; their excess rises with their month
+ *      from the first share, never to CEILING; and an order's multiple is the premium for the buildings within the
+ *      threshold and their excess for the rest.
  *   2. THE TRAP, CAUSED: standing roads, one at a time past the model's own figure, until the repairs take more than
- *      all but FOREIGN_FLOOR of the builders' month at every post (one road fewer did not); the city's own sites and
- *      the landlords' Houses on site; the contractor takes orders and has the sites' orders on his book.
+ *      all but SLIVER of the builders' month at every post (one road fewer did not); the city's own sites and the
+ *      landlords' Houses on site; the queue at home past the threshold, every order's work at the contractor's price,
+ *      and nothing on his book until the month's offer hands him the overflow.
  *   3. THE PRICE RISES AS THE FREE POINTS FALL, in a twin that never met the trap: the quote of a House at five
  *      states - the free points ample (no premium, exactly the template's price), then the roads taking them, the
- *      months queued passing the knee and rising, and under the floor the contractor's price; every quote the
- *      multiple the model says, the planners' cost rising with it, and an order placed raising the next one's price.
- *   4. THE FOREIGN CREWS TAKE THE DEPOT FIRST: the builders' own depot ordered in the trap is priced at the
- *      contractor's price and served as their own depot, not put on his book a second time; it is built first out
- *      of the month by his points, he is paid for the points the sites took
- *      past the city's own month at FOREIGN_PRICE the base price of a point, and the builders' statement carries the
- *      bill as an import.
+ *      months queued passing the knee and rising within the threshold, and past it the contractor's price, the road
+ *      before it not: the premium passed his first share between them; every quote the multiple the model says, the
+ *      planners' cost rising with it, and an order placed raising the next one's price.
+ *   4. THE FOREIGN CREWS BUILD THE DEPOT FIRST: the builders' own depot ordered in the trap is priced at the
+ *      contractor's price and served first as their own; the month's offer hands him the queue at home past the
+ *      threshold, his month on it and his price at that month; the depot is built first out of the month with his
+ *      points, he is paid for the points the sites took past the city's own month at his price, his book comes down
+ *      by them, and the builders' statement carries the bill as an import.
  *   5. THE CITY CLIMBS OUT AND THE CONTRACTOR STOPS: the builders' own plan keeps opening depots, the sites at
- *      every post climb over the floor and the trap does not return, the contractor works off his book and no new
- *      order adds to it.
+ *      every post climb over the sliver, no order goes abroad and the trap does not return, the contractor works off
+ *      his book and no new order adds to it.
  *   6. THE MONEY: the sum of the contractor's bills is the sum of what the builders' statements carried as imports
- *      from him, each in the audit's TRADE scope, and nothing was paid abroad in a month he built nothing.
+ *      from him, each in the audit's TRADE scope, and nothing was paid abroad in a month he built nothing; what the
+ *      builders sold abroad is their statement's exports the month after, in the same scope, and never in a month he
+ *      built.
  *   7. A CITY THAT NEVER MEETS THE TRAP PAYS NOTHING ABROAD: free points and a queue under the knee for months
  *      played: no book, no points, no bill, the multiple exactly one.
- *   8. SAVED AND LOADED: the contractor's book and month come back from a save to the bit, and a city that never met
- *      the trap saves none of it.
- *   9. A CANCEL IN THE TRAP (FC1b): the city's site ordered while he takes orders, cancelled in one of two twins, leaves
- *      his book at the month's end by the points the order had left at the stop and nothing else of his month moves;
- *      a restart while he still takes orders puts them on once, never twice; and a depot of the builders' that goes
- *      first, which he never had on his book, takes none off it when it is cancelled.
+ *   8. SAVED AND LOADED: the contractor's book and month and FC2's month's figures come back from a save to the bit,
+ *      and a city that never met the trap saves none of it.
+ *   9. A CANCEL IN THE TRAP (FC1b; FC2): the city's site ordered in the trap, cancelled in one of two twins, leaves his
+ *      book at the month's end by the points the order had left at the stop and nothing else of his month moves; a
+ *      restart puts them back in the queue at home, not on his book, and the next month's offer hands them on to him
+ *      once, never twice; and a depot of the builders' that goes first, cancelled, takes its points off his book too:
+ *      the builders cut the work they pay a stranger's excess for first, whatever the order.
  *  10. A RUSH BESIDE THE CONTRACTOR (FC1b): in a month he builds beside the city's own crews, a rushed site's
  *      overtime, its premium and the wages the city pays for it are struck on the part of its share the city's own
  *      crews worked, not on his; he is paid for the points the sites took past the city's own month, the overtime
  *      among it; and in a city with no contractor that part is the whole share, to the bit.
  *  11. SAVED MID-TRAP, THE NEXT MONTH THE SAME: a trapped city saved and loaded plays the month after as the twin that
  *      was never saved does - his book, points and bill, the builders' cash and order book, the points built, the
- *      price of an order and whether he takes them, to the bit.
+ *      price of an order, his threshold and excess and whether an order goes abroad, to the bit.
  *  12. AN ORDER'S OWN BUILDINGS (BA1): with no cap on orders an order of six hundred homes is not priced at the first's queue; each
  *      building stands in the queue the ones before it leave, and the order pays the mean premium over them
  *      (BuildersShort.meanPremium()). One building is FC1's price to the bit (meanPremium(from, step, 1) == premium(from),
  *      orderPriceMultiplier(x) == orderPriceMultiplier(x, pointsEach, 1)); up to EXACT_SUM_MOST it is the explicit mean and past it
  *      the integral within the javadoc's stated figures of the exact sum, on the grid it was measured on; never above CEILING, under
  *      nothing or NaN; never falling as the order grows; and a quote of 600 homes on a queue near the knee costs more a home than
- *      a quote of one (and the contractor's price is the same for any size of order).
+ *      a quote of one (and past the threshold the contractor's price is the same for any size of order).
  *
- * Every fixture causes its condition. How often the trap is met in a real run is the ensemble's count (FC1.md).
+ * Every fixture causes its condition. How often the trap is met in a real run is the ensemble's count (FC1.md, FC2-notes.md).
  */
 public class ConstructionTrapCheck {
 
@@ -117,6 +129,13 @@ public class ConstructionTrapCheck {
     /** The landlords' Houses the trapped city has on site beside the city's own sites. */
     static final int LANDLORDS_HOUSES = 40;
 
+    /**
+     * The sliver of the builders' month, every post offered, the trap leaves the sites: 5%, FC1's FOREIGN_FLOOR, under
+     * which his contractor came. Since FC2 the contractor is always on offer and nothing in the model reads a floor; the
+     * trap is caused to the same depth, so every section after it starts where FC1's did.
+     */
+    static final double SLIVER = 0.05;
+
     /** The queue of the twins that never met the trap, as a share of the knee in months of the free points they start with: well under it. */
     static final double CALM_SHARE_OF_KNEE = 0.8;
 
@@ -143,21 +162,30 @@ public class ConstructionTrapCheck {
         monthsAudited++;
     }
 
-    /** What one month played left: the trap as the month met it, the sites and the month at every post, the contractor's month, the statement's lines and the audit's. */
+    /**
+     * What one month played left: the trap as the month met it (the sites under SLIVER of the builders' month before it:
+     * FC1's floor, the fixture's depth since FC2, whose month's offer hands the overflow on and leaves the queue at home at
+     * the threshold, so "an order goes abroad" is no longer what marks the trap), the sites
+     * and the month at every post, the contractor's month, the statement's lines and the audit's; and (FC2) the points
+     * the builders sold abroad, what they fetched, the statement's exports and the audit's line for them, the trade in.
+     */
     record Row(int month, boolean trapped, double sites, double output, double points, double bill,
-               double stmtForeign, double stmtImports, double auditImports, double tradeOut, double book) { }
+               double stmtForeign, double stmtImports, double auditImports, double tradeOut, double book,
+               double exportPoints, double exportReceipts, double stmtExports, double auditExports, double tradeIn) { }
 
     /** One month played, audited, and what it left, added to `into`. */
     static Row play(Game g, List<Row> into) {
         BuildingManager bm = g.getBuildingManager();
         Construction c = g.getSectors().construction();
-        boolean trapped = bm.foreignCrewsTakeOrders();
+        boolean trapped = g.getBuildingOutputAtEveryPost() < SLIVER * g.getConstructionOutputAtEveryPost();
         month(g);
         MoneyAudit.Result r = g.getLastMoneyAudit();
         Row row = new Row(g.getMonth(), trapped, g.getBuildingOutputAtEveryPost(), g.getConstructionOutputAtEveryPost(),
                 c.getForeignPointsThisMonth(), c.getForeignBillThisMonth(),
                 c.statement().otherInputs.getOrDefault(Construction.FOREIGN_CREWS, 0.0), c.statement().imports,
-                auditLine(r, "- " + BUILDERS + " Imports"), r == null ? 0 : r.tradeOut, c.getForeignBook());
+                auditLine(r, "- " + BUILDERS + " Imports"), r == null ? 0 : r.tradeOut, c.getForeignBook(),
+                c.getExportPointsThisMonth(), c.getExportReceiptsThisMonth(), c.statement().exports,
+                auditLine(r, "+ " + BUILDERS + " Exports"), r == null ? 0 : r.tradeIn);
         into.add(row);
         return row;
     }
@@ -205,7 +233,7 @@ public class ConstructionTrapCheck {
     /* ============================ 1. THE PRICE'S SHAPE ============================ */
 
     static void shape() {
-        out.println("--- 1. the price's shape: the premium, the contractor's floor, his price and his capacity ---");
+        out.println("--- 1. the price's shape: the premium, the foreign crews' first share, the threshold, the overflow, their month and their excess ---");
         double knee = BuildersShort.KNEE_MONTHS, half = BuildersShort.HALF_MONTHS, ceiling = BuildersShort.CEILING;
         assertTrue("the knee is the backlog the builders themselves expand at", knee == BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING);
         bits("no premium with nothing queued", BuildersShort.premium(0), 0);
@@ -236,32 +264,87 @@ public class ConstructionTrapCheck {
         bits("a NaN queue reads as none", BuildersShort.monthsQueued(Double.NaN, 5), 0);
         assertTrue("...a NaN month for the sites as none of them", Double.isInfinite(BuildersShort.monthsQueued(5, Double.NaN)));
 
-        double month = 1_000, floor = BuildersShort.FOREIGN_FLOOR * month;
-        assertTrue("the contractor takes orders just under FOREIGN_FLOOR of the month", BuildersShort.foreignTakesOrders(Math.nextDown(floor), month));
-        assertTrue("...with the sites at nothing", BuildersShort.foreignTakesOrders(0, month));
-        assertTrue("...not at the floor", !BuildersShort.foreignTakesOrders(floor, month));
-        assertTrue("...nor over it, up to the whole month",
-                !BuildersShort.foreignTakesOrders(Math.nextUp(floor), month) && !BuildersShort.foreignTakesOrders(month, month));
-        assertTrue("...nor with no month at all, the sites at nothing too", !BuildersShort.foreignTakesOrders(0, 0));
-        assertTrue("his price is above anything the city's own premium reaches: no city prefers him",
-                BuildersShort.FOREIGN_PRICE > 1 + BuildersShort.CEILING);
+        // FC2, moved from FC1's floor, price and capacity: the foreign crews' first share, E x / p with x FOREIGN_EXCESS of the
+        // world's base price - in the city's money FOREIGN_EXCESS times the world's price a point over the city's - capped
+        // at the premium SURE_MONTHS past the knee, so the threshold is always reachable.
+        double cap = BuildersShort.capShare(), sure = BuildersShort.SURE_MONTHS, excess = BuildersShort.FOREIGN_EXCESS;
+        bits("the cap on their first share is the premium SURE_MONTHS past the knee", cap, BuildersShort.premium(knee + sure));
+        assertTrue("...well under the ceiling: SURE_MONTHS is under HALF_MONTHS, so the cap is under half of it",
+                sure < half && cap < ceiling / 2);
+        assertTrue("...and over FOREIGN_EXCESS, so at parity the cap does not bind", cap > excess);
+        close("at parity (the world's price a point the city's) their first share is FOREIGN_EXCESS", BuildersShort.excessShare(100, 100), excess, 1e-15);
+        close("...a D$ twice as strong halves it", BuildersShort.excessShare(50, 100), excess / 2, 1e-15);
+        bits("...a D$ far weaker meets the cap", BuildersShort.excessShare(1e9 * 100, 100), cap);
+        bits("...as does a city with no base price to read", BuildersShort.excessShare(100, 0), cap);
+        bits("...and a NaN", BuildersShort.excessShare(Double.NaN, 100), cap);
+        bits("...a world price of nothing is none", BuildersShort.excessShare(0, 100), 0);
+
+        // The threshold: premium() turned round, the months queued at home past which the work goes abroad.
+        bits("the threshold for a first share of nothing is the knee", BuildersShort.thresholdMonths(0), knee);
+        close("...at the cap it is SURE_MONTHS past the knee", BuildersShort.thresholdMonths(cap), knee + sure, 1e-12);
+        boolean inverse = true, risesWith = true;
+        double previousThreshold = knee;
+        for (double r : new double[] { 1e-6, 0.01, 0.05, excess, cap, 0.4, 0.7, 0.79 }) {
+            double t = BuildersShort.thresholdMonths(r);
+            inverse &= Math.abs(BuildersShort.premium(t) - r) <= 1e-12;
+            risesWith &= t > previousThreshold;
+            previousThreshold = t;
+        }
+        assertTrue("...the premium at the threshold is the share it was read for, from a millionth to near the ceiling", inverse);
+        assertTrue("...and the threshold rises with the share, never under the knee", risesWith);
+        assertTrue("...a share at the ceiling is never reached", Double.isInfinite(BuildersShort.thresholdMonths(ceiling)));
+
+        // The overflow: the queue at home past the threshold's months of the sites - none at it, a point a point past it.
+        double sitesMonth = 1_000, threshold = BuildersShort.thresholdMonths(excess);
+        bits("no overflow at the threshold", BuildersShort.overflow(threshold * sitesMonth, sitesMonth, threshold), 0);
+        close("...a point past it, that point", BuildersShort.overflow(threshold * sitesMonth + 1, sitesMonth, threshold), 1, 1e-9);
+        bits("...none under it", BuildersShort.overflow(knee * sitesMonth, sitesMonth, threshold), 0);
+        bits("...all of the queue with no month for the sites", BuildersShort.overflow(500, 0, threshold), 500);
+        bits("...and a NaN queue is none", BuildersShort.overflow(Double.NaN, sitesMonth, threshold), 0);
+
+        // Their month: the work in the threshold's months, never under a depot's points (FC1's rule) nor over the work.
+        double depot = 400;
+        close("their month is their work in the threshold's months", BuildersShort.foreignMonth(100_000, threshold, depot), 100_000 / threshold, 1e-12);
+        bits("...never under the builders' largest depot", BuildersShort.foreignMonth(2_000, threshold, depot), depot);
+        bits("...nor over the work", BuildersShort.foreignMonth(300, threshold, depot), 300.0);
+        bits("...none with no work", BuildersShort.foreignMonth(0, threshold, depot), 0);
+        boolean never = true;
+        for (double w : new double[] { 1, 50, 399, 400, 401, 8_000, 1e6 }) {
+            double m = BuildersShort.foreignMonth(w, threshold, depot);
+            never &= m <= w && m >= Math.min(w, depot);
+        }
+        assertTrue("...at any work: at least the depot or all of it, at most the work", never);
+
+        // Their excess: the supply curve, from the first share toward CEILING.
+        double buildersMonth = 1_000;
+        bits("at a month of nothing their excess is the first share", BuildersShort.excessAt(excess, 0, buildersMonth), excess);
+        close("...half way to CEILING at SUPPLY_HALF of the builders' month",
+                BuildersShort.excessAt(excess, BuildersShort.SUPPLY_HALF * buildersMonth, buildersMonth), (excess + ceiling) / 2, 1e-12);
+        boolean curve = true;
+        double previousExcess = excess;
+        for (double m : new double[] { 1, 100, 250, 1_000, 3_000, 1e5, 1e9 }) {
+            double e = BuildersShort.excessAt(excess, m, buildersMonth);
+            curve &= e > previousExcess && e < ceiling;
+            previousExcess = e;
+        }
+        assertTrue("...strictly rising with their month and under CEILING at every one, from a point to a million times the builders'", curve);
+        bits("...CEILING with no builders' month to read it against", BuildersShort.excessAt(excess, 100, 0), ceiling);
+
+        // An order's multiple: the premium where a building stands within the threshold, their excess past it.
+        double share = BuildersShort.excessAt(excess, 500, buildersMonth);
         boolean multiples = true;
         for (double p : past) {
-            multiples &= Double.doubleToLongBits(BuildersShort.multiplier(knee + p, true)) == Double.doubleToLongBits(BuildersShort.FOREIGN_PRICE);
-            multiples &= Double.doubleToLongBits(BuildersShort.multiplier(knee + p, false)) == Double.doubleToLongBits(1 + BuildersShort.premium(knee + p));
+            double from = knee + p, m = BuildersShort.multiplier(from, 0.5, 1, threshold, share);
+            multiples &= Double.doubleToLongBits(m) == Double.doubleToLongBits(from <= threshold ? 1 + BuildersShort.premium(from) : 1 + share);
         }
-        multiples &= BuildersShort.multiplier(Double.POSITIVE_INFINITY, true) == BuildersShort.FOREIGN_PRICE
-                && BuildersShort.multiplier(0, false) == 1;
-        assertTrue("the multiple is FOREIGN_PRICE while he takes orders, else one and the premium", multiples);
-
-        double depot = 400;
-        close("his capacity is the depot's points when the builders' month is small", BuildersShort.foreignCapacity(100, depot), depot, 1e-12);
-        close("...his share of a large month", BuildersShort.foreignCapacity(10_000, depot), BuildersShort.FOREIGN_CAPACITY_SHARE * 10_000, 1e-12);
-        close("...the two meet where the share is the depot", BuildersShort.foreignCapacity(depot / BuildersShort.FOREIGN_CAPACITY_SHARE, depot), depot, 1e-9);
-        boolean never = true;
-        for (double o : new double[] { -50, 0, 1, 100, 1_600, 1_601, 1e6 }) never &= BuildersShort.foreignCapacity(o, depot) >= depot;
-        assertTrue("...never under the depot's points, at any month of the builders'", never);
-        bits("...and never negative with no depot", BuildersShort.foreignCapacity(-100, 0), 0);
+        multiples &= BuildersShort.multiplier(0, 0.5, 1, threshold, share) == 1
+                && BuildersShort.multiplier(Double.POSITIVE_INFINITY, 0.5, 1, threshold, share) == 1 + share;
+        assertTrue("one building's multiple is one and the premium within the threshold, one and their excess past it", multiples);
+        double from = threshold - 2.25, step = 0.5;
+        close("an order straddling it: the premium's mean over the five within, their excess over the five past",
+                BuildersShort.meanShare(from, step, 10, threshold, share), (5 * BuildersShort.meanPremium(from, step, 5) + 5 * share) / 10, 1e-15);
+        bits("...and with no foreign crews (an endless threshold) every building at home, FC1's mean premium",
+                BuildersShort.meanShare(from, step, 10, Double.POSITIVE_INFINITY, share), BuildersShort.meanPremium(from, step, 10));
     }
 
     /* ============================ 2. THE TRAP, CAUSED ============================ */
@@ -283,18 +366,18 @@ public class ConstructionTrapCheck {
 
     /**
      * DeathCareFirstCheck's city, then standing Paved Roads: two short of the model's own figure for the roads whose
-     * repairs leave the sites the floor of the builders' month, and then one at a time until the contractor takes
-     * orders - so the last road is the one that tips it, and the one before it did not.
+     * repairs leave the sites SLIVER of the builders' month, and then one at a time until they leave less - so the
+     * last road is the one that tips it, and the one before it did not.
      */
     static Game trapped(Path root, String name) {
         Game g = DeathCareFirstCheck.city(root, name);
         BuildingManager bm = g.getBuildingManager();
         double output = g.getConstructionOutputAtEveryPost();
-        int near = (int) Math.floor((output * (1 - BuildersShort.FOREIGN_FLOOR) - g.getMaintenancePoints()) / perRoad(g)) - 2;
+        int near = (int) Math.floor((output * (1 - SLIVER) - g.getMaintenancePoints()) / perRoad(g)) - 2;
         roadsAdded = Math.max(0, near);
         roads(g, roadsAdded);
         sitesBeforeTheLastRoad = sitesAfterTheLastRoad = Double.NaN;
-        while (!bm.foreignCrewsTakeOrders() && roadsAdded < Math.max(0, near) + 50) {
+        while (!(g.getBuildingOutputAtEveryPost() < SLIVER * g.getConstructionOutputAtEveryPost()) && roadsAdded < Math.max(0, near) + 50) {
             sitesBeforeTheLastRoad = g.getBuildingOutputAtEveryPost();
             roads(g, 1);
             roadsAdded++;
@@ -322,34 +405,49 @@ public class ConstructionTrapCheck {
         BuildingManager bm = g.getBuildingManager();
         Construction c = g.getSectors().construction();
         double output = g.getConstructionOutputAtEveryPost(), repairs = g.getMaintenancePoints();
-        double floor = BuildersShort.FOREIGN_FLOOR * output;
+        double floor = SLIVER * output;
         double queueBefore = bm.getRemainingConstructionPoints(), bookBefore = c.getForeignBook();
         sites(g);
         double sites = g.getBuildingOutputAtEveryPost();
-        out.printf("  month %d: nameplate %,d, month at every post %,.0f, repairs %,.1f (%d roads added), sites %,.0f of a floor of %,.1f;"
+        out.printf("  month %d: nameplate %,d, month at every post %,.0f, repairs %,.1f (%d roads added), sites %,.0f of a sliver of %,.1f;"
                         + " queue %,.0f = %,.1f months%n",
                 g.getMonth(), bm.getTotalConstructionCapacity(), output, repairs, roadsAdded, sites, floor,
                 bm.getRemainingConstructionPoints(), bm.monthsQueued());
-        assertTrue("fixture: the repairs take more than all but FOREIGN_FLOOR of the builders' month, every post offered",
-                repairs > (1 - BuildersShort.FOREIGN_FLOOR) * output);
-        assertTrue("...so the sites get under FOREIGN_FLOOR of it", sites < floor);
-        assertTrue("...but only just: one road fewer left them at the floor or over it, the contractor not yet taking orders",
+        assertTrue("fixture: the repairs take more than all but SLIVER of the builders' month, every post offered",
+                repairs > (1 - SLIVER) * output);
+        assertTrue("...so the sites get under SLIVER of it", sites < floor);
+        assertTrue("...but only just: one road fewer left them at the sliver or over it",
                 sitesBeforeTheLastRoad >= floor && sitesAfterTheLastRoad < floor
                         && sitesBeforeTheLastRoad - sitesAfterTheLastRoad <= perRoad(g) + 1);
         assertTrue("fixture: the builders offer every post, as the trace's city did", g.getBuildingOutput() == g.getBuildingOutputAtEveryPost());
-        assertTrue("fixture: the Penitentiary still owes most of its points (it keeps every post offered)",
+        // FC2: "most of its points" was FC1's; the founding's months hand the foreign crews the Penitentiary's work past the
+        // threshold, and they build it beside the city's crews, so it owes less - but it is on site still, and every post is
+        // offered (the assertion above), which is what it is there for.
+        assertTrue("fixture: the Penitentiary still owes points (it keeps every post offered)",
                 bm.stackOfKey(ConstructionControl.keyOf(template(g, "Penitentiary"))).getConstructionProgress()
-                        < template(g, "Penitentiary").getConstructionPoints() / 2.0);
+                        < template(g, "Penitentiary").getConstructionPoints());
         assertTrue("fixture: work owed on site, the city's own and the landlords' Houses",
                 bm.getRemainingConstructionPoints() > queueBefore && bm.citySiteKeys().size() >= 3
                         && bm.siteKeysOnSite().contains(ConstructionControl.keyOf(template(g, HOUSE))));
-        assertTrue("the contractor takes orders", bm.foreignCrewsTakeOrders());
-        bits("...every order's work at his price: the multiple is FOREIGN_PRICE", bm.orderPriceMultiplier(), BuildersShort.FOREIGN_PRICE);
+        // FC2, moved from "the contractor takes orders": he is always on offer, and the queue at home is past his threshold.
+        BuildingManager.ForeignTerms terms = bm.foreignTerms();
+        assertTrue("the foreign crews are on offer: the builders have a month, every post offered", terms != null && bm.foreignTradeOn());
+        assertTrue("the queue at home is past the threshold: an order placed now goes abroad",
+                bm.ordersGoAbroad() && terms.monthsQueued() > terms.thresholdMonths());
+        bits("...every order's work at his price: the multiple is one and his excess at his month", bm.orderPriceMultiplier(), 1 + bm.foreignExcessNow());
+        assertTrue("...his excess at least his first share and under CEILING", terms.share() >= terms.firstShare() && terms.share() < BuildersShort.CEILING);
         assertTrue("the months queued are far past the knee and the city's own premium is within a hair of its ceiling",
                 bm.monthsQueued() > 100 * BuildersShort.KNEE_MONTHS && bm.scarcityPremium() > 0.99 * BuildersShort.CEILING);
-        bits("fixture: nothing was on his book before the trap's sites (the Penitentiary was ordered before it)", bookBefore, 0);
-        close("the sites ordered in the trap are on his book, point for point: what the queue gained", c.getForeignBook(),
-                bm.getRemainingConstructionPoints() - queueBefore, 1e-9);
+        // FC2, moved from "nothing was on his book before the trap's sites": the founding's months handed him the Penitentiary's
+        // work past the threshold (it was ordered before the trap, and stood past it from the first month he was on offer).
+        out.printf("  his book before the trap's sites: %,.0f points, the founding's Penitentiary's overflow%n", bookBefore);
+        assertTrue("fixture: his book before the trap's sites is the founding's, the Penitentiary's overflow: more than none", bookBefore > 0);
+        // ...and moved from "the sites ordered in the trap are on his book, point for point": no order goes on his book when it
+        // is billed; the month's offer hands him the queue at home past the threshold, whoever ordered it.
+        bits("the sites ordered in the trap went on no book when they were billed: his book is what it was", c.getForeignBook(), bookBefore);
+        close("...the month's offer will hand him the queue at home past the threshold's months of the sites", bm.overflowAtHome(),
+                bm.queueAtHome() - terms.thresholdMonths() * terms.sites(), 1e-9);
+        assertTrue("...which is more than none", bm.overflowAtHome() > 0);
         return g;
     }
 
@@ -365,6 +463,14 @@ public class ConstructionTrapCheck {
         if (!g.cancelSite(ConstructionControl.keyOf(template(g, "Penitentiary")), true))
             throw new IllegalStateException("the Penitentiary's site cannot be cancelled");
         month(g);
+        // FC2: the founding handed the foreign crews the Penitentiary's work past the threshold, and the cancel cut the points it
+        // had left off his book first, but not what of the other sites' work he held; he finishes it, and a month more strikes
+        // the statement that carries his last bill - so the twin starts with nothing abroad, as FC1's did.
+        Construction c = g.getSectors().construction();
+        for (int k = 0; k < 24 && (c.getForeignBook() > 0 || c.getForeignBillThisMonth() > 0); k++) month(g);
+        month(g);
+        if (c.getForeignBook() > 0 || c.getForeignBillThisMonth() > 0 || c.statement().otherInputs.containsKey(Construction.FOREIGN_CREWS))
+            throw new IllegalStateException("the calm twin's foreign crews did not finish their book");
         BuildingsTemplate house = template(g, HOUSE);
         int n = (int) Math.floor(CALM_SHARE_OF_KNEE * BuildersShort.KNEE_MONTHS * g.getBuildingOutputAtEveryPost()
                 / house.getConstructionPoints());
@@ -378,22 +484,34 @@ public class ConstructionTrapCheck {
         return g;
     }
 
-    /** A House's quote at a state of the city: the free points, the months queued, the premium, the multiple, the sticker and the planners' cost. */
+    /**
+     * A House's quote at a state of the city: the free points, the months queued, the premium, the multiple, the sticker and the
+     * planners' cost; whether an order goes abroad, and (FC2) the foreign crews' first share and their excess at their month.
+     */
     record State(String name, double sites, double months, double premium, double multiple, double sticker,
-                 double plannersCost, boolean foreign, double prepCost) { }
+                 double plannersCost, boolean foreign, double prepCost, double first, double share) { }
 
-    static State state(Game g, String name) {
+    static State state(Game g, String name) { return state(g, name, true); }
+
+    /** ...printed or not: the walk to the threshold reads a state at every road and prints the last. */
+    static State state(Game g, String name, boolean print) {
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate house = template(g, HOUSE);
         Game.BuildQuote q = g.quoteBuild(house, 1);
         State s = new State(name, g.getBuildingOutputAtEveryPost(), bm.monthsQueued(), bm.scarcityPremium(),
                 bm.orderPriceMultiplier(), q.sticker, g.getBusinessInvestment().getCostOf(house, 1),
-                bm.foreignCrewsTakeOrders(), q.prepCost);
-        out.printf("  %-24s free points %,5.0f; queue %,6.0f = %,6.1f months; premium %.3f; multiple %.4f;"
-                        + " a House's work %.4f (the template's %.4f); the planners' cost %.4f%n",
-                name, s.sites, bm.getRemainingConstructionPoints(), s.months, s.premium, s.multiple, s.sticker,
-                bm.nonMaterialCost(house), s.plannersCost);
+                bm.ordersGoAbroad(), q.prepCost, bm.foreignExcessShare(), bm.foreignExcessNow());
+        if (print) printState(g, s);
         return s;
+    }
+
+    static void printState(Game g, State s) {
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate house = template(g, HOUSE);
+        out.printf("  %-24s free points %,5.0f; queue %,6.0f = %,6.1f months; premium %.3f; multiple %.4f;"
+                        + " a House's work %.4f (the template's %.4f); the planners' cost %.4f; abroad %s, first share %.4f, at his month %.4f%n",
+                s.name, s.sites, bm.getRemainingConstructionPoints(), s.months, s.premium, s.multiple, s.sticker,
+                bm.nonMaterialCost(house), s.plannersCost, s.foreign, s.first, s.share);
     }
 
     /** The standing roads that bring the months queued to `months` at the points the builders have now. */
@@ -412,7 +530,7 @@ public class ConstructionTrapCheck {
         double knee = BuildersShort.KNEE_MONTHS, half = BuildersShort.HALF_MONTHS;
 
         State s0 = state(g, "free points ample");
-        assertTrue("fixture: the queue is under the knee at the points the builders have, the contractor not taking orders",
+        assertTrue("fixture: the queue is under the knee at the points the builders have, no order going abroad",
                 s0.months <= knee && s0.months > 0 && !s0.foreign);
         assertTrue("fixture: flat ground, so the quote's work is the House's alone (no foothill to prepare)", s0.prepCost == 0);
         bits("no premium", s0.premium, 0);
@@ -420,11 +538,16 @@ public class ConstructionTrapCheck {
         bits("...and the quote's sticker is the template's work to the bit", s0.sticker, template);
         bits("...and the price a point earns the builders is the base price", bm.nonMaterialPricePerPoint(), bm.basePricePerPoint());
 
+        // FC2: the premium's states stand within the threshold (FC1's at the premium's half and its most are past it now, the
+        // work there the contractor's): a third and two thirds of the way from the knee to it, and nine tenths after the order.
+        double threshold = bm.thresholdMonths();
+        out.printf("  the threshold: %.3f months, the first share %.4f%n", threshold, bm.foreignExcessShare());
+        assertTrue("fixture: the threshold past the knee, so the premium has room within it", threshold > knee + 1);
         List<State> states = new ArrayList<>(List.of(s0));
-        double[] targets = { knee + half / 2, knee + half };
+        double[] targets = { knee + (threshold - knee) / 3, knee + 2 * (threshold - knee) / 3 };
         for (int i = 0; i < targets.length; i++) {
             roads(g, roadsFor(g, targets[i]));
-            states.add(state(g, "roads: " + (i == 0 ? "past the knee" : "the premium's half")));
+            states.add(state(g, "roads: " + (i == 0 ? "past the knee" : "two thirds to the threshold")));
         }
         // An order placed raises the price of the next: priced on the queue as it stands with the orders before it.
         State at = states.get(states.size() - 1);
@@ -445,20 +568,24 @@ public class ConstructionTrapCheck {
                 bm.orderPriceMultiplier(), aheadOfIt, 1e-12);
         close("...at the premium of the queue as it now stands", bm.orderPriceMultiplier(), 1 + BuildersShort.premium(bm.monthsQueued()), 1e-12);
 
-        roads(g, roadsFor(g, knee + 3 * half));
-        states.add(state(g, "roads: the premium's most"));
-        // ...and the roads one at a time, until the contractor takes the orders.
+        roads(g, roadsFor(g, knee + 0.9 * (threshold - knee)));
+        states.add(state(g, "roads: near the threshold"));
+        // ...and the roads one at a time, until the work goes abroad: the state a road before it, and the state at it.
+        State last = state(g, "a road before the threshold", false);
         int steps = 0;
-        while (!bm.foreignCrewsTakeOrders() && steps++ < 50) roads(g, 1);
-        State foreign = state(g, "under the floor");
-        State last = states.get(states.size() - 1);
+        while (!bm.ordersGoAbroad() && steps++ < 400) {
+            last = state(g, "a road before the threshold", false);
+            roads(g, 1);
+        }
+        printState(g, last);
+        State foreign = state(g, "past the threshold");
         states.add(foreign);
 
         for (int i = 1; i < states.size() - 1; i++) {
             State s = states.get(i);
             String where = " (" + s.name + ")";
             assertTrue("the free points fell" + where, s.sites < states.get(i - 1).sites);
-            assertTrue("...past the knee, the contractor not taking orders" + where, s.months > knee && !s.foreign);
+            assertTrue("...past the knee, within the threshold: no order going abroad" + where, s.months > knee && s.months <= threshold && !s.foreign);
             close("...the multiple is one and the premium at the months queued" + where, s.multiple, 1 + BuildersShort.premium(s.months), 1e-12);
             close("...the quote's work over the template's is that multiple" + where, s.sticker / template, s.multiple, 1e-12);
             assertTrue("...and it is above the state before, strictly" + where, s.multiple > states.get(i - 1).multiple);
@@ -466,22 +593,26 @@ public class ConstructionTrapCheck {
         }
         assertTrue("the premium's states rise in the months queued too", states.get(1).months < states.get(2).months
                 && states.get(2).months < last.months);
-        assertTrue("under the floor the contractor takes the orders, the state before it not", foreign.foreign && !last.foreign);
-        bits("...the multiple is FOREIGN_PRICE", foreign.multiple, BuildersShort.FOREIGN_PRICE);
-        close("...and the quote's work is FOREIGN_PRICE times the template's", foreign.sticker / template, BuildersShort.FOREIGN_PRICE, 1e-12);
-        assertTrue("...above the city's own premium at its most, and above anything it could reach",
-                foreign.multiple > last.multiple && foreign.multiple > 1 + BuildersShort.CEILING);
+        // FC2, moved from "under the floor the contractor takes the orders": past the threshold, the road before it not -
+        // the brief's edge, an order goes abroad exactly when the premium passes his first share E x / p.
+        assertTrue("past the threshold the contractor takes the work, the road before it not", foreign.foreign && !last.foreign);
+        assertTrue("...exactly where the premium passed his first share: at most it a road before, over it now",
+                last.premium <= last.first && foreign.premium > foreign.first);
+        bits("...the multiple is one and his excess at his month", foreign.multiple, 1 + foreign.share);
+        close("...and the quote's work is that times the template's", foreign.sticker / template, foreign.multiple, 1e-12);
+        assertTrue("...his excess at least his first share and under CEILING", foreign.share >= foreign.first && foreign.share < BuildersShort.CEILING);
+        assertTrue("...above the state before: the order pays his price, over the premium within the threshold", foreign.multiple > last.multiple);
         assertTrue("...the planners' cost with it", foreign.plannersCost > last.plannersCost);
-        assertTrue("...but the builders' own price of a point is the city's premium, never the contractor's multiple",
-                bm.nonMaterialPricePerPoint() < BuildersShort.FOREIGN_PRICE * bm.basePricePerPoint());
-        close("...which is the base with the city's own premium: the contractor's price pays abroad, not the builders", bm.nonMaterialPricePerPoint(),
-                bm.basePricePerPoint() * (1 + bm.scarcityPremium()), 1e-12);
+        close("but the builders' own price of a point is the base with the city's own premium: his excess is paid abroad, not to them",
+                bm.nonMaterialPricePerPoint(), bm.basePricePerPoint() * (1 + bm.scarcityPremium()), 1e-12);
+        assertTrue("...under his price a point a road past the threshold, where the premium has only just passed his first share",
+                bm.nonMaterialPricePerPoint() < bm.foreignPricePerPoint());
     }
 
     /* ============================ 4. THE FOREIGN CREWS TAKE THE DEPOT FIRST ============================ */
 
     static void depotFirst(Game g, List<Row> rows) {
-        out.println("\n--- 4. the foreign crews take the builders' depot first: priced at his price, built out of his month as theirs, billed ---");
+        out.println("\n--- 4. the foreign crews build the builders' depot first: priced at his price, handed the overflow, built out of the month with his points, billed ---");
         BuildingManager bm = g.getBuildingManager();
         Construction c = g.getSectors().construction();
         BuildingsTemplate depot = template(g, DEPOT);
@@ -490,8 +621,9 @@ public class ConstructionTrapCheck {
         // The builders' own plan, as BuildersFirstCheck.stalled() releases it, would order this depot and the contractor build it
         // in the month it is ordered; the fixture orders it by hand (their sector held), so that what stood before the month can be read.
         Game.BuildQuote q = g.quoteBuild(depot, 1);
-        close("the depot's order is priced at the contractor's: its work FOREIGN_PRICE times the template's", q.sticker,
-                bm.nonMaterialCost(depot) * BuildersShort.FOREIGN_PRICE, 1e-12);
+        assertTrue("fixture: the queue at home is past the threshold", bm.ordersGoAbroad());
+        close("the depot's order is priced at the contractor's: its work one and his excess times the template's", q.sticker,
+                bm.nonMaterialCost(depot) * (1 + bm.foreignExcessNow()), 1e-12);
         double bookBefore = c.getForeignBook();
         long depotsBefore = bm.countByName(DEPOT);
         long nameplateBefore = bm.getTotalConstructionCapacity();
@@ -500,60 +632,75 @@ public class ConstructionTrapCheck {
             g.getEconomyManager().setSectorCash(BUILDERS, g.getEconomyManager().getSectorCash(BUILDERS) + 2 * q.total + 1_000);
             ordered[0] = g.buildFor(g.getSectorInvestor(BUILDERS), depot, 1);
         });
-        assertTrue("fixture: the builders order a Construction Depot, in the trap", ordered[0] && bm.foreignCrewsTakeOrders()
+        assertTrue("fixture: the builders order a Construction Depot, in the trap", ordered[0] && bm.ordersGoAbroad()
                 && bm.underConstructionByName(DEPOT) == 1);
         assertTrue("...the builders' own depot on site, served first", bm.buildersOwnOnSite().contains(key)
                 && !bm.isCitySite(key) && bm.addsToTheBuilders(key));
         close("...owing all its points", bm.buildersOwnOwed(), depotPoints, 1e-12);
-        // Construction.bill(amount, points, t): a depot the builders serve first is the contractor's as theirs, not on his book a second time.
-        close("its order is not put on the contractor's book too: he builds it as the builders' own depot", c.getForeignBook(), bookBefore, 1e-12);
+        // FC2, moved from FC1's depot-not-on-the-book rule: no order goes on his book when it is billed, a depot as any.
+        close("its order went on no book when it was billed: the month's offer hands him the queue past the threshold, whoever ordered it",
+                c.getForeignBook(), bookBefore, 1e-12);
 
         double base = bm.basePricePerPoint();
-        double capacity = BuildersShort.foreignCapacity(g.getConstructionOutputAtEveryPost(), bm.largestDepotPoints());
-        double work = c.getForeignBook() + bm.buildersOwnOwed();
-        double offered = Math.round(Math.min(capacity, work));
+        BuildingManager.ForeignTerms terms = bm.foreignTerms();
+        double handed = terms.overflow();
+        double month = BuildersShort.foreignMonth(bookBefore + handed, terms.thresholdMonths(), bm.largestDepotPoints());
+        double offered = Math.round(Math.min(month, bookBefore + handed));
+        double share = BuildersShort.excessAt(terms.firstShare(), offered, terms.output());
         double own = g.getBuildingOutput();
         double owed = bm.buildersOwnOwed();
-        out.printf("  before the month: the city's own month for the sites %,.0f; the contractor's capacity %,.0f, his work %,.0f, so %,.0f offered;"
-                        + " his price a point %.4f (the base %.4f)%n", own, capacity, work, offered,
-                BuildersShort.FOREIGN_PRICE * base, base);
-        assertTrue("fixture: the contractor's capacity is not under a depot's points, and his work more than it",
-                capacity >= bm.largestDepotPoints() && work > capacity);
-        // His offer as the month will strike it (Game.foreignCrewsOffer(): idempotent here, the book already at most what is owed on site).
+        out.printf("  before the month: the city's own month for the sites %,.0f; the queue at home %,.0f past a threshold of %.3f months by %,.0f;"
+                        + " his month on it %,.0f, so %,.0f offered; his price a point %.4f (the base %.4f, first share %.4f, at his month %.4f)%n",
+                own, bm.queueAtHome(), terms.thresholdMonths(), handed, month, offered, base * (1 + share), base, terms.firstShare(), share);
+        assertTrue("fixture: his month is not under a depot's points, and the work handed him more than it",
+                month >= bm.largestDepotPoints() && bookBefore + handed > month);
+        // His offer as the month will strike it (Game.foreignCrewsOffer(): the month's own call finds the overflow handed already).
         Game.ForeignOffer offer = g.foreignCrewsOffer();
-        close("his offer: the points are his capacity, the work being more than it", offer.points(), offered, 1e-12);
-        close("...the builders' own depot's points are the part of it served first", offer.depotPoints(), Math.min(owed, offered), 1e-12);
-        bits("...his price a point is FOREIGN_PRICE times the base price of a point", offer.pricePerPoint(), BuildersShort.FOREIGN_PRICE * base);
+        close("the offer hands him the queue at home past the threshold's months of the sites", c.getForeignBook(), bookBefore + handed, 1e-9);
+        bits("...the month's figure the same", c.getHandedAbroadThisMonth(), handed);
+        close("...which leaves the queue at home at the threshold", bm.monthsQueued(), terms.thresholdMonths(), 1e-9);
+        bits("his offer: the points are his month on his book", (double) offer.points(), offered);
+        bits("...his excess the supply curve's at that month", offer.excessShare(), share);
+        bits("...his price a point the base price and that excess", offer.pricePerPoint(), base * (1 + share));
+        bits("...and a spare point of the builders' fetches nothing abroad, the queue at home past the knee", offer.exportPricePerPoint(), 0);
+        double bookOffered = c.getForeignBook();
+        billBeforeTheRows = c.getForeignBillThisMonth();
 
         Row first = play(g, rows);
         double pointsBuilt = bm.getPointsBuilt();
         out.printf("  the month: the contractor built %,.0f points, billed %,.2f; the sites built %,.0f in all; nameplate %,d -> %,d; the book %,.0f%n",
                 first.points, first.bill, pointsBuilt, nameplateBefore, bm.getTotalConstructionCapacity(), c.getForeignBook());
         assertTrue("the contractor built this month: his points are more than none", first.points > 0);
-        close("...what he was offered: his capacity, the depot's order the least of it", first.points, offered, 1e-12);
+        close("...what he was offered: his month on his book", first.points, offered, 1e-12);
         close("...what the sites took past the city's own month", first.points, pointsBuilt - own, 1e-9);
         assertTrue("the depot was built first: it owed its points and took them, opened this month, owing nothing",
                 bm.countByName(DEPOT) == depotsBefore + 1 && bm.underConstructionByName(DEPOT) == 0 && bm.buildersOwnOwed() == 0);
         close("...the builders' nameplate up by its points", bm.getTotalConstructionCapacity() - nameplateBefore, depotPoints, 1e-12);
-        assertTrue("...the contractor's month went to it: the other sites took no more than the city's own month",
-                pointsBuilt - owed <= own + 1e-9);
+        // FC2, moved from "the contractor's month went to it": FC1's month was the depot's points at the least and a quarter of the
+        // builders' at most; his month is now the work in the threshold's months, far more than a depot, and the rest of it goes to
+        // the other sites. The depot first, then the rest of the pooled month.
+        assertTrue("...out of the pooled month: the sites took the depot's points and the rest of the month, the city's and his",
+                pointsBuilt >= owed && pointsBuilt <= own + offered + 1e-9 && first.points > owed);
         // The month strikes its money constants at its top (Game.restrikeMoneyConstants(): the expected price level), before its
         // advance, so the base it struck is the one read here to a fraction of a percent, not to the bit (the offer above is to the bit).
         out.printf("  his price struck in the month: %.6f a point against the %.6f read before it%n", first.bill / first.points,
-                BuildersShort.FOREIGN_PRICE * base);
-        close("he is billed his points at FOREIGN_PRICE the base price of a point, as the month struck it", first.bill,
-                first.points * BuildersShort.FOREIGN_PRICE * base, 5e-3);
-        close("his book came down by what he built beyond the depot's part (the model's rule), the depot never on it",
-                c.getForeignBook(), Math.max(0, bookBefore - Math.max(0, first.points - Math.min(owed, first.points))), 1e-9);
+                offer.pricePerPoint());
+        close("he is billed his points at his price, the base and his excess, as the month struck it", first.bill,
+                first.points * offer.pricePerPoint(), 5e-3);
+        close("his book came down by all he built, the depot's points among them: the book holds the queue's points, not orders",
+                c.getForeignBook(), Math.max(0, bookOffered + c.getHandedAbroadThisMonth() - first.points), 1e-9);
 
         // The builders' statement carries the bill as an import - struck the month after, with every site's book (SimulationEngine).
         Row second = play(g, rows);
         close("the builders' statement the month after carries that bill, named for the contractor, as an import", second.stmtForeign, first.bill, 1e-12);
         assertTrue("...in their imports line, which the audit's TRADE scope reads", second.stmtImports >= first.bill - 1e-9
                 && second.auditImports >= first.bill - MoneyAudit.CENT && Math.abs(second.auditImports - second.stmtImports) < MoneyAudit.CENT);
-        assertTrue("...and the city climbed out in the month: its own sites at every post over the floor, the contractor not taking orders",
-                !bm.foreignCrewsTakeOrders() && first.sites >= BuildersShort.FOREIGN_FLOOR * first.output);
+        assertTrue("...and the city climbed out in the month: its own sites at every post over the sliver, no order going abroad",
+                !bm.ordersGoAbroad() && first.sites >= SLIVER * first.output);
     }
+
+    /** His bill in the month before the rows (FC2: the founding's, the Penitentiary's), which the first row's statement carries. */
+    static double billBeforeTheRows;
 
     /* ============================ 5. THE CITY CLIMBS OUT AND THE CONTRACTOR STOPS ============================ */
 
@@ -589,8 +736,8 @@ public class ConstructionTrapCheck {
                 bm.getTotalConstructionCapacity() > nameplateAtTheTrap + Math.round(template(g, DEPOT).getConstructionPoints())
                         && bm.countByName(DEPOT) > depotsAtTheTrap + 1);
         Row last = rows.get(rows.size() - 1);
-        assertTrue("the city's own sites at every post are over FOREIGN_FLOOR of the month again", last.sites >= BuildersShort.FOREIGN_FLOOR * last.output);
-        assertTrue("...the contractor no longer takes orders", !bm.foreignCrewsTakeOrders());
+        assertTrue("the city's own sites at every post are over SLIVER of the month again", last.sites >= SLIVER * last.output);
+        assertTrue("...no order goes abroad: the queue at home is within the threshold", !bm.ordersGoAbroad());
         assertTrue("...and the trap did not return in any month after the first it was over", rows.stream().skip(1).noneMatch(Row::trapped));
         assertTrue("the trap was met, and the contractor worked on past it, off his book", trapMonths >= 1 && foreignMonths > trapMonths);
         assertTrue("the run ended with the book worked off: " + QUIET_MONTHS + " months with none and no points", quietMonths == QUIET_MONTHS);
@@ -608,7 +755,9 @@ public class ConstructionTrapCheck {
         });
         assertTrue("fixture: the landlords order ten Houses more", ordered[0] && bm.underConstructionByName(HOUSE) >= 10);
         bits("no new order adds to his book: it is as it was", c.getForeignBook(), bookBefore);
-        assertTrue("...and the multiple is the city's own premium, under the contractor's", bm.orderPriceMultiplier() < BuildersShort.FOREIGN_PRICE);
+        bits("...nor will the next month's offer: nothing at home is past the threshold", bm.overflowAtHome(), 0);
+        close("...and the multiple is the city's own premium at the queue at home, not his excess", bm.orderPriceMultiplier(),
+                1 + BuildersShort.premium(bm.monthsQueued()), 1e-12);
     }
 
     /* ============================ 6. THE MONEY ============================ */
@@ -621,7 +770,7 @@ public class ConstructionTrapCheck {
     }
 
     static void money(List<Row> rows) {
-        out.println("\n--- 6. the money: his bills are the builders' imports from him, in the audit's TRADE scope; none in a month he built nothing ---");
+        out.println("\n--- 6. the money: his bills are the builders' imports from him and their sales abroad their exports, in the audit's TRADE scope ---");
         double billed = 0, carried = 0, billedMonths = 0;
         boolean next = true, onTheAudit = true, none = true, imports = true;
         for (int i = 0; i < rows.size(); i++) {
@@ -630,7 +779,8 @@ public class ConstructionTrapCheck {
             if (r.bill > 0) billedMonths++;
             none &= (r.points > 0) == (r.bill > 0);
             if (i == 0) {
-                none &= r.stmtForeign == 0;   // nothing carried from a month before he worked
+                // FC2: the month before the rows is the founding's, in which he built the Penitentiary's overflow: its bill and nothing else
+                none &= Math.abs(r.stmtForeign - billBeforeTheRows) <= 1e-9 * Math.max(1, billBeforeTheRows);
                 continue;
             }
             Row before = rows.get(i - 1);
@@ -650,6 +800,29 @@ public class ConstructionTrapCheck {
         assertTrue("it is in their imports line, every month", imports);
         assertTrue("...and in the audit's TRADE scope: its imports line for the builders is the statement's, the trade out at least that", onTheAudit);
         assertTrue("nothing was paid abroad in a month he built nothing: no bill, and no line the month after", none);
+
+        // FC2: the builders' spare points sold abroad, an export of services, booked once, the month after as any sale.
+        double sold = 0, carriedOut = 0;
+        int soldMonths = 0;
+        boolean exportsNext = true, exportsOnAudit = true, spareOnly = true;
+        for (int i = 0; i < rows.size(); i++) {
+            Row r = rows.get(i);
+            sold += i < rows.size() - 1 ? r.exportReceipts : 0;
+            if (r.exportPoints > 0) soldMonths++;
+            spareOnly &= r.exportPoints == 0 || r.points == 0;
+            spareOnly &= (r.exportPoints > 0) == (r.exportReceipts > 0);
+            if (i == 0) continue;
+            Row before = rows.get(i - 1);
+            carriedOut += r.stmtExports;
+            exportsNext &= Math.abs(r.stmtExports - before.exportReceipts) <= 1e-9 * Math.max(1, before.exportReceipts);
+            exportsOnAudit &= Math.abs(r.auditExports - r.stmtExports) < MoneyAudit.CENT && r.tradeIn >= r.stmtExports - 0.01;
+        }
+        out.printf("  the builders sold spare points abroad in %d of the %d months, for %,.2f in all; the statements' exports %,.2f%n",
+                soldMonths, rows.size(), sold, carriedOut);
+        assertTrue("every month's statement carries the month before's sales abroad as the builders' exports, and nothing else", exportsNext);
+        close("...the sum of the sales is the sum of the statements' exports", carriedOut, sold, 1e-9);
+        assertTrue("...each in the audit's TRADE scope: its exports line for the builders is the statement's, the trade in at least that", exportsOnAudit);
+        assertTrue("...and none in a month he built: a month with points past the city's own has none spare", spareOnly);
         audited("so far");
     }
 
@@ -663,7 +836,7 @@ public class ConstructionTrapCheck {
         List<Row> rows = new ArrayList<>();
         boolean underTheKnee = true, one = true, free = true;
         for (int i = 0; i < NEVER_MONTHS; i++) {
-            underTheKnee &= bm.monthsQueued() <= BuildersShort.KNEE_MONTHS && !bm.foreignCrewsTakeOrders();
+            underTheKnee &= bm.monthsQueued() <= BuildersShort.KNEE_MONTHS && !bm.ordersGoAbroad();
             one &= Double.doubleToLongBits(bm.orderPriceMultiplier()) == Double.doubleToLongBits(1.0);
             Row r = play(g, rows);
             free &= r.points == 0 && r.bill == 0 && r.stmtForeign == 0 && !r.trapped
@@ -671,7 +844,7 @@ public class ConstructionTrapCheck {
         }
         out.printf("  %d months played, the queue %,.0f points = %,.1f months of the free points %,.0f%n", NEVER_MONTHS,
                 bm.getRemainingConstructionPoints(), bm.monthsQueued(), (double) g.getBuildingOutputAtEveryPost());
-        assertTrue("fixture: every month began with the queue under the knee and the contractor not taking orders", underTheKnee);
+        assertTrue("fixture: every month began with the queue under the knee and no order going abroad", underTheKnee);
         assertTrue("...and the multiple exactly one in every month", one);
         assertTrue("...and the Houses were being built: the queue is shorter", bm.getRemainingConstructionPoints() > 0
                 && rows.get(rows.size() - 1).book == 0);
@@ -706,6 +879,10 @@ public class ConstructionTrapCheck {
         bits("the book comes back to the bit", back.getForeignBook(), c.getForeignBook());
         bits("...the month's points", back.getForeignPointsThisMonth(), c.getForeignPointsThisMonth());
         bits("...and its bill", back.getForeignBillThisMonth(), c.getForeignBillThisMonth());
+        // FC2's month's figures, flows the screens read: what the month handed him, what the builders sold abroad.
+        bits("...what the month handed him (FC2)", back.getHandedAbroadThisMonth(), c.getHandedAbroadThisMonth());
+        bits("...the points the builders sold abroad", back.getExportPointsThisMonth(), c.getExportPointsThisMonth());
+        bits("...and what they fetched", back.getExportReceiptsThisMonth(), c.getExportReceiptsThisMonth());
         String text = Files.readString(files.saveFile(SCRATCH_SLOT));
         assertTrue("the save carries them, where the sector keeps its extras", text.contains("foreignBook")
                 && text.contains("foreignPointsThisMonth") && text.contains("foreignBillThisMonth"));
@@ -714,14 +891,26 @@ public class ConstructionTrapCheck {
         quietly(() -> never.saveGame(SCRATCH_SLOT, "constructiontrapcheck-never"));
         String clean = Files.readString(neverFiles.saveFile(SCRATCH_SLOT));
         assertTrue("a city that never met the trap saves what it always saved: none of the contractor's keys",
-                !clean.contains("foreignBook") && !clean.contains("foreignPointsThisMonth") && !clean.contains("foreignBillThisMonth"));
+                !clean.contains("foreignBook") && !clean.contains("foreignPointsThisMonth") && !clean.contains("foreignBillThisMonth")
+                        && !clean.contains("handedAbroadThisMonth"));
+        assertTrue("...and FC2's sales abroad only where the builders sold some", clean.contains("exportPointsThisMonth")
+                == (never.getSectors().construction().getExportPointsThisMonth() != 0));
         audited("in all");
     }
 
     /* ============================ 9. A CANCEL IN THE TRAP ============================ */
 
-    /** The Construction Depots the city orders in the trap: more points than the contractor is offered, so one is still on site when the month ends and the cancel has something to stop. */
-    static final int CITY_DEPOTS = 2;
+    /**
+     * The Construction Depots the city orders in the trap: more points than the month has, the city's and the contractor's, so
+     * one is still on site when the month ends and the cancel has something to stop. FC1's were two; since FC2 his month is
+     * his book in the threshold's months, so the count is read off it: the depots' own points join the overflow, and his
+     * month with them, by their points over the threshold.
+     */
+    static int cityDepots(Game g, BuildingsTemplate depot) {
+        BuildingManager bm = g.getBuildingManager();
+        double per = depot.getConstructionPoints(), threshold = bm.thresholdMonths();
+        return (int) Math.floor((g.getBuildingOutput() + bm.foreignMonthNow()) / (per * (1 - 1 / threshold))) + 2;
+    }
 
     /** The refund the month's stop made for the building of that name (ConstructionControl.Refund), or null when it stopped none. */
     static ConstructionControl.Refund refundOf(Game g, String building) {
@@ -729,12 +918,16 @@ public class ConstructionTrapCheck {
         return null;
     }
 
-    /** Two trapped cities that stand alike to the bit: the free points, the repairs, the queue, his book and the treasury's cash, and he takes orders in both. */
+    /** Two trapped cities that stand alike to the bit: the free points, the repairs, the queue, his book, his threshold and the overflow at home, and the treasury's cash. */
     static void sameStart(String where, Game a, Game b) {
         BuildingManager x = a.getBuildingManager(), y = b.getBuildingManager();
         Construction cx = a.getSectors().construction(), cy = b.getSectors().construction();
-        assertTrue("fixture: the twins start the same " + where + ": the month, and the contractor takes orders in both",
-                a.getMonth() == b.getMonth() && x.foreignCrewsTakeOrders() && y.foreignCrewsTakeOrders());
+        // FC2, moved from "he takes orders in both": at the trap, before its sites, the founding's overflow on his book holds the
+        // whole queue and no order goes abroad; with them, one does. Either way the twins stand alike in it.
+        assertTrue("fixture: the twins start the same " + where + ": the month, and whether an order goes abroad",
+                a.getMonth() == b.getMonth() && x.ordersGoAbroad() == y.ordersGoAbroad());
+        bits("...his threshold", x.thresholdMonths(), y.thresholdMonths());
+        bits("...the overflow at home", x.overflowAtHome(), y.overflowAtHome());
         bits("...the free points for the sites", a.getBuildingOutputAtEveryPost(), b.getBuildingOutputAtEveryPost());
         bits("...the repairs", a.getMaintenancePoints(), b.getMaintenancePoints());
         bits("...the queue", x.getRemainingConstructionPoints(), y.getRemainingConstructionPoints());
@@ -743,7 +936,7 @@ public class ConstructionTrapCheck {
     }
 
     static void cancelInTheTrap(Path root) {
-        out.println("\n--- 9. a cancel in the trap: the order's points leave the contractor's book when it stops, and a restart puts them on once ---");
+        out.println("\n--- 9. a cancel in the trap: the order's points leave the contractor's book when it stops, and a restart's reach it once ---");
         Game kept = trapped(root, "cancel-kept"), gone = trapped(root, "cancel-gone");
         sameStart("at the trap", kept, gone);
         BuildingManager bk = kept.getBuildingManager(), bg = gone.getBuildingManager();
@@ -754,14 +947,14 @@ public class ConstructionTrapCheck {
         sites(kept);
         sites(gone);
         sameStart("with the sites ordered", kept, gone);
-        double onTheBook = ck.getForeignBook() - bookBefore;
-        out.printf("  the sites ordered in the trap: the queue %,.0f -> %,.0f, his book %,.0f -> %,.0f (the University is %,d points)%n",
-                queueBefore, bk.getRemainingConstructionPoints(), bookBefore, ck.getForeignBook(), university.getConstructionPoints());
-        assertTrue("fixture: the University is the city's own site, ordered while the contractor took orders (he takes them still)",
-                bg.isCitySite(key) && bg.foreignCrewsTakeOrders() && bk.foreignCrewsTakeOrders());
-        close("...and its points are on his book: the book gained what the queue gained, point for point", onTheBook,
-                bk.getRemainingConstructionPoints() - queueBefore, 1e-9);
-        assertTrue("...with more on it than the University's points", onTheBook >= university.getConstructionPoints());
+        out.printf("  the sites ordered in the trap: the queue %,.0f -> %,.0f, his book %,.0f, the overflow at home %,.0f (the University is %,d points)%n",
+                queueBefore, bk.getRemainingConstructionPoints(), ck.getForeignBook(), bk.overflowAtHome(), university.getConstructionPoints());
+        assertTrue("fixture: the University is the city's own site, ordered with the queue at home past the threshold (an order goes abroad still)",
+                bg.isCitySite(key) && bg.ordersGoAbroad() && bk.ordersGoAbroad());
+        // FC2, moved from "its points are on his book, point for point": on no book when billed; the month's offer hands him the overflow.
+        bits("...on no book when billed: his book is what it was", ck.getForeignBook(), bookBefore);
+        assertTrue("...and the overflow the month's offer hands him is more than the University's points",
+                bk.overflowAtHome() >= university.getConstructionPoints());
 
         assertTrue("the city cancels the University in one twin", gone.cancelSite(key, true) && bg.getControl().isCancelling(key)
                 && !bk.getControl().isCancelling(key));
@@ -784,27 +977,52 @@ public class ConstructionTrapCheck {
         close("his book is the other twin's less the University's points left at the stop", cg.getForeignBook(),
                 ck.getForeignBook() - refund.points(), 1e-9);
 
-        // ...restarted while he takes orders: the shell's points go on his book once.
+        // ...restarted: FC2 puts the shell's points back in the queue at home, and the next month's offer hands them on once.
         double stopped = cg.getForeignBook();
-        assertTrue("fixture: he still takes orders when the shell is restarted", bg.foreignCrewsTakeOrders());
         boolean[] restarted = new boolean[1];
         quietly(() -> restarted[0] = gone.restartShell(university.getId()));
         assertTrue("fixture: the restart is booked, the University the city's own site again", restarted[0] && bg.isCitySite(key)
                 && gone.getBuildingManager().getControl().shellOf(university.getId()) == null);
-        out.printf("  restarted: his book %,.2f -> %,.2f, the twin that never cancelled %,.2f; the queue %,.0f against %,.0f%n", stopped,
-                cg.getForeignBook(), ck.getForeignBook(), bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints());
-        close("a restart puts its points on his book once: the book is the twin's that never cancelled", cg.getForeignBook(),
+        bits("a restart puts nothing on his book itself: it is as the stop left it", cg.getForeignBook(), stopped);
+        close("...the queue is the twin's again", bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints(), 1e-9);
+        close("...so the queue at home holds the order's points left over the twin's", bg.queueAtHome() - bk.queueAtHome(), refund.points(), 1e-9);
+        // The month just played handed both the overflow, so their queues at home are within the threshold; the landlords'
+        // Houses, the same in both, put them past it again, so the next offer has an overflow to hand in the twin that kept it too.
+        moreHouses(kept);
+        moreHouses(gone);
+        assertTrue("fixture: the landlords' Houses put the queue at home past the threshold in both twins", bk.overflowAtHome() > 0
+                && bg.overflowAtHome() > bk.overflowAtHome());
+        kept.foreignCrewsOffer();
+        gone.foreignCrewsOffer();
+        out.printf("  restarted and offered: his book %,.2f -> %,.2f, the twin that never cancelled %,.2f; handed %,.2f against %,.2f; the queue %,.0f against %,.0f%n",
+                stopped, cg.getForeignBook(), ck.getForeignBook(), cg.getHandedAbroadThisMonth(), ck.getHandedAbroadThisMonth(),
+                bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints());
+        close("the next offer puts the restart's points on his book once: the book is the twin's that never cancelled", cg.getForeignBook(),
                 ck.getForeignBook(), 1e-9);
-        close("...by exactly the points the order had left", cg.getForeignBook() - stopped, refund.points(), 1e-9);
+        close("...by exactly the points the order had left, over what it handed the twin", cg.getHandedAbroadThisMonth() - ck.getHandedAbroadThisMonth(),
+                refund.points(), 1e-9);
         assertTrue("...and not the billed twice case: the twin's book plus the order's points, as before FC1b",
                 Math.abs(cg.getForeignBook() - (ck.getForeignBook() + refund.points())) > refund.points() / 2);
-        close("...and the queue is the twin's again", bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints(), 1e-9);
+        close("...and the queue is the twin's still", bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints(), 1e-9);
 
         cancelADepotFirst(root);
         audited("including the cancel's twins");
     }
 
-    /** A depot of the builders' ordered by the city and served first: he never had it on his book, so cancelling it takes nothing off. */
+    /** The landlords' Houses ordered again, LANDLORDS_HOUSES of them, out of cash the quote sizes: the same in twins that stand alike. */
+    static void moreHouses(Game g) {
+        quietly(() -> {
+            BuildingsTemplate house = template(g, HOUSE);
+            g.getEconomyManager().setSectorCash(RE, g.getEconomyManager().getSectorCash(RE) + 2 * g.quoteBuild(house, LANDLORDS_HOUSES).total);
+            g.buildFor(g.getSectorInvestor(RE), house, LANDLORDS_HOUSES);
+        });
+    }
+
+    /**
+     * A depot of the builders' ordered by the city and served first, and cancelled: FC1 never had it on his book, so the
+     * cancel took nothing off; since FC2 his book is the queue's points handed him, not orders, and a cancel cuts it first
+     * (Game's cancel: the builders cut the work they pay a stranger's excess for before their own crews'), a depot as any.
+     */
     static void cancelADepotFirst(Path root) {
         out.println("  a Construction Depot the city orders in the trap, served first as the builders' own, and cancelled:");
         Game kept = trapped(root, "depot-kept"), gone = trapped(root, "depot-gone");
@@ -816,23 +1034,27 @@ public class ConstructionTrapCheck {
         BuildingsTemplate depot = template(kept, DEPOT);
         String key = ConstructionControl.keyOf(depot);
         double bookBefore = ck.getForeignBook();
+        final int CITY_DEPOTS = cityDepots(kept, depot);
         Game.BuildResult[] ordered = new Game.BuildResult[2];
         quietly(() -> {
-            kept.setCashForTest(Founding.WEALTHY_CASH);
+            for (Game t : new Game[] { kept, gone }) {
+                t.setCashForTest(Founding.WEALTHY_CASH);
+                t.getLandManager().setOwnedSqFt(t.getLandManager().getOwnedSqFt() + (long) CITY_DEPOTS * depot.getLandSqFt());
+            }
             ordered[0] = kept.buildStack(template(kept, DEPOT), CITY_DEPOTS, false);
-            gone.setCashForTest(Founding.WEALTHY_CASH);
             ordered[1] = gone.buildStack(template(gone, DEPOT), CITY_DEPOTS, false);
         });
         assertTrue("fixture: the city orders " + CITY_DEPOTS + " Construction Depots of its own in the trap, in both twins",
-                ordered[0] == Game.BuildResult.SUCCESS && ordered[1] == Game.BuildResult.SUCCESS && bk.foreignCrewsTakeOrders()
+                ordered[0] == Game.BuildResult.SUCCESS && ordered[1] == Game.BuildResult.SUCCESS && bk.ordersGoAbroad()
                         && bk.underConstructionByName(DEPOT) == CITY_DEPOTS && bg.underConstructionByName(DEPOT) == CITY_DEPOTS
                         && bg.isCitySite(key));
         assertTrue("...served first, as the builders' own depots, in both twins", bk.goesFirst(depot, 0)
                 && bg.goesFirst(template(gone, DEPOT), 0) && bg.buildersOwnOnSite().contains(key) && bk.buildersOwnOnSite().contains(key));
         bits("...and not on his book: the order left it as it was", ck.getForeignBook(), bookBefore);
         Game.ForeignOffer offer = kept.foreignCrewsOffer();
-        assertTrue("fixture: the depots are more points than he is offered, and part of his offer: one is left unbuilt at the month's end",
-                offer.depotPoints() > 0 && offer.points() < CITY_DEPOTS * depot.getConstructionPoints());
+        gone.foreignCrewsOffer();
+        assertTrue("fixture: the depots are more points than the month has, the city's own and his: one is left unbuilt at the month's end",
+                offer.points() > 0 && offer.points() + kept.getBuildingOutput() < CITY_DEPOTS * depot.getConstructionPoints());
 
         assertTrue("the city cancels its depots in one twin", gone.cancelSite(key, true));
         List<Row> keptRows = new ArrayList<>(), goneRows = new ArrayList<>();
@@ -846,8 +1068,9 @@ public class ConstructionTrapCheck {
         assertTrue("fixture: he has a book to fall from, in both twins", ck.getForeignBook() > 0 && cg.getForeignBook() > 0);
         bits("the month's advance was the same in both: his points", stoppedMonth.points, month.points);
         bits("...and his bill", stoppedMonth.bill, month.bill);
-        bits("his book does not fall when the depot is cancelled: it is the twin's, a depot served first never having been on it",
-                cg.getForeignBook(), ck.getForeignBook());
+        // FC2, moved from "his book does not fall when the depot is cancelled": the book is points, and the cancel cuts it first.
+        close("his book falls by the depots' points left when they are cancelled, a depot served first as any order",
+                cg.getForeignBook(), ck.getForeignBook() - refund.points(), 1e-9);
     }
 
     /* ============================ 10. A RUSH BESIDE THE CONTRACTOR ============================ */
@@ -868,8 +1091,8 @@ public class ConstructionTrapCheck {
         Game.ForeignOffer offer = g.foreignCrewsOffer(), again = g.foreignCrewsOffer();
         assertTrue("fixture: the contractor builds this month (his offer is more than none) and the city's own crews have site output too",
                 offer.points() > 0 && siteOutput > 0);
-        assertTrue("...his offer read before the month is the same read twice, so reading it changes nothing",
-                again.points() == offer.points() && again.depotPoints() == offer.depotPoints()
+        assertTrue("...his offer read before the month is the same read twice, so reading it again changes nothing (the first hands the overflow)",
+                again.points() == offer.points() && Double.doubleToLongBits(again.excessShare()) == Double.doubleToLongBits(offer.excessShare())
                         && Double.doubleToLongBits(again.pricePerPoint()) == Double.doubleToLongBits(offer.pricePerPoint()));
         BuildingManager.Plan before = bm.plan(siteOutput + offer.points(), offer.points());
         String key = null;
@@ -922,22 +1145,26 @@ public class ConstructionTrapCheck {
         close("...which is what he was offered: the sites took the whole month", month.points, offer.points(), 1e-9);
         // As section 4: the month restrikes its money constants at its top, so his price is the offer's read before it to a
         // fraction of a percent, not to the bit.
-        close("...at FOREIGN_PRICE the base price of a point, his offer's price as the month struck it", month.bill,
+        close("...at his price, the base and his excess, his offer's price as the month struck it", month.bill,
                 month.points * offer.pricePerPoint(), 5e-3);
 
         // ...and in a city with no contractor the whole share is the city's own: the month it always was.
+        // FC2: the site is a Middle School (2,100 points), not FC1's University: 26,000 points on a calm city's free points put the
+        // queue at home past the threshold, and the contractor would work beside its crews - a city with no contractor at work is
+        // one whose queue at home is within it.
         Game calm = calm(root, "rush-calm");
         BuildingManager bc = calm.getBuildingManager();
+        String calmSite = "Middle School";
         quietly(() -> {
             calm.setCashForTest(Founding.WEALTHY_CASH);
-            calm.buildStack(template(calm, "University"), 1, false);
+            calm.buildStack(template(calm, calmSite), 1, false);
         });
-        String calmKey = ConstructionControl.keyOf(template(calm, "University"));
+        String calmKey = ConstructionControl.keyOf(template(calm, calmSite));
         int calmOutput = calm.getBuildingOutput();
         BuildingManager.Plan calmBefore = bc.plan(calmOutput, 0);
         assertTrue("fixture: the twin that never met the trap has no contractor at work, and the city's own crews have site output",
-                !bc.foreignCrewsTakeOrders() && calm.foreignCrewsOffer().points() == 0 && calmOutput > 0);
-        assertTrue("...and the University's share is over none and under what it owes", calmBefore.shareOf(calmKey) > 0
+                !bc.ordersGoAbroad() && calm.foreignCrewsOffer().points() == 0 && calmOutput > 0);
+        assertTrue("...and the Middle School's share is over none and under what it owes", calmBefore.shareOf(calmKey) > 0
                 && calmBefore.shareOf(calmKey) < calmBefore.owedOf(calmKey));
         assertTrue("the city rushes it there too", calm.rushSite(calmKey, true));
         List<Row> calmRows = new ArrayList<>();
@@ -965,9 +1192,10 @@ public class ConstructionTrapCheck {
         play(g, rows);
         play(g, rows);
         Construction c = g.getSectors().construction();
-        assertTrue("fixture: saved mid-episode: a book, a month of points and a bill, and he takes orders still",
-                c.getForeignBook() > 0 && c.getForeignPointsThisMonth() > 0 && c.getForeignBillThisMonth() > 0
-                        && g.getBuildingManager().foreignCrewsTakeOrders());
+        // FC2: the first month's offer handed him the overflow, so the queue at home is within the threshold now and his book is
+        // what carries the episode on ("he takes orders still" was FC1's floor).
+        assertTrue("fixture: saved mid-episode: a book, a month of points and a bill",
+                c.getForeignBook() > 0 && c.getForeignPointsThisMonth() > 0 && c.getForeignBillThisMonth() > 0);
         quietly(() -> g.saveGame(SCRATCH_SLOT, "constructiontrapcheck-next"));
         Game loaded = new Game(filesOf(root, "next"));
         quietly(() -> loaded.loadGameSave(SCRATCH_SLOT));
@@ -985,7 +1213,9 @@ public class ConstructionTrapCheck {
         bits("...their order book's backlog points", cl.getBacklogPoints(), c.getBacklogPoints());
         bits("...and its unearned revenue", cl.getUnearnedRevenue(), c.getUnearnedRevenue());
         bits("...the price of an order", bl.orderPriceMultiplier(), bm.orderPriceMultiplier());
-        assertTrue("...and he takes orders in both", bm.foreignCrewsTakeOrders() && bl.foreignCrewsTakeOrders());
+        bits("...his threshold (FC2: the load path hands the rate the goods were traded at back to the builders)", bl.thresholdMonths(), bm.thresholdMonths());
+        bits("...his excess at his month", bl.foreignExcessNow(), bm.foreignExcessNow());
+        assertTrue("...and whether an order goes abroad, the same in both", bl.ordersGoAbroad() == bm.ordersGoAbroad());
 
         List<Row> original = new ArrayList<>(), reloaded = new ArrayList<>();
         Row twin = play(g, original), back = play(loaded, reloaded);
@@ -1001,7 +1231,9 @@ public class ConstructionTrapCheck {
         bits("...and its unearned revenue", cl.getUnearnedRevenue(), c.getUnearnedRevenue());
         bits("...the points the sites built", bl.getPointsBuilt(), bm.getPointsBuilt());
         bits("...the price of an order", bl.orderPriceMultiplier(), bm.orderPriceMultiplier());
-        assertTrue("...and whether he takes orders", bl.foreignCrewsTakeOrders() == bm.foreignCrewsTakeOrders());
+        bits("...his threshold", bl.thresholdMonths(), bm.thresholdMonths());
+        bits("...what the month handed him", cl.getHandedAbroadThisMonth(), c.getHandedAbroadThisMonth());
+        assertTrue("...and whether an order goes abroad", bl.ordersGoAbroad() == bm.ordersGoAbroad());
         audited("including the reloaded city's");
     }
 
@@ -1043,15 +1275,16 @@ public class ConstructionTrapCheck {
         for (double from : froms) {
             for (double step : steps) {
                 oneBits &= Double.doubleToLongBits(BuildersShort.meanPremium(from, step, 1)) == Double.doubleToLongBits(BuildersShort.premium(from));
-                oneBits &= Double.doubleToLongBits(BuildersShort.multiplier(from, step, 1, false))
-                        == Double.doubleToLongBits(BuildersShort.multiplier(from, false));
+                // FC2: FC1's multiplier(from, false) is the one with no foreign crews, an endless threshold.
+                oneBits &= Double.doubleToLongBits(BuildersShort.multiplier(from, step, 1, Double.POSITIVE_INFINITY, 0))
+                        == Double.doubleToLongBits(1 + BuildersShort.premium(from));
             }
             for (double step : new double[] { 0, -1, Double.NaN }) {
                 noStepBits &= Double.doubleToLongBits(BuildersShort.meanPremium(from, step, 1000)) == Double.doubleToLongBits(BuildersShort.premium(from));
             }
             noStepBits &= Double.doubleToLongBits(BuildersShort.meanPremium(from, 2, 0)) == Double.doubleToLongBits(BuildersShort.premium(from));
         }
-        assertTrue("meanPremium(from, step, 1) is premium(from) to the bit, and multiplier(from, step, 1) is FC1's multiplier(from), on the grid"
+        assertTrue("meanPremium(from, step, 1) is premium(from) to the bit, and multiplier(from, step, 1) with no foreign crews is FC1's 1 + premium(from), on the grid"
                 + " of queues from nothing to 2,000 months and steps from a twentieth of a month to a hundred", oneBits);
         assertTrue("...and for no step (zero, under nothing, not a number) or no building at all, whatever the order's size: premium(from) too", noStepBits);
         bits("...a queue already endless is the ceiling, for any order", BuildersShort.meanPremium(Double.POSITIVE_INFINITY, 2, 1000), BuildersShort.premium(Double.POSITIVE_INFINITY));
@@ -1107,8 +1340,11 @@ public class ConstructionTrapCheck {
                 + " two months, 3.4e-4 at 22, 2.8e-3 at a hundred (orders of 65 to 100,000 on queues of nothing to 2,000 months)"
                 + (within ? "" : " - " + where), within);
 
-        // Bounds: never above the ceiling, never under nothing, never NaN - for ordinary orders and for the extremes.
+        // Bounds: never above the ceiling, never under nothing, never NaN - for ordinary orders and for the extremes; with the
+        // foreign crews on offer (FC2) at the parity threshold and an excess at a month, and without them.
         boolean bounded = true;
+        double parity = BuildersShort.thresholdMonths(BuildersShort.FOREIGN_EXCESS);
+        double theirs = BuildersShort.excessAt(BuildersShort.FOREIGN_EXCESS, 500, 1_000);
         double[] wild = { -5, 0, 5, 9, 9.0000001, 33, 1e6, 1e300, Double.MAX_VALUE, Double.POSITIVE_INFINITY, Double.NaN };
         double[] wildSteps = { Double.NEGATIVE_INFINITY, -1, 0, 1e-12, 0.05, 2, 100, 1e300, Double.POSITIVE_INFINITY, Double.NaN };
         double biggest = 0, smallest = 1;
@@ -1119,9 +1355,11 @@ public class ConstructionTrapCheck {
                     bounded &= !Double.isNaN(p) && p >= 0 && p <= ceiling;
                     biggest = Math.max(biggest, p);
                     smallest = Math.min(smallest, p);
-                    double m = BuildersShort.multiplier(from, step, n, false);
+                    double m = BuildersShort.multiplier(from, step, n, Double.POSITIVE_INFINITY, 0);
                     bounded &= !Double.isNaN(m) && m >= 1 && m <= 1 + ceiling;
-                    bounded &= BuildersShort.multiplier(from, step, n, true) == BuildersShort.FOREIGN_PRICE;
+                    double f = BuildersShort.multiplier(from, step, n, parity, theirs);
+                    bounded &= !Double.isNaN(f) && f >= 1 && f <= 1 + ceiling;
+                    if (from > parity) bounded &= f == 1 + theirs;
                 }
             }
         }
@@ -1135,7 +1373,7 @@ public class ConstructionTrapCheck {
         }
         out.printf("  %d odd and ordinary orders: the mean premium from %s to %s, the ceiling %s%n", wild.length * wildSteps.length * 10, smallest, biggest, ceiling);
         assertTrue("the mean premium is never above CEILING, never under nothing and never NaN - and the multiplier is between 1 and 1 + CEILING,"
-                + " or FOREIGN_PRICE where the contractor takes the order, whatever the queue, the step or the size", bounded);
+                + " with the foreign crews on offer or without, and their excess exactly from a queue past the threshold, whatever the queue, the step or the size", bounded);
 
         // Rising with the order: more buildings stand in longer queues, so the mean never falls; across the seam at EXACT_SUM_MOST by the stated tolerance only.
         boolean rises = true, seam = true, dearer = true;
@@ -1174,7 +1412,7 @@ public class ConstructionTrapCheck {
         double points = house.getConstructionPoints();
         double nmc = bm.nonMaterialCost(house);
         State s0 = state(g, "calm, free points ample");
-        assertTrue("fixture: the queue is under the knee, the contractor not taking orders", s0.months <= knee && !s0.foreign);
+        assertTrue("fixture: the queue is under the knee, no order going abroad", s0.months <= knee && !s0.foreign);
 
         // The one-argument multiple is FC1's: exactly the three-argument one with one building.
         boolean bitsEqual = true;
@@ -1191,7 +1429,7 @@ public class ConstructionTrapCheck {
         // Just under the knee: one home carries no premium, an order of 600 reaches past the knee and pays more a home.
         roads(g, roadsFor(g, 0.9 * knee));
         State near = state(g, "roads: under the knee");
-        assertTrue("fixture: the queue is just under the knee and the contractor not taking orders", near.months > 0.8 * knee && near.months <= knee && !near.foreign);
+        assertTrue("fixture: the queue is just under the knee and no order going abroad", near.months > 0.8 * knee && near.months <= knee && !near.foreign);
         bitsEqual = true;
         for (double ahead : aheads) {
             for (double each : eachs) {
@@ -1218,20 +1456,23 @@ public class ConstructionTrapCheck {
         assertTrue("fixture: three Houses stay under the knee on it", near.months + 2 * stepMonths <= knee);
         close("an order that stays under the knee pays no premium: three Houses' work a home is one's", three.sticker / 3, one.sticker, 1e-12);
 
-        // Past the knee, and under the floor: the contractor's price is the same for any size of order.
-        roads(g, roadsFor(g, knee + 1.5 * BuildersShort.HALF_MONTHS));
+        // Past the knee within the threshold (FC2: FC1's state stood at the knee and one and a half HALF_MONTHS, past the threshold
+        // now): 600 homes reach past it, the ones past it at his excess, so a home of them still costs more than one of one, and
+        // neither is wholly his price. Then past the threshold: his price is the same for any size of order.
+        double threshold = bm.thresholdMonths();
+        roads(g, roadsFor(g, knee + 0.8 * (threshold - knee)));
         State past2 = state(g, "roads: past the knee");
-        assertTrue("fixture: well past the knee, the contractor not yet taking orders", past2.months > knee + BuildersShort.HALF_MONTHS && !past2.foreign);
+        assertTrue("fixture: past the knee, within the threshold, no order going abroad", past2.months > knee && past2.months <= threshold && !past2.foreign);
         Game.BuildQuote oneP = g.quoteBuild(house, 1), manyP = g.quoteBuild(house, homes);
-        assertTrue("well past the knee a home of 600 still costs more than one of one, and neither is the contractor's price",
-                manyP.sticker / homes > oneP.sticker && manyP.sticker / (homes * nmc) < 1 + ceiling);
+        assertTrue("past the knee a home of 600 still costs more than one of one, and neither is wholly the contractor's price",
+                manyP.sticker / homes > oneP.sticker && manyP.sticker / (homes * nmc) < 1 + past2.share && oneP.sticker / nmc < 1 + past2.share);
         int steps2 = 0;
-        while (!bm.foreignCrewsTakeOrders() && steps2++ < 80) roads(g, 1);
-        assertTrue("fixture: under the floor of the builders' month the contractor takes the orders", bm.foreignCrewsTakeOrders());
+        while (!bm.ordersGoAbroad() && steps2++ < 400) roads(g, 1);
+        assertTrue("fixture: past the threshold the contractor takes the work", bm.ordersGoAbroad());
         Game.BuildQuote oneF = g.quoteBuild(house, 1), manyF = g.quoteBuild(house, homes);
-        close("...his price is the same for one home and for 600: FOREIGN_PRICE times the template's work", manyF.sticker / (homes * nmc),
+        close("...his price is the same for one home and for 600: one and his excess times the template's work", manyF.sticker / (homes * nmc),
                 oneF.sticker / nmc, 1e-12);
-        bits("...and it is FOREIGN_PRICE to the bit, whatever the number of buildings", bm.orderPriceMultiplier(0, points, homes), BuildersShort.FOREIGN_PRICE);
-        bits("...as the one-building multiple is", bm.orderPriceMultiplier(), BuildersShort.FOREIGN_PRICE);
+        bits("...and it is one and his excess to the bit, whatever the number of buildings", bm.orderPriceMultiplier(0, points, homes), 1 + bm.foreignExcessNow());
+        bits("...as the one-building multiple is", bm.orderPriceMultiplier(), 1 + bm.foreignExcessNow());
     }
 }

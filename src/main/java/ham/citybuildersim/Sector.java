@@ -2588,6 +2588,17 @@ public abstract class Sector {
         pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
     }
 
+    /**
+     * ...and one SOLD to the world with no good behind it (FC2): the builders' spare points worked abroad
+     * (sectors.Construction.sellPointsAbroad()). An export (Ledger.exports): revenue, the money audit's "+ <sector>
+     * Exports" and the national accounts' exports, as any sale abroad, with no good's line beside it. No cash moves
+     * here: bank() settles the month at net income, as for every sale.
+     */
+    protected final void bookExportedService(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.exports += amount;
+    }
+
     /* ===================================================================
        THE STATEMENT
        =================================================================== */

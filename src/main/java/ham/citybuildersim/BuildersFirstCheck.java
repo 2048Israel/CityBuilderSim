@@ -511,7 +511,7 @@ public class BuildersFirstCheck {
                         && bu.underConstructionByName(DEPOT) > 0 && bu.getTotalHomes() < 100);
         // ...and the landlords' Houses on site in both twins (FC1): the founding months are the trap in miniature - the
         // sites get nothing of the builders' month - so the foreign contractor takes the orders at its price
-        // (BuildersShort.FOREIGN_PRICE), which the landlords' own plan does not pay, and the homes this section watches
+        // (since FC2 the base and its excess, BuildersShort.excessAt()), which the landlords' own plan does not pay, and the homes this section watches
         // the town build were no longer ordered there. The fixture orders them, as DeathCareFirstCheck.sites() does,
         // out of cash the quote itself sizes. Since BA1 the landlords' own plan orders Houses too (it has no cap to wait
         // on), and the twins' builders differ, so the Houses already on site are not the same in both; the check tops the
