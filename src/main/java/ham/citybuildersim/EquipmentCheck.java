@@ -468,6 +468,8 @@ public class EquipmentCheck {
         g.getFittings().add(industrial.getBuilding().getId(), DRIVE, industry.key(), HELD_FITTING_POINTS);
         check("fixture: Industry has a fitting on site, so the month orders none", g.getFittings().hasOnSite(industry.key()));
         play(g, 1);
+        // ...and the held job goes with the month, so it does not outlive the section: 4, 6 and 7 play this town on (REV-PW2b).
+        g.getFittings().clear();
         check("fixture: the observed month keeps the same unfitted bakery counts",
                 bakery.getQuantity() == 2 && industrial.getQuantity() == industrialAll
                         && bakery.getUnfitted(DRIVE) == 1 && industrial.getUnfitted(DRIVE) == industrialAll);
