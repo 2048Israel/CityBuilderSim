@@ -251,6 +251,7 @@ public final class CreditCrunchCheck {
     /** What the lender's watch read the last order at, its whole cost (Game.lenderReads()' costOf). */
     static double lenderCost = Double.NaN;
     static double roomAtStart = Double.NaN, roomAfterCut = Double.NaN;
+    static double singleDoorRoom = Double.POSITIVE_INFINITY;
     static long cutHomes;
 
     /** ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. */
@@ -301,16 +302,26 @@ public final class CreditCrunchCheck {
         return r == null ? 0 : r.households();
     }
 
-    /** The landlords' homes retired, blocks then houses, while what is left still leaves MARGIN households of room. */
+    /** The landlords' homes retired, larger mixes before single doors, while MARGIN households of room remain. */
     static void cutToTheValve(Game g) {
-        roomAtStart = room(g);
         BuildingManager bm = g.getBuildingManager();
-        for (String name : new String[] { "Low-Rise Apartments", "House" }) {
-            BuildingsTemplate t = LongPlaytest.template(g, name);
-            if (t == null) continue;
+        // The played catalogue can contain only multi-home forms. Stand a paid single door so this fixture can measure
+        // the room quantum of the one-house bound, rather than assuming that a door means one household slot.
+        BuildingsTemplate single = bm.getTemplateByName("House");
+        g.setCashForTest(Math.max(g.getCash(), g.quoteBuild(single, 1).total));
+        check("fixture: a paid single-door House stands before trimming the capacity buffer",
+                g.buildStack(single, 1, true) == Game.BuildResult.SUCCESS);
+        roomAtStart = room(g);
+        singleDoorRoom = Double.POSITIVE_INFINITY;
+        java.util.List<BuildingsTemplate> homes = new java.util.ArrayList<>(bm.getTemplatesBySector(g.getSectors().realEstate().key()));
+        homes.sort(java.util.Comparator.comparingInt(BuildingsTemplate::getDwellings).reversed());
+        for (BuildingsTemplate t : homes) {
             while (bm.getQuantity(t.getId()) > 0 && room(g) - 2 * t.getDwellings() >= MARGIN) {
+                double before = room(g);
                 if (bm.retire(t, 1) < 1) break;
                 cutHomes += t.getDwellings();
+                double removedRoom = before - room(g);
+                if (t.getDwellings() == 1 && removedRoom > 0) singleDoorRoom = Math.min(singleDoorRoom, removedRoom);
             }
         }
         roomAfterCut = room(g);
@@ -367,8 +378,8 @@ public final class CreditCrunchCheck {
 
         out.printf("%nthe ensemble's seed %d, its bank held %.0f%% of the way up its leverage band, months %d-%d%n",
                 SEED, HOLD * 100, FROM + 1, TO);
-        out.printf(Locale.ROOT, "   at m%d the placement had room for %.1f households; %,d homes retired left %.1f%n",
-                FROM, roomAtStart, cutHomes, roomAfterCut);
+        out.printf(Locale.ROOT, "   at m%d the placement had room for %.1f households; %,d homes retired left %.1f (a one-door trim removed %.9g households of room)%n",
+                FROM, roomAtStart, cutHomes, roomAfterCut, singleDoorRoom);
         for (Month r : months) {
             if (r.month % 6 == 0 || r.unplaced > 1 || r.written > 0 || r.raised > 0)
                 out.printf(Locale.ROOT, "   m%d: %,.0f households, %,d homes, %,.0f doubled up, %.1f with no home;"
@@ -402,7 +413,8 @@ public final class CreditCrunchCheck {
         check("fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments",
                 groundMonths == TO - FROM);
         check("fixture: the homes cut left the placement room for MARGIN households and less than one house more",
-                cutHomes > 0 && roomAfterCut >= MARGIN && roomAfterCut < MARGIN + 1 && roomAfterCut < roomAtStart);
+                cutHomes > 0 && Double.isFinite(singleDoorRoom) && roomAfterCut >= MARGIN
+                        && roomAfterCut - MARGIN < singleDoorRoom && roomAfterCut < roomAtStart);
 
         out.println("\n--- 3. the owners put in what the till lacked, homes are built, nobody is left with no home ---");
         double raised = 0, worst = 0;

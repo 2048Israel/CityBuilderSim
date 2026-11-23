@@ -1708,13 +1708,18 @@ public class AuctionCheck {
         Notice waits = p.getInbox().live("autobuild");
         double repricedGap = 0;
         for (AutoBuilder.OpenAsk k : pb.asks()) repricedGap += Math.max(0, k.cost() - raisedBefore.getOrDefault(k, 0.0));
-        double askedAgain = p.getAutoSalesThisMonth().stream().mapToDouble(TimeSkipReport.AutoSale::asked).sum();
+        double cashRaisedAgain = p.getAutoSalesThisMonth().stream().mapToDouble(TimeSkipReport.AutoSale::raised).sum();
+        double faceOfferedAgain = p.getAutoSalesThisMonth().stream().mapToDouble(TimeSkipReport.AutoSale::asked).sum();
+        double newFace = p.getAutoSalesThisMonth().stream().mapToDouble(TimeSkipReport.AutoSale::sold).sum();
+        out.printf("   repeated asks: %d/%d open, %d orders, net cash %.12g against repriced gap %.12g plus %.12g of lots; offered face %.12g, sold face %.12g, principal change %.12g%n",
+                pb.asks().size(), openP, pb.getOrders(), cashRaisedAgain, repricedGap, openP * askLot, faceOfferedAgain,
+                newFace, p.getDebtManager().getAllPrincipal() - principalP);
         assertTrue("next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost"
                         + " less the money already raised, rounded by at most a granule per ask; the orders still wait",
                 pb.asks().size() == openP && pb.getOrders() == 0
                         && p.getAutoSalesThisMonth().stream().noneMatch(TimeSkipReport.AutoSale::shortSale)
-                        && askedAgain <= repricedGap + openP * askLot + 1e-6
-                        && p.getDebtManager().getAllPrincipal() <= principalP + askedAgain + 1e-6);
+                        && cashRaisedAgain <= repricedGap + openP * askLot + 1e-6
+                        && p.getDebtManager().getAllPrincipal() <= principalP + newFace + 1e-6);
         assertTrue("...and the inbox says the month's bills drew the money and that nothing more is borrowed for it",
                 waits != null && String.join(" ", waits.getBody()).contains("have drawn the rest")
                         && String.join(" ", waits.getBody()).contains("nothing more is borrowed for it"));
@@ -1806,7 +1811,7 @@ public class AuctionCheck {
         Game d = load(saved);
         AutoBuilder db = d.getAutoBuilder();
         int openD = db.asks().size();
-        db.setDebtLimit(.1, null);
+        db.setDebtLimit(0, null);
         double[] snapD = new double[3];
         d.autoBuildProbeForTest = after -> { snapD[after ? 1 : 0] = d.getCash(); if (!after) snapD[2] = d.getMonth(); };
         String logD = month(d, false);

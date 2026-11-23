@@ -2000,3 +2000,32 @@ noise .308/1.173/2.269 points. Business borrowing still falls (1,473 at
 feedbacks can oppose that channel. The expanded component report is
 running on RES3 too. No rent, price-index, credit or macro calibration is
 changed to make the curve pass.
+
+AuctionCheck now finishes exit 0, and CreditCrunchCheck finishes exit 0.
+The latter has a real paid single-door input, retires 310 homes across
+the catalogue, leaves room 13.4 above MARGIN 12, and measures the actual
+one-door quantum as 2.00000000 households. Its leverage, mortgage, money
+and no-more-than-one-unplaced-household checks pass. Final raw logs:
+`target/RES3-dry-last-AuctionCheck.{txt,log}` and
+`target/RES3-dry-last-CreditCrunchCheck.{txt,log}`.
+
+The monetary component report localises the counter-channel: at 3 versus
+10 percent, groceries slow from 10.6249 to 3.00265 percent a year, while
+the rent component accelerates from 5.00121 to 10.6751 percent. Rent has
+71.83-72.11 percent of the basket. Thus the borrowing/goods response is
+present, but the rent component outweighs it in this fixed-FX toy. This
+is an owned observed outcome, not a waived conservation finding.
+
+Two predeclared input controls are being tried in a temporary curve-only
+diagnostic, without changing any rate, direction, minimum-effect or noise
+assertion: the model's wealthy founding cash (to remove fiscal borrowing),
+and the same cash plus one paid standing specimen of each currently known
+residential form, with subsequent private housing orders held (to remove
+the transitional supply mix). Both retain actual matching, class rent
+updates, utility/repair bills and every quoted/funded purchase. The first
+control has zero public principal and advances at every reported close
+but reproduces the original curve exactly: 6.46/8.64/9.16/8.15. Fiscal
+borrowing is not the explanation. The stocked control is still running.
+Raw outputs are `target/RES3-policy-wealthy.{txt,log}` and
+`target/RES3-policy-stocked.{txt,log}`. This diagnostic has not been
+adopted as a final fixture, and its temporary shortcut will be removed.
