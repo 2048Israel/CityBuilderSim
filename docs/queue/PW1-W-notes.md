@@ -96,7 +96,9 @@ f937d2c22 (0.9.192, PW5, SAVE_FORMAT 63). The row: [PW1 notes §6](PW1-notes.md)
   rule's 308.66, the losses and the season. The label, the fixture and the other assertions are main's.
 - ★ **PowerPriceCheck 5's identity** gains the water works' power as a line (the electricity income is revenue less
   payroll less power bought less fuel plus the power sold to the water's books), with a fixture line that the town
-  paid it: PW1-W's new line in an identity, not a moved premise. WaterCheck is main's: its town has no sea works.
+  paid it: PW1-W's new line in an identity, not a moved premise. **MaterialsCheck's** (the utility pays the works
+  out of its electricity income) gains the same line and fixture line: the first dry run found it red, a harness this
+  batch had not run. WaterCheck is main's: its town has no sea works.
 - ★ **SpreadPlanner.ownCosts()** (gen x the class tariff, many planners and harnesses) has PW1-G's flaw; left as
   queued **PW1-S**, so this batch does not move every spread planner.
 
@@ -137,6 +139,9 @@ REV-PW1-W 1):
   RecipeCheck, PowerDispatchCheck, BooksCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, HydroCheck,
   ElectrolyserCheck, HydrogenSteelCheck, WoodProductsCheck, BuildAdviceCheck, NewUnitCheck, HistoricalRecipeCheck;
   KeptCheck known red only (main's). `./batch-check.sh --fast` green.
+- **The first dry run** (68f01ebb7, 2026-11-23): one new red, MaterialsCheck's "the utility pays the works what their
+  statements booked, out of its electricity income": its identity left out the water's payment for the works'
+  power, which this batch adds to the electricity income. Mended as PowerPriceCheck 5 (§2); MaterialsCheck green.
 - `tools/pick.sh`: ALL (AllChecks changed). Its review line says "not needed"; the brief owes a stranger's money
   review, and saved state is added, so a saves review too.
 

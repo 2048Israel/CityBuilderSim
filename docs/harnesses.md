@@ -2,7 +2,7 @@
 
 Generated 2026-11-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**246 harness files, 28,114 labelled assertions.** AllChecks runs 246 of them.
+**246 harness files, 28,115 labelled assertions.** AllChecks runs 246 of them.
 
 ## Which harnesses read which class
 
@@ -22549,7 +22549,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L611 ...Retail's spare money, in particular: times the scale
   - L612 ...and Materials' earnings and its money's income scale together, so its return at a scaled price is unmoved
 
-## MaterialsCheck.java - 126 labelled assertions
+## MaterialsCheck.java - 127 labelled assertions
 
 > The materials chains, checked: the shared machinery every chain stands on
 > (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and
@@ -22597,117 +22597,118 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L509 its statement's powerSold is the surplus at the works' price (the struck book's), undimmed by the grid, and in its revenue past its sales
   - L512 ...and in its operating income, every cost taken off the revenue it is in
   - L515 the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever
-  - L518 the utility pays the works what their statements booked, out of its electricity income
-  - L522 the month's money audit closes, the pair noted - the sectors' power sold and the utility's power bought - each off its
-  - L530 its powerSold crosses a save (SectorState), to the bit, and the twin's utility pays the same
-- **L538 5. consumables: bought from the world at the rate and the exchange factor, an import, in TRADE**
-  - L549 a works with none buys none, and books nothing
-  - L554 fixture: two Electric Arc Furnaces with 35 (world thousands) of consumables a month each, the world's money at 1.37
-  - L557 bought: their nameplate at the operating rate and the exchange factor, an import named Consumables on the input line
-  - L561 ...struck: in the statement's imports and inputs, and named among its inputs that are not a good
-  - L567 in the town, the bakeries' consumables are in Industry's imports, and the audit sees them leave in TRADE and closes
-- **L576 6. a processing sector's plan: what a works would make less what it would use, at the margin, less its costs**
-  - L597 a candidate earns what it makes at outValue() less what it uses at inValue(), at the rate, less its running and
-  - L601 ...and the last one standing the mirror: what it makes at inValue(), what losing it would cost the city, and what it
-  - L605 a refusal of its feed is the first gate it fails (a chain's own feed gate; none by default)
-  - L614 in a town Iron & Steel's candidates are its nine works (the two furnaces since 0.7.120, and since 0.7.123 the
-  - L621 ...and it orders the best that passes every gate, or says why not
-- **L629 7. idle, then shed: a kind of works whose last one loses money six months running may be sold**
-  - L648 fixture: four Electric Arc Furnaces whose last one loses money, one Steel Mini-Mill that earns
-  - L660 each month the losing kind counts one more idle month, and the earning kind none
-  - L661 ...under IDLE_MONTHS no kind is singled out: both are the distress rule's, and the spare-capacity rule has no
-  - L664 at IDLE_MONTHS the losing kind may be sold and the earning kind may not
-  - L665 ...the spare-capacity rule's measure is nothing used against its buildings, one a building
-  - L670 ...so, losing money six months, the rule sells a quarter of the foundries and nothing else
-  - L675 the idle months cross a save, by the template's id (extras idleMonths.<id>), the working kind's none
-  - L684 a month the foundry earns clears its count, and no kind may be singled out again
-- **L691 8. Mining on the extraction base: iron's counts, a mine on a free site, the dig, spare once worked out**
-  - L698 Mining is an ExtractionSector on iron's ground, its good iron ore
-  - L701 its sites owned and worked are the iron ones (LandManager.getIronDeposits(), Game.minesCommitted())
-  - L705 with free sites and ore in the ground it sinks an Iron Mine, or says why not (the staff, the ground)
-  - L713 its dig is the iron's tally (LandManager.extractIron()): what it lifted is what the ground gave, and kept for the land
-  - L717 ...with every site worked there is none left to dig, and while there is ore its plant is not spare
-  - L722 once the ore is out all its plant is spare: nothing used against its nameplate
-- **L747 9. the iron rows of batch I3 at parity: the study's four cases and its years abroad, to its rounding**
-  - L753 fixture: the game's founding tariffs are the study's: D$10 a kW a month, D$50 a unit of water
-  - L766 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
-  - L777 the
-  - L782 ...and its cost over a year of what it would sell abroad is the study's
-  - L799 where caseEarns() and the study differ: the mine's diesel is a feed at the case's price, not D$0.60 a litre in its
-- **L808 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads**
-  - L811 the floor is at or past the split's format (GameVersion): a save one format older is no longer readable, and one
-  - L831 fixture: a town whose two furnaces bought scrap three months, saved by this build in its own format, SCRAP in it by name
-  - L843 its twin written down to format 36 and stamped 0.7.115 is refused in P7's words: the build that saved it, which still
-  - L847 ...nothing of it applied, and its file byte for byte as it was
-  - L855 this build's own save loads, its month, the scrap market's price and the furnaces' scrap as saved
-- **L894 11. the integrated route's rows of batch I4 at parity: the study's four cases and its years abroad, to its rounding**
-  - L905 the
-  - L918 its consumables are the study's running cost less its wages, the power it buys from the grid and its water
-  - L930 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
-  - L935 ...and its cost over a year of what it would sell abroad is the study's
-  - L951 the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k
-  - L963 on imported feed for export (case A) no works of the route earns past 0.25% of its cost a month at parity (the study's
-- **L970 12. old steel: the four sources at 85%, a yard buying it pro rata at 70% of scrap's export price, the rest to landfill**
-  - L982 each source arises at RECOVERY (85%) of the steel in it, kept by its seller: 100 cars at 0.9 t the households', two Houses
-  - L1002 the yards take a quarter of what stands: from every seller a quarter of theirs, each paid its tonnes at the price; the
-  - L1010 ...and asked for more than arose they take what arose, no more, and nothing goes to landfill
-  - L1013 ...a month nothing arose records nothing, and pays nobody
-  - L1031 the households are paid for their cars into their savings, all of it, by the cars each scrapped
-  - L1041 fixture: a town's Scrap Yard standing, its pool handed 4,000 t of old steel from the households' cars and 3,000 t from
-  - L1050 the yard makes its scrap from what arose, at 1.05 t of old steel a tonne, no more than arose, and buys it at 70% of scrap's
-  - L1057 each seller paid pro rata: the households into their savings and on the yard's input billed by them, the fabricators by
-  - L1069 struck: the fabricators' sale is \"
-  - L1079 a second yard is refused its feed while the old steel past what the yard standing takes is under FEED_GATE of one
-  - L1093 ...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and
-  - L1102 a yard keeps no van for its 10,000 t of scrap, which is bulk and goes by Haulage's trucks (FR2): no van, no van's capital
-  - L1134 in a town played four months, the yard buying each month's old steel: every month's audit closes, the households' part
-  - L1147 the pool crosses a save (DataSave.oldMetal) to the bit - what stands by seller and source, the last month's record and
-- **L1160 13. captive coke and pig iron: the ovens' coke to the furnaces first, their pig iron to the shop, nothing booked for either**
-  - L1176 fixture: Iron & Steel's real rows, one Coke Ovens, two Mini Blast Furnaces and one Oxygen Steel Shop, the coke and pig iron
-  - L1180 the coke: the furnaces' 13,500 t met first out of the ovens' 40,000, the market bid none of it
-  - L1184 ...and what the ovens make for the market - for home, for the ship and idled - is the 26,500 t past it
-  - L1188 the pig iron: all the furnaces' 30,000 t to the shop, none to the market, and the shop bids for the 216,500 t past it
-  - L1192 ...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought
-  - L1209 its vans move its GOODS tonnes less what the works hands itself (Sector.tonnesMoved(), FR2): the route's coke, pig iron, ore,
-- **L1219 14. the works' own power: the ovens and the furnace sell what they make past their draws, the shop buys the rest**
-  - L1240 fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, four months on
-  - L1244 its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the works' price, in its revenue past its sales;
-  - L1248 the utility pays the works what their statement booked, and the grid counts their surplus as generation
-  - L1251 the month's money audit closes
-- **L1286 15. Iron Mining's rows of batch I5 at parity: by type and size, the study's four cases and its years abroad, to its rounding**
-  - L1294 the Iron Mine (14) stands on one site of a hematite field, ore as dug (ANY until batch I5)
-  - L1302 the
-  - L1313 ...its ground the iron sites it takes, an iron site's ground each (Resource.IRON.siteKm2())
-  - L1320 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
-  - L1331 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
-  - L1334 ...and its cost over a year of what it would sell abroad is the study's
-  - L1347 the open pit burns the Iron Mine's diesel a tonne; the magnetite works burn none
-- **L1355 16. a mine fits its field: twenty sites of one field of its type for a large mine, never magnetite works on hematite**
-  - L1365 fixture: a town's iron by fiat, one field of 19 hematite sites (ground by fiat is the first type), none magnetite
-  - L1371 a works of twenty sites is refused on a field of nineteen: no deposit for it, before the money
-  - L1373 ...where one-site Iron Mines fit, nineteen and not twenty
-  - L1375 a magnetite works is refused on hematite, nineteen sites free: the small one and the large
-  - L1380 ...and the plan orders the mine that fits, the Iron Mine - never the pit or a magnetite works
-  - L1384 on a field of twenty the works of twenty fits, one and not two
-  - L1390 ...and the plan orders the one of the two that earns more on its whole cost, its freight in it
-  - L1399 a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead
-  - L1403 with the pit standing its twenty sites are taken: not one Iron Mine more fits, and the sites committed are twenty
-  - L1407 ...a twenty-first site takes one more Iron Mine, and still no magnetite works
-- **L1436 17. on real fields of both types: what fits, the plan's choice, the dig by type with W exact, and retirement by type**
-  - L1461 fixture: a city on world
-  - L1468 as many twenty-site works fit as the fields of their type hold twenty sites, each on one field: the open pits on
-  - L1474 ...one-site works on every site of their type and not one more; magnetite works never on the hematite's
-  - L1496 the plan's order is the best earnings on the whole cost, freight in, of the mines that fit, staff and pay
-  - L1500 ...its freight in what it earns and costs: the open pit's vans carry its goods alone, the diesel it burns and not its ore
-  - L1521 fixture: two Iron Mines and two magnetite works standing, a month's ore asked of them at the sector's rate
-  - L1523 each type's share of the ask comes out of its own ground: the hematite as dug, the magnetite three tonnes of rock a tonne
-  - L1528 ...E rising by the ground taken out, the land office's month the same tonnes, and W by type to the tonne
-  - L1531 ...and from the first dig by type the save carries E by type
-  - L1535 while both types have ore no mine is spare, and any may be sold
-  - L1540 once the hematite is out the Iron Mines are spare - nothing used against their nameplate - while the magnetite has ore
-  - L1543 ...and only they may be sold, by the spare-capacity rule and the distress rule alike
-  - L1545 ...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be
-  - L1550 ...and the next month's dig gives the hematite mines nothing and the magnetite works their share
+  - L519 fixture: the town's water works drew power the water's books paid for
+  - L520 the utility pays the works what their statements booked, out of its electricity income, which gains what the water's books
+  - L525 the month's money audit closes, the pair noted - the sectors' power sold and the utility's power bought - each off its
+  - L533 its powerSold crosses a save (SectorState), to the bit, and the twin's utility pays the same
+- **L541 5. consumables: bought from the world at the rate and the exchange factor, an import, in TRADE**
+  - L552 a works with none buys none, and books nothing
+  - L557 fixture: two Electric Arc Furnaces with 35 (world thousands) of consumables a month each, the world's money at 1.37
+  - L560 bought: their nameplate at the operating rate and the exchange factor, an import named Consumables on the input line
+  - L564 ...struck: in the statement's imports and inputs, and named among its inputs that are not a good
+  - L570 in the town, the bakeries' consumables are in Industry's imports, and the audit sees them leave in TRADE and closes
+- **L579 6. a processing sector's plan: what a works would make less what it would use, at the margin, less its costs**
+  - L600 a candidate earns what it makes at outValue() less what it uses at inValue(), at the rate, less its running and
+  - L604 ...and the last one standing the mirror: what it makes at inValue(), what losing it would cost the city, and what it
+  - L608 a refusal of its feed is the first gate it fails (a chain's own feed gate; none by default)
+  - L617 in a town Iron & Steel's candidates are its nine works (the two furnaces since 0.7.120, and since 0.7.123 the
+  - L624 ...and it orders the best that passes every gate, or says why not
+- **L632 7. idle, then shed: a kind of works whose last one loses money six months running may be sold**
+  - L651 fixture: four Electric Arc Furnaces whose last one loses money, one Steel Mini-Mill that earns
+  - L663 each month the losing kind counts one more idle month, and the earning kind none
+  - L664 ...under IDLE_MONTHS no kind is singled out: both are the distress rule's, and the spare-capacity rule has no
+  - L667 at IDLE_MONTHS the losing kind may be sold and the earning kind may not
+  - L668 ...the spare-capacity rule's measure is nothing used against its buildings, one a building
+  - L673 ...so, losing money six months, the rule sells a quarter of the foundries and nothing else
+  - L678 the idle months cross a save, by the template's id (extras idleMonths.<id>), the working kind's none
+  - L687 a month the foundry earns clears its count, and no kind may be singled out again
+- **L694 8. Mining on the extraction base: iron's counts, a mine on a free site, the dig, spare once worked out**
+  - L701 Mining is an ExtractionSector on iron's ground, its good iron ore
+  - L704 its sites owned and worked are the iron ones (LandManager.getIronDeposits(), Game.minesCommitted())
+  - L708 with free sites and ore in the ground it sinks an Iron Mine, or says why not (the staff, the ground)
+  - L716 its dig is the iron's tally (LandManager.extractIron()): what it lifted is what the ground gave, and kept for the land
+  - L720 ...with every site worked there is none left to dig, and while there is ore its plant is not spare
+  - L725 once the ore is out all its plant is spare: nothing used against its nameplate
+- **L750 9. the iron rows of batch I3 at parity: the study's four cases and its years abroad, to its rounding**
+  - L756 fixture: the game's founding tariffs are the study's: D$10 a kW a month, D$50 a unit of water
+  - L769 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
+  - L780 the
+  - L785 ...and its cost over a year of what it would sell abroad is the study's
+  - L802 where caseEarns() and the study differ: the mine's diesel is a feed at the case's price, not D$0.60 a litre in its
+- **L811 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads**
+  - L814 the floor is at or past the split's format (GameVersion): a save one format older is no longer readable, and one
+  - L834 fixture: a town whose two furnaces bought scrap three months, saved by this build in its own format, SCRAP in it by name
+  - L846 its twin written down to format 36 and stamped 0.7.115 is refused in P7's words: the build that saved it, which still
+  - L850 ...nothing of it applied, and its file byte for byte as it was
+  - L858 this build's own save loads, its month, the scrap market's price and the furnaces' scrap as saved
+- **L897 11. the integrated route's rows of batch I4 at parity: the study's four cases and its years abroad, to its rounding**
+  - L908 the
+  - L921 its consumables are the study's running cost less its wages, the power it buys from the grid and its water
+  - L933 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
+  - L938 ...and its cost over a year of what it would sell abroad is the study's
+  - L954 the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k
+  - L966 on imported feed for export (case A) no works of the route earns past 0.25% of its cost a month at parity (the study's
+- **L973 12. old steel: the four sources at 85%, a yard buying it pro rata at 70% of scrap's export price, the rest to landfill**
+  - L985 each source arises at RECOVERY (85%) of the steel in it, kept by its seller: 100 cars at 0.9 t the households', two Houses
+  - L1005 the yards take a quarter of what stands: from every seller a quarter of theirs, each paid its tonnes at the price; the
+  - L1013 ...and asked for more than arose they take what arose, no more, and nothing goes to landfill
+  - L1016 ...a month nothing arose records nothing, and pays nobody
+  - L1034 the households are paid for their cars into their savings, all of it, by the cars each scrapped
+  - L1044 fixture: a town's Scrap Yard standing, its pool handed 4,000 t of old steel from the households' cars and 3,000 t from
+  - L1053 the yard makes its scrap from what arose, at 1.05 t of old steel a tonne, no more than arose, and buys it at 70% of scrap's
+  - L1060 each seller paid pro rata: the households into their savings and on the yard's input billed by them, the fabricators by
+  - L1072 struck: the fabricators' sale is \"
+  - L1082 a second yard is refused its feed while the old steel past what the yard standing takes is under FEED_GATE of one
+  - L1096 ...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and
+  - L1105 a yard keeps no van for its 10,000 t of scrap, which is bulk and goes by Haulage's trucks (FR2): no van, no van's capital
+  - L1137 in a town played four months, the yard buying each month's old steel: every month's audit closes, the households' part
+  - L1150 the pool crosses a save (DataSave.oldMetal) to the bit - what stands by seller and source, the last month's record and
+- **L1163 13. captive coke and pig iron: the ovens' coke to the furnaces first, their pig iron to the shop, nothing booked for either**
+  - L1179 fixture: Iron & Steel's real rows, one Coke Ovens, two Mini Blast Furnaces and one Oxygen Steel Shop, the coke and pig iron
+  - L1183 the coke: the furnaces' 13,500 t met first out of the ovens' 40,000, the market bid none of it
+  - L1187 ...and what the ovens make for the market - for home, for the ship and idled - is the 26,500 t past it
+  - L1191 the pig iron: all the furnaces' 30,000 t to the shop, none to the market, and the shop bids for the 216,500 t past it
+  - L1195 ...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought
+  - L1212 its vans move its GOODS tonnes less what the works hands itself (Sector.tonnesMoved(), FR2): the route's coke, pig iron, ore,
+- **L1222 14. the works' own power: the ovens and the furnace sell what they make past their draws, the shop buys the rest**
+  - L1243 fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, four months on
+  - L1247 its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the works' price, in its revenue past its sales;
+  - L1251 the utility pays the works what their statement booked, and the grid counts their surplus as generation
+  - L1254 the month's money audit closes
+- **L1289 15. Iron Mining's rows of batch I5 at parity: by type and size, the study's four cases and its years abroad, to its rounding**
+  - L1297 the Iron Mine (14) stands on one site of a hematite field, ore as dug (ANY until batch I5)
+  - L1305 the
+  - L1316 ...its ground the iron sites it takes, an iron site's ground each (Resource.IRON.siteKm2())
+  - L1323 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
+  - L1334 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
+  - L1337 ...and its cost over a year of what it would sell abroad is the study's
+  - L1350 the open pit burns the Iron Mine's diesel a tonne; the magnetite works burn none
+- **L1358 16. a mine fits its field: twenty sites of one field of its type for a large mine, never magnetite works on hematite**
+  - L1368 fixture: a town's iron by fiat, one field of 19 hematite sites (ground by fiat is the first type), none magnetite
+  - L1374 a works of twenty sites is refused on a field of nineteen: no deposit for it, before the money
+  - L1376 ...where one-site Iron Mines fit, nineteen and not twenty
+  - L1378 a magnetite works is refused on hematite, nineteen sites free: the small one and the large
+  - L1383 ...and the plan orders the mine that fits, the Iron Mine - never the pit or a magnetite works
+  - L1387 on a field of twenty the works of twenty fits, one and not two
+  - L1393 ...and the plan orders the one of the two that earns more on its whole cost, its freight in it
+  - L1402 a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead
+  - L1406 with the pit standing its twenty sites are taken: not one Iron Mine more fits, and the sites committed are twenty
+  - L1410 ...a twenty-first site takes one more Iron Mine, and still no magnetite works
+- **L1439 17. on real fields of both types: what fits, the plan's choice, the dig by type with W exact, and retirement by type**
+  - L1464 fixture: a city on world
+  - L1471 as many twenty-site works fit as the fields of their type hold twenty sites, each on one field: the open pits on
+  - L1477 ...one-site works on every site of their type and not one more; magnetite works never on the hematite's
+  - L1499 the plan's order is the best earnings on the whole cost, freight in, of the mines that fit, staff and pay
+  - L1503 ...its freight in what it earns and costs: the open pit's vans carry its goods alone, the diesel it burns and not its ore
+  - L1524 fixture: two Iron Mines and two magnetite works standing, a month's ore asked of them at the sector's rate
+  - L1526 each type's share of the ask comes out of its own ground: the hematite as dug, the magnetite three tonnes of rock a tonne
+  - L1531 ...E rising by the ground taken out, the land office's month the same tonnes, and W by type to the tonne
+  - L1534 ...and from the first dig by type the save carries E by type
+  - L1538 while both types have ore no mine is spare, and any may be sold
+  - L1543 once the hematite is out the Iron Mines are spare - nothing used against their nameplate - while the magnetite has ore
+  - L1546 ...and only they may be sold, by the spare-capacity rule and the distress rule alike
+  - L1548 ...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be
+  - L1553 ...and the next month's dig gives the hematite mines nothing and the magnetite works their share
 
 ## MedicineCheck.java - 64 labelled assertions
 
