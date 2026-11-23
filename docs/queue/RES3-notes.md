@@ -1825,3 +1825,76 @@ With those inputs, the full AutoBuildCheck suite passes every assertion.
 driver records its exit after maps/Stale. The earlier 19-red run is a
 failed fixture iteration, not a waived result. HydroCheck, IslandLinkCheck,
 LandmassCheck, ChildcareCheck and AuctionCheck follow sequentially.
+
+AutoBuildCheck, HydroCheck and IslandLinkCheck finish exit 0 on the repaired
+town. IslandLinkCheck's generated-world case now places 16 orders, meets
+ground shortage in 142 of its 240 months, and still orders no link, bridge
+or off-home port; the Earth link and both kinds of crossings pass too.
+
+The first frozen-queue LandmassCheck iteration clears the shell but fails
+the standing terminal's fixture: no repair headroom is caused in this tiny
+town, and it stalls 24 months after its first 437 site points. Do not lift
+the stall or work bounds. Prepare its crews before the three demolition
+scenarios: leave homes and construction available while adding paid
+standing depots and playing actual labour months, with linked home ground
+to house the workers; hold other sectors and bank branches. Stop only when
+staffed site output exceeds the repairs of all three future terminals,
+then freeze every private sector. The initial wait includes any work
+already queued during this preparation, and no later private orders can
+invalidate its bound. Other landmass growth cases still invest normally.
+
+The focused section-6 diagnostic passes all three cases: the standing
+terminal finishes in 19 months (9,096 site points against 16,102 initially
+owed), the lone terminal in 17 (16,123 against 16,102), and the shell in six
+(4,023 against 8,197). Every exact release, island placement and on-site
+save assertion in the section passes. Raw
+`target/RES3-demolition-prep.{txt,log}`; its temporary main shortcut is
+removed. These are diagnostic results, not a substitute for the full
+LandmassCheck now running in the serial final harness driver.
+
+The other fixture mends awaiting that driver are explicit about the actual
+catalogue and costs. CreditCrunchCheck trims all residential forms, larger
+mixes first, retaining its exact MARGIN bound. BuildersFirstCheck funds the
+private top-up's complete `doorPriceOf`, including ground, starting from
+nonnegative cash, and asserts the private order was actually placed.
+ForestryCheck holds unrelated private orders before the hand clearing so
+new home construction cannot add salvage during its one-month accounting
+comparison. TreasuryCheck retains its failed note fixture, prints the two
+surpluses that size its notes, and stops that dependent section if a note
+is absent instead of dereferencing null; it does not report a passed
+rollover or netting law on missing paper. CurrencyRegimeCheck and
+MonetaryCheck add read-only phase/rent reports beside their unchanged
+assertions to trace the remaining played-city premises.
+
+The remaining map/page/rail fixture lines are named individually, not as
+suite waivers. PlanCheck's contrasting reuse geometry now retains 74 of
+74 boxes with both algorithms, so the strict advantage condition is
+absent (queued FS6). KeptCheck's additional three NEW lines are in the
+queued FS5 sections: its held-rule holding set grows from 62 to 162 with
+100 other building lots; its literal research reach sentence is false
+while the preceding full card-to-model equality passes; and its effect
+fixture has zero moved rows after the held month against three while
+dragged, while the held thumb, node and text laws pass. The fund page's
+other retention line and the 1,796.5 MiB heap line were already named on
+main, not NEW here: `unnamed.txt` contains just those three new assertions.
+The kept dry logs remain the authority.
+
+HomeRailCheck's boundary uses 175,253 of 199,167 tonnes, leaving a city
+share .898104529914984 for 26,626 tonnes, so it has not caused saturation.
+Its interior fixture leaves 91,376 tonnes after boundary traffic, enough
+for all 58,561 city tonnes, so share 1 is correct and the strict interior
+premise (and its dependent check) is absent. HT1-H already names that
+guarded played-city search; the mends list includes the saturation case
+too. RailDepotCheck's sizing snapshot has 97,209 bulk tonnes and does not
+meet its more-than-two-spurs premise; the computed count is zero, so the
+subsequent zero dealing at zero siding capacity is correct. FS7 shipped;
+the mends list asks that these two lines join HT1-H's played-city cases.
+The ship rows scope each literal condition; no capacity, money, save or
+retention comparison is weakened.
+
+The full LandmassCheck now passes, including the prepared fixed-queue
+demolitions, their saved on-site units and exact ground releases, every
+live investment/map case, and the separate 1,200-month Earth run and its
+audit. `target/RES3-dry-final-LandmassCheck.{txt,log}` reports suite OK.
+No diagnostic shortcut remains in the source. The full check retains
+`STAND_WORK = 2` and `STALL_MONTHS = 24` unchanged.
