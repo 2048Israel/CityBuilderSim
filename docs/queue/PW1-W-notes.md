@@ -151,5 +151,5 @@ ecbc3b975 (0.9.192) built apart and on this branch merged with it (82d5015aa, th
   stamps on two lines in each, and the branch's new count line (the sea's water: 0 months). Both exit 1 on main's
   known red alone.
 - So PW1-L and PW1-G move no figure the trace records in the default path (why each is idle there was not
-  traced); the sea never delivers (§4), and the water's power transfer stays inside the treasury's pool. So the ensemble does not run (docs/contract.md, section 4:
-  an unchanged trace is said in the notes).
+  traced); the sea never delivers (§4), and the water's power transfer stays inside the treasury's pool. The
+  ensemble does not run (docs/contract.md, section 4: an unchanged trace is said in the notes).
