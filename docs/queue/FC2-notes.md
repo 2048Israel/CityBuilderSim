@@ -223,18 +223,19 @@ abroad; each section's claim is the city's own builders', and it is still run wi
     positive factor (`Exchange.carriedSplitFactor()`; 1e-12 only for none, a negative or a NaN), asserted directly.
     No save reads differently unless its factor is under 1e-12, which was wrong before. ★ Real Estate's deeper slide
     in that city (its cash -234 at month 153) is FC2's economy, not its save: the ensemble reads it.
-- **LongPlaytest** (green, every month audited). ★ The played city's path moved: FC2's grows faster from the
-  founding, dips around m750-m1300, and ends 57% larger. Population at its checkpoints against main's (AP2's tree,
-  the same day):
+- **LongPlaytest** (green, every month audited; rerun on REV-FC2 merged with PW5, 2026-11-23). ★ The played city's
+  path moved: REV-FC2's grows faster from the founding (twice main's at m255), lags it from about m1,000 to m1,800 (a
+  fifth of main's at m1,506), and ends 13% smaller at m2,344. FC2 as first reviewed ended 57% larger. Population at
+  its checkpoints against main's (AP2's tree, before PW5):
 
-  | month | FC2 | main |
-  |---|---|---|
-  | ~255 | 2,826 | 1,413 |
-  | ~600 | 14,831 | 7,027 |
-  | ~1,050 | 28,684 (cash $694k, GDP $36.9M a month) | 35,771 (cash $255.8M, GDP $89.6M) |
-  | ~1,300 | 47,577 | 159,044 |
-  | ~1,510 | 268,294 | 269,905 |
-  | ~2,350 | 2,819,538 | 1,796,799 |
+  | month | REV-FC2 | FC2 as first reviewed | main |
+  |---|---|---|---|
+  | ~255 | 2,817 | 2,826 | 1,413 |
+  | ~600 | 9,883 | 14,831 | 7,027 |
+  | ~1,050 | 28,572 (cash $963k, GDP $19.1M a month) | 28,684 (cash $694k, GDP $36.9M) | 35,771 (cash $255.8M, GDP $89.6M) |
+  | ~1,300 | 36,093 | 47,577 | 159,044 |
+  | ~1,510 | 54,390 | 268,294 | 269,905 |
+  | ~2,350 | 1,555,403 | 2,819,538 | 1,796,799 |
 
   The dip is the ensemble's to judge; every harness that reads the played city at a month reads a different city.
 - **KeptCheck**: the played city in its dip at m1043 cannot pay for the land office's best offer (section 31, before
@@ -242,7 +243,13 @@ abroad; each section's claim is the city's own builders', and it is still run wi
   From section 55 on, the reds are FS5's played-city classes (rows 39, 42-45, 54-56 and 104 of
   `docs/notes/known-reds.txt` pass them by name); one is new, the ship file's known-reds row: section 55's Bank
   Overview made no node in 23 of 25 months, but its lists shrank from the first draw's 721 nodes (590 handed back a
-  month), KBP1's class - the measure is the first draw, not the page drawn again.
+  month), KBP1's class - the measure is the first draw, not the page drawn again. ★ On REV-FC2's merged city (after
+  PW5, 2026-11-23) the played path moved again and the reds with it: five, three passed by name (section 63's redraw
+  and its rule held again, Household money's grid) and two new, the ship file's rows - section 50's Wood Products
+  picture, drawn at section 47 and gone by 50 at m1442, and section 79's Month page counts past m3472, twelve months
+  with neither trade figure's words moving after the two pages before it found a move at every rung. Both are
+  fixtures that read the played city and do not cause what they need; FC2 touches neither the pictures nor the
+  count-up.
 - **ConstructionControlCheck** (8 red, moved): its rush city's queue is past the threshold, so the foreign crews'
   points join the month the plan shares out (since REV-FC2 400 of 596-1,744 a month, his month on his book at the
   largest depot's points; 419-423 of 619-1,744 as first reviewed). The rush's work and premium move from
@@ -278,5 +285,15 @@ abroad; each section's claim is the city's own builders', and it is still run wi
   price came to the quote within 1.25e-16; the coal plant built at home though it left 70.4 months queued there
   against a threshold of 20.53; the 500 Houses stood whole at month 32 with 1,822 people (before REV-FC2: month 10,
   ahead of its people). Its first year the crews billed 3,143.25.
+- **FitoutCheck** (2 red) **and WellCheck** (1 red), moved by REV-FC2: their reference multiple read no base a point
+  (`orderPriceMultiplier(ahead, each, n)`), while the quote, `dearOf()` and `getCostOfAt()` strike the foreign crews'
+  threshold and share on the order's own base a point (`basePerPointOf()`, the threshold with the order on site); in
+  a city past the threshold the two differ (FitoutCheck's default town's two farms: 97.72 against 99.04). Each
+  reference reads the order's own base now; each claim (the template's points; the wells at the multiple of an order
+  of that many) is as it was. Green.
+- Green on REV-FC2 merged with PW5, run one at a time: ForeignCrewsCheck, ConstructionTrapCheck, ForeignCheck,
+  DeathCareFirstCheck, SubstationCheck, GapOrderCheck, ConstructionControlCheck, BuildersFirstCheck, SaveFileCheck,
+  AuctionCheck, FitoutCheck, FittingCheck, RunWorksCheck, WellCheck, MonetaryCheck, BuildCardCheck, BuildMenuCheck,
+  PowerPriceCheck, LongPlaytest; HoldersCheck its known red only; KeptCheck its rows above.
 - Green after FC2, run one at a time: ManufacturingCheck, FitoutCheck, InvestCheck, WellCheck, RunWorksCheck,
   MortgageCheck, FittingCheck, AuctionCheck; HoldersCheck its known red only. `./batch-check.sh --fast` green.
