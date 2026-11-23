@@ -3353,6 +3353,12 @@ public class SaveFileCheck {
         quietly(() -> continued.loadGameSave(1));
         assertTrue("REV-HC1 P5: the populated continuation starts from its actual format-62 save", continued.getLoadFailure() == null);
         assertTrue("REV-HC1 P5: the populated format-62 city continues its card stocks, services, loan book and capital", CardCheck.continues(full, continued));
+        // FC2: the continuation above met a company consolidated past a trillion to one (Real Estate, 1e-28 of its founding
+        // shares), which the load put back at a trillion until FC2; the load's rule itself, whatever a city reaches.
+        bits("FC2: a split factor deeper than a trillion to one loads as it was saved", Exchange.carriedSplitFactor(1e-28), 1e-28);
+        assertTrue("...and none, a negative or a NaN at the floor the load always had",
+                Exchange.carriedSplitFactor(0) == 1e-12 && Exchange.carriedSplitFactor(-1) == 1e-12
+                        && Exchange.carriedSplitFactor(Double.NaN) == 1e-12);
         onEarth(root);
         everyIdCrossesASave(root);
         worldMarketCrossesASave(root);
@@ -3470,45 +3476,56 @@ public class SaveFileCheck {
                 + (Migration.BRAKE_FROM_MONTH - 1) + " and " + Migration.BRAKE_FROM_MONTH + " (WG2-R) ---");
         int tiers = PayTier.values().length;
         int monthsSlot = tiers * Migration.DECLINE_MONTHS + tiers;   // the months recorded: the last slot of the wage history
-        for (int n = Migration.BRAKE_FROM_MONTH - 1; n <= Migration.BRAKE_FROM_MONTH; n++) {
-            String at = "at " + n + " months recorded: ";
-            Game city = new Game(new GameFiles(root.resolve("brake-" + n), root.resolve("no-legacy")));
-            city.run();
-            city.setCashForTest(Founding.WEALTHY_CASH);
-            city.buildStack(template(city, "House"), 300, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.simulateMonths(40);
+        // FC2: the town this section was written on is caught in the builders' trap (main: 23.8% out of work, 0.1 arrivals a
+        // month), and the 300 Houses were the lever only through it: the foreign crews, always on
+        // offer since FC2, take the queue past the threshold and build them, and the town fills (647 people, 612 posts, none
+        // out of work, 29.7 arrivals). What this section reads is Migration's months recorded through a save, not the
+        // builders, so the town is played as written - the builders' price and the foreign crews off for this section alone,
+        // as HoldersCheck has them for its JVM (BuildingManager.buildersShortOn), and back on after it.
+        BuildingManager.buildersShortOn = false;
+        try {
+            for (int n = Migration.BRAKE_FROM_MONTH - 1; n <= Migration.BRAKE_FROM_MONTH; n++) {
+                String at = "at " + n + " months recorded: ";
+                Game city = new Game(new GameFiles(root.resolve("brake-" + n), root.resolve("no-legacy")));
+                city.run();
+                city.setCashForTest(Founding.WEALTHY_CASH);
+                city.buildStack(template(city, "House"), 300, false);
+                city.buildStack(template(city, "Convenience Store"), 6, false);
+                city.simulateMonths(40);
 
-            Migration migration = city.getMigration();
-            double[] aged = migration.toSaveArray();
-            aged[monthsSlot] = n - 1;
-            migration.restore(aged);
-            city.simulateMonths(1);
-            PopulationManager people = city.getPopulationManager();
-            System.out.printf("   %s city month: out of work %.4f, brake %.4f, arrivals %,.2f%n",
-                    at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
-            assertTrue(at + "fixture: months recorded are " + n, migration.toSaveArray()[monthsSlot] == n);
-            assertTrue(at + "fixture: brakeApplies() is n >= BRAKE_FROM_MONTH",
-                    migration.brakeApplies() == (n >= Migration.BRAKE_FROM_MONTH));
-            assertTrue(at + "fixture: the city drew people", migration.getLastTarget() > 0);
-            // The lever is jobs: 300 houses and 6 shops leave the town far past the healthy share out of work (past the stop, so the
-            // brake that bites cuts the arrivals to 0). The month before the threshold, the same town is young and unbraked.
-            assertTrue(at + "fixture: out of work past HEALTHY_OUT_OF_WORK, so there is a brake to read",
-                    people.getUnemploymentRate() > Migration.HEALTHY_OUT_OF_WORK);
-            assertTrue(at + "fixture: the month's brake " + (n >= Migration.BRAKE_FROM_MONTH ? "bit, under 1" : "is 1, the city is young"),
-                    n >= Migration.BRAKE_FROM_MONTH ? migration.getLastBrake() < 1 : migration.getLastBrake() == 1);
+                Migration migration = city.getMigration();
+                double[] aged = migration.toSaveArray();
+                aged[monthsSlot] = n - 1;
+                migration.restore(aged);
+                city.simulateMonths(1);
+                PopulationManager people = city.getPopulationManager();
+                System.out.printf("   %s city month: out of work %.4f, brake %.4f, arrivals %,.2f%n",
+                        at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
+                assertTrue(at + "fixture: months recorded are " + n, migration.toSaveArray()[monthsSlot] == n);
+                assertTrue(at + "fixture: brakeApplies() is n >= BRAKE_FROM_MONTH",
+                        migration.brakeApplies() == (n >= Migration.BRAKE_FROM_MONTH));
+                assertTrue(at + "fixture: the city drew people", migration.getLastTarget() > 0);
+                // The lever is jobs: 300 houses and 6 shops leave the town far past the healthy share out of work (past the stop, so the
+                // brake that bites cuts the arrivals to 0). The month before the threshold, the same town is young and unbraked.
+                assertTrue(at + "fixture: out of work past HEALTHY_OUT_OF_WORK, so there is a brake to read",
+                        people.getUnemploymentRate() > Migration.HEALTHY_OUT_OF_WORK);
+                assertTrue(at + "fixture: the month's brake " + (n >= Migration.BRAKE_FROM_MONTH ? "bit, under 1" : "is 1, the city is young"),
+                        n >= Migration.BRAKE_FROM_MONTH ? migration.getLastBrake() < 1 : migration.getLastBrake() == 1);
 
-            assertTrue(at + "saved", city.saveGame(1, "brake").ok);
-            Game twin = new Game(city.getGameFiles());
-            twin.loadGameSave(1);
-            assertTrue(at + "the twin loaded", twin.getLoadFailure() == null);
-            sameBrake(at + "the twin ", twin, city, monthsSlot);
+                assertTrue(at + "saved", city.saveGame(1, "brake").ok);
+                Game twin = new Game(city.getGameFiles());
+                twin.loadGameSave(1);
+                assertTrue(at + "the twin loaded", twin.getLoadFailure() == null);
+                sameBrake(at + "the twin ", twin, city, monthsSlot);
 
-            city.simulateMonths(1);
-            twin.simulateMonths(1);
-            System.out.printf("   %s month on: out of work %.4f, brake %.4f, arrivals %,.2f%n",
-                    at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
-            sameBrake(at + "a month on, the twin ", twin, city, monthsSlot);
+                city.simulateMonths(1);
+                twin.simulateMonths(1);
+                System.out.printf("   %s month on: out of work %.4f, brake %.4f, arrivals %,.2f%n",
+                        at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
+                sameBrake(at + "a month on, the twin ", twin, city, monthsSlot);
+            }
+        } finally {
+            BuildingManager.buildersShortOn = true;
         }
     }
 

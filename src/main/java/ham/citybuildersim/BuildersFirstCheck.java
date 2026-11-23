@@ -146,6 +146,14 @@ public class BuildersFirstCheck {
         // DeathCareFirstCheck's fixture builds the city, quietly, through its own streams.
         DeathCareFirstCheck.out = out;
         DeathCareFirstCheck.quiet = quiet;
+        // FC2: BF1's rule is the city's own crews' month, and its stall the city's crews alone in it. Since FC2 the foreign
+        // crews are always on offer: the month hands them the queue past the threshold (87 months queued here, the threshold
+        // about 21), their month joins the sites' and finishes the builders' depot in the stall's first month, with the rule
+        // or without it, and the builders grow either way (the run of section 4: 1,120 of nameplate without the rule, not the
+        // 560 it held). ConstructionTrapCheck and ForeignCrewsCheck hold that; here the rule is shown where it is the only
+        // way out, the city's crews alone - the builders' price and the foreign crews off in this JVM, as HoldersCheck,
+        // MonetaryCheck and RunWorksCheck have it (BuildingManager.buildersShortOn).
+        BuildingManager.buildersShortOn = false;
         Path root = TempDirs.create("buildersfirstcheck");
 
         arithmetic();
@@ -510,9 +518,9 @@ public class BuildersFirstCheck {
                 onSiteNow > 0 && bm.getTotalHomes() < 100 && !staffingNow.passes()
                         && bu.underConstructionByName(DEPOT) > 0 && bu.getTotalHomes() < 100);
         // ...and the landlords' Houses on site in both twins (FC1): the founding months are the trap in miniature - the
-        // sites get nothing of the builders' month - so the foreign contractor takes the orders at its price
-        // (since FC2 the base and its excess, BuildersShort.excessAt()), which the landlords' own plan does not pay, and the homes this section watches
-        // the town build were no longer ordered there. The fixture orders them, as DeathCareFirstCheck.sites() does,
+        // sites get nothing of the builders' month - so FC1's foreign contractor took the orders at its price, which the
+        // landlords' own plan did not pay, and the homes this section watches the town build were no longer ordered there
+        // (since FC2 the builders' price and the foreign crews are off in this JVM, main()'s note). The fixture orders them, as DeathCareFirstCheck.sites() does,
         // out of cash the quote itself sizes. Since BA1 the landlords' own plan orders Houses too (it has no cap to wait
         // on), and the twins' builders differ, so the Houses already on site are not the same in both; the check tops the
         // twin with fewer up to the one with more (and both to LANDLORDS_HOUSES at least), so they are alike as they were.
