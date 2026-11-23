@@ -1,4 +1,4 @@
-# ConstructionControl.java - 932 lines · 67 methods · 11 constants · model
+# ConstructionControl.java - 933 lines · 67 methods · 11 constants · model
 
 `ham/citybuildersim/ConstructionControl.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -40,7 +40,7 @@
 
 **Uses:** [SaveCopy](SaveCopy.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (5), [BuildingsStacks](BuildingsStacks.md) (4)
 
-**Used by (30):** [AdviceValueOracle](AdviceValueOracle.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BuildingStackCheck](BuildingStackCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FitoutCheck](FitoutCheck.md), [Game](Game.md), [Inbox](Inbox.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [NewUnitCheck](NewUnitCheck.md), [RoadCheck](RoadCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
+**Used by (31):** [AdviceValueOracle](AdviceValueOracle.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BuildingStackCheck](BuildingStackCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FitoutCheck](FitoutCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [Game](Game.md), [Inbox](Inbox.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [NewUnitCheck](NewUnitCheck.md), [RoadCheck](RoadCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
 
 ## Sections
 
@@ -135,19 +135,19 @@
 | 552 | `public java.util.List<Run> runs` |  |
 | 554 | `public java.util.List<Paving> paving` | F. |
 | 580 | `private State state` |  |
-| 909 | `private final Demolition site` |  |
-| 910 | `private double unitsSold, paid` |  |
-| 925 | `public final java.util.List<Overtime> overtime` |  |
-| 926 | `public final java.util.List<Refund> refunds` |  |
-| 927 | `public final java.util.List<Completed> completed` |  |
-| 928 | `public final java.util.List<Paved> paved` |  |
-| 929 | `public double overtimePoints` |  |
+| 910 | `private final Demolition site` |  |
+| 911 | `private double unitsSold, paid` |  |
+| 926 | `public final java.util.List<Overtime> overtime` |  |
+| 927 | `public final java.util.List<Refund> refunds` |  |
+| 928 | `public final java.util.List<Completed> completed` |  |
+| 929 | `public final java.util.List<Paved> paved` |  |
+| 930 | `public double overtimePoints` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 893 | **type** `public final class ConstructionControl` | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it has stopped and the shells they left, the buildings it is pulling dow... |
+| 40 | 894 | **type** `public final class ConstructionControl` | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it has stopped and the shells they left, the buildings it is pulling dow... |
 
 ### A. PRIORITY: THE CITY'S OWN SITES, IN THE ORDER THE PLAYER SETS (lines 42-71)
 
@@ -285,19 +285,19 @@
 |---:|---:|---|---|
 | 871 | 8 | `public void redenominate(double scale)` | A currency reform: the money is money; the points, the units and the ground are not. |
 
-### THE MONTH'S EVENTS, for Game to settle. A month's flows, read once. (lines 880-932)
+### THE MONTH'S EVENTS, for Game to settle. A month's flows, read once. (lines 880-933)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 890 | 2 | **type** `public record Overtime(String key, String building, int month, double share, double work, double perPoint, ...` | A rushed site worked on overtime this month: its share, its work, the builders' wage bill a point it was struck at, the premium on its crews, before the tax, and the part of its share the city's own crews worked (FC1b... |
-| 899 | 2 | **type** `public record Refund(int templateId, String building, long buildings, double value, double allowance, doubl...` | An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of work it was for, the shell it left, and whether it was a depot of the builders' served first (BuildingManag... |
-| 908 | 11 | **type** `public static final class Completed` | A demolition finished this month - and, once Game has sold it, its own sale: the units the builders bought and what they paid, which the inbox reads off the site rather than by its name (after the docs pass: two of on... |
-| 911 | 1 | `public Completed(Demolition site)` _(in ConstructionControl.Completed)_ |  |
-| 912 | 1 | `public Demolition site()` _(in ConstructionControl.Completed)_ |  |
-| 914 | 1 | `public double unitsSold()` _(in ConstructionControl.Completed)_ | Units of its material the builders bought. |
-| 916 | 1 | `public double paid()` _(in ConstructionControl.Completed)_ | ...and what they paid for them. |
-| 917 | 1 | `void sold(double units, double money)` _(in ConstructionControl.Completed)_ |  |
-| 921 | 1 | **type** `public record Paved(long roads, double landFreedSqFt)` | F. |
-| 924 | 8 | **type** `public static final class Events` | The month's events, as the advance left them. |
-| 930 | 1 | `public boolean isEmpty()` _(in ConstructionControl.Events)_ |  |
+| 900 | 2 | **type** `public record Refund(int templateId, String building, long buildings, double value, double allowance, doubl...` | An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of work it was for, the shell it left, and whether it was a depot of the builders' served first (BuildingManag... |
+| 909 | 11 | **type** `public static final class Completed` | A demolition finished this month - and, once Game has sold it, its own sale: the units the builders bought and what they paid, which the inbox reads off the site rather than by its name (after the docs pass: two of on... |
+| 912 | 1 | `public Completed(Demolition site)` _(in ConstructionControl.Completed)_ |  |
+| 913 | 1 | `public Demolition site()` _(in ConstructionControl.Completed)_ |  |
+| 915 | 1 | `public double unitsSold()` _(in ConstructionControl.Completed)_ | Units of its material the builders bought. |
+| 917 | 1 | `public double paid()` _(in ConstructionControl.Completed)_ | ...and what they paid for them. |
+| 918 | 1 | `void sold(double units, double money)` _(in ConstructionControl.Completed)_ |  |
+| 922 | 1 | **type** `public record Paved(long roads, double landFreedSqFt)` | F. |
+| 925 | 8 | **type** `public static final class Events` | The month's events, as the advance left them. |
+| 931 | 1 | `public boolean isEmpty()` _(in ConstructionControl.Events)_ |  |
 

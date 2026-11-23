@@ -1,4 +1,4 @@
-# ConstructionControlCheck.java - 869 lines · 21 methods · 1 constants · harnesses
+# ConstructionControlCheck.java - 872 lines · 21 methods · 1 constants · harnesses
 
 `ham/citybuildersim/ConstructionControlCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -73,10 +73,10 @@
 | 320 | 4. RUSH |
 | 405 | 5. CANCEL |
 | 482 | 6. DEMOLITION |
-| 581 | 7. BUY-OUT |
-| 643 | 8. CONSERVED |
-| 652 | 9. SAVE AND LOAD |
-| 744 | 10. ONE WAIT, AND THE ORDER'S LIFE |
+| 584 | 7. BUY-OUT |
+| 646 | 8. CONSERVED |
+| 655 | 9. SAVE AND LOAD |
+| 747 | 10. ONE WAIT, AND THE ORDER'S LIFE |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 795 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
+| 75 | 798 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -140,34 +140,34 @@
 |---:|---:|---|---|
 | 407 | 74 | `static void cancel(Path root)` |  |
 
-### 6. DEMOLITION (lines 482-580)
+### 6. DEMOLITION (lines 482-583)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 484 | 96 | `static void demolition(Path root)` |  |
+| 484 | 99 | `static void demolition(Path root)` |  |
 
-### 7. BUY-OUT (lines 581-642)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 583 | 59 | `static void buyOut(Path root)` |  |
-
-### 8. CONSERVED (lines 643-651)
+### 7. BUY-OUT (lines 584-645)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 645 | 6 | `static void conserved()` |  |
+| 586 | 59 | `static void buyOut(Path root)` |  |
 
-### 9. SAVE AND LOAD (lines 652-743)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 654 | 89 | `static void saveAndLoad(Path root) throws Exception` |  |
-
-### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 744-869)
+### 8. CONSERVED (lines 646-654)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 746 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
-| 866 | 3 | `static String fmt(double thousands)` |  |
+| 648 | 6 | `static void conserved()` |  |
+
+### 9. SAVE AND LOAD (lines 655-746)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 657 | 89 | `static void saveAndLoad(Path root) throws Exception` |  |
+
+### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 747-872)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 749 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
+| 869 | 3 | `static String fmt(double thousands)` |  |
 

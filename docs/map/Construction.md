@@ -1,4 +1,4 @@
-# Construction.java - 1,345 lines · 78 methods · 4 constants · sectors
+# Construction.java - 1,348 lines · 78 methods · 4 constants · sectors
 
 `ham/citybuildersim/sectors/Construction.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -97,7 +97,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1296 | **type** `public final class Construction extends Sector` | The builders. |
+| 50 | 1299 | **type** `public final class Construction extends Sector` | The builders. |
 | 158 | 13 | `public void strikeCrews(double work, double depots)` | Strikes the month's crews. |
 | 173 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 180 | 1 | `public boolean isIdleAtCoreCrew()` | Whether the builders stand idle at the core crew: the work this month's strike saw needs no more than the core crew, so they offer IDLE_PAYROLL_FLOOR of their posts and lay the rest off (strikeCrews()). |
@@ -207,7 +207,7 @@
 | 1135 | 1 | `public boolean hasPlantBlock()` |  |
 | 1138 | 76 | `public List<Line> ownLines(Game game)` |  |
 
-### SAVE (lines 1215-1345)
+### SAVE (lines 1215-1348)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -215,5 +215,5 @@
 | 1228 | 46 | `protected void saveExtras(Map<String, Double> extras)` |  |
 | 1276 | 38 | `protected void restoreExtras(Map<String, Double> extras)` |  |
 | 1316 | 14 | `protected void resetExtras()` |  |
-| 1333 | 12 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 1333 | 15 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

@@ -1,4 +1,4 @@
-# BuildersShort.java - 281 lines · 16 methods · 7 constants · model
+# BuildersShort.java - 298 lines · 16 methods · 8 constants · model
 
 `ham/citybuildersim/BuildersShort.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -57,12 +57,13 @@
 | 143 | `BuildersShort.FOREIGN_EXCESS` | `0.15` | The foreign crews' excess over a local builder's price for the same work at parity, as a share of the base, at the curve's first point: 15%. |
 | 157 | `BuildersShort.SURE_MONTHS` | `12` | The months of backlog past KNEE_MONTHS at which the overflow goes abroad whatever the currency (N, Jerus's "at a certain premium they do go for it"): a year, the time an owner takes to tender work abroad and have the ... |
 | 166 | `BuildersShort.SUPPLY_HALF` | `2.0` | The foreign crews' month, as a multiple of the builders' month at every post, at which their excess is half way from its first point to CEILING: twice the city's own trade. |
+| 248 | `BuildersShort.AT_THRESHOLD` | `1e-9` | The months within which the queue at home reads as at the threshold (REV-FC2, the second review): an order that crosses it leaves the queue there to the last bits of a double, read back from the points (homeUnits()), ... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 244 | **type** `public final class BuildersShort` | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months of work queued at the pace the builders leave the sites - and, since ... |
+| 38 | 261 | **type** `public final class BuildersShort` | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months of work queued at the pace the builders leave the sites - and, since ... |
 | 40 | 1 | `private BuildersShort()` |  |
 | 59 | 7 | `public static double monthsQueued(double queuePoints, double sitesAtEveryPost)` | The months of work queued at the pace the sites get: queue over sites. |
 | 72 | 7 | `public static double premium(double months)` | What a point's work carries over its price at that many months queued, as a share of it: none at or under KNEE_MONTHS, then CEILING * x^2 / (1 + x^2) for x the months past the knee over HALF_MONTHS - no slope at the k... |
@@ -70,7 +71,7 @@
 | 117 | 5 | `private static double antiderivative(double months)` | The area under premium() from the knee to that many months queued; nothing at or under the knee. |
 | 123 | 3 | `private static double clamp(double premium)` |  |
 
-### THE FOREIGN CREWS, ALWAYS ON OFFER (FC2, 2026-11-22) (lines 127-281)
+### THE FOREIGN CREWS, ALWAYS ON OFFER (FC2, 2026-11-22) (lines 127-298)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -81,7 +82,7 @@
 | 210 | 5 | `public static double overflow(double queueAtHome, double sitesAtEveryPost, double thresholdMonths)` | The queue's work past the threshold, in points: what the city's own builders hold over {@code thresholdMonths} of their month for the sites ({@code sitesAtEveryPost}), nothing under it. |
 | 222 | 5 | `public static double foreignMonth(double work, double thresholdMonths, double floorPoints)` | The foreign crews' month, in points, for {@code work} on their book: enough crews to build it in the threshold's months - so the work abroad waits no longer than the work at home at the threshold, and the backlog read... |
 | 234 | 8 | `public static double excessAt(double firstShare, double foreignMonth, double buildersMonth)` | The foreign crews' excess share at {@code foreignMonth} points a month (the supply curve): {@code firstShare} (the curve's first point, excessShare()) and the rest of the way to CEILING times m / (1 + m), m their mont... |
-| 250 | 8 | `public static long homeBuildings(double fromMonths, double stepMonths, long n, double thresholdMonths)` | How many of an order's {@code n} buildings (at least one) stand within {@code thresholdMonths} (REV-FC2): the building i (from 0) in {@code fromMonths + i * stepMonths} months queued, at home while that is at or under... |
-| 267 | 9 | `public static double meanShare(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare)` | The mean share an order of {@code n} buildings carries over its base price with the foreign crews on offer: the building i (from 0) stands in {@code fromMonths + i * stepMonths} months queued (meanPremium()); it is th... |
-| 278 | 3 | `public static double multiplier(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare)` | ...and the multiple an order's non-material price is struck at: one and meanShare(). |
+| 262 | 7 | `public static double homeUnits(double fromMonths, double stepMonths, long n, double thresholdMonths)` | How much of an order of {@code n} buildings (at least one) stands within {@code thresholdMonths}, in buildings (REV-FC2, the second review): the building i (from 0) takes the months {@code fromMonths + i * stepMonths}... |
+| 279 | 14 | `public static double meanShare(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare)` | The mean share an order of {@code n} buildings carries over its base price with the foreign crews on offer: the building i (from 0) stands in {@code fromMonths + i * stepMonths} months queued (meanPremium()); its work... |
+| 295 | 3 | `public static double multiplier(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare)` | ...and the multiple an order's non-material price is struck at: one and meanShare(). |
 
