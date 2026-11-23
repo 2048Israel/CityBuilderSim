@@ -193,8 +193,19 @@ Harnesses PW2 moved, each mended by a fixture that causes its condition; no prem
   the order the town is main's: March 1933 at world month 398, cover 8.963, lowest 8.802, as main's export prints.
   Section 7 now asserts as a fixture that the treasury paid all of GOLD_LOCAL, so a short purchase is caught at its
   cause (the orchestrator: "makes the check stricter. No review is owed for it"). The town's other borrowers,
-  CurrencyRegimeCheck and InterventionCheck, are green on it. GoldStandardCheck was not among my one-at-a-time
-  rounds; the dry run, which runs every harness, found it.
+  CurrencyRegimeCheck and InterventionCheck, are green on it. GoldStandardCheck was not among my rounds (they ran
+  about half the harnesses, below); the dry run found it.
+- **EquipmentCheck 3: the month orders no fitting (the dry runs).** An electric drive on the counted town's bakeries
+  pays (EquipmentFit), on main as on PW2, so the observed month orders one. On main its job stays on site 6 points
+  short and the counts hold; on PW2 the builders have the room (its coal plant cheaper, 86,983 points over 60
+  months) and finish it, so an Industrial Bakery was fitted in the month observed and the steam share read 0.5
+  against 0.8125. A sector fits one at a time (EquipmentFit.choose()), so the fixture now holds a job of
+  Industry's on site, too long to finish, and asserts it is there: the counts hold because the fixture makes them.
+- **PlanCheck 1 and 10: the boxes those plans were made from.** The prototype's plan (digests from 0.7.90) and
+  0.8.11's comb were made from a catalogue in which the Coal Power Plant (id 9) stood on 2,000,000 sq ft; PW2's
+  200 acres made its box over four times larger and moved every box after it (32,907 plots of buildings against the
+  table's 32,217). The two sections draw it on its ground of then (PlanCheck.typesAsDrawn(), as GatewayCheck 21
+  holds the terminals' ground from before SL1); every other type and the planner are today's. Both sections green.
 - **HousingCheck** (the landlords build before anyone can staff them): the yard's materials set to none, as main's
   city had them. The refigured coal plants are placed on less material (14,373 each, not 19,848), and 36 were left
   after the two years: a House's 10 come from the yard and a Studio's 320 do not, so the House's price fell to 8.5
@@ -225,6 +236,18 @@ The known reds (the ship file's rows), each a moved played city, none a PW2 mech
 - **FloatLinkCheck**, "the played sale covers its fixed fee" (HT1-H; FS14 shipped): the town's tax is its coal
   plant's site, and PW2's plant is cheaper and held to its 60 months, so at month 62 the town takes 153.1 a month
   against main's 241.7; the sale capped at a third of a year's tax (612) is under the least the fee needs (653).
+- **DeskCheck**, the same line seven times (HT1-H; FS14 shipped): it is FloatLinkCheck's own assertion
+  (FloatLinkCheck.java:741) in FloatLinkCheck.preparedCity(), the town above, and DeskCheck counts its fails.
+
+Main's latent faults, which PW2's moved fixture cities are the first to read (queued as PW2-T and PW2-B, §6):
+
+- **RailDrawCheck 29**, the T line (PW2-T): the iron city draws a fourth plan siding on PW2 (three on main), leaving
+  the main line at (8, 23) of tile (11239, 11611). The line's plots from (8, 24) down are RAIL in the painter's
+  input and not replaced by an arc, yet their middles are not track at 8 px (the colour of the plots either side);
+  main's export draws those plots the same, pixel for pixel. PW2 changes no map or painter code.
+- **PlanCheck 14 (g)**, a box on a band (PW2-B): PW2's coal plant moved the dense city's rim (15,121 districts
+  against main's 14,876, every 37th planned), and one district now in the sample, (7, -25), plans a one-plot Real
+  Estate box at (11, 168) on a plot of a SHORE curve's 8-plot band. DistrictPlan is main's, unchanged.
 
 **LandCheck, Jerus's call (desk chat, 2026-11-23 ~13:05): "Well you just buy more land no? Obviously its not going
 to fit".** LandCheck asserted that the starting land's 30 blocks hold a power plant (it named the Coal Power Plant),
@@ -242,9 +265,11 @@ Then the same order is placed, a site on. A finding, not mended here (the orches
 listing standing, so it returns null for a 200-acre order in a new city, and the auto-builder holds a coal plant
 there for want of bare ground on offer. The founding's first plant is the oil-fired one (★6).
 
-The full suite, one harness at a time on the PC (rounds 1 to 4, 2026-11-23, timing soft from round 4): every
-harness run; red only by the rows above and main's known reds (CurrencyCheck, DeathRecordCheck, Forms1900Check,
-FundCheck, HoldersCheck, RoadCheck). LandCheck was restated to Jerus's call and rerun.
+The suite, one harness at a time on the PC (rounds 1 to 4, 2026-11-23, timing soft from round 4): red only by
+the rows above and main's known reds (CurrencyCheck, DeathRecordCheck, Forms1900Check, FundCheck, HoldersCheck,
+RoadCheck). Not every harness: their logs hold about half the registry, so GoldStandardCheck, DeskCheck,
+EquipmentCheck, PlanCheck and RailDrawCheck were first run by the dry runs (§6), the first full runs of the
+suite. LandCheck was restated to Jerus's call and rerun.
 
 ## 5. The trace
 
@@ -263,6 +288,18 @@ had finished; the restart kept them and scored here.
 
 ## 6. The dry run
 
-The first, on the gate box (`cbs-gate-PW2-j2acbMKF`, 238f74368, 2026-11-23): stopped on twelve NEW lines, all
-GoldStandardCheck's, the batch's own (§4, CurrencyRegimeCheck.town()). Mended, the three harnesses on the town green
-one at a time, and run again on the orchestrator's go.
+The first, on the gate box (`cbs-gate-PW2-j2acbMKF`, 238f74368, 2026-11-23): stopped on 44 unnamed lines in five
+harnesses (its log prints the first twelve; `unnamed.txt` holds them all, which I read only after mailing that
+GoldStandardCheck alone was red). GoldStandardCheck's 21 were the batch's own (§4, CurrencyRegimeCheck.town());
+mended, the three harnesses on the town green one at a time, and run again on the orchestrator's go.
+
+The second (`cbs-gate-PW2-TRRNqZJM`, 52cf45e41): the suite in 1,000 s, 23 unnamed lines, the other four harnesses
+of the first: DeskCheck 9, PlanCheck 7, EquipmentCheck 4, RailDrawCheck 3 (exits and counts included). Main's
+export (`git archive origin/main`, built beside) runs EquipmentCheck, PlanCheck and RailDrawCheck green. Each traced
+by a probe on both trees (not committed):
+
+- EquipmentCheck 3 and PlanCheck 1 and 10, the batch's own: fixtures that read what PW2 moved, mended (§4) and
+  green alone.
+- DeskCheck: FloatLinkCheck's town and line, a known red with FloatLinkCheck's (HT1-H).
+- RailDrawCheck 29 and PlanCheck 14 (g): main's faults, read for the first time in fixture cities PW2 moved. Known
+  reds, each with its queued fix in the ship file, PW2-T and PW2-B (§4).
