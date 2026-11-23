@@ -1,4 +1,4 @@
-# LicenceFees.java - 602 lines · 50 methods · 5 constants · model
+# LicenceFees.java - 605 lines · 50 methods · 5 constants · model
 
 `ham/citybuildersim/LicenceFees.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -12,7 +12,7 @@
 > DataSave/SectorState keeps pending and settled inputs and the standing-cost
 > memo; HistorySave keeps paid and accrued monthly series.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (35), [Game](Game.md) (31), [Sector](Sector.md) (21), [RecipeChanges](RecipeChanges.md) (15), [Recipes](Recipes.md) (14), [BuildingsStacks](BuildingsStacks.md) (13), [Recipe](Recipe.md) (11), [ResearchCatalog](ResearchCatalog.md) (9), [NewUnit](NewUnit.md) (8), [EquipmentFit](EquipmentFit.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [ExtractionSector](ExtractionSector.md) (6), [BuildingType](BuildingType.md) (6), [BuildAdvice](BuildAdvice.md) (6), [Research](Research.md) (5), [Refining](Refining.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (4), [ProcessingSector](ProcessingSector.md) (3), [Equipment](Equipment.md) (3), [BusinessInvestment](BusinessInvestment.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [RefineryFlow](RefineryFlow.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (36), [Game](Game.md) (31), [Sector](Sector.md) (21), [Recipes](Recipes.md) (15), [RecipeChanges](RecipeChanges.md) (15), [BuildingsStacks](BuildingsStacks.md) (13), [Recipe](Recipe.md) (11), [ResearchCatalog](ResearchCatalog.md) (9), [NewUnit](NewUnit.md) (8), [EquipmentFit](EquipmentFit.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [ExtractionSector](ExtractionSector.md) (6), [BuildingType](BuildingType.md) (6), [BuildAdvice](BuildAdvice.md) (6), [Research](Research.md) (5), [Refining](Refining.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (4), [ProcessingSector](ProcessingSector.md) (3), [Equipment](Equipment.md) (3), [BusinessInvestment](BusinessInvestment.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [RefineryFlow](RefineryFlow.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1)
 
 **Used by (26):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentFit](EquipmentFit.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [Fitout](Fitout.md), [FittingCheck](FittingCheck.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [MoneyAudit](MoneyAudit.md), [NewUnit](NewUnit.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [ResearchView](ResearchView.md), [Sector](Sector.md), [WorksValue](WorksValue.md)
 
@@ -21,7 +21,7 @@
 | line | section |
 |---:|---|
 | 368 | THE CITY'S OWN WORKS (R2c-P) |
-| 560 | WHAT A BUILD CARD SAYS OF ITS LICENCE (FB13, R5-L) |
+| 563 | WHAT A BUILD CARD SAYS OF ITS LICENCE (FB13, R5-L) |
 
 ## Constants
 
@@ -31,7 +31,7 @@
 | 33 | `LicenceFees.TERM_MONTHS` | `20 * 12` | Patent life from history's month, in months; adoption never restarts it. |
 | 35 | `LicenceFees.IP_CHARGES` | `"IP charges"` | The imported service's name on the firm's saved statement and the audit. |
 | 76 | `LicenceFees.pricing` | `ThreadLocal.withInitial(() -> false)` | A new building's gain is its sector's estimate, including special outputs (refinery streams, retail service). |
-| 572 | `LicenceFees.Rent.NONE` | `new Rent(0, List.of())` |  |
+| 575 | `LicenceFees.Rent.NONE` | `new Rent(0, List.of())` |  |
 
 ## Fields (state)
 
@@ -46,7 +46,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 576 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
+| 27 | 579 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
 | 28 | 1 | `private LicenceFees()` |  |
 | 38 | 6 | `public static boolean payable(String code, int month, Research found)` | A patent is payable from history's month, excluding its twentieth anniversary. |
 | 46 | 3 | `public static double onGain(String code, int month, Research found, double gain)` | A loss, year, unknown code or unpatented entry costs nothing. |
@@ -81,36 +81,36 @@
 | 355 | 5 | `public static double paid(Game game)` | Read the settled flow from saved statements, never from end-of-month prices. |
 | 362 | 5 | `public static double accrued(Game game)` | Production's accrued bill, already saved in the pending imported-service ledger. |
 
-### THE CITY'S OWN WORKS (R2c-P) (lines 368-559)
+### THE CITY'S OWN WORKS (R2c-P) (lines 368-562)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 371 | 3 | `static boolean citysWork(Game game, BuildingsTemplate t)` | Whether this template is one of the city's own works, the stacks no sector owns (the bank's branch excepted), which pay their licences too (R2c-P). |
-| 376 | 3 | `static double powerDelivered(UtilitiesHandler u, double nameplate)` | What the grid delivers with its nameplate moved, by UtilitiesHandler.updateEnergyRatio()'s rule: output, capped by what the city asks (R2c-P). |
-| 381 | 5 | `static double waterDelivered(Game game, UtilitiesHandler u, double freshMove, double desalMove)` | What the water works deliver with the fresh and the sea nameplates moved, by UtilitiesHandler.waterOutput()'s rule, capped by what the city asks (R2c-P). |
-| 393 | 7 | **type** `record Fitting(Map<String, Long> counts, long n, boolean standing, String[] ids)` | One city utility in a state of its fitting, the thing a bill is struck on (R2c-P, REV-R2c-P-1). |
-| 395 | 1 | `static Fitting standing(Map<String, Long> counts, long quantity, String[] ids)` _(in LicenceFees.Fitting)_ | The stack of `quantity` buildings with these unfitted counts, the grid's nameplate moved from the stack as it stands to this state (R2c-P, REV-R2c-P-1). |
-| 398 | 1 | `static Fitting added(Map<String, Long> counts, long units, String[] ids)` _(in LicenceFees.Fitting)_ | `units` new buildings, each with these unfitted counts, added to the city as it stands (R2c-P, REV-R2c-P-1). |
-| 402 | 4 | `private static boolean utilityWork(Game game, BuildingsTemplate t)` | Whether this template is a city utility the licences are struck on: a city work in a city founded the 1900 way, electricity or water (R2c-P, REV-R2c-P-1). |
-| 411 | 9 | `private static double served(Game game, BuildingsTemplate t, double move, double drop)` | The service delivered with the grid's or the works' nameplate moved by `move`, less that delivered with it moved by `move - drop`, in money at the tariff the planners price it at (Recipes.pricesOf()): surplus capacity... |
-| 427 | 14 | `private static double entryGain(Game game, BuildingsTemplate t, Fitting f, String pieceId, double running)` | The month's public gain of one entry of a city utility in a state of its fitting, in money (R2c-P, REV-R2c-P-1): the service delivered with it less that delivered without it, at the planners' tariff. |
-| 443 | 6 | `private static double lifeShare(String code, int atMonth, double i)` | The share of a life's weight (BuildAdvice.LIFE_MONTHS' annuity at the monthly rate i) that a patent's term left at atMonth covers (R2c-P, REV-R2c-P-1): 0 once it has ended, 1 while a whole life fits inside it. |
-| 451 | 3 | `private static double annuity(double i, double months)` | What a month of 1 is worth over `months` at the monthly rate i, as BuildAdvice.lifeFactor() reads it: the level annuity's factor, the months themselves at no rate (R2c-P, REV-R2c-P-1). |
-| 456 | 6 | `private static double fee(Game game, String code, int atMonth, double gain, boolean overLife, double[] rate)` | One entry's fee on its gain (R2c-P, REV-R2c-P-1): onGain() at atMonth, over a life weighted by lifeShare(); the life's rate (rate[0], NaN till asked) is read only for a fee above nothing. |
-| 470 | 3 | `static double billOf(Game game, BuildingsTemplate t, Fitting f, double running, int atMonth, boolean overLife)` | The ONE bill of a city utility in a state of its fitting (R2c-P, REV-R2c-P-1): every patented entry once a code (the building's own, and each piece fitted on some building of the state and known at atMonth), SHARE of ... |
-| 475 | 16 | `static double billOf(Game game, BuildingsTemplate t, Fitting f, double running, int atMonth, boolean overLife, Set<String> char...` | ...with the codes it struck a licence on, or looked at to (FB13): `charged` takes the building's own and each piece's. |
-| 498 | 8 | `public static double publicGain(Game game, BuildingsStacks stack, String pieceId)` | The month's public gain of one entry on one standing stack of a city utility, in money (R2c-P): the service delivered with it less the service delivered without it, at the tariff the planners price it at (Recipes.pric... |
-| 508 | 6 | `private static double standingBill(Game game, BuildingsStacks stack)` | One standing stack's bill at the month's state, as billOf() strikes it, before any finiteness guard (R2c-P, REV-R2c-P-1). |
-| 516 | 5 | `public static double publicBillOf(Game game, BuildingsStacks stack)` | What the capture would bill this one stack this month (R2c-P, REV-R2c-P-1): its part of capturePublic(); 0 for no stack, a stack that is not a city utility's, or a city not founded the 1900 way. |
-| 527 | 6 | `public static double capturePublic(Game game)` | The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices: the sum of billOf() over the standing stacks at their own state (REV-R2c-P-1), each entry once a... |
-| 539 | 7 | `public static double forNewWork(Game game, BuildingsTemplate t, double running)` | The planners' licence cost of ONE more building of a city utility (R2c-P, REV-R2c-P-1), added to its running cost: billOf() for one new building with the pieces it would be fitted with, today, over a life (each fee we... |
-| 552 | 7 | `public static double forNewWork(Game game, BuildingsTemplate t, double running, long units, int monthsAhead)` | The planners' licence cost of `units` more buildings of a city utility, `monthsAhead` months from now (R2c-P, REV-R2c-P-1): billOf() for the units together beside the city as it stands (the bill of the whole order, no... |
+| 379 | 3 | `static double powerDelivered(UtilitiesHandler u, BuildingsTemplate t, double nameplate)` | What the grid delivers with this template's nameplate moved (R2c-P): since PW1-L the energy the month's dispatch serves with the template's row moved (UtilitiesHandler.deliveredWith()), not the flat rule's output capp... |
+| 384 | 5 | `static double waterDelivered(Game game, UtilitiesHandler u, double freshMove, double desalMove)` | What the water works deliver with the fresh and the sea nameplates moved, by UtilitiesHandler.waterOutput()'s rule, capped by what the city asks (R2c-P). |
+| 396 | 7 | **type** `record Fitting(Map<String, Long> counts, long n, boolean standing, String[] ids)` | One city utility in a state of its fitting, the thing a bill is struck on (R2c-P, REV-R2c-P-1). |
+| 398 | 1 | `static Fitting standing(Map<String, Long> counts, long quantity, String[] ids)` _(in LicenceFees.Fitting)_ | The stack of `quantity` buildings with these unfitted counts, the grid's nameplate moved from the stack as it stands to this state (R2c-P, REV-R2c-P-1). |
+| 401 | 1 | `static Fitting added(Map<String, Long> counts, long units, String[] ids)` _(in LicenceFees.Fitting)_ | `units` new buildings, each with these unfitted counts, added to the city as it stands (R2c-P, REV-R2c-P-1). |
+| 405 | 4 | `private static boolean utilityWork(Game game, BuildingsTemplate t)` | Whether this template is a city utility the licences are struck on: a city work in a city founded the 1900 way, electricity or water (R2c-P, REV-R2c-P-1). |
+| 414 | 9 | `private static double served(Game game, BuildingsTemplate t, double move, double drop)` | The service delivered with the grid's or the works' nameplate moved by `move`, less that delivered with it moved by `move - drop`, in money at the tariff the planners price it at (Recipes.pricesOf()): surplus capacity... |
+| 430 | 14 | `private static double entryGain(Game game, BuildingsTemplate t, Fitting f, String pieceId, double running)` | The month's public gain of one entry of a city utility in a state of its fitting, in money (R2c-P, REV-R2c-P-1): the service delivered with it less that delivered without it, at the planners' tariff. |
+| 446 | 6 | `private static double lifeShare(String code, int atMonth, double i)` | The share of a life's weight (BuildAdvice.LIFE_MONTHS' annuity at the monthly rate i) that a patent's term left at atMonth covers (R2c-P, REV-R2c-P-1): 0 once it has ended, 1 while a whole life fits inside it. |
+| 454 | 3 | `private static double annuity(double i, double months)` | What a month of 1 is worth over `months` at the monthly rate i, as BuildAdvice.lifeFactor() reads it: the level annuity's factor, the months themselves at no rate (R2c-P, REV-R2c-P-1). |
+| 459 | 6 | `private static double fee(Game game, String code, int atMonth, double gain, boolean overLife, double[] rate)` | One entry's fee on its gain (R2c-P, REV-R2c-P-1): onGain() at atMonth, over a life weighted by lifeShare(); the life's rate (rate[0], NaN till asked) is read only for a fee above nothing. |
+| 473 | 3 | `static double billOf(Game game, BuildingsTemplate t, Fitting f, double running, int atMonth, boolean overLife)` | The ONE bill of a city utility in a state of its fitting (R2c-P, REV-R2c-P-1): every patented entry once a code (the building's own, and each piece fitted on some building of the state and known at atMonth), SHARE of ... |
+| 478 | 16 | `static double billOf(Game game, BuildingsTemplate t, Fitting f, double running, int atMonth, boolean overLife, Set<String> char...` | ...with the codes it struck a licence on, or looked at to (FB13): `charged` takes the building's own and each piece's. |
+| 501 | 8 | `public static double publicGain(Game game, BuildingsStacks stack, String pieceId)` | The month's public gain of one entry on one standing stack of a city utility, in money (R2c-P): the service delivered with it less the service delivered without it, at the tariff the planners price it at (Recipes.pric... |
+| 511 | 6 | `private static double standingBill(Game game, BuildingsStacks stack)` | One standing stack's bill at the month's state, as billOf() strikes it, before any finiteness guard (R2c-P, REV-R2c-P-1). |
+| 519 | 5 | `public static double publicBillOf(Game game, BuildingsStacks stack)` | What the capture would bill this one stack this month (R2c-P, REV-R2c-P-1): its part of capturePublic(); 0 for no stack, a stack that is not a city utility's, or a city not founded the 1900 way. |
+| 530 | 6 | `public static double capturePublic(Game game)` | The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices: the sum of billOf() over the standing stacks at their own state (REV-R2c-P-1), each entry once a... |
+| 542 | 7 | `public static double forNewWork(Game game, BuildingsTemplate t, double running)` | The planners' licence cost of ONE more building of a city utility (R2c-P, REV-R2c-P-1), added to its running cost: billOf() for one new building with the pieces it would be fitted with, today, over a life (each fee we... |
+| 555 | 7 | `public static double forNewWork(Game game, BuildingsTemplate t, double running, long units, int monthsAhead)` | The planners' licence cost of `units` more buildings of a city utility, `monthsAhead` months from now (R2c-P, REV-R2c-P-1): billOf() for the units together beside the city as it stands (the bill of the whole order, no... |
 
-### WHAT A BUILD CARD SAYS OF ITS LICENCE (FB13, R5-L) (lines 560-602)
+### WHAT A BUILD CARD SAYS OF ITS LICENCE (FB13, R5-L) (lines 563-605)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 563 | 1 | **type** `public record Patent(String code, int endsMonth)` | A patent a licence is struck on: its catalogue code and the month it ends (history's date and TERM_MONTHS). |
-| 571 | 3 | **type** `public record Rent(double perMonth, List<Patent> patents)` | What one more of a building pays for its patents each month, and the patents that are running among those the bill is made of (FB13). |
-| 579 | 23 | `public static Rent rentOnNew(Game game, BuildingsTemplate t)` | The rent on one more of a building (FB13): none in a city not founded the 1900 way, inside another licence pricing, and for a work that is neither a sector's building nor a city utility. |
+| 566 | 1 | **type** `public record Patent(String code, int endsMonth)` | A patent a licence is struck on: its catalogue code and the month it ends (history's date and TERM_MONTHS). |
+| 574 | 3 | **type** `public record Rent(double perMonth, List<Patent> patents)` | What one more of a building pays for its patents each month, and the patents that are running among those the bill is made of (FB13). |
+| 582 | 23 | `public static Rent rentOnNew(Game game, BuildingsTemplate t)` | The rent on one more of a building (FB13): none in a city not founded the 1900 way, inside another licence pricing, and for a work that is neither a sector's building nor a city utility. |
 

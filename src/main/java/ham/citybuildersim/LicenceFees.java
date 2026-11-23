@@ -139,7 +139,7 @@ public final class LicenceFees {
         for (var e : recipe.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * creditedOutputRate(t, owner, e.getKey(), rate));
         for (var e : recipe.uses().entrySet()) value -= values.out(e.getKey(), e.getValue() * rate);
         for (JobType type : JobType.values()) value -= recipe.getJobs(type) * p.wages()[type.ordinal()];
-        return value - (recipe.getElectricity() - recipe.getGen()) * p.pricePerWatt()
+        return value - Recipes.powerCost(recipe, p)
                 - recipe.getWater() * p.pricePerWaterUnit() - recipe.getConsumables() * p.exchange() * rate;
     }
 
@@ -372,9 +372,12 @@ public final class LicenceFees {
         return t != null && game.isCitysToDemolish(t);
     }
 
-    /** What the grid delivers with its nameplate moved, by UtilitiesHandler.updateEnergyRatio()'s rule: output, capped by what the city asks (R2c-P). */
-    static double powerDelivered(UtilitiesHandler u, double nameplate) {
-        return Math.max(0, Math.min(u.getConsumption(), Math.max(0, u.getProduction() + nameplate * u.getAverageUtilityFill())));
+    /**
+     * What the grid delivers with this template's nameplate moved (R2c-P): since PW1-L the energy the month's dispatch serves with the
+     * template's row moved (UtilitiesHandler.deliveredWith()), not the flat rule's output capped by the draw, which served every kW alike.
+     */
+    static double powerDelivered(UtilitiesHandler u, BuildingsTemplate t, double nameplate) {
+        return Math.max(0, u.deliveredWith(t, nameplate));
     }
 
     /** What the water works deliver with the fresh and the sea nameplates moved, by UtilitiesHandler.waterOutput()'s rule, capped by what the city asks (R2c-P). */
@@ -412,7 +415,7 @@ public final class LicenceFees {
         UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
         Recipes.Prices prices = Recipes.pricesOf(game);
         if (t.getCategory() == BuildingType.ELECTRICITY)
-            return (powerDelivered(u, move) - powerDelivered(u, move - drop)) * prices.pricePerWatt();
+            return (powerDelivered(u, t, move) - powerDelivered(u, t, move - drop)) * prices.pricePerWatt();
         boolean sea = t.isSeaWater();
         return (waterDelivered(game, u, sea ? 0 : move, sea ? move : 0)
                 - waterDelivered(game, u, sea ? 0 : move - drop, sea ? move - drop : 0)) * prices.pricePerWaterUnit();

@@ -6430,6 +6430,9 @@ public class Game {
             byGood.merge(e.getKey(), d.importCost(), Double::sum);
         }
         utility.setFuelPaid(local, imported, book.upkeepWorld * getMarkets().getExchangeRate(), byGood);
+        // ...and the water works' power of the month just ended, at the same book's commerce price, which the water's books pay the power's
+        // in this month's services net (PW1-W, UtilitiesHandler's THE WATER'S POWER).
+        utility.setWaterPowerPaid(utility.getWaterPowerBill());
     }
 
     /**
