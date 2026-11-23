@@ -7176,68 +7176,68 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L672 ...the vault fell by exactly it
   - L673 ...and it fetched the dollars at the month's rate
   - L674 the central bank booked it the month it was sold
-  - L675 ...as spent defending the currency since founding
-  - L676 equity fell by it: its move, less the rest of the sheet's, less the revaluation
-  - L698 a save keeps the month's sale
-  - L699 ...what it fetched
-  - L700 ...the dollars sold since founding
-  - L701 ...the vault
-  - L702 ...what the central bank spent on it
-  - L703 ...its equity
-  - L704 ...and the real rate the reprice was handed
-  - L731 the defence fires in a real city more than once
-  - L732 ...and the equity line is every month's sale at its own month's rate
-  - L734 in every one of those months: M0 moved by the money made alone
-  - L735 ...nothing retired but what the named operations took back
-  - L736 ...the audit closed, and declared nothing for the defence
-  - L737 ...the remittance was the month's profit, the sale not in it
-  - L738 ...and the central bank kept nothing: its equity less the vault is what it owes
-  - L780 M0 moved by the money made and nothing else,
-  - L781 ...nothing retired but what the named operations took back
-  - L782 ...the audit closed, and declared nothing for the defence
-  - L783 ...the remittance is the month's profit, the sale not in it
-  - L784 ...and equity less the vault is what the bank owes: nothing kept
-- **L790 5. the dial, the rule and the appetite are uncapped**
-  - L794 the dial takes 60%
-  - L796 ...and stops at MAX_POLICY_RATE, where a typo would have taken it
-  - L798 the rule is advised unclamped past the old stop
-  - L835 fixture: the city reads a year of 45% inflation
-  - L842 the autopilot sets the rule's rate
-  - L844 ...past the old stop of the dial
-  - L854 the appetite at twenty points is larger than at six: it no longer stops there
-  - L856 ...it is twenty points' worth
-  - L857 ...and it stops at MAX_SPREAD
-  - L860 a month at twenty points is pulled by all twenty
-  - L861 ...toward the stock twenty points want
-- **L949 6. the rate goes where parity's trend takes it: the guards are a billion either way**
-  - L966 fixture: past settling, trade in balance, the vault empty, the whole economy trading
-  - L969 fixture: the market is quiet
-  - L983 a month's trend past the old guard of 100 takes the rate beyond it, not held at 100: the trend arrived
-  - L987 ...a rate under the old guard crosses it
-  - L988 ...and every month is the trend and the levels, never the guard
-  - L989 ...and the dollar debt is worth the dollars at it
-  - L997 fixture: the real city owes dollars, on one piece
-  - L1001 fixture: the city's debt was valued at a rate past the old guard of 100, as the load path leaves it
-  - L1002 fixture: the month moved the rate, so there is a revaluation to book
-  - L1003 ...the month's revaluation the whole of the move: the booked line is the dollars carried times the rate it left
-  - L1005 ...and it is a gain, the D$ having risen from the extreme (the debt costs fewer of it)
-  - L1006 ...the pieces were told the rate the month ended on
-  - L1007 ...and the dollar debt is worth the dollars at it, in the city's books
-  - L1009 ...the history's series holds that month's line (to its two decimals), the only one the city has booked
-  - L1028 a month's trend past the old floor of .01 takes the rate under it, not held at .01: the trend arrived
-  - L1030 a rate over the old floor crosses it
-  - L1031 ...and the dollar debt is worth the dollars at it
-  - L1035 fixture: the city's debt was valued at a rate under the old floor of .01, as the load path leaves it
-  - L1036 fixture: the month moved the rate, so there is a revaluation to book
-  - L1037 ...the month's revaluation the whole of the move, the mirror: the booked line is the dollars carried times the rate it left
-  - L1039 ...and it is a loss, the D$ having fallen from the extreme (the debt costs more of it)
-  - L1040 ...the pieces were told the rate the month ended on
-  - L1041 ...and since founding the city has booked both months' lines (to the history's two decimals)
-  - L1054 three zeros off: the rate a thousandth
-  - L1055 ...the guard above it a thousandth of MAX_RATE
-  - L1057 ...and the one below a thousandth of MIN_RATE
-  - L1069 ...and the push moves it as it moves the unreformed one, a thousandth the size
-  - L1073 a city founded in the new unit carries the guards in it
+  - L680 ...as spent defending the currency since founding
+  - L681 equity fell by it: its move, less the rest of the sheet's, less the revaluation
+  - L703 a save keeps the month's sale
+  - L704 ...what it fetched
+  - L705 ...the dollars sold since founding
+  - L706 ...the vault
+  - L707 ...what the central bank spent on it
+  - L708 ...its equity
+  - L709 ...and the real rate the reprice was handed
+  - L736 the defence fires in a real city more than once
+  - L737 ...and the equity line is every month's sale at its own month's rate
+  - L739 in every one of those months: M0 moved by the money made alone
+  - L740 ...nothing retired but what the named operations took back
+  - L741 ...the audit closed, and declared nothing for the defence
+  - L742 ...the remittance was the month's profit, the sale not in it
+  - L743 ...and the central bank kept nothing: its equity less the vault is what it owes
+  - L785 M0 moved by the money made and nothing else,
+  - L786 ...nothing retired but what the named operations took back
+  - L787 ...the audit closed, and declared nothing for the defence
+  - L788 ...the remittance is the month's profit, the sale not in it
+  - L789 ...and equity less the vault is what the bank owes: nothing kept
+- **L795 5. the dial, the rule and the appetite are uncapped**
+  - L799 the dial takes 60%
+  - L801 ...and stops at MAX_POLICY_RATE, where a typo would have taken it
+  - L803 the rule is advised unclamped past the old stop
+  - L840 fixture: the city reads a year of 45% inflation
+  - L847 the autopilot sets the rule's rate
+  - L849 ...past the old stop of the dial
+  - L859 the appetite at twenty points is larger than at six: it no longer stops there
+  - L861 ...it is twenty points' worth
+  - L862 ...and it stops at MAX_SPREAD
+  - L865 a month at twenty points is pulled by all twenty
+  - L866 ...toward the stock twenty points want
+- **L954 6. the rate goes where parity's trend takes it: the guards are a billion either way**
+  - L971 fixture: past settling, trade in balance, the vault empty, the whole economy trading
+  - L974 fixture: the market is quiet
+  - L988 a month's trend past the old guard of 100 takes the rate beyond it, not held at 100: the trend arrived
+  - L992 ...a rate under the old guard crosses it
+  - L993 ...and every month is the trend and the levels, never the guard
+  - L994 ...and the dollar debt is worth the dollars at it
+  - L1002 fixture: the real city owes dollars, on one piece
+  - L1006 fixture: the city's debt was valued at a rate past the old guard of 100, as the load path leaves it
+  - L1007 fixture: the month moved the rate, so there is a revaluation to book
+  - L1008 ...the month's revaluation the whole of the move: the booked line is the dollars carried times the rate it left
+  - L1010 ...and it is a gain, the D$ having risen from the extreme (the debt costs fewer of it)
+  - L1011 ...the pieces were told the rate the month ended on
+  - L1012 ...and the dollar debt is worth the dollars at it, in the city's books
+  - L1014 ...the history's series holds that month's line (to its two decimals), the only one the city has booked
+  - L1033 a month's trend past the old floor of .01 takes the rate under it, not held at .01: the trend arrived
+  - L1035 a rate over the old floor crosses it
+  - L1036 ...and the dollar debt is worth the dollars at it
+  - L1040 fixture: the city's debt was valued at a rate under the old floor of .01, as the load path leaves it
+  - L1041 fixture: the month moved the rate, so there is a revaluation to book
+  - L1042 ...the month's revaluation the whole of the move, the mirror: the booked line is the dollars carried times the rate it left
+  - L1044 ...and it is a loss, the D$ having fallen from the extreme (the debt costs more of it)
+  - L1045 ...the pieces were told the rate the month ended on
+  - L1046 ...and since founding the city has booked both months' lines (to the history's two decimals)
+  - L1059 three zeros off: the rate a thousandth
+  - L1060 ...the guard above it a thousandth of MAX_RATE
+  - L1062 ...and the one below a thousandth of MIN_RATE
+  - L1074 ...and the push moves it as it moves the unreformed one, a thousandth the size
+  - L1078 a city founded in the new unit carries the guards in it
 
 ## CurrencyRegimeCheck.java - 346 labelled assertions
 
@@ -12926,335 +12926,335 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
 - **L201 the city**
-  - L238 fixture: the founding's order for a Commercial Bank was placed
-  - L239 fixture: a standing bank, owned by somebody other than the city
-  - L242 fixture: a constructor city resolves on the button and its fund's dial is 0
-- **L270 1. a failed bank, automatic: resolved for its shares the month it fails**
-  - L281 fixture: the bank has lost more than it owns
-  - L284 the month resolved it
-  - L290 the city paid the hole the bank failed with and the capital to reopen
-  - L292 ...the hole as the bank recorded it failing
-  - L293 ...its cash first, and the rest for the central bank to advance
-  - L295 every share passed to the city: the households', the world's and the fund's own
-  - L303 ...and it holds every one it took, in its rescue book
-  - L305 the bank failed once and is open again the same month
-  - L307 nothing arrived from outside the city: no creditor absorbed a hole
-  - L308 the audit closed on the month of the resolution
-  - L309 ...and declared the world's loss as a valuation, at its last price
-  - L313 the treasury's journal says what the city put in
-  - L317 the next month's settle advanced the treasury past the central bank's ceiling
-  - L319 ...and its audit closed too
-  - L320 the inbox said what happened, and it is settled the month after
-  - L336 fixture: twelve banks frozen on holes in the trillions
-  - L337 fixture: ...and after the resolution, equity misses the exit level by more than a billionth
-  - L338 ...and the resolution still leaves the bank open, paid for once
-- **L351 2. on the button: frozen, carrying its hole, until the player presses**
-  - L355 fixture: the setting is the button
-  - L359 a month on, it is frozen and nobody has resolved it
-  - L361 ...its hole carried, not absorbed: its equity is still under nothing
-  - L363 ...the owners still own it
-  - L365 ...and the month's audit closed
-  - L368 another month: still frozen, the failure counted once
-  - L375 pressed: the city paid the hole and the capital to reopen
-  - L376 the old owners hold nothing: no household, nobody abroad
-  - L378 the city holds every share, the count in issue unmoved
-  - L379 ...and the bank is open again
-  - L380 the next month's audit closes
-- **L382 3. dilution: the bank's new shares go to others, and the city's stake falls**
-  - L385 fixture: the city holds all of it
-  - L425 fixture: a later branch costs this bank nothing to keep
-  - L426 fixture: the town's fees would cover a second branch
-  - L439 fixture: the fund's rule buys nothing, its withdrawal over the default
-  - L442 fixture: a second branch stands
-  - L447 fixture: the bank sold new shares
-  - L448 the city bought none of them: its shares are what it took
-  - L449 ...so its stake fell
-  - L450 ...to what it holds over what is in issue
-  - L465 the fund's bid over the desk's new-issue ask does not fill
-  - L467 ...by rule or by hand
-  - L468 ...and the ask keeps its place for a household's bid, which does
-- **L475 4. the preferred: TARP's terms**
-  - L479 fixture: a standing bank under its minimum
-  - L485 its size is at least 1% of its risk-weighted assets and at most 3%
-  - L487 ...what takes it back to its target, inside that band
-  - L492 deeper under, it asks for 3% and says the rest is its own share issues'
-  - L502 accepted
-  - L504 the treasury paid its par, a purchase
-  - L505 ...and it is an equity line of its own, the city's
-  - L506 its warrants are struck at last month's price
-  - L507 ...on shares worth 15% of the preferred at it
-  - L508 ...for ten years
-  - L509 its dividend is 5% a year until the fifth anniversary
-  - L511 ...and 9% from it
-  - L517 fixture: its target is over its minimum
-  - L520 a month over its minimum but under its target pays the preferred nothing
-  - L521 ...and owes a twelfth of 5% of its par
-  - L523 with a dividend unpaid, the common gets nothing however much it holds
-  - L526 the next month pays the arrears and the month's, cumulative
-  - L527 ...and the common is paid again
-  - L531 over its target but in its third year, it buys no share back
-  - L534 ...and pays its common no more a share than the year before the city bought in
-  - L537 from the third anniversary it may
-  - L546 at expiry in the money, the city takes shares worth what they are over the strike
-  - L548 ...and the preferred stays
-  - L557 a failure cancels the preferred and its warrants: the hole took them
-  - L559 ...and the equity's parts move by exactly the resolution's causes: the preferred to retained,
-  - L561 ...the old owners' paid-in gone: paid in is what the city paid
-- **L590 5. repaid at its third anniversary: its capital over target, then new shares to the public**
-  - L605 fixture: a block three years old, a month's dividend on it unpaid
-  - L612 at its third anniversary a block is redeemed whole
-  - L613 ...at par with its unpaid dividends, to the city's fund
-  - L615 ...out of its capital over its target: nothing raised, no new share
-  - L617 its unpaid dividends paid with it, as a dividend
-  - L619 ...and the city's consent lifts with it
-  - L620 fixture: its warrants were worth something
-  - L621 with no preferred left, the warrants are bought back at their fair value
-  - L623 ...and nothing is left out
-  - L624 the bank's equity fell by exactly what it paid
-  - L625 ...and its three parts moved by exactly those causes: par off the preferred, the dividend out of
-  - L653 with nothing over its target, it is still redeemed whole
-  - L654 ...by an offering sized to what it owes: the par, then the warrants' value
-  - L655 ...whose shares went to the households and the world
-  - L658 ...none to the city
-  - L659 so the city's stake fell by exactly the dilution
-  - L660 the fund was paid the par and the warrants
-  - L661 the bank ends at its target, where it began
-  - L662 ...its three parts still footing: the new common paid in, the par off the preferred
-  - L680 under its target, it is redeemed whole all the same
-  - L681 ...the offering raising exactly what it pays
-  - L682 ...and its equity where it was, still under its target
-  - L701 a save before the anniversary carries the block
-  - L702 played: the month it comes due, its audit closes
-  - L703 ...and the preferred is repaid
-  - L704 ...partly with new shares sold that month
-  - L705 the reloaded city's month closes too
-  - L706 ...and repays the same
-  - L707 ...raising the same
-  - L708 ...to the same shares in issue
-  - L709 ...and the same fund
-  - L722 an offering half taken up repays half
-  - L723 ...and the rest stays due, to be repaid the next month
-  - L725 ...when it is
-  - L729 fixture: with the preferred gone its warrants are worth something, and nothing is over its target
-  - L733 an offering half taken up for the warrants buys back half their value
-  - L734 ...half of every block's warrant shares
-  - L735 ...and pays out all it raised: the bank's equity where it was
-  - L736 ...counted as a repayment left part-paid
-  - L737 the rest the next month
-  - L739 ...and none is left out
-  - L750 a failed bank repays nothing and offers no share
-- **L782 6. the offer: in the inbox, a quarter after it is declined, and through a save**
-  - L813 fixture: the bank stands, under its minimum, at the month's end
-  - L815 a standing bank under its minimum asks, at the month's end
-  - L817 ...and the inbox has it, the popup Jerus asked for
-  - L838 fixture: it stood, under its minimum, at the end of both months
-  - L839 declined, it does not ask for two months
-  - L842 ...and asks again a quarter after
-  - L847 a pending offer survives a save, its month and the refusal before it
-- **L855 7. the dial: a share of the year's surplus, the floor, and the surplus used once**
-  - L859 at 0 it takes nothing
-  - L860 at 100% it takes the year's surplus, all from the surplus
-  - L861 at 300% three times it, the extra from the treasury's cash
-  - L863 never taking the treasury under a month of its spending
-  - L864 ...the surplus's part first
-  - L866 a deficit year saves nothing
-  - L868 ...and what the rollover already netted of it is not taken again
-  - L869 through the year the rollover leaves the dial's share of the year so far
-  - L871 ...nothing at a dial of 0, which is 0.7.13's rollover
-  - L888 the press after December closed paid the dial's share in
-  - L889 ...what the rule says, from the surplus
-  - L890 ...entered on the rollover's ledger, so the rollover cannot net it again
-- **L935 8. the rule: 70/30, the 10% limit, the band, and cash that waits**
-  - L958 it bids for shares up to 70% of its market book and cash, and no further
-  - L960 ...never for more than 10% of any company
-  - L961 what does not fit waits as its cash
-  - L962 ...and nothing was lost in the placing: at the marks it is what was paid in, less its transfer
-  - L975 fixture: the rule's bids rest on the books, the desk holding nothing to fill them with
-  - L976 the rule's bid stands at the desk's ask
-  - L989 the excess is what takes it back to 70%
-  - L990 ...and inside the band nothing is sold
-  - L992 four points under 70%, it sells the bonds over their 30%
-  - L993 ...but a fund short of shares only for want of a seller sells nothing
-  - L995 fixture: a listed company the households hold 15% of
-  - L999 fixture: a listed company whose households can hand the fund 5% of it
-  - L1010 over 74% in shares, it asks for the excess
-  - L1012 ...at fair value
-  - L1026 fixture: the households can hand the fund 15% of the company
-  - L1033 fixture: its shares are inside the band, so it has no mix to sell for
-  - L1053 over 10% of a company, it offers a tenth of the excess (LIMIT_SALE_SHARE) a month
-  - L1057 ...at the market: the last trade, held between the desk's bid and fair value (RB3)
-- **L1066 8b. the city's mark: a quote that is a last trade a year old gives way to fair value; a bid and an ask resting do not**
-  - L1076 fixture: a listed company that has traded away from its fair value
-  - L1083 fixture: the fund holds it and nothing else
-  - L1105 fixture: a bid and an ask rest on it, the last trade older than STALE_MARK_MONTHS, and the middle of them is neither that trade nor fair value
-  - L1108 a holding whose last trade is older than STALE_MARK_MONTHS but whose book has a bid and an ask resting is marked at the quote, not at fair value
-  - L1121 fixture: no side rests, so the quote is the last trade
-  - L1122 a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value
-  - L1126 ...and the price trading reads is still the last trade
-- **L1143 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only**
-  - L1156 fixture: a pay-in the rule can place, so none of the fund's cash is idle before the month
-  - L1159 fixture: ...and none of the month's transfer was struck on idle cash
-  - L1160 a twelfth of 3% of all it is worth
-  - L1161 ...paid from its cash
-  - L1162 ...a revenue line in the budget
-  - L1165 a fund worth something with no cash pays nothing
-  - L1166 ...and says so
-  - L1168 with some cash, what it has
-  - L1169 fixture: the treasury was not what paid it
-- **L1236 the withdrawal dial**
-  - L1245 fixture: a pay-in the rule can place, so none of the fund's cash is idle (RB1)
-  - L1247 at the default the withdrawal is today's transfer to the bit
-  - L1261 the dial takes whole steps from nothing to MAX_WITHDRAWAL_STEPS
-  - L1262 ...the most of them 10% of its value a month
-  - L1275 fixture: at nothing the fund holds cash its rule places
-  - L1276 at nothing it pays nothing and sells nothing
-  - L1296 fixture: its twin at the default bids for its book with the same cash
-  - L1298 it buys nothing while over the default
-  - L1305 fixture: a market book in two companies, a rescue book, no cash and no bonds
-  - L1311 fixture: the desk's bid is every share of both companies that is not its own, before the fund's ask comes to it
-  - L1324 fixture: its cash could not cover the month, all of it to raise
-  - L1340 over the default, what the cash cannot cover is sold from the market book at the step, pro rata
-  - L1342 ...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid
-  - L1344 ...and the desk's bid meets it at the step: some of it sold, into the fund's cash
-  - L1353 fixture: a bid took every share the fund asked
-  - L1359 ...and paid at the next month's top
-  - L1360 ...to the treasury with the month's own
-  - L1362 ...off the short it was counted in
-  - L1363 ...and into the paid
-  - L1364 the rescue book is never sold to pay it
-  - L1375 fixture: the bank is rebuilding its capital, between its minimum and its target, so it pays its owners nothing
-  - L1382 fixture: at the default its cash could not cover the month either
-  - L1384 at or under the default a short is not paid
-  - L1387 ...and what it asked is the band's, no more than its 30% - under what the withdrawal asked of the same fund
-- **L1400 9c. the idle cash: what is past the room its caps leave goes to the budget, a 24th a month (RB1)**
-  - L1405 a share room that is not a number reads as unlimited: nothing is idle
-  - L1407 ...so does a bond room that is not a number
-  - L1409 an unlimited share room takes the whole cash: nothing is idle
-  - L1410 ...so does an unlimited bond room
-  - L1411 no room at all: the cash less the hand's reserve is idle
-  - L1413 rooms that sum to less than the free cash: what is past them is idle
-  - L1415 rooms that sum to the free cash leave none idle
-  - L1417 a reserve larger than the cash leaves nothing free, so nothing idle
-  - L1421 the mix is not read: a share room that covers the cash leaves none idle, though no bond has a room
-  - L1429 fixture: at the default the dial takes less of the idle cash than the 24th
-  - L1430 fixture: at the most of the dial it takes more than the 24th
-  - L1431 with none idle the due is transferOn() at the default, to the bit
-  - L1436 at the default with idle cash: the dial's share of the rest and the 24th of the idle
-  - L1438 ...which is more than the dial's share of the whole value
-  - L1439 ...the part of it on the idle cash is the 24th of it
-  - L1440 at a dial of nothing nothing is withdrawn, idle or not
-  - L1442 at the most of the dial the idle cash is withdrawn at the dial, as the rest
-  - L1444 ...and its part is the dial's share of it
-  - L1445 idle cash above the fund's value is held to it
-  - L1447 ...and then the whole value is withdrawn at the 24th
-  - L1449 a fund worth nothing is due nothing
-  - L1454 fixture: the rule's rooms are a number, finite
-  - L1459 fixture: paid in past its rooms, the fund holds idle cash, and no more than its cash
-  - L1462 fixture: the dial is at the default
-  - L1463 the due the city reads is the model's, on the fund as it stands
-  - L1465 ...its idle part likewise
-  - L1467 ...and more than the dial would have taken of the whole
-  - L1468 fixture: nothing has been paid from idle cash yet
-  - L1471 the month's audit closes with the idle cash paid out
-  - L1472 the month's transfer has a part struck on the idle cash
-  - L1473 ...which is part of the due, and the life total holds it
-  - L1475 ...the budget's line is what the fund paid
-  - L1477 ...and the fund paid it all, from its cash
-  - L1484 the idle cash's part of the transfer, this month's and the life total, comes back from a save
-  - L1493 fixture: the dial is at nothing and cash lies idle
-  - L1494 at a dial of nothing the city is due nothing, and nothing of it from idle cash
-  - L1497 ...and the month pays none
-- **L1511 9d. the idle cash is read after last month's toRaise (RB1-R)**
-  - L1516 fixture: S is over the default, its share of the dial is under the 24th and one more step's is not
-  - L1521 fixture: a market book in two companies, a rescue book, no cash
-  - L1524 fixture: the dial is at S steps, over the default
-  - L1527 fixture: its cash could not cover the month, so there is a toRaise
-  - L1530 fixture: the rule's rooms are a number, finite
-  - L1538 fixture: paid in past its rooms, the cash is over the toRaise and the whole cash has idle cash in it
-  - L1540 the idle cash is the model's on the cash less last month's toRaise, to the bit
-  - L1541 ...and less than the idle cash on the whole cash, which counted the toRaise as idle
-  - L1546 the preview's due at the dial in force is the city's, and the model's on the idle cash after toRaise
-  - L1548 ...and what its cash pays of it is the due or the cash after toRaise, the less of the two
-  - L1555 fixture: the bond room is under the toRaise, so the bound tells the old read from the new
-  - L1558 the month's audit closes
-  - L1560 the month's due is the model's on the idle cash after toRaise (and so the preview's), to the 24th less the dial of the bond room
-  - L1562 ...its idle part is the model's on the idle cash after toRaise, to the 24th of the bond room (all of it paid)
-  - L1564 last month's toRaise was paid first, from the cash
-  - L1565 ...the month's own due was paid from what was left
-  - L1567 ...and the new toRaise is what its cash could not cover of the month
-  - L1569 fixture: its cash covered the month, so none is to raise
-- **L1597 9e. a real run at the default dial: the cap sale and the idle transfer fire, and no holding passes the fixed point (RB1-R)**
-  - L1618 fixture: a company that is not the Bank buys back in the probe, and its households hold what the limit takes
-  - L1629 fixture: the opening in-kind holding carries no unrelated secured claim
-  - L1638 the opening holding moves actual acquisition cost in kind
-  - L1639 the opening in-kind allocation does not invent purchase cash
-  - L1640 fixture: the fund holds the limit of it,
-  - L1643 fixture: the dial is at the default
-  - L1645 fixture: the rule's rooms are a number, finite
-  - L1649 fixture: paid in past its rooms, the fund holds idle cash
-  - L1682 the dial stayed at the default
-  - L1683 every month's audit closed
-  - L1684 the cap sale fired: the rule asked shares past the limit in some month
-  - L1685 the idle transfer fired: a month's transfer had a part struck on the idle cash
-  - L1686 in every month the company bought back over the limit, it met the fund's ask first: the fund sold what it asked, or all that was retired (RB3)
-  - L1688 no company was held past the fixed point
-- **L1694 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus**
-  - L1704 a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more
-  - L1706 ...and the journal names it
-  - L1708 a draw-out moves what the fund's cash holds back
-  - L1710 the hand's order waits for the step
-  - L1712 ...and is posted at it, at fair value
-  - L1719 fixture: two orders wait for the step, one at a price the player named
-  - L1721 ...and the second can be cancelled
-  - L1723 a limit posts at its limit
-  - L1727 a cancelled order never reaches the step
-- **L1734 11. every piece through a save, and an older save's fund**
-  - L1753 the dial and the rescue setting
-  - L1754 its cash
-  - L1760 its shares, both books, on the register
-  - L1761 its bonds, on the bonds
-  - L1762 the preferred
-  - L1763 ...its arrears
-  - L1764 ...its anniversary and warrants
-  - L1767 the player's order waiting for the step
-  - L1769 its record of the offers
-  - L1771 its value
-  - L1772 fixture: the month just closed paid a transfer and bought something
-  - L1774 ...and the month's transfer and flows, which the Fund page reads, come back with it
-  - L1779 ...and the part of it struck on the idle cash, this month's and the life total (RB1)
-  - L1783 a save from before the fund loads it empty, the dial at 0, the rescue on the button
-- **L1791 12. Insane: nothing, and the ground owed abroad**
-  - L1793 D$0 and US$0 read back as Insane
-  - L1795 ...and a custom founding still takes at least D$6M
-  - L1798 the treasury holds nothing and the vault nothing
-  - L1803 it owes one piece of paper
-  - L1804 ...a dollar term loan abroad
-  - L1806 ...at 3%
-  - L1807 ...for twenty years
-  - L1811 ...for the plots it was founded on, as the land office charges ground, at the opening dollar price
-  - L1815 ...the figure the founding screen quotes for its world
-  - L1817 ...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it
-  - L1831 a day-0 city is quoted a bond
-  - L1835 ...and the note
-  - L1837 the build screen at D$0: a house asks for funding, the whole of it
-  - L1840 the land office at D$0: a plot asks for funding, and is quoted both offers
-  - L1845 borrowed, the treasury holds cash
-  - L1847 ...a month
-  - L1849 ...and its audit closes
-- **L1863 13. Insane, never borrowing: play runs on the central bank's advances**
-  - L1868 day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing
-  - L1870 ...and nothing that is not a promise may be spent
-  - L1873 ...a purchase asked of it is refused whole, and nothing is owed for it
-  - L1875 ...a discretionary line is refused, and owed as arrears
-  - L1878 ...and a promise is paid past it, taking the treasury under nothing
-  - L1907 an Insane city that never borrowed runs twelve months through the time skip
-  - L1908 ...and the audit closes every month, nothing moving after it
-  - L1909 month one pays the land bond's coupon, a twelfth of INSANE_LAND_COUPON on its face at the month's rate
-  - L1911 ...from a treasury that held nothing, which the month leaves overdrawn
-  - L1912 month two's settle: the central bank advances the whole shortfall
-  - L1913 every month's coupon is paid, the land bond owed whole and never missed
-  - L1917 nothing that is not a promise was spent past the room the month opened with
-  - L1918 ...and it borrowed nothing: the land bond is still all it owes
+  - L246 fixture: the founding's order for a Commercial Bank was placed
+  - L247 fixture: a standing bank, owned by somebody other than the city
+  - L250 fixture: a constructor city resolves on the button and its fund's dial is 0
+- **L278 1. a failed bank, automatic: resolved for its shares the month it fails**
+  - L289 fixture: the bank has lost more than it owns
+  - L292 the month resolved it
+  - L298 the city paid the hole the bank failed with and the capital to reopen
+  - L300 ...the hole as the bank recorded it failing
+  - L301 ...its cash first, and the rest for the central bank to advance
+  - L303 every share passed to the city: the households', the world's and the fund's own
+  - L311 ...and it holds every one it took, in its rescue book
+  - L313 the bank failed once and is open again the same month
+  - L315 nothing arrived from outside the city: no creditor absorbed a hole
+  - L316 the audit closed on the month of the resolution
+  - L317 ...and declared the world's loss as a valuation, at its last price
+  - L321 the treasury's journal says what the city put in
+  - L325 the next month's settle advanced the treasury past the central bank's ceiling
+  - L327 ...and its audit closed too
+  - L328 the inbox said what happened, and it is settled the month after
+  - L344 fixture: twelve banks frozen on holes in the trillions
+  - L345 fixture: ...and after the resolution, equity misses the exit level by more than a billionth
+  - L346 ...and the resolution still leaves the bank open, paid for once
+- **L359 2. on the button: frozen, carrying its hole, until the player presses**
+  - L363 fixture: the setting is the button
+  - L367 a month on, it is frozen and nobody has resolved it
+  - L369 ...its hole carried, not absorbed: its equity is still under nothing
+  - L371 ...the owners still own it
+  - L373 ...and the month's audit closed
+  - L376 another month: still frozen, the failure counted once
+  - L383 pressed: the city paid the hole and the capital to reopen
+  - L384 the old owners hold nothing: no household, nobody abroad
+  - L386 the city holds every share, the count in issue unmoved
+  - L387 ...and the bank is open again
+  - L388 the next month's audit closes
+- **L390 3. dilution: the bank's new shares go to others, and the city's stake falls**
+  - L393 fixture: the city holds all of it
+  - L433 fixture: a later branch costs this bank nothing to keep
+  - L434 fixture: the town's fees would cover a second branch
+  - L447 fixture: the fund's rule buys nothing, its withdrawal over the default
+  - L450 fixture: a second branch stands
+  - L455 fixture: the bank sold new shares
+  - L456 the city bought none of them: its shares are what it took
+  - L457 ...so its stake fell
+  - L458 ...to what it holds over what is in issue
+  - L473 the fund's bid over the desk's new-issue ask does not fill
+  - L475 ...by rule or by hand
+  - L476 ...and the ask keeps its place for a household's bid, which does
+- **L483 4. the preferred: TARP's terms**
+  - L487 fixture: a standing bank under its minimum
+  - L493 its size is at least 1% of its risk-weighted assets and at most 3%
+  - L495 ...what takes it back to its target, inside that band
+  - L500 deeper under, it asks for 3% and says the rest is its own share issues'
+  - L510 accepted
+  - L512 the treasury paid its par, a purchase
+  - L513 ...and it is an equity line of its own, the city's
+  - L514 its warrants are struck at last month's price
+  - L515 ...on shares worth 15% of the preferred at it
+  - L516 ...for ten years
+  - L517 its dividend is 5% a year until the fifth anniversary
+  - L519 ...and 9% from it
+  - L525 fixture: its target is over its minimum
+  - L528 a month over its minimum but under its target pays the preferred nothing
+  - L529 ...and owes a twelfth of 5% of its par
+  - L531 with a dividend unpaid, the common gets nothing however much it holds
+  - L534 the next month pays the arrears and the month's, cumulative
+  - L535 ...and the common is paid again
+  - L539 over its target but in its third year, it buys no share back
+  - L542 ...and pays its common no more a share than the year before the city bought in
+  - L545 from the third anniversary it may
+  - L554 at expiry in the money, the city takes shares worth what they are over the strike
+  - L556 ...and the preferred stays
+  - L565 a failure cancels the preferred and its warrants: the hole took them
+  - L567 ...and the equity's parts move by exactly the resolution's causes: the preferred to retained,
+  - L569 ...the old owners' paid-in gone: paid in is what the city paid
+- **L598 5. repaid at its third anniversary: its capital over target, then new shares to the public**
+  - L613 fixture: a block three years old, a month's dividend on it unpaid
+  - L620 at its third anniversary a block is redeemed whole
+  - L621 ...at par with its unpaid dividends, to the city's fund
+  - L623 ...out of its capital over its target: nothing raised, no new share
+  - L625 its unpaid dividends paid with it, as a dividend
+  - L627 ...and the city's consent lifts with it
+  - L628 fixture: its warrants were worth something
+  - L629 with no preferred left, the warrants are bought back at their fair value
+  - L631 ...and nothing is left out
+  - L632 the bank's equity fell by exactly what it paid
+  - L633 ...and its three parts moved by exactly those causes: par off the preferred, the dividend out of
+  - L661 with nothing over its target, it is still redeemed whole
+  - L662 ...by an offering sized to what it owes: the par, then the warrants' value
+  - L663 ...whose shares went to the households and the world
+  - L666 ...none to the city
+  - L667 so the city's stake fell by exactly the dilution
+  - L668 the fund was paid the par and the warrants
+  - L669 the bank ends at its target, where it began
+  - L670 ...its three parts still footing: the new common paid in, the par off the preferred
+  - L688 under its target, it is redeemed whole all the same
+  - L689 ...the offering raising exactly what it pays
+  - L690 ...and its equity where it was, still under its target
+  - L709 a save before the anniversary carries the block
+  - L710 played: the month it comes due, its audit closes
+  - L711 ...and the preferred is repaid
+  - L712 ...partly with new shares sold that month
+  - L713 the reloaded city's month closes too
+  - L714 ...and repays the same
+  - L715 ...raising the same
+  - L716 ...to the same shares in issue
+  - L717 ...and the same fund
+  - L730 an offering half taken up repays half
+  - L731 ...and the rest stays due, to be repaid the next month
+  - L733 ...when it is
+  - L737 fixture: with the preferred gone its warrants are worth something, and nothing is over its target
+  - L741 an offering half taken up for the warrants buys back half their value
+  - L742 ...half of every block's warrant shares
+  - L743 ...and pays out all it raised: the bank's equity where it was
+  - L744 ...counted as a repayment left part-paid
+  - L745 the rest the next month
+  - L747 ...and none is left out
+  - L758 a failed bank repays nothing and offers no share
+- **L790 6. the offer: in the inbox, a quarter after it is declined, and through a save**
+  - L821 fixture: the bank stands, under its minimum, at the month's end
+  - L823 a standing bank under its minimum asks, at the month's end
+  - L825 ...and the inbox has it, the popup Jerus asked for
+  - L846 fixture: it stood, under its minimum, at the end of both months
+  - L847 declined, it does not ask for two months
+  - L850 ...and asks again a quarter after
+  - L855 a pending offer survives a save, its month and the refusal before it
+- **L863 7. the dial: a share of the year's surplus, the floor, and the surplus used once**
+  - L867 at 0 it takes nothing
+  - L868 at 100% it takes the year's surplus, all from the surplus
+  - L869 at 300% three times it, the extra from the treasury's cash
+  - L871 never taking the treasury under a month of its spending
+  - L872 ...the surplus's part first
+  - L874 a deficit year saves nothing
+  - L876 ...and what the rollover already netted of it is not taken again
+  - L877 through the year the rollover leaves the dial's share of the year so far
+  - L879 ...nothing at a dial of 0, which is 0.7.13's rollover
+  - L896 the press after December closed paid the dial's share in
+  - L897 ...what the rule says, from the surplus
+  - L898 ...entered on the rollover's ledger, so the rollover cannot net it again
+- **L943 8. the rule: 70/30, the 10% limit, the band, and cash that waits**
+  - L966 it bids for shares up to 70% of its market book and cash, and no further
+  - L968 ...never for more than 10% of any company
+  - L969 what does not fit waits as its cash
+  - L970 ...and nothing was lost in the placing: at the marks it is what was paid in, less its transfer
+  - L983 fixture: the rule's bids rest on the books, the desk holding nothing to fill them with
+  - L984 the rule's bid stands at the desk's ask
+  - L997 the excess is what takes it back to 70%
+  - L998 ...and inside the band nothing is sold
+  - L1000 four points under 70%, it sells the bonds over their 30%
+  - L1001 ...but a fund short of shares only for want of a seller sells nothing
+  - L1003 fixture: a listed company the households hold 15% of
+  - L1007 fixture: a listed company whose households can hand the fund 5% of it
+  - L1018 over 74% in shares, it asks for the excess
+  - L1020 ...at fair value
+  - L1034 fixture: the households can hand the fund 15% of the company
+  - L1041 fixture: its shares are inside the band, so it has no mix to sell for
+  - L1061 over 10% of a company, it offers a tenth of the excess (LIMIT_SALE_SHARE) a month
+  - L1065 ...at the market: the last trade, held between the desk's bid and fair value (RB3)
+- **L1074 8b. the city's mark: a quote that is a last trade a year old gives way to fair value; a bid and an ask resting do not**
+  - L1084 fixture: a listed company that has traded away from its fair value
+  - L1091 fixture: the fund holds it and nothing else
+  - L1113 fixture: a bid and an ask rest on it, the last trade older than STALE_MARK_MONTHS, and the middle of them is neither that trade nor fair value
+  - L1116 a holding whose last trade is older than STALE_MARK_MONTHS but whose book has a bid and an ask resting is marked at the quote, not at fair value
+  - L1129 fixture: no side rests, so the quote is the last trade
+  - L1130 a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value
+  - L1134 ...and the price trading reads is still the last trade
+- **L1151 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only**
+  - L1164 fixture: a pay-in the rule can place, so none of the fund's cash is idle before the month
+  - L1167 fixture: ...and none of the month's transfer was struck on idle cash
+  - L1168 a twelfth of 3% of all it is worth
+  - L1169 ...paid from its cash
+  - L1170 ...a revenue line in the budget
+  - L1173 a fund worth something with no cash pays nothing
+  - L1174 ...and says so
+  - L1176 with some cash, what it has
+  - L1177 fixture: the treasury was not what paid it
+- **L1244 the withdrawal dial**
+  - L1253 fixture: a pay-in the rule can place, so none of the fund's cash is idle (RB1)
+  - L1255 at the default the withdrawal is today's transfer to the bit
+  - L1269 the dial takes whole steps from nothing to MAX_WITHDRAWAL_STEPS
+  - L1270 ...the most of them 10% of its value a month
+  - L1283 fixture: at nothing the fund holds cash its rule places
+  - L1284 at nothing it pays nothing and sells nothing
+  - L1304 fixture: its twin at the default bids for its book with the same cash
+  - L1306 it buys nothing while over the default
+  - L1313 fixture: a market book in two companies, a rescue book, no cash and no bonds
+  - L1319 fixture: the desk's bid is every share of both companies that is not its own, before the fund's ask comes to it
+  - L1332 fixture: its cash could not cover the month, all of it to raise
+  - L1348 over the default, what the cash cannot cover is sold from the market book at the step, pro rata
+  - L1350 ...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid
+  - L1352 ...and the desk's bid meets it at the step: some of it sold, into the fund's cash
+  - L1361 fixture: a bid took every share the fund asked
+  - L1367 ...and paid at the next month's top
+  - L1368 ...to the treasury with the month's own
+  - L1370 ...off the short it was counted in
+  - L1371 ...and into the paid
+  - L1372 the rescue book is never sold to pay it
+  - L1383 fixture: the bank is rebuilding its capital, between its minimum and its target, so it pays its owners nothing
+  - L1390 fixture: at the default its cash could not cover the month either
+  - L1392 at or under the default a short is not paid
+  - L1395 ...and what it asked is the band's, no more than its 30% - under what the withdrawal asked of the same fund
+- **L1408 9c. the idle cash: what is past the room its caps leave goes to the budget, a 24th a month (RB1)**
+  - L1413 a share room that is not a number reads as unlimited: nothing is idle
+  - L1415 ...so does a bond room that is not a number
+  - L1417 an unlimited share room takes the whole cash: nothing is idle
+  - L1418 ...so does an unlimited bond room
+  - L1419 no room at all: the cash less the hand's reserve is idle
+  - L1421 rooms that sum to less than the free cash: what is past them is idle
+  - L1423 rooms that sum to the free cash leave none idle
+  - L1425 a reserve larger than the cash leaves nothing free, so nothing idle
+  - L1429 the mix is not read: a share room that covers the cash leaves none idle, though no bond has a room
+  - L1437 fixture: at the default the dial takes less of the idle cash than the 24th
+  - L1438 fixture: at the most of the dial it takes more than the 24th
+  - L1439 with none idle the due is transferOn() at the default, to the bit
+  - L1444 at the default with idle cash: the dial's share of the rest and the 24th of the idle
+  - L1446 ...which is more than the dial's share of the whole value
+  - L1447 ...the part of it on the idle cash is the 24th of it
+  - L1448 at a dial of nothing nothing is withdrawn, idle or not
+  - L1450 at the most of the dial the idle cash is withdrawn at the dial, as the rest
+  - L1452 ...and its part is the dial's share of it
+  - L1453 idle cash above the fund's value is held to it
+  - L1455 ...and then the whole value is withdrawn at the 24th
+  - L1457 a fund worth nothing is due nothing
+  - L1462 fixture: the rule's rooms are a number, finite
+  - L1467 fixture: paid in past its rooms, the fund holds idle cash, and no more than its cash
+  - L1470 fixture: the dial is at the default
+  - L1471 the due the city reads is the model's, on the fund as it stands
+  - L1473 ...its idle part likewise
+  - L1475 ...and more than the dial would have taken of the whole
+  - L1476 fixture: nothing has been paid from idle cash yet
+  - L1479 the month's audit closes with the idle cash paid out
+  - L1480 the month's transfer has a part struck on the idle cash
+  - L1481 ...which is part of the due, and the life total holds it
+  - L1483 ...the budget's line is what the fund paid
+  - L1485 ...and the fund paid it all, from its cash
+  - L1492 the idle cash's part of the transfer, this month's and the life total, comes back from a save
+  - L1501 fixture: the dial is at nothing and cash lies idle
+  - L1502 at a dial of nothing the city is due nothing, and nothing of it from idle cash
+  - L1505 ...and the month pays none
+- **L1519 9d. the idle cash is read after last month's toRaise (RB1-R)**
+  - L1524 fixture: S is over the default, its share of the dial is under the 24th and one more step's is not
+  - L1529 fixture: a market book in two companies, a rescue book, no cash
+  - L1532 fixture: the dial is at S steps, over the default
+  - L1535 fixture: its cash could not cover the month, so there is a toRaise
+  - L1538 fixture: the rule's rooms are a number, finite
+  - L1546 fixture: paid in past its rooms, the cash is over the toRaise and the whole cash has idle cash in it
+  - L1548 the idle cash is the model's on the cash less last month's toRaise, to the bit
+  - L1549 ...and less than the idle cash on the whole cash, which counted the toRaise as idle
+  - L1554 the preview's due at the dial in force is the city's, and the model's on the idle cash after toRaise
+  - L1556 ...and what its cash pays of it is the due or the cash after toRaise, the less of the two
+  - L1563 fixture: the bond room is under the toRaise, so the bound tells the old read from the new
+  - L1566 the month's audit closes
+  - L1568 the month's due is the model's on the idle cash after toRaise (and so the preview's), to the 24th less the dial of the bond room
+  - L1570 ...its idle part is the model's on the idle cash after toRaise, to the 24th of the bond room (all of it paid)
+  - L1572 last month's toRaise was paid first, from the cash
+  - L1573 ...the month's own due was paid from what was left
+  - L1575 ...and the new toRaise is what its cash could not cover of the month
+  - L1577 fixture: its cash covered the month, so none is to raise
+- **L1605 9e. a real run at the default dial: the cap sale and the idle transfer fire, and no holding passes the fixed point (RB1-R)**
+  - L1626 fixture: a company that is not the Bank buys back in the probe, and its households hold what the limit takes
+  - L1637 fixture: the opening in-kind holding carries no unrelated secured claim
+  - L1646 the opening holding moves actual acquisition cost in kind
+  - L1647 the opening in-kind allocation does not invent purchase cash
+  - L1648 fixture: the fund holds the limit of it,
+  - L1651 fixture: the dial is at the default
+  - L1653 fixture: the rule's rooms are a number, finite
+  - L1657 fixture: paid in past its rooms, the fund holds idle cash
+  - L1690 the dial stayed at the default
+  - L1691 every month's audit closed
+  - L1692 the cap sale fired: the rule asked shares past the limit in some month
+  - L1693 the idle transfer fired: a month's transfer had a part struck on the idle cash
+  - L1694 in every month the company bought back over the limit, it met the fund's ask first: the fund sold what it asked, or all that was retired (RB3)
+  - L1696 no company was held past the fixed point
+- **L1702 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus**
+  - L1712 a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more
+  - L1714 ...and the journal names it
+  - L1716 a draw-out moves what the fund's cash holds back
+  - L1718 the hand's order waits for the step
+  - L1720 ...and is posted at it, at fair value
+  - L1727 fixture: two orders wait for the step, one at a price the player named
+  - L1729 ...and the second can be cancelled
+  - L1731 a limit posts at its limit
+  - L1735 a cancelled order never reaches the step
+- **L1742 11. every piece through a save, and an older save's fund**
+  - L1761 the dial and the rescue setting
+  - L1762 its cash
+  - L1768 its shares, both books, on the register
+  - L1769 its bonds, on the bonds
+  - L1770 the preferred
+  - L1771 ...its arrears
+  - L1772 ...its anniversary and warrants
+  - L1775 the player's order waiting for the step
+  - L1777 its record of the offers
+  - L1779 its value
+  - L1780 fixture: the month just closed paid a transfer and bought something
+  - L1782 ...and the month's transfer and flows, which the Fund page reads, come back with it
+  - L1787 ...and the part of it struck on the idle cash, this month's and the life total (RB1)
+  - L1791 a save from before the fund loads it empty, the dial at 0, the rescue on the button
+- **L1799 12. Insane: nothing, and the ground owed abroad**
+  - L1801 D$0 and US$0 read back as Insane
+  - L1803 ...and a custom founding still takes at least D$6M
+  - L1806 the treasury holds nothing and the vault nothing
+  - L1811 it owes one piece of paper
+  - L1812 ...a dollar term loan abroad
+  - L1814 ...at 3%
+  - L1815 ...for twenty years
+  - L1819 ...for the plots it was founded on, as the land office charges ground, at the opening dollar price
+  - L1823 ...the figure the founding screen quotes for its world
+  - L1825 ...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it
+  - L1839 a day-0 city is quoted a bond
+  - L1843 ...and the note
+  - L1845 the build screen at D$0: a house asks for funding, the whole of it
+  - L1848 the land office at D$0: a plot asks for funding, and is quoted both offers
+  - L1853 borrowed, the treasury holds cash
+  - L1855 ...a month
+  - L1857 ...and its audit closes
+- **L1871 13. Insane, never borrowing: play runs on the central bank's advances**
+  - L1876 day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing
+  - L1878 ...and nothing that is not a promise may be spent
+  - L1881 ...a purchase asked of it is refused whole, and nothing is owed for it
+  - L1883 ...a discretionary line is refused, and owed as arrears
+  - L1886 ...and a promise is paid past it, taking the treasury under nothing
+  - L1915 an Insane city that never borrowed runs twelve months through the time skip
+  - L1916 ...and the audit closes every month, nothing moving after it
+  - L1917 month one pays the land bond's coupon, a twelfth of INSANE_LAND_COUPON on its face at the month's rate
+  - L1919 ...from a treasury that held nothing, which the month leaves overdrawn
+  - L1920 month two's settle: the central bank advances the whole shortfall
+  - L1921 every month's coupon is paid, the land bond owed whole and never missed
+  - L1925 nothing that is not a promise was spent past the room the month opened with
+  - L1926 ...and it borrowed nothing: the land bond is still all it owes
 
 ## FundLedgerCheck.java - 185 labelled assertions
 
@@ -13273,198 +13273,198 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
 - **L161 the city**
-  - L190 fixture: the founding's order for a Commercial Bank was placed
-  - L191 fixture: a standing bank, owned by somebody other than the city
-  - L196 fixture: the households' cells hold somebody - cells of at least HouseholdBalance.EMPTY_CELL households - to be handed a holding
-  - L197 fixture: the city's fund holds nothing and its ledger tracks from the founding
-- **L233 1. average cost: two buys at two prices, then a sale, on the book**
-  - L238 fixture: a company the households hold more than 200 shares of
-  - L252 100 bought at 2 and 100 at 4 fill whole, as the book reports
-  - L253 ...into one lot, the company's market book
-  - L255 ...which cost 600
-  - L256 ...3 a share, on the register's 200
-  - L258 ...and was worth 200 shares at the step's fair value: a bargain's measure
-  - L260 ...how far under it the lot bought being the one against the other
-  - L263 50 sold at 5 to a bid the world rested
-  - L264 ...take 150 of cost out
-  - L265 ...and realize 100: 250 in, less the 150
-  - L266 ...and leave the average a share at 3
-  - L267 the proceeds are the lot's, and the fund's counter's
-  - L268 ...the purchases too
-  - L274 ...the hand's buys a row, 200 for 600, 3 on average
-  - L275 ...worth 200 shares at fair value on the row too
-  - L277 ...its sale a row, realizing 100
-  - L279 the record has one row each way: fills of a month, a lot and a side are one
-- **L285 2. the books: the rule and the hand pooled; the rescue; a hand sale through both books**
-  - L301 the rule's 30 at 2 and the hand's 20 at 3 are one lot
-  - L303 ...costing 120, 2.4 a share
-  - L314 fixture: somebody other than the city holds the bank's shares
-  - L323 fixture: the fund holds half of what they held on its market book, at the price
-  - L333 fixture: the month resolved the failed bank for its shares
-  - L335 the rescue took the fund's market-book bank shares for nothing: their cost realized as a loss
-  - L337 ...and the market lot closed with nothing left of its cost
-  - L339 ...a rescue lot opened, whose cost is what the city paid
-  - L346 ...and a row says what was paid and what the market lot lost
-  - L356 a hand sale of a quarter of the rescue book takes a quarter of its cost out
-  - L358 ...and realizes the proceeds less it
-  - L360 ...and the rescue book's cost on the fund is the rest
-  - L367 fixture: the fund holds 10 bank shares on its market book again, beside the rescue book
-  - L373 a hand sale of 30 takes the 10 on the market book first, all its cost
-  - L375 ...then 20 from the rescue book, at the rescue lot's own cost a share
-  - L377 ...and the rescue lot's cost is the fund's own after
-- **L399 3. bonds: a coupon is income, a default realizes its share, a maturity the face**
-  - L402 fixture: the existing native largest listed company supplies the issuer key
-  - L406 fixture: the native issuer exists before opening balances are installed
-  - L409 fixture: the declared opening issuer cash is installed before the test interval
-  - L429 fixture: the fund holds 2,000 of a bond's face, bought at .98 and 1.02
-  - L431 ...which cost 2,000, 1.00 a unit of face
-  - L433 ...and was worth its face at the bond's value at the step: a bargain's measure
-  - L437 the original fund cash use outside the bond component remains three thousand
-  - L441 fixture: all actual bond holders add to issued face
-  - L442 fixture: the recorded issuer bill is fifty
-  - L443 fixture: the selected native issuer owes that whole bill
-  - L444 fixture: only the actual issuer has a recorded bill
-  - L445 fixture: the recorded fund entitlement is ten
-  - L446 fixture: the recorded world entitlement is forty
-  - L447 fixture: there is no actual bank entitlement
-  - L448 fixture: there is no private or custody entitlement
-  - L449 fixture: no cell or company entitlement is hidden
-  - L450 fixture: every recorded holder is funded by the issuer bill
-  - L451 fixture: the native record is open and still unpaid
-  - L452 fixture: an uncharged promise contains no cash
-  - L457 fixture: the selected existing native sector can actually fund its recorded bill
-  - L460 fixture: the native payer cash API reads back the unchanged stock
-  - L467 the actual native issuer cash debit is its fifty-dollar bill
-  - L469 the actual issuer debit is the cash entering native clearing
-  - L470 issuer and clearing conserve the detached fixture's real cash
-  - L472 guarded zero bank booking moves no clearing cash
-  - L474 the native record pays exactly forty across the world edge
-  - L475 the fund's actual cash includes its coupon and native trading edges
-  - L477 issuer, clearing, fund and native world edges conserve detached fixture cash
-  - L480 the actual fund coupon counter receives ten once
-  - L481 the standalone book pays no household or bank coupons
-  - L482 the native cash record is discharged
-  - L483 the native record closes and removes all unpaid entitlement
-  - L487 native recording refuses a second positive issuer charge
-  - L493 repeated guarded recording/payment creates no issuer debit
-  - L494 repeated guarded recording/payment creates no fund cash
-  - L495 repeated guarded payment creates no ledger income
-  - L496 repeated guarded payment creates no world coupon
-  - L497 repeated guarded payment creates no clearing cash
-  - L502 a month's coupon is the lot's income
-  - L505 ...its income in the last month that paid any, the month of the coupon's row
-  - L507 ...and not its cost
-  - L508 ...and the fund's, to the cent
-  - L511 a default at the bonds' loss given default realizes that share of the cost
-  - L513 ...and leaves the rest on the face kept
-  - L516 a write-down that keeps the whole face realizes nothing
-  - L520 the actual native issuer cash funds the whole maturing face
-  - L522 its maturity realizes the face less the cost
-  - L523 ...and closes the lot, with its record
-  - L524 ...the face is what the fund was paid
-  - L525 the ledger's proceeds are the counters' sales and principal
-  - L527 opening through closing conserves issuer, fund, clearing and actual external cash
-  - L533 a repeated native maturity creates no fund cash
-  - L534 a repeated native maturity creates no issuer debit
-  - L535 a repeated native maturity creates no principal receipt
-  - L536 a repeated native maturity creates no world principal
-  - L537 a repeated native maturity creates no realized gain
-- **L544 4. a split at SPLIT_AT and a currency reform**
-  - L562 fixture: a lot
-  - L569 fixture: the wage trigger split the company: the quote over SPLIT_AT of the wage before, under it after
-  - L571 a split leaves the lot's cost where it was
-  - L572 ...the register's count goes up by the factor
-  - L573 ...and the average a share falls by it
-  - L576 ...and a row says so
-  - L585 fixture: the currency reformed,
-  - L588 a reform scales the lot's cost
-  - L589 ...what it realized and what it was bought for
-  - L593 ...and every row's money
-  - L594 ...and not the shares it holds
-- **L600 5. through a save, and an older save's ledger seeded**
-  - L626 every lot comes back exactly: its cost, what it realized and paid, and since when
-  - L634 ...every row, an order still on the book among them
-  - L635 ...the hand's order on the book, and the month tracking began
-  - L642 an older save's fund has no ledger, and waits to have one seeded
-  - L646 ...seeded at the load's month
-  - L647 ...each market lot at its market value then, flagged so
-  - L649 ...with the dividends paid before it apart
-  - L650 ...and one row says what happened
-  - L654 a save from before the fund itself waits for a ledger too, which it seeds from nothing
-  - L688 fixture: somebody other than the city holds the bank's shares
-  - L697 fixture: the month resolved the failed bank for its shares
-  - L709 fixture: a city that resolved its bank, sold some of the rescue book and holds bank shares on its market book too
-  - L718 fixture: the save carries the ledger inside the fund
-  - L723 fixture: the save read, its ledger taken out and written as an older save (
-  - L728 a save with a rescue book and no ledger is seeded at its load: tracking from that month, one row to say so
-  - L733 fixture: its rescue book is worth something other than what the city paid for it
-  - L735 ...its rescue lot is there
-  - L736 ...its rescue lot costed at what the city paid for the shares it still holds, exactly, not at their market value
-  - L738 ...and not tagged as counted at market value, its cost dated from the rescue
-  - L740 ...what the hand's sales of it brought, as the city that tracked it all along has it
-  - L742 ...the cost those sales took out: what the rescue paid, less what is left of it
-  - L744 ...and the gain they realized
-  - L745 ...its dividends since the rescue, the rescue book's own
-  - L756 its market lots, the bank's among them, at their market value at the load, each tagged with the month
-  - L759 ...the bank's market lot with the dividends before it apart from the rescue book's
-  - L762 ...and the row counts every holding, the rescue lot among them
-- **L786 6. the identity over a played run, and 7. since it began, by kind**
-  - L816 fixture: the rule bought something over the run
-  - L817 realized + the change in unrealized = the change in value + proceeds - purchases - rescues, every month
-  - L819 ...and the ledger's purchases and proceeds are the fund's own counters'
-  - L820 the whole run, end to end, the same
-  - L824 fixture: a company the fund holds, to lend
-  - L827 ...the fee is the fund's income this month and its life's
-  - L831 since it began, the gain by kind adds up to the fund's: worth + taken out - put in
-  - L833 ...whose put in is the pay-ins, the rescues and the preferred
-  - L839 ...because its cash is what came in less what went out, to the cent
-  - L845 every holding of a city founded with the ledger has a cost, none counted at market value
-- **L851 8. the hand: its cap, its cash held from the rule, its order on the record**
-  - L856 fixture: the desk holds nothing of the company and the households hold the holding they were handed
-  - L866 a buy waiting for the step holds its money from the rule
-  - L867 ...which bids with the rest
-  - L868 ...and a second order can take no more than the rest
-  - L871 fixture: the order was posted at the step and rests on the book
-  - L874 the hand's buy is posted no further than the room under the 10% cap the rule keeps
-  - L876 ...and what it still holds of the cash is its units still to fill at its price
-  - L880 ...and the rule's bid on the same book rests on no more than what the hand leaves
-  - L884 the order is a row from the step that posted it, open while it rests
-  - L887 the next step closes it: off the book and off the cash
-  - L888 ...its row says what it filled and what lapsed
-  - L894 fixture: a buy far past the cap is queued at the free cash
-  - L898 fixture: a company whose step leaves a fund at its cap at the cap
-  - L908 a buy in a company the fund already holds 10% of is not posted, and its row says why
-  - L991 fixture: the rule given the money bids for the company at the step, with the desk holding none
-  - L1026 fixture: the rule bids for the company at the step - resting, or taken at the desk's ask - and both orders were posted beside it
-  - L1033 fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%
-  - L1037 the rule's bid makes way for the orders waiting: it rests on no more than the room they leave
-  - L1039 ...and both orders are posted whole
-  - L1041 ...so the fund's market book and every bid of its on the book come to no more than the cap
-  - L1043 fixture: every bid of the fund's on the book filled - the rule's and both orders'
-  - L1044 ...and the fund holds no more than the cap of the company: nothing for the rule to ask back at fair value
-  - L1060 fixture: two orders for 6% of the company each, both posted
-  - L1063 ...together past the room the market book leaves
-  - L1064 orders past the room on their own leave the rule's bid nothing in the company
-  - L1066 ...and the step posts the first whole and the second only to the room the first leaves
-  - L1069 ...so the market book and every bid of the fund's come to the cap and no more
-  - L1071 fixture: both orders filled
-  - L1072 ...and the fund holds the cap of the company and no more
-  - L1087 fixture: a fund whose rule bids for the whole room in the company
-  - L1091 the ticket offers an order the room all the same: the rule's bid makes way for it
-  - L1101 fixture: two orders placed after it, for 4% of the company each or two-fifths of the room left
-  - L1103 ...everything the fund could hold of it, every buy filled, the rule's as far as it may, is still the cap
-  - L1108 a seller hitting the rule's bid fills it no further than the room the two orders leave
-  - L1114 at the step both orders post, and the market book and every bid of the fund's come to no more than the cap
-  - L1117 fixture: every bid filled
-  - L1118 ...and the fund holds no more than the cap of the company
-  - L1141 fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left
-  - L1144 ...the ticket quotes a buy
-  - L1145 the ticket's room is the cap less what the fund holds and the order waiting
-  - L1147 ...the model's own reckoning, which the step trims the order with and the rule's bid fills by
-  - L1149 ...and a ticket for the whole cap is capped at it, and says so
-  - L1151 ...the market book against the cap after: every one of them filled, the cap itself
-  - L1153 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
-  - L1155 ...and the rule's bid makes way for as much of the order as it would otherwise take
+  - L196 fixture: the founding's order for a Commercial Bank was placed
+  - L197 fixture: a standing bank, owned by somebody other than the city
+  - L202 fixture: the households' cells hold somebody - cells of at least HouseholdBalance.EMPTY_CELL households - to be handed a holding
+  - L203 fixture: the city's fund holds nothing and its ledger tracks from the founding
+- **L239 1. average cost: two buys at two prices, then a sale, on the book**
+  - L244 fixture: a company the households hold more than 200 shares of
+  - L258 100 bought at 2 and 100 at 4 fill whole, as the book reports
+  - L259 ...into one lot, the company's market book
+  - L261 ...which cost 600
+  - L262 ...3 a share, on the register's 200
+  - L264 ...and was worth 200 shares at the step's fair value: a bargain's measure
+  - L266 ...how far under it the lot bought being the one against the other
+  - L269 50 sold at 5 to a bid the world rested
+  - L270 ...take 150 of cost out
+  - L271 ...and realize 100: 250 in, less the 150
+  - L272 ...and leave the average a share at 3
+  - L273 the proceeds are the lot's, and the fund's counter's
+  - L274 ...the purchases too
+  - L280 ...the hand's buys a row, 200 for 600, 3 on average
+  - L281 ...worth 200 shares at fair value on the row too
+  - L283 ...its sale a row, realizing 100
+  - L285 the record has one row each way: fills of a month, a lot and a side are one
+- **L291 2. the books: the rule and the hand pooled; the rescue; a hand sale through both books**
+  - L307 the rule's 30 at 2 and the hand's 20 at 3 are one lot
+  - L309 ...costing 120, 2.4 a share
+  - L320 fixture: somebody other than the city holds the bank's shares
+  - L329 fixture: the fund holds half of what they held on its market book, at the price
+  - L339 fixture: the month resolved the failed bank for its shares
+  - L341 the rescue took the fund's market-book bank shares for nothing: their cost realized as a loss
+  - L343 ...and the market lot closed with nothing left of its cost
+  - L345 ...a rescue lot opened, whose cost is what the city paid
+  - L352 ...and a row says what was paid and what the market lot lost
+  - L362 a hand sale of a quarter of the rescue book takes a quarter of its cost out
+  - L364 ...and realizes the proceeds less it
+  - L366 ...and the rescue book's cost on the fund is the rest
+  - L373 fixture: the fund holds 10 bank shares on its market book again, beside the rescue book
+  - L379 a hand sale of 30 takes the 10 on the market book first, all its cost
+  - L381 ...then 20 from the rescue book, at the rescue lot's own cost a share
+  - L383 ...and the rescue lot's cost is the fund's own after
+- **L405 3. bonds: a coupon is income, a default realizes its share, a maturity the face**
+  - L408 fixture: the existing native largest listed company supplies the issuer key
+  - L412 fixture: the native issuer exists before opening balances are installed
+  - L415 fixture: the declared opening issuer cash is installed before the test interval
+  - L435 fixture: the fund holds 2,000 of a bond's face, bought at .98 and 1.02
+  - L437 ...which cost 2,000, 1.00 a unit of face
+  - L439 ...and was worth its face at the bond's value at the step: a bargain's measure
+  - L443 the original fund cash use outside the bond component remains three thousand
+  - L447 fixture: all actual bond holders add to issued face
+  - L448 fixture: the recorded issuer bill is fifty
+  - L449 fixture: the selected native issuer owes that whole bill
+  - L450 fixture: only the actual issuer has a recorded bill
+  - L451 fixture: the recorded fund entitlement is ten
+  - L452 fixture: the recorded world entitlement is forty
+  - L453 fixture: there is no actual bank entitlement
+  - L454 fixture: there is no private or custody entitlement
+  - L455 fixture: no cell or company entitlement is hidden
+  - L456 fixture: every recorded holder is funded by the issuer bill
+  - L457 fixture: the native record is open and still unpaid
+  - L458 fixture: an uncharged promise contains no cash
+  - L463 fixture: the selected existing native sector can actually fund its recorded bill
+  - L466 fixture: the native payer cash API reads back the unchanged stock
+  - L473 the actual native issuer cash debit is its fifty-dollar bill
+  - L475 the actual issuer debit is the cash entering native clearing
+  - L476 issuer and clearing conserve the detached fixture's real cash
+  - L478 guarded zero bank booking moves no clearing cash
+  - L480 the native record pays exactly forty across the world edge
+  - L481 the fund's actual cash includes its coupon and native trading edges
+  - L483 issuer, clearing, fund and native world edges conserve detached fixture cash
+  - L486 the actual fund coupon counter receives ten once
+  - L487 the standalone book pays no household or bank coupons
+  - L488 the native cash record is discharged
+  - L489 the native record closes and removes all unpaid entitlement
+  - L493 native recording refuses a second positive issuer charge
+  - L499 repeated guarded recording/payment creates no issuer debit
+  - L500 repeated guarded recording/payment creates no fund cash
+  - L501 repeated guarded payment creates no ledger income
+  - L502 repeated guarded payment creates no world coupon
+  - L503 repeated guarded payment creates no clearing cash
+  - L508 a month's coupon is the lot's income
+  - L511 ...its income in the last month that paid any, the month of the coupon's row
+  - L513 ...and not its cost
+  - L514 ...and the fund's, to the cent
+  - L517 a default at the bonds' loss given default realizes that share of the cost
+  - L519 ...and leaves the rest on the face kept
+  - L522 a write-down that keeps the whole face realizes nothing
+  - L526 the actual native issuer cash funds the whole maturing face
+  - L528 its maturity realizes the face less the cost
+  - L529 ...and closes the lot, with its record
+  - L530 ...the face is what the fund was paid
+  - L531 the ledger's proceeds are the counters' sales and principal
+  - L533 opening through closing conserves issuer, fund, clearing and actual external cash
+  - L539 a repeated native maturity creates no fund cash
+  - L540 a repeated native maturity creates no issuer debit
+  - L541 a repeated native maturity creates no principal receipt
+  - L542 a repeated native maturity creates no world principal
+  - L543 a repeated native maturity creates no realized gain
+- **L550 4. a split at SPLIT_AT and a currency reform**
+  - L568 fixture: a lot
+  - L575 fixture: the wage trigger split the company: the quote over SPLIT_AT of the wage before, under it after
+  - L577 a split leaves the lot's cost where it was
+  - L578 ...the register's count goes up by the factor
+  - L579 ...and the average a share falls by it
+  - L582 ...and a row says so
+  - L591 fixture: the currency reformed,
+  - L594 a reform scales the lot's cost
+  - L595 ...what it realized and what it was bought for
+  - L599 ...and every row's money
+  - L600 ...and not the shares it holds
+- **L606 5. through a save, and an older save's ledger seeded**
+  - L632 every lot comes back exactly: its cost, what it realized and paid, and since when
+  - L640 ...every row, an order still on the book among them
+  - L641 ...the hand's order on the book, and the month tracking began
+  - L648 an older save's fund has no ledger, and waits to have one seeded
+  - L652 ...seeded at the load's month
+  - L653 ...each market lot at its market value then, flagged so
+  - L655 ...with the dividends paid before it apart
+  - L656 ...and one row says what happened
+  - L660 a save from before the fund itself waits for a ledger too, which it seeds from nothing
+  - L694 fixture: somebody other than the city holds the bank's shares
+  - L703 fixture: the month resolved the failed bank for its shares
+  - L715 fixture: a city that resolved its bank, sold some of the rescue book and holds bank shares on its market book too
+  - L724 fixture: the save carries the ledger inside the fund
+  - L729 fixture: the save read, its ledger taken out and written as an older save (
+  - L734 a save with a rescue book and no ledger is seeded at its load: tracking from that month, one row to say so
+  - L739 fixture: its rescue book is worth something other than what the city paid for it
+  - L741 ...its rescue lot is there
+  - L742 ...its rescue lot costed at what the city paid for the shares it still holds, exactly, not at their market value
+  - L744 ...and not tagged as counted at market value, its cost dated from the rescue
+  - L746 ...what the hand's sales of it brought, as the city that tracked it all along has it
+  - L748 ...the cost those sales took out: what the rescue paid, less what is left of it
+  - L750 ...and the gain they realized
+  - L751 ...its dividends since the rescue, the rescue book's own
+  - L762 its market lots, the bank's among them, at their market value at the load, each tagged with the month
+  - L765 ...the bank's market lot with the dividends before it apart from the rescue book's
+  - L768 ...and the row counts every holding, the rescue lot among them
+- **L792 6. the identity over a played run, and 7. since it began, by kind**
+  - L822 fixture: the rule bought something over the run
+  - L823 realized + the change in unrealized = the change in value + proceeds - purchases - rescues, every month
+  - L825 ...and the ledger's purchases and proceeds are the fund's own counters'
+  - L826 the whole run, end to end, the same
+  - L830 fixture: a company the fund holds, to lend
+  - L833 ...the fee is the fund's income this month and its life's
+  - L837 since it began, the gain by kind adds up to the fund's: worth + taken out - put in
+  - L839 ...whose put in is the pay-ins, the rescues and the preferred
+  - L845 ...because its cash is what came in less what went out, to the cent
+  - L851 every holding of a city founded with the ledger has a cost, none counted at market value
+- **L857 8. the hand: its cap, its cash held from the rule, its order on the record**
+  - L862 fixture: the desk holds nothing of the company and the households hold the holding they were handed
+  - L872 a buy waiting for the step holds its money from the rule
+  - L873 ...which bids with the rest
+  - L874 ...and a second order can take no more than the rest
+  - L877 fixture: the order was posted at the step and rests on the book
+  - L880 the hand's buy is posted no further than the room under the 10% cap the rule keeps
+  - L882 ...and what it still holds of the cash is its units still to fill at its price
+  - L886 ...and the rule's bid on the same book rests on no more than what the hand leaves
+  - L890 the order is a row from the step that posted it, open while it rests
+  - L893 the next step closes it: off the book and off the cash
+  - L894 ...its row says what it filled and what lapsed
+  - L900 fixture: a buy far past the cap is queued at the free cash
+  - L904 fixture: a company whose step leaves a fund at its cap at the cap
+  - L914 a buy in a company the fund already holds 10% of is not posted, and its row says why
+  - L997 fixture: the rule given the money bids for the company at the step, with the desk holding none
+  - L1032 fixture: the rule bids for the company at the step - resting, or taken at the desk's ask - and both orders were posted beside it
+  - L1039 fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%
+  - L1043 the rule's bid makes way for the orders waiting: it rests on no more than the room they leave
+  - L1045 ...and both orders are posted whole
+  - L1047 ...so the fund's market book and every bid of its on the book come to no more than the cap
+  - L1049 fixture: every bid of the fund's on the book filled - the rule's and both orders'
+  - L1050 ...and the fund holds no more than the cap of the company: nothing for the rule to ask back at fair value
+  - L1066 fixture: two orders for 6% of the company each, both posted
+  - L1069 ...together past the room the market book leaves
+  - L1070 orders past the room on their own leave the rule's bid nothing in the company
+  - L1072 ...and the step posts the first whole and the second only to the room the first leaves
+  - L1075 ...so the market book and every bid of the fund's come to the cap and no more
+  - L1077 fixture: both orders filled
+  - L1078 ...and the fund holds the cap of the company and no more
+  - L1093 fixture: a fund whose rule bids for the whole room in the company
+  - L1097 the ticket offers an order the room all the same: the rule's bid makes way for it
+  - L1107 fixture: two orders placed after it, for 4% of the company each or two-fifths of the room left
+  - L1109 ...everything the fund could hold of it, every buy filled, the rule's as far as it may, is still the cap
+  - L1114 a seller hitting the rule's bid fills it no further than the room the two orders leave
+  - L1120 at the step both orders post, and the market book and every bid of the fund's come to no more than the cap
+  - L1123 fixture: every bid filled
+  - L1124 ...and the fund holds no more than the cap of the company
+  - L1147 fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left
+  - L1150 ...the ticket quotes a buy
+  - L1151 the ticket's room is the cap less what the fund holds and the order waiting
+  - L1153 ...the model's own reckoning, which the step trims the order with and the rule's bid fills by
+  - L1155 ...and a ticket for the whole cap is capped at it, and says so
+  - L1157 ...the market book against the cap after: every one of them filled, the cap itself
+  - L1159 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
+  - L1161 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
 ## GapOrderCheck.java - 34 labelled assertions
 
@@ -31675,20 +31675,20 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1083 net
 - **L1086 the cash flow**
   - L1087 cash flow
-  - L1113 revenue by good
-  - L1119 cost of sales by good and named line
-  - L1132 exports by good
-  - L1141 imports by good
-  - L1156 other revenue named
-- **L1175 AND IT HAS TO SURVIVE A SAVE.**
-  - L1193 survives a save
-  - L1195 ...and its cash
-- **L1207 and the month after**
-  - L1210 cash flow across a reload
-- **L1213 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46)**
-  - L1256 fixture: the crews bought materials in more than one month, and in the month last struck
-  - L1266 Construction's struck materials are the row as it stood at the strike, and cross a save
-  - L1277 ...and a save from before them loads them as not counted, not as nothing
+  - L1116 revenue by good
+  - L1122 cost of sales by good and named line
+  - L1135 exports by good
+  - L1146 imports by good
+  - L1161 other revenue named
+- **L1180 AND IT HAS TO SURVIVE A SAVE.**
+  - L1198 survives a save
+  - L1200 ...and its cash
+- **L1212 and the month after**
+  - L1215 cash flow across a reload
+- **L1218 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46)**
+  - L1261 fixture: the crews bought materials in more than one month, and in the month last struck
+  - L1271 Construction's struck materials are the row as it stood at the strike, and cross a save
+  - L1282 ...and a save from before them loads them as not counted, not as nothing
 
 ## ShortSellingCheck.java - 282 labelled assertions
 

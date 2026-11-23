@@ -226,6 +226,14 @@ public class FundCheck {
             // branch stood and the households or the world held its shares - 73 passed (WG2, 2026-11-10), 74 alone of 74-80. A Commercial Bank built here
             // opens its branch when it is finished, and the branch's paid-in capital is sold as shares, the households first and the world for the rest
             // (Game.capitaliseBank()), so the standing bank and its owners are caused, and the count of months is the stage and no more.
+            // FC2, 2026-11-23: THE BANK'S QUOTE HANDED TO THE FOUNDING'S CASH WHERE THE TOWN'S ORDERS LEFT IT SHORT. The bank is ordered behind the
+            // 300 Houses, the shops, the depots and the plant, and priced on the queue they make; on FC2's path the work past the threshold went to the
+            // foreign crews at their price, the orders before it took the founding's cash, and "the founding's order for a Commercial Bank was placed"
+            // failed. Ordered first instead, it opened in an empty town and sold 3,389 shares where this one sells 32,000, and the sections that read
+            // its shareholders moved. So it stays where it is, and the treasury is handed what its quote asks over the cash the town's orders left, and
+            // no more: on any path the order is placed, and a path that leaves the cash for it is handed nothing.
+            Game.BuildQuote bankQuote = city.quoteBuild(template(city, "Commercial Bank"), 1);
+            if (bankQuote.total > city.getCash()) city.setCashForTest(bankQuote.total);
             bankBuilt = city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(FOUNDING_MONTHS);
             city.saveGame(1);

@@ -1,4 +1,4 @@
-# FundLedgerCheck.java - 1,180 lines · 28 methods · 2 constants · harnesses
+# FundLedgerCheck.java - 1,186 lines · 28 methods · 2 constants · harnesses
 
 `ham/citybuildersim/FundLedgerCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -60,7 +60,7 @@
 > desk's inventory handed away before the sections that play a step on a rule's bid (handCopy()), the seller
 > on every book, the split's trigger sized from the wage at the month it is traded.
 
-**Uses:** [Exchange](Exchange.md) (68), [FundLedger](FundLedger.md) (66), [OrderBook](OrderBook.md) (65), [TreasuryFund](TreasuryFund.md) (44), [Equity](Equity.md) (41), [Game](Game.md) (38), [FundView](FundView.md) (16), [BondMarket](BondMarket.md) (12), [Household](Household.md) (8), [FundCheck](FundCheck.md) (5), [ShortSellingCheck](ShortSellingCheck.md) (4), [CorporateBond](CorporateBond.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [Bank](Bank.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [Exchange](Exchange.md) (68), [FundLedger](FundLedger.md) (66), [OrderBook](OrderBook.md) (65), [TreasuryFund](TreasuryFund.md) (44), [Equity](Equity.md) (41), [Game](Game.md) (39), [FundView](FundView.md) (16), [BondMarket](BondMarket.md) (12), [Household](Household.md) (8), [FundCheck](FundCheck.md) (5), [ShortSellingCheck](ShortSellingCheck.md) (4), [CorporateBond](CorporateBond.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [Bank](Bank.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (2):** [CapitalGainsCheck](CapitalGainsCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md)
 
@@ -69,13 +69,13 @@
 | line | section |
 |---:|---|
 | 161 | · the city |
-| 230 | 1. average cost |
-| 282 | 2. the books |
-| 381 | 3. bonds |
-| 541 | 4. a split, and a reform |
-| 597 | 5. the save |
-| 765 | 6 and 7. the identity, and by kind |
-| 848 | 8. the hand |
+| 236 | 1. average cost |
+| 288 | 2. the books |
+| 387 | 3. bonds |
+| 547 | 4. a split, and a reform |
+| 603 | 5. the save |
+| 771 | 6 and 7. the identity, and by kind |
+| 854 | 8. the hand |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 1113 | **type** `public class FundLedgerCheck` | Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's ... |
+| 68 | 1119 | **type** `public class FundLedgerCheck` | Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's ... |
 | 74 | 4 | `static void check(String label, boolean ok)` |  |
 | 79 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 89 | 4 | `static void quietly(Runnable r)` |  |
@@ -108,59 +108,59 @@
 | 135 | 5 | `static Game handCopy()` | A copy whose desk holds nothing, for the sections that play a step on the rule's bid (section 8): a rule's bid at the desk's ask is met by the desk's inventory first, so a bid the section sizes rests only where the de... |
 | 142 | 8 | `static Household holder(Game g, int c)` | The household cell holding the most of a company's shares: a seller the fixture can cause on the book (copy() hands the households their holding of the company and the bank). |
 | 151 | 5 | `static double filled(List<OrderBook.Fill> fills)` |  |
-| 157 | 55 | `public static void main(String[] args)` |  |
-| 219 | 10 | `static int heldCompany(Game g)` | THE COMPANY THE SECTIONS TRADE IN (FS13, 2026-11-20; PK1): the listed company, the bank apart, with the largest market cap (Exchange.marketCap()) - the model's own measure of the town's companies and not what the hous... |
+| 157 | 61 | `public static void main(String[] args)` |  |
+| 225 | 10 | `static int heldCompany(Game g)` | THE COMPANY THE SECTIONS TRADE IN (FS13, 2026-11-20; PK1): the listed company, the bank apart, with the largest market cap (Exchange.marketCap()) - the model's own measure of the town's companies and not what the hous... |
 
-### 1. average cost (lines 230-281)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 232 | 49 | `static void averageCost()` |  |
-
-### 2. the books (lines 282-380)
+### 1. average cost (lines 236-287)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 284 | 96 | `static void theBooks()` |  |
+| 238 | 49 | `static void averageCost()` |  |
 
-### 3. bonds (lines 381-540)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 383 | 14 | `static BondMarket.Readings readings(int month)` |  |
-| 398 | 142 | `static void bonds()` |  |
-
-### 4. a split, and a reform (lines 541-596)
+### 2. the books (lines 288-386)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 543 | 53 | `static void splitAndReform()` |  |
+| 290 | 96 | `static void theBooks()` |  |
 
-### 5. the save (lines 597-764)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 599 | 58 | `static void theSave()` |  |
-| 670 | 94 | `static void olderSaveWithARescueBook()` | AN OLDER SAVE WITH A RESCUE BOOK (0.7.39, after its docs pass): the path a city that resolved its bank before 0.7.39 takes at its first load - Jerus's long city, if it has. |
-
-### 6 and 7. the identity, and by kind (lines 765-847)
+### 3. bonds (lines 387-546)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 767 | 10 | **type** `record Snap(double mv, double acb, double realized, double bought, double sold, double principal, double re...` |  |
-| 769 | 7 | `static Snap of(Game g)` _(in FundLedgerCheck.Snap)_ |  |
-| 779 | 5 | `static double residual(Snap s0, Snap s)` | The identity's residual between two snapshots: realized + the change in unrealized, less the change in value + proceeds - purchases - rescues. |
-| 785 | 62 | `static void theIdentity()` |  |
+| 389 | 14 | `static BondMarket.Readings readings(int month)` |  |
+| 404 | 142 | `static void bonds()` |  |
 
-### 8. the hand (lines 848-1180)
+### 4. a split, and a reform (lines 547-602)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 850 | 63 | `static void theHand()` |  |
-| 915 | 8 | `static Game fundAtTheCap(int c)` | A city whose fund holds the cap of company c and has a buy of the hand's for it waiting for the next step. |
-| 931 | 13 | `static int companyAtTheCap(int c0)` | The company a fund at the cap is still at the cap of when the step is over: section 8's, or the first other whose step leaves the fund's holding alone, or -1 where none does (FS13). |
-| 946 | 7 | `static double capsOf(Game g)` | The market caps of every company with shares and a fair value, on a city. |
-| 955 | 10 | `static double ruleAloneFor(int c)` | What the rule alone bids for company c at the step, given money for about a hundredth of the market and four orders' worth of 4% of c (theCapCountsEveryBuy()'s twin): its shares resting on c's book. |
-| 977 | 181 | `static void theCapCountsEveryBuy(int c0)` | THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed after its docs pass): what it holds, its own bids on the book - the rule's and the hand's - and the hand's buys still waiting, as if every one fill... |
-| 1160 | 20 | `static boolean fillTheFundsBids(Game g, int c)` | Every bid of the fund's on a company's book filled, at its price: the others' bids withdrawn, households selling into the fund's. |
+| 549 | 53 | `static void splitAndReform()` |  |
+
+### 5. the save (lines 603-770)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 605 | 58 | `static void theSave()` |  |
+| 676 | 94 | `static void olderSaveWithARescueBook()` | AN OLDER SAVE WITH A RESCUE BOOK (0.7.39, after its docs pass): the path a city that resolved its bank before 0.7.39 takes at its first load - Jerus's long city, if it has. |
+
+### 6 and 7. the identity, and by kind (lines 771-853)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 773 | 10 | **type** `record Snap(double mv, double acb, double realized, double bought, double sold, double principal, double re...` |  |
+| 775 | 7 | `static Snap of(Game g)` _(in FundLedgerCheck.Snap)_ |  |
+| 785 | 5 | `static double residual(Snap s0, Snap s)` | The identity's residual between two snapshots: realized + the change in unrealized, less the change in value + proceeds - purchases - rescues. |
+| 791 | 62 | `static void theIdentity()` |  |
+
+### 8. the hand (lines 854-1186)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 856 | 63 | `static void theHand()` |  |
+| 921 | 8 | `static Game fundAtTheCap(int c)` | A city whose fund holds the cap of company c and has a buy of the hand's for it waiting for the next step. |
+| 937 | 13 | `static int companyAtTheCap(int c0)` | The company a fund at the cap is still at the cap of when the step is over: section 8's, or the first other whose step leaves the fund's holding alone, or -1 where none does (FS13). |
+| 952 | 7 | `static double capsOf(Game g)` | The market caps of every company with shares and a fair value, on a city. |
+| 961 | 10 | `static double ruleAloneFor(int c)` | What the rule alone bids for company c at the step, given money for about a hundredth of the market and four orders' worth of 4% of c (theCapCountsEveryBuy()'s twin): its shares resting on c's book. |
+| 983 | 181 | `static void theCapCountsEveryBuy(int c0)` | THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed after its docs pass): what it holds, its own bids on the book - the rule's and the hand's - and the hand's buys still waiting, as if every one fill... |
+| 1166 | 20 | `static boolean fillTheFundsBids(Game g, int c)` | Every bid of the fund's on a company's book filled, at its price: the others' bids withdrawn, households selling into the fund's. |
 

@@ -179,6 +179,12 @@ public class FundLedgerCheck {
             // own at a month: its one branch was the investor's (BusinessInvestment.planBank(), when the branch is wanted and staffable), and the founding's months
             // are a stage and no more. A Commercial Bank built here opens its branch when it is finished, and the branch's paid-in capital is sold as shares, the
             // households first and the world for the rest (Game.capitaliseBank()), so the standing bank and its owners other than the city are caused.
+            // FC2, 2026-11-23: THE BANK'S QUOTE HANDED TO THE FOUNDING'S CASH WHERE THE TOWN'S ORDERS LEFT IT SHORT, as FundCheck's (its comment has
+            // the figures): on FC2's path the orders before the bank, priced past the threshold at the foreign crews' price, took the founding's cash
+            // and the bank's order failed. It stays where it is, behind them, and the treasury is handed what its quote asks over the cash they left,
+            // and no more: on any path the order is placed, and a path that leaves the cash for it is handed nothing.
+            Game.BuildQuote bankQuote = city.quoteBuild(template(city, "Commercial Bank"), 1);
+            if (bankQuote.total > city.getCash()) city.setCashForTest(bankQuote.total);
             bankBuilt = city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(FOUNDING_MONTHS);
             city.saveGame(1);
