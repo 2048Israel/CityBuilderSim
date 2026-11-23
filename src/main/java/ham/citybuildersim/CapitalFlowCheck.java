@@ -592,8 +592,45 @@ public class CapitalFlowCheck {
         heldSector.addCash(topUp);
         plainCity.getSectors().byKey(Sectors.COPPER_REFINING).addCash(2 * bookedSale);
         heldCity.getSectors().byKey(Sectors.COPPER_REFINING).addCash(2 * bookedSale);
+        /*
+         * FC2, 2026-11-23: ...AND THE BUILDERS HOLD NO DOLLARS AND OWE THE BANK, in both twins, so that the plain twin holds none on any
+         * path. The twin's builders were not dollar-free on FC2's path: they held US$1.14k abroad from the founding years, and owing
+         * nothing, with D$986k in the till and the world 2 points over the bank, they sent D$32.6k more abroad in the first month
+         * (OutwardInvestment.takeMonth(): a sector sends its idle cash out when it owes nothing, and a borrower keeps its money home,
+         * section 8) and as much again in the month struck, so the twin held US$49.4k at the hand-over, its coupon was 0.0556k and not
+         * none, and the capital it sent out parted from its twin's by what it moved (-570.5 against -537.0). On main's path the builders
+         * were in debt after a big order; on FC2's the foreign crews' work and the spare work they sold abroad left them owing nothing. The
+         * condition is caused and not read. The dollars of the builders are put at nothing in both twins (OutwardInvestment.restore(), the
+         * lever this section hands the dollars with), and a claim of LOAN_BY_HAND is written on them in both through the lender's own door
+         * (BusinessDebtManager.issueLoan(), as BankCheck's tab city writes one), with the bank's cash it is paid out of and the builders'
+         * till it is paid into moving with it, before the first month, where the top-up above is put in and the month is not measured. A
+         * sector that owes sends nothing abroad, so the plain twin holds none in either month; the twin that is handed dollars below
+         * recalls some at the rule's speed, which the laws below read as the month's move. ...AND THE BUILDERS HOLD NONE OF THE CITY'S BONDS: they
+         * held D$96 of them on FC2's path (one bought while they owed nothing), and a borrower sells what it holds at a limit that reads its
+         * wealth, the dollars in it, so the twin that was handed dollars sold D$0.050 of them in the month struck and its twin D$0.093, and the
+         * till moved by 4.3e-5 more than the tax, the dollars and the buyback name. Their bonds are handed to the world in both twins, so no
+         * bond is sold in either.
+         */
+        double handLoan = LOAN_BY_HAND;
+        for (Game twin : new Game[] {plainCity, heldCity}) {
+            double[] noDollars = twin.getOutwardInvestment().toSaveArray();
+            noDollars[7 + 3 * java.util.Arrays.asList(Sectors.KEYS).indexOf(earner)] = 0;
+            twin.getOutwardInvestment().restore(noDollars);
+            for (CorporateBond bond : twin.getBondMarket().getBonds()) {
+                double face = bond.company(earner);
+                if (face <= 0) continue;
+                bond.companies.remove(earner);
+                bond.world += face;
+            }
+            twin.getEconomyManager().getBusinessDebtManager().issueLoan(earner, handLoan, twin.getMonth());
+            twin.getBank().setCash(twin.getBank().getCash() - handLoan);
+            twin.getSectors().byKey(earner).addCash(handLoan);
+        }
         quietMonth(plainCity);
         quietMonth(heldCity);
+        assertTrue("fixture: the builders still owe the bank in both twins, so neither sends dollars abroad",
+                plainCity.getEconomyManager().getBusinessDebtManager().getPrincipal(earner) > 0
+                        && heldCity.getEconomyManager().getBusinessDebtManager().getPrincipal(earner) > 0);
         boolean sameCity = plainCity.getMonth() == heldCity.getMonth()
                 && Double.compare(plainCity.getForeignAccounts().getRate(), heldCity.getForeignAccounts().getRate()) == 0;
         for (Sector x : plainCity.getSectors().all()) {
@@ -801,6 +838,9 @@ public class CapitalFlowCheck {
 
     /** The months the hot city is played with an audit each: ten panic windows (PANIC_MONTHS), so the money arrives, runs home in a stop and comes back over the audit. */
     static final int AUDITED_MONTHS = 10 * CapitalFlows.PANIC_MONTHS;
+
+    /** The claim written by hand on the builders in each coupon twin (FC2, 2026-11-23), D$100k: a tenth of the till the twins are topped up with, so the builders owe the bank and send no dollars abroad. */
+    static final double LOAN_BY_HAND = 100;
 
     /** A sale of old metal booked to a seller as the model books one (CopperRefining.settle()): other revenue for the seller, an input for the copper refiners, a transfer within the sectors. */
     static void bookSale(Game g, String seller, double amount) {

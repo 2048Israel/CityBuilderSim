@@ -58,6 +58,9 @@ public class PegAnchorCheck {
 
     static final double TRADE = CurrencyRegimeCheck.TRADE, DEEP = CurrencyRegimeCheck.DEEP;
 
+    /** The months of the town's imports its vault is made deeper by before section 9's peg (FC2, 2026-11-23): twice the cover at which reserves fully absorb the month's deficit, as CurrencyRegimeCheck.PEG_VAULT_MONTHS. */
+    static final double PEG_VAULT_MONTHS = 2 * ForeignAccounts.COMFORTABLE_COVER;
+
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
@@ -568,6 +571,22 @@ public class PegAnchorCheck {
 
         boolean held = true, rate = true, dial = true, tie = true, money = true;
         for (int m = 1; m <= 3; m++) {
+            /*
+             * FC2, 2026-11-23: ...AND THE VAULT IS KEPT PEG_VAULT_MONTHS OF IMPORTS DEEP, as CurrencyRegimeCheck.pegTown() makes its own. The foreign
+             * crews' bills are imports (Construction.FOREIGN_CREWS), so on FC2's path the town's imports stood at US$584k a month once the peg's
+             * first month had read them (before it the town has no trade history, and the month's imports are 0), against a vault of US$643k: the
+             * floor the hold may not sell under (VAULT_FLOOR months of imports) left it US$59k to defend with, month 2's shadow stood 0.159 in log
+             * over the peg, the hold's sale would have taken the vault under its floor and the peg broke by the vault (rate 1.2282 D$ per US$ in
+             * month 2 against the held 1.0068, 1.2792 in month 3), and the log lines and the re-peg to the pound broke with it. Each month, before
+             * it is played, the treasury buys what the vault lacks of that depth (its cash raised by what it pays, so the treasury is what it was)
+             * and the rate forgets the dealing (ForeignAccounts.forgetDealing(): a set-up, not a deal), on any path.
+             */
+            double vaultLacks = PEG_VAULT_MONTHS * fx.monthlyImports() - fx.getReservesUsd() * fx.getRate();
+            if (vaultLacks > 0) {
+                g.setCashForTest(g.getCash() + vaultLacks);
+                InterestAbroadCheck.quietly(() -> g.buyForeignCurrency(vaultLacks));
+                fx.forgetDealing();
+            }
             // The dial is set early in the month, before it hands the banks their new rates (as the US's always was), so it stands over the rate the month began with.
             double gapBefore = fx.currencyGap(), euroRateBefore = dm.worldRate("EUR"), spreadBefore = dm.getPegSpread(), tiedBefore = dm.tiedRate(gapBefore);
             InterestAbroadCheck.play(g);
