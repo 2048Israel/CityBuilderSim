@@ -2,7 +2,7 @@
 
 Generated 2026-11-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**247 harness files, 28,277 labelled assertions.** AllChecks runs 247 of them.
+**247 harness files, 28,288 labelled assertions.** AllChecks runs 247 of them.
 
 ## Which harnesses read which class
 
@@ -16883,7 +16883,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L281 first month retains the conveyed title
   - L283 a new city clears both physical and assignment cohorts
 
-## HousingMarketCheck.java - 136 labelled assertions
+## HousingMarketCheck.java - 147 labelled assertions
 
 > Integrated quotes, funded sites, rental receipts, budgets and reload evidence.
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project
@@ -16965,76 +16965,88 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L240 student housing counts only the existing open treasury facility
   - L242 the student's finite planning allowance follows a currency reform
   - L243 quoting a funded student budget itself borrows nothing
-  - L253 a zero-resource emergency guest has an actual funded host
-  - L254 a hosted guest creates no extra occupied door
-  - L255 a hosted guest creates no extra landlord proceeds
-  - L256 the host retains its actual funded bill
-  - L257 the guest owes no invented rent or credit
-  - L258 emergency hosting has an explicit reason count
-  - L260 a doubled home offers migration no fictional extra guest slot
-  - L261 reading actual migration room does not quote or clear
-  - L269 an emergency sharing group can join a funded host without a vacant door
-  - L270 hosting a sharing group still earns just the one funded rent
-  - L271 a sharing group consumes the host slot before further guests
-  - L274 migration room sees a real completion and first reserves current unplaced demand
-  - L276 a completion projection leaves the one monthly quote untouched
-  - L279 current domestic household formation reserves the last rooms before arrivals
-  - L281 the formation preview leaves actual families and the monthly market unchanged
-  - L285 real additional doors still admit arrivals after the formation reserve
-  - L286 arrivals who start work next press cannot use the working family's density
-  - L300 retirement fixture starts with two actually placed families
-  - L302 retirement removes the actual occupied form
-  - L304 migration room reserves doors for families displaced by retirement
-  - L306 the retirement room read does not strike a second quote or clearing
-  - L324 door-census fixture pays for active construction jobs
-  - L326 door-census fixture builds actual compact homes
-  - L330 door-census control preserves the exact family matrix
-  - L333 fixture has more family seekers than twice its family doors
-  - L335 family-door scarcity actually raises the migration floor
-  - L336 door-census fixture funds actual replacement homes before the next press
-  - L338 scarce-door fixture saves natively
-  - L343 running load starts with a different actual family-door census
-  - L348 fresh native load rebuilds the scarce family-door floor
-  - L349 running native load replaces the previous city's door census
-  - L351 fresh and running reloads preserve the crowding-floor reader
-  - L359 completed funded homes cause actual positive first-month arrivals
-  - L360 the migration crowding ramp is active before the physical-room cap
-  - L363 first native month after both loads preserves actual arrivals
-  - L365 first native month after both loads preserves the migration crowding factor
-  - L367 scarce-door native continuations keep the actual class market
-- **L372 the housing budget reserves HC1's fixed card minimum**
-  - L383 principal in the contractual card minimum is reserved before rent
-  - L386 the quoted minimum at the current price matches actual card settlement
-  - L387 a housing quote does not overwrite the saved settled minimum or interest
-  - L388 quoting a home moves no card position
-- **L391 the final shortage uses the existing whole-match packing resolution**
-  - L402 an ULP of the whole source is exactly zero final shortage
-  - L403 an ULP cannot activate the farm's housing-priority guard
-  - L404 a rounded complete match records no phantom affordability or suitability reason
-  - L406 a genuine fractional shortage is still explicit
-  - L407 a genuine shortage still activates housing priority
-  - L409 rounding the counter creates no door or extra guest slot
-- **L413 emergency adult groups leave compatible host space for child families**
-  - L431 host allocation preserves all actual family members
-  - L432 three funded hosts occupy exactly three real doors
-  - L433 actual single adults really form emergency sharing groups
-  - L434 compatible family host space is not consumed by adult soft preferences
-  - L435 the child guest obtains its whole compatible host slot
-  - L436 all emergency guests fit the actual two-household door limit
-  - L437 emergency hosts collect only the three funded lease bills
-  - L497 staged fixture completed real housing before catalogue-wide orders
-  - L501 catalogue order follows actual availability
-  - L502 modern form unavailable in 1900
-  - L510 fixture caused funded residential starts
-  - L511 fixture has actual household demand
-  - L512 fixture has actual occupied rental homes
-  - L514 funded form completes through actual builder work
-  - L518 native reload preserves asks, assignments, actual trades and staleness
-  - L520 next native month preserves the class market
-  - L523 larger population adds no permanent household cells
-  - L524 larger city's class count stays bounded
-  - L525 larger city's assignments stay bounded by H times T
-- **L539 small scratch-city integrated profile**
+- **L246 scarce free host space goes to households that cannot fund a vacant share**
+  - L255 all three households have feasible emergency shelter
+  - L256 the poor household uses the already funded host
+  - L257 the other guest funds its actual vacant half door
+  - L258 the original host still funds its whole actual bill
+  - L259 one hosted guest is counted explicitly
+  - L260 occupied shares earn only their actual rent
+  - L261 actual occupied door equivalents are bounded
+  - L262 no temporary matching node reaches a saved lease
+  - L266 without a funded vacant share one household remains explicitly unplaced
+  - L267 unfunded vacancy creates no extra receipts
+  - L268 unfunded vacancy creates no extra occupied home
+  - L278 a zero-resource emergency guest has an actual funded host
+  - L279 a hosted guest creates no extra occupied door
+  - L280 a hosted guest creates no extra landlord proceeds
+  - L281 the host retains its actual funded bill
+  - L282 the guest owes no invented rent or credit
+  - L283 emergency hosting has an explicit reason count
+  - L285 a doubled home offers migration no fictional extra guest slot
+  - L286 reading actual migration room does not quote or clear
+  - L294 an emergency sharing group can join a funded host without a vacant door
+  - L295 hosting a sharing group still earns just the one funded rent
+  - L296 a sharing group consumes the host slot before further guests
+  - L299 migration room sees a real completion and first reserves current unplaced demand
+  - L301 a completion projection leaves the one monthly quote untouched
+  - L304 current domestic household formation reserves the last rooms before arrivals
+  - L306 the formation preview leaves actual families and the monthly market unchanged
+  - L310 real additional doors still admit arrivals after the formation reserve
+  - L311 arrivals who start work next press cannot use the working family's density
+  - L325 retirement fixture starts with two actually placed families
+  - L327 retirement removes the actual occupied form
+  - L329 migration room reserves doors for families displaced by retirement
+  - L331 the retirement room read does not strike a second quote or clearing
+  - L349 door-census fixture pays for active construction jobs
+  - L351 door-census fixture builds actual compact homes
+  - L355 door-census control preserves the exact family matrix
+  - L358 fixture has more family seekers than twice its family doors
+  - L360 family-door scarcity actually raises the migration floor
+  - L361 door-census fixture funds actual replacement homes before the next press
+  - L363 scarce-door fixture saves natively
+  - L368 running load starts with a different actual family-door census
+  - L373 fresh native load rebuilds the scarce family-door floor
+  - L374 running native load replaces the previous city's door census
+  - L376 fresh and running reloads preserve the crowding-floor reader
+  - L384 completed funded homes cause actual positive first-month arrivals
+  - L385 the migration crowding ramp is active before the physical-room cap
+  - L388 first native month after both loads preserves actual arrivals
+  - L390 first native month after both loads preserves the migration crowding factor
+  - L392 scarce-door native continuations keep the actual class market
+- **L397 the housing budget reserves HC1's fixed card minimum**
+  - L408 principal in the contractual card minimum is reserved before rent
+  - L411 the quoted minimum at the current price matches actual card settlement
+  - L412 a housing quote does not overwrite the saved settled minimum or interest
+  - L413 quoting a home moves no card position
+- **L416 the final shortage uses the existing whole-match packing resolution**
+  - L427 an ULP of the whole source is exactly zero final shortage
+  - L428 an ULP cannot activate the farm's housing-priority guard
+  - L429 a rounded complete match records no phantom affordability or suitability reason
+  - L431 a genuine fractional shortage is still explicit
+  - L432 a genuine shortage still activates housing priority
+  - L434 rounding the counter creates no door or extra guest slot
+- **L438 emergency adult groups leave compatible host space for child families**
+  - L456 host allocation preserves all actual family members
+  - L457 three funded hosts occupy exactly three real doors
+  - L458 actual single adults really form emergency sharing groups
+  - L459 compatible family host space is not consumed by adult soft preferences
+  - L460 the child guest obtains its whole compatible host slot
+  - L461 all emergency guests fit the actual two-household door limit
+  - L462 emergency hosts collect only the three funded lease bills
+  - L522 staged fixture completed real housing before catalogue-wide orders
+  - L526 catalogue order follows actual availability
+  - L527 modern form unavailable in 1900
+  - L535 fixture caused funded residential starts
+  - L536 fixture has actual household demand
+  - L537 fixture has actual occupied rental homes
+  - L539 funded form completes through actual builder work
+  - L543 native reload preserves asks, assignments, actual trades and staleness
+  - L545 next native month preserves the class market
+  - L548 larger population adds no permanent household cells
+  - L549 larger city's class count stays bounded
+  - L550 larger city's assignments stay bounded by H times T
+- **L564 small scratch-city integrated profile**
 
 ## HydroCheck.java - 102 labelled assertions
 

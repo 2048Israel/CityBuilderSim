@@ -1059,3 +1059,145 @@ with rents, affordability and growth read alongside the hard gates.
 The comment-only follow-up's --fast exits 0 (0 firm/199 soft); the six
 generated map changes were dates only and were discarded. The named model
 checks above remain the validation of the unchanged reviewed model.
+
+## Second ensemble: emergency host space must respect feasible alternatives
+
+The reviewed fd7071f54 snapshot ran on gatebox as
+RES3-reviewed-PW5-20261123 against docs/ensemble/0.9.192.md, all 80 runs complete,
+none missing or short. It exits 4: 14/26 overall, 6/10 hard, beside the baseline's
+20/26 and 6/10. All five M1 policies pass, with zero failed or unread audit
+months. F1 fails for AUTO2, ZERO_SLACK and HIGH (3/16 each versus baseline 1),
+and SHOCK (2/16 versus 1); ZERO_HOT passes with 0/16. The unchanged raw score
+and CSVs remain in target/ensemble/RES3-reviewed-PW5-20261123. This failed run
+is not the final baseline and grants no exception to the findings.
+
+All sixteen AUTO2 towns reach 40,000, median month 1,027 versus 747. Final
+median populations are AUTO2 2,490,129 versus 4,649,724; ZERO_SLACK 1,462,930
+versus 2,883,284; ZERO_HOT 5,968 versus 7,632; SHOCK 23,140 versus 67,498; HIGH
+9,789 versus 32,356. Only ZERO_HOT passes T2's informational 75% bound.
+
+For the reviewer's rent/growth watch, these are medians across the sixteen
+seed readings, each reading averaged over its last 120 native months:
+
+| Policy | Rent series / index, baseline | RES3 | Rent series / worker wage, baseline | RES3 |
+| --- | --- | --- | --- | --- |
+| AUTO2 | 0.007019 | 0.006542 | 0.0844 | 0.0803 |
+| ZERO_SLACK | 0.007420 | 0.007230 | 0.1008 | 0.0961 |
+| ZERO_HOT | 0.008373 | 0.009185 | 0.0997 | 0.1109 |
+| SHOCK | 0.007967 | 0.008674 | 0.0886 | 0.0895 |
+| HIGH | 0.008852 | 0.010366 | 0.0967 | 0.1156 |
+
+These use Ensemble's existing weighted getAverageRentPaid series and average
+worker wage, a price-series proxy. Actual affordability uses each household's
+full recurring budget. Native baseline and RES3 CSV readings, sources, ranges
+and per-seed values are kept in target/RES3-reviewed-rent-readings.json.
+
+Native AUTO2 replays of seeds 9, 3 and 14 compare all 491 observed months'
+population, index, rent and GDP with the ensemble at its nine-significant-digit
+CSV precision: zero differences. This establishes the recorded city path,
+without claiming full CSV byte identity. Findings in a CSV label their first
+occurrence; duration comes from the native trace, not that label alone.
+
+Seed 3 is short from m609 through the trace's m660 endpoint (52 months),
+peaking there at 103.203 households, 1,147 homes, no pipeline and 2,271 sq ft
+free. Every flagged month is held for land. Ground looks m461, 469 and 591
+already refuse the whole offer under the cash-share budget: at m591 price
+1,470.890 versus budget 46.142. Seed 14 flags m634 and two later months through
+m660, peak 2.442 at m651, 941 homes, no pipeline and 4,048 sq ft free. Its
+m592/593 ground looks also refuse the offer under the cash-share budget. These
+are FB11's queued whole-offer/land-funding class; LP-G1's long-skip diagnosis
+alone would not establish their cause. Neither funding limit is changed here.
+The kept traces are target/RES3-reviewed-native-{3,9,14}.log, with the native
+market/inventory snapshots in target/RES3-shortage-<seed>-*.json.
+
+Seed 9 is different: at m47 it leaves 1.344704 retired households unplaced
+while homes are vacant and land is available. The controlled first-red case
+is one funded host, one zero-budget guest, one guest able to fund half a door,
+and a second actual vacant door. The sequential free-host pass splits its one
+free place pro rata across the guests; the paid-vacancy pass then shelters the
+fundable residue but strands half the poor household. HousingMarketCheck
+exits 4 with four original assertions red (target/RES3-free-host-first-red.*).
+
+★ Match free host places and self-funded vacant half doors in one flow, after
+normal placements and same-kind five-adult sharing groups. Feasible shelter
+takes priority over soft preference or which emergency pass happened first.
+The existing solver retains its suitability, maximum-two-household shares,
+budget checks and rotated equivalent ties. Temporary flow-node keys are
+translated to actual comparable classes before a lease is retained; no new
+class, saved field or quote is introduced. Original hosts keep their full
+bills; guests pay only their actual funded vacant shares, and zero-budget
+hosted guests owe zero. Physical shares and hosted/crowding reasons reconcile.
+
+The positive case now shelters all three, records one hosted guest, 1.5 actual
+occupied door equivalents and exactly 1.5 asks of receipts. The full existing
+HousingMarketCheck passes (target/RES3-free-host-mend.*). A counter-case lowers
+the second guest below half the ask and requires one explicitly unplaced
+household, just one occupied home and no additional rent. The affected native
+replay, checks, money/save delta review and another final ensemble remain owed.
+
+The corrected native AUTO2-9 replay completes m2-70 with zero unplaced
+households in all 69 observations (target/RES3-host-mend-native9.*), including
+the old m47 failure. Its diagnostics are removed, both observed source files
+match the reviewed source, and their timestamps force a clean recompilation.
+
+The regular HousingMarketCheck passes with the unfunded counter-case too.
+Compiled HousingDoorCheck and LongPlaytest contain no temporary diagnostic
+branch. Paid half-door shares retain each cell's separate lease and can be
+partitioned by seeker kind within aggregate vacant stock; the solver does not
+merge their household counts. Existing same-kind five-adult groups still form
+only in emergencySharing. No borrowing, host subsidy or new building ID is
+created by a temporary flow node.
+
+On this mend's played HousingDoorCheck window, the only red is again its FS11
+capital/owners fixture premise: six orders would be capital-short, all six
+behind quotes supporting no share issue, so none is offered to the owners.
+The lending/quote rules and every assertion are unchanged. There are zero
+unplaced households, 2,155 homes finish by size in the watched window, and all
+899 monthly household cash identities close. The same FS11 row is restored
+with this native cause; it had correctly been removed on the previous model
+where the premise occurred. The pre-pin report is retained separately as
+target/RES3-host-mend-HDC-beforepin.*.
+
+The refreshed catalogue and profiles are from the regular check of ff8ea23be,
+including the new unfunded control. All fourteen forms and thirty-two classes
+remain reported in both eras, with the shipped Substation at 155 and residential
+IDs through 166. Both populated native reloads and their next months pass.
+
+| Scratch city | Integrated month | H/T/A/M/L |
+| --- | --- | --- |
+| Small, 203 people | 40.277 ms | 70/32/70/0/0 |
+| Present-day catalogue | 48.869 ms | 84/32/352/0/0 |
+| Present-day larger, 148,950 people | 47.710 ms | 82/32/341/0/0 |
+| Historical catalogue | 38.512 ms | 62/32/190/0/0 |
+| Historical larger, 149,168 people | 35.396 ms | 62/32/189/0/0 |
+
+The larger cities still have 141 permanent household cells. This algorithmic
+mend adds no saved state; the batch's already owed format/floor 64 stays 64.
+
+## Emergency-match mend: completed checks and review handoff
+
+Final model ff8ea23be passes HousingMarketCheck, HousingChoiceCheck,
+HousingCheck, HouseholdCheck, HouseholdFlowCheck, BuildingDataCheck,
+InvestCheck, WaterCheck, SubstationCheck, SaveFileCheck, ReadPathCheck,
+DenominationCheck and LongPlaytest (exit 0), each run alone. HousingDoorCheck
+exits 3 with only its restored FS11 quote-supported-capital premise.
+ReloadCheck exits 3 with only main's HT1-H hand-order/material premise.
+ScaleCheck exits 3 with only HT1-H's free-growth premise, still ten candidate
+windows; every historical savings/deposit TRACK assertion passes. All native
+cash, save, continuation, lending, placement and count comparisons are kept.
+
+The full default playtest and its additional money controls pass: 2,404
+audited months, no findings, every reload matched, ending "All checks passed."
+The final --fast exits 0 (0 firm/199 soft). All final logs and batch metadata
+are retained as target/RES3-host-mend-<harness>.log and .txt, with
+target/RES3-host-mend-fast.txt. The pick against merged main ecbc3b975 is ALL,
+247 harnesses; its review line remains "needed - saves: DataSave.java,
++SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT". The new money delta is the emergency
+allocation itself; neither DataSave nor its format changes again in this mend.
+
+No diagnostic source or compiled diagnostic branch remains. The refreshed
+catalogue is the check's actual model report, not recalculated estimates.
+The provisional marker stays while REV-RES3 reviews the delta after fd7071f54.
+Another final-model ensemble against the newest baseline remains owed after
+that go. The second ensemble's raw FAIL and land-funding evidence above remain
+unaltered; no F1 assertion is waived by this handoff. No dry run has started.
