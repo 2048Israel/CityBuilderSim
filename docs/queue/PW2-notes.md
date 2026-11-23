@@ -164,6 +164,21 @@ Harnesses PW2 moved, each mended by a fixture that causes its condition; no prem
   refigured plant at 776,914 left room, the stations stood, and NEEDS YOU listed three needs, not five (the
   javadoc's NO POLICE, CAUSED paragraph).
 - **SaveFileCheck**: the used-car price crosses the loader (★11), a new line; the HC2 line it parted is green.
+- **BuybackCheck, CurrencyCheck, HoldersCheck 11: no coal plant, the town each was written against.** Each orders
+  a Coal Power Plant on the Wealthy treasury after its list; main refused it (NEEDS_FUNDING at 1,071,816: probed on
+  main for BuybackCheck's and HoldersCheck's lists), and PW2's refigured plant at 776,914 is bought, a 60-month site
+  that took the crews from the houses (252 of 300 by month 61, against 300 by month 37) and the bank's room to bid
+  (its equity -1,415). Without the order BuybackCheck's town is main's to the figure through month 97, and
+  CurrencyCheck's defence month is main's to the cent. HoldersCheck 11 holds only two sectors, so PW2's other moves
+  still reach its town (its auction cleared at 6.199%, main's at 3.813%); its lines are green.
+- **HousingCheck** (the landlords build before anyone can staff them): the yard's materials set to none, as main's
+  city had them. The refigured coal plants are placed on less material (14,373 each, not 19,848), and 36 were left
+  after the two years: a House's 10 come from the yard and a Studio's 320 do not, so the House's price fell to 8.5
+  against 13.8 and outscored the blocks. With none in the yard the landlords order six Studios, main's line.
+- **Not mended where main built the plant too.** BankCheck's tab city and InvestCheck's priced town place the coal
+  plant at once (main built it as well: probed), and FloatLinkCheck's town builds it (main's under construction at
+  month 62). Those stay as they are and are known reds below.
+- **Timing soft.** The suite runs `-Dcbs.timing=soft` (GR1); MapCheck and KeptTimingCheck are green so.
 
 The known reds (the ship file's rows), each a moved played city, none a PW2 mechanism:
 
@@ -176,8 +191,27 @@ The known reds (the ship file's rows), each a moved played city, none a PW2 mech
   cell the grid opens ... the families held (1 closed; the month alone would have closed 1). Main's own KHT1 class
   (its rows for "all of them" and "every measure open", FS5): holding the families' counts does not hold the
   job-bound grid, on LongPlaytest.probeCity's 600 months, which PW2's founding power moved. The tooltip lines pass.
+- **BankCheck** 13's tab city, two lines (HT1-H; FS9 shipped): the loss month is read against the played month's
+  income, which the fixture does not cause. The claim at twice retail's assets was $539.98k and the month kept
+  $10.98k after $32.47k written off (main: $379.74k, -$14.78k after $25.27k). Unattended, the bank's desk books a
+  one-month trading gain of about $90k, in month 19 on PW2's town and in month 20 on main's.
+- **InvestCheck**, FB3's rebate line (HT1-H; FS9 shipped): the founding ladder's House stands either side of the
+  rebate's line at main's wage index (1.127794: 0.0000628650 at the ladder, nothing by the rule); PW2's town stands
+  at 1.124593, where the ladder reads nothing too.
+- **FloatLinkCheck**, "the played sale covers its fixed fee" (HT1-H; FS14 shipped): the town's tax is its coal
+  plant's site, and PW2's plant is cheaper and held to its 60 months, so at month 62 the town takes 153.1 a month
+  against main's 241.7; the sale capped at a third of a year's tax (612) is under the least the fee needs (653).
 
-The full suite, one harness at a time on the PC (round 3, 2026-11-23): RESULTS.
+**Waiting on a call (LandCheck, Jerus's: it moves a premise).** LandCheck asserts that the starting land's 30 blocks
+hold a power plant (it names the Coal Power Plant), that power and water fit with under 3 blocks to spare, and that
+a materials plant then does not: "the mechanic introducing itself". The study gives the coal plant 200 acres
+(8.7M sq ft; "today 46"), which no longer fits at all. The 1900 city's first plant is the Oil-Fired Plant (30
+acres), which fits; with water it leaves 9 blocks and a materials plant fits. Recommended: name the Oil-Fired Plant
+and restate the pair to the cited footprints (mailed to the orchestrator, 2026-11-23).
+
+The full suite, one harness at a time on the PC (rounds 1 to 4, 2026-11-23, timing soft from round 4): every
+harness run; red only by the rows above, main's known reds (CurrencyCheck, DeathRecordCheck, Forms1900Check,
+FundCheck, HoldersCheck, RoadCheck) and LandCheck.
 
 ## 5. The trace
 
