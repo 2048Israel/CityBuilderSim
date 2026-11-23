@@ -8,8 +8,8 @@ quotes across draws) is not to be done.
 ## What is true today
 
 When a landmass is linked, `CityMap.landmassPicture()` re-measures all 151
-districts: in months 624 and 1630 of slot 9's month 1135 run, and 2801 in
-1139. That takes about 1.7 s, 34% of a land month.
+districts. On slot 9 that took 624 ms and 1,630 ms in month 1135, and
+2,801 ms in month 1139: about 1.7 s, 34% of a land month.
 
 ## The batch
 
