@@ -172,15 +172,9 @@ public class ChildcareCheck {
             // Its callers (AutoBuildCheck, AuctionCheck, HydroCheck) need a town whose automatic builder orders in its months; on history's dates
             // (R0 to OP1) a 1900 town had no income taxes or wage floor to 1916-1920 and its builder ordered nothing in 24 months. Every lever is
             // open from the founding since OP1, and the defaults are put back before a month (call 17's class).
-            // WG2, {next}, 2026-11-10: five Construction Depots, not four. Senior care no longer lifts the jobs' draw (Migration.jobsPull())
-            // and this town has it from the founding (two Home Care Services), so it drew fewer people for its jobs from month 1: 3,902 at the
-            // end of its three years against 4,361, 2,307 workers against 2,582. The depots' posts filled 70.8% instead of 82.8%, their output
-            // at every post fell from 398 to 342 and the repairs of the town's buildings take 343.7, so the builders had no site output
-            // (Game.getBuildingOutputAtEveryPost() 0, main's 54): the advice held every order "for the builders" and the automatic builder
-            // ordered nothing in 24 months (main's three in its first pass). A fifth depot (capacity 2,160 against 1,760) puts the output at
-            // every post at 418 and the site output at 74, the builders the callers need. Measured with HydroCheck, AutoBuildCheck, AuctionCheck
-            // and ChildcareCheck: the first two pass, ChildcareCheck passes; AuctionCheck's two lines at "twenty Health Centres stand" fail
-            // as on the town of four depots (WG2's, not this one's).
+            // WG2 added the fifth depot when fewer arrivals left four depots below the repairs' work. RES3's typed housing
+            // changes that draw again: main's 431 points / 344.05 repairs become 302 / 344.05 with the same standing stock.
+            // Five is the starting stock, not a promise of staffed capacity; cause the positive site output below.
             g.getEconomyManager().getTaxPolicy().reset();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L * k);
@@ -198,6 +192,18 @@ public class ChildcareCheck {
                 }
             }
             g.simulateMonths(36);
+            // The callers exercise service orders, so the builders must have points left after repairs. Typed homes change
+            // who can move into this town and hence the crews it can staff; another fixed depot count would only hide the cliff
+            // until the next population change. Add paid, standing depots and let the actual labour month staff them, stopping
+            // only on the site's own capacity gate. Keep the shortages of roads, schools and care that the callers test.
+            for (int months = 0; g.getBuildingOutputAtEveryPost() <= 0 && months < 12; months++) {
+                g.setCashForTest(Founding.WEALTHY_CASH);
+                if (g.buildStack(template(g, "Construction Depot"), 1, true) != Game.BuildResult.SUCCESS)
+                    throw new AssertionError("the service-order fixture could not stand its builders' depot");
+                g.simulateMonths(1);
+            }
+            if (g.getBuildingOutputAtEveryPost() <= 0)
+                throw new AssertionError("the service-order fixture has no staffed site output after twelve added depots");
             g.setCashForTest(Founding.WEALTHY_CASH);
         });
         return g;

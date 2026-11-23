@@ -1742,3 +1742,86 @@ each addition, and fail the fixture if twelve additions cannot cause it.
 Do not repick a fixed count or change the service, funding or payback laws.
 This harness-only mend is awaiting the full named checks below; it does
 not change the final ensemble's production model.
+
+The LandmassCheck observer reproduces both demolition reds. The standing
+terminal owes 7,777.8 points; at its old 129-month ceiling the fixture has
+counted 15,754 whole-city site points, but the demolition has received only
+7,666.487358457717. Its queue now also includes C04, Compact House,
+Duplex, other homes and business sites. For the shell, the initial owed is
+47.75, and the second month counts 99 site points while a new C04 site gets
+92.99986942494814 and the demolition gets only 6.000130575051852. This is
+the endogenous orders breaking the wait's assumed bound on later work;
+the demolition does advance, and the ground-release rule has not yet
+fired. Raw: `target/RES3-dry-Landmass-trace.{txt,log}`. This observer run is
+diagnostic, not a green check. The queued mend is to cause a fixed queue
+for these three demolition-only cities by holding private sectors and
+bank branches before their first month; the deadline and the exact ground
+and save assertions stay intact. Other LandmassCheck growth runs remain
+live.
+
+The diagnostic Landmass run was stopped after the section-6 causes were
+captured, during section 13's separate 1,200-month full-file growth run:
+only its verified own child PID 14176 (parent 35324, LandmassCheck) was
+ended. Its exit -1 is a cancelled diagnostic, not a third model failure.
+The observers were restored before the repaired named checks.
+
+PriceLevelCheck's three new lines have a concrete same-level trace. Its
+eight built-city children, six months each, all complete. At history index
+3, the factor's unnudged child records sick rate .1833 and unhoused 26.62;
+the other seven record .1825 and 26.09, including all three children at
+the same factor nudged by +1e-12, -1e-12 and +1e-13. Every child has the
+same live population vector `[0,92,92,92,92,92,91]`. The unnudged child
+also rejoins the other seven's history readings at the next index. This
+is not a split confined to different price levels. `parting()` explicitly
+skips every `h.*` series, so it reports the later live split at month 5
+and compares a history already parted by rounding. Raw eight-child
+readings: `target/RES3-dry-price-trace.{txt,log}`. The temporary observer
+is removed. Keep the invariant and its tolerances; name these three exact
+history lines under the existing HT1-H rounding/onset sweep, with this
+same-level evidence. The orchestrator gets the new case in the mends list.
+
+Two more data assumptions are mended through their inputs, awaiting named
+checks. PolicyOpenCheck moved the first textual `month` in a save; RES3's
+earlier housing-market state has its own `month`, before DataSave's root
+month, so the city stayed at its original date with no load failure. Set
+DataSave.month through its setter before serializing, retaining the exact
+loaded-month and policy assertions. TruckRouteCheck's supposedly empty
+three-month founding imports 30 tonnes for new private construction. Hold
+private sectors and bank branches before those months to cause the zero
+bulk case; retain the exact zero bulk and three zero tally laws.
+
+ZoningCheck likewise removed only the building named House, leaving the
+other typed homes available to the displaced households, so its outside
+count was zero and its unzoned-farm shortage premise was absent. Buy out
+and demolish at least nine in ten buildings of every available residential
+form (asserting each actual purchase), hold replacement home orders for
+that month, and retain the positive-outside, staffing, farm-zone and tiny
+zone refusal assertions. No production rule or funding gate changes.
+
+The first full AutoBuildCheck after causing positive builder output places
+its first advice card and passes the decades/reload laws, but leaves 19
+failed assertions. The subsequent trace causes the remaining premises:
+
+- The school town has 172 elementary pupils, below
+  `FIRST_WORK_SHARE * 600 = 180`, so no first school is warranted. In the
+  school-only cases, set the child cohort so demand is halfway between the
+  first-work threshold and half the smallest school's places, retaining
+  the old below-half-school condition. Restore the named cohort array,
+  population and workforce through their existing model inputs. Assert
+  the warranted demand explicitly; do not change its threshold, payback,
+  funding or first-school assertions.
+- A bond for two years of GDP yields only 202-203% debt, below the 240%
+  default limit. Size the fixture's funding-page bond from twice
+  `DEFAULT_DEBT_LIMIT` years of GDP and assert that it actually crosses the
+  limit. The zero-limit/central-bank case separately causes a real advance
+  by playing a month overdrawn and asserts that advance exists.
+- The three-month default young town has no output. Give it the standard
+  forty Houses and three Convenience Stores before its months; its actual
+  recorded GDP is now 105,123 against screens' annualised 420,492, and the
+  unchanged strict inequality and national-accounts identity both pass.
+
+With those inputs, the full AutoBuildCheck suite passes every assertion.
+`target/RES3-dry-mend-AutoBuildCheck.txt` reports suite OK; the final serial
+driver records its exit after maps/Stale. The earlier 19-red run is a
+failed fixture iteration, not a waived result. HydroCheck, IslandLinkCheck,
+LandmassCheck, ChildcareCheck and AuctionCheck follow sequentially.
