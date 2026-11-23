@@ -577,3 +577,12 @@ it changes neither the gate nor its staffing answer. The original staffing,
 automatic land buying, private-order and native continuation assertions all
 passed. SaveFileCheck is green, including the exact used-car and debt-survey
 checks (target/RES3-save-mends.txt and target/checks/SaveFileCheck.log).
+
+The first new reform guard found that DenominationCheck's played town offered
+no used cars. Its money comparisons passed but the positive-mark premise was
+empty. The fixture now causes a financed second-hand sale with the existing
+HouseholdBalance market (an insolvent car owner and a buyer with a deposit),
+then restores that same actual closed trade to both currency twins before the
+reform. ScaleCheck also sends that nonzero trade through its native JSON copier.
+This is an input for the flow-transform checks; SaveFileCheck independently
+causes the positive trade through the integrated played city's monthly market.

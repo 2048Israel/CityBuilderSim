@@ -65,6 +65,28 @@ public class DenominationCheck {
     static PrintStream out;
     static PrintStream quiet;
 
+    /** A closed trade caused by an insolvent seller and a liquid buyer, as in CarCheck. */
+    static Motoring.UsedTrade usedTradeFixture() {
+        HouseholdBalance market = new HouseholdBalance();
+        Household seller = market.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        seller.households = 1000;
+        seller.disposable = 4;
+        seller.afterFixed = 1;
+        seller.subsistence = 3;
+        seller.debt = HouseholdBalance.CREDIT_LIMIT_MONTHS * seller.disposable;
+        seller.cars = 1;
+        Household buyer = market.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        buyer.households = 1000;
+        buyer.disposable = 10;
+        buyer.afterFixed = 8;
+        buyer.subsistence = 3;
+        buyer.savings = 30;
+        market.wearOutCars();
+        double traded = market.clearUsedCars(100, 1);
+        return new Motoring.UsedTrade(traded, market.getUsedCarsOffered(),
+                market.getUsedCarSpend(), market.getUsedCarsFinanced(), market.getUsedCarPrice());
+    }
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-62s %s%n", label, ok ? "OK" : "FAIL");
@@ -255,6 +277,13 @@ public class DenominationCheck {
                 : "no world-1.bin here: the terms of trade and the trade by partner do not run"));
 
         double factor = 100;
+        // The played twins need not offer a used car this month. Put the same
+        // actual closed trade through their restore port before reforming one.
+        Motoring.UsedTrade usedFixture = usedTradeFixture();
+        assertTrue("fixture: a seller and buyer actually traded a financed used car",
+                usedFixture.traded() > 0 && usedFixture.spend() > 0 && usedFixture.credit() > 0);
+        plain.getMotoring().restoreUsedTrade(usedFixture);
+        lopped.getMotoring().restoreUsedTrade(usedFixture);
 
         /*
          * The button is gated on the price level and this fixture's has not

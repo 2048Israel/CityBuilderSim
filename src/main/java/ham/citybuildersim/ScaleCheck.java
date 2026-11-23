@@ -368,6 +368,21 @@ public class ScaleCheck {
 
     static void run(Path root) throws Exception {
         paperDeskRemainder(root);
+        Motoring.UsedTrade usedInput = DenominationCheck.usedTradeFixture();
+        assertTrue("fixture: the used-car scale input contains an actual financed trade",
+                usedInput.traded() > 0 && usedInput.spend() > 0 && usedInput.credit() > 0);
+        JsonObject usedSave = new JsonObject();
+        var usedJson = new com.google.gson.Gson();
+        usedSave.add("usedCarTrade", usedJson.toJsonTree(usedInput));
+        Path usedSource = root.resolve("used-trade.json"), usedCopy = root.resolve("used-trade-scaled.json");
+        Files.writeString(usedSource, usedJson.toJson(usedSave));
+        long usedK = TRACK_TIMES;
+        scale(usedSource, usedCopy, usedK);
+        Motoring.UsedTrade scaledUsed = usedJson.fromJson(com.google.gson.JsonParser.parseString(
+                Files.readString(usedCopy)).getAsJsonObject().get("usedCarTrade"), Motoring.UsedTrade.class);
+        assertTrue("the native copier scales all four trade flows and preserves the per-car mark",
+                scaledUsed.equals(new Motoring.UsedTrade(usedInput.traded() * usedK, usedInput.offered() * usedK,
+                        usedInput.spend() * usedK, usedInput.credit() * usedK, usedInput.price())));
 
         /* ============== 1. the fixture, and its copy K times over ============== */
         out.println("--- the founded city, and its copy K times over past 2^31 people ---");
