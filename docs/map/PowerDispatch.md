@@ -18,7 +18,7 @@
 
 **Uses:** [Good](Good.md) (5), [PriceLevel](PriceLevel.md) (3)
 
-**Used by (18):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PowerView](PowerView.md), [PowerViewCheck](PowerViewCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ScaleCheck](ScaleCheck.md), [SubstationCheck](SubstationCheck.md), [Substations](Substations.md), [UtilitiesHandler](UtilitiesHandler.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+**Used by (19):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PowerView](PowerView.md), [PowerViewCheck](PowerViewCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ScaleCheck](ScaleCheck.md), [SubstationCheck](SubstationCheck.md), [Substations](Substations.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterPowerCheck](WaterPowerCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 

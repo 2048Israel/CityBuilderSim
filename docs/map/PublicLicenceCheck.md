@@ -14,7 +14,7 @@
 
 **Uses:** [LicenceFees](LicenceFees.md) (52), [UtilitiesHandler](UtilitiesHandler.md) (34), [BuildAdvice](BuildAdvice.md) (30), [Game](Game.md) (28), [ResearchCatalog](ResearchCatalog.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (17), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (16), [ResearchCheck](ResearchCheck.md) (11), [RecipeCheck](RecipeCheck.md) (7), [BuildingsStacks](BuildingsStacks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (5), [Recipes](Recipes.md) (5), [LicenceFeesCheck](LicenceFeesCheck.md) (5), [EquipmentFit](EquipmentFit.md) (5), [RecipeChange](RecipeChange.md) (4), [Equipment](Equipment.md) (4), [Ports](Ports.md) (4), [MoneyAudit](MoneyAudit.md) (4), [RecipeChanges](RecipeChanges.md) (4), [HistorySave](HistorySave.md) (4), [PowerDispatch](PowerDispatch.md) (3), [AutoBuilder](AutoBuilder.md) (3), [FittingCheck](FittingCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [BuildingType](BuildingType.md) (2), [GameFiles](GameFiles.md) (2), [DataSave](DataSave.md) (2), [NewGameCheck](NewGameCheck.md) (2)... and 5 more
 
-**Used by (2):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (3):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WaterPowerCheck](WaterPowerCheck.md)
 
 ## Sections
 
