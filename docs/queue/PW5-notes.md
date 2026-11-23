@@ -1554,3 +1554,37 @@ are retained. No production or harness logic change follows the pushed
 ensemble model. Logs and CSV comparisons are at target/PW5-ensemble-seed9/;
 the complete run and score are at
 target/ensemble/PW5-HC1-final-9c769adf3-20261123/.
+
+### Final ALL dry run passed; readiness
+
+The orchestrator's 2026-11-23 00:46 go accepts **seed 9's m605 F1 by
+name to LP-G1**, following HT1's FB11H precedent: native main without
+substations shows the same exhausted-land, long-skip class, and the brief
+carries the precise case. The raw F1s and 20/26 score remain unchanged,
+as do the AUTO2 89.1% and SHOCK 66.1% population medians and the 45%
+normal default household gap recorded beside them above.
+
+The granted dry run of **eb338867dfcd2a871dc22744d2b9d6f6451d1814**
+against main **cbf8a362e2577053e9a3f945fb12728d82482c50** passes on
+the gate box: **gate exit 0, suite exit 3**, only named reds. The launcher
+records the full selection and version 0.9.192; its retained suite reports
+**244 harnesses run, 233 passed and 11 with known reds**, in 1,034 seconds.
+The enclosing check phase takes 1,050 seconds. Both unnamed.txt and
+checks/new-reds.txt are empty. No red is waived or added after the run.
+
+Kept run on the box:
+`/home/jerus/cbs/runs/cbs-gate-PW5-ZBhvJISL`.
+Copied home, verified after completion:
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW5-ZBhvJISL`.
+Its branch.commit and main.commit contain the two exact commits above;
+exit contains 0 and checks.complete is present. The run remains sealed.
+The ship file names this box directory in its first-line gate-run comment
+so the gate can reuse it. The source and records were held fixed during
+the run; only these notes and the ship file change afterwards.
+
+The publication record retains the accepted exact default housing window
+and PriceLevel onset parts, plus Kept's held-grid row; its duplicate heap
+row stays removed because main already owns it. The final ship parser
+and scoped whitespace check pass. The provisional marker is dropped last
+in its own readiness commit, with its absence checked on origin before
+the ready mail. No work remains beyond publication by the orchestrator.
