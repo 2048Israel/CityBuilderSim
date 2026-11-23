@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW2-FZfbf78Z -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — PW2, the power plants and their fuels — 2026-11-23, ready, see docs/queue/PW2-notes.md
