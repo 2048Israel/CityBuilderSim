@@ -1,7 +1,8 @@
 # RES3 — home choice, typed rents and the 14-form catalogue
 
-Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through main's
-591fc92d8 FC2 capacity brief. Final verification and publication status are below.
+Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through HC1 on
+main efca2c5fd (0.9.190), merged as ef18a4b6c. Final verification and publication
+status are below.
 No user city or user save slot 1–9 is opened or written. Existing checks use
 their own isolated scratch slots; new RES3 native fixtures use slot 10.
 
@@ -223,11 +224,10 @@ trimming and no-land checks are intact. HousingMarketCheck passes the actual
 room/host/paired-door invariants, both historical and present-day paid catalogue
 construction, monthly pool/household money, native state and next-month parity.
 
-Current SAVE_FORMAT and OLDEST_LOADABLE_FORMAT are 62, above shipped main's 61.
-If HC1/PW5 publishes its 62 before RES3, RES3 merges it and advances from that
-shipped value; no conversion is introduced. Its new form IDs likewise follow
-any shipped Substation row. Neither concurrent batch has shipped as of the
-latest main refresh recorded above.
+RES3 initially used format/floor 62 above RES2's 61. After HC1 shipped its 62,
+RES3 merged it and advanced both numbers to 63; no conversion is introduced.
+Its new form IDs must likewise follow any shipped Substation row. PW5 has not
+shipped as of the latest main refresh recorded above.
 
 ## Save and unit findings during final checks
 
@@ -509,3 +509,28 @@ played founding moved. This batch changes no Exchange or OrderBook production
 code. RES3's own two unit-invariance defects above are mended and all currency
 comparisons pass. The final ScaleCheck repeat must also pass the added money
 identities and name only these five FS2 pins.
+
+## HC1 integration
+
+HC1 shipped on main efca2c5fd (0.9.190) while the prior-source full playtest was
+running. It was merged immediately; its published VERSION, card stocks, debt
+statistics, cash channels and census stock routes are kept. Generated map
+conflicts are regenerated from the combined source. Format/floor advance from
+shipped 62 to 63 because RES3's class flows cannot be reconstructed. PW5's IDs
+remain to be refreshed if it ships before this batch.
+
+The kept prior-source full playtest is target/RES3-LongPlaytest-pre-HC1.log:
+its only model red is 20 unplaced-household months, 689-922. Its money, own-line
+bounds and native continuation checks are green. That supply finding is not
+waived; the integrated model's traced replay follows the card-budget seam.
+
+A caused five-to-one sharing/census move preserves all HC1 positions: card
+balance 328.0831740677, holder position 3.2808317407, late balance 65.6166348135,
+late-holder position 0.6561663481, and excluded position 1.6404158703. The budget
+case first failed with zero principal reserve where 0.3 was due. ★ Live housing
+now quotes the entire opening balance's contractual card minimum at the bank's
+current funding price and scheduled income. The bare API reserves interest and
+minimum principal. The prediction is separate from HC1's saved settled flow:
+it matches actual card settlement, and neither the saved minimum/interest nor
+any card position changes when a home is quoted. HousingMarketCheck is green
+with these caused cases and both native-era continuations.

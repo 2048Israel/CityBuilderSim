@@ -683,6 +683,11 @@ public class HouseholdBalance {
     /** Current scheduled wages/pensions precede the later cash strike; old row totals describe last month's people. */
     public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
                                                                      ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome) {
+        return strikeHousingBudgets(families,accounts,foodPrice,chargedRent,currentIncome,Double.NaN);
+    }
+    /** Live housing reserves the opening card balance's contractual bill at the bank's current price. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome,double cardFundingRate) {
         double[] fresh=takeCensus(families),income=new double[ROWS],fees=new double[ROWS];
         for(int r=0;r<ROWS;r++){
             income[r]=accounts.getRowDisposable(r);
@@ -696,7 +701,8 @@ public class HouseholdBalance {
             double scheduled=currentIncome.applyAsDouble(c);
             double recurringIncome=Double.isFinite(scheduled)?Math.max(0,scheduled):pay[i];
             double actualFixed=Math.max(0,c.disposable()-c.afterFixed()-oldRent);
-            double projected=bills[i]+Math.max(0,accountFee)+c.interest()+c.studentInterest()+c.studentRepaid();
+            double cardService=Double.isFinite(cardFundingRate)?c.cardMinimumAt(cardFundingRate,recurringIncome):c.interest()+c.minimumPrincipal();
+            double projected=bills[i]+Math.max(0,accountFee)+cardService+c.studentInterest()+c.studentRepaid();
             double budget=Math.max(0,recurringIncome-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
                     +c.savings()/HousingMarket.SAVINGS_MONTHS);
             // The existing student facility funds housing shortfalls too, while open.

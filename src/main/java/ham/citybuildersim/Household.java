@@ -197,6 +197,13 @@ public abstract class Household {
                 interest + Bank.CARD_MIN_PRINCIPAL * debt) - interest);
     }
 
+    /** The opening balance's next contractual bill; a housing quote changes no settled card flow. */
+    double cardMinimumAt(double fundingRate,double income) {
+        if(debtFrozen())return 0;
+        double owedInterest=debt*cardRate(fundingRate,income)/12;
+        return Math.min(debt+owedInterest,Math.max(Bank.CARD_MINIMUM*debt,owedInterest+Bank.CARD_MIN_PRINCIPAL*debt));
+    }
+
     /** Probability and balance tails move into arrears at an annual hazard. */
     private void cardArrears(double spare) {
         double currentShare = Math.max(0, revolving - lateShare);

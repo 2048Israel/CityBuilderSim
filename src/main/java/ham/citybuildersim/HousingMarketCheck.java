@@ -156,11 +156,19 @@ public final class HousingMarketCheck {
             double budget=ordinary?ask*2:ask/4;
             var d=new HousingChoice.Demand(single.key(),quantity,1,0,false,single.tier().ordinal(),single.stage()==AdultStage.YOUNG,budget);
             double beforePeople=0;for(FamilyStructure shape:FamilyStructure.values())beforePeople+=g.getFamilies().totalOf(shape)*shape.size();
+            double[] cardsBefore=null;
+            if(!ordinary){
+                g.getHouseholdBalance().censusOnly(g.getFamilies());single.debt=10;single.revolving=.1;single.lateDebt=2;single.lateShare=.02;single.shutOut=.05;
+                cardsBefore=cardPositions(g.getHouseholdBalance());
+            }
             var market=g.getSectors().realEstate().housingMarket();var result=market.clear(g,List.of(d));
             double afterPeople=0;for(FamilyStructure shape:FamilyStructure.values())afterPeople+=g.getFamilies().totalOf(shape)*shape.size();
             near("sharing preserves the actual family members",afterPeople,beforePeople);
             if(ordinary){near("all suitable affordable singles placed first",result.suitable(),quantity);near("affordable singles are not forced to share",market.sharingGroups(),0);}
             else {
+                g.getHouseholdBalance().censusOnly(g.getFamilies());var cardsAfter=cardPositions(g.getHouseholdBalance());
+                String[] positions={"card balance","holder position","late balance","late holder position","excluded position"};
+                for(int i=0;i<positions.length;i++)near("a five-to-one housing move preserves HC1's "+positions[i],cardsAfter[i],cardsBefore[i]);
                 check("five budgets fund a real remaining home",market.sharingGroups()>0);
                 near("only actually placed sharing groups change the census",g.getFamilies().get(single.shape(),single.tier(),single.stage()),quantity-5*market.sharingGroups());
                 near("the actual sharing rent is one bill per occupied door",market.receipts(),market.occupied()*ask);
@@ -251,6 +259,30 @@ public final class HousingMarketCheck {
         var newcomers=market.roomLeft(g,new FamilyModel.Room(0,0,0,2,1,0,2));
         check("real additional doors still admit arrivals after the formation reserve",newcomers.households()>0);
         near("arrivals who start work next press cannot use the working family's density",newcomers.people(),newcomers.households());
+    }
+    static double[] cardPositions(HouseholdBalance balances){
+        double[] totals=new double[5];for(Household c:balances.cells()){
+            double n=c.households();totals[0]+=n*c.debt;totals[1]+=n*c.revolving;totals[2]+=n*c.lateDebt;totals[3]+=n*c.lateShare;totals[4]+=n*c.shutOut;
+        }return totals;
+    }
+    static void cardHousingBudget(){
+        out.println("--- the housing budget reserves HC1's fixed card minimum ---");
+        Game g=new Game(GameFiles.scratch("res3-card-budget"));g.run();
+        double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
+        g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
+        double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;g.getFamilies().rebuild(g.getCohorts(),jobs);
+        var balances=g.getHouseholdBalance();balances.censusOnly(g.getFamilies());
+        var cell=balances.cells().stream().filter(c->c instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT&&c.households()>0).findFirst().orElseThrow();
+        double before=balances.strikeHousingBudgets(g.getFamilies(),g.getHouseholds(),0,c->0,c->10).get(cell.key()).budget();
+        cell.debt=10;cell.revolving=.1;cell.lateDebt=2;cell.lateShare=.02;cell.shutOut=.05;
+        var opening=cardPositions(balances);
+        double withCard=balances.strikeHousingBudgets(g.getFamilies(),g.getHouseholds(),0,c->0,c->10).get(cell.key()).budget();
+        near("principal in the contractual card minimum is reserved before rent",before-withCard,Bank.CARD_MINIMUM*cell.debt);
+        var settled=CardCheck.cell(10,0,10,.1);settled.settle(10,0,0,0,0,.2,null,1);
+        double atCurrentRate=balances.strikeHousingBudgets(g.getFamilies(),g.getHouseholds(),0,c->0,c->10,.2).get(cell.key()).budget();
+        near("the quoted minimum at the current price matches actual card settlement",before-atCurrentRate,settled.minimumDue());
+        check("a housing quote does not overwrite the saved settled minimum or interest",cell.minimumDue()==0&&cell.interest()==0);
+        var closing=cardPositions(balances);for(int i=0;i<opening.length;i++)near("quoting a home moves no card position "+i,closing[i],opening[i]);
     }
     static void aggregatePackingRemainder(){
         out.println("--- the final shortage uses the existing whole-match packing resolution ---");
@@ -396,7 +428,7 @@ public final class HousingMarketCheck {
     public static void main(String[] args)throws Exception{
         out=System.out;PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
-        try{System.setOut(silent);classPrices();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();studentFacility();fundedHost();familyHostReservation();aggregatePackingRemainder();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
+        try{System.setOut(silent);classPrices();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();studentFacility();fundedHost();familyHostReservation();aggregatePackingRemainder();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
         out.println("Report: "+target);out.println(fails==0?"HousingMarketCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }

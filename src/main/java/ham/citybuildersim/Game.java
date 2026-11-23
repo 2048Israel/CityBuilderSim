@@ -16568,7 +16568,7 @@ public class Game {
         var resources=householdBalance.strikeHousingBudgets(families,households,getSectors().retail().getStoreSellPrice(),
                 c -> market.active()?market.rentFor(c.key(),c.households()):households.rentPerHousehold()*c.rentShare(),
                 c -> c instanceof WorkingHousehold?netWages[c.tier().ordinal()]*c.earningWeight():
-                        c instanceof RetiredHousehold?tax.pensionPerSenior()*c.grownUps():Double.NaN);
+                        c instanceof RetiredHousehold?tax.pensionPerSenior()*c.grownUps():Double.NaN,bank.householdRate(debtManager.getPolicyRate()));
         for(Household c:householdBalance.cells()) {
             if(c instanceof OwnerHousehold || c instanceof OrphanHousehold || c instanceof PrisonerHousehold)continue;
             if(c instanceof UnemployedHousehold u && u.status()==UnemployedHousehold.Status.UNHOUSED)continue;
