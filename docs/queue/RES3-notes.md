@@ -590,6 +590,9 @@ The caused flow has 800 offered, 20 traded, price 15.679012345679013,
 spend 313.58024691358025 and credit 223.58024691358042. The buyer's deposit
 is above SHARE_CUSHION_MONTHS times income and derived from CAR_DEPOSIT,
 CAR_ADOPTION and the used-car floor; every saved tuple component is nonzero.
+The copier proof uses a separate copy of the fixture's complete native save,
+leaving the economic tracking source intact. Its initial tuple-only JSON input
+was incomplete for the census copier and correctly failed on missing keys.
 
 ## Final integrated profile
 
@@ -600,11 +603,11 @@ months on this laptop (not solver-only timings):
 
 | Scratch city | People | Month ms | H/T/A/M/L |
 | --- | ---: | ---: | --- |
-| Small | 210 | 47.296 | 65/32/112/0/0 |
-| Present-day | supporting catalogue inputs above | 36.445 | 84/32/330/0/0 |
-| Larger present-day | 148,967 | 36.393 | 82/32/314/0/0 |
-| Historical | supporting catalogue inputs above | 29.620 | 62/32/193/0/0 |
-| Larger historical | 149,126 | 37.195 | 62/32/193/0/0 |
+| Small | 210 | 56.955 | 65/32/112/0/0 |
+| Present-day | supporting catalogue inputs above | 47.177 | 84/32/330/0/0 |
+| Larger present-day | 148,967 | 47.409 | 82/32/314/0/0 |
+| Historical | supporting catalogue inputs above | 37.847 | 62/32/193/0/0 |
+| Larger historical | 149,126 | 43.702 | 62/32/193/0/0 |
 
 Permanent household cells remain 141 in both larger cities; physical classes
 are 32 today and 16 in 1900. All 32 class quotes and 14 form availability rows

@@ -366,12 +366,11 @@ public class ScaleCheck {
         }
     }
 
-    static void run(Path root) throws Exception {
-        paperDeskRemainder(root);
+    static void usedTradeScale(Path root, Path nativeSource) throws Exception {
         Motoring.UsedTrade usedInput = DenominationCheck.usedTradeFixture();
         assertTrue("fixture: the used-car scale input contains an actual financed trade",
                 usedInput.traded() > 0 && usedInput.spend() > 0 && usedInput.credit() > 0);
-        JsonObject usedSave = new JsonObject();
+        JsonObject usedSave = com.google.gson.JsonParser.parseString(Files.readString(nativeSource)).getAsJsonObject();
         var usedJson = new com.google.gson.Gson();
         usedSave.add("usedCarTrade", usedJson.toJsonTree(usedInput));
         Path usedSource = root.resolve("used-trade.json"), usedCopy = root.resolve("used-trade-scaled.json");
@@ -383,6 +382,10 @@ public class ScaleCheck {
         assertTrue("the native copier scales all four trade flows and preserves the per-car mark",
                 scaledUsed.equals(new Motoring.UsedTrade(usedInput.traded() * usedK, usedInput.offered() * usedK,
                         usedInput.spend() * usedK, usedInput.credit() * usedK, usedInput.price())));
+    }
+
+    static void run(Path root) throws Exception {
+        paperDeskRemainder(root);
 
         /* ============== 1. the fixture, and its copy K times over ============== */
         out.println("--- the founded city, and its copy K times over past 2^31 people ---");
@@ -408,6 +411,8 @@ public class ScaleCheck {
         } finally {
             LongPlaytest.out = was;
         }
+
+        usedTradeScale(root, small.saveFile(10));
 
         // The founded city as its own save loads it, so both sides of every
         // comparison below come through the same load.
