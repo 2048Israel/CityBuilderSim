@@ -1,4 +1,4 @@
-# CallCheck.java - 852 lines · 31 methods · 5 constants · harnesses
+# CallCheck.java - 870 lines · 32 methods · 5 constants · harnesses
 
 `ham/citybuildersim/CallCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -53,7 +53,7 @@
 >    waiting up to 24 months; the call month is moved by hand (moveFirstCallForTest()).
 > 7. the callable line it saves is section 4's, or, run alone, one sold as section 5's is.
 
-**Uses:** [CallTree](CallTree.md) (69), [Game](Game.md) (24), [Auction](Auction.md) (19), [LongTermBond](LongTermBond.md) (19), [YieldCurve](YieldCurve.md) (13), [DebtManager](DebtManager.md) (11), [Debt](Debt.md) (8), [Founding](Founding.md) (6), [DebtQuote](DebtQuote.md) (6), [MoneyAudit](MoneyAudit.md) (4), [GameFiles](GameFiles.md) (3), [FloatLinkCheck](FloatLinkCheck.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sectors](Sectors.md) (2), [CapitalFlows](CapitalFlows.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Sector](Sector.md) (1), [CentralBank](CentralBank.md) (1), [Bank](Bank.md) (1), [TreasuryCheck](TreasuryCheck.md) (1)
+**Uses:** [CallTree](CallTree.md) (69), [Game](Game.md) (25), [Auction](Auction.md) (19), [LongTermBond](LongTermBond.md) (19), [YieldCurve](YieldCurve.md) (13), [DebtManager](DebtManager.md) (11), [Debt](Debt.md) (8), [Founding](Founding.md) (6), [DebtQuote](DebtQuote.md) (6), [MoneyAudit](MoneyAudit.md) (4), [GameFiles](GameFiles.md) (3), [FloatLinkCheck](FloatLinkCheck.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sectors](Sectors.md) (2), [Bank](Bank.md) (2), [CapitalFlows](CapitalFlows.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Sector](Sector.md) (1), [CentralBank](CentralBank.md) (1), [TreasuryCheck](TreasuryCheck.md) (1)
 
 **Used by (1):** [FloatLinkCheck](FloatLinkCheck.md)
 
@@ -66,10 +66,10 @@
 | 215 | 2. THE OPTION |
 | 284 | 3. THE VOLATILITY |
 | 342 | A PLAYED CITY (BuybackCheck's: the households, the bank and the world have the money to bid) |
-| 428 | 4. THE SALE |
-| 599 | 5. THE CALL |
-| 718 | 6. WORTH CALLING |
-| 807 | 7. THE SAVE |
+| 446 | 4. THE SALE |
+| 617 | 5. THE CALL |
+| 736 | 6. WORTH CALLING |
+| 825 | 7. THE SAVE |
 
 ## Constants
 
@@ -77,9 +77,9 @@
 |---:|---|---|---|
 | 137 | `CallCheck.ROW_MONTHS` | `{ 12, 24, 60, 120, 240, 360, 600 }` | The study's calm city (spec section 3.3): the 1-year zero rate and the zero rate at 2, 5, 10, 20, 30 and 50 years. |
 | 138 | `CallCheck.ROW_ZERO` | `{.0312,.0318,.0335,.0362,.0402,.0427,.0462 }` |  |
-| 407 | `CallCheck.ASKS_OF_ROOM` | `4` | FS14: the asks of section 4 the bank is handed its room for: the callable sale, the non-call one, the reopening of the callable line and the 20-year quote. |
-| 410 | `CallCheck.CB_DIAL` | `.3` | FS14: the central bank's dial in section 5: a share of the city's term paper to hold, 30%. |
-| 413 | `CallCheck.CB_BUYS_WITHIN_MONTHS` | `1` | FS14: the most months section 5 presses, after the dial is set, for the central bank to hold part of the line: its holdings step moves it in the first. |
+| 425 | `CallCheck.ASKS_OF_ROOM` | `4` | FS14: the asks of section 4 the bank is handed its room for: the callable sale, the non-call one, the reopening of the callable line and the 20-year quote. |
+| 428 | `CallCheck.CB_DIAL` | `.3` | FS14: the central bank's dial in section 5: a share of the city's term paper to hold, 30%. |
+| 431 | `CallCheck.CB_BUYS_WITHIN_MONTHS` | `1` | FS14: the most months section 5 presses, after the dial is set, for the central bank to hold part of the line: its holdings step moves it in the first. |
 
 ## Fields (state)
 
@@ -93,7 +93,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 789 | **type** `public class CallCheck` | Callable bonds, the call and "worth calling" (CD4, spec-city-debt.md sections 2.6 and 6.4; D22, D23, D24): a bond of ten years or more may be sold callable, its coupon carries the right on a Ho-Lee tree fitted to the ... |
+| 64 | 807 | **type** `public class CallCheck` | Callable bonds, the call and "worth calling" (CD4, spec-city-debt.md sections 2.6 and 6.4; D22, D23, D24): a bond of ten years or more may be sold callable, its coupon carries the right on a Ho-Lee tree fitted to the ... |
 | 70 | 4 | `static void check(String label, boolean ok)` |  |
 | 75 | 9 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 85 | 4 | `static void quietly(Runnable r)` |  |
@@ -131,43 +131,44 @@
 | 289 | 6 | `static double[] zigzag(double start, double step, int changes)` | A rate history whose monthly changes are +step, -step, +step, ... |
 | 296 | 45 | `static void theVolatility()` |  |
 
-### A PLAYED CITY (BuybackCheck's: the households, the bank and the world have the money to bid) (lines 342-427)
+### A PLAYED CITY (BuybackCheck's: the households, the bank and the world have the money to bid) (lines 342-445)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 356 | 26 | `static Game playedCity(String label)` | FOUR DEPOTS STANDING SINCE PT1-M4, beside the four it orders. |
-| 384 | 7 | `static void worldWantsPaper(Game city)` | The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. |
-| 393 | 5 | `static List<LongTermBond> callables(Game g)` | Every callable bond on the city's books. |
-| 400 | 5 | `static int bonds(Game g)` | Every piece the city's own bond lines hold (callable or not). |
-| 416 | 4 | `static boolean fixture(String label, boolean ok)` | FS14: a fixture assertion that counts its failure and says whether it held, so a section stops where what follows would read nonsense. |
-| 422 | 5 | `static void roomFor(Game city, double face, String what)` | FS14: the bank handed its room for this face of the city's paper (FloatLinkCheck.handBankRoom(): capital put in its till, between months), and the room asserted. |
+| 393 | 7 | `static double keepBankOverDesk(Game city)` | FC2, 2026-11-23: THE BANK'S CAPITAL KEPT OVER ITS SHARE DESK'S BOOK, between months, by what its equity lacks put in its till (Bank.setCash, as FloatLinkCheck.handBankRoom() hands its room): what the desk holds could ... |
+| 402 | 7 | `static void worldWantsPaper(Game city)` | The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. |
+| 411 | 5 | `static List<LongTermBond> callables(Game g)` | Every callable bond on the city's books. |
+| 418 | 5 | `static int bonds(Game g)` | Every piece the city's own bond lines hold (callable or not). |
+| 434 | 4 | `static boolean fixture(String label, boolean ok)` | FS14: a fixture assertion that counts its failure and says whether it held, so a section stops where what follows would read nonsense. |
+| 440 | 5 | `static void roomFor(Game city, double face, String what)` | FS14: the bank handed its room for this face of the city's paper (FloatLinkCheck.handBankRoom(): capital put in its till, between months), and the room asserted. |
 
-### 4. THE SALE (lines 428-598)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 440 | 4 | `static double saleOf(Game city, double spares)` | A sale of this many times what the households could take, and of no more than that many times a third of a year's tax revenue (EM1, 2026-10-29). |
-| 445 | 141 | `static void theSale(Game city)` |  |
-| 588 | 10 | `static boolean differentCallDateIsAnotherLine(Game city)` | A callable line built with another first call date is not the line a standard callable sale reopens. |
-
-### 5. THE CALL (lines 599-717)
+### 4. THE SALE (lines 446-616)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 603 | 98 | `static void theCall()` |  |
-| 703 | 7 | `static double[] snapshot(Game g, Debt d)` | Everything a refused call must leave as it was. |
-| 712 | 5 | `static double tills(Game g)` | Every sector's till, added up. |
+| 458 | 4 | `static double saleOf(Game city, double spares)` | A sale of this many times what the households could take, and of no more than that many times a third of a year's tax revenue (EM1, 2026-10-29). |
+| 463 | 141 | `static void theSale(Game city)` |  |
+| 606 | 10 | `static boolean differentCallDateIsAnotherLine(Game city)` | A callable line built with another first call date is not the line a standard callable sale reopens. |
 
-### 6. WORTH CALLING (lines 718-806)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 722 | 79 | `static void worthCalling(Game city)` |  |
-| 803 | 3 | `static void reprice(Game g)` | The market priced as the city stands (Game keeps that private): a quote of a bill books nothing and prices it first. |
-
-### 7. THE SAVE (lines 807-852)
+### 5. THE CALL (lines 617-735)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 811 | 41 | `static void theSave(Game city) throws Exception` |  |
+| 621 | 98 | `static void theCall()` |  |
+| 721 | 7 | `static double[] snapshot(Game g, Debt d)` | Everything a refused call must leave as it was. |
+| 730 | 5 | `static double tills(Game g)` | Every sector's till, added up. |
+
+### 6. WORTH CALLING (lines 736-824)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 740 | 79 | `static void worthCalling(Game city)` |  |
+| 821 | 3 | `static void reprice(Game g)` | The market priced as the city stands (Game keeps that private): a quote of a bill books nothing and prices it first. |
+
+### 7. THE SAVE (lines 825-870)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 829 | 41 | `static void theSave(Game city) throws Exception` |  |
 
