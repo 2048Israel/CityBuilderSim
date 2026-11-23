@@ -694,7 +694,7 @@ public final class CityLand {
         return h;
     }
 
-    /** centreStamp() hashed from the blocks, never kept: a harness's (KeptReadsCheck). */
+    /** centreStamp() hashed from the blocks, never kept: a harness's (LandCheck, AP2). */
     long centreStampDrawn() {
         long h = World.mix(seed ^ World.mix(siteX * 0x9E3779B97F4A7C15L ^ siteY));
         for (LandGrid.Fill f : centreRects) h = World.mix(h ^ World.mix(f.x0() * 31 + f.y0()) ^ (f.x1() * 0xC2B2AE3D27D4EB4FL + f.y1()));

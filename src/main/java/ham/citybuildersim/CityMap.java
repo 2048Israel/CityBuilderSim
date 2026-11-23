@@ -6543,7 +6543,7 @@ public final class CityMap {
         };
         /** How many tiles the three maps below keep: RUN_TILES_KEPT, or RUN_SEARCH_TILES_KEPT while a link's search runs (searching(), AP2). */
         private int tilesKept = RUN_TILES_KEPT;
-        /** The tiles whose terrain it has drawn (a miss of `tiles`): a harness's (KeptReadsCheck). */
+        /** The tiles whose terrain it has drawn (a miss of `tiles`): a harness's (GatewayCheck, AP2). */
         private long drawn;
         private final Map<Long, byte[]> tiles = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
             @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > tilesKept; }
@@ -6714,7 +6714,7 @@ public final class CityMap {
     /** The ground the runs read: a harness's, to lay runs of its own on the city's ground. */
     CityRuns.Ground runGround() { return runGround; }
 
-    /** (AP2) The tiles the runs' ground keeps now, and the tiles' terrain it has drawn since the map was made: a harness's (KeptReadsCheck). */
+    /** (AP2) The tiles the runs' ground keeps now, and the tiles' terrain it has drawn since the map was made: a harness's (GatewayCheck, AP2). */
     int runTilesHeld() { return runGround.tiles.size(); }
     long runTilesDrawn() { return runGround.drawn; }
 

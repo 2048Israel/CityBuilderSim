@@ -1476,7 +1476,7 @@ public final class EarthTerrain {
     /** idsNear() by tile, (tx << 32 | ty): the data is frozen, so a tile's window of cells never changes; shared, do not write into one. */
     private final Map<Long, int[]> idsKept = new HashMap<>();
 
-    /** idsNear() read from the cells, never kept: a harness's (KeptReadsCheck) beside idsNear(). */
+    /** idsNear() read from the cells, never kept: a harness's (LandmassCheck, AP2) beside idsNear(). */
     int[] idsNearDrawn(long tx, long ty) {
         int n = World.TILE;
         long x0 = tx * n, y0 = ty * n;
