@@ -306,9 +306,15 @@ public class DeathCareFirstCheck {
         BuildingManager bm = g.getBuildingManager();
         String cem = ConstructionControl.keyOf(template(g, CEMETERY));
         assertTrue("fixture: the cemetery is the city's own site", bm.isCitySite(cem));
-        assertTrue("fixture: among other city sites, the Penitentiary still owing most of its points",
-                bm.citySiteKeys().size() >= 4 && bm.stackOfKey(ConstructionControl.keyOf(template(g, "Penitentiary")))
-                        .getConstructionProgress() < template(g, "Penitentiary").getConstructionPoints() / 2.0);
+        // REV-FC2, the second review, moved from "still owing most of its points" (FC2 first made this move, and REV-FC2 put
+        // main's back when whole buildings kept the Penitentiary at home): the threshold splits the building it falls in,
+        // so the founding's Penitentiary hands the foreign crews its work past it and they build it beside the city's crews.
+        // It owes less, but it is on site still, which keeps every post offered (the assertion after this), what it is for.
+        BuildingsStacks pen = bm.stackOfKey(ConstructionControl.keyOf(template(g, "Penitentiary")));
+        out.printf("  the Penitentiary: %,.0f of its %,d points built%n", pen.getConstructionProgress(),
+                template(g, "Penitentiary").getConstructionPoints());
+        assertTrue("fixture: among other city sites, the Penitentiary still owing points",
+                bm.citySiteKeys().size() >= 4 && pen.getConstructionProgress() < template(g, "Penitentiary").getConstructionPoints());
         assertTrue("fixture: the builders offer every post", g.getBuildingOutput() == g.getBuildingOutputAtEveryPost());
         String houses = ConstructionControl.keyOf(template(g, "House"));
         assertTrue("fixture: and the landlords' Houses on site, not the city's", bm.siteKeysOnSite().contains(houses)

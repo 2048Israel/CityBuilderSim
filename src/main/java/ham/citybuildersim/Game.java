@@ -9389,8 +9389,9 @@ public class Game {
     }
 
     /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's (and, ET4, the part runs'), and the foothill their orders prepare (buildRunInvoice()); and (FC1) the points they put on the queue, which the builders' scarcity price reads. */
-    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands, double queue, double abroad) {
-        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of(), 0, 0); }
+    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands, double queue, double abroad,
+                               java.util.Map<BuildingsTemplate, Double> site) {
+        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of(), 0, 0, java.util.Map.of()); }
     }
 
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
@@ -9437,8 +9438,8 @@ public class Game {
         Fitout fit = Fitout.of(this, selected);
         // ...its buildings past the threshold at the foreign crews' share for the month they make them run, the order on
         // site in the base a point (REV-FC2; BuildingManager.abroadOfOrder()), and handed to them at that when it is billed.
-        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected);
-        BuildingManager.OrderAbroad abroad = buildingManager.abroadOfOrder(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected);
+        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected, ahead.site());
+        BuildingManager.OrderAbroad abroad = buildingManager.abroadOfOrder(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected, ahead.site());
         double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
         double sticker = buildingManager.nonMaterialCost(fit) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;
@@ -11851,16 +11852,22 @@ public class Game {
         double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0, queueAhead = 0, abroadAhead = 0;
         // ...and (ET5) the sea terminals ahead of it that stand on an island no port links, by island: they take its room, not the linked ground.
         java.util.Map<Integer, Double> islandsAhead = new java.util.HashMap<>();
+        // ...and (REV-FC2, the second review) the points they put on site by template, which the foreign crews' threshold reads.
+        java.util.Map<BuildingsTemplate, Double> siteAhead = new java.util.LinkedHashMap<>();
         for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
-                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead, abroadAhead));
+                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead, abroadAhead,
+                            new java.util.LinkedHashMap<>(siteAhead)));
             total += q.total;
             // ...and the points the order puts on the queue, as bill() is handed them: the next is priced on the queue with them (FC1),
             // its fitout's points a building (R1e, REV-R1e), as processBuildOrder() bills them.
             queueAhead += pointsEach(e.getKey(), q) * (double) e.getValue() + q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
             // ...and the part of them it hands the foreign crews when it is billed (REV-FC2), which leaves the queue at home.
             abroadAhead += q.abroadPoints;
+            // ...and its buildings' points on its stack (BuildingsStacks.pointsOnSite(): a building's fitout points; the prep and
+            // the works are queued, not on a stack).
+            siteAhead.merge(e.getKey(), pointsEach(e.getKey(), q) * (double) e.getValue(), Double::sum);
             double land = e.getKey().getLandSqFt() * (double) e.getValue();
             LandManager.Use use = groundUse(e.getKey());
             int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);

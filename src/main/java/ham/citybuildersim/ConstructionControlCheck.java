@@ -493,8 +493,11 @@ public class ConstructionControlCheck {
         Game.DemolitionQuote q = g.quoteDemolition(t, 2);
         close("its work is 5% of the template's points", q.points(),
                 ConstructionControl.DEMOLITION_SHARE * t.getConstructionPoints() * 2, 0);
-        close("its price is that share of the building's work at the builders' rate today, at their multiple (FC1)",
-                q.price().sticker, ConstructionControl.DEMOLITION_SHARE * bm.nonMaterialCost(t) * 2 * bm.orderPriceMultiplier(), 1e-12);
+        // REV-FC2, the second review, moved from "at their multiple (FC1)": a demolition is the city's crews' work, never
+        // handed abroad, so it is priced at the premium at home (BuildingManager.homePriceMultiplier()), not at the order's
+        // multiple, which past the threshold is the foreign crews' share - and this city's queue is past it.
+        close("its price is that share of the building's work at the builders' rate today, at the premium at home",
+                q.price().sticker, ConstructionControl.DEMOLITION_SHARE * bm.nonMaterialCost(t) * 2 * bm.homePriceMultiplier(), 1e-12);
         double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX,
                 g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().construction())));
         close("...no material, and the tax in it", q.price().total, q.price().sticker / (1 - rB), 1e-12);

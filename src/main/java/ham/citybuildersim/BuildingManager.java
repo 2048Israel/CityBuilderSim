@@ -239,13 +239,16 @@ public class BuildingManager {
     }
 
     /**
-     * ...the same work at the founding's wages and level (FC2): each template's cash cost over the expected level it is
-     * struck at (THE CASH IS STRUCK AT THE EXPECTED LEVEL), the labour in it at the founding's wage - the city's price for
-     * a point before any inflation of its own, which the world's base price for the same work starts from
-     * (worldPricePerPoint()). Zero where basePricePerPoint() is.
+     * ...the same work at the founding's wages and level (FC2): each template's cash cost as the catalogue states it, in
+     * founding dollars (BuildingsTemplate.getFoundingCashCost(), which the price level and a currency reform never move) -
+     * the city's price for a point before any inflation of its own, which the world's base price for the same work
+     * starts from (worldPricePerPoint()). Zero where basePricePerPoint() is. WHY founding dollars (REV-FC2, the second
+     * review): FC2 read the cash over the expected level it is struck at, the same figure in today's unit, and E converts
+     * into today's unit too, so a reform by a thousand moved the world's price a millionfold and the foreign crews'
+     * first share a thousandfold (DenominationCheck's reformed twin parted from its twin the month after).
      */
     public double basePricePerPointAtFounding() {
-        return pricePerPointOf(t -> t.getCashCost() / expectedLevel);
+        return pricePerPointOf(BuildingsTemplate::getFoundingCashCost);
     }
 
     /** basePricePerPoint()'s average, each template's non-material cost read by `costOf`: over the points owed on site, or the standing city's mix with nothing on site. */
@@ -6417,16 +6420,31 @@ public class BuildingManager {
                               double month, double share) { }
 
     public OrderAbroad abroadOfOrder(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of) {
+        return abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of, java.util.Map.of());
+    }
+
+    /**
+     * ...with {@code siteAhead}, the points the orders before it in a run put on site, by template (REV-FC2, the second
+     * review; Game.buildRunInvoice()): each on its own template's stack, as placing them would, so the threshold a run's
+     * order is quoted on is the one it reads placed after them. WHY: the order's own points stood in for the run's
+     * before it, so a depot after six farms was struck on seven depots' mix, and the run's invoice parted from its orders
+     * placed in turn (FitoutCheck section 9, BuildCardCheck section 9).
+     */
+    public OrderAbroad abroadOfOrder(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of,
+                                     java.util.Map<BuildingsTemplate, Double> siteAhead) {
         ForeignTerms now = foreignTerms();
         if (now == null) return null;
         double ahead = Double.isNaN(pointsAhead) ? 0 : Math.max(0, pointsAhead);
         double away = Double.isNaN(abroadAhead) ? 0 : Math.max(0, Math.min(ahead, abroadAhead));
         double each = Double.isNaN(pointsEach) ? 0 : Math.max(0, pointsEach);
         long count = Math.max(1, n);
-        double onSite = ahead + each * count;
-        boolean placed = of != null && of.getConstructionPoints() > 0 && onSite > 0 && Double.isFinite(onSite);
-        double base = placed ? pricePerPointWith(this::nonMaterialCost, onSite, of) : now.base();
-        double world = placed ? exchangeRate * pricePerPointWith(t -> t.getCashCost() / expectedLevel, onSite, of) : now.world();
+        double own = each * count;
+        boolean placed = of != null && of.getConstructionPoints() > 0 && own > 0 && Double.isFinite(own);
+        java.util.Map<BuildingsTemplate, Double> site = new java.util.LinkedHashMap<>();
+        if (placed && siteAhead != null) siteAhead.forEach((t, p) -> { if (t != null && p != null && p > 0) site.merge(t, p, Double::sum); });
+        if (placed) site.merge(of, own, Double::sum);
+        double base = placed ? pricePerPointWith(this::nonMaterialCost, site) : now.base();
+        double world = placed ? exchangeRate * pricePerPointWith(BuildingsTemplate::getFoundingCashCost, site) : now.world();
         double first = BuildersShort.excessShare(world, base);
         double threshold = BuildersShort.thresholdMonths(first);
         double from = BuildersShort.monthsQueued(now.queueAtHome() + ahead - away, now.sites());
@@ -6445,24 +6463,40 @@ public class BuildingManager {
     }
 
     /**
-     * pricePerPointOf() with {@code points} more of {@code of}'s work owed on site (REV-FC2): what it reads once an order
-     * is placed - the base a point (basePricePerPoint()) and, at the founding's, the world's (worldPricePerPoint()), so
-     * the threshold an order is quoted on is the threshold read after it stands. WHY the world's too: struck on the base
-     * with the order and the world's without it, a cheap plant's order read its threshold at the cap where the city,
-     * once it stood, read 20.53 months (ForeignCheck's founded town).
+     * pricePerPointOf() with {@code added} more owed on site, points by template (REV-FC2): what it reads once the orders
+     * are placed - the base a point (basePricePerPoint()) and, at the founding's, the world's (worldPricePerPoint()), so
+     * the threshold an order is quoted on is the threshold read after it stands. Each template's points join its own
+     * stack, as addStack() puts them (one stack a template, by name), and a template with none is a new stack at the
+     * end, so the sum runs in the order the placed city's does. WHY the world's too: struck on the base with the order
+     * and the world's without it, a cheap plant's order read its threshold at the cap where the city, once it stood,
+     * read 20.53 months (ForeignCheck's founded town).
      */
-    private double pricePerPointWith(java.util.function.ToDoubleFunction<BuildingsTemplate> costOf, double points, BuildingsTemplate of) {
-        double value = points * costOf.applyAsDouble(of) / of.getConstructionPoints(), owedAll = points;
+    private double pricePerPointWith(java.util.function.ToDoubleFunction<BuildingsTemplate> costOf,
+                                     java.util.Map<BuildingsTemplate, Double> added) {
+        java.util.Map<String, BuildingsTemplate> byName = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Double> left = new java.util.LinkedHashMap<>();
+        added.forEach((t, p) -> { byName.putIfAbsent(t.getName(), t); left.merge(t.getName(), p, Double::sum); });
+        double value = 0, owedAll = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             int per = t.getConstructionPoints();
-            if (stack.getUnderConstruction() <= 0 || per <= 0) continue;
-            double owed = stack.pointsOnSite() - stack.getConstructionProgress();
+            Double more = left.remove(t.getName());
+            double a = more == null ? 0 : more;
+            if ((stack.getUnderConstruction() <= 0 && !(a > 0)) || per <= 0) continue;
+            double owed = (stack.pointsOnSite() + a) - stack.getConstructionProgress();
             if (owed <= 0) continue;
             value += owed * costOf.applyAsDouble(t) / per;
             owedAll += owed;
         }
-        return value / owedAll;
+        for (java.util.Map.Entry<String, Double> e : left.entrySet()) {
+            BuildingsTemplate t = byName.get(e.getKey());
+            int per = t.getConstructionPoints();
+            double a = e.getValue();
+            if (per <= 0 || !(a > 0)) continue;
+            value += a * costOf.applyAsDouble(t) / per;
+            owedAll += a;
+        }
+        return owedAll > 0 ? value / owedAll : pricePerPointOf(costOf);
     }
 
     /** The terms now; null with no trade on. */
@@ -6569,7 +6603,13 @@ public class BuildingManager {
 
     /** ...with {@code abroadAhead} of the points ahead handed abroad by the orders before it in a run (abroadOfOrder(); Game.buildRunInvoice()): what placing it after them asks. */
     public double orderPriceMultiplier(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of) {
-        OrderAbroad a = abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of);
+        return orderPriceMultiplier(pointsAhead, abroadAhead, pointsEach, n, of, java.util.Map.of());
+    }
+
+    /** ...with the points the orders before it in a run put on site, by template (abroadOfOrder()'s six-argument form). */
+    public double orderPriceMultiplier(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of,
+                                       java.util.Map<BuildingsTemplate, Double> siteAhead) {
+        OrderAbroad a = abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of, siteAhead);
         if (a == null) return 1;
         return BuildersShort.multiplier(a.fromMonths(), a.stepMonths(), n, a.thresholdMonths(), a.share());
     }
@@ -9097,6 +9137,10 @@ public class BuildingManager {
         for (BuildingsStacks s : stacks) s.redenominate(scale);
         control.redenominate(scale);
         materialsCost *= scale;
+        // ...and the rate kept for the world's price of a point (REV-FC2, the second review): the D$ per US$ is in today's
+        // unit, EconomyManager.redenominate() scales its own and hands it on at the next strike only, so until then the
+        // builders read the old unit's rate - the materials' price, struck from it, is scaled on the line above.
+        exchangeRate *= scale;
     }
 
 
