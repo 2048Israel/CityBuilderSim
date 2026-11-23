@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — AP2, slot 9's slow months at 17 million people — 2026-11-22, ready, see docs/queue/AP2-notes.md
 On Jerus's slot 9 (17.3 million people, 321,345 buildings, 151 districts) the months the ground moved took 8-15 s. A highway piece's failed link search reruns at every purchase, and its 2-million-plot ring drew the same Earth tiles again, about 90,000 draws for 4,000 tiles, through a 256-tile memory.
