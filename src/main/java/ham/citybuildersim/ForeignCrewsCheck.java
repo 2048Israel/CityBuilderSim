@@ -60,7 +60,16 @@ import static ham.citybuildersim.ConstructionTrapCheck.template;
  *      threshold's months of the sites; his month is far over the sites'; half the backlog is a smaller month at a smaller
  *      excess; the backlog read at both paces stays within a month under the threshold, which stays within SURE_MONTHS of
  *      the knee; and his crews take no worker from the city (a twin with the price switched off for its first month).
- *   7. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
+ *   7. THE BUILDING THE THRESHOLD FALLS IN (REV-FC2, the second review): a Coal Power Plant, a year of the sites' month
+ *      many times over, ordered with the queue under the threshold is split at it - its points past the threshold abroad,
+ *      point for point, priced at the premium for its part at home and the crews' share for the rest, and the queue at home
+ *      left at the threshold, not years past it; a month on, the queue at home is under it and the next order is built at
+ *      home. Each site claims its own work on his book, and his month falls on every claim alike; a cancel takes the
+ *      cancelled site's own off it: nothing for a Middle School quoted at home, the plant's own and not the Houses' ordered
+ *      after it; the claims survive a save, and a save without them shares his book by the sites' points owed.
+ *   8. A CURRENCY REFORM: a reform dividing the money by 1,000 divides his book's price a point by 1,000, and the offer's,
+ *      and his next bill is his points at it - not a thousandfold abroad at the old unit's price.
+ *   9. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
  *
  * Every fixture causes its condition.
  */
@@ -96,6 +105,15 @@ public class ForeignCrewsCheck {
      * order makes him run, Game.foreignTermsOfOrder()), and the base a point the quote read with the order on site.
      */
     static final java.util.Map<String, double[]> QUOTED = new java.util.HashMap<>();
+
+    /** Section 7's buildings: one quoted at home, and one far bigger than the threshold's months of the sites, which it splits. */
+    static final String SCHOOL = "Middle School", PLANT = "Coal Power Plant";
+
+    /** ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it. */
+    static final long HOUSES = 200;
+
+    /** Section 8's reform: the money divided by a thousand, the reviewer's case. */
+    static final double REFORM = 1000;
 
     /** The months queued within which, under the threshold, the backlog read at both paces must stay: one month. */
     static final double ONE_MONTH = 1;
@@ -137,8 +155,11 @@ public class ForeignCrewsCheck {
         domesticInflation(held[0]);
         held[0] = null;
         theExport(root);
-        theBacklog(root);
-        out.println("\n--- 7. the audit ---");
+        Game reformed = theBacklog(root);
+        theSplit(root);
+        theReform(reformed);
+        reformed = null;
+        out.println("\n--- 9. the audit ---");
         audited("in every month here");
 
         out.printf("%n%d assertions made here%n", checked);
@@ -416,7 +437,7 @@ public class ForeignCrewsCheck {
         return g;
     }
 
-    static void theBacklog(Path root) {
+    static Game theBacklog(Path root) {
         out.println("\n--- 6. a 240-month backlog: the order hands him its buildings past the threshold as it is billed, his month and excess rise with it, the city's workers are not taken ---");
         Game a = backlog(root, "backlog-a", LONG_MONTHS);
         Game b = backlog(root, "backlog-b", HALF_MONTHS_QUEUED);
@@ -433,11 +454,13 @@ public class ForeignCrewsCheck {
         ok("fixture: ...and half of it in b", orderedB >= HALF_MONTHS_QUEUED && orderedB < LONG_MONTHS);
         ok("fixture: a and its twin are the same city", bmA.queueAtHome() == bmOff.queueAtHome() && ca.getForeignBook() == cOff.getForeignBook()
                 && sitesA == off.getBuildingOutputAtEveryPost());
-        ok("fixture: both are far past the threshold", bmA.ordersGoAbroad() && bmB.ordersGoAbroad());
+        // REV-FC2, the second review: the queue at home is left at the threshold, not past it (the House it falls in split).
+        ok("fixture: both are far past the threshold, at home and abroad", orderedA > bmA.thresholdMonths() + ONE_MONTH
+                && orderedB > bmB.thresholdMonths() + ONE_MONTH);
 
         // REV-FC2's P1: the order's buildings past the threshold went to him as it was billed, at what its quote charged for them.
         double[] q = QUOTED.get("backlog-a"), qb = QUOTED.get("backlog-b");
-        double thresholdA = bmA.thresholdMonths(), firstA = bmA.foreignExcessShare(), houseMonths = template(a, HOUSE).getConstructionPoints() / sitesA;
+        double thresholdA = bmA.thresholdMonths(), firstA = bmA.foreignExcessShare();
         out.printf("  a's order: %,.0f points past the threshold quoted at +%.4f (+%.4f his share without it), %,.6f a point (the House's base %,.6f); his book %,.0f at +%.4f, %,.6f%n",
                 q[3], q[1], q[0], q[2], q[4], ca.getForeignBook(), ca.getForeignBookShare(), ca.getForeignBookPrice());
         ok("fixture: his book was empty before the order", q[5] == 0 && qb[5] == 0);
@@ -446,8 +469,9 @@ public class ForeignCrewsCheck {
         near("...at the share the quote charged for them", ca.getForeignBookShare(), q[1], 1e-12);
         near("...and the price a point it charged, the House's own base and that share", ca.getForeignBookPrice(), q[2], 1e-12);
         near("...which is the House's base a point and that share", q[2], q[4] * (1 + q[1]), 1e-12);
-        ok("...and the queue at home is the threshold's months of the sites, over it by no more than a House",
-                bmA.monthsQueued() > thresholdA && bmA.monthsQueued() <= thresholdA + houseMonths + 1e-9);
+        // REV-FC2, the second review: the House the threshold falls in is split at it, so the queue at home is the threshold.
+        near("...and the queue at home is the threshold's months of the sites, the House it falls in split at it",
+                bmA.monthsQueued(), thresholdA, 1e-9);
         double monthA = BuildersShort.foreignMonth(ca.getForeignBook(), thresholdA, bmA.largestDepotPoints());
         near("his excess is the supply curve's at the month the order makes him run", q[1],
                 BuildersShort.excessAt(firstA, monthA, a.getConstructionOutputAtEveryPost()), 1e-12);
@@ -476,8 +500,8 @@ public class ForeignCrewsCheck {
                 priceDrift = Math.max(priceDrift, Math.abs(ca.getForeignBookPrice() - quotedPrice) / quotedPrice);
                 double threshold = bmA.thresholdMonths();
                 double paced = bmA.getRemainingConstructionPoints() / (a.getBuildingOutputAtEveryPost() + bmA.foreignMonthNow());
-                // REV-FC2: within a month of it either side - billing put whole buildings abroad by the threshold then, and
-                // the work stays where it was put while the threshold moves with the base.
+                // REV-FC2: within a month of it either side - billing put the work past the threshold then abroad, and the
+                // work stays where it was put while the threshold moves with the base.
                 inside &= Math.abs(threshold - paced) <= ONE_MONTH;
                 thresholdOk &= threshold <= reach;
                 lowest = Math.min(lowest, threshold - paced);
@@ -527,6 +551,161 @@ public class ForeignCrewsCheck {
         exact("...and the share its points were handed at", cBack.getForeignBookShare(), share);
         exact("...and their price a point, so the load bills them what their payers were quoted", cBack.getForeignBookPrice(), price);
         ok("...a book that is priced", !cBack.foreignBookUnpriced() && price > 0);
+        return a;
+    }
+
+    /* ============================ 7. THE BUILDING THE THRESHOLD FALLS IN ============================ */
+
+    /** The refund the month's end made for t's site, or null. */
+    static ConstructionControl.Refund refundOf(Game g, BuildingsTemplate t) {
+        for (ConstructionControl.Refund r : g.getControlThisMonth().refunds) if (r.templateId() == t.getId()) return r;
+        return null;
+    }
+
+    /** n of t ordered by the city, quietly, its cash and ground given first; false if the order was not placed. */
+    static boolean cityOrders(Game g, BuildingsTemplate t, long n) {
+        Game.BuildQuote q = g.quoteBuild(t, n);
+        g.setCashForTest(g.getCash() + 2 * q.total);
+        double land = n * t.getLandSqFt();
+        if (g.getLandManager().getAvailableSqFt() < land) g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 2 * land);
+        Game.BuildResult[] r = new Game.BuildResult[1];
+        quietly(() -> r[0] = g.buildStack(t, n, false));
+        if (r[0] != Game.BuildResult.SUCCESS) out.printf("  the order of %d %s: %s%n", n, t.getName(), r[0]);
+        return r[0] == Game.BuildResult.SUCCESS;
+    }
+
+    static void theSplit(Path root) {
+        out.println("\n--- 7. the building the threshold falls in: split at it, its points past it abroad, the queue at home left at the threshold; a cancel takes its site's own work off his book, saved ---");
+        Game g = calm(root, "split");
+        BuildingManager bm = g.getBuildingManager();
+        Construction c = g.getSectors().construction();
+        BuildingsTemplate school = template(g, SCHOOL), plant = template(g, PLANT), house = template(g, HOUSE);
+
+        // The school first, quoted at home: the queue at home is the calm city's, under the knee.
+        Game.BuildQuote qs = g.quoteBuild(school, 1);
+        ok("fixture: a Middle School quoted with the queue under the threshold is quoted at home", qs.abroadPoints == 0
+                && bm.monthsQueued() < bm.thresholdMonths());
+        ok("fixture: ...and ordered", cityOrders(g, school, 1));
+        ok("fixture: his book is empty", c.getForeignBook() == 0);
+
+        // The plant: a year of the sites' month many times over.
+        BuildingManager.OrderAbroad oa = g.abroadOfOrder(plant, 1);
+        Game.BuildQuote qp = g.quoteBuild(plant, 1);
+        double each = Fitout.of(g, plant).points(), sites = g.getBuildingOutputAtEveryPost();
+        double from = oa.fromMonths(), step = oa.stepMonths(), threshold = oa.thresholdMonths(), share = oa.share();
+        double home = (threshold - from) / step;
+        double multiple = bm.orderPriceMultiplier(0, 0, each, 1, bm.basePerPointOf(plant));
+        out.printf("  the plant: %,.0f points, %.2f months of the sites' %,.0f; the queue at home %.4f months, the threshold %.4f; %,.1f points past it quoted abroad at +%.4f, its parts' %,.0f points; the multiple %.6f%n",
+                each, step, sites, from, threshold, qp.abroadPoints, share, qp.prepPoints + qp.worksPoints + qp.bridgePoints + qp.deepWaterPoints, multiple);
+        out.printf("  FC2's whole buildings kept it at home: %.2f months queued at home after it, every order after it abroad until its builders had worked %.2f months of it down%n",
+                from + step, from + step - threshold);
+        ok("fixture: the queue at home is under the threshold and the plant's points run past it by more than a month of the sites",
+                from < threshold && from + step > threshold + ONE_MONTH);
+        ok("the plant is split: one building with work abroad", oa.buildings() == 1);
+        near("...its points past the threshold abroad, point for point", oa.points(), each * (1 - home), 1e-12);
+        near("...priced at the premium where it begins for its part at home and the crews' share for the rest, independently computed",
+                multiple, 1 + home * BuildersShort.premium(from) + (1 - home) * share, 1e-12);
+        ok("...the part at home dearer a point than none and cheaper than the crews'", BuildersShort.premium(from) < share);
+
+        ok("fixture: the plant is ordered", cityOrders(g, plant, 1));
+        BuildingsStacks ss = bm.getStack(school), sh = bm.getStack(house);
+        exact("billing handed him the quote's points abroad", c.getForeignBook(), qp.abroadPoints);
+        near("...and the queue at home is the threshold's months of the sites, and its parts' share at home", bm.monthsQueued(),
+                bm.thresholdMonths() + (qp.prepPoints + qp.worksPoints + qp.bridgePoints + qp.deepWaterPoints) * home / sites, 1e-9);
+
+        // Houses after it, with the queue at home at the threshold: abroad whole, on his book beside the plant's work.
+        double houseEach = Fitout.of(g, house).points();
+        Game.BuildQuote qh = g.quoteBuild(house, HOUSES);
+        ok("fixture: the Houses are ordered", cityOrders(g, house, HOUSES));
+        double P = qp.abroadPoints, H = qh.abroadPoints;
+        near("Houses ordered with the queue at home at the threshold go abroad whole", H, HOUSES * houseEach, 1e-9);
+        near("...his book is the plant's work abroad and theirs", c.getForeignBook(), P + H, 1e-12);
+        near("the plant's site claims its own work on his book", bm.abroadOwedOf(plant), P, 1e-12);
+        near("...the Houses' site theirs", bm.abroadOwedOf(house), H, 1e-9);
+        exact("...and the school's, quoted at home, none", bm.abroadOwedOf(school), 0);
+        near("...the sites' work on his book sums to his book", sum(bm.getAbroadOwedById()), c.getForeignBook(), 1e-12);
+
+        // The claims saved, and a save from before them.
+        java.util.Map<Integer, Double> owed = bm.getAbroadOwedById();
+        Game back = new Game(new GameFiles(root.resolve("split"), root.resolve("split-no-legacy")));
+        quietly(() -> {
+            g.saveGame(3, "the split");
+            back.run();
+            back.loadGameSave(3);
+        });
+        BuildingManager bmBack = back.getBuildingManager();
+        java.util.Map<Integer, Double> loaded = bmBack.getAbroadOwedById();
+        out.printf("  each site's work on his book by id saved %s, loaded %s%n", owed, loaded);
+        boolean same = owed.keySet().equals(loaded.keySet()) && owed.containsKey(plant.getId());
+        for (java.util.Map.Entry<Integer, Double> e : owed.entrySet())
+            same &= loaded.get(e.getKey()) != null && Math.abs(loaded.get(e.getKey()) - e.getValue()) <= 1e-9 * e.getValue();
+        ok("each site's work on his book loads as it was saved", same);
+        bmBack.restoreAbroadOwed(null);
+        BuildingsStacks backPlant = bmBack.getStack(template(back, PLANT)), backHouse = bmBack.getStack(template(back, HOUSE));
+        out.printf("  read as a save from before it: the plant %,.1f of its %,.1f owed, the Houses %,.1f of their %,.1f%n",
+                bmBack.abroadOwedOf(template(back, PLANT)), backPlant.owedPoints(), bmBack.abroadOwedOf(template(back, HOUSE)), backHouse.owedPoints());
+        near("...and a save from before it shares his book among the sites by their points owed, as FC1b cut them",
+                bmBack.abroadOwedOf(template(back, PLANT)) / bmBack.abroadOwedOf(template(back, HOUSE)), backPlant.owedPoints() / backHouse.owedPoints(), 1e-12);
+        near("...the sites' work on his book still his book", sum(bmBack.getAbroadOwedById()), back.getSectors().construction().getForeignBook(), 1e-12);
+
+        // A month on: his month falls on every site's work on his book alike.
+        month(g);
+        double b1 = c.getForeignBook();
+        BuildingManager.OrderAbroad next = g.abroadOfOrder(house, 1);
+        out.printf("  a month on: the queue at home %.4f months against the threshold %.4f; a House quoted %,.3f of its %,.3f points abroad; his book %,.1f, the plant's %,.1f, the Houses' %,.1f%n",
+                bm.monthsQueued(), bm.thresholdMonths(), next.points(), houseEach, b1, bm.abroadOwedOf(plant), bm.abroadOwedOf(house));
+        ok("a month on, the queue at home is under the threshold again", bm.monthsQueued() < bm.thresholdMonths());
+        ok("...and the next order is built at home", next.points() < houseEach);
+        near("his month fell on the Houses' work on his book in its share", bm.abroadOwedOf(house), H * b1 / (P + H), 1e-9);
+        near("...and on the plant's, never more than the points it owes", bm.abroadOwedOf(plant),
+                Math.min(bm.getStack(plant).owedPoints(), P * b1 / (P + H)), 1e-9);
+
+        // The cancels, in one month: the school's, quoted at home, and the plant's.
+        ok("fixture: the school is still on site", ss.getUnderConstruction() > 0 && ss.owedPoints() > 0);
+        double bookBefore = c.getForeignBook();
+        ok("fixture: the school's and the plant's sites can be cancelled", g.cancelSite(ConstructionControl.keyOf(school), true)
+                && g.cancelSite(ConstructionControl.keyOf(plant), true));
+        month(g);
+        ConstructionControl.Refund rs = refundOf(g, school), rp = refundOf(g, plant);
+        double built = c.getForeignPointsThisMonth(), then = bookBefore - built, after = c.getForeignBook();
+        double f = P / (P + H), expected = rp == null ? Double.NaN : Math.min(rp.points(), f * then);
+        out.printf("  cancelled: the school %,.1f points left, a share of his book %.6f (FC2 cut the %,.1f); the plant %,.1f left, a share %.6f, its work's share %.6f; his book %,.1f, %,.1f after his month of %,.1f, %,.1f after the cancels%n",
+                rs == null ? Double.NaN : rs.points(), rs == null ? Double.NaN : rs.bookShare(), rs == null ? Double.NaN : rs.points(),
+                rp == null ? Double.NaN : rp.points(), rp == null ? Double.NaN : rp.bookShare(), f, bookBefore, then, built, after);
+        ok("fixture: the month's end stopped both with points left", rs != null && rs.points() > 0 && rp != null && rp.points() > 0);
+        exact("a cancel of an order quoted at home takes no share of his book", rs == null ? Double.NaN : rs.bookShare(), 0);
+        near("the plant's takes its work's share of his book", rp == null ? Double.NaN : rp.bookShare(), f, 1e-12);
+        near("...off his book after his month, never more than its points left", after, then - expected, 1e-9);
+        ok("...which leaves the Houses' work on his book whole", after >= (1 - f) * then - 1e-9);
+    }
+
+    static double sum(java.util.Map<Integer, Double> m) {
+        double t = 0;
+        for (double v : m.values()) t += v;
+        return t;
+    }
+
+    /* ============================ 8. A CURRENCY REFORM ============================ */
+
+    static void theReform(Game a) {
+        out.println("\n--- 8. a currency reform: his book's price a point is the city's money, divided with it ---");
+        Construction c = a.getSectors().construction();
+        double book = c.getForeignBook(), price = c.getForeignBookPrice();
+        ok("fixture: his book holds points at a price", book > 0 && price > 0);
+        boolean[] done = new boolean[1];
+        quietly(() -> done[0] = a.reformCurrencyForTest(REFORM));
+        ok("fixture: the reform is made", done[0]);
+        Game.ForeignOffer offer = a.foreignCrewsOffer();
+        out.printf("  his book %,.1f points at %,.9f a point, after the reform %,.12f; the offer's price %,.12f%n",
+                book, price, c.getForeignBookPrice(), offer.pricePerPoint());
+        near("the book's price a point is divided by the reform", c.getForeignBookPrice(), price / REFORM, 1e-12);
+        near("...and the offer bills his month at it", offer.pricePerPoint(), price / REFORM, 1e-12);
+        month(a);
+        double builtNow = c.getForeignPointsThisMonth(), bill = c.getForeignBillThisMonth();
+        out.printf("  the month after: he built %,.1f points and billed %,.6f, at the new unit's price %,.6f%n",
+                builtNow, bill, builtNow * price / REFORM);
+        ok("fixture: he built in the month after", builtNow > 0);
+        near("...and billed them at the book's price in the new unit, not a thousandfold", bill, builtNow * price / REFORM, 1e-9);
     }
 
     /** The city's workers after a's first month and the twin's, which had no foreign crews. */

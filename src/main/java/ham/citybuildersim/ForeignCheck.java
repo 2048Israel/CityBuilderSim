@@ -109,7 +109,7 @@ public class ForeignCheck {
             Object[][] orders = {{"House", 500L, false}, {"Convenience Store", 8L, false}, {"Small Grocery Store", 3L, false},
                     {"Construction Depot", 4L, true}, {"Coal Power Plant", 1L, false}, {"Water Treatment Plant", 1L, false},
                     {"Industrial Bakery", 2L, false}};
-            double quotedPoints = 0, quotedMoney = 0, coalHomeMonths = Double.NaN, coalThreshold = Double.NaN;
+            double quotedPoints = 0, quotedMoney = 0, coalHomeMonths = Double.NaN, coalThreshold = Double.NaN, coalPartsHome = Double.NaN;
             long coalAbroad = -1;
             boolean tradeOn = true;
             StringBuilder lines = new StringBuilder();
@@ -139,6 +139,10 @@ public class ForeignCheck {
                         coalAbroad = with == null ? -1 : with.buildings();
                         coalHomeMonths = bm.monthsQueued();
                         coalThreshold = bm.thresholdMonths();
+                        // ...its preparation, works, bridge and deep water at home in the share its building's points are.
+                        double parts = q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
+                        coalPartsHome = with == null || !(with.stepMonths() > 0) ? 0
+                                : parts * (1 - q.abroadPoints / Math.max(1e-9, each + parts)) / Math.max(1e-9, each / with.stepMonths());
                     }
                 }
             } finally {
@@ -178,8 +182,8 @@ public class ForeignCheck {
             }
             out.printf("   the town's orders: %,.0f points past the threshold quoted abroad for %,.2f; the first offer counted %,.0f handed%n",
                     quotedPoints, quotedMoney, handedFirst);
-            out.printf("   the coal plant: %d of 1 past the threshold, and %,.2f months queued at home after it against a threshold of %,.2f%n",
-                    coalAbroad, coalHomeMonths, coalThreshold);
+            out.printf("   the coal plant: %d of 1 with work past the threshold, and %,.4f months queued at home after it against a threshold of %,.4f (its other parts' share at home %,.4f)%n",
+                    coalAbroad, coalHomeMonths, coalThreshold, coalPartsHome);
             out.printf("   %d months before a later order handed the crews work: billed and on the book at its price within %.2e of the quote%n",
                     ledgerMonths, worstLedger);
             out.printf("   the town's 500 houses stood whole at month %d with %,d people; its first year the crews billed %,.2f, its households' flows at home %,.2f, the trade balance %,.2f%n",
@@ -188,8 +192,10 @@ public class ForeignCheck {
                     handedFirst, quotedPoints, 1e-9);
             assertTrue("...and what the crews billed and their book still holds at its price is what the town's payers were quoted for that work,"
                     + " to a part in a million million, month by month: the builders' cash carries no gap", ledgerMonths >= 2 && worstLedger <= 1e-12);
-            assertTrue("an order whose building stood within the threshold handed nothing abroad: the coal plant built at home, at its payer's price,"
-                    + " though the queue it left ran past the threshold", coalAbroad == 0 && coalHomeMonths > coalThreshold);
+            // REV-FC2, the second review: FC2 kept the plant whole at home, 70.40 months queued after it against 20.53.
+            assertTrue("the coal plant the threshold fell in was split at it: its work past the threshold abroad, and the queue at home it left"
+                    + " the threshold's months of the sites, within its other parts' share at home", coalAbroad == 1
+                    && coalHomeMonths >= coalThreshold - 1e-9 && coalHomeMonths <= coalThreshold + coalPartsHome + 1e-9);
             assertTrue("the town's 500 houses stand whole within three years, built partly abroad, with people in them", townMonth > 0 && peopleThen > 0);
         } finally {
             BuildingManager.buildersShortOn = false;

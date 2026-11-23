@@ -1191,19 +1191,19 @@ public class DataSave implements Cloneable {
     }
 
     /**
-     * Each site's share of its points owed that went to the foreign crews' book, by template id (REV-FC2, the second
-     * review; BuildingsStacks.abroadShare, BuildingManager.noteAbroad()), only the sites with some, and written always,
-     * an empty map when none: so a save without the key is a save from before it, whose sites with points owed read all
-     * of them abroad - a cancel cuts his book by its points left, never below nothing, as FC1b cut it. No format bump.
+     * Each site's work on the foreign crews' book in points, by template id (REV-FC2, the second review;
+     * BuildingsStacks.abroadClaim, BuildingManager.abroadOwedOf()), only the sites with some, and written always, an
+     * empty map when none: so a save without the key is a save from before it, whose sites with points owed claim his
+     * book in proportion to them - a cancel takes its share of his book, as FC1b took its points left. No format bump.
      */
-    private java.util.Map<Integer, Double> abroadShareById;
+    private java.util.Map<Integer, Double> abroadOwedById;
 
-    public void setAbroadShareById(java.util.Map<Integer, Double> byId) {
-        this.abroadShareById = byId == null ? new java.util.TreeMap<>() : byId;
+    public void setAbroadOwedById(java.util.Map<Integer, Double> byId) {
+        this.abroadOwedById = byId == null ? new java.util.TreeMap<>() : byId;
     }
 
-    /** The share by template id, empty for a save with none abroad, null for a save from before the key. */
-    public java.util.Map<Integer, Double> getAbroadShareById() { return abroadShareById; }
+    /** The points by template id, empty for a save with none abroad, null for a save from before the key. */
+    public java.util.Map<Integer, Double> getAbroadOwedById() { return abroadOwedById; }
 
     /**
      * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written

@@ -579,12 +579,11 @@ public final class Construction extends Sector {
      * what the city prepaid and the builders have not earned goes back out
      * of the book, and the work it was for off the order book's points.
      * Never below nothing. And (FC1b) `offTheBook` of it off the foreign
-     * contractor's book: since REV-FC2's second review the order's own points
-     * abroad, its site's share of them abroad (BuildingManager.noteAbroad(),
-     * stopCancelled()) - none for an order quoted at home, all its points
-     * left for a site an old save carries with no share. FC2 first cut the
-     * order's whole points, whoever had them, and took a home order's work
-     * off his book.
+     * contractor's book: since REV-FC2's second review the site's own work
+     * on his book, his book in proportion to its claim (BuildingManager.
+     * abroadOwedOf(), stopCancelled()) - none for an order quoted at home.
+     * FC2 first cut the order's whole points, whoever had them, and took a
+     * home order's work off his book.
      */
     public void cancelOrder(double refund, double points, double offTheBook) {
         unearnedRevenue = Math.max(0, unearnedRevenue - Math.max(0, refund));

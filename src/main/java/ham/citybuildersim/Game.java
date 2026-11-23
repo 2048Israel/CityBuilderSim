@@ -10597,17 +10597,18 @@ public class Game {
 
         // C. The cancelled orders, stopped: the city's contract left comes
         // back out of the builders' book, the work it was for off their order
-        // book's points - and off the foreign contractor's (FC1b) the order's
-        // own points abroad (REV-FC2, the second review: the site's share
-        // abroad of its points left, none for an order quoted at home), or a
-        // restart would put its points on his book a second time.
+        // book's points - and off the foreign contractor's (FC1b) the site's
+        // own work on his book (REV-FC2, the second review: its claim, none
+        // for an order quoted at home), or a restart would put its points on
+        // his book a second time.
         for (ConstructionControl.Refund r : controlThisMonth.refunds) {
             double back = Math.max(0, r.value());
             if (back > 0) {
                 cash += back;
                 cityCapitalSpending -= back;
             }
-            builders.cancelOrder(back, r.points(), r.abroadPoints());
+            // ...his book after his month (settleForeignCrews(), above) in the site's share of it, never more than its points left.
+            builders.cancelOrder(back, r.points(), Math.min(r.points(), r.bookShare() * builders.getForeignBook()));
             r.shell().month = month;
             r.shell().refunded += back;
             GameLog.note(String.format("The city's %d %s stopped: %s back, the shell kept.", r.buildings(),
@@ -10833,7 +10834,7 @@ public class Game {
                 // ...and its buildings past the threshold handed to the foreign crews now, at what the sticker charged a
                 // point for them (REV-FC2's P1): the builders bill on to the crews what the city paid for that work.
                 getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
-                // ...and the site's share of its points abroad struck again, what a cancel cuts his book by (REV-FC2, the second review).
+                // ...and the site's claim on his book, what a cancel takes off it (REV-FC2, the second review).
                 buildingManager.noteAbroad(selected, billedPoints, quote.abroadPoints);
             }
 
@@ -17754,8 +17755,8 @@ public class Game {
         dataSave.setContractRecords(buildingManager.getContractRecords());
         // ...and the buildings still without a piece of equipment, where a stack has any (R1; none in a played city).
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
-        // ...and each site's share of its points owed that went abroad (REV-FC2, the second review), what a cancel cuts his book by.
-        dataSave.setAbroadShareById(buildingManager.getAbroadShareById());
+        // ...and each site's work on the foreign crews' book (REV-FC2, the second review), what a cancel takes off it.
+        dataSave.setAbroadOwedById(buildingManager.getAbroadOwedById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
@@ -21967,9 +21968,9 @@ public class Game {
             // ...and the equipment each site's orders froze (R1e), after the sites' counts (restoreConstruction(), above): a save with none
             // reads every building on site as the whole template, its pieces decided at the finish, as it was ordered.
             buildingManager.restoreLots(loaded.getLotsById());
-            // ...and each site's share of its points owed abroad (REV-FC2, the second review), once the sites owe their points:
-            // a save from before the key reads all of a site's points owed abroad, as FC1b's cancel cut them.
-            buildingManager.restoreAbroadShare(loaded.getAbroadShareById());
+            // ...and each site's work on the foreign crews' book (REV-FC2, the second review), once the sites owe their points:
+            // a save from before the key shares his book among the sites by their points owed, as FC1b's cancel cut them.
+            buildingManager.restoreAbroadOwed(loaded.getAbroadOwedById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());

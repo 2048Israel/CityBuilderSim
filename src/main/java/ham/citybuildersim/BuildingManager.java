@@ -6315,33 +6315,66 @@ public class BuildingManager {
 
     /**
      * An order just billed on t's site (REV-FC2, the second review): {@code billed} points of it on site, {@code abroad}
-     * of them handed to the foreign crews (Game.processBuildOrder(), buildFor()) - the site's share abroad struck again,
-     * so a cancel cuts his book by the order's own abroad points (stopCancelled()); a restart's shell is billed at home.
+     * of them handed to the foreign crews' book (Game.processBuildOrder(), buildFor(), after Construction.handAbroad()).
+     * The site's claim on his book grows by those points, at the claims' scale against his book before them, so every
+     * other site's work on his book is what it was. An empty book, or one no site with points owed claims, starts again.
      */
     public void noteAbroad(BuildingsTemplate t, double billed, double abroad) {
         BuildingsStacks s = t == null ? null : getStack(t);
-        if (s != null) s.noteAbroad(billed, abroad);
+        if (s == null || !(abroad > 0)) return;
+        boolean before = s.owedPoints() - Math.max(0, billed) > 1e-9;
+        double book = foreignBookPoints(), was = Math.max(0, book - abroad);
+        double claims = liveClaims() - (before ? 0 : s.getAbroadClaim());
+        if (!(was > 0) || !(claims > 0)) {
+            for (BuildingsStacks x : stacks) x.setAbroadClaim(0);
+            s.setAbroadClaim(abroad);
+        } else {
+            s.setAbroadClaim((before ? s.getAbroadClaim() : 0) + claims * abroad / was);
+        }
     }
 
-    /** Each site's share of its points owed that went abroad, by template id, for the save: only the sites with some. */
-    public java.util.Map<Integer, Double> getAbroadShareById() {
+    /** The claims on the foreign crews' book of every site with points owed (noteAbroad()), in their own unit. */
+    private double liveClaims() {
+        double sum = 0;
+        for (BuildingsStacks s : stacks) if (s.owedPoints() > 0) sum += s.getAbroadClaim();
+        return sum;
+    }
+
+    /** A site's work on the foreign crews' book, in points (REV-FC2, the second review): his book in proportion to its claim; nothing for a site with no points owed. */
+    private double claimedPoints(BuildingsStacks s, double claims) {
+        if (s == null || !(s.owedPoints() > 0) || !(s.getAbroadClaim() > 0) || !(claims > 0)) return 0;
+        return foreignBookPoints() * s.getAbroadClaim() / claims;
+    }
+
+    /**
+     * The points of t's site on the foreign crews' book (REV-FC2, the second review): his book in proportion to the
+     * site's claim, never more than the points the site owes - what a cancel of it takes off his book once his month is
+     * off it (stopCancelled(), Game.settleConstructionControl()). None for a site whose orders were all quoted at home.
+     */
+    public double abroadOwedOf(BuildingsTemplate t) {
+        BuildingsStacks s = t == null ? null : getStack(t);
+        return s == null ? 0 : Math.min(s.owedPoints(), claimedPoints(s, liveClaims()));
+    }
+
+    /** Each site's work on the foreign crews' book in points, by template id, for the save: only the sites with some. They sum to his book. */
+    public java.util.Map<Integer, Double> getAbroadOwedById() {
         java.util.Map<Integer, Double> out = new java.util.TreeMap<>();
+        double claims = liveClaims();
         for (BuildingsStacks s : stacks) {
-            double share = s.getAbroadShare();
-            if (s.owedPoints() > 0 && !(share == 0)) out.put(s.getBuilding().getId(), share);
+            double points = claimedPoints(s, claims);
+            if (points > 0) out.put(s.getBuilding().getId(), points);
         }
         return out;
     }
 
     /**
-     * ...and restored from it. A save written before REV-FC2's second review has no key (null): every site with points
-     * owed reads all of them abroad, and a cancel there cuts his book by the points left (never below nothing), as FC1b
-     * and FC2 first cut it.
+     * ...and restored from it, the points the claims. A save written before REV-FC2's second review has no key (null):
+     * every site with points owed claims his book in proportion to them, as FC1b's cancel cut a site's points left.
      */
-    public void restoreAbroadShare(java.util.Map<Integer, Double> byId) {
+    public void restoreAbroadOwed(java.util.Map<Integer, Double> byId) {
         for (BuildingsStacks s : stacks) {
             Double v = byId == null ? null : byId.get(s.getBuilding().getId());
-            s.setAbroadShare(v != null ? v : byId == null && s.owedPoints() > 0 ? 1 : 0);
+            s.setAbroadClaim(v != null ? v : byId == null ? s.owedPoints() : 0);
         }
     }
 
@@ -6705,16 +6738,20 @@ public class BuildingManager {
                     - s.getConstructionProgress());
             // ...read while it is still on site: a depot served first was never on the contractor's book (FC1b).
             boolean servedFirst = goesFirst(t, 0);
-            // ...and its points on the foreign crews' book, the site's share abroad of them (REV-FC2, the second review;
-            // noteAbroad()): none for an order quoted at home; the points left for a site whose share an old save lacks.
-            double abroadLeft = pointsLeft * s.getAbroadShare();
+            // ...and its share of the foreign crews' book (REV-FC2, the second review; noteAbroad()): its claim over the
+            // claims of the sites still owing points, none for an order quoted at home. Game.settleConstructionControl()
+            // takes that share of his book once his month is off it (he settles after the sites advance), never more than
+            // its points left; its claim goes with it, so a second site stopped is read against the rest, cut after it.
+            double claims = liveClaims();
+            double bookShare = claims > 0 && s.owedPoints() > 0 ? Math.min(1, s.getAbroadClaim() / claims) : 0;
+            s.setAbroadClaim(0);
             // ...and the equipment its orders froze (R1e), before the stop clears it.
             List<BuildingsStacks.Lot> lots = s.getLots();
             double[] stopped = s.stopForShell();
             control.endRun(t.getId());
             ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0, lots);
             controlEvents.refunds.add(new ConstructionControl.Refund(t.getId(), t.getName(), (int) stopped[0],
-                    stopped[3], stopped[4], pointsLeft, shell, servedFirst, abroadLeft));
+                    stopped[3], stopped[4], pointsLeft, shell, servedFirst, bookShare));
         }
         control.clearCancelling();
     }
@@ -6750,10 +6787,8 @@ public class BuildingManager {
             addStack(t, 0, true);
             s = getStack(t);
         }
-        double owedBefore = s.owedPoints();
+        // ...its points left built at home (REV-FC2, the second review: a restart is quoted at home), no claim on his book.
         s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed, shell.lots);
-        // ...its points left built at home (REV-FC2, the second review: a restart is quoted at home), on the site's share.
-        s.noteAbroad(s.owedPoints() - owedBefore, 0);
         control.removeShell(shell);
     }
 

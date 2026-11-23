@@ -894,10 +894,11 @@ public final class ConstructionControl {
      * An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of
      * work it was for, the shell it left, and whether it was a depot of the builders' served first
      * (BuildingManager.goesFirst()), whose points the foreign contractor builds as theirs and never had on his book
-     * (FC1b; Construction.bill()).
+     * (FC1b; Construction.bill()); and its share of his book (REV-FC2, the second review: its claim over the claims of
+     * the sites still owing points, BuildingManager.noteAbroad()), what the month's settlement takes off it.
      */
     public record Refund(int templateId, String building, long buildings, double value, double allowance,
-                         double points, Shell shell, boolean servedFirst, double abroadPoints) { }
+                         double points, Shell shell, boolean servedFirst, double bookShare) { }
 
     /**
      * A demolition finished this month - and, once Game has sold it, its
