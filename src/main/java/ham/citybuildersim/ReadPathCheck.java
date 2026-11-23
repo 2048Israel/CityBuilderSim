@@ -288,6 +288,10 @@ public class ReadPathCheck {
      * the same report fields these print.
      */
     static void readEverything(Game g) {
+        g.getHouseholdBalance().debtStatistics();
+        for (PayTier tier : PayTier.values()) DebtStatistics.of(g.getHouseholdBalance(), tier, null);
+        for (DebtStatistics.Stage stage : DebtStatistics.Stage.values()) DebtStatistics.of(g.getHouseholdBalance(), null, stage);
+        g.getHistorySave().getDebtSurveys();
         var housing = g.getBuildingManager().getHousingInventory();
         housing.homes(); housing.pipelineHomes(); housing.capacity(); housing.foundingCapacity(); housing.homesBySize();
         for (var row : housing.stock()) for (var owner : HousingInventory.Owner.values()) {
@@ -1622,6 +1626,8 @@ public class ReadPathCheck {
         assertTrue("R6e current E21 loads keep physical choices through real reads; formats58/59 are refused without changing a running city", ModernEngineeringCheck.readChecks());
         assertTrue("native format60 refusal and repeated reads preserve an actual running loaded twin and both files", SaveFileCheck.nativeCard60Refusal(true));
         assertTrue("native format61 refusal and repeated reads preserve an actual running loaded twin and both files", SaveFileCheck.nativeGrid61Refusal(true));
+        assertTrue("HC1 native format61 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeCard61Refusal(true));
+        assertTrue("PW5 format63: native shipped format62 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeGrid62Refusal(true));
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
         assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 

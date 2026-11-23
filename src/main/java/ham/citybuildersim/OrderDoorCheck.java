@@ -183,6 +183,22 @@ public class OrderDoorCheck {
         int c = Equity.indexOf(RE);
         double one = door(g, block, 1), two = door(g, block, 2);
         out.printf(Locale.ROOT, "  a block at the door %.4f (the quote %.4f), the planner %.4f%n", one, g.quoteBuild(block, 1).total, g.getBusinessInvestment().getCostOf(block, 1));
+        HouseholdBalance households = g.getHouseholdBalance();
+        double borrowed = 0, bills = 0;
+        for (Household h : households.cells()) {
+            borrowed += h.borrowed * h.households;
+            bills += h.emergencyBill * h.households;
+        }
+        out.printf(Locale.ROOT, "  native card inputs: people %d, card book %.12g, borrowed this month %.12g, loan fees %.12g, interest %.12g, unexpected bills %.12g%n",
+                g.getPopulationManager().getPopulation(), households.totalDebt(), borrowed, households.totalLoanFees(), households.totalInterest(), bills);
+        Game.LenderTest lender = g.lenderTest(RE, block);
+        BusinessInvestment investment = g.getBusinessInvestment();
+        long passedOne = Mortgage.decide(1, k -> door(g, block, k), Mortgage.ownFundsFor(one), lender.noi(), lender.tested(),
+                k -> investment.carryOf(block, k, lender.insured())).quantity();
+        long passedTwo = Mortgage.decide(2, k -> door(g, block, k), Mortgage.ownFundsFor(two), lender.noi(), lender.tested(),
+                k -> investment.carryOf(block, k, lender.insured())).quantity();
+        out.printf(Locale.ROOT, "  at m%d: door one %.12g, two %.12g; the register would raise %.12g and %.12g; NOI %.12g, tested rate %.12g; lender quantities %d/1 and %d/2; tested orders asked %d, passed %d%n",
+                g.getMonth(), one, two, raise(g, RE, one), raise(g, RE, two), lender.noi(), lender.tested(), passedOne, passedTwo, asked, passed);
         out.printf("  the edge's parts: ground for three %b; listed %b, regime %s, raises nothing on one %b and two %b;"
                         + " quote supports an issue %b; nothing abroad %b; lending open and not banned %b; door over planner %b;"
                         + " lender passes one %b and two %b; bank not short for two %b; shopkeeper ready %b%n",
@@ -206,6 +222,31 @@ public class OrderDoorCheck {
         Method consider = Game.class.getDeclaredMethod("consider", BusinessInvestment.Decision.class, Investor.class);
         consider.setAccessible(true);
         consider.invoke(g, d, investor.invoke(g, d.sector));
+    }
+
+    /** A failed played premise gets a native input control, without moving the tested city's edge. */
+    static void traceClosedCards() throws Exception {
+        Game closed = new Game(GameFiles.scratch("orderdoor-closed-cards"), LongPlaytest.played(null));
+        PrintStream quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        System.setOut(quiet);
+        try {
+            closed.run();
+            closed.getHouseholdBalance().setCardLenderOpenForHarness(false);
+            foundAndPlay(closed);
+            BuildingsTemplate block = LongPlaytest.template(closed, BLOCK);
+            buyGround(closed, block, 3);
+            shortAndDear(closed, block);
+            Method refresh = Game.class.getDeclaredMethod("refreshLand");
+            refresh.setAccessible(true);
+            refresh.invoke(closed);
+        } finally {
+            LongPlaytest.out = was;
+            System.setOut(out);
+        }
+        out.println("  diagnostic control: identical founding and plan, card lending held shut from the first month");
+        edgeParts(closed, LongPlaytest.template(closed, BLOCK));
     }
 
     public static void main(String[] args) throws Exception {
@@ -275,7 +316,7 @@ public class OrderDoorCheck {
         edgeParts(g, block);
         boolean edge = ground(g, block, 3) && landlordAtTheEdge(g) && shopkeeperReady(g);
         check("fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready", edge);
-        if (!edge) { finish(); return; }
+        if (!edge) { traceClosedCards(); finish(); return; }
         EconomyManager em = g.getEconomyManager();
         BusinessDebtManager credit = em.getBusinessDebtManager();
         double plan1 = g.getBusinessInvestment().getCostOf(block, 1), door1 = door(g, block, 1);

@@ -234,10 +234,12 @@ public class BusinessServicesCheck {
         BusinessServices bs = city.getSectors().businessServices();
         check("two centres is six hundred seats", bs.getSeats(), 600, 0);
         assertTrue("it billed somebody", bs.statement().revenue > 0);
-        assertTrue("...and all of it left the city", bs.statement().exports > 0);
-        check("everything it sold, it exported",
-                bs.statement().exports, bs.statement().revenue, 1e-6);
-        assertTrue("it bought no materials to do it", bs.statement().inputs <= 1e-9);
+        assertTrue("...and its seat-service customers were abroad", bs.statement().exports > 0);
+        check("every seat-service sale is still an export; brokered household receipts are named other revenue",
+                bs.statement().exports, bs.statement().revenue - bs.statement().otherRevenue, 1e-6);
+        double serviceInputs = bs.statement().otherInputs.values().stream().mapToDouble(Double::doubleValue).sum();
+        assertTrue("it bought no materials to produce seat services; brokered service inputs are separate",
+                bs.statement().inputs - serviceInputs <= 1e-9);
         double share = bs.payrollShare();
         out.printf("   payroll is %.0f%% of what it billed%n", share * 100);
         assertTrue("payroll is most of the cost and not all of it",
@@ -348,10 +350,10 @@ public class BusinessServicesCheck {
                 + " the student debt, the cars, the month's investment income, the dinners,"
                 + " the share who paid for care, the city's paper, the businesses' bonds,"
                 + " the last sale's four grocery figures, the year's investment income"
-                + " and the income after its fixed bills, plus basis, loss carry, current gains, tagged units and claims",
+                + " and the income after its fixed bills, plus basis, loss carry, current gains, tagged units and claims, four card stocks, ten settled figures and two pending departure positions",
                 (now.length - 3.0) / keys.length,
                 8 + Equity.COMPANIES.length + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 4 + 1 + 1
-                        + Equity.COMPANIES.length + 2 + 2 * Equity.COMPANIES.length, 0);
+                        + Equity.COMPANIES.length + 2 + 2 * Equity.COMPANIES.length + 4 + 10 + 2, 0);
         check("...which is CELL_SLOTS, the width the save is written and read at",
                 (now.length - 3.0) / keys.length, HouseholdBalance.CELL_SLOTS, 0);
 

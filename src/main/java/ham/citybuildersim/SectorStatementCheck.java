@@ -1136,7 +1136,8 @@ public class SectorStatementCheck {
                         // literals' city had not by month 120, so this identity met a sector with them for the first time; the model
                         // (MaterialsCheck 5: st.imports == the consumables' bill) has always counted them in `imports`.
                         double abroadServices = st.otherInputs.getOrDefault(Sector.CONSUMABLES, 0.0)
-                                + st.otherInputs.getOrDefault(ham.citybuildersim.sectors.Oil.SHUTTLE_TANKERS, 0.0);
+                                + st.otherInputs.getOrDefault(ham.citybuildersim.sectors.Oil.SHUTTLE_TANKERS, 0.0)
+                                + st.otherInputs.getOrDefault(Sector.HOUSEHOLD_SERVICES, 0.0);
                         near("imports by good", sector, m.month(), abroadBought + abroadServices, st.imports);
 
                         /*

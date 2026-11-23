@@ -421,6 +421,7 @@ public final class MoneyAudit {
                 + sectors.automotive().pending().salesToHouseholds
                 + sectors.luxuryRetail().pending().salesToHouseholds
                 + sectors.restaurants().pending().salesToHouseholds
+                + sectors.businessServices().pending().salesToHouseholds
                 // ...and the households' old steel and copper the yards have bought and paid into their savings at once
                 // (HouseholdBalance.creditScrappedCars()), which the buyer's books strike a press later, where the line
                 // "- sectors OldMetalToHouseholds" reads it: in the savings, not yet out of the pools, so it comes OFF what
@@ -1631,7 +1632,8 @@ public final class MoneyAudit {
         note.accept("chk property tax collected", e.getTotalPropertyTax());
         double localSales = 0, localPurchases = 0, bills = 0;
         for (Sector s : sectors.all()) {
-            localSales += s.statement().localSales - s.statement().salesToHouseholds;
+            localSales += s.statement().localSales - s.statement().salesToHouseholds
+                    + s.statement().otherParts.getOrDefault(Sector.HOUSEHOLD_SERVICES, 0.0);
             localPurchases += s.statement().localPurchases;
             bills += s.statement().electricity + s.statement().water;
         }

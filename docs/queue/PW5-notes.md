@@ -1091,3 +1091,66 @@ the old-saves rule, prove refusal of a real native previous-format pair,
 then run --fast and the save checks. The orchestrator accepts this merge
 after the dry run without a second ALL if conflicts are confined to
 GameVersion and records; any broader conflict requires another granted run.
+
+### Passed ALL, then the HC1 format-63 integration
+
+The granted ALL passes on the box: gate exit 0, suite exit 3 (named known
+reds only), 243 harnesses in 1,007 seconds. Its kept run is
+`/home/jerus/cbs/runs/cbs-gate-PW5-RnLpjOXm`, copied to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW5-RnLpjOXm`.
+The two tested commits are branch
+`4d706651123af843ac140ee88de29286d75f99be` and main
+`591fc92d859b438b02e093f1dbe66a1615c02018`. No unnamed red remains.
+The named harnesses with reds are BuildAdviceCheck, CopperRefiningCheck,
+Forms1900Check, FundCheck, KeptCheck, MapCheck, OrderDoorCheck,
+PublicLicenceCheck and RoadCheck. Their existing records name them; PW5's
+ship file still adds only its accepted OrderDoorCheck premise.
+
+HC1 then ships Civic Ledger 0.9.190 at efca2c5fd, format and floor 62. Its
+merge into PW5 conflicts in SaveFileCheck and ReadPathCheck, as well as
+GameVersion and generated records. The save conflicts are competing
+insertions of native-refusal assertions and the common fixture reader;
+both batches' native pairs and assertions are retained. One common refusal
+implementation checks both old cell shapes, hashes, files, running loaded
+state and repeated read paths. All HC1 changes outside those insertions
+merge normally. Generated maps, dials and month order are rebuilt together.
+These two source conflicts require a second granted ALL under the
+orchestrator's explicit condition; the passed run above is retained as
+evidence and will not be represented as the merged model's ALL.
+
+**Old-saves call:** raise PW5's SAVE_FORMAT and OLDEST_LOADABLE_FORMAT from
+the shipped 62 to **63**. A native HC1 save has neither the struck nor
+pending closing grid costs; loading it as a current save would incorrectly
+erase the carried flow and change the next bill. Refuse it without a
+conversion. The native preceding pair is captured from the unedited
+published efca2c5fd checkout using GridLegacyFixture, playing the probe to
+month 31 and writing scratch slot 10. Its 30-row history includes HC1's
+debtSurveys, and its 141 household cells have 144 slots apiece. The README
+and raw SHA-256 pins accompany fixtures/pw5-format62. It is never restamped.
+SaveFileCheck, ReadPathCheck and SubstationCheck add the real format-62
+refusal through the same intact-files/running-twin checks. The canonical
+format-60 pair remains a single pair under fixtures/hc1-format60; HC1's and
+PW5's independently produced format-61 pairs both retain their assertions.
+
+The 80-run PW5 ensemble at 069504753 **predates HC1's merge**. The
+orchestrator explicitly accepts that once-run final PW5-model ensemble,
+with M1/F1 10/10 and 24/26, and asks for this integration's --fast and save
+checks and a second ALL if the merge has broader conflicts. No replacement
+ensemble is claimed for the combined HC1/PW5 model.
+
+The merged format-63 validation is complete: --fast, SubstationCheck,
+SaveFileCheck, ReadPathCheck, CardCheck, PowerPriceCheck and
+BuildingDataCheck all exit **0**, one name per serial invocation with
+cbs.parallel=1. --fast regenerates the complete merged indexes and reports
+zero firm Stale findings and 199 soft. Logs and return codes are kept in
+target/PW5-format63-results/. The native capture's separate --fast also
+exits 0; its production executable is the published HC1, not the merged
+PW5 classes. The new refusal line therefore proves the immediately previous
+shipped format rather than a changed header on a current save.
+
+The final integration fetch still finds main
+efca2c5fd718895fae43ac4e05c73a9cd71f5933. All conflict markers are resolved;
+the source and PW5 record diffs pass whitespace checks, and the edited
+source and records retain LF. No repair, conservation, tariff or save bound
+has been weakened. The provisional marker remains. Request the required
+second ALL slot on this pushed integration; do not reuse RnLpjOXm for it.

@@ -221,6 +221,7 @@ public final class SubstationCheck {
         check("the first post-load strike bills exactly the same grid costs as the uninterrupted city", JSON.toJson(x.getStruckBook()).equals(JSON.toJson(y.getStruckBook())));
         check("a native format-60 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeCard60Refusal());
         check("a native format-61 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeGrid61Refusal(false));
+        check("a native shipped format-62 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeGrid62Refusal(false));
     }
 
     record WireFinding(long districts, double peak, double cents, double energyCents,

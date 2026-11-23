@@ -338,6 +338,8 @@ public class MoneyWordsCheck {
         try {
             g = new Game(GameFiles.scratch("hs3-money"), LongPlaytest.founding());
             g.run();
+            // Close an actual year so the saved-survey view has a native observation.
+            g.simulateMonths(12 - Math.floorMod(g.getMonth(), 12));
         } finally { System.setOut(real); }
         Currency.use(g.getCurrency());
         HouseholdBalance bal = g.getHouseholdBalance();
@@ -449,6 +451,34 @@ public class MoneyWordsCheck {
             String amount = ham.citybuildersim.ui.Money.tightMoney(amounts[i] * 1000, false);
             check("the page shows the model's " + labels[i], lineShows(bench, labels[i], amount), amount);
         }
+        check("the fixture records a yearly debt survey", !g.getHistorySave().getDebtSurveys().isEmpty());
+        // A partial opening card book: different household/adult weights and a real excluded share.
+        holder.debt = 14; holder.revolving = .4; holder.lateDebt = 3; holder.lateShare = .1;
+        holder.shutOut = .1; holder.minimumDue = .6; holder.disposable = 4;
+        for (boolean adult : new boolean[]{false, true}) {
+            bench.householdDebt(PayTier.ELITE.getLabel(), "Established", adult, false);
+            bench.drawKept(page);
+            DebtStatistics.Snapshot survey = DebtStatistics.of(bal, PayTier.ELITE, DebtStatistics.Stage.ESTABLISHED);
+            DebtStatistics.Measure card = (adult ? survey.perAdult() : survey.perHousehold()).get(DebtStatistics.Kind.CARD);
+            Set<String> debtWords = pageWords(bench);
+            check("debt table names the kinds and the holder median, " + (adult ? "adult" : "household"),
+                    debtWords.contains("Credit cards") && debtWords.contains("Median")
+                    && debtWords.contains(ham.citybuildersim.ui.Money.tightMoney(card.medianAmongHolders() * 1000, false)));
+            check("debt burden uses the selected tier and stage's model", lineShows(bench, "Debt / assets",
+                    String.format(java.util.Locale.ROOT, "%.2f%%", 100 * survey.debtToAssets())));
+        }
+        bench.householdDebt("Untiered", "Outside families", false, false);
+        bench.drawKept(page);
+        check("the untiered stage filter uses its own population", lineShows(bench, "Debt / annual disposable income",
+                String.format(java.util.Locale.ROOT, "%.2f%%", 100 * DebtStatistics.untiered(bal, DebtStatistics.Stage.OTHER).debtToDisposableIncome())));
+        bench.householdDebt("All tiers", "All stages", false, true);
+        bench.drawKept(page);
+        List<DebtStatistics.Survey> debtYears = g.getHistorySave().getDebtSurveys();
+        DebtStatistics.Snapshot savedSurvey = debtYears.get(debtYears.size() - 1).groups().get("All");
+        check("yearly view reads the saved survey instead of today's changed book", lineShows(bench, "Debt / assets",
+                String.format(java.util.Locale.ROOT, "%.2f%%", 100 * savedSurvey.debtToAssets())));
+        bench.householdDebt("All tiers", "All stages", false, false);
+        bench.drawKept(page);
         bench.passes();
         bench.settle();
         List<String> kept = bench.signature();

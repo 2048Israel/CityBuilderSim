@@ -17,7 +17,7 @@
 
 **Uses:** [PayTier](PayTier.md) (6), [AdultStage](AdultStage.md) (6), [FamilyStructure](FamilyStructure.md) (2), [Household](Household.md) (1)
 
-**Used by (9):** [CapitalGainsCheck](CapitalGainsCheck.md), [DenominationCheck](DenominationCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [PeopleScreen](PeopleScreen.md)
+**Used by (12):** [BankCheck](BankCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [CardCheck](CardCheck.md), [DebtStatistics](DebtStatistics.md), [DenominationCheck](DenominationCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [PeopleScreen](PeopleScreen.md)
 
 ## Fields (state)
 
