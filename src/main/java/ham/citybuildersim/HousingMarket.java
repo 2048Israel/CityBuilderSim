@@ -214,19 +214,27 @@ public final class HousingMarket {
         emergencySharing(game);
         emergencyDoubling(game);
         leases=result.leases();month=game.getMonth();
+        strikePriceDemand(offers);
+        Map<HousingInventory.Key,Double> actual=new LinkedHashMap<>();
+        for(var s:inventory.stock())actual.put(s.key(),classes.get(s.key()).occupied);
+        inventory.matchClasses(actual);
+        return result;
+    }
+    /** Current physical occupancy and funded whole-door pressure, from the clearing's actual budget profiles. */
+    void strikePriceDemand(List<HousingChoice.Offer> pricedOffers){
         for(ClassState c:classes.values()){c.occupied=0;c.demand=0;}
         for(var l:leases){ClassState c=classes.get(l.home());c.occupied+=l.count();c.demand+=l.count();}
         // Emergency shelter does not supply a door of one's own. Occupied physical shares
         // plus the remaining funded demand count each household once, including guests.
         // Send that residual to its best compatible affordable class, never every alternative.
         for(var d:demand){
-            HousingChoice.Demand willing=d;
-            for(var shift:sharing)if(shift.target().equals(d.key()))willing=with(d,d.count(),shift.targetBudget());
-            final var seeker=willing;
+            // The transfer has pooled both counts and resources into this cell. Its old target budget cannot fund
+            // every newly added household; price pressure uses the same current budget the clearing can actually pay.
+            final var seeker=d;
             double used=0;
             for(var l:leases)if(l.cell().equals(d.key())){
                 used+=l.count();
-                var home=offers.stream().filter(o->o.key().equals(l.home())).findFirst().orElseThrow();
+                var home=pricedOffers.stream().filter(o->o.key().equals(l.home())).findFirst().orElseThrow();
                 // A guest who could fund this suitable home still wants a whole door
                 // in this class. A half bill alone does not establish that budget.
                 if(HousingChoice.suitable(seeker,home,false)&&HousingChoice.affordable(seeker,home)){
@@ -237,7 +245,7 @@ public final class HousingMarket {
             double left=Math.max(0,d.count()-used),best=Double.NEGATIVE_INFINITY;
             if(left<=FamilyModel.packingRounding(d.count()))continue;
             List<HousingChoice.Offer> tied=new ArrayList<>();
-            for(var o:offers)if(HousingChoice.suitable(seeker,o,false)&&HousingChoice.affordable(seeker,o)){
+            for(var o:pricedOffers)if(HousingChoice.suitable(seeker,o,false)&&HousingChoice.affordable(seeker,o)){
                 double score=HousingChoice.score(seeker,o);int order=Double.compare(score,best);
                 if(order>0){best=score;tied.clear();}if(order>=0)tied.add(o);
             }
@@ -246,10 +254,6 @@ public final class HousingMarket {
             double weight=tied.stream().mapToDouble(o->Math.max(1,o.count())).sum();
             for(var o:tied)classes.get(o.key()).demand+=left*Math.max(1,o.count())/weight;
         }
-        Map<HousingInventory.Key,Double> actual=new LinkedHashMap<>();
-        for(var s:inventory.stock())actual.put(s.key(),classes.get(s.key()).occupied);
-        inventory.matchClasses(actual);
-        return result;
     }
     private record LeaseKey(String cell,HousingInventory.Key home) { }
     private record EmergencyRoom(HousingChoice.Offer home,boolean hosted) { }

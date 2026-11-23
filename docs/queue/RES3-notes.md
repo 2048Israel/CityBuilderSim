@@ -2029,3 +2029,169 @@ borrowing is not the explanation. The stocked control is still running.
 Raw outputs are `target/RES3-policy-wealthy.{txt,log}` and
 `target/RES3-policy-stocked.{txt,log}`. This diagnostic has not been
 adopted as a final fixture, and its temporary shortcut will be removed.
+
+Neither diagnostic is adopted. The wealthy control reproduces all three
+original curve failures with no public debt. The stocked control restores
+direction (-2.50/-2.44/-2.21/-5.35 percent inflation) but fails the unchanged
+timing-noise tests, with calendar-year differences 1.763/1.650/1.406 points.
+Its failure remains a finding; no noise allowance is increased. Both
+temporary controls and the curve-only shortcut are removed from source.
+
+The subsequent model audit finds a concrete price-demand budget defect.
+After emergency sharing pools poor singles into an existing shared cell,
+the price-pressure loop applies the old target cell's budget to its larger
+new household count. That can promise unfunded whole doors even though the
+matcher itself uses the conserved current budget correctly. A validated
+snapshot causes it: five old shared households at budget 20 plus twenty-five
+singles at budget 1 form ten shared households at budget 12.5, preserving
+125 resources. They occupy five half-price doors at ask 15, paying exactly
+75. The old pressure loop reports ten whole-door demands; the current
+budget can fund no extra whole door, so occupied pressure is five. A second
+case with current budget 20 must still report all ten funded demands.
+
+`HousingMarketCheck.mergedBudgetPressure` is first-red on the old algorithm:
+10 observed, 5 expected; the resource, receipts and funded-20 controls pass.
+Raw `target/RES3-pressure-first-red.{txt,log}`. The price-demand calculation
+is extracted without behavioral change so the saved, resource-consistent
+inputs exercise the same path as monthly clearing. ★ Use the actual
+post-transfer budget for price pressure; retain pre-transfer metadata for
+the independent planning projection. Do not apply a historical richer
+budget to the new pooled count. The existing lease-length sticky-price
+function and all price constants remain unchanged.
+
+This is a new production model mend, so it requires a stranger's delta
+review and a fresh final ensemble after the named checks. It adds no saved
+field and changes no stored meaning: format/floor 64 remain the owed bump
+from shipped 63. The existing old-format native refusal pairs and reload
+comparisons remain required. HousingMarketCheck and MonetaryCheck are
+running again before further attribution of the curve findings.
+
+The pooled-budget regression and full HousingMarketCheck now pass. Both
+historical and present-day catalogue runs, paid builder completions,
+MoneyAudit/household identities, actual rent receipts and next-month native
+reload comparisons remain green; the regenerated report is committed as
+`RES3-catalogue.md`. Raw `target/RES3-pressure-HousingMarketCheck.{txt,log}`.
+HousingCheck, HousingDoorCheck, HouseholdCheck, BuildingDataCheck, InvestCheck
+and ReadPathCheck also finish exit 0 on this model. HousingDoorCheck includes
+899 played months of the household cash identity. SaveFileCheck is still
+running at this point.
+
+MonetaryCheck reproduces its three original failures after the budget fix,
+with exactly the same curve and timing-noise readings. The mixed rich/poor
+sharing defect is real, but it is not the cause of that toy's counter-channel.
+Raw `target/RES3-pressure-MonetaryCheck.{txt,log}`. No assertion or threshold
+is relaxed, and no monetary line is entered in the ship file. A further
+read-only report records each standing class's homes, occupied leases,
+funded demand, ask, target, capital and carry at the measurement opening
+and each calendar-year close; it changes no fixture input or model state.
+
+SaveFileCheck finishes exit 0 too, including the genuine 0.9.192 format-63
+save/history boundary and preservation of both refused files and the
+running city. All seven checks in `target/RES3-pressure-core.sh` pass;
+their individual raw outputs are `target/RES3-pressure-<Harness>.{txt,log}`.
+
+ReloadCheck also passes in full (215 seconds): checkpoints through m1205,
+the caused events at m1211, autosave m1229, and next-month history/save
+comparisons all agree. The autosave continuation compares 821,235 history
+numbers in 336 series and 185,156 save numbers. Its shutdown again prints
+the already-traced native harness lifecycle warning while deleting its
+scratch autosave-history folder, after all assertions pass; it is not a
+changed comparison or a player save. Raw
+`target/RES3-pressure-detail-ReloadCheck.{txt,log}`.
+
+The corrected read-only class report completes and reproduces the three
+monetary reds (`target/RES3-pressure-detail-final-MonetaryCheck.{txt,log}`).
+At m49 the 3/10 percent towns have similar populations (285/293) and H55
+capital quotes (4.8007804/4.7619382), but 58/12 actual Compact houses. Their
+asks are .025161104/.039079114. By m84 their H55 stocks are 87/66; the
+3-percent town also has 30 T100 homes where the 10-percent town has none.
+Thus the dial changes actual financed supply and the occupied mix, not
+only households' demand. The higher-rate class carry at m49 is actually
+lower (.018494662 versus .022005625 for H55), so a rising interest floor
+alone is not the explanation.
+
+A third, single-variable control is declared from that observation:
+hold new private Real Estate orders immediately after the common m25
+founding, without changing its stock, pending orders, households, money,
+prices, any rate or the measurement window. Keep actual leases, rent
+updates, maintenance and every existing policy/noise assertion. This
+isolates the newly observed supply response in the fixture's stated
+steady-town premise, unlike the rejected all-form stocked town with its
+changed founding population. If the control does not cause identical
+standing stock through the measurement window or still fails the hard
+assertions, it is not a completed fixture repair. Its temporary input hook
+is restored automatically after the diagnostic, and is not final source.
+
+That hold-after-founding control restores every noise bound, but inflation
+is 11.32/10.61/10.90/11.02 percent: only .296 points across the range, so the
+one-point minimum still fails. Nor does the control cause fixed standing
+stock: the original paid housing queue continues to complete, at different
+times across the dials. At m49 its House counts are 52/53 and H240 counts
+13/14 at 3/10 percent. It is rejected as a completed repair. Raw
+`target/RES3-policy-fixed-stock.{txt,log}`. The source hook is removed.
+
+Complete that causal test by causing the actual proposed condition,
+rather than repicking a seed, rate, window or threshold: the same two
+40/20 House inputs are paid standing fixture stock at their original
+founding months, and new private housing orders are held before the first
+month. The fixture supplies their actual plot area and cost, as it already
+supplies its Bakery/Diner/Boutique and hospital capital. No intervention
+occurs after the common founding. A diagnostic assertion requires exactly
+those sixty Houses and zero other RE homes at every reported measurement
+checkpoint; all existing monetary assertions remain. This control too is
+temporary unless it actually causes its condition and passes the laws.
+
+The completed fixed-standing-stock control causes all 32 checkpoint
+inventory predicates: exactly sixty Houses and no other RE homes, across
+the four on-time and four month-late runs. Populations are nearly steady
+(3 percent: 259 at m49, 273 at m84; 40 percent: 260/274). Every original
+fixture, noise and direction assertion passes, but the one-point minimum
+still fails: inflation is 7.42/7.47/7.16/7.30 percent, a .121-point effect.
+Calendar-year timing noise is .034/.033/.159 points, against the unchanged
+.650 allowance. Raw `target/RES3-policy-standing-stock.{txt,log}`.
+This control is rejected too; the automatic restoration removes its input
+hook, extra fixture assertions and all changes to founding. Final source
+keeps only the read-only component/class reports. There is no adopted
+fixture change, model calibration, rate/window/tolerance change or
+MonetaryCheck known-red row.
+
+### Monetary calibration block after the first dry-run mends
+
+The owned block is the original MonetaryCheck policy curve: native main
+86359b9d4 passes; RES3 reverses the 3-to-10-percent CPI ordering, misses the
+one-point 3-to-40-percent minimum, and exceeds the calendar-year timing
+bound. Credit/goods transmission remains present, while financed housing
+supply and its paid rent mix oppose it. Removing fiscal borrowing did not
+change the result; alternative stocked/fixed-supply controls did not pass
+all the retained laws. Even the genuinely fixed, nearly steady sixty-House
+control misses the minimum. These are evidence, not replacement premises.
+
+The brief authorizes calibrated starting inputs and actual rent/choice,
+but does not decide a new CPI definition, a different minimum policy
+effect or a new smoothing/choice rule. Changing those solely to turn the
+curve green would not mend the finding. The next needed call is a focused
+money/macro review of the measured rate-and-housing response and a concrete
+calibration direction that retains the laws. Recommend keeping the current
+assertions and this block until that diagnosis is settled, rather than
+assigning these owned failures to a fixture-sweep row. The pooled-budget
+price-demand defect has its separate first-red/fix and still requires a
+stranger's delta review. No new final ensemble or second dry run is claimed.
+
+First-dry disposition: of the 36 uncovered NEW harnesses, fifteen have
+green input/measurement mends, fourteen are the agreed untouched FC2 files,
+six have individually traced fixture-premise rows proposed for their
+queued owners, and MonetaryCheck is the remaining owned block. The two
+previously named ScaleCheck/BuildCardCheck cases bring the total NEW count
+to 38. HT1-H's additional CurrencyRegime/PriceLevel/HomeRail/RailDepot scope
+still needs the orchestrator's queue amendment; no branch edits QUEUE.md.
+FC2 must ship, be merged and have its fourteen shared checks verified before
+another slot request. The provisional ship marker stays in place.
+
+The restored final source passes `./batch-check.sh --fast` (exit 0): compile,
+generated maps, and zero firm Stale findings (199 soft). Its MonetaryCheck
+bytes equal the pre-control backup; only the read-only reports differ from
+the reviewed source. `git diff --check`, LF checks and
+`sh tools/known-reds.sh RES3 docs/queue/RES3-ship.md` pass. Raw fast output:
+`target/RES3-block-fast.txt`. This is a blocked checkpoint, not a mends/SHIP
+or ready claim. The earlier 80-run report remains explicitly a snapshot of
+2d9a79aea, not validation of the new pooled-budget mend.

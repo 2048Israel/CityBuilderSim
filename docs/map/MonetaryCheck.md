@@ -1,4 +1,4 @@
-# MonetaryCheck.java - 1,127 lines · 15 methods · 10 constants · harnesses
+# MonetaryCheck.java - 1,149 lines · 16 methods · 10 constants · harnesses
 
 `ham/citybuildersim/MonetaryCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -46,7 +46,7 @@
 >      builders' crews and the month's delay, in each year and over the
 >      three, asserted hard, not waited for.)
 
-**Uses:** [PriceIndex](PriceIndex.md) (70), [DebtManager](DebtManager.md) (24), [Game](Game.md) (21), [ForeignAccounts](ForeignAccounts.md) (18), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [CityCalendar](CityCalendar.md) (9), [WorldEconomy](WorldEconomy.md) (6), [PriceLevel](PriceLevel.md) (5), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (1), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [Sectors](Sectors.md) (1), [WorldMarket](WorldMarket.md) (1), [Bank](Bank.md) (1)
+**Uses:** [PriceIndex](PriceIndex.md) (73), [DebtManager](DebtManager.md) (24), [Game](Game.md) (22), [ForeignAccounts](ForeignAccounts.md) (18), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [CityCalendar](CityCalendar.md) (9), [WorldEconomy](WorldEconomy.md) (6), [PriceLevel](PriceLevel.md) (5), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (1), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [HousingMarket](HousingMarket.md) (1), [HousingChoice](HousingChoice.md) (1), [Sectors](Sectors.md) (1), [WorldMarket](WorldMarket.md) (1), [Bank](Bank.md) (1)
 
 **Used by (3):** [CurveCheck](CurveCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [HouseholdCheck](HouseholdCheck.md)
 
@@ -73,10 +73,10 @@
 | 776 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
 | 789 | `MonetaryCheck.MEASUREMENT_NOISE` | `.0065` | How far apart two runs of the one founding may read when only the dial's timing moves: 0.65 points a year, about twice CB2's largest reading on RT2 main (0.9.113), holding each dial a month late over the same window. |
 | 792 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. |
-| 1093 | `MonetaryCheck.WORLD_LEVEL_SET` | `1.5` | The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. |
-| 1096 | `MonetaryCheck.PINNED_RATE` | `1.0` | The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. |
-| 1099 | `MonetaryCheck.FIXTURE_SHELF_RISE` | `.01` | What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. |
-| 1102 | `MonetaryCheck.FIXTURE_RENT_RISE` | `.005` | ...and what its rent rises a month: half of that, so the two components part. |
+| 1115 | `MonetaryCheck.WORLD_LEVEL_SET` | `1.5` | The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. |
+| 1118 | `MonetaryCheck.PINNED_RATE` | `1.0` | The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. |
+| 1121 | `MonetaryCheck.FIXTURE_SHELF_RISE` | `.01` | What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. |
+| 1124 | `MonetaryCheck.FIXTURE_RENT_RISE` | `.005` | ...and what its rent rises a month: half of that, so the two components part. |
 
 ## Fields (state)
 
@@ -95,12 +95,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 1075 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
+| 53 | 1097 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
 | 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 64 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 74 | 565 | `public static void main(String[] args) throws Exception` |  |
 
-### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 640-1127)
+### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 640-1149)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -112,8 +112,9 @@
 | 827 | 3 | `static Game founding(Path root, String label, boolean onLiterals, String...held)` | ...with the sectors named held out of the investor's building (BusinessInvestment.holdSector()), as the harnesses that read a steady bank hold the one whose plant on a bank loan the bank cannot carry (WN3 held Cement ... |
 | 835 | 76 | `static Game founding(Path root, String label, boolean onLiterals, boolean causesHeldOff, String...held)` | ...with the causes of 1900 held off from the first month where asked (R0b call 7): only heldRun() asks, the three harnesses that borrow this founding (CurveCheck, ExpectationsCheck, HouseholdCheck) keep the deaths of ... |
 | 916 | 8 | `static double[] fingerprint(Game g)` | What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. |
-| 945 | 43 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years)` | One run of the founding at a held rate: the dial held from heldFrom, the D$ pinned (ForeignAccounts.pinRate()) at the founding's rate in its own last month, HELD_FROM, on time and late alike, and inflation over the wi... |
-| 989 | 102 | `static void inflationFallsWithTheRate(Path root)` |  |
-| 1110 | 10 | `static PriceIndex basedBasket(int shoppingMonths)` | FS10: a price index put through the model's own door, PriceIndex.takeMonth(): a shelf and a rent, each month with spending on both in it (the households' 40 on food and 60 on rent, the weights the basket is struck on)... |
-| 1121 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 938 | 9 | `static void reportHeldRent(Game g, String label)` | Read the rent counter-channel without changing any paid lease, quote, policy input or assertion. |
+| 956 | 54 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years)` | One run of the founding at a held rate: the dial held from heldFrom, the D$ pinned (ForeignAccounts.pinRate()) at the founding's rate in its own last month, HELD_FROM, on time and late alike, and inflation over the wi... |
+| 1011 | 102 | `static void inflationFallsWithTheRate(Path root)` |  |
+| 1132 | 10 | `static PriceIndex basedBasket(int shoppingMonths)` | FS10: a price index put through the model's own door, PriceIndex.takeMonth(): a shelf and a rent, each month with spending on both in it (the households' 40 on food and 60 on rent, the weights the basket is struck on)... |
+| 1143 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

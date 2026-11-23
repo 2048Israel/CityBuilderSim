@@ -934,6 +934,17 @@ public class MonetaryCheck {
     /** Whether every run's D$ stood at heldAt, pinned, in every month from the hold to the window's close (heldRun()). */
     static boolean currencyHeld = true;
 
+    /** Read the rent counter-channel without changing any paid lease, quote, policy input or assertion. */
+    static void reportHeldRent(Game g, String label) {
+        HousingMarket homes = g.getSectors().realEstate().housingMarket();
+        out.printf("   held-rate housing %s m%d: people %d, households %.8g, unplaced %.8g, receipts %.8g, classes %s%n",
+                label, g.getMonth(), g.getPopulationManager().getPopulation(),
+                homes.demands().stream().mapToDouble(HousingChoice.Demand::count).sum(), homes.result().unplaced(), homes.receipts(),
+                homes.classes().stream().filter(c -> c.homes > 0).map(c -> String.format(java.util.Locale.ROOT,
+                        "%d/%s[homes=%.6g,occupied=%.6g,demand=%.6g,ask=%.8g,target=%.8g,capital=%.8g,carry=%.8g]",
+                        c.recipe,c.dwelling,c.homes,c.occupied,c.demand,c.ask,c.target,c.capital,c.carry)).toList());
+    }
+
     /**
      * One run of the founding at a held rate: the dial held from heldFrom, the D$ pinned (ForeignAccounts.pinRate()) at the founding's rate
      * in its own last month, HELD_FROM, on time and late alike, and inflation over the window - the index at the January month MEASURED_MONTHS - windowMonths()
@@ -960,6 +971,10 @@ public class MonetaryCheck {
                 currencyHeld &= fx.getRate() == heldAt;
             }
             double indexFrom = g.getPriceIndex().getIndex();
+            reportHeldRent(g, label);
+            double rentFrom = g.getSectors().realEstate().getRentPrice();
+            double[] componentsFrom = java.util.stream.IntStream.range(0, PriceIndex.COMPONENTS)
+                    .mapToDouble(g.getPriceIndex()::getComponentLevel).toArray();
             basedBeforeWindow &= g.getPriceIndex().isBased() && g.getPriceIndex().getLinkedMonth() < opens;
             // The window opens on a January and closes on a December, and each month of it the market has solved in its own year.
             solvesOnTheCalendar &= market != null && CityCalendar.monthOfYear(g.getMonth()) == 1
@@ -974,11 +989,18 @@ public class MonetaryCheck {
                 solvesOnTheCalendar &= market != null && market.solvedYear() == CityCalendar.yearOf(g.getMonth());
                 if (CityCalendar.monthOfYear(g.getMonth()) == 1) yearFrom = g.getPriceIndex().getIndex();
                 if (CityCalendar.monthOfYear(g.getMonth()) == 12) {
+                    reportHeldRent(g, label);
                     if (years != null) years[year] = Math.pow(g.getPriceIndex().getIndex() / yearFrom, 12.0 / (CityCalendar.monthOfYear(MEASURED_MONTHS) - 1)) - 1;
                     year++;
                 }
             }
             solvesOnTheCalendar &= year == WINDOW_YEARS;
+            out.printf("   held-rate rent trace %s: dial %.0f%% from m%d, family rent per capacity %.12g -> %.12g, CPI %.12g -> %.12g%n",
+                    label, rate * 100, heldFrom, rentFrom, g.getSectors().realEstate().getRentPrice(), indexFrom, g.getPriceIndex().getIndex());
+            out.printf("   held-rate components %s: annual growth %s, closing weights %s (groceries, rent, meals, luxury, services)%n",
+                    label, java.util.Arrays.toString(java.util.stream.IntStream.range(0, PriceIndex.COMPONENTS)
+                            .mapToDouble(k -> Math.pow(g.getPriceIndex().getComponentLevel(k) / componentsFrom[k], 12.0 / windowMonths()) - 1).toArray()),
+                    java.util.Arrays.toString(java.util.stream.IntStream.range(0, PriceIndex.COMPONENTS).mapToDouble(g.getPriceIndex()::getWeight).toArray()));
             if (city != null) city[0] = g;
             return Math.pow(g.getPriceIndex().getIndex() / indexFrom, 12.0 / windowMonths()) - 1;
         } finally {

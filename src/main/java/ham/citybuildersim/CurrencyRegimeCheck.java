@@ -679,6 +679,14 @@ public class CurrencyRegimeCheck {
         g.getBank().setForeignDeposits(hot.getStock());
     }
 
+    /** The played fixture's actual phase, kept beside its assertions so an absent doubt is not mistaken for a lost saved field. */
+    static void reportDoubtFixture(String label, Game g) {
+        ForeignAccounts fx = g.getForeignAccounts();
+        out.printf("   doubt fixture %s: m%d, %s, gap %.12g (break %.12g), doubt %.12g, edge owed %.12g, held %s, hot stock %.12g, left on doubt %.12g%n",
+                label, g.getMonth(), fx.getRegime(), fx.getLastPegGap(), ForeignAccounts.BREAK_GAP, fx.getDoubtShare(),
+                fx.getEdgeOwedLocal(), fx.isHeld(), g.getCapitalFlows().getStock(), g.getCapitalFlows().getDoubtDeparted());
+    }
+
     /**
      * The doubt fixture, caused: a tied pegged town with hot money in it, the peg revalued DOUBT_GAP under its shadow. The next reprice strikes a doubt at
      * the gap (hazard() of it) and the month after it that share of the stock leaves; with the market quiet no break comes by chance.
@@ -1092,6 +1100,7 @@ public class CurrencyRegimeCheck {
         CapitalFlows hot = g.getCapitalFlows();
         play(g, 1);
         double shareStruck = fx.getDoubtShare(), stockBefore = hot.getStock();
+        reportDoubtFixture("initial doubt", g);
         assertTrue("fixture: a city pegged a fifth under its shadow held the month, with hot money in the city and a doubt struck",
                 fx.getRegime() == PEG && !fx.brokeThisMonth() && shareStruck > 0 && stockBefore > 0);
         assertTrue("fixture: the gap is past BREAK_GAP (" + String.format("%.3f", fx.getLastPegGap()) + ")", fx.getLastPegGap() > ForeignAccounts.BREAK_GAP);
@@ -1595,6 +1604,7 @@ public class CurrencyRegimeCheck {
         double fading = faded(lfx);
         quietly(() -> live.repeg(lfx.getShadowRate() * Math.exp(fading / 2)));
         play(live, 1);
+        reportDoubtFixture("purchase save", live);
         assertTrue("fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow",
                 lfx.getRegime() == PEG && !lfx.brokeThisMonth() && lfx.getEdgeOwedLocal() > 0 && lfx.getDoubtShare() > 0 && lfx.isHeld());
         final Game saved = live;
@@ -1792,6 +1802,7 @@ public class CurrencyRegimeCheck {
         play(live, 2);
         ForeignAccounts fx = live.getForeignAccounts();
         CapitalFlows hot = live.getCapitalFlows();
+        reportDoubtFixture("hot-money save", live);
         assertTrue("fixture: a pegged city held two months past its repeg, hot money leaving on doubt this month and a doubt struck for the next",
                 fx.getRegime() == PEG && !fx.brokeThisMonth() && fx.getDoubtShare() > 0 && hot.getDoubtDeparted() > 0);
         doubtCitySaved = live;
@@ -1877,6 +1888,7 @@ public class CurrencyRegimeCheck {
             gone.loadGameSave(2);
         });
         ForeignAccounts keptFx = kept.getForeignAccounts(), goneFx = gone.getForeignAccounts();
+        reportDoubtFixture("loaded doubt twin", kept);
         assertTrue("fixture: the twins are loaded alike - both pegged, the same doubt struck (" + String.format("%.2f%%", keptFx.getDoubtShare() * 100)
                         + "), hot money in the city - and alike to the bit",
                 keptFx.getRegime() == PEG && goneFx.getRegime() == PEG && keptFx.getDoubtShare() > 0 && kept.getCapitalFlows().getStock() > 0
