@@ -1,6 +1,6 @@
 # MapCheck.java - 16,559 lines · 443 methods · 155 constants · harnesses
 
-`ham/citybuildersim/MapCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the drawn raster itself is one street network with + junctions apart and every building within reach, the sidecar comes back byte for byte, and a screen costs what the screen holds, never what the city does - at Jerus's size and at five and ten billion people.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [CityMap](CityMap.md) (832), [World](World.md) (600), [LandMap](LandMap.md) (407), [DistrictPlan](DistrictPlan.md) (281), [TilePainter](TilePainter.md) (267), [MapFrame](MapFrame.md) (251), [BuildingVisual](BuildingVisual.md) (238), [TrainSchedule](TrainSchedule.md) (209), [TileRaster](TileRaster.md) (177), [MapTiles](MapTiles.md) (158), [CityLand](CityLand.md) (132), [LandParcel](LandParcel.md) (126), [GlobeFrame](GlobeFrame.md) (117), [CityRuns](CityRuns.md) (115), [CityShore](CityShore.md) (101), [LongPlaytest](LongPlaytest.md) (95), [MiniMapFrame](MiniMapFrame.md) (93), [SeaRoutes](SeaRoutes.md) (83), [Game](Game.md) (82), [JunctionCheck](JunctionCheck.md) (73), [DepositMarks](DepositMarks.md) (70), [BoatSchedule](BoatSchedule.md) (58), [DistrictPicture](DistrictPicture.md) (58), [EarthTerrainCheck](EarthTerrainCheck.md) (46), [Deposit](Deposit.md) (41), [Ports](Ports.md) (41), [Resource](Resource.md) (38), [Timing](Timing.md) (35), [EarthTerrain](EarthTerrain.md) (31), [LandGrid](LandGrid.md) (30)... and 42 more
 
-**Used by (13):** [BridgeMapCheck](BridgeMapCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [IslandNetCheck](IslandNetCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [QuayCraneCheck](QuayCraneCheck.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
+**Used by (14):** [BridgeMapCheck](BridgeMapCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [IslandNetCheck](IslandNetCheck.md), [JunctionCheck](JunctionCheck.md), [LandCheck](LandCheck.md), [MainLineCheck](MainLineCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [QuayCraneCheck](QuayCraneCheck.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 

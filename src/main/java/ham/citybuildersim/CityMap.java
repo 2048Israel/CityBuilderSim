@@ -6525,6 +6525,12 @@ public final class CityMap {
     static final int RUN_TILES_KEPT = 256;
 
     /**
+     * ...and while a link's search runs (CityRuns.linkWay(), AP2): 8,192 tiles, so a search of LINK_SEARCH plots, 2,048 tiles' worth and
+     * the ground beside them, reads each tile once (slot 9 at 17 million people: two searches a month read 4,046 tiles, 89,679 times at 256).
+     */
+    static final int RUN_SEARCH_TILES_KEPT = 8192;
+
+    /**
      * The ground the runs read (CityRuns.Ground): a plot's World class where
      * the city owns it, -1 where it does not - the terrain a tile's row or
      * column at a time (World.lineTerrain(), byte for byte the painter's
@@ -6535,16 +6541,43 @@ public final class CityMap {
         private final Map<Long, byte[]> lines = new LinkedHashMap<>(RUN_LINES_KEPT * 2, 0.75f, true) {
             @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > RUN_LINES_KEPT; }
         };
+        /** How many tiles the three maps below keep: RUN_TILES_KEPT, or RUN_SEARCH_TILES_KEPT while a link's search runs (searching(), AP2). */
+        private int tilesKept = RUN_TILES_KEPT;
+        /** The tiles whose terrain it has drawn (a miss of `tiles`): a harness's (GatewayCheck, AP2). */
+        private long drawn;
         private final Map<Long, byte[]> tiles = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > RUN_TILES_KEPT; }
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > tilesKept; }
         };
         private final Map<Long, boolean[]> owned = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > RUN_TILES_KEPT; }
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > tilesKept; }
         };
         /** ET5: ownership with no mask (atRaw()), kept only while the city holds a picture of its landmasses; the same size and the same version as `owned`. */
         private final Map<Long, boolean[]> rawOwned = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > RUN_TILES_KEPT; }
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > tilesKept; }
         };
+
+        /**
+         * (AP2) A link's search keeps every tile it reads, so its breadth-first ring, wider than RUN_TILES_KEPT tiles on a large
+         * city, does not draw the same tile's terrain again at every step; once it ends the maps keep their usual size, the
+         * tiles read least recently let go. What is kept changes, never what is read.
+         */
+        @Override public void searching(boolean on) {
+            tilesKept = on ? RUN_SEARCH_TILES_KEPT : RUN_TILES_KEPT;
+            if (!on) {
+                trim(tiles);
+                trim(owned);
+                trim(rawOwned);
+            }
+        }
+
+        /** Lets go the eldest tiles of an access-ordered map until it holds tilesKept. */
+        private void trim(Map<Long, ?> m) {
+            java.util.Iterator<Long> it = m.keySet().iterator();
+            while (m.size() > tilesKept && it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+        }
         private long rawAt = Long.MIN_VALUE, lastRawKey = Long.MIN_VALUE;
         private boolean[] lastRaw;
         private long ownedAt = Long.MIN_VALUE, lastLineKey = Long.MIN_VALUE, lastOwnKey = Long.MIN_VALUE;
@@ -6579,6 +6612,7 @@ public final class CityMap {
                 if (t == null) {
                     t = new byte[TilePainter.PLOTS];
                     World.of(worldKey).tileTerrain(tx, ty, t);
+                    drawn++;
                     tiles.put(tk, t);
                 }
                 return t[iy * World.TILE + ix];
@@ -6679,6 +6713,12 @@ public final class CityMap {
 
     /** The ground the runs read: a harness's, to lay runs of its own on the city's ground. */
     CityRuns.Ground runGround() { return runGround; }
+
+    /** (AP2) The tiles the runs' ground keeps now, and the tiles' terrain it has drawn since the map was made: a harness's (GatewayCheck, AP2). */
+    int runTilesHeld() { return runGround.tiles.size(); }
+    long runTilesDrawn() { return runGround.drawn; }
+    /** (AP2) The tiles each ownership keep holds now, the masked and the raw (ET5), which searching(false) trims as it trims the tiles: a harness's (GatewayCheck, AP2). */
+    int[] runOwnedHeld() { return new int[] { runGround.owned.size(), runGround.rawOwned.size() }; }
 
     /* =====================================================================
        THE CITY'S GROUND IN PIECES (batch CL5, slice B)

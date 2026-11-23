@@ -1,6 +1,6 @@
 # BusinessDebt.java - 100 lines · 14 methods · 0 constants · model
 
-`ham/citybuildersim/BusinessDebt.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessDebt.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > Base class for private-sector borrowing.
 > 
@@ -24,7 +24,7 @@
 > Mortgage, the insured, amortizing loan a landlord buys a residential
 > building with.
 
-**Used by (10):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [CreditCheck](CreditCheck.md), [DataSave](DataSave.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md)
+**Used by (11):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [CreditCheck](CreditCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md)
 
 ## Fields (state)
 

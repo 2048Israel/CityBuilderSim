@@ -1,6 +1,6 @@
 # SulphideLeachCheck.java - 404 lines · 18 methods · 8 constants · harnesses
 
-`ham/citybuildersim/SulphideLeachCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SulphideLeachCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The Sulphide Leach & SX-EW Plant, checked (R6b, FE2: sulphide heap leaching, Johnson Camp, Arizona, Nov 2025): the near-future row that lets a sulphide
 > field - four copper fields in five - yield cathode at the mine, with no concentrator and no smelter, in a city that knows it.

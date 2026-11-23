@@ -1,6 +1,6 @@
 # TruckRouteCheck.java - 1,997 lines · 65 methods · 4 constants · harnesses
 
-`ham/citybuildersim/TruckRouteCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TruckRouteCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > Proves the trucks' routes (0.8.8, batch FR5, slice B;
 > docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the
