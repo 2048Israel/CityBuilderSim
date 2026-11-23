@@ -1508,6 +1508,9 @@ public class FundCheck {
 
     /* ================= 9d. the idle cash after last month's toRaise (RB1-R) ================= */
 
+    /** How many times the bond room before the month 9d lifts the fund's first month's due (all of it short) to, so the room a month on, which may be over it by the month's new bonds, is still under the toRaise. */
+    static final double BOND_ROOM_MARGIN = 3;
+
     /**
      * THE CASH THE TOP OF THE MONTH PAYS LAST MONTH'S toRaise FROM IS NOT IDLE (RB1-R). Over the default, payTransfer() pays last
      * month's toRaise out of the cash first, and struck the due on an idle figure read before that: with the dial under 17 steps
@@ -1528,6 +1531,18 @@ public class FundCheck {
         int[] two = holdTwoAndARescueBook(g);
         check("fixture: a market book in two companies, a rescue book, no cash", two[1] >= 0 && g.getFund().getCash() == 0
                 && g.fundRescueSharesValue() > 0);
+        // FC2, 2026-11-23: THE RESCUE BOOK IS SIZED TO THE BOND MARKET, SO THE MONTH'S SHORTFALL IS OVER THE BOND ROOM ON ANY PATH. The book is six times the market
+        // book whatever the town's bonds are, and the shortfall is the dial's share of the fund's value with no cash (the month's due, all of it short): on FC2's path
+        // the town's bonds stood at D$154 of room (29 live bonds, D$165 and 31 a month on) against a fund of D$707 (D$606 of it rescue) and a toRaise of D$28, so the
+        // bond room was 5.8 times the toRaise and the bound could not tell the old read, off by the toRaise, from the new. The Bank's rescue shares are lifted, as the
+        // helper issues them, until the dial's share of the fund's value is BOND_ROOM_MARGIN times the room before the month (the toRaise D$461 against D$165 now);
+        // the room a month on is the room before it and what the month's bonds add (7% here), so the toRaise is over it with the margin to spare, whichever
+        // way the town's bonds went.
+        double bondRoomBefore = g.getBondMarket().fundBondRoom(g.getMonth());
+        double valueWanted = BOND_ROOM_MARGIN * bondRoomBefore / (s * step), valueHad = g.fundValue();
+        if (valueWanted > valueHad)
+            g.getEquity().issueToCityRescue(Equity.BANK, (valueWanted - valueHad) / g.getExchange().cityMark(Equity.BANK));
+        check("fixture: the fund's value is over what makes the month's due the margin over the bond room", g.fundValue() * s * step >= BOND_ROOM_MARGIN * bondRoomBefore * (1 - 1e-12));
         g.setFundWithdrawal(s * step);
         check("fixture: the dial is at S steps, over the default", g.getFund().getWithdrawalSteps() == s && g.getFund().sellsToPay());
         play(g);
@@ -1700,17 +1715,38 @@ public class FundCheck {
 
     static void theHand() {
         out.println("\n--- 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus ---");
-        Game a = copy(), b = copy();
+        Game a = copy();
         double x = 50_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
         a.setCashForTest(a.getCash() + x);
-        b.setCashForTest(b.getCash() + x);
         a.fundPayIn(x);
         play(a);
-        play(b);
-        double surplusA = a.getEconomyManager().getNationalAccounts().getBalance();
-        double surplusB = b.getEconomyManager().getNationalAccounts().getBalance();
+        // FC2, 2026-11-23: THE TWINS OF THE LAW DO NOT LET THE FUND TRADE WITH THE HOUSEHOLDS. Twins at the default dial differed by D$0.0341 of capital gains tax on
+        // FC2's path (a: 0.0826, b: 0.1167, the national accounts' balance 39.7115 against 0.6149 where the transfer paid was 39.1307): a's fund bought 5,016 Industry
+        // shares, 3.66 of Retail and a sliver of Freight with its pay-in, and the households who sold it 3,884 Industry shares were taxed on the gain their sale realised
+        // (or refunded on its loss), which b's households, who sold none to the fund, were not. That is the market's effect of the fund's buying, not the pay-in's on
+        // the budget. Over the default the rule buys nothing (sellsToPay(): the dial spends the fund), so the twins' markets are alike and the pay-in is all that
+        // is between them; the cash x is far over the month's due at the dial, so the fund sells nothing either (the fixture below). The twins are two more copies
+        // of the founding; a itself plays on at the default for what follows.
+        Game pa = copy(), pb = copy();
+        for (Game t : java.util.List.of(pa, pb)) {
+            t.setFundWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + 1) * TreasuryFund.WITHDRAWAL_STEP);
+            t.setCashForTest(t.getCash() + x);
+        }
+        pa.fundPayIn(x);
+        play(pa);
+        play(pb);
+        double marketHeld = 0;
+        for (Game t : java.util.List.of(pa, pb)) {
+            marketHeld += t.getBondMarket().faceHeldByCity();
+            for (int c = 0; c < Equity.COMPANIES.length; c++) marketHeld += t.getEquity().getCityMarketShares(c);
+        }
+        check("fixture: over the default the rule buys nothing, so neither twin's fund holds a share or a bond of the market, and a's holds its cash",
+                pa.getFund().sellsToPay() && pb.getFund().sellsToPay() && marketHeld == 0 && pa.getFund().getCash() > 0
+                        && pa.getFund().getToRaise() == 0 && pb.getFund().getToRaise() == 0);
+        double surplusA = pa.getEconomyManager().getNationalAccounts().getBalance();
+        double surplusB = pb.getEconomyManager().getNationalAccounts().getBalance();
         close("a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more",
-                surplusA - surplusB, a.getFund().getTransferPaid() - b.getFund().getTransferPaid(), 1e-6);
+                surplusA - surplusB, pa.getFund().getTransferPaid() - pb.getFund().getTransferPaid(), 1e-6);
         check("...and the journal names it", journalHas(a, "Paid into the fund", -x));
         double drawn = a.fundDrawOut(1_000 * PriceLevel.FACTOR);
         check("a draw-out moves what the fund's cash holds back", drawn == 1_000 * PriceLevel.FACTOR);
