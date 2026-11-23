@@ -1467,3 +1467,90 @@ The final merged model now runs 80 cities against **0.9.190** on the gate
 box, using that baseline's options without laptop data-path overrides.
 Only M1 or F1 stops the ship; any new finding still needs its own trace.
 The older pre-HC1 ensemble is not the merged-model verdict.
+
+### Merged final ensemble: 80 complete, M1 clean, seed-9 F1 traced
+
+The fresh run uses pushed **9c769adf3**, label
+PW5-HC1-final-9c769adf3-20261123, on gatebox, OpenJDK 21.0.13. It waits
+behind RES3's ensemble, then runs eight cities at once on the box; there
+is no laptop fallback. JAVA_OPTS is empty and JDK_JAVA_OPTIONS is unset,
+so the box uses its own earth-2/world-1 data copies, named in the stored
+baseline. All **80/80** runs finish, none short or missing. The complete
+102,352 recorded audit months pass, with none unread: **all five M1s pass**.
+The new baseline at docs/ensemble/PW5.md replaces the pre-HC1 capture and
+retains the raw score and JSON, including its failures.
+
+The raw score is **20/26 versus 0.9.190's 25/26**; hard criteria are 6/10.
+Four F1s change to FAIL, each solely seed 9 at m605. SHOCK's T2 population
+is the sole newly failing informational criterion; it does not stop a
+ship. Final population medians, read beside the earlier default-city gap:
+
+| policy | PW5 | 0.9.190 | share of baseline | T2 |
+| --- | ---: | ---: | ---: | --- |
+| AUTO2 | 4,649,724.5 | 5,217,451 | 89.1% | PASS |
+| ZERO_SLACK | 2,883,284.5 | 3,579,897.5 | 80.5% | PASS |
+| ZERO_HOT | 7,632.5 | 7,562.5 | 100.9% | PASS |
+| SHOCK | 67,498 | 102,120.5 | 66.1% | FAIL, info |
+| HIGH | 32,356 | 31,959.5 | 101.2% | PASS |
+
+These aggregate medians do not erase the large normal default-city
+change: at m760, main has **3,250 households / 8,200 capacity / 593
+builders**, against PW5's **1,776 / 5,944 / 418**. PW5 has about **45%
+fewer households**, 28% less capacity and 30% fewer builders there.
+The study's lumpy district charge remains in the model and in PW5-F1;
+none of those effects is removed to improve this population score.
+
+**F1 is a separate seed-9 finding, not the default window's exception.**
+AUTO2, ZERO_SLACK, SHOCK and HIGH each flag only m605, households with
+no home; ZERO_HOT has no finding. The four seed-9 CSVs match every field
+through m600 except the phase label, before their policy paths split.
+All four have full power and a clean money audit at m605. The normal
+LongPlaytest also runs annual GovernmentPlayer actions; the monetary
+controller intentionally omits them. Its seed-0 default window is not
+silently substituted for this ensemble's seed-9 case, and its exact ship
+part remains limited to 16 months at m792-807.
+
+A read-only AUTO2 replay through m700 matches **all 699 CSV rows and every
+value** of the box run. At m560-603 the landlord repeatedly holds for
+land, with no home pipeline. At m600 it needs 5,570 m2 with 24.6 m2 free,
+has unlimited mortgage capital, full power, one district carrying the
+27.188 MW peak, and **1,354 site points after 574 repairs**, including
+the district's 110. It makes **no ground look m500-603**. At m604 the
+player finally buys five parcels within its unchanged 24,744.685 budget,
+then correctly holds the next 9,034.633 offer against 7,278.795 left.
+At m605, 17.895817409 households are unplaced with 3,087 homes now on
+site; builders supply 7,277 points, repairs take 574 and 6,703 remain for
+sites. Power is fully served at a 24.690 MW peak against 100 MW of carry,
+with a native wires bill of 42.14 cents/kWh. At m606 homes stand and the
+finding clears. There is no home site competing for points during the
+preceding exhausted-land hold; no wires or repair charge is refunded.
+
+Native **main 1b89c5c4c**, without a Substations class or model edits,
+replays the same monetary seed 9. It makes **no ground look m500-602**.
+At m540 its landlord also needs 5,570 m2 with just 21 m2 free, has no
+pipeline, full power, unlimited mortgage capital and **1,132 site points**.
+The next look is m603, at least 103 months after the preceding look,
+against the same six-month forecast. Main's different, larger housing
+stock avoids the m605 flag; at m610 its studio order again holds for
+land with no pipeline, full power and 1,010 site points. This establishes
+the long-skip ground class on current native main, rather than claiming
+that the two cities or their finance paths are equal.
+
+**★ Name the four seed-9 F1s to LP-G1's deferred-ground class.** Its brief
+now includes this precise monetary-controller case beside the separately
+accepted normal default case. No other seed or window is passed, and the
+raw ensemble remains FAIL; the outside-class attribution must be taken
+by name. No scorer threshold, housing bound or money check is changed.
+The dry-run-slot request reports that verdict and evidence explicitly.
+
+The replay uses the existing named EnsembleCheck to compile and invoke
+the unchanged driver, with temporary read-only LongPlaytest logging.
+The first temporary logger has a compile typo, corrected before the run;
+the PW5 and native-main diagnostic runs then both exit 0. Both source
+backups are restored, the diagnostic driver classes are removed, and
+the final restored --fast exits 0 (0 firm / 199 soft findings). Regenerated
+indexes differ only in their date stamp, so the already committed indexes
+are retained. No production or harness logic change follows the pushed
+ensemble model. Logs and CSV comparisons are at target/PW5-ensemble-seed9/;
+the complete run and score are at
+target/ensemble/PW5-HC1-final-9c769adf3-20261123/.
