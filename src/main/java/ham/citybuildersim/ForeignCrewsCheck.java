@@ -594,7 +594,7 @@ public class ForeignCrewsCheck {
         double each = Fitout.of(g, plant).points(), sites = g.getBuildingOutputAtEveryPost();
         double from = oa.fromMonths(), step = oa.stepMonths(), threshold = oa.thresholdMonths(), share = oa.share();
         double home = (threshold - from) / step;
-        double multiple = bm.orderPriceMultiplier(0, 0, each, 1, bm.basePerPointOf(plant));
+        double multiple = bm.orderPriceMultiplier(0, 0, each, 1, plant);
         out.printf("  the plant: %,.0f points, %.2f months of the sites' %,.0f; the queue at home %.4f months, the threshold %.4f; %,.1f points past it quoted abroad at +%.4f, its parts' %,.0f points; the multiple %.6f%n",
                 each, step, sites, from, threshold, qp.abroadPoints, share, qp.prepPoints + qp.worksPoints + qp.bridgePoints + qp.deepWaterPoints, multiple);
         out.printf("  FC2's whole buildings kept it at home: %.2f months queued at home after it, every order after it abroad until its builders had worked %.2f months of it down%n",

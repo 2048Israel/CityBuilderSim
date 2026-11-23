@@ -8581,7 +8581,7 @@ public class Game {
      */
     public BuildingManager.OrderAbroad abroadOfOrder(BuildingsTemplate t, long n) {
         if (t == null) return null;
-        return buildingManager.abroadOfOrder(0, 0, Fitout.of(this, t).points(), Math.max(1, n), buildingManager.basePerPointOf(t));
+        return buildingManager.abroadOfOrder(0, 0, Fitout.of(this, t).points(), Math.max(1, n), t);
     }
 
     /**
@@ -9437,10 +9437,8 @@ public class Game {
         Fitout fit = Fitout.of(this, selected);
         // ...its buildings past the threshold at the foreign crews' share for the month they make them run, the order on
         // site in the base a point (REV-FC2; BuildingManager.abroadOfOrder()), and handed to them at that when it is billed.
-        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), ahead.abroad(), fit.points(), quantity,
-                buildingManager.basePerPointOf(selected));
-        BuildingManager.OrderAbroad abroad = buildingManager.abroadOfOrder(ahead.queue(), ahead.abroad(), fit.points(), quantity,
-                buildingManager.basePerPointOf(selected));
+        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected);
+        BuildingManager.OrderAbroad abroad = buildingManager.abroadOfOrder(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected);
         double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
         double sticker = buildingManager.nonMaterialCost(fit) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;

@@ -373,9 +373,9 @@ public final class FitoutCheck {
         BuildingsTemplate farm = bm.getTemplateByName("Grain Farm");
         silent(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
         Game.BuildQuote q = g.quoteBuild(farm, 2);
-        // REV-FC2: an order's multiple strikes the foreign crews' threshold and share on the base with the order on site,
-        // at its own base a point (BuildingManager.basePerPointOf()), so "as before" reads the template's points and its base.
-        double multiple = bm.orderPriceMultiplier(0, farm.getConstructionPoints(), 2, bm.basePerPointOf(farm));
+        // REV-FC2: an order's multiple strikes the foreign crews' threshold and share on the base and the world's price with
+        // the order on site, as the farm's work (BuildingManager.abroadOfOrder()), so "as before" reads the template's points and it.
+        double multiple = bm.orderPriceMultiplier(0, farm.getConstructionPoints(), 2, farm);
         double old = bm.nonMaterialCost(farm) * 2 * multiple;
         check("an order's buildings are priced as before: nonMaterialCost(t) on the template's points, to the bit", buildingsPart(q) == old
                 && q.fitout() != null && q.fitout().isWhole() && !q.fitout().isChosen(), buildingsPart(q) + " vs " + old);

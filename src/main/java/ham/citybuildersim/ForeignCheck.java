@@ -111,7 +111,7 @@ public class ForeignCheck {
                     {"Industrial Bakery", 2L, false}};
             double quotedPoints = 0, quotedMoney = 0, coalHomeMonths = Double.NaN, coalThreshold = Double.NaN, coalPartsHome = Double.NaN;
             long coalAbroad = -1;
-            boolean tradeOn = true;
+            boolean tradeOn = true, placedAll = true, thresholdHeld = true;
             StringBuilder lines = new StringBuilder();
             System.setOut(quiet);
             try {
@@ -134,7 +134,12 @@ public class ForeignCheck {
                     lines.append(String.format("   %s x%d%s: %d past the threshold, %,.0f points at +%.4f, %,.4f a point (its own base %,.4f)%n",
                             o[0], n, instant ? " (instant)" : "", with == null ? 0 : with.buildings(), q.abroadPoints, q.abroadShare,
                             q.abroadPricePerPoint, bm.nonMaterialCost(Fitout.of(city, t)) / Math.max(1e-9, each)));
-                    city.buildStack(t, n, instant);
+                    // ...each order placed: the town's cash topped up to its quote where the orders before it spent it.
+                    if (city.getCash() < 2 * q.total) city.setCashForTest(city.getCash() + 2 * q.total);
+                    Game.BuildResult placed = city.buildStack(t, n, instant);
+                    placedAll &= placed == Game.BuildResult.SUCCESS;
+                    // REV-FC2, the second review: the threshold the order was quoted on is the one read once it stands.
+                    if (with != null && !instant) thresholdHeld &= Math.abs(bm.thresholdMonths() - with.thresholdMonths()) <= 1e-9;
                     if (o[0].equals("Coal Power Plant")) {
                         coalAbroad = with == null ? -1 : with.buildings();
                         coalHomeMonths = bm.monthsQueued();
@@ -149,7 +154,7 @@ public class ForeignCheck {
                 System.setOut(out);
             }
             out.print(lines);
-            assertTrue("fixture: every order of the town was placed with the foreign crews on offer", tradeOn);
+            assertTrue("fixture: every order of the town was placed with the foreign crews on offer", tradeOn && placedAll);
             assertTrue("fixture: ...and some of its buildings stood past the threshold", quotedPoints > 0);
 
             Construction c = city.getSectors().construction();
@@ -192,6 +197,7 @@ public class ForeignCheck {
                     handedFirst, quotedPoints, 1e-9);
             assertTrue("...and what the crews billed and their book still holds at its price is what the town's payers were quoted for that work,"
                     + " to a part in a million million, month by month: the builders' cash carries no gap", ledgerMonths >= 2 && worstLedger <= 1e-12);
+            assertTrue("the threshold each order was quoted on is the threshold read once it stands", thresholdHeld);
             // REV-FC2, the second review: FC2 kept the plant whole at home, 70.40 months queued after it against 20.53.
             assertTrue("the coal plant the threshold fell in was split at it: its work past the threshold abroad, and the queue at home it left"
                     + " the threshold's months of the sites, within its other parts' share at home", coalAbroad == 1

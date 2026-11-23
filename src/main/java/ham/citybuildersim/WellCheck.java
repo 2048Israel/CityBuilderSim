@@ -1334,10 +1334,10 @@ public class WellCheck {
         // The planner: the package at the depth it would stand in, its earnings carrying the upkeep.
         Oil.JacketCase c = wells.jacketCase(plans);
         // ...the wells' works at the multiple of an order of that many (BA1: each well priced on the queue the ones before it leave, BuildersShort.meanPremium()); the jacket's, an order of one, at its own (the quote's).
-        // REV-FC2: at the well's own base a point, as BusinessInvestment.getCostOfAt() strikes it (the foreign crews'
-        // threshold and share on the base with the order on site, BuildingManager.basePerPointOf()).
+        // REV-FC2: as the well's work, as BusinessInvestment.getCostOfAt() strikes it (the foreign crews' threshold and
+        // share on the base and the world's price with the order on site, BuildingManager.abroadOfOrder()).
         double wellsPremium = (wf - 1) * bm.nonMaterialCost(seaWell) * (c == null ? 0 : c.wells())
-                * bm.orderPriceMultiplier(0, seaWell.getConstructionPoints(), c == null ? 1 : c.wells(), bm.basePerPointOf(seaWell));
+                * bm.orderPriceMultiplier(0, seaWell.getConstructionPoints(), c == null ? 1 : c.wells(), seaWell);
         double running = plans.runningCostOf(jacket);
         report("the planner judges the package at the depth it would stand in: the jacket's premium and its n wells' on that field in its cost,"
                         + " with the builders' tax, the wells' at the multiple of an order of that many (BA1)",

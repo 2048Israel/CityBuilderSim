@@ -6406,8 +6406,9 @@ public class BuildingManager {
      * building the threshold falls in split, its points past it abroad), the buildings with any of it, and the share
      * the foreign crews take them at - what the quote prices them at (orderPriceMultiplier()) and what the order hands
      * the crews' book when it is billed (Game.processBuildOrder(), buildFor(); Construction.handAbroad()), so the payer
-     * pays what its work costs abroad and the builders pass it on to the cent. The order on site in the base a point
-     * ({@code basePerPoint}, basePerPointOf(); the base as it stands with none to read), and so in E x / p and the
+     * pays what its work costs abroad and the builders pass it on to the cent. The order on site, as {@code of}'s work,
+     * in the base a point and the world's (REV-FC2, the second review: both, so E x / p and the threshold are what they
+     * read once the order is placed; the base and the world's as they stand with no template), and so in E x / p and the
      * threshold; its first building on the queue at home with {@code pointsAhead} more - what the orders before it in a
      * run put there - less {@code abroadAhead} of them those orders hand abroad (homeUnits()); his month on his book,
      * those and this order's points abroad, and the share the supply curve gives it. Null with no trade on.
@@ -6415,7 +6416,7 @@ public class BuildingManager {
     public record OrderAbroad(double fromMonths, double stepMonths, double thresholdMonths, long buildings, double points,
                               double month, double share) { }
 
-    public OrderAbroad abroadOfOrder(double pointsAhead, double abroadAhead, double pointsEach, long n, double basePerPoint) {
+    public OrderAbroad abroadOfOrder(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of) {
         ForeignTerms now = foreignTerms();
         if (now == null) return null;
         double ahead = Double.isNaN(pointsAhead) ? 0 : Math.max(0, pointsAhead);
@@ -6423,9 +6424,10 @@ public class BuildingManager {
         double each = Double.isNaN(pointsEach) ? 0 : Math.max(0, pointsEach);
         long count = Math.max(1, n);
         double onSite = ahead + each * count;
-        double base = basePerPoint > 0 && Double.isFinite(basePerPoint) && onSite > 0 && Double.isFinite(onSite)
-                ? basePricePerPointWith(onSite, basePerPoint) : now.base();
-        double first = BuildersShort.excessShare(now.world(), base);
+        boolean placed = of != null && of.getConstructionPoints() > 0 && onSite > 0 && Double.isFinite(onSite);
+        double base = placed ? pricePerPointWith(this::nonMaterialCost, onSite, of) : now.base();
+        double world = placed ? exchangeRate * pricePerPointWith(t -> t.getCashCost() / expectedLevel, onSite, of) : now.world();
+        double first = BuildersShort.excessShare(world, base);
         double threshold = BuildersShort.thresholdMonths(first);
         double from = BuildersShort.monthsQueued(now.queueAtHome() + ahead - away, now.sites());
         double step = now.sites() > 0 ? each / now.sites() : Double.NaN;
@@ -6442,16 +6444,22 @@ public class BuildingManager {
         return nonMaterialCost(t) / t.getConstructionPoints();
     }
 
-    /** basePricePerPoint() with {@code points} more owed on site at {@code perPoint} (REV-FC2): what it reads once an order is placed. */
-    private double basePricePerPointWith(double points, double perPoint) {
-        double value = points * perPoint, owedAll = points;
+    /**
+     * pricePerPointOf() with {@code points} more of {@code of}'s work owed on site (REV-FC2): what it reads once an order
+     * is placed - the base a point (basePricePerPoint()) and, at the founding's, the world's (worldPricePerPoint()), so
+     * the threshold an order is quoted on is the threshold read after it stands. WHY the world's too: struck on the base
+     * with the order and the world's without it, a cheap plant's order read its threshold at the cap where the city,
+     * once it stood, read 20.53 months (ForeignCheck's founded town).
+     */
+    private double pricePerPointWith(java.util.function.ToDoubleFunction<BuildingsTemplate> costOf, double points, BuildingsTemplate of) {
+        double value = points * costOf.applyAsDouble(of) / of.getConstructionPoints(), owedAll = points;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             int per = t.getConstructionPoints();
             if (stack.getUnderConstruction() <= 0 || per <= 0) continue;
             double owed = stack.pointsOnSite() - stack.getConstructionProgress();
             if (owed <= 0) continue;
-            value += owed * nonMaterialCost(t) / per;
+            value += owed * costOf.applyAsDouble(t) / per;
             owedAll += owed;
         }
         return value / owedAll;
@@ -6543,25 +6551,24 @@ public class BuildingManager {
 
     /** ...for an order of `n` buildings of `pointsEach` points on the base as it stands (the founding's village, Founding.whatItBuys()): the four-figure form with no base a point to read. */
     public double orderPriceMultiplier(double pointsAhead, double pointsEach, long n) {
-        return orderPriceMultiplier(pointsAhead, pointsEach, n, Double.NaN);
+        return orderPriceMultiplier(pointsAhead, pointsEach, n, null);
     }
 
     /**
      * ...for an order of `n` buildings of `pointsEach` points (BA1): each building priced on the queue at home the ones
      * before it in the order leave, at the premium while it stands within the threshold and at the foreign crews' excess
      * past it (FC2; BuildersShort.meanShare()), the first at the queue plus `pointsAhead`. The threshold and the share
-     * abroad are the order's (REV-FC2's P1, abroadOfOrder(), at `basePerPoint` a point - basePerPointOf() - for it and
-     * the ones before it): the share the supply curve gives the month its buildings past the threshold make him run,
+     * abroad are the order's (REV-FC2's P1, abroadOfOrder(), as `of`'s work on site, it and the ones before it): the share the supply curve gives the month its buildings past the threshold make him run,
      * which they are handed to him at when it is billed, so the payer pays what its work costs abroad.
      * For no points, exactly the multiple above.
      */
-    public double orderPriceMultiplier(double pointsAhead, double pointsEach, long n, double basePerPoint) {
-        return orderPriceMultiplier(pointsAhead, 0, pointsEach, n, basePerPoint);
+    public double orderPriceMultiplier(double pointsAhead, double pointsEach, long n, BuildingsTemplate of) {
+        return orderPriceMultiplier(pointsAhead, 0, pointsEach, n, of);
     }
 
     /** ...with {@code abroadAhead} of the points ahead handed abroad by the orders before it in a run (abroadOfOrder(); Game.buildRunInvoice()): what placing it after them asks. */
-    public double orderPriceMultiplier(double pointsAhead, double abroadAhead, double pointsEach, long n, double basePerPoint) {
-        OrderAbroad a = abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, basePerPoint);
+    public double orderPriceMultiplier(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of) {
+        OrderAbroad a = abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of);
         if (a == null) return 1;
         return BuildersShort.multiplier(a.fromMonths(), a.stepMonths(), n, a.thresholdMonths(), a.share());
     }
