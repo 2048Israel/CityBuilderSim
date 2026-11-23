@@ -624,6 +624,12 @@ public class GoldStandardCheck {
     /** The cover section 9 sets the town's gold to, between the floor and the defence's own: where the autopilot's spread is neither nothing nor the whole. */
     static final double MIDWAY = (ForeignAccounts.COVER_RATIO + DebtManager.GOLD_DEFENCE_FROM) / 2;
 
+    /** The slot section 9 saves its town to after the quiet month, in the same scratch folder as SLOT (and not section 10's). */
+    static final int QUIET_SLOT = 4;
+
+    /** The base section 9 puts under the town when its own is less, D$ thousands: what the central bank held in March 1933 on the path without the builders' trade (4,964), so the gold the cover keeps outlasts the months' payouts (at most 166 a month on the traced path). */
+    static final double M0_FLOOR = 5_000;
+
     static Game shared;
     static double entryRate, coverMarch1933, centreMarch1933;
 
@@ -762,9 +768,33 @@ public class GoldStandardCheck {
 
     static void theDialInTheTown() {
         out.println("\n--- 9. the dial in the town ---");
-        Game g = reload(shared, SLOT);
+        /*
+         * FC2, 2026-11-23: THE TOWN'S TOP IS CAUSED QUIET AND ITS BASE CAUSED, NOT READ OFF THE PATH. The section took the town as March 1933 left
+         * it, and read from it a base to cover (M0 = reserves + currency) and a month's top that moved none. On FC2's path the town's M0 was
+         * 0.00 at March 1933: the foreign crews billed 217, 66 and 53 a month in world months 12, 24 and 36, an import paid in gold at the
+         * points, and the gold paid out retires M0 up to the reserves (669 of it by world month 48, 2,617 by March 1933), so the base has stood
+         * near nothing since. So keep = MIDWAY x M0 / mint was 0, the fixture sold all the gold, the cover was 0.000 and the D$ came off gold in
+         * the first month; the gold's due was 31.66 against reserves of 0.00. On RES3's path the edge owed at the top was 34.18, which is paid in
+         * new money at the top (settleTheEdge()) before the dial is struck, so M0 moved under the cover the fixture had read. Neither the base
+         * nor the quiet is the town's to give on every path, so both are caused here. A month is played with the rate pinned (pinRate(): the
+         * lever for a fixture that measures something else than the currency; a pinned month reprices nothing, so it buys no dollars at the edge
+         * and pays out no gold), at the top of which the paper, the edge and the gold's due of the month before are settled; the town is saved
+         * and loaded, which drops the pin. Its base is then raised to M0_FLOOR where it is less, by what the central bank prints to the treasury
+         * (the treasury repays it in the month, after the dial is struck, as it repays any advance), and the cover is brought to MIDWAY from
+         * that base. With it the top reads 0.00 paper, 0.00 edge, a due of 0.00 within reserves of 5,000, and the cover 0.600.
+         */
+        Game pinned = reload(shared, SLOT);
+        pinned.getForeignAccounts().pinRate(pinned.getForeignAccounts().getRate());
+        play(pinned, 1);
+        assertTrue("saved to the harness's scratch folder", pinned.saveGame(QUIET_SLOT, "gd3-quiet-month").ok);
+        Game g = reload(pinned, QUIET_SLOT);
         ForeignAccounts fx = g.getForeignAccounts();
         DebtManager dm = g.getDebtManager();
+        double printed = Math.max(0, M0_FLOOR - g.getCentralBank().m0());
+        quietly(() -> {
+            g.getCentralBank().advanceToTreasury(printed);
+            g.setCashForTest(g.getCash() + printed);
+        });
         // The cover is brought to MIDWAY by selling gold by name (what the treasury may do): the fixture that gives the spread something to ask.
         double keep = MIDWAY * g.getCentralBank().m0() / fx.getMintPrice();
         double sold = 1 - keep / fx.getHolding(GOLD);

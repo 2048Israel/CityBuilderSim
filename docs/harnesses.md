@@ -2,7 +2,7 @@
 
 Generated 2026-11-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**247 harness files, 28,341 labelled assertions.** AllChecks runs 247 of them.
+**247 harness files, 28,342 labelled assertions.** AllChecks runs 247 of them.
 
 ## Which harnesses read which class
 
@@ -7171,73 +7171,73 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L645 every month, Game handed the currency the real rate differential
   - L647 fixture: the month ran a deficit (the hot money's leaving)
   - L648 fixture: the currency was defended in a real city
-  - L656 fixture: the treasury neither bought nor sold
-  - L669 the sale is what takes back the vault's capacity of the month's new fall, at most that capacity times the month's own deficit and at most the vault
-  - L672 ...the vault fell by exactly it
-  - L673 ...and it fetched the dollars at the month's rate
-  - L674 the central bank booked it the month it was sold
-  - L680 ...as spent defending the currency since founding
-  - L681 equity fell by it: its move, less the rest of the sheet's, less the revaluation
-  - L703 a save keeps the month's sale
-  - L704 ...what it fetched
-  - L705 ...the dollars sold since founding
-  - L706 ...the vault
-  - L707 ...what the central bank spent on it
-  - L708 ...its equity
-  - L709 ...and the real rate the reprice was handed
-  - L736 the defence fires in a real city more than once
-  - L737 ...and the equity line is every month's sale at its own month's rate
-  - L739 in every one of those months: M0 moved by the money made alone
-  - L740 ...nothing retired but what the named operations took back
-  - L741 ...the audit closed, and declared nothing for the defence
-  - L742 ...the remittance was the month's profit, the sale not in it
-  - L743 ...and the central bank kept nothing: its equity less the vault is what it owes
-  - L785 M0 moved by the money made and nothing else,
-  - L786 ...nothing retired but what the named operations took back
-  - L787 ...the audit closed, and declared nothing for the defence
-  - L788 ...the remittance is the month's profit, the sale not in it
-  - L789 ...and equity less the vault is what the bank owes: nothing kept
-- **L795 5. the dial, the rule and the appetite are uncapped**
-  - L799 the dial takes 60%
-  - L801 ...and stops at MAX_POLICY_RATE, where a typo would have taken it
-  - L803 the rule is advised unclamped past the old stop
-  - L840 fixture: the city reads a year of 45% inflation
-  - L847 the autopilot sets the rule's rate
-  - L849 ...past the old stop of the dial
-  - L859 the appetite at twenty points is larger than at six: it no longer stops there
-  - L861 ...it is twenty points' worth
-  - L862 ...and it stops at MAX_SPREAD
-  - L865 a month at twenty points is pulled by all twenty
-  - L866 ...toward the stock twenty points want
-- **L954 6. the rate goes where parity's trend takes it: the guards are a billion either way**
-  - L971 fixture: past settling, trade in balance, the vault empty, the whole economy trading
-  - L974 fixture: the market is quiet
-  - L988 a month's trend past the old guard of 100 takes the rate beyond it, not held at 100: the trend arrived
-  - L992 ...a rate under the old guard crosses it
-  - L993 ...and every month is the trend and the levels, never the guard
-  - L994 ...and the dollar debt is worth the dollars at it
-  - L1002 fixture: the real city owes dollars, on one piece
-  - L1006 fixture: the city's debt was valued at a rate past the old guard of 100, as the load path leaves it
-  - L1007 fixture: the month moved the rate, so there is a revaluation to book
-  - L1008 ...the month's revaluation the whole of the move: the booked line is the dollars carried times the rate it left
-  - L1010 ...and it is a gain, the D$ having risen from the extreme (the debt costs fewer of it)
-  - L1011 ...the pieces were told the rate the month ended on
-  - L1012 ...and the dollar debt is worth the dollars at it, in the city's books
-  - L1014 ...the history's series holds that month's line (to its two decimals), the only one the city has booked
-  - L1033 a month's trend past the old floor of .01 takes the rate under it, not held at .01: the trend arrived
-  - L1035 a rate over the old floor crosses it
-  - L1036 ...and the dollar debt is worth the dollars at it
-  - L1040 fixture: the city's debt was valued at a rate under the old floor of .01, as the load path leaves it
-  - L1041 fixture: the month moved the rate, so there is a revaluation to book
-  - L1042 ...the month's revaluation the whole of the move, the mirror: the booked line is the dollars carried times the rate it left
-  - L1044 ...and it is a loss, the D$ having fallen from the extreme (the debt costs more of it)
-  - L1045 ...the pieces were told the rate the month ended on
-  - L1046 ...and since founding the city has booked both months' lines (to the history's two decimals)
-  - L1059 three zeros off: the rate a thousandth
-  - L1060 ...the guard above it a thousandth of MAX_RATE
-  - L1062 ...and the one below a thousandth of MIN_RATE
-  - L1074 ...and the push moves it as it moves the unreformed one, a thousandth the size
-  - L1078 a city founded in the new unit carries the guards in it
+  - L664 fixture: the treasury neither bought nor sold
+  - L677 the sale is what takes back the vault's capacity of the month's new fall, at most that capacity times the month's own deficit and at most the vault
+  - L680 ...the vault fell by exactly it
+  - L681 ...and it fetched the dollars at the month's rate
+  - L682 the central bank booked it the month it was sold
+  - L688 ...as spent defending the currency since founding
+  - L689 equity fell by it: its move, less the rest of the sheet's, less the revaluation
+  - L711 a save keeps the month's sale
+  - L712 ...what it fetched
+  - L713 ...the dollars sold since founding
+  - L714 ...the vault
+  - L715 ...what the central bank spent on it
+  - L716 ...its equity
+  - L717 ...and the real rate the reprice was handed
+  - L744 the defence fires in a real city more than once
+  - L745 ...and the equity line is every month's sale at its own month's rate
+  - L747 in every one of those months: M0 moved by the money made alone
+  - L748 ...nothing retired but what the named operations took back
+  - L749 ...the audit closed, and declared nothing for the defence
+  - L750 ...the remittance was the month's profit, the sale not in it
+  - L751 ...and the central bank kept nothing: its equity less the vault is what it owes
+  - L793 M0 moved by the money made and nothing else,
+  - L794 ...nothing retired but what the named operations took back
+  - L795 ...the audit closed, and declared nothing for the defence
+  - L796 ...the remittance is the month's profit, the sale not in it
+  - L797 ...and equity less the vault is what the bank owes: nothing kept
+- **L803 5. the dial, the rule and the appetite are uncapped**
+  - L807 the dial takes 60%
+  - L809 ...and stops at MAX_POLICY_RATE, where a typo would have taken it
+  - L811 the rule is advised unclamped past the old stop
+  - L848 fixture: the city reads a year of 45% inflation
+  - L855 the autopilot sets the rule's rate
+  - L857 ...past the old stop of the dial
+  - L867 the appetite at twenty points is larger than at six: it no longer stops there
+  - L869 ...it is twenty points' worth
+  - L870 ...and it stops at MAX_SPREAD
+  - L873 a month at twenty points is pulled by all twenty
+  - L874 ...toward the stock twenty points want
+- **L962 6. the rate goes where parity's trend takes it: the guards are a billion either way**
+  - L979 fixture: past settling, trade in balance, the vault empty, the whole economy trading
+  - L982 fixture: the market is quiet
+  - L996 a month's trend past the old guard of 100 takes the rate beyond it, not held at 100: the trend arrived
+  - L1000 ...a rate under the old guard crosses it
+  - L1001 ...and every month is the trend and the levels, never the guard
+  - L1002 ...and the dollar debt is worth the dollars at it
+  - L1010 fixture: the real city owes dollars, on one piece
+  - L1014 fixture: the city's debt was valued at a rate past the old guard of 100, as the load path leaves it
+  - L1015 fixture: the month moved the rate, so there is a revaluation to book
+  - L1016 ...the month's revaluation the whole of the move: the booked line is the dollars carried times the rate it left
+  - L1018 ...and it is a gain, the D$ having risen from the extreme (the debt costs fewer of it)
+  - L1019 ...the pieces were told the rate the month ended on
+  - L1020 ...and the dollar debt is worth the dollars at it, in the city's books
+  - L1022 ...the history's series holds that month's line (to its two decimals), the only one the city has booked
+  - L1041 a month's trend past the old floor of .01 takes the rate under it, not held at .01: the trend arrived
+  - L1043 a rate over the old floor crosses it
+  - L1044 ...and the dollar debt is worth the dollars at it
+  - L1048 fixture: the city's debt was valued at a rate under the old floor of .01, as the load path leaves it
+  - L1049 fixture: the month moved the rate, so there is a revaluation to book
+  - L1050 ...the month's revaluation the whole of the move, the mirror: the booked line is the dollars carried times the rate it left
+  - L1052 ...and it is a loss, the D$ having fallen from the extreme (the debt costs more of it)
+  - L1053 ...the pieces were told the rate the month ended on
+  - L1054 ...and since founding the city has booked both months' lines (to the history's two decimals)
+  - L1067 three zeros off: the rate a thousandth
+  - L1068 ...the guard above it a thousandth of MAX_RATE
+  - L1070 ...and the one below a thousandth of MIN_RATE
+  - L1082 ...and the push moves it as it moves the unreformed one, a thousandth the size
+  - L1086 a city founded in the new unit carries the guards in it
 
 ## CurrencyRegimeCheck.java - 346 labelled assertions
 
@@ -14255,7 +14255,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L488 ...about US$798 of 2025
   - L489 2025's US$3,300 is about 4.13 times that
 
-## GoldStandardCheck.java - 187 labelled assertions
+## GoldStandardCheck.java - 188 labelled assertions
 
 > The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the
 > centre that moves with gold, the sale paid in gold first and the purchase made into gold, the cover that breaks it, doubt that grows as the cover thins, the central bank
@@ -14387,92 +14387,93 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L604 ...and does nothing to another aim
   - L606 setAim() does write its line: \"
   - L608 untied, the tie money is none and the tie rate the US's: the autopilot aiming at inflation is the rule's
-- **L695 7. a town on gold through 1933 and 1934**
-  - L703 fixture: the town is on Gold, its aim Defend the gold, struck at the D$'s rate of the day times gold's price (D$
-  - L726 fixture: the cover is held at a full one (
-  - L727 the town is still on Gold in March 1933, with a cover over the law's floor
-  - L728 ...its event none, and the centre the entry rate: the mint price over the statute's price (the D$ where it was struck)
-  - L729 saved to the harness's scratch folder
-  - L736 the event of April 1933 is open that month, and the answer is written in the decision log (
-  - L738 leave: the event opens, the answer is written, and the regime goes to Lean with the aim Inflation
-  - L740 stay: still on Gold in February 1934 (world month
-  - L744 stay: the centre in February 1934 is March 1933's times PAR_1900 / PAR_1934
-  - L745 stay: in February 1934 the PAR_1934 event opens
-  - L746 follow: still on Gold, its centre at the mint rate every month, the rate inside the points, and no PAR_1934 event (it follows the dollar already)
-  - L748 follow: the centre in February 1934 is March 1933's
-- **L750 8. the notice**
-  - L751 the notice 'gold:LEFT_1933' is raised the month the event opens (month
-  - L753 ...and is resolved the month after it is answered (raised
-  - L754 ...a leaver's too, the month after it left gold
-  - L755 the notice 'gold:PAR_1934' stands in February 1934 for the city that stayed, and is never raised for the one that followed
-  - L760 a city not on gold in April 1933 has no event and no notice
-- **L764 9. the dial in the town**
-  - L775 fixture: on Gold, the autopilot on and aiming at the gold, the cover
-  - L796 the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, at the cover the month's top holds (read before the month, the gold's d...
-  - L798 ...above the tie (the spread asks something at this cover) and the dial is tied
-  - L801 aiming at inflation the dial is the inflation rule's, untied: isTied() false, and not the gold's
-  - L804 the autopilot off, the dial is the tie plus the player's spread (not the cover's)
-  - L816 forced break: the regime is Float, the cause the cover or doubt, and the aim Inflation
-  - L818 ...and the decision log gained no line about the aim (the city's fate, not a decision)
-- **L822 10. saved mid-gold**
-  - L826 fixture: on Gold with the April 1933 event open, the mint price not following
-  - L828 saved to the scratch folder
-  - L831 round
-  - L836 ...and the second round follows the dollar with no event open
-  - L852 round
-- **L867 11. GD2's two findings**
-  - L876 fixture: a GoldPrice on a US price level that is NaN from 1980 throws on its own at 1990 (the Random rule, from August 1971, walks on it)
-  - L877 (a) Game.priceOrNaN() gives NaN there, no throw, and the price where the level is fine (1940)
-  - L882 (b) Game.eightOf(moneys, \"XAU\") is not the vault's gold (
-  - L889 ...and tradeSharesByMoney never gives gold a share (
-- **L893 12. Lean is the default**
-  - L896 a new town: Lean, the aim Inflation, no mint price, no event, not tied
-  - L899 24 months on: no gold in the vault, no gold event, no mint price, nothing dealt in gold, still Lean and untied
-- **L922 13. the gold's sales retire M0 (FB14; GD3's review, item 6): the next month's top takes back what the vault paid, the audit says so, the ...**
-  - L949 fixture: the town founded on gold sold gold in at least six of its months, and stayed on Gold for all
-  - L951 every sale a reprice made under Gold is due back from the reserves, the month's getDefenceLocal() to the bit's share (
-  - L952 ...and the next month's top retires it whole wherever the reserves could pay twice over (
-  - L953 ...the audit says it twice, + centralbank TakenBackForGold and - centralbank RetiredForGold, each the month's retired gold (
-  - L954 ...the audit closed every month (
-  - L955 ...the bank kept nothing every month: equity less the vault plus vaultInNewMoney(), less the remittance due plus the loss carried (
-  - L957 every sale settled is booked once: retired for gold since the founding plus the bank's equity spent where the reserves could not pay
-  - L958 ...and most of it was retired, M0 the smaller by it, where GD3 booked all of it as the bank's equity spent (dollarsSold()) and retired none (
-  - L964 fixture: the reserves have a sale to pay (D$
-  - L966 a sale of gold is due back, and M0 has not moved before the next month's top
-  - L968 at the top it is retired: M0 is lower by the sale (GD3 left it where it was)
-  - L969 ...the retirement is the sale
-  - L970 ...nothing of it is the bank's equity spent
-  - L971 ...and the vault's new money is less by it
-  - L977 a sale past the reserves retires them all
-  - L978 ...leaving none (
-  - L979 ...and the rest is the bank's equity spent, as any defence is
-  - L980 ...nothing left due
-- **L987 14. the start-on-gold box (FB14; GD3-F): the founding puts the law's cover of the treasury into gold, never more than the vault, and foun...**
-  - L999 ...nothing stays in dollars (dollarsUsd(), the screen's \"the other\")
-  - L1000 ...the gold's share of the treasury is the vault's at the opening rate, never over the law's (
-  - L1002 ...and the line says the law's 40% only where the vault holds it: Lean and Wealthy do, Standard's whole vault is short (
-  - L1004 ...the city founds with the whole vault in gold
-  - L1005 ...and none in dollars (
-  - L1006 ...on Gold, Defend the gold the aim, the mint the day's rate times gold's price, and nothing in the player's log
-  - L1010 ...a month on it holds the cover: still on Gold, the cover
-  - L1015 fixture: the custom founding is one the screen lets through (
-  - L1020 a custom vault deeper than 40% of the treasury: the gold is 40% of the treasury at the opening rate
-  - L1021 ...the rest stays in dollars
-  - L1022 ...the dollars the box's line quotes (Founding.dollarsUsd()) are those
-  - L1023 ...and its gold is the law's 40% of the treasury
-  - L1024 ...the vault's worth is the founding's
-  - L1025 ...and it is on Gold
-  - L1029 the box off: no gold, the vault in dollars, Lean, the aim Inflation
-  - L1032 ...and none a month on
-  - L1037 a new Game handed the box founds on gold too, its run() the door (the whole vault in gold, on Gold)
-  - L1043 founded the 1900 way with the box: on Gold, not on Canada's peg at par (isCanadaGold() false), the whole vault in gold
-  - L1046 ...where without it the 1900 city is on Canada's peg (OP1), with no gold
-  - L1050 Insane, with no vault, has no gold to found on: the box founds it on dollars (Lean, no gold)
-- **L1059 15. the dates pass it by (FB14; REV-FB14): a 1900 box city stays on its own Gold through August 1914 and July 1926**
-  - L1079 fixture: the city reached July 1926 on Gold, every month of the
-  - L1080 August 1914, Canada's suspension, does not float it: on Gold that month
-  - L1081 ...and July 1926, Canada's return, does not peg it: on Gold that month, and on Canada's peg in none (
-  - L1082 ...and every month the cover it shows is over M0 after the last sale's retirement (Game.getGoldBase()), the one the next reprice reads (
+- **L701 7. a town on gold through 1933 and 1934**
+  - L709 fixture: the town is on Gold, its aim Defend the gold, struck at the D$'s rate of the day times gold's price (D$
+  - L732 fixture: the cover is held at a full one (
+  - L733 the town is still on Gold in March 1933, with a cover over the law's floor
+  - L734 ...its event none, and the centre the entry rate: the mint price over the statute's price (the D$ where it was struck)
+  - L735 saved to the harness's scratch folder
+  - L742 the event of April 1933 is open that month, and the answer is written in the decision log (
+  - L744 leave: the event opens, the answer is written, and the regime goes to Lean with the aim Inflation
+  - L746 stay: still on Gold in February 1934 (world month
+  - L750 stay: the centre in February 1934 is March 1933's times PAR_1900 / PAR_1934
+  - L751 stay: in February 1934 the PAR_1934 event opens
+  - L752 follow: still on Gold, its centre at the mint rate every month, the rate inside the points, and no PAR_1934 event (it follows the dollar already)
+  - L754 follow: the centre in February 1934 is March 1933's
+- **L756 8. the notice**
+  - L757 the notice 'gold:LEFT_1933' is raised the month the event opens (month
+  - L759 ...and is resolved the month after it is answered (raised
+  - L760 ...a leaver's too, the month after it left gold
+  - L761 the notice 'gold:PAR_1934' stands in February 1934 for the city that stayed, and is never raised for the one that followed
+  - L766 a city not on gold in April 1933 has no event and no notice
+- **L770 9. the dial in the town**
+  - L789 saved to the harness's scratch folder
+  - L805 fixture: on Gold, the autopilot on and aiming at the gold, the cover
+  - L826 the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, at the cover the month's top holds (read before the month, the gold's d...
+  - L828 ...above the tie (the spread asks something at this cover) and the dial is tied
+  - L831 aiming at inflation the dial is the inflation rule's, untied: isTied() false, and not the gold's
+  - L834 the autopilot off, the dial is the tie plus the player's spread (not the cover's)
+  - L846 forced break: the regime is Float, the cause the cover or doubt, and the aim Inflation
+  - L848 ...and the decision log gained no line about the aim (the city's fate, not a decision)
+- **L852 10. saved mid-gold**
+  - L856 fixture: on Gold with the April 1933 event open, the mint price not following
+  - L858 saved to the scratch folder
+  - L861 round
+  - L866 ...and the second round follows the dollar with no event open
+  - L882 round
+- **L897 11. GD2's two findings**
+  - L906 fixture: a GoldPrice on a US price level that is NaN from 1980 throws on its own at 1990 (the Random rule, from August 1971, walks on it)
+  - L907 (a) Game.priceOrNaN() gives NaN there, no throw, and the price where the level is fine (1940)
+  - L912 (b) Game.eightOf(moneys, \"XAU\") is not the vault's gold (
+  - L919 ...and tradeSharesByMoney never gives gold a share (
+- **L923 12. Lean is the default**
+  - L926 a new town: Lean, the aim Inflation, no mint price, no event, not tied
+  - L929 24 months on: no gold in the vault, no gold event, no mint price, nothing dealt in gold, still Lean and untied
+- **L952 13. the gold's sales retire M0 (FB14; GD3's review, item 6): the next month's top takes back what the vault paid, the audit says so, the ...**
+  - L979 fixture: the town founded on gold sold gold in at least six of its months, and stayed on Gold for all
+  - L981 every sale a reprice made under Gold is due back from the reserves, the month's getDefenceLocal() to the bit's share (
+  - L982 ...and the next month's top retires it whole wherever the reserves could pay twice over (
+  - L983 ...the audit says it twice, + centralbank TakenBackForGold and - centralbank RetiredForGold, each the month's retired gold (
+  - L984 ...the audit closed every month (
+  - L985 ...the bank kept nothing every month: equity less the vault plus vaultInNewMoney(), less the remittance due plus the loss carried (
+  - L987 every sale settled is booked once: retired for gold since the founding plus the bank's equity spent where the reserves could not pay
+  - L988 ...and most of it was retired, M0 the smaller by it, where GD3 booked all of it as the bank's equity spent (dollarsSold()) and retired none (
+  - L994 fixture: the reserves have a sale to pay (D$
+  - L996 a sale of gold is due back, and M0 has not moved before the next month's top
+  - L998 at the top it is retired: M0 is lower by the sale (GD3 left it where it was)
+  - L999 ...the retirement is the sale
+  - L1000 ...nothing of it is the bank's equity spent
+  - L1001 ...and the vault's new money is less by it
+  - L1007 a sale past the reserves retires them all
+  - L1008 ...leaving none (
+  - L1009 ...and the rest is the bank's equity spent, as any defence is
+  - L1010 ...nothing left due
+- **L1017 14. the start-on-gold box (FB14; GD3-F): the founding puts the law's cover of the treasury into gold, never more than the vault, and foun...**
+  - L1029 ...nothing stays in dollars (dollarsUsd(), the screen's \"the other\")
+  - L1030 ...the gold's share of the treasury is the vault's at the opening rate, never over the law's (
+  - L1032 ...and the line says the law's 40% only where the vault holds it: Lean and Wealthy do, Standard's whole vault is short (
+  - L1034 ...the city founds with the whole vault in gold
+  - L1035 ...and none in dollars (
+  - L1036 ...on Gold, Defend the gold the aim, the mint the day's rate times gold's price, and nothing in the player's log
+  - L1040 ...a month on it holds the cover: still on Gold, the cover
+  - L1045 fixture: the custom founding is one the screen lets through (
+  - L1050 a custom vault deeper than 40% of the treasury: the gold is 40% of the treasury at the opening rate
+  - L1051 ...the rest stays in dollars
+  - L1052 ...the dollars the box's line quotes (Founding.dollarsUsd()) are those
+  - L1053 ...and its gold is the law's 40% of the treasury
+  - L1054 ...the vault's worth is the founding's
+  - L1055 ...and it is on Gold
+  - L1059 the box off: no gold, the vault in dollars, Lean, the aim Inflation
+  - L1062 ...and none a month on
+  - L1067 a new Game handed the box founds on gold too, its run() the door (the whole vault in gold, on Gold)
+  - L1073 founded the 1900 way with the box: on Gold, not on Canada's peg at par (isCanadaGold() false), the whole vault in gold
+  - L1076 ...where without it the 1900 city is on Canada's peg (OP1), with no gold
+  - L1080 Insane, with no vault, has no gold to found on: the box founds it on dollars (Lean, no gold)
+- **L1089 15. the dates pass it by (FB14; REV-FB14): a 1900 box city stays on its own Gold through August 1914 and July 1926**
+  - L1109 fixture: the city reached July 1926 on Gold, every month of the
+  - L1110 August 1914, Canada's suspension, does not float it: on Gold that month
+  - L1111 ...and July 1926, Canada's return, does not peg it: on Gold that month, and on Canada's peg in none (
+  - L1112 ...and every month the cover it shows is over M0 after the last sale's retirement (Game.getGoldBase()), the one the next reprice reads (
 
 ## GovernmentPlayerCheck.java - 34 labelled assertions
 
