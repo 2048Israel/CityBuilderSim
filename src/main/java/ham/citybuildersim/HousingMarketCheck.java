@@ -82,6 +82,9 @@ public final class HousingMarketCheck {
         plans.setLandAvailable(1_000_000_000,0);var backlog=re.plan(plans,g);
         check("the fixture selects the six-door terrace",backlog.template!=null&&backlog.template.getId()==terrace.id());
         check("the order covers the actual typed backlog rather than one project's income",backlog.template!=null&&backlog.quantity*backlog.template.getDwellings()>=80);
+        int needed=market.forecast(g).quantityNeeded(bm.getTemplate(terrace.id()));
+        check("the typed backlog needs the smallest whole recipe covering eighty households",needed==(int)Math.ceil(80.0/bm.getTemplate(terrace.id()).getDwellings()));
+        check("the smaller head-based gap does not inflate the typed order",backlog.template!=null&&backlog.quantity==needed);
         market.reset();market.clear(g,List.of(new HousingChoice.Demand("planner-family",80,4,2,false,0,false,1000)));
         market.setAsk(key,market.price(key)*3);plans.setLandAvailable(6000,0);
         check("a child family is not offered an unsuitable compact fallback",re.plan(plans,g).template==null);

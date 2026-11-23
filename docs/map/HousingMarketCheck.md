@@ -1,4 +1,4 @@
-# HousingMarketCheck.java - 599 lines · 26 methods · 2 constants · harnesses
+# HousingMarketCheck.java - 602 lines · 26 methods · 2 constants · harnesses
 
 `ham/citybuildersim/HousingMarketCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -26,31 +26,31 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 13 | 587 | **type** `public final class HousingMarketCheck` | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. |
+| 13 | 590 | **type** `public final class HousingMarketCheck` | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. |
 | 19 | 1 | `static void check(String label, boolean ok)` |  |
 | 20 | 1 | `static void near(String label, double a, double b)` |  |
 | 21 | 5 | `static void audits(Game g)` |  |
 | 26 | 27 | `static void classes(Game g)` |  |
 | 53 | 12 | `static HousingMarket.State priceInputs(double studioCarry)` |  |
-| 65 | 27 | `static void plannerInputs()` |  |
-| 92 | 48 | `static void classPrices()` |  |
-| 140 | 11 | `static void foundingBudgets()` |  |
-| 151 | 13 | `static void fractionalPressure()` |  |
-| 164 | 44 | `static void sharingOrder()` |  |
-| 208 | 28 | `static void doubledDoors()` |  |
-| 236 | 23 | `static void doubledDemand()` |  |
-| 259 | 13 | `static void studentFacility()` |  |
-| 272 | 25 | `static void scarceFreeHost()` |  |
-| 297 | 43 | `static void fundedHost()` |  |
-| 340 | 5 | `static double[] cardPositions(HouseholdBalance balances)` |  |
-| 345 | 15 | `static void retiredRoom()` |  |
-| 360 | 4 | `static void holdHousingFixture(Game g)` |  |
-| 364 | 59 | `static void loadedDoorCensus() throws Exception` |  |
-| 423 | 19 | `static void cardHousingBudget()` |  |
-| 442 | 22 | `static void aggregatePackingRemainder()` |  |
-| 464 | 27 | `static void familyHostReservation()` |  |
-| 491 | 32 | `static void writeReport(StringBuilder report, Game g, String label, Map<Integer, Long> starts, Map<Integer, Long> completions, ...` |  |
-| 523 | 60 | `static void city(StringBuilder report, boolean historical) throws Exception` |  |
-| 583 | 7 | `public static void main(String[] args) throws Exception` |  |
-| 590 | 9 | `static void smallProfile(StringBuilder report)` |  |
+| 65 | 30 | `static void plannerInputs()` |  |
+| 95 | 48 | `static void classPrices()` |  |
+| 143 | 11 | `static void foundingBudgets()` |  |
+| 154 | 13 | `static void fractionalPressure()` |  |
+| 167 | 44 | `static void sharingOrder()` |  |
+| 211 | 28 | `static void doubledDoors()` |  |
+| 239 | 23 | `static void doubledDemand()` |  |
+| 262 | 13 | `static void studentFacility()` |  |
+| 275 | 25 | `static void scarceFreeHost()` |  |
+| 300 | 43 | `static void fundedHost()` |  |
+| 343 | 5 | `static double[] cardPositions(HouseholdBalance balances)` |  |
+| 348 | 15 | `static void retiredRoom()` |  |
+| 363 | 4 | `static void holdHousingFixture(Game g)` |  |
+| 367 | 59 | `static void loadedDoorCensus() throws Exception` |  |
+| 426 | 19 | `static void cardHousingBudget()` |  |
+| 445 | 22 | `static void aggregatePackingRemainder()` |  |
+| 467 | 27 | `static void familyHostReservation()` |  |
+| 494 | 32 | `static void writeReport(StringBuilder report, Game g, String label, Map<Integer, Long> starts, Map<Integer, Long> completions, ...` |  |
+| 526 | 60 | `static void city(StringBuilder report, boolean historical) throws Exception` |  |
+| 586 | 7 | `public static void main(String[] args) throws Exception` |  |
+| 593 | 9 | `static void smallProfile(StringBuilder report)` |  |
 

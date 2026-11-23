@@ -1543,3 +1543,34 @@ remain owed on the reviewed combined model, including seed 9 at m605 and all
 new F1 seeds, with rents, affordability and growth reported. All three earlier
 raw FAIL verdicts remain recorded above. No dry run has started, no kept
 dry-run directory is claimed, and the provisional readiness marker remains.
+
+## REV-RES3 SHIP and the three P2 folds
+
+REV-RES3 returns SHIP on b948e245e..ae903ee4b, no P1: the backlog preserves
+the funding gates and creates no money, the fixture conditions are caused,
+the FS12/CL7 premises and main's teardown lifecycle are accepted, and the
+PW1-W merge holds. Its three P2s are folded without moving the model:
+
+- InvestCheck's wage/work identity no longer reads orderPriceMultiplier as
+  its expected multiplier. A separate fresh city has no queued site or
+  priority work, the same explicit wage ladder and tax rates, and either no
+  builder month or enough sites' output that all ten Houses stay below
+  BuildersShort.KNEE_MONTHS without foreign crews. The expected premium is
+  exactly one. Every existing tax, material and settlement identity and its
+  strict bound remains; the played city's later billing/save cases remain.
+- HousingMarketCheck retains the eighty-door lower bound, requires
+  quantityNeeded to be the smallest whole six-door recipe covering eighty,
+  and requires the actual plan quantity to equal it: fourteen projects,
+  eighty-four doors. The smaller head-based gap cannot inflate the order.
+- Main 86359b9d4 is merged at f33363857. Only QUEUE.md changes, explicitly
+  naming the Rail Spur loss-first staffing case under queued FS12. The three
+  ship-file rows keep that owner.
+
+InvestCheck and HousingMarketCheck both exit 0; --fast exits 0 with zero
+firm/199 soft findings. Evidence: target/RES3-P2-{InvestCheck,
+HousingMarketCheck}.{log,txt}, target/RES3-P2-fast.txt. The refreshed catalogue
+has the same populations, mix, cohorts and 141 permanent cells. Its measured
+months are small 49.316 ms, present-day 45.067 ms, present-day larger 46.302 ms,
+historical 36.216 ms and historical larger 37.092 ms. No additional money/save
+review is owed under the explicit P2 go: only the harnesses, reports and main's
+ownership record move. The final-model ensemble runs next against 0.9.192.

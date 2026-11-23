@@ -1269,11 +1269,28 @@ public class InvestCheck {
         double rB19 = pe.buildersSalesRate();
         double rM19 = pe.getTaxPolicy().effectiveSalesRate(priced19.getSectors().materials());
         assertTrue("fixture: the builders charge a sales tax", rB19 > 0);
-        Game.BuildQuote q19 = priced19.quoteBuild(house19, 10);
+        // Quote before a first month, on genuinely empty sites, at the same
+        // explicit wage ladder. No order premium is read back from the pricer.
+        Game quoteCity19 = city(root, "builders-price-empty-queue");
+        quoteCity19.playOnLiterals();
+        BuildingManager quoteBuildings19 = quoteCity19.getBuildingManager();
+        EconomyManager quoteEconomy19 = quoteCity19.getEconomyManager();
+        quoteEconomy19.getTaxPolicy().reset();
+        quoteEconomy19.updateWages(set19, quoteBuildings19.getJobArrayByName("Commercial Bank"));
+        assertTrue("fixture: the quote has no queued site or priority work", quoteBuildings19.pointsOwedOnSite() == 0);
+        double sites19 = quoteCity19.getBuildingOutputAtEveryPost();
+        double output19 = quoteCity19.getConstructionOutputAtEveryPost();
+        assertTrue("fixture: ten Houses stay below the premium knee without foreign crews",
+                output19 == 0 || (sites19 >= BuildersShort.FOREIGN_FLOOR * output19
+                        && 9 * house19.getConstructionPoints() <= BuildersShort.KNEE_MONTHS * sites19));
+        assertTrue("fixture: the empty-queue quote has the same wages and tax rates",
+                quoteBuildings19.nonMaterialCost(template(quoteCity19, "House")) == pb.nonMaterialCost(house19)
+                        && quoteEconomy19.buildersSalesRate() == rB19
+                        && quoteEconomy19.getTaxPolicy().effectiveSalesRate(quoteCity19.getSectors().materials()) == rM19);
+        Game.BuildQuote q19 = quoteCity19.quoteBuild(template(quoteCity19, "House"), 10);
         double plantNet19 = q19.plantCost * (1 - rM19);
-        double scarcity19 = pb.orderPriceMultiplier(0, house19.getConstructionPoints(), 10);
-        check("the quote's work is ten Houses' work at today's wages and its actual order premium",
-                q19.sticker, 10 * pb.nonMaterialCost(house19) * scarcity19, 1e-9);
+        check("the empty-queue quote's work is ten Houses' work at today's wages, with premium exactly one",
+                q19.sticker, 10 * pb.nonMaterialCost(house19), 1e-9);
         check("the quote is the work and the material over one less the builders' rate",
                 q19.total, (q19.sticker + q19.importCost + plantNet19) / (1 - rB19), 1e-9);
         check("...its allowance the material in it, on the same terms",
