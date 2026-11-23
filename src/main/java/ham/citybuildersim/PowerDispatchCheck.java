@@ -302,8 +302,9 @@ public class PowerDispatchCheck {
         check("the Coal Power Plant's fuel a kWh is its heat rate over the coal's heat content", perKwh == expected, perKwh + " against " + expected);
         check("...0.357 tonnes a MWh", Math.abs(perKwh * 1000 - 0.357) < 0.001, "" + perKwh * 1000);
         check("a station with no fuel burns none", fromRow("Wind Farm").fuelPerKwh() == 0 && fromRow("Hydro Station").fuelPerKwh() == 0);
-        check("a fuel the model has no heat content for burns none (PW2 adds the rest)",
-                new BuildingsTemplate("x", BuildingType.ELECTRICITY).setFuel("WOOD_PELLETS").setHeatRate(13_300).fuelPerKwh() == 0
+        // PW2 gave fuel oil, diesel and pellets their heat contents; crude is burned by no row.
+        check("a fuel the model has no heat content for burns none (crude, which no row burns)",
+                new BuildingsTemplate("x", BuildingType.ELECTRICITY).setFuel("CRUDE").setHeatRate(13_300).fuelPerKwh() == 0
                         && new BuildingsTemplate("x", BuildingType.ELECTRICITY).setFuel("NO_SUCH_GOOD").setHeatRate(13_300).getFuel() == null);
         PowerDispatch.Row row = PowerDispatch.Row.fuelled("coal", DRAW, marginal(), coal.getFuel(), perKwh, coal.getVariableUpkeep() / 1e6);
         PowerDispatch.dispatch(List.of(row), DRAW, 1, PowerDispatch.VOLL_A_KWH);

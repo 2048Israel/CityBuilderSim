@@ -565,6 +565,9 @@ public class ResearchCheck {
     /* ==================== 7. buildings.json's codes (R2, slice B) ==================== */
 
     /** research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. */
+    /** The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. */
+    static final Map<Integer, String> POWER_YEARS = new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"));
+
     static final Map<Integer, String> CODED = new TreeMap<>(Map.ofEntries(
             Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, "PB1"), Map.entry(122, "PE8"),
             Map.entry(79, "PE11"), Map.entry(80, "PE11"), Map.entry(66, "PE13"), Map.entry(85, "PE23"), Map.entry(86, "PE23"),
@@ -624,9 +627,13 @@ public class ResearchCheck {
         check("the Panel Mill is E19 at sourced 1981 and the Wood Pellet Mill E20 at retained 1970 (Q13, R2e)",
                 panel != null && panel.getSinceText().equals("E19") && panel.getSince() == 1981
                         && pellets != null && pellets.getSinceText().equals("E20") && pellets.getSince() == 1970);
+        Map<Integer, String> powerYears = new TreeMap<>();
+        for (BuildingsTemplate t : shipped) if (POWER_YEARS.containsKey(t.getId())) powerYears.put(t.getId(), t.getSinceText());
+        check("the power plants PW2 dates by a year after 1900 are dated exactly so (spec-electricity 2.3, Q2): the diesel station 1910, the turbine 1949, the biomass plant 1970, the solar farm 1982",
+                powerYears.equals(POWER_YEARS), powerYears + " vs " + POWER_YEARS);
         List<String> odd = new ArrayList<>();
         for (BuildingsTemplate t : shipped) {
-            if (CODED.containsKey(t.getId()) || t == panel || t == pellets) continue;
+            if (CODED.containsKey(t.getId()) || POWER_YEARS.containsKey(t.getId()) || t == panel || t == pellets) continue;
             if (!t.getSinceText().isEmpty() && !t.getSinceText().equals("1900")) odd.add(t.getName() + " " + t.getSinceText());
         }
         check("every other template is undated or 1900", odd.isEmpty(), odd.toString());
@@ -903,14 +910,18 @@ public class ResearchCheck {
 
         Game modern = datedCity("research-default-building-dates", false);
         boolean all = true;
-        int nearFutureBuildings = 0;
+        int nearFutureBuildings = 0, plantsNotYet = 0;
         for (BuildingsTemplate t : modern.getBuildingManager().getTemplates()) {
-            // ...every building but a near-future row's (R6b's call 1), which the city founded today's way never knows.
+            // ...every building but a near-future row's (R6b's call 1), which the city founded today's way never knows, and since PW2 a
+            // power plant whose year has not come (Jerus's Q2: each from its since, in every city).
             boolean near = ResearchCatalog.nearFuture(t.getSinceText());
+            boolean notYet = !near && t.getCategory() == BuildingType.ELECTRICITY && !t.knownAt(modern.getMonth());
             if (near) nearFutureBuildings++;
-            all &= modern.getBuildingManager().getTemplatesBySector(t.getSector()).contains(t) == !near;
+            if (notYet) plantsNotYet++;
+            all &= modern.getBuildingManager().getTemplatesBySector(t.getSector()).contains(t) == !(near || notYet);
         }
-        check("a city founded the default way keeps every sector candidate, including future buildings, but the near future's (" + nearFutureBuildings + ")", all && nearFutureBuildings == 2);
+        check("a city founded the default way keeps every sector candidate, including future buildings, but the near future's (" + nearFutureBuildings
+                + ") and the power plants whose year has not come (" + plantsNotYet + ")", all && nearFutureBuildings == 2 && plantsNotYet > 0);
         check("a default city's direct order for the December 1900 arc furnace succeeds in January", modern.buildStack(
                 modern.getBuildingManager().getTemplate(11), 1, false) == Game.BuildResult.SUCCESS);
     }
