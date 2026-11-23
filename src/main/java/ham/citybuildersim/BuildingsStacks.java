@@ -138,6 +138,7 @@ public class BuildingsStacks {
      * a city founded the default way), or none, adds no lot: those buildings are loose (see THE ORDERS' EQUIPMENT ON SITE).
      */
     public void startConstruction(long n, Fitout fit) {
+        if (n > 0) claimAfresh();
         underConstruction += n;
         materialsOwed += template.getConstructionMaterials() * (double) n;
         if (n > 0 && fit != null && fit.isChosen() && fit.template() == template) addLot(n, fit);
@@ -151,6 +152,7 @@ public class BuildingsStacks {
      * (BuildingManager's owed sums; resumeShell() keeps it through a shell). Nothing for no points.
      */
     void addPreparation(double points) {
+        if (points > 0) claimAfresh();
         if (points > 0) constructionProgress -= points;
     }
 
@@ -240,6 +242,7 @@ public class BuildingsStacks {
 
     /** ...with the lots it was stopped with (R1e): back on site behind what is there, each with its set; a shell with none comes back loose. */
     void resumeShell(long buildings, double progress, double owedUnits, java.util.List<Lot> stopped) {
+        if (buildings > 0) claimAfresh();
         underConstruction += Math.max(0, buildings);
         // ...a shell cancelled before its site's preparation was done holds it owed, progress below nothing (addPreparation()): it goes back as owed.
         constructionProgress += progress;
@@ -452,6 +455,15 @@ public class BuildingsStacks {
 
     public double getAbroadClaim() { return abroadClaim; }
     public void setAbroadClaim(double claim) { abroadClaim = claim > 0 && Double.isFinite(claim) ? claim : 0; }
+
+    /**
+     * New work on a site that owed nothing starts with no claim on his book (REV-FC2, the third review): what its orders
+     * before claimed was the work of a site that has finished, or stopped, and a load reads none for it (BuildingManager.
+     * getAbroadOwedById() saves only the sites with points owed). An order quoted at home notes nothing (noteAbroad()), so
+     * a claim kept past the site's end would wake with it and take a share of the others' work on his book - and part the
+     * city from its loaded twin at the next cancel. Called as an order, a shell restarted or a preparation goes on site.
+     */
+    private void claimAfresh() { if (!(owedPoints() > 0)) abroadClaim = 0; }
 
     /** Points still owed on site: every building's points less the progress made (a foothill's preparation owed reads as more). */
     public double owedPoints() {

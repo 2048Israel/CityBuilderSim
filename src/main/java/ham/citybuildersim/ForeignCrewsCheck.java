@@ -66,7 +66,10 @@ import static ham.citybuildersim.ConstructionTrapCheck.template;
  *      left at the threshold, not years past it; a month on, the queue at home is under it and the next order is built at
  *      home. Each site claims its own work on his book, and his month falls on every claim alike; a cancel takes the
  *      cancelled site's own off it: nothing for a Middle School quoted at home, the plant's own and not the Houses' ordered
- *      after it; the claims survive a save, and a save without them shares his book by the sites' points owed.
+ *      after it; the claims survive a save, and a save without them shares his book by the sites' points owed. A site that
+ *      finished claims none of his book when Houses quoted at home go on it later, in the city and its loaded twin alike,
+ *      and a cancel after it takes the same share in both (the third review). A works on foothill, split, hands him its
+ *      pad's preparation in its building's share, and the queue counts the preparation owed on its site.
  *   8. A CURRENCY REFORM: a reform dividing the money by 1,000 divides his book's price a point by 1,000, and the offer's,
  *      and his next bill is his points at it - not a thousandfold abroad at the old unit's price.
  *   9. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
@@ -111,6 +114,12 @@ public class ForeignCrewsCheck {
 
     /** ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it. */
     static final long HOUSES = 200;
+
+    /** ...and the works ordered on foothill ground at the section's end, split at the threshold with its pad's preparation. */
+    static final String WORKS = "Water Treatment Plant";
+
+    /** The months the section plays at most for the Houses' site to finish with the plant's work on his book. */
+    static final int MOST_MONTHS_TO_FINISH = 120;
 
     /** Section 8's reform: the money divided by a thousand, the reviewer's case. */
     static final double REFORM = 1000;
@@ -677,6 +686,103 @@ public class ForeignCrewsCheck {
         near("the plant's takes its work's share of his book", rp == null ? Double.NaN : rp.bookShare(), f, 1e-12);
         near("...off his book after his month, never more than its points left", after, then - expected, 1e-9);
         ok("...which leaves the Houses' work on his book whole", after >= (1 - f) * then - 1e-9);
+
+        claimOfAFinishedSite(root, g);
+        partsAbroadOwedOnSite(g);
+    }
+
+    /**
+     * REV-FC2, the third review (P2-1): the Houses' site finishes with the work its orders handed him on his book beside a
+     * second plant's; a load reads no claim for a site that owes nothing, and the city must read none either - so Houses
+     * ordered on it later, quoted at home, claim none of his book in the city or its loaded twin, and a cancel after it
+     * takes the same share of his book in both.
+     */
+    static void claimOfAFinishedSite(Path root, Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        Construction c = g.getSectors().construction();
+        BuildingsTemplate plant = template(g, PLANT), house = template(g, HOUSE);
+        BuildingsStacks sh = bm.getStack(house);
+        Game.BuildQuote qp = g.quoteBuild(plant, 1);
+        ok("fixture: a second plant, split at the threshold, its work past it on his book beside the Houses'", qp.abroadPoints > 0
+                && cityOrders(g, plant, 1) && bm.abroadOwedOf(house) > 0);
+        int months = 0;
+        while (months < MOST_MONTHS_TO_FINISH && sh.getUnderConstruction() > 0) { month(g); months++; }
+        out.printf("  the Houses' site finished %d months on; his book %,.1f, the plant's work on it %,.1f of its %,.1f owed%n",
+                months, c.getForeignBook(), bm.abroadOwedOf(plant), bm.getStack(plant).owedPoints());
+        ok("fixture: the Houses' site finished with the plant's work still on his book", sh.getUnderConstruction() == 0
+                && !(sh.owedPoints() > 0) && bm.abroadOwedOf(plant) > 0);
+
+        Game twin = new Game(new GameFiles(root.resolve("split"), root.resolve("split-no-legacy")));
+        quietly(() -> {
+            g.saveGame(4, "the finished site");
+            twin.run();
+            twin.loadGameSave(4);
+            // ...its businesses held as the city's are: the hold is the fixture's (calm()), not the save's.
+            for (Sector s : twin.getSectors().all()) twin.getBusinessInvestment().holdSector(s.key());
+        });
+        BuildingManager tm = twin.getBuildingManager();
+        Construction tc = twin.getSectors().construction();
+        BuildingsTemplate tPlant = template(twin, PLANT), tHouse = template(twin, HOUSE);
+        // Houses quoted at home, half the room the queue at home has under the threshold.
+        double houseEach = Fitout.of(g, house).points(), sites = g.getBuildingOutputAtEveryPost();
+        long n = Math.max(1, (long) Math.floor(0.5 * (bm.thresholdMonths() - bm.monthsQueued()) * sites / houseEach));
+        Game.BuildQuote qh = g.quoteBuild(house, n), tqh = twin.quoteBuild(tHouse, n);
+        ok("fixture: Houses on the finished site are quoted at home, in the city and in its loaded twin", qh.abroadPoints == 0
+                && tqh.abroadPoints == 0);
+        ok("fixture: ...and ordered in both", cityOrders(g, house, n) && cityOrders(twin, tHouse, n));
+        out.printf("  %d Houses ordered at home on it: their site's work on his book %,.1f, the twin's %,.1f; the plant's %,.1f, the twin's %,.1f%n",
+                n, bm.abroadOwedOf(house), tm.abroadOwedOf(tHouse), bm.abroadOwedOf(plant), tm.abroadOwedOf(tPlant));
+        exact("an order quoted at home on a site that finished claims none of his book", bm.abroadOwedOf(house), 0);
+        exact("...as its loaded twin reads it", tm.abroadOwedOf(tHouse), 0);
+        near("...and the plant's work on his book is the twin's", bm.abroadOwedOf(plant), tm.abroadOwedOf(tPlant), 1e-9);
+
+        ok("fixture: the Houses' and the plant's sites can be cancelled, in both", g.cancelSite(ConstructionControl.keyOf(house), true)
+                && g.cancelSite(ConstructionControl.keyOf(plant), true) && twin.cancelSite(ConstructionControl.keyOf(tHouse), true)
+                && twin.cancelSite(ConstructionControl.keyOf(tPlant), true));
+        month(g);
+        month(twin);
+        ConstructionControl.Refund rh = refundOf(g, house), rp = refundOf(g, plant), trh = refundOf(twin, tHouse), trp = refundOf(twin, tPlant);
+        out.printf("  cancelled: the Houses' share of his book %.6f, the twin's %.6f; the plant's %.6f, the twin's %.6f; his book %,.3f, the twin's %,.3f%n",
+                rh == null ? Double.NaN : rh.bookShare(), trh == null ? Double.NaN : trh.bookShare(), rp == null ? Double.NaN : rp.bookShare(),
+                trp == null ? Double.NaN : trp.bookShare(), c.getForeignBook(), tc.getForeignBook());
+        ok("fixture: the month's end stopped both, in both, with points left", rh != null && rp != null && trh != null && trp != null
+                && rh.points() > 0 && trh.points() > 0);
+        exact("the Houses' cancel takes no share of his book: their order was quoted at home", rh == null ? Double.NaN : rh.bookShare(), 0);
+        exact("...nor in the twin", trh == null ? Double.NaN : trh.bookShare(), 0);
+        near("the plant's takes the share the twin's takes", rp == null ? Double.NaN : rp.bookShare(), trp == null ? Double.NaN : trp.bookShare(), 1e-12);
+        near("...and his book after the cancels is the twin's", c.getForeignBook(), tc.getForeignBook(), 1e-9);
+    }
+
+    /**
+     * REV-FC2, the third review (P2-2): a works on foothill ground, split at the threshold, hands him its pad's preparation
+     * in the share its building's points are (Game.abroadWork()); the preparation is owed on its site with its building
+     * (BuildingsStacks.addPreparation(): progress below nothing), so the queue (getRemainingConstructionPoints()) counts it
+     * and the next offer's cut of his book to what the sites owe (Construction.capForeignBook()) has it to stand on.
+     */
+    static void partsAbroadOwedOnSite(Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        Construction c = g.getSectors().construction();
+        BuildingsTemplate works = template(g, WORKS);
+        double dry = g.getCityLand().totalKm2(CityLand.DRY);
+        g.getCityLand().setCentreRelief(new double[] { 0, dry, 0, 0, 0 });
+        Game.BuildQuote q = g.quoteBuild(works, 1);
+        BuildingManager.OrderAbroad oa = g.abroadOfOrder(works, 1);
+        double each = Fitout.of(g, works).points(), parts = q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
+        out.printf("  a %s on foothill: %,.0f points and %,.1f of its pad's preparation; %,.1f of its points past the threshold, %,.1f of its work quoted abroad%n",
+                WORKS, each, parts, oa == null ? Double.NaN : oa.points(), q.abroadPoints);
+        ok("fixture: on foothill ground it carries its pad's preparation, and the threshold splits it", q.prepPoints > 0 && oa != null
+                && oa.buildings() == 1 && oa.points() > 0 && oa.points() < each);
+        near("...its preparation quoted abroad in the share its building's points are", q.abroadPoints, oa == null ? Double.NaN
+                : oa.points() * (1 + parts / each), 1e-12);
+        double owedBefore = bm.getRemainingConstructionPoints(), bookBefore = c.getForeignBook();
+        ok("fixture: ...and ordered", cityOrders(g, works, 1));
+        double owedAfter = bm.getRemainingConstructionPoints(), bookAfter = c.getForeignBook();
+        near("the queue counts its preparation with its building: what the sites owe rose by both", owedAfter - owedBefore, each + parts, 1e-9);
+        near("...his book took its work quoted abroad, the preparation's share with it", bookAfter - bookBefore, q.abroadPoints, 1e-9);
+        ok("...which the sites owe: the offer's cut to what they owe takes none of it", bookAfter <= owedAfter);
+        month(g);
+        near("a month on, his book is what it held less what he built: the offer cut none of the work its payer paid for abroad",
+                c.getForeignBook(), bookAfter - c.getForeignPointsThisMonth(), 1e-9);
     }
 
     static double sum(java.util.Map<Integer, Double> m) {
