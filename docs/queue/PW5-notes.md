@@ -1440,3 +1440,30 @@ whitespace checks pass, all edited files retain LF, and publisher-owned
 records and VERSION match main. The next required work is the fresh
 merged-model 80-run ensemble against the newest 0.9.190 baseline, then
 another granted ALL dry run; neither is claimed complete here.
+
+### Delta SHIP: scope the exact exception lines, then the merged ensemble
+
+REV-PW5-2 on 3d61452e4 is SHIP once its exception parts are scoped, with
+no further review required (orchestrator, 2026-11-22 23:58). KnownReds
+matches substrings: the LP-G1 part now includes the native padding and
+**16 time(s), months 792-807**; the HT1-H PriceLevel part includes
+**(month 81: 0 same-level pairs and 1 across)**. A different window or
+onset is not covered. The Kept heap row is removed from PW5's ship file
+because main already records that exact line; its measurements remain
+above. The separate held-grid row remains scoped to that native label.
+Main's HT1-H ownership record at cbf8a362e is merged before the ensemble.
+
+The reviewed LP-G1 attribution is main's class, but **"a larger buffer"
+understates the city-size change**. At m760, native main 1b89c5c4c has
+3,250 households, housing capacity 8,200 and 593 builders. PW5 has 1,776
+households, capacity 5,944 and 418 builders: about **45% fewer households**,
+28% less housing capacity and 30% fewer builders. This is a substantial
+default-city change even though the immediate no-land order hold and long
+look gap occur on both models. These figures must be read beside the new
+ensemble's population score, rather than treating the two cities as the
+same size with a slightly different buffer.
+
+The final merged model now runs 80 cities against **0.9.190** on the gate
+box, using that baseline's options without laptop data-path overrides.
+Only M1 or F1 stops the ship; any new finding still needs its own trace.
+The older pre-HC1 ensemble is not the merged-model verdict.
