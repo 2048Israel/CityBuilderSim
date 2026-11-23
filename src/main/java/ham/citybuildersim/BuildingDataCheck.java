@@ -175,6 +175,14 @@ public class BuildingDataCheck {
             check(who + " stationTonnes (FR7)", actual.getStationTonnes(), expected.getStationTonnes());
             check(who + " siding (FR7)", actual.isSiding() ? 1 : 0, expected.isSiding() ? 1 : 0);
             check(who + " hydro (HY1)", actual.isHydro() ? 1 : 0, expected.isHydro() ? 1 : 0);
+            // ...and a power plant's own figures (PW1, PW2): what it burns and how, its weather, its cooling and its months.
+            check(who + " nameplate (PW1)", actual.getNameplate(), expected.getNameplate());
+            check(who + " fuel (PW1)", actual.getFuel() == null ? -1 : actual.getFuel().ordinal(), expected.getFuel() == null ? -1 : expected.getFuel().ordinal());
+            check(who + " heat rate (PW1)", actual.getHeatRate(), expected.getHeatRate());
+            check(who + " variable upkeep (PW1)", actual.getVariableUpkeep(), expected.getVariableUpkeep());
+            check(who + " wind or sun (PW1, PW2)", actual.isWind() ? 1 : actual.isSolar() ? 2 : 0, expected.isWind() ? 1 : expected.isSolar() ? 2 : 0);
+            check(who + " cooling (PW2)", actual.cooling() ? 1 : 0, expected.cooling() ? 1 : 0);
+            check(who + " build months (PW2)", actual.buildMonths(), expected.buildMonths());
             check(who + " bridge (ET6)", actual.bridgeKind() == null ? -1 : actual.bridgeKind().ordinal(), expected.bridgeKind() == null ? -1 : expected.bridgeKind().ordinal());
             check(who + " truckRoom", actual.getTruckRoom(), expected.getTruckRoom());
             check(who + " production1", actual.getProduction1(), expected.getProduction1());
@@ -824,6 +832,12 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
         years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
         years.put(Substations.ID, 1900);   // PW5: the district grid is available at founding.
+        years.put(9, 1900);     // PW2: the Coal Power Plant, a kind before the start (a 325 MW unit first ran in 1960, Eddystone)
+        years.put(167, 1900);   // PW2: the Oil-Fired Plant
+        years.put(168, 1910);   // PW2: the Diesel Station
+        years.put(169, 1949);   // PW2: the Oil-Fired Turbine (Belle Isle)
+        years.put(170, 1970);   // PW2: the Biomass Plant, with the Wood Pellet Mill
+        years.put(171, 1982);   // PW2: the Solar Farm (Lugo, 1 MW)
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
@@ -842,7 +856,10 @@ public class BuildingDataCheck {
                         + " Steel Mini-Mill E13 1969, the Walk-in Clinic B4 1973, the Wind Farm E16 1980, the Assisted Living Residence M8 1981 and the Shared"
                         + " Services Centre B6 1982) and R6b's two near-future buildings, the Sulphide Leach & SX-EW Plant 2025 (FE2) and the Hydrogen Steel Works 2028 (FE4, a projection); the Large Cement Plant, the Large Copper Mine, the pelletising and two magnetite works, the Large"
                         + " Mini-Mill, the Leach & SX-EW Plant and the Harvesting Operation keep their years, now as the codes PE4, PE8, E4, E13, E12 and E14,"
-                        + " their years here being their entries'; and PW5's Substation 1900; no row"
+                        + " their years here being their entries'; and PW5's Substation 1900; and PW2's power plants, each from its year"
+                        + " (spec-electricity 2.3, Q2): the Coal Power Plant 1900 (a kind before the start), the Oil-Fired Plant 1900, the"
+                        + " Diesel Station 1910, the Oil-Fired Turbine 1949 (Belle Isle) and the Biomass Plant 1970 (with the Wood Pellet"
+                        + " Mill), the Solar Farm 1982 (Lugo); no row"
                         + " before them: " + dated,
                 dated.equals(years));
 

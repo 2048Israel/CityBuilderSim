@@ -1946,7 +1946,7 @@ public final class BuildCard {
        refusals are warned before the click, not discovered after it.
        ===================================================================== */
 
-    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST, NO_RIVER, NO_BRIDGE }
+    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST, NO_RIVER, NO_BRIDGE, NO_WATER }
 
     /** The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). */
     public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site) {
@@ -1959,6 +1959,7 @@ public final class BuildCard {
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
         if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);
         if (!game.hasRiverFor(t, n)) return new Verdict(VerdictKind.NO_RIVER, q, 0);
+        if (!game.hasCoolingFor(t)) return new Verdict(VerdictKind.NO_WATER, q, 0);
         if (!game.hasBridgeFor(t, n)) return new Verdict(VerdictKind.NO_BRIDGE, q, 0);
         if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(nu, n));
         if (q.landNeeded > q.landFree) return new Verdict(VerdictKind.NO_LAND, q, q.landNeeded - q.landFree);

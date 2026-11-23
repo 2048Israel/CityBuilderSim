@@ -593,7 +593,9 @@ public class CurrencyCheck {
             city.buildStack(ForeignCheck.template(city, "Convenience Store"), 8, false);
             city.buildStack(ForeignCheck.template(city, "Small Grocery Store"), 3, false);
             city.buildStack(ForeignCheck.template(city, "Construction Depot"), 4, false);
-            city.buildStack(ForeignCheck.template(city, "Coal Power Plant"), 1, false);
+            // NO COAL PLANT, THE CITY THIS FIXTURE WAS WRITTEN AGAINST (PW2, 2026-11-23): until PW2 the treasury refused the one this
+            // list ordered (NEEDS_FUNDING); PW2's refigured plant is cheaper and was bought, a 60-month site whose spending moved the
+            // town, so that it defended its currency in a warm-up month the fixture's first defence was to be caused after.
             city.buildStack(ForeignCheck.template(city, "Water Treatment Plant"), 1, false);
             city.buildStack(ForeignCheck.template(city, "Industrial Bakery"), 2, false);
         } finally {

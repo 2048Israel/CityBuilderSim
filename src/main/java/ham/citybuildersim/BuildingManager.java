@@ -325,7 +325,10 @@ public class BuildingManager {
        Industry is where water actually bites, and that is true to life:
        textile dyeing and food processing are two of the most water-intensive
        industries there are, and thermoelectric cooling is the single largest
-       category of freshwater withdrawal in the US - hence the coal plant's 400.
+       category of freshwater withdrawal in the US - hence the coal plant's 400,
+       until PW2 (2026-11-23): a steam plant now draws its cooling once-through
+       from the sea, a lake or a river the city owns (cooling(), NO_WATER) and
+       nothing from the city's supply, which could not carry a tower's.
        ------------------------------------------------------------------------- */
 
     /**
@@ -1150,14 +1153,36 @@ public class BuildingManager {
         templates.add(buildersYard);
 
         // ELECTRICTY buildings
+        /* ------------------------------------------------------------------
+           THE COAL POWER PLANT, refigured (PW2; spec-electricity 2.3). A 325 MW
+           unit, kept, at EIA's new coal plant, $3,271 a kW in 2023 dollars
+           [S8]: $1.06B all-in, 776,914 of cash at the Wind Farm's old cash
+           per dollar (HY1's rule, 23,240 for $31.8M), its points the old coal
+           plant's points to cash (120,000 over 1,071,816) and its materials
+           1.85% of cash. Available 85% (NETL's design capacity factor [S9]):
+           325,000 kW x 0.85 x 730 / 720 = 280,087 a month on average. 200
+           acres (400 for 650 MW [S10]), 60 months to build [S10]. It draws
+           its cooling once-through from the sea, a lake or a river the city
+           owns (cooling(), refused NO_WATER without one) and takes nothing
+           from the city's water: a tower would consume 500 gallons a MWh
+           [S5], 10,085 units a month, more than the city's fresh limit could
+           carry. Its posts and its own load are kept.
+           ------------------------------------------------------------------ */
         BuildingsTemplate coalPowerplant = new BuildingsTemplate("Coal Power Plant", BuildingType.ELECTRICITY)
-                .setCashCost(1071816)
-                .setConstructionPoints(120000)
-                .setConstructionMaterials(19848)
-                .setProduction1(280000) // electricity output
+                .setSince(1900)                     // a kind since before 1900; a 325 MW unit first ran in 1960 (Eddystone)
+                .setCashCost(776914)                // $1.06B all-in at $3,271/kW
+                .setConstructionPoints(86983)       // the old coal plant's points to cash
+                .setConstructionMaterials(14373)    // 1.85% of cash
+                .setProduction1(280087)             // 325 MW, available 85%
+                .setNameplate(325000)
+                .setFuel("THERMAL_COAL")
+                .setHeatRate(8490)                  // Btu a kWh, 40.2% [S8]
+                .setVariableUpkeep(9.37)            // $ a MWh [S8]
+                .setCooling(true)                   // once-through on owned water
+                .setBuildMonths(60)                 // [S10]
                 .setElectricityConsumption(15)
-                .setWaterConsumption(400) // cooling - the biggest single draw in the game
-                .setLandSqFt(2000000)
+                .setWaterConsumption(0)             // its cooling is the owned water's, not the city's
+                .setLandSqFt(8712000)               // 200 acres [S10]
                 .setRoadLoad(120)
                 .setJobs(JobType.NO_DIPLOMA, 40)
                 .setJobs(JobType.DIPLOMA, 20)
@@ -1217,19 +1242,26 @@ public class BuildingManager {
            450 kWh a tonne - see RealismCheck). Weather and storage are a
            different game.
            ------------------------------------------------------------------ */
+        // PW2 refigured it (spec-electricity 2.3): EIA's $1,712 a kW [S1], 33.8% a year [S3], 2 posts (wind employs
+        // 21.8 a TWh [S13] x 0.059 TWh), 36 months to build [S1]; land and nameplate kept. The weather is PW1's
+        // dispatch (PowerDispatch.windAt()); the paragraphs above are its first day, 2026-09-09.
         BuildingsTemplate windFarm = new BuildingsTemplate("Wind Farm", BuildingType.ELECTRICITY)
                 .setSince("E16")
-                .setCashCost(23240)                 // $31.8M all-in at $1,590/kW
-                .setConstructionPoints(1800)        // months, not years
-                .setConstructionMaterials(431)
-                .setProduction1(8100)               // 20 MW at a 40% capacity factor
+                .setCashCost(25023)                 // $34.2M all-in at $1,712/kW
+                .setConstructionPoints(2802)        // the coal plant's old points to cash
+                .setConstructionMaterials(463)      // 1.85% of cash
+                .setProduction1(6854)               // 20 MW at a 33.8% capacity factor
+                .setNameplate(20000)
+                .setVariable("wind")
+                .setBuildMonths(36)                 // [S1]
                 .setElectricityConsumption(1)       // its own parasitic load
                 .setWaterConsumption(0)             // none, which is half the point
                 .setLandSqFt(1742400)               // 40 acres - 2 per MW
                 .setRoadLoad(5)
-                .setJobs(JobType.NO_DIPLOMA, 2)
-                .setJobs(JobType.DIPLOMA, 4)        // turbine technicians, a real trade
-                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                // Its two posts are the site's turbine technicians, a trade (BLS: wind turbine service technicians enter with a
+                // postsecondary nondegree award), not an engineer: one engineering post in two, in a town short of engineers,
+                // drew the utilities' pooled fill down by more than the farm adds (WorksFinanceCheck's oracle, PW2).
+                .setJobs(JobType.DIPLOMA, 2)
                 .setId(41);
 
         templates.add(windFarm);
@@ -4900,6 +4932,8 @@ public class BuildingManager {
                 .setConstructionPoints(2450)        // the coal plant's points to cash
                 .setConstructionMaterials(406)      // 1.85% of cash, as both plants'
                 .setProduction1(4560)               // 10 MW at a 45% capacity factor
+                .setNameplate(10000)                // PW1: its sets' rating
+                .setVariableUpkeep(1.71)            // PW1: $ a MWh [S1]
                 .setElectricityConsumption(20)      // its own load
                 .setWaterConsumption(0)             // it takes nothing from the river
                 .setLandSqFt(435600)                // 10 acres: dam wings, powerhouse, yard
@@ -5105,7 +5139,61 @@ public class BuildingManager {
                 .setCapacity((int) (Substations.SUBSTATION_MW * 1000)).setLandSqFt(217800).setRoadLoad(140)
                 .setJobs(JobType.DIPLOMA, 100).setJobs(JobType.COLLEGE_ENGINEERING, 30)
                 .setJobs(JobType.UNIV_HIGHTECH_ENG, 10).setSince(1900).setId(Substations.ID));
-        //add more buildings; next Building ID is 156
+
+        /* ------------------------------------------------------------------
+           THE POWER PLANTS AND THEIR FUELS (PW2, ids 167 to 171; RES3 takes
+           156 to 166). Spec-electricity 2.3's rows, each today's plant, each
+           priced by HY1's rule (the all-in cost at 23,240 of cash for $31.8M,
+           the old coal plant's points to cash, materials 1.85% of cash), each
+           running at nameplate x its availability x 730 / 720 on average, and
+           each burning its fuel from the market by the MWh at its heat rate
+           (PowerDispatch.heatContentMJ(): 283 litres of fuel oil, 298 and 260
+           of diesel, 0.750 t of pellets). Each is offered from its year
+           (Q2), each stands no sooner than its months (buildMonths(), the
+           crews' cap), and the steam plants - the oil and the biomass, as
+           coal - stand only on owned sea, lake or river (cooling(),
+           NO_WATER). The starred figures are the study's own estimates,
+           named in its table, the posts among them; a fuelled row's own load
+           and road load are the coal plant's per MW, the solar farm's the wind
+           farm's (1 and 5).
+           ------------------------------------------------------------------ */
+        // A 100 MW oil steam plant from 1900: no source prices a new one, so NETL's subcritical coal plant [S9], $3,054/kW, is the upper bound.
+        templates.add(new BuildingsTemplate("Oil-Fired Plant", BuildingType.ELECTRICITY)
+                .setCashCost(223192).setConstructionPoints(24988).setConstructionMaterials(4129)
+                .setProduction1(86181).setNameplate(100000).setFuel("FUEL_OIL").setHeatRate(11227).setVariableUpkeep(9.68)
+                .setCooling(true).setBuildMonths(48).setElectricityConsumption(5).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 12).setJobs(JobType.DIPLOMA, 6).setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setLandSqFt(1306800).setRoadLoad(37).setSince(1900).setId(167));
+        // Four engines, 21 MW, from 1910 [S10, the gas-engine case, $1,810/kW in 2019 dollars], cooled in a closed loop: no water.
+        templates.add(new BuildingsTemplate("Diesel Station", BuildingType.ELECTRICITY)
+                .setCashCost(27778).setConstructionPoints(3110).setConstructionMaterials(514)
+                .setProduction1(19163).setNameplate(21000).setFuel("DIESEL").setHeatRate(10847).setVariableUpkeep(5.69)
+                .setBuildMonths(30).setElectricityConsumption(1).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 1).setJobs(JobType.DIPLOMA, 2)
+                .setLandSqFt(435600).setRoadLoad(8).setSince(1910).setId(168));
+        // Two aeroderivatives, 100 MW, from 1949 (Belle Isle) at EIA's $2,275/kW [S1], burning diesel at its gas heat rate [S10].
+        templates.add(new BuildingsTemplate("Oil-Fired Turbine", BuildingType.ELECTRICITY)
+                .setCashCost(166261).setConstructionPoints(18615).setConstructionMaterials(3076)
+                .setProduction1(91250).setNameplate(100000).setFuel("DIESEL").setHeatRate(9447).setVariableUpkeep(5.97)
+                .setBuildMonths(24).setElectricityConsumption(5).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 2).setJobs(JobType.DIPLOMA, 3).setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setLandSqFt(435600).setRoadLoad(37).setSince(1949).setId(169));
+        // 50 MW on wood pellets, from 1970 with the Wood Pellet Mill, at EIA's $4,843/kW and 13,300 Btu a kWh [S1].
+        templates.add(new BuildingsTemplate("Biomass Plant", BuildingType.ELECTRICITY)
+                .setCashCost(176967).setConstructionPoints(19813).setConstructionMaterials(3274)
+                .setProduction1(43090).setNameplate(50000).setFuel("WOOD_PELLETS").setHeatRate(13300).setVariableUpkeep(5.93)
+                .setCooling(true).setBuildMonths(60).setElectricityConsumption(2).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 15).setJobs(JobType.DIPLOMA, 7).setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setLandSqFt(4356000).setRoadLoad(18).setSince(1970).setId(170));
+        // 50 MW of panels, from 1982 (Lugo), at EIA's $1,484/kW [S1] and the US fleet's 24.0% a year [S3]; the sun's shape is PowerDispatch's.
+        templates.add(new BuildingsTemplate("Solar Farm", BuildingType.ELECTRICITY)
+                .setCashCost(54227).setConstructionPoints(6071).setConstructionMaterials(1003)
+                .setProduction1(12167).setNameplate(50000).setVariable("solar")
+                .setBuildMonths(24).setElectricityConsumption(1).setWaterConsumption(0)
+                .setJobs(JobType.DIPLOMA, 3).setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setLandSqFt(14505480).setRoadLoad(5).setSince(1982).setId(171));
+        //add more buildings; next Building ID is 172
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 
@@ -5379,17 +5467,21 @@ public class BuildingManager {
             BuildingsStacks s = stacks.get(k);
             long building = s.getUnderConstruction();
             double points = s.getBuilding().getConstructionPoints();
+            double extraPoints = 0;
             if (extra != null && extraCount > 0 && s.getBuilding() == extra) {
                 extraHasStack = true;
                 building += extraCount;
-                owed[k] = extraCount * points;
+                owed[k] = extraPoints = extraCount * points;
             }
             if (building <= 0) continue;
             owed[k] += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+            // ...never more in a month than its build time allows (PW2): its points on site, the extra's with them, over its months.
+            owed[k] = capped(owed[k], siteCap(s, extraPoints));
             weight[k] = weightOf(s.getBuilding(), building);
         }
         if (extra != null && extraCount > 0 && !extraHasStack) {
             owed[n] = extraCount * (double) extra.getConstructionPoints();
+            owed[n] = capped(owed[n], monthCap(extra, owed[n]));
             weight[n] = weightOf(extra, extraCount);
         }
         for (int j = 0; j < d; j++) {
@@ -5488,8 +5580,60 @@ public class BuildingManager {
         return priorityWait(waitWith(t, 0, 0, siteOutput), siteOutput);
     }
 
-    /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2). */
+    /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2); never sooner than its build time allows (PW2, floorWait()). */
     private double waitWith(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
+        double months = crewWait(t, quantity, extraPoints, siteOutput);
+        return months == Double.MAX_VALUE ? months : Math.max(months, floorWait(t, quantity, extraPoints));
+    }
+
+    /* ----- the build-time floor (PW2) -----
+       Bromilow's rule gives a building the crew its points can use, and a city
+       with builders to spare could stand a coal plant in a month. A power
+       plant has a build time no crew beats (BuildingsTemplate.buildMonths(),
+       spec-electricity 2.3): a stack of one is worked no faster than its
+       points over its months a month, so one building stands in its months at
+       the soonest. Its site is pooled and finishes front first, as every
+       stack does: an order of n stands whole in no fewer than its months, its
+       first building sooner, and a building added to a site already begun
+       shares the site's pace. The cap is a site's demand in the crews' rule,
+       not a crew of its own: what it cannot take this month goes to the other
+       sites by the same water-filling. A building with no build time is
+       uncapped, to the bit. A site's preparation (a foothill pad, the works,
+       a bridge: owed as progress below nothing, BuildingsStacks.addPreparation())
+       is not held to it: the crews take it as fast as the rule gives them, and
+       the buildings' own points then stand in their months (found when a wind
+       farm on unprepared ground was quoted 418 months, its preparation counted
+       against the cap of its 6,854 points). */
+
+    /** The most a site of this building may be worked in a month: its points on site over its build time; unbounded for a building with none (PW2). */
+    static double monthCap(BuildingsTemplate t, double pointsOnSite) {
+        int months = t == null ? 0 : t.buildMonths();
+        return months > 0 ? Math.max(0, pointsOnSite) / months : Double.POSITIVE_INFINITY;
+    }
+
+    /** A site's cap (PW2): its buildings' points on site, and `extraPoints` more of them, over their build time, and all the preparation it still owes. */
+    static double siteCap(BuildingsStacks s, double extraPoints) {
+        return monthCap(s.getBuilding(), s.pointsOnSite() + extraPoints) + Math.max(0, -s.getConstructionProgress());
+    }
+
+    /** What a site may take this month: all it owes when that is within its cap (a hair over is rounding, and taken, so the last month finishes it rather than holding it a month for the hair), else the cap. */
+    static double capped(double owed, double cap) {
+        return owed <= cap * (1 + 1e-9) ? owed : cap;
+    }
+
+    /** The months its build time holds an order's site to at the least (PW2): its months x the buildings' own points the site would owe with the order over their points with it, its preparation (and the order's, `extraPoints`) left to the crews' wait; 0 for a building with none. */
+    double floorWait(BuildingsTemplate t, long quantity, double extraPoints) {
+        if (t == null || t.buildMonths() <= 0) return 0;
+        BuildingsStacks s = getStack(t);
+        boolean on = s != null && s.getUnderConstruction() > 0;
+        double order = quantity > 0 ? quantity * (double) t.getConstructionPoints() : 0;
+        double points = (on ? s.pointsOnSite() : 0) + order;
+        double own = (on ? Math.max(0, s.pointsOnSite() - Math.max(0, s.getConstructionProgress())) : 0) + order;
+        return points > 0 ? t.buildMonths() * own / points : 0;
+    }
+
+    /** waitWith() before PW2: the crews' wait alone, no build time counted. */
+    private double crewWait(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         // ...the first group's, with a depot served first on site or a depot
         // weighed that would be (0.7.130).
@@ -5517,6 +5661,7 @@ public class BuildingManager {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double others = 0, aheadOwed = 0;
         long aheadUnits = 0;
+        java.util.List<double[]> floored = null;
         for (BuildingsStacks s : stacks) {
             long on = s.getUnderConstruction();
             if (on <= 0) continue;
@@ -5524,7 +5669,12 @@ public class BuildingManager {
                 aheadUnits = on;
                 aheadOwed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             } else {
-                others += weightOf(s.getBuilding(), on);
+                double w = weightOf(s.getBuilding(), on);
+                others += w;
+                if (s.getBuilding().buildMonths() > 0) {
+                    if (floored == null) floored = new java.util.ArrayList<>();
+                    floored.add(new double[] {w, capped(Math.max(0, s.pointsOnSite() - s.getConstructionProgress()), siteCap(s, 0))});
+                }
             }
         }
         // ...and the city's demolitions on site (0.7.22), whose crews are
@@ -5538,6 +5688,20 @@ public class BuildingManager {
         double mine = weightOf(t, (long) aheadUnits + quantity);
         if (!(mine > 0)) return 0;
         double owedWith = aheadOwed + orderPoints(t, quantity, extraPoints);
+        // ...but a site the build-time floor holds (PW2) is held there for its whole build, not a month: what its cap
+        // leaves goes to the rest by weight, as siteShares() gives it, the least-capped first. With none held, to the bit.
+        if (floored != null) {
+            floored.sort(java.util.Comparator.comparingDouble(f -> f[1] / f[0]));
+            double left = siteOutput, weights = others + mine;
+            boolean held = false;
+            for (double[] f : floored) {
+                if (!(left / weights * f[0] > f[1])) break;
+                left -= f[1];
+                weights -= f[0];
+                held = true;
+            }
+            if (held) return owedWith * weights / (left * mine);
+        }
         return owedWith * (others + mine) / (siteOutput * mine);
     }
 
@@ -5848,6 +6012,8 @@ public class BuildingManager {
             if (s.getUnderConstruction() > 0) {
                 owed[k] = Math.max(0, s.pointsOnSite()
                         - s.getConstructionProgress());
+                // ...and no more than its build time allows in a month, in the player's order or on overtime (PW2).
+                owed[k] = capped(owed[k], siteCap(s, 0));
             }
         }
         keys.add("");
@@ -6890,10 +7056,16 @@ public class BuildingManager {
         BuildingsStacks s = d == null ? stackOfKey(key) : null;
         if (d == null && (s == null || s.getUnderConstruction() <= 0)) return 0;
         // ...the first group's, with a depot on site (0.7.130).
-        if (firstOn(null, 0)) return priorityWait(firstWait(key, null, false, false, siteOutput), siteOutput);
+        double floor = s == null ? 0 : floorWait(s.getBuilding(), 0, 0);
+        if (firstOn(null, 0)) return priorityWait(floored(firstWait(key, null, false, false, siteOutput), floor), siteOutput);
         // The rule's wait, to the bit, with the player's hand off the site.
         if (s != null && !handOn(key)) return priorityWait(waitWith(s.getBuilding(), 0, 0, siteOutput), siteOutput);
-        return priorityWait(handWait(key, null, false, siteOutput), siteOutput);
+        return priorityWait(floored(handWait(key, null, false, siteOutput), floor), siteOutput);
+    }
+
+    /** A wait no sooner than its build time's floor (PW2); NaN and MAX_VALUE pass as they are. */
+    private static double floored(double wait, double floor) {
+        return Double.isNaN(wait) || wait == Double.MAX_VALUE ? wait : Math.max(wait, floor);
     }
 
     /**

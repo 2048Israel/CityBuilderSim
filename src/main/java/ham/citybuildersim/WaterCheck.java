@@ -66,7 +66,8 @@ public class WaterCheck {
         check("House", house.getWaterConsumption(), .2);
         check("Small Grocery Store", store.getWaterConsumption(), 6);
         check("Industrial Bakery", mill.getWaterConsumption(), 60);
-        check("Coal Power Plant", coal.getWaterConsumption(), 400);
+        // PW2 (spec-electricity 2.3): its cooling is once-through on water the city owns (cooling(), NO_WATER without), none from the supply.
+        check("Coal Power Plant", coal.getWaterConsumption(), 0);
         check("Water Treatment Plant", plant.getWaterConsumption(), 20);
 
         /* ================= 2. demand = buildings + people ================= */

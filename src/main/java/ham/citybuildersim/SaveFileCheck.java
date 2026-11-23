@@ -1958,6 +1958,10 @@ public class SaveFileCheck {
         assertTrue("HC1 card positions and settled flows cross the loader", cardsMatch);
         assertTrue("HC2 annual debt surveys cross the history loader",
                 full.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
+        // PW2: the month's used-car price, the households' cars' mark in their assets (DataSave.usedCarPrice): unsaved, a loaded city
+        // marked them at the showroom's floor until its next month, and the line below parted in debtToAssets by 3.7e-9.
+        same("the month's used-car price crosses the loader, the households' cars' mark", back.getMotoring().getUsedCarPrice(),
+                full.getMotoring().getUsedCarPrice());
         assertTrue("HC2 current debt statistics cross the fully populated city loader exactly",
                 full.getHouseholdBalance().debtStatistics().equals(back.getHouseholdBalance().debtStatistics()));
         // ...each cell's own, bond by bond, by the cell's name (0.7.12 round 2).

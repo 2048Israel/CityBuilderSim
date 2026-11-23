@@ -219,6 +219,8 @@ public class DeathCareFirstCheck {
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 120_000_000L);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+            // PW2: its works stand Wind Farms, which a 1900 city knows only from their year; its research found them first.
+            EssentialWorksCheck.knowWind(g);
             for (String[] w : new String[][] {
                     { "Industrial Bakery", "3" }, { "Wind Farm", "4" }, { "Water Treatment Plant", "1" },
                     { "Commercial Bank", "1" }, { "Convenience Store", "6" }, { "House", "400" },

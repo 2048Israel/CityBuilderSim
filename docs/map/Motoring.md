@@ -1,4 +1,4 @@
-# Motoring.java - 392 lines · 21 methods · 2 constants · model
+# Motoring.java - 395 lines · 22 methods · 2 constants · model
 
 `ham/citybuildersim/Motoring.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -90,11 +90,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 337 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
+| 56 | 340 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
 
 ### THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) (lines 66-117)
 
-### THE FUEL IS DRAWN (0.7.62, batch K) (lines 118-392)
+### THE FUEL IS DRAWN (0.7.62, batch K) (lines 118-395)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -116,7 +116,8 @@
 | 233 | 1 | `public double getUsedCarsTraded()` | Cars that changed hands second-hand this month. |
 | 236 | 1 | `public double getUsedCarsOffered()` | ...against what was put up for sale, which in a crash is far more. |
 | 239 | 1 | `public double getUsedCarPrice()` | What one went for. |
-| 242 | 1 | `public double getUsedCarSpend()` | What the buyers paid for them, all in. |
-| 245 | 1 | `public double getUsedCarCredit()` | ...and what of that a lender advanced. |
-| 248 | 144 | `void month(Game game)` | The car market's month. |
+| 242 | 1 | `void restoreUsedCarPrice(double price)` | ...restored from a save (PW2; DataSave.usedCarPrice): the month's figure the households' cars are marked at until the next month clears its own. |
+| 245 | 1 | `public double getUsedCarSpend()` | What the buyers paid for them, all in. |
+| 248 | 1 | `public double getUsedCarCredit()` | ...and what of that a lender advanced. |
+| 251 | 144 | `void month(Game game)` | The car market's month. |
 

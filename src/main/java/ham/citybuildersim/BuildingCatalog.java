@@ -243,7 +243,10 @@ public class BuildingCatalog {
                 .setFuel(string(o, "fuel"))
                 .setHeatRate(number(o, "heatRate"))
                 .setVariableUpkeep(number(o, "variableUpkeep"))
-                .setVariable(string(o, "variable"));
+                .setVariable(string(o, "variable"))
+                // ...and the water it cools by and the months no crew builds it faster than (PW2; spec-electricity 2.3): absent, none.
+                .setCooling(flag(o, "cooling"))
+                .setBuildMonths((int) number(o, "buildMonths"));
 
         readCare(o, template, name);
         readJobs(o, template, name);
