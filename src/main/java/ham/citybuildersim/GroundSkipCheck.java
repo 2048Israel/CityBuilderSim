@@ -58,7 +58,24 @@ public class GroundSkipCheck {
 
     /** One month of the player's own play, as the playtest's skip runs it (LongPlaytest.runPlayer()). */
     static void month(Game g) {
-        quietly(() -> LongPlaytest.runPlayer(g, 1));
+        quietly(() -> play(g));
+    }
+
+    /** The city whose M0 the playtest's audit read last. */
+    static Game audited;
+
+    /**
+     * A month of runPlayer() on `g`, the audit's M0 its own: LongPlaytest.lastM0 is one static for the JVM, and this
+     * harness plays several towns, so a month of another town than the last is first given its own M0 - else its
+     * first month is read against the other town's ("M0 moved by something other than the money made", m246 of
+     * section 2 against section 1's m305). Months of one town in a row chain as the playtest's do.
+     */
+    static void play(Game g) {
+        if (audited != g) {
+            LongPlaytest.lastM0 = g.getCentralBank().m0();
+            audited = g;
+        }
+        LongPlaytest.runPlayer(g, 1);
     }
 
     /** Whether the landlords' order held for ground this month (Game.getLandBlockedSectors(): BusinessInvestment's noLand()). */
@@ -194,7 +211,7 @@ public class GroundSkipCheck {
         java.util.Map<Integer, Seen> bAt = new java.util.LinkedHashMap<>();
         bAt.put(b.getMonth(), seen(b));
         quietly(() -> LongPlaytest.skipWatchingGround(b, SKIP, () -> {
-            LongPlaytest.runPlayer(b, 1);
+            play(b);
             bAt.put(b.getMonth(), seen(b));
         }));
         java.util.List<Seen> bSeen = new java.util.ArrayList<>(bAt.values());
@@ -248,7 +265,7 @@ public class GroundSkipCheck {
                 && price > LongPlaytest.GROUND_AHEAD_CASH_SHARE * c.getCash() && c.canAffordParcel(offer));
         double cOwned = cl.getOwnedSqFt(), cUsd = c.getForeignAccounts().getLandUsdLifetime();
         int cPurchases = c.getCityLand().purchases().size(), cShort = LongPlaytest.groundAheadShort, cLooks = LongPlaytest.groundLooksInSkips;
-        quietly(() -> LongPlaytest.skipWatchingGround(c, 1, () -> LongPlaytest.runPlayer(c, 1)));
+        quietly(() -> LongPlaytest.skipWatchingGround(c, 1, () -> play(c)));
         check("the watched skip looks, and the look is counted stopped short",
                 LongPlaytest.groundLooksInSkips == cLooks + 1 && LongPlaytest.groundAheadShort == cShort + 1);
         check("...buys nothing and pays nothing: the ground, the purchases and the land office's dollars as they were",
@@ -265,11 +282,11 @@ public class GroundSkipCheck {
         if (again != null) c.setCashForTest(again.localPrice(c.getForeignAccounts().getRate())
                 / LongPlaytest.GROUND_AHEAD_CASH_SHARE * (1 + BuildAdvice.SLACK));
         double cOwnedNow = cl.getOwnedSqFt(), cUsdNow = c.getForeignAccounts().getLandUsdLifetime();
-        quietly(() -> LongPlaytest.skipWatchingGround(c, 1, () -> LongPlaytest.runPlayer(c, 1)));
+        quietly(() -> LongPlaytest.skipWatchingGround(c, 1, () -> play(c)));
         check("...and with the share able to pay, that look buys the offer and pays for it",
                 again != null && cl.getOwnedSqFt() > cOwnedNow && c.getForeignAccounts().getLandUsdLifetime() > cUsdNow);
         for (int i = 0; i < BuildAdvice.HORIZON && landlordsHeld(c); i++) {
-            quietly(() -> LongPlaytest.skipWatchingGround(c, 1, () -> LongPlaytest.runPlayer(c, 1)));
+            quietly(() -> LongPlaytest.skipWatchingGround(c, 1, () -> play(c)));
         }
         check("...and the landlords are released", !landlordsHeld(c));
 
@@ -279,9 +296,9 @@ public class GroundSkipCheck {
         StringBuilder dLooks = new StringBuilder(), eLooks = new StringBuilder();
         for (int i = 0; i < SKIP; i++) {
             if (LongPlaytest.groundLookDue(d)) dLooks.append(d.getMonth()).append(' ');
-            quietly(() -> LongPlaytest.skipWatchingGround(d, 1, () -> LongPlaytest.runPlayer(d, 1)));
+            quietly(() -> LongPlaytest.skipWatchingGround(d, 1, () -> play(d)));
             if (LongPlaytest.groundLookDue(e)) eLooks.append(e.getMonth()).append(' ');
-            quietly(() -> LongPlaytest.skipWatchingGround(e, 1, () -> LongPlaytest.runPlayer(e, 1)));
+            quietly(() -> LongPlaytest.skipWatchingGround(e, 1, () -> play(e)));
         }
         out.printf("   looks at m %s and m %s%n", dLooks.toString().trim(), eLooks.toString().trim());
         check("the two look at their ground in the same months, HORIZON apart",
