@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-HC1-lbD8kzvX -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HC1, credit cards — 2026-11-22, ready, see docs/queue/HC1-notes.md
 Households carry card balances within each cell: thin buffers meet unexpected
