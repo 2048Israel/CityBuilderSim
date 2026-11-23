@@ -308,7 +308,7 @@ public final class CreditCrunchCheck {
         for (String name : new String[] { "Low-Rise Apartments", "House" }) {
             BuildingsTemplate t = LongPlaytest.template(g, name);
             if (t == null) continue;
-            while (bm.getQuantity(t.getId()) > 0 && room(g) - t.getDwellings() >= MARGIN) {
+            while (bm.getQuantity(t.getId()) > 0 && room(g) - 2 * t.getDwellings() >= MARGIN) {
                 if (bm.retire(t, 1) < 1) break;
                 cutHomes += t.getDwellings();
             }
@@ -464,6 +464,20 @@ public final class CreditCrunchCheck {
         EconomyManager em = g.getEconomyManager();
         BusinessDebtManager desk = em.getBusinessDebtManager();
         BuildingsTemplate block = LongPlaytest.template(g, "Low-Rise Apartments");
+        // Cause actual replacement demand for this hand order. Standing homes
+        // and funded sites otherwise reserve its prospective tenants first;
+        // a vacancy cannot supply the lender with fictitious occupied proceeds.
+        long replacementDoors=0;
+        for(BuildingsTemplate t:g.getBuildingManager().getTemplatesBySector(RE)){
+            if(t.getHousingRecipe()==null)continue;
+            var stack=g.getBuildingManager().getStack(t);if(stack==null)continue;
+            long n=stack.getQuantity();
+            while(n>0&&!g.getBuildingManager().getHousingInventory().mayRemove(stack,n))n--;
+            long removed=g.getBuildingManager().retire(t,n);
+            replacementDoors+=removed*t.getDwellings();
+            g.getLandManager().release(removed*t.getLandSqFt(),t.getSector(),Game.groundUse(t));
+        }
+        check("fixture: the hand order has actual replacement demand from removed homes",replacementDoors>=ORDER*block.getDwellings());
         int plots = 0;
         while (!ground(g, block, ORDER) && plots < MAX_PLOTS && g.buyLandBlock()) plots++;
         // The yard empty: the order's materials come in at their landed price, over the planner's (the yard short of its materials).

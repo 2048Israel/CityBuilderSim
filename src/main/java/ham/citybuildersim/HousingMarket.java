@@ -89,15 +89,22 @@ public final class HousingMarket {
     /** Read-only migration bound: actual remaining door/guest capacity, with the raw incoming household mix. */
     public FamilyModel.Room roomLeft(Game game,FamilyModel.Room legacy){
         if(!active())return null;
-        var inventory=game.getBuildingManager().getHousingInventory();double family=0,compact=0,homes=0;
+        var inventory=game.getBuildingManager().getHousingInventory();double family=0,compact=0,homes=0,children=0,adults=0;
+        Map<String,Boolean> familyCells=new HashMap<>();for(var d:demand)familyCells.put(d.key(),d.children()>0);
         for(var stock:inventory.stock()){
             var c=classes.get(stock.key());if(c==null||!c.available)continue;
             double owned=inventory.owned(c.key(),HousingInventory.Owner.REAL_ESTATE);homes+=owned;
             double assigned=leases.stream().filter(l->l.home().equals(c.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            // A demolition/title transfer can precede the next monthly clearing.
+            // Reserve other rooms for its displaced tenants before admitting arrivals.
+            double lost=Math.max(0,assigned-2*owned);
+            double parents=leases.stream().filter(l->l.home().equals(c.key())&&familyCells.getOrDefault(l.cell(),false))
+                    .mapToDouble(HousingChoice.Lease::households).sum();
+            double lostFamilies=Math.min(lost,Math.max(0,parents-2*owned));
+            children+=lostFamilies;adults+=lost-lostFamilies;
             double slots=Math.max(0,2*owned-assigned);
             if(c.capacity>FamilyModel.STUDIO_MAX_SIZE)family+=slots;else compact+=slots;
         }
-        double children=0,adults=0;
         if(result.unplaced()>0)for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double missing=Math.max(0,d.count()-taken);if(d.children()>0)children+=missing;else adults+=missing;}
         family=Math.max(0,family-children);double inCompact=Math.min(compact,adults);compact-=inCompact;family=Math.max(0,family-(adults-inCompact));

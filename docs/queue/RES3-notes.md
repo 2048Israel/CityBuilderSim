@@ -1,8 +1,8 @@
 # RES3 — home choice, typed rents and the 14-form catalogue
 
 Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through HC1 on
-main efca2c5fd (0.9.190), merged as ef18a4b6c. Final verification and publication
-status are below.
+main efca2c5fd (0.9.190), merged as ef18a4b6c, and the queue-only e66c310a3.
+Final verification and publication status are below.
 No user city or user save slot 1–9 is opened or written. Existing checks use
 their own isolated scratch slots; new RES3 native fixtures use slot 10.
 
@@ -27,8 +27,8 @@ construction queue and work proofs are retained.
 are flows that cannot be reconstructed from closing stock. They pass through
 DataSave and the load path. A format bump and matching oldest-loadable floor
 are owed under the old-saves rule: old class IDs/mixes and missing assignments
-would read wrongly. The final format is set from shipped main after HC1/PW5
-integration. No conversion code is added.
+would read wrongly. The final format and floor are 63, advancing from HC1's
+shipped 62. No conversion code is added.
 
 Initial baseline --fast passed before source edits (52 s compile; no firm Stale
 finding). The first integrated compile exposed and corrected a pooled-weight
@@ -586,3 +586,63 @@ then restores that same actual closed trade to both currency twins before the
 reform. ScaleCheck also sends that nonzero trade through its native JSON copier.
 This is an input for the flow-transform checks; SaveFileCheck independently
 causes the positive trade through the integrated played city's monthly market.
+
+## Final integrated profile
+
+The final HousingMarketCheck repeat passed both eras, their actual paid starts
+and completion receipts, monthly pool/household money identities and exact
+native continuation. Its complete report is RES3-catalogue.md. Measured full
+months on this laptop (not solver-only timings):
+
+| Scratch city | People | Month ms | H/T/A/M/L |
+| --- | ---: | ---: | --- |
+| Small | 210 | 47.296 | 65/32/112/0/0 |
+| Present-day | supporting catalogue inputs above | 36.445 | 84/32/330/0/0 |
+| Larger present-day | 148,967 | 36.393 | 82/32/314/0/0 |
+| Historical | supporting catalogue inputs above | 29.620 | 62/32/193/0/0 |
+| Larger historical | 149,126 | 37.195 | 62/32/193/0/0 |
+
+Permanent household cells remain 141 in both larger cities; physical classes
+are 32 today and 16 in 1900. All 32 class quotes and 14 form availability rows
+are reported in each era. M is the new typed ownership-loan cohort seam for HO1,
+and L is live listing cohorts; both remain zero in these rental fixtures.
+
+The final ReloadCheck repeat is exit 0: its m1229 autosave continuation compares
+818,555 history numbers in 341 series and 105,494 saved numbers exactly. After
+the passed assertions it prints an asynchronous autosave-history temporary-file
+rename warning in the shared Earth scratch fixture (the same warning appeared
+on the earlier pre-card-integration repeat). This is recorded separately from
+the successful native comparisons; no save check or production I/O path was
+weakened to pass it. SaveSlotCheck also passes, including its held-writer and
+one-writer-at-a-time cases; its wall-clock timing observation is soft.
+
+## Retirement-room and capital-fixture finding
+
+The deliberately caused CreditCrunchCheck exposed a derived-room defect: its
+physical retirement removed 70 homes, yet the room read stayed at 108.6. Leases
+from the previous clearing still occupied a demolished class, and their
+displaced households were not reserved against other classes before arrivals.
+The crunch then had 7.59 unplaced households in its first month.
+
+A focused HousingMarketCheck case first failed with room 4 where 2 fit: two
+actually placed child families lose their occupied form while another form
+stands. ★ The read-only room projection now reserves other rooms for displaced
+lease households, keeping child families in family-capable doors and using
+compact rooms for displaced adults first. This adds no quote, clearing or
+saved state; the assertion also checks that the read leaves the monthly state
+unchanged. The physical two-household-per-door limit remains exact.
+
+The crunch fixture's cut budget consequently counts two potential slots per
+removed door. Its unchanged margin assertion and no-homelessness watch still
+apply. Its separate hand-written six-block order previously reached a demand
+limit before the bank-capital trim: actual standing homes and funded sites
+already reserved those tenants. ★ That hand-order fixture now physically removes
+standing rental homes before its order, causing actual replacement demand;
+no vacant candidate receives fictitious rent to force the lender through.
+
+The mended CreditCrunchCheck is fully green: 48 homes retired leave 12.6
+households of room, every crunch month has zero unplaced households, and the
+original six-block hand-order assertion reaches the bank-capital trim. Its
+door quote is 6851.6 versus the planner's 6754.4; the lender reads the door
+price, the owners are offered 5138.7 and put in 244.6. The original pricing,
+partial-equity, leverage-band and no-sticky-capital-refusal assertions all pass.
