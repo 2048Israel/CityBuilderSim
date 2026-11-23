@@ -1102,3 +1102,60 @@ data, criteria and JSON are the scorer's. The ship paragraph now names
 f78dfd076 explicitly, as the review requires. No source changes follow the
 ensemble. Commit/push these publication records, announce the authorized
 ALL dry-run start, and use a fresh kept run rather than either STOPPED run.
+
+
+### Final ALL dry run GREEN, 2026-11-22
+
+The orchestrator's SHIP gives the free dry-run slot after the final-model
+ensemble, with a start notice requested. HC1 mails the80-run PASS and
+announces the ALL start at623381d93 (mail194004). A fresh run is started
+on the box,7200s Bash background child with its waiting parent, no laptop
+fallback. No source or ensemble-artifact changes occur during or after it.
+
+**Gate exit0; suite exit3, known reds only.** Kept remote directory:
+`/home/jerus/cbs/runs/cbs-gate-HC1-lbD8kzvX`.
+Read-only local mirror:
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HC1-lbD8kzvX`.
+Controller:`target/HC1-paper-dry.txt`; exit file:
+`target/hc1-paper-dry.exit`. Manifest commits:
+
+- branch:`623381d93191806a87c25f451def6af034cb7252`
+- main:`591fc92d859b438b02e093f1dbe66a1615c02018`
+
+The ALL pick is244;238 runtime harnesses actually run in1121s,
+**227 passed and11 failed, all exact known reds**. Compile8s;
+the complete suite/record check takes1139s. The9 Monocle display harnesses
+start; none can skip for a missing toolkit. There is1 MapCheck timing
+assertion SOFT and8 path assertions OBSERVED, neither counted as assertion
+passes. The8 observations are ConstructionControl1, AutoBuild1,
+PriceLevel3, Scale2 and Map1. `unnamed.txt` is0 bytes; `checks.complete`
+and the kept checks manifest are present. Before/after heads both remain
+main591fc92d8: this was a dry run, no real merge/tag/push.
+
+The exact known-red harnesses are CurrencyCheck, DeathRecordCheck,
+EducationCheck, Forms1900Check, FundCheck, HoldersCheck, KeptCheck,
+OrderDoorCheck, PublicLicenceCheck, ReloadCheck and RoadCheck. No new row
+or waiver is added. CentralBank, Map, PriceLevel, LongPlaytest, Health,
+Card, DebtStatistics, Scale and native save/refusal/continuation checks
+pass. The final Scale log independently records the shrinking-book
+regression at2.17e-15 and the original city/copy register law at3.0e-15.
+SaveFileCheck records actual format60 byte/history/running-city refusal
+and actual format61 byte/running-twin refusal, with continuation intact.
+
+KeptCheck has3 covered rows. Its final fund allocation figures are301
+nodes made and1789 handed back,85.6%, after opening the closed-lots fold;
+the old84.9%/315/1776 figures above belong to the earlier dry run. The
+ship row now records the final figures and the same exact FS5 label;
+the90% bound and fresh/kept picture comparisons remain unchanged. Its
+other2 lines are main's exact no-paper premise (known-reds:74) and
+software-renderer live-heap row (known-reds:72),1715.9 MiB of2048 in this
+run, within the traced box-renderer range. No conservation or saved-field
+failure is named away.
+
+HC1 mails this green result (mail200016). The ship file's **first line**
+now names the remote kept run so the gate can reuse it; neither STOPPED
+run is offered. Only these notes and the ship file change after green.
+The reviewed final-model80-run artifact of f78dfd076 remains unchanged.
+On the already-given go, commit these records with the marker still in
+place, then drop the marker last in its own commit, push, verify it absent
+on origin and report HC1 ready. No requested implementation remains.
