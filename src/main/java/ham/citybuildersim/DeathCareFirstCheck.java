@@ -306,12 +306,9 @@ public class DeathCareFirstCheck {
         BuildingManager bm = g.getBuildingManager();
         String cem = ConstructionControl.keyOf(template(g, CEMETERY));
         assertTrue("fixture: the cemetery is the city's own site", bm.isCitySite(cem));
-        // FC2, moved from "still owing most of its points": the founding's months hand the foreign crews the Penitentiary's
-        // work past the threshold and they build it beside the city's crews, so it owes less - but it is on site still, which
-        // keeps every post offered (the assertion after this), what it is there for.
-        assertTrue("fixture: among other city sites, the Penitentiary still owing points",
+        assertTrue("fixture: among other city sites, the Penitentiary still owing most of its points",
                 bm.citySiteKeys().size() >= 4 && bm.stackOfKey(ConstructionControl.keyOf(template(g, "Penitentiary")))
-                        .getConstructionProgress() < template(g, "Penitentiary").getConstructionPoints());
+                        .getConstructionProgress() < template(g, "Penitentiary").getConstructionPoints() / 2.0);
         assertTrue("fixture: the builders offer every post", g.getBuildingOutput() == g.getBuildingOutputAtEveryPost());
         String houses = ConstructionControl.keyOf(template(g, "House"));
         assertTrue("fixture: and the landlords' Houses on site, not the city's", bm.siteKeysOnSite().contains(houses)

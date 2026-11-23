@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Construction;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -86,6 +87,112 @@ public class ForeignCheck {
             out.printf("%-58s FAIL  %,.6f != %,.6f%n", label, actual, expected);
         } else {
             out.printf("%-58s OK%n", label);
+        }
+    }
+
+    /* ===== THE FOUNDED TOWN WITH THE FOREIGN CREWS ON (REV-FC2, 2026-11-23) =====
+       Every other section here runs with the builders' price and the foreign crews off (main's note). This one turns
+       them on for section 2's town, ordered whole the day the city is founded - five hundred houses, the shops, four
+       depots standing at once, the coal plant, the water works and two bakeries - and asserts what FC2 makes of it under
+       REV-FC2's pricing. Each order's buildings past the threshold go to the foreign crews as it is billed, at what its
+       quote charged a point for them (BuildingManager.abroadOfOrder(), Construction.handAbroad()); an order whose
+       buildings stand within it stays at home, whatever the queue it leaves behind. Before REV-FC2 the month's offer
+       handed the crews the whole queue at home past the threshold at the curve's price: the town stood whole at month 10,
+       ahead of its people, and in its first three years the crews took 208,555 points and billed 46,753 where its orders
+       had been quoted 54,170 points abroad for 7,958 - the builders paid the difference. */
+    static void foundedTownAbroad() throws Exception {
+        out.println("\n--- and with the foreign crews on, the founded town is built abroad at the price its payer was quoted ---");
+        Path root = TempDirs.create("foreigncheck-crews");
+        Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+        BuildingManager.buildersShortOn = true;
+        try {
+            Object[][] orders = {{"House", 500L, false}, {"Convenience Store", 8L, false}, {"Small Grocery Store", 3L, false},
+                    {"Construction Depot", 4L, true}, {"Coal Power Plant", 1L, false}, {"Water Treatment Plant", 1L, false},
+                    {"Industrial Bakery", 2L, false}};
+            double quotedPoints = 0, quotedMoney = 0, coalHomeMonths = Double.NaN, coalThreshold = Double.NaN;
+            long coalAbroad = -1;
+            boolean tradeOn = true;
+            StringBuilder lines = new StringBuilder();
+            System.setOut(quiet);
+            try {
+                city.run();
+                city.setCashForTest(Founding.WEALTHY_CASH);
+                city.getLandManager().setOwnedSqFt(30_000_000);
+                for (Object[] o : orders) {
+                    BuildingsTemplate t = template(city, (String) o[0]);
+                    long n = (Long) o[1];
+                    boolean instant = (Boolean) o[2];
+                    BuildingManager bm = city.getBuildingManager();
+                    Game.BuildQuote q = city.quoteBuild(t, n);
+                    BuildingManager.OrderAbroad with = city.abroadOfOrder(t, n);
+                    tradeOn &= with != null;
+                    double each = Fitout.of(city, t).points();
+                    if (!instant) {
+                        quotedPoints += q.abroadPoints;
+                        quotedMoney += q.abroadPoints * q.abroadPricePerPoint;
+                    }
+                    lines.append(String.format("   %s x%d%s: %d past the threshold, %,.0f points at +%.4f, %,.4f a point (its own base %,.4f)%n",
+                            o[0], n, instant ? " (instant)" : "", with == null ? 0 : with.buildings(), q.abroadPoints, q.abroadShare,
+                            q.abroadPricePerPoint, bm.nonMaterialCost(Fitout.of(city, t)) / Math.max(1e-9, each)));
+                    city.buildStack(t, n, instant);
+                    if (o[0].equals("Coal Power Plant")) {
+                        coalAbroad = with == null ? -1 : with.buildings();
+                        coalHomeMonths = bm.monthsQueued();
+                        coalThreshold = bm.thresholdMonths();
+                    }
+                }
+            } finally {
+                System.setOut(out);
+            }
+            out.print(lines);
+            assertTrue("fixture: every order of the town was placed with the foreign crews on offer", tradeOn);
+            assertTrue("fixture: ...and some of its buildings stood past the threshold", quotedPoints > 0);
+
+            Construction c = city.getSectors().construction();
+            double handedFirst = Double.NaN, billed = 0, yearBilled = 0, yearOut = 0, yearTrade = 0, worstLedger = 0;
+            int townMonth = -1, ledgerMonths = 0;
+            long peopleThen = 0;
+            boolean othersHanded = false;
+            System.setOut(quiet);
+            try {
+                for (int m = 1; m <= 36; m++) {
+                    city.simulateMonths(1);
+                    MoneyAudit.Result r = city.getLastMoneyAudit();
+                    if (m == 1) handedFirst = c.getHandedAbroadThisMonth();
+                    else othersHanded |= c.getHandedAbroadThisMonth() > 0;
+                    billed += c.getForeignBillThisMonth();
+                    if (m <= 12) { yearBilled += c.getForeignBillThisMonth(); yearOut += r.domesticOut(); yearTrade += r.tradeBalance(); }
+                    // What the crews billed and what their book holds at its price, against what the town's orders were quoted
+                    // for the work abroad - while no later order has handed them any.
+                    if (!othersHanded) {
+                        worstLedger = Math.max(worstLedger, Math.abs(billed + c.getForeignBook() * c.getForeignBookPrice() - quotedMoney) / quotedMoney);
+                        ledgerMonths = m;
+                    }
+                    if (townMonth < 0 && city.getBuildingManager().standingWhere(t -> t.getName().equals("House")) >= 500) {
+                        townMonth = m;
+                        peopleThen = city.getPopulationManager().getPopulation();
+                    }
+                }
+            } finally {
+                System.setOut(out);
+            }
+            out.printf("   the town's orders: %,.0f points past the threshold quoted abroad for %,.2f; the first offer counted %,.0f handed%n",
+                    quotedPoints, quotedMoney, handedFirst);
+            out.printf("   the coal plant: %d of 1 past the threshold, and %,.2f months queued at home after it against a threshold of %,.2f%n",
+                    coalAbroad, coalHomeMonths, coalThreshold);
+            out.printf("   %d months before a later order handed the crews work: billed and on the book at its price within %.2e of the quote%n",
+                    ledgerMonths, worstLedger);
+            out.printf("   the town's 500 houses stood whole at month %d with %,d people; its first year the crews billed %,.2f, its households' flows at home %,.2f, the trade balance %,.2f%n",
+                    townMonth, peopleThen, yearBilled, yearOut, yearTrade);
+            close("the town's buildings past the threshold went to the foreign crews as each order was billed, no more: the first offer counts them",
+                    handedFirst, quotedPoints, 1e-9);
+            assertTrue("...and what the crews billed and their book still holds at its price is what the town's payers were quoted for that work,"
+                    + " to a part in a million million, month by month: the builders' cash carries no gap", ledgerMonths >= 2 && worstLedger <= 1e-12);
+            assertTrue("an order whose building stood within the threshold handed nothing abroad: the coal plant built at home, at its payer's price,"
+                    + " though the queue it left ran past the threshold", coalAbroad == 0 && coalHomeMonths > coalThreshold);
+            assertTrue("the town's 500 houses stand whole within three years, built partly abroad, with people in them", townMonth > 0 && peopleThen > 0);
+        } finally {
+            BuildingManager.buildersShortOn = false;
         }
     }
 
@@ -1115,6 +1222,7 @@ public class ForeignCheck {
         reserveDefends();
         landByConversion();
         whatTheTradeTabReads();
+        foundedTownAbroad();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

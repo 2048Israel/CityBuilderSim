@@ -90,6 +90,13 @@ public class ForeignCrewsCheck {
     /** The months played in the long backlog, to read the pace each one. */
     static final int PLAYED = 6;
 
+    /**
+     * What each backlog fixture's order was quoted, struck just before it was placed (REV-FC2's P1): the foreign crews'
+     * share for its work past the threshold without the order (what FC2 quoted until the mend) and with it (the month the
+     * order makes him run, Game.foreignTermsOfOrder()), and the base a point the quote read with the order on site.
+     */
+    static final java.util.Map<String, double[]> QUOTED = new java.util.HashMap<>();
+
     /** The months queued within which, under the threshold, the backlog read at both paces must stay: one month. */
     static final double ONE_MONTH = 1;
 
@@ -396,7 +403,12 @@ public class ForeignCrewsCheck {
         if (g.getLandManager().getAvailableSqFt() < land) g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + land);
         boolean[] ordered = new boolean[1];
         quietly(() -> {
-            double price = g.quoteBuild(house, n).total;
+            BuildingManager.ForeignTerms without = bm.foreignTerms();
+            Game.BuildQuote quote = g.quoteBuild(house, n);
+            QUOTED.put(name, new double[] { without == null ? Double.NaN : without.share(), quote.abroadShare,
+                    quote.abroadPricePerPoint, quote.abroadPoints, bm.nonMaterialCost(house) / house.getConstructionPoints(),
+                    g.getSectors().construction().getForeignBook() });
+            double price = quote.total;
             g.getEconomyManager().setSectorCash(RE, g.getEconomyManager().getSectorCash(RE) + 2 * price);
             ordered[0] = g.buildFor(g.getSectorInvestor(RE), house, n);
         });
@@ -405,49 +417,68 @@ public class ForeignCrewsCheck {
     }
 
     static void theBacklog(Path root) {
-        out.println("\n--- 6. a 240-month backlog: the offer hands him the overflow, his month and excess rise with it, the city's workers are not taken ---");
+        out.println("\n--- 6. a 240-month backlog: the order hands him its buildings past the threshold as it is billed, his month and excess rise with it, the city's workers are not taken ---");
         Game a = backlog(root, "backlog-a", LONG_MONTHS);
         Game b = backlog(root, "backlog-b", HALF_MONTHS_QUEUED);
         Game off = backlog(root, "backlog-off", LONG_MONTHS);
         BuildingManager bmA = a.getBuildingManager(), bmB = b.getBuildingManager(), bmOff = off.getBuildingManager();
-        Construction ca = a.getSectors().construction(), cb = b.getSectors().construction();
+        Construction ca = a.getSectors().construction(), cb = b.getSectors().construction(), cOff = off.getSectors().construction();
         double reach = BuildersShort.KNEE_MONTHS + BuildersShort.SURE_MONTHS;
-        out.printf("  queued at home: a %.2f months, b %.2f, the twin %.2f; the sites' month a %d, b %d; the threshold a %.4f, b %.4f%n",
-                bmA.monthsQueued(), bmB.monthsQueued(), bmOff.monthsQueued(), a.getBuildingOutputAtEveryPost(), b.getBuildingOutputAtEveryPost(),
-                bmA.thresholdMonths(), bmB.thresholdMonths());
-        ok("fixture: the long backlog is twenty years of the sites' month at home in a and in its twin", bmA.monthsQueued() >= LONG_MONTHS && bmOff.monthsQueued() >= LONG_MONTHS);
-        ok("fixture: ...and half of it in b", bmB.monthsQueued() >= HALF_MONTHS_QUEUED && bmB.monthsQueued() < LONG_MONTHS);
-        ok("fixture: a and its twin are the same city", bmA.queueAtHome() == bmOff.queueAtHome() && a.getBuildingOutputAtEveryPost() == off.getBuildingOutputAtEveryPost());
+        double sitesA = a.getBuildingOutputAtEveryPost(), sitesB = b.getBuildingOutputAtEveryPost();
+        double orderedA = (bmA.queueAtHome() + ca.getForeignBook()) / sitesA, orderedB = (bmB.queueAtHome() + cb.getForeignBook()) / sitesB;
+        double orderedOff = (bmOff.queueAtHome() + cOff.getForeignBook()) / off.getBuildingOutputAtEveryPost();
+        out.printf("  queued at home and abroad: a %.2f months of the sites, b %.2f, the twin %.2f; at home a %.2f, b %.2f; the sites' month a %,.0f, b %,.0f; the threshold a %.4f, b %.4f%n",
+                orderedA, orderedB, orderedOff, bmA.monthsQueued(), bmB.monthsQueued(), sitesA, sitesB, bmA.thresholdMonths(), bmB.thresholdMonths());
+        ok("fixture: the long order is twenty years of the sites' month, at home and abroad, in a and in its twin", orderedA >= LONG_MONTHS && orderedOff >= LONG_MONTHS);
+        ok("fixture: ...and half of it in b", orderedB >= HALF_MONTHS_QUEUED && orderedB < LONG_MONTHS);
+        ok("fixture: a and its twin are the same city", bmA.queueAtHome() == bmOff.queueAtHome() && ca.getForeignBook() == cOff.getForeignBook()
+                && sitesA == off.getBuildingOutputAtEveryPost());
         ok("fixture: both are far past the threshold", bmA.ordersGoAbroad() && bmB.ordersGoAbroad());
 
-        // The offer, before the month: the overflow handed now.
-        double thresholdA = bmA.thresholdMonths(), sitesA = a.getBuildingOutputAtEveryPost();
-        double overflowA = bmA.overflowAtHome(), bookBefore = ca.getForeignBook();
+        // REV-FC2's P1: the order's buildings past the threshold went to him as it was billed, at what its quote charged for them.
+        double[] q = QUOTED.get("backlog-a"), qb = QUOTED.get("backlog-b");
+        double thresholdA = bmA.thresholdMonths(), firstA = bmA.foreignExcessShare(), houseMonths = template(a, HOUSE).getConstructionPoints() / sitesA;
+        out.printf("  a's order: %,.0f points past the threshold quoted at +%.4f (+%.4f his share without it), %,.6f a point (the House's base %,.6f); his book %,.0f at +%.4f, %,.6f%n",
+                q[3], q[1], q[0], q[2], q[4], ca.getForeignBook(), ca.getForeignBookShare(), ca.getForeignBookPrice());
+        ok("fixture: his book was empty before the order", q[5] == 0 && qb[5] == 0);
+        exact("a: billing the order handed him its buildings past the threshold: his book is the quote's points abroad", ca.getForeignBook(), q[3]);
+        exact("b: ...and likewise", cb.getForeignBook(), qb[3]);
+        near("...at the share the quote charged for them", ca.getForeignBookShare(), q[1], 1e-12);
+        near("...and the price a point it charged, the House's own base and that share", ca.getForeignBookPrice(), q[2], 1e-12);
+        near("...which is the House's base a point and that share", q[2], q[4] * (1 + q[1]), 1e-12);
+        ok("...and the queue at home is the threshold's months of the sites, over it by no more than a House",
+                bmA.monthsQueued() > thresholdA && bmA.monthsQueued() <= thresholdA + houseMonths + 1e-9);
+        double monthA = BuildersShort.foreignMonth(ca.getForeignBook(), thresholdA, bmA.largestDepotPoints());
+        near("his excess is the supply curve's at the month the order makes him run", q[1],
+                BuildersShort.excessAt(firstA, monthA, a.getConstructionOutputAtEveryPost()), 1e-12);
+        ok("...the month the order makes him run, over his share without it", q[1] > q[0]);
+        ok("...and over the first share", q[1] > firstA);
+
+        // The offer, before the month: nothing more handed, his month billed at the book's price.
         Game.ForeignOffer offerA = a.foreignCrewsOffer();
-        exact("a: the book grew by the overflow read just before the offer", ca.getForeignBook(), bookBefore + overflowA);
-        near("...and the queue at home is then the threshold's months of the sites", bmA.queueAtHome(), thresholdA * sitesA, 1e-9);
-        double overflowB = bmB.overflowAtHome();
         Game.ForeignOffer offerB = b.foreignCrewsOffer();
-        exact("b: the book grew by the overflow read just before the offer", cb.getForeignBook(), overflowB);
-        double firstA = bmA.foreignExcessShare(), firstB = bmB.foreignExcessShare();
-        out.printf("  a: overflow %,.0f points, his month %,d (the sites' %,.0f), his excess %.4f over the first share %.4f, price %,.6f a point%n",
-                overflowA, offerA.points(), sitesA, offerA.excessShare(), firstA, offerA.pricePerPoint());
-        out.printf("  b: overflow %,.0f points, his month %,d, his excess %.4f over the first share %.4f%n", overflowB, offerB.points(), offerB.excessShare(), firstB);
+        out.printf("  a: his month %,d (the sites' %,.0f), his excess %.4f, price %,.6f a point; b: his month %,d, his excess %.4f%n",
+                offerA.points(), sitesA, offerA.excessShare(), offerA.pricePerPoint(), offerB.points(), offerB.excessShare());
+        exact("the offer counts the order's handover as the month's", ca.getHandedAbroadThisMonth(), q[3]);
+        exact("...and hands him nothing more: the work at home is its payers', at the home price they were quoted", ca.getForeignBook(), q[3]);
+        near("...his month billed at the book's price a point, the payer's", offerA.pricePerPoint(), q[2], 1e-12);
         ok("a: his month is far over the sites' month", offerA.points() > FAR_OVER * sitesA);
-        near("...his excess is the supply curve's at that month", offerA.excessShare(),
-                BuildersShort.excessAt(firstA, offerA.points(), a.getConstructionOutputAtEveryPost()), 1e-12);
-        ok("...and over the first share", offerA.excessShare() > firstA);
         ok("b's month is smaller than a's", offerB.points() > 0 && offerB.points() < offerA.points());
         ok("...and so is its excess", offerB.excessShare() < offerA.excessShare());
 
         // Six months in a; the first of the twin's with the foreign crews' price switched off.
         boolean inside = true, thresholdOk = true;
         double lowest = Double.POSITIVE_INFINITY, highest = Double.NEGATIVE_INFINITY, highestThreshold = 0;
+        double handedLater = 0, priceDrift = 0, quotedPrice = q[2];
         for (int m = 1; m <= PLAYED; m++) {
             if (m >= 2) {
+                handedLater += ca.getHandedAbroadThisMonth();
+                priceDrift = Math.max(priceDrift, Math.abs(ca.getForeignBookPrice() - quotedPrice) / quotedPrice);
                 double threshold = bmA.thresholdMonths();
                 double paced = bmA.getRemainingConstructionPoints() / (a.getBuildingOutputAtEveryPost() + bmA.foreignMonthNow());
-                inside &= paced >= threshold - ONE_MONTH && paced <= threshold + 1e-9;
+                // REV-FC2: within a month of it either side - billing put whole buildings abroad by the threshold then, and
+                // the work stays where it was put while the threshold moves with the base.
+                inside &= Math.abs(threshold - paced) <= ONE_MONTH;
                 thresholdOk &= threshold <= reach;
                 lowest = Math.min(lowest, threshold - paced);
                 highest = Math.max(highest, threshold - paced);
@@ -455,6 +486,13 @@ public class ForeignCrewsCheck {
             }
             month(a);
             if (m == 1) {
+                double built = ca.getForeignPointsThisMonth(), bill = ca.getForeignBillThisMonth();
+                double gap = bill - built * q[2], before = built * q[4] * (q[1] - q[0]);
+                out.printf("  a's first month: he built %,.0f points, billed %,.4f; the payer's price for them %,.4f; the gap in the builders' cash %,.6f, where FC2 before the mend left %,.4f there%n",
+                        built, bill, built * q[2], gap, before);
+                ok("fixture: he built in a's first month", built > 0);
+                near("the builders paid abroad what the payer was quoted for those points: the quote is the bill", bill, built * q[2], 1e-9);
+                ok("...so the builders' cash carries no gap between them, where the quote without the order left them short", Math.abs(gap) <= 1e-9 * bill && before > 0);
                 BuildingManager.buildersShortOn = false;
                 try {
                     month(off);
@@ -466,8 +504,29 @@ public class ForeignCrewsCheck {
         }
         out.printf("  months 2 to %d in a: the threshold less the backlog read at both paces ran %.4f to %.4f months; the threshold at most %.4f (KNEE + SURE_MONTHS %.1f)%n",
                 PLAYED, lowest, highest, highestThreshold, reach);
-        ok("before each month from the second the backlog at both paces is within a month under the threshold and never over it", inside);
+        ok("before each month from the second the backlog at both paces is within a month of the threshold, either side", inside);
         ok("...and the threshold is within SURE_MONTHS of the knee", thresholdOk);
+        // REV-FC2: nothing goes abroad but what an order's quote put there - the queue at home is its payers' at the home price.
+        out.printf("  months 2 to %d in a: %,.0f points handed after the order's own %,.0f; the book's price a point %,.6f, %.2e from the order's %,.6f%n",
+                PLAYED, handedLater, q[3], ca.getForeignBookPrice(), priceDrift, quotedPrice);
+        ok("after the order's own handover nothing more was handed him: the work at home stays its payers'", handedLater == 0);
+        ok("...so each point he built for it was billed the order's price a point", priceDrift <= 1e-15);
+
+        // ...and the book's price survives a save (REV-FC2's new saved state, Construction's extras), in a's own scratch folder.
+        double book = ca.getForeignBook(), share = ca.getForeignBookShare(), price = ca.getForeignBookPrice();
+        Game back = new Game(new GameFiles(root.resolve("backlog-a"), root.resolve("backlog-a-no-legacy")));
+        quietly(() -> {
+            a.saveGame(3, "the backlog");
+            back.run();
+            back.loadGameSave(3);
+        });
+        Construction cBack = back.getSectors().construction();
+        out.printf("  saved and loaded: the book %,.3f at +%.9f, %,.9f a point; back %,.3f at +%.9f, %,.9f%n",
+                book, share, price, cBack.getForeignBook(), cBack.getForeignBookShare(), cBack.getForeignBookPrice());
+        exact("the book loads as it was saved", cBack.getForeignBook(), book);
+        exact("...and the share its points were handed at", cBack.getForeignBookShare(), share);
+        exact("...and their price a point, so the load bills them what their payers were quoted", cBack.getForeignBookPrice(), price);
+        ok("...a book that is priced", !cBack.foreignBookUnpriced() && price > 0);
     }
 
     /** The city's workers after a's first month and the twin's, which had no foreign crews. */
