@@ -46,7 +46,9 @@ currency". The brief is `docs/queue/FC2.md`; FC2b (the next row) is left its sea
   the stacks still owing (`abroadOwedOf()`), and his month draws every site's in proportion as it draws the book's
   money. A cancel takes the cancelled site's share, struck at the stop (`ConstructionControl.Refund.bookShare()`) and
   cut once his month is off the book (`Game.settleConstructionControl()`, after `settleForeignCrews()`), never more
-  than the points the order had left (section 3).
+  than the points the order had left (section 3). Since the third review a site that owes nothing starts its next
+  work with no claim (`BuildingsStacks.claimAfresh()`, as an order, a restarted shell or a preparation goes on site):
+  a load reads none for it, and an order quoted at home notes none.
 - **The contractor's month, a supply curve.** `foreignMonth()`: his book in the threshold's months, never under the
   builders' largest depot (FC1's rule) nor over the book - so the work abroad waits no longer than the work at home at
   the threshold. His excess rises with it (`excessAt()`): r and the rest of the way to CEILING times m / (1 + m), m his
@@ -151,6 +153,25 @@ Sources:
   share 0.983221, his book 108,113.0 after his month and 1,814.1 after both cancels). ConstructionTrapCheck
   section 9's University, 0.681261 of the book, cuts 24,361.90 of its 25,459.29 points left. A depot served first is
   no exception: its work past the threshold is on the book from its billing, a depot's as any.
+- ★ **A finished site claims nothing (REV-FC2, the third review, P2-1).** `noteAbroad()` notes only work handed
+  abroad, so a site that finished kept the claim its orders had made: inert while it owed nothing (`liveClaims()` reads
+  the sites with points owed), woken by the next order on it quoted at home - and the save keeps only the sites with
+  points owed, so its loaded twin woke with none, and the two parted at the next cancel. The claim now goes when the
+  site starts new work owing nothing, which is what the load reads. ForeignCrewsCheck section 7: the Houses' site
+  finishes 5 months after a second plant is split, his book 90,030.1 all the plant's; 162 Houses quoted at home on it
+  then claim none of it in the city and in its loaded twin, the plant's 90,030.1 in both, and the cancels take the
+  same shares (the Houses' 0, the plant's 1) and leave the same book. On d35563166 the Houses' site claimed 1,421.3
+  (the twin 0), the plant's 88,608.7 against 90,030.1, and the Houses' cancel 0.015787 of his book (the twin 0): 3 red.
+- **The parts handed abroad are owed on their site (the third review, P2-2: not reproduced).** The review read the
+  queue (`getRemainingConstructionPoints()`) as the buildings' points alone, so that the preparation, works, bridge
+  and deep water `Game.abroadWork()` hands abroad with an order would be missing from `queueAtHome()` and the cut of his
+  book to what the sites owe (`Construction.capForeignBook()`). They are owed on the order's stack, as progress below
+  nothing (`BuildingsStacks.addPreparation()`, each placed by both order paths), and the queue reads every stack as its
+  points on site less its progress. ForeignCrewsCheck section 7, the same on d35563166: a Water Treatment Plant on
+  foothill, 44,000 points and 9,119.7 of its pad's preparation, split with 36,398.0 of its points past the threshold,
+  quotes 43,942.0 abroad (its preparation in its building's share); what the sites owe rises by 53,119.67, both; his
+  book by 43,942.04; a month on his book is what it held less what he built, 41,850.04, nothing cut. (A business's
+  order puts no bridge on its site and bills none; no business orders a bridge.)
 - ★ **The payer pays (REV-FC2's P1; FC2 as first reviewed had the builders bear the gap).** That form quoted an
   order's abroad part at his excess before the order and billed it at the curve's excess at the month the whole
   overflow at home made him run, so the builders paid the difference: 1,389.92 in the first month of
@@ -218,6 +239,7 @@ before it has none, a null map: every site's claim is then struck at the points 
 save's claims would have read wherever every site was handed him in the same share. Only a cancel reads the claims,
 and in such a city it takes that share. No save reads wrongly, so no bump (ForeignCrewsCheck section 7 reads a save
 both ways: the plant 112,936.4 of its 120,000 owed, the Houses 4,282.2 of their 4,550, read as a save from before).
+The third review's claim reset (section 3) is the live city reading what the load reads: no key, no bump.
 
 A currency reform (`Construction.redenominateExtras()`) now scales the book's price a point with the rest of the
 builders' money (the second review's P1; FC2 left it in the old D$): ForeignCrewsCheck section 8 reforms a thousand
@@ -243,7 +265,7 @@ were measured with the crews on under FC2 as first reviewed, which handed the ov
 REV-FC2 an order hands only its own buildings past the threshold, so with the crews on those cities would send less
 abroad; each section's claim is the city's own builders', and it is still run with the crews off, as written.
 
-- **ForeignCrewsCheck** (new; a Sonnet slice, reviewed; 145 assertions of its own since the second review, green). Each bound is caused
+- **ForeignCrewsCheck** (new; a Sonnet slice, reviewed; 165 assertions of its own since the third review, green). Each bound is caused
   through the model's inputs (the rate, the queue, the level, standing roads) on both sides of its edge:
   1. The strongest D$ (`ForeignAccounts.MIN_RATE`): threshold 9.000326 against the knee's 9; 8.854 months queued
      not abroad, 9.075 abroad.
@@ -274,10 +296,12 @@ abroad; each section's claim is the city's own builders', and it is still run wi
      home. The claims: his book 113,519.0, the plant's 111,614.2 and the Houses' 1,904.8, carried through a save; read
      as a save from before the key, the plant's struck at its 112,936.4 owed of 120,000. Cancelled after his month: a
      Middle School with none on the book cuts none of it (FC2 cut its 1,658.6 left), the plant its share 0.983221 of
-     his book after his month, 108,113.0 to 1,814.1.
+     his book after his month, 108,113.0 to 1,814.1. The third review: a finished site's later order at home claims
+     none, in the city and its loaded twin, through a cancel; a split works' preparation abroad is owed on its site
+     (section 3's two calls).
   8. A currency reform, a thousand to one, with his book on: 58,014 points at 1.174893464 a point, after it
      0.001174893464; the month after he built 6,199 points and billed 7.283165, at the new unit's price.
-  9. 43 months audited here, the worst residual 1.71e-13.
+  9. 51 months audited here, the worst residual 3.13e-13.
 - **ConstructionTrapCheck** (moved to the new truth, 324 OK): FC2's pure shape. Since the second review the
   founding's Penitentiary (62,000 points) is split at the threshold and its work past it went on his book as it was
   billed, 7,716 points of it still there before the trap's sites; they were ordered from under the threshold (the
@@ -416,6 +440,8 @@ abroad; each section's claim is the city's own builders', and it is still run wi
   `homePriceMultiplier()`, the premium at home (53.1108 where the order's multiple, the crews' share past the
   threshold in this city, read 56.8944). Green.
 - **DenominationCheck** (6 red, mended in the model): the reform's family above. Green.
+- Green on the third review's tree (c2d0c8bd5), run one at a time: ForeignCrewsCheck, ConstructionTrapCheck,
+  ForeignCheck, ConstructionControlCheck, DenominationCheck, SaveFileCheck; `./batch-check.sh --fast` green.
 - Green on the second review's tree (26fe8b1d0 and its notes), run one at a time: ForeignCrewsCheck, ForeignCheck,
   ConstructionTrapCheck, DenominationCheck, FitoutCheck, BuildCardCheck, ConstructionControlCheck, DeathCareFirstCheck,
   SaveFileCheck, WellCheck, GapOrderCheck, BuildMenuCheck, SubstationCheck, BuildersFirstCheck, AuctionCheck,
