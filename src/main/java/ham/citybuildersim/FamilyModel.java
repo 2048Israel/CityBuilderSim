@@ -1485,6 +1485,13 @@ public class FamilyModel implements HouseholdBalance.Census {
         this.familyRentWeight = Math.max(0, family);
         this.rentWeight = this.studioRentWeight + this.familyRentWeight;
     }
+
+    /** Restore the three saved aggregates without changing their accumulation rounding. */
+    void restoreRentWeight(double total, double studio, double family) {
+        rentWeight = Math.max(0, total);
+        studioRentWeight = Math.max(0, studio);
+        familyRentWeight = Math.max(0, family);
+    }
     public double getCrowdedHouseholds(){ return crowdedHouseholds; }
     public double getRefusedByStudio()  { return refusedByStudio; }
 

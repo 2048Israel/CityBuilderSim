@@ -17225,6 +17225,8 @@ public class Game {
     private double carriedOccupiedHomes = -1;
     /** ...and the studio half of it. See DataSave.getRentWeightStudio(). */
     private double carriedStudioWeight;
+    /** The exact family half already saved in Real Estate's sector extras. */
+    private double carriedFamilyWeight;
     private double carriedRetailCapacity;
     private double carriedRetailWant;
 
@@ -20893,7 +20895,11 @@ public class Game {
     // because migration reads it. See FamilyModel.adoptCarriedUnplaced().
     families.adoptCarriedUnplaced();
     families.adoptCarriedDoubling();
-    if (savedHousing.active() || carriedRentWeight > 0) {
+    if (savedHousing.active()) {
+        // Each aggregate is already saved. Subtracting the studio share from
+        // the total can move the family share by an ULP at the load seam.
+        families.restoreRentWeight(carriedRentWeight, carriedStudioWeight, carriedFamilyWeight);
+    } else if (carriedRentWeight > 0) {
         /*
          * BOTH HALVES, RESTORED, not one total re-split.
          *
@@ -21742,6 +21748,7 @@ public class Game {
             handOnExpectations();
             carriedRentWeight = loaded.getRentWeight();
             carriedStudioWeight = loaded.getRentWeightStudio();
+            carriedFamilyWeight = getSectors().realEstate().getFamilyRentWeight();
 
             // The shops' budget constraint came back inside the Retail sector's
             // own state; it is re-applied after the rebuild below all the same,
@@ -22486,12 +22493,13 @@ public class Game {
         getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
         getSectors().retail().setWantedSpend(carriedRetailWant);
         if (getSectors().realEstate().housingMarket().active() || carriedRentWeight > 0) {
-            // Both halves, and the family one by subtraction so the two always
-            // sum to the figure the landlords were paid. See the note at the
-            // other restore site.
-            double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
-            families.setRentWeight(studio, carriedRentWeight - studio);
-            getSectors().realEstate().setRentWeight(studio, carriedRentWeight - studio);
+            if (getSectors().realEstate().housingMarket().active()) {
+                families.restoreRentWeight(carriedRentWeight, carriedStudioWeight, carriedFamilyWeight);
+            } else {
+                double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
+                families.setRentWeight(studio, carriedRentWeight - studio);
+            }
+            getSectors().realEstate().setRentWeight(families.studioRentWeight(), families.familyRentWeight());
         }
 
         /*
