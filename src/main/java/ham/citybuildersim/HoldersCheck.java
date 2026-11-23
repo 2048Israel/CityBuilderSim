@@ -1474,7 +1474,10 @@ public class HoldersCheck {
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
             city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            // NO COAL PLANT, THE CITY SECTION 11 WAS WRITTEN AGAINST (PW2, 2026-11-23): until PW2 the treasury refused the one this
+            // list ordered (NEEDS_FUNDING), so the town ran on its founding's power; PW2's refigured plant is cheaper and was bought,
+            // a 60-month site that took the crews from the houses. BuybackCheck's town, the same list, is main's to the figure
+            // without it.
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(60);
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
