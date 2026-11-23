@@ -100,6 +100,21 @@ public class ForeignCheck {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        /*
+         * FC2: THE BUILDERS' PRICE AND THE FOREIGN CREWS ARE OFF IN THIS JVM (BuildingManager.buildersShortOn, as
+         * HoldersCheck and MonetaryCheck have them). Every city here is ordered its town and its programme whole on the
+         * first day, a queue of years for its four depots, so since FC2 the foreign crews build it abroad within the year,
+         * and the fixtures stop being what they were written as. Measured with them on: the town of section 2 stood
+         * finished at month 10 with nobody in it, its first two years' payroll $677k and $366k against trade deficits of
+         * $20,859k and $12,689k (the crews billed $35,333k and $9,805k), so the swamp law below was a town being bought, not
+         * one paying its people, and its bakery stood two months with nothing sold abroad; and the twins of section 6 bought
+         * their programme partly as the crews' work at p/E + x a point, whose p/E falls with a weaker currency and whose
+         * threshold rises with it (Construction's imports $99,022k at parity, $78,545k at 1.40), the premise reading 0.8040
+         * - the hinge Manufacturing and Cement sit out of it for. What FC2 puts across the edge is ForeignCrewsCheck's:
+         * its import and export booked once (section 7), and the Trade tab's sold abroad still the balance of payments'
+         * exports with the builders' among them (section 5).
+         */
+        BuildingManager.buildersShortOn = false;
 
         /* ================= 1. the rate is pinned ================= */
         out.println("--- phase one: the rate exists and does nothing ---");

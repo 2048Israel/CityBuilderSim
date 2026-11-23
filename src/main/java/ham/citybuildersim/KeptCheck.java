@@ -2016,7 +2016,7 @@ public class KeptCheck {
         choices.add(choice("paid from the vault", b -> { b.landPay(true); return null; }));
         choices.add(choice("paid by converting cash", b -> { b.landPay(false); return null; }));
         choices.add(choice("the way of paying put back", b -> { b.landPay(vault); return null; }));
-        choices.add(choice("a plot bought (its receipt, the plots that came onto the shelf)", b -> quietly(b::landBuy)));
+        choices.add(choice("a plot bought (its receipt, the plots that came onto the shelf)", b -> buyTheBestOffer(g, b)));
         pageReshapedCaused(g, bench, page, 31, choices);
 
         // The two other pages of the office, each an arrival that forgets the pool: drawn, then a month later. The funding page
@@ -2036,6 +2036,23 @@ public class KeptCheck {
             // (In the game the fell-short page is never redrawn over itself: a month landing draws the office. It is drawn so here, as every page is.)
             pageReshapedCaused(g, bench, other, 33, List.of(choice(other.name() + " opened", b -> null)));
         }
+    }
+
+    /**
+     * The best offer bought through the bench (KeptBench.landBuy(), a row's Buy), the city first given the least that pays for
+     * it where it cannot (FC2): the played city reaches this section at month 1043 in a slump of its own since FC2
+     * (LongPlaytest's m1052 checkpoint: cash $694k against main's $255.8M), so the receipt's page is caused, not found - by
+     * cash, and through the cash, the vault's toggle set to converting it, where the vault is short too. Only the gap, so
+     * section 33 still finds the city short of the next.
+     */
+    static String buyTheBestOffer(Game g, KeptBench b) throws Exception {
+        List<Integer> ids = g.nextLandParcels(1);
+        if (!ids.isEmpty() && g.landNeedsFunding(ids)) {
+            if (g.isLandPaidFromVault()) b.landPay(false);
+            double gap = g.landCashGap(ids);
+            if (gap > 0) g.setCashForTest(g.getCash() + gap + Math.max(1, 1e-9 * gap));
+        }
+        return quietly(b::landBuy);
     }
 
     /**

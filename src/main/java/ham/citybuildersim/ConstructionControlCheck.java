@@ -346,14 +346,25 @@ public class ConstructionControlCheck {
             for (ConstructionControl.Overtime x : g.getControlThisMonth().overtime) if (x.key().equals(key)) o = x;
             assertTrue("month " + m + ": the site was worked on overtime, its month " + m, o != null && o.month() == m);
             if (o == null) continue;
-            close("  its work is its share x 50/40 x the month's factor", o.work(),
-                    Math.min(bm.getLastPlan().owedOf(key), o.share() * ConstructionControl.overtimeOutput(m)), 1e-12);
+            // FC2, moved from "its work is its share x 50/40 x the month's factor": since FC2 the foreign crews are always on
+            // offer, and this city's queue is past their threshold, so their points join the month the plan shares out and part
+            // of the site's share is theirs. Overtime is the city's own crews' hours (FC1's rule, ConstructionTrapCheck 10):
+            // their part of the share - the share over the whole month, less his points, of it - on overtime, and his as it is.
+            // With nothing of his in the month the own part is the whole share, and this is the line it was.
+            BuildingManager.Plan plan = bm.getLastPlan();
+            double his = g.getSectors().construction().getForeignPointsThisMonth();
+            out.printf("  month %d: the sites' month %,.0f, of it %,.0f the foreign crews'%n", m, plan.output, his);
+            close("  the city's own crews' part of the share is the share over the month, less the foreign crews' points of it", o.own(),
+                    o.share() * (plan.output - his) / plan.output, 1e-12);
+            close("  its work is the city's own part x 50/40 x the month's factor and the foreign crews' part as it is", o.work(),
+                    Math.min(plan.owedOf(key), (o.share() - o.own()) + o.own() * ConstructionControl.overtimeOutput(m)), 1e-12);
             close("  ...and is what the site was built by", uni.getLastApplied(), o.work(), 1e-12);
             close("  ...its progress moved by it", uni.getConstructionProgress() - progressBefore, o.work(), 1e-9);
             close("  the wage bill a point is a depot's posts at today's wages over its points", o.perPoint(),
                     perPoint, 1e-12);
-            close("  the premium is 0.375 of its crews' bill", o.premium(),
-                    ConstructionControl.premiumShare() * o.share() * perPoint, 1e-12);
+            // ...and moved from "of its crews' bill" on the share: the premium is on the city's own crews' part alone (FC2).
+            close("  the premium is 0.375 of its own crews' bill", o.premium(),
+                    ConstructionControl.premiumShare() * o.own() * perPoint, 1e-12);
             close("  the treasury paid it with the builders' tax in it", g.getOvertimePaidThisMonth(),
                     o.premium() / (1 - rB), 1e-9);
             close("  ...which the builders earned", g.getSectors().construction().getOvertimeThisMonth(),

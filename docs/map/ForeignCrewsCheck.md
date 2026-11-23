@@ -1,4 +1,4 @@
-# ForeignCrewsCheck.java - 497 lines · 16 methods · 10 constants · harnesses
+# ForeignCrewsCheck.java - 507 lines · 16 methods · 10 constants · harnesses
 
 `ham/citybuildersim/ForeignCrewsCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
 
@@ -42,7 +42,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [BuildersShort](BuildersShort.md) (25), [Game](Game.md) (17), [BuildingManager](BuildingManager.md) (12), [ConstructionTrapCheck](ConstructionTrapCheck.md) (8), [MoneyAudit](MoneyAudit.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [Construction](Construction.md) (4), [DeathCareFirstCheck](DeathCareFirstCheck.md) (2), [TempDirs](TempDirs.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sector](Sector.md) (1), [PopulationManager](PopulationManager.md) (1)
+**Uses:** [BuildersShort](BuildersShort.md) (25), [Game](Game.md) (17), [BuildingManager](BuildingManager.md) (12), [ConstructionTrapCheck](ConstructionTrapCheck.md) (8), [MoneyAudit](MoneyAudit.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [Construction](Construction.md) (4), [DeathCareFirstCheck](DeathCareFirstCheck.md) (2), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sector](Sector.md) (1), [PopulationManager](PopulationManager.md) (1)
 
 ## Sections
 
@@ -54,7 +54,7 @@
 | 252 | 3. THE WEAKEST RATE |
 | 272 | 4. DOMESTIC INFLATION |
 | 304 | 5. THE EXPORT |
-| 372 | 6. A 240-MONTH BACKLOG |
+| 382 | 6. A 240-MONTH BACKLOG |
 
 ## Constants
 
@@ -81,7 +81,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 431 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
+| 67 | 441 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
 | 102 | 1 | `static void ok(String label, boolean cond)` |  |
 | 104 | 1 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 106 | 1 | `static void exact(String label, double actual, double expected)` |  |
@@ -121,17 +121,17 @@
 |---:|---:|---|---|
 | 274 | 29 | `static void domesticInflation(Game g)` |  |
 
-### 5. THE EXPORT (lines 304-371)
+### 5. THE EXPORT (lines 304-381)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 306 | 65 | `static void theExport(Path root)` |  |
+| 306 | 75 | `static void theExport(Path root)` |  |
 
-### 6. A 240-MONTH BACKLOG (lines 372-497)
+### 6. A 240-MONTH BACKLOG (lines 382-507)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 379 | 17 | `static Game backlog(Path root, String name, double months)` | A calm city with the landlords' Houses ordered on top of its own, enough that the queue at home is `months` of the sites (ConstructionTrapCheck.calm()'s own way of ordering them: the landlords given twice the quoted p... |
-| 397 | 65 | `static void theBacklog(Path root)` |  |
-| 464 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
+| 389 | 17 | `static Game backlog(Path root, String name, double months)` | A calm city with the landlords' Houses ordered on top of its own, enough that the queue at home is `months` of the sites (ConstructionTrapCheck.calm()'s own way of ordering them: the landlords given twice the quoted p... |
+| 407 | 65 | `static void theBacklog(Path root)` |  |
+| 474 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
 

@@ -348,6 +348,16 @@ public class ForeignCrewsCheck {
             ok("...in the audit's TRADE scope: the trade in is at least that line", r != null && r.tradeIn >= line - MoneyAudit.CENT);
             ok("...and in the national accounts' exports", g.getEconomyManager().getNationalAccounts().getExports() >= line - MoneyAudit.CENT);
             ok("...and the foreign accounts'", g.getForeignAccounts().getExports() >= line - MoneyAudit.CENT);
+            // ...and the Trade tab's reading of it (Sectors.TradeByGood.servicesSold()): an export with no good behind it, on the
+            // builders' row, so what the tab says was sold abroad is still the balance of payments' exports (ForeignCheck's footing,
+            // which runs with the foreign crews off: its note says why).
+            Sectors.TradeByGood t = g.getTradeByGood();
+            out.printf("  the Trade tab: the builders sold abroad %,.4f with no good behind it; sold abroad in all %,.4f, the foreign accounts' exports %,.4f%n",
+                    t.servicesSold().getOrDefault(BUILDERS, 0.0), t.sold(), g.getForeignAccounts().getExports());
+            near("on the Trade tab the builders sold abroad what their statement carries, an export with no good behind it",
+                    t.servicesSold().getOrDefault(BUILDERS, 0.0), stated, 1e-9);
+            near("...and what the tab says was sold abroad is the balance of payments' exports, theirs among them",
+                    t.sold(), g.getForeignAccounts().getExports(), 1e-9);
         }
 
         Game kneeCity = calm(root, "knee");

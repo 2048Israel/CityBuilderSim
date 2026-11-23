@@ -6253,8 +6253,9 @@ public class BuildingManager {
      * Whether the builders' scarcity price and the foreign contractor are on (FC1): always, in the game. Harnesses only
      * turn it off, for the whole JVM (AllChecks runs each harness in its own), so every city they found or load reads
      * alike: a fixture town whose claim is about something other than building, which FC1's price moves onto another
-     * path (HoldersCheck, DenominationCheck, MonetaryCheck, SectorStatementCheck, and MapCheck through its section 2h:
-     * their notes say why) - every order's multiple then exactly 1
+     * path (HoldersCheck, DenominationCheck, MonetaryCheck, SectorStatementCheck, and MapCheck through its section 2h;
+     * since FC2's foreign crews BuildersFirstCheck and ForeignCheck, and for one section each SaveFileCheck's brake
+     * town, GapOrderCheck's trap and ForeignCrewsCheck's twin: their notes say why) - every order's multiple then exactly 1
      * and the contractor never taking orders. Nothing in the game sets it.
      */
     static boolean buildersShortOn = true;

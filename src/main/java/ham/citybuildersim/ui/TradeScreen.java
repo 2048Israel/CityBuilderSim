@@ -898,8 +898,9 @@ final class TradeScreen {
     /**
      * Every good that crossed the edge this month, largest side first (the
      * spec's D6: a good with nothing either way is not a row), then what was
-     * bought abroad with no good behind it, by the sector that bought it
-     * (pure). The railway's fuel and the households' were such rows until
+     * bought abroad with no good behind it, by the sector that bought it,
+     * and since FC2 what was sold abroad with none, by the sector that sold
+     * it - the builders' spare points worked abroad (pure). The railway's fuel and the households' were such rows until
      * fuel was a good (0.7.62); they are FUEL's buyers now - the households
      * PETROL's and the railway DIESEL's since 0.7.76, and since 0.7.83 the
      * grocers PETROL's for the drivers and the vans DIESEL's (a save from
@@ -920,6 +921,13 @@ final class TradeScreen {
                     e.getValue(), 0, -e.getValue(),
                     "Bought abroad by " + who(e.getKey()) + "\n" + dFull(e.getValue())
                             + "\nAn import with no good behind it.", null, hasPage(e.getKey()) ? e.getKey() : null));
+        }
+        for (Map.Entry<String, Double> e : t.servicesSold().entrySet()) {
+            if (!(e.getValue() > 0)) continue;
+            out.add(new GoodRow(Icons.ofSector(sector(e.getKey())), "Sold abroad by " + who(e.getKey()),
+                    0, e.getValue(), e.getValue(),
+                    "Sold abroad by " + who(e.getKey()) + "\n" + dFull(e.getValue())
+                            + "\nAn export with no good behind it.", null, hasPage(e.getKey()) ? e.getKey() : null));
         }
         return out;
     }
