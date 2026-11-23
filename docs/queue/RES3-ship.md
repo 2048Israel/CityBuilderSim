@@ -9,7 +9,7 @@ retired. Commits historical and present-day quote, budget, availability and buil
 reports. Native class flows and wage indices use save format 64 and floor 64.
 Emergency shelter retains funded demand for separate doors without extra rent.
 Feasible paid and hosted emergency placements are matched together.
-Unbuilt supply quotes cover operations; feasible forms use the full typed backlog.
+Unbuilt supply quotes cover operations; feasible orders use the full affordable typed backlog.
 ## known-reds
 ScaleCheck | fixture: the town has, within 60 months of month 225, a month it is growing | HT1-H | 2026-11-23 | Moved played-city premise after funded doubled demand is priced: none of six candidate windows has six straight affordability-pull=1 months on the final planner model. All evaluated native tracking, count and money laws pass; the free-growth copy needs its premise caused. FS2 shipped; queued HT1-H owns this fixture class. See RES3-notes.
 BuildCardCheck | another spur's gate is a loss, what the investors' estimate says it would lose: | FS12 | 2026-11-23 | The played town can staff 29% now and 71% with arrivals, below the unchanged 80% gate. The actual estimate is -28.13918112808416; LOSS and INTEREST fail correctly, but STAFFING comes first. Cause adequate staffing for the loss-first fixture; preserve every gate and comparison. See RES3-notes.
