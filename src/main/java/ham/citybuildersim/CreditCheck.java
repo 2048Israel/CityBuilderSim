@@ -1220,10 +1220,29 @@ public class CreditCheck {
          * the window): it builds from its till and borrows nothing, and the
          * advisor does not say the ban.
          */
+        /*
+         * FC2, 2026-11-23: THE TILL HAS STOOD A QUARTER. The lender reads a sector on its last quarter's readings
+         * (BusinessDebtManager.getQuarterLeverage()), and this retailer's were its forty-seven held-broke months: owing
+         * $74k of interim loans against $35k owned, a leverage of 2.1 and a rate of 29.6%, the curve's end. A shop's
+         * profit ($0.15k a month on $13.7k) does not carry its interest on its whole cost at that, and the advisor, which
+         * judges the whole cost whoever pays (Game.Slices.passes()), declined the order it was judged on ("not even one
+         * would cover its interest ... at NaN%": the ban returns before the rate is read, so firstRate stays NaN in the
+         * words) - a retailer that could not carry a shop at its own risk, not a ban on a till that covers one. So the till
+         * stands for the quarter first, the planner held: its cash is owned, the readings go to a leverage of 0.9 and
+         * the rate to 7.3%, and what the ban is judged on is the ban.
+         */
+        banned.getBusinessInvestment().holdSector(sector);
+        for (int mm = 0; mm <= BusinessDebtManager.STATEMENT_MONTHS; mm++) {
+            econ.setSectorCash(sector, 2 * shopCost);
+            quietly(() -> banned.simulateMonths(1));
+        }
+        banned.getBusinessInvestment().releaseSector(sector);
         ledger.setAssets(sector, -1);
         if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
         ledger.restructure(sector);
         assertTrue("fixture: the ban is live for the month the till covers a shop", ledger.getBlockedMonths(sector) > 1);
+        assertTrue("fixture: the lender reads the retailer at no more than its assets owed, a rate a shop's profit carries",
+                ledger.getQuarterLeverage(sector) <= 1);
         int loansThen = ledger.getLoanCount(sector) - ledger.getInterimCount(sector);
         double principalThen = ledger.getPrincipal(sector) - ledger.getInterimPrincipal(sector);
         long orderedThen = banned.getBuildingManager().getQuantity(shop.getId())
@@ -1573,7 +1592,13 @@ public class CreditCheck {
              */
             town.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
             town.getBusinessInvestment().holdSector(Sectors.FREIGHT);
-            town.simulateMonths(3);
+            // FC2, 2026-11-23: one month, not three. Played three, this town's first farm and store were standing at the end of the
+            // first (the foreign crews finish an order's work abroad), Freight filed a reading at the end of the second and had
+            // filed two, borrowed 0.22k of a first bill and held 0.14k of cash by the third: it had owned and owed something,
+            // which the premise below says it has not. A town's first buildings open at the end of its first month at the
+            // soonest, so a sector with no plant of its own has had nothing to carry, and filed nothing, in that month on any
+            // path (the premise below asserts it); the plant is handed over after it, between months as before.
+            town.simulateMonths(1);
         });
         BusinessDebtManager lender = town.getEconomyManager().getBusinessDebtManager();
         BuildingManager plant = town.getBuildingManager();
