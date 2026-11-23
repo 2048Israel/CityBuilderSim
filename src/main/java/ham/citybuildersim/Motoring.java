@@ -238,6 +238,9 @@ public final class Motoring {
     /** What one went for. Zero in a month when nobody offered one. */
     public double getUsedCarPrice()        { return usedCarPrice; }
 
+    /** ...restored from a save (PW2; DataSave.usedCarPrice): the month's figure the households' cars are marked at until the next month clears its own. */
+    void restoreUsedCarPrice(double price)  { usedCarPrice = Math.max(0, price); }
+
     /** What the buyers paid for them, all in. */
     public double getUsedCarSpend()        { return usedCarSpend; }
 

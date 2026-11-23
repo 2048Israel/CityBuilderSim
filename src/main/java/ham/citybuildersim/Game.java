@@ -17972,6 +17972,8 @@ public class Game {
         // ...and the work the city sends the builders (OG1): what their next depot order is sized to.
         dataSave.setBuildersWork(businessInvestment.getSiteWorkOrdered());
         dataSave.setBuildersOwedAfterAdvance(businessInvestment.getOthersOwedAfterAdvance());
+        // ...and what a used car went for in the month, the households' cars' mark (PW2; DataSave.usedCarPrice).
+        dataSave.setUsedCarPrice(motoring.getUsedCarPrice());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
         // ...and the investors' last word on each sector (0.7.102, A22): words written inside the tick.
@@ -22443,6 +22445,7 @@ public class Game {
             businessInvestment.restoreOperatingLossMonths(restoredFlows.getSectorOperatingLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             businessInvestment.restoreSiteWork(restoredFlows.getBuildersWork(), restoredFlows.getBuildersOwedAfterAdvance());
+            motoring.restoreUsedCarPrice(restoredFlows.getUsedCarPrice() == null ? 0 : restoredFlows.getUsedCarPrice());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
             // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which
