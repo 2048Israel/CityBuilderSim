@@ -706,6 +706,7 @@ public final class RealEstate extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0, bestDoors = 0;
         String blocked = null;
+        String blockedLand = null;
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.getCapacity() <= 0) continue;
@@ -729,6 +730,10 @@ public final class RealEstate extends Sector {
                 blocked = String.format("rent does not cover a new %s", t.getName());
                 continue;
             }
+            if(plans.plotsAvailableFor(t)<1){
+                if(blockedLand==null)blockedLand=plans.landReason(t);
+                continue;
+            }
 
             double income = housingMarket.active()?typedIncome:doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
             double cost = plans.getCostOf(t, 1);
@@ -742,6 +747,7 @@ public final class RealEstate extends Sector {
         }
 
         if (best == null) {
+            if(blockedLand!=null)return BusinessInvestment.Decision.noLand(sector,blockedLand);
             if(housingMarket.active()&&headShortfall<=0&&familyShortfall<=0)
                 return BusinessInvestment.Decision.no(sector,String.format("housing ahead of jobs (%,d now, %,d coming); %s",
                         totalJobs,jobsComing,blocked!=null?blocked:"new homes would not cover their costs"));
@@ -750,7 +756,8 @@ public final class RealEstate extends Sector {
 
         // Sized on whichever shortage is the bigger.
         double byHeads = headShortfall;
-        double byDoors = bestDoors * FamilyModel.rentWeightOf(best.homeSize());
+        double byDoors = typedForecast!=null?(double)typedForecast.quantityNeeded(best)*best.getCapacity()
+                :bestDoors * FamilyModel.rentWeightOf(best.homeSize());
         double gap = Math.max(byHeads, byDoors);
         int wanted = best.getCapacity() > 0 ? Math.max(1, (int) Math.ceil(gap / best.getCapacity())) : 1;
         int plots = plans.plotsAvailableFor(best);

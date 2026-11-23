@@ -143,6 +143,7 @@ public final class HousingMarket {
         var bm=game.getBuildingManager();var em=game.getEconomyManager();var re=game.getSectors().realEstate();
         double totalBasis=0;
         Map<Integer,Double> carry=new HashMap<>();
+        Set<HousingInventory.Key> opening=new HashSet<>();
         for(BuildingsTemplate t:bm.getTemplates()){
             if(!re.key().equals(t.getSector()))continue;
             double structure=game.quoteBuild(t,1).total;
@@ -159,22 +160,32 @@ public final class HousingMarket {
                 c.capacity=d.capacity();
                 c.capital=f==null?full*d.costWeight()/r.costWeight():f.homeCapital(d.id(),Math.max(0,full-land),land);
                 boolean known=bm.isTemplateKnown(t);
-                if(initial||(!c.available&&known))c.ask=c.capital*RealEstate.LANDLORD_YIELD/12;
+                if(initial||(!c.available&&known))opening.add(key);
                 c.available=known;
             }
         }
         var stock=bm.getHousingInventory().stock();
+        Map<HousingInventory.Key,Double> onSite=new HashMap<>();
         for(ClassState c:classes.values()){c.homes=0;c.carry=0;}
         for(var s:stock){ClassState c=classes.get(s.key());if(c==null)continue;
             c.homes=bm.getHousingInventory().owned(s.key(),HousingInventory.Owner.REAL_ESTATE);
+            onSite.put(s.key(),s.pipeline());
             totalBasis+=(c.homes+s.pipeline())*c.capital;}
-        for(var s:stock){ClassState c=classes.get(s.key());if(c==null)continue;
-            double share=s.dwelling().costWeight()/s.recipe().costWeight();
-            // Debt is currently a sector obligation. Fixed project capital weights partition it once,
-            // including sites; a class never raises its target to make up another class's deficit.
-            double debt=totalBasis>0?re.carriedInterest()*c.capital/totalBasis:0;
-            c.carry=carry.getOrDefault(s.key().recipe(),0.0)*share+debt;
+        // An unbuilt form is absent from physical stock, but still has a real
+        // operating quote. Its capital-return anchor alone cannot pay those bills.
+        for(BuildingsTemplate t:bm.getTemplates()){
+            HousingRecipe recipe=t.getHousingRecipe();if(!re.key().equals(t.getSector())||recipe==null)continue;
+            for(var d:recipe.mix()){
+                var key=new HousingInventory.Key(t.getId(),d.id());ClassState c=classes.get(key);
+                double share=d.costWeight()/recipe.costWeight();
+                // Actual titles/sites partition debt once. An unbuilt blueprint
+                // cannot inherit another class's loans or promise their rent.
+                double debt=totalBasis>0&&c.homes+onSite.getOrDefault(key,0.0)>0?re.carriedInterest()*c.capital/totalBasis:0;
+                c.carry=carry.getOrDefault(t.getId(),0.0)*share+debt;
+            }
         }
+        for(ClassState c:classes.values())if(opening.contains(c.key()))
+            c.ask=c.capital*RealEstate.LANDLORD_YIELD/12+(c.homes==0?c.carry:0);
     }
     public HousingChoice.Result clear(Game game,List<HousingChoice.Demand> cells){
         if(month==game.getMonth())return result;
@@ -431,10 +442,25 @@ public final class HousingMarket {
         private Forecast(Game city,List<HousingChoice.Demand> remaining){this.city=city;this.remaining=List.copyOf(remaining);
             Map<HousingInventory.Key,Double> prices=new HashMap<>();for(var c:classes.values())prices.put(c.key(),c.ask);asks=Map.copyOf(prices);}
         public double income(BuildingsTemplate t,long quantity){
-            if(city==null||t==null||quantity<=0||t.getHousingRecipe()==null||!city.getBuildingManager().isTemplateKnown(t))return 0;
+            return match(t,quantity).leases().stream().mapToDouble(HousingChoice.Lease::bill).sum();
+        }
+        /** Enough actual recipe units for the remaining compatible, affordable demand; no fictitious head-capacity demand. */
+        public int quantityNeeded(BuildingsTemplate t){
+            long limit=(long)Math.min(Integer.MAX_VALUE,Math.ceil(remaining.stream().mapToDouble(HousingChoice.Demand::count).sum()));
+            var placed=match(t,limit);int wanted=0;
+            if(t==null||t.getHousingRecipe()==null)return 0;
+            for(var d:t.getHousingRecipe().mix()){
+                double units=placed.leases().stream().filter(l->l.home().dwelling().equals(d.id())).mapToDouble(HousingChoice.Lease::count).sum();
+                wanted=Math.max(wanted,(int)Math.ceil(Math.max(0,units-FamilyModel.packingRounding(units))/d.count()));
+            }
+            return wanted;
+        }
+        private HousingChoice.Result match(BuildingsTemplate t,long quantity){
+            if(city==null||t==null||quantity<=0||t.getHousingRecipe()==null||!city.getBuildingManager().isTemplateKnown(t))
+                return new HousingChoice.Result(List.of(),0,0,0,0,0,0);
             List<HousingChoice.Offer> proposed=new ArrayList<>();var recipe=t.getHousingRecipe();var f=HousingForms.of(t.getId());
             for(var d:recipe.mix()){var key=new HousingInventory.Key(t.getId(),d.id());proposed.add(new HousingChoice.Offer(key,(double)d.count()*quantity,d.capacity(),d.bedrooms(),d.area(),d.quality(),f==null?0:f.garden(),f!=null&&f.stepFree(),asks.getOrDefault(key,0.0),0));}
-            return HousingChoice.clear(remaining,proposed,List.of(),month,false).leases().stream().mapToDouble(HousingChoice.Lease::bill).sum();
+            return HousingChoice.clear(remaining,proposed,List.of(),month,false);
         }
     }
     /** The current cell counts, before this month's emergency sharing transfers. */
@@ -459,7 +485,7 @@ public final class HousingMarket {
             // An unbuilt class keeps its opening supply quote until it has a market.
             double pressure=c.homes>0?c.demand/c.homes:1;
             double anchor=c.capital*RealEstate.LANDLORD_YIELD/12;
-            c.target=anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY);
+            c.target=c.homes>0?anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY):anchor+c.carry;
             double balanced=c.homes*RealEstate.GLUT_PRESSURE;
             // Allocation can round down by an ULP at a full door. Classify
             // economic vacancy with the same quantity bound as the match.
