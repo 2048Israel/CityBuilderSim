@@ -221,6 +221,29 @@ public class DenominationCheck {
                 g.buildStack(network, 1, true);
             }
             g.simulateMonths(120);
+            if(buses){
+                // Opening fixture assets: an existing fleet and its funded fuel
+                // buffer. The next native month must really strike and settle fuel.
+                Household buyer=g.getHouseholdBalance().cells().stream()
+                        .filter(c->c instanceof WorkingHousehold&&!c.isEmpty()&&c.disposable()>0)
+                        .max(java.util.Comparator.comparingDouble(Household::disposable)).orElseThrow();
+                double perHousehold=HouseholdBalance.SHARE_CUSHION_MONTHS*Math.max(buyer.disposable(),buyer.subsistence)
+                        +TaxPolicy.JOURNEYS_A_MONTH*Motoring.journeyFuel(g);
+                double transfer=perHousehold*buyer.households();
+                assertTrue("fixture: the treasury funds the driver's fuel buffer",g.getCash()>=transfer);
+                g.getGovernmentInvestor().spend(transfer);buyer.savings+=perHousehold;
+                buyer.cars=1;
+                // First strike the fleet's fuel; then carry that bill into the
+                // households' settlement on the following native press.
+                for(int phase=0;phase<2;phase++){
+                    g.simulateMonths(1);
+                    var pools=g.getLastMoneyAudit();
+                    assertTrue("fixture: the funded driver month conserves the money pools",Math.abs(pools.residual)
+                            <=MoneyAudit.tolerance(Math.abs(pools.before)+Math.abs(pools.after)+pools.inflows+pools.outflows));
+                    assertTrue("fixture: the funded driver month conserves household money",
+                            LongPlaytest.MoneyFixtures.householdsClose(g.getLastHouseholdsAudit()));
+                }
+            }
         });
         return g;
     }
@@ -647,6 +670,8 @@ public class DenominationCheck {
         double fuelStruck = reformed.getInfrastructureManager().getFuelPerJourney();
         double fuelBill = reformed.getMotoring().getFuelBill();
         double fuelPaid = reformed.getHouseholdFuel();
+        out.printf(java.util.Locale.ROOT,"   native driver fixture: cars %.9g, drivers %.9g; fuel struck %.9g, billed %.9g, paid %.9g%n",
+                reformed.getInfrastructureManager().getCarOwnership(),reformed.getInfrastructureManager().getDrivers(),fuelStruck,fuelBill,fuelPaid);
         assertTrue("fixture: the bus town's drivers burn fuel, struck, billed and paid",
                 fuelStruck > 0 && fuelBill > 0 && fuelPaid > 0);
         assertTrue("fixture: the reform by a thousand goes through", force(reformed, thousand));
