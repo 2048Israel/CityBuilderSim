@@ -162,6 +162,6 @@ ecbc3b975 (0.9.192) built apart and on this branch merged with it (82d5015aa, th
 ## 6. The dry run
 
 The second dry run (`sh tools/gate.sh PW1-W --dry-run`, the gate box, 2026-11-23) passed: branch 6fc091ac1 merged
-with main cdbe83dc0, the pick ALL (246 harnesses), the suite in 1,001 s, exit 3 on known reds alone (CopperRefiningCheck,
-CurrencyCheck, DeathRecordCheck, Forms1900Check, FundCheck, HoldersCheck, KeptCheck, LongPlaytest, PriceLevelCheck,
+with main cdbe83dc0, the pick ALL (246 harnesses), the suite in 1,001 s, exit 3 on known reds alone
+(CopperRefiningCheck, CurrencyCheck, DeathRecordCheck, Forms1900Check, FundCheck, HoldersCheck, KeptCheck, LongPlaytest, PriceLevelCheck,
 RoadCheck), no unnamed line, Stale no firm findings, gate exit 0. Run `/home/jerus/cbs/runs/cbs-gate-PW1-W-3D5i6fZ2`.
