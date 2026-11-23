@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.190"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.191"` | Bump on release. |
 | 8370 | `GameVersion.SAVE_FORMAT` | `63` | HC1 follows shipped RES2 format 61: the old card balance has no holder, late/excluded or debt-free departure positions. |
 | 8430 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `63` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 8438 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |

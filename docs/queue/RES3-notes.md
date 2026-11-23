@@ -2,7 +2,8 @@
 
 Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through HC1 on
 main efca2c5fd (0.9.190), merged as ef18a4b6c, and the queue-only e66c310a3.
-Final verification and publication status are below.
+AP2 then shipped as 1b89c5c4c (0.9.191), merged as 9af9ee926. Final
+verification and publication status are below.
 No user city or user save slot 1–9 is opened or written. Existing checks use
 their own isolated scratch slots; new RES3 native fixtures use slot 10.
 
@@ -603,11 +604,11 @@ months on this laptop (not solver-only timings):
 
 | Scratch city | People | Month ms | H/T/A/M/L |
 | --- | ---: | ---: | --- |
-| Small | 210 | 56.955 | 65/32/112/0/0 |
-| Present-day | supporting catalogue inputs above | 47.177 | 84/32/330/0/0 |
-| Larger present-day | 148,967 | 47.409 | 82/32/314/0/0 |
-| Historical | supporting catalogue inputs above | 37.847 | 62/32/193/0/0 |
-| Larger historical | 149,126 | 43.702 | 62/32/193/0/0 |
+| Small | 210 | 57.401 | 65/32/112/0/0 |
+| Present-day | supporting catalogue inputs above | 46.313 | 84/32/330/0/0 |
+| Larger present-day | 148,967 | 50.477 | 82/32/314/0/0 |
+| Historical | supporting catalogue inputs above | 39.727 | 62/32/193/0/0 |
+| Larger historical | 149,126 | 43.640 | 62/32/193/0/0 |
 
 Permanent household cells remain 141 in both larger cities; physical classes
 are 32 today and 16 in 1900. All 32 class quotes and 14 form availability rows
@@ -653,3 +654,78 @@ original six-block hand-order assertion reaches the bank-capital trim. Its
 door quote is 6851.6 versus the planner's 6754.4; the lender reads the door
 price, the owners are offered 5138.7 and put in 244.6. The original pricing,
 partial-equity, leverage-band and no-sticky-capital-refusal assertions all pass.
+
+AP2's shipped exact-state performance changes are retained. Its VERSION is
+0.9.191; the shipped save format remains 62, so RES3's format/floor remain 63.
+The source merge resolved only four generated-document conflicts, regenerated
+by the next named checks. The already-compiled full playtest finishes on its
+pre-AP2 classes; AP2's own 2,405-month trace comparison is byte-identical.
+Following native checks compile the merged source.
+
+The final HousingDoorCheck repeat has 149 lender-door months, 52 whole orders
+while the segment is short, no cut/held/down-payment refusal, and zero unplaced
+households throughout the window. All 899 household money identities close.
+It ends at 10,801 people and 1,893 homes. Its only red remains the missing
+played bank-capital opportunity, recorded with FS11; the deliberately caused
+CreditCrunchCheck is fully green. These final numbers supersede the earlier
+157/70 observation on the pre-retirement-room source.
+
+The final full LongPlaytest is exit 0. Its 2,404 audited monthly transitions
+have no money finding, every reload matches, and the maximum unplaced-household
+count is zero. The original mean-month carrier bounds hold: UnsettledIncome
+3,360 ppm against 5,000; UnsettledRent 345 against 500; UnsettledFees 21.1
+against 30. The additional HA1 and payslip-carrier fixtures pass too. Kept logs:
+target/RES3-LongPlaytest-final.log and target/RES3-LongPlaytest-final.txt,
+compiled from a5f4f6c0c before the AP2 merge described above. No short-window
+bound or homeless finding is waived.
+
+SaveFileCheck on the AP2-integrated source is exit 0. It retains exact card
+positions/flows, used-car trade/mark and debt-statistics comparisons. The AW2
+workplace inputs now give share 1.000000 before the original 80% staffing gate;
+the ordinary saved/live construction twins still pass every original assertion.
+
+## Local acceptance and review handoff
+
+The final model includes HC1 and AP2 from shipped main 1b89c5c4c. PW5 has not
+shipped at this handoff; its eventual shipped ID and save format must be
+refreshed before RES3's final gate. All calls below use the supplied earth/world
+paths and isolated fixture directories. Named checks run one call at a time;
+the final card selection additionally uses cbs.parallel=1 because it selects
+BuildCardCheck too.
+
+| Check | Result |
+| --- | --- |
+| --fast | 0; no firm Stale finding, 199 soft observations |
+| HousingInventoryCheck, HousingChoiceCheck, HousingMarketCheck | 0 each; final merged-tree repeats |
+| HouseholdCheck, HouseholdFlowCheck, BuildingDataCheck | 0 each; final merged-tree repeats |
+| CardCheck (including BuildCardCheck), DebtStatisticsCheck | 0; final merged-tree repeats |
+| HousingCheck, InvestCheck, CreditCrunchCheck | 0 each; all original laws retained |
+| HousingDoorCheck | 3; only its one FS11 played-opportunity premise; money and placement green |
+| DenominationCheck | 0; original 1e-9 comparisons and the nonzero used-trade transforms |
+| ScaleCheck | 3; two FS2 historical financial pins; strict native, count, flow-transform and money checks green |
+| LongPlaytest | 0; full 2,400-month run, additional fixtures, no findings or unplaced households |
+| SaveFileCheck, ReloadCheck, ReadPathCheck | 0 each on the AP2-integrated source |
+| SaveSlotCheck | 0 in the post-HC1 native-writer repeat; one soft wall-clock observation |
+
+The earlier pre-HC1 five-pin ScaleCheck record is retained above as evidence,
+not as five current waivers. The final ship file keeps only month-four savings
+and month-five deposits under FS2, plus the single HousingDoorCheck FS11 row.
+No money, conservation, save, numeric or carrier bound is widened.
+
+The final read-only ScaleCheck trace confirms the current FS2 class. At month
+four, household savings per city are 25,568.8001625 versus 26,637.8022059.
+The desk buys household shares for 0.0196997180 versus 1,173.78489006;
+its reverse sales are 323.779344144 versus 323.780738880. Both banks have
+zero resolution loss. Housing rent is 0.00344637227121 versus 0.00344637010252,
+with equal occupied weight 33,286. The GDP miss is 1.76e-5 and CPI miss 9.56e-6;
+the existing half-post bound and both pool/household money identities pass.
+This is the same discrete cash-for-shares class traced before HC1, with the
+current card-integrated numbers. Its only remaining original TRACK reds are
+month-four savings and month-five deposits. Kept trace:
+target/RES3-ScaleCheck-final-trace.log (metadata target/RES3-scale-final-trace.txt).
+
+Review is owed for money and saves: typed lease budgets/rents and actual builder
+funding; DataSave, the load rebuild, SAVE_FORMAT and OLDEST_LOADABLE_FORMAT.
+There is no threading change. The pick is ALL 246. The provisional marker
+requests the stranger's review; the changed trace's 80-run ensemble and the ALL
+dry run on the gate box follow that review's go, before the marker is dropped.
