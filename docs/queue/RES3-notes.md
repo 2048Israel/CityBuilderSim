@@ -4,6 +4,9 @@ Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through HC1 on
 main efca2c5fd (0.9.190), merged as ef18a4b6c, and the queue-only e66c310a3.
 AP2 then shipped as 1b89c5c4c (0.9.191), merged as 9af9ee926. Final
 verification and publication status are below.
+Current integration is shipped PW5 f937d2c22 (0.9.192): RES3's new form IDs are
+156-166 after Substation 155, nextId 167, and save format/floor 64. Earlier
+63/155-165 records below describe the pre-PW5 build and its checks.
 No user city or user save slot 1–9 is opened or written. Existing checks use
 their own isolated scratch slots; new RES3 native fixtures use slot 10.
 
@@ -832,3 +835,217 @@ queue/measurement documentation only (through ea16576cd), merged locally.
 REV-RES3's delta review of 47764c061 is SHIP (2026-11-22). Its three small
 follow-ups are folded in without another review: the fallback-ID warning
 above, one-space nextId indentation, and the WaterCheck/Services-label record.
+
+## First ensemble and the funded-demand mend (2026-11-23)
+
+The approved model, merged with main's queue records through cbf8a362e, was
+pushed as 964e65cd7. `RES3-final-20261123` ran on the gate box, eight cities at
+a time: 80/80 finished, none short or missing, 16.7 minutes of runs. Its files
+are kept under target/ensemble/RES3-final-20261123 and its controller log is
+target/RES3-ensemble-final.txt. The box used its earth-2/world-1 copies; the
+0.9.190 baseline has no extra JAVA_OPTS beyond its data properties.
+
+This first run is **not acceptance of the final model**. Against 0.9.190's
+25/26 information-plus-hard score and 10/10 hard score, it scored 11/26 and
+5/10. Every M1 money-audit criterion passed, with zero failed or unread months.
+Every F1 criterion failed solely on "households with no home": AUTO2 seeds
+2/10/12, ZERO_SLACK 2/10/12, ZERO_HOT 11, SHOCK 4/10, HIGH 7/10. AUTO2's final
+median population was 2,723,424 against the baseline's 5,217,451; its takeoff
+criterion still passed 16/16, median month 1,016 against 739. The complete
+score and changed information verdicts remain in that run's score.md. No
+F1 line is waived on the basis of the money audit passing.
+
+Read-only native HousingDoorCheck overlays replayed six representative seeds,
+with the ensemble's founding, advice rhythm and native policy setters. Each
+matched the ensemble's population, price index, paid rent and monthly GDP at
+the written nine-significant-figure precision in every observed row: AUTO2-10
+(171 rows), AUTO2-12 (301), AUTO2-2 (111), ZERO_HOT-11 (61), SHOCK-4 (71), HIGH-7
+(81). These are four-column comparisons, not a claim of complete CSV byte
+identity. The overlays and logs remain under target/RES3-shortage-*; production
+HousingDoorCheck and LongPlaytest are restored after diagnostics.
+
+The native shortages include distinct causes. Seed 10's first shortage has
+605 homes, no pipeline, and 1,211.88980565 seeking households, with the plan
+held for land. Seed 12's first has 2,001 homes, no pipeline, and 4,005.29230203
+seekers; its 192 flagged months include 178 land holds and 14 months building.
+SHOCK-4's nine flagged months are land holds. FB11's growth-land funding class
+is relevant to those observations; that does not explain away the other
+funding holds or establish the final model's ensemble verdict.
+
+At ZERO_HOT-11 month 247 the plan selects the Large-home luxury tower, whose
+native lender cover is 0.938915846302 against Mortgage's 1.20 requirement.
+A read-only check of all fourteen alternatives finds no ignored feasible
+project: the other thirteen miss the operating build hurdle; the selected
+tower alone covers it and then fails the lender. For example, Compact house
+income 0.0412068448168 is below its 0.0434345266555 hurdle. This finding does
+not justify bypassing either the operating margin or the lender's coverage.
+
+★ The class-price pressure had an omission in RES3 itself. After emergency
+doubling it counted the occupied physical shares, then looked for additional
+demand only among households still without any shelter. Two households able
+to fund whole suitable homes, sheltered in one door, therefore registered only
+one unit of demand. The legacy rent pressure still counted seekers who were
+doubled up. With demand erased until shelter actually ran out, rents could
+stay below the native build hurdle during a real shortage of separate doors.
+
+The mend keeps the physical occupied shares, then counts each funded remaining
+share once in the actual class when a whole home there is suitable and
+affordable. Other residual demand goes once to its best compatible affordable
+alternative, retaining the existing tie split. It does not create a second
+lease, receipt or permanent preference cell. The new native scratch regression
+first failed with class demand 1 against two sheltered households. Its control
+retains the lower demand when only a half bill is affordable. An intermediate
+attempt sent all extra demand to preferred alternatives; the occupied-class
+scarcity guard correctly stayed red. Keeping the funded demand for the actual
+suitable class makes both guards green, with the one actual rent unchanged.
+
+HousingMarketCheck passes the mend, including both era reports, real funded
+builds, the positive-arrival reload twins, cards, budgets and money audits.
+The existing saved class-demand field carries the corrected quantity; no new
+saved field is introduced. The format/floor remains 63, with the real shipped
+format-62 boundary. The final model's ensemble is still owed after the new
+money-review delta; the failed first run is retained as the finding.
+
+The corrected 4a33d0a83 model replayed ZERO_HOT-11 through its full endpoint,
+month 402: all 401 observed months have no flagged housing shortage, against
+the first model's 16 flagged months. This uses the same native founding,
+advice rhythm and policy, without changing the operating margin or mortgage
+test. Kept: target/RES3-pressure-ZERO_HOT-11.log and its batch metadata.
+
+The new report in RES3-catalogue.md is from this corrected model:
+
+| Scratch city | Integrated month | H/T/A/M/L |
+| --- | --- | --- |
+| Small, 203 people | 39.840 ms | 70/32/70/0/0 |
+| Present-day catalogue | 51.649 ms | 84/32/351/0/0 |
+| Present-day larger, 148,949 people | 47.180 ms | 82/32/341/0/0 |
+| Historical catalogue | 38.997 ms | 62/32/187/0/0 |
+| Historical larger, 149,029 people | 38.411 ms | 62/32/187/0/0 |
+
+Both catalogue eras still quote all 32 classes, and retain 141 permanent
+household cells in the larger cities. All fourteen forms follow the actual
+era gates and paid builder path.
+The table and catalogue were refreshed on the final PW5-integrated model
+ec8fb7510, including its native format-64 reloads and next-month twins.
+
+The post-mend ScaleCheck's historical month-four savings and month-five
+deposits TRACK assertions are green, so their old ship-file pins are removed.
+Its only red is the existing free-growth fixture search: eight candidate
+windows within the unchanged 60-month search provide no six consecutive
+months with affordability pull 1. The evaluated native count, tracking and
+money laws pass; the free-growth copy lacks its fixture premise. This is the
+played-condition class owned by queued HT1-H, not shipped FS2. Its original
+assertion and bounds remain, and the replacement ship row names that exact
+premise rather than carrying the now-green financial pins. Rejudging the kept
+native log against the updated rows reports only the known fixture red.
+
+The original HousingDoorCheck is now fully green after the pressure mend:
+6,809 family homes finish in its window, no household is left without shelter,
+and all 899 monthly household cash identities close. Its FS11 ship row is
+removed. No part of HousingDoorCheck was changed to obtain that result.
+
+The affected SaveFileCheck then exposed an exact load-seam difference:
+familyRentWeight 7636.075444713484 became 7636.075444713485. The loader derived
+the family half by subtracting studio weight from total weight, overwriting
+the exact family value already saved in Real Estate's extras. Card loans and
+bank capital agreed; the complete opening JSON comparison correctly failed.
+★ Carry the existing saved family segment through the rebuild, and restore
+total/studio/family aggregates independently at both typed-load restore sites.
+This adds one load-workspace value, with no new JSON key or conversion. The
+original complete CardCheck.continues comparison now passes. Its temporary
+diagnostic writes are removed; no equality or tolerance was relaxed.
+
+## PW5 shipped: applied integration and native format-63 boundary
+
+PW5 shipped as f937d2c22 (0.9.192, format/floor 63) during these checks. The
+own check controller was stopped by its verified PID; no verdict from a partial
+run is acceptance. Merge 59a40be89 keeps PW5's JSON/fallback Substation 155,
+shifts only RES3's eleven unshipped rows to 156-166, and moves HousingForms.ALL's
+hard-coded IDs with them. The three existing numeric IDs remain 0/1/6, with
+the specification changes recorded above. nextId and the fallback comment
+are 167. Format and floor rise together from shipped 63 to 64: PW5's native
+layout has its closing grid costs but lacks RES3's class market and new rental
+flows. No old-save conversion is introduced.
+
+The merge preserves both refusal histories. Its poor-retiree fixture keeps
+RES3's source/destination cohort cash/credit inputs and PW5's securities
+conservation: the cohort's securities, basis, tax claims and bonds move to a
+populated recipient outside that former-tier cohort. They do not disappear or
+refill the target through retirement/shape redistribution. The original care,
+issuer, money, save and continuation assertions remain.
+
+The genuine native 0.9.192 format-63 pair was produced at month 31 by
+HousingFormat63Fixture, running alone against unedited f937d2c22 classes after
+that detached tree's --fast build. Source diffs before/after are empty. Native
+slot 10 wrote both files; gzip only packages the raw bytes. The pair contains
+141 144-field cells, two HC1 debt surveys and PW5's pending/struck grid costs,
+with no RES3 market/home-pay/used-trade fields. Provenance and both pinned
+uncompressed SHA-256 values are in
+src/main/resources/fixtures/res3-format63/README.md. The detached source tree
+was removed only after its resolved target path and unedited source were
+verified; raw files and build/producer evidence remain under target/RES3-native63-*.
+
+ec8fb7510 preserves all native 60/61 refusal fixtures, PW5's native 62 pair,
+and RES3's independent native 62 pair. The new 63 pair supplies the exact
+one-below-floor case. All pairs retain the byte, manager, family-floor, history
+identity and full running-city guards. The PW5-integrated SaveFileCheck exits
+0, including the populated-city exact continuation. The final ensemble must
+use this merged model and the newer 0.9.192 baseline; the failed 0.9.190-based
+first run is not reused as that verdict.
+
+On the merged model, ReloadCheck's only red is main's already recorded HT1-H
+hand-order premise: fixture 3b has zero crews drawing materials. Every native
+save, field and continuation comparison passes. ScaleCheck retains only the
+free-growth premise above, now ten candidate windows on the PW5-integrated
+path; all its evaluated tracking, count and money laws pass. No bound changes.
+
+DenominationCheck exposed another played-fixture premise: its bus towns had
+positive riders, fares and transit bills, but no positive private-driver fuel
+payment. ★ Give this unit-reform fixture explicit opening fleet assets in an
+existing working household cell, and transfer a buffer from its funded
+treasury using the model's savings-cushion, subsistence and journey-cost inputs.
+No closed fuel value is set. A cash-only attempt still produced no fleet; the
+opening fleet makes native drivers and a fuel bill. The first press strikes
+that bill, and the following press carries it into household settlement.
+Both fixed native periods now assert pool and household money conservation in
+both towns. This causes the existing positive-fuel condition through model
+inputs and the actual settlement sequence, without changing the condition or
+the exact currency-reform comparisons.
+
+387d54043's DenominationCheck exits 0. Its native driver readings are ownership
+0.00218071132 per household, 4.01000040 drivers, fuel struck 0.0000463920781,
+billed 0.00783993061 and paid 0.00782785503. The paid figure is the preceding
+press's actual bill. All reform assertions remain, with added money audits;
+the ordinary floating-currency neutrality twins keep their original setup.
+The failed attempts remain in target/RES3-driver-original.*, -cash-only.log
+and -first-press.log; the final record is target/RES3-PW5-DenominationCheck*.
+
+## Final integrated checks before the second review
+
+The final code is 387d54043, with shipped main f937d2c22 merged. Each named
+harness ran alone with the two shared data paths and cbs.parallel=1. These
+checks exit 0: HousingMarketCheck, HousingCheck, HousingDoorCheck,
+HouseholdCheck, HouseholdFlowCheck, BuildingDataCheck, InvestCheck, WaterCheck,
+SubstationCheck, SaveFileCheck, ReadPathCheck, DenominationCheck and LongPlaytest.
+HousingDoorCheck closes all 899 monthly household cash identities. The complete
+2,400-month playtest and its additional controls report 2,404 audited months,
+no findings, and every reload matched. The final --fast exits 0, with zero
+firm stale findings and 199 soft findings. Evidence is kept in
+target/RES3-PW5-<harness>.txt and .log, and target/RES3-PW5-fast.txt.
+
+ReloadCheck and ScaleCheck exit 3, known reds only. ReloadCheck's one hand-order
+premise is already recorded on main under HT1-H; all its save/continuation
+comparisons pass. ScaleCheck's sole free-growth premise is the ten-window case
+above, recorded under queued HT1-H in this ship file. The old historical TRACK
+and HousingDoorCheck pins are gone because those assertions pass. No money,
+save, conservation or comparison check was weakened.
+
+The final pick against origin/main is ALL, 247 harnesses. Its review line is
+"needed - saves: DataSave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT".
+Money and the load path also changed after REV-RES3's SHIP on 47764c061:
+funded doubled demand, exact saved rental segments, the shipped PW5 integration
+and the native driver fixture need the reviewer's delta check. The provisional
+ship marker stays in place. A fresh 80-run ensemble against the newest
+0.9.192 baseline and the ALL dry run remain owed after that review; the failed
+first ensemble is evidence, not the final ensemble verdict. No dry run has
+started, and the orchestrator's dry-run go is still required.
