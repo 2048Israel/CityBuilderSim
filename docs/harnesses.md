@@ -2,7 +2,7 @@
 
 Generated 2026-11-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**246 harness files, 28,279 labelled assertions.** AllChecks runs 246 of them.
+**246 harness files, 28,299 labelled assertions.** AllChecks runs 246 of them.
 
 ## Which harnesses read which class
 
@@ -66,7 +66,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, BuildAdviceCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, MedicineCheck, MonetaryCheck, OilViewCheck, PolicyOpenCheck, PowerViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SubstationCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
-| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
+| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCrewsCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, LandCheck, LongPlaytest, NewUnitCheck, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
@@ -12068,7 +12068,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2203 ...after which it needs nothing more
   - L2204 and selling it all leaves no cover
 
-## ForeignCrewsCheck.java - 137 labelled assertions
+## ForeignCrewsCheck.java - 157 labelled assertions
 
 > The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange
 > rate the city's money stands at and the city's own inflation; the handover of the queue past it; the supply curve
@@ -12084,152 +12084,172 @@ _(this harness does not label its checks through a helper - it prints its findin
 > is BuildersShort (the arithmetic, THE FOREIGN CREWS banner), BuildingManager (foreignTerms() and what reads it), Game
 > ...
 
-- **L162 9. the audit**
-- **L227 1. a strong currency, under the knee: the strongest D$ and the threshold is the knee**
-  - L231 the builders hold the strongest rate set (ForeignAccounts.MIN_RATE)
-  - L235 the threshold is the knee and not a thousandth of a month over it
-  - L236 fixture: the queue starts under the knee
-  - L237 ...and with it no order goes abroad
-  - L239 roads to the knee
-  - L240 an order goes abroad exactly when the months queued pass the threshold, at every road walked
-  - L241 ...and never while the months queued are at or under the knee
-  - L242 the road before the knee: not abroad
-  - L243 fixture: the first road past the knee lands past the threshold, the width of which is a thousandth of a month
-  - L244 the first road past the knee: abroad
-- **L250 2. two rates past the knee: the threshold is where the premium reaches the first share**
-  - L255 fixture: the share is under the cap, so the cap does not bind
-  - L258 the builders hold the rate set
-  - L260 the first share is FOREIGN_EXCESS E x_founding over p, computed here
-  - L261 ...and the share the rate was set for
-  - L263 the threshold is BuildersShort.thresholdMonths() of the share
-  - L264 ...KNEE + HALF_MONTHS sqrt(r / (CEILING - r))
-  - L268 setting the rate left the queue under the new threshold: no order goes abroad
-  - L270 roads to the threshold
-  - L271 an order goes abroad exactly when the months queued pass the threshold, at every road
-  - L272 ...and never while they are within it
-  - L273 the road before the crossing: not abroad, its premium within the first share
-  - L274 the crossing road: abroad, its premium past the first share
-  - L275 the crossing is at more months than the rate before it had
-- **L283 3. the weakest rate: the first share is the cap, the threshold SURE_MONTHS past the knee**
-  - L287 the builders hold the weakest rate set (ForeignAccounts.MAX_RATE)
-  - L288 the first share is the cap
-  - L289 the threshold is the knee and SURE_MONTHS
-  - L291 fixture: the queue is within the threshold, so no order goes abroad yet
-  - L293 roads to the threshold
-  - L294 an order goes abroad exactly when the months queued pass the threshold, at every road
-  - L295 never abroad at or under KNEE + SURE_MONTHS
-  - L296 fixture: the crossing lands past the threshold
-  - L297 abroad at the first road past it
-- **L303 4. domestic inflation: the city's own level doubled moves p and not the world's price of a point**
-  - L309 fixture: the share is the one set, under the cap
-  - L319 the builders hold the level struck
-  - L320 x, the world's excess a point at the founding's price, is unchanged
-  - L321 ...and so is E x
-  - L322 p, the city's own price for a point, rose
-  - L323 the first share fell
-  - L324 ...to E x over the new p
-  - L325 the threshold fell
-  - L326 ...and not under the knee
-- **L335 5. the export: a month the sites took less than the builders' month sells the rest abroad, within the knee**
-  - L355 a month sold points abroad once the queue at home was under a month of the sites
-  - L362 fixture: a point sold fetched something before the month
-  - L363 the points sold are some, and never more than the sites' month
-  - L364 the receipts are the points at the price read before the month (the month re-strikes it)
-  - L365 no foreign crews built in a month the queue was at home and within the knee
-  - L367 no site was starved: the points the sites took and the points sold are the city's own month at the sites
-  - L373 the builders' statement the month after carries what they fetched, at least
-  - L374 ...and nothing else, exactly
-  - L375 the audit's exports line for the builders is the statement's
-  - L376 ...in the audit's TRADE scope: the trade in is at least that line
-  - L377 ...and in the national accounts' exports
-  - L378 ...and the foreign accounts'
-  - L385 on the Trade tab the builders sold abroad what their statement carries, an export with no good behind it
-  - L387 ...and what the tab says was sold abroad is the balance of payments' exports, theirs among them
-  - L395 roads to the knee
-  - L397 a point the builders sell abroad fetches something while the months queued are at or under the knee
-  - L398 ...and nothing at the first road past it
-  - L401 fixture: the queue is well past the knee
-  - L402 ...and a point sold fetches nothing there
-  - L406 a month played past the knee sold no points
-  - L407 ...and took nothing for them
-- **L441 6. a 240-month backlog: the order hands him its buildings past the threshold as it is billed, his month and excess rise with it, the city...**
-  - L453 fixture: the long order is twenty years of the sites' month, at home and abroad, in a and in its twin
-  - L454 fixture: ...and half of it in b
-  - L455 fixture: a and its twin are the same city
-  - L458 fixture: both are far past the threshold, at home and abroad
-  - L466 fixture: his book was empty before the order
-  - L467 a: billing the order handed him its buildings past the threshold: his book is the quote's points abroad
-  - L468 b: ...and likewise
-  - L469 ...at the share the quote charged for them
-  - L470 ...and the price a point it charged, the House's own base and that share
-  - L471 ...which is the House's base a point and that share
-  - L473 ...and the queue at home is the threshold's months of the sites, the House it falls in split at it
-  - L476 his excess is the supply curve's at the month the order makes him run
-  - L478 ...the month the order makes him run, over his share without it
-  - L479 ...and over the first share
-  - L486 the offer counts the order's handover as the month's
-  - L487 ...and hands him nothing more: the work at home is its payers', at the home price they were quoted
-  - L488 ...his month billed at the book's price a point, the payer's
-  - L489 a: his month is far over the sites' month
-  - L490 b's month is smaller than a's
-  - L491 ...and so is its excess
-  - L517 fixture: he built in a's first month
-  - L518 the builders paid abroad what the payer was quoted for those points: the quote is the bill
-  - L519 ...so the builders' cash carries no gap between them, where the quote without the order left them short
-  - L531 before each month from the second the backlog at both paces is within a month of the threshold, either side
-  - L532 ...and the threshold is within SURE_MONTHS of the knee
-  - L536 after the order's own handover nothing more was handed him: the work at home stays its payers'
-  - L537 ...so each point he built for it was billed the order's price a point
-  - L550 the book loads as it was saved
-  - L551 ...and the share its points were handed at
-  - L552 ...and their price a point, so the load bills them what their payers were quoted
-  - L553 ...a book that is priced
-- **L578 7. the building the threshold falls in: split at it, its points past it abroad, the queue at home left at the threshold; a cancel takes i...**
-  - L586 fixture: a Middle School quoted with the queue under the threshold is quoted at home
-  - L588 fixture: ...and ordered
-  - L589 fixture: his book is empty
-  - L602 fixture: the queue at home is under the threshold and the plant's points run past it by more than a month of the sites
-  - L604 the plant is split: one building with work abroad
-  - L605 ...its points past the threshold abroad, point for point
-  - L606 ...priced at the premium where it begins for its part at home and the crews' share for the rest, independently computed
-  - L608 ...the part at home dearer a point than none and cheaper than the crews'
-  - L610 fixture: the plant is ordered
-  - L612 billing handed him the quote's points abroad
-  - L613 ...and the queue at home is the threshold's months of the sites, and its parts' share at home
-  - L619 fixture: the Houses are ordered
-  - L621 Houses ordered with the queue at home at the threshold go abroad whole
-  - L622 ...his book is the plant's work abroad and theirs
-  - L623 the plant's site claims its own work on his book
-  - L624 ...the Houses' site theirs
-  - L625 ...and the school's, quoted at home, none
-  - L626 ...the sites' work on his book sums to his book
-  - L642 each site's work on his book loads as it was saved
-  - L647 ...and a save from before it shares his book among the sites by their points owed, as FC1b cut them
-  - L649 ...the sites' work on his book still his book
-  - L657 a month on, the queue at home is under the threshold again
-  - L658 ...and the next order is built at home
-  - L659 his month fell on the Houses' work on his book in its share
-  - L660 ...and on the plant's, never more than the points it owes
-  - L664 fixture: the school is still on site
-  - L666 fixture: the school's and the plant's sites can be cancelled
-  - L675 fixture: the month's end stopped both with points left
-  - L676 a cancel of an order quoted at home takes no share of his book
-  - L677 the plant's takes its work's share of his book
-  - L678 ...off his book after his month, never more than its points left
-  - L679 ...which leaves the Houses' work on his book whole
-- **L691 8. a currency reform: his book's price a point is the city's money, divided with it**
-  - L694 fixture: his book holds points at a price
-  - L697 fixture: the reform is made
-  - L701 the book's price a point is divided by the reform
-  - L702 ...and the offer bills his month at it
-  - L707 fixture: he built in the month after
-  - L708 ...and billed them at the book's price in the new unit, not a thousandfold
-  - L734 the builders' workers are the same with and without the foreign crews: no city worker is taken
-  - L735 ...in every sector, not the builders' alone
-  - L739 ...and the city offers the same posts in every tier: his crews are his own, and open none
-  - L741 the foreign crews built in a and not in the twin
-  - L742 a's sites took more points than the twin's
-  - L743 ...by his month
+- **L171 9. the audit**
+- **L236 1. a strong currency, under the knee: the strongest D$ and the threshold is the knee**
+  - L240 the builders hold the strongest rate set (ForeignAccounts.MIN_RATE)
+  - L244 the threshold is the knee and not a thousandth of a month over it
+  - L245 fixture: the queue starts under the knee
+  - L246 ...and with it no order goes abroad
+  - L248 roads to the knee
+  - L249 an order goes abroad exactly when the months queued pass the threshold, at every road walked
+  - L250 ...and never while the months queued are at or under the knee
+  - L251 the road before the knee: not abroad
+  - L252 fixture: the first road past the knee lands past the threshold, the width of which is a thousandth of a month
+  - L253 the first road past the knee: abroad
+- **L259 2. two rates past the knee: the threshold is where the premium reaches the first share**
+  - L264 fixture: the share is under the cap, so the cap does not bind
+  - L267 the builders hold the rate set
+  - L269 the first share is FOREIGN_EXCESS E x_founding over p, computed here
+  - L270 ...and the share the rate was set for
+  - L272 the threshold is BuildersShort.thresholdMonths() of the share
+  - L273 ...KNEE + HALF_MONTHS sqrt(r / (CEILING - r))
+  - L277 setting the rate left the queue under the new threshold: no order goes abroad
+  - L279 roads to the threshold
+  - L280 an order goes abroad exactly when the months queued pass the threshold, at every road
+  - L281 ...and never while they are within it
+  - L282 the road before the crossing: not abroad, its premium within the first share
+  - L283 the crossing road: abroad, its premium past the first share
+  - L284 the crossing is at more months than the rate before it had
+- **L292 3. the weakest rate: the first share is the cap, the threshold SURE_MONTHS past the knee**
+  - L296 the builders hold the weakest rate set (ForeignAccounts.MAX_RATE)
+  - L297 the first share is the cap
+  - L298 the threshold is the knee and SURE_MONTHS
+  - L300 fixture: the queue is within the threshold, so no order goes abroad yet
+  - L302 roads to the threshold
+  - L303 an order goes abroad exactly when the months queued pass the threshold, at every road
+  - L304 never abroad at or under KNEE + SURE_MONTHS
+  - L305 fixture: the crossing lands past the threshold
+  - L306 abroad at the first road past it
+- **L312 4. domestic inflation: the city's own level doubled moves p and not the world's price of a point**
+  - L318 fixture: the share is the one set, under the cap
+  - L328 the builders hold the level struck
+  - L329 x, the world's excess a point at the founding's price, is unchanged
+  - L330 ...and so is E x
+  - L331 p, the city's own price for a point, rose
+  - L332 the first share fell
+  - L333 ...to E x over the new p
+  - L334 the threshold fell
+  - L335 ...and not under the knee
+- **L344 5. the export: a month the sites took less than the builders' month sells the rest abroad, within the knee**
+  - L364 a month sold points abroad once the queue at home was under a month of the sites
+  - L371 fixture: a point sold fetched something before the month
+  - L372 the points sold are some, and never more than the sites' month
+  - L373 the receipts are the points at the price read before the month (the month re-strikes it)
+  - L374 no foreign crews built in a month the queue was at home and within the knee
+  - L376 no site was starved: the points the sites took and the points sold are the city's own month at the sites
+  - L382 the builders' statement the month after carries what they fetched, at least
+  - L383 ...and nothing else, exactly
+  - L384 the audit's exports line for the builders is the statement's
+  - L385 ...in the audit's TRADE scope: the trade in is at least that line
+  - L386 ...and in the national accounts' exports
+  - L387 ...and the foreign accounts'
+  - L394 on the Trade tab the builders sold abroad what their statement carries, an export with no good behind it
+  - L396 ...and what the tab says was sold abroad is the balance of payments' exports, theirs among them
+  - L404 roads to the knee
+  - L406 a point the builders sell abroad fetches something while the months queued are at or under the knee
+  - L407 ...and nothing at the first road past it
+  - L410 fixture: the queue is well past the knee
+  - L411 ...and a point sold fetches nothing there
+  - L415 a month played past the knee sold no points
+  - L416 ...and took nothing for them
+- **L450 6. a 240-month backlog: the order hands him its buildings past the threshold as it is billed, his month and excess rise with it, the city...**
+  - L462 fixture: the long order is twenty years of the sites' month, at home and abroad, in a and in its twin
+  - L463 fixture: ...and half of it in b
+  - L464 fixture: a and its twin are the same city
+  - L467 fixture: both are far past the threshold, at home and abroad
+  - L475 fixture: his book was empty before the order
+  - L476 a: billing the order handed him its buildings past the threshold: his book is the quote's points abroad
+  - L477 b: ...and likewise
+  - L478 ...at the share the quote charged for them
+  - L479 ...and the price a point it charged, the House's own base and that share
+  - L480 ...which is the House's base a point and that share
+  - L482 ...and the queue at home is the threshold's months of the sites, the House it falls in split at it
+  - L485 his excess is the supply curve's at the month the order makes him run
+  - L487 ...the month the order makes him run, over his share without it
+  - L488 ...and over the first share
+  - L495 the offer counts the order's handover as the month's
+  - L496 ...and hands him nothing more: the work at home is its payers', at the home price they were quoted
+  - L497 ...his month billed at the book's price a point, the payer's
+  - L498 a: his month is far over the sites' month
+  - L499 b's month is smaller than a's
+  - L500 ...and so is its excess
+  - L526 fixture: he built in a's first month
+  - L527 the builders paid abroad what the payer was quoted for those points: the quote is the bill
+  - L528 ...so the builders' cash carries no gap between them, where the quote without the order left them short
+  - L540 before each month from the second the backlog at both paces is within a month of the threshold, either side
+  - L541 ...and the threshold is within SURE_MONTHS of the knee
+  - L545 after the order's own handover nothing more was handed him: the work at home stays its payers'
+  - L546 ...so each point he built for it was billed the order's price a point
+  - L559 the book loads as it was saved
+  - L560 ...and the share its points were handed at
+  - L561 ...and their price a point, so the load bills them what their payers were quoted
+  - L562 ...a book that is priced
+- **L587 7. the building the threshold falls in: split at it, its points past it abroad, the queue at home left at the threshold; a cancel takes i...**
+  - L595 fixture: a Middle School quoted with the queue under the threshold is quoted at home
+  - L597 fixture: ...and ordered
+  - L598 fixture: his book is empty
+  - L611 fixture: the queue at home is under the threshold and the plant's points run past it by more than a month of the sites
+  - L613 the plant is split: one building with work abroad
+  - L614 ...its points past the threshold abroad, point for point
+  - L615 ...priced at the premium where it begins for its part at home and the crews' share for the rest, independently computed
+  - L617 ...the part at home dearer a point than none and cheaper than the crews'
+  - L619 fixture: the plant is ordered
+  - L621 billing handed him the quote's points abroad
+  - L622 ...and the queue at home is the threshold's months of the sites, and its parts' share at home
+  - L628 fixture: the Houses are ordered
+  - L630 Houses ordered with the queue at home at the threshold go abroad whole
+  - L631 ...his book is the plant's work abroad and theirs
+  - L632 the plant's site claims its own work on his book
+  - L633 ...the Houses' site theirs
+  - L634 ...and the school's, quoted at home, none
+  - L635 ...the sites' work on his book sums to his book
+  - L651 each site's work on his book loads as it was saved
+  - L656 ...and a save from before it shares his book among the sites by their points owed, as FC1b cut them
+  - L658 ...the sites' work on his book still his book
+  - L666 a month on, the queue at home is under the threshold again
+  - L667 ...and the next order is built at home
+  - L668 his month fell on the Houses' work on his book in its share
+  - L669 ...and on the plant's, never more than the points it owes
+  - L673 fixture: the school is still on site
+  - L675 fixture: the school's and the plant's sites can be cancelled
+  - L684 fixture: the month's end stopped both with points left
+  - L685 a cancel of an order quoted at home takes no share of his book
+  - L686 the plant's takes its work's share of his book
+  - L687 ...off his book after his month, never more than its points left
+  - L688 ...which leaves the Houses' work on his book whole
+  - L706 fixture: a second plant, split at the threshold, its work past it on his book beside the Houses'
+  - L712 fixture: the Houses' site finished with the plant's work still on his book
+  - L730 fixture: Houses on the finished site are quoted at home, in the city and in its loaded twin
+  - L732 fixture: ...and ordered in both
+  - L735 an order quoted at home on a site that finished claims none of his book
+  - L736 ...as its loaded twin reads it
+  - L737 ...and the plant's work on his book is the twin's
+  - L739 fixture: the Houses' and the plant's sites can be cancelled, in both
+  - L748 fixture: the month's end stopped both, in both, with points left
+  - L750 the Houses' cancel takes no share of his book: their order was quoted at home
+  - L751 ...nor in the twin
+  - L752 the plant's takes the share the twin's takes
+  - L753 ...and his book after the cancels is the twin's
+  - L773 fixture: on foothill ground it carries its pad's preparation, and the threshold splits it
+  - L775 ...its preparation quoted abroad in the share its building's points are
+  - L778 fixture: ...and ordered
+  - L780 the queue counts its preparation with its building: what the sites owe rose by both
+  - L781 ...his book took its work quoted abroad, the preparation's share with it
+  - L782 ...which the sites owe: the offer's cut to what they owe takes none of it
+  - L784 a month on, his book is what it held less what he built: the offer cut none of the work its payer paid for abroad
+- **L797 8. a currency reform: his book's price a point is the city's money, divided with it**
+  - L800 fixture: his book holds points at a price
+  - L803 fixture: the reform is made
+  - L807 the book's price a point is divided by the reform
+  - L808 ...and the offer bills his month at it
+  - L813 fixture: he built in the month after
+  - L814 ...and billed them at the book's price in the new unit, not a thousandfold
+  - L840 the builders' workers are the same with and without the foreign crews: no city worker is taken
+  - L841 ...in every sector, not the builders' alone
+  - L845 ...and the city offers the same posts in every tier: his crews are his own, and open none
+  - L847 the foreign crews built in a and not in the twin
+  - L848 a's sites took more points than the twin's
+  - L849 ...by his month
 
 ## ForeignDebtCheck.java - 111 labelled assertions
 

@@ -1,4 +1,4 @@
-# ForeignCrewsCheck.java - 745 lines · 21 methods · 14 constants · harnesses
+# ForeignCrewsCheck.java - 851 lines · 23 methods · 16 constants · harnesses
 
 `ham/citybuildersim/ForeignCrewsCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -44,124 +44,131 @@
 >      left at the threshold, not years past it; a month on, the queue at home is under it and the next order is built at
 >      home. Each site claims its own work on his book, and his month falls on every claim alike; a cancel takes the
 >      cancelled site's own off it: nothing for a Middle School quoted at home, the plant's own and not the Houses' ordered
->      after it; the claims survive a save, and a save without them shares his book by the sites' points owed.
+>      after it; the claims survive a save, and a save without them shares his book by the sites' points owed. A site that
+>      finished claims none of his book when Houses quoted at home go on it later, in the city and its loaded twin alike,
+>      and a cancel after it takes the same share in both (the third review). A works on foothill, split, hands him its
+>      pad's preparation in its building's share, and the queue counts the preparation owed on its site.
 >   8. A CURRENCY REFORM: a reform dividing the money by 1,000 divides his book's price a point by 1,000, and the offer's,
 >      and his next bill is his points at it - not a thousandfold abroad at the old unit's price.
 >   9. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
 > 
 > Every fixture causes its condition.
 
-**Uses:** [Game](Game.md) (37), [BuildersShort](BuildersShort.md) (28), [BuildingManager](BuildingManager.md) (17), [ConstructionTrapCheck](ConstructionTrapCheck.md) (8), [Construction](Construction.md) (7), [MoneyAudit](MoneyAudit.md) (5), [ConstructionControl](ConstructionControl.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [DeathCareFirstCheck](DeathCareFirstCheck.md) (2), [GameFiles](GameFiles.md) (2), [Fitout](Fitout.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1), [PopulationManager](PopulationManager.md) (1)
+**Uses:** [Game](Game.md) (44), [BuildersShort](BuildersShort.md) (28), [BuildingManager](BuildingManager.md) (21), [Construction](Construction.md) (10), [ConstructionControl](ConstructionControl.md) (10), [ConstructionTrapCheck](ConstructionTrapCheck.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [MoneyAudit](MoneyAudit.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [Fitout](Fitout.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [DeathCareFirstCheck](DeathCareFirstCheck.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [CityLand](CityLand.md) (1), [PopulationManager](PopulationManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 170 | THE WALK |
-| 224 | 1. A STRONG CURRENCY, UNDER THE KNEE |
-| 247 | 2. TWO RATES PAST THE KNEE |
-| 280 | 3. THE WEAKEST RATE |
-| 300 | 4. DOMESTIC INFLATION |
-| 332 | 5. THE EXPORT |
-| 410 | 6. A 240-MONTH BACKLOG |
-| 557 | 7. THE BUILDING THE THRESHOLD FALLS IN |
-| 688 | 8. A CURRENCY REFORM |
+| 179 | THE WALK |
+| 233 | 1. A STRONG CURRENCY, UNDER THE KNEE |
+| 256 | 2. TWO RATES PAST THE KNEE |
+| 289 | 3. THE WEAKEST RATE |
+| 309 | 4. DOMESTIC INFLATION |
+| 341 | 5. THE EXPORT |
+| 419 | 6. A 240-MONTH BACKLOG |
+| 566 | 7. THE BUILDING THE THRESHOLD FALLS IN |
+| 794 | 8. A CURRENCY REFORM |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 79 | `ForeignCrewsCheck.MOST_ROADS` | `100` | The most single roads a walk adds after its jump: the jump stops JUMP_SHORT roads under the limit, so a handful reach it. |
-| 82 | `ForeignCrewsCheck.JUMP_SHORT` | `3` | How many roads under the model's own figure a walk's jump stops, so the roads either side of the limit are walked one at a time. |
-| 85 | `ForeignCrewsCheck.MOST_MONTHS` | `24` | The most months the export city is played for the queue at home to fall under one month of the sites, and again for a month that sells. |
-| 88 | `ForeignCrewsCheck.SHARES` | `{ 0.05, 0.10 }` | The first shares section 2 sets the rate for: both under the cap, so the cap does not bind. |
-| 91 | `ForeignCrewsCheck.INFLATION_SHARE` | `0.10` | The share section 4 sets the rate for before the city's level doubles: under the cap, so r can fall. |
-| 94 | `ForeignCrewsCheck.LONG_MONTHS` | `240, HALF_MONTHS_QUEUED = 120` | The queue, in months of the sites, of the long backlog (twenty years) and of the half of it. |
-| 97 | `ForeignCrewsCheck.FAR_OVER` | `5` | How many sites' months the contractor's first month must be over, for a backlog of twenty years: far over. |
-| 100 | `ForeignCrewsCheck.PLAYED` | `6` | The months played in the long backlog, to read the pace each one. |
-| 107 | `ForeignCrewsCheck.QUOTED` | `new java.util.HashMap<>()` | What each backlog fixture's order was quoted, struck just before it was placed (REV-FC2's P1): the foreign crews' share for its work past the threshold without the order (what FC2 quoted until the mend) and with it (t... |
-| 110 | `ForeignCrewsCheck.SCHOOL` | `"Middle School", PLANT = "Coal Power Plant"` | Section 7's buildings: one quoted at home, and one far bigger than the threshold's months of the sites, which it splits. |
-| 113 | `ForeignCrewsCheck.HOUSES` | `200` | ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it. |
-| 116 | `ForeignCrewsCheck.REFORM` | `1000` | Section 8's reform: the money divided by a thousand, the reviewer's case. |
-| 119 | `ForeignCrewsCheck.ONE_MONTH` | `1` | The months queued within which, under the threshold, the backlog read at both paces must stay: one month. |
-| 122 | `ForeignCrewsCheck.A_POINT` | `1` | The points within which two figures of one month are the same: the sites take whole points of a month struck in whole ones. |
+| 82 | `ForeignCrewsCheck.MOST_ROADS` | `100` | The most single roads a walk adds after its jump: the jump stops JUMP_SHORT roads under the limit, so a handful reach it. |
+| 85 | `ForeignCrewsCheck.JUMP_SHORT` | `3` | How many roads under the model's own figure a walk's jump stops, so the roads either side of the limit are walked one at a time. |
+| 88 | `ForeignCrewsCheck.MOST_MONTHS` | `24` | The most months the export city is played for the queue at home to fall under one month of the sites, and again for a month that sells. |
+| 91 | `ForeignCrewsCheck.SHARES` | `{ 0.05, 0.10 }` | The first shares section 2 sets the rate for: both under the cap, so the cap does not bind. |
+| 94 | `ForeignCrewsCheck.INFLATION_SHARE` | `0.10` | The share section 4 sets the rate for before the city's level doubles: under the cap, so r can fall. |
+| 97 | `ForeignCrewsCheck.LONG_MONTHS` | `240, HALF_MONTHS_QUEUED = 120` | The queue, in months of the sites, of the long backlog (twenty years) and of the half of it. |
+| 100 | `ForeignCrewsCheck.FAR_OVER` | `5` | How many sites' months the contractor's first month must be over, for a backlog of twenty years: far over. |
+| 103 | `ForeignCrewsCheck.PLAYED` | `6` | The months played in the long backlog, to read the pace each one. |
+| 110 | `ForeignCrewsCheck.QUOTED` | `new java.util.HashMap<>()` | What each backlog fixture's order was quoted, struck just before it was placed (REV-FC2's P1): the foreign crews' share for its work past the threshold without the order (what FC2 quoted until the mend) and with it (t... |
+| 113 | `ForeignCrewsCheck.SCHOOL` | `"Middle School", PLANT = "Coal Power Plant"` | Section 7's buildings: one quoted at home, and one far bigger than the threshold's months of the sites, which it splits. |
+| 116 | `ForeignCrewsCheck.HOUSES` | `200` | ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it. |
+| 119 | `ForeignCrewsCheck.WORKS` | `"Water Treatment Plant"` | ...and the works ordered on foothill ground at the section's end, split at the threshold with its pad's preparation. |
+| 122 | `ForeignCrewsCheck.MOST_MONTHS_TO_FINISH` | `120` | The months the section plays at most for the Houses' site to finish with the plant's work on his book. |
+| 125 | `ForeignCrewsCheck.REFORM` | `1000` | Section 8's reform: the money divided by a thousand, the reviewer's case. |
+| 128 | `ForeignCrewsCheck.ONE_MONTH` | `1` | The months queued within which, under the threshold, the backlog read at both paces must stay: one month. |
+| 131 | `ForeignCrewsCheck.A_POINT` | `1` | The points within which two figures of one month are the same: the sites take whole points of a month struck in whole ones. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 125 | `static int checked` | The assertions made here (those ConstructionTrapCheck's helpers count are in its own total). |
+| 134 | `static int checked` | The assertions made here (those ConstructionTrapCheck's helpers count are in its own total). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 670 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
-| 127 | 1 | `static void ok(String label, boolean cond)` |  |
-| 129 | 1 | `static void near(String label, double actual, double expected, double tol)` |  |
-| 131 | 1 | `static void exact(String label, double actual, double expected)` |  |
-| 134 | 6 | `static void within(String label, double actual, double expected, double tol)` | Two figures within `tol` of each other, absolutely: the points of a month, which are whole. |
-| 141 | 28 | `public static void main(String[] args) throws Exception` |  |
+| 79 | 773 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
+| 136 | 1 | `static void ok(String label, boolean cond)` |  |
+| 138 | 1 | `static void near(String label, double actual, double expected, double tol)` |  |
+| 140 | 1 | `static void exact(String label, double actual, double expected)` |  |
+| 143 | 6 | `static void within(String label, double actual, double expected, double tol)` | Two figures within `tol` of each other, absolutely: the points of a month, which are whole. |
+| 150 | 28 | `public static void main(String[] args) throws Exception` |  |
 
-### THE WALK (lines 170-223)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 178 | 2 | **type** `record Walk(int roads, double before, double at, boolean abroadBefore, boolean abroadAt, double thresholdAt...` | What a walk of single roads left: the roads added, the months queued at the last road not past the limit and at the first past it (the crossing), whether an order went abroad at each, the threshold at the crossing, wh... |
-| 186 | 25 | `static Walk walk(Game g, double limit)` | Standing Paved Roads on the city, no month played: JUMP_SHORT roads under the model's own figure for `limit` months queued (ConstructionTrapCheck.roadsFor()), then one at a time until the months queued pass it. |
-| 212 | 6 | `static void printWalk(String what, Walk w)` |  |
-| 220 | 3 | `static double rateFor(BuildingManager bm, double share)` | The rate E at which the foreign crews' first share is `share`, from the base price now and the founding's: E = r p / (FOREIGN_EXCESS x_founding). |
-
-### 1. A STRONG CURRENCY, UNDER THE KNEE (lines 224-246)
+### THE WALK (lines 179-232)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 226 | 20 | `static void strongCurrency(Game g)` |  |
+| 187 | 2 | **type** `record Walk(int roads, double before, double at, boolean abroadBefore, boolean abroadAt, double thresholdAt...` | What a walk of single roads left: the roads added, the months queued at the last road not past the limit and at the first past it (the crossing), whether an order went abroad at each, the threshold at the crossing, wh... |
+| 195 | 25 | `static Walk walk(Game g, double limit)` | Standing Paved Roads on the city, no month played: JUMP_SHORT roads under the model's own figure for `limit` months queued (ConstructionTrapCheck.roadsFor()), then one at a time until the months queued pass it. |
+| 221 | 6 | `static void printWalk(String what, Walk w)` |  |
+| 229 | 3 | `static double rateFor(BuildingManager bm, double share)` | The rate E at which the foreign crews' first share is `share`, from the base price now and the founding's: E = r p / (FOREIGN_EXCESS x_founding). |
 
-### 2. TWO RATES PAST THE KNEE (lines 247-279)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 249 | 30 | `static void twoRates(Game g)` |  |
-
-### 3. THE WEAKEST RATE (lines 280-299)
+### 1. A STRONG CURRENCY, UNDER THE KNEE (lines 233-255)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 282 | 17 | `static void weakestRate(Game g)` |  |
+| 235 | 20 | `static void strongCurrency(Game g)` |  |
 
-### 4. DOMESTIC INFLATION (lines 300-331)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 302 | 29 | `static void domesticInflation(Game g)` |  |
-
-### 5. THE EXPORT (lines 332-409)
+### 2. TWO RATES PAST THE KNEE (lines 256-288)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 334 | 75 | `static void theExport(Path root)` |  |
+| 258 | 30 | `static void twoRates(Game g)` |  |
 
-### 6. A 240-MONTH BACKLOG (lines 410-556)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 417 | 22 | `static Game backlog(Path root, String name, double months)` | A calm city with the landlords' Houses ordered on top of its own, enough that the queue at home is `months` of the sites (ConstructionTrapCheck.calm()'s own way of ordering them: the landlords given twice the quoted p... |
-| 440 | 116 | `static Game theBacklog(Path root)` |  |
-
-### 7. THE BUILDING THE THRESHOLD FALLS IN (lines 557-687)
+### 3. THE WEAKEST RATE (lines 289-308)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 560 | 4 | `static ConstructionControl.Refund refundOf(Game g, BuildingsTemplate t)` | The refund the month's end made for t's site, or null. |
-| 566 | 10 | `static boolean cityOrders(Game g, BuildingsTemplate t, long n)` | n of t ordered by the city, quietly, its cash and ground given first; false if the order was not placed. |
-| 577 | 104 | `static void theSplit(Path root)` |  |
-| 682 | 5 | `static double sum(java.util.Map<Integer, Double> m)` |  |
+| 291 | 17 | `static void weakestRate(Game g)` |  |
 
-### 8. A CURRENCY REFORM (lines 688-745)
+### 4. DOMESTIC INFLATION (lines 309-340)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 690 | 20 | `static void theReform(Game a)` |  |
-| 712 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
+| 311 | 29 | `static void domesticInflation(Game g)` |  |
+
+### 5. THE EXPORT (lines 341-418)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 343 | 75 | `static void theExport(Path root)` |  |
+
+### 6. A 240-MONTH BACKLOG (lines 419-565)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 426 | 22 | `static Game backlog(Path root, String name, double months)` | A calm city with the landlords' Houses ordered on top of its own, enough that the queue at home is `months` of the sites (ConstructionTrapCheck.calm()'s own way of ordering them: the landlords given twice the quoted p... |
+| 449 | 116 | `static Game theBacklog(Path root)` |  |
+
+### 7. THE BUILDING THE THRESHOLD FALLS IN (lines 566-793)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 569 | 4 | `static ConstructionControl.Refund refundOf(Game g, BuildingsTemplate t)` | The refund the month's end made for t's site, or null. |
+| 575 | 10 | `static boolean cityOrders(Game g, BuildingsTemplate t, long n)` | n of t ordered by the city, quietly, its cash and ground given first; false if the order was not placed. |
+| 586 | 107 | `static void theSplit(Path root)` |  |
+| 700 | 55 | `static void claimOfAFinishedSite(Path root, Game g)` | REV-FC2, the third review (P2-1): the Houses' site finishes with the work its orders handed him on his book beside a second plant's; a load reads no claim for a site that owes nothing, and the city must read none eith... |
+| 762 | 25 | `static void partsAbroadOwedOnSite(Game g)` | REV-FC2, the third review (P2-2): a works on foothill ground, split at the threshold, hands him its pad's preparation in the share its building's points are (Game.abroadWork()); the preparation is owed on its site wit... |
+| 788 | 5 | `static double sum(java.util.Map<Integer, Double> m)` |  |
+
+### 8. A CURRENCY REFORM (lines 794-851)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 796 | 20 | `static void theReform(Game a)` |  |
+| 818 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
 
