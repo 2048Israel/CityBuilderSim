@@ -273,8 +273,8 @@ public final class Construction extends Sector {
         unearnedRevenue += amount;
         backlogPoints += points;
         if (points > 0) billedPoints += points;
-        // (Since FC2 no order goes on the foreign crews' book when it is billed: the month's offer hands them the queue
-        // at home past the threshold, whoever ordered it - Game.foreignCrewsOffer(), handAbroad().)
+        // (Since REV-FC2 an order's buildings past the threshold go on the foreign crews' book as it is billed, at what
+        // its payer was quoted for them - Game.processBuildOrder(), buildFor(), handAbroad().)
     }
 
     /* ===================================================================
@@ -298,8 +298,27 @@ public final class Construction extends Sector {
     /** Points the foreign contractor has taken and not yet built (FC1; handed to him by the month's offer since FC2). Saved when there are some. */
     private double foreignBook;
 
-    /** Points the month last offered handed him from the queue at home (FC2). Saved when there were some. */
+    /**
+     * The excess share the points on his book were handed to him at, their mean by the point (REV-FC2's P1): each
+     * month's handover struck at the supply curve's share for the month it makes him run (Game.foreignCrewsOffer(),
+     * the share the payer was quoted, BuildingManager.foreignTermsWith()), so a point is billed at the share its order
+     * paid and not at whatever his month is when he builds it. NaN for a book an older save carries with no share: the
+     * first offer after the load strikes it at the curve's share then (priceUnpricedBook()). Saved with the book.
+     */
+    private double foreignBookShare;
+
+    /**
+     * ...and the price a point they were handed at, in the city's money, their mean by the point (REV-FC2): the base and
+     * that share as the handover struck them - a fixed price for the work, as the payer's order with the builders is, so
+     * the bill is what the quote charged and not the base of the month he builds it in. NaN with the share, the same way.
+     */
+    private double foreignBookPrice;
+
+    /** Points the orders billed before the month last offered handed him (REV-FC2: each order's buildings past the threshold, when it was billed). Saved when there were some. */
     private double handedAbroadThisMonth;
+
+    /** ...and the points handed him since that offer, the next month's figure (closeHandovers()). Saved when there were some. */
+    private double handedSinceOffer;
 
     /** Points the builders' own crews had and no site took, sold abroad in the month last settled (FC2). Saved when there were some. */
     private double exportPointsThisMonth;
@@ -324,14 +343,57 @@ public final class Construction extends Sector {
     }
 
     /**
-     * The queue at home past the threshold, handed to the contractor by the month's offer (FC2; Game.foreignCrewsOffer()):
-     * onto his book, and the month's figure set to it - called every month, so a month that handed nothing sets it to
-     * nothing. Never negative.
+     * An order's buildings past the threshold, handed to the contractor when it is billed (REV-FC2's P1; Game.
+     * processBuildOrder(), buildFor(), BuildingManager.abroadOfOrder()): onto his book at {@code share}, the supply
+     * curve's excess for the month the order makes him run, and at {@code pricePerPoint}, what its payer was quoted a
+     * point for that work - its own base and that share - the book's share and price their means by the point, so the
+     * builders bill on to him what the payers paid for it, no more and no less. Counted in the month's figure from the
+     * next offer (closeHandovers()). Never negative.
      */
-    public void handAbroad(double points) {
+    public void handAbroad(double points, double share, double pricePerPoint) {
         double p = Double.isFinite(points) ? Math.max(0, points) : 0;
+        double s = Double.isFinite(share) ? Math.max(0, share) : 0;
+        double c = Double.isFinite(pricePerPoint) ? Math.max(0, pricePerPoint) : 0;
+        if (p > 0) {
+            boolean priced = foreignBook > 0 && !foreignBookUnpriced();
+            double keptShare = priced ? foreignBookShare : s, keptPrice = priced ? foreignBookPrice : c;
+            foreignBookShare = (foreignBook * keptShare + p * s) / (foreignBook + p);
+            foreignBookPrice = (foreignBook * keptPrice + p * c) / (foreignBook + p);
+        }
         foreignBook += p;
-        handedAbroadThisMonth = p;
+        if (!(foreignBook > 0)) foreignBookShare = foreignBookPrice = 0;
+        handedSinceOffer += p;
+    }
+
+    /** The points handed him since the last offer (REV-FC2): the orders billed since, which the next offer counts as its month's. */
+    public double getHandedSinceOffer() { return handedSinceOffer; }
+
+    /** The month's offer (Game.foreignCrewsOffer()): the points handed him since the last one become the month's figure, and the count starts again. */
+    public void closeHandovers() {
+        handedAbroadThisMonth = handedSinceOffer;
+        handedSinceOffer = 0;
+    }
+
+    /** The excess share the points on his book were handed at, their mean by the point (REV-FC2); nothing with no book. */
+    public double getForeignBookShare() {
+        return foreignBook > 0 && Double.isFinite(foreignBookShare) ? foreignBookShare : 0;
+    }
+
+    /** The price a point the points on his book were handed at, in the city's money, their mean by the point (REV-FC2): what each is billed at; nothing with no book. */
+    public double getForeignBookPrice() {
+        return foreignBook > 0 && Double.isFinite(foreignBookPrice) ? foreignBookPrice : 0;
+    }
+
+    /** Whether the book has points and no price - an older save's (REV-FC2), struck by the next offer. */
+    public boolean foreignBookUnpriced() {
+        return foreignBook > 0 && !(Double.isFinite(foreignBookShare) && Double.isFinite(foreignBookPrice));
+    }
+
+    /** ...struck at {@code share} and {@code pricePerPoint}, the curve's the offer reads: what that book's points were billed at before the price was carried. */
+    public void priceUnpricedBook(double share, double pricePerPoint) {
+        if (!foreignBookUnpriced()) return;
+        foreignBookShare = Double.isFinite(share) ? Math.max(0, share) : 0;
+        foreignBookPrice = Double.isFinite(pricePerPoint) ? Math.max(0, pricePerPoint) : 0;
     }
 
     /** The points the month last offered handed the contractor (FC2). */
@@ -361,6 +423,7 @@ public final class Construction extends Sector {
      */
     public void takeFromForeignBook(double points) {
         foreignBook = Math.max(0, foreignBook - Math.max(0, points));
+        if (!(foreignBook > 0)) foreignBookShare = foreignBookPrice = 0;
     }
 
     /**
@@ -371,6 +434,7 @@ public final class Construction extends Sector {
      */
     public void capForeignBook(double owedOnSite) {
         foreignBook = Math.max(0, Math.min(foreignBook, Math.max(0, owedOnSite)));
+        if (!(foreignBook > 0)) foreignBookShare = foreignBookPrice = 0;
     }
 
     /** Points the foreign contractor has taken and not yet built. */
@@ -1183,10 +1247,16 @@ public final class Construction extends Sector {
         if (fittingThisMonth != 0) extras.put("fittingThisMonth", fittingThisMonth);
         // ...and the foreign contractor's (FC1), the same way: a city that never met the trap saves what it always saved.
         if (foreignBook != 0) extras.put("foreignBook", foreignBook);
+        // ...and the share its points were handed at (REV-FC2), with it; an older save has none and the next offer strikes one.
+        if (foreignBook != 0 && !foreignBookUnpriced()) {
+            extras.put("foreignBookShare", foreignBookShare);
+            extras.put("foreignBookPrice", foreignBookPrice);
+        }
         if (foreignPointsThisMonth != 0) extras.put("foreignPointsThisMonth", foreignPointsThisMonth);
         if (foreignBillThisMonth != 0) extras.put("foreignBillThisMonth", foreignBillThisMonth);
         // ...and FC2's: what the month handed him and what the builders sold abroad - flows a screen reads next month.
         if (handedAbroadThisMonth != 0) extras.put("handedAbroadThisMonth", handedAbroadThisMonth);
+        if (handedSinceOffer != 0) extras.put("handedSinceOffer", handedSinceOffer);
         if (exportPointsThisMonth != 0) extras.put("exportPointsThisMonth", exportPointsThisMonth);
         if (exportReceiptsThisMonth != 0) extras.put("exportReceiptsThisMonth", exportReceiptsThisMonth);
         if (overtimeWages != null) {
@@ -1219,9 +1289,12 @@ public final class Construction extends Sector {
         salvageCutThisMonth = extras.getOrDefault("salvageCutThisMonth", 0.0);
         fittingThisMonth = extras.getOrDefault("fittingThisMonth", 0.0);
         foreignBook = extras.getOrDefault("foreignBook", 0.0);
+        foreignBookShare = foreignBook > 0 ? extras.getOrDefault("foreignBookShare", Double.NaN) : 0;
+        foreignBookPrice = foreignBook > 0 ? extras.getOrDefault("foreignBookPrice", Double.NaN) : 0;
         foreignPointsThisMonth = extras.getOrDefault("foreignPointsThisMonth", 0.0);
         foreignBillThisMonth = extras.getOrDefault("foreignBillThisMonth", 0.0);
         handedAbroadThisMonth = extras.getOrDefault("handedAbroadThisMonth", 0.0);
+        handedSinceOffer = extras.getOrDefault("handedSinceOffer", 0.0);
         exportPointsThisMonth = extras.getOrDefault("exportPointsThisMonth", 0.0);
         exportReceiptsThisMonth = extras.getOrDefault("exportReceiptsThisMonth", 0.0);
         overtimeWages = null;
@@ -1249,8 +1322,8 @@ public final class Construction extends Sector {
         loadedWorkFill = Double.NaN;
         overtimeThisMonth = 0;
         overtimeWages = null;
-        foreignBook = foreignPointsThisMonth = foreignBillThisMonth = 0;
-        handedAbroadThisMonth = exportPointsThisMonth = exportReceiptsThisMonth = 0;
+        foreignBook = foreignBookShare = foreignBookPrice = foreignPointsThisMonth = foreignBillThisMonth = 0;
+        handedAbroadThisMonth = handedSinceOffer = exportPointsThisMonth = exportReceiptsThisMonth = 0;
         rDrawnLocal = rDrawnImported = 0;
         drawnKnown = true;
     }

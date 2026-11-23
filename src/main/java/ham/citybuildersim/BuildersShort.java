@@ -144,9 +144,15 @@ public final class BuildersShort {
 
     /**
      * The months of backlog past KNEE_MONTHS at which the overflow goes abroad whatever the currency (N, Jerus's
-     * "at a certain premium they do go for it"): a foreign firm trims its markup in a weak currency to the one it asks
-     * at parity, and premium(KNEE_MONTHS + 12) = 0.16 is the first whole month past the knee - a year - whose premium is over
-     * FOREIGN_EXCESS - a fifth of CEILING, so the cap binds only under parity and never asks for years of backlog.
+     * "at a certain premium they do go for it"): a year, the time an owner takes to tender work abroad and have the
+     * winner start (REV-FC2, its own reason). A road resurfacing contract takes 270 days in Korea from the bidders'
+     * documents to the winner starting work, among the quickest, and years in the slowest (Bosio and Djankov, World
+     * Bank, 2020-02-12, from the Contracting with the Government study); FIDIC's Red Book lets the work commence up to 42
+     * days after the letter of acceptance (1999, sub-clause 8.1). An owner who would wait a year past the builders' own
+     * backlog has had the time to bring a foreign firm in, at whatever it asks. The cap it gives, premium(KNEE_MONTHS +
+     * 12) = 0.16, a fifth of CEILING, is barely over FOREIGN_EXCESS: a D$ about 6% under par already sits at it, so from
+     * par to the weakest D$ the threshold moves only from 20.5 months to 21 - a weak currency barely raises it, while a
+     * strong one lowers it as far as the knee (docs/queue/FC2-notes.md).
      */
     public static final double SURE_MONTHS = 12;
 
@@ -242,17 +248,27 @@ public final class BuildersShort {
      * (zero, negative or NaN) every building stands where the first does; with a queue already endless all are abroad,
      * unless the threshold is endless too (no foreign crews at all: every building at home, FC1's meanPremium()).
      */
+    /**
+     * How many of an order's {@code n} buildings (at least one) stand within {@code thresholdMonths} (REV-FC2): the
+     * building i (from 0) in {@code fromMonths + i * stepMonths} months queued, at home while that is at or under the
+     * threshold. meanShare() prices those at the premium and the rest at the foreign crews' share, and the order hands
+     * the rest to the crews when it is billed (BuildingManager.abroadOfOrder()), one rule for both. All of them with no
+     * step or an endless threshold, none from a queue already past it; a NaN queue reads as nothing.
+     */
+    public static long homeBuildings(double fromMonths, double stepMonths, long n, double thresholdMonths) {
+        long count = Math.max(1, n);
+        double from = Double.isNaN(fromMonths) ? 0 : fromMonths;
+        if (!(from <= thresholdMonths)) return 0;
+        if (!(stepMonths > 0) || thresholdMonths == Double.POSITIVE_INFINITY) return count;
+        double k = Math.floor((thresholdMonths - from) / stepMonths) + 1;
+        return k >= count ? count : (long) Math.max(0, k);
+    }
+
     public static double meanShare(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare) {
         long count = Math.max(1, n);
         double abroad = Math.max(0, Math.min(CEILING, Double.isNaN(foreignShare) ? 0 : foreignShare));
         double from = Double.isNaN(fromMonths) ? 0 : fromMonths;
-        long home;
-        if (!(from <= thresholdMonths)) home = 0;
-        else if (!(stepMonths > 0) || thresholdMonths == Double.POSITIVE_INFINITY) home = count;
-        else {
-            double k = Math.floor((thresholdMonths - from) / stepMonths) + 1;
-            home = k >= count ? count : (long) Math.max(0, k);
-        }
+        long home = homeBuildings(fromMonths, stepMonths, n, thresholdMonths);
         if (home == count) return meanPremium(from, stepMonths, count);
         if (home == 0) return abroad;
         return clamp((home * meanPremium(from, stepMonths, home) + (count - home) * abroad) / count);

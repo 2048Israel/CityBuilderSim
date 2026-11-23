@@ -8562,8 +8562,9 @@ public class Game {
 
     /**
      * What the foreign contractor puts into the sites this month, as it was offered before the advance: the points
-     * (a whole number, as the sites' output is), his price a point and the excess share in it, struck now on the queue
-     * before the advance at the month he takes; and what a point the builders' crews have spare fetches abroad this
+     * (a whole number, as the sites' output is), his price a point and the excess share in it - the price and share his
+     * book's points were handed at (REV-FC2), each handover's struck on the base then and the curve's share at the month
+     * it made him run; and what a point the builders' crews have spare fetches abroad this
      * month, nothing while the queue at home is past the knee (BuildingManager.exportPriceOf()).
      */
     public record ForeignOffer(int points, double pricePerPoint, double excessShare, double exportPricePerPoint) {
@@ -8572,25 +8573,39 @@ public class Game {
     }
 
     /**
+     * The foreign crews' part of an order of {@code n} of {@code t} placed now (REV-FC2): its buildings past the threshold,
+     * their points and the share they go to the crews at (BuildingManager.abroadOfOrder(), on the order's points as its
+     * equipment takes them, Fitout.of()) - what the quote prices that work at and what billing it hands the crews. Null
+     * with no trade on, or no template.
+     */
+    public BuildingManager.OrderAbroad abroadOfOrder(BuildingsTemplate t, long n) {
+        if (t == null) return null;
+        return buildingManager.abroadOfOrder(0, 0, Fitout.of(this, t).points(), Math.max(1, n), buildingManager.basePerPointOf(t));
+    }
+
+    /**
      * The contractor's month, offered: his book cut first to what is still owed on site (Construction.capForeignBook();
-     * a cancelled order left it when it stopped, FC1b), then the queue at home past the threshold handed to him
-     * (BuildingManager.overflowAtHome(), Construction.handAbroad()), then his month on that book
-     * (BuildersShort.foreignMonth(): the book in the threshold's months, never under the builders' largest depot) at the
-     * excess share the supply curve gives it (BuildersShort.excessAt()). NONE with no trade on (BuildingManager.
+     * a cancelled order left it when it stopped, FC1b), the points the orders billed since the last offer handed him
+     * counted as the month's (Construction.closeHandovers(): REV-FC2, an order's buildings past the threshold go on his
+     * book as it is billed, at what its payer was quoted for them), then his month on that book
+     * (BuildersShort.foreignMonth(): the book in the threshold's months, never under the builders' largest depot), billed
+     * at the price a point the book's points were handed at (Construction.getForeignBookPrice()), so the builders pass on
+     * what the payers paid for the work abroad. An older save's book, which carried no price, is struck at the curve's
+     * share at his month and the base now (Construction.priceUnpricedBook()). NONE with no trade on (BuildingManager.
      * foreignTradeOn(): the builders have no month at all, or the switch is off). Called once a month, before the sites
-     * advance; the only place the book grows.
+     * advance.
      */
     public ForeignOffer foreignCrewsOffer() {
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
         builders.capForeignBook(buildingManager.getRemainingConstructionPoints());
+        builders.closeHandovers();
         BuildingManager.ForeignTerms terms = buildingManager.foreignTerms();
-        builders.handAbroad(terms == null ? 0 : terms.overflow());
         if (terms == null) return ForeignOffer.NONE;
+        builders.priceUnpricedBook(terms.share(), terms.base() * (1 + terms.share()));
         double work = builders.getForeignBook();
         double month = BuildersShort.foreignMonth(work, terms.thresholdMonths(), buildingManager.largestDepotPoints());
         int points = (int) Math.round(Math.min(month, work));
-        double share = BuildersShort.excessAt(terms.firstShare(), points, terms.output());
-        return new ForeignOffer(Math.max(0, points), points > 0 ? terms.base() * (1 + share) : 0, points > 0 ? share : 0,
+        return new ForeignOffer(Math.max(0, points), points > 0 ? builders.getForeignBookPrice() : 0, points > 0 ? builders.getForeignBookShare() : 0,
                 BuildingManager.exportPriceOf(terms));
     }
 
@@ -9191,6 +9206,21 @@ public class Game {
             return this;
         }
 
+        /**
+         * The order's buildings past the threshold (REV-FC2; BuildingManager.abroadOfOrder()): their points, the foreign
+         * crews' share on them and what the sticker charges a point for that work - the building's base a point and that
+         * share - which billing the order hands the crews' book (Construction.handAbroad()). All 0 for a quote with no
+         * trade on, with nothing past the threshold, or of no template's order.
+         */
+        public double abroadPoints, abroadShare, abroadPricePerPoint;
+
+        BuildQuote withAbroad(double points, double share, double pricePerPoint) {
+            this.abroadPoints = Math.max(0, points);
+            this.abroadShare = share;
+            this.abroadPricePerPoint = pricePerPoint;
+            return this;
+        }
+
         /** ...that equipment; null for a quote of no template's order (a shell's restart: its buildings keep their own). */
         public Fitout fitout() { return fitout; }
 
@@ -9355,8 +9385,8 @@ public class Game {
     }
 
     /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's (and, ET4, the part runs'), and the foothill their orders prepare (buildRunInvoice()); and (FC1) the points they put on the queue, which the builders' scarcity price reads. */
-    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands, double queue) {
-        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of(), 0); }
+    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands, double queue, double abroad) {
+        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of(), 0, 0); }
     }
 
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
@@ -9401,7 +9431,12 @@ public class Game {
         // ...and on the equipment the order's buildings come with (R1e; Fitout.of()), chosen here and frozen on site when
         // the order is accepted: its shell and pieces' cash and points, the template's own in a city founded the default way.
         Fitout fit = Fitout.of(this, selected);
-        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), fit.points(), quantity);
+        // ...its buildings past the threshold at the foreign crews' share for the month they make them run, the order on
+        // site in the base a point (REV-FC2; BuildingManager.abroadOfOrder()), and handed to them at that when it is billed.
+        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), ahead.abroad(), fit.points(), quantity,
+                buildingManager.basePerPointOf(selected));
+        BuildingManager.OrderAbroad abroad = buildingManager.abroadOfOrder(ahead.queue(), ahead.abroad(), fit.points(), quantity,
+                buildingManager.basePerPointOf(selected));
         double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
         double sticker = buildingManager.nonMaterialCost(fit) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;
@@ -9444,7 +9479,10 @@ public class Game {
                 need == null ? 0 : need.sqFt(), worksPoints, worksCost,
                 need == null ? new double[4] : need.mix(),
                 span == null ? 0 : span.lengthM(), bridgePoints, bridgeCost,
-                deep == null ? 0 : deep.depthM(), deepPoints, deepCost).withFitout(fit);
+                deep == null ? 0 : deep.depthM(), deepPoints, deepCost).withFitout(fit)
+                .withAbroad(abroad == null ? 0 : abroad.points(), abroad == null ? 0 : abroad.share(),
+                        abroad == null || !(fit.points() > 0) ? 0
+                                : buildingManager.nonMaterialCost(fit) / fit.points() * (1 + abroad.share()));
     }
 
     /** One building's construction points as an order's quote froze them (R1e): its fitout's, the template's own without one. */
@@ -10766,6 +10804,9 @@ public class Game {
                 if (quote.bridgePoints > 0) billedPoints += quote.bridgePoints;
                 if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
                 getSectors().construction().bill(totalCost, billedPoints);
+                // ...and its buildings past the threshold handed to the foreign crews now, at what the sticker charged a
+                // point for them (REV-FC2's P1): the builders bill on to the crews what the city paid for that work.
+                getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -11620,6 +11661,9 @@ public class Game {
         if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
         if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
         getSectors().construction().bill(totalCost - landPrice, billedPoints);
+        // ...and its buildings past the threshold handed to the foreign crews now, at what the payer's sticker charged a
+        // point for them (REV-FC2's P1): the builders bill on to the crews what the payer paid for that work.
+        getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
 
         return true;
     }
@@ -11776,17 +11820,19 @@ public class Game {
         double total = 0, bitumenAhead = 0;
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
         // ...and (ET4) the part of it that is runs', which take their share of every class and push buildings off the flat.
-        double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0, queueAhead = 0;
+        double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0, queueAhead = 0, abroadAhead = 0;
         // ...and (ET5) the sea terminals ahead of it that stand on an island no port links, by island: they take its room, not the linked ground.
         java.util.Map<Integer, Double> islandsAhead = new java.util.HashMap<>();
         for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
-                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead));
+                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead, abroadAhead));
             total += q.total;
             // ...and the points the order puts on the queue, as bill() is handed them: the next is priced on the queue with them (FC1),
             // its fitout's points a building (R1e, REV-R1e), as processBuildOrder() bills them.
             queueAhead += pointsEach(e.getKey(), q) * (double) e.getValue() + q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
+            // ...and the part of them it hands the foreign crews when it is billed (REV-FC2), which leaves the queue at home.
+            abroadAhead += q.abroadPoints;
             double land = e.getKey().getLandSqFt() * (double) e.getValue();
             LandManager.Use use = groundUse(e.getKey());
             int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);

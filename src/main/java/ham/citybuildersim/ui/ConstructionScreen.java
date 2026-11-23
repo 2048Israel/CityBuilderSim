@@ -242,8 +242,10 @@ final class ConstructionScreen {
         boolean foreign = abroadNow;
         if (foreign || builtAbroad > 0 || book > 0) {
             box.getChildren().add(Kept.scope("abroad", () -> {
-                Label abroad = Kept.label(String.format("FOREIGN CREWS: %,.0f pts built last month, %s paid abroad; %,.0f pts handed them this month, %,.0f pts still theirs%s",
+                // ...and (REV-FC2) the share the points still theirs were handed at, which each is billed at: its payer's quote.
+                Label abroad = Kept.label(String.format("FOREIGN CREWS: %,.0f pts built last month, %s paid abroad; %,.0f pts handed them this month, %,.0f pts still theirs%s%s",
                         builtAbroad, money(contractor.getForeignBillThisMonth()), contractor.getHandedAbroadThisMonth(), book,
+                        book > 0 ? String.format(" at +%d%% a point", Math.round(contractor.getForeignBookShare() * 100)) : "",
                         foreign ? " - taking the queue past the threshold" : book > 0 ? " - finishing what it took" : ""));
                 abroad.setWrapText(true);
                 abroad.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.WARN));

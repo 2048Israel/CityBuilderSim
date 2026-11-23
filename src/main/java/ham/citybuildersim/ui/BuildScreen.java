@@ -907,7 +907,7 @@ final class BuildScreen {
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
         face.getChildren().addAll(Kept.scope("hero", () -> heroRow(f)), Kept.scope("price", () -> priceRow(f, afford)));
         // ...and (FC1), while the builders are short, why the work costs more than it did.
-        Label buildersShort = Kept.scope("builders short", this::shortLine);
+        Label buildersShort = Kept.scope("builders short", () -> shortLine(template));
         if (buildersShort != null) face.getChildren().add(buildersShort);
         face.getChildren().addAll(Kept.scope("bars", () -> cardBars(f, group, m)));
         // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
@@ -1561,18 +1561,21 @@ final class BuildScreen {
      * The builders' two offers (FC1; FC2), a small line under the price row: the city's builders' premium on the work
      * and the months queued at home, and the foreign crews' excess and the months past which the queue is theirs - in
      * Palette.WARN while an order placed now sends work abroad or pays a premium, else in the label's tone. Every figure
-     * is the model's (BuildingManager.foreignTerms(), scarcityPremium()); null with no trade on (the founding's first
-     * month, or the switch off), the row as it always was.
+     * is the model's (BuildingManager.foreignTerms(), scarcityPremium()); the foreign crews' share and threshold are the
+     * card's own order's, one of {@code template} (REV-FC2; Game.abroadOfOrder()): what the price row's quote
+     * charges for its work past the threshold. Null with no trade on (the founding's first month, or the switch off),
+     * the row as it always was.
      */
-    Label shortLine() {
+    Label shortLine(BuildingsTemplate template) {
         BuildingManager bm = ui.game.getBuildingManager();
-        BuildingManager.ForeignTerms t = bm.foreignTerms();
-        if (t == null) return null;
-        boolean abroad = t.monthsQueued() > t.thresholdMonths();
+        BuildingManager.ForeignTerms now = bm.foreignTerms();
+        BuildingManager.OrderAbroad t = ui.game.abroadOfOrder(template, 1);
+        if (now == null || t == null) return null;
+        boolean abroad = t.buildings() > 0;
         long premiumPct = Math.round(bm.scarcityPremium() * 100);
         Label line = Kept.label(String.format("builders %s · ≈ %.1f months queued · foreign crews +%d%% a point%s",
                 premiumPct > 0 ? String.format("+%d%% on the work", premiumPct) : "at their price",
-                t.monthsQueued(), Math.round(t.share() * 100),
+                now.monthsQueued(), Math.round(t.share() * 100),
                 abroad ? String.format(" for the work past %.1f months, paid abroad", t.thresholdMonths())
                         : String.format(", past %.1f months", t.thresholdMonths())));
         line.setStyle(wordsAt(9.5, abroad || premiumPct > 0 ? Palette.WARN : Palette.TEXT_LABEL));
