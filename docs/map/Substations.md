@@ -9,7 +9,7 @@
 
 **Uses:** [PowerDispatch](PowerDispatch.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [JobType](JobType.md) (2), [Game](Game.md) (1), [BuildingManager](BuildingManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
-**Used by (15):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [ElectrolyserCheck](ElectrolyserCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LongPlaytest](LongPlaytest.md), [NewUnitCheck](NewUnitCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesManager](ServicesManager.md), [SubstationCheck](SubstationCheck.md), [UtilitiesHandler](UtilitiesHandler.md)
+**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [ElectrolyserCheck](ElectrolyserCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LongPlaytest](LongPlaytest.md), [NewUnitCheck](NewUnitCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesManager](ServicesManager.md), [SubstationCheck](SubstationCheck.md), [UtilitiesHandler](UtilitiesHandler.md)
 
 ## Constants
 

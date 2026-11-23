@@ -1,4 +1,4 @@
-# BuildCard.java - 1,968 lines · 100 methods · 14 constants · model
+# BuildCard.java - 1,969 lines · 100 methods · 14 constants · model
 
 `ham/citybuildersim/BuildCard.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -32,7 +32,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (68), [Game](Game.md) (66), [BuildAdvice](BuildAdvice.md) (54), [Sector](Sector.md) (43), [Good](Good.md) (34), [NewUnit](NewUnit.md) (30), [Sectors](Sectors.md) (19), [Forestry](Forestry.md) (10), [Refining](Refining.md) (9), [JobType](JobType.md) (9), [Resource](Resource.md) (9), [StrategicReserve](StrategicReserve.md) (8), [CareType](CareType.md) (7), [Ports](Ports.md) (7), [BuildingType](BuildingType.md) (7), [Oil](Oil.md) (5), [LandManager](LandManager.md) (5), [ProcessingSector](ProcessingSector.md) (5), [SpreadPlanner](SpreadPlanner.md) (5), [Retail](Retail.md) (4), [BuildingManager](BuildingManager.md) (4), [Formats](Formats.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [ExtractionSector](ExtractionSector.md) (3), [ConstructionControl](ConstructionControl.md) (2), [WorksValue](WorksValue.md) (2), [Bank](Bank.md) (2), [Haulage](Haulage.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Deposit](Deposit.md) (2)... and 12 more
 
-**Used by (42):** [AdviceValueOracle](AdviceValueOracle.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingStackCheck](BuildingStackCheck.md), [CementConcrete](CementConcrete.md), [ChildcareCheck](ChildcareCheck.md), [CoalMining](CoalMining.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CopperMining](CopperMining.md), [CopperRefining](CopperRefining.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Forestry](Forestry.md), [GoldMining](GoldMining.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HousingCheck](HousingCheck.md), [HydroCheck](HydroCheck.md), [KeptBench](KeptBench.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [Mining](Mining.md), [NewUnitCheck](NewUnitCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [Quarrying](Quarrying.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SectorFlow](SectorFlow.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SubstationCheck](SubstationCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [WoodProducts](WoodProducts.md), [WorksFinanceCheck](WorksFinanceCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (43):** [AdviceValueOracle](AdviceValueOracle.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingStackCheck](BuildingStackCheck.md), [CementConcrete](CementConcrete.md), [ChildcareCheck](ChildcareCheck.md), [CoalMining](CoalMining.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CopperMining](CopperMining.md), [CopperRefining](CopperRefining.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Forestry](Forestry.md), [GoldMining](GoldMining.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HousingCheck](HousingCheck.md), [HydroCheck](HydroCheck.md), [KeptBench](KeptBench.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [Mining](Mining.md), [NewUnitCheck](NewUnitCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [Quarrying](Quarrying.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SectorFlow](SectorFlow.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SubstationCheck](SubstationCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [WoodProducts](WoodProducts.md), [WorksFinanceCheck](WorksFinanceCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -114,6 +114,7 @@
 | 1949 | `BuildCard.VerdictKind.NO_COAST` |  |
 | 1949 | `BuildCard.VerdictKind.NO_RIVER` |  |
 | 1949 | `BuildCard.VerdictKind.NO_BRIDGE` |  |
+| 1949 | `BuildCard.VerdictKind.NO_WATER` |  |
 
 ## Constants
 
@@ -138,7 +139,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 1932 | **type** `public final class BuildCard` | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 143 of them since FR3, the Bulk Berth): what it gives the city and in what unit, its price per unit of that, the scarce resource it t... |
+| 37 | 1933 | **type** `public final class BuildCard` | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 143 of them since FR3, the Bulk Berth): what it gives the city and in what unit, its price per unit of that, the scarce resource it t... |
 | 39 | 1 | `private BuildCard()` |  |
 
 ### WHAT KIND OF CARD (lines 41-132)
@@ -323,12 +324,12 @@
 | 1913 | 3 | `public Investors line()` _(in BuildCard.SectorInvestors)_ | The sector's line as a build card's line is worded: its own name, its word, no gate of its own. |
 | 1918 | 21 | `public static SectorInvestors sectorInvestors(Game game, Sector sector)` |  |
 
-### THE VERDICT ON AN ORDER (lines 1940-1968)
+### THE VERDICT ON AN ORDER (lines 1940-1969)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1949 | 1 | **type** `public enum VerdictKind` |  |
 | 1952 | 3 | **type** `public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site)` | The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). |
 | 1953 | 1 | `public Verdict(VerdictKind kind, Game.BuildQuote quote, double figure)` _(in BuildCard.Verdict)_ |  |
-| 1956 | 12 | `public static Verdict verdict(Game game, BuildingsTemplate t, long n)` |  |
+| 1956 | 13 | `public static Verdict verdict(Game game, BuildingsTemplate t, long n)` |  |
 

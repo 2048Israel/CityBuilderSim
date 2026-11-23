@@ -1,12 +1,12 @@
-# UtilitiesHandler.java - 1,336 lines · 122 methods · 9 constants · model
+# UtilitiesHandler.java - 1,342 lines · 122 methods · 9 constants · model
 
 `ham/citybuildersim/UtilitiesHandler.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
-**Uses:** [PowerDispatch](PowerDispatch.md) (55), [Currency](Currency.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [Substations](Substations.md) (7), [Good](Good.md) (5), [PriceLevel](PriceLevel.md) (3), [CityNeeds](CityNeeds.md) (2)
+**Uses:** [PowerDispatch](PowerDispatch.md) (57), [Currency](Currency.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [Substations](Substations.md) (7), [Good](Good.md) (5), [PriceLevel](PriceLevel.md) (3), [CityNeeds](CityNeeds.md) (2)
 
-**Used by (46):** [AdviceValueOracle](AdviceValueOracle.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CementConcreteCheck](CementConcreteCheck.md), [CityNeeds](CityNeeds.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydroCheck](HydroCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LandManager](LandManager.md), [LicenceFees](LicenceFees.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [NewUnitCheck](NewUnitCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PowerView](PowerView.md), [PowerViewCheck](PowerViewCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [ResearchCheck](ResearchCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SimulationEngine](SimulationEngine.md), [SubstationCheck](SubstationCheck.md), [Substations](Substations.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md), [WaterPowerCheck](WaterPowerCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+**Used by (47):** [AdviceValueOracle](AdviceValueOracle.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CementConcreteCheck](CementConcreteCheck.md), [CityNeeds](CityNeeds.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydroCheck](HydroCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LandManager](LandManager.md), [LicenceFees](LicenceFees.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [NewUnitCheck](NewUnitCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PowerView](PowerView.md), [PowerViewCheck](PowerViewCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [ResearchCheck](ResearchCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SimulationEngine](SimulationEngine.md), [SubstationCheck](SubstationCheck.md), [Substations](Substations.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md), [WaterPowerCheck](WaterPowerCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 
@@ -19,9 +19,9 @@
 | 340 | THE POWER THE WORKS MAKE (0.7.112, batch I2; |
 | 475 | THE MERIT ORDER (PW1, 2026-11-11; spec-electricity 2.2, 2.6; Jerus's Q1: "Market price") |
 | 533 | · THE WATER'S POWER (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price") |
-| 1203 | · · ELECTRIC POWER |
-| 1234 | · · WATER |
-| 1275 | · · CONSOLIDATED |
+| 1209 | · · ELECTRIC POWER |
+| 1240 | · · WATER |
+| 1281 | · · CONSOLIDATED |
 
 ## Constants
 
@@ -35,7 +35,7 @@
 | 502 | `UtilitiesHandler.WORKS_ROW` | `"works", GRID_ROW = "grid"` |  |
 | 560 | `UtilitiesHandler.SEA_MARGIN_SHARE` | `.5` | The share of the sea works' output at the fill the sea must deliver to be the water's margin alone: at it or past it the sea's water pays their power, under it their power is spread over the water served, over no more... |
 | 611 | `UtilitiesHandler.WORKS_ID` | `- 1, GRID_ID = - 2, FIXTURE_ID = - 3` | Reserved aggregate row ids; catalogue rows keep their permanent nonnegative ids. |
-| 1302 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+| 1308 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
 
 ## Fields (state)
 
@@ -96,30 +96,31 @@
 | 680 | `public double commercePrice, industryPrice, worksPrice` | City money a kW a month: commerce and light industry (the energy and all the wires), Heavy Industry and Mining (the energy and transmission), and the works' surplus. |
 | 682 | `public double[] price` | Per half-block: the price a kWh, the load, and what was left unserved, kW. |
 | 684 | `public double askedKwh, servedKwh, curtailedKwh, fuelledKwh, windKwh, hydroKwh, worksKwh, gridKwh` | The month's kWh asked, served and curtailed, and made by the fuelled plants, the wind, the hydro, the works and the founding grid. |
-| 686 | `public double upkeepWorld` | The variable upkeep the plants ran up, thousands of the WORLD's money. |
-| 688 | `public LinkedHashMap<String, Double> fuel` | Fuel burned: good name to units. |
-| 690 | `public boolean cleared` | True once a month has been struck into this book; false in the founding book, for the screens to say "still at founding". |
-| 692 | `public DispatchRecord dispatch` | Optional observations: absent in older saves, never back-filled from the ending fleet. |
-| 693 | `public int struckMonth` |  |
-| 694 | `public double transmissionPrice, distributionPrice` |  |
-| 696 | `public Substations.Costs gridCosts` | The grid costs captured with this dispatch; paid by existing city flows, recovered in the wires' tariff. |
-| 842 | `public Book struck` |  |
-| 843 | `public double fuelLocal, fuelImported, upkeepPaid` |  |
-| 844 | `public Map<String, Double> fuelImportedByGood` |  |
-| 845 | `public int paidDispatchMonth` |  |
-| 846 | `public int fuelPaidMonth` |  |
-| 848 | `public PowerDispatch.Month pendingMonth` | The completed closing dispatch, still awaiting the next strike; optional in older saves. |
-| 849 | `public DispatchRecord pendingDispatch` |  |
-| 850 | `public Substations.Costs pendingGridCosts` |  |
-| 852 | `public double waterPowerPaid` | What the water's books paid the power's this month for the works' power, and the update the next strike prices it on (PW1-W); absent in older saves. |
-| 853 | `public WaterDraw pendingWater` |  |
-| 870 | `private boolean seedOnLoad` | True from a load whose save carried no struck book until seedLoadedRatio() has given the founding book the ratio the load computed. |
+| 686 | `public double solarKwh` | ...and by the sun (PW2); absent in an older save, which had no solar farm. |
+| 688 | `public double upkeepWorld` | The variable upkeep the plants ran up, thousands of the WORLD's money. |
+| 690 | `public LinkedHashMap<String, Double> fuel` | Fuel burned: good name to units. |
+| 692 | `public boolean cleared` | True once a month has been struck into this book; false in the founding book, for the screens to say "still at founding". |
+| 694 | `public DispatchRecord dispatch` | Optional observations: absent in older saves, never back-filled from the ending fleet. |
+| 695 | `public int struckMonth` |  |
+| 696 | `public double transmissionPrice, distributionPrice` |  |
+| 698 | `public Substations.Costs gridCosts` | The grid costs captured with this dispatch; paid by existing city flows, recovered in the wires' tariff. |
+| 846 | `public Book struck` |  |
+| 847 | `public double fuelLocal, fuelImported, upkeepPaid` |  |
+| 848 | `public Map<String, Double> fuelImportedByGood` |  |
+| 849 | `public int paidDispatchMonth` |  |
+| 850 | `public int fuelPaidMonth` |  |
+| 852 | `public PowerDispatch.Month pendingMonth` | The completed closing dispatch, still awaiting the next strike; optional in older saves. |
+| 853 | `public DispatchRecord pendingDispatch` |  |
+| 854 | `public Substations.Costs pendingGridCosts` |  |
+| 856 | `public double waterPowerPaid` | What the water's books paid the power's this month for the works' power, and the update the next strike prices it on (PW1-W); absent in older saves. |
+| 857 | `public WaterDraw pendingWater` |  |
+| 874 | `private boolean seedOnLoad` | True from a load whose save carried no struck book until seedLoadedRatio() has given the founding book the ratio the load computed. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 23 | 1314 | **type** `public class UtilitiesHandler` |  |
+| 23 | 1320 | **type** `public class UtilitiesHandler` |  |
 
 ### WATER SUPPLY (lines 38-101)
 
@@ -208,7 +209,7 @@
 |---:|---:|---|---|
 | 531 | 1 | `public void setGridCostSource(Supplier<Substations.Costs> source)` | Real city grid costs; a bare dispatch fixture without a city keeps its unconstrained wires. |
 
-### THE WATER'S POWER (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price") (lines 533-1336)
+### THE WATER'S POWER (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price") (lines 533-1342)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -237,52 +238,52 @@
 | 664 | 6 | `public void seedConstants(double unit)` | Re-seeds the money constants at a given unit: the dial over the unit, as Bank.seedConstants() does (the later slice calls it from Game.restrikeMoneyConstants()). |
 | 671 | 1 | `public PowerDispatch.Month getLatestMonth()` |  |
 | 673 | 1 | `public List<PowerDispatch.Row> getLatestRows()` |  |
-| 676 | 46 | **type** `public static final class Book` | A month's price and what it was made of: what the bills and the screens read. |
-| 699 | 6 | `public static Book founding()` _(in UtilitiesHandler.Book)_ | The book before any month has cleared: the founding tariff, ratio 1, nothing made. |
-| 706 | 15 | `Book copy()` _(in UtilitiesHandler.Book)_ |  |
-| 723 | 7 | `private static void scale(Book b, double scale)` |  |
-| 732 | 36 | `public void strikePower()` | Strikes the month last dispatched into the book: a new object each time, sharing nothing with the dispatch. |
-| 769 | 1 | `public Book getStruckBook()` |  |
-| 772 | 1 | `public boolean isFoundingBook()` | True while no month has been struck: the prices are the founding tariff (the book's own flag, so a load keeps it). |
-| 775 | 1 | `public double getEnergyPricePerMwh()` | What the month's energy cleared at, city money (thousands) a MWh delivered. |
-| 778 | 1 | `public double getFuelBurned(Good g)` | Units of a good the plants burned in the month last struck (tonnes, for coal). |
-| 781 | 1 | `public double getCurtailedKwh()` | kWh of the wind and the works' surplus turned away in the month last struck, for want of a load. |
-| 784 | 5 | `public double getUnservedKwh()` | kWh of the load left unserved in the month last struck, summed over its six half-blocks. |
-| 791 | 5 | `public int getHalfBlocksShort()` | How many of the month's six half-blocks left some load unserved. |
-| 798 | 1 | `public double getPricePerWatt()` | What commerce and light industry pay a kW a month (the struck commerce price). |
-| 801 | 1 | `public double getIndustryPricePerWatt()` | What Heavy Industry and Mining pay a kW a month (the energy and the long wires). |
-| 804 | 1 | `public double getWorksPricePerWatt()` | What the utility pays the works a kW of surplus a month. |
-| 810 | 3 | `public void setFuelPaid(double local, double imported, double upkeep)` | The fuel the plants burned this month and the upkeep they ran up, in city money: at home, abroad, and the upkeep (a later slice draws them from the market at the top of the month). |
-| 815 | 14 | `public void setFuelPaid(double local, double imported, double upkeep, Map<String, Double> importedByGood)` | ...with the imported part good by good (Game.buyPowerFuel()). |
-| 831 | 1 | `public Map<String, Double> getFuelImportedByGood()` | The fuel bought from the world this month, good by good (the Good's name), in city money. |
-| 833 | 1 | `public double getFuelLocal()` |  |
-| 834 | 1 | `public double getFuelImported()` |  |
-| 835 | 1 | `public double getUpkeepPaid()` |  |
-| 836 | 1 | `public double getFuelBill()` |  |
-| 837 | 1 | `public int getPaidDispatchMonth()` |  |
-| 838 | 1 | `public int getFuelPaidMonth()` |  |
-| 841 | 14 | **type** `public static final class PowerState` | What the save keeps of the merit order: the struck book and the fuel paid (a later slice wires it to DataSave). |
-| 856 | 12 | `public PowerState toPowerState()` |  |
-| 878 | 5 | `public void seedLoadedRatio()` | A save from before PW1 carries no book (REV-PW1c): it loads the founding book, and here, on the load path after updateServices() has dispatched the loaded city, that book takes the ratio just computed, the one the loa... |
-| 885 | 27 | `public void restorePendingPower()` | Restores the completed closing flow after the load's LAST derived-services rebuild, for the next strike. |
-| 914 | 13 | `public void restorePowerState(PowerState s)` | Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. |
-| 929 | 3 | `public void setWattsProduction(double watts)` | setters |
-| 933 | 4 | `public void setWattsConsumption(double watts)` |  |
-| 938 | 3 | `public void setWaterProduction(double water)` |  |
-| 943 | 4 | `public void setWaterSources(double fresh, double desal)` | The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. |
-| 949 | 3 | `public void setFreshCap(double cap)` | The fresh water limit, from the city's land and rights (Game.getFreshCap()); infinite for none. |
-| 954 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
-| 959 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
-| 968 | 3 | `public void setPopulation(long population)` | The people. |
-| 972 | 3 | `public void setPricePerWaterUnit(double price)` |  |
-| 982 | 50 | `public void updateEnergyRatio()` | The month dispatched (PW1, THE MERIT ORDER): the rows the city's plants make, run against the grid's draw by PowerDispatch; energyRatio is the energy served over the energy asked, and production the power offered, as ... |
-| 1039 | 14 | `private PowerDispatch.Row rowFor(BuildingsTemplate t, long n, double extraKw, double fill)` | The row n of a template make at this staffing, their output at nameplate moved by extraKw (0: the row the month runs, to the bit). |
-| 1061 | 27 | `public double deliveredWith(BuildingsTemplate t, double moveKw)` | The kW the grid delivers its customers with one template's output at nameplate moved by moveKw (PW1-L): the month's dispatch run again on the rows it ran, at the same draw, season, cap price and wires, that template's... |
-| 1089 | 35 | `public void updateWaterRatio()` |  |
-| 1129 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
-| 1140 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
-| 1193 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
-| 1199 | 101 | `public void printUtilitiesInfo()` | printers |
-| 1304 | 4 | `static { ... }` |  |
-| 1311 | 24 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
+| 676 | 49 | **type** `public static final class Book` | A month's price and what it was made of: what the bills and the screens read. |
+| 701 | 6 | `public static Book founding()` _(in UtilitiesHandler.Book)_ | The book before any month has cleared: the founding tariff, ratio 1, nothing made. |
+| 708 | 16 | `Book copy()` _(in UtilitiesHandler.Book)_ |  |
+| 726 | 7 | `private static void scale(Book b, double scale)` |  |
+| 735 | 37 | `public void strikePower()` | Strikes the month last dispatched into the book: a new object each time, sharing nothing with the dispatch. |
+| 773 | 1 | `public Book getStruckBook()` |  |
+| 776 | 1 | `public boolean isFoundingBook()` | True while no month has been struck: the prices are the founding tariff (the book's own flag, so a load keeps it). |
+| 779 | 1 | `public double getEnergyPricePerMwh()` | What the month's energy cleared at, city money (thousands) a MWh delivered. |
+| 782 | 1 | `public double getFuelBurned(Good g)` | Units of a good the plants burned in the month last struck (tonnes, for coal). |
+| 785 | 1 | `public double getCurtailedKwh()` | kWh of the wind and the works' surplus turned away in the month last struck, for want of a load. |
+| 788 | 5 | `public double getUnservedKwh()` | kWh of the load left unserved in the month last struck, summed over its six half-blocks. |
+| 795 | 5 | `public int getHalfBlocksShort()` | How many of the month's six half-blocks left some load unserved. |
+| 802 | 1 | `public double getPricePerWatt()` | What commerce and light industry pay a kW a month (the struck commerce price). |
+| 805 | 1 | `public double getIndustryPricePerWatt()` | What Heavy Industry and Mining pay a kW a month (the energy and the long wires). |
+| 808 | 1 | `public double getWorksPricePerWatt()` | What the utility pays the works a kW of surplus a month. |
+| 814 | 3 | `public void setFuelPaid(double local, double imported, double upkeep)` | The fuel the plants burned this month and the upkeep they ran up, in city money: at home, abroad, and the upkeep (a later slice draws them from the market at the top of the month). |
+| 819 | 14 | `public void setFuelPaid(double local, double imported, double upkeep, Map<String, Double> importedByGood)` | ...with the imported part good by good (Game.buyPowerFuel()). |
+| 835 | 1 | `public Map<String, Double> getFuelImportedByGood()` | The fuel bought from the world this month, good by good (the Good's name), in city money. |
+| 837 | 1 | `public double getFuelLocal()` |  |
+| 838 | 1 | `public double getFuelImported()` |  |
+| 839 | 1 | `public double getUpkeepPaid()` |  |
+| 840 | 1 | `public double getFuelBill()` |  |
+| 841 | 1 | `public int getPaidDispatchMonth()` |  |
+| 842 | 1 | `public int getFuelPaidMonth()` |  |
+| 845 | 14 | **type** `public static final class PowerState` | What the save keeps of the merit order: the struck book and the fuel paid (a later slice wires it to DataSave). |
+| 860 | 12 | `public PowerState toPowerState()` |  |
+| 882 | 5 | `public void seedLoadedRatio()` | A save from before PW1 carries no book (REV-PW1c): it loads the founding book, and here, on the load path after updateServices() has dispatched the loaded city, that book takes the ratio just computed, the one the loa... |
+| 889 | 28 | `public void restorePendingPower()` | Restores the completed closing flow after the load's LAST derived-services rebuild, for the next strike. |
+| 919 | 13 | `public void restorePowerState(PowerState s)` | Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. |
+| 934 | 3 | `public void setWattsProduction(double watts)` | setters |
+| 938 | 4 | `public void setWattsConsumption(double watts)` |  |
+| 943 | 3 | `public void setWaterProduction(double water)` |  |
+| 948 | 4 | `public void setWaterSources(double fresh, double desal)` | The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. |
+| 954 | 3 | `public void setFreshCap(double cap)` | The fresh water limit, from the city's land and rights (Game.getFreshCap()); infinite for none. |
+| 959 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
+| 964 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
+| 973 | 3 | `public void setPopulation(long population)` | The people. |
+| 977 | 3 | `public void setPricePerWaterUnit(double price)` |  |
+| 987 | 50 | `public void updateEnergyRatio()` | The month dispatched (PW1, THE MERIT ORDER): the rows the city's plants make, run against the grid's draw by PowerDispatch; energyRatio is the energy served over the energy asked, and production the power offered, as ... |
+| 1044 | 15 | `private PowerDispatch.Row rowFor(BuildingsTemplate t, long n, double extraKw, double fill)` | The row n of a template make at this staffing, their output at nameplate moved by extraKw (0: the row the month runs, to the bit). |
+| 1067 | 27 | `public double deliveredWith(BuildingsTemplate t, double moveKw)` | The kW the grid delivers its customers with one template's output at nameplate moved by moveKw (PW1-L): the month's dispatch run again on the rows it ran, at the same draw, season, cap price and wires, that template's... |
+| 1095 | 35 | `public void updateWaterRatio()` |  |
+| 1135 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
+| 1146 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
+| 1199 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
+| 1205 | 101 | `public void printUtilitiesInfo()` | printers |
+| 1310 | 4 | `static { ... }` |  |
+| 1317 | 24 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
 
