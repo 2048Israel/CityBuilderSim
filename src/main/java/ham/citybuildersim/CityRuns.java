@@ -246,6 +246,8 @@ public final class CityRuns {
         long version();
         /** The city's owned box, {x0, y0, x1, y1} in plots, inclusive: how far out a corridor is sought. */
         long[] box();
+        /** (AP2) A link's search (linkWay()) begins (true) or ends (false): a ground that keeps what it reads may keep all of it meanwhile. It changes no answer of at(). */
+        default void searching(boolean on) { }
     }
 
     /** Whether a ground class is the city's dry ground: owned (a class at all, not -1), and dry by World.dry() - not water, and since 0.7.127 not ice. */
@@ -1664,7 +1666,13 @@ public final class CityRuns {
      */
     static LinkWay linkWay(Net n, Net other, Ground g, int p, long[][] from, int goalKind, long goalV, long[] hub, long most) {
         LinkSearch s = new LinkSearch(n, other, g, p, goalKind, goalV, hub, most);
-        return s.run(from[0], from[1]);
+        // (AP2) The ground keeps every tile the search reads: on a large city its ring is wider than the tiles it keeps otherwise.
+        g.searching(true);
+        try {
+            return s.run(from[0], from[1]);
+        } finally {
+            g.searching(false);
+        }
     }
 
     /**

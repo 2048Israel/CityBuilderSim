@@ -1,6 +1,6 @@
 # CreditCrunchCheck.java - 651 lines · 18 methods · 13 constants · harnesses
 
-`ham/citybuildersim/CreditCrunchCheck.java` - generated 2026-11-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CreditCrunchCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose
 > leverage ratio binds, standing in its band between its leverage minimum and
