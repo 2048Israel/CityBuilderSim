@@ -625,10 +625,21 @@ public class ResearchCheck {
                 panel != null && panel.getSinceText().equals("E19") && panel.getSince() == 1981
                         && pellets != null && pellets.getSinceText().equals("E20") && pellets.getSince() == 1970);
         List<String> odd = new ArrayList<>();
+        List<String> homeDates = new ArrayList<>();
+        int housingForms = 0;
         for (BuildingsTemplate t : shipped) {
+            HousingForms.Form home = HousingForms.of(t.getId());
+            if (home != null) {
+                housingForms++;
+                if (t.getSince() != home.since() || !t.getSinceText().equals(Integer.toString(home.since())))
+                    homeDates.add(t.getName() + " " + t.getSinceText() + " vs " + home.since());
+                continue;
+            }
             if (CODED.containsKey(t.getId()) || t == panel || t == pellets) continue;
             if (!t.getSinceText().isEmpty() && !t.getSinceText().equals("1900")) odd.add(t.getName() + " " + t.getSinceText());
         }
+        check("all fourteen residential rows retain their catalogue form years",
+                housingForms == HousingForms.ALL.size() && homeDates.isEmpty(), homeDates.toString());
         check("every other template is undated or 1900", odd.isEmpty(), odd.toString());
 
         List<String> unopened = new ArrayList<>();

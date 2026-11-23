@@ -734,10 +734,10 @@ public class ResearchViewCheck {
         check("newTemplates() is every template that isNew(), in the templates' order (" + expected.size() + ": the furnace among them)", ResearchView.newTemplates(town).equals(expected) && expected.contains(furnace));
 
         // Known at the founding, never known, a year not yet come.
-        BuildingsTemplate house = template(town, "House"), quarry = template(town, "Quarry"), panel = template(town, "Panel Mill");
-        check("a template known at the founding has no origin: an undated House, and a Quarry dated 1900, the founding's January",
-                house.getSinceText().isEmpty() && ResearchView.origin(town, house) == null && "1900".equals(quarry.getSinceText()) && ResearchView.origin(town, quarry) == null
-                        && !ResearchView.isNew(town, house) && !ResearchView.isNew(town, quarry));
+        BuildingsTemplate undated = template(town, "Gravel Road"), quarry = template(town, "Quarry"), panel = template(town, "Panel Mill");
+        check("a template known at the founding has no origin: an undated Gravel Road, and a Quarry dated 1900, the founding's January",
+                undated.getSinceText().isEmpty() && ResearchView.origin(town, undated) == null && "1900".equals(quarry.getSinceText()) && ResearchView.origin(town, quarry) == null
+                        && !ResearchView.isNew(town, undated) && !ResearchView.isNew(town, quarry));
         check("...nor one not known yet: the Large Cement Plant (PE4, history's month " + CAT.entry("PE4").worldMonth() + ") in month " + month + ", nor the Panel Mill (" + panel.getSinceText() + ")",
                 ResearchView.origin(town, template(town, "Large Cement Plant")) == null && ResearchView.origin(town, panel) == null);
 
@@ -772,7 +772,7 @@ public class ResearchViewCheck {
         boolean labs = true;
         for (Field f : Field.values()) labs &= ResearchView.isLab(town.labTemplate(f)) && town.labTemplate(f).getResearches() == f;
         check("the four labs are labs, and a school (the University), a house and nothing at all are not",
-                labs && !ResearchView.isLab(template(town, "University")) && !ResearchView.isLab(house) && !ResearchView.isLab(null));
+                labs && !ResearchView.isLab(template(town, "University")) && !ResearchView.isLab(template(town, "House")) && !ResearchView.isLab(null));
     }
 
     /* ==================== 9. the series ==================== */

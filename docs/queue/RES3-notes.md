@@ -1638,3 +1638,107 @@ only the baseline, notes and ship record follow it. Pick ALL 248 still owes
 the dry run, which is requested from the orchestrator after these records
 are pushed. No dry run has started; the provisional marker stays until the
 explicit go and a green kept dry run.
+
+## First ALL dry run: stopped, slot released
+
+The orchestrator grants the dry run at fde7db7b9. Main remains
+86359b9d448e95fe1a5632a16d075c3f1d0b14d2, so no further merge precedes it.
+The gatebox run is /home/jerus/cbs/runs/cbs-gate-RES3-xIpD5dJW, copied to
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RES3-xIpD5dJW. These are retained
+red-run evidence, not a reuse claim. Branch commit:
+fde7db7b9411feb6dfa1832f240dc8f3db595d4e. Local controller log:
+target/RES3-dry.txt. No process or command is run inside the kept clone.
+
+The gate exits 1, 2026-11-23 12:06:09 UTC: 247 harnesses ran in 1,289 s,
+204 passed/43 failed, 38 harnesses with 182 unnamed lines (including exits
+and summaries; some harnesses have both known and new lines). Stale does not
+decide this run; the suite stops first. The slot is released by bus at
+08:10:42 Halifax. The provisional marker remains; no ready message is sent.
+The nine-minute foreground watcher intervals expired normally while the gate
+continued; the controller and gate both finish, no process is abandoned.
+
+The initial trace distinguishes owned data changes from unclassified laws:
+
+- EquipmentCheck's old House is now billed to RE, so it cannot be its
+  unbilled-building example. A city's Gravel Road has positive draw and no
+  utility invoice; the unchanged zero-cost/zero-steam assertions use it, with
+  the unbilled premise asserted explicitly.
+- ResearchCheck's four newly dated tower rows are the catalogue's 1931/1969
+  dates. All fourteen residential rows must retain their declared form year;
+  every other non-code/non-special row retains the old undated/1900 rule.
+  DiscoveryCheck and ResearchViewCheck use the actually undated Gravel Road
+  for the original undated case; the year-dated Quarry and all known/from-
+  research/unknown/origin assertions remain. These are being checked alone,
+  not passed to a sweep.
+- A diagnostic-only AutoBuildCheck run isolates section 2, changing no model
+  input. Its native callback at m37 reads 3,112 people, annual GDP
+  2,925.739475548268, cash 57,227.47701054205 and debt ratio 0. Full builder
+  output is 302 and site output is 0. Paved Road, Walk-in Clinic and Childcare
+  Centre are all HELD with cut BUILDERS. The helper's WG2 comment records
+  five depots calibrated at 3,902 people/output 418, just past repairs. Its
+  original full 600-month operational/save laws pass and place 28 orders;
+  this trace does not establish all 38 short-fixture failures' causes.
+  Evidence: target/RES3-dry-AutoBuild-trace.{log,txt}. The observation is
+  restored byte-for-byte before accepted checks; its scoped failure is a
+  diagnostic, not a green full-harness result.
+- LandmassCheck's total builder points do not establish the demolition's
+  own share: it receives 15,754 total points against 7,778 initially owed
+  without finishing in 129 months. Allocation and competition still need
+  tracing. The same warning applies to other work/pending-order premises.
+- Currency and other money comparisons remain unclassified. Their original
+  laws and tolerances are kept; neither a sweep name nor a different played
+  city is an attribution by itself.
+
+The orchestrator supplies FC2's red run, e90eb0b93,
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FC2-0uEcU2DO, and asks whether
+the currency cases share a premise. Fourteen red harnesses overlap:
+BankCheck, CallCheck, CarCheck, CentralBankCheck, CurrencyCheck,
+DeathRecordCheck, DeskCheck, EssentialWorksCheck, FundCheck, FundLedgerCheck,
+GoldStandardCheck, OrderDoorCheck, RailCheck and ShortSellingCheck.
+GoldStandardCheck explicitly fails its no-top-of-month-M0-move premise in
+both: RES3 has edge owed 34.18; FC2 has gold due 31.66 with zero reserves,
+and its mid-cover premise already fails. RES3's before-top cover cannot be
+used for its struck-rate equality; FC2 additionally loses its Gold fixture.
+These are related fixture/phase assumptions, not an exclusive common cause
+or a waiver. CurrencyCheck's cumulative defence comparison fails in both
+with different figures and still needs its actual-flow trace. DeskCheck's
+premises differ (unchanged spare for paper here, fixed-fee coverage there).
+The overlap and evidence are mailed to the orchestrator at 08:25:29, with
+the recommendation that FC2 owns common money-fixture mends to avoid two
+builders editing them together. RES3 leaves those fourteen files untouched
+pending coordination while its own catalogue checks proceed.
+
+No production model, money/save check, threshold or ensemble score is
+changed in this trace. The final monetary ensemble remains the passing
+2d9a79aea model; another dry run requires a new slot go after every unnamed
+line is mended or honestly named with its queued owner and cause.
+
+The four catalogue/utility assumption repairs all pass independently:
+EquipmentCheck, ResearchCheck, DiscoveryCheck and ResearchViewCheck, each
+exit 0. The first compile caught a remaining local `house` reference in
+ResearchViewCheck's separate lab example; that example still tests House,
+and the undated-origin example now tests Gravel Road. No threshold changed.
+
+The ChildcareCheck.town trace is now a native-main comparison, not a guess
+about PW5. Native 0.9.193 at 86359b9d4, with the identical observer and
+36-month fixture, ends at m37 with 4,016 people, 2,415 workers, construction
+fill 0.7279804650063673, full output 431 and site output 87. RES3 ends with
+3,112 people, 1,865 workers, fill 0.5029633156194911, full output 302 and
+site output 0. Both have exactly 344.05000000000007 repair points, including
+7.5 for the same 900 Houses; the entire standing-stock lists match and
+neither has a Substation. Road ratio is 0.35 in both; health work ratios
+are 0.7833219508408702 and 0.7934365755180257 respectively. RES3's housing
+choice changes the people and staffed crews; PW5 has not added a repair
+load to this fixture. Raw diagnostics are
+`target/RES3-native-builder-trace.{txt,log}` and
+`target/RES3-dry-Childcare-trace.{txt,log}`. These are one-fixture observer
+runs, not full ChildcareCheck passes. The native scratch worktree was
+restored, checked clean and removed after its process ended.
+
+★ Cause this fixture's intended positive site output with physical inputs:
+start with its five depots, add paid standing depots while the actual
+staffed output leaves nothing after repairs, play a labour month after
+each addition, and fail the fixture if twelve additions cannot cause it.
+Do not repick a fixed count or change the service, funding or payback laws.
+This harness-only mend is awaiting the full named checks below; it does
+not change the final ensemble's production model.
