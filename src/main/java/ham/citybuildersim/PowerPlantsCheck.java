@@ -21,7 +21,8 @@ import java.util.Map;
  *      heat content, its ground, posts, cooling, months and year the table's; every ELECTRICITY row is dated.
  *   2. THE SUN RUNS AT ITS HOURS: a solar row makes its average x solarAt() in each half-block, nothing in the dark halves of the base
  *      and the shoulder, after the wind and before the rest; a solar farm standing in a town is dispatched so and booked as the sun.
- *   3. EACH FUEL IS BOUGHT FROM A REAL SELLER AND PAID ONCE: a town on each new fuelled row burns that fuel by the dispatch's kWh x its
+ *   3. EACH FUEL IS BOUGHT FROM A REAL SELLER AND PAID ONCE: the fuelled rows run by their marginal cost, both sides (on the same diesel
+ *      the turbine, the lower heat rate, runs first, and the station only past it); a town on each new fuelled row burns that fuel by the dispatch's kWh x its
  *      fuel a kWh; the market draws it for the city, what a seller at home holds from it (Refining's fuel oil and diesel, Wood Products'
  *      pellets) and the rest from the world; the seller's statement books the sale, the audit's FuelImports line and the Trade tab's
  *      good the import, once; the audit closes every month.
@@ -29,6 +30,8 @@ import java.util.Map;
  *      run, the advice and the automatic builder) and not a closed-loop or dry row; a city that owns water is not refused one.
  *   5. THE BUILD-TIME FLOOR, both sides: a site of a row with months is worked no faster than its points over its months, so one
  *      stands in exactly its months with crews to spare and a quote waits them; a building with none is worked as fast as the crews go.
+ *      A site's preparation is not held to it: a station whose ground owes ten times its points still stands in its months.
+ *      An order's quote counts a site the floor holds at its cap, not its weight's share; one the floor does not hold, to the bit.
  *   6. EACH ROW FROM ITS YEAR (Q2), both sides: a row is known from its since and not the month before, in the build menu, the
  *      advice's list and the order; a 1900 city knows the coal and oil plants and not the diesel station, and it knows the diesel
  *      station from 1910.
@@ -227,10 +230,14 @@ public class PowerPlantsCheck {
        1. THE ROWS ARE THE STUDY'S
        ===================================================================== */
 
+    /** The catalogue section 1 read, for the sections that need only templates. */
+    static BuildingManager catalogue;
+
     static void rows() {
         section("1. the rows are the study's (spec-electricity 2.3, by HY1's rule)");
         Game g = city("rows", false);
         BuildingManager b = g.getBuildingManager();
+        catalogue = b;
         for (Study s : STUDY) {
             BuildingsTemplate t = b.getTemplateByName(s.name());
             if (t == null) { check(s.name() + " is in the catalogue", false); continue; }
@@ -327,6 +334,23 @@ public class PowerPlantsCheck {
 
     static void fuels() {
         section("3. each fuel is bought from a real seller and paid once");
+        // The merit order, both sides: on the same diesel the turbine's lower heat rate makes it the cheaper row, so the station runs only past it.
+        BuildingsTemplate turbine = catalogue.getTemplateByName("Oil-Fired Turbine"), station = catalogue.getTemplateByName("Diesel Station");
+        double litre = Good.DIESEL.worldImportPrice();
+        double mt = litre * turbine.fuelPerKwh() + turbine.getVariableUpkeep() / 1e6, ms = litre * station.fuelPerKwh() + station.getVariableUpkeep() / 1e6;
+        check("on the same diesel the Oil-Fired Turbine's marginal cost is below the Diesel Station's: its heat rate is the lower", litre > 0 && mt < ms,
+                f(mt) + " against " + f(ms));
+        for (double share : new double[] {0.5, 1.5}) {
+            PowerDispatch.Row tr = PowerDispatch.Row.fuelled("turbine", turbine.getNameplate(), mt, Good.DIESEL, turbine.fuelPerKwh(), turbine.getVariableUpkeep() / 1e6);
+            PowerDispatch.Row st = PowerDispatch.Row.fuelled("station", station.getNameplate(), ms, Good.DIESEL, station.fuelPerKwh(), station.getVariableUpkeep() / 1e6);
+            PowerDispatch.dispatch(List.of(st, tr), share * turbine.getNameplate(), 1, PowerDispatch.VOLL_A_KWH);
+            boolean behind = tr.kwh > 0;
+            for (int h = 0; h < PowerDispatch.HALVES; h++) behind &= st.gen[h] == 0 || tr.gen[h] >= turbine.getNameplate() * (1 - 1e-12);
+            if (share < 1) check("...a draw of half the turbine's nameplate is the turbine's alone: the station, listed first, runs nothing", behind && st.kwh == 0,
+                    f(tr.kwh) + " and " + f(st.kwh) + " kWh");
+            else check("...a draw past it runs the station, and only in half-blocks where the turbine is at its nameplate", behind && st.kwh > 0,
+                    f(tr.kwh) + " and " + f(st.kwh) + " kWh");
+        }
         for (String[] row : FUELLED) {
             String plant = row[0], seller = row[2];
             Good good = Good.valueOf(row[1]);
@@ -503,6 +527,40 @@ public class PowerPlantsCheck {
                 && near(left, 1, 1e-9), f(left));
         quietly(() -> b.advanceConstruction(AMPLE, 0));
         check("...and in its " + months + "th month it stands: no sooner than its months, and no later with crews to spare", site.getQuantity() == 1 && site.getUnderConstruction() == 0);
+        // The preparation (a foothill pad, the works: owed as progress below nothing) is the crews', not the floor's.
+        double prep = 10.0 * diesel.getConstructionPoints();
+        check("an order whose ground owes ten times its points still waits its months exactly with crews to spare",
+                near(b.waitFor(diesel, 1, prep, AMPLE), months, 1e-12), f(b.waitFor(diesel, 1, prep, AMPLE)));
+        quietly(() -> {
+            b.addStack(diesel, 1, false);
+            b.addPreparation(diesel, prep);
+        });
+        double[] owing = b.siteShares(AMPLE);
+        check("fixture: the second station's site owes its preparation, as progress below nothing", site.getUnderConstruction() == 1
+                && near(site.getConstructionProgress(), -prep, 1e-9), f(site.getConstructionProgress()));
+        check("...its first month's share is all the preparation and its points over its months: the preparation is not capped",
+                near(owing[k], prep + diesel.getConstructionPoints() / (double) months, 1e-9), f(owing[k]));
+        for (int m = 0; m < months - 1; m++) quietly(() -> b.advanceConstruction(AMPLE, 0));
+        check("...after " + (months - 1) + " months it is still on site", site.getQuantity() == 1 && site.getUnderConstruction() == 1);
+        quietly(() -> b.advanceConstruction(AMPLE, 0));
+        check("...and in its " + months + "th it stands, not " + months + " x 11 months on", site.getQuantity() == 2 && site.getUnderConstruction() == 0);
+        // The quotes (BuildingManager.ruleWait()) share the output by weight, held steady; a site the floor holds is held for its
+        // whole build, so what its cap leaves goes to the order. A third station on site alone, and a water plant quoted beside it.
+        quietly(() -> b.addStack(diesel, 1, false));
+        boolean alone = true;
+        for (BuildingsStacks on : b.getStacksUnderConstruction()) alone &= on == site;
+        double owes = site.pointsOnSite() - site.getConstructionProgress();
+        double held = Math.min(owes, diesel.getConstructionPoints() / (double) months);
+        double wd = BuildingManager.weightOf(diesel, 1), ww = BuildingManager.weightOf(water, 1), wp = water.getConstructionPoints();
+        double edge = held * (wd + ww) / wd;
+        check("fixture: a third station is on site alone, owing more than its cap", alone && site.getUnderConstruction() == 1 && owes > held && held > 0,
+                f(owes) + " against " + f(held));
+        double past = 2 * edge, short_ = edge / 2;
+        check("past the output at which its weight's share is its cap (" + f(edge) + "), the water plant waits its points over the output the cap leaves",
+                near(b.waitFor(water, 1, past), wp / (past - held), 1e-9) && !near(b.waitFor(water, 1, past), wp * (wd + ww) / (past * ww), 1e-6),
+                f(b.waitFor(water, 1, past)) + " against " + f(wp / (past - held)));
+        check("...and short of it the weight's own share, to the bit", b.waitFor(water, 1, short_) == wp * (wd + ww) / (short_ * ww),
+                f(b.waitFor(water, 1, short_)) + " against " + f(wp * (wd + ww) / (short_ * ww)));
         sectionEnd();
     }
 

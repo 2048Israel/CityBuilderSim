@@ -1221,8 +1221,10 @@ public class BuildingManager {
                 .setWaterConsumption(0)             // none, which is half the point
                 .setLandSqFt(1742400)               // 40 acres - 2 per MW
                 .setRoadLoad(5)
-                .setJobs(JobType.DIPLOMA, 1)        // turbine technicians, a real trade
-                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                // Its two posts are the site's turbine technicians, a trade (BLS: wind turbine service technicians enter with a
+                // postsecondary nondegree award), not an engineer: one engineering post in two, in a town short of engineers,
+                // drew the utilities' pooled fill down by more than the farm adds (WorksFinanceCheck's oracle, PW2).
+                .setJobs(JobType.DIPLOMA, 2)
                 .setId(41);
 
         templates.add(windFarm);
@@ -5114,7 +5116,9 @@ public class BuildingManager {
            crews' cap), and the steam plants - the oil and the biomass, as
            coal - stand only on owned sea, lake or river (cooling(),
            NO_WATER). The starred figures are the study's own estimates,
-           named in its table; posts, own load and road load by coal's per MW.
+           named in its table, the posts among them; a fuelled row's own load
+           and road load are the coal plant's per MW, the solar farm's the wind
+           farm's (1 and 5).
            ------------------------------------------------------------------ */
         // A 100 MW oil steam plant from 1900: no source prices a new one, so NETL's subcritical coal plant [S9], $3,054/kW, is the upper bound.
         templates.add(new BuildingsTemplate("Oil-Fired Plant", BuildingType.ELECTRICITY)
@@ -5435,7 +5439,7 @@ public class BuildingManager {
             if (building <= 0) continue;
             owed[k] += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             // ...never more in a month than its build time allows (PW2): its points on site, the extra's with them, over its months.
-            owed[k] = capped(owed[k], monthCap(s.getBuilding(), s.pointsOnSite() + extraPoints));
+            owed[k] = capped(owed[k], siteCap(s, extraPoints));
             weight[k] = weightOf(s.getBuilding(), building);
         }
         if (extra != null && extraCount > 0 && !extraHasStack) {
@@ -5557,7 +5561,12 @@ public class BuildingManager {
        shares the site's pace. The cap is a site's demand in the crews' rule,
        not a crew of its own: what it cannot take this month goes to the other
        sites by the same water-filling. A building with no build time is
-       uncapped, to the bit. */
+       uncapped, to the bit. A site's preparation (a foothill pad, the works,
+       a bridge: owed as progress below nothing, BuildingsStacks.addPreparation())
+       is not held to it: the crews take it as fast as the rule gives them, and
+       the buildings' own points then stand in their months (found when a wind
+       farm on unprepared ground was quoted 418 months, its preparation counted
+       against the cap of its 6,854 points). */
 
     /** The most a site of this building may be worked in a month: its points on site over its build time; unbounded for a building with none (PW2). */
     static double monthCap(BuildingsTemplate t, double pointsOnSite) {
@@ -5565,20 +5574,25 @@ public class BuildingManager {
         return months > 0 ? Math.max(0, pointsOnSite) / months : Double.POSITIVE_INFINITY;
     }
 
+    /** A site's cap (PW2): its buildings' points on site, and `extraPoints` more of them, over their build time, and all the preparation it still owes. */
+    static double siteCap(BuildingsStacks s, double extraPoints) {
+        return monthCap(s.getBuilding(), s.pointsOnSite() + extraPoints) + Math.max(0, -s.getConstructionProgress());
+    }
+
     /** What a site may take this month: all it owes when that is within its cap (a hair over is rounding, and taken, so the last month finishes it rather than holding it a month for the hair), else the cap. */
     static double capped(double owed, double cap) {
         return owed <= cap * (1 + 1e-9) ? owed : cap;
     }
 
-    /** The months its build time holds an order's site to at the least (PW2): its months x what the site would owe with the order over its points with it; 0 for a building with none. */
+    /** The months its build time holds an order's site to at the least (PW2): its months x the buildings' own points the site would owe with the order over their points with it, its preparation (and the order's, `extraPoints`) left to the crews' wait; 0 for a building with none. */
     double floorWait(BuildingsTemplate t, long quantity, double extraPoints) {
         if (t == null || t.buildMonths() <= 0) return 0;
         BuildingsStacks s = getStack(t);
         boolean on = s != null && s.getUnderConstruction() > 0;
-        double order = quantity > 0 ? orderPoints(t, quantity, extraPoints) : 0;
-        double points = (on ? s.pointsOnSite() : 0) + (quantity > 0 ? quantity * (double) t.getConstructionPoints() : 0);
-        double owed = (on ? Math.max(0, s.pointsOnSite() - s.getConstructionProgress()) : 0) + order;
-        return points > 0 ? t.buildMonths() * owed / points : 0;
+        double order = quantity > 0 ? quantity * (double) t.getConstructionPoints() : 0;
+        double points = (on ? s.pointsOnSite() : 0) + order;
+        double own = (on ? Math.max(0, s.pointsOnSite() - Math.max(0, s.getConstructionProgress())) : 0) + order;
+        return points > 0 ? t.buildMonths() * own / points : 0;
     }
 
     /** waitWith() before PW2: the crews' wait alone, no build time counted. */
@@ -5610,6 +5624,7 @@ public class BuildingManager {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double others = 0, aheadOwed = 0;
         long aheadUnits = 0;
+        java.util.List<double[]> floored = null;
         for (BuildingsStacks s : stacks) {
             long on = s.getUnderConstruction();
             if (on <= 0) continue;
@@ -5617,7 +5632,12 @@ public class BuildingManager {
                 aheadUnits = on;
                 aheadOwed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             } else {
-                others += weightOf(s.getBuilding(), on);
+                double w = weightOf(s.getBuilding(), on);
+                others += w;
+                if (s.getBuilding().buildMonths() > 0) {
+                    if (floored == null) floored = new java.util.ArrayList<>();
+                    floored.add(new double[] {w, capped(Math.max(0, s.pointsOnSite() - s.getConstructionProgress()), siteCap(s, 0))});
+                }
             }
         }
         // ...and the city's demolitions on site (0.7.22), whose crews are
@@ -5631,6 +5651,20 @@ public class BuildingManager {
         double mine = weightOf(t, (long) aheadUnits + quantity);
         if (!(mine > 0)) return 0;
         double owedWith = aheadOwed + orderPoints(t, quantity, extraPoints);
+        // ...but a site the build-time floor holds (PW2) is held there for its whole build, not a month: what its cap
+        // leaves goes to the rest by weight, as siteShares() gives it, the least-capped first. With none held, to the bit.
+        if (floored != null) {
+            floored.sort(java.util.Comparator.comparingDouble(f -> f[1] / f[0]));
+            double left = siteOutput, weights = others + mine;
+            boolean held = false;
+            for (double[] f : floored) {
+                if (!(left / weights * f[0] > f[1])) break;
+                left -= f[1];
+                weights -= f[0];
+                held = true;
+            }
+            if (held) return owedWith * weights / (left * mine);
+        }
         return owedWith * (others + mine) / (siteOutput * mine);
     }
 
@@ -5942,7 +5976,7 @@ public class BuildingManager {
                 owed[k] = Math.max(0, s.pointsOnSite()
                         - s.getConstructionProgress());
                 // ...and no more than its build time allows in a month, in the player's order or on overtime (PW2).
-                owed[k] = capped(owed[k], monthCap(s.getBuilding(), s.pointsOnSite()));
+                owed[k] = capped(owed[k], siteCap(s, 0));
             }
         }
         keys.add("");

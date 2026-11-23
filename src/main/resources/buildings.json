@@ -664,8 +664,7 @@
    "electricity": 1,
    "water": 0,
    "jobs": {
-    "DIPLOMA": 1,
-    "COLLEGE_ENGINEERING": 1
+    "DIPLOMA": 2
    },
    "land": 1742400,
    "roadLoad": 5
