@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW5-ZBhvJISL -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — PW5, substations — 2026-11-23, ready, see docs/queue/PW5-notes.md
 Substations carry 100 MW of the peak each, ordered by the automatic builder through the
