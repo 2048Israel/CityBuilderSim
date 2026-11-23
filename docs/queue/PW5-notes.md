@@ -1386,3 +1386,57 @@ pair readings are kept at target/PW5-restored-source/digests/ and
 target/PW5-restored-source/pair-readings.txt; the earlier cash phases are
 at target/PW5-pricecash-probe/. This classification and LP-G1 still need
 the stranger's delta review and the required merged-model ensemble.
+
+Main's later ea16576cd (AP3/AP4 records only) is merged with no conflict;
+no further model code changes arrive with it. The publication sentence now
+qualifies the m576 / 6,176-builder-point census as **before HC1**. It is
+the measured default run recorded above, rather than a claim that the new
+merged city's first district completes in that identical month. The
+district's own 110-point continuing repair load is unchanged.
+
+### Merged fixture-mend validation and review handoff
+
+The final serial pass on 7e8fe7eda (with only publication records changed
+after it) uses the real data paths and cbs.parallel=1. No model, save,
+money-audit, conservation or comparison bound is changed in these mends.
+The temporary cash observer is absent from source and rebuilt classes.
+
+| check | result |
+| --- | --- |
+| --fast | 0; indexes regenerated, 0 firm / 199 soft Stale findings, tree unchanged |
+| LongPlaytest, normal 2,400 months | 3; only the named LP-G1 finding, 16 months m792-807, worst 12.283 households beside 1,496 homes |
+| SubstationCheck | 0; includes the growing money-town's full-warmup wire-carry guard |
+| PowerPriceCheck | 0 |
+| BuildingDataCheck | 0 |
+| SaveFileCheck | 0; real native shipped-format-62 refusal preserves both files and the loaded running twin |
+| ReadPathCheck | 0 |
+| PriceLevelCheck, full normal run on the restored model | 4 before the new classification; explicit saved-log rejudge 3, only the traced HT1-H onset line |
+| KeptCheck, retained standalone Windows run | 4 before the new classification; explicit saved-log rejudge 3, only the FS5 held-grid line; its unchanged heap bound passes |
+
+The complete LongPlaytest confirms the HA1 mend: **63 presses to actual
+maturity at m184**, drift 3.7882 before it and 3.7992 in the maturity
+month. The unchanged principal-floor and household-book assertions both
+pass. Its only failure is the separately traced default housing window;
+none of the short m830 diagnostic's post-limit unsettled-line flags
+appears in the full run. OrderDoorCheck and ScaleCheck already exited 0
+on these fixture mends; the subsequent main merges are exact-speed AP2
+and record-only AP3/AP4.
+
+The first saved-log judge call returns 1 because the earlier log labels
+the line NEW while the new ship row names it. The supported
+`CBS_REJUDGE=1 ./batch-check.sh --judge LOG` then returns 3 for both
+retained PriceLevel and Kept logs. These are classifications of unchanged
+standalone logs, not a replay or a change inside a sealed gate run. The
+final raw logs, status and judge results are at
+target/PW5-final-fixture-mends/. The published exception rows still await
+the stranger's delta review.
+
+A final fetch leaves main at ea16576cd; no newer merge is pending.
+`tools/pick.sh origin/main HEAD` is **ALL 245**, with review needed for
+DataSave, SAVE_FORMAT and OLDEST_LOADABLE_FORMAT. The earlier money and
+merge-save SHIPs remain recorded above; this handoff asks for the new
+fixture and finding classifications. The ship parser and scoped
+whitespace checks pass, all edited files retain LF, and publisher-owned
+records and VERSION match main. The next required work is the fresh
+merged-model 80-run ensemble against the newest 0.9.190 baseline, then
+another granted ALL dry run; neither is claimed complete here.

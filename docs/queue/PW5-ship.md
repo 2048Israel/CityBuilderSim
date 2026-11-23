@@ -10,7 +10,7 @@ transmission-only share. Closing costs are saved with the dispatch, so reloading
 the next bill exact. Currency reforms scale every wires component once. Older saves
 are refused with both files and the running city intact under the raised format floor.
 PW5-F1: a 45 MW town pays 11.38 cents/kWh against 5.94; each district also needs
-110 repair points/month. Default seed's first stands at m576: builders 6,176,
+110 repair points/month. Before HC1, seed 0's first stands at m576: builders 6,176,
 standing repairs 420 (110 for the district), leaving 5,756 points for sites.
 ## queued
 | LP-G1 | The test player's ground forecast must cover its long skip: main also holds housing orders for land across a 63-month gap between looks; retain the cash-share limit and every housing and money bound (PW5, {next}) | [brief](docs/queue/LP-G1.md) |
