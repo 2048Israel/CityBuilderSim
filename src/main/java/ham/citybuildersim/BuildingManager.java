@@ -288,7 +288,10 @@ public class BuildingManager {
        Industry is where water actually bites, and that is true to life:
        textile dyeing and food processing are two of the most water-intensive
        industries there are, and thermoelectric cooling is the single largest
-       category of freshwater withdrawal in the US - hence the coal plant's 400.
+       category of freshwater withdrawal in the US - hence the coal plant's 400,
+       until PW2 (2026-11-23): a steam plant now draws its cooling once-through
+       from the sea, a lake or a river the city owns (cooling(), NO_WATER) and
+       nothing from the city's supply, which could not carry a tower's.
        ------------------------------------------------------------------------- */
 
     /**
