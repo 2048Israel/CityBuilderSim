@@ -1295,3 +1295,46 @@ grid count is exact, and all old monetary/real tolerances remain. Its cash
 trace records the progression before the first Agriculture-cash mismatch.
 The replay through m830 and the full price-level harness are running on
 this merged source, serially; their results are not yet claimed.
+
+The AP2-merged replay again matches the original default housing window.
+At m743 the player leaves 1,534,346.965 square feet free, used share
+0.934660113003 against its 0.945640734565 forecast line. It does not make
+another ground look until **m805**, when it has 216,902.323709505 cash and
+a 21,690.232370951 budget. Three parcels costing 2,992.643026560,
+3,471.090657765 and 3,673.727301570 are bought within that budget; the next
+15,308.447933355 offer is properly held against the remaining budget.
+The cause of the preceding hold is the gap between looks, not that later
+budget hold. Housing orders had waited for ground throughout the gap.
+
+For a current-main control, an isolated checkout of **1b89c5c4c**, format
+62 and without any Substation class, runs the same m830 diagnostic. Only
+read-only observations in LongPlaytest are added; production source is
+unedited. It shows the same ground-order hold at m760, m792 and m800:
+5,570 m² needed, 286 m² free, no home pipeline, unlimited mortgage capital,
+full power and 268-367 site points. Main's looks are **m741 then m804**.
+Its 1,951 homes leave a larger buffer, so it has no unplaced household in
+that window. This is the same deferred-land class, not an assertion that
+the two cities have the same housing counts. Both diagnostics' unrelated
+post-limit unsettled-line flags occur after m830 (PW5 m834, main m835);
+neither is represented as a normal-run finding or granted an exception.
+The control's --fast exits 0. Its logs remain at target/PW5-native-main-land/;
+PW5's AP2 replay is at target/PW5-main191-traces/.
+
+**★ Queue LP-G1 for the player's land horizon and skip timing.** The model
+has power and construction points available while no housing site can be
+ordered, and current main shows the same no-land hold and over-sixty-month
+gap. keepGroundAhead uses BuildAdvice.HORIZON's six months but is called
+at advisor looks separated here by 62/63 months. Preserve the player and
+its cash-share dial in PW5; queue a fixture that causes the gap and a mend
+that aligns the next look with the reserve. The default seed-0 F1 line is
+named to LP-G1 for review, with no permission to pass other ensemble seeds
+without diagnosing them. The mandatory full merged ensemble remains to run.
+
+OrderDoor's old edge row is removed because the named harness now passes.
+The played-edge/search work still belongs to HT1-H as a latent fixture;
+these independent-order mends do not claim to have made that edge causal.
+Kept's two native classes are named to the existing, unshipped FS5 row,
+with the box and Windows measurements above and every bound retained.
+PriceLevel is still open: no row or waiver is added while its cash-writing
+phase is being traced. Temporary cash observation in Sector is diagnostic
+only and must be restored before final checks, review or ensemble capture.
