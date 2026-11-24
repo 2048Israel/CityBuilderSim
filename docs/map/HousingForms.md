@@ -1,6 +1,6 @@
 # HousingForms.java - 112 lines · 11 methods · 3 constants · model
 
-`ham/citybuildersim/HousingForms.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingForms.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The fourteen fixed forms, geometry and capital partitions of the RES1 catalogue.
 > WHY (RES3): mixed homes need one actual project quote, partitioned without charging
@@ -8,7 +8,7 @@
 
 **Uses:** [HousingRecipe](HousingRecipe.md) (47), [BuildingsTemplate](BuildingsTemplate.md) (3), [BuildingType](BuildingType.md) (1), [Good](Good.md) (1), [JobType](JobType.md) (1)
 
-**Used by (6):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [DenominationCheck](DenominationCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [ResearchCheck](ResearchCheck.md)
+**Used by (7):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [DenominationCheck](DenominationCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [MonetaryCheck](MonetaryCheck.md), [ResearchCheck](ResearchCheck.md)
 
 ## Constants
 

@@ -1,4 +1,4 @@
-# Motoring.java - 395 lines · 22 methods · 2 constants · model
+# Motoring.java - 418 lines · 25 methods · 2 constants · model
 
 `ham/citybuildersim/Motoring.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -56,21 +56,21 @@
 
 **Uses:** [Good](Good.md) (4), [Markets](Markets.md) (3), [Game](Game.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [PriceLevel](PriceLevel.md) (1), [Retail](Retail.md) (1), [Bank](Bank.md) (1), [GoodsMarket](GoodsMarket.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Consumption](Consumption.md) (1), [Trade](Trade.md) (1)
 
-**Used by (6):** [CarCheck](CarCheck.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [OilCheck](OilCheck.md), [ReadPathCheck](ReadPathCheck.md), [TradeCostCheck](TradeCostCheck.md)
+**Used by (9):** [CarCheck](CarCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [OilCheck](OilCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [TradeCostCheck](TradeCostCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 66 | THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) |
-| 118 | THE FUEL IS DRAWN (0.7.62, batch K) |
+| 89 | THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) |
+| 141 | THE FUEL IS DRAWN (0.7.62, batch K) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 99 | `Motoring.CAR_FUEL_PER_JOURNEY` | `.002 * PriceLevel.FACTOR` | What a journey to work by car burns, in world money: $2.00, fifteen kilometres at eight litres a hundred and about $1.65 a litre. |
-| 113 | `Motoring.LITRES_PER_JOURNEY` | `1.2` | ...and the litres in it (0.7.62): fifteen kilometres at eight litres a hundred, the same journey. |
+| 122 | `Motoring.CAR_FUEL_PER_JOURNEY` | `.002 * PriceLevel.FACTOR` | What a journey to work by car burns, in world money: $2.00, fifteen kilometres at eight litres a hundred and about $1.65 a litre. |
+| 136 | `Motoring.LITRES_PER_JOURNEY` | `1.2` | ...and the litres in it (0.7.62): fifteen kilometres at eight litres a hundred, the same journey. |
 
 ## Fields (state)
 
@@ -81,43 +81,47 @@
 | 60 | `private double householdCarImports` |  |
 | 61 | `private double householdCarCredit` |  |
 | 64 | `private double usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice` | The second-hand market's month: offered, traded, what it cost and what a lender found. |
-| 116 | `private double fuelBill` | The month's fuel: the drivers' journeys at a journey's price, today's money. |
-| 138 | `private double fuelImports, fuelLitres` |  |
-| 141 | `private double prefersTransit` | The households' share who would rather ride than buy: 1 until a month is struck, and 1 at the default fare in the research cities. |
-| 144 | `private double ownershipCeiling` | ...and the ceiling on ownership the month's buyers met, cars per household (1 until a month is struck). |
+| 139 | `private double fuelBill` | The month's fuel: the drivers' journeys at a journey's price, today's money. |
+| 161 | `private double fuelImports, fuelLitres` |  |
+| 164 | `private double prefersTransit` | The households' share who would rather ride than buy: 1 until a month is struck, and 1 at the default fare in the research cities. |
+| 167 | `private double ownershipCeiling` | ...and the ceiling on ownership the month's buyers met, cars per household (1 until a month is struck). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 340 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
+| 56 | 363 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
+| 67 | 1 | **type** `public record UsedTrade(double traded, double offered, double spend, double credit, double price)` | The closed month's trades and asset mark, which cannot be rebuilt from its closing fleet. |
+| 69 | 3 | `public UsedTrade usedTradeForSave()` |  |
+| 73 | 10 | `public void restoreUsedTrade(UsedTrade saved)` |  |
+| 84 | 4 | `public void redenominateUsedTrade(double scale)` |  |
 
-### THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) (lines 66-117)
+### THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) (lines 89-140)
 
-### THE FUEL IS DRAWN (0.7.62, batch K) (lines 118-395)
+### THE FUEL IS DRAWN (0.7.62, batch K) (lines 141-418)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 147 | 5 | `public void setFuelBill(double v)` | Sets the month's fuel bill with every litre of it imported: what the fuel was before a refinery could sell any, and a save from before 0.7.62. |
-| 152 | 1 | `public double getFuelBill()` |  |
-| 155 | 1 | `public double getFuelImports()` | ...the part of it bought from the world (0.7.62): all of it with no refinery. |
-| 158 | 1 | `public double getFuelLitres()` | ...and the litres the drivers burned (0.7.62); 0 for a month struck by setFuelBill(). |
-| 161 | 5 | `public void restoreFuel(double bill, double imports, double litres)` | The month's fuel as 6d struck it, put back by a load (0.7.62): the bill, its imported part and the litres. |
-| 175 | 4 | `public static double journeyFuel(Markets markets)` | What a journey's fuel costs today, in today's money (0.7.62): its litres at what a litre costs to bring in (GoodsMarket.landedPrice()) - the refiners' price while the city has fuel on offer, the import price while it ... |
-| 188 | 4 | `public static double journeyFuel(Game game)` | ...at the pump (0.7.83, batch O6): a journey's litres at the forecourts' pump price today (Retail.pumpPriceToday()) - the price on the sign, the wholesale with the stations' margin and the sales tax on it, and since 0... |
-| 200 | 7 | `void drawFuel(Game game, double journeys)` | The drivers' month of fuel (6d, 0.7.62): `journeys` at LITRES_PER_JOURNEY, bought at the pump since 0.7.83 - the grocers' forecourts draw them off the refiners' shelf and the world at wholesale and sell them on (Retai... |
-| 207 | 1 | `public double getPrefersTransit()` |  |
-| 208 | 1 | `public double getOwnershipCeiling()` |  |
-| 215 | 6 | `public static double carPayment(double price, double annualRate)` | A car's monthly payment over its life (CAR_LIFE_MONTHS) at an annual rate: the annuity P i / (1 - (1 + i)^-n), i the rate over twelve; the price over the months at no rate. |
-| 223 | 1 | `public double getHouseholdCarsBought()` | Cars the households bought this month. |
-| 226 | 1 | `public double getHouseholdCarSpend()` | ...what they paid for them, and what of that left the country. |
-| 227 | 1 | `public double getHouseholdCarImports()` |  |
-| 230 | 1 | `public double getHouseholdCarCredit()` | ...and what of it the bank advanced rather than the household finding. |
-| 233 | 1 | `public double getUsedCarsTraded()` | Cars that changed hands second-hand this month. |
-| 236 | 1 | `public double getUsedCarsOffered()` | ...against what was put up for sale, which in a crash is far more. |
-| 239 | 1 | `public double getUsedCarPrice()` | What one went for. |
-| 242 | 1 | `void restoreUsedCarPrice(double price)` | ...restored from a save (PW2; DataSave.usedCarPrice): the month's figure the households' cars are marked at until the next month clears its own. |
-| 245 | 1 | `public double getUsedCarSpend()` | What the buyers paid for them, all in. |
-| 248 | 1 | `public double getUsedCarCredit()` | ...and what of that a lender advanced. |
-| 251 | 144 | `void month(Game game)` | The car market's month. |
+| 170 | 5 | `public void setFuelBill(double v)` | Sets the month's fuel bill with every litre of it imported: what the fuel was before a refinery could sell any, and a save from before 0.7.62. |
+| 175 | 1 | `public double getFuelBill()` |  |
+| 178 | 1 | `public double getFuelImports()` | ...the part of it bought from the world (0.7.62): all of it with no refinery. |
+| 181 | 1 | `public double getFuelLitres()` | ...and the litres the drivers burned (0.7.62); 0 for a month struck by setFuelBill(). |
+| 184 | 5 | `public void restoreFuel(double bill, double imports, double litres)` | The month's fuel as 6d struck it, put back by a load (0.7.62): the bill, its imported part and the litres. |
+| 198 | 4 | `public static double journeyFuel(Markets markets)` | What a journey's fuel costs today, in today's money (0.7.62): its litres at what a litre costs to bring in (GoodsMarket.landedPrice()) - the refiners' price while the city has fuel on offer, the import price while it ... |
+| 211 | 4 | `public static double journeyFuel(Game game)` | ...at the pump (0.7.83, batch O6): a journey's litres at the forecourts' pump price today (Retail.pumpPriceToday()) - the price on the sign, the wholesale with the stations' margin and the sales tax on it, and since 0... |
+| 223 | 7 | `void drawFuel(Game game, double journeys)` | The drivers' month of fuel (6d, 0.7.62): `journeys` at LITRES_PER_JOURNEY, bought at the pump since 0.7.83 - the grocers' forecourts draw them off the refiners' shelf and the world at wholesale and sell them on (Retai... |
+| 230 | 1 | `public double getPrefersTransit()` |  |
+| 231 | 1 | `public double getOwnershipCeiling()` |  |
+| 238 | 6 | `public static double carPayment(double price, double annualRate)` | A car's monthly payment over its life (CAR_LIFE_MONTHS) at an annual rate: the annuity P i / (1 - (1 + i)^-n), i the rate over twelve; the price over the months at no rate. |
+| 246 | 1 | `public double getHouseholdCarsBought()` | Cars the households bought this month. |
+| 249 | 1 | `public double getHouseholdCarSpend()` | ...what they paid for them, and what of that left the country. |
+| 250 | 1 | `public double getHouseholdCarImports()` |  |
+| 253 | 1 | `public double getHouseholdCarCredit()` | ...and what of it the bank advanced rather than the household finding. |
+| 256 | 1 | `public double getUsedCarsTraded()` | Cars that changed hands second-hand this month. |
+| 259 | 1 | `public double getUsedCarsOffered()` | ...against what was put up for sale, which in a crash is far more. |
+| 262 | 1 | `public double getUsedCarPrice()` | What one went for. |
+| 265 | 1 | `void restoreUsedCarPrice(double price)` | ...restored from a save (PW2; DataSave.usedCarPrice): the month's figure the households' cars are marked at until the next month clears its own. |
+| 268 | 1 | `public double getUsedCarSpend()` | What the buyers paid for them, all in. |
+| 271 | 1 | `public double getUsedCarCredit()` | ...and what of that a lender advanced. |
+| 274 | 144 | `void month(Game game)` | The car market's month. |
 

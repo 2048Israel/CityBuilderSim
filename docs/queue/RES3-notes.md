@@ -2433,9 +2433,9 @@ allows. `RES3-log3` reports the complete results in immutable mail
 `20261124-022255-747-RES3-log3-bf93`; raw
 `target/RES3-reality17-MonetaryCheck.{txt,log}`.
 
-★ Freeze empirical timing limits with the old harness's own calibration
-convention: approximately twice the largest measured response, rounded up
-to a quarter percentage point. The 17-town calibration therefore gives
+★ Keep the old harness's approximately twofold calibration margin, and
+choose upward quarter-percentage-point rounding for these two new
+aggregate timing limits. The 17-town calibration therefore gives
 .750 points for the whole-window estimate (twice .356534) and 2.000 for
 an annual estimate (twice .961207). Preserve the old .650-point ordering
 resolution and the original one-point effect bound. For ordering, compare
@@ -2527,3 +2527,34 @@ passes the real format-64 boundary and its older native pairs (exit 0),
 regenerated after the merge, including its current small and larger city
 integrated-month observations. The validation runner's subsequent
 `./batch-check.sh --fast` also passes, exit 0.
+
+Final CurveCheck, ExpectationsCheck, TimingCheck and WaterCheck each pass
+(exit 0), one named harness per call. The final fast check passes after
+all source cleanup, regenerating the maps with 0 firm and 199 soft Stale
+findings. `RES3-close-logs`, launched at 69-percent committed memory, reads
+all named outputs and confirms these results in immutable mail
+`20261124-025240-784-RES3-close-logs-305d`; it has ended. Raw final outputs:
+`target/RES3-reality-<Harness>.{txt,log}` and
+`target/RES3-reality-final-fast.txt`. The InvestCheck red is exactly main's
+HT1-H/FB3/RT2-L wage/rebate premise: index 1.158005 and both rebates zero,
+so the required strict contrast is not caused. No new red is passed as
+known. HousingCheck also prints an uncounted OBSERVED line because its
+played town did not close homes leaving landlord debt; that observation
+is not a new passing assertion. HousingDoorCheck still closes all 899
+months' cash identities. Native refusal, current-format reload and the
+atomic malformed-market guards all pass.
+
+The final source pick against merged main `94ba28823` is ALL, 251
+harnesses. The review line is "needed - saves: DataSave.java,
++SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT". The combined stranger review also
+covers money: the current-pool demand budget, the chained comparable-rent
+CPI level, saving-sensitive funded bids and their native restoration.
+There is no threading change. The revised monetary law, real boundary
+pair and main merge belong to that same delta. The provisional ship
+marker remains. Known-reds syntax passes with exit 0, including the four
+HT1-H fixture classes awaiting the review's premise acceptance; no
+MonetaryCheck waiver is added. The earlier ensemble is not validation of
+this model. The fresh final ensemble against `docs/ensemble/0.9.195.md`,
+the FC2 merge and its four named shared guards when it ships, and the
+slot-authorized ALL dry run remain after the review's SHIP. No other job
+or helper is left running at the review handoff.

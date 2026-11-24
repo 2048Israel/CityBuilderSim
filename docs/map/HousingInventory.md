@@ -9,7 +9,7 @@
 
 **Uses:** [HousingRecipe](HousingRecipe.md) (11), [BuildingsStacks](BuildingsStacks.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (12):** [BuildingManager](BuildingManager.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FamilyModel](FamilyModel.md), [HousingChoice](HousingChoice.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingInventoryCheck](HousingInventoryCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [InvestCheck](InvestCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md)
+**Used by (13):** [BuildingManager](BuildingManager.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FamilyModel](FamilyModel.md), [HousingChoice](HousingChoice.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingInventoryCheck](HousingInventoryCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [InvestCheck](InvestCheck.md), [MonetaryCheck](MonetaryCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md)
 
 ## Enum constants
 

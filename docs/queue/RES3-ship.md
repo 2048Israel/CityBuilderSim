@@ -1,12 +1,12 @@
 <!-- readiness: provisional -->
 ## changelog
-### {next} — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-23, ready, see docs/queue/RES3-notes.md
+### {next} — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-24, ready, see docs/queue/RES3-notes.md
 Activates fourteen residential recipes and thirty-two comparable dwelling classes,
 with full-budget household choice, retained incumbents, explicit emergency sharing
 and crowding, class rents and actual occupied receipts. The existing builder and
 funding path receive the actual mix, costs and work; the synthetic pipeline is
 retired. Commits historical and present-day quote, budget, availability and build
-reports. Native class flows and wage indices use save format 64 and floor 64.
+reports. Native class flows and wage indices use save format 65 and floor 65.
 Emergency shelter retains funded demand for separate doors without extra rent.
 Feasible paid and hosted emergency placements are matched together.
 Unbuilt supply quotes cover operations; feasible orders use the full affordable typed backlog.

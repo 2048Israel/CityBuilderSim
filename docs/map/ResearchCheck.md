@@ -1,4 +1,4 @@
-# ResearchCheck.java - 1,092 lines · 26 methods · 15 constants · harnesses
+# ResearchCheck.java - 1,103 lines · 26 methods · 15 constants · harnesses
 
 `ham/citybuildersim/ResearchCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -51,7 +51,7 @@
 >  13. ITS BUILDINGS. A city founded the default way never knows a near-future building (a candidate nor an order) and knows the oxide leach plant; one
 >      founded the 1900 way knows the Sulphide Leach & SX-EW Plant from FE2's month and the Hydrogen Steel Works from FE4's, and not the month before.
 
-**Uses:** [ResearchCatalog](ResearchCatalog.md) (84), [BuildingsTemplate](BuildingsTemplate.md) (29), [PolicyDates](PolicyDates.md) (19), [Game](Game.md) (17), [CityCalendar](CityCalendar.md) (13), [EquipmentFit](EquipmentFit.md) (12), [Recipes](Recipes.md) (11), [BuildAdvice](BuildAdvice.md) (8), [Refining](Refining.md) (7), [Equipment](Equipment.md) (5), [Sectors](Sectors.md) (5), [ResearchView](ResearchView.md) (5), [BuildingManager](BuildingManager.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Ports](Ports.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [Founding](Founding.md) (3), [Good](Good.md) (3), [Recipe](Recipe.md) (2), [BuildingType](BuildingType.md) (2), [LongPlaytest](LongPlaytest.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [GameFiles](GameFiles.md) (1), [RefineryFlow](RefineryFlow.md) (1), [Investor](Investor.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
+**Uses:** [ResearchCatalog](ResearchCatalog.md) (84), [BuildingsTemplate](BuildingsTemplate.md) (29), [PolicyDates](PolicyDates.md) (19), [Game](Game.md) (17), [CityCalendar](CityCalendar.md) (13), [EquipmentFit](EquipmentFit.md) (12), [Recipes](Recipes.md) (11), [BuildAdvice](BuildAdvice.md) (8), [Refining](Refining.md) (7), [Equipment](Equipment.md) (5), [Sectors](Sectors.md) (5), [ResearchView](ResearchView.md) (5), [BuildingManager](BuildingManager.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Ports](Ports.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [HousingForms](HousingForms.md) (3), [Founding](Founding.md) (3), [Good](Good.md) (3), [Recipe](Recipe.md) (2), [BuildingType](BuildingType.md) (2), [LongPlaytest](LongPlaytest.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [GameFiles](GameFiles.md) (1), [RefineryFlow](RefineryFlow.md) (1), [Investor](Investor.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
 **Used by (10):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [WaterPowerCheck](WaterPowerCheck.md)
 
@@ -68,12 +68,12 @@
 | 432 | · 5. known from |
 | 476 | · 6. the reader's refusals, and the fees |
 | 578 | 7. buildings.json's codes (R2, slice B) |
-| 698 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
-| 786 | 10. the building candidates and orders (R2b) |
-| 942 | 11. the mark against HISTORY_ENDS (R6b) |
-| 984 | 12. the near future (R6b, call 1) |
-| 1012 | 13. a near-future building, by the way the city was founded (R6b, call 1) |
-| 1052 | · helpers |
+| 709 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
+| 797 | 10. the building candidates and orders (R2b) |
+| 953 | 11. the mark against HISTORY_ENDS (R6b) |
+| 995 | 12. the near future (R6b, call 1) |
+| 1023 | 13. a near-future building, by the way the city was founded (R6b, call 1) |
+| 1063 | · helpers |
 
 ## Constants
 
@@ -106,7 +106,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 1017 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
+| 76 | 1028 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
 | 81 | 4 | `static void check(String label, boolean ok)` |  |
 | 87 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 
@@ -133,51 +133,51 @@
 | 233 | 3 | `static boolean has(Entry e, List<String> kinds)` |  |
 | 237 | 340 | `public static void main(String[] args) throws Exception` |  |
 
-### 7. buildings.json's codes (R2, slice B) (lines 578-697)
+### 7. buildings.json's codes (R2, slice B) (lines 578-708)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 595 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id)` |  |
-| 600 | 97 | `static void sectionSeven()` |  |
+| 600 | 108 | `static void sectionSeven()` |  |
 
-### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 698-785)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 700 | 85 | `static void sectionEightAndNine()` |  |
-
-### 10. the building candidates and orders (R2b) (lines 786-941)
+### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 709-796)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 789 | 11 | `static Game datedCity(String label, boolean historical)` | A scratch city with ample land and cash; the date alone must refuse its orders. |
-| 802 | 5 | `static void atMonth(Game g, int month) throws Exception` | Set the clock at an exact boundary without playing decades of unrelated economics. |
-| 808 | 133 | `static void buildingsOnDates() throws Exception` |  |
+| 711 | 85 | `static void sectionEightAndNine()` |  |
 
-### 11. the mark against HISTORY_ENDS (R6b) (lines 942-983)
+### 10. the building candidates and orders (R2b) (lines 797-952)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 944 | 39 | `static void theMark()` |  |
+| 800 | 11 | `static Game datedCity(String label, boolean historical)` | A scratch city with ample land and cash; the date alone must refuse its orders. |
+| 813 | 5 | `static void atMonth(Game g, int month) throws Exception` | Set the clock at an exact boundary without playing decades of unrelated economics. |
+| 819 | 133 | `static void buildingsOnDates() throws Exception` |  |
 
-### 12. the near future (R6b, call 1) (lines 984-1011)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 986 | 25 | `static void theNearFuture()` |  |
-
-### 13. a near-future building, by the way the city was founded (R6b, call 1) (lines 1012-1051)
+### 11. the mark against HISTORY_ENDS (R6b) (lines 953-994)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1014 | 37 | `static void nearFutureBuildings() throws Exception` |  |
+| 955 | 39 | `static void theMark()` |  |
 
-### helpers (lines 1052-1092)
+### 12. the near future (R6b, call 1) (lines 995-1022)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1054 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
-| 1061 | 12 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E21, M12, B10, L8 (STUDY_TAIL), then the near future's rows. |
-| 1075 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
-| 1085 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
+| 997 | 25 | `static void theNearFuture()` |  |
+
+### 13. a near-future building, by the way the city was founded (R6b, call 1) (lines 1023-1062)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1025 | 37 | `static void nearFutureBuildings() throws Exception` |  |
+
+### helpers (lines 1063-1103)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1065 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
+| 1072 | 12 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E21, M12, B10, L8 (STUDY_TAIL), then the near future's rows. |
+| 1086 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
+| 1096 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
 
