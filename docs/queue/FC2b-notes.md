@@ -143,3 +143,31 @@ more to get just roads fixed").
   2,400 months, median about 175, 3,006 over the 16 seeds**; at most 8 to 14 sites with the crews at once; the first at month 11 or 12
   in every seed (the founding's queue, the city's builders few), and some site with the crews in 269 to 712 of the 2,400 months.
   All are businesses' (the city's are the player's).
+
+## 8. The dry run
+
+- `sh tools/gate.sh FC2b --dry-run` on the orchestrator's go, on the gate box: run /home/jerus/cbs/runs/cbs-gate-FC2b-Yd0ZcIDj
+  (the branch 02d4392de, main 2186dbbf5, 0.9.197 and QUEUE commits), exit 1 with 9 unnamed red lines in five harnesses. Each was
+  traced by a helper in scratch (the worktree untouched): every harness here mutes System.out while it plays, so its log cannot show
+  a handover; the helper replayed each city with a counting stream, a twin with investorsHandAbroad() overridden to nothing, and a
+  build of main b92af507f. The twin and main give main's figures exactly in each, so **none is an FC2b code path giving a wrong
+  figure; all are cities the handovers moved**, entered as `## known-reds` rows in the ship file:
+  - **SectorFlowCheck** (two lines): main's SectorFlow.of() has no row for Statement.powerSold. The fixture's Pulp Mill, handed to
+    the crews about m38, opens at m58 on FC2b's path, and Wood Products' outputs fall short of its revenue at m61 by $293,460, that
+    month's powerSold; on main the mill is still on site at m61. Queued as **SFP1** in the ship file (the row, null good, "Power sold
+    to the grid").
+  - **AutoBuildCheck** (the priced-out fixture, ~805-815 on the decades city ~374): 12 handovers; general care priced out 0.0 of
+    7,209.5 (main 183.3 of 6,931.8). FS12, the harness's queued sweep, takes it; its by-section row names only the "placed orders"
+    premise, so the line is added here for it.
+  - **ForeignDebtCheck** (theLadder ~812, the 60-month trading city ~130): 4 handovers, 4,032 people against 2,980; the quote sells
+    nothing ("the bids reached only $21,316 of the $103,533 asked"), main's covers 1.42x with 36 payments. FS13 shipped; HT1-H.
+  - **CarCheck** (three lines, OE1 ~1250-1305 and CI1 ~1383, the buying city ~340): 7 handovers open Automotive sooner, 2 cars on
+    its shelves at m24 and 12 at m25 (main 0). OE1's edge needs empty shelves (no edge in 4,800 trials); CI1's month needs every car
+    off the ship (6.0 on the shelves). Its "imports declared ... paid" pair is not a money mismatch: paid less declared is 0.7920,
+    exactly the six shelf cars at 0.132, the households' domestic purchases; FC2b touches no household car code. FS7 shipped; HT1-H.
+  - **GroundSkipCheck** (section 3's premise and its next line, ~268-269 and ~285): the one handover in probeCity's first 19 months
+    (Industry's Bakery, 2 months against 20) grows probePlay()'s town to 2,314 people and 0.9053 built on at m245 (main 1,285 and
+    0.9274); the landlords are held 0 of the 60 skip months (main 2). LP-G2, queued for this town's holds and owner of the
+    section's other two lines, causes the premise.
+- The ship file's first line names the run, so the gate reuses its suite; `sh tools/known-reds.sh FC2b docs/queue/FC2b-ship.md`
+  reads the nine rows. Only the notes and the ship file changed after the run.
