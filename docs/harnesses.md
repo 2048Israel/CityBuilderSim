@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 28,959 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 28,961 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -45,7 +45,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, HoldersCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CardCheck, CreditCheck, CreditCrunchCheck, DistressBleedCheck, FittingCheck, ForeignChoiceCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PowerPlanCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, CardCheck, DistressBleedCheck, GdpCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
@@ -27450,7 +27450,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L406 a redenomination scales the book's prices and the fuel paid
   - L410 seedConstants re-strikes the wires: the dial over the unit
 
-## PowerPlanCheck.java - 58 labelled assertions
+## PowerPlanCheck.java - 60 labelled assertions
 
 > The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities.
 > 
@@ -27466,82 +27466,84 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L160 1. the south has its own season; the sun's year and months by place and rack; the tracker is E25's**
-  - L171 a city south of the equator reads each calendar month six on; the equator and the north as they are
-  - L173 ...so its load, wind, water and sun in January are the north's in July at the same latitude
-  - L181 a fixed rack yields less than a tracker in every band, 0 to 70 degrees
-  - L182 a farm far from the equator yields less than one near the tropics, fixed or tracked (65 against 25 degrees)
-  - L185 each place's twelve months average its year, fixed and tracked (the tables' rounding)
-  - L190 a generated world's farm (no latitude) is the tracked US fleet's year, its fixed rack SOLAR_US_FIXED of it
-  - L195 the wind's months average its year
-  - L201 a 1900 town's solar farms stand on fixed racks; once research finds E25 they track (
-- **L207 2. a variable row's credit falls with its share, a straight line to the floor; a fuelled row's is all of it**
-  - L209 no variable row standing keeps all of its peak hours
-  - L210 at CREDIT_HALF of the energy it keeps CREDIT_FLOOR, and the floor past it
-  - L212 halfway there it keeps halfway between (a straight line)
-  - L214 a share it cannot read (NaN) keeps all of it
-  - L215 a wind farm's credit is its peak hours' output times the fall
-  - L218 a solar farm's at the US fleet's place, tracked, is its peak hours' output
-  - L220 ...more firm near the tropics than far from them, and the same either side of the equator
-- **L227 3. the firm supply: the works' own power, a wind farm added, a plant from its opening**
-  - L231 a fuelled row's template credit is all of it; a wind farm's the windCredit at no share
-  - L247 fixture: a coal plant is going up, its first unit quoted to open
-  - L250 a plant still going up is open by its opening and not before
-  - L252 ...so it adds nothing to today's firm supply, and its firm kW from its opening
-- **L259 4. the reserve test: short at the base, coal; short at the peak alone, a peaker**
-  - L264 fixture: power is short at the base, its firm supply under the base block's draw (slice
-  - L268 short at the base the reserve test orders coal (
-  - L269 ...counted once as a reserve order and never as a spread
-  - L283 short at the peak the reserve test orders a peaker, not coal (
-  - L285 ...counted once as a reserve order
-  - L287 the slices' hours: the base all of the year's, the peak its peak block's
-- **L294 5. wind alone never passes the reserve test**
-  - L297 fixture: power is short
-  - L315 knowing a firm row as well, the same city has a reserve order that closes it, the firm row (
-  - L318 at CREDIT_HALF of the energy or more a wind farm counts CREDIT_FLOOR of its peak hours
-- **L345 6. the spread: wind where the fuelled rows run dear, none where they run cheap**
-  - L351 fixture:
-  - L360 with diesel running, one more wind farm saves the year more than it costs (
-  - L362 ...so the spread orders wind (
-  - L366 with coal running, no wind farm saves the year what it costs (
-  - L367 ...so nothing is ordered (
-- **L408 6a. the reserve test credits a farm: no firm row fills FIRST_WORK_SHARE of its order, so the farm that closes the gap is the order**
-- **L439 6a(ii). the farms that close a gap a firm row fills the share of are weighed against the screening curve's firm pick**
-- **L491 6b. the spread counts a plant on site from its opening**
-  - L505 fixture: with nothing on site the farm saves the year more than it costs (
-- **L533 7. a coal plant's ground, assembled past the one listing**
-  - L542 fixture: the town owns no ground spare, and its listing holds less than
-  - L548 past ASSEMBLE_MOST offers no ground is planned (
-  - L557 fixture: the reserve test asks for at least
-  - L565 the automatic path orders coal on ground it assembles past the listing (
-- **L600 7a. dearer replenishment: the ground past the listing is quoted at what it costs**
-  - L605 fixture: the reserve test asks for at least
-  - L620 fixture: ground is quoted for
-  - L629 fixture: the order of
-- **L656 7b. an assembly that cannot cover the order**
-  - L667 fixture: the reserve test asks for coal (
-- **L682 7c. an order the builders would refuse**
-  - L687 fixture: the reserve test asks for coal (
-  - L690 fixture: ground can be had for one coal plant, past what the town owns spare
-  - L693 fixture: the builders refuse the plant for no ground and no money (
-- **L727 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
-  - L751 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
-  - L762 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
-  - L772 with the seasonal peak short at the plant's opening it orders (
-  - L791 a seasonal gap under the share, projected to the plant's opening, that the month does not lack: the power suggestion orders nothing (
-  - L808 a gap under the share with the seasonal peak short at the plant's opening and in the month orders it (
-- **L839 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
-  - L862 a city drawing nothing lacks no power
-  - L874 fixture: every essential service but Power has its operating capacity
-- **L909 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
-  - L939 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
-  - L942 the peak block unserved, the roads wait to preserve Power's quoted first completion (
-  - L954 fixture: every essential service but General care has its operating capacity
-- **L977 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
-  - L1004 the peak block served, Power is not lacked and its order waits to preserve
-  - L1007 the peak block unserved, Power is lacked and its order is placed whatever it does to
-- **L1029 9. how often each fires**
-  - L1032 the reserve test and the spread each fired here
+- **L161 1. the south has its own season; the sun's year and months by place and rack; the tracker is E25's**
+  - L172 a city south of the equator reads each calendar month six on; the equator and the north as they are
+  - L174 ...so its load, wind, water and sun in January are the north's in July at the same latitude
+  - L182 a fixed rack yields less than a tracker in every band, 0 to 70 degrees
+  - L183 a farm far from the equator yields less than one near the tropics, fixed or tracked (65 against 25 degrees)
+  - L186 each place's twelve months average its year, fixed and tracked (the tables' rounding)
+  - L191 a generated world's farm (no latitude) is the tracked US fleet's year, its fixed rack SOLAR_US_FIXED of it
+  - L196 the wind's months average its year
+  - L202 a 1900 town's solar farms stand on fixed racks; once research finds E25 they track (
+- **L208 2. a variable row's credit falls with its share, a straight line to the floor; a fuelled row's is all of it**
+  - L210 no variable row standing keeps all of its peak hours
+  - L211 at CREDIT_HALF of the energy it keeps CREDIT_FLOOR, and the floor past it
+  - L213 halfway there it keeps halfway between (a straight line)
+  - L215 a share it cannot read (NaN) keeps all of it
+  - L216 a wind farm's credit is its peak hours' output times the fall
+  - L219 a solar farm's at the US fleet's place, tracked, is its peak hours' output
+  - L221 ...more firm near the tropics than far from them, and the same either side of the equator
+- **L228 3. the firm supply: the works' own power, a wind farm added, a plant from its opening**
+  - L232 a fuelled row's template credit is all of it; a wind farm's the windCredit at no share
+  - L248 fixture: a coal plant is going up, its first unit quoted to open
+  - L251 a plant still going up is open by its opening and not before
+  - L253 ...so it adds nothing to today's firm supply, and its firm kW from its opening
+- **L260 4. the reserve test: short at the base, coal; short at the peak alone, a peaker**
+  - L265 fixture: power is short at the base, its firm supply under the base block's draw (slice
+  - L269 short at the base the reserve test orders coal (
+  - L270 ...counted once as a reserve order and never as a spread
+  - L284 short at the peak the reserve test orders a peaker, not coal (
+  - L286 ...counted once as a reserve order
+  - L288 the slices' hours: the base all of the year's, the peak its peak block's
+- **L295 5. wind alone never passes the reserve test**
+  - L298 fixture: power is short
+  - L316 knowing a firm row as well, the same city has a reserve order that closes it, the firm row (
+  - L319 at CREDIT_HALF of the energy or more a wind farm counts CREDIT_FLOOR of its peak hours
+- **L346 6. the spread: wind where the fuelled rows run dear, none where they run cheap**
+  - L352 fixture:
+  - L361 with diesel running, one more wind farm saves the year more than it costs (
+  - L363 ...so the spread orders wind (
+  - L367 with coal running, no wind farm saves the year what it costs (
+  - L368 ...so nothing is ordered (
+- **L409 6a. the reserve test credits a farm: no firm row fills FIRST_WORK_SHARE of its order, so the farm that closes the gap is the order**
+- **L440 6a(ii). the farms that close a gap a firm row fills the share of are weighed against the screening curve's firm pick**
+- **L492 6b. the spread counts a plant on site from its opening**
+  - L506 fixture: with nothing on site the farm saves the year more than it costs (
+- **L534 7. a coal plant's ground, assembled past the one listing**
+  - L543 fixture: the town owns no ground spare, and its listing holds less than
+  - L549 past ASSEMBLE_MOST offers no ground is planned (
+  - L558 fixture: the reserve test asks for at least
+  - L566 the automatic path orders coal on ground it assembles past the listing (
+- **L601 7a. dearer replenishment: the ground past the listing is quoted at what it costs**
+  - L606 fixture: the reserve test asks for at least
+  - L621 fixture: ground is quoted for
+  - L630 fixture: the order of
+- **L657 7b. an assembly that cannot cover the order**
+  - L668 fixture: the reserve test asks for coal (
+- **L683 7c. an order the builders would refuse**
+  - L688 fixture: the reserve test asks for coal (
+  - L691 fixture: ground can be had for one coal plant, past what the town owns spare
+  - L694 fixture: the builders refuse the plant for no ground and no money (
+- **L736 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
+  - L760 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
+  - L771 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
+  - L781 with the seasonal peak short at the plant's opening it orders (
+  - L802 a seasonal gap under the share that only the opening's slack projects: the power suggestion orders nothing (
+  - L820 a gap under the share with the seasonal peak short in the month and at the plant's completion orders it (
+  - L851 the seasonal peak short at the plant's own completion, the month covered: a gap under the share orders it (
+  - L865 a seasonal gap under the share that only the horizon past the completion projects: the power suggestion orders nothing (
+- **L897 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
+  - L920 a city drawing nothing lacks no power
+  - L932 fixture: every essential service but Power has its operating capacity
+- **L967 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
+  - L997 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
+  - L1000 the peak block unserved, the roads wait to preserve Power's quoted first completion (
+  - L1012 fixture: every essential service but General care has its operating capacity
+- **L1035 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
+  - L1062 the peak block served, Power is not lacked and its order waits to preserve
+  - L1065 the peak block unserved, Power is lacked and its order is placed whatever it does to
+- **L1087 9. how often each fires**
+  - L1090 the reserve test and the spread each fired here
 
 ## PowerPlantsCheck.java - 59 labelled assertions
 

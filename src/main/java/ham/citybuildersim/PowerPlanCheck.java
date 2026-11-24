@@ -39,8 +39,9 @@ import java.util.Set;
  *      assembly that cannot cover the order buys nothing and borrows nothing; (7c) an order the builders would refuse moves no money (REV-PW3 #1, #2).
  *   8. A GAP IN THE RESERVE ALONE IS NOT A PLANT (2026-11-24): with the seasonal peak (PLAN_PEAK_SEASON: the peak block of the year's highest
  *      month) covered at a plant's opening, a gap to the peak hour (PLAN_PEAK_HOUR) orders it only when it fills FIRST_WORK_SHARE of the
- *      plant; so does a gap in the seasonal peak projected to the opening that the month does not lack (REV-PW3d); a gap in the seasonal
- *      peak that the month lacks orders as ever (8a). And the month lacks power when its peak month's peak block goes unserved, which
+ *      plant; so does a gap in the seasonal peak that only the opening's slack and horizon project (REV-PW3d); a gap in the seasonal peak
+ *      at the plant's own completion, its lead and the town's growth over it, orders as ever, the month short or not (REV-PW3e) (8a). And
+ *      the month lacks power when its peak month's peak block goes unserved, which
  *      the city's own dispatch shows at three firm levels, not below the plan's peak hour (BuildAdvice.lacksNow(), 8b); and the auto-builder's holds read the same "short now", through a real pass, in both directions (AutoBuilder.crewLimit() and pendingDelay(), 8b (b)).
  *   9. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
@@ -717,6 +718,14 @@ public final class PowerPlanCheck {
     /** The month's firm supply over the seasonal peak's draw, just over it (the month does not lack) and just under it (it does), in 8a's last two fixtures. */
     static final double NOW_OVER = 1.02, NOW_UNDER = .99;
 
+    /** The town's growth over the coal plant's lead in 8a's growing town (BusinessInvestment.growthFactor() at the lead, less one), to a hundredth (the history is whole people). */
+    static final double GROWTH_AT_LEAD = .30;
+
+    /** A plant's own completion: its lead and the town's growth over it, no horizon past it and no slack (BuildAdvice.suggestFor()'s share rule). */
+    static BuildAdvice.Ahead completion(Game g, double lead) {
+        return new BuildAdvice.Ahead(lead, g.getBusinessInvestment().growthFactor(lead), 0);
+    }
+
     /** The firm supply over the city's draw at `p`: the plan's peak hour is PLAN_PEAK_HOUR of the draw, the month's peak block PLAN_PEAK, in the year's highest month PLAN_PEAK_SEASON. */
     static double supplyOverDraw(Game g, BuildAdvice.Ahead p) {
         double[] sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
@@ -772,41 +781,90 @@ public final class PowerPlanCheck {
         check("with the seasonal peak short at the plant's opening it orders (" + named(s) + ")",
                 s != null && s.template() == coal && s.count() >= 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
 
-        // ...the works' power taken off again, one coal plant and the founding grid stand. REV-PW3d's P1 4 (2026-11-24): a gap under the share in
-        // the seasonal peak projected to the plant's opening (the slack and the town's growth on the month's draw), which the month does not
-        // lack, orders nothing: it waits for a gap that fills the share or for a month that lacks. With the share waived for any seasonal gap
-        // at the opening, all 16 of the ensemble's ZERO_HOT towns, drawing some 3,000 kW on a 10,000 kW founding grid, were sold an 86,181 kW
+        // ...the works' power taken off again, one coal plant and the founding grid stand, the town's history flat. REV-PW3d's P1 4
+        // (2026-11-24): a gap under the share in the seasonal peak that only the opening's slack projects, the peak covered now and at the
+        // plant's own completion, orders nothing: it waits for a gap that fills the share. With the share waived for any seasonal gap at the
+        // opening, all 16 of the ensemble's ZERO_HOT towns, drawing some 3,000 kW on a 10,000 kW founding grid, were sold an 86,181 kW
         // Oil-Fired Plant at m72-81 on credit.
         u.setWorksPower(works);
         drawRatio(g, BuildAdvice.NOW, 1 / (SEASONAL * NOW_OVER));
+        BuildAdvice.Ahead done = completion(g, lead);
         sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
-        double[] sdNow = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW);
-        check(String.format("fixture: the month does not lack (lacksNow() false: the firm supply %.0f kW covers the seasonal peak's %.0f now); at the opening it is "
-                                + "under the seasonal peak's %.0f and short of the peak hour by %.0f kW, %.0f%% of one coal plant's, under FIRST_WORK_SHARE's",
-                        sdNow[0], sdNow[1] * SEASONAL, sd[1] * SEASONAL, sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit),
-                !BuildAdvice.lacksNow(g, POWER) && sd[0] < sd[1] * SEASONAL && sd[1] > sd[0] && sd[1] - sd[0] < share * unit);
+        double[] sdNow = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW), sdDone = BuildAdvice.supplyDemand(g, POWER, Map.of(), done);
+        check(String.format("fixture: the seasonal peak covered now (lacksNow() false: the firm supply %.0f kW against the seasonal peak's %.0f) and at the plant's completion "
+                                + "(%.0f months, growth %.4f: %.0f), and short at the opening, the slack's (%.0f), the peak hour short by %.0f kW, %.0f%% of one coal plant's, under FIRST_WORK_SHARE's",
+                        sdNow[0], sdNow[1] * SEASONAL, lead, done.k(), sdDone[1] * SEASONAL, sd[1] * SEASONAL, sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit),
+                !BuildAdvice.lacksNow(g, POWER) && sdDone[0] >= sdDone[1] * SEASONAL && sd[0] < sd[1] * SEASONAL && sd[1] > sd[0]
+                        && sd[1] - sd[0] < share * unit);
         r0 = BuildAdvice.RESERVE_ORDERS.get();
         s0 = BuildAdvice.SPREAD_ORDERS.get();
         s = suggest(g);
-        check("a seasonal gap under the share, projected to the plant's opening, that the month does not lack: the power suggestion orders nothing (" + named(s) + ")",
+        check("a seasonal gap under the share that only the opening's slack projects: the power suggestion orders nothing (" + named(s) + ")",
                 s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
 
-        // ...and the month itself short of the seasonal peak, though covered at the year's mean peak block (PLAN_PEAK): a real shortage orders,
-        // whatever the share (red if either line were PLAN_PEAK).
+        // ...and the month itself short of the seasonal peak, though covered at the year's mean peak block (PLAN_PEAK): with the history flat
+        // it is short at the completion too, and orders whatever the share (red if the line were PLAN_PEAK).
         drawRatio(g, BuildAdvice.NOW, 1 / (SEASONAL * NOW_UNDER));
         sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
         sdNow = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW);
+        sdDone = BuildAdvice.supplyDemand(g, POWER, Map.of(), done);
         double mean = PowerDispatch.PLAN_PEAK / PowerDispatch.PLAN_PEAK_HOUR;
-        check(String.format("fixture: the month lacks (lacksNow() true: the firm supply %.0f kW under the seasonal peak's %.0f now, over the year's mean peak block's %.0f); "
-                                + "at the opening %.0f kW, under the seasonal peak's %.0f and over the mean peak block's %.0f, short of the peak hour by %.0f kW, %.0f%% of one coal plant's, "
+        check(String.format("fixture: the month lacks (lacksNow() true: the firm supply %.0f kW under the seasonal peak's %.0f now, over the year's mean peak block's %.0f), "
+                                + "and at the completion (%.0f against %.0f, over the mean block's %.0f); at the opening short of the peak hour by %.0f kW, %.0f%% of one coal plant's, "
                                 + "under FIRST_WORK_SHARE's",
-                        sdNow[0], sdNow[1] * SEASONAL, sdNow[1] * mean, sd[0], sd[1] * SEASONAL, sd[1] * mean, sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit),
-                BuildAdvice.lacksNow(g, POWER) && sdNow[0] >= sdNow[1] * mean && sd[0] >= sd[1] * mean
-                        && sd[0] < sd[1] * SEASONAL && sd[1] - sd[0] < share * unit);
+                        sdNow[0], sdNow[1] * SEASONAL, sdNow[1] * mean, sdDone[0], sdDone[1] * SEASONAL, sdDone[1] * mean, sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit),
+                BuildAdvice.lacksNow(g, POWER) && sdNow[0] >= sdNow[1] * mean && sdDone[0] >= sdDone[1] * mean
+                        && sdDone[0] < sdDone[1] * SEASONAL && sd[1] - sd[0] < share * unit);
         r0 = BuildAdvice.RESERVE_ORDERS.get();
         s = suggest(g);
-        check("a gap under the share with the seasonal peak short at the plant's opening and in the month orders it (" + named(s) + ")",
+        check("a gap under the share with the seasonal peak short in the month and at the plant's completion orders it (" + named(s) + ")",
                 s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+
+        // REV-PW3e's P1 (2026-11-24): a utility orders for the peak projected at the unit's in-service date, not once the month is short. The
+        // town grows (the businesses' trend, GROWTH_AT_LEAD over the coal plant's lead) and the slack is 0, so the opening's projection past
+        // the completion is the horizon's growth alone. Waived only in a month already short, the share held every diesel a whole build lead
+        // (30 months) after the shortage began: 529 ZERO_HOT seed-months under lacksNow()'s line against 120 before.
+        BusinessInvestment bi = g.getBusinessInvestment();
+        double slack = g.getAutoBuilder().getSlack(), perMonth = GROWTH_AT_LEAD / lead;
+        long last = Math.max(1, Math.round(bi.reachablePopulation() / 2));
+        java.util.List<Long> history = new java.util.ArrayList<>();
+        for (int month = 0; month <= 12; month++) history.add(Math.round(last * (1 - perMonth * (12 - month))));
+        bi.restorePopulationHistory(history);
+        g.getAutoBuilder().setSlack(0, null);
+        done = completion(g, lead);
+        BuildAdvice.Ahead p0 = BuildAdvice.opening(g, lead, 0);
+        check(String.format("fixture: the town grows %.4f over the coal plant's lead (%.0f months) and %.4f to the opening (%.0f months), the slack 0",
+                        done.k(), lead, p0.k(), p0.months()),
+                Math.abs(done.k() - 1 - GROWTH_AT_LEAD) < .01 && p0.k() > done.k() && p0.scale() == p0.k() && g.getAutoBuilder().getSlack() == 0);
+
+        // ...covered now, short at the completion: it orders.
+        drawRatio(g, BuildAdvice.NOW, 1 / (SEASONAL * (1 + done.k()) / 2));
+        sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p0);
+        sdNow = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW);
+        sdDone = BuildAdvice.supplyDemand(g, POWER, Map.of(), done);
+        check(String.format("fixture: the seasonal peak covered now (lacksNow() false: %.0f kW against %.0f) and short at the plant's completion (%.0f against %.0f); "
+                                + "at the opening short of the peak hour by %.0f kW, %.0f%% of one coal plant's, under FIRST_WORK_SHARE's",
+                        sdNow[0], sdNow[1] * SEASONAL, sdDone[0], sdDone[1] * SEASONAL, sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit),
+                !BuildAdvice.lacksNow(g, POWER) && sdDone[0] < sdDone[1] * SEASONAL && sd[1] > sd[0] && sd[1] - sd[0] < share * unit);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s = suggest(g);
+        check("the seasonal peak short at the plant's own completion, the month covered: a gap under the share orders it (" + named(s) + ")",
+                s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+
+        // ...covered at the completion, short only at the horizon past it: it waits.
+        drawRatio(g, BuildAdvice.NOW, 1 / (SEASONAL * (done.k() + p0.k()) / 2));
+        sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p0);
+        sdDone = BuildAdvice.supplyDemand(g, POWER, Map.of(), done);
+        check(String.format("fixture: the seasonal peak covered at the plant's completion (%.0f kW against %.0f) and short at the opening, the horizon's growth (%.0f); "
+                                + "the peak hour short by %.0f kW, %.0f%% of one coal plant's, under FIRST_WORK_SHARE's",
+                        sdDone[0], sdDone[1] * SEASONAL, sd[1] * SEASONAL, sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit),
+                sdDone[0] >= sdDone[1] * SEASONAL && sd[0] < sd[1] * SEASONAL && sd[1] > sd[0] && sd[1] - sd[0] < share * unit);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s0 = BuildAdvice.SPREAD_ORDERS.get();
+        s = suggest(g);
+        check("a seasonal gap under the share that only the horizon past the completion projects: the power suggestion orders nothing (" + named(s) + ")",
+                s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+        g.getAutoBuilder().setSlack(slack, null);
     }
 
     /** The calendar month of the year's highest load at this city's latitude, as its dispatch reads it (PowerDispatch.season(month, latitude)). */
