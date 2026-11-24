@@ -6,8 +6,8 @@ M12, robot-assisted surgery (Jul 2000): its 0.23 days off keyhole surgery on 0.7
 general care's stays are a little longer before it; the four later stays rows keep 1950's 10.0 days.
 B10, the AI assistant (Nov 2020): the Contact Centre's agents are 14% more posts before it, for the
 same calls. L8, Basel III (Jan 2013): the 8% minimum stands throughout; the 2.5-point conservation
-buffer comes with the row, and before it a bank's buffer is its own worst year alone. A loaded city
-hears its bank's rule once its founding is back. ModernRowsCheck proves the three. A city founded
+buffer comes with the row, and before it a bank's buffer is its own worst year alone. A load or a find
+re-derives the bank's rule and the medicine at once. ModernRowsCheck proves the three. A city founded
 the default way is unchanged. SAVE_FORMAT and its floor rise to 64: a format-63 Contact Centre before
 B10 loads modern. M19 (hospital at home) and B9 (the tick) are queued, with what each needs.
 ## queued

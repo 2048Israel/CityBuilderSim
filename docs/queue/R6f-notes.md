@@ -40,7 +40,7 @@ default way knows every row from month 0 and runs as before.
   either was back: a loaded 1900 city held today's buffer until its next
   month.
 - **ModernRowsCheck** (new; in AllChecks after ModernEngineeringCheck; its
-  line in docs/tree.md): 121 assertions in three sections, one per row.
+  line in docs/tree.md): 160 assertions in three sections, one per row.
   ResearchCheck (100 entries, the counts, needs, dates and work),
   MedicineCheck (M12 a STAYS row, the re-struck split) and
   PostwarRecipeCheck (30 template changes: its `postwar()` pattern takes
@@ -105,6 +105,14 @@ Each page was opened again by R6f; none has stopped saying its figure.
   (what limit a Canadian bank had before it) and is left as it was (queued as R6i).
 - **★ One harness, ModernRowsCheck,** with a section per row, in place of
   three classes: the three share their fixtures and their pattern.
+- **★ A find takes effect in its month.** A row found ahead of history is
+  known the whole month it is found (`Research.known()`), so the month's
+  finds are heard at once (`Game.hearTheFinds()`, after `research.month`):
+  the bank its capital rule, the sickness its medicine. The rest of that
+  month reads the new rule, as a reload of that month does. Only a 1900 city
+  that finds a row ahead of history runs differently, and only in that
+  month: the sickness ring's month (`advanceMonth`) and the bank's later
+  reads now take the find.
 - **The bank's rule is not saved.** It is derived from the founding and the
   finds, both saved, and heard again at a load.
 
@@ -184,7 +192,7 @@ One at a time on the PC, on 34c278b8b's code, each with the data paths
 | harness | result |
 |---|---|
 | `./batch-check.sh --fast` | exit 0 |
-| ModernRowsCheck | all 121 ok |
+| ModernRowsCheck | all 160 ok (121 at the mends of e83309220) |
 | ResearchCheck | all 245 ok |
 | MedicineCheck | exit 0 |
 | PostwarRecipeCheck | exit 0, 231 assertions |
@@ -203,6 +211,39 @@ file agrees); `hearCapitalRule(true)` in the month, 7, section 3;
 `bufferFloor()` always the buffer, 7, section 3. The pick
 (`sh tools/pick.sh origin/main HEAD`) is ALL, Game.java's 209 readers; the
 review is owed for money (Bank.java) and saves (the format and its floor).
+
+## 8a. The review (REV-R6f, Codex, money and saves, on e83309220)
+
+Two findings, both mended, each with ModernRowsCheck assertions that fail
+without the mend:
+
+- **P1: L8 found in a played month.** The month's only hearing of the rule
+  was at its top, before the research; a city that completed L8 ahead of
+  history ran the old target to the month's end, and a reload of the same
+  month heard the new one. Mend: `Game.hearTheFinds()` after
+  `research.month`. Assertions (section 3): a 1900 town with a Law School
+  and L8's pile just under (DiscoveryCheck's route) finds L8 in a real
+  month 24 before history's; in that month the bank requires the buffer,
+  its target 10.5% risen from 8%; saved and loaded, the bank equals the
+  live one. With the call removed: 6 reds.
+- **P2: the medicine at a load.** The sickness's derived medicine (stays
+  factor, long recovery, death lift) was unsaved and not restored: a 1900
+  city before M12 loaded at factor 1 until its next month. The defect is
+  R2f's, for every stays row; M12 makes it show in the 1990s. Mend: the
+  load sets it (`sickness.setMedicine`) once the finds, the month and the
+  month's general-care coverage (saved) are back. Assertions (section 1):
+  a held town's live factor STAYS_BEFORE_M12, its long recovery, death
+  lift, `recoveryAt` and `servedRecovery()` equal after a load, at once.
+  With the line removed: 6 reds. The long recovery and death lift are at
+  today's at this fixture's month, so those two do not discriminate.
+- **The medicine half of hearTheFinds()** (R6f's own, the same defect for a
+  stays row found in a month): a town with a Medical School finds M12 in a
+  real month 24 before history's; its factor is 1 in that month and equal
+  after a load. With the line removed: 2 reds.
+
+After the mends, on the PC, one at a time: `--fast` exit 0, ModernRowsCheck
+all 160 ok, MedicineCheck exit 0, SaveFileCheck exit 0, DiscoveryCheck all
+270 ok.
 
 ## 9. The dry run
 
