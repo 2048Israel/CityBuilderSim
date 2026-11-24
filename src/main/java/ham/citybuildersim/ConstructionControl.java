@@ -599,6 +599,9 @@ public final class ConstructionControl {
         public double earningsForward;
         public Abroad() { }
 
+        /** The months the crews take on what is left, at their pace: nothing for nothing owed, endless for no pace (BuildersShort.monthsAbroad(); FC2b). */
+        public double monthsLeft() { return BuildersShort.monthsAbroad(owed, pace); }
+
         /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
         Abroad copy() {
             try {
