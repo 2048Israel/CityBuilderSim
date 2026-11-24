@@ -2772,3 +2772,130 @@ notes pending. The final partial helper report is fifteen-line mail
 `20261124-043132-158-RES3-ensemble-logs-e2eb`. Its focused continuation is
 launched at 65-percent committed memory in the same isolated checkout;
 the parent runs no JVM alongside that probe.
+
+### Seed-four stock and incumbent mend, 2026-11-24 (candidate)
+
+The isolated probe finds a second, distinct phase error. Housing reads the
+new family census before the next financial census routing, so newly
+unemployed physical cells can still have the old empty financial cells.
+At m37 ON_EI goes from zero to 176.4307562 households and OFF_EI to
+.5692438, with zero old-cell cash and debt. The later cash strike carries
+their existing money and debt through `followThePeople`. Opening-pool EI
+remains intentionally zero in this first unemployment month.
+
+★ Quote existing stocks on a detached census view through the same stock
+routing, with zero arrivals' cash buffers. Preserve HC1 card state,
+securities, basis, claims, bonds and actual price/tax context; do not book
+the detached view's transfers into live counterparties. There is no new
+saved field or cached census. Format/floor 65 remain the already owed
+boundary. The actual financial strike is unchanged.
+
+★ Retain funded paid door shares at the current class quote before new
+movers, preserving households separately from physical doors. Retain old
+zero-bill guests only within this clearing's actual funded host room.
+An unfunded vacant door creates no shelter entitlement. Emergency sharing
+and planner residuals subtract housed households, rather than their
+fractional door shares. Cap two, suitability and funding gates remain.
+
+The five-file candidate is applied to the FC2 merge `1ae98bb3c`; the
+isolated authoring base is `563b5f17c`. Before that merge, the complete
+HousingChoiceCheck and HousingMarketCheck pass, including new caused
+stock-preservation, no-invented-arrivals, restore, retained-paid-halves,
+funded-host and no-host cases. The exact seed-four m2–45 diagnostic has
+zero findings and clean audits. This is a bounded replay, not an ensemble
+or a passing MonetaryCheck law run. Its m45 population is 986 versus 971,
+rent index .0109625214 versus .00812986492, GDP 238.49 versus 389.52 and
+hunger .001689744 versus .001385404; the adverse outcomes are retained.
+
+Acceptance is still pending. The pre-merge CardCheck command also selects
+BuildCardCheck by substring. CardCheck passes; BuildCardCheck has the
+recorded three Rail assertions plus two new Pelletising Plant assertions:
+staffing 38 percent now and 79 percent with arrivals preempts MONEY at the
+unchanged 80-percent gate. Those two have no waiver. The merged model
+needs a causal classification before a mends handoff.
+
+The cash evidence also has an explicit limit. Three newly admitted paying
+unemployed cohorts settle with zero Unfunded, and none of 475 increased-bid
+paying observations exceeds its new budget. One quote-m16 ON_EI row still
+has Unfunded .13661891 at its next strike despite rent .04724352 being
+below both old and new bids (.12963506/.12963856). Native `b92af507f`
+has generic unfunded/skipped-cell faults, owned by queued HL2, but that
+alone does not prove this changed path inherited every gap. Residual zero
+includes Unfunded and UnsettledRent and is not strict paid-rent equality.
+The helper's evidence, failed attempts, patch and hashes are retained in
+`target/RES3-F1-mend/`; a fresh isolated source/cash investigation and
+merged named checks are in progress, with no parent JVM alongside it.
+
+The FC2 merge also exposes one source-level harness dependency before
+any test starts: InvestCheck still refers to removed FC1
+`BuildersShort.FOREIGN_FLOOR`. FC2 always offers foreign work. Replace
+that obsolete rescue condition with a positive local site pace, retaining
+the independently caused empty queue and the bound that all ten Houses
+stand below `KNEE_MONTHS`. The expected work price remains premium exactly
+one; no quoted premium is read back into the expectation. The first
+merged BuildCardCheck command therefore compiles no harness and exits 1;
+its repair is included before the next validation.
+The merged BuildCardCheck confirms the same five assertions. SpreadPlanner
+orders FEED, LAND, STAFF, MONEY; the Pellet card has earnings 15,616, whole
+cost 11.9 million and money hurdle 71,316, but staffing 38/79 percent
+preempts MONEY at the unchanged 80-percent threshold. `moneyGate` changes
+prime only when the initial card has no failed gate; it never causes the
+staffing premise. ★ Attribute the two new lines to queued FS12's played
+building-card fixture sweep, the same structural gate-preemption class as
+its already named Rail case. Add exact separate ship rows for review,
+without changing the fixture, its first-failure assertion or any gate.
+The helper's first wrapper is edited during finalization and reports 1
+although its saved suite verdict is 4; retain that mistake and rerun the
+named check once after diagnostic source restoration. No green result is
+claimed from that wrapper.
+The second helper closes the old-path cash mechanism with one restored,
+17-month named diagnostic. At quote m16, ON_EI has 21.6651344775 opening
+financial households and .98852727168 fresh households. The old paid EI
+row .158560130476 becomes .160400360231 per fresh household. The current
+modeled EI bill .00708205500231 would instead give .00716424847872,
+exactly the actual m17 income. Old row fees .0233730818742 are likewise
+concentrated despite their billed source population being 22. This is a
+RES3 quote defect, independent of the stock-projection mend, and cannot
+pass merely because both old and new bids exceeded the rent.
+
+The m17 cash shortfall also includes .196937458833 shopping per household,
+from the existing cash strike's historical grocery row divided over the
+fresh census, versus rent .04724352339. That separate actual-settlement
+fault is within queued HL2; this batch changes no shopping waterfall.
+The FC2-merged seed-four path has no ON_EI cell at that particular month,
+so the old-path replay establishes the defect's mechanism and caused
+unit cases must guard it independently of a seed or calendar month.
+
+★ Bound fallback recurring take-home by both its source recipient rate
+and the actually paid opening pool across fresh recipients. Contraction
+cannot concentrate the pool; expansion cannot multiply it. Keep explicit
+scheduled wage/pension callbacks and first-shock EI zero. Recurring fees
+retain their billed source per-person rate, with the same pooled fee
+basis as the actual cash strike, and known costs are not discarded when
+source counts are absent. Account fees and loan minima remain per
+household. These decisions are implemented and tested before acceptance.
+
+The independent source review also catches a candidate-only defect:
+`restoreCells` carries `afterFixed`, but not the ephemeral `disposable`.
+A detached cell therefore cannot supply the previous actual fixed-bill
+lower bound. Read that bound from the live original cell and its
+same-phase rent; use the detached view only for routed stocks. A caused
+positive-disposable floor case is required, rather than changing the
+save schema to persist a derived context solely for a quote.
+The incremental quote mend adds eighteen caused laws for EI and student
+grants, source/fresh count directions, zero or unowned opening receipts,
+source fee rates, missing source-head metadata, and the live fixed-bill
+floor. The complete normal HousingMarketCheck then passes (selected one,
+exit 0), with all existing integrations unchanged. Its initial nineteen
+assertion progress count is corrected to eighteen in the helper's report.
+
+A final stock-context review identifies student service as another concrete
+projection risk: principal is restored and routed, but studentInterest and
+studentRepaid are last-strike flow fields and are zero in the detached
+view. A working household carrying 114 of student principal at annual
+rate .12 owes 1.14 interest and 1 principal under the existing term, even
+with an old fixed-bill floor of zero. ★ Reserve the existing pure current
+contract calculations on carried principal, rather than stale flow
+getters. Keep the repayment term, forbearance, rates and actual settlement
+unchanged; a caused positive-service and zero/forbearance case must pass
+before the wider matrix. No new save or accounting flow is introduced.

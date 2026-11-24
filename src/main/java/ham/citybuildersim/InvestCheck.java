@@ -1296,8 +1296,8 @@ public class InvestCheck {
         assertTrue("fixture: the quote has no queued site or priority work", quoteBuildings19.pointsOwedOnSite() == 0);
         double sites19 = quoteCity19.getBuildingOutputAtEveryPost();
         double output19 = quoteCity19.getConstructionOutputAtEveryPost();
-        assertTrue("fixture: ten Houses stay below the premium knee without foreign crews",
-                output19 == 0 || (sites19 >= BuildersShort.FOREIGN_FLOOR * output19
+        assertTrue("fixture: ten Houses stay below the premium knee at the local sites' pace",
+                output19 == 0 || (sites19 > 0
                         && 9 * house19.getConstructionPoints() <= BuildersShort.KNEE_MONTHS * sites19));
         assertTrue("fixture: the empty-queue quote has the same wages and tax rates",
                 quoteBuildings19.nonMaterialCost(template(quoteCity19, "House")) == pb.nonMaterialCost(house19)

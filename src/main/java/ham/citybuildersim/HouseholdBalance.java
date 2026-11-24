@@ -684,7 +684,7 @@ public class HouseholdBalance {
         double committed=Math.min(resources,Math.max(0,committedRent));
         return committed+factor*Math.max(0,resources-committed);
     }
-    /** Monthly housing uses the same staged census and income/fee splits as the cash strike, without moving any stocks. */
+    /** Quotes the staged census against paid source income and recurring fees without moving live stocks. */
     public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
                                                                      ToDoubleFunction<Household> chargedRent) {
         return strikeHousingBudgets(families,accounts,foodPrice,chargedRent,c->Double.NaN);
@@ -708,24 +708,63 @@ public class HouseholdBalance {
             fees[r]=accounts.getRowHealthcare(r)+accounts.getRowTuition(r)+accounts.getRowFares(r)
                     +accounts.getRowFuel(r)+accounts.getRowHomeFuel(r);
         }
-        double[] pay=splitIncome(fresh,income),bills=splitByPeople(fresh,fees);
+        double[] sourceWeight=new double[ROWS],freshWeight=new double[ROWS];
+        for(int i=0;i<cells.length;i++){
+            Household c=cells[i];
+            sourceWeight[c.row()]+=c.households()*c.earningWeight();
+            freshWeight[c.row()]+=fresh[i]*c.earningWeight();
+        }
+        double[] bills=splitByPeople(fresh,fees);
+        Household[] housingCells=housingCensusCells(families,fresh);
         java.util.Map<String,HousingResources> result=new java.util.LinkedHashMap<>();
         for(int i=0;i<cells.length;i++){
-            Household c=cells[i];double oldRent=chargedRent.applyAsDouble(c);
+            Household c=housingCells[i];double oldRent=chargedRent.applyAsDouble(c);
             double scheduled=currentIncome.applyAsDouble(c);
-            double recurringIncome=Double.isFinite(scheduled)?Math.max(0,scheduled):pay[i];
-            double actualFixed=Math.max(0,c.disposable()-c.afterFixed()-oldRent);
+            // An opening paid pool cannot concentrate on fewer recipients or fund extra arrivals.
+            double paidIncome=sourceWeight[c.row()]>0?income[c.row()]*c.earningWeight()
+                    /Math.max(sourceWeight[c.row()],freshWeight[c.row()]):0;
+            double recurringIncome=Double.isFinite(scheduled)?Math.max(0,scheduled):paidIncome;
+            Household live=cells[i];
+            double actualFixed=Math.max(0,live.disposable()-live.afterFixed()-chargedRent.applyAsDouble(live));
             double cardService=Double.isFinite(cardFundingRate)?c.cardMinimumAt(cardFundingRate,recurringIncome):c.interest()+c.minimumPrincipal();
-            double projected=bills[i]+Math.max(0,accountFee)+cardService+c.studentInterest()+c.studentRepaid();
+            // Recurring service fees keep the billed source's per-head rate through a census change.
+            double sourceHeads=accounts.getRowPeople(c.row());
+            double recurringFees=sourceHeads>0?fees[c.row()]*c.headcount()/sourceHeads:bills[i];
+            double projected=recurringFees+Math.max(0,accountFee)+cardService
+                    +c.studentInterestAt(studentLoanRate)+Math.min(c.studentDebt(),c.studentRepayment());
             double budget=Math.max(0,recurringIncome-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
                     +c.savings()/HousingMarket.SAVINGS_MONTHS);
             budget=housingBid(budget,oldRent,plannedFactor);
             // The existing student facility funds housing shortfalls too, while open.
             // It is settled as treasury lending in the normal household strike.
-            if(c instanceof StudentHousehold)budget+=Math.max(0,c.planningRoom());
+            if(c instanceof StudentHousehold)budget+=Math.max(0,cells[i].planningRoom());
             result.put(c.key(),new HousingResources(fresh[i],budget));
         }
         return result;
+    }
+
+    /** A derived census quote: route actual saved stocks on a detached ledger, never arrivals' future cash. */
+    Household[] housingCensusCells(FamilyModel families,double[] fresh) {
+        HouseholdBalance projected=new HouseholdBalance();
+        if(!projected.restoreCells(cellKeys(),toCellSaveArray(),Equity.COMPANIES))
+            throw new IllegalStateException("Cannot project housing census stocks");
+        projected.restoreBondsByCell(bondsByCellToSave());
+        projected.restoreFlows(flowsToSave());
+        projected.restoreInvestmentTaxes(investmentTaxesToSave());
+        projected.restoreSecuredTaxes(securedTaxesToSave());
+        projected.investmentPolicy=investmentPolicy;
+        projected.investmentPrice=investmentPrice;
+        projected.localPerUsd=localPerUsd;
+        projected.paperRatio=paperRatio;
+        projected.bondRatio=bondRatio;
+        projected.minMove=minMove;
+        projected.graduating=graduating;
+        projected.studentLoanRate=studentLoanRate;
+        for(int i=0;i<cells.length;i++)projected.cells[i].dependants=cells[i].dependants;
+        // Counterparties and receipts deliberately stay detached: this is a quote,
+        // not a tax payment, security trade, inheritance booking or a cash settlement.
+        projected.followThePeople(fresh,new double[cells.length],projected.planFlows(families,false),true);
+        return projected.cells;
     }
 
     public void setRentShares(ToDoubleFunction<Household> shares) {
@@ -2041,6 +2080,10 @@ public class HouseholdBalance {
      * @param plan   the month's flows (planFlows()), carried before the pool
      */
     private void followThePeople(double[] fresh, double[] buffer, Plan plan) {
+        followThePeople(fresh,buffer,plan,false);
+    }
+
+    private void followThePeople(double[] fresh, double[] buffer, Plan plan, boolean quote) {
         int[] named = new int[3];
         java.util.List<Stock> stocks = stocks(named);
         final int loanSlot = named[0];
@@ -2051,7 +2094,7 @@ public class HouseholdBalance {
         // The month's flows carry their money first (HS1, MONEY FOLLOWS
         // PEOPLE); the pool moves what they left, from the households after them.
         double[] flowLeft = new double[stocks.size()];
-        double[] before = carryTheFlows(plan, stocks, flowLeft, loanSlot);
+        double[] before = carryTheFlows(plan, stocks, flowLeft, loanSlot,quote);
         double[] beforeLoans = carryGraduatesLoans(before);
 
         /*
@@ -2721,7 +2764,7 @@ public class HouseholdBalance {
      *
      * @return every cell's households after the flows: the pool's "before"
      */
-    private double[] carryTheFlows(Plan plan, java.util.List<Stock> stocks, double[] left, int loanSlot) {
+    private double[] carryTheFlows(Plan plan, java.util.List<Stock> stocks, double[] left, int loanSlot, boolean quote) {
         int n = cells.length, k = stocks.size();
         double[] b = new double[n];
         for (int i = 0; i < n; i++) b[i] = cells[i].households;
@@ -2811,7 +2854,7 @@ public class HouseholdBalance {
             if (estate[slot] != null) {
                 int heirs = slot % heirSlots - 1;
                 passOn(estate[slot], PayTier.values()[slot / heirSlots],
-                        heirs < 0 ? null : AdultStage.values()[heirs], b, stocks, left);
+                        heirs < 0 ? null : AdultStage.values()[heirs], b, stocks, left,quote);
             }
         }
         return b;
@@ -2823,7 +2866,7 @@ public class HouseholdBalance {
      * with none, the city's; with none at all (no heir after the flows), out
      * with the leavers.
      */
-    private void passOn(double[] e, PayTier tier, AdultStage heirs, double[] b, java.util.List<Stock> stocks, double[] left) {
+    private void passOn(double[] e, PayTier tier, AdultStage heirs, double[] b, java.util.List<Stock> stocks, double[] left, boolean quote) {
         for (int pass = heirs == null ? 1 : 0; pass < 3; pass++) {
             double weight = 0;
             for (int i = 0; i < cells.length; i++) {
@@ -2844,6 +2887,8 @@ public class HouseholdBalance {
             lastEstatePassed += e[0];
             return;
         }
+        // A quote excludes the same no-heir property from household resources without booking its treasury transfer.
+        if(quote)return;
         if (custody == null) throw new IllegalStateException("No receiving owner for an unclaimed estate");
         double[] units = new double[Equity.COMPANIES.length], basis = units.clone(), claims = units.clone();
         java.util.Map<Integer, Double> bonds = new java.util.LinkedHashMap<>();

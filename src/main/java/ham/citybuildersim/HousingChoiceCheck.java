@@ -15,7 +15,25 @@ public final class HousingChoiceCheck {
         return new HousingChoice.Offer(new HousingInventory.Key(900,key),n,size,size<=2?0:size/2,area,quality,garden,accessible,rent,0);}
     static double count(HousingChoice.Result r,String cell,String home){return r.leases().stream().filter(l->(cell==null||l.cell().equals(cell))&&(home==null||l.home().dwelling().equals(home))).mapToDouble(HousingChoice.Lease::count).sum();}
     static HousingChoice.Result clear(List<HousingChoice.Demand> d,List<HousingChoice.Offer> o){return HousingChoice.clear(d,o,List.of(),7);}
+    static void retainedHalfLeases(){
+        System.out.println("--- funded half-paying incumbents precede a rich new mover ---");
+        var home=o("paired",1,2,40,1,0,false,20);
+        var a=d("old-a",1,1,0,0,12);var b=d("old-b",1,1,0,0,12);var rich=d("new-rich",1,1,0,5,100);
+        var old=List.of(new HousingChoice.Lease(a.key(),home.key(),.5,5,1),new HousingChoice.Lease(b.key(),home.key(),.5,5,1));
+        var r=HousingChoice.clear(List.of(rich,b,a),List.of(home),old,8);
+        near("both old households keep their actual half shares",r.leases().stream().filter(l->!l.cell().equals(rich.key())).mapToDouble(HousingChoice.Lease::households).sum(),2);
+        near("a rich new mover cannot displace those funded incumbents",count(r,rich.key(),null),0);
+        near("one real door is occupied once",count(r,null,null),1);
+        near("only the new mover remains unplaced",r.unplaced(),1);
+        near("retained and unplaced households close the source",r.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()+r.unplaced(),a.count()+b.count()+rich.count());
+        near("the two half charges follow the current class quote",r.leases().stream().mapToDouble(HousingChoice.Lease::bill).sum(),20);
+        check("every retained half share remains within its funded budget",r.leases().stream().allMatch(l->l.bill()<=12*l.households()));
+        var reversed=HousingChoice.clear(List.of(a,b,rich),List.of(home),List.of(old.get(1),old.get(0)),8);
+        check("incumbent order confers no priority",r.leases().equals(reversed.leases()));
+    }
+
     public static void main(String[] args){
+        retainedHalfLeases();
         System.out.println("--- suitable placements before preferences; studios cannot take children ---");
         var family=d("family",1,4,2,0,100);var single=d("single",1,1,0,0,100);
         var studios=o("studio",100,2,40,1,0,false,10);var home=o("family",1,4,80,1,0,false,10);

@@ -682,8 +682,168 @@ public final class HousingMarketCheck {
                 g.getCohorts().total(),largeMs,re.housingMarket().forSave().demand.size(),re.housingMarket().classes().size(),re.housingMarket().leases().size(),
                 bm.getHousingInventory().forSave().stream().filter(h->h.listedVacant+h.listedOccupied>0).count(),cells));
     }
+    static void retainedFundedGuest(){
+        out.println("--- prior guests retain only currently funded host capacity ---");
+        Game g=new Game(GameFiles.scratch("res3-retained-funded-guest"));g.run();
+        var bm=g.getBuildingManager();var t=bm.getTemplate(0);bm.addStack(t,1,true);
+        var market=g.getSectors().realEstate().housingMarket();
+        var first=market.clear(g,List.of(new HousingChoice.Demand("old-host",1,2,0,false,0,false,1e6),
+                new HousingChoice.Demand("old-guest",1,1,0,true,0,false,0)));
+        near("fixture has a genuine already funded guest",first.unplaced(),0);
+        market.sold();market.reprice(.01);var previous=market.forSave();previous.month=g.getMonth()-1;
+        var key=previous.leases.getFirst().home();double current=market.price(key);
+        market.restore(previous);
+        var next=market.clear(g,List.of(new HousingChoice.Demand("old-host",1,2,0,false,0,false,1e6),
+                new HousingChoice.Demand("old-guest",1,1,0,true,0,false,0),
+                new HousingChoice.Demand("new-rich",1,1,0,true,5,false,1e6)));
+        near("the existing guest keeps its zero-bill funded arrangement",next.leases().stream().filter(l->l.cell().equals("old-guest")).mapToDouble(HousingChoice.Lease::households).sum(),1);
+        near("a rich new guest cannot displace that incumbent",next.leases().stream().filter(l->l.cell().equals("new-rich")).mapToDouble(HousingChoice.Lease::households).sum(),0);
+        near("incumbency creates no additional door",market.occupied(),1);
+        near("retained rent follows the current class quote once",market.receipts(),current);
+        near("the retained guest owes no invented rent",market.rentFor("old-guest",1),0);
+        check("all retained arrangements respect two households per door",next.leases().stream().allMatch(l->l.households()<=2*l.count()+FamilyModel.packingRounding(l.households())));
+        market.restore(previous);
+        next=market.clear(g,List.of(new HousingChoice.Demand("old-guest",1,1,0,true,0,false,0)));
+        near("a prior zero charge cannot create an unfunded empty-door right",next.unplaced(),1);
+        near("without a funded host no rent is invented",market.receipts(),0);
+        near("without a funded host no door is occupied",market.occupied(),0);
+    }
+    static void stagedHousingStocks(){
+        out.println("--- RES3 staged housing stocks follow the same funded census ---");
+        var balance=new HouseholdBalance();var families=new FamilyModel();
+        var source=balance.cell(FamilyStructure.SINGLE_ADULT,PayTier.UNSKILLED);
+        var on=balance.unemployed(UnemployedHousehold.Status.ON_EI);
+        var off=balance.unemployed(UnemployedHousehold.Status.OFF_EI);
+        source.households=10;source.savings=120;source.debt=12;
+        source.revolving=.8;source.lateDebt=3;source.lateShare=.2;source.shutOut=.1;
+        source.shares[0]=3;source.basis[0]=2;source.taxShares[0]=1;source.taxClaim[0]=.2;
+        source.studentDebt=4;source.paper=8;source.abroad=6;source.putBondFace(17,5);source.recountBonds();
+        balance.setOutsideCensus(c->c==on?10:0);
+        double[] fresh=new double[balance.cells().size()];int oi=balance.cells().indexOf(on),fi=balance.cells().indexOf(off);
+        fresh[oi]=10;
+        double[] saved=balance.toCellSaveArray();var bonds=balance.bondsByCellToSave();
+        Household projected=balance.housingCensusCells(families,fresh)[oi];
+        near("a newly unemployed household carries actual source cash",projected.savings,120);
+        near("its existing card balance follows it",projected.debt,12);
+        near("HC1 current borrower share follows",projected.revolving,.8);
+        near("HC1 late balance follows",projected.lateDebt,3);
+        near("HC1 late borrower share follows",projected.lateShare,.2);
+        near("HC1 shut-out share follows",projected.shutOut,.1);
+        near("security units follow the same stock route",projected.shares[0],3);
+        near("security basis follows the same stock route",projected.basis[0],2);
+        near("tagged security units follow",projected.taxShares[0],1);
+        near("tagged security claim follows",projected.taxClaim[0],.2);
+        near("student principal follows",projected.studentDebt,4);
+        near("paper follows",projected.paper,8);near("foreign cash follows",projected.abroad,6);
+        near("individual bond face follows",projected.bondFace(17),5);
+        check("projection leaves every saved live field unchanged",Arrays.equals(saved,balance.toCellSaveArray()));
+        check("projection leaves all live bond holdings unchanged",bonds.equals(balance.bondsByCellToSave()));
+        var bid=balance.strikeHousingBudgets(families,new HouseholdAccounts(),0,c->0,c->0,.03,1).get(on.key());
+        check("real inherited cash can fund a finite housing buffer",bid.budget()>0&&bid.budget()<=120/HousingMarket.SAVINGS_MONTHS);
+        check("quoting also leaves every saved live field unchanged",Arrays.equals(saved,balance.toCellSaveArray()));
+        fresh[fi]=10;Household[] tied=balance.housingCensusCells(families,fresh);
+        near("equal new cells share cash pro rata",tied[oi].savings,tied[fi].savings);
+        near("extra people bring no invented opening cash",tied[oi].savings*10+tied[fi].savings*10,source.savings*source.households);
+        near("extra people bring no invented card balance",tied[oi].debt*10+tied[fi].debt*10,source.debt*source.households);
+        var otherCity=new HouseholdBalance();
+        check("a different city's complete stock state restores into the warmed ledger",balance.restoreCells(otherCity.cellKeys(),otherCity.toCellSaveArray(),Equity.COMPANIES));
+        balance.restoreBondsByCell(otherCity.bondsByCellToSave());
+        near("a warmed quote cannot retain the old city's cash",balance.strikeHousingBudgets(families,new HouseholdAccounts(),0,c->0,c->0,.03,1).get(on.key()).budget(),0);
+        double[] restored=balance.toCellSaveArray();
+        check("an invalid restore is refused",!balance.restoreCells(balance.cellKeys(),new double[1],Equity.COMPANIES));
+        check("a refused restore preserves the live ledger",Arrays.equals(restored,balance.toCellSaveArray()));
+        near("a refused restore cannot revive stale quoted resources",balance.strikeHousingBudgets(families,new HouseholdAccounts(),0,c->0,c->0,.03,1).get(on.key()).budget(),0);
+        var empty=new HouseholdBalance();var hungry=empty.unemployed(UnemployedHousehold.Status.ON_EI);
+        empty.setOutsideCensus(c->c==hungry?10:0);
+        var zero=empty.strikeHousingBudgets(new FamilyModel(),new HouseholdAccounts(),0,c->0,c->0,.03,1).get(hungry.key());
+        near("no source stocks or received income gives no funded bid",zero.budget(),0);
+        var offer=new HousingChoice.Offer(new HousingInventory.Key(900,"no-funding"),10,2,1,30,1,0,false,1,0);
+        var result=HousingChoice.clear(List.of(new HousingChoice.Demand(hungry.key(),zero.count(),1,0,false,0,false,zero.budget())),List.of(offer),List.of(),0);
+        near("empty unfunded doors create no tenancy",result.leases().size(),0);
+        near("the no-funding household stays explicitly unplaced",result.unplaced(),zero.count());
+    }
+
+    /** An actually paid non-wage row and its billed source population, before the next census. */
+    static HouseholdAccounts paidHousingRow(int row,double people,double income,double fees){
+        var accounts=new HouseholdAccounts();
+        accounts.setOutsideMoney(0,row==Household.UNEMPLOYED_ROW?income:0,row==Household.STUDENT_ROW?income:0);
+        accounts.update(0,0,0,0,0,0,fees,0,0,(long)people,0,0);
+        double[] heads=new double[Household.ROWS];heads[row]=people;
+        accounts.updateByTier(new double[PayTier.values().length],new double[PayTier.values().length],heads,heads);
+        return accounts;
+    }
+    static void stagedHousingFlows(){
+        out.println("--- housing quotes keep opening paid income and recurring fee source weights ---");
+        for(boolean student:new boolean[]{false,true}){
+            var balances=new HouseholdBalance();var families=new FamilyModel();
+            Household cell=student?balances.cells().stream().filter(c->c instanceof StudentHousehold).findFirst().orElseThrow()
+                    :balances.unemployed(UnemployedHousehold.Status.ON_EI);
+            cell.studentLoansOpen=false;cell.households=10;
+            double[] fresh={2};balances.setOutsideCensus(c->c==cell?fresh[0]:0);
+            var accounts=paidHousingRow(cell.row(),10,200,0);
+            near(cell.key()+" contraction keeps the paid source's per-recipient income",balances.strikeHousingBudgets(families,accounts,0,c->0,c->Double.NaN,.03,1).get(cell.key()).budget(),20);
+            fresh[0]=20;
+            var expanded=balances.strikeHousingBudgets(families,accounts,0,c->0,c->Double.NaN,.03,1).get(cell.key());
+            near(cell.key()+" expansion shares the funded opening pool",expanded.budget(),10);
+            check(cell.key()+" expansion never multiplies the paid opening receipt",expanded.budget()*expanded.count()<=accounts.getRowDisposable(cell.row()));
+            cell.households=0;
+            near(cell.key()+" no source recipients cannot claim a stale row receipt",balances.strikeHousingBudgets(families,accounts,0,c->0,c->Double.NaN,.03,1).get(cell.key()).budget(),0);
+            near(cell.key()+" no opening funding invents no current receipt",balances.strikeHousingBudgets(families,paidHousingRow(cell.row(),0,0,0),0,c->0,c->Double.NaN,.03,1).get(cell.key()).budget(),0);
+            cell.households=10;accounts=paidHousingRow(cell.row(),10,0,40);fresh[0]=2;
+            near(cell.key()+" contraction does not concentrate a recurring per-head fee",balances.strikeHousingBudgets(families,accounts,0,c->0,c->100,.03,1).get(cell.key()).budget(),96);
+            fresh[0]=20;
+            near(cell.key()+" expansion cannot dilute a recurring per-head fee",balances.strikeHousingBudgets(families,accounts,0,c->0,c->100,.03,1).get(cell.key()).budget(),96);
+        }
+        var balances=new HouseholdBalance();var families=new FamilyModel();
+        var cell=balances.unemployed(UnemployedHousehold.Status.ON_EI);cell.households=10;
+        balances.setOutsideCensus(c->c==cell?2:0);
+        var missingHeads=new HouseholdAccounts(){
+            @Override public double getRowHealthcare(int row){return row==cell.row()?40:0;}
+        };
+        near("a billed fee without source heads still reserves the existing fresh split",balances.strikeHousingBudgets(families,missingHeads,0,c->0,c->100,.03,1).get(cell.key()).budget(),80);
+        cell.disposable=10;cell.afterFixed=5;
+        var accounts=paidHousingRow(cell.row(),10,0,0);
+        near("detached stocks preserve the live fixed-bill floor and its live rent denominator",balances.strikeHousingBudgets(families,accounts,0,c->c.key().equals(cell.key())?20/c.households():0,c->10,.03,1).get(cell.key()).budget(),7);
+        near("quoting changes no live disposable income",cell.disposable,10);
+        near("quoting changes no live income after fixed bills",cell.afterFixed,5);
+    }
+    static void carriedStudentService(){
+        out.println("--- carried student principal reserves current contractual service ---");
+        Game g=new Game(GameFiles.scratch("res3-carried-student-service"));g.run();
+        double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
+        g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
+        double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;
+        g.getFamilies().rebuild(g.getCohorts(),jobs);
+        var balances=new HouseholdBalance();var source=balances.unemployed(UnemployedHousehold.Status.ON_EI);
+        source.households=10;source.studentDebt=Household.STUDENT_LOAN_MONTHS;
+        var worker=balances.cell(FamilyStructure.SINGLE_ADULT,PayTier.UNSKILLED);
+        double rate=TaxPolicy.MAX_STUDENT_LOAN_RATE/2;balances.setStudentLoanRate(rate);
+        double[] saved=balances.toCellSaveArray();var accounts=new HouseholdAccounts();
+        var quoted=balances.strikeHousingBudgets(g.getFamilies(),accounts,0,c->0,c->100,.03,1);
+        double[] fresh=balances.cells().stream().mapToDouble(c->quoted.get(c.key()).count()).toArray();
+        Household carried=balances.housingCensusCells(g.getFamilies(),fresh)[balances.cells().indexOf(worker)];
+        check("the new working cell really carries principal from the old unemployed source",worker.studentDebt()==0&&carried.studentDebt()>0&&quoted.get(worker.key()).count()>0);
+        double principal=carried.studentDebt();
+        double service=principal/Household.STUDENT_LOAN_MONTHS+principal*rate/12;
+        near("a quote reserves the carried loan's contractual term and current-rate interest",quoted.get(worker.key()).budget(),100-service);
+        carried.studentLoanRate=rate;carried.settle(100,0,0,0,0,0);
+        near("the quote's reservation agrees with the actual model strike",quoted.get(worker.key()).budget(),carried.afterFixed());
+        balances.setStudentLoanRate(TaxPolicy.MAX_STUDENT_LOAN_RATE);
+        double dearer=balances.strikeHousingBudgets(g.getFamilies(),accounts,0,c->0,c->100,.03,1).get(worker.key()).budget();
+        near("a current rate change is reserved without waiting for settled flow fields",quoted.get(worker.key()).budget()-dearer,principal*(TaxPolicy.MAX_STUDENT_LOAN_RATE-rate)/12);
+        check("student service quotes and a detached comparison strike change no live saved field",Arrays.equals(saved,balances.toCellSaveArray()));
+        source.studentDebt=0;
+        near("a working cell carrying no student principal reserves no student service",balances.strikeHousingBudgets(g.getFamilies(),accounts,0,c->0,c->100,.03,1).get(worker.key()).budget(),100);
+        source.studentDebt=Household.STUDENT_LOAN_MONTHS;balances.setOutsideCensus(c->c==source?10:0);
+        near("unemployed principal remains in contractual forbearance",balances.strikeHousingBudgets(new FamilyModel(),accounts,0,c->0,c->100,.03,1).get(source.key()).budget(),100);
+        var enrolled=new HouseholdBalance();var student=enrolled.students();student.households=10;
+        student.studentDebt=Household.STUDENT_LOAN_MONTHS;student.studentLoansOpen=false;
+        enrolled.setStudentLoanRate(TaxPolicy.MAX_STUDENT_LOAN_RATE);enrolled.setOutsideCensus(c->c==student?10:0);
+        near("an enrolled student's existing principal is not serviced during study",enrolled.strikeHousingBudgets(new FamilyModel(),accounts,0,c->0,c->100,.03,1).get(student.key()).budget(),100);
+    }
+
     public static void main(String[] args)throws Exception{
-        out=System.out;PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
+        out=System.out;stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
         try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);

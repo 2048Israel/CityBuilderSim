@@ -73,6 +73,7 @@ public final class HousingChoice {
     }
     /** Planning can reserve suitable homes without assuming emergency crowding in a new project. */
     public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month,boolean emergency) {
+        if(!incumbents.isEmpty())return retainAndClear(demands,offers,incumbents,month,emergency);
         List<Demand> ds=demands.stream().sorted(Comparator.comparing(Demand::key)).toList();
         List<Offer> os=offers.stream().sorted(Comparator.comparing(o->o.key().toString())).toList();
         int h=ds.size(),t=os.size(); double[][] x=new double[h][t];
@@ -122,6 +123,44 @@ public final class HousingChoice {
         if(left<=FamilyModel.packingRounding(source))left=poor=noSuitable=0;
         return new Result(List.copyOf(leases),kept,suitable,crowded,poor,noSuitable,left);
     }
+    /** Existing funded door shares precede new movers; their household quantity is not a whole-door quantity. */
+    private static Result retainAndClear(List<Demand> demands,List<Offer> offers,List<Lease> incumbents,int month,boolean emergency){
+        Map<String,Demand> cells=new HashMap<>();for(var d:demands)cells.put(d.key(),d);
+        Map<HousingInventory.Key,Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);
+        List<Lease> ordered=incumbents.stream().sorted(Comparator.comparing(Lease::cell).thenComparing(l->l.home().toString())).toList();
+        Map<HousingInventory.Key,Double> oldBills=new HashMap<>(),oldDoors=new HashMap<>();
+        for(var l:ordered){oldBills.merge(l.home(),l.bill(),Double::sum);oldDoors.merge(l.home(),l.count(),Double::sum);}
+        List<Lease> valid=new ArrayList<>();Map<String,Double> wanted=new HashMap<>();
+        for(var l:ordered){var d=cells.get(l.cell());var o=homes.get(l.home());if(d==null||o==null)continue;
+            double oldPrice=oldBills.get(l.home())/oldDoors.get(l.home());
+            double n=oldPrice>0?Math.min(l.households(),l.bill()/oldPrice):l.count();
+            double people=Math.min(l.households(),2*n);
+            if(!(n>0)||!suitable(d,o,people>n)||(o.rent()+o.recurring())*n>d.budget()*people)continue;
+            var paid=new Lease(l.cell(),l.home(),n,l.bill(),people);
+            valid.add(paid);wanted.merge(paid.cell(),paid.households(),Double::sum);
+        }
+        valid.sort(Comparator.comparing(Lease::cell).thenComparing(l->l.home().toString()));
+        List<Lease> scaled=new ArrayList<>();Map<HousingInventory.Key,Double> occupied=new HashMap<>();
+        for(var l:valid){double factor=Math.min(1,cells.get(l.cell()).count()/wanted.get(l.cell()));
+            double n=l.count()*factor;if(!(n>0))continue;
+            var q=new Lease(l.cell(),l.home(),n,n*homes.get(l.home()).rent(),l.households()*factor);
+            scaled.add(q);occupied.merge(q.home(),q.count(),Double::sum);
+        }
+        List<Lease> kept=new ArrayList<>();Map<String,Double> placed=new HashMap<>();Map<HousingInventory.Key,Double> used=new HashMap<>();
+        double doors=0,crowded=0;
+        for(var l:scaled){double factor=Math.min(1,homes.get(l.home()).count()/occupied.get(l.home()));
+            double n=l.count()*factor;if(!(n>0))continue;
+            var q=new Lease(l.cell(),l.home(),n,n*homes.get(l.home()).rent(),l.households()*factor);
+            kept.add(q);placed.merge(q.cell(),q.households(),Double::sum);used.merge(q.home(),q.count(),Double::sum);
+            doors+=q.count();crowded+=q.households()-q.count();
+        }
+        List<Demand> rest=new ArrayList<>();for(var d:demands){double n=Math.max(0,d.count()-placed.getOrDefault(d.key(),0.0));
+            if(n>FamilyModel.packingRounding(d.count()))rest.add(new Demand(d.key(),n,d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()));}
+        List<Offer> free=new ArrayList<>();for(var o:offers)free.add(new Offer(o.key(),Math.max(0,o.count()-used.getOrDefault(o.key(),0.0)),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()));
+        var next=clear(rest,free,List.of(),month,emergency);kept.addAll(next.leases());
+        return new Result(List.copyOf(kept),doors,next.suitable(),crowded+next.crowded(),next.unaffordable(),next.noSuitable(),next.unplaced());
+    }
+
     private record DemandSignature(int size,int children,boolean retired,int tier,boolean young,double budget) { }
     /** Books the outcome of internal emergency phases without clearing or pricing again. */
     public static Result summarize(List<Demand> demand,List<Offer> offers,List<Lease> leases,double kept,double normal,double crowded,

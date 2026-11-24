@@ -213,8 +213,9 @@ public final class HousingMarket {
         pipeline=List.copyOf(pending);
         List<HousingChoice.Lease> primary=new ArrayList<>();
         for(var l:leases){var c=classes.get(l.home());double n=c!=null&&c.lastTrade>0?Math.min(l.households(),l.bill()/c.lastTrade):l.count();
-            if(n>0)primary.add(new HousingChoice.Lease(l.cell(),l.home(),n,l.bill()));}
+            if(n>0)primary.add(new HousingChoice.Lease(l.cell(),l.home(),n,l.bill(),Math.min(l.households(),2*n)));}
         result=HousingChoice.clear(demand,offers,primary,game.getMonth());
+        retainHosted();
         emergencySharing(game);
         emergencyDoubling(game);
         leases=result.leases();month=game.getMonth();
@@ -260,6 +261,31 @@ public final class HousingMarket {
         }
     }
     private record LeaseKey(String cell,HousingInventory.Key home) { }
+    /** Prior guests keep priority only in the real room funded by this clearing's paying hosts. */
+    private void retainHosted(){
+        Map<String,HousingChoice.Demand> cells=new HashMap<>();for(var d:demand)cells.put(d.key(),d);
+        Map<HousingInventory.Key,HousingChoice.Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);
+        List<HousingChoice.Lease> all=new ArrayList<>(result.leases());
+        Map<String,Double> prior=new HashMap<>(),left=new HashMap<>();
+        for(var d:demand){double placed=all.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();left.put(d.key(),Math.max(0,d.count()-placed));}
+        Map<LeaseKey,Double> claims=new LinkedHashMap<>();
+        for(var l:leases){var c=classes.get(l.home());var d=cells.get(l.cell());var o=homes.get(l.home());
+            if(c==null||d==null||o==null||!(c.lastTrade>0)||!HousingChoice.suitable(d,o,true))continue;
+            double guests=Math.max(0,l.households()-Math.min(l.households(),2*l.bill()/c.lastTrade));
+            if(!(guests>0))continue;claims.merge(new LeaseKey(l.cell(),l.home()),guests,Double::sum);prior.merge(l.cell(),guests,Double::sum);
+        }
+        Map<HousingInventory.Key,Double> room=new HashMap<>(),asked=new HashMap<>(),taken=new HashMap<>();
+        for(var o:offers)room.put(o.key(),all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum());
+        for(var e:claims.entrySet()){double n=e.getValue()*Math.min(1,left.getOrDefault(e.getKey().cell(),0.0)/prior.get(e.getKey().cell()));e.setValue(n);asked.merge(e.getKey().home(),n,Double::sum);}
+        List<HousingChoice.Lease> guests=new ArrayList<>();double extra=0;
+        for(var e:claims.entrySet()){double n=e.getValue()*Math.min(1,room.getOrDefault(e.getKey().home(),0.0)/asked.get(e.getKey().home()));if(!(n>0))continue;
+            guests.add(new HousingChoice.Lease(e.getKey().cell(),e.getKey().home(),n/2,0,n));taken.merge(e.getKey().home(),n,Double::sum);extra+=n;}
+        for(int i=0;i<all.size();i++){var l=all.get(i);double n=taken.getOrDefault(l.home(),0.0);if(!(n>0))continue;
+            all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*room.get(l.home())),l.bill(),l.households()));}
+        all.addAll(guests);hosted+=extra;
+        result=HousingChoice.summarize(demand,offers,bounded(all),result.kept(),result.suitable(),result.crowded()+extra,Map.of());
+    }
+
     private record EmergencyRoom(HousingChoice.Offer home,boolean hosted) { }
     /** Guests and hosts retain separate household counts while sharing one actual door and rent bill. */
     private void emergencyDoubling(Game game){
@@ -316,7 +342,7 @@ public final class HousingMarket {
             var d=cells.get(c.key());if(d==null)continue;
             boolean working=c instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT;
             if(!working&&!(c instanceof StudentHousehold)&&!(c instanceof UnemployedHousehold))continue;
-            double used=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            double used=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double groups=Math.min(Math.max(0,d.count()-used),d.count()*FamilyModel.MAX_SHARING)/5;
             if(!(groups>0))continue;String target;int size,children;boolean young=d.young();
             if(c instanceof WorkingHousehold w){target=game.getHouseholdBalance().cell(FamilyStructure.SHARED_ADULTS,w.tier(),w.stage()).key();size=5;children=0;}
@@ -437,7 +463,7 @@ public final class HousingMarket {
         }
         var reserved=HousingChoice.clear(planning,committed,leases,month,false);
         List<HousingChoice.Demand> remaining=new ArrayList<>();
-        for(var d:planning){double taken=reserved.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
+        for(var d:planning){double taken=reserved.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             double n=Math.max(0,d.count()-taken);if(n<=FamilyModel.packingRounding(d.count()))continue;
             remaining.add(new HousingChoice.Demand(d.key(),n,d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()));
         }
