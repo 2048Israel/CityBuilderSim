@@ -1139,6 +1139,8 @@ public final class EssentialWorksCheck {
         for (Sector sector : g.getSectors().all())
             if (g.getBusinessInvestment().isHeld(sector.key()))
                 loaded.getBusinessInvestment().holdSector(sector.key());
+        // ...and this fixture's own lever (PW3), the Diesel Station dated to the town's year: a template's date is the catalogue's, which no save carries.
+        loaded.getBuildingManager().getTemplateByName(fast.getName()).setSince(fast.getSince());
         check("the mid-construction scratch save loaded through DataSave with its original pending date",
                 saved[0] && loaded.getLoadFailure() == null && loaded.getMonth() == reloadAt
                         && savedDeadline != null
@@ -1156,7 +1158,8 @@ public final class EssentialWorksCheck {
         check("monthly passes respect the original pending deadline before it expires (began " + began + ", first " + first
                 + ", orders " + originalOrders + ")", !early[0]);
         check("past that deadline the automatic path orders more power despite the pending diesel", late[0]);
-        check("the real loaded city and its unbroken twin place the same later automatic orders, one by one",
+        check("the real loaded city and its unbroken twin place the same later automatic orders, one by one ("
+                        + originalOrders + " against " + loadedOrders + ")",
                 !originalOrders.isEmpty() && originalOrders.equals(loadedOrders));
     }
 

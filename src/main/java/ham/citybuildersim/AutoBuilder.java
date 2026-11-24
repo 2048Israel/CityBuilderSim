@@ -1215,7 +1215,11 @@ public final class AutoBuilder {
         Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, m);
         Double due = pendingUntil.get(m.label());
         boolean shortAhead = !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, 0, slack));
-        if (shortAhead && due != null && game.getMonth() > due) return Map.of();
+        // HW1: past its deadline a site that has not covered the shortage counts nothing. Not power's (PW3): its planner reads each
+        // plant on site at its revised opening (WorksValue.openBy(), the builders' queue), so a late plant counts from when it will
+        // open and a candidate opening sooner is still ordered; dropped whole, every late plant was ordered again, each order
+        // crowding the builders and slipping the next deadline (seed 1: 19 coal plants in the 1960s, the firm supply 6 times the peak).
+        if (shortAhead && due != null && game.getMonth() > due && m.kind() != BuildAdvice.Kind.POWER) return Map.of();
         // A slow site cannot cover service that faster work can deliver sooner. Power's planner reads each plant on site from its
         // own opening at each candidate's (PW3, WorksValue.openBy()), so a slow power site is kept: dropped whole, a second coal plant
         // would be ordered against the shortfall the first already meets at its opening.
@@ -1239,11 +1243,12 @@ public final class AutoBuilder {
      * Power's planner (PW3) reads it: a candidate opening before the promise counts the site only from each plant's opening
      * (WorksValue.openBy(), PW1-P's second gap); one opening after it counts the site whole while the promise stands, as
      * pendingCapacity() does, since each order shares the builders and puts back what is on site: read from its opening, the
-     * site that order slows would order again the next month, and the next.
+     * site that order slows would order again the next month, and the next. NaN too once the promise has expired (past its
+     * deadline, as pendingCapacity() reads it): every candidate then reads the site by each plant's revised opening.
      */
     public double promisedMonths(Game game, BuildAdvice.Measure m) {
         Double due = pendingUntil.get(m.label());
-        return due == null ? Double.NaN : due - game.getMonth();
+        return due == null || game.getMonth() > due ? Double.NaN : due - game.getMonth();
     }
 
     private void rememberPending(Game game, BuildAdvice.Measure m, boolean newOrder) {
