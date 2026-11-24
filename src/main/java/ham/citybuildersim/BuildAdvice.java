@@ -455,7 +455,7 @@ public final class BuildAdvice {
                 if (!game.hasCoolingFor(t)) return 0;
                 // PW3, 2026-11-23: power is planned for the year's peak hour, so a wind or solar farm adds its credit there at the city's place,
                 // falling with the variable rows' share with it standing (credit(), THE FIRM SUPPLY); every other row its production1.
-                return u.getProduction1() * credit(game, t, variableShare(game, Map.of(t, 1L))) * staffing(u, fill);
+                return u.getProduction1() * credit(game, t, variableShare(game, Map.of(t, 1L))) * firmFill(t, staffing(u, fill));
             case WATER: {
                 /*
                  * THE WATER UNIT (0.7.59, batch J2): a fresh plant adds no
@@ -726,6 +726,11 @@ public final class BuildAdvice {
         return 1;
     }
 
+    /** The share of a plant's production1 its staffing gives: its posts' fill, a hydro station's all of it with anybody on shift (its water, as UtilitiesHandler counts a station's month). */
+    static double firmFill(BuildingsTemplate t, double staffed) {
+        return t.isHydro() ? (staffed > 0 ? 1 : 0) : staffed;
+    }
+
     /** Power's {firm supply, the peak hour's draw}, kW, with these buildings standing as well, at `p`'s demand: THE FIRM SUPPLY above. */
     private static double[] powerSupplyDemand(Game game, Map<BuildingsTemplate, Long> added, Ahead p) {
         UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
@@ -741,14 +746,14 @@ public final class BuildAdvice {
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (t.getCategory() != BuildingType.ELECTRICITY) continue;
             long q = bm.getQuantity(t.getId());
-            if (q > 0) firm += q * t.getProduction1() * credit(game, t, share) * staffing(t, fill);
+            if (q > 0) firm += q * t.getProduction1() * credit(game, t, share) * firmFill(t, staffing(t, fill));
         }
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
             BuildingsTemplate t = e.getKey();
             long n = e.getValue();
             NewUnit nu = adding(game, t, n);
             demand += n * nu.getElectricityConsumption();
-            if (t.getCategory() == BuildingType.ELECTRICITY) firm += n * nu.getProduction1() * credit(game, t, share) * staffing(nu, fill);
+            if (t.getCategory() == BuildingType.ELECTRICITY) firm += n * nu.getProduction1() * credit(game, t, share) * firmFill(t, staffing(nu, fill));
             // ...and the posts of a utility added join the pool the founding grid runs at, as UtilitiesHandler pools them.
             if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER) {
                 for (JobType job : JobType.values()) {

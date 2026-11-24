@@ -650,6 +650,23 @@ public class BuildAdviceCheck {
         return readByTheModel(twin, m);
     }
 
+    /**
+     * The model's firm supply (PW3): the handler's production - the founding grid at the pooled fill, the works' power, each plant at
+     * its own posts' fill and a station at its water - less each wind and solar farm's average beyond its credit at the city's share.
+     */
+    static double modelFirm(Game twin) {
+        UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
+        BuildingManager bm = twin.getBuildingManager();
+        double[] fill = twin.getPopulationManager().getJobFillRate();
+        double share = BuildAdvice.variableShare(twin, Map.of()), nonFirm = 0;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (t.getCategory() == BuildingType.ELECTRICITY && (t.isWind() || t.isSolar())) {
+                nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * BuildAdvice.staffing(t, fill) * (1 - BuildAdvice.credit(twin, t, share));
+            }
+        }
+        return u.getProduction() - nonFirm;
+    }
+
     /** The students a school above the ladder would get and hire, read before the order stood (builtAndRead()). */
     static double wantBefore = Double.NaN;
 
@@ -666,14 +683,9 @@ public class BuildAdviceCheck {
             }
             case POWER: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
-                // PW1: the peak block's draw (PLAN_PEAK) over the production less what the standing wind does not deliver in its calmest half-block (WIND_FIRM).
-                double nonFirm = 0;
-                for (BuildingsTemplate t : bm.getTemplates()) {
-                    if (t.getCategory() == BuildingType.ELECTRICITY && t.isWind()) {
-                        nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
-                    }
-                }
-                return u.getConsumption() * PowerDispatch.PLAN_PEAK / (u.getProduction() - nonFirm * u.getAverageUtilityFill());
+                // PW1, PW3: the year's peak hour's draw (PLAN_PEAK_HOUR) over the model's production less what the standing wind and sun
+                // do not deliver in the peak hours (each farm at its own posts' fill, its credit at the city's share).
+                return u.getConsumption() * PowerDispatch.PLAN_PEAK_HOUR / modelFirm(twin);
             }
             case WATER: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
@@ -1581,7 +1593,7 @@ public class BuildAdviceCheck {
     }
 
     static void powerForTheCalmPeak(Game fixture) {
-        out.println("\n--- 14. power is planned for the calm peak (PW1): a wind farm adds its firm kW, the figure is the peak's draw over the firm supply ---");
+        out.println("\n--- 14. power is planned for the peak (PW1; PW3 the year's peak hour): a wind farm adds its credit there, the figure is the peak hour's draw over the firm supply ---");
         // The short city's twin (it stands staffed, with its Coal Power Plant), six Wind Farms standing in it and the month's services pass run.
         Game g = twin(fixture);
         Map<BuildingsTemplate, Long> six = new LinkedHashMap<>();
@@ -1595,28 +1607,36 @@ public class BuildAdviceCheck {
                 wind.isWind() && !coal.isWind() && staffWind > 0 && staffCoal > 0
                         && g.getBuildingManager().getQuantity(wind.getId()) >= 6 && g.getBuildingManager().getQuantity(coal.getId()) >= 1);
 
-        // (a) the unit: a wind farm's average x WIND_FIRM, a coal plant's all, each at its own staffing.
+        // (a) the unit: a wind farm's average x its credit at the share with one more standing (PW3: WIND_PEAK_CREDIT, falling with the
+        // variable rows' share of the energy), a coal plant's all, each at its own staffing.
+        double shareWithOne = BuildAdvice.variableShare(g, Map.of(wind, 1L));
+        double credit = PowerDispatch.WIND_PEAK_CREDIT * PowerDispatch.creditFall(shareWithOne);
+        // ...in this small city six farms make several times its energy, so the credit is at its floor (PowerPlanCheck walks the line).
+        assertTrue(String.format("fixture: seven Wind Farms make %.2f times the city's energy, past CREDIT_HALF: their credit is CREDIT_FLOOR of WIND_PEAK_CREDIT", shareWithOne),
+                shareWithOne >= PowerDispatch.CREDIT_HALF && PowerDispatch.creditFall(shareWithOne) == PowerDispatch.CREDIT_FLOOR);
         double perWind = BuildAdvice.unit(g, power, wind) / wind.getProduction1();
         double perCoal = BuildAdvice.unit(g, power, coal) / coal.getProduction1();
-        close("(a) a Wind Farm's power unit per kW of its average is WIND_FIRM of a Coal Power Plant's, staffing aside",
-                perWind / perCoal, PowerDispatch.WIND_FIRM * staffWind / staffCoal, 1e-12);
+        close("(a) a Wind Farm's power unit per kW of its average is its credit at that share (WIND_PEAK_CREDIT x creditFall()) of a Coal Power Plant's, staffing aside",
+                perWind / perCoal, credit * staffWind / staffCoal, 1e-12);
         close("...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed",
-                BuildAdvice.built(g, power, wind) / wind.getProduction1(), PowerDispatch.WIND_FIRM, 1e-12);
+                BuildAdvice.built(g, power, wind) / wind.getProduction1(), credit, 1e-12);
         bits("...a Coal Power Plant's built() is its whole average", BuildAdvice.built(g, power, coal), coal.getProduction1());
 
-        // (b) the figure: the peak block's draw over the firm supply, off the handler's own figures.
+        // (b) the figure: the peak hour's draw over the firm supply, off the handler's own figures.
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         Map<BuildingsTemplate, Long> none = new LinkedHashMap<>();
         long windStanding = g.getBuildingManager().getQuantity(wind.getId());
-        double firm = (u.getBaseProduction() - windStanding * wind.getProduction1() * (1 - PowerDispatch.WIND_FIRM)) * u.getAverageUtilityFill();
+        double shareNow = BuildAdvice.variableShare(g, none);
+        double firm = u.getProduction() - windStanding * wind.getProduction1() * staffWind
+                * (1 - PowerDispatch.WIND_PEAK_CREDIT * PowerDispatch.creditFall(shareNow));
         double figure = BuildAdvice.figure(g, power, none);
-        close("(b) power's figure is the draw x PLAN_PEAK over the firm supply (the base less the wind's non-firm part, at the utilities' fill)",
-                figure, u.getConsumption() * PowerDispatch.PLAN_PEAK / firm, 1e-9);
+        close("(b) power's figure is the draw x PLAN_PEAK_HOUR over the firm supply (the model's production less the wind's average beyond its credit, at its own posts' fill)",
+                figure, u.getConsumption() * PowerDispatch.PLAN_PEAK_HOUR / firm, 1e-9);
         assertTrue("...which is more than the average's draw over its production, the wind standing counted at its average",
                 figure > u.getConsumption() / u.getProduction());
         double[] sd = BuildAdvice.supplyDemand(g, power, none);
-        close("...and supplyDemand() is the firm supply against the peak's draw", sd[0], firm, 1e-9);
-        close("...the draw the peak's, losses in", sd[1], u.getConsumption() * PowerDispatch.PLAN_PEAK, 1e-9);
+        close("...and supplyDemand() is the firm supply against the peak hour's draw", sd[0], firm, 1e-9);
+        close("...the draw the peak hour's, losses in", sd[1], u.getConsumption() * PowerDispatch.PLAN_PEAK_HOUR, 1e-9);
 
         // (c) a shortfall of five wind farms' average, caused by homes added to the demand.
         Map<BuildingsTemplate, Long> short1 = new LinkedHashMap<>();
