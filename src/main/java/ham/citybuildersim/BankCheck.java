@@ -166,6 +166,9 @@ public class BankCheck {
     /** What retail owes against what it owns, taken on again between each month of the slice section: past the watch line and under the default point, so a slice defaults each month and no month is news. */
     static final double SLICE_LEVERAGE = 1.2;
 
+    /** The months of its bills (the larger of last month's, and the interest on the claim just taken on) that retail's till is topped up to before each month of the slice section, so that no month's bill is left unpaid for want of a lender behind it: a month it cannot pay is a default of its own, and news. */
+    static final double SLICE_TILL_MONTHS = 4;
+
     /** What retail owes against what it owns when its month is to be news, after the slice section's quiet months: twice what it owns, past the default point (BusinessDebtManager.INSOLVENCY_TRIGGER). */
     static final double PAST_THE_LINE_LEVERAGE = 2;
 
@@ -2611,6 +2614,22 @@ public class BankCheck {
                 // It owes SLICE_LEVERAGE times what it owns - taken on between months, as the money check's own stressed
                 // sector is: a claim, no money moved. Taken on again each month, so each month has a slice to default.
                 credit.issueLoan(RET, Math.max(0, SLICE_LEVERAGE * credit.getAssets(RET) - credit.getPrincipal(RET)), city.getMonth());
+                /*
+                 * FC2, 2026-11-23: RETAIL'S TILL PAYS ITS MONTH. The condition of this section is a slice that the leverage alone defaults:
+                 * the claim sits at SLICE_LEVERAGE, a month's hazard of 1.8% of its debt, under the 5.6% that is news. A slice is not the
+                 * only way a month defaults, though: a sector whose till is short with no lender behind it defaults the share of its
+                 * bills it could not pay (CAN'T PAY MEANS DEFAULT), and a debt over the ceiling has behind it nothing but the interest
+                 * reserve. On FC2's path retail's bills were D$1.07k in months 3 to 6, all interest, and then D$2.00k, D$2.27k, D$2.36k,
+                 * D$3.00k, D$3.32k and D$4.44k in months 7 to 12 against a till of nothing: the reserve paid the D$1.0k of interest and the
+                 * rest was short, 46%, 33%, 27%, 39%, 37% and 45% of the month's bills (reason CEILING), and that share of its debt
+                 * defaulted - news in 6 of the 12 months with its leverage 1.09 to 1.13 after the slice, under the default point all the
+                 * while. What the stores earn is the played path's and not this section's, so the fixture causes its own condition: the till
+                 * is lifted between months, as the claim is, to SLICE_TILL_MONTHS months of the bills it last read, so a month's bills are
+                 * paid out of it whatever the town's stores took, and what defaults is the slice and nothing else.
+                 */
+                double tillBills = Math.max(credit.getMonthObligations(RET), credit.getMonthlyInterest(RET));
+                city.getEconomyManager().setSectorCash(RET,
+                        Math.max(city.getEconomyManager().getSectorCash(RET), SLICE_TILL_MONTHS * tillBills));
                 city.simulateMonths(1);
                 MoneyAudit.Result audit = city.getLastMoneyAudit();
                 worstResidual = Math.max(worstResidual, Math.abs(audit.residual));

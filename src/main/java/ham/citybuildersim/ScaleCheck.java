@@ -1634,7 +1634,12 @@ public class ScaleCheck {
             // and Freight's carried.<stream> is the share of each stream the railway carries (0.7.86), which the copy loaded K times
             // over and so hauled K squared tonnes once its town had a line (section 9 on IC1's town: Manufacturing's haulage sank it,
             // and the bank with it, in the first month).
-            + "^crewsNeeded$|^carried\\.)");
+            + "^crewsNeeded$|^carried\\.|"
+            // FC2, 2026-11-23: the builders' staffing the month was worked at (Construction's workFill, the sector's averageFill), a
+            // share; the copy loaded it K times over, so its first month's crews worked K times the posts they had - the K = 10 copy
+            // 191,249 points where its month is 18,983 - and since FC2 the points no site took are sold abroad, so its GDP read the
+            // phantom crews' month (worst 8.10e-01 of 0.140 in section 9). Main's copies left those points idle, unsold.
+            + "(^|\\.)workFill$)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month
@@ -1657,7 +1662,12 @@ public class ScaleCheck {
             "repairsThisMonth", "lastMonthSales", "demandAtPrice", "buildings", "sharesBoughtBack", "zeroRated",
             // FW9, 2026-10-25: the borrowing costs a business has yet to expense are dollars in a schedule, and the units of
             // construction material a business holds are a quantity; "Left" and "building" read them as months and as a kind.
-            "borrowingChargesLeft", "buildingMaterials");
+            "borrowingChargesLeft", "buildingMaterials",
+            // FC2, 2026-11-23: the builders' month with the foreign crews and the world - the points the crews built and their
+            // bill, the points handed them, the points sold abroad and the receipts, which the audit books the month after - are
+            // points and dollars; "Month" read them as months, and the copy's second month booked the city's receipts, not K's.
+            "foreignPointsThisMonth", "foreignBillThisMonth", "handedAbroadThisMonth", "exportPointsThisMonth",
+            "exportReceiptsThisMonth");
 
     /** The save's top-level keys scaled: scale_save.py's list, less the works yard. */
     static final String[] TOP = { "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged",
@@ -1681,7 +1691,10 @@ public class ScaleCheck {
             "householdGraduates",
             // ...and the power plants' struck book and the fuel they paid (PW1, 2026-11-11): its load, its kWh, its fuel and its
             // upkeep are the city's size, its prices and its ratio the pattern leaves; unscaled, the copy bought one city's coal.
-            "powerBooks" };
+            "powerBooks",
+            // ...and each site's work on the foreign crews' book (FC2, REV-FC2's claims, abroadOwedById): points owed on a site, K times over
+            // as the points on site are; unscaled, the copy's sites claimed one city's share of a book K times the city's.
+            "abroadOwedById" };
 
     /** The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. */
     static final java.util.Set<String> NAMED = java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks",

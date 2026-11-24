@@ -226,6 +226,14 @@ public class FundCheck {
             // branch stood and the households or the world held its shares - 73 passed (WG2, 2026-11-10), 74 alone of 74-80. A Commercial Bank built here
             // opens its branch when it is finished, and the branch's paid-in capital is sold as shares, the households first and the world for the rest
             // (Game.capitaliseBank()), so the standing bank and its owners are caused, and the count of months is the stage and no more.
+            // FC2, 2026-11-23: THE BANK'S QUOTE HANDED TO THE FOUNDING'S CASH WHERE THE TOWN'S ORDERS LEFT IT SHORT. The bank is ordered behind the
+            // 300 Houses, the shops, the depots and the plant, and priced on the queue they make; on FC2's path the work past the threshold went to the
+            // foreign crews at their price, the orders before it took the founding's cash, and "the founding's order for a Commercial Bank was placed"
+            // failed. Ordered first instead, it opened in an empty town and sold 3,389 shares where this one sells 32,000, and the sections that read
+            // its shareholders moved. So it stays where it is, and the treasury is handed what its quote asks over the cash the town's orders left, and
+            // no more: on any path the order is placed, and a path that leaves the cash for it is handed nothing.
+            Game.BuildQuote bankQuote = city.quoteBuild(template(city, "Commercial Bank"), 1);
+            if (bankQuote.total > city.getCash()) city.setCashForTest(bankQuote.total);
             bankBuilt = city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(FOUNDING_MONTHS);
             city.saveGame(1);
@@ -1500,6 +1508,9 @@ public class FundCheck {
 
     /* ================= 9d. the idle cash after last month's toRaise (RB1-R) ================= */
 
+    /** How many times the bond room before the month 9d lifts the fund's first month's due (all of it short) to, so the room a month on, which may be over it by the month's new bonds, is still under the toRaise. */
+    static final double BOND_ROOM_MARGIN = 3;
+
     /**
      * THE CASH THE TOP OF THE MONTH PAYS LAST MONTH'S toRaise FROM IS NOT IDLE (RB1-R). Over the default, payTransfer() pays last
      * month's toRaise out of the cash first, and struck the due on an idle figure read before that: with the dial under 17 steps
@@ -1520,6 +1531,18 @@ public class FundCheck {
         int[] two = holdTwoAndARescueBook(g);
         check("fixture: a market book in two companies, a rescue book, no cash", two[1] >= 0 && g.getFund().getCash() == 0
                 && g.fundRescueSharesValue() > 0);
+        // FC2, 2026-11-23: THE RESCUE BOOK IS SIZED TO THE BOND MARKET, SO THE MONTH'S SHORTFALL IS OVER THE BOND ROOM ON ANY PATH. The book is six times the market
+        // book whatever the town's bonds are, and the shortfall is the dial's share of the fund's value with no cash (the month's due, all of it short): on FC2's path
+        // the town's bonds stood at D$154 of room (29 live bonds, D$165 and 31 a month on) against a fund of D$707 (D$606 of it rescue) and a toRaise of D$28, so the
+        // bond room was 5.8 times the toRaise and the bound could not tell the old read, off by the toRaise, from the new. The Bank's rescue shares are lifted, as the
+        // helper issues them, until the dial's share of the fund's value is BOND_ROOM_MARGIN times the room before the month (the toRaise D$461 against D$165 now);
+        // the room a month on is the room before it and what the month's bonds add (7% here), so the toRaise is over it with the margin to spare, whichever
+        // way the town's bonds went.
+        double bondRoomBefore = g.getBondMarket().fundBondRoom(g.getMonth());
+        double valueWanted = BOND_ROOM_MARGIN * bondRoomBefore / (s * step), valueHad = g.fundValue();
+        if (valueWanted > valueHad)
+            g.getEquity().issueToCityRescue(Equity.BANK, (valueWanted - valueHad) / g.getExchange().cityMark(Equity.BANK));
+        check("fixture: the fund's value is over what makes the month's due the margin over the bond room", g.fundValue() * s * step >= BOND_ROOM_MARGIN * bondRoomBefore * (1 - 1e-12));
         g.setFundWithdrawal(s * step);
         check("fixture: the dial is at S steps, over the default", g.getFund().getWithdrawalSteps() == s && g.getFund().sellsToPay());
         play(g);
@@ -1699,10 +1722,41 @@ public class FundCheck {
         a.fundPayIn(x);
         play(a);
         play(b);
-        double surplusA = a.getEconomyManager().getNationalAccounts().getBalance();
-        double surplusB = b.getEconomyManager().getNationalAccounts().getBalance();
-        close("a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more",
-                surplusA - surplusB, a.getFund().getTransferPaid() - b.getFund().getTransferPaid(), 1e-6);
+        // FC2 and REV-FC2b, 2026-11-23: AT THE DEFAULT DIAL, THE PLAYER'S CASE, THE TWINS DIFFER BY THE TRANSFER AND BY THE HOUSEHOLDS' TAXES ON WHAT THE FUND'S
+        // BUYING MOVED. On FC2's path a's fund bought 5,016 Industry shares, 3.66 of Retail and a sliver of Freight with its pay-in, and the households' sales
+        // realised other gains than b's: the capital gains tax was D$0.0826 in a and D$0.1167 in b, so the balance differed by D$39.0966 where the transfer
+        // paid differed by D$39.1307. That is the market's effect of the fund's buying, booked as the households' tax, not the pay-in's on the budget: the
+        // law reads both taxes on the shares (NationalAccounts.getCapitalGainsTax(), getDividendTax()) from the model and asserts the pay-in moves nothing more.
+        NationalAccounts na = a.getEconomyManager().getNationalAccounts(), nb = b.getEconomyManager().getNationalAccounts();
+        double gainsMoved = na.getCapitalGainsTax() - nb.getCapitalGainsTax(), dividendsMoved = na.getDividendTax() - nb.getDividendTax();
+        out.printf("  at the default: the balance %,.6f and %,.6f, the transfer paid %,.6f and %,.6f, the households' capital gains tax %,.6f and %,.6f, their dividend tax %,.6f and %,.6f%n",
+                na.getBalance(), nb.getBalance(), a.getFund().getTransferPaid(), b.getFund().getTransferPaid(),
+                na.getCapitalGainsTax(), nb.getCapitalGainsTax(), na.getDividendTax(), nb.getDividendTax());
+        close("a pay-in is not spending: at the default dial the budget moves by the fund's transfer on it and by the households' taxes on the shares its buying moved, read from the model, and nothing more",
+                na.getBalance() - nb.getBalance(), (a.getFund().getTransferPaid() - b.getFund().getTransferPaid()) + gainsMoved + dividendsMoved, 1e-6);
+        // ...and over the default the rule buys nothing (sellsToPay(): the dial spends the fund), so the twins' markets are alike and the transfer is all that is
+        // between them; the cash x is far over the month's due at the dial, so the fund sells nothing either (the fixture below). These twins are two more copies
+        // of the founding; a itself plays on at the default for what follows.
+        Game pa = copy(), pb = copy();
+        for (Game t : java.util.List.of(pa, pb)) {
+            t.setFundWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + 1) * TreasuryFund.WITHDRAWAL_STEP);
+            t.setCashForTest(t.getCash() + x);
+        }
+        pa.fundPayIn(x);
+        play(pa);
+        play(pb);
+        double marketHeld = 0;
+        for (Game t : java.util.List.of(pa, pb)) {
+            marketHeld += t.getBondMarket().faceHeldByCity();
+            for (int c = 0; c < Equity.COMPANIES.length; c++) marketHeld += t.getEquity().getCityMarketShares(c);
+        }
+        check("fixture: over the default the rule buys nothing, so neither twin's fund holds a share or a bond of the market, and a's holds its cash",
+                pa.getFund().sellsToPay() && pb.getFund().sellsToPay() && marketHeld == 0 && pa.getFund().getCash() > 0
+                        && pa.getFund().getToRaise() == 0 && pb.getFund().getToRaise() == 0);
+        double surplusA = pa.getEconomyManager().getNationalAccounts().getBalance();
+        double surplusB = pb.getEconomyManager().getNationalAccounts().getBalance();
+        close("...and over the default, where the fund buys nothing, the budget moves by the fund's transfer on the pay-in and nothing more",
+                surplusA - surplusB, pa.getFund().getTransferPaid() - pb.getFund().getTransferPaid(), 1e-6);
         check("...and the journal names it", journalHas(a, "Paid into the fund", -x));
         double drawn = a.fundDrawOut(1_000 * PriceLevel.FACTOR);
         check("a draw-out moves what the fund's cash holds back", drawn == 1_000 * PriceLevel.FACTOR);

@@ -1,4 +1,4 @@
-# EssentialWorksCheck.java - 1,189 lines · 36 methods · 4 constants · harnesses
+# EssentialWorksCheck.java - 1,198 lines · 36 methods · 4 constants · harnesses
 
 `ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -37,7 +37,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1168 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
+| 22 | 1177 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
 | 28 | 4 | `static void check(String label, boolean ok)` |  |
 | 33 | 5 | `static void quietly(Runnable run)` |  |
 | 39 | 12 | `static Game town(Path root, String name)` |  |
@@ -71,7 +71,7 @@
 | 938 | 38 | `static void queuedPower(Path root)` |  |
 | 977 | 37 | `static void shortPowerBenefit(Path root)` |  |
 | 1015 | 40 | `static void pavingLead(Path root)` |  |
-| 1056 | 83 | `static void overduePending(Path root) throws Exception` |  |
-| 1140 | 20 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, java.util.List<String> orders, bool...` |  |
-| 1161 | 28 | `public static void main(String[] args) throws Exception` |  |
+| 1056 | 92 | `static void overduePending(Path root) throws Exception` |  |
+| 1149 | 20 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, java.util.List<String> orders, bool...` |  |
+| 1170 | 28 | `public static void main(String[] args) throws Exception` |  |
 

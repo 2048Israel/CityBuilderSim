@@ -161,6 +161,8 @@ public final class SectorState {
         public double householdServices;
         /** Sector.Ledger.paidToCity (FR3): the dues it pays the city this month, in its inputs. An older save reads none. */
         public double paidToCity;
+        /** Sector.Ledger.servicesSold (FC2): the exports with no good behind them, by name (the builders' work sold abroad), in transit until the next strike. Unsaved until REV-FC2b, when a load struck the receipts into revenue with no line naming them. An older save reads none, which is what it had pending: no save before FC2 sold work abroad. */
+        public Map<String, Double> servicesSold = new LinkedHashMap<>();
 
         static LedgerState of(Sector.Ledger l) {
             LedgerState s = new LedgerState();
@@ -181,6 +183,7 @@ public final class SectorState {
             s.upkeepSold = l.upkeepSold;
             s.householdServices = l.householdServices;
             s.paidToCity = l.paidToCity;
+            s.servicesSold = new LinkedHashMap<>(l.servicesSold);
             return s;
         }
 
@@ -209,6 +212,7 @@ public final class SectorState {
             l.upkeepSold = upkeepSold;
             l.householdServices = householdServices;
             l.paidToCity = paidToCity;
+            if (servicesSold != null) l.servicesSold.putAll(servicesSold);
             return l;
         }
     }
@@ -235,6 +239,8 @@ public final class SectorState {
         public double powerSold;
         /** Sector.Statement.foreignIncome (HD1, 2026-10-29): the coupon on its dollars abroad, paid home and inside the profit; an older save reads none, which is what it earned. */
         public double foreignIncome;
+        /** Sector.Statement.servicesSold (FC2): the struck month's exports with no good behind them, by name, inside its exports and revenue. Unsaved until REV-FC2b; an older save reads none, which is what it sold. */
+        public Map<String, Double> servicesSold = new LinkedHashMap<>();
 
         static StatementState of(Sector.Statement t) {
             StatementState s = new StatementState();
@@ -256,6 +262,7 @@ public final class SectorState {
             s.borrowingCosts = t.borrowingCosts;
             s.powerSold = t.powerSold;
             s.foreignIncome = t.foreignIncome;
+            s.servicesSold = new LinkedHashMap<>(t.servicesSold);
             return s;
         }
 
@@ -280,6 +287,7 @@ public final class SectorState {
             t.borrowingCosts = borrowingCosts;
             t.powerSold = powerSold;
             t.foreignIncome = foreignIncome;
+            t.servicesSold = servicesSold == null ? new LinkedHashMap<>() : new LinkedHashMap<>(servicesSold);
             return t;
         }
     }

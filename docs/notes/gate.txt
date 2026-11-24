@@ -1,8 +1,8 @@
-# gate of Merge batch/R6f: research: the 1996-2024 medicine, business and law rows with something behind them: M12 robot surgery and M19 hospital care at home on general care's stays and the Home Care Service (each by the share of stays it reaches, that share sourced first); B9 a minimum price step on the order book, cut at Toronto's 1996 date; B10 the AI assistant at the Contact Centre (+14% output a post); L8 Basel III on `Bank.CAPITAL_RATIO`. On R6-G's recommended calls (★1, ★6) unless Jerus says otherwise, 0.9.196
+# gate of Merge batch/FC2: construction traded with the world (Jerus, 2026-11-22: "make it a imported/exported good... the base cost is still in domestic currency but the excess is in foreign currency"; placed "next after whatever is getting built"): FC1's contractor always on offer at p + E x a point, so the city's builders win to the knee and the overflow goes abroad sooner under a strong currency; the export of spare points under the knee, 0.9.197
 # date: 2026-11-24
 # earth-2.bin: named
-# nightly: 2026-11-23 02:51 0.9.192 f937d2c22 4,000 months: RED, exit 1 in 335 s: FAIL households with no home 16 time(s), months 792-807; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-23-f937d2c22-eGpFQhFj
-# suite: 246 harnesses run in 1082s: 232 passed, 14 failed
+# nightly: 2026-11-24 03:09 0.9.196 94ba28823 4,000 months: RED, exit 1 in 712 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-24-94ba28823-AVsIJOCL
+# suite: 246 harnesses run in 1227s: 234 passed, 12 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -10,47 +10,45 @@ RoadCheck | exit 1
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
 RoadCheck | 2 FAILED
-FloatLinkCheck | exit 1
-FloatLinkCheck | fixture: the played sale covers its fixed fee within the rate allowance                                  FAIL
-FloatLinkCheck | 6 FAILED
-DeskCheck | exit 1
-DeskCheck | fixture: the played sale covers its fixed fee within the rate allowance                                  FAIL
-DeskCheck | 7 FAILED
-BankCheck | exit 1
-BankCheck | fixture: its firms defaulted in the month of a claim past the default point (TAB_LOSS_MONTH), and the bank lost money in it FAIL
-BankCheck | fixture: it lost money in a month, the one its firms defaulted on a claim by hand FAIL
-BankCheck | 2 FAILED
 CurrencyCheck | exit 1
 CurrencyCheck | fixture: the city reads a year of 45% inflation                    FAIL  0.000000000 != 0.450000000
 CurrencyCheck | the autopilot sets the rule's rate                                 FAIL  0.030000000 != 0.000000000
 CurrencyCheck | ...past the old stop of the dial                                   FAIL
 CurrencyCheck | 3 FAILED
-FundCheck | exit 1
-FundCheck | a limit posts at its limit                                                                       FAIL
-FundCheck | 1 FAILED
 HoldersCheck | exit 3
 HoldersCheck | fixture: in those months no household left and none sold the bank's desk any paper FAIL
 HoldersCheck | fixture: ...and the step came from the households                        FAIL
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
 HoldersCheck | 3 FAILED
-ScaleCheck | exit 1
-ScaleCheck | fixture: the town has, within 60 months of month 225, a month it is growing (more people than a year before) with ground free for a home, and its own rents price no migrant out in the 6 months after (the affordability pull 1 in all; struck at month -1, 0 tried) FAIL
-ScaleCheck | 1 FAILED
+DenominationCheck | exit 1
+DenominationCheck | the same output                                                FAIL  3.9121344197 != 3.9121428260  (2.15e-06 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  51.6431926539 != 51.6434532608  (5.05e-06 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0000805525 != 0.0000805523  (2.71e-06 apart)
+DenominationCheck | the same price level                                           FAIL  1.3474572220 != 1.3476198550  (0.000121 apart)
+DenominationCheck | the same currency                                              FAIL  0.0099073541 != 0.0099078391  (4.90e-05 apart)
+DenominationCheck | the same treasury                                              FAIL  340.6124857313 != 340.6124578322  (8.19e-08 apart)
+DenominationCheck | the same bank                                                  FAIL  224.3409506262 != 224.3421999456  (5.57e-06 apart)
+DenominationCheck | 7 FAILED
+PopulationCheck | exit 1
+PopulationCheck | ...but it does fill, given a decade                        FAIL
+PopulationCheck | 1 FAILED
 RailDrawCheck | exit 1
 RailDrawCheck | ...and where the line runs on through that plot (a T) its plots and the two beside are not replaced and are track in the picture: 3 of 4 FAIL
 RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 3
-KeptCheck | fixture: Household money: every cell the household grid opens before the month it opens after, the families held (1 closed; the month alone would have closed 1) FAIL
-KeptCheck | fixture: the Rankings tab with the city's drawer open: every cell the household grid opens before the month it opens after, the families held (1 closed; the month alone would have closed 1) FAIL
+KeptCheck | exit 1
 KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 3 FAILED
+KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
+DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
-DeathRecordCheck | 1 FAILED
-Forms1900Check | exit 1
-Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 380.4, litres 7493.7, petrol duty 0.000000
-Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  403.049701 != 380.394985
-Forms1900Check | 2 FAILED
+DeathRecordCheck | 2 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | seed 1's 2,400 months stand at most ROD_MILLS_STANDING (1) Rod Mill                                  FAIL  181 Rod Mills, 7.6 minutes
+CopperRefiningCheck | 1 FAILED
+GroundSkipCheck | exit 1
+GroundSkipCheck | ...and the landlords' order is held for land with no home on site FAIL
+GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 2 month(s) FAIL
+GroundSkipCheck | 2 FAILED

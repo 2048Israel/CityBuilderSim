@@ -235,6 +235,24 @@ public class BuildingManager {
      * nonMaterialPricePerPoint() and the foreign contractor's price are struck on.
      */
     public double basePricePerPoint() {
+        return pricePerPointOf(this::nonMaterialCost);
+    }
+
+    /**
+     * ...the same work at the founding's wages and level (FC2): each template's cash cost as the catalogue states it, in
+     * founding dollars (BuildingsTemplate.getFoundingCashCost(), which the price level and a currency reform never move) -
+     * the city's price for a point before any inflation of its own, which the world's base price for the same work
+     * starts from (worldPricePerPoint()). Zero where basePricePerPoint() is. WHY founding dollars (REV-FC2, the second
+     * review): FC2 read the cash over the expected level it is struck at, the same figure in today's unit, and E converts
+     * into today's unit too, so a reform by a thousand moved the world's price a millionfold and the foreign crews'
+     * first share a thousandfold (DenominationCheck's reformed twin parted from its twin the month after).
+     */
+    public double basePricePerPointAtFounding() {
+        return pricePerPointOf(BuildingsTemplate::getFoundingCashCost);
+    }
+
+    /** basePricePerPoint()'s average, each template's non-material cost read by `costOf`: over the points owed on site, or the standing city's mix with nothing on site. */
+    private double pricePerPointOf(java.util.function.ToDoubleFunction<BuildingsTemplate> costOf) {
         double value = 0, points = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
@@ -242,18 +260,32 @@ public class BuildingManager {
             if (stack.getUnderConstruction() <= 0 || per <= 0) continue;
             double owed = stack.pointsOnSite() - stack.getConstructionProgress();
             if (owed <= 0) continue;
-            value += owed * nonMaterialCost(t) / per;
+            value += owed * costOf.applyAsDouble(t) / per;
             points += owed;
         }
         if (points > 0) return value / points;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (stack.getQuantity() <= 0 || t.getConstructionPoints() <= 0) continue;
-            value += stack.getQuantity() * nonMaterialCost(t);
+            value += stack.getQuantity() * costOf.applyAsDouble(t);
             points += stack.getQuantity() * (double) t.getConstructionPoints();
         }
         return points > 0 ? value / points : 0;
     }
+
+    /**
+     * The world's base price for a point of the same work, in the city's money (FC2): the founding's price for it
+     * (basePricePerPointAtFounding(); the D$ opened at par, ForeignAccounts.OPENING_PARITY) carried at the world's level
+     * and converted at the rate the goods are struck at (EconomyManager.getExchangeRate(): the D$ times the world's
+     * level) - E times the world's base, in BuildersShort's words. The city's own inflation does not move it; the D$ and
+     * the world's do.
+     */
+    public double worldPricePerPoint() {
+        return exchangeRate * basePricePerPointAtFounding();
+    }
+
+    /** The rate the goods are struck at, as EconomyManager last handed it (setExchangeRate()): the D$ per US$ times the world's level. */
+    public double getExchangeRate() { return exchangeRate; }
 
     /**
      * What a depot earns a point of work (FC1): basePricePerPoint() with the
@@ -268,7 +300,12 @@ public class BuildingManager {
 
     public void setExchangeRate(double rate) {
         this.materialsCost = MATERIALS_WORLD_PRICE * (rate > 0 ? rate : 1);
+        // ...and kept, for the world's price of a point (FC2; worldPricePerPoint()): handed with every strike and on a load.
+        this.exchangeRate = rate > 0 ? rate : 1;
     }
+
+    /** The rate the goods are struck at (FC2): 1 until EconomyManager hands one. Derived each month and on a load, never saved. */
+    private double exchangeRate = 1;
 
     public BuildingManager() {
         templates = new ArrayList<>();
@@ -6391,55 +6428,356 @@ public class BuildingManager {
      * Whether the builders' scarcity price and the foreign contractor are on (FC1): always, in the game. Harnesses only
      * turn it off, for the whole JVM (AllChecks runs each harness in its own), so every city they found or load reads
      * alike: a fixture town whose claim is about something other than building, which FC1's price moves onto another
-     * path (HoldersCheck, DenominationCheck, MonetaryCheck, SectorStatementCheck, and MapCheck through its section 2h:
-     * their notes say why) - every order's multiple then exactly 1
+     * path (HoldersCheck, DenominationCheck, MonetaryCheck, SectorStatementCheck, and MapCheck through its section 2h;
+     * since FC2's foreign crews BuildersFirstCheck and ForeignCheck, and for one section each SaveFileCheck's brake
+     * town, GapOrderCheck's trap and ForeignCrewsCheck's twin: their notes say why) - every order's multiple then exactly 1
      * and the contractor never taking orders. Nothing in the game sets it.
      */
     static boolean buildersShortOn = true;
 
-    /** The months of work queued at the pace the builders leave the sites (BuildersShort.monthsQueued(): the queue as it stands over the sites' month, every post offered); 0 with no month to read. */
+    /** Where the foreign crews' book is read from (FC2; sectors.Construction.getForeignBook()), as Game hands it; null - a bare manager - reads none. */
+    private java.util.function.DoubleSupplier foreignBook;
+
+    /** Told by Game: where the points the foreign crews have taken and not yet built are read from (FC2). */
+    public void setForeignBook(java.util.function.DoubleSupplier book) { this.foreignBook = book; }
+
+    /** The points the foreign crews have taken and not yet built (FC2): nothing with no book to read. */
+    public double foreignBookPoints() {
+        double b = foreignBook == null ? 0 : foreignBook.getAsDouble();
+        return b > 0 && Double.isFinite(b) ? b : 0;
+    }
+
+    /**
+     * The queue the city's own builders hold (FC2): everything owed on site and the work ahead of the sites, less the
+     * foreign crews' book - their points are theirs to build, at their own month. Never negative.
+     */
+    public double queueAtHome() {
+        return Math.max(0, getRemainingConstructionPoints() + priorityPoints() - foreignBookPoints());
+    }
+
+    /**
+     * The months of work queued at the pace the builders leave the sites (BuildersShort.monthsQueued(): the queue at home
+     * as it stands over the sites' month, every post offered); 0 with no month to read. Since FC2 the foreign crews'
+     * book is not in it (queueAtHome()): the city's own builders' wait, which their premium prices.
+     */
     public double monthsQueued() {
         if (!buildersMonthKnown()) return 0;
-        return BuildersShort.monthsQueued(getRemainingConstructionPoints() + priorityPoints(), sitesAtEveryPost.getAsDouble());
+        return BuildersShort.monthsQueued(queueAtHome(), sitesAtEveryPost.getAsDouble());
     }
 
     /**
      * The premium a point's work carries over its price for the queue as it stands (BuildersShort.premium()), as a share of
      * the price; 0 with no month to read, and 0 while the builders have no month at all, every post offered - the founding's
-     * first, before any depot works: nobody's repairs took anything, so they are not short (as the contractor's, foreignTakesOrders()).
+     * first, before any depot works: nobody's repairs took anything, so they are not short (foreignTradeOn()).
      */
     public double scarcityPremium() {
-        if (!buildersMonthKnown() || !(outputAtEveryPost.getAsDouble() > 0)) return 0;
+        if (!foreignTradeOn()) return 0;
         return BuildersShort.premium(monthsQueued());
     }
 
-    /** Whether the foreign contractor takes the orders: the points for the sites are under the floor of the builders' whole month (BuildersShort.foreignTakesOrders()); never with no month to read. */
-    public boolean foreignCrewsTakeOrders() {
-        return buildersMonthKnown()
-                && BuildersShort.foreignTakesOrders(sitesAtEveryPost.getAsDouble(), outputAtEveryPost.getAsDouble());
+    /**
+     * What work built at home is multiplied by (REV-FC2, the second review): one and the builders' own premium on the
+     * queue at home, never the foreign crews' share - a restart's shell, a demolition and a paving, which no quote puts
+     * abroad (Game.quoteRestart(), demolitionPrice(), quotePaving()). Within the threshold it is orderPriceMultiplier().
+     */
+    public double homePriceMultiplier() { return 1 + scarcityPremium(); }
+
+    /**
+     * An order just billed on t's site (REV-FC2, the second review): {@code billed} points of it on site, {@code abroad}
+     * of them handed to the foreign crews' book (Game.processBuildOrder(), buildFor(), after Construction.handAbroad()).
+     * The site's claim on his book grows by those points, at the claims' scale against his book before them, so every
+     * other site's work on his book is what it was. An empty book, or one no site with points owed claims, starts again.
+     */
+    public void noteAbroad(BuildingsTemplate t, double billed, double abroad) {
+        BuildingsStacks s = t == null ? null : getStack(t);
+        if (s == null || !(abroad > 0)) return;
+        boolean before = s.owedPoints() - Math.max(0, billed) > 1e-9;
+        double book = foreignBookPoints(), was = Math.max(0, book - abroad);
+        double claims = liveClaims() - (before ? 0 : s.getAbroadClaim());
+        if (!(was > 0) || !(claims > 0)) {
+            for (BuildingsStacks x : stacks) x.setAbroadClaim(0);
+            s.setAbroadClaim(abroad);
+        } else {
+            s.setAbroadClaim((before ? s.getAbroadClaim() : 0) + claims * abroad / was);
+        }
     }
 
-    /** What an order's non-material price (the work, the foothill's preparation, a run's works, a span, deep water) is multiplied by, struck once per quote on the queue as it stands: the contractor's price while it takes orders, else one and the premium; exactly 1 with no month to read, or none worked (scarcityPremium()). Never the repairs' or a valuation's. */
+    /** The claims on the foreign crews' book of every site with points owed (noteAbroad()), in their own unit. */
+    private double liveClaims() {
+        double sum = 0;
+        for (BuildingsStacks s : stacks) if (s.owedPoints() > 0) sum += s.getAbroadClaim();
+        return sum;
+    }
+
+    /** A site's work on the foreign crews' book, in points (REV-FC2, the second review): his book in proportion to its claim; nothing for a site with no points owed. */
+    private double claimedPoints(BuildingsStacks s, double claims) {
+        if (s == null || !(s.owedPoints() > 0) || !(s.getAbroadClaim() > 0) || !(claims > 0)) return 0;
+        return foreignBookPoints() * s.getAbroadClaim() / claims;
+    }
+
+    /**
+     * The points of t's site on the foreign crews' book (REV-FC2, the second review): his book in proportion to the
+     * site's claim, never more than the points the site owes - what a cancel of it takes off his book once his month is
+     * off it (stopCancelled(), Game.settleConstructionControl()). None for a site whose orders were all quoted at home.
+     */
+    public double abroadOwedOf(BuildingsTemplate t) {
+        BuildingsStacks s = t == null ? null : getStack(t);
+        return s == null ? 0 : Math.min(s.owedPoints(), claimedPoints(s, liveClaims()));
+    }
+
+    /** Each site's work on the foreign crews' book in points, by template id, for the save: only the sites with some. They sum to his book. */
+    public java.util.Map<Integer, Double> getAbroadOwedById() {
+        java.util.Map<Integer, Double> out = new java.util.TreeMap<>();
+        double claims = liveClaims();
+        for (BuildingsStacks s : stacks) {
+            double points = claimedPoints(s, claims);
+            if (points > 0) out.put(s.getBuilding().getId(), points);
+        }
+        return out;
+    }
+
+    /**
+     * ...and restored from it, the points the claims. A save written before REV-FC2's second review has no key (null):
+     * every site with points owed claims his book in proportion to them, as FC1b's cancel cut a site's points left.
+     */
+    public void restoreAbroadOwed(java.util.Map<Integer, Double> byId) {
+        for (BuildingsStacks s : stacks) {
+            Double v = byId == null ? null : byId.get(s.getBuilding().getId());
+            s.setAbroadClaim(v != null ? v : byId == null ? s.owedPoints() : 0);
+        }
+    }
+
+    /**
+     * Whether the builders' price and the foreign crews are in force (FC2): both months known (buildersMonthKnown()) and a
+     * month of the builders' at all, every post offered. Off for a bare manager, a fixture town with the switch off
+     * (buildersShortOn) and the founding's first month, when no depot works yet: no premium, nothing abroad, no export.
+     */
+    public boolean foreignTradeOn() {
+        return buildersMonthKnown() && outputAtEveryPost.getAsDouble() > 0;
+    }
+
+    /**
+     * The foreign crews' terms as the city stands (FC2), each month read once - a read of the sites' month is the city's
+     * repairs worked out again, and a quote is struck often: the sites' and the builders' month at every post, the queue
+     * at home, the base and the world's price for a point, the excess share at the curve's first point and the threshold
+     * it sets, the queue at home past it (overflow; since REV-FC2 it stays the city's builders', its payers quoted it at
+     * home), the contractor's month on his book as the next offer strikes it, and the excess share at that month. Null
+     * with no trade on (foreignTradeOn()).
+     */
+    public record ForeignTerms(double sites, double output, double queueAtHome, double base, double world,
+                               double firstShare, double thresholdMonths, double overflow, double month, double share) {
+        /** The months queued at home (BuildersShort.monthsQueued()). */
+        public double monthsQueued() { return BuildersShort.monthsQueued(queueAtHome, sites); }
+    }
+
+    /**
+     * An order's work abroad (REV-FC2's P1): its work past the threshold, point for point (BuildersShort.homeUnits(): the
+     * building the threshold falls in split, its points past it abroad), the buildings with any of it, and the share
+     * the foreign crews take them at - what the quote prices them at (orderPriceMultiplier()) and what the order hands
+     * the crews' book when it is billed (Game.processBuildOrder(), buildFor(); Construction.handAbroad()), so the payer
+     * pays what its work costs abroad and the builders pass it on to the cent. The order on site, as {@code of}'s work,
+     * in the base a point and the world's (REV-FC2, the second review: both, so E x / p and the threshold are what they
+     * read once the order is placed; the base and the world's as they stand with no template), and so in E x / p and the
+     * threshold; its first building on the queue at home with {@code pointsAhead} more - what the orders before it in a
+     * run put there - less {@code abroadAhead} of them those orders hand abroad (homeUnits()); his month on his book,
+     * those and this order's points abroad, and the share the supply curve gives it. Null with no trade on.
+     */
+    public record OrderAbroad(double fromMonths, double stepMonths, double thresholdMonths, long buildings, double points,
+                              double month, double share) { }
+
+    public OrderAbroad abroadOfOrder(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of) {
+        return abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of, java.util.Map.of());
+    }
+
+    /**
+     * ...with {@code siteAhead}, the points the orders before it in a run put on site, by template (REV-FC2, the second
+     * review; Game.buildRunInvoice()): each on its own template's stack, as placing them would, so the threshold a run's
+     * order is quoted on is the one it reads placed after them. WHY: the order's own points stood in for the run's
+     * before it, so a depot after six farms was struck on seven depots' mix, and the run's invoice parted from its orders
+     * placed in turn (FitoutCheck section 9, BuildCardCheck section 9).
+     */
+    public OrderAbroad abroadOfOrder(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of,
+                                     java.util.Map<BuildingsTemplate, Double> siteAhead) {
+        ForeignTerms now = foreignTerms();
+        if (now == null) return null;
+        double ahead = Double.isNaN(pointsAhead) ? 0 : Math.max(0, pointsAhead);
+        double away = Double.isNaN(abroadAhead) ? 0 : Math.max(0, Math.min(ahead, abroadAhead));
+        double each = Double.isNaN(pointsEach) ? 0 : Math.max(0, pointsEach);
+        long count = Math.max(1, n);
+        double own = each * count;
+        boolean placed = of != null && of.getConstructionPoints() > 0 && own > 0 && Double.isFinite(own);
+        java.util.Map<BuildingsTemplate, Double> site = new java.util.LinkedHashMap<>();
+        if (placed && siteAhead != null) siteAhead.forEach((t, p) -> { if (t != null && p != null && p > 0) site.merge(t, p, Double::sum); });
+        if (placed) site.merge(of, own, Double::sum);
+        double base = placed ? pricePerPointWith(this::nonMaterialCost, site) : now.base();
+        double world = placed ? exchangeRate * pricePerPointWith(BuildingsTemplate::getFoundingCashCost, site) : now.world();
+        double first = BuildersShort.excessShare(world, base);
+        double threshold = BuildersShort.thresholdMonths(first);
+        double from = BuildersShort.monthsQueued(now.queueAtHome() + ahead - away, now.sites());
+        double step = now.sites() > 0 ? each / now.sites() : Double.NaN;
+        double home = BuildersShort.homeUnits(from, step, count, threshold);
+        double points = Math.max(0, count - home) * each;
+        long abroad = points > 0 ? count - (long) Math.floor(home) : 0;
+        double month = BuildersShort.foreignMonth(foreignBookPoints() + away + points, threshold, largestDepotPoints());
+        return new OrderAbroad(from, step, threshold, abroad, points, month, BuildersShort.excessAt(first, month, now.output()));
+    }
+
+    /** The base a point of t's work is priced on, before any premium: its non-material cost over its points, as basePricePerPoint() weighs each stack on site; NaN for no template or no points. */
+    public double basePerPointOf(BuildingsTemplate t) {
+        if (t == null || t.getConstructionPoints() <= 0) return Double.NaN;
+        return nonMaterialCost(t) / t.getConstructionPoints();
+    }
+
+    /**
+     * pricePerPointOf() with {@code added} more owed on site, points by template (REV-FC2): what it reads once the orders
+     * are placed - the base a point (basePricePerPoint()) and, at the founding's, the world's (worldPricePerPoint()), so
+     * the threshold an order is quoted on is the threshold read after it stands. Each template's points join its own
+     * stack, as addStack() puts them (one stack a template, by name), and a template with none is a new stack at the
+     * end, so the sum runs in the order the placed city's does. WHY the world's too: struck on the base with the order
+     * and the world's without it, a cheap plant's order read its threshold at the cap where the city, once it stood,
+     * read 20.53 months (ForeignCheck's founded town).
+     */
+    private double pricePerPointWith(java.util.function.ToDoubleFunction<BuildingsTemplate> costOf,
+                                     java.util.Map<BuildingsTemplate, Double> added) {
+        java.util.Map<String, BuildingsTemplate> byName = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Double> left = new java.util.LinkedHashMap<>();
+        added.forEach((t, p) -> { byName.putIfAbsent(t.getName(), t); left.merge(t.getName(), p, Double::sum); });
+        double value = 0, owedAll = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            int per = t.getConstructionPoints();
+            Double more = left.remove(t.getName());
+            double a = more == null ? 0 : more;
+            if ((stack.getUnderConstruction() <= 0 && !(a > 0)) || per <= 0) continue;
+            double owed = (stack.pointsOnSite() + a) - stack.getConstructionProgress();
+            if (owed <= 0) continue;
+            value += owed * costOf.applyAsDouble(t) / per;
+            owedAll += owed;
+        }
+        for (java.util.Map.Entry<String, Double> e : left.entrySet()) {
+            BuildingsTemplate t = byName.get(e.getKey());
+            int per = t.getConstructionPoints();
+            double a = e.getValue();
+            if (per <= 0 || !(a > 0)) continue;
+            value += a * costOf.applyAsDouble(t) / per;
+            owedAll += a;
+        }
+        return owedAll > 0 ? value / owedAll : pricePerPointOf(costOf);
+    }
+
+    /** The terms now; null with no trade on. */
+    public ForeignTerms foreignTerms() {
+        if (!foreignTradeOn()) return null;
+        double sites = sitesAtEveryPost.getAsDouble(), output = outputAtEveryPost.getAsDouble();
+        double home = queueAtHome(), base = basePricePerPoint(), world = worldPricePerPoint();
+        double first = BuildersShort.excessShare(world, base);
+        double threshold = BuildersShort.thresholdMonths(first);
+        double overflow = BuildersShort.overflow(home, sites, threshold);
+        // REV-FC2: his book only - an order hands him its work abroad when it is billed (abroadOfOrder()), and the work at
+        // home past the threshold is its payers' at the home price, which they were quoted.
+        double month = BuildersShort.foreignMonth(foreignBookPoints(), threshold, largestDepotPoints());
+        return new ForeignTerms(sites, output, home, base, world, first, threshold, overflow, month,
+                BuildersShort.excessAt(first, month, output));
+    }
+
+    /** The foreign crews' excess share at the curve's first point (BuildersShort.excessShare(): E x / p, capped). */
+    public double foreignExcessShare() {
+        return BuildersShort.excessShare(worldPricePerPoint(), basePricePerPoint());
+    }
+
+    /** The months queued at home past which an order's work goes abroad (BuildersShort.thresholdMonths() at foreignExcessShare()). */
+    public double thresholdMonths() {
+        return BuildersShort.thresholdMonths(foreignExcessShare());
+    }
+
+    /** The queue at home past the threshold, in points (BuildersShort.overflow()): work its payers were quoted at home, which the city's builders keep (REV-FC2); nothing with no trade on. */
+    public double overflowAtHome() {
+        ForeignTerms t = foreignTerms();
+        return t == null ? 0 : t.overflow();
+    }
+
+    /**
+     * The foreign crews' month as the next offer would strike it now (BuildersShort.foreignMonth()): their book, in the
+     * threshold's months, never under the builders' largest depot; nothing with no trade on.
+     * What an order's wait is read at beside the sites' month (Game.orderWaitOutput()) - so where the sites get nothing,
+     * every order the city places goes abroad, and his month is never under that depot even with nothing on his book
+     * yet: the order he would take is what he would bring the crews for (FC1's trap, where every wait read endless).
+     */
+    public double foreignMonthNow() {
+        ForeignTerms t = foreignTerms();
+        if (t == null) return 0;
+        return t.sites() > 0 ? t.month() : Math.max(t.month(), largestDepotPoints());
+    }
+
+    /** Their excess share at that month (BuildersShort.excessAt(), the supply curve): what the work an order sends abroad now pays over the base price; the first point's with no trade on. */
+    public double foreignExcessNow() {
+        ForeignTerms t = foreignTerms();
+        return t == null ? foreignExcessShare() : t.share();
+    }
+
+    /** What the foreign crews ask a point of work now, in the city's money (FC2): the base price and their excess at their month; nothing with no trade on. */
+    public double foreignPricePerPoint() {
+        ForeignTerms t = foreignTerms();
+        return t == null ? 0 : t.base() * (1 + t.share());
+    }
+
+    /**
+     * What a point the city's builders sell abroad fetches now, in the city's money (FC2): the world's base for the work
+     * and the city's own excess on it (BuildersShort.exportShare()); nothing with no trade on, or while the queue at home
+     * is past the knee - the builders sell only points their own queue does not want (Game.settleForeignCrews()).
+     */
+    public double exportPricePerPoint() {
+        ForeignTerms t = foreignTerms();
+        return t == null ? 0 : exportPriceOf(t);
+    }
+
+    /** ...on these terms: nothing past the knee. */
+    public static double exportPriceOf(ForeignTerms t) {
+        if (t == null || t.monthsQueued() > BuildersShort.KNEE_MONTHS) return 0;
+        return t.world() * (1 + BuildersShort.exportShare(t.world(), t.base()));
+    }
+
+    /** Whether an order placed now sends work abroad (FC2): the queue at home is at the threshold or past it; never with no trade on. */
+    public boolean ordersGoAbroad() {
+        ForeignTerms t = foreignTerms();
+        // ...at or past it, as BuildersShort.homeUnits() reads it (REV-FC2, the second review: the split leaves it at it).
+        return t != null && !(t.monthsQueued() < t.thresholdMonths() - BuildersShort.AT_THRESHOLD);
+    }
+
+    /** What an order's non-material price (the work, the foothill's preparation, a run's works, a span, deep water) is multiplied by, struck once per quote on the queue as it stands: one and the premium at home, or the foreign crews' excess for the work past the threshold; exactly 1 with no trade on (foreignTradeOn()). Never the repairs' or a valuation's. */
     public double orderPriceMultiplier() { return orderPriceMultiplier(0); }
 
     /** ...with `pointsAhead` more on the queue than it holds: what the orders before this one in a run put there, which a run's invoice prices it on (Game.buildRunInvoice()). */
     public double orderPriceMultiplier(double pointsAhead) { return orderPriceMultiplier(pointsAhead, 0, 1); }
 
-    /**
-     * ...for an order of `n` buildings of `pointsEach` points (BA1): each building priced on the queue the ones before it
-     * in the order leave, so the order's multiple is the mean over its buildings (BuildersShort.meanPremium(); AN ORDER'S
-     * OWN BUILDINGS), the first at the queue plus `pointsAhead`. For one building, or no points, exactly the multiple above.
-     */
+    /** ...for an order of `n` buildings of `pointsEach` points on the base as it stands (the founding's village, Founding.whatItBuys()): the four-figure form with no base a point to read. */
     public double orderPriceMultiplier(double pointsAhead, double pointsEach, long n) {
-        if (!buildersMonthKnown()) return 1;
-        // Each month read once: a quote is struck often, and each read is the city's repairs worked out again.
-        double sites = sitesAtEveryPost.getAsDouble(), output = outputAtEveryPost.getAsDouble();
-        if (!(output > 0)) return 1;
-        boolean foreign = BuildersShort.foreignTakesOrders(sites, output);
-        double queue = getRemainingConstructionPoints() + priorityPoints() + Math.max(0, pointsAhead);
-        // (Not foreign, the sites have at least FOREIGN_FLOOR of the month: a step in months is a finite number.)
-        return BuildersShort.multiplier(foreign ? 0 : BuildersShort.monthsQueued(queue, sites),
-                foreign ? 0 : Math.max(0, pointsEach) / sites, n, foreign);
+        return orderPriceMultiplier(pointsAhead, pointsEach, n, null);
+    }
+
+    /**
+     * ...for an order of `n` buildings of `pointsEach` points (BA1): each building priced on the queue at home the ones
+     * before it in the order leave, at the premium while it stands within the threshold and at the foreign crews' excess
+     * past it (FC2; BuildersShort.meanShare()), the first at the queue plus `pointsAhead`. The threshold and the share
+     * abroad are the order's (REV-FC2's P1, abroadOfOrder(), as `of`'s work on site, it and the ones before it): the share the supply curve gives the month its buildings past the threshold make him run,
+     * which they are handed to him at when it is billed, so the payer pays what its work costs abroad.
+     * For no points, exactly the multiple above.
+     */
+    public double orderPriceMultiplier(double pointsAhead, double pointsEach, long n, BuildingsTemplate of) {
+        return orderPriceMultiplier(pointsAhead, 0, pointsEach, n, of);
+    }
+
+    /** ...with {@code abroadAhead} of the points ahead handed abroad by the orders before it in a run (abroadOfOrder(); Game.buildRunInvoice()): what placing it after them asks. */
+    public double orderPriceMultiplier(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of) {
+        return orderPriceMultiplier(pointsAhead, abroadAhead, pointsEach, n, of, java.util.Map.of());
+    }
+
+    /** ...with the points the orders before it in a run put on site, by template (abroadOfOrder()'s six-argument form). */
+    public double orderPriceMultiplier(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of,
+                                       java.util.Map<BuildingsTemplate, Double> siteAhead) {
+        OrderAbroad a = abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of, siteAhead);
+        if (a == null) return 1;
+        return BuildersShort.multiplier(a.fromMonths(), a.stepMonths(), n, a.thresholdMonths(), a.share());
     }
 
     /** Points still owed on the builders' own sites served first (buildersOwnOnSite()): buildings on site over their points, less progress, as basePricePerPoint() counts each stack. */
@@ -6614,13 +6952,20 @@ public class BuildingManager {
                     - s.getConstructionProgress());
             // ...read while it is still on site: a depot served first was never on the contractor's book (FC1b).
             boolean servedFirst = goesFirst(t, 0);
+            // ...and its share of the foreign crews' book (REV-FC2, the second review; noteAbroad()): its claim over the
+            // claims of the sites still owing points, none for an order quoted at home. Game.settleConstructionControl()
+            // takes that share of his book once his month is off it (he settles after the sites advance), never more than
+            // its points left; its claim goes with it, so a second site stopped is read against the rest, cut after it.
+            double claims = liveClaims();
+            double bookShare = claims > 0 && s.owedPoints() > 0 ? Math.min(1, s.getAbroadClaim() / claims) : 0;
+            s.setAbroadClaim(0);
             // ...and the equipment its orders froze (R1e), before the stop clears it.
             List<BuildingsStacks.Lot> lots = s.getLots();
             double[] stopped = s.stopForShell();
             control.endRun(t.getId());
             ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0, lots);
             controlEvents.refunds.add(new ConstructionControl.Refund(t.getId(), t.getName(), (int) stopped[0],
-                    stopped[3], stopped[4], pointsLeft, shell, servedFirst));
+                    stopped[3], stopped[4], pointsLeft, shell, servedFirst, bookShare));
         }
         control.clearCancelling();
     }
@@ -6656,6 +7001,7 @@ public class BuildingManager {
             addStack(t, 0, true);
             s = getStack(t);
         }
+        // ...its points left built at home (REV-FC2, the second review: a restart is quoted at home), no claim on his book.
         s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed, shell.lots);
         control.removeShell(shell);
     }
@@ -8963,6 +9309,10 @@ public class BuildingManager {
         for (BuildingsStacks s : stacks) s.redenominate(scale);
         control.redenominate(scale);
         materialsCost *= scale;
+        // ...and the rate kept for the world's price of a point (REV-FC2, the second review): the D$ per US$ is in today's
+        // unit, EconomyManager.redenominate() scales its own and hands it on at the next strike only, so until then the
+        // builders read the old unit's rate - the materials' price, struck from it, is scaled on the line above.
+        exchangeRate *= scale;
     }
 
 

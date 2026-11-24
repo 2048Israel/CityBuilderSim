@@ -45,7 +45,7 @@ import static ham.citybuildersim.ui.Levers.*;
  * Since 0.7.5 the shell's key filter also calls buildPending() and
  * clearPending(): Enter, and Backspace or Delete, on the page showing.
  */
-final class BuildScreen {
+public final class BuildScreen {
 
     /** The window this screen draws into: its game, its root, its clearMenu(). */
     private final UserInterface ui;
@@ -907,7 +907,7 @@ final class BuildScreen {
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
         face.getChildren().addAll(Kept.scope("hero", () -> heroRow(f)), Kept.scope("price", () -> priceRow(f, afford)));
         // ...and (FC1), while the builders are short, why the work costs more than it did.
-        Label buildersShort = Kept.scope("builders short", this::shortLine);
+        Label buildersShort = Kept.scope("builders short", () -> shortLine(template));
         if (buildersShort != null) face.getChildren().add(buildersShort);
         face.getChildren().addAll(Kept.scope("bars", () -> cardBars(f, group, m)));
         // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
@@ -1558,28 +1558,30 @@ final class BuildScreen {
     }
 
     /**
-     * The builders short (FC1), a small line under the price row: what an order's work is multiplied by when the queue
-     * has outgrown the builders' pace (the premium and the months queued, in Palette.WARN) or the city's crews are all on
-     * repairs and a foreign contractor takes the order (Palette.BAD). Every figure is the model's
-     * (BuildingManager.orderPriceMultiplier(), scarcityPremium(), monthsQueued(), foreignCrewsTakeOrders()); null when the
-     * multiplier is 1, the row as it always was - and for a premium that does not round to a whole percent, which would
-     * read "+0%".
+     * The builders' two offers (FC1; FC2), a small line under the price row: the city's builders' premium on the work
+     * and the months queued at home, and the foreign crews' excess and the months past which the queue is theirs - in
+     * Palette.WARN while an order placed now sends work abroad or pays a premium, else in the label's tone. Every figure
+     * is the model's (BuildingManager.foreignTerms(), scarcityPremium()); the foreign crews' share and threshold are the
+     * card's own order's, one of {@code template} (REV-FC2; Game.abroadOfOrder()): what the price row's quote
+     * charges for its work past the threshold. Null with no trade on (the founding's first month, or the switch off),
+     * the row as it always was.
      */
-    Label shortLine() {
+    Label shortLine(BuildingsTemplate template) {
         BuildingManager bm = ui.game.getBuildingManager();
-        if (bm.orderPriceMultiplier() == 1) return null;
-        boolean foreign = bm.foreignCrewsTakeOrders();
-        double premium = bm.scarcityPremium();
-        if (!foreign && Math.round(premium * 100) == 0) return null;
-        Label line = Kept.label(foreign
-                ? String.format("foreign crews: ×%.1f on the work, paid abroad · the city's crews are all on repairs",
-                        BuildersShort.FOREIGN_PRICE)
-                : String.format("builders short: +%d%% on the work · ≈ %.1f months queued",
-                        Math.round(premium * 100), bm.monthsQueued()));
-        line.setStyle(wordsAt(9.5, foreign ? Palette.BAD : Palette.WARN));
+        BuildingManager.ForeignTerms now = bm.foreignTerms();
+        BuildingManager.OrderAbroad t = ui.game.abroadOfOrder(template, 1);
+        if (now == null || t == null) return null;
+        boolean abroad = t.buildings() > 0;
+        long premiumPct = Math.round(bm.scarcityPremium() * 100);
+        Label line = Kept.label(String.format("builders %s · ≈ %.1f months queued · foreign crews +%d%% a point%s",
+                premiumPct > 0 ? String.format("+%d%% on the work", premiumPct) : "at their price",
+                now.monthsQueued(), Math.round(t.share() * 100),
+                abroad ? String.format(" for the work past %.1f months, paid abroad", t.thresholdMonths())
+                        : String.format(", past %.1f months", t.thresholdMonths())));
+        line.setStyle(wordsAt(9.5, abroad || premiumPct > 0 ? Palette.WARN : Palette.TEXT_LABEL));
         line.setWrapText(true);
         line.setMinWidth(0);
-        Tooltip tip = Kept.tip(line, buildersShortInfo(), 1000);
+        Tooltip tip = Kept.tip(line, buildersShortInfo(ui.game.getCurrency()), 1000);
         tip.setWrapText(true);
         tip.setMaxWidth(320);
         return line;
@@ -1587,15 +1589,21 @@ final class BuildScreen {
 
     /**
      * What the builders' premium and the foreign contractor are, in two sentences, from the model's own constants
-     * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i).
+     * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i). The city's
+     * money by its name, never a typed sign (FM1; MoneyWordsCheck), and as an argument of the format, never inside its
+     * template (REV-FC2b: a typed "100% Crown" threw; MoneyWordsCheck 4).
      */
-    static String buildersShortInfo() {
+    public static String buildersShortInfo(Currency money) {
         return String.format("The builders charge more for a point of work as their queue grows past %.0f months at the pace "
-                + "the repairs leave the sites, up to +%.0f%% with none left. Once the sites get under %.0f%% of the "
-                + "builders' month, a foreign contractor takes every new order at %.1f times the price, paid abroad, "
-                + "and builds the builders' own depots first.",
-                BuildersShort.KNEE_MONTHS, BuildersShort.CEILING * 100, BuildersShort.FOREIGN_FLOOR * 100,
-                BuildersShort.FOREIGN_PRICE);
+                + "the repairs leave the sites, up to +%.0f%% with none left. Foreign crews are always on offer at the "
+                + "city's own price for the work and an excess in the world's money, %.0f%% of the world's price at par: "
+                + "a strong %s makes them cheaper, a weak one dearer, but never more than +%.0f%% to begin with, so the "
+                + "work queued past %.0f months at the latest is theirs, paid abroad. They bring their own crews, as "
+                + "many as the work wants, and ask more a point the more they take, never more than +%.0f%%. While the "
+                + "queue is under %.0f months the builders sell the points no site took abroad.",
+                BuildersShort.KNEE_MONTHS, BuildersShort.CEILING * 100, BuildersShort.FOREIGN_EXCESS * 100, money.name(),
+                BuildersShort.capShare() * 100, BuildersShort.KNEE_MONTHS + BuildersShort.SURE_MONTHS,
+                BuildersShort.CEILING * 100, BuildersShort.KNEE_MONTHS);
     }
 
     /**

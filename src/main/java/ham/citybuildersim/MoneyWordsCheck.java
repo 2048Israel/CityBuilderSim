@@ -327,6 +327,28 @@ public class MoneyWordsCheck {
         if (offending > 0) System.out.println("  " + offending + " strings of the Krona's pages hold a \"$\" that is not a foreign mark's");
         else check("no string of any page holds a \"$\" that is not a foreign mark's", true);
         fx(() -> { householdMoney(); return null; });
+        buildersShortTyped();
+    }
+
+    /**
+     * REV-FC2b: the builders' tooltip (BuildScreen.buildersShortInfo(), the build card's line and the Construction page's
+     * gauge) names the city's money as an argument of its format. Until the review it joined the name into the template,
+     * so a name the player typed with a "%" in it threw where the card was drawn.
+     */
+    static void buildersShortTyped() throws Exception {
+        System.out.println("\n--- 4. the builders' tooltip (FC2) takes a typed name with a \"%\" in it as a word, never as a format ---");
+        Currency percent = Currency.typed("100% Crown", "HPC");
+        check("fixture: \"100% Crown\" is a money the player may type, a \"%\" in its name", percent != null && percent.name().contains("%"));
+        if (percent == null) return;
+        String[] tip = new String[1];
+        RuntimeException[] thrown = new RuntimeException[1];
+        fx(() -> {
+            try { tip[0] = ham.citybuildersim.ui.BuildScreen.buildersShortInfo(percent); } catch (RuntimeException e) { thrown[0] = e; }
+            return null;
+        });
+        check("the tooltip is written whole", thrown[0] == null && tip[0] != null, thrown[0] == null ? null : thrown[0].toString());
+        check("...and names the money as typed: \"a strong 100% Crown makes them cheaper\"",
+                tip[0] != null && tip[0].contains("a strong 100% Crown makes them cheaper"));
     }
 
     /** HS3: initial census/stocks, then native estates, fills and dividends; no displayed result is assigned. */

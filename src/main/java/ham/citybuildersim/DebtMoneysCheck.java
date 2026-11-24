@@ -112,6 +112,30 @@ public class DebtMoneysCheck {
         g.getDebtManager().setTrade(EXPORTS, 6);
     }
 
+    /** How many times what the window abroad asks of the month's exports (its two limits, WINDOW_SHUT_SERVICE_SHARE and WINDOW_SHUT_EXPORT_YEARS) the rollover section hands the debt, so the window is open with room to spare (FC2, 2026-11-23). */
+    static final double ROLLOVER_ROOM = 2;
+
+    /**
+     * FC2, 2026-11-23: ...the window abroad held open for the rollover of section 8, whatever the town owes. open() hands the exports every
+     * other section is quoted against (EXPORTS), and on FC2's path that is not enough for what the town owes then: the dollar and the euro paper
+     * fall due in D$ at a currency that fell (the foreign crews' bills draw on the vault), 48% of the D$60,000k a year of exports went to foreign
+     * creditors next year against the window's limit of 45% (WINDOW_SHUT_SERVICE_SHARE), the window was shut at the top of the press, and the
+     * euro bill that fell due was rolled into a note at home (the plan's one issue: Note, 3 months, money null). The exports are what the debt
+     * asks of them instead, ROLLOVER_ROOM times over, and never less than EXPORTS: the service next year over the share the window shuts at,
+     * or the foreign principal over the years of exports it shuts at, the greater.
+     */
+    static void openWide(Game g) {
+        DebtManager dm = g.getDebtManager();
+        double annual = Math.max(dm.nextYearService() / DebtManager.WINDOW_SHUT_SERVICE_SHARE, dm.getForeignPrincipal() / DebtManager.WINDOW_SHUT_EXPORT_YEARS);
+        dm.setTrade(Math.max(EXPORTS, ROLLOVER_ROOM * annual / 12), 6);
+    }
+
+    /** One press with the window held open as openWide() holds it, for the rollover it reads at the press's top (FC2, 2026-11-23): press() hands EXPORTS again there. */
+    static void pressWide(Game g) {
+        openWide(g);
+        quietly(g::toggleNextMonth);
+    }
+
     /** A trading town on the default founding (InterestAbroadCheck.town), played three months so the world's moneys are handed to the debt. */
     static Game town(String label, boolean literals) {
         Game g = InterestAbroadCheck.town(label, false, literals);
@@ -404,13 +428,13 @@ public class DebtMoneysCheck {
         press(w);
         check("fixture: it falls due at the next press", dm.getDebt().contains(bill) && bill.principalDueNextMonth() > 0);
         Set<Debt> beforeRoll = new HashSet<>(foreignPieces(w));
-        open(w);
+        openWide(w);
         Rollover.Plan plan = w.rolloverPlan();
         Rollover.Issue issue = null;
         for (Rollover.Issue i : plan.issues()) if ("EUR".equals(i.money())) issue = i;
         check("the plan has an issue in euros: a three-month bill, abroad", issue != null && issue.foreign() && "Note".equals(issue.type()) && issue.term() == 3);
         check("...and says so: \"a 3-month bill in euros\"", issue != null && issue.paper().equals("a 3-month bill in euros"));
-        press(w);
+        pressWide(w);
         Debt rolled = null;
         for (Debt d : foreignPieces(w)) if (!beforeRoll.contains(d) && d instanceof ShortTermTBill) rolled = d;
         check("the bill fell due and left the books", !dm.getDebt().contains(bill));
@@ -421,11 +445,13 @@ public class DebtMoneysCheck {
         /* ============ 9. across a save and a load ============ */
         out.println("\n--- across a save and a load: each piece's money, its rate and its books come back, and the load books no exchange move ---");
 
-        open(w);
+        // FC2, 2026-11-23: held open as section 8's press was, in both: the euro bill now rolls abroad, so the town owes the euro paper still and
+        // at EXPORTS the window is shut and no money is quoted; openWide() reads each city's own debt, so a reload that came back whole opens alike.
+        openWide(w);
         quietly(() -> w.saveGame(2));
         Game back = new Game(w.getGameFiles());
         quietly(() -> back.loadGame(2));
-        open(back);
+        openWide(back);
         DebtManager backDm = back.getDebtManager();
         ForeignAccounts backFx = back.getForeignAccounts();
         List<Debt> was = foreignPieces(w), now = foreignPieces(back);
