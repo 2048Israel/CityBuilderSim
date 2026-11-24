@@ -607,3 +607,29 @@ and queued row; the orchestrator, 2026-11-23: a real gap in LP-G1's player, not 
   Shops again at m281, m283 and m289 took the later looks' ground too). keepGroundAhead() sizes a look by the used share alone,
   not by what the sectors held for land asked for (`Game.getLandBlockedNeeds()`): LP-G2, the look counting every sector's
   blocked needs. FC2 changes no ground, look or landlord rule.
+
+The dry run on 0a1b64a0b (cbs-gate-FC2-jDTdtFcP, 2026-11-24) stopped on three harnesses main's gate passes, each traced by a
+helper (contract 4) and each checked against the world first (Jerus, 2026-11-23). No model change; harnesses only:
+- PegAnchorCheck 9 (section 9's town, InterestAbroadCheck.town()): a real effect. The crews' bill is an import of services, and a
+  peg's reserves are judged in months of imports of goods and services (the IMF's import cover; the rule behind VAULT_FLOOR,
+  Krugman 1979). The town's month of imports stood at 3,770 (the crews' bill 1,996 of it) against a vault of 653, the floor
+  (VAULT_FLOOR months of the trailing 1,885) over the vault, so the hold's sale took it under and the peg broke by the vault in
+  month 1 (0.9976, then 1.2712 and 1.2416 against the held 0.9959). The FC2 top-up read the trailing imports before month 1, when
+  the town had no trade history and they read 0. With the crews off, the run matched main's to the digit. Now the town plays to its
+  first month of imports before the peg (a fixture line says so). Two lines assert the real law: the month's imports the floor
+  reads include the crews' bill (1,996 of 3,770), and the floor is VAULT_FLOOR months of the trailing imports, which rose with
+  them (1,885 from 0). The top-up then acts from month 1 (21,968), and the peg holds three months (1.0081, 0.9758, 1.0134).
+- ConstructionTrapCheck 1 (section 9, red since the merge of 0.9.194: the gate had not rerun it since): the fixture found its
+  room. The room the Houses meet in the twin that never cancelled is T x (S' - S) + S, where S and S' are the sites' month at the
+  order and a month on. Before PW2 it was 230 points; after it nothing, S = T = 21 and S' = 20, because PW2 dated the Wind Farm to
+  1980 and the founding's first plant became Oil-Fired. So every House went abroad, and no split was shown. This is a contractor's
+  real rule (a book at its limit sends the order on), not a defect. Both twins now stand a depot while the room is under
+  ROOM_LEAST of the Houses' points, then roads while it is at or over ROOM_MOST: on the merged town 1 depot and 47 roads, the room
+  294.0 of 400. A fixture line asserts it caused the room, and a new line asserts the split exactly: handed 106.0 against the
+  Houses' 400 less the room.
+- LongPlaytest 2 (MoneyFixtures, the orphaned coupon): the fixture found its bond. On FC2's path the founding city's landlords'
+  order went to the crews from m2 (their bills about 15,350 to m12), and Industry was short of cash from m7. Its first bond, for a
+  shortfall of $20.82, was $0.80 (the record 0.0731), and every cell halved left D 0.0366 with its coupon 0.000033, under a cent.
+  The orphaned line was exact and the books closed. The bond is now chosen by its coupon: the soonest whose coupon on half its
+  record clears twice the visible line (a fixture line). That is Retail's, due m129 (the record 5.41, 1 of 59 cells halved), and
+  a second fixture line asserts the coupon on D is visible.

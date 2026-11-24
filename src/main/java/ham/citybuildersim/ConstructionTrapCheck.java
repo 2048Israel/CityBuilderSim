@@ -1106,6 +1106,32 @@ public class ConstructionTrapCheck {
         // all of them where the restart holds the queue at home past the threshold, past the threshold's room in the twin.
         BuildingsTemplate house = template(kept, HOUSE);
         double housePoints = LANDLORDS_HOUSES * (double) house.getConstructionPoints();
+        // The room the Houses meet in the twin that never cancelled is the fixture's, not the played town's. After the month its
+        // queue at home is the threshold's points at the order (T x S) less the city's own month taken from it (S), and its
+        // threshold's points are T x S' of the month after: room = T x (S' - S) + S, which the town decides - 230 points before PW2,
+        // exactly nothing after it (S = T = 21, S' = S - 1), where every House went abroad and no split was ever shown. So both twins
+        // stand a Construction Depot while the room is under ROOM_LEAST of the Houses' points (the builders' month climbs by its
+        // crews', the room by T x that), then Paved Roads one at a time while it is at or over ROOM_MOST (each takes T x its repairs
+        // off it, a few points: on FC2's merged town 1 depot and 47 roads, the room 294.0 of 400): the room ends over nothing and
+        // under the Houses, whatever the town's month did, and the fixture line below says so.
+        int depotsStood = 0, roadsStood = 0;
+        while (depotsStood < 5 && roomOf(kept) < ROOM_LEAST * housePoints) {
+            quietly(() -> {
+                kept.buildStack(template(kept, DEPOT), 1, true);
+                gone.buildStack(template(gone, DEPOT), 1, true);
+            });
+            depotsStood++;
+        }
+        while (roadsStood < 400 && roomOf(kept) >= ROOM_MOST * housePoints) {
+            roads(kept, 1);
+            roads(gone, 1);
+            roadsStood++;
+        }
+        double roomForHouses = roomOf(kept);
+        out.printf("  the Houses' room in the twin that never cancelled: %,.1f points of their %,.0f (%d depots and %d roads stood in both twins to cause it; the queue at home %,.1f, the sites %,.2f)%n",
+                roomForHouses, housePoints, depotsStood, roadsStood, bk.queueAtHome(), bk.foreignTerms().sites());
+        assertTrue("fixture: the twin that never cancelled has room for some of the Houses and not all of them, caused in both twins",
+                roomForHouses > 0 && roomForHouses < housePoints && kept.getBuildingOutputAtEveryPost() == gone.getBuildingOutputAtEveryPost());
         moreHouses(kept);
         moreHouses(gone);
         assertTrue("fixture: the landlords' Houses ordered in both twins, the restart's points keeping the cancelled twin's queue at home past the threshold",
@@ -1125,12 +1151,23 @@ public class ConstructionTrapCheck {
                 cg.getHandedAbroadThisMonth(), housePoints, 1e-9);
         assertTrue("...and in the twin those past the threshold's room the month's work left", ck.getHandedAbroadThisMonth() > 0
                 && ck.getHandedAbroadThisMonth() < housePoints);
+        close("...exactly the Houses' points past the room: the order splits at the threshold (BuildersShort.homeUnits()), the room's at home",
+                ck.getHandedAbroadThisMonth(), housePoints - roomForHouses, 1e-9);
         assertTrue("...and not the billed twice case: the twin's book plus the order's points, as before FC1b",
                 Math.abs(cg.getForeignBook() - (ck.getForeignBook() + refund.points())) > refund.points() / 2);
         close("...and the queue is the twin's still", bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints(), 1e-9);
 
         cancelADepotFirst(root);
         audited("including the cancel's twins");
+    }
+
+    /** The share of the Houses' points under which the cancel section stands a depot for the room, and the share it takes it down to by roads: a quarter and three quarters, a road's step (T x its repairs) far smaller than the half between them. */
+    static final double ROOM_LEAST = 0.25, ROOM_MOST = 0.75;
+
+    /** The room under the threshold the queue at home leaves in points: its months over the sites' month at every post, less the queue at home (BuildingManager.foreignTerms()). */
+    static double roomOf(Game g) {
+        BuildingManager.ForeignTerms t = g.getBuildingManager().foreignTerms();
+        return t.thresholdMonths() * t.sites() - t.queueAtHome();
     }
 
     /** The landlords' Houses ordered again, LANDLORDS_HOUSES of them, out of cash the quote sizes: the same in twins that stand alike. */

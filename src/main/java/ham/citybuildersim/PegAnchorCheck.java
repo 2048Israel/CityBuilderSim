@@ -558,6 +558,23 @@ public class PegAnchorCheck {
         for (int m = 0; m < 6 && !fx.hasRate(1); m++) InterestAbroadCheck.play(g);
         assertTrue("fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean", fx.hasRate(1) && fx.getPegAnchor() == 0 && fx.getRegime() == LEAN);
 
+        // ...and a month of trade read before the peg (FC2, 2026-11-24): the crews' bill is an import, so the floor the hold may not sell under
+        // is read from it, and the top-up below acts from month 1 (before it the trailing imports read 0 and the peg broke by the vault).
+        ham.citybuildersim.sectors.Construction crews = g.getSectors().construction();
+        double billPaid = crews.getForeignBillThisMonth(), importsBefore = fx.monthlyImports();
+        for (int m = 0; m < 3 && !(fx.monthlyImports() > 0); m++) {
+            billPaid = crews.getForeignBillThisMonth();
+            InterestAbroadCheck.play(g);
+        }
+        assertTrue("fixture: the town has a month of imports before the peg (monthlyImports() > 0), so the top-up below reads the crews' bill from month 1", fx.monthlyImports() > 0);
+        // THE REAL LAW (Jerus, 2026-11-23: a red on new behaviour is checked against the world first): a peg's reserves are judged in months
+        // of imports of goods and services (the IMF's import cover), so the crews' bill, paid abroad, raises the floor a peg must hold.
+        assertTrue(String.format("the month's imports the vault floor reads include the foreign crews' bill, an import of services (bill %.0f of imports %.0f)", billPaid, fx.tradeImports()),
+                billPaid > 0 && fx.tradeImports() >= billPaid);
+        assertTrue(String.format("...and the vault floor is VAULT_FLOOR months of the trailing imports, which rose with them (floor %.0f, trailing %.0f from %.0f)",
+                fx.vaultFloorUsd() * fx.getRate(), fx.monthlyImports(), importsBefore),
+                fx.monthlyImports() > importsBefore && Math.abs(fx.vaultFloorUsd() * fx.getRate() - ForeignAccounts.VAULT_FLOOR * fx.monthlyImports()) <= 1e-6 * fx.monthlyImports());
+
         g.setPegAnchor("EUR");
         g.setCurrencyRegime(PEG);
         assertTrue("fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price",
@@ -572,14 +589,16 @@ public class PegAnchorCheck {
         boolean held = true, rate = true, dial = true, tie = true, money = true;
         for (int m = 1; m <= 3; m++) {
             /*
-             * FC2, 2026-11-23: ...AND THE VAULT IS KEPT PEG_VAULT_MONTHS OF IMPORTS DEEP, as CurrencyRegimeCheck.pegTown() makes its own. The foreign
-             * crews' bills are imports (Construction.FOREIGN_CREWS), so on FC2's path the town's imports stood at US$584k a month once the peg's
-             * first month had read them (before it the town has no trade history, and the month's imports are 0), against a vault of US$643k: the
-             * floor the hold may not sell under (VAULT_FLOOR months of imports) left it US$59k to defend with, month 2's shadow stood 0.159 in log
-             * over the peg, the hold's sale would have taken the vault under its floor and the peg broke by the vault (rate 1.2282 D$ per US$ in
-             * month 2 against the held 1.0068, 1.2792 in month 3), and the log lines and the re-peg to the pound broke with it. Each month, before
-             * it is played, the treasury buys what the vault lacks of that depth (its cash raised by what it pays, so the treasury is what it was)
-             * and the rate forgets the dealing (ForeignAccounts.forgetDealing(): a set-up, not a deal), on any path.
+             * FC2, 2026-11-24: ...AND THE VAULT IS KEPT PEG_VAULT_MONTHS OF IMPORTS DEEP, as CurrencyRegimeCheck.pegTown() makes its own. The foreign
+             * crews' bills are imports (Construction.FOREIGN_CREWS), and the town is played a month beyond its rates until it has a month of them
+             * (above), so that the figure read here is the one the hold's floor reads. On FC2's path, before the peg, the town's month of imports
+             * stands at 3,770 (thousands, the crews' bill 1,996 of it), the trailing mean at 1,885 over its two months, the floor VAULT_FLOOR
+             * months of it against a vault of 653 (0.35 months of cover). Without that month the trailing imports read 0 before month 1, the top-up bought
+             * nothing, the hold's sale of 15 would have left the vault under the floor and the peg broke by the vault in month 1 (rate 0.9976 D$
+             * per US$ against the held 0.9959, 1.2712 in month 2, 1.2416 in month 3), and the log lines and the re-peg to the pound broke with it.
+             * With it the top-up acts from month 1: before each month is played the treasury buys what the vault lacks of that depth (21,968 in
+             * month 1, its cash raised by what it pays, so the treasury is what it was) and the rate forgets the dealing
+             * (ForeignAccounts.forgetDealing(): a set-up, not a deal), on any path.
              */
             double vaultLacks = PEG_VAULT_MONTHS * fx.monthlyImports() - fx.getReservesUsd() * fx.getRate();
             if (vaultLacks > 0) {
