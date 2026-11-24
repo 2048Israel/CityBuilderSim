@@ -718,14 +718,15 @@ public class HouseholdBalance {
         Household[] housingCells=housingCensusCells(families,fresh);
         java.util.Map<String,HousingResources> result=new java.util.LinkedHashMap<>();
         for(int i=0;i<cells.length;i++){
-            Household c=housingCells[i];double oldRent=chargedRent.applyAsDouble(c);
+            Household c=housingCells[i],live=cells[i];
+            double liveRent=chargedRent.applyAsDouble(live);
+            double committedRent=Math.min(liveRent,chargedRent.applyAsDouble(c));
             double scheduled=currentIncome.applyAsDouble(c);
             // An opening paid pool cannot concentrate on fewer recipients or fund extra arrivals.
             double paidIncome=sourceWeight[c.row()]>0?income[c.row()]*c.earningWeight()
                     /Math.max(sourceWeight[c.row()],freshWeight[c.row()]):0;
             double recurringIncome=Double.isFinite(scheduled)?Math.max(0,scheduled):paidIncome;
-            Household live=cells[i];
-            double actualFixed=Math.max(0,live.disposable()-live.afterFixed()-chargedRent.applyAsDouble(live));
+            double actualFixed=Math.max(0,live.disposable()-live.afterFixed()-liveRent);
             double cardService=Double.isFinite(cardFundingRate)?c.cardMinimumAt(cardFundingRate,recurringIncome):c.interest()+c.minimumPrincipal();
             // Recurring service fees keep the billed source's per-head rate through a census change.
             double sourceHeads=accounts.getRowPeople(c.row());
@@ -734,7 +735,7 @@ public class HouseholdBalance {
                     +c.studentInterestAt(studentLoanRate)+Math.min(c.studentDebt(),c.studentRepayment());
             double budget=Math.max(0,recurringIncome-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
                     +c.savings()/HousingMarket.SAVINGS_MONTHS);
-            budget=housingBid(budget,oldRent,plannedFactor);
+            budget=housingBid(budget,committedRent,plannedFactor);
             // The existing student facility funds housing shortfalls too, while open.
             // It is settled as treasury lending in the normal household strike.
             if(c instanceof StudentHousehold)budget+=Math.max(0,cells[i].planningRoom());

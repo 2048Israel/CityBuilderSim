@@ -218,6 +218,7 @@ public final class HousingMarket {
         retainHosted();
         emergencySharing(game);
         emergencyDoubling(game);
+        if(completeNormalFootprints())emergencyDoubling(game);
         leases=result.leases();month=game.getMonth();
         strikePriceDemand(offers);
         Map<HousingInventory.Key,Double> actual=new LinkedHashMap<>();
@@ -330,6 +331,49 @@ public final class HousingMarket {
         Map<String,Double> oldBudgets=new HashMap<>();for(var shift:sharing)oldBudgets.put(shift.target(),shift.targetBudget());
         result=HousingChoice.summarize(demand,offers,all,result.kept(),result.suitable(),result.crowded()+extra,oldBudgets);
     }
+    /** Same-class normal space follows all movers; hosted space is measured by its funded bill. */
+    private boolean completeNormalFootprints(){
+        List<HousingChoice.Lease> before=result.leases(),all=new ArrayList<>(before);
+        Map<String,HousingChoice.Demand> cells=new HashMap<>();for(var d:demand)cells.put(d.key(),d);
+        Map<HousingInventory.Key,HousingChoice.Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);
+        Map<HousingInventory.Key,Double> used=new HashMap<>(),wanted=new HashMap<>();
+        double[] need=new double[before.size()];
+        for(int i=0;i<before.size();i++){
+            var l=before.get(i);used.merge(l.home(),l.count(),Double::sum);
+            var d=cells.get(l.cell());var o=homes.get(l.home());
+            if(d==null||o==null||!(l.bill()>0)||!(o.rent()>0)||!HousingChoice.suitable(d,o,false)||!HousingChoice.affordable(d,o))continue;
+            double n=Math.min(l.households()-l.count(),l.households()-l.bill()/o.rent());
+            if(n<=FamilyModel.packingRounding(l.households()))continue;
+            need[i]=n;wanted.merge(l.home(),n,Double::sum);
+        }
+        double expanded=0;
+        for(int i=0;i<before.size();i++)if(need[i]>0){
+            var l=before.get(i);var o=homes.get(l.home());
+            double free=Math.max(0,o.count()-used.get(l.home()));
+            double n=Math.min(l.households(),l.count()+need[i]*Math.min(1,free/wanted.get(l.home())));
+            while(n>l.count()&&(n-l.count()>need[i]||l.bill()+(n-l.count())*o.rent()>l.households()*o.rent()))n=Math.nextDown(n);
+            if(!(n>l.count()))continue;
+            for(;;){
+                double bill=l.bill()+(n-l.count())*o.rent();
+                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),n,bill,l.households()));
+                double total=0;for(var q:all)if(q.home().equals(l.home()))total+=q.count();
+                if(total<=o.count())break;
+                double excess=total-o.count();
+                if(excess>FamilyModel.packingRounding(total))throw new IllegalStateException("Normal completion exceeds current homes");
+                n=Math.max(l.count(),Math.nextDown(n-excess));
+            }
+            expanded+=n-l.count();
+        }
+        if(!(expanded>0))return false;
+        if(expanded-result.crowded()>FamilyModel.packingRounding(expanded))throw new IllegalStateException("Normal completion exceeds paid crowding");
+        double crowded=Math.max(0,result.crowded()-expanded);
+        if(hosted-crowded>FamilyModel.packingRounding(hosted))throw new IllegalStateException("Normal completion erases hosted provenance");
+        Map<String,Double> oldBudgets=new HashMap<>();for(var shift:sharing)oldBudgets.put(shift.target(),shift.targetBudget());
+        result=HousingChoice.summarize(demand,offers,all,result.kept(),result.suitable()+expanded,crowded,oldBudgets);
+        return true;
+    }
+
+
     private record Pool(Household source,HousingChoice.Demand original,HousingChoice.Demand target) { }
     private static HousingChoice.Demand with(HousingChoice.Demand d,double count,double budget){
         return new HousingChoice.Demand(d.key(),count,d.size(),d.children(),d.retired(),d.tier(),d.young(),budget);
@@ -463,11 +507,24 @@ public final class HousingMarket {
         }
         var reserved=HousingChoice.clear(planning,committed,leases,month,false);
         List<HousingChoice.Demand> remaining=new ArrayList<>();
-        for(var d:planning){double taken=reserved.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+        // Current sharing reserves physical stock; construction requests independent doors.
+        // Household matching and actual emergency-sharing source closure remain separate.
+        for(var d:planning){double taken=reserved.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
             double n=Math.max(0,d.count()-taken);if(n<=FamilyModel.packingRounding(d.count()))continue;
             remaining.add(new HousingChoice.Demand(d.key(),n,d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()));
         }
-        return new Forecast(game,remaining);
+        Map<HousingInventory.Key,Double> used=new HashMap<>();
+        for(var l:reserved.leases())used.merge(l.home(),l.count(),Double::sum);
+        List<HousingChoice.Offer> spare=new ArrayList<>();
+        for(var o:committed)spare.add(new HousingChoice.Offer(o.key(),Math.max(0,o.count()-used.getOrDefault(o.key(),0.0)),
+                o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()));
+        var covered=HousingChoice.clear(remaining,spare,List.of(),month,false);
+        List<HousingChoice.Demand> unmet=new ArrayList<>();
+        for(var d:remaining){double placed=covered.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            double n=Math.max(0,d.count()-placed);if(n<=FamilyModel.packingRounding(d.count()))continue;
+            unmet.add(new HousingChoice.Demand(d.key(),n,d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()));
+        }
+        return new Forecast(game,unmet);
     }
     public final class Forecast {
         private final Game city;

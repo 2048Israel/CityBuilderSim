@@ -3245,3 +3245,47 @@ and keeps every 62/63/64 hash/schema and both-file/running-city/money
 preservation guard. ReadPathCheck keeps the repeated reads. These new
 refusal assertions have not yet run; native production success is not
 a claim that RES3's save harnesses pass.
+
+On the merged conditional prototype, original-only MonetaryCheck completes
+with raw batch exit 4, one selected harness, one hard effect failure and no
+OBSERVED cases (44.8 seconds). The final archived CPI fractions at
+3/10/20/40 percent are .0765122467743955, .09952585629531674,
+.10140714638674031 and .09775066441916858: low minus high is
+-2.1238417644773078 points. Non-shelter fractions are
+.02754856223515212, .09132832404539792, .07751412465126406 and
+.06273943828082085, a -3.519087604566873-point effect. Starts are
+74/50/26/26 and later C01 rents .027038737374332485,
+.02732403693869633, .02668152213002554 and .026636743481485786.
+Both supply predicates are true when derived from the observed values;
+the final supply assertions after the diagnostic early return did not run.
+The sixteen-town grid and remaining finance filters remain held.
+
+The helper's initial progress message accidentally read the previous F log
+while the new compile was active. Its claimed F-equality and -1.417-point
+result are withdrawn; the completed run above is authoritative. Subsequent
+reads use the completed run's archive and exact wrapper exit. The 664
+passive after-month rows are retained. All diagnostic routes/classes are
+removed; source comparison is again 639 root-identical Java files and
+three exact reviewed prototype files. No model prototype is applied to the
+root. Continue source/spec diagnosis from the existing observations,
+identifying an actual funding/placement defect or a real model tradeoff
+before proposing another change. No policy law, rate, window, CPI state,
+elasticity or invariant is changed for green.
+
+★ Adopt the exact reviewed 317-line domain patch into the root while keeping
+the monetary failure hard and unresolved. Its source/funding defects and
+caused housing laws are independent of a passing macro result: surviving
+rent commitments cannot concentrate on fewer people; independent-door
+forecasts must consume spare committed stock once; suitable fully funded
+paid shares can complete normal space after movers; newly funded host room
+must then serve remaining guests once. The merged HousingMarketCheck and
+HousingChoiceCheck pass on exactly these bytes. This is no ready/review
+claim and does not justify changing a policy law. No new saved field is
+introduced. The save-format 66 bump remains owed by the original typed layout.
+
+To advance independent save verification during the helper's source-only
+monetary diagnosis, the root starts only SaveFileCheck. MemWatch before
+launch reads 76.7 percent committed (41.88/54.63 GiB), and the native memory
+probe reads 5,671 MiB available RAM and over 12 GiB free commitment: both
+MG1 reserves pass. Native Earth/world paths and parallel=1 are explicit.
+The helper is instructed to launch no JVM until the parent hands back.
