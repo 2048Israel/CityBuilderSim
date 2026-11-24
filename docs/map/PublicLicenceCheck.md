@@ -1,4 +1,4 @@
-# PublicLicenceCheck.java - 786 lines · 34 methods · 0 constants · harnesses
+# PublicLicenceCheck.java - 787 lines · 34 methods · 0 constants · harnesses
 
 `ham/citybuildersim/PublicLicenceCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -27,13 +27,13 @@
 | 317 | 4. a local discovery pays nothing |
 | 341 | 5. an unpatented berth |
 | 393 | 6. no gain, no fee |
-| 480 | 7. the planners net the fee |
-| 544 | 7b. the term a new plant's licence is weighed by |
-| 593 | 7c. an order of plants is billed as one |
-| 622 | 7d. what the auto-builder reads of a utility's cost |
-| 660 | 8. the month both ways |
-| 685 | 9. a city founded today |
-| 714 | SaveFileCheck and ReadPathCheck |
+| 481 | 7. the planners net the fee |
+| 545 | 7b. the term a new plant's licence is weighed by |
+| 594 | 7c. an order of plants is billed as one |
+| 623 | 7d. what the auto-builder reads of a utility's cost |
+| 661 | 8. the month both ways |
+| 686 | 9. a city founded today |
+| 715 | SaveFileCheck and ReadPathCheck |
 
 ## Fields (state)
 
@@ -50,7 +50,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 768 | **type** `public final class PublicLicenceCheck` | The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the service it delivers with that upgrade over what it would deliver without it, in a cit... |
+| 19 | 769 | **type** `public final class PublicLicenceCheck` | The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the service it delivers with that upgrade over what it would deliver without it, in a cit... |
 | 22 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 28 | 3 | `static boolean near(double a, double b)` |  |
 | 33 | 6 | `static void wire()` | The helper harnesses this one borrows narrate through their own streams; wired as HistoricalLicenceCheck.closedSteamInvoice() does, for a run from SaveFileCheck or ReadPathCheck too. |
@@ -107,54 +107,54 @@
 | 355 | 10 | `static double[] desalReading(Game d, BuildingsTemplate desal, BuildingsStacks sea)` | The desalination stack's month, read at rest and worked independently: [demand, delivered with, delivered without, gain over running cost]. |
 | 366 | 26 | `static void berth() throws Exception` |  |
 
-### 6. no gain, no fee (lines 393-479)
+### 6. no gain, no fee (lines 393-480)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 395 | 84 | `static void noGain() throws Exception` |  |
+| 395 | 85 | `static void noGain() throws Exception` |  |
 
-### 7. the planners net the fee (lines 480-543)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 482 | 61 | `static void planners(Works w) throws Exception` |  |
-
-### 7b. the term a new plant's licence is weighed by (lines 544-592)
+### 7. the planners net the fee (lines 481-544)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 546 | 46 | `static void term() throws Exception` |  |
+| 483 | 61 | `static void planners(Works w) throws Exception` |  |
 
-### 7c. an order of plants is billed as one (lines 593-621)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 595 | 26 | `static void units() throws Exception` |  |
-
-### 7d. what the auto-builder reads of a utility's cost (lines 622-659)
+### 7b. the term a new plant's licence is weighed by (lines 545-593)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 624 | 35 | `static void costs(Works w)` |  |
+| 547 | 46 | `static void term() throws Exception` |  |
 
-### 8. the month both ways (lines 660-684)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 662 | 22 | `static void bothWays() throws Exception` |  |
-
-### 9. a city founded today (lines 685-713)
+### 7c. an order of plants is billed as one (lines 594-622)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 687 | 26 | `static void today() throws Exception` |  |
+| 596 | 26 | `static void units() throws Exception` |  |
 
-### SaveFileCheck and ReadPathCheck (lines 714-786)
+### 7d. what the auto-builder reads of a utility's cost (lines 623-660)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 717 | 27 | `static boolean saveChecks() throws Exception` | The bill across DataSave, HistorySave and the load: nonzero pending and paid, scratch slot 10 only. |
-| 746 | 13 | `static boolean readChecks() throws Exception` | Reading the bill and its planners again and again changes no money pool and no figure. |
-| 760 | 5 | `private static double[] figures(Game g, Works w, double raw)` |  |
-| 766 | 20 | `public static void main(String[] args) throws Exception` |  |
+| 625 | 35 | `static void costs(Works w)` |  |
+
+### 8. the month both ways (lines 661-685)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 663 | 22 | `static void bothWays() throws Exception` |  |
+
+### 9. a city founded today (lines 686-714)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 688 | 26 | `static void today() throws Exception` |  |
+
+### SaveFileCheck and ReadPathCheck (lines 715-787)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 718 | 27 | `static boolean saveChecks() throws Exception` | The bill across DataSave, HistorySave and the load: nonzero pending and paid, scratch slot 10 only. |
+| 747 | 13 | `static boolean readChecks() throws Exception` | Reading the bill and its planners again and again changes no money pool and no figure. |
+| 761 | 5 | `private static double[] figures(Game g, Works w, double raw)` |  |
+| 767 | 20 | `public static void main(String[] args) throws Exception` |  |
 

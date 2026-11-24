@@ -2,9 +2,9 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,647 constants in 634 files.**
+**6,672 constants in 635 files.**
 
-## model (3037 constants)
+## model (3058 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -53,10 +53,11 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 208 | `AutoBuilder.DEBT_STEP` | `.10` | The debt limit's step (0.7.101, star P2-4): ten per cent of a year's GDP - sixty steps to DEBT_LIMIT_MOST, as N6-4's five per cents were to three years; DEFAULT_DEBT_LIMIT and OLD_DEFAULT_DEBT_LIMI... |
 | 211 | `AutoBuilder.LOG_MOST` | `40` | The most of its orders the log keeps, newest kept (BuildLog's cap). |
 | 217 | `AutoBuilder.ORDER_MONTHS` | `12` | No more than opens inside this many months: the businesses' own rule for an order until BA1 (BusinessInvestment.MAX_ORDER_MONTHS, which went with the cap on orders), kept for the city's automatic o... |
-| 420 | `AutoBuilder.HELD_BACK` | `"Automatic building holds it back; "` | What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. |
-| 704 | `AutoBuilder.PAID_MONTHS` | `12` | Months of monthPaid() the payback's figure averages: a year, as a lender reads a city's accounts - a year of its own recurring revenue, the sale of its property left out, as a city's debt limit is ... |
-| 1830 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
-| 1927 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
+| 422 | `AutoBuilder.HELD_BACK` | `"Automatic building holds it back; "` | What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. |
+| 708 | `AutoBuilder.PAID_MONTHS` | `12` | Months of monthPaid() the payback's figure averages: a year, as a lender reads a city's accounts - a year of its own recurring revenue, the sale of its property left out, as a city's debt limit is ... |
+| 1869 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
+| 1971 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
+| 1996 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
 
 ### Bank.java ([map](map/Bank.md))
 
@@ -221,17 +222,20 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 88 | `BuildAdvice.OVERVIEW` | `"Overview"` | The page Build opens on: the city's job, what would help most, and what the market builds. |
 | 116 | `BuildAdvice.UTILITIES` | `"Utilities", ROADS = "Infrastructure", HEALTHCARE = "Healthcare", EDUCATION = "Educatio...` | The fourteen categories' names, as the strip, the Overview and NEEDS YOU's doors say them. |
-| 1170 | `BuildAdvice.MAX_SUGGESTIONS` | `3` | At most this many suggestions, one per need. |
-| 1173 | `BuildAdvice.MOST` | `1<<22` | The most of one building a search will count to. |
-| 1176 | `BuildAdvice.SLACK` | `BusinessInvestment.TARGET_HEADROOM` | The businesses' headroom, retained for explicit callers. |
-| 1179 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size... |
-| 1192 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
-| 1245 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
-| 1689 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
-| 2000 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
-| 2561 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
-| 2567 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
-| 2738 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
+| 1235 | `BuildAdvice.MAX_SUGGESTIONS` | `3` | At most this many suggestions, one per need. |
+| 1238 | `BuildAdvice.MOST` | `1<<22` | The most of one building a search will count to. |
+| 1241 | `BuildAdvice.SLACK` | `BusinessInvestment.TARGET_HEADROOM` | The businesses' headroom, retained for explicit callers. |
+| 1244 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size... |
+| 1257 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
+| 1310 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
+| 1644 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
+| 1647 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
+| 1650 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
+| 1907 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
+| 2218 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
+| 2779 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
+| 2785 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
+| 2956 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
 
 ### BuildCard.java ([map](map/BuildCard.md))
 
@@ -722,28 +726,29 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 151 | `CityNeeds.PLAIN` | `new Words() { @ Override public String people(double count) { return Formats.INSTANCE.c...` | The same four shapes without the toolkit (Formats), for a harness and a log. |
 | 173 | `CityNeeds.NETWORK_YELLOW` | `.75, NETWORK_RED = 1` | A network is listed from three-quarters of its capacity, red once it is over. |
-| 183 | `CityNeeds.HIGHWAY_MIN_FILL` | `.60` | THE HIGHWAYS ARE LISTED (FR7, 2026-10-18) once the through trips with no highway to take them would fill this share of one more highway at free flow: a highway is not built to stand idle, the railw... |
-| 186 | `CityNeeds.HIGHWAY_RED_FILL` | `1.0` | ...and red once those trips would fill a whole highway: a highway's worth of through traffic is on the streets. |
-| 189 | `CityNeeds.GENERAL_YELLOW` | `.80, GENERAL_RED =.50` | General care is watched hardest: it moves the sick rate. |
-| 192 | `CityNeeds.OTHER_CARE_YELLOW` | `.70, OTHER_CARE_RED =.40` | Childcare and senior care kill at the ends of life; a young city legitimately has neither for a while. |
-| 195 | `CityNeeds.PLOTS_WATCHED` | `120` | Burial plots are watched once fewer than this many months are left. |
-| 197 | `CityNeeds.PLOTS_YELLOW` | `24, PLOTS_RED = 6` | ...listed under two years of plots, red under six months. |
-| 200 | `CityNeeds.SCHOOLS_YELLOW` | `.90, SCHOOLS_RED =.60` | The basic ladder's bottleneck, its coverage (read as served since 0.7.41; "taught" until then). |
-| 203 | `CityNeeds.SEATS_YELLOW` | `1.05, SEATS_RED = 2` | A school above the ladder: who would come and be hired (wanted(), 0.7.51; who would come until then) over its seats. |
-| 206 | `CityNeeds.SEATS_FLOOR` | `25` | A class's worth: fewer students than this the city would get and hire (would-be students until 0.7.51) and a school is not a row (measured: 3 would-be law students in a city of 1,650). |
-| 209 | `CityNeeds.CRIME_YELLOW` | `1.2, CRIME_RED = 1.5` | Crime against Canada's rate. |
-| 212 | `CityNeeds.CELLS_YELLOW` | `1, CELLS_RED = 25` | The caught, not held. |
-| 220 | `CityNeeds.SICK_YELLOW` | `.06, SICK_RED =.12` | The sick rate, the share of the workforce off sick (0.7.28): the left panel's OFF SICK lines (SummaryScreen's literals until then), here so the Services screen colours the same figure by the same l... |
-| 229 | `CityNeeds.FALLS_DUE_MONTHS` | `3` | FALLS DUE (0.7.24): paper due within this many months is red, as the bottom strip drew its maturity chip until it left the frame (its maturity chip, FinancesScreen's until 0.7.32 and its urgency() ... |
-| 237 | `CityNeeds.FALLS_DUE_SOON_MONTHS` | `12` | ...and paper due within this many months is amber: the strip's other rule (gap <= 12), named in 0.7.32 so the Finances tab's NEXT DUE, its book and its strip colour a maturity by one line. |
-| 247 | `CityNeeds.SERVICE_FELT` | `.12, SERVICE_CONSTRAINED =.25` | DEBT SERVICE, A SHARE OF THE TAKE (0.7.32): what the city pays its lenders against what it collects is comfortable under SERVICE_FELT, felt from there, and constrained past SERVICE_CONSTRAINED - th... |
-| 257 | `CityNeeds.YEAR_WALL` | `.5` | A WALL ON THE LADDER (0.7.32): a calendar year whose payments - coupons and principal - pass this share of a year of revenue is one a city meets by refinancing before it arrives. |
-| 291 | `CityNeeds.SERVED` | `"served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough"` | The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. |
-| 294 | `CityNeeds.AT_THE_CALM_PEAK` | `" at the calm peak"` | What the POWER row's share is read at (PW1): the firm supply against the calm peak's draw, not the month's average, so "48% served at the calm peak". |
-| 318 | `CityNeeds.SERVED_AS_MULTIPLE` | `5` | From this served share up (5 = five times what is asked) a share prints as a multiple, "30×", not a per cent: in a town of 40 a power plant read 13333% served (PT1). |
-| 655 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
-| 658 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
-| 999 | `CityNeeds.FIRST_SCHOOL_SHARE` | `BuildAdvice.FIRST_WORK_SHARE` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, ... |
+| 176 | `CityNeeds.POWER_YELLOW` | `1 /(1 + PowerDispatch.RESERVE)` | Power is listed once its firm supply leaves less than the reserve test's margin over the year's peak hour (PW3: 1 / (1 + PowerDispatch.RESERVE)), red once the peak hour is not covered (NETWORK_RED). |
+| 189 | `CityNeeds.HIGHWAY_MIN_FILL` | `.60` | THE HIGHWAYS ARE LISTED (FR7, 2026-10-18) once the through trips with no highway to take them would fill this share of one more highway at free flow: a highway is not built to stand idle, the railw... |
+| 192 | `CityNeeds.HIGHWAY_RED_FILL` | `1.0` | ...and red once those trips would fill a whole highway: a highway's worth of through traffic is on the streets. |
+| 195 | `CityNeeds.GENERAL_YELLOW` | `.80, GENERAL_RED =.50` | General care is watched hardest: it moves the sick rate. |
+| 198 | `CityNeeds.OTHER_CARE_YELLOW` | `.70, OTHER_CARE_RED =.40` | Childcare and senior care kill at the ends of life; a young city legitimately has neither for a while. |
+| 201 | `CityNeeds.PLOTS_WATCHED` | `120` | Burial plots are watched once fewer than this many months are left. |
+| 203 | `CityNeeds.PLOTS_YELLOW` | `24, PLOTS_RED = 6` | ...listed under two years of plots, red under six months. |
+| 206 | `CityNeeds.SCHOOLS_YELLOW` | `.90, SCHOOLS_RED =.60` | The basic ladder's bottleneck, its coverage (read as served since 0.7.41; "taught" until then). |
+| 209 | `CityNeeds.SEATS_YELLOW` | `1.05, SEATS_RED = 2` | A school above the ladder: who would come and be hired (wanted(), 0.7.51; who would come until then) over its seats. |
+| 212 | `CityNeeds.SEATS_FLOOR` | `25` | A class's worth: fewer students than this the city would get and hire (would-be students until 0.7.51) and a school is not a row (measured: 3 would-be law students in a city of 1,650). |
+| 215 | `CityNeeds.CRIME_YELLOW` | `1.2, CRIME_RED = 1.5` | Crime against Canada's rate. |
+| 218 | `CityNeeds.CELLS_YELLOW` | `1, CELLS_RED = 25` | The caught, not held. |
+| 226 | `CityNeeds.SICK_YELLOW` | `.06, SICK_RED =.12` | The sick rate, the share of the workforce off sick (0.7.28): the left panel's OFF SICK lines (SummaryScreen's literals until then), here so the Services screen colours the same figure by the same l... |
+| 235 | `CityNeeds.FALLS_DUE_MONTHS` | `3` | FALLS DUE (0.7.24): paper due within this many months is red, as the bottom strip drew its maturity chip until it left the frame (its maturity chip, FinancesScreen's until 0.7.32 and its urgency() ... |
+| 243 | `CityNeeds.FALLS_DUE_SOON_MONTHS` | `12` | ...and paper due within this many months is amber: the strip's other rule (gap <= 12), named in 0.7.32 so the Finances tab's NEXT DUE, its book and its strip colour a maturity by one line. |
+| 253 | `CityNeeds.SERVICE_FELT` | `.12, SERVICE_CONSTRAINED =.25` | DEBT SERVICE, A SHARE OF THE TAKE (0.7.32): what the city pays its lenders against what it collects is comfortable under SERVICE_FELT, felt from there, and constrained past SERVICE_CONSTRAINED - th... |
+| 263 | `CityNeeds.YEAR_WALL` | `.5` | A WALL ON THE LADDER (0.7.32): a calendar year whose payments - coupons and principal - pass this share of a year of revenue is one a city meets by refinancing before it arrives. |
+| 297 | `CityNeeds.SERVED` | `"served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough"` | The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. |
+| 300 | `CityNeeds.AT_THE_PEAK_HOUR` | `" at the peak hour"` | What the POWER row's share is read at (PW1; PW3 the year's peak hour): the firm supply against the peak hour's draw, not the month's average, so "48% served at the peak hour". |
+| 324 | `CityNeeds.SERVED_AS_MULTIPLE` | `5` | From this served share up (5 = five times what is asked) a share prints as a multiple, "30×", not a per cent: in a town of 40 a power plant read 13333% served (PT1). |
+| 661 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
+| 664 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
+| 1005 | `CityNeeds.FIRST_SCHOOL_SHARE` | `BuildAdvice.FIRST_WORK_SHARE` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, ... |
 
 ### CityRuns.java ([map](map/CityRuns.md))
 
@@ -1670,38 +1675,38 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
-| 838 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
-| 969 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1819 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1822 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
-| 1825 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 2156 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
-| 3407 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
-| 4107 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 4110 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
-| 7447 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 7450 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 8575 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
-| 9355 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 9585 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 10795 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 11374 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 12174 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 12817 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 12987 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 13031 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 13191 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15121 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 15133 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 15136 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15164 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 15175 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 15215 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 17024 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 17431 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 18085 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 18088 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 18091 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 842 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 973 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
+| 1823 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1826 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1829 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
+| 2160 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
+| 3411 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
+| 4111 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 4114 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
+| 7451 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 7454 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 8579 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
+| 9359 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 9589 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 10799 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 11378 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 12178 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 12821 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 12991 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 13035 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 13195 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15125 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 15137 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 15140 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15168 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 15179 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 15219 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 17028 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 17435 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 18089 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 18092 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 18095 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -2954,13 +2959,29 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 75 | `PowerDispatch.WIND_FIRM` | `windFirm()` | What a wind farm's average delivers in its calmest half-block [D: the least of WIND_BLOCK x (1 - WIND_SWING) over the blocks: 0.806 x 0.41 = 0.330]. |
 | 89 | `PowerDispatch.SOLAR_BLOCK` | `{ 0.680, 1.136, 2.054 }` | The sun's output over its mean in each block, base to peak [M: EIA-930 2025, the lower 48, the study's vblocks.py; spec 2.4; the prototype, line 96]. |
 | 92 | `PowerDispatch.SOLAR_SWING` | `{ 1.0, 1.0, 0.66 }` | How far the sun swings inside a block, over the block's average, the first half sunny and the second dark (the wind's halves) [M: EIA-930 2025, the coefficient of variation of hourly solar output i... |
-| 95 | `PowerDispatch.SOLAR_FIRM` | `firm(SOLAR_BLOCK, SOLAR_SWING)` | What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]: the advice counts no ... |
-| 98 | `PowerDispatch.FUEL_OIL_MJ_PER_LITRE` | `0.150e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of fuel oil [D: 40 CFR 98 subpart C table C-1, residual fuel oil No. |
-| 101 | `PowerDispatch.DIESEL_MJ_PER_LITRE` | `0.138e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of diesel [D: 40 CFR 98 subpart C table C-1, distillate fuel oil No. |
-| 104 | `PowerDispatch.PELLETS_MJ_PER_TONNE` | `17.48e6 * MJ_PER_BTU / 0.90718474 * 0.92` | Megajoules in a tonne of wood pellets [E: 40 CFR 98 table C-1's wood and wood residuals, 17.48 MMBtu a short ton dry, 20.33 GJ a tonne, at 8% moisture (x 0.92) = 18.70 GJ; no government figure for ... |
-| 228 | `PowerDispatch.SHORT_KW` | `1e-9` | A half-block left with more than this much unserved is short, kW. |
-| 231 | `PowerDispatch.LEVEL_STEPS` | `40` | Halvings of the water's level, as the prototype loops them. |
-| 234 | `PowerDispatch.LEVEL_EPS` | `1e-6` | The level's resolution, kW. |
+| 95 | `PowerDispatch.SOLAR_FIRM` | `firm(SOLAR_BLOCK, SOLAR_SWING)` | What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]; the reserve test cred... |
+| 105 | `PowerDispatch.WIND_MONTH_CF` | `{ 37.4, 37.2, 43.1, 40.7, 32.1, 32.2, 27.5, 23.8, 23.1, 33.8, 35.4, 39.2 }` | Wind's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a month's index is its figure over the twelve's mean. |
+| 108 | `PowerDispatch.SOLAR_MONTH_CF` | `{ 16.2, 18.7, 23.6, 27.5, 29.3, 31.9, 31.9, 29.7, 26.7, 22.4, 16.9, 13.1 }` | Solar photovoltaic's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: the US fleet's months, a generated world's. |
+| 111 | `PowerDispatch.HYDRO_MONTH_CF` | `{ 34.7, 35.1, 38.2, 40.8, 42.8, 39.8, 34.2, 32.3, 26.1, 24.9, 28.5, 36.1 }` | Conventional hydro's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a station's month of water is its average times t... |
+| 114 | `PowerDispatch.PEAK_HOUR` | `760_649.0 / 491_034.0` | The year's peak hour over its mean [D: EIA-930 2025, the lower 48, 760,649 / 491,034 MW; spec 2.2]. |
+| 117 | `PowerDispatch.PLAN_PEAK_HOUR` | `PEAK_HOUR /(1 - GRID_LOSSES)` | The draw the firm supply must cover, losses in [D: PEAK_HOUR over (1 - GRID_LOSSES)]: what the reserve test plans power against (PLAN_PEAK, the peak block's, stays the substations'). |
+| 120 | `PowerDispatch.RESERVE` | `0.15` | The firm supply's margin over the peak hour the reserve test asks [E: NERC's reference margin level, cited as evidence; spec 2.8, 6]: power's NEEDS YOU line is 1 / (1 + RESERVE). |
+| 123 | `PowerDispatch.WIND_PEAK_CREDIT` | `0.730` | Wind's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.247 of nameplate over 33.8%; spec 2.4]: its credit alone. |
+| 126 | `PowerDispatch.SOLAR_PEAK_CREDIT` | `2.621` | Solar's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.629 of nameplate over 24.0%; spec 2.4]: its credit alone, at the US fleet's place. |
+| 129 | `PowerDispatch.CREDIT_FLOOR` | `0.1` | What a variable row's credit falls to, over its credit alone, once the variable rows make CREDIT_HALF of the city's energy [E: the study's straight line, spec 2.4; NREL's and ERCOT's direction as e... |
+| 132 | `PowerDispatch.CREDIT_HALF` | `0.5` | The variable rows' share of the city's energy at which their credit has fallen to CREDIT_FLOOR [E: spec 2.4]. |
+| 135 | `PowerDispatch.SOLAR_BAND_DEGREES` | `10` | The latitude bands' centres the sun's tables are read at, degrees from the equator either way [D: PVGIS's places averaged in 10-degree bands, docs/studies/electricity/pvgis.py]. |
+| 138 | `PowerDispatch.SOLAR_PLACE_FIXED` | `new double[] { 0.6537, 0.7379, 0.7714, 0.7921, 0.7396, 0.6128, 0.5027, 0.3959 }` | A fixed rack's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0, ERA5, 14% losses; the US reference seven places at 32.8-35.5... |
+| 141 | `PowerDispatch.SOLAR_PLACE_TRACKED` | `new double[] { 0.8359, 0.9611, 0.9930, 1.0011, 0.8909, 0.7125, 0.5910, 0.4825 }` | A single-axis tracker's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0; out/pvgis.txt]. |
+| 144 | `PowerDispatch.SOLAR_US_FIXED` | `0.7940` | A fixed rack's yield at the US fleet's places over a tracker's there [S: PVGIS 5.3, out/pvgis.txt]: a generated world's farm before the tracker. |
+| 147 | `PowerDispatch.SOLAR_SHAPE_FIXED` | `new double[][] { { 1.030, 1.037, 1.080, 1.035, 0.957, 0.936, 0.992, 0.982, 1.049, 0.994...` | A fixed rack's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt; the south's places turned six months]. |
+| 158 | `PowerDispatch.SOLAR_SHAPE_TRACKED` | `new double[][] { { 1.035, 1.044, 1.090, 1.039, 0.957, 0.936, 1.006, 0.996, 1.049, 0.971...` | A tracker's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt]. |
+| 244 | `PowerDispatch.FUEL_OIL_MJ_PER_LITRE` | `0.150e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of fuel oil [D: 40 CFR 98 subpart C table C-1, residual fuel oil No. |
+| 247 | `PowerDispatch.DIESEL_MJ_PER_LITRE` | `0.138e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of diesel [D: 40 CFR 98 subpart C table C-1, distillate fuel oil No. |
+| 250 | `PowerDispatch.PELLETS_MJ_PER_TONNE` | `17.48e6 * MJ_PER_BTU / 0.90718474 * 0.92` | Megajoules in a tonne of wood pellets [E: 40 CFR 98 table C-1's wood and wood residuals, 17.48 MMBtu a short ton dry, 20.33 GJ a tonne, at 8% moisture (x 0.92) = 18.70 GJ; no government figure for ... |
+| 374 | `PowerDispatch.SHORT_KW` | `1e-9` | A half-block left with more than this much unserved is short, kW. |
+| 377 | `PowerDispatch.LEVEL_STEPS` | `40` | Halvings of the water's level, as the prototype loops them. |
+| 380 | `PowerDispatch.LEVEL_EPS` | `1e-6` | The level's resolution, kW. |
 
 ### PriceIndex.java ([map](map/PriceIndex.md))
 
@@ -3846,7 +3867,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 502 | `UtilitiesHandler.WORKS_ROW` | `"works", GRID_ROW = "grid"` |  |
 | 560 | `UtilitiesHandler.SEA_MARGIN_SHARE` | `.5` | The share of the sea works' output at the fill the sea must deliver to be the water's margin alone: at it or past it the sea's water pays their power, under it their power is spread over the water ... |
 | 611 | `UtilitiesHandler.WORKS_ID` | `- 1, GRID_ID = - 2, FIXTURE_ID = - 3` | Reserved aggregate row ids; catalogue rows keep their permanent nonnegative ids. |
-| 1308 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+| 1392 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
 
 ### WageLadder.java ([map](map/WageLadder.md))
 
@@ -5972,7 +5993,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2114 constants)
+## harnesses (2118 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6135,8 +6156,8 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1299 | `BuildAdviceCheck.RISE_A_MONTH` | `.03` | The share of its people the short city's rising history gains a month in section 10, over the businesses' window. |
-| 1650 | `BuildAdviceCheck.SHORT_ON_THE_AVERAGE` | `1.3` | How many times its production the powered city draws before the Wind Farms are added (section 15): short on the average, so the wind is what clears it. |
+| 1311 | `BuildAdviceCheck.RISE_A_MONTH` | `.03` | The share of its people the short city's rising history gains a month in section 10, over the businesses' window. |
+| 1670 | `BuildAdviceCheck.SHORT_ON_THE_AVERAGE` | `1.3` | How many times its production the powered city draws before the Wind Farms are added (section 15): short on the average, so the wind is what clears it. |
 
 ### BuildCardCheck.java ([map](map/BuildCardCheck.md))
 
@@ -6788,7 +6809,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 24 | `EssentialWorksCheck.out` | `System.out` |  |
 | 25 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 | 26 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
-| 554 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
+| 557 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
 
 ### ExchangeCheck.java ([map](map/ExchangeCheck.md))
 
@@ -7291,8 +7312,8 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 145 | `HydroCheck.Y0` | `60` | The plot row of the water of every river here: the river is two plots (60 m) wide, rows Y0 and Y0 + 1, its centre the line y = Y0 + 1. |
 | 148 | `HydroCheck.W` | `2 * World.PLOT_M` | The width of the fixtures' rivers, metres: two plots. |
 | 166 | `HydroCheck.ALL` | `(cx, cy) -> true` |  |
-| 489 | `HydroCheck.PLACES` | `{ new Place("Shawinigan QC", 46.556, - 72.748, true), new Place("Niagara Falls ON", 43....` |  |
-| 499 | `HydroCheck.HALF` | `333` | The half-side of the square a place is scanned in, in plots: 333 (10 km), a square of world 20 km a side. |
+| 498 | `HydroCheck.PLACES` | `{ new Place("Shawinigan QC", 46.556, - 72.748, true), new Place("Niagara Falls ON", 43....` |  |
+| 508 | `HydroCheck.HALF` | `333` | The half-side of the square a place is scanned in, in plots: 333 (10 km), a square of world 20 km a side. |
 
 ### HydrogenSteelCheck.java ([map](map/HydrogenSteelCheck.md))
 
@@ -7645,77 +7666,78 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2414 | `LongPlaytest.worksMin` | `new LinkedHashMap<>()` |  |
 | 2415 | `LongPlaytest.worksReasons` | `new LinkedHashMap<>()` |  |
 | 2416 | `LongPlaytest.worksPowerOrders` | `new LinkedHashMap<>()` |  |
-| 2417 | `LongPlaytest.worksLowLater` | `new LinkedHashMap<>()` |  |
-| 2419 | `LongPlaytest.WORKS_NEAR` | `.90` | Jerus's HW1 bar: near full service, with the length and cause of every dip visible. |
-| 2420 | `LongPlaytest.worksUnder90` | `new LinkedHashMap<>(), worksSpell = new LinkedHashMap<>(), worksLongest = new LinkedHas...` |  |
-| 2422 | `LongPlaytest.worksSpellLead` | `new LinkedHashMap<>(), worksLongestLead = new LinkedHashMap<>()` |  |
-| 2423 | `LongPlaytest.worksSpellReasons` | `new LinkedHashMap<>(), worksLongestReasons = new LinkedHashMap<>()` |  |
-| 2529 | `LongPlaytest.OWNERS` | `System.getProperty("playtest.owners") = = null ? null : "on".equals(System.getProperty(...` | The owner line under -Dplaytest.owners=on\|off (BO1-S), or null for the city's own dial (OwnerHousehold.IN_CITIES); set, the report prints OwnerCheck's probe row at its months (OWNERS m...), so the ... |
-| 2533 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(System.getPr...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
-| 2537 | `LongPlaytest.HELD_AFTER` | `24` | The month the held runs start after: the currency's settling months until XR1, kept at 24 so the held runs and the ensemble start where they always did. |
-| 2564 | `LongPlaytest.FOUNDING` | `Founding.Preset.valueOf(System.getProperty("playtest.founding", "standard").trim().toUp...` | The founding preset under -Dplaytest.founding, standard when unset. |
-| 2574 | `LongPlaytest.FOUNDED_1900` | `"1900".equals(System.getProperty("playtest.founded", "today").trim())` | Whether the run founds its city the 1900 way, under -Dplaytest.founded=1900 (R1d): today's city when unset. |
-| 2601 | `LongPlaytest.PATH` | `System.getProperty("playtest.world") = = null ? Nations.DEFAULT_PATH : Nations.Path.val...` | The path under -Dplaytest.world, Nations.DEFAULT_PATH when unset. |
-| 2605 | `LongPlaytest.PATH_SEED` | `Long.parseLong(System.getProperty("playtest.pathSeed", String.valueOf(Nations.DEFAULT_S...` | The path's seed under -Dplaytest.pathSeed, Nations.DEFAULT_SEED when unset. |
-| 2756 | `LongPlaytest.TRACE` | `System.getProperty("playtest.trace")` | The trace's prefix under -Dplaytest.trace, or null. |
-| 2759 | `LongPlaytest.paperSeen` | `java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())` | The paper already written to the borrow file, by identity. |
-| 3105 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
-| 3113 | `LongPlaytest.ROLLOVER` | `Rollover.Mode.valueOf(System.getProperty("playtest.rollover", "SAME_STRUCTURE").trim()....` | -Dplaytest.rollover=MANUAL\|SAME_STRUCTURE\|TWELVE_MONTH_BILL (0.7.13): the treasury's rollover for the run (Rollover). |
-| 3140 | `LongPlaytest.RESCUE_AUTO` | `! "BUTTON".equalsIgnoreCase(System.getProperty("playtest.rescue", "AUTO").trim())` | The rescue setting under -Dplaytest.rescue, AUTO when unset. |
-| 3143 | `LongPlaytest.PREFERRED_ACCEPT` | `! "DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT").trim())` | The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. |
-| 3146 | `LongPlaytest.SHORTS` | `! "off".equalsIgnoreCase(System.getProperty("playtest.shorts", "on").trim())` | Whether the world sells short under -Dplaytest.shorts, on when unset; "off" is the counterfactual (EM2): the market without them, to see what they change. |
-| 3149 | `LongPlaytest.FUND_DIAL` | `fundDial(System.getProperty("playtest.fund", "0"))` | The fund's dial under -Dplaytest.fund, 0 when unset. |
-| 3179 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
-| 3198 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
-| 3214 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(System.getPrope...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
-| 3229 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueOf(System.g...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
-| 3254 | `LongPlaytest.MONEY_GATE` | `System.getProperty("playtest.moneyGate", "").trim()` | THE MONEY GATE, FOR THE COUNTERFACTUAL (0.7.82, batch O5; turned round at 0.7.112): since 0.7.112 the refiners' spread planner tests every order on its whole cost, whoever pays (SpreadPlanner.ON_IT... |
-| 3257 | `LongPlaytest.REFINERY_TRACE` | `Boolean.getBoolean("playtest.refinery")` | -Dplaytest.refinery=true (0.7.82): the refiners' planner yearly - its outlook and its best candidates under both money gates (refineryLine()). |
-| 3260 | `LongPlaytest.INFLATION_TARGET` | `System.getProperty("playtest.inflationTarget") = = null ? null : Double.valueOf(System....` | The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. |
-| 3288 | `LongPlaytest.FLOAT_FROM_MONTH` | `60` | THE D$ OVER THE RUN (XR1, 2026-10-21): how the float behaved in this city, counted a month at a time (countTheFloat()) and printed as one line beside the currency's (docs/studies/spec-exchange-rate... |
-| 3483 | `LongPlaytest.CHILDCARE_SEEN` | `{ 1_000, 2_000, 3_000, 4_000 }` | CHILDCARE ON THE MAP (0.7.139, batch CC1). |
-| 3486 | `LongPlaytest.childcareSeen` | `new java.util.ArrayList<>()` | ...what it said at each, in order. |
-| 3508 | `LongPlaytest.BUDGET_EVERY` | `Integer.getInteger("playtest.budget", 0)` | -Dplaytest.budget=N (0.7.139, batch CC1): every N months the treasury's month, line by line - what came in and what went out, care by kind and childcare's own running (its centres' posts and upkeep... |
-| 3533 | `LongPlaytest.childcareBuilt` | `new java.util.TreeMap<>()` | ...the buildings, by name. |
-| 3536 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
-| 4182 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
-| 4212 | `LongPlaytest.refinedRun` | `new java.util.EnumMap<>(Good.class)` | ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). |
-| 4317 | `LongPlaytest.terminalsOrdered` | `new java.util.TreeMap<>()` | Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. |
-| 4326 | `LongPlaytest.PORTS_TRACE` | `Boolean.getBoolean("playtest.ports")` | -Dplaytest.ports=true (0.7.86): the ports yearly - each kind's tonnes across the boundary, its berths, its share at sea and the month's calls (portsLine()). |
-| 4415 | `LongPlaytest.refinersOpened` | `new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>()` | THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of the refiners' buildings opened and sold back, and the crude units and the conversion units standing at most. |
-| 4421 | `LongPlaytest.refinersLast` | `new java.util.HashMap<>()` | Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city researches them, so a count kept by the list's index ran past the first month's list (month ... |
-| 4481 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
-| 4488 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
-| 4636 | `LongPlaytest.GROUND_WATCH` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundWatch", "on").trim())` | -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. |
-| 4639 | `LongPlaytest.groundLooked` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` | The month each city's ground was last looked at (keepGroundAhead()), by the city: weakly held, so a harness's cities are let go. |
-| 4674 | `LongPlaytest.GROUND_TRACE` | `groundTraceWindow(System.getProperty("playtest.groundTrace"))` | -Dplaytest.groundTrace=FROM-TO (LP-G1): the months whose ground looks and landlords are traced, to the error stream; unset, none and the run as it was. |
-| 4813 | `LongPlaytest.mapSidecarMonths` | `new ArrayList<>()` | Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). |
-| 4860 | `LongPlaytest.LAYOUT_WINDOW` | `13` | How many months a window of the layout's watch is. |
-| 4862 | `LongPlaytest.LAYOUT_STARTS` | `layoutStarts(TARGET_MONTHS)` | The months each window follows: TARGET_MONTHS / 4, / 2, 3 / 4 and TARGET_MONTHS - LAYOUT_WINDOW, those that fit in the run and clear the window before. |
-| 4895 | `LongPlaytest.layoutSpillByMonth` | `new java.util.TreeMap<>()` | The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. |
-| 4899 | `LongPlaytest.layoutOldBoxes` | `new java.util.HashMap<>()` | ...each district's industry boxes, by its key... |
-| 4901 | `LongPlaytest.layoutOldDims` | `new java.util.HashMap<>()` | ...and each of those boxes' size (LayoutSnap.dims), in the same order. |
-| 4903 | `LongPlaytest.layoutOldCounts` | `new java.util.HashMap<>()` | ...and each district's count of boxes by type. |
-| 4905 | `LongPlaytest.layoutOldModel` | `new java.util.HashMap<>()` | ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did n... |
-| 4914 | `LongPlaytest.layoutOldSpill` | `new java.util.HashSet<>()` | The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahe... |
-| 4927 | `LongPlaytest.layoutOldLive` | `new java.util.HashMap<>(), layoutOldSent = new java.util.HashMap<>()` | THE WORKS SENT ON (RN1-H-M, 2026-11-20). |
-| 5251 | `LongPlaytest.layoutBandsAt` | `new ArrayList<>()` | How many boxes each window's first month holds in the homes' band, in industry and in the outer kinds, one phrase a window: what the oldest works are read against. |
-| 5908 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
-| 5914 | `LongPlaytest.ABROAD_SHARE` | `.8` | CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. |
-| 5917 | `LongPlaytest.QUOTED_BORROWING` | `Boolean.parseBoolean(System.getProperty("playtest.quotedBorrowing", "true"))` | The build compares quotes for the sale by default (QB1); -Dplaytest.quotedBorrowing=false keeps the old rates-before-sale counterfactual. |
-| 5973 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
-| 6626 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
-| 6628 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
-| 6630 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
-| 6632 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
-| 6685 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
-| 6693 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
-| 6844 | `LongPlaytest.COPPER_WORKS` | `{ "Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire...` | The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. |
-| 8688 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
-| 8837 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
-| 8843 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
-| 8949 | `LongPlaytest.CLEAN_UP_WALKS` | `3` | The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). |
-| 9009 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
+| 2418 | `LongPlaytest.worksPowerByDecade` | `new java.util.TreeMap<>()` | ...and by the decade of the calendar they were ordered in (PW3: spec-electricity 6's third measure, against 2.9's table). |
+| 2419 | `LongPlaytest.worksLowLater` | `new LinkedHashMap<>()` |  |
+| 2421 | `LongPlaytest.WORKS_NEAR` | `.90` | Jerus's HW1 bar: near full service, with the length and cause of every dip visible. |
+| 2422 | `LongPlaytest.worksUnder90` | `new LinkedHashMap<>(), worksSpell = new LinkedHashMap<>(), worksLongest = new LinkedHas...` |  |
+| 2424 | `LongPlaytest.worksSpellLead` | `new LinkedHashMap<>(), worksLongestLead = new LinkedHashMap<>()` |  |
+| 2425 | `LongPlaytest.worksSpellReasons` | `new LinkedHashMap<>(), worksLongestReasons = new LinkedHashMap<>()` |  |
+| 2534 | `LongPlaytest.OWNERS` | `System.getProperty("playtest.owners") = = null ? null : "on".equals(System.getProperty(...` | The owner line under -Dplaytest.owners=on\|off (BO1-S), or null for the city's own dial (OwnerHousehold.IN_CITIES); set, the report prints OwnerCheck's probe row at its months (OWNERS m...), so the ... |
+| 2538 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(System.getPr...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
+| 2542 | `LongPlaytest.HELD_AFTER` | `24` | The month the held runs start after: the currency's settling months until XR1, kept at 24 so the held runs and the ensemble start where they always did. |
+| 2569 | `LongPlaytest.FOUNDING` | `Founding.Preset.valueOf(System.getProperty("playtest.founding", "standard").trim().toUp...` | The founding preset under -Dplaytest.founding, standard when unset. |
+| 2579 | `LongPlaytest.FOUNDED_1900` | `"1900".equals(System.getProperty("playtest.founded", "today").trim())` | Whether the run founds its city the 1900 way, under -Dplaytest.founded=1900 (R1d): today's city when unset. |
+| 2606 | `LongPlaytest.PATH` | `System.getProperty("playtest.world") = = null ? Nations.DEFAULT_PATH : Nations.Path.val...` | The path under -Dplaytest.world, Nations.DEFAULT_PATH when unset. |
+| 2610 | `LongPlaytest.PATH_SEED` | `Long.parseLong(System.getProperty("playtest.pathSeed", String.valueOf(Nations.DEFAULT_S...` | The path's seed under -Dplaytest.pathSeed, Nations.DEFAULT_SEED when unset. |
+| 2761 | `LongPlaytest.TRACE` | `System.getProperty("playtest.trace")` | The trace's prefix under -Dplaytest.trace, or null. |
+| 2764 | `LongPlaytest.paperSeen` | `java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())` | The paper already written to the borrow file, by identity. |
+| 3110 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
+| 3118 | `LongPlaytest.ROLLOVER` | `Rollover.Mode.valueOf(System.getProperty("playtest.rollover", "SAME_STRUCTURE").trim()....` | -Dplaytest.rollover=MANUAL\|SAME_STRUCTURE\|TWELVE_MONTH_BILL (0.7.13): the treasury's rollover for the run (Rollover). |
+| 3145 | `LongPlaytest.RESCUE_AUTO` | `! "BUTTON".equalsIgnoreCase(System.getProperty("playtest.rescue", "AUTO").trim())` | The rescue setting under -Dplaytest.rescue, AUTO when unset. |
+| 3148 | `LongPlaytest.PREFERRED_ACCEPT` | `! "DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT").trim())` | The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. |
+| 3151 | `LongPlaytest.SHORTS` | `! "off".equalsIgnoreCase(System.getProperty("playtest.shorts", "on").trim())` | Whether the world sells short under -Dplaytest.shorts, on when unset; "off" is the counterfactual (EM2): the market without them, to see what they change. |
+| 3154 | `LongPlaytest.FUND_DIAL` | `fundDial(System.getProperty("playtest.fund", "0"))` | The fund's dial under -Dplaytest.fund, 0 when unset. |
+| 3184 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
+| 3203 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
+| 3219 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(System.getPrope...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
+| 3234 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueOf(System.g...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
+| 3259 | `LongPlaytest.MONEY_GATE` | `System.getProperty("playtest.moneyGate", "").trim()` | THE MONEY GATE, FOR THE COUNTERFACTUAL (0.7.82, batch O5; turned round at 0.7.112): since 0.7.112 the refiners' spread planner tests every order on its whole cost, whoever pays (SpreadPlanner.ON_IT... |
+| 3262 | `LongPlaytest.REFINERY_TRACE` | `Boolean.getBoolean("playtest.refinery")` | -Dplaytest.refinery=true (0.7.82): the refiners' planner yearly - its outlook and its best candidates under both money gates (refineryLine()). |
+| 3265 | `LongPlaytest.INFLATION_TARGET` | `System.getProperty("playtest.inflationTarget") = = null ? null : Double.valueOf(System....` | The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. |
+| 3293 | `LongPlaytest.FLOAT_FROM_MONTH` | `60` | THE D$ OVER THE RUN (XR1, 2026-10-21): how the float behaved in this city, counted a month at a time (countTheFloat()) and printed as one line beside the currency's (docs/studies/spec-exchange-rate... |
+| 3488 | `LongPlaytest.CHILDCARE_SEEN` | `{ 1_000, 2_000, 3_000, 4_000 }` | CHILDCARE ON THE MAP (0.7.139, batch CC1). |
+| 3491 | `LongPlaytest.childcareSeen` | `new java.util.ArrayList<>()` | ...what it said at each, in order. |
+| 3513 | `LongPlaytest.BUDGET_EVERY` | `Integer.getInteger("playtest.budget", 0)` | -Dplaytest.budget=N (0.7.139, batch CC1): every N months the treasury's month, line by line - what came in and what went out, care by kind and childcare's own running (its centres' posts and upkeep... |
+| 3538 | `LongPlaytest.childcareBuilt` | `new java.util.TreeMap<>()` | ...the buildings, by name. |
+| 3541 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
+| 4187 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
+| 4217 | `LongPlaytest.refinedRun` | `new java.util.EnumMap<>(Good.class)` | ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). |
+| 4322 | `LongPlaytest.terminalsOrdered` | `new java.util.TreeMap<>()` | Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. |
+| 4331 | `LongPlaytest.PORTS_TRACE` | `Boolean.getBoolean("playtest.ports")` | -Dplaytest.ports=true (0.7.86): the ports yearly - each kind's tonnes across the boundary, its berths, its share at sea and the month's calls (portsLine()). |
+| 4420 | `LongPlaytest.refinersOpened` | `new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>()` | THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of the refiners' buildings opened and sold back, and the crude units and the conversion units standing at most. |
+| 4426 | `LongPlaytest.refinersLast` | `new java.util.HashMap<>()` | Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city researches them, so a count kept by the list's index ran past the first month's list (month ... |
+| 4486 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
+| 4493 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
+| 4641 | `LongPlaytest.GROUND_WATCH` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundWatch", "on").trim())` | -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. |
+| 4644 | `LongPlaytest.groundLooked` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` | The month each city's ground was last looked at (keepGroundAhead()), by the city: weakly held, so a harness's cities are let go. |
+| 4679 | `LongPlaytest.GROUND_TRACE` | `groundTraceWindow(System.getProperty("playtest.groundTrace"))` | -Dplaytest.groundTrace=FROM-TO (LP-G1): the months whose ground looks and landlords are traced, to the error stream; unset, none and the run as it was. |
+| 4818 | `LongPlaytest.mapSidecarMonths` | `new ArrayList<>()` | Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). |
+| 4865 | `LongPlaytest.LAYOUT_WINDOW` | `13` | How many months a window of the layout's watch is. |
+| 4867 | `LongPlaytest.LAYOUT_STARTS` | `layoutStarts(TARGET_MONTHS)` | The months each window follows: TARGET_MONTHS / 4, / 2, 3 / 4 and TARGET_MONTHS - LAYOUT_WINDOW, those that fit in the run and clear the window before. |
+| 4900 | `LongPlaytest.layoutSpillByMonth` | `new java.util.TreeMap<>()` | The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. |
+| 4904 | `LongPlaytest.layoutOldBoxes` | `new java.util.HashMap<>()` | ...each district's industry boxes, by its key... |
+| 4906 | `LongPlaytest.layoutOldDims` | `new java.util.HashMap<>()` | ...and each of those boxes' size (LayoutSnap.dims), in the same order. |
+| 4908 | `LongPlaytest.layoutOldCounts` | `new java.util.HashMap<>()` | ...and each district's count of boxes by type. |
+| 4910 | `LongPlaytest.layoutOldModel` | `new java.util.HashMap<>()` | ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did n... |
+| 4919 | `LongPlaytest.layoutOldSpill` | `new java.util.HashSet<>()` | The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahe... |
+| 4932 | `LongPlaytest.layoutOldLive` | `new java.util.HashMap<>(), layoutOldSent = new java.util.HashMap<>()` | THE WORKS SENT ON (RN1-H-M, 2026-11-20). |
+| 5256 | `LongPlaytest.layoutBandsAt` | `new ArrayList<>()` | How many boxes each window's first month holds in the homes' band, in industry and in the outer kinds, one phrase a window: what the oldest works are read against. |
+| 5913 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
+| 5919 | `LongPlaytest.ABROAD_SHARE` | `.8` | CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. |
+| 5922 | `LongPlaytest.QUOTED_BORROWING` | `Boolean.parseBoolean(System.getProperty("playtest.quotedBorrowing", "true"))` | The build compares quotes for the sale by default (QB1); -Dplaytest.quotedBorrowing=false keeps the old rates-before-sale counterfactual. |
+| 5978 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
+| 6631 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
+| 6633 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
+| 6635 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
+| 6637 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
+| 6690 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
+| 6698 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
+| 6849 | `LongPlaytest.COPPER_WORKS` | `{ "Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire...` | The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. |
+| 8696 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
+| 8845 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
+| 8851 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
+| 8957 | `LongPlaytest.CLEAN_UP_WALKS` | `3` | The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). |
+| 9017 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
 
 ### LuxuryRetailCheck.java ([map](map/LuxuryRetailCheck.md))
 
@@ -7920,31 +7942,31 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 172 | `MaterialsCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 174 | `MaterialsCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
-| 732 | `MaterialsCheck.IRON_ROWS` | `{ Mining.IRON_MINE, HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL }` | The iron rows of batch I3 (0.7.120), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. |
-| 735 | `MaterialsCheck.STUDY_CASES` | `{ { 2.7, 2.7, 4.1, 4.1 }, { - 0.5, - 0.1, 0.7, 0.2 }, { - 0.5, 0.1, 1.0, 0.4 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 738 | `MaterialsCheck.STUDY_YEARS` | `{ 2.2, 4.4, 3.5 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 741 | `MaterialsCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(469, 187, 708)` | ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). |
-| 744 | `MaterialsCheck.STUDY_DIESEL` | `.0006 * PriceLevel.FACTOR` | The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). |
-| 747 | `MaterialsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its cases to a tenth of a point, its years to a tenth. |
-| 868 | `MaterialsCheck.ROUTE_ROWS` | `{ HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.COKE_OVENS, ...` | The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. |
-| 872 | `MaterialsCheck.ROUTE_CASES` | `{ { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { - 0.2, 0.7, 2.2, 1.3 }, { - 1.1, 1....` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 876 | `MaterialsCheck.ROUTE_YEARS` | `{ 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 879 | `MaterialsCheck.ROUTE_RUNS` | `PriceLevelCheck.atFounding(255, 1000, 1250, 868, 11700, 25600, 5100)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
-| 882 | `MaterialsCheck.ROUTE_COSTS` | `PriceLevelCheck.atFounding(35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_20...` | ...their all-in cost, D$ thousands (the study's 2.4). |
-| 885 | `MaterialsCheck.ROUTE_POSTS` | `{ 40, 150, 200, 150, 1200, 1800, 400 }` | ...their posts (the study's 2.4). |
-| 888 | `MaterialsCheck.ROUTE_KW` | `{ 550, 5750, 2200, 2050, 51400, 51600, 77000 }` | ...their draw, kW (the study's 2.4 and 1.6). |
-| 891 | `MaterialsCheck.ROUTE_GEN` | `{ 0, 0, 8000, 0, 60000, 25000, 0 }` | ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). |
-| 894 | `MaterialsCheck.ROUTE_HECTARES` | `{ 1.9, 15, 9, 3.7, 60, 84, 46 }` | ...and their ground, hectares (the study's 2.4). |
-| 1260 | `MaterialsCheck.MINE_ROWS` | `{ Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE }` | Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. |
-| 1263 | `MaterialsCheck.MINE_CASES` | `{ { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 1266 | `MaterialsCheck.MINE_YEARS` | `{ 2.0, 2.9, 2.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 1269 | `MaterialsCheck.MINE_RUNS` | `PriceLevelCheck.atFounding(5_420, 951, 9_580)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
-| 1272 | `MaterialsCheck.MINE_COSTS` | `PriceLevelCheck.atFounding(1_000_000, 60_000, 1_100_000)` | ...their all-in cost, D$ thousands (the study's 2.4). |
-| 1275 | `MaterialsCheck.MINE_POSTS` | `{ 400, 120, 500 }` | ...their posts (the study's 2.4). |
-| 1278 | `MaterialsCheck.MINE_KW` | `{ 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 }` | ...their draw, kW, and water, units a month (the study's 2.4). |
-| 1281 | `MaterialsCheck.MINE_MAKES` | `{ 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 }` | ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hemat... |
-| 1284 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType.MAGNETITE }` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
-| 1286 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
+| 740 | `MaterialsCheck.IRON_ROWS` | `{ Mining.IRON_MINE, HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL }` | The iron rows of batch I3 (0.7.120), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. |
+| 743 | `MaterialsCheck.STUDY_CASES` | `{ { 2.7, 2.7, 4.1, 4.1 }, { - 0.5, - 0.1, 0.7, 0.2 }, { - 0.5, 0.1, 1.0, 0.4 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 746 | `MaterialsCheck.STUDY_YEARS` | `{ 2.2, 4.4, 3.5 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 749 | `MaterialsCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(469, 187, 708)` | ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). |
+| 752 | `MaterialsCheck.STUDY_DIESEL` | `.0006 * PriceLevel.FACTOR` | The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). |
+| 755 | `MaterialsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its cases to a tenth of a point, its years to a tenth. |
+| 876 | `MaterialsCheck.ROUTE_ROWS` | `{ HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.COKE_OVENS, ...` | The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. |
+| 880 | `MaterialsCheck.ROUTE_CASES` | `{ { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { - 0.2, 0.7, 2.2, 1.3 }, { - 1.1, 1....` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 884 | `MaterialsCheck.ROUTE_YEARS` | `{ 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 887 | `MaterialsCheck.ROUTE_RUNS` | `PriceLevelCheck.atFounding(255, 1000, 1250, 868, 11700, 25600, 5100)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
+| 890 | `MaterialsCheck.ROUTE_COSTS` | `PriceLevelCheck.atFounding(35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_20...` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 893 | `MaterialsCheck.ROUTE_POSTS` | `{ 40, 150, 200, 150, 1200, 1800, 400 }` | ...their posts (the study's 2.4). |
+| 896 | `MaterialsCheck.ROUTE_KW` | `{ 550, 5750, 2200, 2050, 51400, 51600, 77000 }` | ...their draw, kW (the study's 2.4 and 1.6). |
+| 899 | `MaterialsCheck.ROUTE_GEN` | `{ 0, 0, 8000, 0, 60000, 25000, 0 }` | ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). |
+| 902 | `MaterialsCheck.ROUTE_HECTARES` | `{ 1.9, 15, 9, 3.7, 60, 84, 46 }` | ...and their ground, hectares (the study's 2.4). |
+| 1268 | `MaterialsCheck.MINE_ROWS` | `{ Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE }` | Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. |
+| 1271 | `MaterialsCheck.MINE_CASES` | `{ { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 1274 | `MaterialsCheck.MINE_YEARS` | `{ 2.0, 2.9, 2.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 1277 | `MaterialsCheck.MINE_RUNS` | `PriceLevelCheck.atFounding(5_420, 951, 9_580)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
+| 1280 | `MaterialsCheck.MINE_COSTS` | `PriceLevelCheck.atFounding(1_000_000, 60_000, 1_100_000)` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 1283 | `MaterialsCheck.MINE_POSTS` | `{ 400, 120, 500 }` | ...their posts (the study's 2.4). |
+| 1286 | `MaterialsCheck.MINE_KW` | `{ 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 }` | ...their draw, kW, and water, units a month (the study's 2.4). |
+| 1289 | `MaterialsCheck.MINE_MAKES` | `{ 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 }` | ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hemat... |
+| 1292 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType.MAGNETITE }` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
+| 1294 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
 
 ### MedicineCheck.java ([map](map/MedicineCheck.md))
 
@@ -8334,6 +8356,14 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 55 | `PowerDispatchCheck.DRAW` | `100_000` |  |
 
+### PowerPlanCheck.java ([map](map/PowerPlanCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 37 | `PowerPlanCheck.out` | `System.out` |  |
+| 49 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
+| 51 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station", WIND = "W...` |  |
+
 ### PowerPlantsCheck.java ([map](map/PowerPlantsCheck.md))
 
 | line | constant | value | says |
@@ -8577,16 +8607,16 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 97 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
-| 143 | `ResearchCheck.MONTH_KNOWN` | `32` | The entries whose World column names a month: the tables' 30 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
-| 146 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 92 rows (HISTORY_ROWS). |
-| 147 | `ResearchCheck.PREFIX_COUNTS` | `{ 21, 10, 8, 5, 27, 6, 3, 12 }` |  |
-| 148 | `ResearchCheck.HISTORY_ROWS` | `92` |  |
-| 151 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE... |
-| 152 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
-| 155 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 92. |
-| 158 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "E21", 2151 }, { "M...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 568 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
-| 580 | `ResearchCheck.POWER_YEARS` | `new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"))` | The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. |
+| 144 | `ResearchCheck.MONTH_KNOWN` | `33` | The entries whose World column names a month: the tables' 30, E25 (PW3) and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
+| 147 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 93 rows (HISTORY_ROWS; E25 PW3's). |
+| 148 | `ResearchCheck.PREFIX_COUNTS` | `{ 22, 10, 8, 5, 27, 6, 3, 12 }` |  |
+| 149 | `ResearchCheck.HISTORY_ROWS` | `93` |  |
+| 152 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE... |
+| 153 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
+| 156 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 93. |
+| 159 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "E21", 2151 }, { "E...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
+| 569 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 581 | `ResearchCheck.POWER_YEARS` | `new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"))` | The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. |
 
 ### ResearchPreviewCheck.java ([map](map/ResearchPreviewCheck.md))
 
