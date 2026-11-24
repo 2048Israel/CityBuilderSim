@@ -732,6 +732,31 @@ public final class PowerPlanCheck {
         return sd[0] / (sd[1] / PowerDispatch.PLAN_PEAK_HOUR);
     }
 
+    /** The town's history set so it grows GROWTH_AT_LEAD over `lead` months (BusinessInvestment.growthFactor(), the businesses' trend), from half its reachable people. */
+    static void grow(Game g, double lead) {
+        BusinessInvestment bi = g.getBusinessInvestment();
+        double perMonth = GROWTH_AT_LEAD / lead;
+        long last = Math.max(1, Math.round(bi.reachablePopulation() / 2));
+        java.util.List<Long> history = new java.util.ArrayList<>();
+        for (int month = 0; month <= 12; month++) history.add(Math.round(last * (1 - perMonth * (12 - month))));
+        bi.restorePopulationHistory(history);
+    }
+
+    /*
+     * 8a's table (REV-PW3f, 2026-11-24): every case the last four reviews found, the fixture that causes it, and the form of the rule
+     * it is red under (each shown red, docs/queue/PW3-notes.md section 2, the need date).
+     *
+     *   the case                                         its fixture                                          red under
+     *   a reserve gap under the share (★R)               (1) 15% of one plant, the seasonal peak covered      no share: any reserve gap orders
+     *   the 86 MW plant for a 3 MW town (REV-PW3d)       (i) a seasonal gap the slack alone projects;         the share waived for a seasonal
+     *                                                    (iv) one only the horizon past the completion does   gap at the opening
+     *   the seasonal peak (REV-PW3c)                     (ii) short in the month and at the completion,       both lines at PLAN_PEAK
+     *                                                    over the year's mean peak block
+     *   the shortage waited out for a lead (REV-PW3e)    (iii) covered now, short at the completion           the share waived only in a month that lacks
+     *   two firm rows of different leads (REV-PW3f)      (v) short at coal's completion, covered at the       each row tested at its own lead alone,
+     *                                                    diesel's: nothing; (vi) short at the diesel's own:   no need date (BuildAdvice.timely())
+     *                                                    the diesel
+     */
     static void calmPeak(Path root) {
         out.println("--- 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant ---");
         Game g = town(root, "calm-peak", COAL);
@@ -771,14 +796,16 @@ public final class PowerPlanCheck {
         check("a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (" + named(s) + ")",
                 s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
 
-        // ...and the seasonal peak itself short at the opening: ordered as ever, whatever the share.
+        // ...and the seasonal peak itself short at the opening, by a gap past the share: ordered as ever (it needs no waiver; the waiver's
+        // fixtures are (ii) and (iii) below).
         drawRatio(g, p, 1 / SEASONAL * 1.2);
         sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
-        check(String.format("fixture: the same city with the seasonal peak short at the opening (the firm supply %.0f kW under the seasonal peak's %.0f)", sd[0], sd[1] * SEASONAL),
-                sd[0] < sd[1] * SEASONAL);
+        check(String.format("fixture: the same city with the seasonal peak short at the opening (the firm supply %.0f kW under the seasonal peak's %.0f), "
+                                + "the peak hour short by %.0f kW, %.0f%% of one coal plant's, past FIRST_WORK_SHARE's", sd[0], sd[1] * SEASONAL, sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit),
+                sd[0] < sd[1] * SEASONAL && sd[1] - sd[0] >= share * unit);
         r0 = BuildAdvice.RESERVE_ORDERS.get();
         s = suggest(g);
-        check("with the seasonal peak short at the plant's opening it orders (" + named(s) + ")",
+        check("a gap past the share with the seasonal peak short at the plant's opening orders (" + named(s) + ")",
                 s != null && s.template() == coal && s.count() >= 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
 
         // ...the works' power taken off again, one coal plant and the founding grid stand, the town's history flat. REV-PW3d's P1 4
@@ -824,12 +851,8 @@ public final class PowerPlanCheck {
         // town grows (the businesses' trend, GROWTH_AT_LEAD over the coal plant's lead) and the slack is 0, so the opening's projection past
         // the completion is the horizon's growth alone. Waived only in a month already short, the share held every diesel a whole build lead
         // (30 months) after the shortage began: 529 ZERO_HOT seed-months under lacksNow()'s line against 120 before.
-        BusinessInvestment bi = g.getBusinessInvestment();
-        double slack = g.getAutoBuilder().getSlack(), perMonth = GROWTH_AT_LEAD / lead;
-        long last = Math.max(1, Math.round(bi.reachablePopulation() / 2));
-        java.util.List<Long> history = new java.util.ArrayList<>();
-        for (int month = 0; month <= 12; month++) history.add(Math.round(last * (1 - perMonth * (12 - month))));
-        bi.restorePopulationHistory(history);
+        double slack = g.getAutoBuilder().getSlack();
+        grow(g, lead);
         g.getAutoBuilder().setSlack(0, null);
         done = completion(g, lead);
         BuildAdvice.Ahead p0 = BuildAdvice.opening(g, lead, 0);
@@ -864,6 +887,61 @@ public final class PowerPlanCheck {
         s = suggest(g);
         check("a seasonal gap under the share that only the horizon past the completion projects: the power suggestion orders nothing (" + named(s) + ")",
                 s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+        g.getAutoBuilder().setSlack(slack, null);
+        needDate(root);
+    }
+
+    /**
+     * 8a (v) and (vi), REV-PW3f's P1 (2026-11-24): the need date. A town knowing two firm rows, coal (the slow) and the Diesel Station
+     * (the fast), growing GROWTH_AT_LEAD over coal's lead, the slack 0. Tested each at its own lead, the slowest and biggest row was the
+     * one that passed: LongPlaytest's Oil-Fired Plant, 102.8 months, ordered at m102 ($13.7M borrowed) for the seasonal gap of m205 that
+     * the 30-month diesel could still meet. One need date and the rows that can be on line by it: short at coal's completion and covered
+     * at the diesel's, the gap is the diesel's to meet, later, so nothing orders; short at the diesel's own completion, the diesel orders.
+     */
+    static void needDate(Path root) {
+        out.println("--- 8a (v, vi). two firm rows of different leads: a need date the fast row can still meet orders nothing; at the fast row's own completion, the fast row ---");
+        Game g = town(root, "need-date", COAL, DIESEL);
+        BuildingsTemplate coal = plant(g, COAL), diesel = plant(g, DIESEL);
+        double unit = BuildAdvice.unit(g, POWER, coal), share = BuildAdvice.FIRST_WORK_SHARE, slack = g.getAutoBuilder().getSlack();
+        double slow = g.quoteBuild(coal, 1).months, fast = g.quoteBuild(diesel, 1).months;
+        grow(g, slow);
+        g.getAutoBuilder().setSlack(0, null);
+        BuildAdvice.Ahead pFast = BuildAdvice.opening(g, fast, 0), pSlow = BuildAdvice.opening(g, slow, 0);
+        BuildAdvice.Ahead doneFast = completion(g, fast), doneSlow = completion(g, slow);
+
+        // (v) the reserve covered at the diesel's opening (the firm supply NOW_OVER of the peak hour's demand there), so the seasonal peak
+        // at its completion; the town's growth puts coal's completion short.
+        drawRatio(g, pFast, 1 / NOW_OVER);
+        double[] sdFast = BuildAdvice.supplyDemand(g, POWER, Map.of(), pFast), sdDoneFast = BuildAdvice.supplyDemand(g, POWER, Map.of(), doneFast);
+        double[] sdSlow = BuildAdvice.supplyDemand(g, POWER, Map.of(), pSlow), sdDoneSlow = BuildAdvice.supplyDemand(g, POWER, Map.of(), doneSlow);
+        long n = BuildAdvice.count(g, POWER, BuildAdvice.onSite(g, POWER), Map.of(diesel, 1L), pSlow, BuildAdvice.MOST, true)[0];
+        double nLead = g.quoteBuild(diesel, Math.max(1, n)).months;
+        check(String.format("fixture: the diesel's lead %.1f months, coal's %.1f; the reserve covered at the diesel's opening (%.0f kW against %.0f) and the seasonal "
+                                + "peak at its completion (against %.0f); short at coal's completion (against %.0f, growth %.4f), at its opening short of the peak hour by "
+                                + "%.0f kW, %.0f%% of one coal plant's, under FIRST_WORK_SHARE's; %d diesels close that gap, built in %.1f months, inside coal's lead",
+                        fast, slow, sdFast[0], sdFast[1], sdDoneFast[1] * SEASONAL, sdDoneSlow[1] * SEASONAL, doneSlow.k(), sdSlow[1] - sdSlow[0],
+                        100 * (sdSlow[1] - sdSlow[0]) / unit, n, nLead),
+                fast < slow && BuildAdvice.maintained(g, POWER, Map.of(), pFast) && sdDoneFast[0] >= sdDoneFast[1] * SEASONAL
+                        && sdDoneSlow[0] < sdDoneSlow[1] * SEASONAL && sdSlow[1] - sdSlow[0] < share * unit && n >= 1 && nLead < slow);
+        double cheap = BuildAdvice.screening(g, diesel, Math.max(1, n), BuildAdvice.onSite(g, POWER), pSlow, g.getLandManager().getAvailableSqFt());
+        double dear = BuildAdvice.screening(g, coal, 1, BuildAdvice.onSite(g, POWER), pSlow, g.getLandManager().getAvailableSqFt());
+        check(String.format("fixture: at coal's opening the diesels meet the gap for less by the screening curve (%.4g a kW against coal's %.4g)", cheap, dear),
+                cheap < dear);
+        long r0 = BuildAdvice.RESERVE_ORDERS.get(), s0 = BuildAdvice.SPREAD_ORDERS.get();
+        BuildAdvice.Suggestion s = suggest(g);
+        check("short at the slow row's completion and covered at the fast row's: the need is the fast row's to meet, later, and nothing orders (" + named(s) + ")",
+                s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+
+        // (vi) the seasonal peak short at the diesel's own completion (the firm supply NOW_UNDER of its draw there): its last on-time
+        // month, and the diesel orders, not coal.
+        drawRatio(g, doneFast, 1 / (SEASONAL * NOW_UNDER));
+        sdDoneFast = BuildAdvice.supplyDemand(g, POWER, Map.of(), doneFast);
+        check(String.format("fixture: the seasonal peak short at the diesel's completion (%.0f kW against %.0f)", sdDoneFast[0], sdDoneFast[1] * SEASONAL),
+                sdDoneFast[0] < sdDoneFast[1] * SEASONAL);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s = suggest(g);
+        check("short at the fast row's own completion: the fast row orders, not the slow (" + named(s) + ")",
+                s != null && s.template() == diesel && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
         g.getAutoBuilder().setSlack(slack, null);
     }
 

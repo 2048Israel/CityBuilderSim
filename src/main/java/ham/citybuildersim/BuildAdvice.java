@@ -1513,6 +1513,8 @@ public final class BuildAdvice {
         // PW3: what each power candidate was read with (the plants open at its own opening, and its lead), for placeFarms() below.
         Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened = new LinkedHashMap<>();
         Map<BuildingsTemplate, Double> leads = new LinkedHashMap<>();
+        // ...and every firm row the city could order, the faster ones each due row is weighed against (THE NEED DATE, below).
+        List<BuildingsTemplate> firmRows = new ArrayList<>();
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             // The streets' candidates: every road and line but a highway, which gives no access (FR7); the highways' the Elevated Highway alone.
             boolean candidate = m.kind() == Kind.ROADS
@@ -1527,6 +1529,7 @@ public final class BuildAdvice {
             // A building the city cannot staff at all, or one that does not
             // move the figure, serves nothing.
             if (!(unit > 0)) continue;
+            if (power && !isFarm(t)) firmRows.add(t);
             // Counted twice: at today's demand with the slack, for the order's
             // own wait; then at the demand it opens to after that wait.
             long most = power ? reserveMost(game, t, site) : MOST;
@@ -1557,17 +1560,12 @@ public final class BuildAdvice {
                 if (!full || found[1] != 1) continue;
                 found = new long[] {1, 1};
             }
-            // PW3, 2026-11-24 (the ensemble: a 67,410 kW plant ordered for a 29 kW gap 60 months out, $8.1M borrowed, and a $22M one for a 257 kW
-            // gap): a gap under FIRST_WORK_SHARE (Jerus's HW1 share) of what the order adds is ordered only when the seasonal peak
-            // (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's highest month, what the month's dispatch serves at its worst) is short
-            // at the plant's own completion: its lead, and the town's growth over the lead, with no horizon past it and no slack. A gap that only
-            // the opening's horizon and slack project, the reserve's or the seasonal peak's, waits for the share; any gap that fills it orders.
-            // REV-PW3d's P1 4: with the share waived for any seasonal gap at the opening, all 16 of the ensemble's ZERO_HOT towns, drawing some
-            // 3,000 kW on a 10,000 kW founding grid that covered July until about m200, were sold an 86,181 kW Oil-Fired Plant at m72-81,
-            // $6.2-9.4M borrowed (0.8-1.2 times GDP), before the 1910 diesel stood: no utility buys a unit 29 times its draw for a summer gap
-            // four years out. REV-PW3e's P1: waived only in a month already short (lacksNow()), the plant opened a whole lead late, a diesel's
-            // 30 months (529 ZERO_HOT seed-months under lacksNow()'s line against the fourth run's 120); a utility orders for the peak projected
-            // at the unit's in-service date.
+            // PW3, the row's own test (2026-11-24, REV-PW3c to REV-PW3e): a gap at its opening under FIRST_WORK_SHARE (Jerus's HW1 share) of
+            // what the order adds is a need only when the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's highest
+            // month, what the month's dispatch serves at its worst) is short at the row's own completion: its lead and the town's growth over it,
+            // no horizon and no slack. A gap only the opening's horizon and slack project waits for the share (the ensemble: a 67,410 kW plant
+            // for a 29 kW gap 60 months out, $8.1M borrowed). A row that passes is due: the need date falls at or before its completion, so this
+            // month is its last on time, or it is late. Which due row orders is decided over them all after the loop (THE NEED DATE).
             if (power) {
                 double wait = Double.isNaN(lead) ? 0 : Math.max(0, lead);
                 double[] done = supplyDemand(game, m, at, new Ahead(wait, game.getBusinessInvestment().growthFactor(wait), 0));
@@ -1602,6 +1600,16 @@ public final class BuildAdvice {
             weighed.add(new Weighed(t, tier, per, unit, found[0], closes, fits, p,
                     game.quoteBuild(t, found[0]).months,
                     false, value, power ? rank : value.net()));
+        }
+        // PW3, THE NEED DATE (REV-PW3f's P1, 2026-11-24): a due row orders only when no faster firm row, one that can still be on line by
+        // the date, meets the need at its opening for less (timely()). Each row tested at its own lead, the slowest and biggest was the one
+        // that passed: the Oil-Fired Plant's 102.8-month lead saw the seasonal gap of m205 that the 30-month Diesel Station could still
+        // meet, and LongPlaytest borrowed $13.7M at m102; before that, an 86,181 kW plant for towns drawing 3,000 kW (REV-PW3d) and, with the
+        // share held until the month was short, every diesel a whole lead late (REV-PW3e).
+        if (power) {
+            List<Weighed> due = new ArrayList<>(weighed);
+            weighed.clear();
+            for (Weighed w : due) if (timely(game, m, w, opened.get(w.t()), firmRows, maintain, landLeft)) weighed.add(w);
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
         Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain, cashLeft) : null;
@@ -1699,15 +1707,22 @@ public final class BuildAdvice {
           the farms rank among themselves by it. A farm that cannot close is
           ranked after the firm rows that do, by its net cost a firm kW it
           adds at its own opening. A gap under FIRST_WORK_SHARE of what the
-          order adds orders a plant only when the seasonal peak
+          order adds is a need only when the seasonal peak
           (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's
           highest month) is short at the plant's own completion, its lead
           and the town's growth over it, no horizon and no slack: a gap the
-          opening's horizon and slack alone project, the reserve's or the
-          seasonal peak's, waits (2026-11-24: an order for a 29 kW gap, 60
-          months out, borrowed $8.1M; REV-PW3d, an 86,181 kW plant for towns
-          drawing 3,000 kW on a 10,000 kW grid; REV-PW3e, a diesel ordered
-          only once the month was short, opening 30 months after it). The
+          opening's horizon and slack alone project waits (2026-11-24: an
+          order for a 29 kW gap, 60 months out, borrowed $8.1M).
+          THE NEED DATE (REV-PW3f): a row that passes is due, the date the
+          forecast first falls short at or before its completion; it orders
+          only when no faster firm row, which could still be on line by
+          then, meets the need at its opening for less (timely()). So a
+          long-lead unit is committed early only as the least-cost way to
+          meet the date, a few-MW gap waits for the diesel's own last
+          on-time month, and a month already short orders the cheapest at
+          once (REV-PW3d, an 86,181 kW plant for towns drawing 3,000 kW;
+          REV-PW3e, every diesel a lead late; REV-PW3f, the Oil-Fired Plant
+          for a gap the diesel could still meet). The
           month's own reading of "short" is lacksNow(): that same block, which
           the dispatch serves at its worst, not the plan's peak hour, so the
           holds on every other essential order are not set by a reserve the
@@ -1807,6 +1822,33 @@ public final class BuildAdvice {
         double saved = u.yearRunning(base) - u.yearRunning(plus(base, t, n));
         double net = yearCost(game, t, n, capitalOf(game, t, n, landLeft), lifeFactor(game)) - saved;
         return closes ? net : net / added;
+    }
+
+    /**
+     * Whether a power row that passed its own test, so is due (the need date falls at or before its completion), orders now: THE NEED
+     * DATE (PW3, REV-PW3f). Reality's rule, written once: one need date, the first month the forecast falls short; the candidates the
+     * firm rows that can be on line by then; among them the least-cost by the screening curve, a long-lead unit committed early only as
+     * the least-cost way to meet the date; a few-MW gap a diesel, ordered at the last month it can still be on time; a month already
+     * short ordering at once. Each row's own test reads the date at its own completion, so the rows that can still be on line by it are
+     * the faster ones: `d` waits (false) while a faster firm row, its order for the gap at `d`'s opening (`at`, `d.ahead()`) built
+     * within `d`'s own lead, closes a gap `d` does not (HW1's tier) or closes it at a lower cost - the screening curve against a firm
+     * row's, the total net cost against a farm's (placeFarms()'s comparison). That row orders at its own last on-time month instead,
+     * when it is due itself. In a month already short every row is due, and the cheapest orders at once.
+     */
+    private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, List<BuildingsTemplate> firm,
+                                  boolean maintain, double landLeft) {
+        for (BuildingsTemplate u : firm) {
+            if (u == d.t() || !(game.quoteBuild(u, 1).months < d.lead())) continue;
+            long[] c = count(game, m, at, plus(new LinkedHashMap<>(), u, 1), d.ahead(), reserveMost(game, u, at), maintain);
+            if (c[0] <= 0 || c[1] != 1) continue;
+            double soon = game.quoteBuild(u, c[0]).months;
+            if (!(soon < d.lead())) continue;
+            if (!d.closes()) return false;
+            double cost = isFarm(d.t()) ? reserveRank(game, u, c[0], true, soon, at, d.ahead(), landLeft)
+                    : screening(game, u, c[0], at, d.ahead(), landLeft);
+            if (cost < d.rank()) return false;
+        }
+        return true;
     }
 
     /** A wind or solar farm: the rows whose credit falls with their share (reserveMost(), placeFarms()). */
