@@ -658,3 +658,9 @@ lock, held shared, in a scratch copy since removed; the orchestrator's leave) re
 A runaway, not a real outcome (the orchestrator's reality check): main's planner, which FC2's path exposes. It is filed to CY1
 (the planner over the cycle), whose remedy must read the margin over the cycle (a trailing year), not only the tally. Beside it
 stand a feed gate on the standing works and the idle shed.
+
+The third dry run (2026-11-24): 6665d8aa6 merged with origin/main (b1ccd1c27, two QUEUE-only commits past 0.9.196) on the box,
+/home/jerus/cbs/runs/cbs-gate-FC2-qmeDdMqj: gate exit 0, known red only (CopperRefiningCheck, CurrencyCheck, DeathRecordCheck,
+DenominationCheck, GroundSkipCheck, HoldersCheck, InvestCheck, KeptCheck, PlanCheck, PopulationCheck, RailDrawCheck, RoadCheck),
+unnamed.txt empty. REV-FC2d (Codex) said SHIP on the three harness mends; the ensemble FC2-m195 stands (R6f's default trace is
+0.9.195's to the byte, the orchestrator).

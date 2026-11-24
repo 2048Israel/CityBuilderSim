@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FC2-qmeDdMqj -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — FC2, construction traded with the world — 2026-11-23, ready, see docs/queue/FC2-notes.md
