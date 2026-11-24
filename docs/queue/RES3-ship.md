@@ -2,11 +2,11 @@
 ## changelog
 ### {next} — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-24, ready, see docs/queue/RES3-notes.md
 Activates fourteen residential recipes and thirty-two comparable dwelling classes,
-with full-budget household choice, retained incumbents, explicit emergency sharing
+with funded census budgets, retained paid and hosted incumbents, emergency sharing
 and crowding, class rents and actual occupied receipts. The existing builder and
 funding path receive the actual mix, costs and work; the synthetic pipeline is
 retired. Commits historical and present-day quote, budget, availability and build
-reports. Native class flows and wage indices use save format 65 and floor 65.
+reports. Contract funding, class flows and wage indices use save format/floor 66.
 Emergency shelter retains funded demand for separate doors without extra rent.
 Feasible paid and hosted emergency placements are matched together.
 Unbuilt supply quotes cover operations; feasible orders use the full affordable typed backlog.
@@ -34,3 +34,6 @@ ScaleCheck | fixture: the town has, within 60 months of month 225, a month it is
 BuildCardCheck | another spur's gate is a loss, what the investors' estimate says it would lose: | FS12 | 2026-11-23 | The played town can staff 29% now and 71% with arrivals, below the unchanged 80% gate. The actual estimate is -28.13918112808416; LOSS and INTEREST fail correctly, but STAFFING comes first. Cause adequate staffing for the loss-first fixture; preserve every gate and comparison. See RES3-notes.
 BuildCardCheck | ...worded as a loss, not as no feed: the spur is no refinery's unit (0.7.103) | FS12 | 2026-11-23 | The same loss-first fixture meets STAFFING before LOSS: 70.7393422% forecast, below 80%. The LOSS failure itself has no feed word; the first gate correctly has the staffing explanation. See RES3-notes.
 BuildCardCheck | a spur that would lose money fails the interest too, behind the loss, which stays its first | FS12 | 2026-11-23 | The same moved staffing premise: LOSS and INTEREST already fail with the native negative estimate, while STAFFING is correctly first. Cause the missing labour through fixture inputs rather than weakening the model gates or the first-failure assertion. See RES3-notes.
+BuildCardCheck | fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate | FS12 | 2026-11-24 | The played town can staff 38% now and 79% with a year of arrivals, below the unchanged 80% gate. STAFFING correctly precedes MONEY; moneyGate never establishes staffing eligibility. Cause the other passing gates before the money-only assertion, preserving every model gate. See RES3-notes.
+BuildCardCheck | its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost | FS12 | 2026-11-24 | The same missing staffing premise makes the first refusal STAFFING rather than MONEY. The planner's own earnings, whole-cost and money-hurdle figures remain unchanged by the check. The queued building-card fixture sweep owns this preemption class. See RES3-notes.
+DenominationCheck | the price index has moved (0.7730), and the floor with it: above the founding's | HT1-H | 2026-11-24 | The fixture waits at most twelve unforced months for inflation, then requires both index and lane floor above founding. This town deflates to 0.7730; the floor correctly follows it from about 7.765 to 6.002. All exact floor, reform scaling, lane/arrow and unit-boundary laws pass. Cause the upward-price premise; FS2 shipped. No price input, window, threshold or invariant changed. See RES3-notes.
