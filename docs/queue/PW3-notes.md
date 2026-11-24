@@ -407,4 +407,20 @@ Two helpers traced it (`target/pw3-trace/`):
   231 city-months under 1 in m100-m600, against FC2b's 161, are that reading; seed 8's energy ratio was about 1.0
   in both models.
 
-THIRD_RUN
+**The third run**, after ★R, on 6b3123b38 (PW3 with FC2b, 0.9.198), was scored against `docs/ensemble/0.9.198.md`.
+- M1 and F1 pass in all five policies; the batch verdict is PASS, the hard criteria 10 of 10, and 25 of 26 criteria
+  (A2 fails as the baseline's does, 12 [7 to 24] against 13).
+- No verdict changed. HIGH's T2 passes again.
+
+| policy | measure | the third run | 0.9.198 |
+|---|---|---|---|
+| HIGH | T2, final population (the second run 488,620) | 732,068 [148,358 to 961,519] | 711,698 |
+| HIGH | R2 | 3.03% | 3.37% |
+| AUTO2 | T1 | m318 | m322 |
+| AUTO2 | T2 | 9,388,342 | 9,078,825 |
+| AUTO2 | A1 | 2.60% | 2.66% |
+| ZERO_SLACK | T2 | 7,844,141 | 7,634,318 |
+| ZERO_HOT | T2 | 48,494 | 48,390 |
+| SHOCK | T2 | 1,415,144 | 1,497,435 |
+
+`docs/ensemble/PW3.md` is this run's snapshot.
