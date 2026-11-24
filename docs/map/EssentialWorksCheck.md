@@ -1,4 +1,4 @@
-# EssentialWorksCheck.java - 1,223 lines · 36 methods · 4 constants · harnesses
+# EssentialWorksCheck.java - 1,246 lines · 36 methods · 4 constants · harnesses
 
 `ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -14,7 +14,7 @@
 > share set (SERVED_STREETS), spare care by the people scaled to it (scalePeople()),
 > and the staff-short plant by the workforce set to half the posts.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (256), [AutoBuilder](AutoBuilder.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (47), [Game](Game.md) (41), [WorksValue](WorksValue.md) (23), [LandManager](LandManager.md) (16), [CityNeeds](CityNeeds.md) (15), [UtilitiesHandler](UtilitiesHandler.md) (13), [BuildingManager](BuildingManager.md) (12), [Traffic](Traffic.md) (11), [CareType](CareType.md) (8), [Health](Health.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [Sector](Sector.md) (5), [ConstructionControl](ConstructionControl.md) (5), [EducationType](EducationType.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [ChildcareCheck](ChildcareCheck.md) (3), [PopulationManager](PopulationManager.md) (3), [JobType](JobType.md) (3), [BuildCard](BuildCard.md) (2), [WageBand](WageBand.md) (2), [PowerDispatch](PowerDispatch.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [GameFiles](GameFiles.md) (2), [SubstationCheck](SubstationCheck.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [Education](Education.md) (1), [AgeBand](AgeBand.md) (1)... and 5 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (260), [AutoBuilder](AutoBuilder.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (48), [Game](Game.md) (41), [WorksValue](WorksValue.md) (24), [LandManager](LandManager.md) (16), [CityNeeds](CityNeeds.md) (15), [UtilitiesHandler](UtilitiesHandler.md) (13), [BuildingManager](BuildingManager.md) (12), [Traffic](Traffic.md) (11), [CareType](CareType.md) (8), [Health](Health.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [ConstructionControl](ConstructionControl.md) (6), [Sector](Sector.md) (5), [EducationType](EducationType.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [ChildcareCheck](ChildcareCheck.md) (3), [PopulationManager](PopulationManager.md) (3), [JobType](JobType.md) (3), [BuildCard](BuildCard.md) (2), [WageBand](WageBand.md) (2), [PowerDispatch](PowerDispatch.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [GameFiles](GameFiles.md) (2), [SubstationCheck](SubstationCheck.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [Education](Education.md) (1), [AgeBand](AgeBand.md) (1)... and 5 more
 
 **Used by (5):** [DeathCareFirstCheck](DeathCareFirstCheck.md), [GapOrderCheck](GapOrderCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [ScaleCheck](ScaleCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
@@ -37,7 +37,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1202 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
+| 22 | 1225 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
 | 28 | 4 | `static void check(String label, boolean ok)` |  |
 | 33 | 5 | `static void quietly(Runnable run)` |  |
 | 39 | 12 | `static Game town(Path root, String name)` |  |
@@ -66,12 +66,12 @@
 | 716 | 29 | `static void filledPostCosts(Path root)` |  |
 | 746 | 44 | `static void cappedCare(Path root)` |  |
 | 791 | 39 | `static void adviceParity(Path root)` |  |
-| 831 | 72 | `static void interimPower(Path root)` |  |
-| 904 | 35 | `static void waterAtCap(Path root)` |  |
-| 940 | 38 | `static void queuedPower(Path root)` |  |
-| 979 | 37 | `static void shortPowerBenefit(Path root)` |  |
-| 1017 | 40 | `static void pavingLead(Path root)` |  |
-| 1058 | 115 | `static void overduePending(Path root) throws Exception` |  |
-| 1174 | 20 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, java.util.List<String> orders, bool...` |  |
-| 1195 | 28 | `public static void main(String[] args) throws Exception` |  |
+| 831 | 76 | `static void interimPower(Path root)` |  |
+| 908 | 35 | `static void waterAtCap(Path root)` |  |
+| 944 | 38 | `static void queuedPower(Path root)` |  |
+| 983 | 37 | `static void shortPowerBenefit(Path root)` |  |
+| 1021 | 40 | `static void pavingLead(Path root)` |  |
+| 1062 | 134 | `static void overduePending(Path root) throws Exception` |  |
+| 1197 | 20 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, java.util.List<String> orders, bool...` |  |
+| 1218 | 28 | `public static void main(String[] args) throws Exception` |  |
 

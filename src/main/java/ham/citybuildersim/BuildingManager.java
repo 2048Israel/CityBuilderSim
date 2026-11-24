@@ -5474,9 +5474,9 @@ public class BuildingManager {
                 owed[k] = extraPoints = extraCount * points;
             }
             if (building <= 0) continue;
-            owed[k] += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+            owed[k] += homeOwedOf(s);
             // ...never more in a month than its build time allows (PW2): its points on site, the extra's with them, over its months.
-            owed[k] = capped(owed[k], siteCap(s, extraPoints));
+            owed[k] = capped(owed[k], homeCapOf(s, extraPoints));
             weight[k] = weightOf(s.getBuilding(), building);
         }
         if (extra != null && extraCount > 0 && !extraHasStack) {
@@ -5614,6 +5614,27 @@ public class BuildingManager {
     /** A site's cap (PW2): its buildings' points on site, and `extraPoints` more of them, over their build time, and all the preparation it still owes. */
     static double siteCap(BuildingsStacks s, double extraPoints) {
         return monthCap(s.getBuilding(), s.pointsOnSite() + extraPoints) + Math.max(0, -s.getConstructionProgress());
+    }
+
+    /**
+     * The points a stack owes that the city's crews' rule shares (FC2b): all it owes, less what is handed to the foreign
+     * crews on it (ConstructionControl, G. ABROAD) - the same figure as before for a site with none handed, to the bit.
+     */
+    private double homeOwedOf(BuildingsStacks s) {
+        double owed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+        ConstructionControl.Abroad rec = control.abroadOf(ConstructionControl.keyOf(s.getBuilding()));
+        return rec == null ? owed : Math.max(0, owed - rec.owed);
+    }
+
+    /**
+     * siteCap() less the foreign crews' month on the site (FC2b): a site's build time is the site's, both crews together
+     * (PW2), so what they build of it in a month - the least of what they owe and their pace - is not the city's crews' to
+     * take. siteCap() itself with none handed.
+     */
+    private double homeCapOf(BuildingsStacks s, double extraPoints) {
+        double cap = siteCap(s, extraPoints);
+        ConstructionControl.Abroad rec = control.abroadOf(ConstructionControl.keyOf(s.getBuilding()));
+        return rec == null ? cap : Math.max(0, cap - Math.min(rec.owed, rec.pace));
     }
 
     /** What a site may take this month: all it owes when that is within its cap (a hair over is rounding, and taken, so the last month finishes it rather than holding it a month for the hair), else the cap. */
@@ -5786,8 +5807,17 @@ public class BuildingManager {
         materialsDue = 0;
         revenueDue = 0;
         pointsBuilt = 0;
+        abroadPointsBuilt = 0;
+        abroadBill = 0;
         contractsDue.clear();
         controlEvents = new ConstructionControl.Events();
+
+        // A site handed to the foreign crews (FC2b) that has no buildings on site any more has nothing left to build: its
+        // record ends (a site stopped or emptied some other way than the month's advance).
+        for (ConstructionControl.Abroad a : new java.util.ArrayList<>(control.abroadSites())) {
+            BuildingsStacks site = stackOfKey(a.key);
+            if (site == null || site.getUnderConstruction() <= 0) control.endAbroad(a.key);
+        }
 
         // The player's hand on the queue (0.7.22): an order set, a rush, a
         // cancel or a demolition. Without one - and without the model's own
@@ -5811,8 +5841,23 @@ public class BuildingManager {
             double[] share = planned ? plan.work : siteShares(constructionOutput);
             for (int k = 0; k < stacks.size(); k++) {
                 BuildingsStacks stack = stacks.get(k);
-                stack.advanceConstruction(share[k]);
-                pointsBuilt += stack.getLastApplied();
+                String siteKey = ConstructionControl.keyOf(stack.getBuilding());
+                ConstructionControl.Abroad rec = control.abroadOf(siteKey);
+                if (rec == null) {
+                    stack.advanceConstruction(share[k]);
+                    pointsBuilt += stack.getLastApplied();
+                } else {
+                    // The part handed to the foreign crews (FC2b) is built at the pace struck at the handover, apart from
+                    // the share the city's crews' rule gave the rest: pointsBuilt stays the city's crews' and FC2's pooled work.
+                    stack.advanceConstruction(share[k], Math.min(rec.owed, rec.pace), rec.owed, rec.materials);
+                    double abroad = stack.getLastAbroadApplied();
+                    rec.owed = Math.max(0, rec.owed - abroad);
+                    rec.materials = Math.max(0, rec.materials - stack.getLastAbroadMaterials());
+                    pointsBuilt += stack.getLastApplied() - abroad;
+                    abroadPointsBuilt += abroad;
+                    abroadBill += abroad * rec.pricePerPoint;
+                    if (rec.owed <= 1e-9 || stack.getUnderConstruction() <= 0 || !stack.hasAbroad()) control.endAbroad(siteKey);
+                }
                 materialsDue += stack.getMaterialsDue();
                 revenueDue += stack.getRevenueDue();
                 contractsDue.addAll(stack.getDues());
@@ -5874,6 +5919,19 @@ public class BuildingManager {
     private double pointsBuilt;
 
     public double getPointsBuilt() { return pointsBuilt; }
+
+    /**
+     * The foreign crews' work on the sites handed them this month, in points, and what the builders owe them for it
+     * (FC2b; ConstructionControl, G. ABROAD): apart from pointsBuilt, which stays the city's crews' and FC2's pooled work.
+     * SimulationEngine passes them to Construction.payCrewsOnSites(). Reset with pointsBuilt at the top of the month.
+     */
+    private double abroadPointsBuilt, abroadBill;
+
+    /** The foreign crews' work on the sites handed them this month, in points (FC2b). */
+    public double getAbroadPointsBuilt() { return abroadPointsBuilt; }
+
+    /** What the builders owe the foreign crews for it, in the city's money (FC2b): the points built at each site's price. */
+    public double getAbroadBill() { return abroadBill; }
 
     /* =====================================================================
        THE PLAYER'S HAND ON THE QUEUE (0.7.22)
@@ -6010,10 +6068,10 @@ public class BuildingManager {
             BuildingsStacks s = stacks.get(k);
             keys.add(ConstructionControl.keyOf(s.getBuilding()));
             if (s.getUnderConstruction() > 0) {
-                owed[k] = Math.max(0, s.pointsOnSite()
-                        - s.getConstructionProgress());
+                // ...the home part of it: what is handed to the foreign crews (FC2b) is theirs, not the city's crews' to share.
+                owed[k] = homeOwedOf(s);
                 // ...and no more than its build time allows in a month, in the player's order or on overtime (PW2).
-                owed[k] = capped(owed[k], siteCap(s, 0));
+                owed[k] = capped(owed[k], homeCapOf(s, 0));
             }
         }
         keys.add("");
@@ -6449,10 +6507,11 @@ public class BuildingManager {
 
     /**
      * The queue the city's own builders hold (FC2): everything owed on site and the work ahead of the sites, less the
-     * foreign crews' book - their points are theirs to build, at their own month. Never negative.
+     * foreign crews' book - their points are theirs to build, at their own month - and the work handed to them on the sites
+     * (FC2b; ConstructionControl.abroadOwedTotal()): it is not the builders' queue at home. Never negative.
      */
     public double queueAtHome() {
-        return Math.max(0, getRemainingConstructionPoints() + priorityPoints() - foreignBookPoints());
+        return Math.max(0, getRemainingConstructionPoints() + priorityPoints() - foreignBookPoints() - control.abroadOwedTotal());
     }
 
     /**
@@ -6619,7 +6678,9 @@ public class BuildingManager {
         double points = Math.max(0, count - home) * each;
         long abroad = points > 0 ? count - (long) Math.floor(home) : 0;
         double month = BuildersShort.foreignMonth(foreignBookPoints() + away + points, threshold, largestDepotPoints());
-        return new OrderAbroad(from, step, threshold, abroad, points, month, BuildersShort.excessAt(first, month, now.output()));
+        // ...the crews' supply curve counts their month on the sites handed them too (FC2b); the record's month stays his book's.
+        return new OrderAbroad(from, step, threshold, abroad, points, month,
+                BuildersShort.excessAt(first, month + control.abroadMonth(), now.output()));
     }
 
     /** The base a point of t's work is priced on, before any premium: its non-material cost over its points, as basePricePerPoint() weighs each stack on site; NaN for no template or no points. */
@@ -6676,9 +6737,97 @@ public class BuildingManager {
         // REV-FC2: his book only - an order hands him its work abroad when it is billed (abroadOfOrder()), and the work at
         // home past the threshold is its payers' at the home price, which they were quoted.
         double month = BuildersShort.foreignMonth(foreignBookPoints(), threshold, largestDepotPoints());
+        // ...the supply curve counts the crews' month on the sites handed them too (FC2b); the month itself stays his book's
+        // (foreignMonthNow() reads it as orders' wait output: the sites' crews serve no new order).
         return new ForeignTerms(sites, output, home, base, world, first, threshold, overflow, month,
-                BuildersShort.excessAt(first, month, output));
+                BuildersShort.excessAt(first, month + control.abroadMonth(), output));
     }
+
+    /**
+     * What a payer's share of one site's work would cost and take abroad now (FC2b; ConstructionControl, G. ABROAD): the
+     * payer's home contract's share of the site, its points, the units of material they draw, the buildings that share
+     * stands for, the foreign crews' pace on it and the months it takes them (BuildersShort.sitePace(), monthsAbroad())
+     * against the months it waits at home (siteMonths(), endless when nothing moves), the base a point, the home premium
+     * on it as it stands, the crews' excess at their month with this work in it, what they bill a point, and the extra
+     * over the home price - the city's money, before the builders' tax: points x base x what the crews' excess is over the
+     * premium (never under nothing). Read by the payer's test (and the Construction screen); Game strikes the handover on it.
+     */
+    public record AbroadTerms(String key, int templateId, String building, String payer, double share, double points,
+                              double materials, double buildings, double pace, double monthsAbroad, double monthsHome,
+                              double base, double premiumHome, double excess, double pricePerPoint, double extra) { }
+
+    /**
+     * The terms a payer's share of template t's site would be handed to the foreign crews on, now (FC2b), its months at
+     * home read at {@code waitOutput} (siteMonths()). Null with no trade on, no stack or nothing on site, a record
+     * already standing for the site, a payer with no home contract on it, or points that come to nothing. The pooled
+     * claim of FC2 stays on his book: the share is of the points owed at home, less what is handed abroad already.
+     */
+    public AbroadTerms abroadTermsOf(BuildingsTemplate t, String payer, double waitOutput) {
+        if (t == null || payer == null || !foreignTradeOn()) return null;
+        BuildingsStacks stack = getStack(t);
+        if (stack == null || stack.getUnderConstruction() <= 0) return null;
+        String key = ConstructionControl.keyOf(t);
+        if (control.abroadOf(key) != null) return null;
+        double share = stack.homePointsShare(payer);
+        if (!(share > 0)) return null;
+        double owedAll = stack.owedPoints();
+        double homeOwed = Math.max(0, owedAll - abroadOwedOf(t)); // ...FC2's pooled claim stays on his book
+        double points = share * homeOwed;
+        if (!(points > 0) || !Double.isFinite(points) || !(owedAll > 0)) return null;
+        double materials = stack.getMaterialsOwed() * points / owedAll;
+        // ...the buildings its points finish sooner: the site's by the points owed, so FC2's pooled claim, which stays on his book, is not counted.
+        double buildings = stack.getUnderConstruction() * points / owedAll;
+        double pace = BuildersShort.sitePace(points, thresholdMonths(), largestDepotPoints(), monthCap(t, stack.pointsOnSite()));
+        double monthsAbroad = BuildersShort.monthsAbroad(points, pace);
+        double home = siteMonths(key, waitOutput);
+        double monthsHome = Double.isNaN(home) || home >= Double.MAX_VALUE ? Double.POSITIVE_INFINITY : home;
+        double base = basePricePerPoint();
+        double premiumHome = scarcityPremium();
+        ForeignTerms ft = foreignTerms();
+        double excess = BuildersShort.excessAt(ft.firstShare(), ft.month() + control.abroadMonth() + pace, ft.output());
+        double pricePerPoint = base * (1 + excess);
+        double extra = points * base * Math.max(0, excess - premiumHome);
+        return new AbroadTerms(key, t.getId(), t.getName(), payer, share, points, materials, buildings, pace,
+                monthsAbroad, monthsHome, base, premiumHome, excess, pricePerPoint, extra);
+    }
+
+    /**
+     * The books' half of a handover (FC2b): the payer's home contract on the site moves to the foreign crews' part
+     * (BuildingsStacks.handAbroad()), what it paid over is booked to it (bookAbroad()), and the site's record is made and
+     * kept (ConstructionControl.addAbroad()), owing the points and the units the terms give, at the pace and price they
+     * struck; returned. The payer's payment and the builders' bill are Game's. Null for a site that is not there. Every
+     * figure it keeps is finite (REV-FC2b-1): the record is saved, and the save's Gson refuses an infinity.
+     */
+    public ConstructionControl.Abroad handSiteAbroad(AbroadTerms a, int month, double paid, double interestSaved,
+                                                     double earningsForward) {
+        if (a == null) return null;
+        BuildingsStacks stack = stackOfKey(a.key());
+        if (stack == null) return null;
+        stack.handAbroad(a.payer());
+        stack.bookAbroad(a.payer(), paid);
+        ConstructionControl.Abroad r = new ConstructionControl.Abroad();
+        r.key = a.key();
+        r.templateId = a.templateId();
+        r.building = a.building();
+        r.payer = a.payer();
+        r.month = month;
+        r.points = finiteOr0(a.points());
+        r.owed = r.points;
+        r.materials = finiteOr0(a.materials());
+        r.pace = finiteOr0(a.pace());
+        r.pricePerPoint = finiteOr0(a.pricePerPoint());
+        r.paid = finiteOr0(paid);
+        // ...a wait at home that never ends is siteMonths()' never, Double.MAX_VALUE: the save's Gson writes no infinity (REV-FC2b-1).
+        r.monthsHome = a.monthsHome() < Double.MAX_VALUE ? a.monthsHome() : Double.MAX_VALUE;
+        r.monthsAbroad = a.monthsAbroad() < Double.MAX_VALUE ? a.monthsAbroad() : Double.MAX_VALUE;
+        r.interestSaved = finiteOr0(interestSaved);
+        r.earningsForward = finiteOr0(earningsForward);
+        control.addAbroad(r);
+        return r;
+    }
+
+    /** A figure for the saved record (REV-FC2b-1): itself when finite, else nothing - the save's Gson refuses an infinity or a NaN. */
+    private static double finiteOr0(double x) { return Double.isFinite(x) ? x : 0; }
 
     /** The foreign crews' excess share at the curve's first point (BuildersShort.excessShare(): E x / p, capped). */
     public double foreignExcessShare() {
@@ -9087,6 +9236,15 @@ public class BuildingManager {
         if (stack != null && amount > 0) control.runFor(template.getId()).billed += amount;
     }
 
+    /**
+     * The points an order of {@code payer}'s put on site (FC2b), booked after its contract (bookContract()): what a payer's
+     * share of a shared site is read by (BuildingsStacks.homePointsShare()).
+     */
+    public void noteContractPoints(BuildingsTemplate t, String payer, double points) {
+        BuildingsStacks stack = t == null ? null : getStack(t);
+        if (stack != null) stack.addPoints(payer, points);
+    }
+
     /** One payer's contract on one template's sites, as the save carries it (0.7.19). */
     public static final class ContractRecord {
         public int templateId;
@@ -9095,6 +9253,10 @@ public class BuildingManager {
         /** The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. */
         public Double recovered;
         public double value, units, allowance;
+        /** The points of work its orders put on site still owed (FC2b); absent from an older save, which reads none. */
+        public double points;
+        /** Whether it is a contract handed to the foreign crews (FC2b; BuildingsStacks.getAbroadContracts()), not a home one. */
+        public boolean abroad;
     }
 
     /** Every payer's contract on site, for the save. */
@@ -9110,6 +9272,21 @@ public class BuildingManager {
                 r.value = c.getValue();
                 r.units = c.getUnits();
                 r.allowance = c.getAllowance();
+                r.points = c.getPoints();
+                out.add(r);
+            }
+            // ...and the ones handed to the foreign crews (FC2b), marked.
+            for (BuildingsStacks.Contract c : stack.getAbroadContracts()) {
+                ContractRecord r = new ContractRecord();
+                r.templateId = stack.getBuilding().getId();
+                r.payer = c.payer;
+                r.creditable = c.creditable;
+                r.recovered = c.getRecovered();
+                r.value = c.getValue();
+                r.units = c.getUnits();
+                r.allowance = c.getAllowance();
+                r.points = c.getPoints();
+                r.abroad = true;
                 out.add(r);
             }
         }
@@ -9124,7 +9301,7 @@ public class BuildingManager {
             BuildingsTemplate t = getTemplate(r.templateId);
             BuildingsStacks stack = t == null ? null : getStack(t);
             double recovered = r.recovered != null ? r.recovered : (r.creditable ? 1 : 0);
-            if (stack != null) stack.restoreContract(r.payer, recovered, r.value, r.units, r.allowance);
+            if (stack != null) stack.restoreContract(r.payer, recovered, r.value, r.units, r.allowance, r.points, r.abroad);
         }
     }
 

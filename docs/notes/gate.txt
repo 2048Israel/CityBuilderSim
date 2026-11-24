@@ -1,20 +1,33 @@
-# gate of Merge batch/FC2: construction traded with the world (Jerus, 2026-11-22: "make it a imported/exported good... the base cost is still in domestic currency but the excess is in foreign currency"; placed "next after whatever is getting built"): FC1's contractor always on offer at p + E x a point, so the city's builders win to the knee and the overflow goes abroad sooner under a strong currency; the export of spare points under the knee, 0.9.197
+# gate of Merge batch/FC2b: after FC2: the choices that use the foreign crews (Jerus, 2026-11-22): an investor moves its order abroad, a half-built building included, when the extra on the work remaining is less than the interest and earnings it saves; the city hands one site (roads, say) to them from the Construction screen, saved, 0.9.198
 # date: 2026-11-24
 # earth-2.bin: named
 # nightly: 2026-11-24 03:09 0.9.196 94ba28823 4,000 months: RED, exit 1 in 712 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-24-94ba28823-AVsIJOCL
-# suite: 246 harnesses run in 1227s: 234 passed, 12 failed
+# suite: 238 harnesses run in 988s: 222 passed, 16 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
+OrderDoorCheck | exit 1
+OrderDoorCheck | FAIL fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready
+OrderDoorCheck | OrderDoorCheck: 1 FAILED
 RoadCheck | exit 1
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
 RoadCheck | 2 FAILED
+AutoBuildCheck | exit 1
+AutoBuildCheck | fixture: the saved city turned people away from general care for its fee                                       FAIL
+AutoBuildCheck | 1 FAILED
+SectorFlowCheck | exit 1
+SectorFlowCheck | ...and its outputs, goods and work billed, to its revenue                                            FAIL
+SectorFlowCheck | ...and both are the SectorBooks month the Income page draws                                          FAIL
+SectorFlowCheck | 2 FAILED
 CurrencyCheck | exit 1
 CurrencyCheck | fixture: the city reads a year of 45% inflation                    FAIL  0.000000000 != 0.450000000
 CurrencyCheck | the autopilot sets the rule's rate                                 FAIL  0.030000000 != 0.000000000
 CurrencyCheck | ...past the old stop of the dial                                   FAIL
 CurrencyCheck | 3 FAILED
+ForeignDebtCheck | exit 1
+ForeignDebtCheck | fixture: a three-year serial's schedule, a payment a month FAIL
+ForeignDebtCheck | 1 FAILED
 HoldersCheck | exit 3
 HoldersCheck | fixture: in those months no household left and none sold the bank's desk any paper FAIL
 HoldersCheck | fixture: ...and the step came from the households                        FAIL
@@ -38,17 +51,28 @@ RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 1
+KeptCheck | exit 5
+KeptCheck | ...the rule held again, Portfolio with the holdings its month settled, every row that folds opened: the redraw and the next equal a page built new FAIL
+KeptCheck | the page of a holding the let-go month settled, from Portfolio: the redraw and the next equal a page built new FAIL
+KeptCheck | fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (0 settled) FAIL
+KeptCheck | fixture: the settled lot watched, null, runs 0 months, past the 3 months its page is watched FAIL
 KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 1 FAILED
+KeptCheck | 5 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 2 FAILED
+CarCheck | exit 3
+CarCheck | the fixture: one household's money buys a car at the price the draw is sized at and none at the price it is struck at FAIL  4800 trials, no edge found
+CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
+CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
+CarCheck | 3 FAILED
+GroundSkipCheck | exit 1
+GroundSkipCheck | ...and the landlords' order is held for land with no home on site FAIL
+GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 0 month(s) FAIL
+GroundSkipCheck | premise: skipped the old way, the landlords are held for land and a look is due FAIL
+GroundSkipCheck | ...and places nothing: the landlords are still held for land FAIL
+GroundSkipCheck | 4 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | seed 1's 2,400 months stand at most ROD_MILLS_STANDING (1) Rod Mill                                  FAIL  181 Rod Mills, 7.6 minutes
 CopperRefiningCheck | 1 FAILED
-GroundSkipCheck | exit 1
-GroundSkipCheck | ...and the landlords' order is held for land with no home on site FAIL
-GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 2 month(s) FAIL
-GroundSkipCheck | 2 FAILED
