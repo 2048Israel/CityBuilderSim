@@ -633,3 +633,28 @@ helper (contract 4) and each checked against the world first (Jerus, 2026-11-23)
   The orphaned line was exact and the books closed. The bond is now chosen by its coupon: the soonest whose coupon on half its
   record clears twice the visible line (a fixture line). That is Retail's, due m129 (the record 5.41, 1 of 59 cells halved), and
   a second fixture line asserts the coupon on D is visible.
+
+The merge of main at 0.9.196 (R6f; 69402a412) and its dry run (cbs-gate-FC2-IWtpy02T, 2026-11-24) stopped on one red,
+CopperRefiningCheck's "seed 1's 2,400 months stand at most ROD_MILLS_STANDING (1) Rod Mill": 181 Rod Mills, 40 smelters, 46
+refineries and 60 scrap refineries (main 0.9.196 on the box: 0). It is the box's path only. On the PC the same commit, arguments
+and data stand 0 (33 min on 0a1b64a0b, 40 on 0e1c26bf6), the JVMs' arithmetic parting the 2,400 months (box OpenJDK 21.0.13,
+PC Oracle 21.0.4). There, Copper Refining's borrowing ban (BusinessDebtManager.java:3172) holds the Rod Mill, the planner's best
+candidate for 1,064 months (it would replace 7,640 t of imported rod a month). A hooked run on the box (one JVM under the box
+lock, held shared, in a scratch copy since removed; the orchestrator's leave) reproduced it exactly:
+- No ban was ever on. The chain starts at m858 with a Scrap Copper Refinery at a 5% margin over its hurdle; the first Rod Mill
+  follows at m889, the first refinery at m1035 and the first smelter at m1091, one works a month after that
+  (ProcessingSector.plan(), ProcessingSector.java:491-499), paid by cash and borrowing, none shed.
+- From about m1200 the cathode and rod tallies repeat every three months: cathode exports of 494k t, then imports of 82k t with
+  992k t of rod made, then an idle month. The planner prices a works' output at the import price up to the month's imports and its
+  feed at the export price up to the month's exports (SpreadPlanner.java:166-190), and reads the peak month as lasting. A Rod Mill
+  earns +54k, -83k and -33k over the cycle, a mean of -20k against a hurdle of about 45k, and still passes (earns over hurdle 1.08
+  to 14.95). Each stage's flush month is the next stage's import to replace, so the stages feed one another.
+- CopperRefining declares no feedRefusal (HeavyIndustry.feedRefusal(), HeavyIndustry.java:332-339, has one), so standing
+  capacity never refuses an order: 180 mills stand for 1.44 Mt a month against 0.69 Mt of cathode made, at about 25% of
+  nameplate. The idle-shed count resets in each working month (SpreadPlanner.noteMonth()), so none is retired.
+- FC2 changes none of ProcessingSector, SpreadPlanner, CopperRefining or the goods market. The foreign crews took points in 19 of
+  the 355 orders, and the queue premium was 1.000 on most orders after m1089 (1.14 at the first Rod Mill, against a margin of
+  4.9 times).
+A runaway, not a real outcome (the orchestrator's reality check): main's planner, which FC2's path exposes. It is filed to CY1
+(the planner over the cycle), whose remedy must read the margin over the cycle (a trailing year), not only the tally. Beside it
+stand a feed gate on the standing works and the idle shed.
