@@ -1,10 +1,10 @@
 # The code map
 
-Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regenerate with `Regenerate maps.bat` (or `Maps`).
+Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regenerate with `Regenerate maps.bat` (or `Maps`).
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 635 files, 686,295 lines, 29,991 methods, 6,683 constants. `GameVersion.VERSION` is "0.9.195", `SAVE_FORMAT` 63.
+**The tree:** 635 files, 686,361 lines, 29,992 methods, 6,684 constants. `GameVersion.VERSION` is "0.9.195", `SAVE_FORMAT` 63.
 
 ## model (280 files)
 
@@ -300,7 +300,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BusinessServices.java](BusinessServices.md) | 415 | 17 | Somebody else's work, done here, paid for from outside. | 9 |
 | [CementConcrete.java](CementConcrete.md) | 73 | 2 | Kilns and cement plants - Cement & Concrete (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.12 and 5's I7 row; the study's 6): stone's pr... | 6 |
 | [CoalMining.java](CoalMining.md) | 503 | 27 | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study... | 11 |
-| [Construction.java](Construction.md) | 1,351 | 78 | The builders. | 28 |
+| [Construction.java](Construction.md) | 1,351 | 78 | The builders. | 29 |
 | [CopperMining.java](CopperMining.md) | 305 | 13 | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the s... | 11 |
 | [CopperRefining.java](CopperRefining.md) | 286 | 16 | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the stu... | 13 |
 | [ExtractionSector.java](ExtractionSector.md) | 668 | 42 | A sector that digs or cuts one resource out of the ground the city owns: the template every extraction industry of the materials chains extends (0.... | 20 |
@@ -426,7 +426,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ClockCheck.java](ClockCheck.md) | 690 | 25 | The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and drops what it could not run, the header's speed sa... | 1 |
 | [CoalMiningCheck.java](CoalMiningCheck.md) | 675 | 16 | Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.m... | 3 |
 | [ConstructionControlCheck.java](ConstructionControlCheck.md) | 872 | 21 | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. | 0 |
-| [ConstructionTrapCheck.java](ConstructionTrapCheck.md) | 1,616 | 43 | The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work as the repairs leave the build... | 2 |
+| [ConstructionTrapCheck.java](ConstructionTrapCheck.md) | 1,653 | 44 | The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work as the repairs leave the build... | 2 |
 | [ConsumptionCheck.java](ConsumptionCheck.md) | 343 | 4 | Verifies the consumption model against the two laws it is shaped to obey, and guards the data file against the Java. | 0 |
 | [CopperBufferCheck.java](CopperBufferCheck.md) | 250 | 10 | A stock buffer must not buy feed worth more than its undemanded output (CPB1). | 0 |
 | [CopperMiningCheck.java](CopperMiningCheck.md) | 526 | 13 | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.... | 4 |
@@ -530,7 +530,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 822 | 33 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 1 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,487 | 101 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 7 |
 | [LicenceFeesCheck.java](LicenceFeesCheck.md) | 546 | 15 | Licence fees leave a running firm's money and enter this month's current account. | 4 |
-| [LongPlaytest.java](LongPlaytest.md) | 10,035 | 190 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 79 |
+| [LongPlaytest.java](LongPlaytest.md) | 10,045 | 190 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 79 |
 | [LuxuryRetailCheck.java](LuxuryRetailCheck.md) | 249 | 10 | What a luxury shop's post sells: its payroll over its margin at BEA's mark (LX1, 2026-11-17). | 0 |
 | [MainLineCheck.java](MainLineCheck.md) | 2,032 | 67 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
@@ -560,7 +560,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PartnerCallsCheck.java](PartnerCallsCheck.md) | 1,322 | 40 | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by ... | 0 |
 | [PartnersCheck.java](PartnersCheck.md) | 838 | 18 | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md... | 0 |
 | [PassThroughCheck.java](PassThroughCheck.md) | 911 | 23 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
-| [PegAnchorCheck.java](PegAnchorCheck.md) | 667 | 22 | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. | 1 |
+| [PegAnchorCheck.java](PegAnchorCheck.md) | 686 | 22 | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. | 1 |
 | [PlanCheck.java](PlanCheck.md) | 5,569 | 188 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 5 |
 | [PlaytestFixCheck.java](PlaytestFixCheck.md) | 224 | 9 | Verifies the small fixes of a played city (PT1): words and the log, nothing the month does. | 0 |
 | [PolicyCheck.java](PolicyCheck.md) | 479 | 5 | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. | 0 |

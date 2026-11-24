@@ -1,6 +1,6 @@
 # Construction.java - 1,351 lines · 78 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/Construction.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Construction.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The builders. Every build order in the city is theirs, and they bill it.
 > 
@@ -36,7 +36,7 @@
 
 **Uses:** [Good](Good.md) (20), [BusinessInvestment](BusinessInvestment.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (6), [Game](Game.md) (3), [BuildingManager](BuildingManager.md) (2), [BuildersShort](BuildersShort.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [NewUnit](NewUnit.md) (1), [JobType](JobType.md) (1)
 
-**Used by (28):** [BankCheck](BankCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [FoundingYardCheck](FoundingYardCheck.md), [Game](Game.md), [GapOrderCheck](GapOrderCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReloadCheck](ReloadCheck.md), [RobustnessCheck](RobustnessCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [SlopeCheck](SlopeCheck.md), [UserInterface](UserInterface.md), [WantedPostsCheck](WantedPostsCheck.md)
+**Used by (29):** [BankCheck](BankCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [FoundingYardCheck](FoundingYardCheck.md), [Game](Game.md), [GapOrderCheck](GapOrderCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [ReloadCheck](ReloadCheck.md), [RobustnessCheck](RobustnessCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [SlopeCheck](SlopeCheck.md), [UserInterface](UserInterface.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Sections
 

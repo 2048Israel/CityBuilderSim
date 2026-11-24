@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**249 harness files, 28,469 labelled assertions.** AllChecks runs 249 of them.
+**249 harness files, 28,473 labelled assertions.** AllChecks runs 249 of them.
 
 ## Which harnesses read which class
 
@@ -75,7 +75,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ClockPace](map/ClockPace.md) | ClockCheck, KeptCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, GroundInputCheck, IndustryViewCheck, LandCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
-| [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, ConstructionTrapCheck, FitoutCheck, FittingCheck, ForeignCheck, ForeignCrewsCheck, FoundingYardCheck, GapOrderCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, ReloadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SlopeCheck, WantedPostsCheck |
+| [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, ConstructionTrapCheck, FitoutCheck, FittingCheck, ForeignCheck, ForeignCrewsCheck, FoundingYardCheck, GapOrderCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, PegAnchorCheck, ReloadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SlopeCheck, WantedPostsCheck |
 | [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildersFirstCheck, BuildingStackCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, FitoutCheck, ForeignCrewsCheck, LandmassCheck, LongPlaytest, NewUnitCheck, RoadCheck, SaveSlotCheck, WorksFinanceCheck |
 | [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | BasketYearCheck, ConsumptionCheck, ForeignCheck, PriceLevelCheck |
@@ -5819,7 +5819,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L861 ...the second its own: what the till had left
   - L864 the notice says each one's sale, not the last one's twice
 
-## ConstructionTrapCheck.java - 286 labelled assertions
+## ConstructionTrapCheck.java - 288 labelled assertions
 
 > The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work
 > as the repairs leave the builders fewer points for the sites, the queue at home past the threshold that a foreign
@@ -6032,107 +6032,109 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1101 a restart puts nothing on his book itself: it is as the stop left it
   - L1102 ...the queue is the twin's again
   - L1103 ...so the queue at home holds the work the order had on his book over the twin's: the restart is built at home
-  - L1111 fixture: the landlords' Houses ordered in both twins, the restart's points keeping the cancelled twin's queue at home past the threshold
-  - L1122 the next offer puts none of the restart's points on his book: the book is the stop's and the Houses' handed
-  - L1124 ...the Houses all abroad in the cancelled twin, the restart holding the queue at home past the threshold
-  - L1126 ...and in the twin those past the threshold's room the month's work left
-  - L1128 ...and not the billed twice case: the twin's book plus the order's points, as before FC1b
-  - L1130 ...and the queue is the twin's still
-  - L1171 fixture: the city orders
-  - L1175 ...served first, as the builders' own depots, in both twins
-  - L1178 ...and on his book as they were billed, whole: the queue at home was past the threshold
-  - L1182 fixture: the depots are more points than the month has, the city's own and his: one is left unbuilt at the month's end
-  - L1185 the city cancels its depots in one twin
-  - L1192 fixture: the cancel stopped a depot served first, with points left on site
-  - L1194 fixture: he has a book to fall from, in both twins
-  - L1195 the month's advance was the same in both: his points
-  - L1196 ...and his bill
-  - L1198 his book falls by the depots' points left when they are cancelled, a depot served first as any order
-- **L1211 10. a rush beside the contractor: overtime and its premium struck on the city's own crews' part of the share alone**
-  - L1218 fixture: the contractor builds this month (his offer is more than none) and the city's own crews have site output too
-  - L1220 ...his offer read before the month is the same read twice, so reading it again changes nothing (the first counts the handovers)
-  - L1228 fixture: a city site whose share of the month is over none and under what it owes
-  - L1233 the city rushes it
-  - L1242 fixture: the month worked the rushed site on overtime, in a plan struck on the whole month: the city's points and his, within a point of his offer
-  - L1248 fixture: the contractor's crews worked part of the share: the city's own part is under the share and over none
-  - L1250 fixture: overtime is more work than a normal month in this month of the rush, and the site did not finish on it
-  - L1252 the city's own crews' part of the share is the share over the whole month, less his points, of it
-  - L1254 fixture: the builders' wages a point are over none
-  - L1255 the premium is the premium share of the wage bill on the city's own part alone, not on the share
-  - L1257 ...under what the whole share would have cost
-  - L1258 the work is his part of the share as it is and the city's part on overtime, at most what the site owes
-  - L1260 ...the plan's work for the site is the overtime's
-  - L1261 the extra the month worked is the work over the share, the city's crews' hours alone
-  - L1263 ...under the extra the whole share would have worked
-  - L1264 fixture: the builders were paid overtime this month
-  - L1265 the builders' overtime is what the treasury paid
-  - L1266 ...the premium on the city's own part, with the builders' tax on it
-  - L1272 the month's extra points are the plan's
-  - L1273 he is paid for the points the sites took past the city's own month, its overtime among it (his offer, in full)
-  - L1275 ...which is his month as the month struck it: the sites took the whole month
-  - L1278 ...at his price, the base and his excess, his offer's price as the month struck it
-  - L1295 fixture: the twin that never met the trap has no contractor at work, and the city's own crews have site output
-  - L1297 ...and the Middle School's share is over none and under what it owes
-  - L1299 the city rushes it there too
-  - L1303 fixture: the month worked the rushed site on overtime, and no contractor built in it
-  - L1307 with no contractor the city's own part is the whole share, to the bit
-  - L1308 ...the premium is the premium share of the wage bill on the share
-  - L1310 ...and the work is the share on overtime, at most what the site owes
-- **L1318 11. saved mid-trap, the next month the same: the reloaded city plays the month as the twin that was never saved does**
-  - L1327 fixture: saved mid-episode: a book, a month of points and a bill
-  - L1337 fixture: the save loaded
-  - L1338 fixture: the reloaded city is held as the original is: no planner of either asks to build
-  - L1341 before the month: his book
-  - L1342 ...the builders' cash
-  - L1343 ...their order book's backlog points
-  - L1344 ...and its unearned revenue
-  - L1345 ...the price of an order
-  - L1346 ...his threshold (FC2: the load path hands the rate the goods were traded at back to the builders)
-  - L1347 ...his excess at his month
-  - L1348 ...and whether an order goes abroad, the same in both
-  - L1355 fixture: he built in the month, in the city that was never saved
-  - L1356 the next month's contractor's book comes out the same in the reloaded city
-  - L1357 ...his points
-  - L1358 ...his bill
-  - L1359 ...the builders' cash
-  - L1360 ...their order book's backlog points
-  - L1361 ...and its unearned revenue
-  - L1362 ...the points the sites built
-  - L1363 ...the price of an order
-  - L1364 ...his threshold
-  - L1365 ...what the month handed him
-  - L1366 ...and whether an order goes abroad
-- **L1397 12. an order's own buildings (BA1)**
-  - L1417 meanPremium(from, step, 1) is premium(from) to the bit, and multiplier(from, step, 1) with no foreign crews is FC1's 1 + premium(from), on the grid
-  - L1419 ...and for no step (zero, under nothing, not a number) or no building at all, whatever the order's size: premium(from) too
-  - L1420 ...a queue already endless is the ceiling, for any order
-  - L1421 ...and the ceiling itself
-  - L1437 for an order of up to EXACT_SUM_MOST (
-  - L1469 past EXACT_SUM_MOST the integral is within the javadoc's stated figures of the exact sum: 1e-6 for a home's step, 3e-5 up to
-  - L1505 the mean premium is never above CEILING, never under nothing and never NaN - and the multiplier is between 1 and 1 + CEILING,
-  - L1533 the mean premium never falls as the order grows, from one building to 64 and from 65 to 3,000, for every queue and step
-  - L1534 ...across the seam at EXACT_SUM_MOST it falls by no more than the integral's stated tolerance
-  - L1535 ...and an order of a hundred standing in a queue that reaches past the knee pays more than the first building alone but less than the last
-  - L1545 fixture: the queue is under the knee, no order going abroad
-  - L1559 on the calm city, orderPriceMultiplier(x, pointsEach, 1) is orderPriceMultiplier(x) to the bit where the building stands within the threshold,
-  - L1565 fixture: the queue is just under the knee and no order going abroad
-  - L1568 ...and the same at the queue just under the knee, to the bit
-  - L1574 fixture: flat ground, so a quote's work is the Houses' alone (no foothill to prepare)
-  - L1575 fixture: 600 Houses reach past the knee on that queue: its months plus 599 homes' steps
-  - L1576 one House's work is the template's with the premium at the queue it stands in (FC1's quote)
-  - L1577 600 Houses' work a home is the template's times the mean multiple over the queues they stand in
-  - L1579 A QUOTE OF 600 HOMES ON A QUEUE NEAR THE KNEE COSTS MORE A HOME THAN A QUOTE OF 1: the work a home, and the quote's total a home
-  - L1581 ...and the planners' cost a home with it (BusinessInvestment.getCostOf())
-  - L1585 fixture: three Houses stay under the knee on it
-  - L1586 an order that stays under the knee pays no premium: three Houses' work a home is one's
-  - L1594 fixture: past the knee, within the threshold, no order going abroad
-  - L1598 past the knee a home of 600 still costs more than one of one, and neither is wholly the contractor's price
-  - L1602 fixture: past the threshold the contractor takes the work
-  - L1609 ...one home's work is one and the share at the month it makes him run, times the template's
-  - L1610 ...and 600 homes' work a home one and the share at the month the 600 make him run
-  - L1611 ...which is the dearer: a huge order costs more abroad, and its payer pays it
-  - L1612 ...and the three-figure multiple the share with the order's points in his month, whatever the number of buildings
-  - L1614 ...as the one-building multiple is
+  - L1133 fixture: the twin that never cancelled has room for some of the Houses and not all of them, caused in both twins
+  - L1137 fixture: the landlords' Houses ordered in both twins, the restart's points keeping the cancelled twin's queue at home past the threshold
+  - L1148 the next offer puts none of the restart's points on his book: the book is the stop's and the Houses' handed
+  - L1150 ...the Houses all abroad in the cancelled twin, the restart holding the queue at home past the threshold
+  - L1152 ...and in the twin those past the threshold's room the month's work left
+  - L1154 ...exactly the Houses' points past the room: the order splits at the threshold (BuildersShort.homeUnits()), the room's at home
+  - L1156 ...and not the billed twice case: the twin's book plus the order's points, as before FC1b
+  - L1158 ...and the queue is the twin's still
+  - L1208 fixture: the city orders
+  - L1212 ...served first, as the builders' own depots, in both twins
+  - L1215 ...and on his book as they were billed, whole: the queue at home was past the threshold
+  - L1219 fixture: the depots are more points than the month has, the city's own and his: one is left unbuilt at the month's end
+  - L1222 the city cancels its depots in one twin
+  - L1229 fixture: the cancel stopped a depot served first, with points left on site
+  - L1231 fixture: he has a book to fall from, in both twins
+  - L1232 the month's advance was the same in both: his points
+  - L1233 ...and his bill
+  - L1235 his book falls by the depots' points left when they are cancelled, a depot served first as any order
+- **L1248 10. a rush beside the contractor: overtime and its premium struck on the city's own crews' part of the share alone**
+  - L1255 fixture: the contractor builds this month (his offer is more than none) and the city's own crews have site output too
+  - L1257 ...his offer read before the month is the same read twice, so reading it again changes nothing (the first counts the handovers)
+  - L1265 fixture: a city site whose share of the month is over none and under what it owes
+  - L1270 the city rushes it
+  - L1279 fixture: the month worked the rushed site on overtime, in a plan struck on the whole month: the city's points and his, within a point of his offer
+  - L1285 fixture: the contractor's crews worked part of the share: the city's own part is under the share and over none
+  - L1287 fixture: overtime is more work than a normal month in this month of the rush, and the site did not finish on it
+  - L1289 the city's own crews' part of the share is the share over the whole month, less his points, of it
+  - L1291 fixture: the builders' wages a point are over none
+  - L1292 the premium is the premium share of the wage bill on the city's own part alone, not on the share
+  - L1294 ...under what the whole share would have cost
+  - L1295 the work is his part of the share as it is and the city's part on overtime, at most what the site owes
+  - L1297 ...the plan's work for the site is the overtime's
+  - L1298 the extra the month worked is the work over the share, the city's crews' hours alone
+  - L1300 ...under the extra the whole share would have worked
+  - L1301 fixture: the builders were paid overtime this month
+  - L1302 the builders' overtime is what the treasury paid
+  - L1303 ...the premium on the city's own part, with the builders' tax on it
+  - L1309 the month's extra points are the plan's
+  - L1310 he is paid for the points the sites took past the city's own month, its overtime among it (his offer, in full)
+  - L1312 ...which is his month as the month struck it: the sites took the whole month
+  - L1315 ...at his price, the base and his excess, his offer's price as the month struck it
+  - L1332 fixture: the twin that never met the trap has no contractor at work, and the city's own crews have site output
+  - L1334 ...and the Middle School's share is over none and under what it owes
+  - L1336 the city rushes it there too
+  - L1340 fixture: the month worked the rushed site on overtime, and no contractor built in it
+  - L1344 with no contractor the city's own part is the whole share, to the bit
+  - L1345 ...the premium is the premium share of the wage bill on the share
+  - L1347 ...and the work is the share on overtime, at most what the site owes
+- **L1355 11. saved mid-trap, the next month the same: the reloaded city plays the month as the twin that was never saved does**
+  - L1364 fixture: saved mid-episode: a book, a month of points and a bill
+  - L1374 fixture: the save loaded
+  - L1375 fixture: the reloaded city is held as the original is: no planner of either asks to build
+  - L1378 before the month: his book
+  - L1379 ...the builders' cash
+  - L1380 ...their order book's backlog points
+  - L1381 ...and its unearned revenue
+  - L1382 ...the price of an order
+  - L1383 ...his threshold (FC2: the load path hands the rate the goods were traded at back to the builders)
+  - L1384 ...his excess at his month
+  - L1385 ...and whether an order goes abroad, the same in both
+  - L1392 fixture: he built in the month, in the city that was never saved
+  - L1393 the next month's contractor's book comes out the same in the reloaded city
+  - L1394 ...his points
+  - L1395 ...his bill
+  - L1396 ...the builders' cash
+  - L1397 ...their order book's backlog points
+  - L1398 ...and its unearned revenue
+  - L1399 ...the points the sites built
+  - L1400 ...the price of an order
+  - L1401 ...his threshold
+  - L1402 ...what the month handed him
+  - L1403 ...and whether an order goes abroad
+- **L1434 12. an order's own buildings (BA1)**
+  - L1454 meanPremium(from, step, 1) is premium(from) to the bit, and multiplier(from, step, 1) with no foreign crews is FC1's 1 + premium(from), on the grid
+  - L1456 ...and for no step (zero, under nothing, not a number) or no building at all, whatever the order's size: premium(from) too
+  - L1457 ...a queue already endless is the ceiling, for any order
+  - L1458 ...and the ceiling itself
+  - L1474 for an order of up to EXACT_SUM_MOST (
+  - L1506 past EXACT_SUM_MOST the integral is within the javadoc's stated figures of the exact sum: 1e-6 for a home's step, 3e-5 up to
+  - L1542 the mean premium is never above CEILING, never under nothing and never NaN - and the multiplier is between 1 and 1 + CEILING,
+  - L1570 the mean premium never falls as the order grows, from one building to 64 and from 65 to 3,000, for every queue and step
+  - L1571 ...across the seam at EXACT_SUM_MOST it falls by no more than the integral's stated tolerance
+  - L1572 ...and an order of a hundred standing in a queue that reaches past the knee pays more than the first building alone but less than the last
+  - L1582 fixture: the queue is under the knee, no order going abroad
+  - L1596 on the calm city, orderPriceMultiplier(x, pointsEach, 1) is orderPriceMultiplier(x) to the bit where the building stands within the threshold,
+  - L1602 fixture: the queue is just under the knee and no order going abroad
+  - L1605 ...and the same at the queue just under the knee, to the bit
+  - L1611 fixture: flat ground, so a quote's work is the Houses' alone (no foothill to prepare)
+  - L1612 fixture: 600 Houses reach past the knee on that queue: its months plus 599 homes' steps
+  - L1613 one House's work is the template's with the premium at the queue it stands in (FC1's quote)
+  - L1614 600 Houses' work a home is the template's times the mean multiple over the queues they stand in
+  - L1616 A QUOTE OF 600 HOMES ON A QUEUE NEAR THE KNEE COSTS MORE A HOME THAN A QUOTE OF 1: the work a home, and the quote's total a home
+  - L1618 ...and the planners' cost a home with it (BusinessInvestment.getCostOf())
+  - L1622 fixture: three Houses stay under the knee on it
+  - L1623 an order that stays under the knee pays no premium: three Houses' work a home is one's
+  - L1631 fixture: past the knee, within the threshold, no order going abroad
+  - L1635 past the knee a home of 600 still costs more than one of one, and neither is wholly the contractor's price
+  - L1639 fixture: past the threshold the contractor takes the work
+  - L1646 ...one home's work is one and the share at the month it makes him run, times the template's
+  - L1647 ...and 600 homes' work a home one and the share at the month the 600 make him run
+  - L1648 ...which is the dearer: a huge order costs more abroad, and its payer pays it
+  - L1649 ...and the three-figure multiple the share with the order's points in his month, whatever the number of buildings
+  - L1651 ...as the one-building multiple is
 
 ## ConsumptionCheck.java - 48 labelled assertions
 
@@ -21383,7 +21385,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L541 DataSave and HistorySave JSON and the load restorers keep the paid flow
   - L542 repeated screen and planner reads keep the paid flow and every money pool still
 
-## LongPlaytest.java - 78 labelled assertions
+## LongPlaytest.java - 79 labelled assertions
 
 > A city played for 2,400 months at the gate and 4,000 once a night on main
 > (tools/nightly.sh), the way a person plays.
@@ -21491,24 +21493,25 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L9862 the game's own strike, whose opening figure was read after the theft, closes
   - L9863 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
 - **L9866 15. a bond's face that no cell holds is named**
-  - L9890 fixture: the bond town's households hold a corporate bond
-  - L9899 fixture: the bond town has real wires for its billed and closing peaks
-  - L9917 fixture: the bond's record now exceeds the cells' own by D, over a cent
-  - L9925 the press that paid the coupon on D declares it orphaned:
-  - L9928 ...and the own line fired with that figure
-  - L9929 ...the households' books close
-  - L9932 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
-  - L9960 the bond matured within its term (m
-  - L9962 ...every month on the way closed its households' books
-  - L9963 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
-  - L9966 ...and the households' books close that month, the principal paid on a face no cell held
-- **L9970 16. what comes off the payslips is in transit a press**
-  - L9990 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
-  - L10012 fixture: the treasury banked all three that press
-  - L10015 ...by the lines the pools' identity reads
-  - L10026 fixture: what comes off the payslips moved by over a cent in at least three presses
-  - L10027 the households' books close in every one of the
-  - L10028 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
+  - L9899 fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line
+  - L9908 fixture: the bond town has real wires for its billed and closing peaks
+  - L9926 fixture: the bond's record now exceeds the cells' own by D, over a cent
+  - L9927 fixture: ...and the coupon on D is over what the identity can tell from rounding
+  - L9935 the press that paid the coupon on D declares it orphaned:
+  - L9938 ...and the own line fired with that figure
+  - L9939 ...the households' books close
+  - L9942 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
+  - L9970 the bond matured within its term (m
+  - L9972 ...every month on the way closed its households' books
+  - L9973 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
+  - L9976 ...and the households' books close that month, the principal paid on a face no cell held
+- **L9980 16. what comes off the payslips is in transit a press**
+  - L10000 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
+  - L10022 fixture: the treasury banked all three that press
+  - L10025 ...by the lines the pools' identity reads
+  - L10036 fixture: what comes off the payslips moved by over a cent in at least three presses
+  - L10037 the households' books close in every one of the
+  - L10038 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
 
 ## LuxuryRetailCheck.java - 8 labelled assertions
 
@@ -25468,7 +25471,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L874 ...and the reading is the struck rate over the D$, less one (
   - L893 every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in
 
-## PegAnchorCheck.java - 147 labelled assertions
+## PegAnchorCheck.java - 148 labelled assertions
 
 > The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not
 > only the US$. The peg is kept in the anchor's money (D$ per unit of it); the rate the hold keeps, D$ per US$, is the peg over the anchor's
@@ -25618,29 +25621,30 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L535 restoring a shorter save over a euro peg starts from the US$ (restore() resets first)
 - **L550 9. in a city (the full file): a trading town pegged to the euro holds the peg per euro, ties its dial to the euro area and says so**
   - L559 fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean
-  - L563 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
-  - L567 the decision log names the euro: \"
-  - L569 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
-  - L603 three months on, the peg held (not broken)
-  - L604 each month the rate is the peg per euro over the euro's US$ price
-  - L605 ...the euro's price is the world's rate for it
-  - L606 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
-  - L607 ...and tieRate() is the euro area's rate and tieMoney() EUR
-  - L613 a devaluation in the euro's money is logged in it: \"
-  - L617 moving the anchor under a peg re-pegs at the day's cross and says so: \"
-  - L619 ...the held rate did not move on the switch
-  - L622 ...and the next month's rate is the peg per pound over the pound's price
-  - L623 ...with the dial on the pound's rate as the month began with it
-- **L632 10. the review's two low notes: the hold's support is the held rate's log over the shadow in every held month; the dial's gap is read at ...**
-  - L647 fixture: a quiet euro peg on a deep vault held all
-  - L648 fixture: the hold's support took both signs and was never zero for want of work (
-  - L649 note 1: in every held month the support is the log of the held rate over the shadow to 1e-9 (worst
-  - L651 ...and it is as wide as the gap the hold paid for, inside the euro's whole swing (ln(1.06/.94)), the widest being
-  - L654 fixture: still a held peg for the dial's month
-  - L659 note 2: the month's rates handed, the shadow is still the last reprice's
-  - L660 ...and the dial's gap is that shadow over the held rate at the NEW euro: the peg per euro over
-  - L662 ...so a euro that rose a tenth moved the gap's ratio by a tenth
-  - L664 ...and the gap the reprice then measures is against that same held rate, with the shadow the reprice found
+  - L569 fixture: the town has a month of imports before the peg (monthlyImports() > 0), so the top-up below reads the crews' bill from month 1
+  - L580 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
+  - L584 the decision log names the euro: \"
+  - L586 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
+  - L622 three months on, the peg held (not broken)
+  - L623 each month the rate is the peg per euro over the euro's US$ price
+  - L624 ...the euro's price is the world's rate for it
+  - L625 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
+  - L626 ...and tieRate() is the euro area's rate and tieMoney() EUR
+  - L632 a devaluation in the euro's money is logged in it: \"
+  - L636 moving the anchor under a peg re-pegs at the day's cross and says so: \"
+  - L638 ...the held rate did not move on the switch
+  - L641 ...and the next month's rate is the peg per pound over the pound's price
+  - L642 ...with the dial on the pound's rate as the month began with it
+- **L651 10. the review's two low notes: the hold's support is the held rate's log over the shadow in every held month; the dial's gap is read at ...**
+  - L666 fixture: a quiet euro peg on a deep vault held all
+  - L667 fixture: the hold's support took both signs and was never zero for want of work (
+  - L668 note 1: in every held month the support is the log of the held rate over the shadow to 1e-9 (worst
+  - L670 ...and it is as wide as the gap the hold paid for, inside the euro's whole swing (ln(1.06/.94)), the widest being
+  - L673 fixture: still a held peg for the dial's month
+  - L678 note 2: the month's rates handed, the shadow is still the last reprice's
+  - L679 ...and the dial's gap is that shadow over the held rate at the NEW euro: the peg per euro over
+  - L681 ...so a euro that rose a tenth moved the gap's ratio by a tenth
+  - L683 ...and the gap the reprice then measures is against that same held rate, with the shadow the reprice found
 
 ## PlanCheck.java - 277 labelled assertions
 

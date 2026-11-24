@@ -1,6 +1,6 @@
 # ForeignCrewsCheck.java - 921 lines · 26 methods · 17 constants · harnesses
 
-`ham/citybuildersim/ForeignCrewsCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignCrewsCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange
 > rate the city's money stands at and the city's own inflation; the handover of the queue past it; the supply curve

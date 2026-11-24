@@ -1,6 +1,6 @@
 # EquipmentForms.java - 217 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/EquipmentForms.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EquipmentForms.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share
 > and the carts' horse share, each the unfitted part of what it scales, and (R6b) Haulage's driven share of the depots, the part of their truck room still without the driverless kit.

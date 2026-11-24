@@ -1,8 +1,8 @@
 # The dials
 
-Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,683 constants in 635 files.**
+**6,684 constants in 635 files.**
 
 ## model (3038 constants)
 
@@ -5974,7 +5974,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2148 constants)
+## harnesses (2149 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6355,6 +6355,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 144 | `ConstructionTrapCheck.QUIET_MONTHS` | `3` |  |
 | 147 | `ConstructionTrapCheck.NEVER_MONTHS` | `6` | The months the twin that never met the trap is played. |
 | 150 | `ConstructionTrapCheck.SCRATCH_SLOT` | `10` | The slot the saved city is written to, in its own scratch folder (never the player's slots). |
+| 1165 | `ConstructionTrapCheck.ROOM_LEAST` | `0.25, ROOM_MOST = 0.75` | The share of the Houses' points under which the cancel section stands a depot for the room, and the share it takes it down to by roads: a quarter and three quarters, a road's step (T x its repairs)... |
 
 ### ConsumptionCheck.java ([map](map/ConsumptionCheck.md))
 

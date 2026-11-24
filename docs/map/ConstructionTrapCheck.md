@@ -1,6 +1,6 @@
-# ConstructionTrapCheck.java - 1,616 lines · 43 methods · 12 constants · harnesses
+# ConstructionTrapCheck.java - 1,653 lines · 44 methods · 13 constants · harnesses
 
-`ham/citybuildersim/ConstructionTrapCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConstructionTrapCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work
 > as the repairs leave the builders fewer points for the sites, the queue at home past the threshold that a foreign
@@ -64,7 +64,7 @@
 >      among it; and in a city with no contractor that part is the whole share, to the bit.
 > ... (12 more lines in the source)
 
-**Uses:** [BuildersShort](BuildersShort.md) (117), [Game](Game.md) (59), [BuildingManager](BuildingManager.md) (30), [ConstructionControl](ConstructionControl.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (17), [Construction](Construction.md) (17), [MoneyAudit](MoneyAudit.md) (8), [DeathCareFirstCheck](DeathCareFirstCheck.md) (5), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (3), [Sectors](Sectors.md) (2), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [TempDirs](TempDirs.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Sector](Sector.md) (1)
+**Uses:** [BuildersShort](BuildersShort.md) (117), [Game](Game.md) (60), [BuildingManager](BuildingManager.md) (31), [ConstructionControl](ConstructionControl.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (17), [Construction](Construction.md) (17), [MoneyAudit](MoneyAudit.md) (8), [DeathCareFirstCheck](DeathCareFirstCheck.md) (5), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (3), [Sectors](Sectors.md) (2), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [TempDirs](TempDirs.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Sector](Sector.md) (1)
 
 **Used by (2):** [ForeignCrewsCheck](ForeignCrewsCheck.md), [SectorStatementCheck](SectorStatementCheck.md)
 
@@ -81,9 +81,9 @@
 | 931 | 7. A CITY THAT NEVER MEETS THE TRAP |
 | 961 | 8. SAVED AND LOADED |
 | 1003 | 9. A CANCEL IN THE TRAP |
-| 1202 | 10. A RUSH BESIDE THE CONTRACTOR |
-| 1315 | 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME |
-| 1370 | 12. AN ORDER'S OWN BUILDINGS (BA1) |
+| 1239 | 10. A RUSH BESIDE THE CONTRACTOR |
+| 1352 | 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME |
+| 1407 | 12. AN ORDER'S OWN BUILDINGS (BA1) |
 
 ## Constants
 
@@ -101,6 +101,7 @@
 | 144 | `ConstructionTrapCheck.QUIET_MONTHS` | `3` |  |
 | 147 | `ConstructionTrapCheck.NEVER_MONTHS` | `6` | The months the twin that never met the trap is played. |
 | 150 | `ConstructionTrapCheck.SCRATCH_SLOT` | `10` | The slot the saved city is written to, in its own scratch folder (never the player's slots). |
+| 1165 | `ConstructionTrapCheck.ROOM_LEAST` | `0.25, ROOM_MOST = 0.75` | The share of the Houses' points under which the cancel section stands a depot for the room, and the share it takes it down to by roads: a quarter and three quarters, a road's step (T x its repairs) far smaller than th... |
 
 ## Fields (state)
 
@@ -119,7 +120,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 1530 | **type** `public class ConstructionTrapCheck` | The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work as the repairs leave the builders fewer points for the sites, the queue at home past the threshold t... |
+| 87 | 1567 | **type** `public class ConstructionTrapCheck` | The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work as the repairs leave the builders fewer points for the sites, the queue at home past the threshold t... |
 | 93 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 98 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 104 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -194,35 +195,36 @@
 |---:|---:|---|---|
 | 963 | 39 | `static void saved(Path root, Game never) throws Exception` |  |
 
-### 9. A CANCEL IN THE TRAP (lines 1003-1201)
+### 9. A CANCEL IN THE TRAP (lines 1003-1238)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1011 | 5 | `static int cityDepots(Game g, BuildingsTemplate depot)` | The Construction Depots the city orders in the trap: more points than the month has, the city's and the contractor's, so one is still on site when the month ends and the cancel has something to stop. |
 | 1018 | 4 | `static ConstructionControl.Refund refundOf(Game g, String building)` | The refund the month's stop made for the building of that name (ConstructionControl.Refund), or null when it stopped none. |
 | 1024 | 15 | `static void sameStart(String where, Game a, Game b)` | Two trapped cities that stand alike to the bit: the free points, the repairs, the queue, his book, his threshold and the overflow at home, and the treasury's cash. |
-| 1040 | 95 | `static void cancelInTheTrap(Path root)` |  |
-| 1137 | 7 | `static void moreHouses(Game g)` | The landlords' Houses ordered again, LANDLORDS_HOUSES of them, out of cash the quote sizes: the same in twins that stand alike. |
-| 1150 | 51 | `static void cancelADepotFirst(Path root)` | A depot of the builders' ordered by the city and served first, and cancelled: FC1 never had it on his book, so the cancel took nothing off; since REV-FC2 an order's buildings past the threshold go on it as it is bille... |
+| 1040 | 123 | `static void cancelInTheTrap(Path root)` |  |
+| 1168 | 4 | `static double roomOf(Game g)` | The room under the threshold the queue at home leaves in points: its months over the sites' month at every post, less the queue at home (BuildingManager.foreignTerms()). |
+| 1174 | 7 | `static void moreHouses(Game g)` | The landlords' Houses ordered again, LANDLORDS_HOUSES of them, out of cash the quote sizes: the same in twins that stand alike. |
+| 1187 | 51 | `static void cancelADepotFirst(Path root)` | A depot of the builders' ordered by the city and served first, and cancelled: FC1 never had it on his book, so the cancel took nothing off; since REV-FC2 an order's buildings past the threshold go on it as it is bille... |
 
-### 10. A RUSH BESIDE THE CONTRACTOR (lines 1202-1314)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1205 | 4 | `static ConstructionControl.Overtime overtimeOf(Game g, String key)` | The overtime of the rushed site the month struck, with the plan it was struck in. |
-| 1210 | 104 | `static void rushBesideTheContractor(Path root)` |  |
-
-### 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME (lines 1315-1369)
+### 10. A RUSH BESIDE THE CONTRACTOR (lines 1239-1351)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1317 | 52 | `static void nextMonthTheSame(Path root) throws Exception` |  |
+| 1242 | 4 | `static ConstructionControl.Overtime overtimeOf(Game g, String key)` | The overtime of the rushed site the month struck, with the plan it was struck in. |
+| 1247 | 104 | `static void rushBesideTheContractor(Path root)` |  |
 
-### 12. AN ORDER'S OWN BUILDINGS (BA1) (lines 1370-1616)
+### 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME (lines 1352-1406)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1373 | 5 | `static double explicitMean(double from, double step, long n)` | The sums an order of n buildings is priced by, in the order the model sums them (BuildersShort.meanPremium() up to EXACT_SUM_MOST). |
-| 1380 | 6 | `static double integralTolerance(double stepMonths)` | The tolerance meanPremium()'s javadoc states for the integral past EXACT_SUM_MOST, by the step in months (its MEASURED figures). |
-| 1396 | 220 | `static void ordersOwnBuildings(Path root)` | AN ORDER'S OWN BUILDINGS (BA1). |
+| 1354 | 52 | `static void nextMonthTheSame(Path root) throws Exception` |  |
+
+### 12. AN ORDER'S OWN BUILDINGS (BA1) (lines 1407-1653)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1410 | 5 | `static double explicitMean(double from, double step, long n)` | The sums an order of n buildings is priced by, in the order the model sums them (BuildersShort.meanPremium() up to EXACT_SUM_MOST). |
+| 1417 | 6 | `static double integralTolerance(double stepMonths)` | The tolerance meanPremium()'s javadoc states for the integral past EXACT_SUM_MOST, by the step in months (its MEASURED figures). |
+| 1433 | 220 | `static void ordersOwnBuildings(Path root)` | AN ORDER'S OWN BUILDINGS (BA1). |
 

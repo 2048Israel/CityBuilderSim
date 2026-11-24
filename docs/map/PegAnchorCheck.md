@@ -1,6 +1,6 @@
-# PegAnchorCheck.java - 667 lines · 22 methods · 6 constants · harnesses
+# PegAnchorCheck.java - 686 lines · 22 methods · 6 constants · harnesses
 
-`ham/citybuildersim/PegAnchorCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PegAnchorCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not
 > only the US$. The peg is kept in the anchor's money (D$ per unit of it); the rate the hold keeps, D$ per US$, is the peg over the anchor's
@@ -43,7 +43,7 @@
 > anchor to move), a deficit trade where the hold has to sell, a vault of none where it cannot, a quiet market (seed 0) where a chance
 > break would blur the arithmetic, and a seeded one where the claim is the very absence of a difference.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (54), [DebtManager](DebtManager.md) (24), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (17), [DecisionLog](DecisionLog.md) (6), [InterestAbroadCheck](InterestAbroadCheck.md) (5), [WorldData](WorldData.md) (3), [Game](Game.md) (2), [GoldPrice](GoldPrice.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (55), [DebtManager](DebtManager.md) (24), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (17), [DecisionLog](DecisionLog.md) (6), [InterestAbroadCheck](InterestAbroadCheck.md) (6), [WorldData](WorldData.md) (3), [Game](Game.md) (2), [GoldPrice](GoldPrice.md) (1), [Construction](Construction.md) (1)
 
 **Used by (1):** [GoldStandardCheck](GoldStandardCheck.md)
 
@@ -60,7 +60,7 @@
 | 401 | 7. THE DIAL TIES TO THE ANCHOR'S RATE |
 | 473 | 8. THE SAVE |
 | 538 | 9. IN A CITY |
-| 627 | 10. THE REVIEW'S TWO LOW NOTES (WN4c) |
+| 646 | 10. THE REVIEW'S TWO LOW NOTES (WN4c) |
 
 ## Constants
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 616 | **type** `public class PegAnchorCheck` | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. |
+| 52 | 635 | **type** `public class PegAnchorCheck` | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. |
 | 70 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 76 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
 | 83 | 5 | `static void close(String label, double actual, double expected, double tol)` | Equal within a share of the expected. |
@@ -144,16 +144,16 @@
 |---:|---:|---|---|
 | 477 | 60 | `static void theSave()` |  |
 
-### 9. IN A CITY (lines 538-626)
+### 9. IN A CITY (lines 538-645)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 543 | 5 | `static List<String> currencyLines(Game g)` | The decision log's currency lines, oldest first. |
-| 549 | 77 | `static void inACity()` |  |
+| 549 | 96 | `static void inACity()` |  |
 
-### 10. THE REVIEW'S TWO LOW NOTES (WN4c) (lines 627-667)
+### 10. THE REVIEW'S TWO LOW NOTES (WN4c) (lines 646-686)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 631 | 36 | `static void theReviewsLowNotes()` |  |
+| 650 | 36 | `static void theReviewsLowNotes()` |  |
 

@@ -1,6 +1,6 @@
 # OwnerHousehold.java - 117 lines · 12 methods · 6 constants · model
 
-`ham/citybuildersim/OwnerHousehold.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OwnerHousehold.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The owner families, as one ledger: one two-adult household per company that
 > has listed and not gone broke.
