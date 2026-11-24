@@ -311,6 +311,17 @@ public class RailCheck {
              */
             lay(game, "Rail Spur", 1);
             lay(game, "Rail Depot", 1);
+            /*
+             * FC2, 2026-11-23: EVERY SECTOR IS HELD FROM THE MONTH THE TRACK IS LAID, as the railway, the mills and the works are above, so that the freight
+             * is what the railway was sized to. On FC2's path the investor went on building the sectors this town left free, and the builders' trade with
+             * the world let its orders stand sooner: the cement works' limestone in was 20,771 tonnes a month at month 50, 42,237 at 55 and 122,023 at the
+             * month read (the lime out 11,539, 23,465 and 67,791), the wood mills' pulpwood and residues 18,660 and 14,328, and the town offered the railway
+             * 53,940 tonnes at month 50 and 307,458 at the month read, to 100,000 tonnes of track. That track was outgrown: 114,512 tonnes hauled, tightness 0.676,
+             * scarcity 1.41, the rule's target 100% where the quote was 97%, billed 280k against 269k allowed - and the same freight left the four-times
+             * track's comparison reading 410k earned on 51,803k of track against 184k on 11,991k, and the boxes with no yard to ride (0 t). With every sector held
+             * the town offers 55,841 tonnes to the 99,583 the track and its sets carry, as the town of the fixture was written (the sizing is read below).
+             */
+            for (String sectorKey : Sectors.KEYS) game.getBusinessInvestment().holdSector(sectorKey);
             game.toggleNextMonth();
         });
         report("track laid and no trains bought yet carries nothing",
@@ -460,6 +471,13 @@ public class RailCheck {
          * apart from it. The quote still walks a trade that grew under it: it bills within one repricing step (REPRICE_SPEED) of the rule, and no nearer is the law.
          */
         final double sizedTarget = quotePrior + (sizedQuote - quotePrior) / Freight.REPRICE_SPEED;
+        // FC2, 2026-11-23: the premise of the sizing, said where it can fail: the freight the town offers has not outgrown the track (tightness is what the
+        // dealing left on the road for want of it, and the target is the rule's over it, scarcity x needed, so a town whose freight is past its track
+        // stands at the ceiling whatever it was sized to). It was 0.676 of 307,458 tonnes on 100,000 tonnes of track with the investor free.
+        report("fixture: the city's freight has not outgrown the track it was sized to",
+                rail.getTightness() < 1e-9,
+                String.format("%,.0f tonnes offered to %,.0f tonnes of track and sets, %.3f of it left on the road",
+                        rail.getOfferedTonnes(), rail.getCapacityTonnes(), rail.getTightness()));
         report("a railway sized to its city bills about what the rule allows it",
                 sizedAllowed > 0 && sizedTarget > Freight.RAIL_FLOOR + 1e-9 && sizedTarget < 1 - 1e-9
                         && near(sizedBilled, sizedAllowed * quotePrior / sizedTarget, 1e-9 + rail.getHomeBill() / sizedAllowed)

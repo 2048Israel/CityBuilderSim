@@ -781,13 +781,24 @@ public class InvestCheck {
         /*
          * THE BEST HOME NO LONGER HAS TO FIT. The room is a year (AutoBuilder.ORDER_MONTHS, the months the city's own
          * orders are still cut to) of the builders' site output less what the landlords owe on site, with the crews
-         * thinned until it is halfway between the landlords' best home and the smallest they build: less than one of the
+         * thinned until it is just under the landlords' best home and above the smallest they build: less than one of the
          * best, more than a smaller one - the condition that made them order the smaller. This city's best home is the
-         * House, the smallest there is, so a House is priced out of first place for the question (its cash cost a
-         * thousandfold) and put back after, with the crews: the landlords' best is then a bigger one.
+         * House, the smallest there is, so a House is priced out of first place for the question (its materials a millionfold,
+         * which the market's price for them charges) and put back after, with the crews: the landlords' best is then a bigger one.
+         *
+         * FC2, 2026-11-23: the House was priced out through its cash cost a thousandfold, and the House is the one building on
+         * site, so the base the foreign crews' excess is struck on (BuildingManager.basePricePerPoint(), averaged over the points
+         * owed on site) read D$688 a point against the world's D$0.69: the excess share 0.00015 and the threshold 9.3 months,
+         * the knee. The crews were halfway (1,214 points of room, 102 points a month), a Low-Rise Apartments 23.5 months of that
+         * and 1,285 of its points past the threshold (11.0 months, with its own points in the base), at the foreign crews' share
+         * 0.49 (its multiple 1.26), and the Studio Apartments below it won on the score, 28 of them. The materials are the price-out that leaves the base where the town's prices put it (D$0.70
+         * against the world's D$0.69: the share 0.148, the threshold 20.5 months), and the crews are just under the best home
+         * (95% of it, 191 points a month): it is 12.6 months of their work, within any threshold above the knee's 9 that a town with
+         * a base within a tenth of the world's has, so the foreign crews' price adds nothing to the best home's quote - the
+         * premise the claim needs, asserted below.
          */
-        double houseCash = aHouse.cashCost;
-        aHouse.cashCost = houseCash * 1_000;
+        int houseMaterials = aHouse.getConstructionMaterials();
+        aHouse.setConstructionMaterials(houseMaterials * 1_000_000 + 1_000_000);
         d = landlords.plan(tight, housed);
         BuildingsTemplate bestHome = d.template;
         BuildingsTemplate smallest = bestHome;
@@ -799,7 +810,7 @@ public class InvestCheck {
         double repairsNow = housed.getMaintenancePoints();
         double staffedAtFull = sitesGet + repairsNow;                 // the sites' output plus the repairs, every post filled
         double owedRe = hb.pointsOwedBySector(re);
-        double wantRoom = (bestHome.getConstructionPoints() + smallest.getConstructionPoints()) / 2.0;
+        double wantRoom = bestHome.getConstructionPoints() * 0.95;
         double wantOutput = (owedRe + wantRoom) / AutoBuilder.ORDER_MONTHS;
         double thin = (wantOutput + repairsNow) / staffedAtFull;
         double[] thinned = new double[11];
@@ -811,6 +822,11 @@ public class InvestCheck {
                 bestHome.getName(), bestHome.getConstructionPoints(), smallest.getName(), smallest.getConstructionPoints());
         assertTrue("fixture: a year's room is less than one of the best home, and more than the smallest",
                 roomLeft < bestHome.getConstructionPoints() && roomLeft >= smallest.getConstructionPoints());
+        // FC2, 2026-11-23: and none of the best home's work is handed to the foreign crews, so its price is the home price
+        // that the smaller one's is struck on too, and what steers the choice is the rent and the cost, as it did.
+        BuildingManager.OrderAbroad bestAbroad = hb.abroadOfOrder(0, 0, bestHome.getConstructionPoints(), 1, bestHome);
+        assertTrue("fixture: none of the best home's work is past the threshold of months queued at home, so it is not priced at the foreign crews'",
+                bestAbroad == null || bestAbroad.points() == 0);
         d = landlords.plan(tight, housed);
         System.out.println("   " + d.reason);
         assertTrue("the best home does not fit in a year of the builders' work: they order it all the same, not the next smaller",
@@ -821,7 +837,7 @@ public class InvestCheck {
             assertTrue("...and it does not say it would not fit in months of work", !d.reason.contains("would not fit in")
                     && !d.reason.contains("months of work on site"));
         }
-        aHouse.cashCost = houseCash;
+        aHouse.setConstructionMaterials(houseMaterials);
         housedBuilders.updateJobFillRate(everyPost);
         housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
         /*

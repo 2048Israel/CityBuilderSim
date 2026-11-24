@@ -198,15 +198,20 @@ final class ConstructionScreen {
         VBox material = Kept.scope("material", () -> limitCell("MATERIAL", String.format("%,d in the yard", bm.getConstructionMaterials()),
                 "the rest bought as they build; the world's at " + money(bm.getConstructionMaterialPrice())
                         + " a unit", Palette.TEXT_HEAD));
-        // The price of a point (FC1): the premium the queue's months set, or the contractor's price while the city's crews are all on repairs.
-        boolean foreign = bm.foreignCrewsTakeOrders();
+        // The price of a point (FC1): the premium the queue at home's months set (FC2: the foreign crews' book is not in it).
         long premiumPct = Math.round(bm.scarcityPremium() * 100);
         VBox price = Kept.scope("price", () -> limitCell("PRICE OF A POINT",
-                foreign ? String.format("×%.1f foreign", BuildersShort.FOREIGN_PRICE)
-                        : premiumPct > 0 ? String.format("+%d%%", premiumPct) : "no premium",
-                foreign ? "the city's crews are all on repairs" : "the queue's months set it",
-                foreign ? Palette.BAD : premiumPct > 0 ? Palette.WARN : Palette.TEXT_HEAD));
-        HBox cells = vitalsBar(builders, onSite, months, material, price);
+                premiumPct > 0 ? String.format("+%d%%", premiumPct) : "no premium",
+                "the queue at home's months set it", premiumPct > 0 ? Palette.WARN : Palette.TEXT_HEAD));
+        // ...and the foreign crews' offer beside it (FC2): their excess now and the months past which the queue is theirs,
+        // in Palette.WARN while an order placed now sends work abroad; "not on offer" with no trade on (the founding's first month).
+        BuildingManager.ForeignTerms terms = bm.foreignTerms();
+        boolean abroadNow = terms != null && terms.monthsQueued() > terms.thresholdMonths();
+        VBox foreignCell = Kept.scope("foreign", () -> limitCell("FOREIGN CREWS",
+                terms == null ? "not on offer" : String.format("+%d%%", Math.round(terms.share() * 100)),
+                terms == null ? "no builders' month yet" : String.format("a point, for the queue past %.1f months", terms.thresholdMonths()),
+                abroadNow ? Palette.WARN : Palette.TEXT_HEAD));
+        HBox cells = vitalsBar(builders, onSite, months, material, price, foreignCell);
 
         // The bar: the queue up to where the premium is half its ceiling, a mark at the knee.
         double span = limit + BuildersShort.HALF_MONTHS;
@@ -229,19 +234,36 @@ final class ConstructionScreen {
                 + "price and the interest on its wait, and stops ordering when they do not pay. "
                 + "The yard's material is free to the city's orders; the crews buy the rest as they build, from "
                 + "what they salvaged, then the plant, then the world - so no site in this model is ever short "
-                + "of it.\n\n" + BuildScreen.buildersShortInfo(), false));
+                + "of it.\n\n" + BuildScreen.buildersShortInfo(g.getCurrency()), false));
         VBox box = Kept.column(6, cells, bar, scale);
         // ...and, once a foreign contractor has built anything for the city, what it built, what it was paid and what is still its own (FC1).
         var contractor = g.getSectors().construction();
         double builtAbroad = contractor.getForeignPointsThisMonth(), book = contractor.getForeignBook();
+        boolean foreign = abroadNow;
         if (foreign || builtAbroad > 0 || book > 0) {
             box.getChildren().add(Kept.scope("abroad", () -> {
-                Label abroad = Kept.label(String.format("FOREIGN CREWS: %,.0f pts built last month, %s paid abroad; %,.0f pts still theirs%s",
-                        builtAbroad, money(contractor.getForeignBillThisMonth()), book,
-                        foreign ? " - taking every new order" : book > 0 ? " - finishing what it took" : ""));
+                // ...and (REV-FC2) the share the points still theirs were handed at, which each is billed at: its payer's quote.
+                Label abroad = Kept.label(String.format("FOREIGN CREWS: %,.0f pts built last month, %s paid abroad; %,.0f pts handed them this month, %,.0f pts still theirs%s%s",
+                        builtAbroad, money(contractor.getForeignBillThisMonth()), contractor.getHandedAbroadThisMonth(), book,
+                        book > 0 ? String.format(" at +%d%% a point", Math.round(contractor.getForeignBookShare() * 100)) : "",
+                        foreign ? " - taking the queue past the threshold" : book > 0 ? " - finishing what it took" : ""));
                 abroad.setWrapText(true);
-                abroad.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BAD));
+                abroad.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.WARN));
                 return abroad;
+            }));
+        }
+        // ...and the other way (FC2): what a spare point of the builders' fetches abroad while the queue at home is under
+        // the knee, and what they sold last month; nothing past the knee, when their own queue wants every point.
+        double exportPrice = terms == null ? 0 : BuildingManager.exportPriceOf(terms);
+        double soldAbroad = contractor.getExportPointsThisMonth();
+        if (exportPrice > 0 || soldAbroad > 0) {
+            box.getChildren().add(Kept.scope("export", () -> {
+                Label sold = Kept.label(String.format("SOLD ABROAD: %,.0f spare pts last month for %s; a spare point fetches %s abroad%s",
+                        soldAbroad, money(contractor.getExportReceiptsThisMonth()), money(exportPrice),
+                        exportPrice > 0 ? "" : " - none now, the queue at home is past the knee"));
+                sold.setWrapText(true);
+                sold.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                return sold;
             }));
         }
         box.setStyle("-fx-padding: 10 12 10 12;" + Palette.block(Palette.PANEL, Palette.EDGE));

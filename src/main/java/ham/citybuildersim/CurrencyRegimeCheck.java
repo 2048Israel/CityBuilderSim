@@ -1796,13 +1796,29 @@ public class CurrencyRegimeCheck {
     /** Section 12's city, kept for section 13: saved to slot 2 of its own scratch folder in the month the hot money left on doubt, then played on. */
     static Game doubtCitySaved;
 
+    /** The scratch slot section 12's twin is saved to, a month before the save month, to read the save month's target ahead (slot 2 is the save the section is about). */
+    static final int TWIN_SLOT = 3;
+
     static void theHotMoneysMonthCrossesASave() {
         out.println("\n--- 12. the hot money's month crosses a save ---");
 
         // A pegged city a fifth under its shadow: a doubt struck by one reprice acts the next month, so two months from the repeg. CAUSED (FS10), where this section once
         // played six seeds of a doubt town for it: the hot money is placed, the market quiet, the revaluation DOUBT_GAP under the shadow (causedDoubtTown()).
         Game live = causedDoubtTown("fx8-hot", false);
-        play(live, 2);
+        play(live, 1);
+        // CAUSED for any played path (FC2, on the merge of 0.9.194): money arrives in the month saved only while that month's target, drawn on the month's own GDP,
+        // is over the stock, and a town's month of GDP is as lumpy as its sites. On the merged branch the save month's GDP fell from 816.1 to 277.6 (its
+        // construction investment 970.5, then 247.3), its target to 2,499 under the stock of 3,826, and nothing arrived; main's town and FC2's before the merge
+        // took 244.6k and 267.6k. So the save month's target is read from a twin played the month ahead from a save (the replay is the live city's to the bit,
+        // as this section asserts below), and the stock is set to HOT_SHARE of it (InterestAbroadCheck.setHotStock(), the bank moved with it): the doubt struck
+        // last month takes its share of what is left, and money arrives whatever the month's sites did.
+        quietly(() -> live.saveGame(TWIN_SLOT, "hot-money ahead"));
+        final Game ahead = new Game(live.getGameFiles());
+        quietly(() -> ahead.loadGameSave(TWIN_SLOT));
+        play(ahead, 1);
+        double aheadTarget = ahead.getCapitalFlows().getTarget();
+        if (live.getCapitalFlows().getStock() > HOT_SHARE * aheadTarget) InterestAbroadCheck.setHotStock(live, HOT_SHARE * aheadTarget);
+        play(live, 1);
         ForeignAccounts fx = live.getForeignAccounts();
         CapitalFlows hot = live.getCapitalFlows();
         reportDoubtFixture("hot-money save", live);

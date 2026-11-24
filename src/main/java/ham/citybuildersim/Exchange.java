@@ -2379,6 +2379,16 @@ public class Exchange {
     public double getSplit(int c)                { return split[c]; }
     /** Shares today for one share at the founding. */
     public double getSplitFactor(int c)          { return splitFactor[c]; }
+
+    /**
+     * A saved split factor as the load carries it (FC2): every positive factor as it was saved, however deep the
+     * consolidations went; 1e-12 only for none, a negative or a NaN - the floor the load always put under a factor, which
+     * until FC2 also rewrote a genuine one under it (a company consolidated past a trillion to one loaded at a trillion,
+     * and the reloaded city priced its founding shares off it: SaveFileCheck's REV-HC1 P5).
+     */
+    static double carriedSplitFactor(double saved) {
+        return saved > 0 ? saved : 1e-12;
+    }
     /** The price per FOUNDING share: continuous through every split. The price history is this. */
     public double pricePerFoundingShare(int c)   { return price(c) * splitFactor[c]; }
     /** ...and the register's reckoning, the same way. */
@@ -2627,7 +2637,7 @@ public class Exchange {
             OrderBook b = s.books.get(i);
             books[c] = b != null ? b : new OrderBook(Equity.COMPANIES[c]);
             fair[c] = s.fair[i];
-            splitFactor[c] = Math.max(1e-12, s.splitFactor[i]);
+            splitFactor[c] = carriedSplitFactor(s.splitFactor[i]);
             if (s.emigrantShares != null && i < s.emigrantShares.length) emigrantShares[c] = s.emigrantShares[i];
             if (s.taxEmigrantsGross != null && i < s.taxEmigrantsGross.length) taxEmigrantsGross[c] = s.taxEmigrantsGross[i];
             if (s.taxEmigrantsRetained != null && i < s.taxEmigrantsRetained.length) taxEmigrantsRetained[c] = s.taxEmigrantsRetained[i];
@@ -2699,7 +2709,7 @@ public class Exchange {
             double mid = saved[i++];
             fair[c] = saved[i++];
             i++;                                   // the dealer's unfilled demand
-            splitFactor[c] = slots >= SLOTS ? Math.max(1e-12, saved[i++]) : 1;
+            splitFactor[c] = slots >= SLOTS ? carriedSplitFactor(saved[i++]) : 1;
             if (mid > 0) books[c].seedLastPrice(mid);
         }
         lifetimeVolume = saved[i];

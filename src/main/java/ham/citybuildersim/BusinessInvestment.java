@@ -1574,7 +1574,7 @@ public class BusinessInvestment {
     public double dearOf(BuildingsTemplate t, long n) {
         if (t == null || n < 1) return 1;
         // ...its buildings' points as their equipment takes them (R1e), as getCostOf() prices them.
-        return buildingManager.orderPriceMultiplier(0, fitoutOf(t).points(), n);
+        return buildingManager.orderPriceMultiplier(0, fitoutOf(t).points(), n, t);
     }
 
     /** The household mix, so a residential building can be priced on who would actually live in it. */
@@ -1733,7 +1733,8 @@ public class BusinessInvestment {
         // ...on the equipment the order's buildings would come with (R1e; Game hands in Fitout.of()), as the quote prices it:
         // the template's own cash and points for the whole template, to the bit.
         Fitout fit = fitoutOf(t);
-        double scarcity = buildingManager.orderPriceMultiplier(0, fit.points(), quantity);
+        // ...its work past the threshold at the share the order itself makes the foreign crews ask (REV-FC2), as the quote has it.
+        double scarcity = buildingManager.orderPriceMultiplier(0, fit.points(), quantity, t);
         // (Summed in the order it always was, so a multiple of one is the old price to the last bit.)
         return economyManager.withBuildersTax(buildingManager.nonMaterialCost(fit) * quantity * scarcity
                         + shortfall * buildingManager.getConstructionMaterialPrice() + works * scarcity)

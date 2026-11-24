@@ -5638,14 +5638,7 @@ public class HouseholdBalance {
         double[] want = new double[cells.length];
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
-            Household c = cells[i];
-            if (c.isEmpty() || !c.canInvest() || debtFreeShare(c) <= 0 || c.isGoingShort()) continue;
-            // The owner line takes no offering (BO1): its stakes dilute.
-            if (!c.tradesShares()) continue;
-            double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
-            double excess = c.savings - cushion;
-            if (excess <= 0) continue;
-            want[i] = excess * SHARE_OF_EXCESS * c.households * debtFreeShare(c);
+            want[i] = offeringWant(cells[i]);
             total += want[i];
         }
         if (total <= 0) return 0;
@@ -5662,6 +5655,28 @@ public class HouseholdBalance {
             taken += paidPer * c.households;
         }
         return taken;
+    }
+
+    /**
+     * What the households would put into an offering today, in all (REV-FC2b): subscribe()'s own weighing, cell by cell, of
+     * a share (SHARE_OF_EXCESS) of what a cell that may buy shares holds past SHARE_CUSHION_MONTHS of its take-home, by its
+     * debt-free share. The most an offering of any size raises from them; OrderDoorCheck's fixture reads it.
+     */
+    public double offeringMeans() {
+        double total = 0;
+        for (Household c : cells) total += offeringWant(c);
+        return total;
+    }
+
+    /** One cell's want for an offering, as subscribe() weighs it: nothing for a cell that may not, or will not, buy. */
+    private double offeringWant(Household c) {
+        if (c.isEmpty() || !c.canInvest() || debtFreeShare(c) <= 0 || c.isGoingShort()) return 0;
+        // The owner line takes no offering (BO1): its stakes dilute.
+        if (!c.tradesShares()) return 0;
+        double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+        double excess = c.savings - cushion;
+        if (excess <= 0) return 0;
+        return excess * SHARE_OF_EXCESS * c.households * debtFreeShare(c);
     }
 
     /**

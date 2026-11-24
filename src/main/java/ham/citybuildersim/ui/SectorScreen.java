@@ -1479,6 +1479,15 @@ final class SectorScreen {
             });
             named++;
         }
+        // ...and the work it sold abroad (FC2): an export with no good behind it, named as it was sold (Sector.servicesSoldParts()).
+        for (java.util.Map.Entry<String, Double> part : sector.servicesSoldParts().entrySet()) {
+            if (Math.abs(part.getValue()) < .0000005) continue;
+            Kept.scope("sold:" + part.getKey(), () -> {
+                box.getChildren().add(bookDetailRow(part.getKey(), part.getValue(), false));
+                box.getChildren().add(bookDetailRow("all of it sold abroad", part.getValue(), true));
+            });
+            named++;
+        }
         // ...and Freight's revenue is its shippers' bills, by division (FR4): INCOME · THE SHIPPERS BY DIVISION.
         Node shippers = sector instanceof ham.citybuildersim.sectors.Freight ? shippersByDivision() : null;
         if (shippers != null) box.getChildren().add(shippers);

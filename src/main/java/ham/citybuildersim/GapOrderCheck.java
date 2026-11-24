@@ -107,7 +107,16 @@ public class GapOrderCheck {
         record(g);
         saved(root, g);
         theGap(g);
-        trap(root);
+        // FC2: the stalled city's section with the builders' price and the foreign crews off (BuildingManager.buildersShortOn,
+        // as SaveFileCheck's brake town has them), and back on after it. Its claim is the depot plan's cut
+        // (Construction.depotsForTheQueue(), which reads BuildersShort.premium() itself, so the switch leaves it as it is);
+        // with the crews on, the city a year of orders leaves is not BuildersFirstCheck's trap but FC2's way out of it, and
+        // no longer the fixture: 41,486 points owed at the year's end where 109,675 are with the crews off (theirs built the
+        // rest), 0 of 2 depots staffable (sites 0 and 275 a depot against 2,400 ordered a month, 69 and 400 off), the plan
+        // holding on its staff ("the city could staff 30% of a Builders' Yard now and 69% with a year's arrivals; it wants
+        // 80%"). The crews' own month in such a city is ForeignCrewsCheck's and ConstructionTrapCheck's to prove.
+        BuildingManager.buildersShortOn = false;
+        try { trap(root); } finally { BuildingManager.buildersShortOn = true; }
         food(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");

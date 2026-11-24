@@ -1059,7 +1059,7 @@ public final class EssentialWorksCheck {
         AutoBuilder ab = g.getAutoBuilder();
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
-        BuildingsTemplate road = bm.getTemplateByName("Paved Road");
+        BuildingsTemplate later = bm.getTemplateByName("Container Terminal");
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
         quietly(() -> g.buildStack(bm.getTemplateByName("Construction Depot"), 8, true));
@@ -1079,8 +1079,14 @@ public final class EssentialWorksCheck {
         quietly(() -> ab.pass(g));
         check("pending capacity covers the shortage before its quoted deadline",
                 step(g, power) != null && step(g, power).outcome() == AutoBuilder.Outcome.AHEAD);
-        quietly(() -> g.buildStack(road, 10_000, false));
-        bm.getControl().setOrder(java.util.List.of(ConstructionControl.keyOf(road), ConstructionControl.keyOf(wind)));
+        // FC2, 2026-11-23: the work that stands before the wind was ten thousand Paved Roads. On FC2's path the foreign crews took them
+        // (505 roads finished in the first month), and the repairs of the roads that stood outran the builders: 347 points of repairs
+        // at the order, 3,707 a month on, 12,893 at the pass past the deadline, against a site output of 726 a month that was 0 by the
+        // next month, so that pass held the Coal Power Plant "the builders have no site output to build them" and ordered no power. It is one
+        // Container Terminal now, the dearest single building (829,800 points): one unit, which neither the home builders nor the
+        // crews abroad finish in the months compared, so nothing finishes to be repaired and the builders keep their site output.
+        quietly(() -> g.buildStack(later, 1, false));
+        bm.getControl().setOrder(java.util.List.of(ConstructionControl.keyOf(later), ConstructionControl.keyOf(wind)));
         int reloadAt = began + Math.max(1, (int) first / 2);
         quietly(() -> g.simulateMonths(reloadAt - g.getMonth()));
         check("the unbroken city reaches the mid-construction save month", g.getMonth() == reloadAt);
@@ -1131,6 +1137,9 @@ public final class EssentialWorksCheck {
         g.autoBuildProbeForTest = null;
         loaded.autoBuildProbeForTest = null;
         check("fixture: later priority work kept operating power short throughout the original deadline", stayedShort[0]);
+        check("fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass",
+                bm.getStack(later).getQuantity() == 0 && bm.getStack(later).getUnderConstruction() == 1
+                        && g.getBuildingOutputAtEveryPost() > 0);
         check("monthly passes respect the original pending deadline before it expires", !early[0]);
         check("past that deadline the automatic path orders more power despite the pending wind", late[0]);
         check("the real loaded city and its unbroken twin place the same later automatic orders, one by one",

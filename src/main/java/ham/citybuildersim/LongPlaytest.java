@@ -9884,22 +9884,31 @@ public class LongPlaytest {
              * credited their own, and the difference is money the pools paid that no household was given: "- households BondFaceOrphaned"
              * (BondMarket.getOrphanedToHouseholds(), the coupons' part and the principal's). HL2 reconciles the two records.
              * THE FIXTURE CAUSES THE DRIFT, as the census does, on section 1's founding city rebuilt at its 121st month (foundingCity(): the
-             * industrial city above has no bond the households hold left by its end, all its issues having matured): the households' bond
-             * that matures soonest has the face of the cells that hold it halved, the biggest cell first, until the coupon on what the
-             * record exceeds the cells by is a few times what the identity can tell from rounding. A bond is issued for TERM_MONTHS (ten
-             * years) and this town's first was issued in its 60th month, so the maturity is about sixty presses on (printed below), played
-             * one by one to it: a few seconds.
+             * industrial city above has no bond the households hold left by its end, all its issues having matured): of the households'
+             * bonds whose coupon on half the record is twice what the identity can tell from rounding, the one that matures soonest has the
+             * face of the cells that hold it halved, the biggest cell first, until the coupon on what the record exceeds the cells by is a
+             * few times that. A bond is issued for TERM_MONTHS (ten years), so its maturity is some presses on (printed below), played one
+             * by one to it: a few seconds.
+             * FC2, 2026-11-24: the bond is chosen by its coupon, not found. On FC2's path the founding city's landlords' order went to
+             * the foreign crews from m2 (their bills about 15,350 to m12, an import paid abroad), Industry was short of cash from m7, and
+             * its first bond, for a shortfall of $20.82 against little bond room, was $0.80 (the record 0.0731): every cell halved left D
+             * 0.0366 and its coupon 0.000033, under a cent, so the orphaned line could not be seen. Chosen by its coupon, the bond is
+             * Retail's (due m129, the record 5.41, 1 of 59 cells halved), on any path that issues one.
              */
             final String bondLine = "- households BondFaceOrphaned";
             Game bondTown = foundingCity(GameFiles.scratch("moneycheck-bonds"));
             BondMarket bondMarket = bondTown.getBondMarket();
             HouseholdBalance gBooks = bondTown.getHouseholdBalance();
             CorporateBond soonest = null;
+            // ...one whose coupon on half its record clears twice what the identity can tell from rounding (the visible line below):
+            // halving every cell leaves D at most half the record, so a sliver's coupon could never be seen.
+            double reach = 2 * 4 * Math.max(MoneyAudit.CENT, 1e-7 * Math.max(1, bondTown.getLastHouseholdsAudit().moved()));
             for (CorporateBond b : bondMarket.getBonds()) {
                 if (!(b.households() > 0) || !(gBooks.bondFaceHeld(b.id) > 0)) continue;
+                if (!(b.households() / 2 * b.coupon / CorporateBond.COUPONS_A_YEAR > reach)) continue;
                 if (soonest == null || b.maturityMonth() < soonest.maturityMonth()) soonest = b;
             }
-            assertTrue("fixture: the bond town's households hold a corporate bond", soonest != null);
+            assertTrue("fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line", soonest != null);
             if (soonest != null) {
                 final int bondId = soonest.id;
                 if (Boolean.getBoolean("cbs.pw5.traceFixtures")) {
@@ -9927,6 +9936,7 @@ public class LongPlaytest {
                         bondId, soonest.issuer, soonest.maturityMonth(), bondTown.getMonth(), soonest.households(), gBooks.bondFaceHeld(bondId),
                         halved, holders.size(), drift, drift * monthlyCoupon, visible);
                 assertTrue("fixture: the bond's record now exceeds the cells' own by D, over a cent", drift > MoneyAudit.CENT);
+                assertTrue("fixture: ...and the coupon on D is over what the identity can tell from rounding", drift * monthlyCoupon > visible);
 
                 // The coupon month: one press.
                 quietly(() -> bondTown.simulateMonths(1));

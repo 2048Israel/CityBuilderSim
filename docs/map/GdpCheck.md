@@ -1,4 +1,4 @@
-# GdpCheck.java - 1,214 lines · 10 methods · 1 constants · harnesses
+# GdpCheck.java - 1,220 lines · 10 methods · 1 constants · harnesses
 
 `ham/citybuildersim/GdpCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -43,15 +43,15 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 1200 | **type** `public class GdpCheck` | Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them). |
+| 15 | 1206 | **type** `public class GdpCheck` | Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them). |
 | 22 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 29 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 35 | 4 | `static int asManyAsWorth(double gdp, double each)` | FS17: how many of a thing worth `each` hold MONTHS_OF_OUTPUT months of `gdp`, the last month's: at least one, and one when the thing has no worth to count by. |
 | 41 | 4 | `static int heldAt(Good g)` | Where a good stands in NationalAccounts.HELD. |
-| 46 | 830 | `public static void main(String[] args)` |  |
-| 878 | 53 | `static void forecastPrices()` | GDP1: a new input band must reach every works' next run decision. |
-| 939 | 62 | `static void delayedExports()` | GDP1: an imported feed made into stock before the accounts, exported after them. |
-| 1024 | 121 | `static void sheds(java.io.PrintStream quiet, java.io.PrintStream out)` | ...AND IN A CITY (0.7.136, batch FX1): a town's bakeries and materials plants retired with their sheds full. |
-| 1156 | 24 | `static void bankUpkeep()` | ...AND A BANK'S UPKEEP BOUGHT ABROAD (HL1, 2026-11-11, the review's finding): GDP is C + I + G + exports less imports, and the city's upkeep is bought of Business Services, which imports the share of it a sector of it... |
-| 1182 | 32 | `private static void bankBooks(String label, boolean bare, Game c, double bill)` | One upkeep city's books, the month after the bank's operating cost `bill` was paid: the sectors' statements against the accounts'. |
+| 46 | 836 | `public static void main(String[] args)` |  |
+| 884 | 53 | `static void forecastPrices()` | GDP1: a new input band must reach every works' next run decision. |
+| 945 | 62 | `static void delayedExports()` | GDP1: an imported feed made into stock before the accounts, exported after them. |
+| 1030 | 121 | `static void sheds(java.io.PrintStream quiet, java.io.PrintStream out)` | ...AND IN A CITY (0.7.136, batch FX1): a town's bakeries and materials plants retired with their sheds full. |
+| 1162 | 24 | `static void bankUpkeep()` | ...AND A BANK'S UPKEEP BOUGHT ABROAD (HL1, 2026-11-11, the review's finding): GDP is C + I + G + exports less imports, and the city's upkeep is bought of Business Services, which imports the share of it a sector of it... |
+| 1188 | 32 | `private static void bankBooks(String label, boolean bare, Game c, double bill)` | One upkeep city's books, the month after the bank's operating cost `bill` was paid: the sectors' statements against the accounts'. |
 

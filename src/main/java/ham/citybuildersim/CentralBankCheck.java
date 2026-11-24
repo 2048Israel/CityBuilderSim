@@ -1322,6 +1322,31 @@ public class CentralBankCheck {
         return g;
     }
 
+    /** What a month's dead leave of the city's paper, as a share of what the households hold of it: an estate the fixture hands to the treasury's custody. */
+    static final double ESTATE_OF_PAPER = .001;
+
+    /**
+     * FC2, 2026-11-23: an estate of the city's own paper that no household inherits, handed to the treasury's custody between two presses,
+     * as HouseholdBalance's census does when a death leaves no working heir (passOn(); CapitalGainsCheck's custody fixtures make it by
+     * emptying every working cell). Section 19's town is the queued one (standTheTown's note), thin enough that with FC2's trade switched
+     * off in a probe, its 32 working cells held 3.2 households between them, a tenth of one each and under EMPTY_CELL, so the
+     * estates of months 63 to 69 reached the custody and 3.8e-5 of the serial's face was consolidated a month; on FC2's path the town
+     * held 15.7 households in 48 working cells, some at or over half a household, so each estate had an heir and the custody
+     * received nothing in those months (nothing consolidated, no cash, no dollars), while the households held $139k of the serial.
+     * Whether a death has an heir is a matter of how many households the cells hold, which no fixture of this section is about, so
+     * the fixture causes it: the households give up ESTATE_OF_PAPER of their paper, cell by cell as a death does, and the custody
+     * receives that face, reserved against the serial and consolidated after the holdings step. The households' cells and the
+     * paper's household face stay equal, since both lose it.
+     */
+    static void anEstateWithNoHeir(Game g) {
+        HouseholdBalance households = g.getHouseholdBalance();
+        double held = households.totalPaper();
+        for (Household c : households.cells()) c.paper *= 1 - ESTATE_OF_PAPER;
+        double estate = held - households.totalPaper();
+        double[] none = new double[Equity.COMPANIES.length];
+        g.getEstateCustody().receive(0, none, none.clone(), new java.util.LinkedHashMap<>(), 0, 0, 0, estate);
+    }
+
     static void theRolloverAtIssue() throws Exception {
         out.println("\n--- 19. what the central bank holds of a maturing piece it takes again at issue, par for par ---");
         GameFiles files = GameFiles.scratch("centralbankcheck-rollover");
@@ -1357,7 +1382,11 @@ public class CentralBankCheck {
          */
         double dial = (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE) * .8;
         city.getCentralBank().setTargetShare(dial);
-        while (serial.getRemainingMonths() > 52) play(city);   // three months before its first slice (49 months left)
+        // FC2, 2026-11-23: handed over before the last press only, as the fixture below reads that month's consolidation (earlier ones
+        // would shrink the term book the bank bought its dial's share of, and the share it holds would no longer be the dial's of it).
+        while (serial.getRemainingMonths() > 53) play(city);
+        anEstateWithNoHeir(city);
+        play(city);                                        // three months before its first slice (49 months left)
         assertTrue("fixture: the households, the bank and the central bank each hold part of it",
                 serial.householdPrincipal() > 0 && serial.bankPrincipal() > 0 && serial.centralBankPrincipal() > 0);
         // HT1: own paper inherited without an heir is consolidated after the holdings step.
@@ -1393,6 +1422,9 @@ public class CentralBankCheck {
         close("...so the market's issue is sized for the rest, less what is netted", plan.toRoll(),
                 slice - itsPar - plan.netted(), 1e-9);
         assertTrue("fixture: ...nothing netted, and the rest is issued", plan.netted() == 0 && plan.issues().size() == 1);
+        // FC2, 2026-11-23: the roll month's estate, handed over after the plan is read (the roll strikes the central bank's par before the
+        // month consolidates it): see anEstateWithNoHeir for why the town's own deaths no longer cause it.
+        anEstateWithNoHeir(a);
         play(a);
         java.util.List<Debt> sold = soldAtTheLastPress(a);
         assertTrue("the rollover sold one piece, a serial like the one falling due",
@@ -1725,8 +1757,14 @@ public class CentralBankCheck {
         assertTrue("fixture: the central bank holds the first bond, which falls due next month and is not the line",
                 aFirst != null && aFirst != aLine && aFirst.centralBankPrincipal() > 0);
         Rollover.Plan alonePlan = alone.rolloverPlan();
+        // FC2, 2026-11-23: the plan reads the central bank's part of a piece as principal * held / out, which is a unit in the last place
+        // over the principal when it holds all of it: $20,000.152511469427k falls due and $20,000.15251146943k of it is the central bank's,
+        // so the market's part is -3.6e-12 and the plan's netted part of the par +3.6e-12, with the press's cash at 0 (atTheRollPress) and
+        // last year's surplus at -$172.1k, which nets nothing. The cash paying the par down is not what happened: no cash is left to net
+        // it and no surplus, and the premise is caused on any path. The exact zero was only the figure main's doubles gave, so it reads
+        // within the rounding the market clause below already allows (1e-9 of a $20,000k par).
         assertTrue("fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing",
-                alonePlan.centralBankPar() > 0 && alonePlan.centralBankNetted() == 0 && alonePlan.issues().isEmpty()
+                alonePlan.centralBankPar() > 0 && Math.abs(alonePlan.centralBankNetted()) < 1e-9 && alonePlan.issues().isEmpty()
                         && Math.abs(alonePlan.toRoll()) < 1e-9);
         assertTrue("fixture: nothing is sold between the presses", !soldBetweenPresses(alone));
         assertTrue("fixture: ...and the central bank's book is at its dial, so none of it runs off or is bought on",
@@ -1752,8 +1790,9 @@ public class CentralBankCheck {
                         && dFirst.centralBankPrincipal() > 0);
         added.getCentralBank().setTargetShare(added.getCentralBank().getPaperHeld() / added.getDebtManager().termPrincipal());
         Rollover.Plan addPlan = added.rolloverPlan();
+        // FC2, 2026-11-23: within rounding, as for the plan above (3.6e-12 netted here too, with the cash set to 0 just above).
         assertTrue("fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more",
-                addPlan.centralBankPar() > 0 && addPlan.centralBankNetted() == 0 && addPlan.issues().isEmpty()
+                addPlan.centralBankPar() > 0 && Math.abs(addPlan.centralBankNetted()) < 1e-9 && addPlan.issues().isEmpty()
                         && Math.abs(addPlan.toRoll()) < 1e-9);
         assertTrue("fixture: term paper was sold between the presses, and the central bank is at its dial",
                 soldBetweenPresses(added) && added.centralBankOverItsDial() == 0);

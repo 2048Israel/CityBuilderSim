@@ -1521,10 +1521,12 @@ public class AuctionCheck {
         // FS15: and more, one at a time, while the town's builders are still short (a town moved by a change to the month
         // may need more than FC1's eight); until FS15 an Observation stood here.
         BuildingManager builders = a.getBuildingManager();
-        for (int more = 0; more < 64 && (builders.foreignCrewsTakeOrders() || builders.orderPriceMultiplier() != 1.0); more++)
+        // FC2: "no foreign crews" is now no work going abroad (BuildingManager.ordersGoAbroad(), the queue at home past the
+        // threshold), FC1's foreignCrewsTakeOrders() gone with its floor.
+        for (int more = 0; more < 64 && (builders.ordersGoAbroad() || builders.orderPriceMultiplier() != 1.0); more++)
             a.buildStack(ChildcareCheck.template(a, "Construction Depot"), 1, true);
-        boolean notShort = !builders.foreignCrewsTakeOrders() && builders.orderPriceMultiplier() == 1.0;
-        assertTrue("fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes",
+        boolean notShort = !builders.ordersGoAbroad() && builders.orderPriceMultiplier() == 1.0;
+        assertTrue("fixture: the builders are not short - no work going abroad and the order price at its base, so a quote does not jump between the passes",
                 notShort);
         if (!notShort) return;
 
