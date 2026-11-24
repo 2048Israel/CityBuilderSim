@@ -95,3 +95,17 @@ more to get just roads fixed").
 - The record is saved whole with ConstructionControl's state (Gson, State.copy(), restore()'s null guard); the contracts' points and
   the abroad ones in BuildingManager.ContractRecord (points, abroad); the crews' month in Construction's extras. Nothing is derived on
   load. ForeignChoiceCheck 7 holds the round trip; SaveFileCheck as section 3.
+
+## 5. The checks on the final code (91167f730 and the records after it)
+
+- The pick is ALL (AllChecks gains ForeignChoiceCheck). A full suite started here was stopped by the orchestrator (contract 4: the
+  whole suite is the dry run's, on the box); its log is not a result. Run here, one at a time: ./batch-check.sh --fast green; green:
+  ForeignChoiceCheck, ForeignCrewsCheck, ConstructionControlCheck, ConstructionTrapCheck, SaveFileCheck, CardCheck (its two), ForeignCheck,
+  FitoutCheck, GapOrderCheck, MortgageCheck, NewUnitCheck, RunWorksCheck, WellCheck; InvestCheck known red only (main's,
+  docs/notes/gate.txt). The named set is every harness that reads BuildersShort, a stack's contracts, the contract records, the
+  crews' bill or terms, the queue at home or the home premium.
+- ★ **SaveFileCheck green on the final path**: the buildings mend (slice C) moved which sites go abroad and P5's rent weights now sum
+  exactly, so its red of section 3 no longer fires and no known-reds row is filed for it. The fault is main's and still latent (a
+  moved city can bring it back), so FRW1 stays queued in the ship file; if the dry run shows it, the row naming FRW1 goes back.
+- The review owed: money and saves (the brief; tools/pick.sh reads no money or saves in the diff, but the handover's payment, the
+  crews' import and format 65 are both). The ensemble is owed after the review (the trace moves: businesses hand sites abroad).
