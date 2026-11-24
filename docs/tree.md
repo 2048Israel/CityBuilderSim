@@ -364,6 +364,8 @@ adds its line here, not in `CLAUDE.md`.
                                    its template, which every order, stack and key keeps; what future readers read
         HistoricalRecipeCheck.java R2d's per-row date/fitting fixtures, both fitting orders, default and real-clock checks.
         PostwarRecipeCheck.java    R2e's postwar row transitions, independent and catalyst-stage composition, wood dates and default control.
+        ModernRowsCheck.java       R6f's M12, B10 and L8 on both sides of their months: the stays factor, the Contact Centre's agents,
+                                   the bank's conservation buffer; a default city unchanged; a held city across a save
         NewUnitCheck.java          QN1's new-building readers: the rejected robot's 300 posts, staffing, the order bar, the bank's
                                    clerks and fee boundary, identities, what is on site and the power ahead
         HistoricalLicenceCheck.java Independent recipe/piece and rail patent invoices, closed audits, saved bills and exemptions.

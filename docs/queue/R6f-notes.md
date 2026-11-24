@@ -1,0 +1,209 @@
+# R6f - research: the 1996-2024 medicine, business and law rows with something behind them
+
+Builder: R6f (Claude Opus, headless), branch `batch/R6f` from origin/main
+3d495d293 (0.9.195, format 63). The brief: M12 and M19 on general care's
+stays and the Home Care Service, each by its sourced share of stays or
+Pending; B9 a minimum price step on the order book; B10 the AI assistant at
+the Contact Centre, +14% a post; L8 Basel III on Bank.CAPITAL_RATIO. The
+pattern is the study's 3.3 (docs/studies/research-1996-2024.md) and R6e's;
+R6-G's ★1 (one central date) and ★6 (a row enters research.json only in
+the batch that builds what it gives). ★ below marks a design call.
+
+## 1. What was built
+
+Three rows enter `research.json` after E21, in the order M12, B10, L8 (100
+entries). Each is undone in a city founded the 1900 way until it is known
+(history's month, or the month the city found it); a city founded the
+default way knows every row from month 0 and runs as before.
+
+- **M12, robot-assisted surgery (17 Jul 2000).** `Sickness.STAYS_ROWS`
+  gains M12. Before it, general care's part of the recovery is
+  `Sickness.STAYS_BEFORE_M12` (0.99962) of today's: the robot's 0.23 days
+  over keyhole surgery on its 0.78% share of US stays, against the 4.662-day
+  mean stay. `STAYS_BEFORE_LATER_ROW` (M5, M6, M9, M10) is re-struck so the
+  four and M12 still make 1950's 10.0 days into 2022-23's 7.3
+  (`LATER^4 x M12 == 0.73`, MedicineCheck); each later row's factor moves
+  from 0.92434 to 0.92443. `MedicalRows.CODES` gains M12.
+- **B10, the AI assistant (Nov 2020).** The Contact Centre (id 46) gains a
+  recipe change, `without: jobs NO_DIPLOMA +35.7`: before B10 its agents are
+  today's 255 times 1.14, 290.7, rounded once by RecipeChanges to 291, for
+  the same 300 units of support work. B1's change (the DIPLOMA and
+  COLLEGE_BUSINESS clerks) composes beside it.
+- **L8, Basel III (1 Jan 2013).** `Bank.hearCapitalRule(boolean)`,
+  `conservationBufferRequired()`, `bufferFloor()` and `BUFFER_BEFORE_L8 = 0`:
+  the bank's buffer is `min(MAX_BUFFER, max(bufferFloor(), worst year))`, so
+  before L8 its target is the 8% minimum plus its own worst year alone, and
+  from L8 at least 10.5%. `targetReason()` says so before 2013. Game tells
+  the bank in `bankHearsTheRule()`: where the month is heard (the founding,
+  the top of every month) and again at a load once the founding and the
+  finds are restored. ModernRowsCheck found the load saying it before
+  either was back: a loaded 1900 city held today's buffer until its next
+  month.
+- **ModernRowsCheck** (new; in AllChecks after ModernEngineeringCheck; its
+  line in docs/tree.md): 121 assertions in three sections, one per row.
+  ResearchCheck (100 entries, the counts, needs, dates and work),
+  MedicineCheck (M12 a STAYS row, the re-struck split) and
+  PostwarRecipeCheck (30 template changes: its `postwar()` pattern takes
+  B10) hold the new rows.
+- **M19 and B9 are Pending** (section 4).
+
+## 2. The sources, re-opened 2026-11-23
+
+Each page was opened again by R6f; none has stopped saying its figure.
+
+| code | page, date | the line |
+|---|---|---|
+| G-M38 | ScienceDaily, 17 Jul 2000, sciencedaily.com/releases/2000/07/000717072719.htm | "The U.S. Food and Drug Administration has cleared for marketing a robotic device" (the da Vinci Surgical System) |
+| G-M39 | Choi et al., Surg Endosc 38:2371 (2024), PMID 38528261; the abstract by Europe PMC's REST API (its article page answers 403) | "Compared to laparoscopic surgery, robotic surgery had fewer open conversions ..., shorter length of stay (mean difference - 0.23 days, p = 0.01)"; against open surgery, "shorter length of stay (mean difference - 1.69 days, p = 0.001)" |
+| R6f-S1 | Minimally Invasive Surgery in the United States, 2022, J Surg Res 281:33 (14 Sep 2022), PMC9691544 | Table 1, 2018: "Visits with ≥ 1 robotic-assisted ... 276,325 (261,629–291,021)" of 9,605,207 inpatient OR stays; "in 2018, these rates were 11.2% ... and 2.9% ..." (keyhole, robotic) |
+| R6f-S2 | HCUP Statistical Brief 281, AHRQ, Aug 2021 | "Inpatient stays (N = 35,527,500)"; "In 2018, 27.0 percent of inpatient stays involved at least one OR procedure"; its Figure 1's mean stays, 5.1 days with an OR procedure and 4.5 without |
+| G-B1, G-B2, G-B3 | Brynjolfsson, Li and Raymond, Generative AI at Work, NBER w31161 (Apr 2023, rev. Nov 2023), its full text | "Access to the tool increases productivity, as measured by issues resolved per hour, by 14% on average, including a 34% improvement for novice and low-skilled workers"; the data "from 5,179 customer support agents"; "The bulk of the adoption occurs between November 2020 and February 2021." |
+| G-B29 | BIS press releases, 12 Sep 2010 and 16 Dec 2010 | common equity from 2% to 4.5%, Tier 1 from 4% to 6%, a conservation buffer of 2.5%; "The total capital requirement remains at the existing level of 8.0%" |
+| G-B33 | DLA Piper on Legal 500, Final Guideline for Basel III Implementation Now In Effect, 14 May 2013 | OSFI's capital guideline in effect from 1 January 2013 (the page's reading as fetched; its exact sentence was not kept) |
+| R6f-S3 | BCBS history, bis.org/bcbs/history.htm | the 1988 Accord's minimum of 8% of risk-weighted assets, to be met by the end of 1992 |
+
+## 3. The calls
+
+- **★ M12's share.** 276,325 robot-assisted of 35,527,500 US inpatient
+  stays in 2018 (R6f-S1 over R6f-S2): 0.78%. No Canadian share was found;
+  the US share stands for the city's (est.), as the study's other rows take
+  US trials.
+- **★ M12's saving is the robot's over keyhole surgery, 0.23 days**, not its
+  1.69 over open surgery: the 1.69 holds keyhole surgery's own saving,
+  which M9 (the way before it, and M12's need) already gives.
+- **★ The mean stay is the US 2018 mean, 4.662 days** (0.270 x 5.1 + 0.730 x
+  4.5, R6f-S2), the same population as the share.
+- **★ The stays rule is general.** A stays row with its own measure (M12;
+  MED3's M14 takes the same rule) has its own factor, and the four later
+  rows split evenly what is left of the 10.0-to-7.3 fall, so 1950's
+  calibration holds. Leaving the four at 0.92434 and M12 on top would make a
+  1900 city's 1950 stay 10.004 days.
+- **★ B10 is the agents only.** The +14% is resolutions an hour of the
+  agents given the tool: the Contact Centre's NO_DIPLOMA posts. B1's clerks
+  (DIPLOMA, COLLEGE_BUSINESS) were not measured. The 34% for the novice is
+  inside the 14% average and is not stacked on it.
+- **★ B10 is dated Nov 2020**, the bulk of the firm's roll-out (G-B2), not
+  ChatGPT's release (Nov 2022): R6-G's ★1, one central date for the thing
+  measured.
+- **★ B10 has no equipment piece.** The study names a piece; its capital
+  cost and licence price were not measured, and a piece in today's figures
+  would be a new number in every default city. The row is a recipe undo
+  alone, its fee a patentability estimate, as E21's.
+- **★ L8 does not move Bank.CAPITAL_RATIO.** The 8% is the total-capital
+  minimum, and Basel III left it "at the existing level of 8.0%" (G-B29),
+  the 1988 Accord's (R6f-S3). The game's bank holds only common equity, so
+  the common-equity and Tier 1 minimums (2% to 4.5%, 4% to 6%) are under
+  its 8% before the row and after it, and never bind. What Basel III
+  brought that the bank reads is the 2.5-point conservation buffer: before
+  L8 a bank's buffer is its own worst year alone (`BUFFER_BEFORE_L8 = 0`).
+  OSFI's pre-2013 targets (7% Tier 1, 10% total) were seen only in a search
+  snippet, never on an opened page, and are not used.
+- **★ The leverage minimum is not dated by L8.** `leverageTarget()` is
+  `LEVERAGE_RATIO_MIN x capitalTarget() / CAPITAL_RATIO`, so before L8 it
+  follows the target down to the 3% minimum itself. The 3% leverage ratio
+  is Basel III's too, but dating the leverage floor needs its own source
+  (what limit a Canadian bank had before it) and is left as it was.
+- **★ One harness, ModernRowsCheck,** with a section per row, in place of
+  three classes: the three share their fixtures and their pattern.
+- **The bank's rule is not saved.** It is derived from the founding and the
+  finds, both saved, and heard again at a load.
+
+## 4. Pending
+
+- **M19, hospital at home: Pending, with what it needs.** The measured
+  national effect is not a shorter stay: MedPAC (June 2024, ch. 6) gives
+  6.6 days at home against 5.7 in hospital for the same DRGs (two-column
+  text: "6.6 ... compared with 5.7 days, respectively"), and Levine's trial
+  4.5 against 3.8; Leff's 3.2 against 4.9 is contradicted by the newer
+  national figure. Its reach is about 6,100 discharges in 2022, "less than
+  0.1 percent of all IPPS discharges" (MedPAC), with no Canadian share. The
+  Home Care Service is senior care and holds no acute patients, so the
+  study's recipe there has nothing to act on. It needs a mechanism for
+  acute care at home with its cost a stay (MedPAC: resource use "18 percent
+  lower"), and a measured share.
+- **B9, the tick: Pending, with what it needs.** The tick Toronto cut from
+  on 15 Apr 1996 is on no opened page: La Spada, Farmer and Lillo (arXiv
+  1009.2329, Oct 2010) say only "the April 15, 1996 Toronto Stock Exchange
+  (TSE) reduction in the minimum tick size to five cents". And the game's
+  share price is SX1's wage band (between 0.25% and 25% of the monthly
+  wage), not a real share's, so a nominal step would be some 14% of a 1900
+  share and 0.2% of a 1995 one. It needs the old tick and its price tiers
+  sourced, and Jerus's call on a nominal against a relative step.
+
+## 5. L8: the harnesses that read Bank.CAPITAL_RATIO
+
+None moves: every assertion that reads the capital rule runs on a bare
+`new Bank()` (which requires the buffer) or a city founded the default way
+(which hears it from month 0), and CAPITAL_RATIO itself is unchanged.
+
+| harness | why it does not move |
+|---|---|
+| BankCheck | bare Banks; its Game is a default founding |
+| BankFailureCheck | bare Banks; its Games `Founding.defaults().withPath(...)`; CAPITAL_RATIO as a constant |
+| BondCheck | `BankCheck.lentOut` (bare) and a default `city()` |
+| BuybackCheck | a comment only |
+| CreditCrunchCheck | a bare Bank; its played crunch is `LongPlaytest.played(null)`, default unless `-Dplaytest.founded=1900` |
+| FloatLinkCheck | CAPITAL_RATIO as a constant: the auction room is equity over the minimum, not the target |
+| HistoryCheck | its 10.5% target assertions are on a default `new Game(scratch)` |
+| LongPlaytest | `FOUNDED_1900` defaults to today; under the 1900 flag only its printed targets and rationing counts would shift, and its save round trip holds (a load hears the rule) |
+| MortgageCheck | bare Banks and a default landlord city |
+| ReadPathCheck | reads with no assertion on the value; default fixtures |
+| YoungBankCheck | CAPITAL_RATIO as a constant; a default young city |
+| ExchangeCheck, SaveFileCheck | a bare Bank; a default round trip |
+
+The 1900-founded fixtures elsewhere (ScaleCheck, AuctionCheck 12,
+AutoBuildCheck 10, NewGameCheck) assert nothing on the capital rule.
+
+## 6. Saves (the old-saves rule)
+
+A format bump is owed, for B10, and made: SAVE_FORMAT 64 and
+OLDEST_LOADABLE_FORMAT 64 (GameVersion). A format-63 1900 city before Nov
+2020 saved its Contact Centre's choice as "default", which is not written;
+it now holds "default~B10". Loaded, it would run 255 agents, not 291, until
+the next month's choice: an old save read wrongly, R6e's precedent for E21.
+M12 and L8 add no saved state: the stays factor is set every month and the
+bank's rule is heard at a load, both from the saved founding and finds.
+
+## 7. The default trace and the ensemble
+
+Every change is gated: `Sickness.staysFactor` is 1 when the rows are
+today's (`MedicalRows.isToday()`, a default city); `Recipes.choose` and
+`apply` do nothing in a default city; the bank in a default city hears
+`true` from its founding, and `capitalBuffer()` with the floor
+CONSERVATION_BUFFER is the old expression. ModernRowsCheck asserts a default
+city's factor 1, its Contact Centre at today's anchor and its bank requiring
+the buffer at each month across the three dates. So the default trace is
+expected unchanged and the ensemble not owed; the dry run's LongPlaytest
+report against main's retained gate report confirms it or not (section 9).
+
+## 8. Checks run by R6f
+
+One at a time on the PC, on 34c278b8b's code, each with the data paths
+`-Dcbs.earth=.../earth-2.bin -Dcbs.world=.../world-1.bin`:
+
+| harness | result |
+|---|---|
+| `./batch-check.sh --fast` | exit 0 |
+| ModernRowsCheck | all 121 ok |
+| ResearchCheck | all 245 ok |
+| MedicineCheck | exit 0 |
+| PostwarRecipeCheck | exit 0, 231 assertions |
+| RecipeCheck | exit 0 |
+| ModernEngineeringCheck | all 207 ok |
+| SaveFileCheck | exit 0 |
+| DiscoveryCheck | all 270 ok |
+| BankCheck | 2 FAILED, both main's exact lines in docs/notes/gate.txt (FS9's tab city) |
+
+ModernRowsCheck's causes removed one at a time, each reverted (with the
+load mend not yet made, so one red stood under each): M12 out of
+`Sickness.STAYS_ROWS`, 8 new reds, all in section 1; B10's 35.7 set to 0, 7,
+all in section 2 (at first 2: the harness took its expected posts from the
+file's own undo, and now takes them from the source's 14% and checks the
+file agrees); `hearCapitalRule(true)` in the month, 7, section 3;
+`bufferFloor()` always the buffer, 7, section 3. The pick
+(`sh tools/pick.sh origin/main HEAD`) is ALL, Game.java's 209 readers; the
+review is owed for money (Bank.java) and saves (the format and its floor).
+
+## 9. The dry run
+
+Not yet run.
