@@ -1412,8 +1412,8 @@ public final class KeptBench {
                 + (keptPools == null ? 0 : keptPools.length) + (keptPanelPools == null ? 0 : keptPanelPools.length)
                 + (keptFramePools == null ? 0 : keptFramePools.length) + (keptHistoryPool == null ? 0 : 1)
                 + (keptChipPools == null ? 0 : keptChipPools.length) + keptLegend.size() + keptRanges.size()
-                + (chartParents == null ? 0 : chartParents.length) + (keptGovernmentBody == null ? 0 : 1)
-                + (keptGovernmentTargets == null ? 0 : 1 + keptGovernmentTargets.size());
+                + (chartParents == null ? 0 : chartParents.length) + (keptReferenceOwner == null ? 0 : 1)
+                + (keptScreenBody == null ? 0 : 1) + (keptScreenTargets == null ? 0 : 1 + keptScreenTargets.size());
     }
 
     /** An unattached picture counted by the bench: only the diagnostic map could keep it alive. */
@@ -1556,32 +1556,33 @@ public final class KeptBench {
     /** What the kept page held when a page was built new in its place: its top nodes, and what every box under it held. */
     private List<Node> keptPage = List.of();
     private java.util.Map<Pane, List<Node>> keptBoxes = new java.util.IdentityHashMap<>();
-    private Object keptGovernmentBody;
-    private java.util.Map<String, Node> keptGovernmentTargets;
+    private Object keptReferenceOwner, keptScreenBody;
+    private java.util.Map<String, Node> keptScreenTargets;
 
-    /** FS5: a comparison overwrites these proven owners of its temporary Government graph. Restore ownership, without drawing. */
+    /** FS5: Bank and Government fresh draws overwrite their body/target owners. Restore them without a healing redraw. */
     @SuppressWarnings("unchecked")
-    private void governmentReferences(boolean save) throws ReflectiveOperationException {
-        var body = GovernmentScreen.class.getDeclaredField("body");
-        var targets = GovernmentScreen.class.getDeclaredField("targets");
+    private void screenReferences(Object owner, boolean save) throws ReflectiveOperationException {
+        var body = owner.getClass().getDeclaredField("body");
+        var targets = owner.getClass().getDeclaredField("targets");
         body.setAccessible(true);
         targets.setAccessible(true);
-        var live = (java.util.Map<String, Node>) targets.get(ui.governmentScreen);
+        var live = (java.util.Map<String, Node>) targets.get(owner);
         if (save) {
-            Object originalBody = body.get(ui.governmentScreen);
+            Object originalBody = body.get(owner);
             var originalTargets = new java.util.HashMap<>(live);
-            keptGovernmentBody = originalBody;
-            keptGovernmentTargets = originalTargets;
+            keptReferenceOwner = owner;
+            keptScreenBody = originalBody;
+            keptScreenTargets = originalTargets;
         } else {
-            body.set(ui.governmentScreen, keptGovernmentBody);
+            body.set(owner, keptScreenBody);
             live.clear();
-            live.putAll(keptGovernmentTargets);
+            live.putAll(keptScreenTargets);
         }
     }
 
 
     /**
-     * Draw with an empty pool, saving the kept boxes and proven Government owners for exact restore.
+     * Draw with an empty pool, saving the kept boxes and proven screen owners for exact restore.
      */
     public double[] showFresh(Page p) throws Exception {
         ensureWindow();
@@ -1589,14 +1590,15 @@ public final class KeptBench {
         keptPage = new ArrayList<>(column.getChildren());
         keptBoxes = new java.util.IdentityHashMap<>();
         for (Node n : keptPage) boxesOf(n, keptBoxes);
-        boolean government = p.screen.equals("showGovernmentMenu");
+        Object owner = p.screen.equals("showGovernmentMenu") ? ui.governmentScreen
+                : p.screen.equals("showBankMenu") ? ui.bankScreen : null;
         try {
-            if (government) governmentReferences(true);
+            if (owner != null) screenReferences(owner, true);
             double ms = p.draw.applyAsDouble(new Kept.Pool());
             double[] pass = passes();
             return new double[]{ms, pass[0], pass[1]};
         } catch (Exception | Error failure) {
-            if (government) {
+            if (owner != null) {
                 try { restoreKeptPage(); }
                 catch (Exception | Error cleanup) { failure.addSuppressed(cleanup); }
             }
@@ -1612,10 +1614,11 @@ public final class KeptBench {
             passes();
         } finally {
             try {
-                if (keptGovernmentTargets != null) governmentReferences(false);
+                if (keptReferenceOwner != null) screenReferences(keptReferenceOwner, false);
             } finally {
-                keptGovernmentBody = null;
-                keptGovernmentTargets = null;
+                keptReferenceOwner = null;
+                keptScreenBody = null;
+                keptScreenTargets = null;
                 keptPage = List.of();
                 keptBoxes.clear();
                 release(scene);
@@ -1627,11 +1630,11 @@ public final class KeptBench {
                                      boolean counters, boolean nodes, boolean roots, boolean aborted) { }
 
     /** An actual temporary page held deliberately by the release guard's negative control. */
-    private List<Node> retainedGovernmentControl = List.of();
+    private List<Node> retainedComparisonControl = List.of();
 
     /** Drop only the negative control's deliberately retained roots. */
-    public void clearGovernmentReleaseControl() {
-        retainedGovernmentControl = List.of();
+    public void clearComparisonReleaseControl() {
+        retainedComparisonControl = List.of();
         release();
     }
 
@@ -1643,7 +1646,16 @@ public final class KeptBench {
     /** The same release fixture, optionally retaining its first actual fresh page as a leak control. */
     public ReleasedComparison retiredGovernmentComparisons(boolean retain) throws Exception {
         if (!"showGovernmentMenu".equals(ui.currentScreen)) throw new IllegalStateException("Government must already be active");
-        Page page = government();
+        return retiredComparisons(government(), retain);
+    }
+
+    /** The same ordinary/aborted/leaked-page fixture for the Bank's proven body and target owners. */
+    public ReleasedComparison retiredBankComparisons(boolean retain) throws Exception {
+        if (!"showBankMenu".equals(ui.currentScreen)) throw new IllegalStateException("Bank must already be active");
+        return retiredComparisons(bank(), retain);
+    }
+
+    private ReleasedComparison retiredComparisons(Page page, boolean retain) throws Exception {
         finishPageAnimations();
         settle();
         var keptNodes = nodesOnPage();
@@ -1652,7 +1664,7 @@ public final class KeptBench {
         List<java.lang.ref.WeakReference<Node>> fresh = new ArrayList<>();
         Runnable remember = () -> {
             var distinct = nodesOnPage().stream().filter(n -> !keptNodes.contains(n)).toList();
-            if (retain && retainedGovernmentControl.isEmpty()) retainedGovernmentControl = distinct;
+            if (retain && retainedComparisonControl.isEmpty()) retainedComparisonControl = distinct;
             for (Node n : distinct) fresh.add(new java.lang.ref.WeakReference<>(n));
         };
         boolean sameSignature = true, sameCounters = true, sameNodes = true, cleared = true, aborted = false;

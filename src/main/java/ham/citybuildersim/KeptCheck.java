@@ -3864,6 +3864,14 @@ public class KeptCheck {
         System.out.println("  " + foreignSays);
         System.out.println("  not reached by a fixture, drawn by the same code as the pages around them: the Bank's rescue and the preferred offer (its action cards: they need a failed bank), a city with no bank (no branch standing)");
         bankPicks(g, bench);
+        fx(() -> {
+            KeptBench.Page lending = bench.bank("Lending comparison lifetime", "pages", "Lending", false);
+            bench.bankOpen("pages", "Lending", false);
+            bench.bankLine("lending:tables", true);
+            bench.drawKept(lending);
+            return null;
+        });
+        comparisonsReleased(bench, true);
     }
 
     /**
@@ -4373,7 +4381,7 @@ public class KeptCheck {
                 .mapToLong(c -> g.getExchange().bookOf(c).bids().stream().filter(o -> Exchange.FUND.equals(o.who())).count()).sum();
     }
 
-    /** Hold the automatic strategy and explicitly cancel its outstanding commitments, leaving the hand's orders alone. */
+    /** Explicitly cancel the automatic strategy's outstanding commitments, leaving the hand's orders alone. */
     static int cancelAutomaticFundOrders(Game g) {
         int cancelled = 0;
         for (CorporateBond b : g.getBondMarket().getBonds()) cancelled += g.getBondMarket().bookOf(b).withdraw(BondMarket.FUND);
@@ -5827,34 +5835,39 @@ public class KeptCheck {
 
     /** FS5: drain callbacks from the non-FX driver, then judge the fresh graph's lifetime without another draw. */
     static void governmentComparisonsReleased(KeptBench bench) throws Exception {
+        comparisonsReleased(bench, false);
+    }
+
+    private static void comparisonsReleased(KeptBench bench, boolean bank) throws Exception {
         if (Platform.isFxApplicationThread()) throw new IllegalStateException("release check needs the non-FX driver");
-        KeptBench.ReleasedComparison r = fx(bench::retiredGovernmentComparisons);
+        String name = bank ? "Bank" : "Government";
+        KeptBench.ReleasedComparison r = fx(() -> bank ? bench.retiredBankComparisons(false) : bench.retiredGovernmentComparisons(false));
         fx(() -> null); // FIFO: restoreScroll callbacks queued by the fresh draws finish before GC.
         System.gc();
         long alive = r.fresh().stream().filter(w -> w.get() != null).count();
-        System.out.printf("  Government comparison release: %d distinct fresh nodes, %d alive; signature %s, counters %s, kept nodes %s, roots cleared %s, abort restored %s%n",
-                r.fresh().size(), alive, r.signature(), r.counters(), r.nodes(), r.roots(), r.aborted());
-        check("fixture: Government comparisons made distinct fresh nodes and exercised an aborted draw", !r.fresh().isEmpty() && r.aborted());
-        check("Government comparison restore keeps the same nodes, signature and draw counters", r.signature() && r.counters() && r.nodes());
-        check("Government comparison captures clear on normal and exceptional restore", r.roots());
-        check("restored Government fresh nodes release after queued callbacks finish (" + alive + " alive)", governmentFreshReleased(r));
-        KeptBench.ReleasedComparison leaked = fx(() -> bench.retiredGovernmentComparisons(true));
+        System.out.printf("  %s comparison release: %d distinct fresh nodes, %d alive; signature %s, counters %s, kept nodes %s, roots cleared %s, abort restored %s%n",
+                name, r.fresh().size(), alive, r.signature(), r.counters(), r.nodes(), r.roots(), r.aborted());
+        check("fixture: " + name + " comparisons made distinct fresh nodes and exercised an aborted draw", !r.fresh().isEmpty() && r.aborted());
+        check(name + " comparison restore keeps the same nodes, signature and draw counters", r.signature() && r.counters() && r.nodes());
+        check(name + " comparison captures clear on normal and exceptional restore", r.roots());
+        check("restored " + name + " fresh nodes release after queued callbacks finish (" + alive + " alive)", comparisonFreshReleased(r));
+        KeptBench.ReleasedComparison leaked = fx(() -> bank ? bench.retiredBankComparisons(true) : bench.retiredGovernmentComparisons(true));
         try {
             fx(() -> null);
             KeptBench.releaseIdleEffectImages();
             System.gc();
-            check("the same release predicate rejects an actual fresh Government page deliberately retained through the cache purge",
-                    !governmentFreshReleased(leaked));
+            check("the same release predicate rejects an actual fresh " + name + " page deliberately retained through the cache purge",
+                    !comparisonFreshReleased(leaked));
         } finally {
-            fx(() -> { bench.clearGovernmentReleaseControl(); return null; });
+            fx(() -> { bench.clearComparisonReleaseControl(); return null; });
         }
         fx(() -> null);
         System.gc();
-        check("the same retired page releases when the deliberate strong root is dropped", governmentFreshReleased(leaked));
+        check("the same retired page releases when the deliberate strong root is dropped", comparisonFreshReleased(leaked));
     }
 
     /** The identical lifetime law for the ordinary restore and its real leaked-page negative control. */
-    private static boolean governmentFreshReleased(KeptBench.ReleasedComparison r) {
+    private static boolean comparisonFreshReleased(KeptBench.ReleasedComparison r) {
         return r.fresh().stream().noneMatch(w -> w.get() != null);
     }
 

@@ -2971,3 +2971,18 @@ current-main merge, helper diagnosis and necessary named checks.
   recorded care-fee premise is red; KeptTimingCheck correctly skips soft
   timing in an ordinary gate. Candidate --fast compiles; the initial viewport
   edit's missing StackPane qualification was fixed before testing it.
+- The flag-zero control passes on real pages/images: an orphan collects,
+  an intentionally held page and its image survive the same two GCs, and
+  both collect once the strong root drops. It also reveals a real Bank
+  comparison leak: 302 fresh Lending nodes remain after restore, and body
+  restoration alone does not free them because BankScreen.targets still
+  holds them. Generalize the existing proven Government body/targets restore
+  to Bank and add the same ordinary/aborted/leaked-page release predicate
+  there. Enter Lending through its normal page state, without forgetting
+  the pool, so this regression cannot lower the measured retained-page set.
+  Combined Bank restore is pending native validation. Evidence:
+  target/FS5b-heap-199/soft/KeptCheck.log.
+- The original heap helper finished with all owned jobs ended. A fresh
+  geometry helper takes actual Grid/StatementView/ScrollPane state cycles;
+  20 previous maker-only transitions did not reproduce the historical
+  geometry fault, so no speculative Pieces/wrapText change is made.
