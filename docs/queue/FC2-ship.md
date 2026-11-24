@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FC2-qmeDdMqj -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — FC2, construction traded with the world — 2026-11-23, ready, see docs/queue/FC2-notes.md
 Jerus, 2026-11-22: "make it a imported/exported good... the base cost is still in domestic currency but the excess is in foreign currency". Foreign crews are always on offer at the city's base price for a point plus an excess of 15% of the world's base price for the same work, in foreign money (`BuildersShort.FOREIGN_EXCESS`), so a strong D$ makes them cheaper and a weak one dearer.
