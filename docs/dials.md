@@ -8022,8 +8022,8 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1291 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType.MAGNETITE }` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
 | 1293 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
 | 1568 | `MaterialsCheck.FC2_CYCLE` | `{ 54, - 83, - 33 }` | What FC2's seed 1 appraised one more Rod Mill at, a month at a time (D$k): +54k, -83k and -33k, over and over, against a hurdle of 45k. |
-| 1954 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
-| 1957 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
+| 2040 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
+| 2043 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
 
 ### MedicineCheck.java ([map](map/MedicineCheck.md))
 
@@ -8739,7 +8739,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 4384 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4389 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 
