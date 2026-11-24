@@ -3220,3 +3220,28 @@ bill 60, hosted/crowded three and zero unplaced. Every earlier stock,
 newcomer-first, poor-budget, mixed/full-host and equivalent-rationing control
 passes. The patch is still isolated. This result predates the FC2b merge;
 merged-domain and monetary checks remain due.
+
+The newest main baseline is docs/ensemble/0.9.198.md (FC2b): all five
+policies have zero M1 audit failures and zero F1 findings across sixteen
+seeds. The future fresh eighty-run RES3 ensemble is prepared against it,
+with no output directory or job started. Earlier 0.9.195 findings are
+historical comparisons, not current allowances; new findings need their
+own cause and cannot pass by an old seed name.
+
+Accepted the genuine FC2b format-65 pair after independent parent review of
+the 129-line guard/producer/README patch and gzip contents. Native shipped
+source is clean; native fast, producer compilation and runtime each return
+zero. Runtime reflection pins 0.9.198/format 65. The slot-10 scratch pair is
+month 31 with 141 household keys/20,307 values, thirty history months and
+two debt surveys. A native Manufacturing contract holds
+1454.9999999999998 points, without another run or field assignment.
+Parent recomputed raw save SHA-256
+be8f72e5c39f0bc2147d63fb44bc84a8bffa1777cf7c3432bf622e4807352082
+and history SHA-256
+3b4339debc58574aa470d3429e8f144f63e202ea509dd999fd4fe9b444919877;
+both gzip timestamps are zero. The exact real pair is committed beside
+its guarded producer. SaveFileCheck now tests real 65 directly below 66
+and keeps every 62/63/64 hash/schema and both-file/running-city/money
+preservation guard. ReadPathCheck keeps the repeated reads. These new
+refusal assertions have not yet run; native production success is not
+a claim that RES3's save harnesses pass.
