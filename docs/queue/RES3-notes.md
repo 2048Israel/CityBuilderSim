@@ -3175,3 +3175,48 @@ completion is .5, making total occupied two and receipts 40 while retaining
 the guest. Completing the physical gap of one would overcharge the host.
 All diagnostic source, stock, price and capacity controls pass; this witness
 precedes implementation and is not a final-model result.
+
+The late-completion prototype passes every stock, budget, equivalent-rationing,
+input-reversal and full/mixed-host boundary except the added guest-feasibility
+law. Native stock two, two fully affordable old paid halves and two zero-budget
+guests ends with two paid households occupying two doors/bill 40 but two
+unplaced guests. The same normal-control inputs house all four in two doors,
+bill 40, hosted/crowded two. The additional funded room appears after the
+existing host pass. This hard failure is preserved; no monetary probe follows.
+
+★ Complete the new room through one conditional reuse of emergencyDoubling,
+only when the paid-footprint phase expanded. Its remaining source subtracts
+already assigned household counts, and its host room reads the updated actual
+footprints. Require exact preservation of paid households/bills, old/new guest
+counts, price and hosted provenance in the caused witness. No new sharing
+formation, saved state or iterative equilibrium is authorized. Full housing
+checks precede the unchanged original monetary scenario; the final source
+remains unchanged until the required laws pass.
+
+Merged records-only main 77c77ab8c at 24138a2f9. It changes queue/briefs and
+contract section 6 (the orchestrator can return a cleared Pending row), with
+no Java source change. The controlled model comparisons retain the exact
+1055bc228 source base.
+
+FC2b shipped as 0.9.198 at e6a47dff8 while the conditional guest prototype
+was awaiting its domain run. Per orchestrator 09:56, merged at fe2a08755.
+AllChecks keeps both RES3 housing harnesses and ForeignChoiceCheck; the tree
+keeps both entries. The version string is main's. GameVersion preserves
+FC2b's contract-points rationale and raises RES3's format/floor from 65 to
+66 under the old-saves rule. This supersedes the earlier 65 boundary; no
+conversion is written. The helper pauses old-source monetary probes and
+prepares a genuine shipped format-65 pair with independent save/history
+hashes, keeping all older refusal pairs and all intact-city/file checks.
+The merged model must be validated afresh. No previous monetary diagnostic,
+catalogue, ensemble or check result is represented as final-merge evidence.
+
+The conditional host prototype's pre-FC2b normal HousingMarketCheck passes.
+The original hard guest witness now houses four exactly as the native
+normal control does: two doors/bill 40, zero unplaced, hosted/crowded two.
+Each payer remains one household/bill 20, and the two free guests pay zero.
+A second native case preserves one old free guest and places two new free
+guests once each, with three payers, six housed households, three doors,
+bill 60, hosted/crowded three and zero unplaced. Every earlier stock,
+newcomer-first, poor-budget, mixed/full-host and equivalent-rationing control
+passes. The patch is still isolated. This result predates the FC2b merge;
+merged-domain and monetary checks remain due.

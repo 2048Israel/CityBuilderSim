@@ -18,7 +18,7 @@ Uncompressed SHA-256:
 - save.json: `5f2c197a1e26cfd33dbd01fc0dbf10ef889ba374c130721071c6f2dca6bd712c`
 - history.json: `e86d6f648d9f3b806397bca6c846de2c53f6f02b45867ddfb57f54a072d8662b`
 
-At RES3's format/floor 65, SaveFileCheck pins the hashes and native
+At RES3's current format/floor 66, SaveFileCheck pins the hashes and native
 schema and refuses fresh and running loads. Both files, managers, family
 floor, history object, full saved city and money must remain intact.
 ReadPathCheck repeats the reads. All older native refusal pairs remain.

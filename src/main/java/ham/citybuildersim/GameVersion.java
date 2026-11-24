@@ -8392,7 +8392,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 65 since batch FC2b (A CONTRACT'S POINTS above: an older save's
+     * 66 since batch RES3: typed class leases and rental flows cannot be
+     * reconstructed from the older pooled housing layout.
+     * 65 from batch FC2b (A CONTRACT'S POINTS above: an older save's
      * contracts hold no points and a shared site's shares read wrongly).
      * 64 from batch R6f (THE CONTACT CENTRE BEFORE THE AI ASSISTANT above:
      * an older 1900 city's Contact Centre holds no missing-B10 flag and loads
