@@ -830,7 +830,10 @@ public class BusinessInvestment {
         if (ordersInFlight > 0) return Decision.no(key, "building, not shrinking");
 
         int losses = getLossMonths(key);
-        if (losses < RETIREMENT_LOSS_MONTHS) {
+        // ...save a works' kind idle over its year (CY1; ProcessingSector.idleBuildings()): its IDLE_MONTHS are its own losing months. The
+        // sector's streak starts again on any paying month, so a sector on a three-month cycle never sold its idle works (MaterialsCheck 22).
+        boolean idleKind = sector instanceof ham.citybuildersim.sectors.ProcessingSector p && p.idleBuildings() > 0;
+        if (losses < RETIREMENT_LOSS_MONTHS && !idleKind) {
             return Decision.no(key, losses == 0 ? "profitable" : losses + " months of losses");
         }
 
@@ -879,9 +882,13 @@ public class BusinessInvestment {
                     : "losing money, but nothing spare to sell");
         }
 
+        // ...an idle kind sold on its own months says so (CY1), not the sector's streak it did not wait on.
+        String why = idleKind && losses < RETIREMENT_LOSS_MONTHS
+                ? String.format("%s idle %d months over its year", worst.getName(),
+                        ((ham.citybuildersim.sectors.ProcessingSector) sector).idleMonths(worst))
+                : String.format("%d months of losses", losses);
         return new Decision(key, worst, quantity,
-                String.format("%d months of losses, %,.0f capacity against %,.0f used",
-                        losses, capacity, demand),
+                String.format("%s, %,.0f capacity against %,.0f used", why, capacity, demand),
                 true);
     }
 
