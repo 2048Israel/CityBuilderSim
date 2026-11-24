@@ -74,3 +74,24 @@ more to get just roads fixed").
   code touches the rent weights, FamilyModel, RealEstate or their save fields. So the known-reds row passes it to FRW1 (queued in the
   ship file): save F, or keep the value RealEstate.restoreExtras() already restores exactly. The review moved the card's "already
   with the foreign crews" before "not the city's own site" (a handed site is not isCitysOwn()).
+- Slice C (ForeignChoiceCheck, new, 7 sections from the brief's bounds): 212 assertions green in 16 s, the money audit closing in
+  every month played (148, worst residual 1e-9). Section 2's twins differ in the exchange rate alone, the queue at home lengthened
+  by standing roads until the strong D$'s extra is under the saving and the city's own rate's over it; section 3 a half-built site;
+  section 4 the city's Houses on the landlords' site; section 5 two Middle Schools twins, one handed by the card; section 6 the money
+  through the audit, the national and the foreign accounts; section 7 a save and load with a record half done, four months on. The
+  slice found the terms counted the part's buildings as the payer's share of all on site while its points leave FC2's pooled claim
+  out, overstating the saving on a claimed site: mended, the buildings counted by the part's points (BuildingManager.abroadTermsOf()).
+- Slice D (the Construction screen): --fast green. The hand row is a flow (Kept.flow) so Rush, Foreign crews and Cancel fit the
+  168 px column; the card's captions and the crews' line in their own Kept scopes; ConstructionControl.Abroad.monthsLeft() so the
+  screen computes nothing. No harness reads this screen's scopes; the window was not opened.
+
+## 4. The saves
+
+- ★ **Format 65, the floor with it** (the old-saves rule). The control's G. ABROAD list and the builders' crews-on-sites figures are
+  absent from an older save and read as none, which is right. But a contract's points are not: a format-64 save's contracts hold
+  none, and once an order adds points to one payer's contract on a shared site, the share by points (homePointsShare()) reads the
+  older payers' work there as none. That is a wrong load, not an incomplete one, so the floor rises with the format; no conversion.
+  RES3 is to ship format 65 too: whichever ships second bumps from the other's (FC2b re-bumps at its merge if RES3 is first).
+- The record is saved whole with ConstructionControl's state (Gson, State.copy(), restore()'s null guard); the contracts' points and
+  the abroad ones in BuildingManager.ContractRecord (points, abroad); the crews' month in Construction's extras. Nothing is derived on
+  load. ForeignChoiceCheck 7 holds the round trip; SaveFileCheck as section 3.
