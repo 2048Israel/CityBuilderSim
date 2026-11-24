@@ -1,7 +1,8 @@
 <!-- readiness: provisional -->
 ## changelog
-### FS5 (untagged) — KeptCheck II causes what its pages read — 2026-11-21, ready, see docs/queue/FS5-notes.md
-KeptCheck's money, Government, Trade, Policy and household sections cause their fixtures and use the common kept-page law. The fund's new holding settles through its real book and seller, grid tooltips hold all cell counts, saved-city reads await their worker, and held-still traces report recurring differences and every excluded or refused month. Government comparisons restore their captured body and target-row owners on normal and aborted draws; a hard regression verifies fresh nodes release after queued callbacks finish with kept signatures and counters unchanged. Canvas target discovery follows retained nodes' parent links, proved against actual backing arrays and direct-reference controls. An optional Healthcare observer writes existing complete signature pairs for later leaf tracing while preserving the hard checks and full continuation. The heap dial and identity checks stay hard. Native software validation reports 1502.8 MiB of objects within the unchanged 1536 MiB bound; the stopped Monocle/software gate reports 1711.9 MiB above it. Historical Healthcare ownership remains pending for Jerus review.
-
-## pending
-| KHL1 | Jerus review: unresolved owner of the historical four-look Healthcare kept/fresh layout fault; kept7 is green on new provenance | No UI-versus-bench owner, decided mend or exemption is proved; capture only if it recurs during the next independently required, separately authorized native software run; no standalone historical replay decided | docs/queue/FS5-notes.md#khl1-repeating-healthcare-kept-layout-fault |
+### {next} — FS5, the KeptCheck sweep from section 55 — 2026-11-24, ready, see docs/queue/FS5-notes.md
+KeptCheck causes its fund settlements, standing bids, held household cells, paper holdings and policy controls, and awaits the saved-city worker's result.
+Retention counts the nodes drawn again; recurring rebuilds, repeated geometry differences and every content mismatch remain hard. Trade count-up covers changed and unchanged saved-month words at the real clock rungs.
+Fresh Bank and Government comparisons restore their body and target owners even after an aborted draw; no-window bench minimaps stop their retaining timer.
+Blank native label skins no longer keep a font strut after their words disappear, with exact signature, pixel and node-identity controls.
+The unchanged 1536 MiB object budget normalizes reconstructible renderer caches and soft-reference age, preserving Canvas targets and rejection of deliberately retained real pages.
