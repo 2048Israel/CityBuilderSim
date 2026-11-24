@@ -4389,3 +4389,61 @@ actual GROCERIES line. Check the CPI service-fee sub-basket explicitly so
 home fuel is not counted there as well. These observation/coverage changes
 move no actual transaction, strike or settlement, and keep the existing
 120-month cadence, explicit parity rent cap and every policy law.
+
+FS5 ships on main as 0.9.200 at b17b75d42. RES3 merges it before CPI
+integration; the only conflict is generated docs/map/Household.md, kept
+from main for final regeneration. No CPI, Game, DataSave, Motoring,
+HistorySave, Sector or Retail source is changed by this main delta;
+AllChecks/Observation/Timing and Kept/UI sweep changes are retained.
+Shipped format remains 65, so RES3's owed 66/floor66 and genuine format65
+pair stay valid. The final pushed merge is ff123698ad9ef1072c3774b67d5bebc2202f20e2;
+its immediate predecessor merge was replaced only to remove Git's conflict
+footer and restore the required author line at the end of the message,
+using a lease against that exact own branch tip. No source changed.
+The CPI builder backs up its own work and rebases onto the final merge;
+all final checks must use the integrated source.
+
+The home-energy nonduplication audit is explicit: CPI fee spending is only
+healthcare, tuition, fares and account fees; it contains no HomeFuel line.
+Current rental receipts are the actual lease bills; HomeFuel and recurring
+affordability costs are not added to them. The two current home-fuel trade
+bills sum to the separate saved HomeFuel bill, charged to household
+accounts on its existing subsequent schedule. The index observes current
+acquisition, moving no such payment. Home quantities come from saved HH
+heldSale litres/tonnes, not an unchecked all-buyer units denominator.
+Retail declares itself only a GROCERIES maker, so ordinary markets cannot
+sell its JET/coal as industrial production; its direct JET/coal sales are
+the household home-fuel path. The new fixture asserts these independent
+facts and reconciles pending quantities, bill and eventual payment.
+
+The final CPI source handoff is reviewed and adopted on FS5 main's merged
+ff123698a. The old five component ids stay fixed; new cars, petrol, lamp
+oil and home coal append at 5-8. Current GROCERIES acquisitions use the
+actual charged price; current lease bills replace the struck prior-month
+weight input. Meals, luxury and the existing billed-service convention
+stay. Home oil and coal keep separate physical units and actual bills.
+The unsupported luxury truncation is removed; the explicit XR1 parity
+rent cap and 120-month link cadence stay. No payment, funding, lease,
+strike, service billing or UI code is changed by this CPI correction.
+
+NewTrade saves actual physical new cars, local seller spending, imports,
+credit and the last paid unit price. PetrolPrices saves previous actual
+pump/queue litres, tax-inclusive channel prices and the comparable price
+level. DataSave, load, refounding and redenomination carry both records;
+physical quantities never scale. Existing saved pending ledgers and
+HomeFuel heldSale supply the other acquisition inputs. The already owed,
+unshipped format/floor66 covers this change over shipped65; the genuine
+shipped65 refusal fixture remains unchanged.
+
+The peer's model patch SHA256 is
+9bcd7b79744cc1a34bb0190d921fc4a775edc49085a91e7af9b354fb88c9b924;
+its findings patch is
+e6d75c1c34f94b8026932b2e135d0b27249e9413b93eaab358dadf3ee666f4d2.
+Review checks current-period food/rent/fuel reconciliation, full financed
+car value, pump/queue mix neutrality, separate home units/nonduplication,
+first/no-trade prices, fixed-basket continuity and native fresh/running
+reload/next-month twins. Historical UI cap text is unreachable through
+isLuxuryCapped=false, with no screen edits. These are source findings,
+not native passes. Compile, the unchanged monetary policy laws, the
+old-production finding and the new coverage/save cases remain to run on
+the pushed candidate, box/shared lock/one owned JVM at a time.

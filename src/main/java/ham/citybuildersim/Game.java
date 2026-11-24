@@ -578,6 +578,8 @@ public class Game {
         exchange.reset();
         bondMarket.reset();
         priceIndex.reset();
+        motoring.restoreNewTrade(null);
+        motoring.restorePetrolPrices(null);
         // ...and the anchor, seeded at the city's target by its first month (0.7.42).
         expectations.reset();
         /*
@@ -17152,7 +17154,11 @@ public class Game {
     /** Each component's price this month, in PriceIndex's order: the shelf, the average rent paid, a meal, a luxury piece; the services' price is struck by the index from the fees. */
     double[] indexPrices() {
         double[] p = new double[PriceIndex.COMPONENTS];
-        p[PriceIndex.GROCERIES] = getSectors().retail().getStoreSellPrice();
+        ham.citybuildersim.sectors.Retail retail = getSectors().retail();
+        // Markets has finished this month's sale AND repriced the next posted shelf.
+        // Use what was actually charged; with no sale, carry the last saved CPI price.
+        p[PriceIndex.GROCERIES] = retail.getCurrentGrocerySales() > 0
+                ? retail.getChargedPrice() : priceIndex.getComponentPrice(PriceIndex.GROCERIES);
         /*
          * Comparable class bills chained on last month's occupied doors. The
          * first paid month opens at rent per capacity; subsequent changes hold
@@ -17174,16 +17180,27 @@ public class Game {
         ham.citybuildersim.sectors.LuxuryRetail counters = getSectors().luxuryRetail();
         p[PriceIndex.MEALS]  = kitchens.getServed() > 0 ? kitchens.getSellPrice() : 0;
         p[PriceIndex.LUXURY] = counters.getServed() > 0 ? counters.getSellPrice() : 0;
+        p[PriceIndex.NEW_CARS] = motoring.getNewCarPrice();
+        p[PriceIndex.PETROL] = motoring.getPetrolPrice();
+        // Use the held HOUSEHOLD quantities, never a market-wide or all-buyer unit count.
+        p[PriceIndex.LAMP_OIL] = homeFuel.getLitres() > 0 ? retail.getCurrentHomeFuelSales(Good.JET) / homeFuel.getLitres() : 0;
+        p[PriceIndex.HOME_COAL] = homeFuel.getTonnes() > 0 ? retail.getCurrentHomeFuelSales(Good.THERMAL_COAL) / homeFuel.getTonnes() : 0;
         return p;
     }
 
-    /** ...what the households spent on each: groceries and rent off the sectors' statements, meals and luxury off their own purchases; the services' is the index's sum of the fee lines. */
+    /** Current completed acquisitions: groceries and billed rent, meals/luxury from actual purchases, plus transport; services retain their existing household billed-fee convention. */
     double[] indexSpends() {
         double[] s = new double[PriceIndex.COMPONENTS];
-        s[PriceIndex.GROCERIES] = getSectors().retail().statement().salesToHouseholds;
-        s[PriceIndex.RENT]      = getSectors().realEstate().statement().salesToHouseholds;
+        ham.citybuildersim.sectors.Retail retail = getSectors().retail();
+        // Read only the current grocery Good, excluding petrol/home fuel without cross-period subtraction.
+        s[PriceIndex.GROCERIES] = retail.getCurrentGrocerySales();
+        s[PriceIndex.RENT]      = getSectors().realEstate().getRentIncomeBilled();
         s[PriceIndex.MEALS]     = householdBalance.getMealSpend();
         s[PriceIndex.LUXURY]    = householdBalance.getLuxurySpend();
+        s[PriceIndex.NEW_CARS]  = motoring.getHouseholdCarSpend();
+        s[PriceIndex.PETROL]    = motoring.getFuelBill();
+        s[PriceIndex.LAMP_OIL]  = retail.getCurrentHomeFuelSales(Good.JET);
+        s[PriceIndex.HOME_COAL] = retail.getCurrentHomeFuelSales(Good.THERMAL_COAL);
         return s;
     }
 
@@ -18031,6 +18048,8 @@ public class Game {
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
         dataSave.setHousingMarket(getSectors().realEstate().housingMarket().forSave());
         dataSave.setUsedCarTrade(motoring.usedTradeForSave());
+        dataSave.setNewCarTrade(motoring.newTradeForSave());
+        dataSave.setPetrolPrices(motoring.petrolPricesForSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
         dataSave.setHomePayIndices(recipes.payIndicesForSave(),recipes.payIndexMonth());
@@ -22756,6 +22775,8 @@ public class Game {
             families.restoreOwnerAdults(restoredFlows.getOwnerAdults());
             getSectors().realEstate().housingMarket().restore(restoredFlows.getHousingMarket(),buildingManager);
             motoring.restoreUsedTrade(restoredFlows.getUsedCarTrade());
+            motoring.restoreNewTrade(restoredFlows.getNewCarTrade());
+            motoring.restorePetrolPrices(restoredFlows.getPetrolPrices());
             populationManager.setOwners(families.getOwnerAdults());
             health.restore(restoredFlows.getHealth());
             // ...and the causes of death of 1900 (R0b): a save from before has
@@ -23577,6 +23598,7 @@ public class Game {
         getInfrastructureManager().redenominateFuel(scale);
         motoring.restoreFuel(motoring.getFuelBill() * scale, motoring.getFuelImports() * scale, motoring.getFuelLitres());
         motoring.redenominateUsedTrade(scale);
+        motoring.redenominateCpi(scale);
         // ...and the homes' held lamp oil and coal sale (R0c), a figure in money too; nothing to divide with both shares at 0.
         homeFuel.redenominate(scale);
 

@@ -12,8 +12,8 @@ import java.nio.file.Path;
  *
  *   1. Does the price index measure what households BUY, on a basket fixed at a
  *      base period? A CPI that re-weights as spending shifts shows no inflation
- *      for a family that switched to cheaper food while eating worse. Since
- *      0.7.43: five components on the trailing year's spending, luxury capped,
+ *      for a family that switched to cheaper food while eating worse.
+ *      Nine components use actual trailing reference spending,
  *      struck again every REBASE_MONTHS and chained, so neither the level nor
  *      the year's rate jumps at a link - and since 0.7.45 each component's own
  *      level runs through it too.
@@ -244,17 +244,16 @@ public class MonetaryCheck {
         assertTrue("a rate is not quoted before there is a year of readings",
                 !young.hasRate() && young.inflation() == 0);
 
-        /* ---------------- five components, the year's weights, chained (0.7.43) ----------------
+        /* ---------------- nine components, the year's weights, chained (0.7.43) ----------------
          *
          * spec-inflation.md 2.9: groceries, rent, meals, luxury and the
          * services' fees, each weighted by what the households spent on it
-         * over the trailing year - luxury capped at LUXURY_WEIGHT_CAP, its
-         * excess spread pro rata over the rest - and the fees a sub-index of
+         * over the trailing year, including new cars and petrol, and the fees a sub-index of
          * their own, each line by its share of what was paid.
          */
-        out.println("\n--- five components, the year's weights, chained ---");
-        double[] prices5 = { .30, .12, .9, 2.0, 0 };
-        double[] spends5 = { 50, 30, 10, 40, 0 };
+        out.println("\n--- nine components, the year's weights, chained ---");
+        double[] prices5 = { .30, .12, .9, 2.0, 0, 12, .002, .003, .2 };
+        double[] spends5 = { 50, 30, 10, 40, 0, 20, 5, 10, 15 };
         double[] fees5 = { 2.0, 1.0, .5, .1 };
         double[] feeSpends5 = { 5, 3, 2, 0 };
         PriceIndex five = new PriceIndex();
@@ -269,8 +268,8 @@ public class MonetaryCheck {
         }
         close("every component the households spent on is in the basket", weighted, PriceIndex.COMPONENTS, 0);
         close("...the weights summing to one", weightSum, 1, 1e-12);
-        close("luxury is no more than LUXURY_WEIGHT_CAP of it",
-                five.getWeight(PriceIndex.LUXURY), PriceIndex.LUXURY_WEIGHT_CAP, 1e-12);
+        close("luxury keeps its true reference expenditure share above the former cap",
+                five.getWeight(PriceIndex.LUXURY), 40.0 / (50 + 30 + 10 + 40 + 10 + 20 + 5 + 10 + 15), 1e-12);
         close("...its excess spread pro rata: groceries to rent as spent",
                 five.getWeight(PriceIndex.GROCERIES) / five.getWeight(PriceIndex.RENT), 50.0 / 30, 1e-12);
         close("...and the services weighed as their fees were paid",
@@ -283,7 +282,7 @@ public class MonetaryCheck {
         close("a tenth on the doctor moves the index by a tenth of its share of the services' weight",
                 five.getIndex() - 1, .1 * .5 * five.getWeight(PriceIndex.SERVICES), 1e-12);
         double beforeShut = five.getIndex();
-        five.takeMonth(new double[] { .30, .12, 0, 2.0, 0 }, new double[] { 50, 30, 0, 40, 0 },
+        five.takeMonth(new double[] { .30, .12, 0, 2.0, 0, 12, .002, .003, .2 }, new double[] { 50, 30, 0, 40, 0, 20, 5, 10, 15 },
                 new double[] { 2.2, 1.0, .5, .1 }, feeSpends5, ++fm);
         close("a month with no meal sold holds meals at their last price", five.getIndex(), beforeShut, 1e-12);
 
@@ -297,7 +296,7 @@ public class MonetaryCheck {
         int cm = 0, linkDue = -1;
         double rise = .004, grown = 1, worstRateGap = 0, beforeLink = 0;
         double steadyRate = Math.pow(1 + rise, 12) - 1;
-        double[] spendsLater = { 20, 30, 40, 5, 0 };
+        double[] spendsLater = { 20, 30, 40, 5, 0, 20, 5, 10, 15 };
         double[] componentBefore = new double[PriceIndex.COMPONENTS];
         while (linkDue < 0 || cm < linkDue) {
             boolean lateYear = linkDue > 0 && cm >= linkDue - PriceIndex.WEIGHT_MONTHS;
@@ -318,7 +317,7 @@ public class MonetaryCheck {
         close("with every price rising alike, the year's rate runs through the link unbroken",
                 worstRateGap, 0, 1e-12);
         close("the new basket weighs what was spent in the year before it",
-                chain.getWeight(PriceIndex.MEALS), 40.0 / (20 + 30 + 40 + 5 + 10), 1e-12);
+                chain.getWeight(PriceIndex.MEALS), 40.0 / (20 + 30 + 40 + 5 + 10 + 20 + 5 + 10 + 15), 1e-12);
         /*
          * EACH COMPONENT'S OWN LEVEL IS CHAINED TOO (0.7.45; the UI spec's
          * D12): City History draws it, and the relative it is read from
@@ -381,8 +380,8 @@ public class MonetaryCheck {
         PriceIndex pre743 = new PriceIndex();
         pre743.restore(java.util.Arrays.copyOf(px.toSaveArray(), PriceIndex.SLOTS_BEFORE_CHAIN));
         assertTrue("an older save waits to link its basket", pre743.isLinkPending());
-        double[] oldPrices = { .15, .12, .9, 2.0, 0 };
-        double[] oldSpends = { 60, 40, 10, 5, 0 };
+        double[] oldPrices = { .15, .12, .9, 2.0, 0, 12, .002, .003, .2 };
+        double[] oldSpends = { 60, 40, 10, 5, 0, 0, 0, 0, 0 };
         pre743.takeMonth(oldPrices, oldSpends, fees5, feeSpends5, ++mo);
         close("...and its first month opens at the level its own basket strikes",
                 pre743.getIndex(), .6 * .15 / .30 + .4 * .12 / .12, 1e-12);
@@ -719,6 +718,8 @@ public class MonetaryCheck {
                 beforeTheDial.getDebtManager().getInflationTarget(), DebtManager.DEFAULT_INFLATION_TARGET, 0);
 
         inflationFallsWithTheRate(root);
+
+        fails += CpiCoverageCheck.run();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
