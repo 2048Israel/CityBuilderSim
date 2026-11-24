@@ -176,15 +176,22 @@ and PW2's ground finding (REV-PW2).
     times the whole nameplate; the net draw and the surplus held exactly as before.
 
 - ★R **A gap in the reserve alone orders a plant only when it fills Jerus's HW1 share of it, and the month's
-  "short" is the calm peak** (the second ensemble, traced; 2026-11-24). The reserve test plans at the year's peak
-  hour (★D, 1.631 of the mean draw), and the month's dispatch serves and charges the calm peak's block (1.263). Two
-  things followed that nothing in the model pays for and no real planner does:
+  "short" is the peak block of the year's highest month.** Found by tracing the second ensemble, with REV-PW3c's two
+  P1s, 2026-11-24.
+  - **The two lines.** The reserve test plans at the year's peak hour (★D, 1.631 of the mean draw).
+    `PowerDispatch.dispatch()` serves draw × season × the block's load, losses in. Its worst block is July's peak
+    block, `PLAN_PEAK_SEASON` = `PLAN_PEAK` × SEASON's highest = 1.263 × 1.193 = 1.507 of the draw. On the south's
+    calendar the months fall six later, but the highest season is the same. Planning at the hour led to two things
+    no real planner does.
   - **The holds.** `AutoBuilder.crewLimit()` and `pendingDelay()` read "short now" as `!maintained(NOW)`, the peak
-    hour. A city whose firm supply lay between the two lines read power as short, and every other essential order
-    "waited to preserve Power's quoted first completion". HIGH seed 8 held roads, childcare and schools from m160 to
-    m172 while its cash piled up to $2.3M, with power served in full. Both now read `BuildAdvice.lacksNow()`: power
-    is short below the calm peak, and every other measure reads as before. A real city does not stop its schools for
-    a reserve margin.
+    hour. A city whose firm supply lay between the seasonal peak and the peak hour read power as short, and every
+    other essential order "waited to preserve Power's quoted first completion".
+    - Both now read `BuildAdvice.lacksNow()`: power is short below `PLAN_PEAK_SEASON`, and every other measure reads
+      as before.
+    - ★R's first form drew the line at `PLAN_PEAK`, the year's mean block. That let works go ahead while July's peak
+      block went unserved (REV-PW3c, P1). HIGH seed 8's held months, m160-m172, include such a summer: the dispatch's
+      energy ratio was 0.993, 0.969 and 0.990 in m162-m164 (July to September). The first trace's "served in full"
+      read the year, not the month. Those holds answer a real shortage, and at the seasonal line they stand.
   - **The lumpy orders.** The test ordered on any gap at a plant's opening.
     - HIGH seed 10 at m117, in 1909 (no Diesel Station until 1910): a 3,440-person town on the 10,000 kW founding
       grid ordered a 67,410 kW Oil-Fired Plant for a 29 kW gap 60 months out, borrowing $8.1M of its $9.8M; its
@@ -193,35 +200,51 @@ and PW2's ground finding (REV-PW2).
       stood at 6,000 to 7,000 people while main's reached 35,000.
     - Seed 8 at m226 ordered a $22.3M Oil-Fired Plant for a 257 kW gap, at a lead of 237 months.
 
-    Now a gap in the reserve alone, with the calm peak covered at the plant's opening, orders a plant only when it
-    fills `FIRST_WORK_SHARE` of what the order adds (Jerus's HW1: "150 students for a 500-seat college, and the same
-    share for other oversized works"). A calm-peak gap orders as ever. Reality: a shortfall that is a fraction of
-    one unit is met by small units or waits. No 10 MW system takes a 67 MW unit, whose own loss would be larger than
-    the system's whole load.
+    Now a gap in the reserve alone, with `PLAN_PEAK_SEASON` covered at the plant's opening, orders a plant only when
+    it fills `FIRST_WORK_SHARE` of what the order adds (Jerus's HW1: "150 students for a 500-seat college, and the
+    same share for other oversized works"). A gap in the seasonal peak itself orders as ever. Reality: a shortfall
+    that is a fraction of one unit is met by small units or waits. No 10 MW system takes a 67 MW unit, whose own loss
+    would be larger than the system's whole load.
   - **Main's rank** would have picked the same Oil-Fired Plant had it seen a gap (WorksValue's net, $10.8M against
-    coal's $76.5M). It saw none: at the calm peak the opening had a 2,231 kW surplus.
-  - **HIGH seeds 10, 8 and 14 to m300 after the mend** are identical to main's through m200 (PW3b had parted at
-    m118, m161 and m164):
+    coal's $76.5M). It saw none: at main's line the opening had 7,769 kW against 10,000. At the seasonal line it is
+    9,269 kW against 10,000, so still a reserve gap alone, under the share.
+  - **HIGH seeds 10, 8 and 14 to m300.** With the seasonal line the runs part from main's at m133, m161 (seed 8's
+    summer holds) and m164; PW3b had parted at m118, m161 and m164. Population at m299:
 
-    | seed | after the mend, m299 | main | PW3b |
-    |---|---|---|---|
-    | 10 | 45,390 | 37,504 | 12,467 |
-    | 8 | 28,261 | 27,798 | 17,557 |
-    | 14 | 24,670 | 25,310 | 21,585 |
-  - **The fixtures.**
-    - PowerPlanCheck 8a, coal the only firm row:
-      - a 32,599 kW gap (15% of one plant) with the calm peak covered orders nothing; it was red without the rule,
-        ordering 1 Coal Power Plant;
-      - a 68,459 kW gap (31%) orders one;
-      - the calm peak short orders 3.
-    - PowerPlanCheck 8b: `lacksNow` is false at 1.447 of the draw and true at 1.137; `maintained(NOW)` is false at
-      both.
-    - 6a, restated in two:
-      - (i) a 1,542 kW gap is half one Wind Farm's 3,084 kW credit and under the share line of a Diesel Station's
-        14,411 kW (4,323 kW). No firm row is a pick, and the farm is the order.
-      - (ii) a 4,756 kW gap is over that line. Two Wind Farms (net -149.4) are weighed against the Diesel Station
-        (123.2), and the farms are the order.
-    - AutoBuildCheck's BUILDERS twin reads `lacksNow` as AutoBuilder does.
+    | seed | after ★R | ★R's first form (`PLAN_PEAK`) | main | PW3b |
+    |---|---|---|---|---|
+    | 10 | 33,196 | 45,390 | 37,504 | 12,467 |
+    | 8 | 23,103 | 28,261 | 27,798 | 17,557 |
+    | 14 | 22,137 | 24,670 | 25,310 | 21,585 |
+  - **PowerPlanCheck 8a**, coal the only firm row:
+    - a 32,599 kW gap (15% of one plant) with the seasonal peak covered orders nothing; it was red without the rule,
+      ordering 1 Coal Power Plant;
+    - a 68,459 kW gap (31%) orders one;
+    - with the seasonal peak short by a gap under the share (supply 224,523 kW against 237,623), it orders one;
+    - with the peak short by more, it orders 3.
+  - **PowerPlanCheck 8b (a)** dispatches the town in July (season 1.193) at four firm levels, reading
+    `getLatestMonth()`'s peak half-blocks:
+
+    | firm supply / draw | peak block unserved | `lacksNow` |
+    |---|---|---|
+    | 1.794 | 0 kW | false |
+    | 1.569 | 0 kW | false |
+    | 1.385 | 39,519 kW | true |
+    | 1.137 | 146,189 kW | true |
+
+    With the line at `PLAN_PEAK`, the 1.385 line is red (`lacksNow` false).
+  - **PowerPlanCheck 8b (b)** drives AutoBuilder's hold through a real pass on WorksFinanceCheck's reserve town:
+    - Power pending (a coal plant due at m17) with Streets ordered. At 1.569 of the draw the roads are ordered,
+      4 of 4. At 1.385 they are held, 0 of 4: "Streets waits to preserve Power's quoted first completion".
+    - Power as the order with General care pending. At 1.569 it is held for General care. At 1.385 power lacks now,
+      and 2 Oil-Fired Plants are placed.
+    - The first fixture is red with `pendingDelay`'s read reverted, the second with `crewLimit`'s guard reverted.
+  - **6a**, restated in two:
+    - (i) a 1,542 kW gap is half one Wind Farm's 3,084 kW credit and under the share line of a Diesel Station's
+      14,411 kW (4,323 kW). No firm row is a pick, and the farm is the order.
+    - (ii) a 4,756 kW gap is over that line. Two Wind Farms (net -149.4) are weighed against the Diesel Station
+      (123.2), and the farms are the order.
+  - **AutoBuildCheck's BUILDERS twin** reads `lacksNow` as AutoBuilder does.
 
 ## 3. Old saves
 
@@ -404,8 +427,8 @@ Two helpers traced it (`target/pw3-trace/`):
 - The seeds' paths parted from m92 to m175.
 - The mechanism was PW3's, and ★R mends it.
 - The `served_power` column is the planner's reading at the peak hour, not the dispatch's. The second run's
-  231 city-months under 1 in m100-m600, against FC2b's 161, are that reading; seed 8's energy ratio was about 1.0
-  in both models.
+  231 city-months under 1 in m100-m600, against FC2b's 161, are that reading. Seed 8's
+  energy ratio, the dispatch's own, fell only in its summers, to 0.969 at worst in m162-m164 (★R).
 
 **The third run**, after ★R, on 6b3123b38 (PW3 with FC2b, 0.9.198), was scored against `docs/ensemble/0.9.198.md`.
 - M1 and F1 pass in all five policies; the batch verdict is PASS, the hard criteria 10 of 10, and 25 of 26 criteria
