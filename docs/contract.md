@@ -337,7 +337,9 @@ own words, and it is the requirement.
   question alone (2026-10-20: "if you dont post the stuff in the chat i wont
   have a clue").
 - **A blocked batch goes under Pending at once**, in a queue commit pushed the
-  same turn (2026-10-24: PT1-M4's reds held a lane six hours). Who returns
-  such a row to Queued when its block clears by itself is still Jerus's call
-  (BP1, call 2; recommended: the orchestrator; unanswered, so until then his
-  review moves it).
+  same turn (2026-10-24: PT1-M4's reds held a lane six hours). The
+  orchestrator returns such a row to Queued itself, once its block clears or
+  once the work that clears it (a trace, a mend) is a batch's, and says so at
+  ship (BP1, call 2; Jerus, 2026-11-24, desk chat: "Yes, its call"). WHY:
+  R1g, WG3, FS5 and FS6 sat in Pending from 11-21 with their causes untraced,
+  each waiting on a review nobody had asked him for.
