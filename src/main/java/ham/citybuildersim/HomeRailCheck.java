@@ -331,7 +331,10 @@ public class HomeRailCheck {
         // literals with pellets paying, as `rail`: on the world file's band under Random the plant ran every other month in the draws of 1900 (EP1),
         // and in the idle months the city offered the railway 0 t and its boundary dealt 53,202 of the 199,167 t of track.
         Game trackOnly = railed(GameFiles.scratch("homerailcheck-track"), 0, 0, 4, null, 3, true);
-        Game tight = railed(GameFiles.scratch("homerailcheck-tight"), 1, 3, 0, null, 8, true);
+        // ...two spurs, not three (CY1, 2026-11-24): on three the boundary hovered within 4% of the track (main dipped under it in m18 and
+        // m19, and CY1, its Pulp Mill held on money at m4 not on staff, in m22: a share set then, billed in the month read). Two leave
+        // 149,375 t of track under 202,120 t or more of boundary bulk in every month m17-m23.
+        Game tight = railed(GameFiles.scratch("homerailcheck-tight"), 1, 2, 0, null, 8, true);
         Game rail = railed(GameFiles.scratch("homerailcheck-rail"), 1, 0, 0, null, 3, true, HomeRailCheck::doubleTown);
         untilFractional(rail);
         Game yard = railed(yardFiles, 1, 0, 0, "Bulk Berth", 4);
@@ -501,7 +504,7 @@ public class HomeRailCheck {
         // In the cities themselves.
         Freight ft = tight.getSectors().freight();
         double boundaryDealt = RailDepotCheck.dealtNow(ft);
-        report("a played city whose boundary fills the railway (a depot and three spurs): the city's own bulk is offered and none is dealt",
+        report("a played city whose boundary fills the railway (a depot and two spurs): the city's own bulk is offered and none is dealt",
                 ft.getHomeOffered() > 0 && near(boundaryDealt, ft.getCapacityTonnes(), 1e-9) && same(ft.getHomeShare(), 0) && same(ft.getHomeBill(), 0),
                 String.format("%,.0f t offered, the boundary dealt %,.0f of %,.0f t, home share %s", ft.getHomeOffered(), boundaryDealt, ft.getCapacityTonnes(), ft.getHomeShare()));
 

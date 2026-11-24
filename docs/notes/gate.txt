@@ -1,8 +1,8 @@
-# gate of Merge batch/FC2b: after FC2: the choices that use the foreign crews (Jerus, 2026-11-22): an investor moves its order abroad, a half-built building included, when the extra on the work remaining is less than the interest and earnings it saves; the city hands one site (roads, say) to them from the Construction screen, saved, 0.9.198
+# gate of Merge batch/CY1: the planner appraises a processing works over its cycle: SpreadPlanner reads one month's margin as lasting, so a sector builds at the copper charge's peak and is left at the trough owing more than it holds, its own borrowing lifting the hurdle past every later build (DS1's answer, CU2: seed 2's five smelters from m1598, 30.44% and an 82-month loss streak at m2400; seed 1's Scrap Copper Refinery on a one-month spike). Read the margin over the charge's swing or a trailing year, and look at a sector whose rate has outrun its works' earnings; any processing sector can be left this way. The swing is in quantities too (FC2's box path, 11-24: seed 1's cathode and rod tallies cycle every three months from m1200, a Rod Mill earns +54k, -83k, -33k, mean -20k against a 45k hurdle, and still passes; one works a month from m858 to 181 Rod Mills, 40 smelters, 46 refineries, 60 scrap refineries). Beside the trailing margin: CopperRefining gets the feed gate HeavyIndustry has (feedRefusal; 180 mills stood for 1.44 Mt against 0.69 Mt of cathode, at 25% of nameplate), and the idle shed must fire (noteMonth resets it). Owns CopperRefiningCheck's seed-1 Rod Mills known red, 0.9.199
 # date: 2026-11-24
 # earth-2.bin: named
 # nightly: 2026-11-24 03:09 0.9.196 94ba28823 4,000 months: RED, exit 1 in 712 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-24-94ba28823-AVsIJOCL
-# suite: 238 harnesses run in 988s: 222 passed, 16 failed
+# suite: 242 harnesses run in 1285s: 226 passed, 16 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -16,10 +16,6 @@ RoadCheck | 2 FAILED
 AutoBuildCheck | exit 1
 AutoBuildCheck | fixture: the saved city turned people away from general care for its fee                                       FAIL
 AutoBuildCheck | 1 FAILED
-SectorFlowCheck | exit 1
-SectorFlowCheck | ...and its outputs, goods and work billed, to its revenue                                            FAIL
-SectorFlowCheck | ...and both are the SectorBooks month the Income page draws                                          FAIL
-SectorFlowCheck | 2 FAILED
 CurrencyCheck | exit 1
 CurrencyCheck | fixture: the city reads a year of 45% inflation                    FAIL  0.000000000 != 0.450000000
 CurrencyCheck | the autopilot sets the rule's rate                                 FAIL  0.030000000 != 0.000000000
@@ -34,13 +30,13 @@ HoldersCheck | fixture: ...and the step came from the households                
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
 HoldersCheck | 3 FAILED
 DenominationCheck | exit 1
-DenominationCheck | the same output                                                FAIL  3.9121344197 != 3.9121428260  (2.15e-06 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  51.6431926539 != 51.6434532608  (5.05e-06 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0000805525 != 0.0000805523  (2.71e-06 apart)
-DenominationCheck | the same price level                                           FAIL  1.3474572220 != 1.3476198550  (0.000121 apart)
-DenominationCheck | the same currency                                              FAIL  0.0099073541 != 0.0099078391  (4.90e-05 apart)
-DenominationCheck | the same treasury                                              FAIL  340.6124857313 != 340.6124578322  (8.19e-08 apart)
-DenominationCheck | the same bank                                                  FAIL  224.3409506262 != 224.3421999456  (5.57e-06 apart)
+DenominationCheck | the same output                                                FAIL  5.7809393183 != 5.7809399727  (1.13e-07 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  77.8713223620 != 77.8713277272  (6.89e-08 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0001354427 != 0.0001354428  (4.65e-08 apart)
+DenominationCheck | the same price level                                           FAIL  1.5619412248 != 1.5619413852  (1.03e-07 apart)
+DenominationCheck | the same currency                                              FAIL  0.0088302998 != 0.0088303014  (1.90e-07 apart)
+DenominationCheck | the same shops' till                                           FAIL  0.4257051150 != 0.4258477382  (0.000335 apart)
+DenominationCheck | the same bank                                                  FAIL  308.7121732599 != 308.7120705809  (3.33e-07 apart)
 DenominationCheck | 7 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
@@ -51,13 +47,14 @@ RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 5
-KeptCheck | ...the rule held again, Portfolio with the holdings its month settled, every row that folds opened: the redraw and the next equal a page built new FAIL
-KeptCheck | the page of a holding the let-go month settled, from Portfolio: the redraw and the next equal a page built new FAIL
-KeptCheck | fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (0 settled) FAIL
-KeptCheck | fixture: the settled lot watched, null, runs 0 months, past the 3 months its page is watched FAIL
+KeptCheck | exit 6
+KeptCheck | the Bank Overview: a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | fixture: the fund's rule held still through 63's choices, no lot it did not hold before (187 lots, then 88; new [B:2695, B:2696, B:2697]) FAIL
+KeptCheck | the city's fund: a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | fixture: the rule held again after its month, no lot but the ones it settled (88 lots, then 178; new [B:2698, B:2699, B:2700, B:2701, B:2702, B:2703, B:2704, B:2705, B:2706, B:2707, B:2708, B:2709, B:2710, B:2711, B:2712, B:2713, B:2714, B:2715, B:2716, B:2717, B:2718, B:2719, B:2720, B:2721, B:2722, B:2723, B:2724, B:2725, B:2726, B:2727, B:2728, B:2729, B:2730, B:2731, B:2732, B:2733, B:2734, B:2735, B:2736, B:2737, B:2738, B:2739, B:2740, B:2741, B:2742, B:2743, B:2744, B:2745, B:2746, B:2747, B:2748, B:2749, B:2750, B:2752, B:2753, B:2754, B:2755, B:2756, B:2757, B:2758, B:2759, B:2760, B:2761, B:2762, B:2763, B:2764, B:2765, B:2766, B:2767, B:2768, B:2769, B:2770, B:2771, B:2772, B:2773, B:2774, B:2775, B:2776, B:2777, B:2778, B:2779, B:2780, B:2781, B:2782, B:2783, B:2785, B:2786, B:2787, B:2788, B:2789, B:2790, B:2791, B:2792]) FAIL
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 39 of 376; 10 of 25 months made none) FAIL
 KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 5 FAILED
+KeptCheck | 6 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -67,12 +64,9 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
 CarCheck | 3 FAILED
-GroundSkipCheck | exit 1
-GroundSkipCheck | ...and the landlords' order is held for land with no home on site FAIL
-GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 0 month(s) FAIL
-GroundSkipCheck | premise: skipped the old way, the landlords are held for land and a look is due FAIL
-GroundSkipCheck | ...and places nothing: the landlords are still held for land FAIL
-GroundSkipCheck | 4 FAILED
 CopperRefiningCheck | exit 1
-CopperRefiningCheck | seed 1's 2,400 months stand at most ROD_MILLS_STANDING (1) Rod Mill                                  FAIL  181 Rod Mills, 7.6 minutes
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
 CopperRefiningCheck | 1 FAILED
+GroundSkipCheck | exit 1
+GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
+GroundSkipCheck | 1 FAILED

@@ -4,7 +4,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 637 files, 689,070 lines, 30,109 methods, 6,719 constants. `GameVersion.VERSION` is "0.9.198", `SAVE_FORMAT` 65.
+**The tree:** 637 files, 690,070 lines, 30,141 methods, 6,727 constants. `GameVersion.VERSION` is "0.9.199", `SAVE_FORMAT` 65.
 
 ## model (280 files)
 
@@ -40,7 +40,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BuildingsTemplate.java](BuildingsTemplate.md) | 1,693 | 186 | One kind of building, and what it costs to put up. | 245 |
 | [BusinessDebt.java](BusinessDebt.md) | 100 | 14 | Base class for private-sector borrowing. | 11 |
 | [BusinessDebtManager.java](BusinessDebtManager.md) | 3,847 | 253 | Private-sector credit. | 44 |
-| [BusinessInvestment.java](BusinessInvestment.md) | 1,833 | 108 | Capacity planning for the private sector. | 102 |
+| [BusinessInvestment.java](BusinessInvestment.md) | 1,840 | 108 | Capacity planning for the private sector. | 102 |
 | [BusinessLoan.java](BusinessLoan.md) | 72 | 7 | A fixed-term business loan: interest-only each month, principal repaid in full at maturity. | 8 |
 | [Buyback.java](Buyback.md) | 432 | 28 | The city's paper bought back in a reverse auction: every holder offers what it holds in slices, each at the price where its own buying rule would s... | 13 |
 | [CallPartners.java](CallPartners.md) | 233 | 16 | Who each ship and train of the month calls on: a nation drawn by the month's tonnes of the call's kind of cargo, and the compass bearing of its nod... | 4 |
@@ -302,7 +302,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CoalMining.java](CoalMining.md) | 503 | 27 | Coal mines and the plants that wash their coal - Coal Mining (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the study... | 11 |
 | [Construction.java](Construction.md) | 1,384 | 81 | The builders. | 30 |
 | [CopperMining.java](CopperMining.md) | 305 | 13 | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the s... | 11 |
-| [CopperRefining.java](CopperRefining.md) | 286 | 16 | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the stu... | 13 |
+| [CopperRefining.java](CopperRefining.md) | 299 | 17 | Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the stu... | 15 |
 | [ExtractionSector.java](ExtractionSector.md) | 668 | 42 | A sector that digs or cuts one resource out of the ground the city owns: the template every extraction industry of the materials chains extends (0.... | 20 |
 | [FoodIndustry.java](FoodIndustry.md) | 105 | 7 | The mills and the plants that feed the shops. | 5 |
 | [FoodProcessing.java](FoodProcessing.md) | 610 | 15 | The plants between the farm and the shelf. | 3 |
@@ -312,19 +312,19 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Haulage.java](Haulage.md) | 1,561 | 99 | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.m... | 30 |
 | [HeavyIndustry.java](HeavyIndustry.md) | 370 | 20 | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0... | 33 |
 | [LuxuryRetail.java](LuxuryRetail.md) | 590 | 24 | The luxury shops. | 6 |
-| [Manufacturing.java](Manufacturing.md) | 382 | 16 | What the city makes out of its own steel, and ships. | 6 |
+| [Manufacturing.java](Manufacturing.md) | 382 | 16 | What the city makes out of its own steel, and ships. | 7 |
 | [Materials.java](Materials.md) | 88 | 4 | The materials plant. | 1 |
 | [Mining.java](Mining.md) | 85 | 4 | Iron mines - Iron Mining since 0.7.120, under the key it was saved by, "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). | 32 |
 | [Oil.java](Oil.md) | 1,759 | 117 | Oil wells. | 20 |
 | [PortDivision.java](PortDivision.md) | 363 | 27 | Freight's Ports division: the crews that work the city's berths, paid by the shippers who use them and paying the city for the quay (FR3, 2026-10-1... | 11 |
-| [ProcessingSector.java](ProcessingSector.md) | 650 | 57 | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends ... | 20 |
+| [ProcessingSector.java](ProcessingSector.md) | 767 | 62 | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends ... | 22 |
 | [Quarrying.java](Quarrying.md) | 436 | 24 | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's ... | 9 |
 | [RealEstate.java](RealEstate.md) | 1,067 | 98 | The landlords. | 23 |
 | [RefineryFlow.java](RefineryFlow.md) | 431 | 38 | The refinery as a campus of units, and a month's flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into ... | 23 |
 | [Refining.java](Refining.md) | 2,024 | 118 | The refinery. | 27 |
 | [Restaurants.java](Restaurants.md) | 532 | 25 | The kitchens. | 8 |
 | [Retail.java](Retail.md) | 1,409 | 105 | The shops. | 44 |
-| [SpreadPlanner.java](SpreadPlanner.md) | 656 | 57 | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of t... | 44 |
+| [SpreadPlanner.java](SpreadPlanner.md) | 843 | 70 | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of t... | 45 |
 | [WoodProducts.java](WoodProducts.md) | 107 | 2 | Sawmills, and the panel, pulp, paper and pellet mills - Wood Products (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.7, 2.8, 2.12 and 5... | 7 |
 
 ## interface (53 files)
@@ -429,8 +429,8 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ConstructionTrapCheck.java](ConstructionTrapCheck.md) | 1,653 | 44 | The builders short (FC1) and the foreign crews always on offer beside them (FC2): what an order pays a point of work as the repairs leave the build... | 3 |
 | [ConsumptionCheck.java](ConsumptionCheck.md) | 343 | 4 | Verifies the consumption model against the two laws it is shaped to obey, and guards the data file against the Java. | 0 |
 | [CopperBufferCheck.java](CopperBufferCheck.md) | 250 | 10 | A stock buffer must not buy feed worth more than its undemanded output (CPB1). | 0 |
-| [CopperMiningCheck.java](CopperMiningCheck.md) | 526 | 13 | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.... | 4 |
-| [CopperRefiningCheck.java](CopperRefiningCheck.md) | 1,457 | 31 | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-r... | 0 |
+| [CopperMiningCheck.java](CopperMiningCheck.md) | 526 | 13 | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.... | 5 |
+| [CopperRefiningCheck.java](CopperRefiningCheck.md) | 1,457 | 31 | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-r... | 1 |
 | [CreditCheck.java](CreditCheck.md) | 2,245 | 19 | Verifies private-sector credit: pricing, origination, rollover, cash conservation. | 0 |
 | [CreditCrunchCheck.java](CreditCrunchCheck.md) | 637 | 18 | A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose leverage ratio binds, standing in its band between its leverage minimum and it... | 0 |
 | [CreditsCheck.java](CreditsCheck.md) | 462 | 10 | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, the J... | 0 |
@@ -501,7 +501,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HistoricalRecipeCheck.java](HistoricalRecipeCheck.md) | 743 | 31 | Each sourced 1900 undo runs before its entry, knowledge alone does not fit equipment, independent pieces compose, and the default city stays modern. | 7 |
 | [HistoryCheck.java](HistoryCheck.md) | 1,243 | 21 | Verifies the graph history: recording, alignment, and the round trip. | 0 |
 | [HoldersCheck.java](HoldersCheck.md) | 3,046 | 66 | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is boug... | 0 |
-| [HomeRailCheck.java](HomeRailCheck.md) | 958 | 30 | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's... | 2 |
+| [HomeRailCheck.java](HomeRailCheck.md) | 961 | 30 | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's... | 2 |
 | [HouseholdCheck.java](HouseholdCheck.md) | 1,802 | 13 | Verifies the residents' books and the demolition log. | 0 |
 | [HouseholdFlowCheck.java](HouseholdFlowCheck.md) | 718 | 22 | Money follows people: the households' balance carries each month's own flows - the retiring, the ageing on, the dead and the leavers - with the sto... | 3 |
 | [HouseholdMemoryCheck.java](HouseholdMemoryCheck.md) | 416 | 11 | The households remember: the builder keeps what still fits. | 4 |
@@ -537,7 +537,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
 | [MapCheck.java](MapCheck.md) | 16,559 | 443 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 14 |
 | [MarketCheck.java](MarketCheck.md) | 684 | 22 | Verifies the efficient market (EM1, 2026-10-29): one value for a share, every holder reading it, and a price that follows it - each claim on a fixt... | 1 |
-| [MaterialsCheck.java](MaterialsCheck.md) | 1,557 | 31 | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), a... | 30 |
+| [MaterialsCheck.java](MaterialsCheck.md) | 2,196 | 44 | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), a... | 30 |
 | [MedicineCheck.java](MedicineCheck.md) | 619 | 35 | Proves the research catalogue's medical rows (R2f) move the constants they map to: a medical row a 1900 city finds ahead of the world brings its st... | 0 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 12 |
 | [ModernEngineeringCheck.java](ModernEngineeringCheck.md) | 594 | 28 | E21's crop-only historical undo, its actual farm production and patent bill, and the saved physical state on either side of the discovery. | 2 |
@@ -600,7 +600,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RoadCheck.java](RoadCheck.md) | 1,209 | 35 | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to the... | 1 |
 | [RobustnessCheck.java](RobustnessCheck.md) | 432 | 5 | What the game does when something is already broken. | 0 |
 | [RunWorksCheck.java](RunWorksCheck.md) | 1,310 | 40 | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's groun... | 2 |
-| [SaveFileCheck.java](SaveFileCheck.md) | 5,127 | 42 | Verifies where saves go and how they are written. | 13 |
+| [SaveFileCheck.java](SaveFileCheck.md) | 5,161 | 42 | Verifies where saves go and how they are written. | 13 |
 | [SaveSlotCheck.java](SaveSlotCheck.md) | 2,001 | 53 | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. | 1 |
 | [ScaleCheck.java](ScaleCheck.md) | 2,310 | 68 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 2 |
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |

@@ -2858,3 +2858,15 @@ current-main merge, helper diagnosis and necessary named checks.
 - Delegate the current-main/box heap root and GC trace to heap_trace, with
   one box probe JVM and the shared box.lock held for its entire lifetime.
   No bound increase or conservation/save exemption is authorized or planned.
+- Merge e766bb64c: --fast exit 0 (24s compile, maps regenerated, zero firm
+  Stale findings). Native Windows SW named KeptCheck then exits 4, exactly
+  one hard failure: objects 1711.7 MiB (live 1729.8, ten Canvas targets
+  18.1) against the unchanged 1536 MiB. All other assertions pass, including
+  the three FS5H/FC2 geometry routes, fund settlement B:3139 (116 months),
+  held household cells (zero closed), Month-page count-up (ten clocks), and
+  1968 distinct Government fresh nodes with zero alive after release.
+  Zero KRT1 readings; three KBP1 blocks, zero held-still repeats. Evidence:
+  target/FS5b-checks/KeptCheck-merge-198.log and its saved suite file.
+- CY1 shipped 0.9.199 (b3ff7eb6d) during that owned run. Merge it after the
+  run ends, before the remaining named checks. Only generated indexes
+  conflict; regenerate them. Its model changes are upstream, not FS5's.

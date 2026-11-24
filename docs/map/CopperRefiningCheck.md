@@ -66,6 +66,8 @@
 
 **Uses:** [Good](Good.md) (242), [CopperRefining](CopperRefining.md) (52), [Sector](Sector.md) (47), [OldMetal](OldMetal.md) (31), [Game](Game.md) (29), [Sectors](Sectors.md) (26), [BuildingManager](BuildingManager.md) (26), [SpreadPlanner](SpreadPlanner.md) (18), [LongPlaytest](LongPlaytest.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (16), [GoodsMarket](GoodsMarket.md) (13), [CopperMiningCheck](CopperMiningCheck.md) (12), [MaterialsCheck](MaterialsCheck.md) (10), [Manufacturing](Manufacturing.md) (8), [CopperMining](CopperMining.md) (8), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [BusinessInvestment](BusinessInvestment.md) (4), [Nations](Nations.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Trade](Trade.md) (3), [WorldData](WorldData.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PriceLevel](PriceLevel.md) (2), [MoneyAudit](MoneyAudit.md) (2), [NationalAccounts](NationalAccounts.md) (2), [Resource](Resource.md) (2), [Markets](Markets.md) (1)... and 11 more
 
+**Used by (1):** [MaterialsCheck](MaterialsCheck.md)
+
 ## Sections
 
 | line | section |
