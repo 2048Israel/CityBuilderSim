@@ -2974,3 +2974,36 @@ premise remains. The original two failures/exit 4 are archived separately.
 The helper's outer PowerShell initially normalizes nested nonzero statuses
 to 1; the directly captured batch exit.txt (3) is authoritative and the
 outer wrapper is corrected without rerunning unchanged laws for labels.
+
+Validation checkpoint, 2026-11-24 06:56: ten of nineteen named matrix
+filters are complete. Normal exit 0: HousingChoiceCheck,
+HousingMarketCheck, HousingInventoryCheck, HousingCheck, HousingDoorCheck,
+HouseholdCheck, BuildingDataCheck, SaveFileCheck and ReadPathCheck.
+InvestCheck is 3 (only HT1-H); the additional BuildCardCheck is 3 (FS12's
+three Rail/two Pellet lines). The helper fast check is 0. HousingCheck
+also prints one OBSERVED unreached closed-home/debt premise; no execution
+of that mechanic is claimed. All 641 Java sources match the parent.
+
+Remaining: ReloadCheck, DenominationCheck, CurrencyCheck, MonetaryCheck,
+CallCheck, DeskCheck, FundCheck, BankCheck and WaterCheck. Their FC2 guards
+are not yet claimed. An external laptop AllChecks gate, PID 37156, and
+available RAM below MG1's four-GiB reserve hold starts before any JVM.
+The gate remains active at 06:56. Respect contract section 4's no-named-
+JVM-beside-gate rule; never end another session's processes. The parent
+also holds its final fast/maps until the lane/resources permit. This is
+an external validation block, not a model verdict or a mends/ready claim.
+
+The checkpoint is `target/RES3-F1-audit/checkpoint.md`, matrix-status.json,
+source-hashes.json, manifest.json and checkpoint.zip (343 files,
+3,795,634 bytes; SHA256
+`daf34773daec70d0777678f9f1c66c7bdb19e9f7fb024ac56320f639b9763a7e`).
+Production source is `05370e41e`; the later committed changes are test and
+record guards. No fresh full eighty-run score, dry run or ready marker
+is claimed. Finish the remaining checks, regenerate maps, then request
+the money/saves delta review before the fresh eighty-run ensemble.
+
+The helper ends cleanly at 06:56 with no owned JVM or job. Its final
+`blocked-artifacts.zip` has 345 files/3,797,909 bytes, SHA256
+`a24c28e6e135c7c02eb7c1dce70e85f1167c092911f6f5d760399d413b364b86`;
+blocked-report.md gives the exact nine pending filters. A parent recheck
+still finds gate 37156 active, 3,215 MiB available and 80-percent committed.
