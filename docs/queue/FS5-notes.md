@@ -2911,3 +2911,23 @@ current-main merge, helper diagnosis and necessary named checks.
 - LongPlaytest's complete 2400 months pass on .199. MapCheck is the current
   owned call; compile/validation of the candidate begins at the next named
   call, followed by the final native KeptCheck. No gameplay model changed.
+- The .199 box experiment disproves idle-only sufficiency: source
+  55647bb81, original raw 1762.0 MiB/objects 1757.4; repeat GC unchanged.
+  One pool held five idle images (4,149,248 bytes) and 90 locked images.
+  Idle-only pruning preserves the 90 locked images and lowers the heap only
+  4.95 MiB (1847625488 to 1842426184 bytes), still hard red. Do not claim
+  ac14ee1d6 is the final mend. The box also finds fund 63's held-rule premise
+  red: 187 to 88 lots with B:2695, B:2696 and B:2697 new. FS5 owns it.
+  Evidence: /home/jerus/cbs/diagnostics/FS5b-merged-55647bb81.
+- The renderer has a second reconstructible cache: OpenJFX 21
+  [ScrollPaneSkin](https://raw.githubusercontent.com/openjdk/jfx/jfx21/modules/javafx.controls/src/main/java/javafx/scene/control/skin/ScrollPaneSkin.java)
+  enables viewRect.cache at line 586. [CacheFilter.invalidate](https://raw.githubusercontent.com/openjdk/jfx/jfx21/modules/javafx.graphics/src/main/java/com/sun/javafx/sg/prism/CacheFilter.java)
+  releases cachedImageData while preserving the node/filter; dispose also
+  drops the node and must not be used. A real viewport control passes:
+  983040 raster bytes to zero after invalidate, back to 983040 on normal
+  redraw; the cached flag, viewport, exact Canvas backing target and exact
+  picture stay unchanged. A-to-B-to-A content changes differ then return to
+  identical A pixels. Its wrapper's intentional overlay Stale/tree failure
+  is not an assertion failure. Probe log is the box experiment's
+  viewport/KeptCheck.log. Trace the 90 branch owners before selecting this
+  extension; never flush non-reconstructible Canvas drawing buffers.
