@@ -269,7 +269,7 @@ price: real farms stand on rural ground, leased or bought at a few percent of th
 prices rural ground apart from the city's (a helper's reading of the tree: the city's price varies only by relief;
 `LandFactors` is a nation's multiplier; agriculture buys at the city's price, with a property-tax relief at use
 value; no building rents its ground; a farm's ground use is a coal plant's). Rural ground for the power farms is
-RG1's (Pending on main, 943d0da82; Jerus asked), not PW3's, so PW3 ships with the city's price and the mix follows
+RG1's (Queued on main after FS6, 77c77ab8c: a policy, Jerus 2026-11-24, "that also lets farms crops as well be cheaper"), not PW3's, so PW3 ships with the city's price and the mix follows
 it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s,
 2030s and 2060s).
 
