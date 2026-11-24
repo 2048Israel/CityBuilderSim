@@ -3568,3 +3568,33 @@ city has 332 residents and a 29.055 ms integrated month; modern and 1900
 observations are 23.884 and 18.271 ms. These are individual laptop timings,
 not a performance guarantee. The full unchanged monetary check is running
 on precisely the adopted source; no result is claimed in this checkpoint.
+
+The full normal MonetaryCheck on the adopted source completes in 177.2 s,
+raw batch 4/harness 1, with 489 OK and exactly two hard failing assertions.
+Archive: the helper's target/funding-monetary-final, immutable report
+20261124-125323-167-RES3-funding-core-8d99. MonetaryCheck is unchanged.
+The original path 48213 has CPI inflation 3.374736859 percent at the
+3-percent rate and 7.266503681 percent at 40 percent: an effect of
+-3.891766822 percentage points, below the required positive one-point
+floor. Non-shelter inflation there falls 11.943969 to 4.627077 percent,
+but rent growth rises from -.281825 to 8.355324 percent. The reported
+closing rent weight is about 70 percent; its accounting and the native
+same-class supply/price phases need diagnosis before attribution.
+
+Across the sixteen declared paths, common-basket non-shelter transmission
+passes at +1.333409 points. Total CPI effect is +.555722 points, fitted
+slope -.007295, and whole-curve ordering passes. Multi-town timing fails
+at .806726401 versus .750 points, at 40 percent late versus on-time.
+All three annual timing comparisons, 1.857345286/.512931167/.571070952
+points, pass their unchanged two-point bound. Both supply guards pass:
+early accepted homes 122/34 at 3/10 percent and later C01 rents
+.03043576996/.03170029791. Currency, calendar, basket, physical CPI,
+crews and identical founding/dial premises also pass.
+
+No monetary failure is passed as known or attributed away. Authorize a
+read-only helper diagnosis of the two failures, preserving this exact
+source and every law, rate, seed, fixture, bound and window. First use the
+completed artifacts; any needed native paired replay may add only passive
+phase reads and must reproduce the native CPI exactly before attribution.
+The parent will decide whether the diagnosed channel needs a model mend
+or the orchestrator's premise call. There is no new ensemble or dry run.
