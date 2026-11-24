@@ -178,6 +178,8 @@ public final class HousingMarketCheck {
         // Free ground keeps the actual invoice and planner quote identical.
         g.getLandManager().setPricePerSqFt(0);em.setLandPricePerSqFt(0);
         em.getTaxPolicy().setPropertyTaxRate(0);em.setPricePerWaterUnit(0);em.setPricePerWatt(0);
+        // Both the paid invoice and replacement carry buy the materials; no endowed yard stock funds either alternative.
+        bm.setConstructionMaterials(0);near("the choice fixture starts with no endowed material stock",bm.getConstructionMaterials(),0);
         var plans=new BusinessInvestment(bm,em);plans.setLandAvailable(house.getLandSqFt(),0);
         double compactCost=plans.getCostOf(compact,1),houseCost=plans.getCostOf(house,1);
         double compactBase=em.housingCarry(compact),houseBase=em.housingCarry(house);
@@ -214,7 +216,7 @@ public final class HousingMarketCheck {
 
         // A planner quote is an observation, including its full native saved state.
         check("choice fixture saves only in scratch slot10",g.saveGame(10,"RES3 net operating choice").ok);
-        byte[] saved=Files.readAllBytes(g.getGameFiles().saveFile(10));
+        String saved=Files.readString(g.getGameFiles().saveFile(10));
         double[] pools=MoneyAudit.pools(g);String leases=JSON.toJson(market.forSave());
         String stock=JSON.toJson(bm.getHousingInventory().forSave());
         for(int i=0;i<3;i++){
@@ -227,7 +229,15 @@ public final class HousingMarketCheck {
         check("quotes and plans change no lease or saved market field",leases.equals(JSON.toJson(market.forSave())));
         check("quotes and plans change no owned or funded physical stock",stock.equals(JSON.toJson(bm.getHousingInventory().forSave())));
         check("repeated quote fixture saves only in scratch slot10",g.saveGame(10,"RES3 net operating choice").ok);
-        check("quotes and plans preserve the complete native saved state",Arrays.equals(saved,Files.readAllBytes(g.getGameFiles().saveFile(10))));
+        String repeatedSave=Files.readString(g.getGameFiles().saveFile(10));
+        // Each native write stamps wall-clock metadata. Preserve every other character, including numeric tokens.
+        var stamp=java.util.regex.Pattern.compile("(?m)^  \"savedAt\": ([1-9][0-9]*),?$");
+        var firstStamp=stamp.matcher(saved);var repeatedStamp=stamp.matcher(repeatedSave);
+        boolean stamped=firstStamp.find()&&repeatedStamp.find();
+        check("both native writes contain root savedAt write metadata",stamped);
+        String sameStamp=stamped?repeatedSave.substring(0,repeatedStamp.start(1))+firstStamp.group(1)
+                +repeatedSave.substring(repeatedStamp.end(1)):repeatedSave;
+        check("quotes and plans preserve complete native saved text with only root savedAt normalized",saved.equals(sameStamp));
 
         em.setPricePerWatt(0);
         check("with no power bill the gross winner is also the net winner",(compactIncome-em.housingCarry(compact))/compactCost>(houseIncome-em.housingCarry(house))/houseCost);

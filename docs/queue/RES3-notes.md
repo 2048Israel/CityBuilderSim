@@ -4140,3 +4140,40 @@ All fixture prerequisites are explicit and still require native proof.
 The parent also corrects the catalogue generator's machine wording to
 "executing host", since these heavy runs now use the gate box. No native
 result is claimed for this candidate before the pushed-source replay.
+
+While the box is occupied, bounded provenance report 0112 finds
+PriceIndex.LUXURY_WEIGHT_CAP=.15 at lines 108-109, introduced in the
+available d6f1512e159d8d5e4614ed07f769d8990570e42a source history;
+the basket design dates itself to 0.7.43. spec-inflation (P1a, 4 October),
+section 2.8 and decision 6 call it a starred engineering choice because
+one city at month 2400 spent 63 percent on a watch/import at FX times
+margin. No external empirical basis for 15 percent or explicit Jerus
+quote choosing it is found. The later one-third RENT_CAP is a distinct
+explicit XR1 currency-parity rule and stays separate. The five-component
+basket design states no principled vehicle or motor-fuel exclusion;
+native fuel arrived after the original basket. No CPI source change is
+made in this provenance check. The current NOI native path waits behind
+PW3f's box write lock; no own compile/JVM has started.
+
+The first old-scorer native fixture run has 36 passing and three failing
+assertions, so it is not yet a valid old-scorer proof. The net-dominance
+prerequisite itself is false, and the expected-choice failure follows;
+full saved-byte equality also fails. The source diagnosis identifies
+endowed construction material stock: the actual paid invoice deducts
+that stock, while operating carry prices replacement materials. No model
+fault is established by this fixture. ★ Initialize the fixture's material
+stock to zero before both reads and assert it, preserving all gross/net,
+hurdle and rejection conditions. This makes purchased materials common
+to the invoice and operating-cost comparison rather than fitting rent.
+
+The native save mismatch is exactly write metadata savedAt: Game stamps
+each save and DataSave records it. ★ Compare complete native JSON with
+only the second root savedAt normalized to the first's exact timestamp,
+while checking both metadata fields exist. Preserve exact serialization
+of every other field/numeric value, both real scratch saves and the
+separate cash/lease/inventory checks. This repairs the new test's invalid
+same-timestamp premise; no existing conservation, SaveFileCheck,
+ReadPathCheck or load/refusal guard changes. Reports 8fe1/0bd9 retain the
+failed fixture, exact model/source and cause. Candidate 62da was never
+compiled/run at this stage; no HMC/Invest/Mon result is claimed for it.
+The approved repair is test-only and awaits review/push before replay.
