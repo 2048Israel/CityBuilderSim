@@ -40,6 +40,19 @@ happens if he does not answer. A question in a chat reply, a note or a report
 does not count as asked. The same holds for any builder whose brief lets it
 talk to him directly.
 
+**Never wait on him; ask only what is his** (Jerus, 2026-11-23, desk chat:
+"even if the orchestrator asks, im probably going to take hours to answer,
+cause im extremely busy. and if they start sending a bunch of uselss
+questions, im going to take even longer to respond"). A batch held on his
+answer is parked at once (QUEUE's Pending) and gives up its lane to the next
+startable row; it takes the next free lane after he answers. Ask only what
+`docs/contract.md` reserves to him (weakening a check, a design call the rules
+give no recommendation to take, spending, anything outside the repository);
+decide the rest and tell him in the ship note. Never ask about lanes, order,
+pace or whether to go ahead. One mail per decision, sent once: no reminders,
+no "still waiting". Keep it to a few short lines with the question first (his
+phone cut 11-23's long ones off).
+
 ## Dispatch
 
 - **Read live budget at the start of EVERY turn and immediately before every
