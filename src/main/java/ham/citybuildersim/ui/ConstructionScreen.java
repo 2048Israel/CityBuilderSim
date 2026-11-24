@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -548,8 +549,13 @@ final class ConstructionScreen {
         String status;
         String tone;
         boolean rushed = control.isRushed(key);
+        // FC2b: a site with a record of work handed to the foreign crews (a business's or the city's own), and the city's card for one it may hand.
+        ConstructionControl.Abroad abroad = control.abroadOf(key);
+        Game.AbroadCard abroadCard = mine && demolition == null && !control.isCancelling(key) ? g.abroadPreview(key) : null;
+        boolean handable = abroadCard != null && abroadCard.open();
         if (control.isCancelling(key)) { status = "stops at month's end"; tone = Palette.WARN; }
         else if (demolition != null && demolition.closing) { status = "closes as the month starts"; tone = Palette.WARN; }
+        else if (abroad != null) { status = "with the foreign crews"; tone = Palette.BUILDING; }
         else if (rushed) { status = String.format("rushed (month %d)", control.monthsOnOvertime(key) + 1); tone = Palette.BUILDING; }
         else if (share <= 0 && plan.owedOf(key) > 0) { status = "waiting for crews"; tone = Palette.WARN; }
         else if (demolition != null) { status = "demolishing"; tone = Palette.GOOD; }
@@ -557,7 +563,8 @@ final class ConstructionScreen {
         VBox statusBox = Kept.scope("status", () -> {
             VBox box = Kept.column(4);
             box.getChildren().add(chip(status, tone));
-            HBox hand = Kept.row(4);
+            // A flow, not a row (FC2b): Rush, Foreign crews and Cancel are wider together than the column, and the last wraps under the others.
+            FlowPane hand = Kept.flow(4, 4);
             if (mine) {
                 if (rushed) {
                     double[] next = g.rushPreview(key);
@@ -577,6 +584,13 @@ final class ConstructionScreen {
                         return rush;
                     }));
                 }
+                if (handable) {
+                    hand.getChildren().add(Kept.scope("abroad", () -> {
+                        Button foreign = action("Foreign crews", Palette.TEXT_BODY, () -> confirmAbroad(key));
+                        tip(foreign, abroadTip(abroadCard));
+                        return foreign;
+                    }));
+                }
                 if (demolition == null) {
                     if (control.isCancelling(key)) {
                         hand.getChildren().add(Kept.scope("keep", () -> action("Keep", Palette.TEXT_BODY, () -> { g.cancelSite(key, false); draw(); })));
@@ -591,10 +605,20 @@ final class ConstructionScreen {
                         hand.getChildren().add(Kept.scope("cancel", () -> action("Cancel", Palette.BAD, () -> confirmCancel(key))));
                     }
                 }
-            } else if (demolition == null) {
+            } else if (demolition == null && (abroad == null || !"City".equals(abroad.payer))) {
+                // The city's own site handed abroad is no one's order to speak of: the crews' line below says whose it is now.
                 hand.getChildren().add(Kept.scope("theirs", () -> caption("their order")));
             }
             box.getChildren().add(hand);
+            if (handable) {
+                box.getChildren().add(Kept.scope("abroad numbers", () -> caption(String.format("abroad: %s, %s, %s interest saved",
+                        plusMoney(abroadCard.extra()), soonerWords(abroadCard.monthsSaved()), money(abroadCard.interestSaved())))));
+            }
+            if (abroad != null) {
+                // Under the hand rather than in it: the hand is a column's width, and a line this long beside "their order" would squeeze both.
+                box.getChildren().add(Kept.scope("crews", () -> caption(String.format("foreign crews: %,.0f of %,.0f points left at %,.0f a month, %s; paid %s",
+                        abroad.owed, abroad.points, abroad.pace, wholeMonths(abroad.monthsLeft()), money(abroad.paid)))));
+            }
             return box;
         });
 
@@ -1171,6 +1195,63 @@ final class ConstructionScreen {
                 "This month's work is done and billed; the rest of the prepayment comes back. The half-built shell "
                 + "keeps its work and its ground.",
                 lines, "Stop it", () -> { g.cancelSite(key, true); draw(); });
+    }
+
+    /**
+     * The city hands one of its sites to the foreign crews (FC2b): the card as the model strikes it now, said before it is paid. A site the
+     * month has since closed the card on is refused with the card's own reason, as a hand the model refuses is.
+     */
+    private void confirmAbroad(String key) {
+        Game g = ui.game;
+        Game.AbroadCard card = g.abroadPreview(key);
+        if (!card.open()) { refused(card.why()); return; }
+        List<String[]> lines = new ArrayList<>();
+        lines.add(new String[] { "Their price a point", money(card.pricePerPoint()) });
+        lines.add(new String[] { "The extra, paid now", plusMoney(card.extra()) });
+        lines.add(new String[] { "Finished in", wholeMonths(card.monthsAbroad()) });
+        lines.add(new String[] { "At home", wholeMonths(card.monthsHome()) });
+        lines.add(new String[] { "Months saved", Double.isFinite(card.monthsSaved()) ? wholeMonths(card.monthsSaved()) : "it never finishes at home" });
+        lines.add(new String[] { "Interest saved", money(card.interestSaved()) });
+        ui.confirm(String.format("Hand %s to the foreign crews?", card.building()),
+                String.format("The foreign crews build the rest of this site at their own pace, %,.0f points a month. "
+                        + "The site's other work stays with the city's crews. %sIt cannot be taken back.",
+                        card.pace(), g.getBuildingManager().getControl().isRushed(key) ? "Its overtime stops. " : ""),
+                lines, "Hand it over", () -> {
+                    String why = g.handSiteAbroad(key);
+                    if (why != null) refused(why);
+                    draw();
+                });
+    }
+
+    /** What the Foreign crews button says it does (FC2b), from the card's own getters. */
+    private static String abroadTip(Game.AbroadCard card) {
+        return String.format("The foreign crews build the rest of this site at their own pace, %,.0f points a month, and price, %s a point. "
+                + "The city pays %s over the home price, the builders' tax in it. %s. That saves %s of interest on its cost, at the city's long rate.",
+                card.pace(), money(card.pricePerPoint()), plusMoney(card.extra()), againstHome(card), money(card.interestSaved()));
+    }
+
+    /** The months abroad against the months at home, and the months saved (FC2b): "3 months against 10 months at home, 7 months sooner", or where home never finishes, that. */
+    private static String againstHome(Game.AbroadCard card) {
+        return Double.isFinite(card.monthsHome())
+                ? String.format("Finished in %s against %s at home, %s", wholeMonths(card.monthsAbroad()), wholeMonths(card.monthsHome()), soonerWords(card.monthsSaved()))
+                : String.format("Finished in %s, where at home it never finishes", wholeMonths(card.monthsAbroad()));
+    }
+
+    /** The months the foreign crews' figures are worded in (FC2b): "1 month", "3 months", "never" for endless. */
+    private static String wholeMonths(double months) {
+        if (!Double.isFinite(months)) return "never";
+        long n = Math.round(months);
+        return n == 1 ? "1 month" : String.format("%,d months", n);
+    }
+
+    /** The months a handover saves, as the card's caption says them: "3 months sooner", or "never done at home" where the wait at home is endless. */
+    private static String soonerWords(double monthsSaved) {
+        return Double.isFinite(monthsSaved) ? wholeMonths(monthsSaved) + " sooner" : "never done at home";
+    }
+
+    /** A sum the city pays over, with its plus (thousands, as money() takes them): "+$1.2M", and "-$40K" when it is a saving. */
+    private static String plusMoney(double thousands) {
+        return (thousands > 0 ? "+" : "") + money(thousands);
     }
 
     private void confirmDemolition(BuildingsTemplate t, long n, Game.DemolitionQuote q) {
