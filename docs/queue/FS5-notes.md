@@ -3070,3 +3070,63 @@ entry points and generated dials/harness/maps is 4204 added/3546 removed,
 notes and ship excluded. Repeated section prose is condensed beside the
 actual assertions; existing guards are retained. The ordinary Label mend
 is production UI code and is outside that process count.
+
+### Authorized final dry run
+
+Gate exit0 at2026-11-24 22:08:30UTC (18:08 Atlantic), retained as
+`/home/jerus/cbs/runs/cbs-gate-FS5-dKjxpGov`, copied home to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FS5-dKjxpGov`.
+The two commits were branch b1b58c73bbba4198014c06f35eb350074a572392
+(review-mended code023c67952), main e1b58f210ddc51f093350cb89c9d8d24d5532e08.
+The wrapper waited for ensemblePW3g before acquiring the box; no laptop
+JVM ran during it. ALL251 selected,240 gate-tier harnesses ran in1032seconds:
+226 passed,14 failed only on existing known reds,0 NEW; suite exit3,
+empty unnamed.txt. Eleven nightly-tier harnesses were excluded by the
+ordinary gate selection rule. Nine Monocle display harnesses started,
+none skipped; three timing assertions SOFT, six path assertions OBSERVED.
+
+KeptCheck is ALL OK: warm1522.4MiB, normalized1503.9, Canvas4.6,
+objects1499.3 against the unchanged1536 bound. The first unmodified box
+sample was1499.0: the dry sample differs0.3MiB, margin36.7MiB. Exact
+Canvas/pixels/cache flags and real-page, bench/UI, retired-picture/header
+release guards all pass. The heap-red trace/mail condition did not fire.
+LongPlaytest also passes. The known red harnesses are AutoBuildCheck,
+CarCheck, CurrencyCheck, DeathRecordCheck, DenominationCheck,
+ForeignDebtCheck, GroundSkipCheck, HoldersCheck, InvestCheck,
+OrderDoorCheck, PlanCheck, PopulationCheck, RailDrawCheck and RoadCheck;
+their existing queued owners are FS12, HT1-H, DK1, PW2-B, LP-G2, OX2,
+MR1 and PW2-T. No extra known-red exemption is added by FS5.
+
+Helper dry_watch traces the output read-only, verifies the copied exit0,
+suite and empty unnamed file, and ends all its SSH jobs. The helper first
+overclassified BuildMenuCheck's console failures as NEW; the actual judge
+reports it as passed because the unchanged harness never exits nonzero.
+The real inherited defect is queued below, not hidden as a gate exemption.
+No code/index changes follow the dry run: only these notes and ship records.
+The ship file's first line names the reusable box run. Validator passes;
+the readiness marker is removed last, in its own commit, checked on origin.
+
+### BMD1: lab descriptions and BuildMenuCheck exit
+
+★ Queue BMD1, not FS12: by-harness gives BuildMenuCheck screens/owner'-',
+and FS12 explicitly names nine other building harnesses. This is an actual
+inherited description/harness defect, not a moved played-city fixture (the
+check creates a fresh scratch Game and plays no month). BuildScreen,
+BuildMenuCheck and buildings.json are unchanged by FS5.
+
+`BuildScreen.whatItDoes(BuildingsTemplate, NewUnit)` has no research-lab
+branch: labs make no ordinary goods and BUSINESS_SERVICES falls through.
+Engineering Research Lab, Medical Research Lab, Business Research Lab and
+Law Research Lab consequently describe themselves as nothing, although
+`BuildingsTemplate.getResearches()` identifies their research field and
+their role is research posts pursuing discoveries for prizes. Describe
+that existing role/conditions from template/model fields; preserve the
+actual research, money, conservation and descriptive laws. Do not invent
+ordinary goods or suppress these four assertions.
+
+`BuildMenuCheck.main()` prints four failed checks (line285) and returns0;
+make failures a nonzero process exit. Validate --fast, BuildMenuCheck with
+all four meaningful descriptions, and a controlled failed description
+proving nonzero exit. tools/batch-id.sh BMD1 reports unused. The ship file
+queues this brief; no source mend or quarantine is part of FS5 after its
+green dry run.
