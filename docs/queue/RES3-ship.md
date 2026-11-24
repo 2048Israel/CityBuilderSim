@@ -2,15 +2,15 @@
 ## changelog
 ### {next} — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-24, ready, see docs/queue/RES3-notes.md
 Activates fourteen residential recipes and thirty-two comparable dwelling classes,
-with funded census budgets, retained paid and hosted incumbents, emergency sharing
+with funded census budgets, retained paid and hosted incumbents, explicit sharing
 and crowding, class rents and actual occupied receipts. The existing builder and
-funding path receive the actual mix, costs and work; the synthetic pipeline is
-retired. Commits historical and present-day quote, budget, availability and build
-reports. Contract funding, class flows and wage indices use save format/floor 66.
-Emergency shelter retains funded demand for separate doors without extra rent.
-Feasible paid and hosted emergency placements are matched together.
-Unbuilt supply quotes cover operations; feasible orders use the full affordable typed backlog.
-Rent CPI follows comparable class bills; funded housing bids read the real saving return.
+funding path receive the actual mix, costs and work; the synthetic pipeline is retired.
+Commits historical and present-day quote, budget, availability and paid-build reports.
+Emergency shelter keeps funded demand for separate doors; paid and hosted placements
+clear together. Feasible orders use the affordable backlog and actual operating returns.
+Rent CPI follows comparable class bills; completed consumer purchases supply reference
+weights, including saved new-car and petrol observations and separate home fuels.
+Contract funding, class flows, wage indices and CPI observations use save format/floor 66.
 ## known-reds
 CurrencyRegimeCheck | fixture: the gap is past BREAK_GAP (0.064) | HT1-H | 2026-11-23 | The played reprice leaves gap 0.0641459260050 below BREAK_GAP 0.10. Its before-month fifth-under-shadow target does not cause the asserted after-month gap. Keep hazard and all FX laws; cause the gap at the tested phase. FS10 shipped. See RES3-notes.
 CurrencyRegimeCheck | fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow | HT1-H | 2026-11-23 | The save fixture has edge owed 450.353060385 and is held, but the gap has changed sign to -0.0763558615137 and doubt is correctly zero. Its positive-doubt premise is absent. See RES3-notes.

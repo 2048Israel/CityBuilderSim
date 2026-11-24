@@ -2,6 +2,7 @@ package ham.citybuildersim;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -14,6 +15,7 @@ import java.util.regex.Pattern;
 public final class CpiCoverageFinding {
     private static final double[] FEES = { 2, 1, .5, .1 }, FEE_SPEND = { 5, 3, 2, 0 };
     private static final Pattern SAVED_AT = Pattern.compile("(\"savedAt\"\\s*:\\s*)[0-9]+");
+    private static int nativeRead;
 
     private static void check(String label, boolean ok) { CpiReferenceFinding.check(label, ok); }
     private static void close(String label, double actual, double expected) { CpiReferenceFinding.close(label, actual, expected); }
@@ -189,6 +191,11 @@ public final class CpiCoverageFinding {
     /** Preserve all serialized text except the one wall-clock metadata timestamp. */
     private static String nativeText(GameFiles files, boolean history) throws Exception {
         String raw = Files.readString(history ? files.historyFile(10) : files.saveFile(10), StandardCharsets.UTF_8);
+        Path snapshots = Path.of("target", "cpi-native-snapshots", Long.toString(ProcessHandle.current().pid()));
+        Files.createDirectories(snapshots);
+        Path snapshot = snapshots.resolve(String.format("%03d-%s.json", nativeRead++, history ? "history" : "data"));
+        Files.writeString(snapshot, raw, StandardCharsets.UTF_8);
+        CpiReferenceFinding.OUT.println("native snapshot " + snapshot);
         if (history) return raw;
         var matcher = SAVED_AT.matcher(raw);
         check("native save has exactly one wall-clock savedAt metadata field", matcher.results().count() == 1);

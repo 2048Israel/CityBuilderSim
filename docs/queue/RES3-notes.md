@@ -4474,3 +4474,34 @@ helper target/cpi-native-0579/evidence and box
 ~/cbs/runs/res3-cpi-0579c76b6-20261124. These compile/old-finding results
 are not new-model or monetary passes. The corrected finding must show
 only its intended old failures, then pass with the new source.
+
+The corrected old-API finding is run unchanged against clean ff123698a
+production: driver compile 0, finding exit 1, with exactly the twelve
+intended CPI failures and no failed fixture/physical/cash/credit guard.
+The failure-set verifier passes (helper report 367f). Exact pushed
+d2114bf2d, including only the reviewed stock-identity correction, is now
+the candidate for new-source verification. Candidate results remain open.
+
+Exact d2114bf2d compiles and its actual-purchase CPI reference finding
+passes. Coverage records 157 passes and 22 native identity failures:
+history equality in nominal/historical twins, redenominated data equality
+and redenominated next-month exact guards/current inputs. All four
+three-city money-audit closure assertions pass; that does not waive the
+exact save/history/input comparisons. No normal named harness has run.
+Snapshots were removed with scratch teardown, so the field-level cause
+is not yet established. History has no savedAt field: these differences
+must not be dismissed as timestamp metadata or normalized speculatively.
+
+Adopt the reviewed read-only evidence patch, SHA256
+ee79225fb14b3da8f4174f2fed6cc1f19e650b4dee9ab3ff3e36a4cf97c1a912,
+which copies each unmodified native data/history read to a numbered
+target/cpi-native-snapshots/<pid> artifact before existing comparisons.
+No model, assertion, input, tolerance, observation order or return changes.
+Replay only the standalone coverage finding on the pushed evidence
+candidate, then let the helper diagnose the exact fields. The already
+verified old-production proof and reference finding need no repetition.
+Source/JDK/data manifests and raw d211 outputs are retained in helper
+target/cpi-native-d211/evidence and box
+~/cbs/runs/res3-cpi-d2114bf2d-20261124; evidence archive SHA256
+c73f748a19bfa0599918e5927624045a63c790228ff7c75897696749f59daf4a.
+All owned d211 jobs ended before the report. No monetary pass is claimed.
