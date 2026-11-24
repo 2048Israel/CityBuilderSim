@@ -345,6 +345,26 @@ public final class Construction extends Sector {
         if (bill > 0) bookImportedService(FOREIGN_CREWS, bill);
     }
 
+    /** Points the foreign crews built on the sites handed them in the month last settled (FC2b; BuildingManager.getAbroadPointsBuilt()). Saved when there were some. */
+    private double sitesAbroadPointsThisMonth;
+
+    /** What the builders owe them for it, the builders' import of services in that month (FC2b). Saved when there was some. */
+    private double sitesAbroadBillThisMonth;
+
+    /**
+     * The month's work of the foreign crews on the sites handed them settled (FC2b; ConstructionControl, G. ABROAD): the
+     * points they built there and what the builders pay them for them, at the price struck at each handover. Called every
+     * month, so a month with none sets both to nothing; the bill is an import of services, as payForeignCrews()'s. The
+     * points come off the order book - the work was billed with the orders and is built by the crews on site, not by the
+     * builders' own (never under nothing).
+     */
+    public void payCrewsOnSites(double points, double bill) {
+        sitesAbroadPointsThisMonth = Math.max(0, points);
+        sitesAbroadBillThisMonth = Math.max(0, bill);
+        if (bill > 0) bookImportedService(FOREIGN_CREWS, bill);
+        backlogPoints = Math.max(0, backlogPoints - sitesAbroadPointsThisMonth);
+    }
+
     /**
      * An order's buildings past the threshold, handed to the contractor when it is billed (REV-FC2's P1; Game.
      * processBuildOrder(), buildFor(), BuildingManager.abroadOfOrder()): onto his book at {@code share}, the supply
@@ -448,6 +468,12 @@ public final class Construction extends Sector {
 
     /** What the builders paid it for them: the import of services in the month last settled. */
     public double getForeignBillThisMonth() { return foreignBillThisMonth; }
+
+    /** Points the foreign crews built on the sites handed them in the month last settled (FC2b). */
+    public double getSitesAbroadPointsThisMonth() { return sitesAbroadPointsThisMonth; }
+
+    /** What the builders owe them for it: the import of services in the month last settled (FC2b). */
+    public double getSitesAbroadBillThisMonth() { return sitesAbroadBillThisMonth; }
 
     /** The construction points ever billed, from this game's start (ET2): not saved. */
     public double getBilledPoints() { return billedPoints; }
@@ -1257,6 +1283,9 @@ public final class Construction extends Sector {
         }
         if (foreignPointsThisMonth != 0) extras.put("foreignPointsThisMonth", foreignPointsThisMonth);
         if (foreignBillThisMonth != 0) extras.put("foreignBillThisMonth", foreignBillThisMonth);
+        // ...and FC2b's: the crews' month on the sites handed them.
+        if (sitesAbroadPointsThisMonth != 0) extras.put("sitesAbroadPointsThisMonth", sitesAbroadPointsThisMonth);
+        if (sitesAbroadBillThisMonth != 0) extras.put("sitesAbroadBillThisMonth", sitesAbroadBillThisMonth);
         // ...and FC2's: what the month handed him and what the builders sold abroad - flows a screen reads next month.
         if (handedAbroadThisMonth != 0) extras.put("handedAbroadThisMonth", handedAbroadThisMonth);
         if (handedSinceOffer != 0) extras.put("handedSinceOffer", handedSinceOffer);
@@ -1296,6 +1325,8 @@ public final class Construction extends Sector {
         foreignBookPrice = foreignBook > 0 ? extras.getOrDefault("foreignBookPrice", Double.NaN) : 0;
         foreignPointsThisMonth = extras.getOrDefault("foreignPointsThisMonth", 0.0);
         foreignBillThisMonth = extras.getOrDefault("foreignBillThisMonth", 0.0);
+        sitesAbroadPointsThisMonth = extras.getOrDefault("sitesAbroadPointsThisMonth", 0.0);
+        sitesAbroadBillThisMonth = extras.getOrDefault("sitesAbroadBillThisMonth", 0.0);
         handedAbroadThisMonth = extras.getOrDefault("handedAbroadThisMonth", 0.0);
         handedSinceOffer = extras.getOrDefault("handedSinceOffer", 0.0);
         exportPointsThisMonth = extras.getOrDefault("exportPointsThisMonth", 0.0);
@@ -1326,6 +1357,7 @@ public final class Construction extends Sector {
         overtimeThisMonth = 0;
         overtimeWages = null;
         foreignBook = foreignBookShare = foreignBookPrice = foreignPointsThisMonth = foreignBillThisMonth = 0;
+        sitesAbroadPointsThisMonth = sitesAbroadBillThisMonth = 0;
         handedAbroadThisMonth = handedSinceOffer = exportPointsThisMonth = exportReceiptsThisMonth = 0;
         rDrawnLocal = rDrawnImported = 0;
         drawnKnown = true;
@@ -1342,6 +1374,7 @@ public final class Construction extends Sector {
         salvageCost *= scale;
         overtimeThisMonth *= scale;
         foreignBillThisMonth *= scale;
+        sitesAbroadBillThisMonth *= scale;
         exportReceiptsThisMonth *= scale;
         // The book's price a point is money (REV-FC2, the second review): a reform that left it would bill his points
         // at the old unit's price, a thousandfold abroad from a divide by 1,000. Its share is a ratio and stays.
