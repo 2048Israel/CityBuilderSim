@@ -593,7 +593,8 @@ The merge of main at 0.9.194 (PW1-W, PW2; 6c487106e). Every harness the merge to
   points), so the Houses quoted at home are on site at the cancel.
 
 The merge of main at 0.9.195 (LP-G1; 975886be7). Every harness the merge touched was rerun alone, and `--fast`; one was red,
-GroundSkipCheck (LP-G1's own), in two lines, both passed by name to HT1-H with their traces (the ship file's known-reds):
+GroundSkipCheck (LP-G1's own), in two lines, both passed by name to LP-G2 with their traces (the ship file's known-reds
+and queued row; the orchestrator, 2026-11-23: a real gap in LP-G1's player, not a fixture premise, not mended in FC2):
 - Its town is the playtest's probe town played to m245 (probePlay()), and its premises are found in main's path: on main the old
   skip holds the landlords for land 17 of 60 months, first with no home on site at m283, and the watched skip never. FC2 moves
   the path (section 5): its town at m245 is 1,285 people, 0.9274 built on against the line 0.9295, growth 1.024620 over HORIZON
@@ -604,5 +605,5 @@ GroundSkipCheck (LP-G1's own), in two lines, both passed by name to HT1-H with t
   (HORIZON months of growth with the slack). The m269 look bought the town to 0.8946 built on; the Fabrication Shop took it at
   m270 (0.9923), and the landlords were held for land m271-m275, no home on site, until the m275 look; never after (Fabrication
   Shops again at m281, m283 and m289 took the later looks' ground too). keepGroundAhead() sizes a look by the used share alone,
-  not by what the sectors held for land asked for (`Game.getLandBlockedNeeds()`); whether it should is LP-G1's player, and a town
-  with no lump past the reserve is a fixture's to cause. FC2 changes no ground, look or landlord rule.
+  not by what the sectors held for land asked for (`Game.getLandBlockedNeeds()`): LP-G2, the look counting every sector's
+  blocked needs. FC2 changes no ground, look or landlord rule.
