@@ -2963,8 +2963,30 @@ Other caused mends and calls:
 | 25,27,38 | FS5H/FC2: exact actual Lending/scheduleRow blank-skin strut cause and native regression above. |
 | 36 | KP6-N: no natural formatted-word move guaranteed; 240e91713 causes both prior endpoints and tests unchanged words too; complete native validation passes. |
 | 22 | Heap: renderer soft-age/viewport caches and proven Bank/MiniMap lifetimes above. Native1509.8/1509.6 pass1536; final box full measurement due. |
-| 1,5 | Original slider/property fresh equality currently passes with zero KRT1 readings; the historical blank0×13/0×0 owner is not yet proved. No invented attribution to the label cure. |
-| 17 | Historical Healthcare1454×684/1446×700 remains unattributed. Its hard broad comparisons pass; Healthcare7 never caused a wrapping transition and Monocle Stage resizing buffer errors invalidate that probe. Bounded no-Stage threshold trace in progress. |
+| 1,5 | Original slider/property fresh equality currently passes with zero KRT1 readings; the historical blank0×13/0×0 owner is not yet proved. KRT8 staging/drop and held tax release pass with both label modes; arrows0,2,2 differ from old0,3,2. No invented attribution to the label cure. |
+| 17 | Historical Healthcare1454×684/1446×700 remains unattributed. Its hard broad comparisons pass. KRT8 crosses the real scrollbar threshold but causes no growing leaf; see the bounded evidence below. |
+
+The native KRT8 isolated diagnostic (240e91713, original/fixed label modes)
+passes 12 exact comparisons and 42 hard controls. Actual Healthcare viewport
+1446×496/content1446×497 has a bar; viewport1454×498/content1454×497 has none.
+Both modes preserve exact pixels and body/targets ownership. This crosses
+the eight-pixel bar threshold, but produces no historical sixteen-pixel
+growth. A single bounded extension sweeps1456→640 in16-pixel steps,104
+samples: content height remains497 and the real minimum width is1026.
+No wrapping transition, hence zero bistability comparisons. No geometry
+mend or exemption follows. Named probe returns0; wrapper1 is its deliberate
+source-overlay/interface-count metadata. Evidence: target/FS5b-krt8-native
+and its wrap/ directory. The earlier Healthcare7 Stage/buffer-error probe
+also proves no cure. No owned diagnostic job remains.
+
+Review hold: rows1,5,17 still lack historical causal attribution; current
+hard passes do not establish their old owner. They are not transferred to
+another queued row or exempted. ★ Remove the November21 unadopted KHL1
+Pending proposal from the provisional ship records; these remain FS5's
+open task, not a new owner. The original39 registry lines still name FS5.
+The stranger must settle these limits and the restated laws before ready;
+the provisional mends submission is that review checkpoint, not a claim
+that all39 historical causes have been proved.
 
 Validation receipts are target/FS5b-checks. The 22 other named calls
 finish0/3: only AutoBuildCheck's main-known care-fee premise is red.
