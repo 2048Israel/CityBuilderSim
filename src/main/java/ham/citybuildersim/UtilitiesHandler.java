@@ -679,6 +679,9 @@ public class UtilitiesHandler {
         return fillRate == null || !fillRatesGiven ? pooled : BuildAdvice.staffing(t, fillRate);
     }
 
+    /** The fill a plant of this kind runs at in the merit order (PW3): its own posts' at the city's fill rate by job, the pooled utility fill for a handler never given the rates. */
+    public double plantFill(BuildingsTemplate t) { return ownFill(t, averageUtilityFill); }
+
     private double fuelPrice(Good g) {
         return fuelPriceSource != null ? fuelPriceSource.applyAsDouble(g) : g.worldImportPrice();
     }
