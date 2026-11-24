@@ -2868,6 +2868,7 @@ Heap evidence (MiB; these are diagnostics, not reusable gate runs):
 | 07e223341, native SW | Warm 1593.6, normalized 1575.2, objects 1556.7; still the only hard red | target/FS5b-checks/KeptCheck-normalized-07e.log |
 | f4c60493f, native SW | Warm 1546.5, normalized 1528.3, Canvas 18.5, objects 1509.8; ALL OK against unchanged 1536 | target/FS5b-checks/KeptCheck-ship.log |
 | 240e91713, final Trade fixture, native SW | Warm 1546.3, normalized 1528.1, Canvas 18.5, objects 1509.6; ALL OK, 0.2 MiB from the preceding full run | target/FS5b-checks/KeptCheck-trade-240e.log |
+| b202d3511 (code240e91713, basee1b58f210), box SW | Warm1523.4, normalized1503.6, Canvas4.6, objects1499.0; ALL OK, unchanged1536 bound | target/FS5b-heap-final |
 
 - The .198 dump has 122 large physical SWRTTexture arrays, 474.6 MiB:
   81/319.484 MiB only softly reachable, 40/152.555 MiB also owned by
@@ -2962,7 +2963,7 @@ Other caused mends and calls:
 | 24 | CD9-K: all natural paper offers can refuse. Try real offers, then book a Term through booked if necessary; reread actual financesPieces and require nonempty paper. The fallback branch was not exercised in 07e. |
 | 25,27,38 | FS5H/FC2: exact actual Lending/scheduleRow blank-skin strut cause and native regression above. |
 | 36 | KP6-N: no natural formatted-word move guaranteed; 240e91713 causes both prior endpoints and tests unchanged words too; complete native validation passes. |
-| 22 | Heap: renderer soft-age/viewport caches and proven Bank/MiniMap lifetimes above. Native1509.8/1509.6 pass1536; final box full measurement due. |
+| 22 | Heap: renderer soft-age/viewport caches and proven Bank/MiniMap lifetimes above. Native1509.8/1509.6 and box1499.0 all pass1536; actual retained-page leak controls remain hard. |
 | 1,5 | Original slider/property fresh equality currently passes with zero KRT1 readings; the historical blank0×13/0×0 owner is not yet proved. KRT8 staging/drop and held tax release pass with both label modes; arrows0,2,2 differ from old0,3,2. No invented attribution to the label cure. |
 | 17 | Historical Healthcare1454×684/1446×700 remains unattributed. Its hard broad comparisons pass. KRT8 crosses the real scrollbar threshold but causes no growing leaf; see the bounded evidence below. |
 
@@ -3001,6 +3002,25 @@ No gameplay/default playtest trace moves; no ensemble is owed for FS5.
 The pick is ALL251 due to AllChecks. No laptop full pick is run: stranger
 review, orchestrator go and the box dry run remain required. No gate-run
 reuse or ready claim has been made.
+
+Final unmodified box named check exits0, tree0, zero firm Stale, all hard
+checks green. Bank10176/Government1832 fresh nodes release; deliberate
+real-page holding is rejected, dropping it releases; minimap and bitmap,
+cache-flag, exact Canvas and pixel controls pass. Healthcare does not recur,
+so no additional model capture. Shared box.lock held for the complete run:
+`/home/jerus/cbs/diagnostics/FS5b-final-b202d3511-20261124T205608Z`.
+Receipt/logs copied home under target/FS5b-heap-final. This named diagnostic
+is not a gate run and cannot be reused as one. No ensemble is owed because
+FS5 changes no gameplay/default trace. A dry run is still subject to the
+orchestrator's separate go after the stranger's review.
+
+Review floor from `sh tools/pick.sh origin/main HEAD`: ALL251 because
+AllChecks runs the suite; review needed for AtomicReference/synchronized
+in KeptBench and UI-wide UserInterface. Review the renderer normalization,
+strong-page negative controls, temporary/restored Trade history endpoints,
+KBP1/KRT1 restatements, and the three explicitly unresolved old owners.
+Final fetch still has e1b58f210. Every owned helper/JVM/job has ended;
+the marker remains provisional and no dry run has been started.
 
 One-in/out: `git diff --numstat origin/main` over AllChecks, KeptCheck,
 Observation, TimingCheck, KeptBench, the bench-only MiniMap/UserInterface
