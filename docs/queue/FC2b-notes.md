@@ -171,3 +171,6 @@ more to get just roads fixed").
     section's other two lines, causes the premise.
 - The ship file's first line names the run, so the gate reuses its suite; `sh tools/known-reds.sh FC2b docs/queue/FC2b-ship.md`
   reads the nine rows. Only the notes and the ship file changed after the run.
+- The dry run again on fafc01299 (the rows entered, main 77c77ab8c, QUEUE and contract commits only): run
+  /home/jerus/cbs/runs/cbs-gate-FC2b-Z4xWHH5X, the first run's suite reused, **exit 0, known red only, unnamed.txt empty**. The ship
+  file's first line names it.

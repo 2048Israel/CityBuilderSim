@@ -1,4 +1,4 @@
-<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FC2b-Yd0ZcIDj -->
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FC2b-Z4xWHH5X -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — FC2b, the choices that use the foreign crews — 2026-11-24, ready, see docs/queue/FC2b-notes.md
