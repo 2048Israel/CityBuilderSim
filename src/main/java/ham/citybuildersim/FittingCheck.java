@@ -1398,8 +1398,10 @@ public class FittingCheck {
         BuildingsStacks bakery = stack(g, "Bakery");
         double output = g.orderWaitOutput();
         double before = bm.waitFor(bakery.getBuilding(), 1, output);
+        // FC2: the contractor is on offer whenever the builders have a month (foreignTradeOn()), and with no sites' month his
+        // month is never under the largest depot (BuildingManager.foreignMonthNow()), FC1's foreignCrewsTakeOrders() gone.
         check("fixture: real standing roads consume every local site point and the foreign contractor offers positive output",
-                g.getBuildingOutputAtEveryPost() == 0 && bm.foreignCrewsTakeOrders() && output > 0);
+                g.getBuildingOutputAtEveryPost() == 0 && bm.foreignTradeOn() && bm.foreignMonthNow() > 0 && output > 0);
         check("fixture: the city orders a fitting that still owes local work", g.fitForCity(bakery.getBuilding(), DRIVE) == null
                 && g.getFittings().pointsOwed() > 0);
         double wait = bm.waitFor(bakery.getBuilding(), 1, g.orderWaitOutput());

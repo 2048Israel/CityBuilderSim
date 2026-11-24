@@ -18,6 +18,203 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.198 — FC2b, the choices that use the foreign crews — 2026-11-24, ready, see docs/queue/FC2b-notes.md
+A payer may now hand its share of one site's remaining work to the foreign crews (Jerus, 2026-11-22: "something finished in 20 months is better than something finished in 100 months"). They build it on the site at their own pace, about the threshold's months, and at their price; the payer pays the extra over the home price, and money already spent is sunk. A business weighs it each month by its earnings brought forward over the months saved, which is the interest on its cost plus the earnings past it. The city hands a site from the Construction screen's Foreign crews card (Jerus: "if roads are causing the issues then you could pay more to get just roads fixed"), which shows the price, the months saved and the interest saved. A shared site splits by the points each payer put on it, and the other payers' work stays with the city's crews. The crews' bill is the builders' import of services. Save format 65.
+
+### 0.9.197 — FC2, construction traded with the world — 2026-11-23, ready, see docs/queue/FC2-notes.md
+Jerus, 2026-11-22: "make it a imported/exported good... the base cost is still in domestic currency but the excess is in foreign currency". Foreign crews are always on offer at the city's base price for a point plus an excess of 15% of the world's base price for the same work, in foreign money (`BuildersShort.FOREIGN_EXCESS`), so a strong D$ makes them cheaper and a weak one dearer.
+An order's work goes abroad past the months queued at which the builders' premium reaches that excess: never under the 9-month knee, and at most 21 months whatever the currency (`SURE_MONTHS`, a year past the knee, the time an owner takes to tender work abroad and have the winner start); 20.5 at par.
+A weak currency barely raises the threshold: the cap, the premium at 21 months (16%), is barely over the 15%, so a D$ about 6% under par already sits at it and every weaker one changes nothing more than the share of the price paid in foreign money, while a strong D$ lowers the threshold as far as the knee.
+An order's work past the threshold goes to the foreign crews as it is billed, a building the threshold falls in split at it (so one giant building, a substation or a power plant, no longer holds the city's queue past the threshold and sends every later order abroad), at what its quote charged for them: the excess at the month the order itself makes them run, so the payer pays a big backlog's dearer price and the builders' cash carries no gap. Work quoted at home stays at home, and a restart, a demolition and the paving are priced at the premium at home. A cancelled order takes its own share of the crews' book off it, and a currency reform carries the book's price and the world's price of a point, so a reformed city is the same city. Their month is their book in the threshold's months, so a 240-month backlog is built at the threshold's pace. Their excess rises with their month, half way to +80% at twice the builders' own (`SUPPLY_HALF`), and they bring their own crews.
+Under the knee the builders sell the points no site took abroad, at the world's base and the city's own excess, booked once as the builders' exports in the audit, the national accounts and the current account.
+The Construction screen's gauge and rows, the build card's line and the BUILDERS flag show both offers; the Trade tab carries the builders' export on a row of its own, so its sold abroad is still the balance of payments' exports. FC1's 5% floor, its double price and its quarter-month capacity are gone.
+The figures rest on the World Bank's 7.5% domestic preference, the cost of flying crews in (up to 10% of a job), expatriate costs, demand surge after disasters (10-50%), and the time to procure works abroad (270 days in Korea, years in the slowest; FIDIC's 42 days to commence).
+ForeignCrewsCheck proves each bound at three rates, under domestic inflation, for the export and for a 240-month backlog, its bill the payer's quote to the bit, for the building the threshold splits, the cancels and a currency reform; ForeignCheck's founded town, with the crews on, is built partly abroad at its payers' price (139,931 points quoted for 37,152.30, billed to 1.96e-16, the 500 houses whole at month 13 with 1,253 people); ConstructionTrapCheck moved to the new truth. A saved split factor under 1e-12 now loads as saved. No format bump.
+
+### 0.9.196 — R6f, research: the 1996-2024 medicine, business and law rows — 2026-11-24, ready, see docs/queue/R6f-notes.md
+Three rows enter research with something behind them, each undone in a 1900 city until it is known.
+M12, robot-assisted surgery (Jul 2000): its 0.23 days off keyhole surgery on 0.78% of stays, so
+general care's stays are a little longer before it; the four later stays rows keep 1950's 10.0 days.
+B10, the AI assistant (Nov 2020): the Contact Centre's agents are 14% more posts before it, for the
+same calls. L8, Basel III (Jan 2013): the 8% minimum stands throughout; the 2.5-point conservation
+buffer comes with the row, and before it a bank's buffer is its own worst year alone. A load or a find
+re-derives the bank's rule and the medicine at once. ModernRowsCheck proves the three. A city founded
+the default way is unchanged. SAVE_FORMAT and its floor rise to 64: a format-63 Contact Centre before
+B10 loads modern. M19 (hospital at home) and B9 (the tick) are queued, with what each needs.
+
+### 0.9.195 — LP-G1, keep ground ahead across the player's long skips — 2026-11-23, ready, see docs/queue/LP-G1-notes.md
+The test player looks at its ground across a skip: `LongPlaytest.skipWatchingGround()` runs the skip a month at a
+time and makes the unchanged `keepGroundAhead()` look whenever `BuildAdvice.HORIZON` months have passed since the
+last, in the playtest's loop, its Earth city and the ensemble's controller (the cash share per look, the line and
+the hold when the share cannot pay are as they were; the fixtures `probePlay()` builds keep main's rhythm). The
+default seed 0 went 62 months unlooked (m742-804) with its landlords held for land m756-804; now no gap passes
+six months and every month held for land follows an offer the share could not pay. The same in the ensemble's
+seed 9 (no look m482-603 before). Held for land, the player's city grew slowly: seed 0 now ends at 5.7 million
+people (1.3 million), in about twice the time. `GroundSkipCheck`: the old skip's hold, the timely look, the
+unaffordable offer. Versioned with no change to the game: the ensemble's baseline moves (docs/ensemble/0.9.195.md).
+
+### 0.9.194 — PW2, the power plants and their fuels — 2026-11-23, ready, see docs/queue/PW2-notes.md
+Five new power plants, each burning its fuel from the market by the MWh: the Oil-Fired Plant (1900), the Diesel Station (1910), the
+Oil-Fired Turbine (1949), the Biomass Plant (1970) and the Solar Farm (1982); the Coal Power Plant and the Wind Farm refigured to
+spec-electricity §2.3 (coal 325 MW at $3,271 a kW, 60 months, 200 acres; wind 20 MW at 33.8%, from December 1980). Fuel oil and diesel
+are bought from Refining, pellets from Wood Products, the rest imported, each paid once in the money audit and the Trade tab. The sun
+runs after the wind, by its hours. A coal, oil-fired or biomass plant stands only where the city owns sea, a lake or a river (NO WATER
+TO COOL IT); a plant stands no sooner than its months, whatever the crews; each kind is offered from the year it was first built
+(Jerus: "the rec, later research will change this"), so a 1900 city's first power is the oil-fired plant. Natural gas (PW7) waits
+for the world file's re-bake. New harness PowerPlantsCheck.
+
+### 0.9.193 — PW1-W, water priced from its cost — 2026-11-23, ready, see docs/queue/PW1-W-notes.md
+The sea's water is priced as PW1 prices power, at its margin: while the city needs it, a unit costs its tariff and the
+desalination works' power over the water the sea delivers, at the struck commerce price with PW5's wires. A plant under half
+used spreads its power over the water served instead, recovered once and over no more than half its output, so a sliver of
+the sea has a bounded price. While the land's water (the wells and the fresh works) serves, the price is the tariff, which
+pays the fresh works' power. The water's books buy all the works' power of the power's at the top of the next month, inside
+the treasury, so the utilities' net is unmoved; the Services screen shows it on both books. A Desalination Plant's water
+covers its power again and a patented one earns its licence: PublicLicenceCheck's four desalination reds pass. A licence's
+power is now the dispatch's energy served with the plant's row moved, not the flat rule (PW1-L), and a recipe's surplus power
+is weighed at the works price the strike pays it, not its class's (PW1-G). WaterPowerCheck holds the price, the bills and the
+save on both sides of each edge. No format bump.
+
+### 0.9.192 — PW5, substations — 2026-11-23, ready, see docs/queue/PW5-notes.md
+Substations carry 100 MW of the peak each, ordered by the automatic builder through the
+same funding, ground and construction rules as roads. Beyond the free founding 10 MW,
+a city short of wires browns out in the power dispatch's existing shortfall figures.
+The wires' bill now reads their capital over forty years at four percent real, repairs
+and filled posts, paid through the existing city books once; industry retains its
+transmission-only share. Closing costs are saved with the dispatch, so reloading keeps
+the next bill exact. Currency reforms scale every wires component once. Older saves
+are refused with both files and the running city intact under the raised format floor.
+PW5-F1: a 45 MW town pays 11.38 cents/kWh against 5.94; each district also needs
+110 repair points/month. Before HC1, seed 0's first stands at m576: builders 6,176,
+standing repairs 420 (110 for the district), leaving 5,756 points for sites.
+
+### 0.9.191 — AP2, slot 9's slow months at 17 million people — 2026-11-22, ready, see docs/queue/AP2-notes.md
+On Jerus's slot 9 (17.3 million people, 321,345 buildings, 151 districts) the months the ground moved took 8-15 s. A highway piece's failed link search reruns at every purchase, and its 2-million-plot ring drew the same Earth tiles again, about 90,000 draws for 4,000 tiles, through a 256-tile memory.
+The runs' ground keeps every tile a link's search reads (`CityMap.RUN_SEARCH_TILES_KEPT`, 8,192, for the search alone; `CityRuns.Ground.searching()`), and gives back its usual 256 after.
+`CityLand.centreStamp()`, asked at every plot the search reads, is kept between the centre's changes. `EarthTerrain.idsNear()`, asked by every bridge survey, is kept a tile. The auction's bidders read what each sector owes from one pass over the bank's book (`BusinessDebtManager.getPrincipalsByKey()`).
+Every figure is the same to the bit. GatewayCheck, LandCheck, LandmassCheck and HoldersCheck each gain a section proving their kept read equals the read afresh and moves with what it reads, and the playtest's trace is the same byte for byte over 2,405 months.
+On slot 9 the month went from a mean of 5.9 s, a median of 3.1 s and a worst of 12.9 s to 2.5 s, 2.4 s and 4.8 s, with every month's population and the whole log the same. The paused Build Overview's model went from about 590 ms to 540 ms.
+A waiting link's search (about 1.5 s a land month), the re-measure when an island is linked, and the Overview's auction quotes are left for Jerus.
+
+### 0.9.190 — HC1, credit cards — 2026-11-22, ready, see docs/queue/HC1-notes.md
+Households carry card balances within each cell: thin buffers meet unexpected
+bills, a 3% minimum is a fixed bill, and holders can fall behind, recover or
+charge off without discharging their neighbours. Borrower status ends at
+estates; discharged families leave debt-free from their source cells. The
+neutral card APR is 21.35%, capped at 35%; the bank books payments and losses.
+Household money shows debt holders, medians, means, payment burdens, arrears
+and yearly surveys by tier and stage, per household or adult. Every new flow
+has one money and national-accounts path. Save format 62 refuses older saves
+without conversion; refusal of formats 60/61 and exact next-month continuation are checked.
+The 80-run ensemble of f78dfd076 passes its money-audit and findings checks.
+
+### 0.9.189 — RES2, aggregate housing inventory — 2026-11-22, ready, see docs/queue/RES2-notes.md
+Separates completed residential structures from their immutable dwelling mixes,
+aggregate titles, occupancy and listing subsets. The three current templates
+remain compatible; the founding places are a named non-saleable endowment.
+Supplies pure stock/pipeline reads, retained-occupant matching, quantity transfers,
+one completion mix, saved/rebuilt cohorts and fixed asset/collateral allocation.
+Preserves next-month construction work and RN2 debt allocation across reloads;
+refuses genuine older saves without conversion. Caused housing/save checks pass or retain named main-only reds;
+all eight default trace CSVs are observed byte-identical to current main.
+
+### 0.9.188 — RS1, the city can sell the bank it rescued — 2026-11-22, ready, see docs/queue/RS1-notes.md
+The city's hand offers its shares before world and household investors choose
+their purchases, so they can buy a rescued bank and pay the fund for real
+ownership. The fund's rule pauses its buying of a company the hand is selling.
+A crossed book quotes the last trade, or fair value before its first, and
+explains the crossing instead of showing a misleading midpoint. Rounding
+residue at the desk's caps or the bank's buyback capital target cannot fund a
+dust trade that replaces a real last price. Regression fixtures cover all four
+findings and both sorts of buyer; no new saved state is needed.
+
+### 0.9.187 — HS3, the household money page by stage — 2026-11-22, ready, see docs/queue/HS3-notes.md
+Household money separates young and established households and opens each
+stage's own books, with the retired still named by former tier and owner
+families on their own line. The month's estate cash, debt settlements and
+taxes on realised gains and dividends read the model's own figures. Kept
+redraws update the page in place and retain its scroll; no simulation or save
+change.
+
+### FS9 (untagged) — the bank's harnesses cause what they read — 2026-11-22, ready, see docs/queue/FS9-notes.md
+The bank and its borrowers' twelve harnesses (Bank, YoungBank, Mortgage, CreditCrunch, SupplierCredit, Credit, CapitalFlow, CarryTrade, Invest, DistressBleed, BankFailure, OrderDoor) cause their premises, not what a played city happens to hold.
+DistressBleedCheck sets the loss and operating streaks, the desk's loan and the till, and reads planDistressRetirement at DISTRESS - 1 and DISTRESS: no LIFT_AT.
+YoungBankCheck lends a lone Lime Kiln twice the young bank's equity on four twins and writes off a loss under the cushion, between cushion and equity, and past equity: resolution only past it.
+MortgageCheck issues its mortgages by hand and causes the lean month; CreditCrunchCheck holds the bank where leverage binds (holdInBand), stands its landlords' ground each crunch month, and strikes the desk's rule before its caused order.
+OrderDoorCheck plays seed 12 to m200 and sets HN1-A's edge by hand: the yard short of a block, the market's materials 3.5% over the planner's price.
+BankCheck's nine played sections set the loan, the carry, the savers' book, the desk's trades, the allowance, the slices, the distress sale and the tab's events by hand.
+CapitalFlowCheck causes its carry and its twin's profit; with BankCheck it leaves Observation.HARNESSES. BankFailureCheck and InvestCheck keep their played runs as identities, their counts printed.
+The 21 FS9 known reds retire, none a fault (three of them HT1's). The batch is harness-only: the model, the screens and the trace do not move.
+
+### 0.9.186 — R6e, GM crop history — 2026-11-22, ready, see docs/queue/R6e-notes.md
+GM crops enter farm history in 1996. Before E21 is known, output is the unchanged
+modern 500/69 divided by 1.22: an approximate crop-mix estimate with source limits
+and CC BY 4.0 credit disclosed. PE20/E10/E21 add fixed-anchor differences; livestock,
+land, jobs and inputs stay unchanged. Patentability uses the native estimate.
+Captured fees now follow each farm's actual credited output, so an idle farm
+cannot pay for another farm's coproducts; this also mends main's combine/milking fees.
+SAVE_FORMAT and its floor rise to 60: format-59 pre-E21 choices load wrong crop
+figures immediately, so older saves are refused without conversion. Other rows
+retain their figures and explicit conditions below; E24 waits for PW3, E27 for E18.
+
+### 0.9.185 — RR1, the map's roads and rails — 2026-11-22, ready, see docs/queue/RR1-notes.md
+Jerus's city drawn as he saw it (slot 10's copy, months 1,204 to 1,208). A works siding drawn square from the first draw after
+a month keeps its arcs (`CityMap.planSidingsRoutable()`, RailDrawCheck 31). A highway S-bend's straights stop where the next
+bend's arc begins (`TileRaster.highwayLegs()`, JunctionCheck 24). ★ A main line that reaches no edge is taken back to the trains'
+way (`CityRuns.cutDeadSpine()`, MainLineCheck). HWW1: where the highways' gate arm ends at the city's own water, the trucks come
+in at its end (`CityMap.highwayPortal()`; his city 0 world truck routes to 7, TruckRouteCheck 11). STY1: a station at the mixed
+train's tier is weighed beside the quarter line too (MainLineCheck 17 (c)). ★ A highway's end with a street beneath narrows to
+that street, carried past a link's bend, and an arm waiting at the city's own water has a street laid beneath its ramp
+(`TileRaster.highwayEnds()`, `DistrictPlan.rampJoins()`, JunctionCheck 25, 26). FA1's frontage avenues end at their last
+crossing, no stair step past it (`DistrictPlan.frontageEnds()`, PlanCheck 20). Bergen's 48-plot station through the hub is
+queued (RH1). Map only: nothing in the model reads it, and the default trace is unchanged.
+
+### 0.9.184 — HT1, household basis and investment taxes — 2026-11-22, ready, see docs/queue/HT1-notes.md
+Household stock purchases and founders carry average acquisition cost with the people; sales release it and carry unused losses. Real sale and integrated dividend taxes transfer cash to two named treasury revenues, with an adjustable inclusion dial. Cash-first secured deferral, estate step-up, survivor rollover and passive unclaimed-property custody preserve the actual stocks and payments. The incompatible save format carries basis, claims, policy and struck flows. Genuine bond extinction closes every household position without inventing cash. Independent whole and scoped reviews have cleared the money/save changes; integrated .183 custody, monetary, save and scaling checks pass. The final model ensemble passes every money audit; its exact seed14 land-funding finding passes by name with FB11H queued. The versioned ALL dry completes all234 selected harnesses and its retained-run record gate passes, with remaining assertions traced and named with queued owners. L7 retains its separate Pending account-design disposition.
+
+### 0.9.183 — OG1, a planner orders to the gap — 2026-11-22, ready, see docs/queue/OG1-notes.md
+Past a nine-month backlog the builders no longer order one depot a month. They order the gap between their
+sites' month and the work a typical month sends them, plus the queue past the knee over two years, never more
+than 1.8 times that month. The typical month is a saved median of a year, their own depots left out. Each
+batch takes at most the premium's share of a month of the sites. Food Processing orders as many plants as the
+city already eats. On the 2,424-month playtest the months past the knee fell from 685 to 438 (470 to 224 with
+over 100,000 people), and the city reached 629,000 people to main's 531,000. A first cut sized to the queue
+ran to 7,771 depots to main's 299 and was dropped. His own city (slot 10) plays as main and gains nothing
+from this batch: its builders' order is refused at the staffing gate (0.57 of a depot's posts staffable
+against 0.80, with 0.0% out of work) before OG1 sizes it. GapOrderCheck holds it.
+
+### 0.9.182 — FB16, OE1's four follow-ups — 2026-11-22, ready, see docs/queue/FB16-notes.md
+OE1's four follow-ups, one commit each, every line causing its condition. AS1: AuctionCheck §11 sells a bill at
+its 1,200-month run's end and counts exactly that one sale more than the run booked. CI1: Motoring strikes the
+households' car imports as the spend's import share, so paid and imported are one number; a CarCheck section walks
+the import price a bit at a time until the two roundings part. PT2: PassThroughCheck §3 stands grocery stores and
+stocks the shelf at the DEAR pin before the step, so the shops hand over the households' need in all 12 months. RN2:
+RealEstate saves the count its closed homes' share moves against, put back after the load's rebuild, so a reload's
+first month moves the share as the live city does (ReloadCheck 3k, HousingCheck); an old save loads as before, no
+format bump. The playtest trace is unchanged; four known reds leave.
+
+### SD1 — Correct scrapping wording — 2026-11-22, ready, see docs/queue/SD1-notes.md
+Physically retired buildings now say Scrapped, with the same quantities,
+plot-return and recovered-material details. Genuine compulsory purchases
+still say Sold. Build cards keep their existing classification and compact
+wording. This untagged wording correction changes no economic decisions or flows.
+
+### RES1 — Real Estate study and HO1 implementation contract — 2026-11-22, ready, see docs/queue/RES1-notes.md
+Finalized the aggregate housing design and HO1 contract after Jerus's review:
+fourteen initial building forms and 32 dwelling classes, complete numerical
+cost/rent/parking/fee tables, measured compute and executable underwriting/cash
+fixtures. Recorded tenant retention, persistent common-cost pools, real funded
+sales and the immediate financial-demolition guard; supplied RES2-RES5 and
+HO1/REU1 briefs. The study-review hold is closed; actual model calibration and
+code dependencies remain the named implementation gates. Documentation only.
+
+### 0.9.181 — PW6, the recorded power month — 2026-11-21, ready, see docs/queue/PW6-notes.md
+Services › Utilities shows the recorded month's six supply stacks, each plant's run,
+fuel and clearing receipts, clearing prices and bill parts, firm capacity against
+peak load, curtailed and unserved energy, with the dispatch and billing periods named.
+Power observations and history survive saves; the completed closing dispatch is retained
+for the following tariff instead of being rebuilt from ending fleet, draw or fuel prices.
+
 ### 0.9.180 — PW1, power by the merit order at the market's price — 2026-11-21, ready, see docs/queue/PW1-notes.md
 Power clears by the merit order at the market's price (Jerus: "Market price"): three load blocks, each a windy and calm half, with the works' surplus first, then wind, hydro and fuelled plants.
 Short half-blocks clear at the cap. Coal plants burn thermal coal bought from the market. Commerce pays energy and both wires; Heavy Industry and Mining pay energy and transmission.

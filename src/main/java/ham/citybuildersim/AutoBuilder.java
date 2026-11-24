@@ -586,6 +586,7 @@ public final class AutoBuilder {
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
             if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
+            if (!game.hasCoolingFor(t)) continue;
             double[] after = BuildAdvice.supplyDemand(game, m, Map.of(t, 1L));
             if (!(after[1] > 0) || after[0] / after[1] <= share + 1e-12) continue;
             Ground ground = groundFor(game, t, 1);
@@ -985,7 +986,7 @@ public final class AutoBuilder {
      */
     public static boolean essential(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS:
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS: case GRID:
             case SCHOOL: case POLICE: case CELLS: return true;
             default: return false;
         }
@@ -1217,6 +1218,7 @@ public final class AutoBuilder {
             for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
                 if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
+                if (!game.hasCoolingFor(t)) continue;
                 double lead = game.quoteBuild(t, 1).months;
                 if (Double.isFinite(lead) && Math.ceil(lead) < first
                         && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, lead, slack)))

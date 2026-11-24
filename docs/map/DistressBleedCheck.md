@@ -1,6 +1,6 @@
-# DistressBleedCheck.java - 491 lines · 12 methods · 8 constants · harnesses
+# DistressBleedCheck.java - 550 lines · 18 methods · 11 constants · harnesses
 
-`ham/citybuildersim/DistressBleedCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DistressBleedCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over
 > BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running while it owes the desk,
@@ -15,94 +15,104 @@
 > this month's operating income, and counted a sector living on its own cash as lent; it now reads its own saved
 > operating-loss streak (BusinessInvestment.getOperatingLossMonths(), the old metal sold left out) and the desk's principal.
 > 
-> WHAT THIS HAS TO PROVE (the fixture is a town with eight Contact Centres, then the minimum wage lifted until the
-> sector's own operations lose money; nothing is set but the cause):
+> WHAT THIS HAS TO PROVE:
 > 
->   1. the fixture: Business Services loses money on its operations every month while the desk lends it (it owes the desk
->      throughout), its debt rising, until its operating-loss streak reaches DISTRESS_LOSS_MONTHS; and that streak is the
->      run of months its running result (operating income less old metal sold) was below zero
->   2. nothing is sold in any month that ends with fewer than DISTRESS_LOSS_MONTHS months of operating losses
->   3. plant goes while it is still lent: a centre is sold in the month the streak reaches DISTRESS_LOSS_MONTHS, and by
+>   1. the streak is the run of months the plant's own result (operating income less old metal sold) was below zero, and it
+>      reaches DISTRESS_LOSS_MONTHS after that many losing months; at DISTRESS_LOSS_MONTHS - 1 a lent, solvent sector sells
+>      nothing and at DISTRESS_LOSS_MONTHS it sells a centre
+>   2. nothing is sold at any operating streak under DISTRESS_LOSS_MONTHS, the sector lent
+>   3. plant goes while it is still lent: a centre is sold at the count that reaches DISTRESS_LOSS_MONTHS, and by
 >      DISTRESS_LOSS_MONTHS + BLEED_MONTHS months of it at least half the centres are gone
->   4. never faster than the pace: at most max(1, held / BLEED_MONTHS) a month, on the months the dial names
->   5. a net-loss count carried past the dial by interest sells nothing: the floor lifted so the plant's own result comes
->      back while interest keeps the net count climbing, then raised again with the net count past the dial and the
->      operating streak begun again; in every month the net count is at the dial and the streak under it, nothing is sold
->      (the first form of the rule would have sold), and the centres go when the streak reaches the dial
+>   4. never faster than the pace: at most max(1, held / BLEED_MONTHS) a month, on the counts the dial names, for every holding
+>   5. a net-loss count carried past the dial by interest sells nothing: with the net count at the dial or past it and the
+>      operating streak under the dial (back at 0, a loss that is only interest, or begun again), nothing is sold where the first
+>      form of the rule (e17ee67f9's: the net count alone, the plant losing money this month) would have sold; and the centres
+>      go when the operating streak reaches the dial
 >   6. overdrawn with no lender, the quarter as before
 >   7. only a sector the spare-capacity rule cannot reach bleeds (the three overrides), and, as behaviour, a sector that
->      does not bleed, not overdrawn, sells nothing to the rule however long it has lost money (Freight, run on)
+>      does not bleed, lent, not overdrawn, sells nothing to the rule however long it has lost money, where Business
+>      Services in the same state sells
+>   8. a sector living on its own cash (both streaks past the dial, no principal, cash at or above zero) is not lent and sells
+>      nothing; the same sector once the desk lends it sells
 > 
-> Not proved here, for want of a fixture that can cause it: that a sector living on its own cash (an operating streak past the
-> dial, no principal, cash at or above zero) is not lent and sells nothing. No run of months in a founded town builds the cash
-> that would carry two years of losses without the desk (measured: Business Services' cash stayed under $500k across five
-> years of profit); the line in the rule is `lent = principal > 0`.
-> 
-> Every fixture here CAUSES its condition. The counts are never set, nor the cash, nor a statement: the wage floor is
-> moved and the months are run.
+> WHAT IS SET, AND WHY (FS9: the played town moved under it): every section reads the rule, so the rule's own inputs are set
+> through the model's own doors on a scratch town that holds CENTRES Contact Centres and no month played: the net-loss and
+> operating-loss streaks (BusinessInvestment.restoreLossMonths(), restoreOperatingLossMonths()), the shortfall desk's principal
+> (BusinessDebtManager.issueLoan()) and the sector's cash (setSectorCash()); the holding moves only by the model's own retire
+> (BuildingManager.retire()), as the decision names. The streak's own formula is not set: a statement is written and
+> recordOperatingResult() is asked of it, a month each way. The first form of this harness played a wage-floored town for
+> its counts and waited, in section 5, for a net count (LIFT_AT) measured on main's town; the town moved under that timing on
+> two other batches' paths and the fixture's own premises went red with the rule untouched. Nothing here is a timing: each
+> state is the state, and each threshold is read from both sides against the model's constants.
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (6), [Game](Game.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (2), [GameFiles](GameFiles.md) (2), [BusinessServices](BusinessServices.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [OldMetal](OldMetal.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (16), [Sector](Sector.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (5), [Game](Game.md) (4), [OldMetal](OldMetal.md) (4), [BuildingManager](BuildingManager.md) (3), [Statement](Statement.md) (2), [BusinessServices](BusinessServices.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [GameFiles](GameFiles.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 207 | · 1. the fixture: the sector loses money on its operations while it is lent |
-| 281 | · 2. nothing is sold below the dial |
-| 294 | · 3. plant goes while it is still lent |
-| 319 | · 4. never faster than the pace |
-| 356 | · 5. a net-loss count carried past the dial by interest sells nothing |
-| 428 | · 6. overdrawn with no lender, the quarter as before |
-| 445 | · 7. only a sector the spare-capacity rule cannot reach bleeds |
+| 219 | · 1. the streak, and the dial from both sides |
+| 292 | · 2. nothing is sold below the dial |
+| 305 | · 3. plant goes while it is still lent |
+| 340 | · 4. never faster than the pace |
+| 372 | · 5. a net-loss count carried past the dial by interest sells nothing |
+| 437 | · 6. overdrawn with no lender, the quarter as before |
+| 458 | · 7. only a sector the spare-capacity rule cannot reach bleeds |
+| 516 | · 8. a sector living on its own cash is not lent |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 68 | `DistressBleedCheck.CONTACT` | `"Contact Centre"` |  |
-| 71 | `DistressBleedCheck.CENTRES` | `8` | The centres the town founds the sector with: eight held is one sold every three months at the dial's pace, so the pace shows. |
-| 77 | `DistressBleedCheck.FLOOR_TIMES` | `1.8` | How many times the founding minimum wage the floor is lifted to: past the point the sector's operations lose money, short of the three times at which the desk refuses within two years (measured: x3 loses $250k a month... |
-| 84 | `DistressBleedCheck.LIFT_AT` | `12` | The net count at which section 5 lifts the floor: wages come back down over about a dozen months, so lifted this far ahead of DISTRESS_LOSS_MONTHS the sector's operating income crosses zero just as the net count passe... |
-| 87 | `DistressBleedCheck.RECOVERED_MONTHS` | `3` | Months running the plant's own result must have held at or above zero (the operating streak at 0, the net count still climbing on interest) before section 5 raises the floor again. |
-| 90 | `DistressBleedCheck.MOST_MONTHS` | `120` | Months a run may take before it is given up, whatever the sector does. |
-| 92 | `DistressBleedCheck.DISTRESS` | `BusinessInvestment.DISTRESS_LOSS_MONTHS` |  |
-| 93 | `DistressBleedCheck.BLEED` | `BusinessInvestment.BLEED_MONTHS` |  |
+| 72 | `DistressBleedCheck.CONTACT` | `"Contact Centre"` |  |
+| 75 | `DistressBleedCheck.CENTRES` | `8` | The centres the town holds: eight held is one sold every two months at the dial's pace, so the pace shows. |
+| 77 | `DistressBleedCheck.DISTRESS` | `BusinessInvestment.DISTRESS_LOSS_MONTHS` |  |
+| 78 | `DistressBleedCheck.BLEED` | `BusinessInvestment.BLEED_MONTHS` |  |
+| 81 | `DistressBleedCheck.NET_PAST` | `DISTRESS + BLEED` | The net-loss streak sections 1 to 4 set beside the operating streak: past the dial and the whole pace after it, so the rule's first question (the net count) is answered yes and only the operating streak decides. |
+| 84 | `DistressBleedCheck.LOAN` | `1_000` | What the shortfall desk is lent against the sector: the rule reads only that the principal is above zero. |
+| 87 | `DistressBleedCheck.CASH` | `1_000` | The cash a solvent sector is set at: the rule reads only that it is at or above zero. |
+| 90 | `DistressBleedCheck.OVERDRAWN` | `- 1_000` | The cash an overdrawn sector is set at: below zero, which is all the quarter's rule reads. |
+| 93 | `DistressBleedCheck.LOSS` | `- 50` | The operating income, in thousands, of a month the plant loses money on its operations. |
+| 96 | `DistressBleedCheck.PROFIT` | `10` | The operating income, in thousands, of a month the plant's own result is above zero. |
+| 99 | `DistressBleedCheck.INTEREST` | `40` | The interest, in thousands, a month's statement carries: more than PROFIT, so a month of operating profit can still lose money in net. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 53 | `static int fails` |  |
-| 54 | `static PrintStream out` |  |
-| 55 | `static PrintStream quiet` |  |
-| 98 | `int count, opCount` | The net-loss streak (interest in it) and the operating-loss streak the bleed reads (AQ1). |
-| 99 | `long held, others` |  |
-| 101 | `double opInc, oldMetal, running, interest, net, cash, debt` | running is the plant's own result: operating income less the old metal it sold that month. |
-| 106 | `final Game city` |  |
-| 107 | `final BusinessServices bs` |  |
-| 108 | `final BuildingsTemplate contact` |  |
-| 109 | `final BusinessInvestment plans` |  |
-| 110 | `final BusinessDebtManager desk` |  |
-| 111 | `final String key` |  |
-| 112 | `double foundingFloor` |  |
+| 57 | `static int fails` |  |
+| 58 | `static PrintStream out` |  |
+| 59 | `static PrintStream quiet` |  |
+| 103 | `final Game city` |  |
+| 104 | `final BusinessServices bs` |  |
+| 105 | `final BuildingsTemplate contact` |  |
+| 106 | `final BusinessInvestment plans` |  |
+| 107 | `final BusinessDebtManager desk` |  |
+| 108 | `final String key` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 441 | **type** `public class DistressBleedCheck` | The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_... |
-| 57 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 62 | 5 | `static void quietly(Runnable r)` |  |
-| 96 | 7 | **type** `static final class Row` | One month of the sector, read at the month's end. |
-| 105 | 57 | **type** `static final class Town` | A scratch city with the sector's fixture in it, and what a month reads of it. |
-| 114 | 8 | `Town(Game city)` _(in DistressBleedCheck.Town)_ |  |
-| 123 | 18 | `Row read()` _(in DistressBleedCheck.Town)_ |  |
-| 142 | 4 | `Row month()` _(in DistressBleedCheck.Town)_ |  |
-| 148 | 7 | `void raiseFloor()` _(in DistressBleedCheck.Town)_ | The cause: the floor lifted (the minimum wage law is open from the founding since OP1; the fixture opened it here before). |
-| 157 | 4 | `void liftFloor()` _(in DistressBleedCheck.Town)_ | The cause taken away again: the floor back where it was, no longer binding. |
-| 164 | 18 | `static Town town(String prefix) throws Exception` | A town of houses, shops, power, water and road around CENTRES Contact Centres, a founding two years old. |
-| 184 | 3 | `static long stepFor(long held)` | The months the dial lets pass between two sales when this many are held: one building every so many months of the losses. |
-| 189 | 6 | `static boolean pastDialSolvent(Town t)` | Whether a sector that does not bleed has lost money DISTRESS_LOSS_MONTHS running and ends the month with cash at or above zero. |
-| 196 | 5 | `static String list(List<Long> xs)` |  |
-| 202 | 289 | `public static void main(String[] args) throws Exception` |  |
+| 55 | 496 | **type** `public class DistressBleedCheck` | The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_... |
+| 61 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 66 | 5 | `static void quietly(Runnable r)` |  |
+| 102 | 59 | **type** `static final class Town` | A scratch city with the sector's fixture in it, and the doors the rule reads through. |
+| 110 | 8 | `Town(Game city)` _(in DistressBleedCheck.Town)_ |  |
+| 119 | 3 | `long held()` _(in DistressBleedCheck.Town)_ |  |
+| 124 | 8 | `long others()` _(in DistressBleedCheck.Town)_ | What the sector holds of anything but the centres. |
+| 134 | 6 | `void holdAt(long n)` _(in DistressBleedCheck.Town)_ | The centres held set to n: the surplus scrapped by the model's own retire, the shortfall stood by addStack. |
+| 142 | 4 | `void streaks(String sector, int net, int op)` _(in DistressBleedCheck.Town)_ | Both streaks of one sector set: the restore methods replace the whole map, so the sector asked is the only one that holds a count. |
+| 147 | 3 | `void cash(String sector, double cash)` _(in DistressBleedCheck.Town)_ |  |
+| 152 | 3 | `void lend(String sector)` _(in DistressBleedCheck.Town)_ | The desk lends the sector LOAN: its principal is above zero from here. |
+| 157 | 3 | `BusinessInvestment.Decision ask(Sector s)` _(in DistressBleedCheck.Town)_ | The rule asked as Game asks it each month: the sector's own cash, no order in flight. |
+| 163 | 7 | `static Town town(String label)` | A town holding CENTRES Contact Centres and no month played: the rule reads counts, a principal, a cash and a holding, none of which a month builds. |
+| 172 | 8 | `static void statement(Town t, double operating, double oldMetal, double interest)` | A month's statement written for the sector: its operating income, the old metal it sold that month (0 for none), the interest on its debt. |
+| 182 | 3 | `static long sold(BusinessInvestment.Decision d)` | What a decision sells: its quantity when it builds (sells) at all, else none. |
+| 187 | 3 | `static long stepFor(long held)` | The months the dial lets pass between two sales when this many are held: one building every so many months of the losses. |
+| 192 | 3 | `static boolean oldRuleSells(int net, double operatingIncome, double cash, boolean lent, long held)` | The first form of the rule (e17ee67f9's): the net count at the dial, this month's operating income below zero, solvent and lent, the step read off the net count. |
+| 197 | 7 | `static BuildingsTemplate freightPlant(Town t)` | A building of Freight's the sector may sell and that counts toward its measure: plant for a sector that does not bleed to hold. |
+| 205 | 5 | `static String list(List<Long> xs)` |  |
+| 212 | 1 | **type** `record Month(String what, double operating, double oldMetal, int streak)` | One month's statement for section 1's streak formula, and the streak it must leave from a streak one short of the dial. |
+| 214 | 336 | `public static void main(String[] args) throws Exception` |  |
 

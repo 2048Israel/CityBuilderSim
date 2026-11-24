@@ -226,7 +226,7 @@ public final class BuildAdvice {
      * docs/queue/FR3.md 5.4), last: the berths of one kind of cargo (A BERTH
      * THAT PAYS BACK, below).
      */
-    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS, HIGHWAYS, PORT }
+    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS, HIGHWAYS, PORT, GRID }
 
     /** One measure: a kind, and the care type or the school it is about - or, for PORT, the cargo (null for every other kind). */
     public record Measure(Kind kind, CareType care, EducationType school, Ports.Cargo cargo) {
@@ -241,7 +241,8 @@ public final class BuildAdvice {
         public boolean serves(BuildingsTemplate t) {
             if (t == null) return false;
             switch (kind) {
-                case POWER:   return t.getCategory() == BuildingType.ELECTRICITY;
+                case POWER:   return t.getCategory() == BuildingType.ELECTRICITY && !Substations.isSubstation(t);
+                case GRID:    return Substations.isSubstation(t);
                 case WATER:   return t.getCategory() == BuildingType.WATER;
                 // The streets' roads: a highway gives no access and is the through need's (FR7).
                 case ROADS:   return t.getCategory() == BuildingType.INFRASTRUCTURE && t.getCapacity() > 0 && !t.isHighway();
@@ -261,7 +262,7 @@ public final class BuildAdvice {
         /** The category its buildings are in. */
         public String category() {
             switch (kind) {
-                case POWER: case WATER:        return UTILITIES;
+                case POWER: case WATER: case GRID: return UTILITIES;
                 case ROADS: case HIGHWAYS: case TRANSIT: return ROADS;
                 case CARE: case DEATH: case PLOTS: return HEALTHCARE;
                 case SCHOOL:                   return EDUCATION;
@@ -274,6 +275,7 @@ public final class BuildAdvice {
         public String label() {
             switch (kind) {
                 case POWER:   return "Power";
+                case GRID:    return "Power grid";
                 case WATER:   return "Water";
                 case ROADS:   return "Streets";
                 case HIGHWAYS: return "Through traffic";
@@ -290,7 +292,7 @@ public final class BuildAdvice {
         }
 
         /** True for a figure that is a load - the share of a network's capacity in use. */
-        public boolean isLoad() { return kind == Kind.POWER || kind == Kind.WATER || kind == Kind.ROADS; }
+        public boolean isLoad() { return kind == Kind.POWER || kind == Kind.WATER || kind == Kind.ROADS || kind == Kind.GRID; }
     }
 
     /** The measures a city category's page opens on, in its ring order; empty for a market category. */
@@ -301,6 +303,7 @@ public final class BuildAdvice {
         switch (c.name()) {
             case UTILITIES:
                 out.add(Measure.of(Kind.POWER));
+                out.add(Measure.of(Kind.GRID));
                 out.add(Measure.of(Kind.WATER));
                 break;
             case ROADS:
@@ -444,11 +447,15 @@ public final class BuildAdvice {
         if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway())) return 0;
         double[] fill = game.getPopulationManager().getJobFillRate();
         switch (m.kind()) {
+            case GRID: return Substations.SUBSTATION_MW * 1000;
             case POWER:
                 // A hydro station adds power only while a slot of the city's river is free (HY1: Game.hydroSlotsFree()).
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) return 0;
-                // PW1, 2026-11-11: power is planned for the calm peak, so a wind farm adds its firm kW (PowerDispatch.WIND_FIRM of its average), not the average.
-                return u.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1) * staffing(u, fill);
+                // ...and a steam plant only where the city owns water to cool it (PW2: Game.hasCoolingFor()).
+                if (!game.hasCoolingFor(t)) return 0;
+                // PW1, 2026-11-11: power is planned for the calm peak, so a wind farm adds its firm kW (PowerDispatch.WIND_FIRM of its average), not the average;
+                // PW2: a solar farm its darkest half-block's (SOLAR_FIRM), both the template's credit().
+                return u.getProduction1() * t.credit() * staffing(u, fill);
             case WATER: {
                 /*
                  * THE WATER UNIT (0.7.59, batch J2): a fresh plant adds no
@@ -492,7 +499,7 @@ public final class BuildAdvice {
         BuildingsTemplate t = u.template();
         switch (m.kind()) {
             // PW1, 2026-11-11: a wind farm's firm kW, as unit() counts it (the card sets the one beside the other).
-            case POWER: return u.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1);
+            case POWER: return u.getProduction1() * t.credit();
             case WATER: return u.getProduction1();
             case ROADS: case HIGHWAYS: return t.getCapacity();
             case TRANSIT:           return t.getTransitCapacity();
@@ -594,6 +601,10 @@ public final class BuildAdvice {
         BuildingManager bm = game.getBuildingManager();
         double k = p.scale();
         switch (m.kind()) {
+            case GRID: {
+                double[] sd = supplyDemand(game, m, added, p);
+                return sd[0] > 0 ? sd[1] / sd[0] : sd[1] > 0 ? Double.POSITIVE_INFINITY : 0;
+            }
             case POWER:
             case WATER: {
                 // UtilitiesHandler: production = (built + base) x the utilities'
@@ -612,8 +623,8 @@ public final class BuildAdvice {
                 double nonFirm = 0;
                 if (power) {
                     for (BuildingsTemplate t : bm.getTemplates()) {
-                        if (t.getCategory() == BuildingType.ELECTRICITY && t.isWind()) {
-                            nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
+                        if (t.getCategory() == BuildingType.ELECTRICITY && t.credit() < 1) {
+                            nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - t.credit());
                         }
                     }
                 }
@@ -627,7 +638,7 @@ public final class BuildAdvice {
                     NewUnit nu = adding(game, t, n);
                     if (t.getCategory() == (power ? BuildingType.ELECTRICITY : BuildingType.WATER)) {
                         base += n * nu.getProduction1();
-                        if (power && t.isWind()) nonFirm += n * nu.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
+                        if (power && t.credit() < 1) nonFirm += n * nu.getProduction1() * (1 - t.credit());
                     }
                     if (t.isFreshWater()) fresh += n * nu.getProduction1();
                     if (t.isSeaWater()) desal += n * nu.getProduction1();
@@ -716,6 +727,18 @@ public final class BuildAdvice {
         BuildingManager bm = game.getBuildingManager();
         double k = p.scale();
         switch (m.kind()) {
+            case GRID: {
+                UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+                double n = bm.getQuantity(Substations.ID);
+                double draw = k * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
+                for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
+                    if (Substations.isSubstation(e.getKey())) n += e.getValue();
+                    draw += e.getValue() * adding(game, e.getKey(), e.getValue()).getElectricityConsumption();
+                }
+                double supply = Math.max(u.getFoundingGridKw(), n * Substations.SUBSTATION_MW * 1000);
+                double season = PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth()));
+                return new double[] {supply, Substations.peak(draw, season)};
+            }
             case POWER: case WATER: {
                 double load = figure(game, m, added, p);
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
@@ -838,7 +861,7 @@ public final class BuildAdvice {
     /** Whether a measure's gauge reads as served (0.7.41): power, water, the road, transit, care and the schools. */
     public static boolean isServed(Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case HIGHWAYS: case TRANSIT: case CARE: case SCHOOL: return true;
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case TRANSIT: case CARE: case SCHOOL: case GRID: return true;
             default: return false;
         }
     }
@@ -1037,6 +1060,7 @@ public final class BuildAdvice {
      */
     public static boolean clear(Measure m, double figure) {
         switch (m.kind()) {
+            case GRID: return figure <= 1;
             case POWER: case WATER: return figure < CityNeeds.NETWORK_YELLOW;
             case ROADS:   return figure < InfrastructureManager.STRAINED;
             case HIGHWAYS: return figure < CityNeeds.HIGHWAY_MIN_FILL;
@@ -1222,6 +1246,7 @@ public final class BuildAdvice {
 
     /** Below a useful share of the smallest work, no shortage is declared or forced (HW1). */
     public static boolean warranted(Game game, Measure m) {
+        if (m.kind() == Kind.GRID) return supplyDemand(game, m, Map.of())[1] > 0;
         if (!AutoBuilder.essential(m)) return true;
         double demand = supplyDemand(game, m, Map.of())[1];
         if (!(demand > 0)) return false;
@@ -2036,6 +2061,10 @@ public final class BuildAdvice {
      */
     public static double shortfall(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p) {
         switch (m.kind()) {
+            case GRID: {
+                double[] sd = supplyDemand(game, m, added, p);
+                return sd[1] - sd[0];
+            }
             case POWER: case WATER: {
                 double[] sd = supplyDemand(game, m, added, p);
                 return sd[1] / CityNeeds.NETWORK_YELLOW - sd[0];

@@ -434,6 +434,8 @@ final class GovernmentScreen {
             java.util.Map.entry("Business tax", List.of("taxBusiness", "taxIndustrial")),
             java.util.Map.entry("Sales tax", List.of("taxSales")),
             java.util.Map.entry("Wage tax", List.of("taxWage")),
+            java.util.Map.entry("Capital gains tax", List.of("capitalGainsTax")),
+            java.util.Map.entry("Dividend tax", List.of("dividendTax")),
             java.util.Map.entry("Property tax", List.of("taxProperty")),
             java.util.Map.entry("Pension contributions", List.of("contributions")),
             java.util.Map.entry("EI premiums", List.of("eiPremiums")),
@@ -629,7 +631,7 @@ final class GovernmentScreen {
         return switch (line) {
             case "Business tax"                     -> new String[] {"Taxes", "Profit"};
             case "Sales tax"                        -> new String[] {"Taxes", "Sales"};
-            case "Wage tax"                         -> new String[] {"Taxes", "Wage"};
+            case "Wage tax", "Capital gains tax", "Dividend tax" -> new String[] {"Taxes", "Wage"};
             case "Property tax"                     -> new String[] {"Taxes", "Property"};
             case "Pension contributions", "Pensions" -> new String[] {"Promises", "Pensions"};
             case "EI premiums", "EI"                -> new String[] {"Promises", "Out of work"};
@@ -1523,7 +1525,7 @@ final class GovernmentScreen {
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
                 "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
-                "Transfer from the fund", "Transit fares", "Crude sold from the reserve", "Fuel duty", "Port dues");
+                "Transfer from the fund", "Transit fares", "Crude sold from the reserve", "Fuel duty", "Port dues", "Capital gains tax", "Dividend tax", "Unclaimed estates and receipts");
     }
 
     List<Double> revenueAmounts(NationalAccounts na) {
@@ -1561,7 +1563,7 @@ final class GovernmentScreen {
                 // ...and the fuel duty on the drivers' petrol (0.7.103, Jerus's A7), its own line.
                 na.getFuelDuty(),
                 // ...and the port dues Freight paid on its berths' tonnes (FR3), its own line; the dial's door is Policy › Taxes › Port dues (FR4).
-                na.getPortDues());
+                na.getPortDues(), na.getCapitalGainsTax(), na.getDividendTax(), na.getUnclaimedReceipts());
     }
 
     /*
@@ -2252,7 +2254,18 @@ final class GovernmentScreen {
                         default                      -> null;
                     };
                 },
-                name -> "who", "Taken in altogether", null);
+                name -> "who", "Taken in altogether", Kept.scope("capital-tax-claims", () -> {
+                    javafx.scene.control.Label claims = new javafx.scene.control.Label("Capital gains: assessed " + money(na.getCapitalTaxAssessed())
+                            + "; cash collected " + money(na.getCapitalGainsTax()) + "; secured unpaid " + money(na.getCapitalTaxOutstanding())
+                            + "; noncash claim losses " + money(na.getCapitalTaxWrittenOff())
+                            + "; noncash consolidations " + money(na.getCapitalTaxConsolidated()) + ". Only cash collected is revenue.");
+                    double[] held = na.getCustodyDisclosures();
+                    claims.setText(claims.getText() + " Unclaimed property: noncash local book received " + money(held[1])
+                            + "; asset losses " + money(held[2]) + "; own-paper noncash result " + money(held[3])
+                            + "; local book held " + money(held[6]) + "; reserved own-paper face " + money(held[7])
+                            + "; USD held " + held[4] + "; idle cars " + held[5] + ". These stocks are not cash revenue.");
+                    claims.setWrapText(true); return claims;
+                }));
     }
 
     void spendingPage(VBox page, EconomyManager em, NationalAccounts na, List<CityNeeds.Need> all) {

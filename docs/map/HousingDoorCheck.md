@@ -1,6 +1,6 @@
 # HousingDoorCheck.java - 393 lines · 6 methods · 5 constants · harnesses
 
-`ham/citybuildersim/HousingDoorCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingDoorCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The landlords' order at the lender's door (HN1, 2026-11-18): a played
 > city's households held from the homes that fit them while the plan passed

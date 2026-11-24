@@ -1098,6 +1098,22 @@ public class BuildingsTemplate {
         return constructionPoints;
     }
 
+    private HousingRecipe housingRecipe;
+
+    /** Fixed dwelling/rights metadata, separate from the structure's physical recipe. */
+    public HousingRecipe getHousingRecipe() {
+        if (getCategory() != BuildingType.RESIDENTIAL) return null;
+        return housingRecipe == null ? HousingRecipe.compatible(this) : housingRecipe;
+    }
+
+    public BuildingsTemplate setHousingRecipe(HousingRecipe recipe) {
+        if (getCategory() != BuildingType.RESIDENTIAL || recipe == null
+                || recipe.doors() != getDwellings() || recipe.capacity() != getCapacity())
+            throw new IllegalArgumentException("Housing mix differs from physical template");
+        housingRecipe = recipe;
+        return this;
+    }
+
     public int getDwellings() {
         return dwellings;
     }
@@ -1339,6 +1355,46 @@ public class BuildingsTemplate {
 
     /** Whether this station's output is the wind's, shaped by the weather (PowerDispatch.windAt()). */
     public boolean isWind() { return "wind".equals(variable); }
+
+    /** Whether this station's output is the sun's, shaped by the day and the weather (PowerDispatch.solarAt(); PW2): buildings.json "variable": "solar". */
+    public boolean isSolar() { return "solar".equals(variable); }
+
+    /**
+     * The share of its average a station counts as firm, what the build advice plans power by (PW1's calm peak; PW2): a wind farm's
+     * PowerDispatch.WIND_FIRM, a solar farm's SOLAR_FIRM (its darkest half-block, 0, until PW3 credits it by the peak hours), every
+     * other row all of it.
+     */
+    public double credit() {
+        return isWind() ? PowerDispatch.WIND_FIRM : isSolar() ? PowerDispatch.SOLAR_FIRM : 1;
+    }
+
+    /* ----- THE COOLING WATER AND THE BUILD-TIME FLOOR (PW2, 2026-11-23; spec-electricity 2.3) -----
+       A steam plant (the coal, the oil-fired and the biomass plant; PW4's reactor) is cooled by water drawn once-through from
+       the sea, a lake or a river the city owns, and takes nothing from the city's water: EIA's plant data has a tower-cooled
+       coal plant consume 500 gallons a MWh, 10,085 of the game's water units a month at a 325 MW plant's full run, past what
+       the fresh water limit (J2) carries [S5]. So it stands only where the city owns water, and an order without is refused
+       NO_WATER (Game.hasCoolingFor()), beside HY1's NO_RIVER. A dry-cooled row is later work.
+
+       And a power plant takes its months whatever the crews (Bromilow's rule gives a building its crew by its points,
+       BuildingManager.CREW_SCALE_EXPONENT): EIA's and Sargent & Lundy's lead times, a coal plant's 60 months, a turbine's 24
+       [S1, S10]. A stack of a row with buildMonths is worked no faster than its points on site over those months
+       (BuildingManager.monthCap()), so one ordered alone stands no sooner, and a quote waits no less. Absent, no floor. */
+
+    /** Whether it is cooled by water the city owns (buildings.json "cooling": true). */
+    private boolean cooling;
+
+    /** The fewest months it is built in, whatever the crews; 0 for no floor (buildings.json "buildMonths"). */
+    private int buildMonths;
+
+    public BuildingsTemplate setCooling(boolean cooling) { this.cooling = cooling; return this; }
+
+    public BuildingsTemplate setBuildMonths(int months) { this.buildMonths = Math.max(0, months); return this; }
+
+    /** Whether it needs owned sea, lake or river to cool it (PW2): the steam rows. */
+    public boolean cooling() { return cooling; }
+
+    /** The fewest months it is built in, whatever the crews; 0 for none (PW2). */
+    public int buildMonths() { return buildMonths; }
 
     /** Units of fuel the station burns a kWh: its heat rate over the fuel's heat content; 0 with no fuel, no heat rate or no heat content. */
     public double fuelPerKwh() {

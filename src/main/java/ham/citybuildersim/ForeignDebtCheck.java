@@ -821,6 +821,22 @@ public class ForeignDebtCheck {
             city.handleLongBondLogic(5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);
             city.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 10, 100 * PriceLevel.FACTOR, false);
             city.simulateMonths(2);
+            /*
+             * FC2, 2026-11-23: ...AND THE LONG BOND IS SOLD AGAIN until "later" is the heaviest of the ladder's thirteen. The 20-year
+             * bond is the only piece that falls due after the twelfth year, and the 10-year dollar term loan falls due in the eleventh:
+             * on this city's path the dollar loan stood at D$176.6k of principal against the bond's D$129.4k (both asked for 5,000 at the
+             * founding's prices, but the dollars were revalued by the currency's fall), so the eleventh year carried D$181.2k and "later",
+             * the bond's eight years of coupons and its principal, D$159.5k. What the long bond is sold for is the section's to cause:
+             * it is sold again, at twice the heaviest year's payments, as the 20-year is reopened by a second sale, until the ladder
+             * reads "later" over every year of it (a guard of six sales).
+             */
+            for (int again = 0; again < 6; again++) {
+                DebtManager.Ladder standing = city.getDebtManager().ladder(city.getMonth());
+                double heaviestYear = 0;
+                for (DebtManager.Rung r : standing.years()) heaviestYear = Math.max(heaviestYear, r.owed());
+                if (standing.later() != null && standing.later().owed() > heaviestYear) break;
+                city.handleLongBondLogic(2 * heaviestYear, 20, 100 * PriceLevel.FACTOR);
+            }
         } finally {
             System.setOut(out);
         }

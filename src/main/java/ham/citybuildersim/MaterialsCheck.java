@@ -515,9 +515,12 @@ public class MaterialsCheck {
         assertTrue("the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever"
                 + " the utility's staffing", u.getConsumption() == allNet && u.getWorksPower() == allSold && allSold == surplus
                 && u.getProduction() == (u.getAverageUtilityFill() == 0 ? 10000 : u.getBaseProduction() * u.getAverageUtilityFill()) + allSold);
-        assertTrue("the utility pays the works what their statements booked, out of its electricity income",
+        // PW1-W: the water's books pay the power's for the water works' draw, a line of the electricity income (UtilitiesHandler, THE WATER'S POWER).
+        report("fixture: the town's water works drew power the water's books paid for", u.getWaterPowerPaid() > 0, String.format("%,.6f", u.getWaterPowerPaid()));
+        assertTrue("the utility pays the works what their statements booked, out of its electricity income, which gains what the water's books"
+                        + " pay it for the water works' power",
                 u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getPowerBought() == st.powerSold
-                        && u.getElectricityIncome() == u.getElectricityRevenue() - u.getElectricityPayroll() - u.getPowerBought());
+                        && u.getElectricityIncome() == u.getElectricityRevenue() - u.getElectricityPayroll() - u.getPowerBought() + u.getWaterPowerPaid());
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes, the pair noted - the sectors' power sold and the utility's power bought - each off its"
                         + " own book", audit.relative() < 1e-4 && audit.detail.contains("chk + sectors PowerSold")

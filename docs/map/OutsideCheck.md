@@ -1,6 +1,6 @@
-# OutsideCheck.java - 767 lines · 5 methods · 6 constants · harnesses
+# OutsideCheck.java - 783 lines · 5 methods · 6 constants · harnesses
 
-`ham/citybuildersim/OutsideCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutsideCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The people outside the families: the out of work, the students, the
 > unhoused and the orphans (2026-09-11).
@@ -18,7 +18,7 @@
 > hand, and the college town is put through a university with its students
 > seeded (EducationCheck.seeded()) for a few months.
 
-**Uses:** [AgeBand](AgeBand.md) (44), [FamilyModel](FamilyModel.md) (18), [FamilyStructure](FamilyStructure.md) (17), [Unemployment](Unemployment.md) (15), [PayTier](PayTier.md) (11), [PopulationCohorts](PopulationCohorts.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (8), [Game](Game.md) (7), [EducationCheck](EducationCheck.md) (7), [PriceLevel](PriceLevel.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [UnemployedHousehold](UnemployedHousehold.md) (5), [StudentHousehold](StudentHousehold.md) (5), [Health](Health.md) (4), [EducationType](EducationType.md) (4), [JobType](JobType.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [PopulationManager](PopulationManager.md) (2), [WageBand](WageBand.md) (2), [Household](Household.md) (2), [EconomyManager](EconomyManager.md) (2), [Sectors](Sectors.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Healthcare](Healthcare.md) (1), [Founding](Founding.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [AgeBand](AgeBand.md) (44), [FamilyModel](FamilyModel.md) (18), [FamilyStructure](FamilyStructure.md) (17), [Unemployment](Unemployment.md) (15), [PayTier](PayTier.md) (11), [PopulationCohorts](PopulationCohorts.md) (11), [HouseholdBalance](HouseholdBalance.md) (10), [HouseholdAccounts](HouseholdAccounts.md) (8), [Game](Game.md) (7), [EducationCheck](EducationCheck.md) (7), [PriceLevel](PriceLevel.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [UnemployedHousehold](UnemployedHousehold.md) (5), [StudentHousehold](StudentHousehold.md) (5), [Bank](Bank.md) (5), [CellSpread](CellSpread.md) (4), [Health](Health.md) (4), [EducationType](EducationType.md) (4), [JobType](JobType.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [PopulationManager](PopulationManager.md) (2), [WageBand](WageBand.md) (2), [Household](Household.md) (2), [EconomyManager](EconomyManager.md) (2), [Sectors](Sectors.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Healthcare](Healthcare.md) (1), [Founding](Founding.md) (1)... and 2 more
 
 ## Sections
 
@@ -30,9 +30,9 @@
 | 177 | · 3b. the children go where their parent goes |
 | 264 | · 4. EI, on the inflow |
 | 347 | · 5. the books |
-| 437 | · 6. health |
-| 462 | · 7. a real city: the treasury and the books agree |
-| 614 | · 8. a city with a college: the students' money, and a save |
+| 453 | · 6. health |
+| 478 | · 7. a real city: the treasury and the books agree |
+| 630 | · 8. a city with a college: the students' money, and a save |
 
 ## Constants
 
@@ -55,10 +55,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 746 | **type** `public class OutsideCheck` | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). |
+| 22 | 762 | **type** `public class OutsideCheck` | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). |
 | 26 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 32 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 37 | 5 | `static void quietly(Runnable work)` |  |
 | 43 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 68 | 699 | `public static void main(String[] args)` |  |
+| 68 | 715 | `public static void main(String[] args)` |  |
 

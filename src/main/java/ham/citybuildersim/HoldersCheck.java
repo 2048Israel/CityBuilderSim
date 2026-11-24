@@ -3,6 +3,9 @@ package ham.citybuildersim;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Proves who holds the city's own paper (0.7.1): that the households buy it at
@@ -112,6 +115,12 @@ import java.nio.file.Files;
  *     share of the face moved, so the founding's scale is the same. RT1b also causes the rounding on the sectors' and cells' own
  *     books, for principal and buybacks, and runs the firm's desk: the bank's independently booked face must equal the pieces' transfer.
  *
+ * 16. What each sector owes, from one pass over the book, is getPrincipal() to the bit (AP2): BusinessDebtManager.getPrincipalsByKey()
+ *     gives every sector of Sectors.KEYS the figure getPrincipal() gives it, in a city whose bank holds loans in two sectors or more
+ *     and several loans in one, and in each of the twelve months after, the book changing under it - the auction's bidders lend or hold
+ *     on `owed > 0` (OutwardInvestment.mayHold()), so a figure off by a bit would tip a sector from one side to the other. Then with
+ *     bonds laid over the city's own market for a sector with loans and one without, as the city here issues none.
+ *
  * Each fixture causes its condition rather than finding a city in it. How sections 1 to 9 get theirs (FS14):
  *   1. the households' savings are set by hand (setSpare), so the purse and the split by the auction's rule are caused;
  *   2. the shares the coupon is paid on are read at the coupon itself (Game.settleProbeForTest, after the settle), not before the month;
@@ -152,6 +161,11 @@ public class HoldersCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-72s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-72s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
     }
 
     /** A fixture's assertion that says whether it held, so a section stops on a fixture that failed (counted) instead of reading past it. */
@@ -393,12 +407,14 @@ public class HoldersCheck {
                 return cash;
             }
         };
-        family.settle(100, 30, 0, 90, 1, .03, desk, 0);        // short by 20: the paper covers it
+        // Cause exactly these ordinary gaps with no income-scaled emergency
+        // bill between the two liquidations. Both still run the real waterfall.
+        family.settle(0, 0, 0, 20, 1, .03, desk, 0);           // short by 20: the paper covers it
         assertTrue("short by less than its paper is worth, it sells paper and nothing else",
                 order.toString().equals("P") && family.shares[0] == 20);
         close("...for exactly what it was short", family.paperSold(), 20, 1e-9);
         order.setLength(0);
-        family.settle(100, 30, 0, 110, 1, .03, desk, 0);       // short by 40: more than the paper left
+        family.settle(0, 0, 0, 40, 1, .03, desk, 0);           // short by 40: more than the paper left
         assertTrue("short by more, it sells all of its paper first and its shares after",
                 order.toString().equals("PS") && family.paper() <= 1e-12 && family.shares[0] < 20);
         close("...the shares covering what the paper could not", family.sold(),
@@ -639,6 +655,7 @@ public class HoldersCheck {
         theDiscountReleased();
         theHoldingFloor();
         theEachHoldersOwn();
+        theBook();
 
         assertTrue(String.format("every month this harness played closed the audit (%d)",
                 closedMonths + brokenMonths), brokenMonths == 0);
@@ -768,8 +785,8 @@ public class HoldersCheck {
                         && bond.bankPrincipal() < 2 * cb.stepFor(ledger.termPrincipal()));
         // ...and nobody short of money in the months watched, which is what sends a sliver of the households' paper to the bank's desk.
         setSpare(hb);
-        out.printf("   the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
-                bond.householdPrincipal(), face, bond.bankPrincipal());
+        out.printf("   at m%d the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
+                city.getMonth(), bond.householdPrincipal(), face, bond.bankPrincipal());
 
         boolean bankFirst = true, deskQuiet = true;
         int months = 0;
@@ -777,6 +794,8 @@ public class HoldersCheck {
             double bankBefore = bond.bankPrincipal(), step = cb.stepFor(ledger.termPrincipal());
             play(city);
             months++;
+            out.printf("   m%d: households sold the desk %.12g of paper; departures took %.12g; bank face %.12g, household face %.12g%n",
+                    city.getMonth(), bank.getPaperBoughtFromHouseholds(), hb.getTakenAway(), bond.bankPrincipal(), bond.householdPrincipal());
             deskQuiet &= bank.getPaperBoughtFromHouseholds() == 0 && hb.getTakenAway() == 0;
             // The dial's rule, month by month: the bank's paper is sold first, and the households' bought only once it has none left.
             bankFirst &= bankBefore >= step ? cb.getBoughtFromHouseholds() == 0 : cb.getBoughtFromHouseholds() > 0;
@@ -1455,7 +1474,10 @@ public class HoldersCheck {
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
             city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            // NO COAL PLANT, THE CITY SECTION 11 WAS WRITTEN AGAINST (PW2, 2026-11-23): until PW2 the treasury refused the one this
+            // list ordered (NEEDS_FUNDING), so the town ran on its founding's power; PW2's refigured plant is cheaper and was bought,
+            // a 60-month site that took the crews from the houses. BuybackCheck's town, the same list, is main's to the figure
+            // without it.
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(60);
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
@@ -2884,5 +2906,141 @@ public class HoldersCheck {
             closeRel(h + ": redenominated by " + k + ", its own discount scales by it", big.discountOf(h), own2[h.ordinal()] * k, 1e-12);
         }
         closeRel("the unsettled sales' discount scales by it too", big.unsettledDiscount(), unsettled0 * k, 1e-12);
+    }
+
+    /* ================= 16. what each sector owes (AP2) ================= */
+
+    /** The months the section 16 city runs before the bank's book is looked at, and the most it may run on for the condition (two sectors in debt). */
+    static final int MONTHS_FIRST = 24, MONTHS_MOST = 120;
+
+    /** The months after, one at a time, in each of which the figures are read again: a year, the book changing under them. */
+    static final int MONTHS_LOOKED = 12;
+
+    /** How many sectors the bank's book holds a loan of. */
+    static int sectorsLent(BusinessDebtManager bank) {
+        Set<String> s = new HashSet<>();
+        for (BusinessDebt loan : bank.getLoans()) s.add(loan.getSector());
+        return s.size();
+    }
+
+    /** The most loans the bank's book holds of any one sector: more than one, and the sum's order is a thing to keep. */
+    static int mostLoansOfASector(BusinessDebtManager bank) {
+        java.util.Map<String, Integer> n = new java.util.HashMap<>();
+        int most = 0;
+        for (BusinessDebt loan : bank.getLoans()) most = Math.max(most, n.merge(loan.getSector(), 1, Integer::sum));
+        return most;
+    }
+
+    static void theBook() {
+        out.println("\n--- 16. what each sector owes, from one pass over the book, is getPrincipal() to the bit (AP2) ---");
+        Set<String> keys = new HashSet<>(Arrays.asList(Sectors.KEYS));
+        assertTrue("fixture: Sectors.KEYS holds no key twice (the one pass puts a sector at its first place)", keys.size() == Sectors.KEYS.length);
+
+        GameFiles files = GameFiles.scratch("holderscheck-book");
+        Game city = ShortSellingCheck.lineOff(new Game(files));
+        city.quietTheWorldForTheD();
+        quietly(() -> {
+            city.run();
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
+            city.getForeignAccounts().pinRate(1.0);
+            city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+            city.buildStack(template(city, "Gravel Road"), 6, true);
+            city.buildStack(template(city, "House"), 300, false);
+            city.buildStack(template(city, "Convenience Store"), 6, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
+            city.buildStack(template(city, "Construction Depot"), 4, false);
+            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            city.buildStack(template(city, "Commercial Bank"), 1, false);
+            city.simulateMonths(MONTHS_FIRST);
+        });
+        BusinessDebtManager bank = city.getEconomyManager().getBusinessDebtManager();
+        int months = MONTHS_FIRST;
+        for (; months < MONTHS_MOST && sectorsLent(bank) < 2; months++) quietly(() -> city.simulateMonths(1));
+        int lent = sectorsLent(bank);
+        report("fixture: the bank's book holds loans in at least two sectors", lent >= 2,
+                bank.getLoans().size() + " loans in " + lent + " sectors after " + months + " months");
+        int most = mostLoansOfASector(bank);
+        report("fixture: a sector holds several loans, so the order they are summed in is in the figure", most >= 2, most + " loans in the most indebted sector");
+        int owing = 0, clear = 0, bonds = 0;
+        for (String k : Sectors.KEYS) {
+            if (bank.getPrincipal(k) > 0) owing++;
+            else if (bank.getPrincipal(k) == 0) clear++;
+            if (bank.getBondPrincipal(k) > 0) bonds++;
+        }
+        out.println("   the book's bonds are held in " + bonds + " sectors");
+        report("fixture: one sector owes more than nothing and one owes nothing (both sides of `owed > 0`)", owing >= 1 && clear >= 1,
+                owing + " sectors owe, " + clear + " owe nothing, of " + Sectors.KEYS.length);
+
+        double[] owed = bank.getPrincipalsByKey();
+        assertTrue("one figure for every sector of Sectors.KEYS", owed.length == Sectors.KEYS.length);
+        String[] first = new String[1];
+        int apart = sectorsApart(bank, first);
+        report("every sector's figure is getPrincipal() to the bit", apart == 0,
+                (Sectors.KEYS.length - apart) + " of " + Sectors.KEYS.length + (first[0] == null ? "" : ", first apart: " + first[0]));
+        double[] again = bank.getPrincipalsByKey();
+        assertTrue("...and a second pass over the book gives the same figures", Arrays.equals(owed, again) && again != owed);
+
+        // The book as it moves: a month at a time, the figures drawn afresh each time (a sum of several loans is not exact, so its order is in its bits).
+        int monthsLooked = 0, monthsApart = 0, sectorsLooked = 0;
+        for (int m = 0; m < MONTHS_LOOKED; m++) {
+            quietly(() -> city.simulateMonths(1));
+            int a = sectorsApart(bank, first);
+            monthsLooked++;
+            sectorsLooked += Sectors.KEYS.length;
+            if (a > 0) monthsApart++;
+        }
+        report("...and in each of the months after, every sector's figure is getPrincipal() to the bit", monthsApart == 0,
+                monthsLooked + " months, " + sectorsLooked + " figures, " + bank.getLoans().size() + " loans in " + sectorsLent(bank)
+                        + " sectors at the last" + (first[0] == null ? "" : ", first apart: " + first[0]));
+
+        // Bonds on the book. This city's sectors issue none, so a face is laid over the city's own bond market for two sectors: one with
+        // loans (its bonds added after the loans' sum, as getPrincipal() adds them) and one with none (its bonds alone). Faces of a third
+        // and a twenty-first of the loans, so neither sum is exact and its order is in its bits.
+        BondMarket market = city.getBondMarket();
+        String withLoans = null, alone = null;
+        for (String k : Sectors.KEYS) {
+            if (withLoans == null && bank.getLoanPrincipal(k) > 0) withLoans = k;
+            if (alone == null && bank.getLoanPrincipal(k) == 0) alone = k;
+        }
+        if (withLoans == null || alone == null) {
+            report("fixture: a sector with loans and one without, for the bonds", false, withLoans + " with, " + alone + " without");
+            return;
+        }
+        final String lentKey = withLoans, bareKey = alone;
+        final double faceLent = bank.getLoanPrincipal(lentKey) / 3, faceBare = faceLent / 7;
+        BusinessDebtManager.BondBook laid = new BusinessDebtManager.BondBook() {
+            @Override public double principal(String s) { return market.principal(s) + (s.equals(lentKey) ? faceLent : s.equals(bareKey) ? faceBare : 0); }
+            @Override public double monthlyCoupon(String s) { return market.monthlyCoupon(s); }
+            @Override public double writeDown(String s, double scale) { return market.writeDown(s, scale); }
+        };
+        bank.setBondMarket(laid, market);
+        int bonded = 0;
+        for (String k : Sectors.KEYS) if (bank.getBondPrincipal(k) > 0) bonded++;
+        report("fixture: with bonds laid on, a sector holds bonds beside its loans and one holds bonds alone",
+                bonded >= 2 && bank.getBondPrincipal(lentKey) > 0 && bank.getBondPrincipal(bareKey) > 0,
+                bonded + " sectors hold bonds: " + lentKey + " " + bank.getBondPrincipal(lentKey) + " beside its loans, " + bareKey + " "
+                        + bank.getBondPrincipal(bareKey) + " alone");
+        int bondsApart = sectorsApart(bank, first);
+        report("...and every sector's figure, its bonds added, is getPrincipal() to the bit", bondsApart == 0,
+                (Sectors.KEYS.length - bondsApart) + " of " + Sectors.KEYS.length + (first[0] == null ? "" : ", first apart: " + first[0]));
+        bank.setBondMarket(market, market);
+    }
+
+    /** How many sectors' getPrincipalsByKey() figures are not getPrincipal() to the bit; `first` takes a line on the first that is not. */
+    static int sectorsApart(BusinessDebtManager bank, String[] first) {
+        double[] owed = bank.getPrincipalsByKey();
+        int apart = 0;
+        first[0] = null;
+        for (int i = 0; i < Sectors.KEYS.length && i < owed.length; i++) {
+            double each = bank.getPrincipal(Sectors.KEYS[i]);
+            if (Double.doubleToRawLongBits(owed[i]) != Double.doubleToRawLongBits(each)) {
+                apart++;
+                if (first[0] == null) first[0] = Sectors.KEYS[i] + " " + owed[i] + " against " + each;
+            }
+        }
+        return apart;
     }
 }

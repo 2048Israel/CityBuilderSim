@@ -28,8 +28,8 @@ public final class Observation {
             "AutoBuildCheck", "PriceLevelCheck",
             "FittingCheck", "BuildAdviceCheck",
             "ConstructionControlCheck", "MapCheck",
-            "BankCheck", "HealthCheck",
-            "CapitalFlowCheck", "HousingCheck", "PrizeCheck");
+            "HealthCheck",
+            "HousingCheck", "PrizeCheck");
 
     /** A path reading with no dependent laws, such as a sample share. */
     static boolean reached(String label, boolean reached) {

@@ -1,6 +1,6 @@
-# PowerDispatch.java - 257 lines · 14 methods · 19 constants · model
+# PowerDispatch.java - 332 lines · 21 methods · 25 constants · model
 
-`ham/citybuildersim/PowerDispatch.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerDispatch.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks,
 > and the price each half-block clears at.
@@ -16,27 +16,28 @@
 > 
 > Power in kW (a half-block's average), energy in kWh, money in the city's, per kWh; a fixture with no calendar passes season 1.
 
-**Uses:** [Good](Good.md) (5), [PriceLevel](PriceLevel.md) (3)
+**Uses:** [Good](Good.md) (4), [PriceLevel](PriceLevel.md) (3)
 
-**Used by (12):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [UtilitiesHandler](UtilitiesHandler.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+**Used by (20):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PowerView](PowerView.md), [PowerViewCheck](PowerViewCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ScaleCheck](ScaleCheck.md), [SubstationCheck](SubstationCheck.md), [Substations](Substations.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterPowerCheck](WaterPowerCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 27 | FIGURES |
-| 88 | THE ROWS |
-| 148 | THE CALENDAR AND THE WEATHER |
-| 163 | THE MONTH |
+| 118 | THE ROWS |
+| 203 | THE CALENDAR AND THE WEATHER |
+| 223 | THE MONTH |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 91 | `PowerDispatch.Kind.MUST_RUN` |  |
-| 91 | `PowerDispatch.Kind.WIND` |  |
-| 91 | `PowerDispatch.Kind.HYDRO` |  |
-| 91 | `PowerDispatch.Kind.FUELLED` |  |
+| 121 | `PowerDispatch.Kind.MUST_RUN` |  |
+| 121 | `PowerDispatch.Kind.WIND` |  |
+| 121 | `PowerDispatch.Kind.HYDRO` |  |
+| 121 | `PowerDispatch.Kind.FUELLED` |  |
+| 121 | `PowerDispatch.Kind.SOLAR` |  |
 
 ## Constants
 
@@ -58,69 +59,83 @@
 | 69 | `PowerDispatch.COAL_MJ_PER_TONNE` | `25_120` | Megajoules in a tonne of thermal coal [E: the Pink Sheet's Newcastle grade, 6,000 kcal/kg = 25.12 GJ a tonne, spec 2.5]. |
 | 72 | `PowerDispatch.PLAN_PEAK` | `BLOCK_LOAD [ PEAK ] /(1 - GRID_LOSSES)` | The draw a firm kW must cover in the peak block, losses in [D: BLOCK_LOAD at the peak over (1 - GRID_LOSSES)]: what the build advice plans power against. |
 | 75 | `PowerDispatch.WIND_FIRM` | `windFirm()` | What a wind farm's average delivers in its calmest half-block [D: the least of WIND_BLOCK x (1 - WIND_SWING) over the blocks: 0.806 x 0.41 = 0.330]. |
-| 168 | `PowerDispatch.SHORT_KW` | `1e-9` | A half-block left with more than this much unserved is short, kW. |
-| 171 | `PowerDispatch.LEVEL_STEPS` | `40` | Halvings of the water's level, as the prototype loops them. |
-| 174 | `PowerDispatch.LEVEL_EPS` | `1e-6` | The level's resolution, kW. |
+| 89 | `PowerDispatch.SOLAR_BLOCK` | `{ 0.680, 1.136, 2.054 }` | The sun's output over its mean in each block, base to peak [M: EIA-930 2025, the lower 48, the study's vblocks.py; spec 2.4; the prototype, line 96]. |
+| 92 | `PowerDispatch.SOLAR_SWING` | `{ 1.0, 1.0, 0.66 }` | How far the sun swings inside a block, over the block's average, the first half sunny and the second dark (the wind's halves) [M: EIA-930 2025, the coefficient of variation of hourly solar output inside each load bloc... |
+| 95 | `PowerDispatch.SOLAR_FIRM` | `firm(SOLAR_BLOCK, SOLAR_SWING)` | What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]: the advice counts no firm power from the ... |
+| 98 | `PowerDispatch.FUEL_OIL_MJ_PER_LITRE` | `0.150e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of fuel oil [D: 40 CFR 98 subpart C table C-1, residual fuel oil No. |
+| 101 | `PowerDispatch.DIESEL_MJ_PER_LITRE` | `0.138e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of diesel [D: 40 CFR 98 subpart C table C-1, distillate fuel oil No. |
+| 104 | `PowerDispatch.PELLETS_MJ_PER_TONNE` | `17.48e6 * MJ_PER_BTU / 0.90718474 * 0.92` | Megajoules in a tonne of wood pellets [E: 40 CFR 98 table C-1's wood and wood residuals, 17.48 MMBtu a short ton dry, 20.33 GJ a tonne, at 8% moisture (x 0.92) = 18.70 GJ; no government figure for pellets was found; s... |
+| 228 | `PowerDispatch.SHORT_KW` | `1e-9` | A half-block left with more than this much unserved is short, kW. |
+| 231 | `PowerDispatch.LEVEL_STEPS` | `40` | Halvings of the water's level, as the prototype loops them. |
+| 234 | `PowerDispatch.LEVEL_EPS` | `1e-6` | The level's resolution, kW. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 95 | `public final String name` |  |
-| 96 | `public final Kind kind` |  |
-| 98 | `public final double kw` | MUST_RUN and FUELLED: kW offered in every half-block; WIND: its average kW; HYDRO: its cap, kW. |
-| 100 | `public final double waterKwh` | HYDRO: its month of water, kWh; 0 for the rest. |
-| 102 | `public final double marginal` | FUELLED: city money a kWh it costs to run (fuel + variable upkeep); 0 for the rest. |
-| 104 | `public final Good fuel` | FUELLED with a fuel; null for the rest. |
-| 106 | `public final double fuelPerKwh` | Units of fuel it burns a kWh; 0 without. |
-| 108 | `public final double upkeepPerKwh` | Its variable upkeep, thousands of the WORLD's money a kWh (paid abroad later); 0 without. |
-| 110 | `public final double[] gen` | kW it ran in each half-block (set by dispatch()). |
-| 112 | `public double kwh, fuelUnits, earned` | The month's kWh, fuel units, and kWh x its half-blocks' prices (set by dispatch()). |
-| 140 | `public final double[] load` | Per half-block: the load asked (kW, losses in), what was left unserved (kW), and the price it cleared at (city money a kWh). |
-| 141 | `public double askedKwh, servedKwh, curtailedKwh` |  |
-| 143 | `public double ratio` | servedKwh / askedKwh, 1 when nothing is asked. |
-| 145 | `public double energyPrice` | City money a kWh DELIVERED: the sum over half-blocks of served kWh x price, over servedKwh, over (1 - GRID_LOSSES); 0 when nothing is served. |
+| 125 | `public final String name` |  |
+| 126 | `public final Kind kind` |  |
+| 128 | `public final double kw` | MUST_RUN and FUELLED: kW offered in every half-block; WIND and SOLAR: its average kW; HYDRO: its cap, kW. |
+| 130 | `public final double waterKwh` | HYDRO: its month of water, kWh; 0 for the rest. |
+| 132 | `public final double marginal` | FUELLED: city money a kWh it costs to run (fuel + variable upkeep); 0 for the rest. |
+| 134 | `public final Good fuel` | FUELLED with a fuel; null for the rest. |
+| 136 | `public final double fuelPerKwh` | Units of fuel it burns a kWh; 0 without. |
+| 138 | `public final double upkeepPerKwh` | Its variable upkeep, thousands of the WORLD's money a kWh (paid abroad later); 0 without. |
+| 140 | `public final double[] gen` | kW it ran in each half-block (set by dispatch()). |
+| 142 | `public double kwh, fuelUnits, earned` | The month's kWh, fuel units, and kWh x its half-blocks' prices (set by dispatch()). |
+| 178 | `private List<Integer> meritOrder` | The actual dispatch order, including idle rows; observation only, never read by the dispatch. |
+| 195 | `public final double[] load` | Per half-block: the load asked (kW, losses in), what was left unserved (kW), and the price it cleared at (city money a kWh). |
+| 196 | `public double askedKwh, servedKwh, curtailedKwh` |  |
+| 198 | `public double ratio` | servedKwh / askedKwh, 1 when nothing is asked. |
+| 200 | `public double energyPrice` | City money a kWh DELIVERED: the sum over half-blocks of served kWh x price, over servedKwh, over (1 - GRID_LOSSES); 0 when nothing is served. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 23 | 235 | **type** `public final class PowerDispatch` | One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks, and the price each half-block clears at. |
+| 23 | 310 | **type** `public final class PowerDispatch` | One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks, and the price each half-block clears at. |
 | 25 | 1 | `private PowerDispatch()` |  |
 
-### FIGURES (lines 27-87)
+### FIGURES (lines 27-117)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 5 | `private static double windFirm()` |  |
-| 84 | 3 | `public static double heatContentMJ(Good g)` | MJ of fuel energy in a unit of a good (HHV), NaN for a good the model does not yet burn (PW2 adds the rest). |
+| 77 | 3 | `private static double windFirm()` |  |
+| 82 | 5 | `private static double firm(double[] block, double[] swing)` | A variable row's least share of its average over the six half-blocks: its block's share x (1 - its swing), the calmest or darkest. |
+| 107 | 10 | `public static double heatContentMJ(Good g)` | MJ of fuel energy in a unit of a good (HHV, the unit the good is sold in), NaN for a good no row burns: thermal coal (PW1), fuel oil, diesel and wood pellets (PW2). |
 
-### THE ROWS (lines 88-147)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 91 | 1 | **type** `public enum Kind` | How a row is dispatched: the works' surplus first, wind at its weather, hydro levelling the load, the rest by marginal cost. |
-| 94 | 42 | **type** `public static final class Row` | One row of the month's fleet: what it offers and, after dispatch(), what it ran. |
-| 114 | 5 | `private Row(String name, Kind kind, double kw, double waterKwh, double marginal, Good fuel, double fuelPerKwh, double upkeepPer...` _(in PowerDispatch.Row)_ |  |
-| 121 | 1 | `public static Row mustRun(String name, double kw)` _(in PowerDispatch.Row)_ | The works' surplus: it takes the load first, whatever the price. |
-| 124 | 1 | `public static Row wind(String name, double averageKw)` _(in PowerDispatch.Row)_ | Wind at its average kW; the weather (windAt) shapes it. |
-| 127 | 3 | `public static Row hydro(String name, double capKw, double waterKwh, double upkeepPerKwh)` _(in PowerDispatch.Row)_ | Hydro under a cap with a month of water to spend where the load is highest. |
-| 132 | 3 | `public static Row fuelled(String name, double kw, double marginal, Good fuel, double fuelPerKwh, double upkeepPerKwh)` _(in PowerDispatch.Row)_ | A fuelled row, run by marginal cost, each half-block up to its kW. |
-| 138 | 9 | **type** `public static final class Month` | What a month's dispatch came to. |
-
-### THE CALENDAR AND THE WEATHER (lines 148-162)
+### THE ROWS (lines 118-202)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 151 | 1 | `public static double halfHours(int s)` | Hours in half-block s: its block's share of the month, halved. |
-| 154 | 3 | `public static double season(int monthOfYear)` | The calendar month's load over the year's mean, for 1..12; 1 for anything else (a fixture with no calendar). |
-| 159 | 3 | `public static double windAt(int s)` | Wind's output over its average in half-block s: its block's share, windy in the first half and calm in the second. |
+| 121 | 1 | **type** `public enum Kind` | How a row is dispatched: the works' surplus first, wind and sun at their weather, hydro levelling the load, the rest by marginal cost. |
+| 124 | 50 | **type** `public static final class Row` | One row of the month's fleet: what it offers and, after dispatch(), what it ran. |
+| 144 | 5 | `private Row(String name, Kind kind, double kw, double waterKwh, double marginal, Good fuel, double fuelPerKwh, double upkeepPer...` _(in PowerDispatch.Row)_ |  |
+| 151 | 1 | `public static Row mustRun(String name, double kw)` _(in PowerDispatch.Row)_ | The works' surplus: it takes the load first, whatever the price. |
+| 154 | 1 | `public static Row wind(String name, double averageKw)` _(in PowerDispatch.Row)_ | Wind at its average kW; the weather (windAt) shapes it. |
+| 157 | 1 | `public static Row solar(String name, double averageKw)` _(in PowerDispatch.Row)_ | The sun at its average kW (PW2); the day and the weather (solarAt) shape it. |
+| 160 | 3 | `public static Row hydro(String name, double capKw, double waterKwh, double upkeepPerKwh)` _(in PowerDispatch.Row)_ | Hydro under a cap with a month of water to spend where the load is highest. |
+| 165 | 3 | `public static Row fuelled(String name, double kw, double marginal, Good fuel, double fuelPerKwh, double upkeepPerKwh)` _(in PowerDispatch.Row)_ | A fuelled row, run by marginal cost, each half-block up to its kW. |
+| 170 | 3 | `public Row offering(double kw, double waterKwh)` _(in PowerDispatch.Row)_ | The same row offering another kW and month of water, nothing run yet: a dispatch run again on it leaves this one as it ran (PW1-L). |
+| 176 | 26 | **type** `public static final class Month` | What a month's dispatch came to. |
+| 181 | 1 | `public List<Integer> getMeritOrder()` _(in PowerDispatch.Month)_ | Immutable indices into the supplied rows, in the actual dispatch order, including idle rows. |
+| 184 | 10 | `public Month copy()` _(in PowerDispatch.Month)_ | Detached saved flow, so load need not dispatch an already completed month again. |
 
-### THE MONTH (lines 163-257)
+### THE CALENDAR AND THE WEATHER (lines 203-222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 165 | 1 | `private static double nonNegative(double x)` |  |
-| 183 | 67 | `public static Month dispatch(List<Row> rows, double drawKw, double season, double voll)` | One month's merit order: drawKw the grid's draw (kW, before losses), season the calendar month's load over the year's mean, voll what a short half-block clears at. |
-| 252 | 5 | `private static double use(double[] residual, double cap, double level)` | The water kWh a hydro row of this cap runs above this level of the residual, half-block by half-block. |
+| 206 | 1 | `public static double halfHours(int s)` | Hours in half-block s: its block's share of the month, halved. |
+| 209 | 3 | `public static double season(int monthOfYear)` | The calendar month's load over the year's mean, for 1..12; 1 for anything else (a fixture with no calendar). |
+| 214 | 3 | `public static double windAt(int s)` | Wind's output over its average in half-block s: its block's share, windy in the first half and calm in the second. |
+| 219 | 3 | `public static double solarAt(int s)` | The sun's output over its average in half-block s (PW2): its block's share, sunny in the first half and dark in the second. |
+
+### THE MONTH (lines 223-332)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 225 | 1 | `private static double nonNegative(double x)` |  |
+| 243 | 3 | `public static Month dispatch(List<Row> rows, double drawKw, double season, double voll)` | One month's merit order: drawKw the grid's draw (kW, before losses), season the calendar month's load over the year's mean, voll what a short half-block clears at. |
+| 248 | 77 | `public static Month dispatch(List<Row> rows, double drawKw, double season, double voll, double carryKw)` | The same dispatch, with the city's wires limiting generation before fuel or water is spent. |
+| 327 | 5 | `private static double use(double[] residual, double cap, double level)` | The water kWh a hydro row of this cap runs above this level of the residual, half-block by half-block. |
 

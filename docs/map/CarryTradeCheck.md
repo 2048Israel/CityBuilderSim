@@ -1,6 +1,6 @@
-# CarryTradeCheck.java - 382 lines · 5 methods · 0 constants · harnesses
+# CarryTradeCheck.java - 430 lines · 5 methods · 1 constants · harnesses
 
-`ham/citybuildersim/CarryTradeCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarryTradeCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The carry trade: the other side of hot money, and the bank's first borrower.
 > 
@@ -38,36 +38,53 @@
 >      borrowers buy the city's money back: the dial's share of the book is
 >      repaid on top of the ordinary month, inside the month's repaid and the
 >      change returned, and a book told a level of 0 is the old book to the bit.
+> 
+> FIXTURES (FS9). Sections 1-4 and 6 run on bare CapitalFlows with the spread, the premium and
+> the bank's headroom handed to the rule. Section 5 is a built city, played AUDITED_MONTHS with
+> an audit each (the identities: the money still balances every month, and what the bank lends
+> crosses the border), and what it needs of the town is caused and read against the rule: the
+> policy rate set to its floor (DebtManager.MIN_POLICY_RATE) so the city is cheaper than the
+> world, the bank's branches stood at once and capitalised through its own door (buildStack
+> with no construction, Bank.openBranches() and injectCapital()) so its capital is there from the
+> first month, and the rule's own reading of month one asserted - a spread over nought and a
+> headroom and a target over nought - instead of the months it was seen lending on one path.
+> WHY: the played town moved under the month its branches opened and its book first grew.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (38), [DebtManager](DebtManager.md) (14), [ForeignAccounts](ForeignAccounts.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Game](Game.md) (2), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (38), [DebtManager](DebtManager.md) (15), [ForeignAccounts](ForeignAccounts.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Game](Game.md) (2), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [Bank](Bank.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 80 | · 1. it is the opposite sign |
-| 114 | · 2. the bank's book is the bound |
-| 138 | · 3. it builds and unwinds gradually |
-| 172 | · 4. it survives a save |
-| 198 | · 5. and it reaches the border |
-| 296 | · 6. a risk-off sends it home (XR4) |
+| 91 | · 1. it is the opposite sign |
+| 125 | · 2. the bank's book is the bound |
+| 149 | · 3. it builds and unwinds gradually |
+| 183 | · 4. it survives a save |
+| 209 | · 5. and it reaches the border |
+| 341 | · 6. a risk-off sends it home (XR4) |
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 420 | `CarryTradeCheck.AUDITED_MONTHS` | `36` | The months the built city is played with an audit each: the book builds a share of its gap a month (CARRY_BORROW_SPEED), so a longer play audits more of its build. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 47 | `static int fails` |  |
-| 48 | `static PrintStream out` |  |
-| 49 | `static PrintStream quiet` |  |
+| 58 | `static int fails` |  |
+| 59 | `static PrintStream out` |  |
+| 60 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 338 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
-| 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 56 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 67 | 7 | `static CapitalFlows settle(double lendingRate, double premium, double headroom, int months)` | Run a stock to rest against a fixed rate, premium and headroom. |
-| 75 | 298 | `public static void main(String[] args) throws Exception` |  |
-| 375 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
+| 56 | 375 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
+| 62 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 67 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 78 | 7 | `static CapitalFlows settle(double lendingRate, double premium, double headroom, int months)` | Run a stock to rest against a fixed rate, premium and headroom. |
+| 86 | 332 | `public static void main(String[] args) throws Exception` |  |
+| 423 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
 

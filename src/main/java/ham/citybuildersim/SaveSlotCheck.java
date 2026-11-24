@@ -1288,8 +1288,13 @@ public class SaveSlotCheck {
         }
         List<Integer> axis = history.getMonth();
         int next = axis.get(axis.size() - 1) + 1;
+        int first = next, surveys = history.getDebtSurveys().size();
         while (history.months() < HistorySave.MONTHLY_KEPT) {
             history.appendMonth(next++, name -> last.getOrDefault(name, 0.0));
+        }
+        if (surveys > 0) {
+            assertEquals("fixture: padded years carry the yearly debt surveys as well as monthly series",
+                    history.getDebtSurveys().size(), surveys + (next - 1) / 12 - (first - 1) / 12);
         }
     }
 

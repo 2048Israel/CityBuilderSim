@@ -66,11 +66,18 @@ public class SimulationEngine {
          */
         // ...less the fittings the crews work first (R1b; Game.workTheFittings()): after the repairs, before the sites, struck here once and used for the advance and for the work the sector is paid for below. With no job on site it is getBuildingOutput(), to the bit.
         int siteOutput = game.workTheFittings();
-        // The foreign contractor's month beside the city's own (FC1): nothing unless the repairs took the
-        // builders' points and left the sites none - see Game, THE FOREIGN CREWS.
+        // The foreign contractor's month beside the city's own (FC1; FC2): the queue at home past the threshold
+        // handed to him, and his month on his book - see Game, THE FOREIGN CREWS.
+        // ...after the businesses' choice (FC2b; Game.investorsHandAbroad()): a payer that hands a site abroad does it before the offer, so the
+        // month's offer prices the crews' load with the new site in it.
+        game.investorsHandAbroad();
         Game.ForeignOffer foreign = game.foreignCrewsOffer();
         // His points are in the month the sites take, and not on a rushed site's overtime (FC1b): his crews are not the city's.
+        // ...and the work ordered of the builders since the last advance, read either side of this one (OG1; BusinessInvestment,
+        // THE WORK THE CITY SENDS THE BUILDERS): what their next depot order is sized to.
+        game.getBusinessInvestment().beforeSitesAdvance();
         java.util.List<BuildingManager.Completion> opened = buildingManager.advanceConstruction(siteOutput + foreign.points(), foreign.points());
+        game.getBusinessInvestment().afterSitesAdvance();
         game.recordCompletions(opened);
         // ...and what the buildings that opened come with (R1b): in a city founded the 1900 way, only the equipment that pays for a new building;
         // nothing in a city founded the default way, where every building opens fitted.
@@ -107,6 +114,8 @@ public class SimulationEngine {
         double ownMonth = overtime == 0 ? siteOutput : siteOutput + overtime;
         // ...and the contractor is paid for what the sites took past the city's own month (FC1).
         game.settleForeignCrews(foreign, buildingManager.getPointsBuilt() - Math.max(0, ownMonth));
+        // ...and the crews on the sites handed them (FC2b), billed as FC1's are; their points are not in getPointsBuilt().
+        game.settleCrewsOnSites();
         game.recogniseSiteWork(buildingManager.takeRevenueDue(), buildingManager.getPointsBuilt(),
                 ownMonth + foreign.points());
         // ...and each owner pays the material its work drew at the price it
@@ -214,6 +223,8 @@ public class SimulationEngine {
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
         utility.strikePower();
         economyManager.setPowerPrices(utility.getPricePerWatt(), utility.getIndustryPricePerWatt(), utility.getWorksPricePerWatt());
+        // ...and the water's, its tariff and the works' power the same book struck (PW1-W).
+        economyManager.setPricePerWaterUnit(utility.getPricePerWaterUnit());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
         economyManager.setWaterRatio(servicesManager.getWaterRatio());
         /*

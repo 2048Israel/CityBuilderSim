@@ -1,6 +1,6 @@
 # Fitout.java - 179 lines · 19 methods · 0 constants · model
 
-`ham/citybuildersim/Fitout.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Fitout.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > One new building's equipment as its order fixes it (R1e): the pieces of its template it comes WITHOUT, chosen when the order
 > is quoted and frozen on site when it is accepted, and what that makes one building's cash cost and construction points - the
@@ -32,7 +32,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (8), [Equipment](Equipment.md) (5), [Game](Game.md) (1), [NewUnit](NewUnit.md) (1), [LicenceFees](LicenceFees.md) (1), [EquipmentFit](EquipmentFit.md) (1), [Good](Good.md) (1)
 
-**Used by (5):** [BuildingManager](BuildingManager.md), [BuildingsStacks](BuildingsStacks.md), [BusinessInvestment](BusinessInvestment.md), [FitoutCheck](FitoutCheck.md), [Game](Game.md)
+**Used by (7):** [BuildingManager](BuildingManager.md), [BuildingsStacks](BuildingsStacks.md), [BusinessInvestment](BusinessInvestment.md), [FitoutCheck](FitoutCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [Game](Game.md)
 
 ## Fields (state)
 

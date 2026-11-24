@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * The stock exchange: one order book per company, where every share that
- * changes hands meets its buyer, and the price is the quote: the middle of the book (EM2).
+ * changes hands meets its buyer, and the price is the quote: the middle of an uncrossed book (EM2, RS1).
  *
  * ==================== WHY ====================
  *
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * One OrderBook per company: price-time priority, a trade at the resting
  * order's price, nobody obliged to trade, no trade with oneself. A
- * company's PRICE is its quote since EM2 - the middle of the book, or the
+ * company's PRICE is its quote since EM2 - the middle of an uncrossed book, or the
  * last trade held inside the side that stands (price()) - and its fair value - the register's
  * reckoning, Equity.fairValue(): book, or the dividend it actually pays
  * capitalised at what the world asks, whichever is more - is beside it,
@@ -64,6 +64,10 @@ import java.util.List;
  *     (Bank.buybackRoom(), "buybacks only from spare capital") and asks new
  *     ones only while under it (Bank.issuesOwnShares()), each at the buyback
  *     pace; bought, they are cancelled, and sold, issued.
+ *   - THE HAND'S SHARE SALES (RS1) post after the desk and the fund's
+ *     over-limit asks, before the world and households decide. Their buyers
+ *     pay the resting ask, including for rescue shares; those shares transfer
+ *     to the buyer. A hand sale pauses the rule's buying of that company.
  *   - EMIGRANTS sell on the way out: what the households' pool released and
  *     nobody claimed this month (HouseholdBalance.getSharesTakenAway()),
  *     asked at the price the dealer's bid at fair value used to pay them.
@@ -100,7 +104,7 @@ import java.util.List;
  *     between the desk's bid and fair value, posted after the desk and
  *     before the emigrants, the world and the companies:
  *     postFundOverLimit(), RB1, RB3); then
- *     the player's hand, at fair
+ *     the player's buys (its sales posted early, RS1), at fair
  *     value or the price it names and no further than the limit, every buy
  *     of the fund's on the company counted as filled and the rule's making
  *     way for the hand's (0.7.39, fundRoom()), under FUND_HAND. It never
@@ -431,7 +435,13 @@ public class Exchange {
      * so a step is not a function of the state it ends in without them.
      */
     private final double[] spare = new double[n], earnings = new double[n], moneyIncome = new double[n];
-    /** This month's leavers' shares still offered: held abroad by the register, sold by EMIGRANTS. */
+    /* This month's leavers' shares still offered: held abroad by the register, sold by EMIGRANTS. */
+    /** Persistent secured departures use a distinct fill identity, with the existing emigrant counter class (HT1). */
+    public static final String TAX_EMIGRANTS = "tax-emigrants";
+    private final double[] taxEmigrantsGross = new double[n], taxEmigrantsRetained = new double[n];
+    public double getTaxEmigrantsGross(int c) { return taxEmigrantsGross[c]; }
+    public double getTaxEmigrantsRetained(int c) { return taxEmigrantsRetained[c]; }
+    public double getTaxEmigrantsNet(int c) { return taxEmigrantsGross[c] - taxEmigrantsRetained[c]; }
     private final double[] emigrantShares = new double[n];
     /** What each company's buyback bid may still spend, money; the rest of its month's programme. */
     private final double[] buybackBudget = new double[n];
@@ -532,6 +542,7 @@ public class Exchange {
         for (int c = 0; c < n; c++) {
             soldToHouseholds[c] = 0; boughtFromHouseholds[c] = 0;
             soldAbroad[c] = 0; boughtFromAbroad[c] = 0; emigrantsPaid[c] = 0;
+            taxEmigrantsGross[c] = taxEmigrantsRetained[c] = 0;
             buybackToHouseholds[c] = 0; buybackToDesk[c] = 0; buybackAbroad[c] = 0;
             householdsBoughtAbroad[c] = 0; householdsSoldAbroad[c] = 0; betweenHouseholds[c] = 0;
             fundBoughtFromHouseholds[c] = 0; fundBoughtAbroad[c] = 0; fundSoldToHouseholds[c] = 0; fundSoldAbroad[c] = 0;
@@ -551,7 +562,9 @@ public class Exchange {
 
     /**
      * A SHARE'S PRICE IS ITS QUOTE (EM2, 2026-10-30): the middle of its book
-     * while a bid and an ask both rest; with one side empty, the last trade -
+     * while an uncrossed bid and ask both rest; a crossed book uses the last
+     * trade, or fair value before its first (RS1), since no midpoint clears;
+     * with one side empty, the last trade -
      * never over the ask that stands, nor under the bid; with neither, the
      * last trade; and fair value before the first trade, held the same way
      * inside a side that stands.
@@ -574,9 +587,10 @@ public class Exchange {
     public double price(int c) {
         double bid = books[c].bestBid(), ask = books[c].bestAsk();
         boolean hasBid = bid > 0, hasAsk = ask > 0;
-        if (hasBid && hasAsk) return (bid + ask) / 2;
         double last = books[c].lastPrice();
         double base = last > 0 ? last : fair[c];
+        // A self-trade restriction can leave crossing orders: their midpoint is no market (RS1).
+        if (hasBid && hasAsk) return bid > ask ? base : (bid + ask) / 2;
         if (hasAsk) return Math.min(base, ask);
         if (hasBid) return Math.max(base, bid);
         return base;
@@ -587,21 +601,23 @@ public class Exchange {
         if (!hasTraded(c)) return false;
         double bid = books[c].bestBid(), ask = books[c].bestAsk(), last = books[c].lastPrice();
         boolean hasBid = bid > 0, hasAsk = ask > 0;
-        if (hasBid && hasAsk) return false;
+        if (hasBid && hasAsk) return bid > ask;
         if (hasAsk) return last <= ask;
         if (hasBid) return last >= bid;
         return true;
     }
 
     /**
-     * What a share's price is made of now, in words, for the caption beside it (EM2): "the middle of the bid and the ask" while both rest;
+     * What a share's price is made of now, in words, for the caption beside it (EM2): "the middle of the bid and the ask" while both rest uncrossed;
+     * a crossed book says so and uses the last trade or fair value (RS1);
      * with one side standing the last trade "held inside the ask" or "held over the bid"; with neither "the last trade"; and fair value,
      * the same way, before the first trade. The screens put "the quote: " in front of it; the rule is price()'s.
      */
     public String quoteWords(int c) {
         boolean hasBid = books[c].bestBid() > 0, hasAsk = books[c].bestAsk() > 0;
         String base = books[c].lastPrice() > 0 ? "the last trade" : "fair value";
-        if (hasBid && hasAsk) return "the middle of the bid and the ask";
+        if (hasBid && hasAsk) return books[c].bestBid() > books[c].bestAsk()
+                ? base + ": the book is crossed" : "the middle of the bid and the ask";
         if (hasAsk) return base + ", held inside the ask";
         if (hasBid) return base + ", held over the bid";
         return books[c].lastPrice() > 0 ? base : base + ": nothing has traded";
@@ -781,8 +797,8 @@ public class Exchange {
 
     /**
      * ...with what the city's fund's bonds are worth this month (0.7.14), for
-     * its mix: its orders are posted last, after the households', by its rule
-     * and then its hand (postFund()); and what the city's paper the
+     * its mix: the rule and then the hand's buys post last, after households
+     * (postFund()); hand sales post early (RS1). Also what the city's paper the
      * households hold yields, annual (EM1), one of the alternatives a share's
      * expected return is read against.
      */
@@ -825,7 +841,8 @@ public class Exchange {
             moneyIncome[c] = holdsMoney ? this.companies.moneyIncome(c) : 0;
             fair[c] = Math.max(minFair, register.fairValue(c, book[c], spare[c], worldRate));
             emigrantShares[c] = households == null ? 0
-                    : Math.max(0, Math.min(households.getSharesTakenAway(c), register.getForeignShares(c)));
+                    : Math.max(0, Math.min(households.getSharesTakenAway(c) - households.departingTaxShares(c),
+                            register.getForeignShares(c) - register.foreignTaxShares(c)));
         }
         deskOpen = hasDealerCapital(bank);
         // ...the lending book struck and its fee paid on the shares as the last step left them (EM2), before anybody posts.
@@ -834,6 +851,7 @@ public class Exchange {
         /* ---- and the orders, in the order they rest ---- */
         if (deskOpen) postDesk();
         postFundOverLimit();
+        postFundHandSales();
         postEmigrants();
         postWorld(worldRate);
         postCompanies();
@@ -988,7 +1006,11 @@ public class Exchange {
         if (c == Equity.BANK) {
             if (!ownSharesTrade(register) || !dealer.buysBackOwnShares()) return 0;
             double pace = Math.max(0, BUYBACK_PACE / 12 * register.getShares(c) - ownBoughtThisMonth);
-            return Math.min(pace, dealer.buybackRoom(markToMarket(register)) / price);
+            double room = dealer.buybackRoom(markToMarket(register));
+            // Own-share buybacks also subtract capital requirements from equity: no dust print at target (RS1).
+            double size = Math.max(Math.abs(dealer.equity()), Math.abs(dealer.targetEquity()));
+            if (room <= MoneyAudit.tolerance(0, size)) return 0;
+            return Math.min(pace, room / price);
         }
         double[] limits = deskLimits(register, c, price);
         double most = limits[0];
@@ -1009,10 +1031,16 @@ public class Exchange {
         double equity = Math.max(0, dealer.equity());
         double f = fair[c];
         double carry = dealer.deskCanCarry(markToMarket(register), price, Math.min(price, f));
-        double position = f > 0 ? POSITION_LIMIT * equity / f - Math.max(0, register.getDealerShares(c)) : 0;
-        double book = f > 0 ? (BOOK_LIMIT * equity - bookAtFair(register)) / f : 0;
+        double position = f > 0 ? resolvedRoom(POSITION_LIMIT * equity, Math.max(0, register.getDealerShares(c)) * f) / f : 0;
+        double book = f > 0 ? resolvedRoom(BOOK_LIMIT * equity, bookAtFair(register)) / f : 0;
         double notMine = Math.max(0, register.getShares(c) - Math.max(0, register.getDealerShares(c)));
         return new double[] { carry, position, book, notMine };
+    }
+
+    /** Cap less holding, in money: a residue below the sums' resolution buys nothing (RS1, DK1). */
+    private static double resolvedRoom(double cap, double held) {
+        double room = cap - held;
+        return room > 0 && room <= MoneyAudit.tolerance(0, Math.max(Math.abs(cap), Math.abs(held))) ? 0 : room;
     }
 
     /** What the desk holds of every other company, at fair value: what BOOK_LIMIT reads. */
@@ -1061,6 +1089,13 @@ public class Exchange {
             double ask = fair[c] * (1 - SPREAD / 2);
             lifeEmigrantsOffered += emigrantShares[c] * ask;
             post(c, EMIGRANTS, OrderBook.Side.SELL, ask, emigrantShares[c]);
+        }
+        for (int c = 0; c < n; c++) {
+            double tagged = register.foreignTaxShares(c);
+            if (!(tagged > 0) || fair[c] <= minFair) continue;
+            double ask = fair[c] * (1 - SPREAD / 2);
+            lifeEmigrantsOffered += tagged * ask;
+            post(c, TAX_EMIGRANTS, OrderBook.Side.SELL, ask, tagged);
         }
     }
 
@@ -1124,7 +1159,7 @@ public class Exchange {
 
     /** What the world holds that it can sell: what is held abroad less this month's leavers' shares, which are theirs to sell. */
     private double worldHolding(int c) {
-        return Math.max(0, register.getForeignShares(c) - emigrantShares[c]);
+        return Math.max(0, register.getForeignShares(c) - emigrantShares[c] - register.foreignTaxShares(c));
     }
 
     /* ---------------------------------- the shorts (EM2) ---------------------------------- */
@@ -1341,14 +1376,21 @@ public class Exchange {
     /* ---------------------------------- the households ---------------------------------- */
 
     /**
-     * Whether a cell may put money into shares at all: no debt, not locked out, not going short, investing at all. A debt is
+     * Whether a cell's debt-free, unexcluded share may invest, while the cell can invest and is not going short. Debt is
      * read as the households' balance reads it (HouseholdBalance.owes()): one no larger than its rounding floor is the
      * arithmetic's dust and not a debt (BA1, 2026-11-04). Read as any debt above nothing, a hair of 1e-16 left in one cell
      * at today's prices, and exactly nothing at the factor, kept that cell out of a share offering at one price level and
      * not the other (PriceLevelCheck 9's town parted at month 26, as it had at month 56 before FC1).
      */
     boolean mayBuy(Household c) {
-        return !c.isEmpty() && c.canInvest() && !owes(c) && c.lockout <= 0 && !c.isGoingShort();
+        return !c.isEmpty() && c.canInvest() && buyingShare(c) > 0 && !c.isGoingShort();
+    }
+
+    /** The eligible neighbours' cash, with the balance's existing rounding floor (HC1). */
+    private double buyingShare(Household c) {
+        if (households != null) return households.debtFreeShare(c);
+        if (owes(c) && !(c.revolving > 0)) return 0;
+        return Math.max(0, Math.min(1, 1 - (owes(c) ? c.revolving : 0) - c.shutOut));
     }
 
     /** Whether a cell owes anything (mayBuy()): past the households' rounding floor where the balance is attached, else anything above nothing. */
@@ -1373,7 +1415,7 @@ public class Exchange {
     double spareOf(Household c) {
         if (!mayBuy(c)) return 0;
         double excess = c.savings - HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
-        return excess > 0 ? excess * c.households : 0;
+        return excess > 0 ? excess * c.households * buyingShare(c) : 0;
     }
 
     /* ----- the owner families sell slowly (BO1) -----------------------------
@@ -1774,7 +1816,7 @@ public class Exchange {
                     if (register.getShares(c) > 0 && fair[c] > minFair) caps += marketCap(register, c);
                 }
                 for (int c = 0; c < n; c++) {
-                    if (!(caps > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+                    if (!(caps > 0) || register.getShares(c) <= 0 || fair[c] <= minFair || fundHandSelling(c)) continue;
                     double want = target * marketCap(register, c) / caps;
                     double mine = register.getCityMarketShares(c);
                     // The room under the cap, less the hand's buys waiting for this step (0.7.39): none, the default.
@@ -1785,35 +1827,52 @@ public class Exchange {
                 }
             }
         }
-        for (TreasuryFund.HandOrder o : fund.takeHandOrders(false)) {
-            int c = o.company();
-            String key = c >= 0 && c < n ? FundLedger.shareKey(Equity.COMPANIES[c]) : null;
-            if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) {
-                fund.noteDropped(o, key, 0, o.limit(), c >= 0 && c < n && register.getShares(c) > 0
-                        ? "the company was worth nothing" : "the company was not listed", month);
-                continue;
+        for (TreasuryFund.HandOrder o : fund.takeHandOrders(false)) postFundHand(o);
+    }
+
+    /** The hand's asks must be visible when the world and households decide, before they are withdrawn next month (RS1). */
+    private void postFundHandSales() {
+        if (fund == null || register == null) return;
+        for (TreasuryFund.HandOrder o : fund.takeShareSales()) postFundHand(o);
+    }
+
+    /** A hand sale pauses the rule's buying of that company for this step, even if the sale has filled (RS1). */
+    private boolean fundHandSelling(int c) {
+        for (TreasuryFund.HandOrder o : fund.getPosted()) {
+            if (!o.bond() && !o.buy() && o.company() == c) return true;
+        }
+        return false;
+    }
+
+    /** Posts one hand order with its existing price, holding, cap and ledger rules. */
+    private void postFundHand(TreasuryFund.HandOrder o) {
+        int c = o.company();
+        String key = c >= 0 && c < n ? FundLedger.shareKey(Equity.COMPANIES[c]) : null;
+        if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) {
+            fund.noteDropped(o, key, 0, o.limit(), c >= 0 && c < n && register.getShares(c) > 0
+                    ? "the company was worth nothing" : "the company was not listed", month);
+            return;
+        }
+        double price = o.limit() > 0 ? o.limit() : fair[c];
+        if (o.buy()) {
+            double q = o.amount() / price;
+            // The share orders are out of the queue by now: the room is what the market book and the hand's bids leave.
+            double room = fundRoom(register, fund, c);
+            if (!(Math.min(q, room) > OrderBook.DUST)) {
+                fund.noteDropped(o, key, q, price, "no room under the " + Math.round(TreasuryFund.OWNERSHIP_LIMIT * 100)
+                        + "% cap", month);
+                return;
             }
-            double price = o.limit() > 0 ? o.limit() : fair[c];
-            if (o.buy()) {
-                double q = o.amount() / price;
-                // The share orders are out of the queue by now: the room is what the market book and the hand's bids leave.
-                double room = fundRoom(register, fund, c);
-                if (!(Math.min(q, room) > OrderBook.DUST)) {
-                    fund.noteDropped(o, key, q, price, "no room under the " + Math.round(TreasuryFund.OWNERSHIP_LIMIT * 100)
-                            + "% cap", month);
-                    continue;
-                }
-                fund.notePosted(o, key, Math.min(q, room), price, month);
-                submit(c, FUND_HAND, OrderBook.Side.BUY, price, Math.min(q, room));
-            } else {
-                double q = Math.min(o.amount(), register.getCityShares(c));
-                if (!(q > OrderBook.DUST)) {
-                    fund.noteDropped(o, key, o.amount(), price, "nothing held to sell", month);
-                    continue;
-                }
-                fund.notePosted(o, key, q, price, month);
-                submit(c, FUND_HAND, OrderBook.Side.SELL, price, q);
+            fund.notePosted(o, key, Math.min(q, room), price, month);
+            submit(c, FUND_HAND, OrderBook.Side.BUY, price, Math.min(q, room));
+        } else {
+            double q = Math.min(o.amount(), register.getCityShares(c));
+            if (!(q > OrderBook.DUST)) {
+                fund.noteDropped(o, key, o.amount(), price, "nothing held to sell", month);
+                return;
             }
+            fund.notePosted(o, key, q, price, month);
+            submit(c, FUND_HAND, OrderBook.Side.SELL, price, q);
         }
     }
 
@@ -2036,7 +2095,7 @@ public class Exchange {
     private static int classOf(String who) {
         if (DESK.equals(who)) return BY_DESK;
         if (WORLD.equals(who) || WORLD_SHORT.equals(who)) return BY_WORLD;
-        if (EMIGRANTS.equals(who)) return BY_EMIGRANTS;
+        if (EMIGRANTS.equals(who) || TAX_EMIGRANTS.equals(who)) return BY_EMIGRANTS;
         if (isFund(who)) return BY_FUND;
         if ((CELL + OwnerHousehold.KEY).equals(who)) return BY_OWNERS;
         return BY_HOUSEHOLDS;
@@ -2072,7 +2131,7 @@ public class Exchange {
                 if (WORLD.equals(who)) return Double.POSITIVE_INFINITY;
                 // ...the short only buys to cover what it is short (EM2).
                 if (WORLD_SHORT.equals(who)) return shortShares[c];
-                if (EMIGRANTS.equals(who)) return 0;
+                if (EMIGRANTS.equals(who) || TAX_EMIGRANTS.equals(who)) return 0;
                 if (who.startsWith(CELL)) {
                     Household h = cellOf(who);
                     if (h == null) return 0;
@@ -2091,7 +2150,8 @@ public class Exchange {
             if (WORLD.equals(who)) return worldHolding(c);
             // ...and sells what the lenders still have to lend and the cap leaves, read now (EM2).
             if (WORLD_SHORT.equals(who)) return shortRoom(c);
-            if (EMIGRANTS.equals(who)) return Math.max(0, Math.min(emigrantShares[c], register.getForeignShares(c)));
+            if (EMIGRANTS.equals(who)) return Math.max(0, Math.min(emigrantShares[c], register.getForeignShares(c) - register.foreignTaxShares(c)));
+            if (TAX_EMIGRANTS.equals(who)) return register.foreignTaxShares(c);
             if (who.startsWith(CELL)) {
                 Household h = cellOf(who);
                 return h == null ? 0 : Math.max(0, h.shares[c] * h.households());
@@ -2123,7 +2183,7 @@ public class Exchange {
             // ...the world's short sells abroad and buys from the world, as its long does (EM2): what crosses the pools' edge is the same.
             boolean shortSells = WORLD_SHORT.equals(seller), shortBuys = WORLD_SHORT.equals(buyer);
             boolean worldBuys = WORLD.equals(buyer) || shortBuys;
-            boolean abroadSells = WORLD.equals(seller) || EMIGRANTS.equals(seller) || shortSells;
+            boolean abroadSells = WORLD.equals(seller) || EMIGRANTS.equals(seller) || TAX_EMIGRANTS.equals(seller) || shortSells;
             boolean deskSells = DESK.equals(seller), deskBuys = DESK.equals(buyer);
             boolean companyBuys = companies != null && buyer.equals(Equity.COMPANIES[c]) && c != Equity.BANK;
             boolean fundBuys = isFund(buyer) && fund != null, fundSells = isFund(seller) && fund != null;
@@ -2148,6 +2208,11 @@ public class Exchange {
                 shortCollateral[c] += INITIAL_MARGIN * cash;
                 lifeShortSold += q;
                 lifeShortSoldValue += cash;
+            } else if (TAX_EMIGRANTS.equals(seller)) {
+                register.moveForeign(c, -q);
+                double retained = register.sellForeignTaxShares(c, q, cash);
+                taxEmigrantsGross[c] += cash; taxEmigrantsRetained[c] += retained;
+                emigrantsPaid[c] += cash; lifeEmigrantsPaid += cash;
             } else if (EMIGRANTS.equals(seller)) {
                 register.moveForeign(c, -q);
                 emigrantShares[c] = Math.max(0, emigrantShares[c] - q);
@@ -2155,11 +2220,11 @@ public class Exchange {
                 lifeEmigrantsPaid += cash;
             } else if (cellSells) {
                 Household h = cellOf(seller);
-                h.shares[c] = Math.max(0, h.shares[c] - q / h.households());
+                double net = households.sellShares(h, c, q / h.households(), price) * h.households();
                 if (h == selling) {
-                    raised += cash;
+                    raised += net;
                 } else {
-                    h.savings += cash / h.households();
+                    h.savings += net / h.households();
                 }
             } else if (FUND.equals(seller)) {
                 double marketBefore = register.getCityMarketShares(c);
@@ -2203,6 +2268,7 @@ public class Exchange {
             } else if (cellBuys) {
                 Household h = cellOf(buyer);
                 h.shares[c] += q / h.households();
+                h.basis[c] += cash / h.households();
                 h.savings -= cash / h.households();
                 if (h == buying) buyingBudget -= cash;
             } else if (companyBuys) {
@@ -2313,6 +2379,16 @@ public class Exchange {
     public double getSplit(int c)                { return split[c]; }
     /** Shares today for one share at the founding. */
     public double getSplitFactor(int c)          { return splitFactor[c]; }
+
+    /**
+     * A saved split factor as the load carries it (FC2): every positive factor as it was saved, however deep the
+     * consolidations went; 1e-12 only for none, a negative or a NaN - the floor the load always put under a factor, which
+     * until FC2 also rewrote a genuine one under it (a company consolidated past a trillion to one loaded at a trillion,
+     * and the reloaded city priced its founding shares off it: SaveFileCheck's REV-HC1 P5).
+     */
+    static double carriedSplitFactor(double saved) {
+        return saved > 0 ? saved : 1e-12;
+    }
     /** The price per FOUNDING share: continuous through every split. The price history is this. */
     public double pricePerFoundingShare(int c)   { return price(c) * splitFactor[c]; }
     /** ...and the register's reckoning, the same way. */
@@ -2451,6 +2527,7 @@ public class Exchange {
         String[] keys;
         List<OrderBook> books;
         double[] fair, splitFactor, emigrantShares, buybackBudget;
+        double[] taxEmigrantsGross, taxEmigrantsRetained;
         /** What fair value was struck on (EM1): each company's spare money, its net income over the last year and what its money earns it, totals. Null in a save from before them: the next step strikes them. */
         double[] spare, earnings, moneyIncome;
         /**
@@ -2481,6 +2558,8 @@ public class Exchange {
                 c.fair = fair == null ? null : fair.clone();
                 c.splitFactor = splitFactor == null ? null : splitFactor.clone();
                 c.emigrantShares = emigrantShares == null ? null : emigrantShares.clone();
+                c.taxEmigrantsGross = taxEmigrantsGross == null ? null : taxEmigrantsGross.clone();
+                c.taxEmigrantsRetained = taxEmigrantsRetained == null ? null : taxEmigrantsRetained.clone();
                 c.buybackBudget = buybackBudget == null ? null : buybackBudget.clone();
                 c.spare = spare == null ? null : spare.clone();
                 c.earnings = earnings == null ? null : earnings.clone();
@@ -2508,6 +2587,7 @@ public class Exchange {
         s.fair = fair.clone();
         s.splitFactor = splitFactor.clone();
         s.emigrantShares = emigrantShares.clone();
+        s.taxEmigrantsGross = taxEmigrantsGross.clone(); s.taxEmigrantsRetained = taxEmigrantsRetained.clone();
         s.buybackBudget = buybackBudget.clone();
         s.spare = spare.clone();
         s.earnings = earnings.clone();
@@ -2557,8 +2637,10 @@ public class Exchange {
             OrderBook b = s.books.get(i);
             books[c] = b != null ? b : new OrderBook(Equity.COMPANIES[c]);
             fair[c] = s.fair[i];
-            splitFactor[c] = Math.max(1e-12, s.splitFactor[i]);
+            splitFactor[c] = carriedSplitFactor(s.splitFactor[i]);
             if (s.emigrantShares != null && i < s.emigrantShares.length) emigrantShares[c] = s.emigrantShares[i];
+            if (s.taxEmigrantsGross != null && i < s.taxEmigrantsGross.length) taxEmigrantsGross[c] = s.taxEmigrantsGross[i];
+            if (s.taxEmigrantsRetained != null && i < s.taxEmigrantsRetained.length) taxEmigrantsRetained[c] = s.taxEmigrantsRetained[i];
             if (s.buybackBudget != null && i < s.buybackBudget.length) buybackBudget[c] = s.buybackBudget[i];
             if (s.spare != null && i < s.spare.length) spare[c] = s.spare[i];
             if (s.earnings != null && i < s.earnings.length) earnings[c] = s.earnings[i];
@@ -2627,7 +2709,7 @@ public class Exchange {
             double mid = saved[i++];
             fair[c] = saved[i++];
             i++;                                   // the dealer's unfilled demand
-            splitFactor[c] = slots >= SLOTS ? Math.max(1e-12, saved[i++]) : 1;
+            splitFactor[c] = slots >= SLOTS ? carriedSplitFactor(saved[i++]) : 1;
             if (mid > 0) books[c].seedLastPrice(mid);
         }
         lifetimeVolume = saved[i];
@@ -2645,6 +2727,7 @@ public class Exchange {
         java.util.Arrays.fill(fair, Equity.FOUNDING_PRICE);
         java.util.Arrays.fill(splitFactor, 1);
         java.util.Arrays.fill(emigrantShares, 0);
+        java.util.Arrays.fill(taxEmigrantsGross, 0); java.util.Arrays.fill(taxEmigrantsRetained, 0);
         java.util.Arrays.fill(buybackBudget, 0);
         java.util.Arrays.fill(spare, 0);
         java.util.Arrays.fill(earnings, 0);
@@ -2684,6 +2767,7 @@ public class Exchange {
             spare[c] *= scale; earnings[c] *= scale; moneyIncome[c] *= scale;
             soldToHouseholds[c] *= scale; boughtFromHouseholds[c] *= scale;
             soldAbroad[c] *= scale; boughtFromAbroad[c] *= scale; emigrantsPaid[c] *= scale;
+            taxEmigrantsGross[c] *= scale; taxEmigrantsRetained[c] *= scale;
             buybackToHouseholds[c] *= scale; buybackToDesk[c] *= scale; buybackAbroad[c] *= scale;
             householdsBoughtAbroad[c] *= scale; householdsSoldAbroad[c] *= scale; betweenHouseholds[c] *= scale;
             fundBoughtFromHouseholds[c] *= scale; fundBoughtAbroad[c] *= scale;

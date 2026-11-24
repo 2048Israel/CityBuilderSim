@@ -1,6 +1,6 @@
 # AdviceValueOracle.java - 368 lines · 14 methods · 0 constants · model
 
-`ham/citybuildersim/AdviceValueOracle.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AdviceValueOracle.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Independent discounted arithmetic for BuildAdviceCheck's complete-plan law.
 > WHY. Reading the value object back through its own factory could never find

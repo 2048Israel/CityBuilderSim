@@ -355,6 +355,7 @@ public class RailDrawCheck {
         depotWithNoLine();
         sidingsTurnCorners();
         sidingStubs();
+        sidingsAfterAMonth();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1850,6 +1851,79 @@ public class RailDrawCheck {
         }
         check("the trains' route to each siding is on the drawn rail all the way (a rail within three pixels of each point at 8 px): " + off + " of " + sampled + " points off it, " + onArcs + " of them within two plots of a bend",
                 sampled > 100 && off == 0 && onArcs > 0);
+    }
+
+    /* ================= 31. (RR1) a plan's siding keeps its train and its arcs past a month ================= */
+
+    /** How many months section 31 plays its siding city on at most (6): one for each type the chain's first district alone holds. */
+    static final int MONTHS_31 = 6;
+
+    /** The trains' routes into the plans' sidings: the works' routes past the runs' own sidings'. */
+    static int planSidingRoutes(CityMap m) {
+        int works = 0;
+        for (TrainSchedule.Route r : m.trainRoutes()) if (r.works()) works++;
+        return works - m.runs().sidings().size();
+    }
+
+    /**
+     * Jerus, 2026-11-20 (his shot 5, month 1,208): "rail still has dead ends and random 90 degree turns". A works' siding a district's
+     * plan laid, drawn with arcs the first time its plan was drawn, was drawn as the plots' square L on every draw after a month passed:
+     * his city's month moves the counts of the chain's first district, the home square, so the band its siding's district is in holds
+     * no further than it until the plans are drawn again; the screen asks for the trains' routes before it draws them, a band that does
+     * not hold yet gives no route to its plans' sidings, and those routes were kept, the siding's plan coming out again the same. The
+     * fixture plays section 29's city on a month at a time, a building fewer each month, of a type the chain's first district alone
+     * holds, asks for the routes as the screen does before the plans are drawn, then draws them: the routes must then reach every siding
+     * drawn, and each corner be the arc.
+     */
+    static void sidingsAfterAMonth() {
+        System.out.println("--- 31. (RR1) a plan's siding keeps its train and its arcs past a month: the routes asked before its plan is drawn again are not kept past it ---");
+        SidingCity sc = sidingCity(SPURS, WORKS);
+        CityMap m = sc.map;
+        long[] c = sc.counts.clone();
+        m.packed();
+        CityMap.District first = m.chainOrder().get(0);
+        List<Integer> alone = new java.util.ArrayList<>();
+        for (int t = 0; t < c.length && alone.size() < MONTHS_31; t++) {
+            if (TYPES[t] == null || TYPES[t].track() || TYPES[t].terminal() || TYPES[t].siding() || first.counts[t] < 1) continue;
+            boolean only = true;
+            for (CityMap.District d : m.districts()) only &= d == first || d.counts[t] == 0;
+            if (only) alone.add(t);
+        }
+        int premise = 0, missed = 0, ways = 0;
+        StringBuilder log = new StringBuilder();
+        for (int month = 1; month <= alone.size(); month++) {
+            c[alone.get(month - 1)]--;
+            m.reconcile(c);
+            int before = planSidingRoutes(m);
+            m.packed();
+            ways = drawnSidingWays(m).size();
+            int after = planSidingRoutes(m);
+            if (before < ways) premise++;
+            if (after != ways) missed++;
+            log.append(String.format(" m%d %d/%d/%d", month, before, after, ways));
+        }
+        System.out.println("      a month at a time, the plans' siding routes before the plans are drawn / after / sidings drawn:" + log);
+        check("fixture: each month takes a building from the chain's first district of a type it alone holds (types " + alone + "), and the routes asked before the plans are drawn again miss a siding the plans then draw: in "
+                + premise + " of " + alone.size() + " months", alone.size() >= 2 && ways > 0 && premise == alone.size());
+        check("...and once the plans are drawn again the trains' routes run to every siding they draw, every month: " + missed + " months short",
+                missed == 0);
+        // The tiles: each corner of each siding drawn is a bend of TrackCurves, its plot one the arc replaces.
+        MapTiles tiles = new MapTiles(m);
+        int corners = 0, bent = 0, px = 8;
+        java.util.Map<Long, Shot> shots = new java.util.HashMap<>();
+        for (List<long[]> way : drawnSidingWays(m)) {
+            for (int k = 1; k + 1 < way.size(); k++) {
+                corners++;
+                long cx = way.get(k)[0], cy = way.get(k)[1], tx = Math.floorDiv(cx, World.TILE), ty = Math.floorDiv(cy, World.TILE);
+                Shot s = shots.computeIfAbsent(MapTiles.key(tx, ty), key -> new Shot(tiles, tx, ty, px));
+                int lx = (int) (cx - tx * World.TILE), ly = (int) (cy - ty * World.TILE);
+                boolean at = false;
+                for (int b = 0; b < s.in.bends; b++) at |= Math.abs(s.in.bendAt(b).x() - (lx + 0.5)) < 1e-6 && Math.abs(s.in.bendAt(b).y() - (ly + 0.5)) < 1e-6;
+                if (at && s.in.curved[ly * T + lx]) bent++;
+            }
+        }
+        check("...and after the last month every corner of every siding is drawn as TrackCurves' arc, no square L: " + bent + " of " + corners,
+                corners > 0 && bent == corners);
     }
 
     /* ================= 30. (MF1) a stub is not drawn: a siding no train fits, a siding whose works is gone ================= */

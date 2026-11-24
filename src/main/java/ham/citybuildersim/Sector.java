@@ -2064,6 +2064,13 @@ public abstract class Sector {
         public final Map<String, Double> otherInputs = new LinkedHashMap<>();
 
         /**
+         * ...and the parts of the EXPORTS that are not a good (FC2): the builders' spare points worked abroad, by name, as
+         * they are sold (bookExportedService()). In exports, so in revenue, and in no good's split - so the opened revenue
+         * line names them, or it would not add up to its own figure.
+         */
+        public final Map<String, Double> servicesSold = new LinkedHashMap<>();
+
+        /**
          * ...AND STOCK IT PAID FOR EARLIER (0.7.8): an input drawn this month
          * out of stock the sector bought in an earlier month and paid cash for
          * then - the builders' material from scrapped plant, booked at what
@@ -2099,6 +2106,8 @@ public abstract class Sector {
          * its cash left the buyer's pool when it was booked and reaches this till at bank(), and MoneyAudit.pools() counts it in between.
          */
         public double upkeepSold;
+        /** Household emergency-service receipts inside otherRevenue and salesToHouseholds (HC1). */
+        public double householdServices;
         /**
          * What it pays the city this month for a service the city sells and
          * no business does (FR3, payTheCity()): the port dues. In inputs and
@@ -2120,6 +2129,7 @@ public abstract class Sector {
             localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
             oldMetalSold = 0;
             upkeepSold = 0;
+            householdServices = 0;
             paidToCity = 0;
             purchasesBySupplier.clear();
             capitalBySupplier.clear();
@@ -2128,6 +2138,7 @@ public abstract class Sector {
             sold.clear();
             bought.clear();
             otherInputs.clear();
+            servicesSold.clear();
         }
 
         /*
@@ -2141,12 +2152,14 @@ public abstract class Sector {
             paidEarlier *= s;
             oldMetalSold *= s;
             upkeepSold *= s;
+            householdServices *= s;
             paidToCity *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             capitalBySupplier.replaceAll((k, v) -> v * s);
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
             otherInputs.replaceAll((k, v) -> v * s);
+            servicesSold.replaceAll((k, v) -> v * s);
         }
     }
 
@@ -2446,6 +2459,17 @@ public abstract class Sector {
     /** The name of the upkeep sold, in a statement's otherParts (HL1). */
     public static final String UPKEEP_SOLD = "Upkeep work";
 
+    /** Named household service receipts, with no physical seat-service good sold (HC1). */
+    public static final String HOUSEHOLD_SERVICES = "Household emergency services";
+
+    /** Non-good household receipts: one revenue entry, tagged as consumption and named at the strike. */
+    protected final void bookHouseholdServices(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.otherRevenue += amount;
+        pending.salesToHouseholds += amount;
+        pending.householdServices += amount;
+    }
+
     /**
      * ...and upkeep sold (HL1; BusinessServices.sellUpkeep()): other revenue
      * like any, named apart on the income statement as UPKEEP_SOLD whatever
@@ -2573,6 +2597,19 @@ public abstract class Sector {
         pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
     }
 
+    /**
+     * ...and one SOLD to the world with no good behind it (FC2): the builders' spare points worked abroad
+     * (sectors.Construction.sellPointsAbroad()). An export (Ledger.exports): revenue, the money audit's "+ <sector>
+     * Exports" and the national accounts' exports, as any sale abroad, with no good's line beside it: named instead
+     * (`what`, Ledger.servicesSold), so the opened revenue line adds up. No cash moves here: bank() settles the month at
+     * net income, as for every sale.
+     */
+    protected final void bookExportedService(String what, double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.exports += amount;
+        pending.servicesSold.merge(what == null ? "Services" : what, amount, Double::sum);
+    }
+
     /* ===================================================================
        THE STATEMENT
        =================================================================== */
@@ -2610,6 +2647,8 @@ public abstract class Sector {
          * at strike() like everything else here. See Ledger.otherInputs.
          */
         public Map<String, Double> otherInputs = new LinkedHashMap<>();
+        /** ...and the parts of the exports that are not a good, by name (FC2; Ledger.servicesSold): in exports and revenue, beside the goods sold. */
+        public Map<String, Double> servicesSold = new LinkedHashMap<>();
         /** The part of inputs drawn from stock paid for in an earlier month - see Ledger.paidEarlier. In inputs, and added back to the cash at bank(). */
         public double paidEarlier;
         /** What its borrowing cost it up front, the month's share of each over its debt's life (0.7.102, A16): a cost before the profit tax, paid when it borrowed, so added back to the cash at bank(). See Sector, WHAT ITS BORROWING COST IT UP FRONT. */
@@ -2653,6 +2692,7 @@ public abstract class Sector {
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
             otherParts.replaceAll((k, v) -> v * s);
             otherInputs.replaceAll((k, v) -> v * s);
+            servicesSold.replaceAll((k, v) -> v * s);
         }
     }
 
@@ -2689,19 +2729,21 @@ public abstract class Sector {
         s.sold = copyOf(pending.sold);
         s.bought = copyOf(pending.bought);
         s.otherInputs = new LinkedHashMap<>(pending.otherInputs);
+        s.servicesSold = new LinkedHashMap<>(pending.servicesSold);
         s.paidEarlier = pending.paidEarlier;
         s.inputs = pending.purchases() + pending.paidEarlier;
         // ...and what it paid the city (FR3), added only when there is some: a zero added is not always nothing.
         if (pending.paidToCity != 0) s.inputs += pending.paidToCity;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
-        if (pending.oldMetalSold != 0 || pending.upkeepSold != 0) {
+        if (pending.oldMetalSold != 0 || pending.upkeepSold != 0 || pending.householdServices != 0) {
             // ...its old steel sold named apart (0.7.123, sellOldMetal()) and its upkeep sold (HL1,
             // sellUpkeep()): the sector names the rest, then the whole is put back.
-            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold - pending.upkeepSold;
+            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold - pending.upkeepSold - pending.householdServices;
             s.otherParts = nameOtherRevenue();
             s.otherRevenue = pending.otherRevenue;
             if (pending.oldMetalSold != 0) s.otherParts.merge(OldMetal.SOLD, pending.oldMetalSold, Double::sum);
             if (pending.upkeepSold != 0) s.otherParts.merge(UPKEEP_SOLD, pending.upkeepSold, Double::sum);
+            if (pending.householdServices != 0) s.otherParts.merge(HOUSEHOLD_SERVICES, pending.householdServices, Double::sum);
         } else {
             s.otherParts = nameOtherRevenue();
         }
@@ -2751,6 +2793,18 @@ public abstract class Sector {
         s.salesTax = capitalTaxCredit != 0 ? salesTaxRemitted + capitalTaxCredit : salesTaxRemitted;
         double earned = s.foreignIncome != 0 ? s.operatingIncome + s.foreignIncome : s.operatingIncome;
         s.preTaxIncome = earned - s.interest - s.borrowingCosts - s.propertyTax - s.salesTax;
+        // HC1's broker reserves the receipt's VAT and imports the rest: its
+        // margin is zero. Cancelling those doubles can leave a few ulps that
+        // would issue an entire company in one price unit and none in another.
+        // Normalize only arithmetic dust, never a real tax change or margin;
+        // the money audit's tolerance and every cash-flow check stay unchanged.
+        if (pending.householdServices > 0 && pending.oldMetalSold == 0
+                && s.localSales == 0 && s.exports == 0 && s.payroll == 0
+                && s.electricity == 0 && s.water == 0 && s.maintenance == 0
+                && s.interest == 0 && s.borrowingCosts == 0 && s.propertyTax == 0 && s.foreignIncome == 0) {
+            double scale = Math.max(Math.abs(s.revenue), Math.max(Math.abs(s.inputs), Math.abs(s.salesTax)));
+            if (Double.isFinite(scale) && Math.abs(s.preTaxIncome) <= 8 * Math.ulp(scale)) s.preTaxIncome = 0;
+        }
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
         // ...less nothing twice: stock paid for when it was bought is a cost
@@ -2817,6 +2871,9 @@ public abstract class Sector {
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherParts);
         s.otherInputs = saved.otherInputs == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherInputs);
+        // ...a statement saved before FC2 named none (null): it sold none.
+        s.servicesSold = saved.servicesSold == null
+                ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.servicesSold);
         s.paidEarlier = saved.paidEarlier;
         s.borrowingCosts = saved.borrowingCosts;
         s.capitalBySupplier = saved.capitalBySupplier == null
@@ -3146,6 +3203,12 @@ public abstract class Sector {
         double made = buildings == null ? 0 : buildings.totalBySector(key, t -> t.makes(g));
         if (!(made > 0)) return orderShares.getOrDefault(g, 1.0);
         return buildings.totalBySector(key, t -> t.makes(g) * buildingOrder(t)) / made;
+    }
+
+    /** This template's native joint-run weight relative to its good's fleet average; read during capture, before endOrders(). */
+    double productionWeight(BuildingsTemplate t, Good g) {
+        double average = flowRunShare(g);
+        return average > 0 ? buildingOrder(t) / average : 0;
     }
 
     /** A sector whose output is limited by what is in the ground says so here. */
@@ -3927,6 +3990,9 @@ public abstract class Sector {
      * so every month - so a sector that splits this figure splits all of it.
      */
     public Map<String, Double> otherRevenueParts() { return statement.otherParts; }
+
+    /** ...and the exports that are not a good, by name (FC2; Statement.servicesSold): the builders' work sold abroad. In revenue beside the goods sold and otherRevenue. */
+    public Map<String, Double> servicesSoldParts() { return statement.servicesSold; }
 
     /**
      * ...and the same for the cost line: what is in Inputs that is not a good.

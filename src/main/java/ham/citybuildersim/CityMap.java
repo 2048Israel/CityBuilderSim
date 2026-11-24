@@ -5259,12 +5259,37 @@ public final class CityMap {
     private long trainRoutesAt = Long.MIN_VALUE;
     private int trainRoutesWagons = -1;
     private long trainRoutesSidings = -1;
+    private long trainRoutesRoutable = -1;
 
     /** A district's plan's sidings' ways (Drawn.sidingWays) with the stamp of the link they came with (MF1): kept when its plan is adopted, so the trains' routes do not wait on a plan being kept drawn (PLANS_KEPT); valid while that link is. */
     private record PlanSidings(long stamp, int[][] ways) { }
     private final Map<Long, PlanSidings> planSidings = new HashMap<>();
     /** Moved whenever a plan adopted has other sidings than the ones kept: trainRoutes() is made again. */
     private long planSidingsVersion;
+
+    /**
+     * Which plans' sidings the trains' routes may run to now (RR1): a sum over the kept sidings whose district's link holds, with the
+     * stamp they came with, and whose band holds up to it - what planSidingRoutes() reads - so trainRoutes() is made again when one
+     * comes to hold or stops. WHY (RR1, Jerus 2026-11-20: "random 90 degree turns", his shot 5 at month 1,208): the routes were kept
+     * against the sidings' version alone, which moves only when a plan comes out with other sidings. Right after a month a band's
+     * links do not hold until its plans are drawn again; the screen asks for the routes first, they were made without the siding and
+     * kept, and the plan drawn again with the same sidings moved nothing: no train to the siding and no arc at its corners all month,
+     * its turns drawn as the plots' square L.
+     */
+    private long planSidingsRoutable() {
+        if (planSidings.isEmpty()) return 0;
+        long sum = 0;
+        for (Map.Entry<Long, PlanSidings> e : planSidings.entrySet()) {
+            District d = districtAt(e.getKey());
+            Link l = d == null ? null : links.get(d);
+            if (l == null || l.stamp() != e.getValue().stamp()) continue;
+            int b = band(d.chainIndex);
+            checkBand(b);
+            if (d.chainIndex >= bandValidTo[b]) continue;
+            sum += World.mix(e.getKey() ^ l.stamp());
+        }
+        return sum;
+    }
 
     /** A bend of the routes the tiles draw (FX5), with whether it lies on double track (its corner plot's M_DOUBLE). */
     private record DrawnBend(TrackCurves.Bend bend, boolean doubled) { }
@@ -5308,11 +5333,14 @@ public final class CityMap {
      * the ladder's end to the siding's far end, a works' siding its own length
      * from the main line) for TrainSchedule to seat only the trains it takes.
      * The map's alone: nothing in the model reads it.
-     * Kept against changes() and the wagon tracks the railway's picture gives.
+     * Kept against changes(), the wagon tracks the railway's picture gives and
+     * (RR1) which plans' sidings it may run to now (planSidingsRoutable()).
      */
     public List<TrainSchedule.Route> trainRoutes() {
         int wagons = wagonTracksOf(railPicture.wagonShare());
-        if (trainRoutesCache != null && trainRoutesAt == changes && trainRoutesWagons == wagons && trainRoutesSidings == planSidingsVersion) return trainRoutesCache;
+        long routable = planSidingsRoutable();
+        if (trainRoutesCache != null && trainRoutesAt == changes && trainRoutesWagons == wagons && trainRoutesSidings == planSidingsVersion
+                && trainRoutesRoutable == routable) return trainRoutesCache;
         long sidingsNow = planSidingsVersion;
         List<TrainSchedule.Route> out = new ArrayList<>();
         List<TrackCurves.Bend> found = new ArrayList<>();
@@ -5368,6 +5396,7 @@ public final class CityMap {
         trainRoutesAt = changes;
         trainRoutesWagons = wagons;
         trainRoutesSidings = sidingsNow;
+        trainRoutesRoutable = routable;
         return out;
     }
 
@@ -5394,6 +5423,65 @@ public final class CityMap {
         if (arm < 0) return null;
         CityRuns.Arm a = runs.rail().arms.get(arm);
         return a.steps > 0 ? new long[] { a.x, a.y } : null;
+    }
+
+    /**
+     * The highways' portal (HWW1), as the railway's (portal()): the plot where their gate arm ends
+     * (CityRuns.gateArm(): of the home piece's arms, the one heading nearest the gateway), which the world's
+     * trucks come out of and go back into, when the highways reach a street, have no line to the world, and
+     * that arm ends at the city's own water - read ahead along its heading as worldLine() reads an arm, an
+     * owned plot that is not dry ground before any plot the city does not own. {x, y, arm}; null otherwise:
+     * an arm still on its dry way to the edge has its line to come, and no truck yet (TruckRouteCheck 1).
+     * WHY. On Jerus's fjord city at month 1,204 (0.9.181, 421,561 people, gateway south) all 749 of the
+     * highways' plots were laid and every arm ended at the city's own water or short of its edge - the gate
+     * arm one plot from the fjord, the city's ground running on 336 plots south of the hub - so there was no
+     * highway line, and no world truck route or trip: the trucks of a city of 421,561 never came or went.
+     */
+    long[] highwayPortal() {
+        if (!runs.highwaysReach()) return null;
+        for (WorldLine l : worldLines()) if (l.net() == CityRuns.HIGHWAYS) return null;
+        CityRuns.Net n = runs.highways();
+        int arm = CityRuns.gateArm(n, runs.gateway());
+        if (arm < 0) return null;
+        CityRuns.Arm a = n.arms.get(arm);
+        if (a.steps <= 0 || CityRuns.pieceOf(n, a) != 0) return null;
+        int dx = CityRuns.DX[a.head], dy = CityRuns.DY[a.head];
+        for (int s = 1; s <= WORLD_GAP; s++) {
+            int g = runGround.at(a.x + (long) dx * s, a.y + (long) dy * s, -1);
+            if (g == -1) return null;
+            if (!World.dry(g)) return new long[] { a.x, a.y, arm };
+        }
+        return null;
+    }
+
+    /**
+     * Where the world's trucks come in (HWW1): the highways' arm they come in at, the points they run before
+     * its end - the world line's far point, TruckSchedule.WORLD_PLOTS out along its way, and the point where
+     * it leaves the city's ground; none at the portal (highwayPortal()), out of which they come at the arm's
+     * end itself - and the plots they fade in over: the world part's length, or at the portal PORTAL_FADE.
+     */
+    private record TruckGate(int arm, List<double[]> in, double fade, boolean portal) {
+        /** How far a truck on the way through pts fades in: at the portal PORTAL_FADE plots, no more than the way's length. */
+        double fadeOver(List<double[]> pts) {
+            if (!portal) return fade;
+            double length = 0;
+            for (int k = 1; k < pts.size(); k++) length += Math.hypot(pts.get(k)[0] - pts.get(k - 1)[0], pts.get(k)[1] - pts.get(k - 1)[1]);
+            return Math.min(fade, length);
+        }
+    }
+
+    /** The trucks' way in from the world: the highways' world line where they have one, their portal where they have none (HWW1), else null. */
+    private TruckGate truckGate() {
+        WorldLine line = null;
+        for (WorldLine l : worldLines()) if (l.net() == CityRuns.HIGHWAYS) line = l;
+        if (line != null) {
+            double r = Math.toRadians(line.way());
+            double fx = line.x() + Math.cos(r) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TruckSchedule.WORLD_PLOTS;
+            return new TruckGate(line.arm(), List.of(new double[] { fx, fy }, new double[] { line.x(), line.y() }),
+                    Math.hypot(line.x() - fx, line.y() - fy), false);
+        }
+        long[] p = highwayPortal();
+        return p == null ? null : new TruckGate((int) p[2], List.of(), PORTAL_FADE, true);
     }
 
     /** A route from the portal (TN1): the route itself, faded in over PORTAL_FADE plots of its track (no more than its length) rather than over the first straight of its way. */
@@ -5717,10 +5805,10 @@ public final class CityMap {
         return new Rounded(r[0], r[1], fade);
     }
 
-    /** Adds the point (x, y) to pts unless the last one is there (no leg of no length). */
+    /** Adds the point (x, y) to pts unless the last one is there (no leg of no length); the first point of a way from the highways' portal (HWW1) to an empty pts. */
     private static void addNew(List<double[]> pts, double x, double y) {
-        double[] last = pts.get(pts.size() - 1);
-        if (Math.abs(last[0] - x) < 1e-9 && Math.abs(last[1] - y) < 1e-9) return;
+        double[] last = pts.isEmpty() ? null : pts.get(pts.size() - 1);
+        if (last != null && Math.abs(last[0] - x) < 1e-9 && Math.abs(last[1] - y) < 1e-9) return;
         pts.add(new double[] { x, y });
     }
 
@@ -5831,31 +5919,29 @@ public final class CityMap {
      * is the world part's length. A ramp the way does not reach, one that runs
      * under TRUCK_ROUTE_LEAST plots along the highways (the arm the line leaves
      * from) and a second route to the same plot are left out, and no more than
-     * TRUCK_ROUTES_MOST are kept. None without the highways' world line, which
-     * exists only while they reach a street (CityRuns.highwaysReach()). The
-     * map's alone: nothing in the model reads it. Kept against changes().
+     * TRUCK_ROUTES_MOST are kept. Without the highways' world line (which
+     * exists only while they reach a street, CityRuns.highwaysReach()) a route
+     * starts at their portal instead, where their gate arm ends at the city's
+     * own water (highwayPortal(), HWW1), faded in over PORTAL_FADE plots; with
+     * neither, none. The map's alone: nothing in the model reads it. Kept
+     * against changes().
      */
     public List<TruckSchedule.Route> truckRoutes() {
         if (truckRoutesCache != null && truckRoutesAt == changes) return truckRoutesCache;
         List<TruckSchedule.Route> out = new ArrayList<>();
-        WorldLine line = null;
-        for (WorldLine l : worldLines()) if (l.net() == CityRuns.HIGHWAYS) line = l;
-        if (line != null) {
-            double r = Math.toRadians(line.way());
-            double fx = line.x() + Math.cos(r) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TruckSchedule.WORLD_PLOTS;
+        TruckGate gate = truckGate();
+        if (gate != null) {
             java.util.Set<String> ends = new java.util.HashSet<>();
             for (long[] ramp : runs.highwayRamps()) {
                 if (out.size() >= TRUCK_ROUTES_MOST) break;
-                double[][] way = runs.highwayWayTo(line.arm(), ramp[0], ramp[1]);
+                double[][] way = runs.highwayWayTo(gate.arm(), ramp[0], ramp[1]);
                 if (way == null || way[0].length == 0) continue;
                 double along = 0;
                 for (int k = 1; k < way[0].length; k++) along += Math.hypot(way[0][k] - way[0][k - 1], way[1][k] - way[1][k - 1]);
                 if (along < TRUCK_ROUTE_LEAST || !ends.add(ramp[0] + "," + ramp[1])) continue;
-                List<double[]> pts = new ArrayList<>();
-                pts.add(new double[] { fx, fy });
-                pts.add(new double[] { line.x(), line.y() });
+                List<double[]> pts = new ArrayList<>(gate.in());
                 for (int k = 0; k < way[0].length; k++) addNew(pts, way[0][k], way[1][k]);
-                out.add(truckRoute(true, pts, Math.hypot(line.x() - fx, line.y() - fy)));
+                out.add(truckRoute(true, pts, gate.fadeOver(pts)));
             }
         }
         truckRoutesCache = out;
@@ -6066,8 +6152,10 @@ public final class CityMap {
      * grown by TRIP_REACH, until every road end of the district is settled; a
      * road's leg is the tree's way from its ramp to its end, a road that ends
      * at a ramp having a leg of that plot alone. A road no ramp reached: no
-     * world trip for it. NO WAY IN YET: while the highways have no world
-     * line (a city before its highways leave it) there is no trip to follow
+     * world trip for it; where the highways have no world line but a portal
+     * (highwayPortal(), HWW1: their gate arm ends at the city's own water),
+     * the world trip comes out of the portal. NO WAY IN YET: while they have
+     * neither (a city before its highways leave it) there is no trip to follow
      * whole, and each drawn road keeps FR5's access route instead (from its
      * end on the streets to its gate, every load: accessRouteInto()).
      *
@@ -6095,29 +6183,28 @@ public final class CityMap {
             plans.add(new TripPlan(d, got, (baseDX + d.dx) * DISTRICT, (baseDY + d.dy) * DISTRICT));
         }
         plans.sort(java.util.Comparator.comparingLong(p -> p.d().key));
-        WorldLine line = null;
-        for (WorldLine l : worldLines()) if (l.net() == CityRuns.HIGHWAYS) line = l;
+        TruckGate gate = truckGate();
         List<DistrictTrips> out = new ArrayList<>();
         Map<Long, TripLegs> kept = new HashMap<>();
-        if (line != null) {
+        if (gate != null) {
             tripReach.clear();
             for (TripPlan p : plans) {
                 if (p.dr().access == null) continue;
                 long hash = runs.frameHash(p.ox() - TRIP_REACH, p.oy() - TRIP_REACH, TRIP_BOX, TRIP_BOX), met = metStamps(plans, p);
                 TripLegs legs = tripLegs.get(p.d().key);
-                if (legs == null || legs.stamp != p.dr().stamp || legs.met != met || legs.hash != hash || legs.arm != line.arm()) {
+                if (legs == null || legs.stamp != p.dr().stamp || legs.met != met || legs.hash != hash || legs.arm != gate.arm()) {
                     legs = new TripLegs();
                     legs.stamp = p.dr().stamp;
                     legs.met = met;
                     legs.hash = hash;
-                    legs.arm = line.arm();
+                    legs.arm = gate.arm();
                     for (int[] way : p.dr().access) if (way.length >= 2) legs.roads.add(new TripRoad(way, p.ox(), p.oy()));
-                    if (!legs.roads.isEmpty()) tripSearch(p, plans, line, legs);
+                    if (!legs.roads.isEmpty()) tripSearch(p, plans, gate.arm(), legs);
                 }
                 kept.put(p.d().key, legs);
             }
             tripReach.clear();
-            tripTrips(plans, kept, line, out);
+            tripTrips(plans, kept, gate, out);
         } else {
             // No way in from the world yet (a city before its highways leave it): each drawn road keeps FR5's access route, from its
             // end on the streets to its gate, every load - what Jerus checked on such a city (FR5-C) - until a whole trip can be drawn.
@@ -6185,7 +6272,7 @@ public final class CityMap {
      * The street legs of one district's roads (legs.roads), settled from the ramps in its search box by a Dial's search over the
      * drawn plans' streets; each road's ramp and leg are set when a ramp reached its end.
      */
-    private void tripSearch(TripPlan p, List<TripPlan> plans, WorldLine line, TripLegs legs) {
+    private void tripSearch(TripPlan p, List<TripPlan> plans, int arm, TripLegs legs) {
         tripSearches++;
         int area = TRIP_BOX * TRIP_BOX, bw = TRIP_BOX;
         if (tripSeen == null) {
@@ -6220,7 +6307,7 @@ public final class CityMap {
                 long rx = bx0 + i % bw, ry = by0 + i / bw, key = plot(rx, ry);
                 Boolean reach = tripReach.get(key);
                 if (reach == null) {
-                    reach = runs.highwayWayTo(line.arm(), rx, ry) != null;
+                    reach = runs.highwayWayTo(arm, rx, ry) != null;
                     tripReach.put(key, reach);
                 }
                 if (!reach) continue;
@@ -6295,7 +6382,7 @@ public final class CityMap {
      * The trips of every district in `plans` whose street legs are in `kept`, into out: the world trips, and the home trips among the roads
      * whose legs come to one ramp. Made whole each time (the highways' parts are cheap).
      */
-    private void tripTrips(List<TripPlan> plans, Map<Long, TripLegs> kept, WorldLine line, List<DistrictTrips> out) {
+    private void tripTrips(List<TripPlan> plans, Map<Long, TripLegs> kept, TruckGate gate, List<DistrictTrips> out) {
         // The roads by the ramp their leg comes from, in district and road order.
         Map<Long, List<TripRoad>> byRamp = new HashMap<>();
         for (TripPlan p : plans) {
@@ -6303,8 +6390,6 @@ public final class CityMap {
             if (legs != null) for (TripRoad r : legs.roads) if (r.leg != null) byRamp.computeIfAbsent(r.ramp, ramp -> new ArrayList<>()).add(r);
         }
         Map<Long, double[][]> highway = new HashMap<>();
-        double rad = Math.toRadians(line.way());
-        double fx = line.x() + Math.cos(rad) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(rad) * TruckSchedule.WORLD_PLOTS;
         for (TripPlan p : plans) {
             TripLegs legs = kept.get(p.d().key);
             if (legs == null) continue;
@@ -6313,13 +6398,11 @@ public final class CityMap {
                 if (r.leg == null) continue;
                 // The world trip.
                 double[][] way = highway.computeIfAbsent(r.ramp, ramp -> {
-                    double[][] w = runs.highwayWayTo(line.arm(), plotX(ramp), plotY(ramp));
+                    double[][] w = runs.highwayWayTo(gate.arm(), plotX(ramp), plotY(ramp));
                     return w == null || w[0].length == 0 ? new double[0][] : w;
                 });
                 if (way.length > 0) {
-                    List<double[]> pts = new ArrayList<>();
-                    pts.add(new double[] { fx, fy });
-                    pts.add(new double[] { line.x(), line.y() });
+                    List<double[]> pts = new ArrayList<>(gate.in());
                     for (int k = 0; k < way[0].length; k++) addNew(pts, way[0][k], way[1][k]);
                     // ...the street leg and the access road each straightened by itself, so the road's end stays a point of the trip.
                     List<double[]> leg = new ArrayList<>(), road = new ArrayList<>();
@@ -6327,7 +6410,7 @@ public final class CityMap {
                     addWay(road, r.way, r.ox, r.oy, false, 0);
                     appendStraight(pts, leg);
                     appendStraight(pts, road);
-                    trips.add(truckRoute(true, pts, Math.hypot(line.x() - fx, line.y() - fy)));
+                    trips.add(truckRoute(true, pts, gate.fadeOver(pts)));
                 }
                 // The home trip: from the nearest other road's gate that comes to the same ramp.
                 TripRoad partner = null;
@@ -6442,6 +6525,12 @@ public final class CityMap {
     static final int RUN_TILES_KEPT = 256;
 
     /**
+     * ...and while a link's search runs (CityRuns.linkWay(), AP2): 8,192 tiles, so a search of LINK_SEARCH plots, 2,048 tiles' worth and
+     * the ground beside them, reads each tile once (slot 9 at 17 million people: two searches a month read 4,046 tiles, 89,679 times at 256).
+     */
+    static final int RUN_SEARCH_TILES_KEPT = 8192;
+
+    /**
      * The ground the runs read (CityRuns.Ground): a plot's World class where
      * the city owns it, -1 where it does not - the terrain a tile's row or
      * column at a time (World.lineTerrain(), byte for byte the painter's
@@ -6452,16 +6541,43 @@ public final class CityMap {
         private final Map<Long, byte[]> lines = new LinkedHashMap<>(RUN_LINES_KEPT * 2, 0.75f, true) {
             @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > RUN_LINES_KEPT; }
         };
+        /** How many tiles the three maps below keep: RUN_TILES_KEPT, or RUN_SEARCH_TILES_KEPT while a link's search runs (searching(), AP2). */
+        private int tilesKept = RUN_TILES_KEPT;
+        /** The tiles whose terrain it has drawn (a miss of `tiles`): a harness's (GatewayCheck, AP2). */
+        private long drawn;
         private final Map<Long, byte[]> tiles = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > RUN_TILES_KEPT; }
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > tilesKept; }
         };
         private final Map<Long, boolean[]> owned = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > RUN_TILES_KEPT; }
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > tilesKept; }
         };
         /** ET5: ownership with no mask (atRaw()), kept only while the city holds a picture of its landmasses; the same size and the same version as `owned`. */
         private final Map<Long, boolean[]> rawOwned = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > RUN_TILES_KEPT; }
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > tilesKept; }
         };
+
+        /**
+         * (AP2) A link's search keeps every tile it reads, so its breadth-first ring, wider than RUN_TILES_KEPT tiles on a large
+         * city, does not draw the same tile's terrain again at every step; once it ends the maps keep their usual size, the
+         * tiles read least recently let go. What is kept changes, never what is read.
+         */
+        @Override public void searching(boolean on) {
+            tilesKept = on ? RUN_SEARCH_TILES_KEPT : RUN_TILES_KEPT;
+            if (!on) {
+                trim(tiles);
+                trim(owned);
+                trim(rawOwned);
+            }
+        }
+
+        /** Lets go the eldest tiles of an access-ordered map until it holds tilesKept. */
+        private void trim(Map<Long, ?> m) {
+            java.util.Iterator<Long> it = m.keySet().iterator();
+            while (m.size() > tilesKept && it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+        }
         private long rawAt = Long.MIN_VALUE, lastRawKey = Long.MIN_VALUE;
         private boolean[] lastRaw;
         private long ownedAt = Long.MIN_VALUE, lastLineKey = Long.MIN_VALUE, lastOwnKey = Long.MIN_VALUE;
@@ -6496,6 +6612,7 @@ public final class CityMap {
                 if (t == null) {
                     t = new byte[TilePainter.PLOTS];
                     World.of(worldKey).tileTerrain(tx, ty, t);
+                    drawn++;
                     tiles.put(tk, t);
                 }
                 return t[iy * World.TILE + ix];
@@ -6596,6 +6713,12 @@ public final class CityMap {
 
     /** The ground the runs read: a harness's, to lay runs of its own on the city's ground. */
     CityRuns.Ground runGround() { return runGround; }
+
+    /** (AP2) The tiles the runs' ground keeps now, and the tiles' terrain it has drawn since the map was made: a harness's (GatewayCheck, AP2). */
+    int runTilesHeld() { return runGround.tiles.size(); }
+    long runTilesDrawn() { return runGround.drawn; }
+    /** (AP2) The tiles each ownership keep holds now, the masked and the raw (ET5), which searching(false) trims as it trims the tiles: a harness's (GatewayCheck, AP2). */
+    int[] runOwnedHeld() { return new int[] { runGround.owned.size(), runGround.rawOwned.size() }; }
 
     /* =====================================================================
        THE CITY'S GROUND IN PIECES (batch CL5, slice B)
@@ -7561,6 +7684,11 @@ public final class CityMap {
 
     /** ...and (batch FR7) the frame's highway plots that carry a ramp into `ramp` (null to leave them): where an access road may end. */
     long runsInto(District d, byte[] fixed, boolean[] ramp) {
+        return runsInto(d, fixed, ramp, null);
+    }
+
+    /** ...and (RR1) the end ramps of the highways' arms that wait at the city's own water into `join` (null to leave them): where the plan lays a street beneath (CityRuns.waitingEnds()). */
+    long runsInto(District d, byte[] fixed, boolean[] ramp, boolean[] join) {
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
         int f = DistrictPlan.FRAME;
         byte[] marks = ramp == null ? null : new byte[f * f];
@@ -7571,6 +7699,11 @@ public final class CityMap {
             if (b == CityRuns.F_RAIL_OVER) fixed[i] = DistrictPlan.FIXED_HIGHWAY;
             else if (b == CityRuns.F_YARD) fixed[i] = DistrictPlan.FIXED_YARD;
             else if (b == CityRuns.F_RESERVE) fixed[i] = DistrictPlan.FIXED_RESERVE;
+        }
+        if (join != null && ramp != null) for (long[] e : runs.waitingEnds()) {
+            if (e[0] < x0 || e[1] < y0 || e[0] >= x0 + f || e[1] >= y0 + f) continue;
+            int i = (int) ((e[1] - y0) * f + e[0] - x0);
+            if (ramp[i]) join[i] = true;
         }
         return h;
     }
@@ -10786,8 +10919,11 @@ public final class CityMap {
         // The city's highways and railway through its frame (0.7.89: the city's runs; THE NETWORK's plan's until 0.7.88), its yards
         // among them. The model's Elevated Highways are the runs' plots, none a street's surface: what the runs could not lay the
         // map counts (THE RUNS).
-        if (runs.highways().started) in.ramp = new boolean[f * f];
-        runsInto(d, in.fixed, in.ramp);
+        if (runs.highways().started) {
+            in.ramp = new boolean[f * f];
+            in.rampJoin = new boolean[f * f];
+        }
+        runsInto(d, in.fixed, in.ramp, in.rampJoin);
         // The works that need an access road (batch FR7): its yards and sea terminals.
         worksInto(d, in);
         // ...and its share of the Rail Spurs the runs' sidings left: a siding to each of that many of the bulk works its plan places (batch FR7 slice 5, D14).

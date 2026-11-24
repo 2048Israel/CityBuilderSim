@@ -723,6 +723,12 @@ public class GdpCheck {
                     * EconomyManager.heldPrice(railTown.getMarkets().get(Good.ROLLING_STOCK));
             spurs = asManyAsWorth(railGdpThen, spurWorth);
             RailCheck.lay(railTown, "Rail Spur", spurs);
+            // FC2, 2026-11-23: on FC2's path the railway held D$0.92 of cash when the spurs were laid (a railway held with no track to earn on) and bid for the 60 sets
+            // the three spurs need, and bought none in either month (0.0 sets bought abroad, D$0.00 imported, its cash D$0.00002 after the first), because a sector
+            // buys its fleet only as far as it can pay for it (Sector, BUY ONLY WHAT IT CAN PAY FOR), so the month read D$1,059.17 without the held term
+            // and not negative. The railway is handed four times the fleet's worth in cash, as HaulageCheck hands Freight its
+            // money, so the order is paid for whatever its till held: 60 sets bought abroad for D$4,286.95, and the month reads D$-3,263.16 without the held term.
+            railTown.getSectors().freight().setCash(4 * spurs * spurWorth);
             railTown.simulateMonths(1);
         } finally { System.setOut(out); }
         ham.citybuildersim.sectors.Freight rail = railTown.getSectors().freight();

@@ -162,18 +162,18 @@ public class ExchangeCheck {
         return r;
     }
 
-    /** Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. */
+    /** A hundred debt-free savers at the exchange boundary, with the stated take-home and cash. */
     static HouseholdBalance savers(double savedEach, double takeHome) {
         HouseholdBalance hb = new HouseholdBalance();
         hb.seedConstants(TODAYS_DOLLAR);
         double[][] mix = new double[FamilyStructure.values().length][PayTier.values().length];
         mix[FamilyStructure.COUPLE.ordinal()][PayTier.UNSKILLED.ordinal()] = 100;
-        double[] income = new double[HouseholdBalance.ROWS];
-        income[PayTier.UNSKILLED.ordinal()] = 100 * takeHome;
-        double[] none = new double[HouseholdBalance.ROWS];
-        double[] spent = new double[HouseholdBalance.ROWS];
-        hb.advanceMonth((s, t) -> mix[s.ordinal()][t.ordinal()], income, 0, none, spent, .25, .05, 1);
-        hb.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED).savings = savedEach;
+        // Census the position without a preceding card/shock month: these
+        // cases start from savers, rather than borrowers whose cash alone was reset.
+        hb.censusOnly((shape, tier) -> mix[shape.ordinal()][tier.ordinal()]);
+        Household c = hb.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        c.disposable = takeHome;
+        c.savings = savedEach;
         return hb;
     }
 
@@ -494,10 +494,133 @@ public class ExchangeCheck {
                         && e1.fund.getMonthSold() == 0);
     }
 
+    /** RS1: cause the rescued bank's sale, its unavailable self-bid and both price faults through settlement. */
+    static void rescueSaleChecks() {
+        out.println("\n--- RS1. the city sells its rescued bank to real buyers ---");
+        for (boolean local : new boolean[] { false, true }) {
+            Equity reg = withPaid(Equity.BANK, 100, 40);
+            reg.takeAllForCity(Equity.BANK, 1_000);
+            TreasuryFund fund = new TreasuryFund();
+            fund.notePaidInByHand(100_000);
+            TreasuryFund.Resolution rescue = TreasuryFund.newResolution(1);
+            rescue.paid = 12_000;
+            fund.noteResolution(rescue);
+            Exchange ex = exchange();
+            ex.attachFund(fund);
+            double fair = reg.fairValue(Equity.BANK, 24_000, 0, W);
+            double ask = fair * (local ? .5 : .01);
+            fund.queue(new TreasuryFund.HandOrder(false, Equity.BANK, -1, false, 1_000, 1, ask));
+            HouseholdBalance buyers = local ? savers(10_000, 4) : null;
+            double householdCash = local ? couple(buyers).savings * couple(buyers).households() : 0;
+            double deposit = local ? HURDLE : 0;
+            step(ex, reg, buyers, null, new Firms(), bookOf(Equity.BANK, 24_000), W, deposit, 2);
+            double sold = 1_000 - reg.getCityShares(Equity.BANK);
+            assertTrue("RS1-0: the world buys rescued shares without a bank buyback", reg.getForeignShares(Equity.BANK) > 0);
+            close("RS1-0: a sale transfers shares rather than cancelling them", reg.getShares(Equity.BANK), 1_000, 1e-9);
+            close("RS1-sale: the rescue book gives up exactly the buyers' shares", sold,
+                    reg.getForeignShares(Equity.BANK) + (local ? buyers.sharesHeld(Equity.BANK) : 0), 1e-9);
+            assertTrue("RS1-sale: the city actually relinquishes ownership", sold > 0);
+            close("RS1-sale: the fund receives the price buyers paid", fund.getCash() - 100_000, sold * ask, 1e-8);
+            close("RS1-sale: rescue cost falls pro rata", fund.getRescueCost(), 12_000 * (1 - sold / 1_000), 1e-8);
+            close("RS1-1: its own rule leaves no bid behind its crossing hand sale",
+                    ex.bookOf(Equity.BANK).resting(Exchange.FUND, OrderBook.Side.BUY), 0, 1e-9);
+            if (local) {
+                double floor = (deposit + Exchange.HOUSEHOLD_PREMIUM) * (1 + Exchange.BAND);
+                assertTrue("RS1-star fixture: fair misses the household hurdle, the offered ask clears it",
+                        ex.expectedReturn(Equity.BANK, fair) < floor && ex.expectedReturn(Equity.BANK, ask) > floor);
+                assertTrue("RS1-star: households too can buy the rescue book", buyers.sharesHeld(Equity.BANK) > 0);
+                close("RS1-star: households pay the fund from their savings",
+                        householdCash - couple(buyers).savings * couple(buyers).households(),
+                        ex.getFundSoldToHouseholds(), 1e-8);
+            }
+        }
+
+        // A bid and an ask can legitimately cross when the clearing bars self-trade.
+        Equity reg = equity();
+        reg.takeAllForCity(Equity.BANK, 1_000);
+        TreasuryFund fund = new TreasuryFund();
+        fund.notePaidInByHand(100_000);
+        Exchange ex = exchange();
+        ex.attachFund(fund);
+        step(ex, reg, null, null, new Firms(), bookOf(Equity.BANK, 14_140), W, 0, 1);
+        double fair = ex.fair(Equity.BANK);
+        ex.tradeForCheck(Equity.BANK, Exchange.FUND_HAND, OrderBook.Side.SELL, fair * .01, 1_000);
+        assertTrue("RS1-2 fixture: an ask rests below the fund's own bid", ex.bestBid(Equity.BANK) > ex.bestAsk(Equity.BANK));
+        close("RS1-2: a crossed book uses fair value before its first trade", ex.price(Equity.BANK), fair, 1e-12);
+        assertTrue("RS1-2: the caption explains why there is no midpoint", ex.quoteWords(Equity.BANK).contains("crossed"));
+        ex.tradeForCheck(Equity.BANK, Exchange.WORLD, OrderBook.Side.BUY, fair, 10);
+        close("RS1-2: after a real trade the crossed book keeps the price paid", ex.price(Equity.BANK), ex.lastTrade(Equity.BANK), 1e-12);
+        assertTrue("RS1-2: the crossed last-trade quote can age", ex.quoteIsLastTrade(Equity.BANK));
+
+        out.println("\n--- RS1-3. a full desk cannot print a dust price (DK1's class) ---");
+        for (double scale : new double[] { 1, 1e9 }) {
+            int a = Equity.indexOf(Sectors.RETAIL), b = Equity.indexOf(Sectors.INDUSTRY);
+            int target = Equity.indexOf(Sectors.MATERIALS);
+            Equity r = equity();
+            Bank bank = bankWith(1e12 * scale);
+            double cap = Exchange.BOOK_LIMIT * bank.equity();
+            double held = Math.nextDown(cap / 2);
+            double[] book = new double[N];
+            for (int c : new int[] { a, b, target }) {
+                r.offer(c, 1e12, 0, null, W);
+                book[c] = 1e12 * scale;
+            }
+            for (int c : new int[] { a, b }) {
+                r.moveForeign(c, -held / scale);
+                r.moveDesk(c, held / scale);
+            }
+            bank.deskPays(2 * held);
+            bank.markSecurities(2 * held);
+            Exchange x = exchange();
+            step(x, r, null, null, new Firms(), book, W, 0, 1);
+            x.attach(r, null, bank, null, 1);
+            double residue = cap - 2 * held;
+            assertTrue("RS1-3 fixture: positive book room is below the sums' resolution but above quantity dust",
+                    residue / scale > OrderBook.DUST && residue <= MoneyAudit.tolerance(0, cap));
+            double cheap = x.fair(target) * .000259 / 14.14;
+            x.tradeForCheck(target, Exchange.WORLD, OrderBook.Side.SELL, cheap, 100);
+            x.tradeForCheck(target, Exchange.DESK, OrderBook.Side.BUY, x.fair(target), 100);
+            assertTrue("RS1-3: arithmetic residue cannot set the order card's last price", !x.hasTraded(target));
+            bank.injectCapital(cap * 1e-5);
+            x.tradeForCheck(target, Exchange.DESK, OrderBook.Side.BUY, x.fair(target), 100);
+            assertTrue("RS1-3 control: resolved room permits a real cheap trade", x.hasTraded(target));
+            close("RS1-3 control: a real trade records the actual buyer's price", x.lastTrade(target), cheap, 1e-12 * scale);
+
+            // The screenshot is the bank's own book: its buyback uses spare capital,
+            // not deskLimits(), but the same difference-of-money-sums can leave dust.
+            Bank own = bankWith(0);
+            double loans = 1e12 * scale;
+            double required = own.capitalTarget() * loans;
+            own.injectCapital(required + MoneyAudit.tolerance(0, required) / 2);
+            own.lend(loans);
+            own.refresh(1, 100 * loans, 0, loans, 0, 0);
+            Equity rescued = withRecord(Equity.BANK, months(100 * scale));
+            rescued.takeAllForCity(Equity.BANK, 1_000);
+            Exchange bankBook = exchange();
+            TreasuryFund city = new TreasuryFund();
+            bankBook.attachFund(city);
+            step(bankBook, rescued, null, null, new Firms(), bookOf(Equity.BANK, own.equity()), W, 0, 1);
+            bankBook.attach(rescued, null, own, null, 1);
+            double spare = own.buybackRoom(0);
+            out.printf(java.util.Locale.ROOT, "   RS1 bank scale %.0e: spare %.12g, resolution %.12g, target %.12g%n",
+                    scale, spare, MoneyAudit.tolerance(0, own.targetEquity()), own.targetEquity());
+            assertTrue("RS1-3 bank fixture: spare is below money resolution but buys more than quantity dust",
+                    spare / cheap > OrderBook.DUST && spare <= MoneyAudit.tolerance(0, own.targetEquity()));
+            double realPrice = bankBook.fair(Equity.BANK);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.FUND_HAND, OrderBook.Side.SELL, realPrice, 10);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.WORLD, OrderBook.Side.BUY, realPrice, 10);
+            close("RS1-3 bank fixture: a real sale has set the last price", bankBook.lastTrade(Equity.BANK), realPrice, 1e-12 * scale);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.FUND_HAND, OrderBook.Side.SELL, cheap, 100);
+            bankBook.tradeForCheck(Equity.BANK, Exchange.DESK, OrderBook.Side.BUY, bankBook.fair(Equity.BANK), 100);
+            close("RS1-3 bank: dust spare capital cannot replace a real last price", bankBook.lastTrade(Equity.BANK), realPrice, 1e-12 * scale);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        rescueSaleChecks();
 
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
         int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
@@ -942,11 +1065,12 @@ public class ExchangeCheck {
         double[] pay6 = new double[HouseholdBalance.ROWS];
         pay6[PayTier.UNSKILLED.ordinal()] = 100 * 4.0;
         pay6[PayTier.SKILLED.ordinal()] = 100 * 4.0;
-        two.advanceMonth((s, t) -> mix6[s.ordinal()][t.ordinal()], pay6, 0, none, none, .25, .05, 1);
+        two.censusOnly((s, t) -> mix6[s.ordinal()][t.ordinal()]);
+        for (Household c : two.cells()) if (c.households() > 0) c.disposable = 4;
         Household poor = two.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household rich = two.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
         poor.savings = 12;                                   // at its cushion: nothing to rebalance at the step
-        rich.savings = 100;
+        rich.savings = 1_000; // a bid deep enough at the current card-priced reservation
         // It earns what it pays out, $480 a year on 10,000 shares (4.8%), and is worth $1 a share: the rest of that is money past its cushion (EM1).
         Equity reg6 = withPaid(RETAIL, 40, 40);
         reg6.listIfUnlisted(RETAIL, 10_000, two);            // the founders: fifty shares a household
@@ -960,7 +1084,12 @@ public class ExchangeCheck {
         close("fixture: ...at the market, fair value", ex6.bestBid(RETAIL), 1.0, 1e-12);
         two.setMarket(ex6, reg6, dead);
         double[] shop6 = new double[HouseholdBalance.ROWS];
-        shop6[PayTier.UNSKILLED.ordinal()] = 100 * 18.0;     // $18k on $4k of pay and $12k saved: $2k short each
+        // Cause a pure $2k ordinary shortfall through the month's inputs.
+        // No cash and no income leave exactly that gap, without a separate
+        // income-scaled emergency bill or a distributed buffer to draw first.
+        poor.savings = 0;
+        pay6[PayTier.UNSKILLED.ordinal()] = 0;
+        shop6[PayTier.UNSKILLED.ordinal()] = 100 * 2.0;
         shop6[PayTier.SKILLED.ordinal()] = 100 * 1.0;
         double richShares = rich.shares(RETAIL), poorShares = poor.shares(RETAIL);
         two.advanceMonth((s, t) -> mix6[s.ordinal()][t.ordinal()], pay6, 0, none, shop6, .25, .05, 1);
@@ -983,7 +1112,8 @@ public class ExchangeCheck {
         out.println("\n--- 6b. a cell over its target sells HOME_SPEED of the excess to a cell under it, which buys OUT_SPEED of the gap ---");
 
         HouseholdBalance two2 = new HouseholdBalance();
-        two2.advanceMonth((s, t) -> mix6[s.ordinal()][t.ordinal()], pay6, 0, none, none, .25, .05, 1);
+        two2.censusOnly((s, t) -> mix6[s.ordinal()][t.ordinal()]);
+        for (Household c : two2.cells()) if (c.households() > 0) c.disposable = 4;
         Household under = two2.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household over = two2.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
         Equity reg6b = withPaid(RETAIL, 40, 40);             // as above: $480 a year, worth $1 a share
@@ -1101,6 +1231,11 @@ public class ExchangeCheck {
         double held7n = short7n.shares(RETAIL);
         short7n.shares[RETAIL] = 0;
         Exchange ex7n = exchange();
+        double[] taxCash7n = {0}; int[] taxCalls7n = {0};
+        owners7n.setInvestmentTaxes(new TaxPolicy(), ex7n::price, (line, amount) -> {
+            assertTrue("the waterfall credits its actual tax receiver by name", line.equals("Capital gains tax"));
+            taxCash7n[0] += amount; taxCalls7n[0]++;
+        });
         Firms firms7n = new Firms();
         firms7n.assets[RETAIL] = 10_000; firms7n.equity[RETAIL] = 10_000;
         firms7n.cash[RETAIL] = 5_000; firms7n.opex[RETAIL] = 100;
@@ -1115,15 +1250,24 @@ public class ExchangeCheck {
                 ex7n.bookOf(RETAIL).resting(Equity.COMPANIES[RETAIL], OrderBook.Side.BUY), pace7n / limit7n, 1e-9);
         close("...not one share retired yet", reg7n.getShares(RETAIL), shares7n, 1e-12);
         short7n.shares[RETAIL] = held7n;                     // ...the shares come back to the cell, and it is short of money
+        double people7n = short7n.households(), need7n = 20;
+        assertTrue("fixture: the requested net cash exceeds the entire resting gross bid", need7n * people7n > pace7n);
+        assertTrue("fixture: the seller holds enough shares to exhaust the resting bid", held7n * people7n > pace7n / limit7n);
+        close("the waiting bid has not yet generated any tax receipt", taxCash7n[0], 0, 0);
+        double taxBefore7n = owners7n.getCapitalGainsTax(); long callsBefore7n = owners7n.getGainAssessments();
         double raised7n = ex7n.sellForHousehold(reg7n, dead, owners7n, short7n, 20) * 100;
         assertTrue("fixture: a household short of money sells in the waterfall and the bid meets it", raised7n > 0);
+        assertTrue("the filled waterfall really withholds positive capital-gains tax", taxCash7n[0] > 0);
+        assertTrue("the single resting bid assesses and transfers its tax once", taxCalls7n[0] == 1 && owners7n.getGainAssessments() - callsBefore7n == 1);
+        close("the actual named receipt matches the native tax cash flow", taxCash7n[0], owners7n.getCapitalGainsTax() - taxBefore7n, 1e-12);
+        close("net seller cash plus the actual tax receipt exhausts the gross bid", raised7n + taxCash7n[0], pace7n, 1e-9);
         close("a household short of money sells into the resting bid, at the bid's price",
-                (held7n - short7n.shares(RETAIL)) * 100 * limit7n, raised7n, 1e-9);
-        close("...paid from the company's till", 5_000 - firms7n.cash[RETAIL], raised7n, 1e-9);
-        close("...the shares retired", shares7n - reg7n.getShares(RETAIL), raised7n / limit7n, 1e-9);
-        close("...counted as a buyback from the households", ex7n.getBuybackToHouseholds(RETAIL), raised7n, 1e-9);
+                (held7n - short7n.shares(RETAIL)) * 100 * limit7n, pace7n, 1e-9);
+        close("...paid from the company's till", 5_000 - firms7n.cash[RETAIL], pace7n, 1e-9);
+        close("...the shares retired", shares7n - reg7n.getShares(RETAIL), pace7n / limit7n, 1e-9);
+        close("...counted as a buyback from the households", ex7n.getBuybackToHouseholds(RETAIL), pace7n, 1e-9);
         close("...and the rest of the bid still rests", ex7n.bookOf(RETAIL).resting(Equity.COMPANIES[RETAIL], OrderBook.Side.BUY),
-                (pace7n - raised7n) / limit7n, 1e-9);
+                0, 1e-9);
 
         Equity loser = withRecord(RETAIL, months(-10));
         HouseholdBalance owners7l = savers(20.0, 4.0);
@@ -1373,7 +1517,8 @@ public class ExchangeCheck {
                     // with one side, the last trade held inside it; with neither, the last trade.
                     double bid = x.bestBid(c), ask = x.bestAsk(c), last = x.lastTrade(c);
                     boolean hasBid = !Double.isNaN(bid), hasAsk = !Double.isNaN(ask);
-                    double quote = hasBid && hasAsk ? (bid + ask) / 2 : hasAsk ? Math.min(last, ask) : hasBid ? Math.max(last, bid) : last;
+                    double quote = hasBid && hasAsk ? (bid > ask ? last : (bid + ask) / 2)
+                            : hasAsk ? Math.min(last, ask) : hasBid ? Math.max(last, bid) : last;
                     if (Math.abs(x.price(c) - quote) > 1e-12 * Math.max(1, quote)) quoteMisread++;
                     if (x.price(c) != last) quoteNotLastTrade++;
                 }

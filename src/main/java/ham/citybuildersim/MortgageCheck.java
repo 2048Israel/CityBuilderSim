@@ -70,7 +70,23 @@ import java.util.List;
  *      principal is the larger (the cushion that counts the payments is
  *      ExchangeCheck's).
  *
- * Every fixture causes its condition.
+ * Every fixture causes its condition. FS9: the played landlords' town moved
+ * with HN1-A (they order at the door's price): section 12's lean month no
+ * longer came in the sixty months it searched, and the others waited on what
+ * the played town happened to do. Each is set, not waited for:
+ *   2 and 3 play one month of the founded town (short of doors from the
+ *     first, so its landlords order in it): 2 reads the premium, the rate, the
+ *     loan and the audit in it; 3 seeds the landlords' book at half what the
+ *     shares are worth, which is what makes them hold, and reads that month.
+ *   5 (the rent floor), 6 (insurance) and 8 (save and load) stand
+ *     HOMES_STANDING homes for the landlords in a town whose works stand,
+ *     hold them from ordering, and write their mortgages and loans by hand
+ *     (issueMortgage, issueLoan): 5 plays the month that reads them, 6 owes
+ *     1.2 times what it owns for a slice to default, 8 plays the months a
+ *     term needs to be mid-way.
+ *   9 sets the tax policy, the builders' offset and the landlords' till.
+ *   12 writes a small and a large mortgage by hand, at PAYOUT_FIXTURE_RATE,
+ *     on homes that earn, and reads the month after each.
  */
 public class MortgageCheck {
 
@@ -307,13 +323,16 @@ public class MortgageCheck {
         out.println("\n--- 2. ...and a played month that writes one: the treasury takes the premium, and it closes ---");
         Game g = landlordCity(root, "origination");
         BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
-        int month = -1;
-        for (int i = 0; i < 24 && month < 0; i++) {
-            quietly(() -> g.simulateMonths(1));
-            if (lender.getMortgagesWrittenThisMonth() > 0) month = g.getMonth();
-        }
-        assertTrue("fixture: the landlords wrote a mortgage in a played month", month >= 0);
-        if (month < 0) return;
+        // FS9: ONE MONTH, NOT A WAIT. The town is founded short of doors, nothing on site and nothing owed, so its landlords order a
+        // House at the door in the first month it plays and the lender writes it then: that month is played, once, and read. (A mortgage
+        // written by hand between months would move no money, and what this section asks is the month's: the premium taken by the
+        // treasury, the loan handed over less its fee, the audit closed.)
+        assertTrue("fixture: the landlords have nothing on site and owe nothing before the month",
+                g.getBuildingManager().getUnderConstructionBySector(RE) == 0 && lender.getMortgages(RE).isEmpty());
+        quietly(() -> g.simulateMonths(1));
+        int month = g.getMonth();
+        assertTrue("fixture: the landlords wrote a mortgage in the one month played", lender.getMortgagesWrittenThisMonth() > 0);
+        if (lender.getMortgagesWrittenThisMonth() == 0) return;
         double premiums = 0, loans = 0;
         boolean atTheRate = true;
         for (Mortgage one : lender.getMortgages(RE)) {
@@ -369,8 +388,6 @@ public class MortgageCheck {
         out.println("\n--- 3. ...and in a played city, a landlord short of it holds, in those words ---");
         Game g = landlordCity(root, "downpayment");
         BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
-        String said = null;
-        int heldMonths = 0, month = -1;
         /*
          * ...WITH ITS SHARES CHEAP ON THE BOOK, so its owners are not asked
          * (0.7.12 round 2). A landlord short of the down payment asks its
@@ -385,18 +402,16 @@ public class MortgageCheck {
          * has their shares cheap - and nothing else moves.
          */
         int re = Equity.indexOf(RE);
-        for (int i = 0; i < 72; i++) {
-            g.getExchange().bookOf(re).seedLastPrice(.5 * g.getExchange().fair(re));
-            quietly(() -> g.simulateMonths(1));
-            if (g.getHeldForDownPayment().contains(RE)) {
-                heldMonths++;
-                if (said == null) { said = g.getLastInvestment(RE); month = g.getMonth(); }
-                assertTrue("...no mortgage is written in a month it holds for the down payment, month " + g.getMonth(),
-                        lender.getMortgagesWrittenThisMonth() == 0);
-            }
-        }
-        out.printf("   held for the down payment in %d of 72 months, first at month %d: %s%n", heldMonths, month, said);
-        assertTrue("fixture: the landlords did hold for the down payment", heldMonths > 0);
+        // FS9: THE SEEDING IS THE CAUSE, SO ONE MONTH IS READ, NOT WAITED FOR: with the book's last trade at half what the shares are worth
+        // the owners are not asked (Exchange.quoteSupportsIssue()), the founding till is short of the down payment on a House, and the
+        // landlords hold in the first month they order - the month played here, once.
+        g.getExchange().bookOf(re).seedLastPrice(.5 * g.getExchange().fair(re));
+        quietly(() -> g.simulateMonths(1));
+        String said = g.getLastInvestment(RE);
+        out.printf("   month %d, held for the down payment: %s%n", g.getMonth(), said);
+        assertTrue("fixture: the landlords did hold for the down payment", g.getHeldForDownPayment().contains(RE));
+        assertTrue("...no mortgage is written in a month it holds for the down payment, month " + g.getMonth(),
+                lender.getMortgagesWrittenThisMonth() == 0);
         assertTrue("...and the advisor said what it needed for the down payment",
                 said != null && said.startsWith("Holding: needs ")
                         && said.contains(String.format("%.0f%% down payment on a ",
@@ -484,13 +499,18 @@ public class MortgageCheck {
         assertTrue("...which leaves out the principal each payment repays",
                 both.getMonthlyInterest(RE) < paying.getMonthlyPayment() + bullet.getMonthlyInterestExpense() - 1e-9);
 
-        Game g = landlordCity(root, "floor");
+        Game g = landlordCity(root, "floor", true);
         BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
-        quietly(() -> g.simulateMonths(4));
+        // FS9: THE MORTGAGE IS WRITTEN BY HAND, not waited for: HOMES_STANDING homes stand for the floor to be over (it is spread over what
+        // the landlords own), the landlords are held from ordering, and a mortgage is issued on them between months - so the one month
+        // played reads it as the month's interest line and the month's payment, and the floor is read in that month.
+        standLandlords(g);
+        lender.issueMortgage(RE, 500, g.getMonth());
+        quietly(() -> g.simulateMonths(1));
         ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
         double repaid = lender.getMortgageRepaidThisMonth(RE);
         assertTrue("fixture: the landlords owe a mortgage and are paying it down",
-                lender.getMortgageCount(RE) > 0 && repaid > 0);
+                lender.getMortgageCount(RE) > 0 && repaid > 0 && re.getOwnedHousingCapacity() > 0);
         double carry = re.getMaintenanceExpense() + re.getPropertyTaxExpense() + re.getInterestExpense();
         close("the break-even is maintenance, property tax and the interest line over what it owns",
                 re.rentBreakEven() * re.getOwnedHousingCapacity(), carry, 1e-9);
@@ -503,14 +523,23 @@ public class MortgageCheck {
     static void insurance(Path root) {
         out.println("\n--- 6. insurance: a landlord's slice - its debt falls, the city pays the bank the insured part ---");
 
-        Game g = landlordCity(root, "insurance");
-        BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
-        quietly(() -> g.simulateMonths(6));
-        // Nothing new written while the write-downs are measured: the debt after the
-        // month is then what the write-down left.
-        g.getBusinessInvestment().holdSector(RE);
-        assertTrue("fixture: the landlords owe insured mortgages", lender.getInsuredPrincipal(RE) > 0);
-        // It owes 1.2 times what it owns, taken on between months: a claim, no money moved.
+        Game g = landlordCity(root, "insurance", true);
+        EconomyManager econ = g.getEconomyManager();
+        BusinessDebtManager lender = econ.getBusinessDebtManager();
+        /*
+         * FS9: THE LANDLORDS' DEBT IS WRITTEN BY HAND, not waited for. HOMES_STANDING homes stand for the landlords to own, they are held
+         * from ordering (nothing new is written while the write-downs are measured: the debt after the month is then what the write-down
+         * left), their sheet is valued as the month will read it, and between months an insured mortgage is issued on half of what they
+         * own, then a claim that takes the debt to 1.2 times it (BondCheck's 5b fixture, the same way): a claim, no money moved. Past
+         * what it owns and under the default point, a month's share of its debt falls through the default point (monthlyDefaultShare of
+         * any positive leverage) - the slice, with the insured mortgage among what it takes.
+         */
+        standLandlords(g);
+        econ.pushBalanceSheetInputs();
+        econ.refreshCreditAssets();
+        Mortgage insuredByHand = lender.issueMortgage(RE, .5 * lender.getAssets(RE), g.getMonth());
+        double byHand = insuredByHand.getOutstandingPrincipal();
+        assertTrue("fixture: the landlords owe an insured mortgage, written by hand", lender.getInsuredPrincipal(RE) > 0);
         double claim = Math.max(0, 1.2 * lender.getAssets(RE) - lender.getPrincipal(RE));
         lender.issueLoan(RE, claim, g.getMonth());
         int recordBefore = lender.getRestructureCount(RE);
@@ -557,8 +586,9 @@ public class MortgageCheck {
         close("...so its month's write-offs carry none of the insured part", bank.getWriteOffs(), uninsuredAll, 1e-9);
         close("the treasury paid the bank exactly the written-down insured balance", bank.getInsuranceClaims(), claimsAll, 1e-12);
         close("...on its claims line", na.getMortgageClaims(), claimsAll, 1e-12);
-        close("the bank's equity moved by its income, its named causes and the fixture's own loan, and nothing else",
-                bank.equityMovement().residual(), claim, MoneyAudit.tolerance(1e-6, bank.equityMovement().scale()));
+        close("the bank's equity moved by its income, its named causes and the fixture's own loans, and nothing else",
+                bank.equityMovement().residual(), claim + byHand,
+                MoneyAudit.tolerance(1e-6, bank.equityMovement().scale()));
         close("the month's money audit closes", g.getLastMoneyAudit().residual, 0,
                 MoneyAudit.tolerance(g.getLastMoneyAudit().moved()));
         assertTrue("a slice is not on the landlord's record", lender.getRestructureCount(RE) == recordBefore);
@@ -717,24 +747,42 @@ public class MortgageCheck {
     static void saveAndLoad(Path root) throws Exception {
         out.println("\n--- 8. save and load in the middle of a term: every field round-trips ---");
 
-        Game g = landlordCity(root, "save");
-        quietly(() -> g.simulateMonths(8));
+        Game g = landlordCity(root, "save", true);
         BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
+        /*
+         * FS9: THE MORTGAGES ARE WRITTEN BY HAND, and only the months a term needs to be mid-way are played. HOMES_STANDING homes stand
+         * for the landlords to owe against and they are held from ordering (nothing else is written); between months, a mortgage and a
+         * business loan are issued on them, one more mortgage two months on, so the two stand at different points of their terms when
+         * they are saved - the first three months into its term, the second two.
+         */
+        standLandlords(g);
+        EconomyManager econ = g.getEconomyManager();
+        econ.pushBalanceSheetInputs();
+        econ.refreshCreditAssets();
+        double owns = lender.getAssets(RE);
+        lender.issueMortgage(RE, .2 * owns, g.getMonth());
+        BusinessLoan byHandLoan = lender.issueLoan(RE, .1 * owns, g.getMonth());
+        quietly(() -> g.simulateMonths(1));
+        lender.issueMortgage(RE, .2 * owns, g.getMonth());
+        quietly(() -> g.simulateMonths(2));
         List<Mortgage> before = lender.getMortgages(RE);
-        assertTrue("fixture: the landlords owe mortgages, mid-term",
-                !before.isEmpty() && before.get(0).getRemainingMonths() < Mortgage.MORTGAGE_TERM_MONTHS
+        assertTrue("fixture: the landlords owe two mortgages, written by hand, each mid-term",
+                before.size() == 2 && before.get(0).getRemainingMonths() < before.get(1).getRemainingMonths()
+                        && before.get(1).getRemainingMonths() < Mortgage.MORTGAGE_TERM_MONTHS
                         && before.get(0).getRemainingMonths() > 0);
         // The business loans beside them, as they stood when saved.
         java.util.List<String> bulletsSaved = new java.util.ArrayList<>();
         for (BusinessDebt loan : lender.getLoans()) {
             if (!(loan instanceof Mortgage)) bulletsSaved.add(describe(loan));
         }
+        boolean loanAmongThem = bulletsSaved.contains(describe(byHandLoan));
         final boolean[] saved = { false };
         quietly(() -> saved[0] = g.saveGame(1, "mortgage city").ok);
         assertTrue("saved", saved[0]);
         GameFiles files = new GameFiles(root.resolve("save"), root.resolve("save-no-legacy"));
         Game back = new Game(files);
         quietly(() -> back.loadGameSave(1));
+        back.getBusinessInvestment().holdSector(RE);   // ...held as the city it was saved from is: a hold is a harness's, and not saved
         BusinessDebtManager again = back.getEconomyManager().getBusinessDebtManager();
         List<Mortgage> after = again.getMortgages(RE);
         boolean fields = after.size() == before.size();
@@ -795,7 +843,7 @@ public class MortgageCheck {
         java.util.List<String> bulletsLoaded = new java.util.ArrayList<>();
         for (BusinessDebt loan : oldLender.getLoans()) bulletsLoaded.add(describe(loan));
         out.printf("   the older save carries %d loan(s) and no mortgage%n", loans);
-        assertTrue("fixture: the city owes business loans beside its mortgages", !bulletsSaved.isEmpty());
+        assertTrue("fixture: the city owes business loans beside its mortgages, the one written by hand among them", loanAmongThem);
         assertTrue("its loans load as they were, field by field", bulletsLoaded.equals(bulletsSaved));
         assertTrue("...with no mortgage and an empty insurance book",
                 oldLender.getMortgages().isEmpty() && oldLender.getPremiumsTotal() == 0
@@ -844,6 +892,9 @@ public class MortgageCheck {
          * lever the player holds, TaxPolicy's sector offset) and the House
          * costs what it did.
          */
+        // FS9: SET, NOT FOUND - the policy is put back to its defaults and the builders' offset set against their sales tax, so the quote
+        // is the House's without it whatever the founding town taxed.
+        econ.getTaxPolicy().reset();
         econ.getTaxPolicy().setSalesOffset(g.getSectors().construction(), -TaxPolicy.DEFAULT_INCOME_TAX);
         assertTrue("fixture: the builders charge no sales tax in this city",
                 econ.buildersSalesRate() == 0);
@@ -855,7 +906,10 @@ public class MortgageCheck {
          * (projectRate(): prime and its expected loss over the book's). The
          * insured rate does not read the borrower at all. Priced as the
          * month will price it, on the balance sheets as they stand.
+         * FS9: THEIR HOLDINGS ARE SET, not found: the till is put at nothing (the founding town gives them none), they have no building
+         * standing or on site, and they owe nothing.
          */
+        econ.setSectorCash(RE, 0);
         econ.pushBalanceSheetInputs();
         econ.refreshCreditAssets();
         assertTrue("fixture: the landlords own nothing and owe nothing yet",
@@ -907,17 +961,14 @@ public class MortgageCheck {
                 coverage >= Mortgage.MORTGAGE_DEBT_COVERAGE);
         assertTrue("...so the landlord builds it", newSays.quantity() == 1);
 
-        // ...and in the city, the month it orders.
+        // ...and in the city, the month it orders: the one month the fixture above causes, played once (FS9: no waiting on the advisor).
         int writtenBefore = lender.getMortgages(RE).size();
-        String[] said = { null };
-        for (int i = 0; i < 3 && said[0] == null; i++) {
-            quietly(() -> g.simulateMonths(1));
-            String line = g.getLastInvestment(RE);
-            if (line != null && line.startsWith("Built") && line.contains("on an insured mortgage")) said[0] = line;
-        }
-        out.println("   the landlords' advisor: " + (said[0] == null ? g.getLastInvestment(RE) : said[0]));
+        quietly(() -> g.simulateMonths(1));
+        String said = g.getLastInvestment(RE);
+        out.println("   the landlords' advisor: " + said);
         assertTrue("...and in a played month it does, on an insured mortgage",
-                said[0] != null && lender.getMortgages(RE).size() > writtenBefore);
+                said != null && said.startsWith("Built") && said.contains("on an insured mortgage")
+                        && lender.getMortgages(RE).size() > writtenBefore);
     }
 
     /* ======================== 10. THE LEVERAGE RATIO (round 2) ======================== */
@@ -1133,111 +1184,135 @@ public class MortgageCheck {
 
     /* ==================== 12. PAYOUTS AFTER PRINCIPAL (round 2) ==================== */
 
+    /** The insured rate section 12's by-hand mortgages are written at: low enough that a mortgage's interest leaves the landlords' income standing while its principal can still pass it. */
+    static final double PAYOUT_FIXTURE_RATE = .005;
+
+    /** The homes section 12 stands for the landlords to let (buildStack, noConstruction): enough that the month's rent is more than its costs once their tenants have moved in. */
+    static final int HOMES_STANDING = 50;
+
+    /** HOMES_STANDING homes stand for the landlords to own (in a town whose works stand: the founding town builds none at once), and they are held from ordering: what a by-hand fixture owes against, and what keeps nothing but its own mortgages on their books. */
+    static void standLandlords(Game g) {
+        quietly(() -> g.buildStack(template(g, "House"), HOMES_STANDING, true));
+        g.getBusinessInvestment().holdSector(RE);
+    }
+
+    /** The most months section 12 plays for those homes to earn, the first month of a founded town being its start-up: a fixture bound, and the fixture fails past it. */
+    static final int START_UP_MONTHS = 6;
+
+    /** One month of the landlords' books as the dividend step reads them: what it earned and repaid, what it paid its owners, what the desk lent it, and the till as the dividend found it. */
+    static final class LandlordMonth {
+        double income, principal, paid, shortfall, till = -1;
+    }
+
+    /** One month played, the till read where the dividend step finds it (the settle probe, after the month's investment and before the owners are paid): nothing in the month moves. */
+    static LandlordMonth playLandlordMonth(Game g) {
+        EconomyManager econ = g.getEconomyManager();
+        LandlordMonth month = new LandlordMonth();
+        g.settleProbeForTest = after -> { if (after) month.till = econ.getSectorCash(RE); };
+        quietly(() -> g.simulateMonths(1));
+        g.settleProbeForTest = null;
+        SectorBooks.SectorMonth now = g.getSectorBooks().get(RE);
+        month.income = now.netIncome();
+        month.principal = Math.max(0, now.repaid()) + Math.max(0, now.bondsRepaid());
+        month.paid = now.dividendsPaid();
+        month.shortfall = econ.getBusinessDebtManager().getShortfallLentThisMonth(RE);
+        return month;
+    }
+
+    /** What the shortfall desk rolled of a month's principal, in the month that pays on it (Game.dividendDue(): never more than what fell due). */
+    static double rolled(LandlordMonth books, LandlordMonth paying) {
+        return Math.min(books.principal, paying.shortfall);
+    }
+
+    /**
+     * A mortgage written by hand on the landlords whose first month repays `firstMonthPrincipal` of principal: the annuity less
+     * its interest at PAYOUT_FIXTURE_RATE, per dollar of shortfall, from a bare lender's own mortgage (the model's arithmetic, no
+     * played month's). Its loan, less the fee, goes to the till as the door hands it (Game.mortgageInvestor()), so the landlords
+     * own what they owe and the lender's default point is not what the month reads.
+     */
+    static Mortgage borrowByHand(Game g, double firstMonthPrincipal) {
+        BusinessDebtManager bare = new BusinessDebtManager();
+        bare.setInsuredMortgageRate(PAYOUT_FIXTURE_RATE);
+        bare.startAuditMonth();
+        Mortgage probe = bare.issueMortgage(RE, 1_000, 0);
+        double perDollar = (probe.getMonthlyPayment() - probe.getOutstandingPrincipal() * PAYOUT_FIXTURE_RATE / 12) / 1_000;
+        EconomyManager econ = g.getEconomyManager();
+        BusinessDebtManager lender = econ.getBusinessDebtManager();
+        lender.setInsuredMortgageRate(PAYOUT_FIXTURE_RATE);
+        Mortgage m = lender.issueMortgage(RE, firstMonthPrincipal / perDollar, g.getMonth());
+        econ.setSectorCash(RE, econ.getSectorCash(RE) + m.getLoan() - BusinessDebtManager.feeOn(m.getOutstandingPrincipal()));
+        return m;
+    }
+
     static void payoutsAfterPrincipal(Path root) {
         out.println("\n--- 12. payouts after principal: a share of what the month leaves once the lender is paid ---");
 
         /*
-         * THE CITY'S WORKS STAND FROM THE START (0.7.17). The fixture needs
-         * landlords who earn more than their mortgages take in one month and
-         * less in another. Since every building gets the crew it can use
-         * (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE) this
-         * city's bakeries, bank and shops waited on site behind its coal plant
-         * for years, the jobs they bring did not come, the landlords held on
-         * "housing ahead of jobs" and lost money every month of the ten years
-         * searched - neither month was found. With the works standing (all
-         * but the depots, which a city nobody lives in yet cannot staff) the
-         * jobs are there, the landlords build for them and earn; their homes
-         * are still built, on mortgages, as the premise has it.
+         * BOTH MONTHS ARE CAUSED (FS9, 2026-11-21). The fixture needs landlords who earn more than their mortgages
+         * take in one month and less in another. The played town found them by searching sixty months, and since HN1-A
+         * (the landlords order at the door's price) its lean month, the principal past the income, no longer comes in
+         * them. So the town is built for it: the
+         * works stand from the start (0.7.17), HOMES_STANDING homes stand for the landlords to let, the landlords are
+         * held from ordering, and the mortgages are written by hand on them (borrowByHand()) at a rate that leaves
+         * their income standing - the first small, its principal a tenth of the income the month before, the second
+         * large, its principal twice the income the month before it. Each month's books are what the next month's
+         * dividend is struck on (Game.dividendDue()), so each is played and then the month after it, which pays.
+         * Their till is the mortgages' proceeds, so what is paid is the rule's and not the till's.
          */
-        // Three depots stand beside the founding yard (PT1-M4): see landlordCity(). Without them the town's builders
-        // cannot keep up with its repairs and no home is built (the landlords then beat their principal every month:
-        // 112 people, 0 homes, no month the other way); with one the landlords lose money until month 35; with two they
-        // beat it in all sixty; with three, the first months beat it and the months of the town's growth do not.
         Game g = landlordCity(root, "payout", true, 3);
-        // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1 on R0, 2026-11-05; OP1): this section needs a month the mortgages' principal beat the
-        // landlords' income as well as one it did not. The 1900 town (R0) had no income tax or wage floor to 1916-18 until OP1, and with BA1's
-        // uncapped orders and its builders' queue its landlords out-earned their principal in all sixty months (net 1.77 against 0.36 in month 2,
-        // and on up; 0.57 against 0.82 never came). The town this was written against taxes from month 1, as main's R0 fixtures had it
-        // (RailDepotCheck, HaulageCheck): the defaults are put back before a month has run (every lever is open from the founding since OP1),
-        // then the lean month the premise needs comes.
-        g.getEconomyManager().getTaxPolicy().reset();
-        long[] homesAfterFirstMonth = { -1 };
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1 on R0, 2026-11-05; OP1): the town this was written against taxes from month 1,
+        // as main's R0 fixtures had it (RailDepotCheck, HaulageCheck): put back before a month has run (every lever is open since OP1).
+        EconomyManager econ = g.getEconomyManager();
+        econ.getTaxPolicy().reset();
         Equity register = g.getEquity();
         int landlords = Equity.indexOf(RE);
-        boolean everPastIt = false, foundPaid = false, foundNothing = false;
-        double paidOn = 0, paidDue = 0, paidWas = 0, nothingIncome = 0, nothingPrincipal = 0;
-        double tillAtDividend = -1, dueAtDividend = -1;
-        /*
-         * THE FIXTURE GIVES THE LANDLORDS A TILL THAT CAN PAY (0.7.12 round 8).
-         * The question is what the rule pays, so the month read must be one
-         * whose till covers the dividend due. Until round 8 the fixture found
-         * one by luck: its landlords defaulted in month 3, because the lender
-         * read their sheet without the houses they had just bought, and the
-         * write-down left them a till. Round 8 fixed that reading, and their
-         * till was empty at every dividend from m39 on. So in a month whose
-         * income beat the principal, and that the shortfall desk rolled none
-         * of, the fixture tops the till up to the dividend due, after the
-         * month's investment and just before the dividend step (the settle
-         * probe), and reads that month. Nothing else in the month moves.
-         */
-        final boolean[] candidate = { false };
-        final double[] atDividend = { -1, -1 };   // {the till, the dividend due}, as the dividend step will read them
-        g.settleProbeForTest = after -> {
-            if (!after || !candidate[0]) return;
-            EconomyManager em = g.getEconomyManager();
-            if (em.getBusinessDebtManager().getShortfallLentThisMonth(RE) > 0) return;
-            double due = g.dividendDueFor(RE);
-            if (!(due > 0)) return;
-            if (em.getSectorCash(RE) < due) em.setSectorCash(RE, due);
-            atDividend[0] = em.getSectorCash(RE);
-            atDividend[1] = due;
-        };
-        for (int m = 0; m < 60 && !(foundPaid && foundNothing); m++) {
-            SectorBooks.SectorMonth last = g.getSectorBooks().get(RE);
-            candidate[0] = !foundPaid && last.repaid() > 0 && last.netIncome() > last.repaid();
-            atDividend[0] = atDividend[1] = -1;
-            quietly(() -> g.simulateMonths(1));
-            if (m == 0) homesAfterFirstMonth[0] = g.getBuildingManager().getTotalHomes();
-            SectorBooks.SectorMonth now = g.getSectorBooks().get(RE);
-            // Net of what the shortfall desk rolled of it that month (0.7.12
-            // round 2, free cash flow to equity, as Game.payDividends() pays):
-            // the fixture's landlords first borrowed in these months in round 4.
-            double repaid = Math.max(0, last.repaid()) + Math.max(0, last.bondsRepaid());
-            double rolled = Math.min(repaid, g.getEconomyManager().getBusinessDebtManager().getShortfallLentThisMonth(RE));
-            double due = register.dividendDue(landlords, last.netIncome(), repaid - rolled);
-            double paid = now.dividendsPaid();
-            everPastIt |= paid > due + 1e-9;
-            if (!foundPaid && last.repaid() > 0 && last.netIncome() > last.repaid() && paid > 0 && atDividend[1] > 0) {
-                foundPaid = true;
-                paidOn = last.netIncome() - last.repaid();
-                paidDue = Equity.PAYOUT * paidOn;
-                paidWas = paid;
-                tillAtDividend = atDividend[0];
-                dueAtDividend = atDividend[1];
-            }
-            // ...a month the principal beat the income by what the lender was NOT rolled (PT1-M4): the shortfall desk rolled
-            // all of the first such month's principal (8.74 against 23.96, rolled 23.96), and the rule rightly paid on
-            // the income it left; the month the fixture needs is one whose principal, net of the roll, is still the larger.
-            double netPrincipal = repaid - rolled;
-            if (!foundNothing && last.netIncome() > 0 && netPrincipal > last.netIncome()) {
-                foundNothing = true;
-                nothingIncome = last.netIncome();
-                nothingPrincipal = netPrincipal;
-                everPastIt |= paid != 0;
-            }
+        standLandlords(g);
+
+        java.util.List<LandlordMonth> months = new java.util.ArrayList<>();
+        LandlordMonth start = null;
+        for (int i = 0; i < START_UP_MONTHS && (start == null || !(start.income > 0)); i++) {
+            start = playLandlordMonth(g);
+            months.add(start);
         }
-        g.settleProbeForTest = null;
-        assertTrue("fixture: the landlords' town built homes in the months searched, its builders out-working its repairs",
-                g.getBuildingManager().getTotalHomes() > homesAfterFirstMonth[0]);
+        assertTrue(String.format("fixture: the landlords' standing homes earned before the mortgages, %.4f a month", start.income),
+                start.income > 0 && g.getBuildingManager().getTotalHomes() >= HOMES_STANDING);
+        if (!(start.income > 0)) return;
+
+        // ...the month that earns more than its principal: a mortgage whose first month repays a tenth of the income before it.
+        borrowByHand(g, start.income / 10);
+        LandlordMonth beat = playLandlordMonth(g), pays = playLandlordMonth(g);
+        months.add(beat);
+        months.add(pays);
+        // ...and the one that earns less: a second, whose first month repays twice the income the month before it.
+        borrowByHand(g, 2 * pays.income);
+        LandlordMonth lean = playLandlordMonth(g), leanPays = playLandlordMonth(g);
+        months.add(lean);
+        months.add(leanPays);
+
+        double rolledOnBeat = rolled(beat, pays), rolledOnLean = rolled(lean, leanPays);
+        double paidOn = beat.income - beat.principal, paidDue = Equity.PAYOUT * paidOn;
+        double nothingIncome = lean.income, nothingPrincipal = lean.principal - rolledOnLean;
+        out.printf("   the small mortgage: $%,.4fk a month of income against $%,.4fk of principal; the large: $%,.4fk against $%,.4fk%n",
+                beat.income, beat.principal, lean.income, lean.principal);
         assertTrue("fixture: a month whose income beat the principal its mortgages took, and one it did not",
-                foundPaid && foundNothing);
-        assertTrue(String.format("fixture: the landlords' till covers the dividend due (%.4f against %.4f)",
-                tillAtDividend, dueAtDividend), dueAtDividend > 0 && tillAtDividend >= dueAtDividend);
-        close("a landlord with a mortgage pays PAYOUT of its income less the principal it repaid", paidWas, paidDue, 1e-9);
+                beat.income > beat.principal && beat.principal > 0 && lean.income > 0 && nothingPrincipal > nothingIncome);
+        assertTrue(String.format("fixture: the shortfall desk rolled none of either month's principal (%.4f and %.4f)", rolledOnBeat, rolledOnLean),
+                rolledOnBeat == 0 && rolledOnLean == 0);
+        assertTrue(String.format("fixture: the landlords' till covers the dividend due (%.4f against %.4f)", pays.till, paidDue),
+                paidDue > 0 && pays.till >= paidDue);
+        assertTrue(String.format("fixture: ...and the dividend the old rule would pay on the lean month (%.4f against %.4f)",
+                leanPays.till, Equity.PAYOUT * nothingIncome), leanPays.till >= Equity.PAYOUT * nothingIncome);
+        close("a landlord with a mortgage pays PAYOUT of its income less the principal it repaid", pays.paid, paidDue, 1e-9);
         assertTrue(String.format("...and a month that earned %.2f against %.2f of principal pays nothing,"
                         + " where the old rule paid %.2f", nothingIncome, nothingPrincipal, Equity.PAYOUT * nothingIncome),
-                register.dividendDue(landlords, nothingIncome, nothingPrincipal) == 0
+                leanPays.paid == 0 && register.dividendDue(landlords, nothingIncome, nothingPrincipal) == 0
                         && register.dividendDue(landlords, nothingIncome) > 0);
+        boolean everPastIt = false;
+        for (int k = 1; k < months.size(); k++) {
+            LandlordMonth books = months.get(k - 1), paying = months.get(k);
+            double due = register.dividendDue(landlords, books.income, books.principal - rolled(books, paying));
+            everPastIt |= paying.paid > due + 1e-9;
+        }
         assertTrue("no month paid the landlords past what their income left after the principal, net of what the desk rolled", !everPastIt);
         close("with nothing repaid the rule is the old one",
                 register.dividendDue(landlords, 100, 0), register.dividendDue(landlords, 100), 0);

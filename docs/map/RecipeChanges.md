@@ -1,6 +1,6 @@
 # RecipeChanges.java - 614 lines · 46 methods · 1 constants · model
 
-`ham/citybuildersim/RecipeChanges.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RecipeChanges.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Composes independent discovery changes on the selected process recipe.
 > 
@@ -9,9 +9,9 @@
 > Recipe decisions are saved in the existing recipe ids after "~"; fitting
 > counts are read on application, including after a construction site opens.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (44), [Recipes](Recipes.md) (40), [Game](Game.md) (31), [Recipe](Recipe.md) (29), [RecipeChange](RecipeChange.md) (24), [Good](Good.md) (15), [JobType](JobType.md) (15), [Equipment](Equipment.md) (12), [LicenceFees](LicenceFees.md) (11), [BuildingsStacks](BuildingsStacks.md) (9), [NewUnit](NewUnit.md) (3), [Freight](Freight.md) (3), [Sector](Sector.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [Agriculture](Agriculture.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [Research](Research.md) (1), [BuildAdvice](BuildAdvice.md) (1), [EquipmentFit](EquipmentFit.md) (1), [BuildingType](BuildingType.md) (1), [Refining](Refining.md) (1), [RefineryFlow](RefineryFlow.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (45), [Recipes](Recipes.md) (41), [Game](Game.md) (31), [Recipe](Recipe.md) (29), [RecipeChange](RecipeChange.md) (24), [Good](Good.md) (15), [JobType](JobType.md) (15), [LicenceFees](LicenceFees.md) (12), [Equipment](Equipment.md) (12), [BuildingsStacks](BuildingsStacks.md) (9), [Sector](Sector.md) (4), [NewUnit](NewUnit.md) (3), [Freight](Freight.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [Agriculture](Agriculture.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [Research](Research.md) (1), [BuildAdvice](BuildAdvice.md) (1), [EquipmentFit](EquipmentFit.md) (1), [BuildingType](BuildingType.md) (1), [Refining](Refining.md) (1), [RefineryFlow](RefineryFlow.md) (1)
 
-**Used by (12):** [BuildingsTemplate](BuildingsTemplate.md), [EquipmentFit](EquipmentFit.md), [FittingCheck](FittingCheck.md), [Freight](Freight.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFees](LicenceFees.md), [NewUnit](NewUnit.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md)
+**Used by (13):** [BuildingsTemplate](BuildingsTemplate.md), [EquipmentFit](EquipmentFit.md), [FittingCheck](FittingCheck.md), [Freight](Freight.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFees](LicenceFees.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnit](NewUnit.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md)
 
 ## Constants
 
@@ -65,7 +65,7 @@
 | 479 | 7 | `private static double extraValue(BuildingsTemplate t, RecipeChange c, Recipes.Prices p, double crackerFeed)` |  |
 | 488 | 4 | `static double recipeFee(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, boolean standing, double rate, java.util.S...` | Imported rent on independent recipe changes actually used by this part of a stack. |
 | 493 | 35 | `static double recipeFee(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, boolean standing, double rate, java.util.S...` |  |
-| 530 | 9 | `private static double standingValue(Recipe r, Recipes.Prices p, ham.citybuildersim.sectors.SpreadPlanner.Values values, double ...` | R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. |
+| 530 | 9 | `private static double standingValue(BuildingsTemplate t, Sector owner, Recipe r, Recipes.Prices p, ham.citybuildersim.sectors.S...` | R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. |
 | 545 | 29 | `public static void railService(Game game, ham.citybuildersim.sectors.Freight rail, double fuelEquivalent, double steamShare, bo...` | Capture PE21 where the private railway invoices its real service, before the common monthly strike. |
 | 576 | 8 | `static Map<Integer, Double> serviceFeeMemo(Game game)` | The earlier rail invoice's saved cost survives the later goods-production capture. |
 | 586 | 11 | `public static double railSteamShare(Game game)` | Capacity-weighted steam engines on the railway; default cities read no stacks. |

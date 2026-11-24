@@ -46,6 +46,8 @@ import javafx.scene.text.Text;
  *      section 2 without having been looked at.
  *   2. On the Krona's city no string holds a "$" except inside a foreign mark (US$, C$, A$: ForeignAccounts.MONEY_MARK, and
  *      Currency.FOREIGN_SYMBOL). Each string is printed once, with the page it was first read on, as one FAIL line.
+ *   3. HS3's household page names both adult stages and their own ledgers, two former tiers and an owner family; caused estates,
+ *      actual profitable fills and dividends show the public model's figures, kept equal to built new and through a real redraw.
  *
  * The city is the playtest's village founded by hand with the money (LongPlaytest.founding() and its first builds) and played
  * MONTHS months, no more: the pages need figures, not a history.
@@ -324,5 +326,219 @@ public class MoneyWordsCheck {
         if (offending > PRINTED) System.out.println("  ... and " + (offending - PRINTED) + " more not printed");
         if (offending > 0) System.out.println("  " + offending + " strings of the Krona's pages hold a \"$\" that is not a foreign mark's");
         else check("no string of any page holds a \"$\" that is not a foreign mark's", true);
+        fx(() -> { householdMoney(); return null; });
+        buildersShortTyped();
+    }
+
+    /**
+     * REV-FC2b: the builders' tooltip (BuildScreen.buildersShortInfo(), the build card's line and the Construction page's
+     * gauge) names the city's money as an argument of its format. Until the review it joined the name into the template,
+     * so a name the player typed with a "%" in it threw where the card was drawn.
+     */
+    static void buildersShortTyped() throws Exception {
+        System.out.println("\n--- 4. the builders' tooltip (FC2) takes a typed name with a \"%\" in it as a word, never as a format ---");
+        Currency percent = Currency.typed("100% Crown", "HPC");
+        check("fixture: \"100% Crown\" is a money the player may type, a \"%\" in its name", percent != null && percent.name().contains("%"));
+        if (percent == null) return;
+        String[] tip = new String[1];
+        RuntimeException[] thrown = new RuntimeException[1];
+        fx(() -> {
+            try { tip[0] = ham.citybuildersim.ui.BuildScreen.buildersShortInfo(percent); } catch (RuntimeException e) { thrown[0] = e; }
+            return null;
+        });
+        check("the tooltip is written whole", thrown[0] == null && tip[0] != null, thrown[0] == null ? null : thrown[0].toString());
+        check("...and names the money as typed: \"a strong 100% Crown makes them cheaper\"",
+                tip[0] != null && tip[0].contains("a strong 100% Crown makes them cheaper"));
+    }
+
+    /** HS3: initial census/stocks, then native estates, fills and dividends; no displayed result is assigned. */
+    static void householdMoney() throws Exception {
+        System.out.println("\n--- 3. household money by stage, former tier, owners, estates and investment taxes (HS3) ---");
+        PrintStream real = System.out;
+        Game g;
+        System.setOut(QUIET);
+        try {
+            g = new Game(GameFiles.scratch("hs3-money"), LongPlaytest.founding());
+            g.run();
+            // Close an actual year so the saved-survey view has a native observation.
+            g.simulateMonths(12 - Math.floorMod(g.getMonth(), 12));
+        } finally { System.setOut(real); }
+        Currency.use(g.getCurrency());
+        HouseholdBalance bal = g.getHouseholdBalance();
+        FamilyModel families = g.getFamilies();
+        double[] jobs = new double[PayTier.values().length];
+        jobs[PayTier.COLLEGE.ordinal()] = 500;
+        jobs[PayTier.ELITE.ordinal()] = 500;
+        families.rebuild(HouseholdMemoryCheck.staged(0, 0, 0, 1000, 400), jobs);
+        for (Household c : bal.cells()) if (c instanceof WorkingHousehold w) {
+            c.households = families.get(c.shape(), c.tier(), w.stage());
+            c.savings = w.stage() == AdultStage.YOUNG ? 333 : 777;
+        }
+        Household college = bal.cell(FamilyStructure.ELDER_ALONE, PayTier.COLLEGE);
+        Household elite = bal.cell(FamilyStructure.ELDER_ALONE, PayTier.ELITE);
+        college.households = 20; college.savings = 1000; college.debt = 200;
+        elite.households = 20; elite.savings = 50; elite.debt = 200;
+        double[] mix = families.toSaveArray();
+        mix[FamilyStructure.ELDER_ALONE.ordinal() * PayTier.values().length] = 32;
+        FamilyStructure widestShape = java.util.Arrays.stream(FamilyStructure.values()).filter(s -> !s.isRetired())
+                .max(java.util.Comparator.comparingInt(s -> s.getLabel().length())).orElseThrow();
+        PayTier widestTier = java.util.Arrays.stream(PayTier.values())
+                .max(java.util.Comparator.comparingInt(t -> t.getLabel().length())).orElseThrow();
+        mix[widestShape.ordinal() * PayTier.values().length + widestTier.ordinal()] = 1;
+        families.restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), mix);
+        bal.cell(widestShape, widestTier).households = families.get(widestShape, widestTier, AdultStage.ESTABLISHED);
+        bal.setOwnerLine(true);
+        bal.restoreOwnerLine(Map.of(Equity.COMPANIES[0], 0));
+        bal.owners().households = 1;
+        bal.owners().savings = 5432;
+        bal.setOutsideCensus(Household::households);
+        bal.setFlows(0, 0, 0, 0, .2, 0, 0);
+        bal.censusOnly(families);
+        check("two former tiers survive the estate month", college.households() >= .5 && elite.households() >= .5);
+        check("dying alone caused estate cash, repayment and write-off", bal.getFlowHouseholds(HouseholdBalance.DYING_ALONE) > 0
+                && bal.getEstatePassed() > 0 && bal.getEstateRepaid() > 0 && bal.getEstateWrittenOff() > 0);
+
+        // Use the same real book/fill path as CapitalGainsCheck, with this city's balance.
+        Equity equity = g.getEquity();
+        Exchange exchange = g.getExchange();
+        Bank bank = g.getBank();
+        equity.listIfUnlisted(0, 10_000, bal);
+        ExchangeCheck.addPaid(equity, 0, 100, 10);
+        ExchangeCheck.Firms firms = new ExchangeCheck.Firms();
+        firms.wage = 1;
+        System.setOut(QUIET);
+        try { ExchangeCheck.step(exchange, equity, bal, bank, firms, ExchangeCheck.bookOf(0, 10_000),
+                DebtManager.WORLD_BASE_RATE, 0, 1); }
+        finally { System.setOut(real); }
+        equity.moveForeign(0, bal.sharesHeld(0));
+        for (Household c : bal.cells()) { c.shares[0] = 0; c.basis[0] = 0; }
+        Household holder = bal.cell(FamilyStructure.SINGLE_ADULT, PayTier.ELITE);
+        check("the census supplied an investor at the elite tier", holder.households() >= .5);
+        holder.savings = 20_000;
+        TaxPolicy policy = g.getEconomyManager().getTaxPolicy();
+        policy.setWageTaxRate(.30);
+        String cell = Exchange.CELL + holder.key();
+        exchange.bookOf(0).withdrawAll();
+        exchange.tradeForCheck(0, Exchange.WORLD, OrderBook.Side.SELL, 2, 100);
+        check("the investor actually buys the lot", FundLedgerCheck.filled(exchange.tradeForCheck(0, cell, OrderBook.Side.BUY, 2, 100)) == 100);
+        exchange.bookOf(0).withdrawAll();
+        exchange.tradeForCheck(0, Exchange.WORLD, OrderBook.Side.BUY, 4, 50);
+        check("the investor actually sells at a gain", FundLedgerCheck.filled(exchange.tradeForCheck(0, cell, OrderBook.Side.SELL, 4, 50)) == 50);
+        bal.creditDividend(0, 1);
+        check("the fills and dividend cause both tax lines", bal.getCapitalGainsTax() > 0 && bal.getDividendTax() > 0);
+
+        KeptBench bench = new KeptBench(g);
+        KeptBench.Page page = bench.householdMoney();
+        bench.home(page);
+        bench.householdStatement(true);
+        bench.drawKept(page);
+        bench.passes();
+        Set<String> words = pageWords(bench);
+        for (AdultStage stage : AdultStage.values()) {
+            check("the page names " + stage.getLabel(), words.contains(stage.getLabel() + " · " + stage.getAges()));
+            String key = PayTier.ELITE.ordinal() + ":" + FamilyStructure.SINGLE_ADULT + stage.keySuffix();
+            check("the stage has its own clickable cell: " + key, bench.householdCells().contains(key));
+            bench.householdCell(key);
+            bench.drawKept(page);
+            check("opening the stage shows its own ledger", pageWords(bench).contains(FamilyStructure.SINGLE_ADULT.getLabel()
+                    + "  ·  " + PayTier.ELITE.getLabel() + "  ·  " + stage.getLabel() + ", " + stage.getAges()));
+            check("the stage's statement count is its model census", g.getHouseholds().statementFor(families,
+                    FamilyStructure.SINGLE_ADULT, PayTier.ELITE, stage).households() == families.get(FamilyStructure.SINGLE_ADULT, PayTier.ELITE, stage));
+            check("the stage's open ledger shows its own savings", lineShows(bench, "Put by",
+                    ham.citybuildersim.ui.Money.tightMoney(bal.cell(FamilyStructure.SINGLE_ADULT, PayTier.ELITE, stage).savings() * 1000, false)));
+        }
+        check("both former tiers are named on the page", words.contains(college.label()) && words.contains(elite.label()));
+        check("the owner family has its own line", words.contains(bal.owners().label()) && bench.householdCells().contains("OUT:" + bal.owners().key()));
+        bench.householdCell(widestTier.ordinal() + ":" + widestShape.name());
+        bench.householdColumnWidth(1000);
+        bench.drawKept(page);
+        bench.passes();
+        bench.settle();
+        String widestCaption = widestShape.getLabel() + "  ·  " + widestTier.getLabel()
+                + "  ·  " + AdultStage.ESTABLISHED.getLabel() + ", " + AdultStage.ESTABLISHED.getAges();
+        boolean captionShown = false;
+        for (Node n : bench.nodesOnPage()) if (n instanceof Labeled l && widestCaption.equals(l.getText()))
+            captionShown = l.lookup(".text") instanceof Text rendered && widestCaption.equals(rendered.getText());
+        check("the longest shape, tier and stage caption is shown in full with the books stacked", captionShown);
+        bench.householdColumnWidth(0);
+        for (Household own : List.of(college, elite, bal.owners())) {
+            bench.householdCell("OUT:" + own.key());
+            bench.drawKept(page);
+            check("the open ledger shows the model's savings for " + own.label(), lineShows(bench, "Put by",
+                    ham.citybuildersim.ui.Money.tightMoney(own.savings() * 1000, false)));
+        }
+        String[] labels = {"Estate cash passed to heirs", "Estate debt repaid", "Estate debt written off", "Tax on realised gains", "Tax on dividends"};
+        double[] amounts = {bal.getEstatePassed(), bal.getEstateRepaid(), bal.getEstateWrittenOff(), bal.getCapitalGainsTax(), bal.getDividendTax()};
+        for (int i = 0; i < labels.length; i++) {
+            String amount = ham.citybuildersim.ui.Money.tightMoney(amounts[i] * 1000, false);
+            check("the page shows the model's " + labels[i], lineShows(bench, labels[i], amount), amount);
+        }
+        check("the fixture records a yearly debt survey", !g.getHistorySave().getDebtSurveys().isEmpty());
+        // A partial opening card book: different household/adult weights and a real excluded share.
+        holder.debt = 14; holder.revolving = .4; holder.lateDebt = 3; holder.lateShare = .1;
+        holder.shutOut = .1; holder.minimumDue = .6; holder.disposable = 4;
+        for (boolean adult : new boolean[]{false, true}) {
+            bench.householdDebt(PayTier.ELITE.getLabel(), "Established", adult, false);
+            bench.drawKept(page);
+            DebtStatistics.Snapshot survey = DebtStatistics.of(bal, PayTier.ELITE, DebtStatistics.Stage.ESTABLISHED);
+            DebtStatistics.Measure card = (adult ? survey.perAdult() : survey.perHousehold()).get(DebtStatistics.Kind.CARD);
+            Set<String> debtWords = pageWords(bench);
+            check("debt table names the kinds and the holder median, " + (adult ? "adult" : "household"),
+                    debtWords.contains("Credit cards") && debtWords.contains("Median")
+                    && debtWords.contains(ham.citybuildersim.ui.Money.tightMoney(card.medianAmongHolders() * 1000, false)));
+            check("debt burden uses the selected tier and stage's model", lineShows(bench, "Debt / assets",
+                    String.format(java.util.Locale.ROOT, "%.2f%%", 100 * survey.debtToAssets())));
+        }
+        bench.householdDebt("Untiered", "Outside families", false, false);
+        bench.drawKept(page);
+        check("the untiered stage filter uses its own population", lineShows(bench, "Debt / annual disposable income",
+                String.format(java.util.Locale.ROOT, "%.2f%%", 100 * DebtStatistics.untiered(bal, DebtStatistics.Stage.OTHER).debtToDisposableIncome())));
+        bench.householdDebt("All tiers", "All stages", false, true);
+        bench.drawKept(page);
+        List<DebtStatistics.Survey> debtYears = g.getHistorySave().getDebtSurveys();
+        DebtStatistics.Snapshot savedSurvey = debtYears.get(debtYears.size() - 1).groups().get("All");
+        check("yearly view reads the saved survey instead of today's changed book", lineShows(bench, "Debt / assets",
+                String.format(java.util.Locale.ROOT, "%.2f%%", 100 * savedSurvey.debtToAssets())));
+        bench.householdDebt("All tiers", "All stages", false, false);
+        bench.drawKept(page);
+        bench.passes();
+        bench.settle();
+        List<String> kept = bench.signature();
+        bench.showFresh(page);
+        bench.settle();
+        if (!kept.equals(bench.signature())) {
+            java.nio.file.Files.write(java.nio.file.Path.of("target/HS3-kept.txt"), kept);
+            java.nio.file.Files.write(java.nio.file.Path.of("target/HS3-fresh.txt"), bench.signature());
+        }
+        check("the stage page kept equals the page built new", kept.equals(bench.signature()));
+        bench.restoreKeptPage();
+        ScrollPane scroll = bench.householdScroller();
+        scroll.setVvalue(.43);
+        Set<Node> nodes = bench.nodesOnPage();
+        // A second census consumes the next month's zero death input and resets that month's estate disclosures.
+        bal.setFlows(0, 0, 0, 0, 0, 0, 0);
+        bal.censusOnly(families);
+        bench.showHousehold();
+        bench.passes();
+        check("the real redraw keeps the same scroller and its position", scroll == bench.householdScroller() && scroll.getVvalue() == .43);
+        check("the redraw updates the estate line to the new month's model", bal.getEstatePassed() == 0
+                && lineShows(bench, labels[0], ham.citybuildersim.ui.Money.tightMoney(0, false)));
+        check("the redraw retains the month's disclosure nodes", bench.nodesOnPage().containsAll(nodes));
+        bench.release();
+    }
+
+    static Set<String> pageWords(KeptBench bench) {
+        Set<String> out = new LinkedHashSet<>();
+        for (Node n : bench.pageTop()) words(n, out, new IdentityHashMap<>());
+        return out;
+    }
+
+    static boolean lineShows(KeptBench bench, String label, String amount) {
+        for (Node n : bench.nodesOnPage()) if (n instanceof Labeled l && label.equals(l.getText())) {
+            Set<String> row = new LinkedHashSet<>();
+            words(n.getParent(), row, new IdentityHashMap<>());
+            if (row.contains(amount)) return true;
+        }
+        return false;
     }
 }

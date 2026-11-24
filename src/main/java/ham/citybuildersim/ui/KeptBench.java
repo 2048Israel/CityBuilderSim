@@ -2369,13 +2369,14 @@ public final class KeptBench {
     }
 
     /** The stopped pages' kinds, by the way the model refuses an order. */
-    public static final List<String> STOPPED = List.of("deposit", "coast", "river", "bridge", "licence", "land");
+    public static final List<String> STOPPED = List.of("deposit", "coast", "river", "bridge", "licence", "land", "water");
 
     private static Game.BuildResult refusalOf(String kind) {
         return switch (kind) {
             case "deposit" -> Game.BuildResult.NO_DEPOSIT;
             case "coast" -> Game.BuildResult.NO_COAST;
             case "river" -> Game.BuildResult.NO_RIVER;
+            case "water" -> Game.BuildResult.NO_WATER;
             case "bridge" -> Game.BuildResult.NO_BRIDGE;
             case "licence" -> Game.BuildResult.NO_LICENCE;
             case "land" -> Game.BuildResult.NO_LAND;
@@ -2389,6 +2390,7 @@ public final class KeptBench {
             case "deposit" -> Game.siteOf(t) != null;
             case "coast" -> ham.citybuildersim.Ports.isPort(t) || t.getName().equals("Desalination Plant");
             case "river" -> ham.citybuildersim.BuildCard.hydro(ui.game, t) != null;
+            case "water" -> t.cooling();
             case "bridge" -> t.isBridge();
             case "licence" -> t.getRequiresLicence() != null;
             default -> true;
@@ -2425,6 +2427,7 @@ public final class KeptBench {
             case "deposit" -> "showNoDepositMenu";
             case "coast" -> "showNoCoastMenu";
             case "river" -> "showNoRiverMenu";
+            case "water" -> "showNoWaterMenu";
             case "bridge" -> "showNoBridgeMenu";
             case "licence" -> "showNoLicenceMenu";
             case "land" -> "showNoLandMenu";
@@ -2434,6 +2437,7 @@ public final class KeptBench {
             case "deposit" -> () -> s.drawNoDeposit(t, quantity, title, types);
             case "coast" -> () -> s.drawNoCoast(t, quantity, title, types);
             case "river" -> () -> s.drawNoRiver(t, quantity, title, types);
+            case "water" -> () -> s.drawNoWater(t, quantity, title, types);
             case "bridge" -> () -> s.drawNoBridge(t, quantity, title, types);
             case "licence" -> () -> s.drawNoLicence(t, quantity, title, types);
             default -> () -> s.drawNoLand(t, quantity, title, types);
@@ -5251,7 +5255,7 @@ public final class KeptBench {
 
     /**
      * The cells of the grid that can be opened on the city as it is, by the key the grid opens them under, in the grid's order: a
-     * family's cell with anybody in it ("tier:SHAPE", the tier's number), then the rows below the rule ("OUT:" and the ledger's key -
+     * family's cell in each adult stage ("tier:SHAPE", the young append ":YOUNG"), then the rows below the rule ("OUT:" and the ledger's key -
      * the retired, the out of work, the students, the orphans, the prison).
      */
     public List<String> householdCells() {
@@ -5259,10 +5263,12 @@ public final class KeptBench {
         ham.citybuildersim.HouseholdBalance bal = ui.game.getHouseholdBalance();
         ham.citybuildersim.FamilyModel families = ui.game.getFamilies();
         List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.AdultStage stage : ham.citybuildersim.AdultStage.values())
         for (ham.citybuildersim.FamilyStructure shape : ham.citybuildersim.FamilyStructure.values()) {
             if (shape.isRetired()) continue;
             for (int t = 0; t < ham.citybuildersim.HouseholdAccounts.RETIRED; t++) {
-                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t]).households() >= .5) out.add(t + ":" + shape.name());
+                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t], stage).households() >= .5)
+                    out.add(t + ":" + shape.name() + stage.keySuffix());
             }
         }
         for (ham.citybuildersim.Household h : ui.peopleScreen.belowTheRule(bal, families)) out.add("OUT:" + h.key());
@@ -5283,6 +5289,15 @@ public final class KeptBench {
     /** The city's month's statement ("the month as a statement") opened or closed, as a click on its toggle would. */
     public void householdStatement(boolean open) {
         fold(ui.peopleScreen.detailsOpen, "statement", open);
+    }
+
+    /** HC2's visible debt-survey filters, with its comparison opened as its details chip does. */
+    public void householdDebt(String tier, String stage, boolean adult, boolean annual) {
+        ui.peopleScreen.debtPanel.tier = tier;
+        ui.peopleScreen.debtPanel.stage = stage;
+        ui.peopleScreen.debtPanel.adult = adult;
+        ui.peopleScreen.debtPanel.annual = annual;
+        fold(ui.peopleScreen.detailsOpen, "debt", true);
     }
 
     /**
@@ -5312,6 +5327,12 @@ public final class KeptBench {
     /** Household money forgotten, as another city opened would leave it: nothing kept (People's page too, which shares the screen's forget()). */
     public void forgetHousehold() {
         ui.peopleScreen.forget();
+    }
+
+    /** The window's scroller used by Household money's real redraw (HS3). */
+    public ScrollPane householdScroller() {
+        ensureWindow();
+        return ui.menuScroller;
     }
 
     /* =====================================================================

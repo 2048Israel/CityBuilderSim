@@ -352,6 +352,7 @@ public class RailDepotCheck {
         // P a spur's sidings (the template's), so their sidings are short of the bulk offered by at least one spur's whole sidings - past any month's
         // drift - and the cap binds by construction, whatever the played city offers. A city offering under two spurs' sidings has no fixture (the gate).
         final double bulkPlayed = fr.getBulkOffered();
+        System.out.println("      rail depot fixture " + SubstationCheck.gridReading(city));
         final int spursLaid = (int) Math.floor(bulkPlayed / P) - 1;
         assertTrue("fixture: the played city offers more than two spurs' sidings of bulk, so there is a spur count that leaves the bulk past its sidings",
                 spursLaid >= 1);
