@@ -4454,3 +4454,23 @@ CpiCoverageFinding and its single caller; normal Monetary still runs
 all its findings, without adding a duplicate full execution to AllChecks.
 No assertion or model behavior changes. Candidate 40806e6f8 is superseded
 for native verification by the following pushed rename commit.
+
+Exact candidate 0579c76b6 and old ff123698a both compile on the box with
+verified source/JDK/assets. The unchanged old-API CPI finding records
+20 passes and 13 failures: twelve intended omitted/mispriced-expenditure
+failures, plus an erroneous new physical-stock expectation. Its setup
+clears cars only in nonempty purchase-eligible cells; tiny retained cells
+still own cars, included in totalCars and normal fleet wear. Closing cars
+12.081211790314319 therefore cannot equal only the twelve new draws.
+Keep those holdings: record the actual opening total and assert closing
+equals opening minus normal CAR_LIFE_MONTHS wear plus actual draws.
+No fixture input, model, tolerance, conservation gate or intended CPI
+failure is changed. Patch SHA256
+6d2331ab641a128231e25853f6196b4bc611610a5cad16a26e0e840671721dbe.
+The sequence stopped before any candidate findings or named harnesses;
+all owned jobs ended. Evidence archive SHA256
+8c483082d5a8caceb4ba11fd073af154109f2fe3905e3b36ed195e0662d812bc,
+helper target/cpi-native-0579/evidence and box
+~/cbs/runs/res3-cpi-0579c76b6-20261124. These compile/old-finding results
+are not new-model or monetary passes. The corrected finding must show
+only its intended old failures, then pass with the new source.

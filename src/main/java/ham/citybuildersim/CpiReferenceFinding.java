@@ -108,6 +108,7 @@ public final class CpiReferenceFinding {
                     + .5 * HouseholdBalance.CAR_ADOPTION * Math.min(cars.getLocalPrice(), cars.importPrice());
         }
         double savings = homes.totalSavings(), debt = homes.totalDebt(), bankCash = g.getBank().getCash();
+        double carStockBefore = homes.totalCars();
         int draws = cars.monthsDraws().size();
         quietly(() -> g.getMotoring().month(g));
         double units = 0, bill = 0;
@@ -118,7 +119,8 @@ public final class CpiReferenceFinding {
         }
         double paid = g.getHouseholdCarSpend(), credit = g.getHouseholdCarCredit();
         check("fixture: actual new cars are bought with positive seller value and financing", units > 0 && paid > 0 && credit > 0);
-        close("new-car physical draws equal the cars placed in household stocks", homes.totalCars(), units);
+        close("new-car physical stock closes after existing fleet wear and actual draws", homes.totalCars(),
+                carStockBefore - carStockBefore / HouseholdBalance.CAR_LIFE_MONTHS + units);
         close("new-car source bills equal the full seller value", paid, bill);
         close("cash savings plus bank advance fund the complete seller bill", savings - homes.totalSavings() + credit, paid);
         close("the bank pays the financed purchase once", bankCash - g.getBank().getCash(), credit);
