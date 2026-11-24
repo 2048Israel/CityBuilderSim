@@ -216,4 +216,15 @@ against").
 
 ## 9. The dry run
 
-(after the ensemble)
+`cbs-gate-LP-G1-3DhXEO5s` on the box, 49cc93154 on main 0c4249711 (FC2's ensemble beside it, within the box's two
+heavy jobs): gate exit 0, the suite in 1,087 s (exit 3, known red only), no unnamed line, no new red, 0 firm Stale
+findings, timing soft (MapCheck 3). `{next}` is 0.9.195 in the three files, and the baseline would land as
+`docs/ensemble/0.9.195.md`. The 14 harnesses known red are main's own, the same as PW2's last dry run
+(`cbs-gate-PW2-FZfbf78Z`): BankCheck, CurrencyCheck, DeathRecordCheck, DeskCheck, FloatLinkCheck, Forms1900Check,
+FundCheck, HoldersCheck, InvestCheck, KeptCheck, PlanCheck, RailDrawCheck, RoadCheck, ScaleCheck. Each has the same
+`exit` and `FAILED` count lines as on that run (28 of 28 identical). Known reds row 101 (LP-G1's) is retired by GR2 in
+the merge.
+
+The harnesses the batch moves, under the full suite on the box: LongPlaytest green in 296 s (133 s at PW2's run),
+CopperRefiningCheck green in 364 s (151 s), GroundSkipCheck green in 7 s, KeptCheck known red only in 293 s. Each is
+well inside `AllChecks.HARNESS_SECONDS` (1,740 s). The PC is a different matter (§6, GB6).
