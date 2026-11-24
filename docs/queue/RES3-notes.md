@@ -4313,3 +4313,32 @@ Report 29e9 retains exact source/asset/JDK manifests and old proof;
 its proof is reusable because the corrected Invest and old production
 remain byte-identical. Only the candidate needs its compile and runtime
 checks after the new pushed correction; no model behavior changes.
+
+Exact pushed 1980899a9aa5d01015370ddbf982c552f1500c47 now validates:
+compile 0, legacy driver 11 passing; normal HousingMarketCheck 0,
+InvestCheck 3 with no new reds, and MonetaryCheck 0 in 104 seconds.
+Invest retains every original land input and >5 predicate, with returned
+hurdle/next-quantity and legacy eligibility assertions passing. Its sole
+used known row is HT1-H's builders-wage premise, exactly matched from
+main known-reds line 107; no new Invest finding is passed by name.
+
+All 494 monetary assertions pass, including every old 491 assertion and
+three new actual paid-supply checks. The full-precision original total
+effect is 5.5261306149104295 points; pooled total
+2.6435558954015903 and non-shelter 1.5999095311524307 points pass.
+Timing .218575 is below .750; calendar reversals
+.7042097487189467/.2518367026423454/.20954925517923106 are below 2.
+Early starts remain 44/23, and C01 has physical and actual trade presence
+in all 12 measured months at both 3/10 rates; paid rent per door
+.02615797583/.02697192308 rises with the higher rate. All founding/dial,
+currency, calendar, crew, base-before-window, saving-plan and 136
+fixed-basket/fee-quantity guards pass unchanged. No extra pair was run.
+
+Report 7049 keeps the complete source-labelled handoff, catalogue and
+maps at the helper's target/order-proof/native198 and
+~/cbs/runs/res3-order-proof-1980899a9-20261124. Evidence archive SHA256
+is ef46344ec01b4813c1acfab743079696a393f0761f49d706222317b053bf45cc.
+Native source is clean, all owned jobs ended, and source/data/JDK hashes
+are verified. Earlier compile stops remain unrun historical checkpoints.
+The housing core is green here; CPI coverage/weight correction and final
+money/save verification remain open before mends.
