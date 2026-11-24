@@ -51,7 +51,12 @@ give no recommendation to take, spending, anything outside the repository);
 decide the rest and tell him in the ship note. Never ask about lanes, order,
 pace or whether to go ahead. One mail per decision, sent once: no reminders,
 no "still waiting". Keep it to a few short lines with the question first (his
-phone cut 11-23's long ones off).
+phone cut 11-23's long ones off). Scheduling, ordering, bundling, which batch
+goes first or with which, lanes and pace are always the orchestrator's, never
+a choice put to him (Jerus, 2026-11-23, on PW7's re-bake: "thats something the
+orchestrator handles, if it asks me im not going to know whats better"). What
+truly needs his hands (a file only he has, an account, a purchase, a release,
+his PC) goes as a request for that one action, not a choice between plans.
 
 **A check red on new behaviour: check reality first** (Jerus, 2026-11-23, desk
 chat: "sometimes its as simple as check reality"). WHY: RES3's lenders held
