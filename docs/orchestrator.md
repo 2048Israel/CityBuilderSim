@@ -28,6 +28,18 @@ the gate box and holds it whole, a gate there waiting for it and it for a gate
 a red playtest or a slower line mailed to `jerus` and the gate's keeper, naming
 the batch (BW1).
 
+**A question for Jerus is a mail, or it is not asked** (Jerus, 2026-11-23,
+desk chat: "IF IT has FUKING qauestion, how am i suppopsed to know if they dont
+fuking send it as a question"). WHY: on 11-23 four questions sat only in the
+orchestrator's chat replies, none reached his phone, and RES3's lane stood idle
+from 14:40; his phone buzzes only on mail to `jerus`. So every question goes as
+its own mail, `cbs-bus.exe send jerus --kind question --urgent --as
+orchestrator --body "..."`, one mail per question, readable alone on a phone:
+what waits on it, the options in plain words, the pick and why, and what
+happens if he does not answer. A question in a chat reply, a note or a report
+does not count as asked. The same holds for any builder whose brief lets it
+talk to him directly.
+
 ## Dispatch
 
 - **Read live budget at the start of EVERY turn and immediately before every
