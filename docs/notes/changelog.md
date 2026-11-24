@@ -18,6 +18,12 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.199 — CY1, the planner appraises a processing works over its cycle — 2026-11-24, ready, see docs/queue/CY1-notes.md
+A processing sector (Iron & Steel, Copper Refining, Wood Products, Cement & Concrete) now tests each works it might order on the lesser of the month's earnings and their mean over its last 12 months, so a one-month spike or a cycle's best month no longer orders a works the year does not pay for (FC2's seed 1 ordered one a month to 181 Rod Mills on a three-month cycle; CU2's seed 1 a refinery on a one-month spike). Its words say when the year held an order back.
+A kind counts idle when its last works earns below nothing in the month or over its year. A paying month no longer starts the count again. A kind idle over its year is sold without waiting for the whole sector's six losing months, but only in a month its last works loses in and over its year, so a recovery's paying months sell none.
+Copper Refining builds no more of a kind while its works making the same goods, standing and on site, would run under 60% of nameplate on last month's make (180 mills stood at a quarter of theirs for want of cathode that paid).
+Each kind's year and the month's run are saved with its sector; an older save starts with an empty year.
+
 ### 0.9.198 — FC2b, the choices that use the foreign crews — 2026-11-24, ready, see docs/queue/FC2b-notes.md
 A payer may now hand its share of one site's remaining work to the foreign crews (Jerus, 2026-11-22: "something finished in 20 months is better than something finished in 100 months"). They build it on the site at their own pace, about the threshold's months, and at their price; the payer pays the extra over the home price, and money already spent is sunk. A business weighs it each month by its earnings brought forward over the months saved, which is the interest on its cost plus the earnings past it. The city hands a site from the Construction screen's Foreign crews card (Jerus: "if roads are causing the issues then you could pay more to get just roads fixed"), which shows the price, the months saved and the interest saved. A shared site splits by the points each payer put on it, and the other payers' work stays with the city's crews. The crews' bill is the builders' import of services. Save format 65.
 
