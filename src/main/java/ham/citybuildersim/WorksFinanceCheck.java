@@ -782,9 +782,13 @@ public final class WorksFinanceCheck {
         EssentialWorksCheck.powerDrawAt(g, 1 / 1.05);
         List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
         bm.getTemplates().removeIf(t -> t.getCategory() == BuildingType.ELECTRICITY && t != wind);
-        // THE FIXTURE CAUSES IT (PW1): the advice credits a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, the calm peak), and in this
-        // town of 290,000 kW its posts pull the pooled fill down by more than that part adds, so one farm is no reserve. The fixture's farm
-        // is built 1 / WIND_FIRM larger: its firm part is the nameplate this section was written against, and one farm is a reserve again.
+        // THE FIXTURE CAUSES IT (PW1, PW3): PW1's advice credited a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, 0.33 of its
+        // average, the calm peak), and in this town of 290,000 kW its posts pull the pooled fill down by more than that part adds, so one
+        // farm was no reserve. PW3's advice credits a farm at PowerDispatch.windCredit(share): WIND_PEAK_CREDIT (0.73) of its average,
+        // falling to a tenth of that as the variable rows' share of the energy rises to CREDIT_HALF; WIND_FIRM is no longer read by it. The
+        // fixture's farm is built 1 / WIND_FIRM larger (three times the average), so the advice credits it WIND_PEAK_CREDIT / WIND_FIRM (2.2)
+        // times the average this section was written against at no share (PW1's credit was exactly that average at any share), and one
+        // farm is a reserve (the first fixture line below asserts it).
         wind.setProduction1(wind.getProduction1() / PowerDispatch.WIND_FIRM);
         try {
             AutoBuilder auto = g.getAutoBuilder();

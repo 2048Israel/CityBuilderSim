@@ -69,7 +69,12 @@ and PW2's ground finding (REV-PW2).
   unclaimed the office lists the same rectangle again under a new id, so it would be paid twice. An offer on a
   landmass the city has not linked counts its linked dry ground alone (`linkedSqFt()`, ET5's rule held). The
   refusals are read on the city as it stands: an order whose refusal only the ground it buys would clear (a river or
-  a coast arriving with an offer) is held.
+  a coast arriving with an offer) is held. Two limits, the re-review's (REV-PW3b, P3): the rehearsal's hold
+  (`LandManager.Rehearsal.hold()`) skips the purchase's `landChanged()` recount, so a held offer's `linkedSqFt()`
+  could differ from the bought one's only where a purchase moves the linked set, and that would fall to `place()`'s
+  residual path (an offer gone or priced otherwise: the order held with the ground bought and the bond sold); and
+  PowerPlanCheck 7b's assembly fails in `groundFor()`, so `place()`'s own hold where the rehearsal cannot cover is
+  reached only if the market changes between the plan and the purchase, which no fixture exercises.
 - ★G **E25 fits, E31 does not.** The tracker raises the farm's yield a kWp (PVGIS tracked over fixed, by band):
   before E25 is known the farm runs at the fixed rack's yield, after it at the tracked (the undone pattern, today's
   figure the tracked). The tandem module raises a module's watts a square metre, not its yield a kWp: its gain is
@@ -112,8 +117,9 @@ and PW2's ground finding (REV-PW2).
   construction among the anticipated resources) and orders more only for what opens sooner, which is ★K's
   per-candidate `openBy()` reading of the builders' queue. So power's site is kept past the deadline, and
   `promisedMonths()` reads NaN once the promise has expired. HW1's late order still comes where a candidate opens
-  before the plants pending (EssentialWorksCheck: 17 Diesel Stations past the deadline, 2 of the 37 pending opening
-  after the candidate). Seed 1 now ends with no copper works but 6 Wire & Cable Works (CU2's run: 1), 0 Rod Mills.
+  before the plants pending (EssentialWorksCheck after FC2's merge: 4 Oil-Fired Plants past the deadline, joining an
+  Oil-Fired Plant on site ahead of FC2's Container Terminal, open in 58 months against the first pending diesel's
+  988; before the merge 17 Diesel Stations, 2 of the 37 pending opening after the candidate). Seed 1 now ends with no copper works but 6 Wire & Cable Works (CU2's run: 1), 0 Rod Mills.
 - ★L **The screening curve ranks the firm rows, and a closing farm is weighed against its pick** (rule 1). A firm
   candidate's twelve months of capital and ground over `lifeFactor()` and of its fixed running, plus its running a
   kWh for the slice's hours, over the firm kW of the gap it serves; the slice from where the firm supply sits against
@@ -143,8 +149,12 @@ and PW2's ground finding (REV-PW2).
     reserve test (REV-PW3 #3), main's Wind Farm fixtures are restored: WorksFinanceCheck's highway promise (2 Wind
     Farms) and independent pending load (8), EssentialWorksCheck's interim power (1) and scarce cash (the cash
     step's 1 Wind Farm). The overdue pending keeps the Diesel Station (1910, dated to the town's year, PW2's lever)
-    for reality's reason, which a fixture line now asserts: no fleet of farms within the credit's cap covers its gap
-    (the best adds 129,953 firm kW against 296,446), and a planner short by that much builds firm plant;
+    for reality's reason, which a fixture line now asserts: no fleet of farms within `CREDIT_HALF`'s share
+    (`reserveMost()`: 19 farms) covers its gap (the most such a fleet adds 27,913 firm kW against 297,476; at the
+    credit's floor some 600 farms would, a fleet no planner builds), and a planner short by that much builds firm
+    plant. After FC2's merge (one Container Terminal ahead of the pending diesels, FC2's reason) every candidate
+    opened after the last diesel and nothing was short at its opening, so the fixture stands one Oil-Fired Plant on
+    site ahead of the terminal: a candidate of its kind opens first and is short (a "fixture:" line asserts it);
   - EssentialWorksCheck's overdue pending: twice the advice's count pending (a quarter more ran short of the
     forecast two months on, and the planner's five more were its own reading); its loaded twin is given the
     fixture's lever as it is given the sector holds (a template's date is the catalogue's, which no save carries:
@@ -255,9 +265,12 @@ works' own must-run power (2.44M kW) was above the city's mean draw (2.31M), so 
 the peak (the diesels and turbines ran at a capacity factor of 0), where no farm's energy is worth its capital.
 **Against reality:** grids grew on coal and hydro base load, and wind and solar are the largest additions since the
 2010s, oil a few percent. Here the base is the works' own power, and a farm's ground is bought at a city's land
-price: real farms stand on rural ground leased or bought at farmland's price. What a farm's ground should cost is
-FE9's question (★G: the tandem module's gain is the farm's ground too), so PW3 leaves the price as it stands and the
-mix follows it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s,
+price: real farms stand on rural ground, leased or bought at a few percent of their capital. Nothing in the model
+prices rural ground apart from the city's (a helper's reading of the tree: the city's price varies only by relief;
+`LandFactors` is a nation's multiplier; agriculture buys at the city's price, with a property-tax relief at use
+value; no building rents its ground; a farm's ground use is a coal plant's). Rural ground for the power farms is
+RG1's (Pending on main, 943d0da82; Jerus asked), not PW3's, so PW3 ships with the city's price and the mix follows
+it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s,
 2030s and 2060s).
 
 **Against §2.9's table:** 1900's city burned coal in plants of half a megawatt and took a third of its power from
