@@ -10,7 +10,7 @@
 
 **Uses:** [Timing](Timing.md) (1)
 
-**Used by (13):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [FittingCheck](FittingCheck.md), [HealthCheck](HealthCheck.md), [HousingCheck](HousingCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [ObservationCheck](ObservationCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ScaleCheck](ScaleCheck.md)
+**Used by (12):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [FittingCheck](FittingCheck.md), [HealthCheck](HealthCheck.md), [HousingCheck](HousingCheck.md), [MapCheck](MapCheck.md), [ObservationCheck](ObservationCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Constants
 

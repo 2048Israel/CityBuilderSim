@@ -27,7 +27,7 @@ public final class Observation {
             "ScaleCheck",
             "AutoBuildCheck", "PriceLevelCheck",
             "FittingCheck", "BuildAdviceCheck",
-            "ConstructionControlCheck", "MapCheck", "KeptCheck",
+            "ConstructionControlCheck", "MapCheck",
             "HealthCheck",
             "HousingCheck", "PrizeCheck");
 

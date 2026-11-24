@@ -325,6 +325,12 @@ public class TimingCheck {
         String javaExe = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         String classpath = System.getProperty("java.class.path");
 
+        String softCache = "-XX:SoftRefLRUPolicyMSPerMB=0";
+        check("KeptCheck's child collects soft-only renderer images independently of heap headroom",
+                AllChecks.command(javaExe, classpath, "KeptCheck", true).contains(softCache));
+        check("timing and model children keep their ordinary soft-reference policy",
+                !AllChecks.command(javaExe, classpath, "KeptTimingCheck", true).contains(softCache)
+                && !AllChecks.command(javaExe, classpath, "LongPlaytest", true).contains(softCache));
         setMode(Timing.SOFT);
         List<String> soft = AllChecks.command(javaExe, classpath, FIXTURE_HARNESS, true);
         check("soft here: forwarded() is -D" + Timing.PROPERTY + "=" + Timing.SOFT,

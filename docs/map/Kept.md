@@ -1,4 +1,4 @@
-# Kept.java - 899 lines · 90 methods · 5 constants · interface
+# Kept.java - 913 lines · 91 methods · 5 constants · interface
 
 `ham/citybuildersim/ui/Kept.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -69,18 +69,18 @@
 | 107 | THE POOL, THE DRAW AND THE SCOPES |
 | 428 | THE BOXES: their children are the draw's own list while a draw is on |
 | 693 | THE NODES, AS THE CODE ASKS FOR THEM |
-| 786 | WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE |
-| 835 | THE PLAYER'S HAND (KP2): a control on a kept page is not set under it |
+| 800 | WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE |
+| 849 | THE PLAYER'S HAND (KP2): a control on a kept page is not set under it |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 183 | `Kept.PARKED_MAX` | `48` | The most scopes a scope parks (parkedScope()): rows are keyed by what they say, and a few dozen is every row a page has had in a year. |
-| 791 | `Kept.TOOLTIP` | `"javafx.scene.control.Tooltip"` | The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. |
-| 793 | `Kept.ANIMATION` | `"kept.animation"` | The key play() keeps a node's last animation under in its properties, to stop it before the next. |
-| 840 | `Kept.HELD` | `"kept.held"` | The key grip() keeps a node's "held" flag under, and the marker that it has been gripped. |
-| 841 | `Kept.GRIP` | `"kept.grip"` |  |
+| 805 | `Kept.TOOLTIP` | `"javafx.scene.control.Tooltip"` | The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. |
+| 807 | `Kept.ANIMATION` | `"kept.animation"` | The key play() keeps a node's last animation under in its properties, to stop it before the next. |
+| 854 | `Kept.HELD` | `"kept.held"` | The key grip() keeps a node's "held" flag under, and the marker that it has been gripped. |
+| 855 | `Kept.GRIP` | `"kept.grip"` |  |
 
 ## Fields (state)
 
@@ -121,7 +121,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 103 | 797 | **type** `public final class Kept` | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the same code, in the order it asks for them, at the next - so a month th... |
+| 103 | 811 | **type** `public final class Kept` | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the same code, in the order it asks for them, at the next - so a month th... |
 | 105 | 1 | `private Kept()` |  |
 
 ### THE POOL, THE DRAW AND THE SCOPES (lines 107-427)
@@ -212,7 +212,7 @@
 | 681 | 6 | `private static boolean sameRow(RowConstraints a, RowConstraints b)` |  |
 | 689 | 3 | `static Group group()` | A Group, kept: Group's getChildren() is final, so a kept group's children are set through {@link #children}. |
 
-### THE NODES, AS THE CODE ASKS FOR THEM (lines 693-785)
+### THE NODES, AS THE CODE ASKS FOR THEM (lines 693-799)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -227,25 +227,26 @@
 | 753 | 3 | `static Region region()` | A Region: a spacer, a bar, a swatch. |
 | 758 | 6 | **type** `static final class SizedRegion extends Region` | A plain Region with the same passive setter observation as the kept boxes. |
 | 759 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.SizedRegion)_ |  |
-| 766 | 6 | `static Label label(String text)` | A Label with this text and no graphic. |
-| 774 | 6 | `static Label label(String text, Node graphic)` | A Label with this text and this graphic. |
-| 782 | 3 | `static void children(Group g, Node...kids)` | A Group's children set where they differ, kept or not (Group's own list cannot be staged). |
+| 766 | 12 | `private static Label newLabel()` | A native Label whose skin text disappears with empty words, including raw CountUp updates. |
+| 780 | 6 | `static Label label(String text)` | A Label with this text and no graphic. |
+| 788 | 6 | `static Label label(String text, Node graphic)` | A Label with this text and this graphic. |
+| 796 | 3 | `static void children(Group g, Node...kids)` | A Group's children set where they differ, kept or not (Group's own list cannot be staged). |
 
-### WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE (lines 786-834)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 796 | 3 | `static Tooltip tipOf(Node n)` | The tooltip installed on a node, or null. |
-| 805 | 14 | `static Tooltip tip(Node n, String text, double delayMillis)` | A tooltip on a node with this text and delay: the node's own, its text set, when it has one and a draw is on; else a new one installed, as Tooltip.install did. |
-| 821 | 3 | `static Animation animationOf(Node n)` | The animation a node was last given through {@link #play}, or null. |
-| 829 | 5 | `static void play(Node owner, Animation a)` | An animation on a node, played: the one this node was last given stopped first, so a month that lands while the last month's count-up still runs does not leave two counting one label. |
-
-### THE PLAYER'S HAND (KP2): a control on a kept page is not set under it (lines 835-899)
+### WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE (lines 800-848)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 852 | 22 | `static void grip(Node n)` | Makes {@link #held} true for this node between a primary-button press on it and the release that ends the press. |
-| 875 | 4 | `private static void letGo(Node n)` |  |
-| 885 | 4 | `static boolean held(Node n)` | Whether the player holds this node now (see {@link #grip}); a slider also counts as held while its value is changing. |
-| 894 | 5 | `static void text(TextInputControl f, String text)` | A field's text set only where it differs and never while the field has the focus: a set marks the field edited and moves its caret, and the player typing owns it. |
+| 810 | 3 | `static Tooltip tipOf(Node n)` | The tooltip installed on a node, or null. |
+| 819 | 14 | `static Tooltip tip(Node n, String text, double delayMillis)` | A tooltip on a node with this text and delay: the node's own, its text set, when it has one and a draw is on; else a new one installed, as Tooltip.install did. |
+| 835 | 3 | `static Animation animationOf(Node n)` | The animation a node was last given through {@link #play}, or null. |
+| 843 | 5 | `static void play(Node owner, Animation a)` | An animation on a node, played: the one this node was last given stopped first, so a month that lands while the last month's count-up still runs does not leave two counting one label. |
+
+### THE PLAYER'S HAND (KP2): a control on a kept page is not set under it (lines 849-913)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 866 | 22 | `static void grip(Node n)` | Makes {@link #held} true for this node between a primary-button press on it and the release that ends the press. |
+| 889 | 4 | `private static void letGo(Node n)` |  |
+| 899 | 4 | `static boolean held(Node n)` | Whether the player holds this node now (see {@link #grip}); a slider also counts as held while its value is changing. |
+| 908 | 5 | `static void text(TextInputControl f, String text)` | A field's text set only where it differs and never while the field has the focus: a set marks the field edited and moves its caret, and the player typing owns it. |
 
