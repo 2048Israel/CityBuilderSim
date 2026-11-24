@@ -3654,3 +3654,126 @@ This is a changed native household/paid-price path, not a noise label.
 Its first causal order and completion calendar cannot be proven by the
 original-town replay; that limit is explicit. Both hard failures remain
 unwaived, and the current source is not mends-ready.
+
+The remaining five named root calls run serially, with a fresh MG1 sample
+before each call and cbs.parallel=1, at source 57528718c (production exactly
+d82144d00). Completed archives are target/RES3-final-five-20261124/NAME,
+with batch.txt, exact exit.txt, memory.txt and copied checks. CallCheck and
+DeskCheck return 0; FundCheck and BankCheck return 4; WaterCheck returns 0.
+The runner's final 0 means completion of all calls, not passing harnesses.
+No second root JVM runs beside them; the runner has ended.
+
+Call selects only CallCheck, 207 OK lines, with every sale, call, both
+worth-call sides and save branch reached. The affected bank-at-sale, room,
+same-face, coupon-step tails, one callable piece, reopening/first-date,
+actual central-bank holding and worth-call fixture guards all pass. The
+94ba28823..e6a47dff8 diff changes playedCity/theSale to keepBankOverDesk;
+it adds no assertion labels, so no invented literal six-plus-two grouping
+is claimed. Desk selects only DeskCheck, 291 passing assertions. Its spare
+D$14,897 is restored and reopening grows 44,690 to 89,381. Immutable helper
+reports 54b8/e77e give the fired labels and log lines.
+
+Fund selects only FundCheck, harness 1 in 28.5 s. Sections 9b and 9d's
+market-book, rescue, zero-cash, bond-room/toRaise-before-idle and audit cases
+execute and pass. Section 9e fails its opening no-secured-claim fixture
+guard, then throws before any in-kind gift, its 240-month run or sections
+10-13. This is not section 10's queued HT1-H limit-posting red. The selector
+chooses the highest observed 24-month buyback rate with enough household
+stock but no lien eligibility condition; the subsequent guard requires
+every cell's claim and tagged shares for that company to be exactly zero.
+Inherited source is not proof of an outside-RES3 cause. Native buyer,
+offending cell/count and claim/tag amounts were not printed, and TempDirs
+removed the scratch opening at process exit. No personal saves were read.
+The real liability versus residual/inactive-cell distinction is unproved.
+
+Authorize a peer-only passive Fund observation before that unchanged guard,
+with current buyer and per-cell stock/basis/claim/tag/count plus byte copies
+of the existing native scratch opening retained outside TempDirs. The
+reviewed patch changes no selector, guard, throw, input, probe, 240-month
+window, cap/idle or audit law. No extra Game/save call or financial mutation
+is added. A lawful fixture mend must follow the actual observation, with
+no automatic known-red assignment, skip or claim forgiveness.
+
+The Bank filter selects CentralBankCheck (1, 1740.1 s), BankCheck (1,
+38.5 s) and YoungBankCheck (0, 7.3 s). Both Bank failures match the existing
+HT1-H classifier lines: defaults fire at month 20 on a 569.75k claim and
+36.21k is written off, but net kept is positive 265.51k, so its required
+net-loss condition is absent. No new waiver is inferred. The current log
+does not isolate each income component. Water selects only WaterCheck and
+passes in 3.9 s; YoungBank reaches its all-passed terminator.
+
+Central's sole failure is its 1740-second timeout. It advances through
+howStrict's deliberate twenty-four shapes, each with 600 founding months
+and two 240-month twins, reaching ten shapes before timeout. Repeated
+completed shape rows show progress; no deadlock is established. This
+neither proves an outside-RES3 load issue nor excludes a per-month runtime
+regression. No timing threshold, shape or law is changed or passed away.
+Completed classification report: 20261124-135434-401-RES3-final-logs-e396.
+The next native Fund observation owns the single JVM lane; final fast/maps
+and any further diagnosis remain pending.
+
+The passive native FundCheck reproduces section 9e's original failure in
+14.6 s, then hands the JVM lane back. Peer source is restored byte for byte;
+the production model is unchanged. Selected buyer is Real Estate, opening
+month 73, with 3020.025596006526 issued shares, 2420.5774943801575 household
+shares and 302.0025596006526 needed at the cap. Four UNSKILLED single,
+couple, baby and teen cells have live counts .701140-.950207, all above
+EMPTY_CELL .5, and finite positive claims with proper tagged-share subsets.
+Their claims sum .0001418278887181453 versus governmentClaim
+.0001418278887181452, a 1.0842e-19 difference. Tagged shares total
+1.007946219828638. The native opening and loaded values agree bit for bit.
+These are real accounted stocks, not empty cells, nonfinite values, a load
+artifact or rounding residue. Their creating assessment event remains
+unobserved; no outside-RES3 attribution is claimed.
+
+Only Real Estate and Construction retire positive stock in the unchanged
+24-month probe; both carry valid claims. There is no clean positive
+candidate, so an all-company zero-lien selector cannot cause this fixture.
+Evidence: the helper's target/RES3-fund9e-native-20261124 and retained
+RES3-fund9e-observation-27788; immutable report
+20261124-140110-710-RES3-final-logs-e454. The initial launcher aborts on
+PowerShell's stderr handling before starting a child; the corrected launch
+is the only actual passive FundCheck run.
+
+★ Keep the native opening, tax policy, 24-month probe and 240-month cap/idle
+run. Cause an unencumbered in-kind gift by moving only actual free units,
+retaining every claim and tagged share with its existing holder. Use the
+model's basisReleased/receivedShareInKind accounting for the corresponding
+basis. Retarget the whole-company zero-claim setup predicate to the units
+actually transferred and add before/after stock, basis, cash, counts and
+exact claim/tag invariants. No tax is paid, cleared, diluted or forgiven;
+no seed/month search, skip, invented cash or relaxed tolerance is allowed.
+The highest positive observed buyer must have enough free stock. The peer
+is authorized to prepare this FundCheck-only mend and run the complete
+normal named harness; adoption still requires parent source review. No
+result is claimed while that run is pending.
+
+The complete normal peer ./batch-check.sh FundCheck returns 0 on the
+reviewed one-file mend: compile 23 s, exactly FundCheck selected, harness
+0 in 22.0 s, maps green and Stale zero firm/206 soft. All sections 1-13
+reach their assertions and the log ends All checks passed, without a
+remaining FAIL or exception. The original section-10 limit-posting case
+now also reaches and passes; no known-red assignment is needed for Fund.
+Immutable report: 20261124-141311-711-RES3-final-logs-524b. Source/patch
+hashes and the completed batch, checks and launch sample are retained in
+the helper's target/RES3-fund9e-mend-20261124. All helper jobs have ended.
+
+The native claimed donor actually supplies free units. Every other cell
+stock, government claim/tag/tax entry, treasury/fund/bank cash and issued
+share count remains bit unchanged; combined shares and acquisition basis
+are conserved and all retained tags remain backed. Real Estate still
+reaches the original ten-percent opening cap. Its 240-month run has cap
+asks in 138 months, idle payouts in 63 and buyer buybacks in 129, with
+240/240 audits closing, no unmet ask and maximum holding 10.2167 percent
+below the unchanged 10.9191-percent fixed point. Both section-10 market
+twins, native save, Insane and never-borrowing cases execute and pass.
+
+Parent source review accepts this fixture-only allocation and independently
+verifies the root/peer source hash
+d8f5d9a599d516b2db28efd4ab553101a57071cf183f8d1313edd86c50a28122.
+Adopt patch 51c91268ce55fbfc95ddcbfd46272ae3d0440f1b3ebd54153aa4d7adbae517dd.
+The production model remains d82144d00; no monetary law, fixture, window,
+seed or bound has moved. Final root fast/maps remains to run. The two
+monetary failures still require the orchestrator's premise decision, and
+Central's timeout remains unattributed and unwaived. No additional long
+runtime experiment is started before that call.
