@@ -1,4 +1,4 @@
-# MedicineCheck.java - 605 lines · 34 methods · 3 constants · harnesses
+# MedicineCheck.java - 619 lines · 35 methods · 3 constants · harnesses
 
 `ham/citybuildersim/MedicineCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -31,20 +31,20 @@
 > The 1900 city of sections 3 and 4 is CausesOfDeathCheck's: Canada's 1901 pyramid at 100,000 people with no childcare, general care for
 > everybody, piped water, nobody hungry, and the mean outbreak running.
 
-**Uses:** [Sickness](Sickness.md) (79), [CausesOfDeath](CausesOfDeath.md) (31), [MedicalRows](MedicalRows.md) (28), [Research](Research.md) (12), [AgeBand](AgeBand.md) (8), [Game](Game.md) (8), [CausesOfDeathCheck](CausesOfDeathCheck.md) (4), [ResearchCatalog](ResearchCatalog.md) (3), [CityCalendar](CityCalendar.md) (3), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [PolicyDates](PolicyDates.md) (1), [EquipmentCheck](EquipmentCheck.md) (1), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [CareType](CareType.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [Sickness](Sickness.md) (81), [CausesOfDeath](CausesOfDeath.md) (31), [MedicalRows](MedicalRows.md) (28), [Research](Research.md) (12), [AgeBand](AgeBand.md) (8), [Game](Game.md) (8), [CausesOfDeathCheck](CausesOfDeathCheck.md) (4), [ResearchCatalog](ResearchCatalog.md) (3), [CityCalendar](CityCalendar.md) (3), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [PolicyDates](PolicyDates.md) (1), [EquipmentCheck](EquipmentCheck.md) (1), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [CareType](CareType.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 83 | · the check's own readings |
-| 200 | 1. every medical row is mapped |
-| 236 | 2. the steps are history's |
-| 259 | 3. a city that found nothing is history's path to the bit |
-| 311 | 4. a row found ahead of the world brings its step forward, and history then has it |
-| 365 | 5. the undone constants switch at the row's month, and at a find |
-| 413 | 6. a ring reads them |
-| 514 | 7. a real city reads them |
+| 208 | 1. every medical row is mapped |
+| 251 | 2. the steps are history's |
+| 274 | 3. a city that found nothing is history's path to the bit |
+| 326 | 4. a row found ahead of the world brings its step forward, and history then has it |
+| 380 | 5. the undone constants switch at the row's month, and at a find |
+| 427 | 6. a ring reads them |
+| 528 | 7. a real city reads them |
 
 ## Enum constants
 
@@ -63,7 +63,7 @@
 |---:|---|---|---|
 | 52 | `MedicineCheck.out` | `System.out` | The real output: quietly() swaps System.out, and the log is this. |
 | 146 | `MedicineCheck.TABLE` | `new LinkedHashMap<>()` | Every medical row's group or groups, typed from research-design Q17 and R2f's notes; section 1 holds the model to it. |
-| 431 | `MedicineCheck.RATE` | `.05` | The sick rate the twins are seeded at. |
+| 445 | `MedicineCheck.RATE` | `.05` | The sick rate the twins are seeded at. |
 
 ## Fields (state)
 
@@ -76,14 +76,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 559 | **type** `public class MedicineCheck` | Proves the research catalogue's medical rows (R2f) move the constants they map to: a medical row a 1900 city finds ahead of the world brings its step on a cause of death forward, and a row it lacks leaves its constant... |
+| 47 | 573 | **type** `public class MedicineCheck` | Proves the research catalogue's medical rows (R2f) move the constants they map to: a medical row a 1900 city finds ahead of the world brings its step on a cause of death forward, and a row it lacks leaves its constant... |
 | 56 | 5 | `static void quietly(Runnable r)` |  |
 | 62 | 3 | `static void check(String label, boolean ok)` |  |
 | 67 | 5 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 | 73 | 4 | `static void near(String label, double actual, double expected, double tolerance)` |  |
 | 79 | 3 | `static void nearRel(String label, double actual, double expected, double rel)` | Within a relative tolerance of the expected value. |
 
-### the check's own readings (lines 83-199)
+### the check's own readings (lines 83-207)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -100,57 +100,58 @@
 | 138 | 3 | `static double[][] cityWithout(CausesOfDeath m, int month)` | The same with no rows: the call that was before R2f. |
 | 143 | 1 | **type** `enum Group` | Where a row's group sits in the check's table. |
 | 148 | 3 | `static void row(String code, Group first, Group...more)` |  |
-| 152 | 18 | `static { ... }` |  |
-| 172 | 6 | `static List<String> staysRows()` | The rows that shorten general care's stays: PM5 first, then the later four. |
-| 179 | 3 | `static double staysShare(String code)` |  |
-| 183 | 16 | `public static void main(String[] args)` |  |
+| 152 | 19 | `static { ... }` |  |
+| 173 | 7 | `static List<String> staysRows()` | The rows that shorten general care's stays: PM5 first, then the later four, then the rows with their own measure (M12, R6f). |
+| 182 | 3 | `static double staysShare(String code)` | A stays row's share, typed here from the constants: PM5's, M12's, or the even split's. |
+| 187 | 3 | `static double allStaysBefore()` | A 1900 city's stays factor before any stays row: STAYS_BEFORE_PM5, STAYS_BEFORE_LATER_ROW for each later row, and STAYS_BEFORE_M12. |
+| 191 | 16 | `public static void main(String[] args)` |  |
 
-### 1. every medical row is mapped (lines 200-235)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 202 | 33 | `static void sectionOne()` |  |
-
-### 2. the steps are history's (lines 236-258)
+### 1. every medical row is mapped (lines 208-250)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 238 | 20 | `static void sectionTwo()` |  |
+| 210 | 40 | `static void sectionOne()` |  |
 
-### 3. a city that found nothing is history's path to the bit (lines 259-310)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 261 | 49 | `static void sectionThree()` |  |
-
-### 4. a row found ahead of the world brings its step forward, and history then has it (lines 311-364)
+### 2. the steps are history's (lines 251-273)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 313 | 51 | `static void sectionFour()` |  |
+| 253 | 20 | `static void sectionTwo()` |  |
 
-### 5. the undone constants switch at the row's month, and at a find (lines 365-412)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 367 | 45 | `static void sectionFive()` |  |
-
-### 6. a ring reads them (lines 413-513)
+### 3. a city that found nothing is history's path to the bit (lines 274-325)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 416 | 5 | `static MedicalRows knowing(List<String> codes)` | Every code in the list found at month 1: those rows are known in any month. |
-| 423 | 6 | `static Sickness twin(MedicalRows rows, double coverage)` | A ring seeded at the rate with the month-1 medicine of the rows, general care at the coverage. |
-| 433 | 5 | `static double ringSum(Sickness s, AgeBand band)` |  |
-| 440 | 12 | `static void keepsItsShare(String name, Sickness s, double coverage)` | One advanceMonth on a twin keeps every slot finite and every ring at its band's share. |
-| 453 | 60 | `static void sectionSix()` |  |
+| 276 | 49 | `static void sectionThree()` |  |
 
-### 7. a real city reads them (lines 514-605)
+### 4. a row found ahead of the world brings its step forward, and history then has it (lines 326-379)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 517 | 9 | `static Game hospitalVillage(String label, boolean the1900Way)` | A village (FittingCheck.village) with a General Hospital stack standing and the staff handed; founded the 1900 way or the default way. |
-| 527 | 3 | `static void play(Game g, int months)` |  |
-| 531 | 4 | `static boolean stands(Game g, String name)` |  |
-| 536 | 69 | `static void sectionSeven()` |  |
+| 328 | 51 | `static void sectionFour()` |  |
+
+### 5. the undone constants switch at the row's month, and at a find (lines 380-426)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 382 | 44 | `static void sectionFive()` |  |
+
+### 6. a ring reads them (lines 427-527)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 430 | 5 | `static MedicalRows knowing(List<String> codes)` | Every code in the list found at month 1: those rows are known in any month. |
+| 437 | 6 | `static Sickness twin(MedicalRows rows, double coverage)` | A ring seeded at the rate with the month-1 medicine of the rows, general care at the coverage. |
+| 447 | 5 | `static double ringSum(Sickness s, AgeBand band)` |  |
+| 454 | 12 | `static void keepsItsShare(String name, Sickness s, double coverage)` | One advanceMonth on a twin keeps every slot finite and every ring at its band's share. |
+| 467 | 60 | `static void sectionSix()` |  |
+
+### 7. a real city reads them (lines 528-619)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 531 | 9 | `static Game hospitalVillage(String label, boolean the1900Way)` | A village (FittingCheck.village) with a General Hospital stack standing and the staff handed; founded the 1900 way or the default way. |
+| 541 | 3 | `static void play(Game g, int months)` |  |
+| 545 | 4 | `static boolean stands(Game g, String name)` |  |
+| 550 | 69 | `static void sectionSeven()` |  |
 

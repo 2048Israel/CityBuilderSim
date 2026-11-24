@@ -21,7 +21,7 @@
 
 **Uses:** [Research](Research.md) (3), [ResearchCatalog](ResearchCatalog.md) (1)
 
-**Used by (4):** [CausesOfDeath](CausesOfDeath.md), [Game](Game.md), [MedicineCheck](MedicineCheck.md), [Sickness](Sickness.md)
+**Used by (5):** [CausesOfDeath](CausesOfDeath.md), [Game](Game.md), [MedicineCheck](MedicineCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [Sickness](Sickness.md)
 
 ## Constants
 
