@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-LP-G1-3DhXEO5s -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — LP-G1, keep ground ahead across the player's long skips — 2026-11-23, ready, see docs/queue/LP-G1-notes.md
 The test player looks at its ground across a skip: `LongPlaytest.skipWatchingGround()` runs the skip a month at a
