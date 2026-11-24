@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**251 harness files, 28,928 labelled assertions.** AllChecks runs 251 of them.
+**251 harness files, 28,931 labelled assertions.** AllChecks runs 251 of them.
 
 ## Which harnesses read which class
 
@@ -19132,7 +19132,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2543 26e. ...joined to the plan's streets: one join listed, no longer than RAMP_JOIN_REACH, and from the ramp the streets run on past it to the grid
   - L2546 26f. ...where the same plan not given it, as before RR1, leaves the ramp with no street beneath and lists no join
 
-## KeptCheck.java - 551 labelled assertions
+## KeptCheck.java - 554 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -19717,61 +19717,64 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L9465 fixture: more one-off lines are parked than a scope can hold (
   - L9466 the recurring lines asked again after the one-offs filled the scope were kept, not let go with them (
   - L9476 the page of lines that come and go equals a page built new in each state (
-  - L9493 the cache release refuses the FX thread
-  - L9497 fixture: the real ScrollPane skin caches its viewport
-  - L9507 the real viewport owns a bitmap, and invalidate releases that bitmap
-  - L9511 fixture: invalidating the real viewport returned an image to the idle pool
-  - L9512 idle effect images release without changing the locked-image count
-  - L9517 the retained node graph has reconstructible bitmaps, and invalidation clears them
-  - L9518 a renderer-cache purge preserves the kept page's signature and every node identity
-  - L9520 bitmap invalidation changes no retained node's cached flag or hint
-  - L9522 a renderer-cache purge preserves the exact Canvas render targets
-  - L9523 a renderer-cache purge changes no Policy draw counter
-  - L9524 the kept page's exact picture survives bitmap invalidation
-  - L9525 the real viewport and its Canvas picture survive invalidation
-  - L9528 the viewport fixture really changes its picture
-  - L9530 the viewport's original state redraws the exact original pixels
-  - L9532 normal rendering recreates the viewport bitmap, which releases again
-  - L9534 the final heap sample starts with reconstructible bitmap and idle caches empty
-- **L9539 102: unchanged state stays put, a press survives greying, retired pages are released**
-  - L9550 restored comparisons keep no saved page, boxes or pools (
-  - L9552 an unchanged greyed button and grid change no property or constraint identity
-  - L9553 the draw that omits optional state and constraints resets all of them
-  - L9554 the following draw resets nothing again
-  - L9555 a kept vitals cell from another maker receives the last cell's look on every draw
-  - L9557 the Rankings page starts with its four row handlers and hand cursor
-  - L9558 ...two kept redraws preserve all four handlers and the same row picture's hand
-  - L9559 History starts with its action button's hand cursor
-  - L9560 ...two kept redraws preserve that same action button's hand
-  - L9561 the header starts with mouse-transparent sparklines
-  - L9562 ...two kept redraws preserve those same sparklines' transparency
-  - L9563 Pieces.sparkline starts mouse-transparent when pooled directly
-  - L9564 ...two kept redraws preserve that same directly pooled sparkline's transparency
-  - L9566 an unchanged icon and HBox margin request no layout (
-  - L9567 the sweep counts an equal raw Region.setPrefSize (
-  - L9568 the sweep counts an equal raw HBox.setMargin (
-  - L9597 a real policy thumb holds through a greyed draw during its drag
-  - L9598 ...and through un-greying and a further draw in the same drag
-  - L9599 ...release commits the held value and ends the hold
-  - L9600 ...dropping the staged choice follows the city again
-  - L9606 fixture: soft-only renderer images have zero GC retention age
-  - L9615 the repaint counter does not keep a retired picture alive
-  - L9616 a no-stage chrome scene releases the fresh header after restore
-  - L9626 fixture: the canvases the kept screens hold are found and their render targets read (
-  - L9628 the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it)
-- **L9633 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L9667 1 and 2: the kept page, month after month, against a page built new**
-  - L9692 an unchanged People draw creates no node
-  - L9727 each month's redraw keeps the page it drew (the same top node,
-  - L9729 each month hands back nine in ten of the nodes it draws again, or more (
-  - L9740 the rule fails on People drawn from a pool let go (forgetPeople), a page thrown away (
-  - L9743 the kept page's signature equals the new page's at every month (
-- **L9745 3: and its pixels**
-  - L9747 the kept page and the new page are the same picture at
-  - L9767 one figure made wrong on the kept page (\"
-  - L9769 ...and its picture
-  - L9770 ...and the next kept draw sets it right again
-- **L9772 4: what reshapes the page**
+  - L9490 fixture: attaching the actual rail starts its minimap pump, and no-window layout stops it
+  - L9495 a held fixture UI releases its completed bench
+  - L9500 the no-window minimap pump does not retain a dropped fixture UI
+  - L9505 the cache release refuses the FX thread
+  - L9509 fixture: the real ScrollPane skin caches its viewport
+  - L9519 the real viewport owns a bitmap, and invalidate releases that bitmap
+  - L9523 fixture: invalidating the real viewport returned an image to the idle pool
+  - L9524 idle effect images release without changing the locked-image count
+  - L9529 the retained node graph has reconstructible bitmaps, and invalidation clears them
+  - L9530 a renderer-cache purge preserves the kept page's signature and every node identity
+  - L9532 bitmap invalidation changes no retained node's cached flag or hint
+  - L9534 a renderer-cache purge preserves the exact Canvas render targets
+  - L9535 a renderer-cache purge changes no Policy draw counter
+  - L9536 the kept page's exact picture survives bitmap invalidation
+  - L9537 the real viewport and its Canvas picture survive invalidation
+  - L9540 the viewport fixture really changes its picture
+  - L9542 the viewport's original state redraws the exact original pixels
+  - L9544 normal rendering recreates the viewport bitmap, which releases again
+  - L9546 the final heap sample starts with reconstructible bitmap and idle caches empty
+- **L9551 102: unchanged state stays put, a press survives greying, retired pages are released**
+  - L9562 restored comparisons keep no saved page, boxes or pools (
+  - L9564 an unchanged greyed button and grid change no property or constraint identity
+  - L9565 the draw that omits optional state and constraints resets all of them
+  - L9566 the following draw resets nothing again
+  - L9567 a kept vitals cell from another maker receives the last cell's look on every draw
+  - L9569 the Rankings page starts with its four row handlers and hand cursor
+  - L9570 ...two kept redraws preserve all four handlers and the same row picture's hand
+  - L9571 History starts with its action button's hand cursor
+  - L9572 ...two kept redraws preserve that same action button's hand
+  - L9573 the header starts with mouse-transparent sparklines
+  - L9574 ...two kept redraws preserve those same sparklines' transparency
+  - L9575 Pieces.sparkline starts mouse-transparent when pooled directly
+  - L9576 ...two kept redraws preserve that same directly pooled sparkline's transparency
+  - L9578 an unchanged icon and HBox margin request no layout (
+  - L9579 the sweep counts an equal raw Region.setPrefSize (
+  - L9580 the sweep counts an equal raw HBox.setMargin (
+  - L9609 a real policy thumb holds through a greyed draw during its drag
+  - L9610 ...and through un-greying and a further draw in the same drag
+  - L9611 ...release commits the held value and ends the hold
+  - L9612 ...dropping the staged choice follows the city again
+  - L9618 fixture: soft-only renderer images have zero GC retention age
+  - L9627 the repaint counter does not keep a retired picture alive
+  - L9628 a no-stage chrome scene releases the fresh header after restore
+  - L9638 fixture: the canvases the kept screens hold are found and their render targets read (
+  - L9640 the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it)
+- **L9645 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
+- **L9679 1 and 2: the kept page, month after month, against a page built new**
+  - L9704 an unchanged People draw creates no node
+  - L9739 each month's redraw keeps the page it drew (the same top node,
+  - L9741 each month hands back nine in ten of the nodes it draws again, or more (
+  - L9752 the rule fails on People drawn from a pool let go (forgetPeople), a page thrown away (
+  - L9755 the kept page's signature equals the new page's at every month (
+- **L9757 3: and its pixels**
+  - L9759 the kept page and the new page are the same picture at
+  - L9779 one figure made wrong on the kept page (\"
+  - L9781 ...and its picture
+  - L9782 ...and the next kept draw sets it right again
+- **L9784 4: what reshapes the page**
 
 ## KeptTimingCheck.java - 5 labelled assertions
 

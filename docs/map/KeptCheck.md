@@ -1,4 +1,4 @@
-# KeptCheck.java - 9,844 lines · 248 methods · 33 constants · harnesses
+# KeptCheck.java - 9,856 lines · 248 methods · 33 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >  94-96. Research equipment and grants: kept pages, signatures, pictures, folds and choices.
 > ... (10 more lines in the source)
 
-**Uses:** [KeptBench](KeptBench.md) (702), [Game](Game.md) (160), [ResearchView](ResearchView.md) (122), [Money](Money.md) (62), [Sectors](Sectors.md) (51), [FundView](FundView.md) (36), [Debt](Debt.md) (29), [DecisionLog](DecisionLog.md) (22), [ResearchViewCheck](ResearchViewCheck.md) (20), [FundLedger](FundLedger.md) (20), [Where](Where.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (18), [BuildAdvice](BuildAdvice.md) (17), [ForeignAccounts](ForeignAccounts.md) (17), [Notice](Notice.md) (16), [ResearchCatalog](ResearchCatalog.md) (15), [CityCalendar](CityCalendar.md) (13), [TreasuryFund](TreasuryFund.md) (13), [ChartModel](ChartModel.md) (10), [LandmassCheck](LandmassCheck.md) (10), [CorporateBond](CorporateBond.md) (10), [Auction](Auction.md) (9), [Equity](Equity.md) (9), [BondMarket](BondMarket.md) (8), [Research](Research.md) (7), [DebtManager](DebtManager.md) (7), [LandmassView](LandmassView.md) (6), [TaxPolicy](TaxPolicy.md) (6), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6)... and 52 more
+**Uses:** [KeptBench](KeptBench.md) (703), [Game](Game.md) (160), [ResearchView](ResearchView.md) (122), [Money](Money.md) (62), [Sectors](Sectors.md) (51), [FundView](FundView.md) (36), [Debt](Debt.md) (29), [DecisionLog](DecisionLog.md) (22), [ResearchViewCheck](ResearchViewCheck.md) (20), [FundLedger](FundLedger.md) (20), [Where](Where.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (18), [BuildAdvice](BuildAdvice.md) (17), [ForeignAccounts](ForeignAccounts.md) (17), [Notice](Notice.md) (16), [ResearchCatalog](ResearchCatalog.md) (15), [CityCalendar](CityCalendar.md) (13), [TreasuryFund](TreasuryFund.md) (13), [ChartModel](ChartModel.md) (10), [LandmassCheck](LandmassCheck.md) (10), [CorporateBond](CorporateBond.md) (10), [Auction](Auction.md) (9), [Equity](Equity.md) (9), [BondMarket](BondMarket.md) (8), [Research](Research.md) (7), [DebtManager](DebtManager.md) (7), [LandmassView](LandmassView.md) (6), [TaxPolicy](TaxPolicy.md) (6), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6)... and 52 more
 
 **Used by (8):** [ChartFitCheck](ChartFitCheck.md), [KeptTimingCheck](KeptTimingCheck.md), [MapCheck](MapCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [NewUnitCheck](NewUnitCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [StepsCheck](StepsCheck.md), [ToastCheck](ToastCheck.md)
 
@@ -168,7 +168,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 96 | 9749 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 96 | 9761 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 100 | 5 | `static void check(String label, boolean ok)` |  |
 | 107 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 121 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -532,7 +532,7 @@
 | 8794 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
 | 8824 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
 
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8878-9844)
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8878-9856)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -544,9 +544,9 @@
 | 9149 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98 (UP7): real header pace at/short of every rung uses speed-only amber or rung colour, fixed unclipped width, stationary neighbours and one changed write. |
 | 9334 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
 | 9345 | 134 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): cause KL1 quote, KS1-UI header/bar, BF1-K Partners/Search and KS1-Gov recurring-line regressions independently of the played city path. |
-| 9488 | 48 | `private static void rendererCacheControls(KeptBench bench) throws Exception` | Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. |
-| 9538 | 93 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
-| 9632 | 12 | `public static void main(String[] args) throws Exception` |  |
-| 9652 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, its minimum wage pinned at the going rate, played CITY_MONTHS by the advisor. |
-| 9666 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
+| 9488 | 60 | `private static void rendererCacheControls(KeptBench bench) throws Exception` | Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. |
+| 9550 | 93 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
+| 9644 | 12 | `public static void main(String[] args) throws Exception` |  |
+| 9664 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, its minimum wage pinned at the going rate, played CITY_MONTHS by the advisor. |
+| 9678 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
 
