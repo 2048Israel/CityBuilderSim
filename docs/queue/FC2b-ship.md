@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FC2b-Z4xWHH5X -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — FC2b, the choices that use the foreign crews — 2026-11-24, ready, see docs/queue/FC2b-notes.md
 A payer may now hand its share of one site's remaining work to the foreign crews (Jerus, 2026-11-22: "something finished in 20 months is better than something finished in 100 months"). They build it on the site at their own pace, about the threshold's months, and at their price; the payer pays the extra over the home price, and money already spent is sunk. A business weighs it each month by its earnings brought forward over the months saved, which is the interest on its cost plus the earnings past it. The city hands a site from the Construction screen's Foreign crews card (Jerus: "if roads are causing the issues then you could pay more to get just roads fixed"), which shows the price, the months saved and the interest saved. A shared site splits by the points each payer put on it, and the other payers' work stays with the city's crews. The crews' bill is the builders' import of services. Save format 65.
