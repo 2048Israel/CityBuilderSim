@@ -5,4 +5,4 @@ KeptCheck causes its fund settlements, standing bids, held household cells, pape
 Retention counts the nodes drawn again; recurring rebuilds, repeated geometry differences and every content mismatch remain hard. Trade count-up covers changed and unchanged saved-month words at the real clock rungs.
 Fresh Bank and Government comparisons restore their body and target owners even after an aborted draw; no-window bench minimaps stop their retaining timer.
 Blank native label skins no longer keep a font strut after their words disappear, with exact signature, pixel and node-identity controls.
-The unchanged 1536 MiB object budget normalizes reconstructible renderer caches and soft-reference age, preserving Canvas targets and rejection of deliberately retained real pages.
+The unchanged 1536 MiB object budget normalizes reconstructible renderer caches and soft-reference age while preserving Canvas targets; a separate weak-reference guard rejects deliberately retained real pages.
