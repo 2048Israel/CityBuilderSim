@@ -2670,7 +2670,7 @@ final class ServicesScreen {
         double[] lines = CityNeeds.servedLines(CityNeeds.Kind.POWER, CareType.NONE);
         out.add(new UtilityRow("Power", Icons.UTILITIES, CityNeeds.servedPct(power.share()), BuildScreen.servedWords(power),
                 BuildScreen.servedTone(power), could, now, asked,
-                List.of(new Tick(CityNeeds.NETWORK_YELLOW * now, Palette.TEXT_MUTED, 1, null,
+                List.of(new Tick(CityNeeds.POWER_YELLOW * now, Palette.TEXT_MUTED, 1, null,
                         "NEEDS YOU lists the grid once the city asks past here: then it serves "
                                 + CityNeeds.servedPct(lines[0]) + " or less of what it asks")),
                 List.of(Part.of("business, billed", billed, Palette.BUSINESS),

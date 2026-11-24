@@ -3758,7 +3758,7 @@ public class LongPlaytest {
              * of its own, nothing when what is on site keeps power ahead. The value is
              * the output at risk: the month's ratio short, or the share of the calm
              * peak's draw the firm supply leaves uncovered at the advice's own yellow
-             * line (1 - BuildAdvice.served() x CityNeeds.NETWORK_YELLOW), whichever
+             * line (1 - BuildAdvice.served() x CityNeeds.POWER_YELLOW, PW3), whichever
              * is larger - so it orders when the advice does, a coal plant's build
              * ahead of the shortage. Valued at the shortage alone (1 - served), it
              * ordered only once a block was short: 66 of 240 sampled months short,
@@ -3766,7 +3766,7 @@ public class LongPlaytest {
              */
             BuildAdvice.Measure powerM = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
             double powerGain = gdp * Math.max(1 - g.getEnergyRatio(),
-                    1 - BuildAdvice.served(g, powerM, java.util.Map.of()) * CityNeeds.NETWORK_YELLOW);
+                    1 - BuildAdvice.served(g, powerM, java.util.Map.of()) * CityNeeds.POWER_YELLOW);
             for (BuildAdvice.Suggestion s : powerByNeed(g, powerM, g.getLandManager().getAvailableSqFt())) {
                 String name = s.template().getName();
                 long n = s.count();

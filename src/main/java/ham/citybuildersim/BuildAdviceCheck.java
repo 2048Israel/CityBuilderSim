@@ -1700,7 +1700,7 @@ public class BuildAdviceCheck {
         assertTrue("...on the firm supply against the peak's draw (supplyDemand()), not production against consumption",
                 row != null && row.a() == sd[0] && row.b() == sd[1] && row.a() < u.getProduction());
         assertTrue("...read as served at the calm peak: \"" + (row == null ? null : row.reading()) + "\"",
-                row != null && row.reading().equals(CityNeeds.servedPct(CityNeeds.servedShare(sd[0], sd[1])) + " " + CityNeeds.SERVED + CityNeeds.AT_THE_CALM_PEAK));
+                row != null && row.reading().equals(CityNeeds.servedPct(CityNeeds.servedShare(sd[0], sd[1])) + " " + CityNeeds.SERVED + CityNeeds.AT_THE_PEAK_HOUR));
 
         // (b) the card: the Build screen offers power (the cards are driven by the rows).
         BuildAdvice.Suggestion card = powerCard(BuildAdvice.suggest(g, all));

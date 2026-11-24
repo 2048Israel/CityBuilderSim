@@ -496,6 +496,10 @@ public class Game {
         });
         servicesManager.setExchangeRate(() -> getMarkets() == null ? 1 : getMarkets().getExchangeRate());
         servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
+        // PW3: the wind's, the sun's and the river's month at the city's latitude (a generated world's has none: the US fleet's year),
+        // and the sun's rack, a fixed one until the utility tracker is known (research E25).
+        servicesManager.getUtilitiesHandler().setPlace(() -> getFounding() == null ? Double.NaN : getFounding().getEarthLat(),
+                () -> getResearch() == null || getResearch().known("E25", getMonth()));
         servicesManager.getUtilitiesHandler().setGridCostSource(() -> Substations.costs(this));
         servicesManager.getUtilitiesHandler().setPowerObservationSources(this::getMonth,
                 () -> BuildAdvice.supplyDemand(this, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of())[0]);

@@ -172,6 +172,12 @@ public final class CityNeeds {
     /** A network is listed from three-quarters of its capacity, red once it is over. */
     public static final double NETWORK_YELLOW = .75, NETWORK_RED = 1;
 
+    /** Power is listed once its firm supply leaves less than the reserve test's margin over the year's peak hour (PW3: 1 / (1 + PowerDispatch.RESERVE)), red once the peak hour is not covered (NETWORK_RED). */
+    public static final double POWER_YELLOW = 1 / (1 + PowerDispatch.RESERVE);
+
+    /** A network's yellow line: power's the reserve test's (PW3), water's the quarter in hand. */
+    public static double networkYellow(Kind kind) { return kind == Kind.POWER ? POWER_YELLOW : NETWORK_YELLOW; }
+
     /**
      * THE HIGHWAYS ARE LISTED (FR7, 2026-10-18) once the through trips with no
      * highway to take them would fill this share of one more highway at free
@@ -290,8 +296,8 @@ public final class CityNeeds {
     /** The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. */
     public static final String SERVED = "served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough";
 
-    /** What the POWER row's share is read at (PW1): the firm supply against the calm peak's draw, not the month's average, so "48% served at the calm peak". */
-    public static final String AT_THE_CALM_PEAK = " at the calm peak";
+    /** What the POWER row's share is read at (PW1; PW3 the year's peak hour): the firm supply against the peak hour's draw, not the month's average, so "48% served at the peak hour". */
+    public static final String AT_THE_PEAK_HOUR = " at the peak hour";
 
     /**
      * One gauge, read the one way (0.7.41): its share served - supply over
@@ -357,7 +363,7 @@ public final class CityNeeds {
     public static double[] servedLines(Kind kind, CareType care) {
         switch (kind) {
             case POWER: case WATER:
-                return new double[] {1 / NETWORK_YELLOW, 1 / NETWORK_RED};
+                return new double[] {1 / networkYellow(kind), 1 / NETWORK_RED};
             case ROADS:
                 return new double[] {1 / InfrastructureManager.STRAINED, 1 / InfrastructureManager.FREE_FLOW};
             case CARE:
@@ -436,13 +442,13 @@ public final class CityNeeds {
 
         /* ---------------------------- the networks ---------------------------- */
         int at = out.size();
-        // PW1, 2026-11-11: power is read on the firm supply against the calm peak's draw, the pair the advice plans by
+        // PW1, 2026-11-11 (PW3: the year's peak hour): power is read on the firm supply against the peak's draw, the pair the advice plans by
         // (BuildAdvice.supplyDemand()), not on the average (consumption over production, which counts a wind farm at its
         // average and read a city of wind farms clear while its calm half-blocks were half served). A city drawing nothing
         // keeps the average's pair: its row is the green "—" it always was.
         double[] peak = BuildAdvice.supplyDemand(game, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of());
         if (!(peak[1] > 0)) peak = new double[] {utilities.getProduction(), 0};
-        network(out, "POWER", Kind.POWER, peak[1], peak[0], utilities.getEnergyRatio(), AT_THE_CALM_PEAK);
+        network(out, "POWER", Kind.POWER, peak[1], peak[0], utilities.getEnergyRatio(), AT_THE_PEAK_HOUR);
         onTheWay(game, w, out, at, t -> t.getCategory() == BuildingType.ELECTRICITY);
         at = out.size();
         network(out, "WATER", Kind.WATER, utilities.getWaterConsumption(),
@@ -935,7 +941,7 @@ public final class CityNeeds {
         network(out, label, kind, demand, supply, ratio, "");
     }
 
-    /** ...with the words that say what the share is read at after "served" (POWER: AT_THE_CALM_PEAK); water's are none. */
+    /** ...with the words that say what the share is read at after "served" (POWER: AT_THE_PEAK_HOUR); water's are none. Each at its own yellow line (networkYellow()). */
     static void network(List<Need> out, String label, Kind kind,
                         double demand, double supply, double ratio, String at) {
         if (supply <= 0) {
@@ -944,7 +950,7 @@ public final class CityNeeds {
             if (demand > 0) {
                 out.add(new Need(label, "nothing supplying it", 2, 1, kind, Go.UTILITIES,
                         CareType.NONE, EducationType.NONE, Double.POSITIVE_INFINITY,
-                        NETWORK_YELLOW, NETWORK_RED, true, 0, Double.NaN, supply, demand));
+                        networkYellow(kind), NETWORK_RED, true, 0, Double.NaN, supply, demand));
             }
             return;
         }
@@ -952,7 +958,7 @@ public final class CityNeeds {
         // "only 92% supplied" once short; listed on the load still.
         double load = demand / supply;
         over(out, label, servedPct(servedShare(supply, demand)) + " " + SERVED + at,
-                load, NETWORK_YELLOW, NETWORK_RED, kind, Go.UTILITIES, CareType.NONE, EducationType.NONE,
+                load, networkYellow(kind), NETWORK_RED, kind, Go.UTILITIES, CareType.NONE, EducationType.NONE,
                 supply, demand);
     }
 
