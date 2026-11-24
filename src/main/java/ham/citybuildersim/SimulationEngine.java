@@ -68,6 +68,9 @@ public class SimulationEngine {
         int siteOutput = game.workTheFittings();
         // The foreign contractor's month beside the city's own (FC1; FC2): the queue at home past the threshold
         // handed to him, and his month on his book - see Game, THE FOREIGN CREWS.
+        // ...after the businesses' choice (FC2b; Game.investorsHandAbroad()): a payer that hands a site abroad does it before the offer, so the
+        // month's offer prices the crews' load with the new site in it.
+        game.investorsHandAbroad();
         Game.ForeignOffer foreign = game.foreignCrewsOffer();
         // His points are in the month the sites take, and not on a rushed site's overtime (FC1b): his crews are not the city's.
         // ...and the work ordered of the builders since the last advance, read either side of this one (OG1; BusinessInvestment,
@@ -111,6 +114,8 @@ public class SimulationEngine {
         double ownMonth = overtime == 0 ? siteOutput : siteOutput + overtime;
         // ...and the contractor is paid for what the sites took past the city's own month (FC1).
         game.settleForeignCrews(foreign, buildingManager.getPointsBuilt() - Math.max(0, ownMonth));
+        // ...and the crews on the sites handed them (FC2b), billed as FC1's are; their points are not in getPointsBuilt().
+        game.settleCrewsOnSites();
         game.recogniseSiteWork(buildingManager.takeRevenueDue(), buildingManager.getPointsBuilt(),
                 ownMonth + foreign.points());
         // ...and each owner pays the material its work drew at the price it

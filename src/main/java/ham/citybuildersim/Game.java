@@ -8669,6 +8669,179 @@ public class Game {
         }
     }
 
+    /* ===== THE CHOICES THAT USE THE FOREIGN CREWS (FC2b, 2026-11-24) =====
+       Jerus, 2026-11-22: "allowing businesses to even decide to pay more to finish sooner (for example, something finished in 20 months is
+       better than something finished in 100 months, cause thats 80 more months of paying interest...)" and "also let the city itself do it,
+       like per building, aka for example if roads are causing the issues then you could pay more to get just roads fixed". A payer hands its
+       share of one site's remaining work to the foreign crews (BuildingManager.abroadTermsOf(), handSiteAbroad()): they build it at their pace
+       and at their price, and the extra over the home price is the payer's. What each payer weighs is the saving to it against that extra: a
+       business by the saving to it - BuildersShort.broughtForward() of its earnings, which is the interest on its cost for the months saved
+       and its earnings over that interest brought forward, the two parts with no double count - the city by the interest on its cost alone
+       (its site earns no money), at its long real rate. Money already spent is sunk: only the work still to do moves. WHY: the two quotes
+       are both true - the home price at the home wait, the crews' price at their pace - and which one a payer takes is its own sum, so the
+       choice is the payer's and the model does not make it for it. */
+
+    /**
+     * The businesses' choice, once a month, before the month's offer (SimulationEngine.simulateMonth(): so the offer prices the crews' load with
+     * any new site in it): each payer that is a sector (not the city, not the builders, whose depots go first already) on a site with no record
+     * of work abroad hands its share of the site to the foreign crews when the extra it pays (the crews' excess over the home premium, in
+     * the builders' tax it gets back as buildFor() credits it) is under what the months saved are worth to it - BuildersShort.broughtForward()
+     * of its building's estimated monthly profit at the real rate of a loan for the extra (the wait's own rate, BusinessInvestment.
+     * realTestRate()). At most one handover a stack a month. Nothing without foreign trade (BuildingManager.foreignTradeOn()); a payer that
+     * cannot borrow the extra it is short does not hand. The extra is paid as fit() pays: cash first, the shortfall borrowed, the builders
+     * billed it; the books' half is BuildingManager.handSiteAbroad().
+     */
+    public void investorsHandAbroad() {
+        if (!buildingManager.foreignTradeOn()) return;
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersSalesRate()));
+        for (BuildingsStacks stack : buildingManager.getStacksUnderConstruction()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (buildingManager.getControl().abroadOf(ConstructionControl.keyOf(t)) != null) continue;
+            for (BuildingsStacks.Contract c : new ArrayList<>(stack.getContracts())) {
+                String payer = c.payer;
+                if ("City".equals(payer) || getSectors().byKey(payer) == null || payer.equals(builders.key())) continue;
+                BuildingManager.AbroadTerms terms = buildingManager.abroadTermsOf(t, payer, orderWaitOutput());
+                if (terms == null || !(terms.monthsAbroad() < terms.monthsHome())) continue;
+                // What it costs the payer: the extra grossed up for the builders' tax, net of the share of it the payer gets back (buildFor()'s rule).
+                double gross = terms.extra() / (1 - rB);
+                double cost = gross * (1 - c.getRecovered() * rB);
+                Investor inv = sectorInvestor(payer);
+                double borrowed = Math.max(0, gross - inv.getCash());
+                double annual = judged(payer, borrowed).tested();
+                double i = businessInvestment.realTestRate(annual) / 12;
+                double perMonth = businessInvestment.estimatedMonthlyProfit(payer, t) * terms.buildings();
+                if (!(perMonth > 0)) continue;
+                double saving = BuildersShort.broughtForward(perMonth, i, terms.monthsAbroad(), terms.monthsHome());
+                double interest = BuildersShort.interestSaved(businessInvestment.getCostOf(t, 1) * terms.buildings(), i,
+                        terms.monthsAbroad(), terms.monthsHome());
+                if (!(cost < saving)) continue;
+                double short_ = gross - inv.getCash();
+                if (short_ > SHORTFALL_DUST * Math.max(1, gross)) {
+                    if (!inv.canBorrow(short_)) continue;
+                    inv.borrow(short_, month);
+                }
+                if (gross > 0) {
+                    inv.spend(gross);
+                    builders.bill(gross, 0);
+                }
+                double interestSaved = Double.isFinite(interest) ? interest : 0;
+                buildingManager.handSiteAbroad(terms, month, gross, interestSaved, Double.isFinite(saving) ? saving - interestSaved : 0);
+                System.out.println(String.format("%s handed its %s %s to the foreign crews: %,.0f points at %,.0f/month, %s against %s, paid %s over the home price; worth %s to it.",
+                        payer, abroadCount(terms.buildings()), terms.building(), terms.points(), terms.pace(),
+                        abroadMonths(terms.monthsAbroad()), abroadMonths(terms.monthsHome()), DecisionLog.money(gross),
+                        Double.isFinite(saving) ? DecisionLog.money(saving) : "all it earns"));
+                break;
+            }
+        }
+    }
+
+    /** A count of buildings for the log: whole when it is, one place otherwise (a share of a stack is not always whole). */
+    private static String abroadCount(double n) {
+        return Math.abs(n - Math.rint(n)) < 0.05 ? String.format("%,.0f", n) : String.format("%,.1f", n);
+    }
+
+    /** A wait for the log: "12 months", or "never" for one that does not end. */
+    private static String abroadMonths(double months) {
+        return Double.isFinite(months) ? String.format("%,.0f months", months) : "never";
+    }
+
+    /** The city's card for one of its sites (abroadPreview()): open with its figures, or not open with the reason in {@code why}; the months saved are endless when the wait at home is. */
+    public record AbroadCard(boolean open, String why, String key, String building, double points, double pace, double pricePerPoint,
+                             double extra, double monthsHome, double monthsAbroad, double monthsSaved, double interestSaved) {
+        /** A card that is not open: the reason, the site's key and name, every figure nothing. */
+        static AbroadCard closed(String why, String key, String building) {
+            return new AbroadCard(false, why, key, building, 0, 0, 0, 0, 0, 0, 0, 0);
+        }
+    }
+
+    /**
+     * The city's card for one of its sites (FC2b; the Construction screen): what handing the site to the foreign crews would take and bring,
+     * as handSiteAbroad() would strike it now. Not open when there is no foreign trade, the site is not the city's own, a record of work
+     * abroad stands, there is nothing left to build, or the crews would not finish sooner. Open: the site's points, the crews' pace and price
+     * a point, the extra the city pays (the crews' excess over the home premium, the builders' tax in it), the months at home against abroad
+     * and the months saved, and the interest saved - the interest on the building's cost for those months at the city's long real rate
+     * (BuildAdvice.lifeRate()): the city's site earns no money, so that is all it saves. Reads; books nothing.
+     */
+    public AbroadCard abroadPreview(String key) {
+        BuildingsStacks stack = buildingManager.stackOfKey(key);
+        String name = stack == null ? "" : stack.getName();
+        if (!buildingManager.foreignTradeOn()) return AbroadCard.closed("no foreign trade", key, name);
+        if (buildingManager.getControl().abroadOf(key) != null) return AbroadCard.closed("already with the foreign crews", key, name);
+        if (!buildingManager.isCitySite(key)) return AbroadCard.closed("not the city's own site", key, name);
+        if (stack == null) return AbroadCard.closed("not a building site", key, name);
+        BuildingManager.AbroadTerms terms = cityAbroadTerms(key);
+        if (terms == null) return AbroadCard.closed("nothing left to build", key, name);
+        if (!(terms.monthsAbroad() < terms.monthsHome())) return AbroadCard.closed("no sooner abroad", key, name);
+        double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersSalesRate()));
+        double extra = terms.extra() / (1 - rB);
+        double saved = terms.monthsHome() - terms.monthsAbroad();
+        double interestSaved = BuildersShort.interestSaved(businessInvestment.getCostOf(stack.getBuilding(), 1) * terms.buildings(),
+                BuildAdvice.lifeRate(this) / 12, terms.monthsAbroad(), terms.monthsHome());
+        return new AbroadCard(true, "", key, terms.building(), terms.points(), terms.pace(), terms.pricePerPoint(), extra,
+                terms.monthsHome(), terms.monthsAbroad(), saved, interestSaved);
+    }
+
+    /** The terms the city's share of a site would be handed on now (abroadPreview(), handSiteAbroad()): null for no stack or nothing to hand. */
+    private BuildingManager.AbroadTerms cityAbroadTerms(String key) {
+        BuildingsStacks stack = buildingManager.stackOfKey(key);
+        return stack == null ? null : buildingManager.abroadTermsOf(stack.getBuilding(), "City", orderWaitOutput());
+    }
+
+    /**
+     * The city hands one of its sites to the foreign crews (FC2b), per building, as the player chooses it (Jerus: "if roads are causing the
+     * issues then you could pay more to get just roads fixed"): null once handed, else why not - as abroadPreview() refuses, or the
+     * treasury cannot pay the extra (the city's cash and what it can borrow, as fit() asks them). A rushed site's rush is stopped first
+     * (rushSite()): the rush is the home crews' overtime, and the site is no longer the city's to rush. The extra is paid from the treasury as
+     * a capital line (TreasuryLine.BUILDINGS), billed to the builders, and booked on the site's abroad contract
+     * (BuildingManager.handSiteAbroad()), with the interest saved the card showed.
+     */
+    public String handSiteAbroad(String key) {
+        AbroadCard card = abroadPreview(key);
+        if (!card.open()) return card.why();
+        // The treasury is asked before the rush is touched: a refusal leaves the site as it was.
+        double short_ = card.extra() - government.getCash();
+        boolean borrows = short_ > SHORTFALL_DUST * Math.max(1, card.extra());
+        if (borrows && !government.canBorrow(short_)) {
+            return "the treasury holds " + DecisionLog.money(government.getCash()) + " and the crews' extra costs " + DecisionLog.money(card.extra());
+        }
+        if (buildingManager.getControl().rushOf(key) != null) {
+            rushSite(key, false);
+            // ...and the card read again: without the overtime the wait at home is the rule's, so the months saved and the interest are against that.
+            card = abroadPreview(key);
+            if (!card.open()) return card.why();
+        }
+        BuildingManager.AbroadTerms terms = cityAbroadTerms(key);
+        if (terms == null) return "nothing left to build";
+        if (borrows) government.borrow(short_, month);
+        double paid = 0;
+        if (card.extra() > 0) {
+            paid = treasuryPays(TreasuryLine.BUILDINGS, card.extra());
+            cityCapitalSpending += paid;
+            getSectors().construction().bill(paid, 0);
+        }
+        buildingManager.handSiteAbroad(terms, month, paid, card.interestSaved(), 0);
+        System.out.println(String.format("The city handed its %s %s to the foreign crews: %,.0f points at %,.0f/month, %s against %s, paid %s over the home price; saves %s of interest.",
+                abroadCount(terms.buildings()), terms.building(), terms.points(), terms.pace(), abroadMonths(terms.monthsAbroad()),
+                abroadMonths(terms.monthsHome()), DecisionLog.money(paid), DecisionLog.money(card.interestSaved())));
+        return null;
+    }
+
+    /**
+     * The crews on the sites handed them, settled after the sites advanced (FC2b): the builders pay the foreign crews for the points they
+     * built this month on those sites (BuildingManager.getAbroadPointsBuilt(), getAbroadBill()), an import of services as FC1's book is paid
+     * (Construction.payCrewsOnSites()); their points are not in getPointsBuilt(). Called every month, so a month with none sets both figures
+     * to nothing. A month with any is one line of the log.
+     */
+    public void settleCrewsOnSites() {
+        double points = buildingManager.getAbroadPointsBuilt(), bill = buildingManager.getAbroadBill();
+        getSectors().construction().payCrewsOnSites(points, bill);
+        if (points > 0) {
+            System.out.println(String.format("Foreign crews built %,.0f points on the sites handed to them, billed %s.",
+                    points, DecisionLog.money(bill)));
+        }
+    }
+
     /**
      * THE RAILWAY'S MONTH, and the band it leaves behind.
      *
