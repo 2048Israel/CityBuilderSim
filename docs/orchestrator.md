@@ -57,6 +57,12 @@ a choice put to him (Jerus, 2026-11-23, on PW7's re-bake: "thats something the
 orchestrator handles, if it asks me im not going to know whats better"). What
 truly needs his hands (a file only he has, an account, a purchase, a release,
 his PC) goes as a request for that one action, not a choice between plans.
+The test before any question: does he know something the orchestrator does
+not? He knows what the game is to be (its feel, its scope, its player), his
+money, his accounts and his time; the orchestrator knows the code, the data,
+the checks, the order of work and how the real world behaves. An answer that
+rests on the latter is decided and said at ship (Jerus, 2026-11-23: "there are
+alot of questions where i literally know less").
 
 **A check red on new behaviour: check reality first** (Jerus, 2026-11-23, desk
 chat: "sometimes its as simple as check reality"). WHY: RES3's lenders held
