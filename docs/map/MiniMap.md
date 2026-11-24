@@ -1,4 +1,4 @@
-# MiniMap.java - 471 lines · 20 methods · 5 constants · interface
+# MiniMap.java - 480 lines · 22 methods · 5 constants · interface
 
 `ham/citybuildersim/ui/MiniMap.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -40,8 +40,8 @@
 | line | section |
 |---:|---|
 | 151 | · what it draws from |
-| 238 | A FRAME OF THE CLOCK |
-| 449 | THE PREVIEW, ON HOVER |
+| 247 | A FRAME OF THE CLOCK |
+| 458 | THE PREVIEW, ON HOVER |
 
 ## Constants
 
@@ -93,7 +93,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 417 | **type** `final class MiniMap` | The minimap: a stamp of the city at the foot of the rail, above Menu, on screen from every tab; while the pointer is on it a preview beside it, 288 x 192; a click opens the land office's map over the window on what it... |
+| 55 | 426 | **type** `final class MiniMap` | The minimap: a stamp of the city at the foot of the rail, above Menu, on screen from every tab; while the pointer is on it a preview beside it, 288 x 192; a click opens the land office's map over the window on what it... |
 | 79 | 68 | **type** `private final class Drawing` | One of its two pictures: its view, its far nodes' ground (asked of WORKER), its pixels and image, and how far its pass has come. |
 | 101 | 9 | `Drawing(int w, int h)` _(in MiniMap.Drawing)_ |  |
 | 112 | 12 | `void aim(MiniMapFrame.View v)` _(in MiniMap.Drawing)_ | Aimed at a view: the same view keeps its ground and its kept nodes; another asks for its own ground, makes new kept nodes and is not held to the pace. |
@@ -101,7 +101,7 @@
 | 138 | 3 | `boolean paceOpen(long now)` _(in MiniMap.Drawing)_ | Whether the pace lets it begin a picture at `now` (System.nanoTime()): none begun since it was aimed at its view, or STAMP_EVERY_MS passed since the last was. |
 | 142 | 4 | `void blank()` _(in MiniMap.Drawing)_ |  |
 
-### what it draws from (lines 151-237)
+### what it draws from (lines 151-246)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -109,25 +109,27 @@
 | 208 | 4 | `private static String stampStyle(boolean hover)` | The stamp's frame: a pixel of the accent round it (the mockup's), the lighter accent under the pointer. |
 | 214 | 1 | `Region node()` | The stamp and its word: what the rail lays above Menu. |
 | 217 | 13 | `void forget()` | A new city or a load: everything drawn is another city's. |
-| 231 | 6 | `private void start()` |  |
+| 232 | 5 | `void stopPumpForBench()` | A no-window bench keeps the stamp hidden and needs no frame pump. |
+| 238 | 1 | `boolean pumpRunningForBench()` |  |
+| 240 | 6 | `private void start()` |  |
 
-### A FRAME OF THE CLOCK (lines 238-448)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 242 | 24 | `private void tick()` |  |
-| 268 | 4 | `private static boolean inView(Node n)` | Whether a node and every parent of it are visible: the rail is hidden on the game's menus. |
-| 282 | 40 | `private boolean keepUp(Game g)` | The minimap caught up with the city: its map drawn aside the first time - a draft on WORKER, unless the land office's map has one there already (MapView.drafting), when it waits for that - a new map (a load) thrown ou... |
-| 324 | 8 | `private void kept(Game.MapDraft d)` | A draft drawn on WORKER, back on the screen's thread: kept as the city's map when it still is the city's. |
-| 333 | 9 | `private void forgetDrawn()` |  |
-| 353 | 36 | `private void draw(Drawing dr, long deadline)` | A picture drawn, or a node of it, until the deadline - one node at least: when the version moved, or a district it drew without its picture has one now (the map's count of pictures kept moved), and at least STAMP_EVER... |
-| 391 | 14 | `private void askGround(Drawing dr)` | A view's far nodes' ground read on WORKER (the world is safe there), kept on the screen's thread while the view is still the one aimed at. |
-| 415 | 33 | `private void askPictures(Drawing dr)` | The district pictures a drawing's last pass lacked: their plans' jobs (CityMap.pictureJobs()) handed to WORKER as one task, in order - as the expanded map's far nodes ask (MapView.askPictures()) - while its view's dis... |
-
-### THE PREVIEW, ON HOVER (lines 449-471)
+### A FRAME OF THE CLOCK (lines 247-457)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 454 | 13 | `private void showPreview()` | The preview beside the rail, its foot level with the stamp's, while the pointer is on the stamp: shown, then moved by what its box measures on the screen (its shadow is the popup's too). |
-| 468 | 3 | `private void hidePreview()` |  |
+| 251 | 24 | `private void tick()` |  |
+| 277 | 4 | `private static boolean inView(Node n)` | Whether a node and every parent of it are visible: the rail is hidden on the game's menus. |
+| 291 | 40 | `private boolean keepUp(Game g)` | The minimap caught up with the city: its map drawn aside the first time - a draft on WORKER, unless the land office's map has one there already (MapView.drafting), when it waits for that - a new map (a load) thrown ou... |
+| 333 | 8 | `private void kept(Game.MapDraft d)` | A draft drawn on WORKER, back on the screen's thread: kept as the city's map when it still is the city's. |
+| 342 | 9 | `private void forgetDrawn()` |  |
+| 362 | 36 | `private void draw(Drawing dr, long deadline)` | A picture drawn, or a node of it, until the deadline - one node at least: when the version moved, or a district it drew without its picture has one now (the map's count of pictures kept moved), and at least STAMP_EVER... |
+| 400 | 14 | `private void askGround(Drawing dr)` | A view's far nodes' ground read on WORKER (the world is safe there), kept on the screen's thread while the view is still the one aimed at. |
+| 424 | 33 | `private void askPictures(Drawing dr)` | The district pictures a drawing's last pass lacked: their plans' jobs (CityMap.pictureJobs()) handed to WORKER as one task, in order - as the expanded map's far nodes ask (MapView.askPictures()) - while its view's dis... |
+
+### THE PREVIEW, ON HOVER (lines 458-480)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 463 | 13 | `private void showPreview()` | The preview beside the rail, its foot level with the stamp's, while the pointer is on the stamp: shown, then moved by what its box measures on the screen (its shadow is the popup's too). |
+| 477 | 3 | `private void hidePreview()` |  |
 

@@ -18,6 +18,13 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.200 — FS5, the KeptCheck sweep from section 55 — 2026-11-24, ready, see docs/queue/FS5-notes.md
+KeptCheck causes its fund settlements, standing bids, held household cells, paper holdings and policy controls, and awaits the saved-city worker's result.
+Retention counts the nodes drawn again; recurring rebuilds, repeated geometry differences and every content mismatch remain hard. Trade count-up covers changed and unchanged saved-month words at the real clock rungs.
+Fresh Bank and Government comparisons restore their body and target owners even after an aborted draw; no-window bench minimaps stop their retaining timer.
+Blank native label skins no longer keep a font strut after their words disappear, with exact signature, pixel and node-identity controls.
+The unchanged 1536 MiB object budget normalizes reconstructible renderer caches and soft-reference age while preserving Canvas targets; a separate weak-reference guard rejects deliberately retained real pages.
+
 ### 0.9.199 — CY1, the planner appraises a processing works over its cycle — 2026-11-24, ready, see docs/queue/CY1-notes.md
 A processing sector (Iron & Steel, Copper Refining, Wood Products, Cement & Concrete) now tests each works it might order on the lesser of the month's earnings and their mean over its last 12 months, so a one-month spike or a cycle's best month no longer orders a works the year does not pay for (FC2's seed 1 ordered one a month to 181 Rod Mills on a three-month cycle; CU2's seed 1 a refinery on a one-month spike). Its words say when the year held an order back.
 A kind counts idle when its last works earns below nothing in the month or over its year. A paying month no longer starts the count again. A kind idle over its year is sold without waiting for the whole sector's six losing months, but only in a month its last works loses in and over its year, so a recovery's paying months sell none.
