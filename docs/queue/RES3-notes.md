@@ -4447,3 +4447,10 @@ isLuxuryCapped=false, with no screen edits. These are source findings,
 not native passes. Compile, the unchanged monetary policy laws, the
 old-production finding and the new coverage/save cases remain to run on
 the pushed candidate, box/shared lock/one owned JVM at a time.
+
+The static pick rejects an unregistered *Check class even when invoked
+by MonetaryCheck. Rename the nested coverage class/file to
+CpiCoverageFinding and its single caller; normal Monetary still runs
+all its findings, without adding a duplicate full execution to AllChecks.
+No assertion or model behavior changes. Candidate 40806e6f8 is superseded
+for native verification by the following pushed rename commit.

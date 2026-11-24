@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * WHY: closing fleets cannot recover purchases, and a pump/queue unit-value average
  * can move with unchanged prices. Exercise both actual transactions and index math.
  */
-public final class CpiCoverageCheck {
+public final class CpiCoverageFinding {
     private static final double[] FEES = { 2, 1, .5, .1 }, FEE_SPEND = { 5, 3, 2, 0 };
     private static final Pattern SAVED_AT = Pattern.compile("(\"savedAt\"\\s*:\\s*)[0-9]+");
 

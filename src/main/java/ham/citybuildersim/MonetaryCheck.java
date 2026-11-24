@@ -719,7 +719,7 @@ public class MonetaryCheck {
 
         inflationFallsWithTheRate(root);
 
-        fails += CpiCoverageCheck.run();
+        fails += CpiCoverageFinding.run();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
