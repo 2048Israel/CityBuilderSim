@@ -574,4 +574,43 @@ against `docs/ensemble/0.9.199.md` (CY1, 41d77afb0).
 - Power is not in it: `served_power` is at least 0.987 in every ZERO_HOT run in m342-m402.
 - CY1's seed-by-seed H2 cannot be rebuilt here (its AUTO2 twins' CSVs are not kept; the baseline stores medians).
 
+**The sixth run**, after REV-PW3e's mend (the share waived when the seasonal peak is short at the plant's
+completion), on 9c8fdfa69 (PW3 on 0.9.199), was scored against `docs/ensemble/0.9.199.md`.
+- M1 and F1 pass in all five policies; the batch verdict is PASS, the hard criteria 10 of 10, and 25 of 26 criteria
+  (A2 fails as the baseline's does, 14 [8 to 29] against 13 [10 to 26]).
+- No verdict changed: ZERO_HOT's T2 and H2 both pass.
+
+| policy | measure | the sixth run | the fifth | the fourth | 0.9.199 |
+|---|---|---|---|---|---|
+| ZERO_HOT | T2, final population | 54,272 [16,026 to 155,817] | 53,423 | 37,968 | 51,906 [15,266 to 79,127] |
+| ZERO_HOT | H2 | -0.26% [-5.83% to 6.81%], 14 of 16 below | 1.21% | 0.51% | 0.81% |
+| HIGH | T2 | 623,344 [99,878 to 1,079,416] | 689,474 | 622,866 | 734,788 |
+| HIGH | R2 | 3.04% | 2.67% | 2.74% | 2.94% |
+| AUTO2 | T1 | m323 [284 to 508] | m320 | m324 | m331 |
+| AUTO2 | T2 | 9,223,768 | 9,080,089 | 9,075,280 | 9,223,026 |
+| AUTO2 | A1 | 2.61% | 2.62% | 2.63% | 2.63% |
+| ZERO_SLACK | T2 | 7,700,074 | 7,516,550 | 7,410,132 | 7,646,013 |
+| SHOCK | T2 | 1,530,066 | 1,436,180 | 1,433,391 | 1,516,325 |
+
+**The short months** (REV-PW3e asked for them; `target/pw3-trace/scripts/short.py`, seed-months over the 16 seeds).
+The CSV's `served_power` is the planner's reading, firm supply over its demand line, capped at 1: on PW3 the peak hour
+(`PLAN_PEAK_HOUR`, 1.631 of the draw), on main the year's mean peak block (`PLAN_PEAK`, 1.263). So `lacksNow()`'s line
+(firm supply under `PLAN_PEAK_SEASON`, 1.507 of the draw) is PW3's 0.924 and is past main's cap; the line both heads
+read is the mean peak block, PW3's 0.774 and main's 1. Main's "59" under 0.924 counts firm supply under 1.167 of the
+draw, a different line. HIGH and AUTO2 count alike (the policies part after these months); CY1 keeps ZERO_HOT's
+CSVs alone.
+
+| run | under `lacksNow()`'s line: ZERO_HOT; HIGH; AUTO2 | under the mean peak block: ZERO_HOT; HIGH; AUTO2 |
+|---|---|---|
+| the sixth (REV-PW3e's mend) | 155 (7 seeds); 183; 183 | 29 (2 seeds); 37; 37 |
+| the fifth (REV-PW3d's) | 529 (16 seeds); 409; 409 | 134 (10 seeds); 156; 156 |
+| the fourth (the seasonal line) | 120 (7 seeds); 145; 145 | 19 (2 seeds); 31; 31 |
+| CY1 (main, 0.9.199) | past main's cap | 169 (10 seeds); not kept; not kept |
+
+The sixth run's two longest spells under `lacksNow()`'s line are the fourth run's to the month and the person:
+ZERO_HOT seed 13 from m92, 36 months at 0.81 to 0.91 (above the mean block; CY1, the same town, reads 1.000), while
+the Oil-Fired Plant ordered at m81 is built (the fourth run's order and CY1's; the sixth run's town matches the
+fourth's month by month to m132, open by m128); and HIGH seed 3 from m129, 29 months at
+0.81 to 0.95 (its order not traced).
+
 `docs/ensemble/PW3.md` is this run's snapshot.
