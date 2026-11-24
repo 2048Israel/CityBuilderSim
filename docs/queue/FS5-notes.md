@@ -2867,6 +2867,7 @@ Heap evidence (MiB; these are diagnostics, not reusable gate runs):
 | 55647bb81, merged .199, box SW | Raw 1762.0, objects 1757.4; idle-only prune saves 4.95, still red | target/FS5b-heap-199 |
 | 07e223341, native SW | Warm 1593.6, normalized 1575.2, objects 1556.7; still the only hard red | target/FS5b-checks/KeptCheck-normalized-07e.log |
 | f4c60493f, native SW | Warm 1546.5, normalized 1528.3, Canvas 18.5, objects 1509.8; ALL OK against unchanged 1536 | target/FS5b-checks/KeptCheck-ship.log |
+| 240e91713, final Trade fixture, native SW | Warm 1546.3, normalized 1528.1, Canvas 18.5, objects 1509.6; ALL OK, 0.2 MiB from the preceding full run | target/FS5b-checks/KeptCheck-trade-240e.log |
 
 - The .198 dump has 122 large physical SWRTTexture arrays, 474.6 MiB:
   81/319.484 MiB only softly reachable, 40/152.555 MiB also owned by
@@ -2943,7 +2944,9 @@ Other caused mends and calls:
   figures must count at the permitted ladder rungs, stop past the top, and
   finish at real current words. Slow/paused equal-word controls start no
   count; the same predicate rejects actual positive counts. 240e91713 fast
-  compiles (28s), zero firm Stale; final native validation is running.
+  compiles (28s), zero firm Stale; its complete native KeptCheck exits0,
+  including all 30 changed-word clock cases, three running-count stop checks
+  and both unchanged-word controls. Maps unchanged, zero firm Stale.
 
 39-row ledger, ordinals in e1b58f210's FS5-filtered registry order:
 
@@ -2958,8 +2961,8 @@ Other caused mends and calls:
 | 3 | KRW1: a one-minute file-read deadline measured load. Await actual worker completion with ten-minute hang guard AND require saved scratch city on the board. |
 | 24 | CD9-K: all natural paper offers can refuse. Try real offers, then book a Term through booked if necessary; reread actual financesPieces and require nonempty paper. The fallback branch was not exercised in 07e. |
 | 25,27,38 | FS5H/FC2: exact actual Lending/scheduleRow blank-skin strut cause and native regression above. |
-| 36 | KP6-N: no natural formatted-word move guaranteed; 240e91713 causes both prior endpoints and tests unchanged words too; validation due. |
-| 22 | Heap: renderer soft-age/viewport caches and proven Bank/MiniMap lifetimes above. Native1509.8 passes1536; final box full measurement due. |
+| 36 | KP6-N: no natural formatted-word move guaranteed; 240e91713 causes both prior endpoints and tests unchanged words too; complete native validation passes. |
+| 22 | Heap: renderer soft-age/viewport caches and proven Bank/MiniMap lifetimes above. Native1509.8/1509.6 pass1536; final box full measurement due. |
 | 1,5 | Original slider/property fresh equality currently passes with zero KRT1 readings; the historical blank0×13/0×0 owner is not yet proved. No invented attribution to the label cure. |
 | 17 | Historical Healthcare1454×684/1446×700 remains unattributed. Its hard broad comparisons pass; Healthcare7 never caused a wrapping transition and Monocle Stage resizing buffer errors invalidate that probe. Bounded no-Stage threshold trace in progress. |
 
@@ -2975,4 +2978,11 @@ NewUnit, Steps, ResearchView and the complete native KeptCheck all pass.
 No gameplay/default playtest trace moves; no ensemble is owed for FS5.
 The pick is ALL251 due to AllChecks. No laptop full pick is run: stranger
 review, orchestrator go and the box dry run remain required. No gate-run
-reuse or ready claim has been made. Final line count and receipts follow.
+reuse or ready claim has been made.
+
+One-in/out: `git diff --numstat origin/main` over AllChecks, KeptCheck,
+Observation, TimingCheck, KeptBench, the bench-only MiniMap/UserInterface
+entry points and generated dials/harness/maps is 4128 added/3516 removed,
+notes and ship excluded. Repeated section prose is condensed beside the
+actual assertions; existing guards are retained. The ordinary Label mend
+is production UI code and is outside that process count.
