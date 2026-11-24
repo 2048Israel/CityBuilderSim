@@ -3777,3 +3777,38 @@ seed or bound has moved. Final root fast/maps remains to run. The two
 monetary failures still require the orchestrator's premise decision, and
 Central's timeout remains unattributed and unwaived. No additional long
 runtime experiment is started before that call.
+
+The final root fast attempt does not start a JVM: MG1 finds 2397 MiB
+available RAM at 14:15, below its 4096-MiB floor. Rechecks find 3406, 2005
+and then 2140 MiB, still below the floor; free commit remains above 2.5 GiB.
+The guard is not overridden and no other session's process is stopped.
+This is a resource block, not a failed compile or a claimed passing fast
+check. Every RES3 simulation and helper job has ended.
+
+During this check pass, CY1 ships as main b3ff7eb6d, 0.9.199. Merge it in
+895ccac01: BusinessInvestment, GameVersion and SaveFileCheck merge cleanly,
+retaining CY1's processing-year coverage and all RES3 native refusal/reload
+cases. Main still uses format/floor 65; RES3 retains its owed 66. The
+completed checks, catalogue/profile and monetary figures above are from
+the pre-CY1 model and are not validation of this merged head. The newest
+ensemble baseline is now docs/ensemble/0.9.199.md.
+
+Preserve the generated pre-merge index changes in stash
+8ce777a3e931e824e6073c384159e32c1143e01b, labelled RES3 generated maps before
+CY1 merge. Do not pop stale generated pages over the merged model; fresh
+root fast/maps must regenerate them when MG1 permits. The catalogue and
+affected named checks, especially the monetary and save paths, also need
+fresh merged-model results before review readiness. No new ensemble, dry
+run, mends request or ready claim is made. Report the real resource block
+and the qualified pre-merge monetary counterexample to the orchestrator;
+replay the merged model before deciding whether its kept premise still
+needs a call. No model or bound is changed to escape the findings.
+
+Static checks still run without a JVM: the ship known-red parser returns
+0 and the pick remains ALL 253, with a required saves review; the money
+delta also explicitly needs review. No publisher record differs from
+origin/main through a branch edit. Older root-fast outputs, if present,
+are historical and must not be read as merged validation. The current
+not-started marker is target/RES3-root-fast-current-status.json; resumption
+uses target/RES3-root-fast-merged-cy1-20261124.sh, which samples MG1 first
+and writes source-labelled new logs rather than reusing old output.
