@@ -2558,3 +2558,109 @@ this model. The fresh final ensemble against `docs/ensemble/0.9.195.md`,
 the FC2 merge and its four named shared guards when it ships, and the
 slot-authorized ALL dry run remain after the review's SHIP. No other job
 or helper is left running at the review handoff.
+
+### REV-RES3x P1: guard the surviving transmission across the declared towns
+
+The review correctly rejects the earlier pooled ordering assertion as a
+transmission guard: it admits zero and a positive response within .650
+points, while the mean far-end effect was only printed. The original
+town's 4.515-point effect does not establish a broader response. Keep that
+original effect and both actual-starts/later-rent assertions; diagnose
+paths 16-31 before changing the model or the law again.
+
+MemWatch helper `RES3-P1-trace` runs native main `94ba28823` and RES3
+`8fdb111b6` in separate detached checkouts, strictly serial named probes.
+Its fifteen-line report is mail `20261124-033229-435-RES3-P1-trace-94a5`.
+Both invocations exit 0: 272 path/rate/timing observations, with 1,904
+founding, basket, crew, currency and calendar premises passing. The
+portable probe and founding-body hashes match between models. Equal
+fixture inputs do not imply equal month-25 states across different
+models; each model's policy/timing twins have equal fingerprints. The
+typed total-CPI mean exactly reproduces the earlier validation curve.
+No model source or household/policy input is changed for the comparison.
+
+Native main is adverse over the same window, not almost flat: its mean
+total CPI is 5.793602/5.435019/8.231521/8.325781 percent at 3/10/20/40%,
+a -2.532180-point far-end effect. Its common-basket non-shelter effect is
+also adverse, -.074993 points, with twelve adverse paths. RES3's common
+non-shelter curve is 4.527429/2.171282/2.117868/2.904979 percent, a
+1.622450-point reduction. It has eleven positive and five adverse paths,
+all retained (16, 19, 23, 25, 26 are adverse). Every path in both models
+has a lower mean live spending-plan factor at 40% than at 3%: a falling
+factor alone does not establish price transmission. Shelter offsets
+RES3's surviving non-shelter response, while the total mean remains only
+.009983 points lower. This is not a claim that every housing feedback
+has been causally isolated. There is no lost non-shelter channel to mend
+in RES3 on this evidence.
+
+[The committed comparison](RES3-transmission.md) files native main's
+coverage gap and every path's total/shelter/non-shelter effect. Main's
+original town passes a 2.231010-point total effect while its broader
+non-shelter mean is adverse; do not call that general transmission or
+attribute it to RES3. The new price guard would reject that native curve.
+Full portable source, entry-point patches, commands, unrounded data and
+snapshots remain under `target/RES3-P1-trace/`. This is measured evidence
+over the original window, not a new longer-run claim or a known-red
+transfer. The FRBSF and IFDP sources and Jerus authority above still apply.
+
+★ Guard a meaningful surviving price channel directly: the mean
+common-basket non-shelter reduction across all sixteen declared paths
+must be at least the existing TRANSMISSION_FLOOR, one percentage point.
+This retains the original minimum effect size rather than calibrating a
+new near-zero allowance. Also require the higher real saving return to
+reach each town's live mean spending-plan factor. The existing
+HouseholdCheck laws separately verify that this factor is actually
+applied to grocery surplus, luxury and meals, including the live month.
+Those quantity/application laws and the new price law protect different
+parts of the channel; neither replaces the other. The original-town
+effect, supply assertions, rates, fixture, window and timing limits stay.
+
+★ Hold a genuinely common physical basket across policies, including
+each services fee quantity. Policy twins can have different component
+weights and nested fee shares at their links, so excluding the rent
+component from each twin's own basket alone is not a clean price
+comparison. Fix component quantities and every fee quantity from the
+3% on-time twin; price that same bundle at both endpoints of each rate.
+The common normalization cancels in the ratio. Assert a fixed link and
+quantities throughout each run, and reconstruct each run's native CPI
+change from its own observed quantities as a hard measurement premise.
+No annual percentage changes are added as if they were CPI contributions.
+Repricing both models with the identical native physical basket still
+gives RES3 1.669167 points, so the positive result is not the choice of
+RES3's quantity bundle. The implementation uses three pure PriceIndex
+price/base readers instead of decoding the saved array in the lasting
+harness. There is no new model state, coefficient, flow, format bump or
+default-trace movement from those readers; format/floor 65 remain owed.
+
+The strengthened MonetaryCheck now passes, exit 0: 491 assertions and no
+reds. Mean non-shelter prices are
+4.5274290012492875/2.1712822045330857/2.117867665076757/2.9049788572586515
+percent, a 1.622450143990636-point effect, matching the independent
+diagnostic to floating-point precision. All 136 fixed-basket/fee checks
+and all 136 native CPI reconstructions pass, as do the 17 live plan
+contrasts. Every older fixture premise, original-town 4.515-point effect,
+137/24 starts, later C01 rents .02486437563/.04124895851 and retained
+aggregate timing assertion remains green. The new guard rejects both
+zero transmission and native main's observed -.074993333-point
+non-shelter mean. This is a benchmark/predicate comparison, not a
+response-suppression ablation. No ablation or universal-town price sign
+is claimed.
+
+`./batch-check.sh --fast` passes, exit 0, with 0 firm and 199 soft Stale
+findings. Raw `target/RES3-P1-fast.txt` and
+`target/RES3-P1-MonetaryCheck.{txt,log}`. Read-only `RES3-P1-verify`, launched
+at 70-percent committed memory, confirms these results and the authored
+measurement diff in its fifteen-line mail
+`20261124-034825-281-RES3-P1-verify-9f1e`; its session has ended. Its check
+of the committed per-path table finds every value within the printed
+rounding precision. The earlier HouseholdCheck application laws remain
+unchanged and green from the format-65 run; no existing money, savings,
+conservation or reload assertion is weakened. The new production methods
+are pure readers, so this P1 mend adds no default-trace movement.
+
+Main's records-only NK1 queue update `149d88cd7` is merged after the run;
+the model still equals the diagnosed `94ba28823` baseline plus RES3. The
+provisional marker and review-required ALL pick remain. The independent
+diagnostic's temporary worktrees are removed after its source patches,
+commands, data and logs are kept under `target/RES3-P1-trace/`. No helper
+or JVM is left running at the short P1 re-review handoff.

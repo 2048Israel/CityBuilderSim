@@ -499,6 +499,9 @@ public class PriceIndex {
     /** One component's price at the link (the services' fee index: 1). */
     public double getBase(int component) { return base[component]; }
 
+    /** The price used in the current relative, for comparisons at a common physical basket. Pure. */
+    public double getComponentPrice(int component) { return component == SERVICES ? feeLevel() : last[component]; }
+
     /** The level the basket in force was linked at: 1 for a city's first basket. */
     public double getLink() { return link; }
 
@@ -522,6 +525,12 @@ public class PriceIndex {
 
     /** One fee line's share of the services price (FEE_LINES order). */
     public double getFeeShare(int line) { return feeShare[line]; }
+
+    /** One fee's price at the link, for comparisons with the same quantities across baskets. Pure. */
+    public double getFeeBase(int line) { return feeBase[line]; }
+
+    /** One fee's latest price used by the index. Pure. */
+    public double getFeePrice(int line) { return feeLast[line]; }
 
     /** True on a save from before 0.7.43 until its first month links the five-component basket. */
     public boolean isLinkPending() { return linkPending; }

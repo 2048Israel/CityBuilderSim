@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**251 harness files, 28,618 labelled assertions.** AllChecks runs 251 of them.
+**251 harness files, 28,622 labelled assertions.** AllChecks runs 251 of them.
 
 ## Which harnesses read which class
 
@@ -23385,7 +23385,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L538 ...and its bufferFloor() is the live city's
   - L539 ...and its capitalTarget() is the live city's
 
-## MonetaryCheck.java - 120 labelled assertions
+## MonetaryCheck.java - 124 labelled assertions
 
 > Money: what a basket costs, what the world charges, and what the rate does.
 > 
@@ -23401,135 +23401,139 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L118 1. the basket**
-  - L124 a young city has no basket yet
-  - L126 ...and a settled one does
-  - L127 the basket is what they actually spent
-  - L128 ...and it starts at one
-  - L138 doubling food moves the index by the food weight
-  - L140 ...and the weights did not move to hide it
-- **L142 the high and low water marks**
-  - L150 the peak is the dearest month, not the last one
-  - L151 ...and it remembers which month that was
-  - L152 the trough opens where the basket was based
-  - L153 ...on the month it was based
-  - L157 cheaper food moves the index
-  - L158 ...and the peak does not come down with it
-  - L159 ...while the trough follows it down
-  - L160 ...and stamps the new month
-  - L161 the swing is peak over trough
-  - L170 the peak reloads
-  - L171 ...with its month
-  - L172 the trough reloads
-  - L173 ...with its month
-  - L183 an older save opens both marks on where it is now
-  - L185 ...both of them
-  - L191 a rate is not quoted before there is a year of readings
-- **L194 five components, the year's weights, chained (0.7.43)**
-- **L202 five components, the year's weights, chained**
-  - L210 fixture: the five-component basket is based
-  - L217 every component the households spent on is in the basket
-  - L218 ...the weights summing to one
-  - L219 luxury is no more than LUXURY_WEIGHT_CAP of it
-  - L221 ...its excess spread pro rata: groceries to rent as spent
-  - L223 ...and the services weighed as their fees were paid
-  - L225 a fee line's share of the services is its share of the fees paid
-  - L227 ...and a line nobody paid has none
-  - L230 a tenth on the doctor moves the index by a tenth of its share of the services' weight
-  - L235 a month with no meal sold holds meals at their last price
-  - L261 the basket is linked again REBASE_MONTHS after it was based
-  - L262 ...at the level the old basket reached: the index does not jump
-  - L264 ...and the link is that level
-  - L265 with every price rising alike, the year's rate runs through the link unbroken
-  - L267 the new basket weighs what was spent in the year before it
-  - L281 fixture: at the link every component's relative restarts at 1
-  - L282 ...while each component's chained level runs straight through it, a month's rise and no jump
-  - L292 ...and a tenth on meals moves the index by the new weight of meals, on the link
-  - L295 a chained basket reloads and prices the next month the same
-  - L296 ...with the same year's rate
-  - L301 ...and the same chained level for every component (0.7.45)
-  - L302 ...and the same capped level parity is struck from (XR1)
-  - L308 a save from before the capped basket's link still reads as a chain, and its capped level runs on from the link
-  - L318 a save from 0.7.43 or 0.7.44, the chain without the levels, still reads as a chain
-  - L320 ...its components running on from the level of the link
-  - L330 an older save waits to link its basket
-  - L334 ...and its first month opens at the level its own basket strikes
-  - L336 ...linked, that month
-  - L337 ...weighed on that month's spending
-  - L338 ...its groceries' own level seeded from the old basket's, the shelf over its base (0.7.45)
-  - L340 ...and its rent's likewise
-  - L341 ...and a component the old basket did not price at the level of the link
-  - L345 ...and the next month, nothing dearer, it stays there
-- **L347 2. prices ration**
-  - L365 shelves that clear under the floor charge the floor
-  - L367 ...and stay there
-  - L372 a total shortage aims at the cap over the floor
-  - L374 ...and moves a sixth of the way there in its first month, in logs
-  - L379 ...and reaches it, at the clear speed
-  - L384 ...and half a shortage is between the two
-- **L388 3. the world is a real place**
-  - L400 it stays inside its band
-  - L403 ...and it actually moves around in it
-  - L404 ...and the price level stays a usable number
-  - L413 two worlds from the same seed agree exactly
-  - L419 a pinned world does not move
-- **L421 4. and the rate does something**
-  - L425 it opens at neutral
-  - L428 the dial moves it
-  - L430 ...and will not go below zero
-  - L433 ...nor past the guard that stops a typo setting 9,900%
-  - L446 on target it advises neutral
-  - L447 above target it advises more than one for one
-  - L449 ...and below target, less
-  - L450 ...and says why in words about inflation
-- **L469 the target is a dial**
-  - L471 it opens at the target it always had
-  - L473 ...where the rule is the rule it always was
-  - L481 the same inflation aimed at 0% and at 5% differs by (TAYLOR_WEIGHT - 1) x 5 points
-  - L483 ...and on its target the rule advises the neutral real rate plus the target, whatever the target is
-  - L485 ...the dial's rule being the rule at that target
-  - L487 ...and the advice it clamps to the dial reads it too
-  - L490 ...and the reason names the target it aims at, half point and all
-  - L493 the dial stops at MAX_INFLATION_TARGET
-  - L496 ...which is Jerus's 20%
-  - L498 a target of 15%, past the old stop at 10%, is kept
-  - L499 ...and the rule aims at it: on it, the neutral real rate plus the target
-  - L502 ...and 25% is held at MAX_INFLATION_TARGET
-  - L505 ...and at MIN_INFLATION_TARGET below
-  - L536 paying under the world in real terms weakens the currency
-  - L537 ...and paying over it supports the currency
-  - L538 ...by exactly -GAP_CAP x tanh(PERSISTENCE x gap / GAP_CAP) for a gap of four points
-  - L541 ...and the same the other way
-  - L544 ...and past any gap a city reaches (a hundred points), held inside GAP_CAP
-  - L547 ...either way
-- **L549 5. in a city, and across a reload**
-  - L588 fixture: a basket one shopping month short of PriceIndex.SETTLING_MONTHS is not based
-  - L590 fixture: PriceIndex.SETTLING_MONTHS shopping months base it
-  - L599 fixture: the index stands where the restored basket struck it
-  - L600 fixture: the restored basket's year of readings reads a rise
-  - L601 fixture: the world's price level stands where it was set
-  - L602 fixture: the rate stands where it was pinned
-  - L604 the city based its basket
-  - L605 ...and the world's prices moved
-  - L607 ...and the currency is not against a bound
-  - L626 the policy rate reloads
-  - L628 ...and the world's price level
-  - L630 ...and the price index
-  - L632 ...and the basket it is measured on
-  - L641 ...and the year of history the inflation rate is struck from
-  - L648 ...and the inflation target, the player's dial
-  - L653 fixture: the save carried the target under its own key
-  - L665 a save from before the dial reads the default: 2%, the constant it was
-  - L1090 the whole policy curve has no upward trend beyond the retained ordering resolution
-  - L1106 a month's delay leaves the multi-town inflation estimate inside the timing bound
-  - L1107 each whole calendar year's multi-town estimate stays inside the timing bound
-  - L1111 a higher rate causes fewer funded homes to start before the window
-  - L1112 that higher-rate supply shortage raises the same class's rents later
-  - L1201 the runs differ by the dial and by nothing else
-  - L1206 fixture: the builders kept every crew on through every run's window
-  - L1207 fixture: the window is
-  - L1209 fixture: the basket was based before every run's window opened
-  - L1212 the original highest rate lowers inflation by at least the effect bound over the original window
+- **L153 1. the basket**
+  - L159 a young city has no basket yet
+  - L161 ...and a settled one does
+  - L162 the basket is what they actually spent
+  - L163 ...and it starts at one
+  - L173 doubling food moves the index by the food weight
+  - L175 ...and the weights did not move to hide it
+- **L177 the high and low water marks**
+  - L185 the peak is the dearest month, not the last one
+  - L186 ...and it remembers which month that was
+  - L187 the trough opens where the basket was based
+  - L188 ...on the month it was based
+  - L192 cheaper food moves the index
+  - L193 ...and the peak does not come down with it
+  - L194 ...while the trough follows it down
+  - L195 ...and stamps the new month
+  - L196 the swing is peak over trough
+  - L205 the peak reloads
+  - L206 ...with its month
+  - L207 the trough reloads
+  - L208 ...with its month
+  - L218 an older save opens both marks on where it is now
+  - L220 ...both of them
+  - L226 a rate is not quoted before there is a year of readings
+- **L229 five components, the year's weights, chained (0.7.43)**
+- **L237 five components, the year's weights, chained**
+  - L245 fixture: the five-component basket is based
+  - L252 every component the households spent on is in the basket
+  - L253 ...the weights summing to one
+  - L254 luxury is no more than LUXURY_WEIGHT_CAP of it
+  - L256 ...its excess spread pro rata: groceries to rent as spent
+  - L258 ...and the services weighed as their fees were paid
+  - L260 a fee line's share of the services is its share of the fees paid
+  - L262 ...and a line nobody paid has none
+  - L265 a tenth on the doctor moves the index by a tenth of its share of the services' weight
+  - L270 a month with no meal sold holds meals at their last price
+  - L296 the basket is linked again REBASE_MONTHS after it was based
+  - L297 ...at the level the old basket reached: the index does not jump
+  - L299 ...and the link is that level
+  - L300 with every price rising alike, the year's rate runs through the link unbroken
+  - L302 the new basket weighs what was spent in the year before it
+  - L316 fixture: at the link every component's relative restarts at 1
+  - L317 ...while each component's chained level runs straight through it, a month's rise and no jump
+  - L327 ...and a tenth on meals moves the index by the new weight of meals, on the link
+  - L330 a chained basket reloads and prices the next month the same
+  - L331 ...with the same year's rate
+  - L336 ...and the same chained level for every component (0.7.45)
+  - L337 ...and the same capped level parity is struck from (XR1)
+  - L343 a save from before the capped basket's link still reads as a chain, and its capped level runs on from the link
+  - L353 a save from 0.7.43 or 0.7.44, the chain without the levels, still reads as a chain
+  - L355 ...its components running on from the level of the link
+  - L365 an older save waits to link its basket
+  - L369 ...and its first month opens at the level its own basket strikes
+  - L371 ...linked, that month
+  - L372 ...weighed on that month's spending
+  - L373 ...its groceries' own level seeded from the old basket's, the shelf over its base (0.7.45)
+  - L375 ...and its rent's likewise
+  - L376 ...and a component the old basket did not price at the level of the link
+  - L380 ...and the next month, nothing dearer, it stays there
+- **L382 2. prices ration**
+  - L400 shelves that clear under the floor charge the floor
+  - L402 ...and stay there
+  - L407 a total shortage aims at the cap over the floor
+  - L409 ...and moves a sixth of the way there in its first month, in logs
+  - L414 ...and reaches it, at the clear speed
+  - L419 ...and half a shortage is between the two
+- **L423 3. the world is a real place**
+  - L435 it stays inside its band
+  - L438 ...and it actually moves around in it
+  - L439 ...and the price level stays a usable number
+  - L448 two worlds from the same seed agree exactly
+  - L454 a pinned world does not move
+- **L456 4. and the rate does something**
+  - L460 it opens at neutral
+  - L463 the dial moves it
+  - L465 ...and will not go below zero
+  - L468 ...nor past the guard that stops a typo setting 9,900%
+  - L481 on target it advises neutral
+  - L482 above target it advises more than one for one
+  - L484 ...and below target, less
+  - L485 ...and says why in words about inflation
+- **L504 the target is a dial**
+  - L506 it opens at the target it always had
+  - L508 ...where the rule is the rule it always was
+  - L516 the same inflation aimed at 0% and at 5% differs by (TAYLOR_WEIGHT - 1) x 5 points
+  - L518 ...and on its target the rule advises the neutral real rate plus the target, whatever the target is
+  - L520 ...the dial's rule being the rule at that target
+  - L522 ...and the advice it clamps to the dial reads it too
+  - L525 ...and the reason names the target it aims at, half point and all
+  - L528 the dial stops at MAX_INFLATION_TARGET
+  - L531 ...which is Jerus's 20%
+  - L533 a target of 15%, past the old stop at 10%, is kept
+  - L534 ...and the rule aims at it: on it, the neutral real rate plus the target
+  - L537 ...and 25% is held at MAX_INFLATION_TARGET
+  - L540 ...and at MIN_INFLATION_TARGET below
+  - L571 paying under the world in real terms weakens the currency
+  - L572 ...and paying over it supports the currency
+  - L573 ...by exactly -GAP_CAP x tanh(PERSISTENCE x gap / GAP_CAP) for a gap of four points
+  - L576 ...and the same the other way
+  - L579 ...and past any gap a city reaches (a hundred points), held inside GAP_CAP
+  - L582 ...either way
+- **L584 5. in a city, and across a reload**
+  - L623 fixture: a basket one shopping month short of PriceIndex.SETTLING_MONTHS is not based
+  - L625 fixture: PriceIndex.SETTLING_MONTHS shopping months base it
+  - L634 fixture: the index stands where the restored basket struck it
+  - L635 fixture: the restored basket's year of readings reads a rise
+  - L636 fixture: the world's price level stands where it was set
+  - L637 fixture: the rate stands where it was pinned
+  - L639 the city based its basket
+  - L640 ...and the world's prices moved
+  - L642 ...and the currency is not against a bound
+  - L661 the policy rate reloads
+  - L663 ...and the world's price level
+  - L665 ...and the price index
+  - L667 ...and the basket it is measured on
+  - L676 ...and the year of history the inflation rate is struck from
+  - L683 ...and the inflation target, the player's dial
+  - L688 fixture: the save carried the target under its own key
+  - L700 a save from before the dial reads the default: 2%, the constant it was
+  - L1094 fixture: the measurement window keeps its basket and fee quantities fixed
+  - L1097 fixture: observed physical quantities reconstruct the model's CPI change
+  - L1150 the highest rate lowers common-basket non-shelter inflation across the declared towns by at least a point
+  - L1152 the whole policy curve has no upward trend beyond the retained ordering resolution
+  - L1168 a month's delay leaves the multi-town inflation estimate inside the timing bound
+  - L1169 each whole calendar year's multi-town estimate stays inside the timing bound
+  - L1173 a higher rate causes fewer funded homes to start before the window
+  - L1174 that higher-rate supply shortage raises the same class's rents later
+  - L1233 the higher real saving return reaches this town's live spending plan
+  - L1273 the runs differ by the dial and by nothing else
+  - L1278 fixture: the builders kept every crew on through every run's window
+  - L1279 fixture: the window is
+  - L1281 fixture: the basket was based before every run's window opened
+  - L1284 the original highest rate lowers inflation by at least the effect bound over the original window
 
 ## MoneyDatesCheck.java - 29 labelled assertions
 

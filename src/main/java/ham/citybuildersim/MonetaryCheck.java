@@ -41,7 +41,10 @@ import java.nio.file.Path;
  *      Preserve the original founding's 3%-to-40% effect of at least one
  *      point over months 49-84. Measure the policy slope and the timing of
  *      the paired estimate across the fixed world-path sample, rather than make
- *      a local supply inversion a universal adjacent-rate law. Jerus,
+ *      a local supply inversion a universal adjacent-rate law. Across that
+ *      sample, require at least a point of non-shelter disinflation on the
+ *      same physical basket, and the saving return reaching each live plan.
+ *      Jerus,
  *      2026-11-23: "sometimes its as simple as check reality"; sources and
  *      the revised law's authority are in docs/queue/RES3-notes.md.
  *      (FS10, MQ1: the D$ held by ForeignAccounts.pinRate() from month 25,
@@ -83,8 +86,40 @@ public class MonetaryCheck {
         }
         double laterRent() { return laterSamples > 0 ? laterRent / laterSamples : Double.NaN; }
     }
+    /** Flatten the services sub-basket too: changing fee shares must not masquerade as a price response. */
+    private record BasketPrices(double[] quantities, double[] prices, int linked, double index) {
+        static BasketPrices read(PriceIndex p) {
+            double[] q = new double[PriceIndex.COMPONENTS + PriceIndex.FEE_LINES];
+            double[] prices = new double[q.length];
+            for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+                if (k == PriceIndex.SERVICES) continue;
+                if (p.getWeight(k) > 0 && p.getBase(k) > 0) q[k] = p.getWeight(k) / p.getBase(k);
+                prices[k] = p.getComponentPrice(k);
+            }
+            for (int j = 0; j < PriceIndex.FEE_LINES; j++) {
+                int k = PriceIndex.COMPONENTS + j;
+                if (p.getBase(PriceIndex.SERVICES) > 0 && p.getFeeBase(j) > 0)
+                    q[k] = p.getWeight(PriceIndex.SERVICES) / p.getBase(PriceIndex.SERVICES)
+                            * p.getFeeShare(j) / p.getFeeBase(j);
+                prices[k] = p.getFeePrice(j);
+            }
+            return new BasketPrices(q, prices, p.getLinkedMonth(), p.getIndex());
+        }
+        double cost(double[] q, boolean withoutRent) {
+            double sum = 0;
+            for (int k = 0; k < q.length; k++)
+                if (q[k] > 0 && (!withoutRent || k != PriceIndex.RENT)) sum += q[k] * prices[k];
+            return sum;
+        }
+    }
+    private record PriceWindow(BasketPrices from, BasketPrices to, double spendFactor) {
+        double nonShelterInflation(double[] quantities) {
+            return Math.pow(to.cost(quantities, true) / from.cost(quantities, true), 12.0 / windowMonths()) - 1;
+        }
+    }
     private record PolicyComparison(double[] inflation, double[][] years, double[] late,
-                                    double[][] lateYears, long[] starts, double[] rents) { }
+                                    double[][] lateYears, long[] starts, double[] rents,
+                                    double[] nonShelter) { }
 
     static int fails = 0;
     static PrintStream out;
@@ -830,7 +865,7 @@ public class MonetaryCheck {
     /** Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. */
     static final double ANNUAL_TIMING_LIMIT = .02;
 
-    /** How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. */
+    /** Minimum annual effect: a point on the original CPI and on pooled common-basket non-shelter prices; a flat demand channel fails. */
     static final double TRANSMISSION_FLOOR = .01;
 
     /** One month, as the playtest steps it: a broke city steps rather than skips. */
@@ -1000,6 +1035,11 @@ public class MonetaryCheck {
      * The city is handed back through `city` for its columns.
      */
     static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years) {
+        return heldRun(root, label, rate, heldFrom, print, city, years, null);
+    }
+
+    private static double heldRun(Path root, String label, double rate, int heldFrom, double[] print,
+                                  Game[] city, double[] years, PriceWindow[] observation) {
         System.setOut(quiet);
         try {
             // WN3-R: on the world's band, see founding().
@@ -1018,6 +1058,10 @@ public class MonetaryCheck {
                 currencyHeld &= fx.getRate() == heldAt;
             }
             double indexFrom = g.getPriceIndex().getIndex();
+            BasketPrices basketFrom = BasketPrices.read(g.getPriceIndex());
+            boolean fixedBasket = true;
+            double spendFactor = g.getHouseholdBalance().getSpendFactor();
+            int spendSamples = 1;
             reportHeldRent(g, label);
             double rentFrom = g.getSectors().realEstate().getRentPrice();
             double[] componentsFrom = java.util.stream.IntStream.range(0, PriceIndex.COMPONENTS)
@@ -1035,6 +1079,9 @@ public class MonetaryCheck {
                 fewestCrews = Math.min(fewestCrews, g.getSectors().construction().getPostsOfferedShare());
                 currencyHeld &= fx.getRate() == heldAt;
                 solvesOnTheCalendar &= market != null && market.solvedYear() == CityCalendar.yearOf(g.getMonth());
+                fixedBasket &= g.getPriceIndex().getLinkedMonth() == basketFrom.linked();
+                spendFactor += g.getHouseholdBalance().getSpendFactor();
+                spendSamples++;
                 if (CityCalendar.monthOfYear(g.getMonth()) == 1) yearFrom = g.getPriceIndex().getIndex();
                 if (CityCalendar.monthOfYear(g.getMonth()) == 12) {
                     reportHeldRent(g, label);
@@ -1043,6 +1090,13 @@ public class MonetaryCheck {
                 }
             }
             solvesOnTheCalendar &= year == WINDOW_YEARS;
+            BasketPrices basketTo = BasketPrices.read(g.getPriceIndex());
+            assertTrue("fixture: the measurement window keeps its basket and fee quantities fixed",
+                    fixedBasket && java.util.Arrays.equals(basketFrom.quantities(), basketTo.quantities()));
+            double reconstructed = basketTo.cost(basketFrom.quantities(), false) / basketFrom.cost(basketFrom.quantities(), false);
+            assertTrue("fixture: observed physical quantities reconstruct the model's CPI change",
+                    Math.abs(reconstructed - basketTo.index() / basketFrom.index()) < 1e-12);
+            if (observation != null) observation[0] = new PriceWindow(basketFrom, basketTo, spendFactor / spendSamples);
             out.printf("   held-rate rent trace %s: dial %.0f%% from m%d, family rent per capacity %.12g -> %.12g, CPI %.12g -> %.12g%n",
                     label, rate * 100, heldFrom, rentFrom, g.getSectors().realEstate().getRentPrice(), indexFrom, g.getPriceIndex().getIndex());
             out.printf("   held-rate components %s: annual growth %s, closing weights %s (groceries, rent, meals, luxury, services)%n",
@@ -1069,11 +1123,14 @@ public class MonetaryCheck {
         } finally { policySeed = Founding.defaults().getPathSeed(); }
         int n = HELD_RATES.length;
         double meanEffect = 0, meanSlope = 0;
-        double[] meanCurve = new double[n];
+        double[] meanCurve = new double[n], meanNonShelter = new double[n];
         double meanRate = java.util.Arrays.stream(HELD_RATES).average().orElseThrow();
         for (var c : comparisons) {
             meanEffect += c.inflation()[0] - c.inflation()[n - 1];
-            for (int r = 0; r < n; r++) meanCurve[r] += c.inflation()[r] / comparisons.size();
+            for (int r = 0; r < n; r++) {
+                meanCurve[r] += c.inflation()[r] / comparisons.size();
+                meanNonShelter[r] += c.nonShelter()[r] / comparisons.size();
+            }
             double meanInflation = java.util.Arrays.stream(c.inflation()).average().orElseThrow();
             double numerator = 0, denominator = 0;
             for (int r = 0; r < n; r++) {
@@ -1087,6 +1144,11 @@ public class MonetaryCheck {
         out.printf("   fixed paths %s: mean low-to-high effect %.6f points; mean policy/CPI slope %.6f%n",
                 java.util.Arrays.toString(POLICY_SEEDS), meanEffect * 100, meanSlope);
         out.printf("   mean CPI curve on validation paths: %s percent%n", java.util.Arrays.toString(java.util.Arrays.stream(meanCurve).map(x -> x*100).toArray()));
+        out.printf("   mean non-shelter CPI on each town's common physical basket: %s percent; low-to-high effect %.6f points%n",
+                java.util.Arrays.toString(java.util.Arrays.stream(meanNonShelter).map(x -> x * 100).toArray()),
+                (meanNonShelter[0] - meanNonShelter[n - 1]) * 100);
+        assertTrue("the highest rate lowers common-basket non-shelter inflation across the declared towns by at least a point",
+                meanNonShelter[0] - meanNonShelter[n - 1] >= TRANSMISSION_FLOOR);
         assertTrue("the whole policy curve has no upward trend beyond the retained ordering resolution",
                 meanSlope * (HELD_RATES[n - 1] - HELD_RATES[0]) <= ORDERING_RESOLUTION);
         double timing = 0;
@@ -1120,6 +1182,7 @@ public class MonetaryCheck {
         double[] inflation = new double[n];
         long[] starts = new long[n];
         double[] rents = new double[n];
+        PriceWindow[] prices = new PriceWindow[n];
         boolean dialsHeld = true;
         fewestCrews = 1;
         solvesOnTheCalendar = true;
@@ -1129,7 +1192,9 @@ public class MonetaryCheck {
         basedBeforeWindow = true;
         for (int r = 0; r < n; r++) {
             Game[] held = new Game[1];
-            inflation[r] = heldRun(root, "rate-" + r, HELD_RATES[r], HELD_FROM, prints[r], held, years[r]);
+            PriceWindow[] observation = new PriceWindow[1];
+            inflation[r] = heldRun(root, "rate-" + r, HELD_RATES[r], HELD_FROM, prints[r], held, years[r], observation);
+            prices[r] = observation[0];
             Game g = held[0];
             starts[r] = ((HousingTown) g).earlyStarts();
             rents[r] = ((HousingTown) g).laterRent();
@@ -1160,6 +1225,13 @@ public class MonetaryCheck {
         }
         out.printf("   inflation at %s: %s a year, months %d-%d (the %d months from a January's solve to the December %d years on, the D$ held at %.4f); %.3f points from the lowest dial to the highest%n",
                 rates, rows, MEASURED_MONTHS - windowMonths(), MEASURED_MONTHS, windowMonths(), WINDOW_YEARS, heldAt, (inflation[0] - inflation[n - 1]) * 100);
+        double[] commonQuantities = prices[0].from().quantities();
+        double[] nonShelter = java.util.Arrays.stream(prices).mapToDouble(p -> p.nonShelterInflation(commonQuantities)).toArray();
+        out.printf("   path %d non-shelter prices on the same physical basket (including each fee): %s percent; plan factors %s%n",
+                seed, java.util.Arrays.toString(java.util.Arrays.stream(nonShelter).map(x -> x * 100).toArray()),
+                java.util.Arrays.toString(java.util.Arrays.stream(prices).mapToDouble(PriceWindow::spendFactor).toArray()));
+        assertTrue("the higher real saving return reaches this town's live spending plan",
+                prices[n - 1].spendFactor() < prices[0].spendFactor());
         for (int y = 0; y < WINDOW_YEARS; y++) {
             StringBuilder yearRows = new StringBuilder();
             for (int r = 0; r < n; r++) yearRows.append(r == 0 ? "" : " / ").append(String.format("%.2f%%", years[r][y] * 100));
@@ -1211,7 +1283,7 @@ public class MonetaryCheck {
         if (seed == Founding.defaults().getPathSeed())
             assertTrue("the original highest rate lowers inflation by at least the effect bound over the original window",
                     inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
-        return new PolicyComparison(inflation, years, lateInflation, lateAnnual, starts, rents);
+        return new PolicyComparison(inflation, years, lateInflation, lateAnnual, starts, rents, nonShelter);
     }
 
     /** The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. */
