@@ -653,8 +653,16 @@ public class CurrencyCheck {
         double sold = fx.getDefenceUsd();
         fetched = fx.getDefenceLocal();
         double deficitUsd = -fx.balance() / rateBefore;
+        // FC2, 2026-11-23: THE LEAN READS THE VAULT AS THE MONTH'S TOP LEFT IT, WITH ITS INTEREST. Game hands the vault its interest at the
+        // top of the month (foreign.earnVaultInterest(), before anything buys or sells), so the reprice's absorption() and its cap on
+        // the vault read vaultBefore plus that interest, not vaultBefore. The harness read vaultBefore, and where the month's interest is
+        // not nothing the capacity (which is the vault's cover over COMFORTABLE_COVER while the cover is under it) came out short: on
+        // FC2's path the vault held US$475.11k and earned US$1.98k, the lean sold US$77.21k and the harness's arithmetic gave US$76.89k.
+        // The figure is the one the model sold on: the vault after its interest, which the line below (the vault fell by exactly the
+        // sale) already adds back.
+        double vaultAtReprice = vaultBefore + fx.getVaultInterestUsd();
         double capacity = ForeignAccounts.MAX_ABSORPTION * Math.max(0, Math.min(1,
-                vaultBefore * rateBefore / fx.monthlyImports() / ForeignAccounts.COMFORTABLE_COVER));
+                vaultAtReprice * rateBefore / fx.monthlyImports() / ForeignAccounts.COMFORTABLE_COVER));
         close("fixture: the treasury neither bought nor sold", fx.getBoughtThisMonth() + fx.getSoldThisMonth(), 0, 0);
         // (b) RESTATED FOR XR1'S LEAN, A CALL JERUS SETTLED (XR1-C ★1, 2026-10-22: "Keep as built"). Main's
         // premise, word for word, was that the sale is the vault's capacity times the month's own deficit.
@@ -666,7 +674,7 @@ public class CurrencyCheck {
         // docs/queue/XR1-notes.md, section 4). The cap's own premise still holds word for word in section 3,
         // whose fixture binds it. So the label says what the lean does, asserted against its own arithmetic
         // (expectedSale(): the least of the need, the cap and the vault), to the cent:
-        double lean = expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultBefore);
+        double lean = expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultAtReprice);
         out.printf("   the lean sold US$%,.2fk; its own arithmetic (the least of the need, the cap and the vault) gives US$%,.2fk%n", sold, lean);
         close("the sale is what takes back the vault's capacity of the month's new fall, at most that capacity times the month's own deficit and at most the vault",
                 sold, lean, 1e-9 * Math.max(1, sold));
@@ -674,7 +682,12 @@ public class CurrencyCheck {
         close("...the vault fell by exactly it", vaultBefore + fx.getVaultInterestUsd() - fx.getReservesUsd(), sold, 1e-9 * Math.max(1, sold));
         close("...and it fetched the dollars at the month's rate", fetched, sold * rateBefore, 1e-9 * Math.max(1, fetched));
         close("the central bank booked it the month it was sold", cb.getDefendedThisMonth(), fetched, 1e-9);
-        close("...as spent defending the currency since founding", cb.vaultSpent(), fetched, 1e-9);
+        // FC2, 2026-11-23: SINCE FOUNDING IS EVERY SALE SINCE FOUNDING. The line read this month's sale alone, so it held only where the
+        // warm-up months sold nothing; on FC2's path the D$ fell under the rate in them, and they sold dollars fetching $244.95k
+        // before the caused month's $101.11k (346.07 against 101.11). Those sales are counted as they are made (fetchedRun, above,
+        // as FS10 counts them for this section's last line, the equity line every month's sale), so the line is the sum of them and
+        // this month's, to the same tolerance.
+        close("...as spent defending the currency since founding", cb.vaultSpent(), fetchedRun + fetched, 1e-9);
         close("equity fell by it: its move, less the rest of the sheet's, less the revaluation",
                 (cb.equity() - was.equity) - ((cb.equity() - cb.getVault()) - was.notVault)
                         - fx.getLastVaultRevaluation() - fx.getVaultInterestUsd() * rateBefore, -fetched, 1e-6 * Math.max(1, fetched));

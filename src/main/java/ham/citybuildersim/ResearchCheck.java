@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,13 +34,13 @@ import java.util.regex.Pattern;
  *
  * What it has to prove:
  *
- *   1. THE FILE READS. The packaged file gives 98 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+ *   1. THE FILE READS. The packaged file gives 101 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
  *      unique and in the studies' order, the near future's FE1, FE2 and FE4 and the speculative tier's FE8 and FE10 after them; the counts by prefix and by field are the studies'; the
  *      field follows the code (the second letter of an F code); every entry has a name, a world, a touches and an effect; the kinds, the kind
  *      notes and the names of a few are the tables'.
- *   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 26
- *      needs of 23 entries and the near future's 3 of 2 are there; M1 needs PM6 (research-1900 8.6), E18 needs E13 and E9, PE17 needs PE14.
- *   3. HISTORY'S DATES. Every entry's world month is PolicyDates.monthOf() of its year and month; every original non-F row is 1900 to 1995, E21 is 1996, E25 2007 (PW3), every F row
+ *   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 29
+ *      needs of 25 entries and the near future's 3 of 2 are there; M1 needs PM6 (research-1900 8.6), E18 needs E13 and E9, PE17 needs PE14, M12 needs M9, B10 needs B1 and B2.
+ *   3. HISTORY'S DATES. Every entry's world month is PolicyDates.monthOf() of its year and month; every original non-F row is 1900 to 1995 but E21, M12, L8, B10 and E25 (PW3), which are 1996 to 2024, every F row
  *      NEAR_FUTURE's year to 2060, and every row from NEAR_FUTURE on is coded F; values typed from the tables (a dated month, and
  *      the study's model's month where the table names none); every PolicyDates lever with an entry key is a LAW entry on the lever's own year,
  *      month and monthKnown; PL1 and PL11, which have no lever, are in their year's January; nothing is known at the founding.
@@ -104,10 +105,13 @@ public class ResearchCheck {
             new Spot("M3", 1955, 4, true),    // Apr 1955
             new Spot("M6", 1971, 10, true),   // Oct 1971, London
             new Spot("M7", 1977, 9, true),    // Sep 1977, Zurich
+            new Spot("M12", 2000, 7, true),   // 17 Jul 2000, FDA clears da Vinci
             new Spot("B1", 1951, 11, true),   // Nov 1951, LEO
             new Spot("B3", 1967, 6, true),    // Jun 1967, Enfield
             new Spot("B5", 1974, 6, true),    // Jun 1974, Troy OH
+            new Spot("B10", 2020, 11, true),  // Nov 2020, the bulk of the roll-out
             new Spot("L1", 1967, 3, true),    // Mar 1967 (CDIC)
+            new Spot("L8", 2013, 1, true),    // 1 Jan 2013, OSFI
             new Spot("PE1", 1900, 12, true),  // Dec 1900, Heroult
             new Spot("PE3", 1901, 1, true),   // 10 Jan 1901, Spindletop
             new Spot("PE6", 1903, 10, true),  // 2 Oct 1903, Fisk Street
@@ -140,25 +144,33 @@ public class ResearchCheck {
             new Spot("PM5", 1943, 6, false),  // 1943-44
             new Spot("PB1", 1905, 6, false)); // 1905, St. Louis
 
-    /** The entries whose World column names a month: the tables' 30, E25 (PW3) and the near future's FE1 and FE2 (FE4 is a projection, a year's window). */
-    static final int MONTH_KNOWN = 33;
+    /** The entries whose World column names a month: the tables' 33, E25 (PW3) and the near future's FE1 and FE2 (FE4 is a projection, a year's window). */
+    static final int MONTH_KNOWN = 36;
 
-    /** The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 93 rows (HISTORY_ROWS; E25 PW3's). */
+    /** The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 96 rows (HISTORY_ROWS; E25 PW3's). */
     static final String[] PREFIXES = {"E", "M", "B", "L", "PE", "PM", "PB", "PL"};
-    static final int[] PREFIX_COUNTS = {22, 10, 8, 5, 27, 6, 3, 12};
-    static final int HISTORY_ROWS = 93;
+    static final int[] PREFIX_COUNTS = {22, 11, 9, 6, 27, 6, 3, 12};
+    static final int HISTORY_ROWS = 96;
+
+    /** The studies' rows that come after the PL rows, in the file's order: L5, E19-E21, then M12, B10 and L8 (R6f), then E25 (PW3). */
+    static final List<String> STUDY_TAIL = List.of("L5", "E19", "E20", "E21", "M12", "B10", "L8", "E25");
+
+    /** The studies' rows dated after 1995, and the years they may be dated in: E21 (1996), M12 (2000), E25 (2007, PW3), L8 (2013) and B10 (2020); every other non-F row is 1900 to 1995. */
+    static final Set<String> LATE_HISTORY = Set.of("E21", "M12", "L8", "B10", "E25");
+    static final int LATE_FROM = 1996;
+    static final int LATE_TO = 2024;
 
     /** The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE8 and FE10 are the speculative tier's, R6d). */
     static final String[] NEAR_PREFIXES = {"FE", "FM", "FB", "FL"};
     static final int[] NEAR_COUNTS = {5, 0, 0, 0};
 
-    /** The near future's rows, in the file's order, after the studies' 93. */
+    /** The near future's rows, in the file's order, after the studies' 96. */
     static final List<String> NEAR_CODES = List.of("FE1", "FE2", "FE4", "FE8", "FE10");
 
     /** Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. */
     static final Object[][] WORK = {
-            {"E1", 444}, {"E5", 545}, {"E12", 1013}, {"E18", 2998}, {"E21", 2151}, {"E25", 7594}, {"M3", 594}, {"M10", 1786}, {"B1", 421}, {"B4", 656}, {"B8", 4086},
-            {"L4", 2567}, {"PE1", 30}, {"PE14", 73}, {"PE27", 380}, {"PM2", 191}, {"PM6", 436}, {"PB1", 20}, {"PL1", 33}, {"PL12", 171}, {"L5", 457}};
+            {"E1", 444}, {"E5", 545}, {"E12", 1013}, {"E18", 2998}, {"E21", 2151}, {"E25", 7594}, {"M3", 594}, {"M10", 1786}, {"M12", 2234}, {"B1", 421}, {"B4", 656}, {"B8", 4086}, {"B10", 14861},
+            {"L4", 2567}, {"L8", 5176}, {"PE1", 30}, {"PE14", 73}, {"PE27", 380}, {"PM2", 191}, {"PM6", 436}, {"PB1", 20}, {"PL1", 33}, {"PL12", 171}, {"L5", 457}};
 
     /** The game month of a real calendar month, worked out here and not by PolicyDates. */
     static int monthOf(int year, int monthOfYear) {
@@ -229,18 +241,18 @@ public class ResearchCheck {
         String real = text("/" + ResearchCatalog.FILE_NAME);
 
         /* ==================== 1. the file reads ==================== */
-        System.out.println("--- the packaged file gives 98 entries and reports nothing ---");
+        System.out.println("--- the packaged file gives 101 entries and reports nothing ---");
         Read fresh = read(real);
         int inFile = JsonParser.parseString(real).getAsJsonObject().getAsJsonArray("entries").size();
         int rows = HISTORY_ROWS + NEAR_CODES.size();
         check("the file has " + rows + " entries (the studies' " + HISTORY_ROWS + " and the near future's and the speculative tier's " + NEAR_CODES.size() + ") and the catalogue read " + cat.entries().size() + " of them",
-                inFile == 98 && rows == 98 && cat.entries().size() == 98);
-        check("a fresh reading of the file's text reads all 98 and writes nothing to the log", fresh.catalogue().entries().size() == 98 && fresh.log().isEmpty());
+                inFile == 101 && rows == 101 && cat.entries().size() == 101);
+        check("a fresh reading of the file's text reads all 101 and writes nothing to the log", fresh.catalogue().entries().size() == 101 && fresh.log().isEmpty());
         check("nothing was skipped: the fresh reading has the same codes, in the same order, as the file",
                 codes(fresh.catalogue()).equals(codes(cat)));
         Set<String> unique = new HashSet<>(codes(cat));
-        check("the 98 codes are unique", unique.size() == 98);
-        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E21, E25 (PW3), then the near future's FE1, FE2, FE4 and the speculative tier's FE8, FE10",
+        check("the 101 codes are unique", unique.size() == 101);
+        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E21, M12, B10, L8, E25 (PW3), then the near future's FE1, FE2, FE4 and the speculative tier's FE8, FE10",
                 codes(cat).equals(orderOf()));
         Map<String, Integer> byPrefix = new HashMap<>();
         for (Entry e : cat.entries()) byPrefix.merge(prefixOf(e.code()), 1, Integer::sum);
@@ -253,8 +265,8 @@ public class ResearchCheck {
         }
         Map<Field, Integer> byField = new HashMap<>();
         for (Entry e : cat.entries()) byField.merge(e.field(), 1, Integer::sum);
-        check("ENGINEERING has 54 (the studies' 49 and FE1, FE2, FE4, FE8, FE10), MEDICINE 16, BUSINESS 11 and LAW 17 (" + byField + ")", byField.get(Field.ENGINEERING) == 54
-                && byField.get(Field.MEDICINE) == 16 && byField.get(Field.BUSINESS) == 11 && byField.get(Field.LAW) == 17);
+        check("ENGINEERING has 54 (the studies' 49 and FE1, FE2, FE4, FE8, FE10), MEDICINE 17, BUSINESS 12 and LAW 18 (" + byField + ")", byField.get(Field.ENGINEERING) == 54
+                && byField.get(Field.MEDICINE) == 17 && byField.get(Field.BUSINESS) == 12 && byField.get(Field.LAW) == 18);
         boolean fieldOfPrefix = true;
         for (Entry e : cat.entries()) {
             String p = prefixOf(e.code());
@@ -311,8 +323,9 @@ public class ResearchCheck {
         check("every need is a code in the catalogue", allCodes);
         check("no entry needs itself", noSelf);
         check("history dates every need no later than the entry that needs it", notLater);
-        check("the tables give 26 needs to 23 entries, the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4) and the speculative tier's 3 to 2 more (FE8 needs PE14 and PE17, FE10 needs FE4): 32 and 27 (" + links + " and " + withNeeds + ")",
-                links == 32 && withNeeds == 27 && of("FE1").needs().isEmpty() && of("FE2").needs().equals(List.of("E12"))
+        check("the tables give 29 needs to 25 entries (M12 needs M9, B10 needs B1 and B2), the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4) and the speculative tier's 3 to 2 more (FE8 needs PE14 and PE17, FE10 needs FE4): 35 and 29 (" + links + " and " + withNeeds + ")",
+                links == 35 && withNeeds == 29 && of("M12").needs().equals(List.of("M9")) && new HashSet<>(of("B10").needs()).equals(Set.of("B1", "B2")) && of("B10").needs().size() == 2
+                        && of("FE1").needs().isEmpty() && of("FE2").needs().equals(List.of("E12"))
                         && new HashSet<>(of("FE4").needs()).equals(Set.of("PE1", "E4")) && of("FE4").needs().size() == 2
                         && new HashSet<>(of("FE8").needs()).equals(Set.of("PE14", "PE17")) && of("FE8").needs().size() == 2 && of("FE10").needs().equals(List.of("FE4")));
         check("M1 needs PM6, streptomycin (research-1900 8.6)", of("M1").needs().equals(List.of("PM6")));
@@ -335,13 +348,13 @@ public class ResearchCheck {
             boolean nearCode = e.code().startsWith("F");
             formula &= e.worldMonth() == PolicyDates.monthOf(e.year(), e.monthOfYear()) && cat.worldMonth(e.code()) == e.worldMonth();
             afterFounding &= e.worldMonth() > 1;
-            boolean yearOk = nearCode ? e.year() >= CityCalendar.yearOf(ResearchCatalog.NEAR_FUTURE) && e.year() <= 2060 : e.year() >= 1900 && (e.code().equals("E21") ? e.year() == 1996 : e.code().equals("E25") ? e.year() == 2007 : e.year() <= 1995);
+            boolean yearOk = nearCode ? e.year() >= CityCalendar.yearOf(ResearchCatalog.NEAR_FUTURE) && e.year() <= 2060 : e.year() >= 1900 && (LATE_HISTORY.contains(e.code()) ? e.year() >= LATE_FROM && e.year() <= LATE_TO : e.year() <= LATE_FROM - 1);
             inRange &= yearOk && e.monthOfYear() >= 1 && e.monthOfYear() <= 12;
             nearIsF &= (e.worldMonth() >= ResearchCatalog.NEAR_FUTURE) == nearCode;
         }
         check("every entry's world month is PolicyDates.monthOf(year, month), the game's one formula", formula);
         check("no discovery is known at the founding (every world month is after month 1)", afterFounding);
-        check("every original non-F row is 1900 to 1995, E21 is 1996, E25 2007, every F row is NEAR_FUTURE's year (" + CityCalendar.yearOf(ResearchCatalog.NEAR_FUTURE) + ") to 2060, and every month is 1 to 12", inRange);
+        check("every original non-F row is 1900 to 1995 but " + new TreeSet<>(LATE_HISTORY) + ", which are " + LATE_FROM + " to " + LATE_TO + ", every F row is NEAR_FUTURE's year (" + CityCalendar.yearOf(ResearchCatalog.NEAR_FUTURE) + ") to 2060, and every month is 1 to 12", inRange);
         check("every row dated from NEAR_FUTURE on is coded F, and every F row is dated from it", nearIsF);
         for (Spot s : DATES) {
             Entry e = of(s.code());
@@ -1045,18 +1058,16 @@ public class ResearchCheck {
         return out;
     }
 
-    /** The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E21, E25 (PW3), then the near future's rows. */
+    /** The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E21, M12, B10, L8, E25 (STUDY_TAIL), then the near future's rows. */
     static List<String> orderOf() {
         List<String> out = new ArrayList<>();
         for (int p = 0; p < PREFIXES.length; p++) {
-            int n = PREFIX_COUNTS[p] - (PREFIXES[p].equals("L") ? 1 : PREFIXES[p].equals("E") ? 4 : 0);
+            int tail = 0;
+            for (String code : STUDY_TAIL) if (prefixOf(code).equals(PREFIXES[p])) tail++;
+            int n = PREFIX_COUNTS[p] - tail;
             for (int i = 1; i <= n; i++) out.add(PREFIXES[p] + i);
         }
-        out.add("L5");
-        out.add("E19");
-        out.add("E20");
-        out.add("E21");
-        out.add("E25");
+        out.addAll(STUDY_TAIL);
         out.addAll(NEAR_CODES);
         return out;
     }

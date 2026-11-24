@@ -1205,6 +1205,9 @@ public class CarCheck {
 
     /* ===== A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) ============================================================== */
 
+    /** The households in each cell the edge is searched in: a power of two, so the take's count of cars is exact, and enough to want seven whole cars at a free ceiling. */
+    static final double EDGE_HOUSEHOLDS = 1024;
+
     /**
      * Causes a draw the take refuses: one household's money on the whole-car edge, a car within it at the price the draw is
      * sized at and not at the price it is struck at, and the car market's month read once.
@@ -1230,6 +1233,18 @@ public class CarCheck {
             if (c.canInvest() && !c.isGoingShort()) buyers.add(c);
         }
         buyers.sort((a, b) -> Double.compare(b.households, a.households));
+        /*
+         * FC2, 2026-11-23: the cells the edge is searched in are given EDGE_HOUSEHOLDS each. On FC2's path the edge was found in a
+         * cell of 333.5426 households, and the take (HouseholdBalance.takeCars) places a cell's cars as want * scale / households
+         * a household and counts them back as that times households: (1 / 333.5426) * 333.5426 is 0.99999999999999990 in doubles,
+         * so the one car the draw was sized for was placed (a household's 1/333.5426 of a car, paid for to the cent) and counted
+         * a bit under one, 0.99999999999999990 placed of 1 drawn, in a take whose law is placed == drawn. The count is exact only
+         * where the cell's size is, and a town's cells are whatever its census made them (typed homes split them again). A cell
+         * wants at most CAR_ADOPTION of its room in cars, so one of under about 150 households can never want three whole cars
+         * and a draw of one, two or four cars is struck exactly (w times p over w is p), where no edge exists. So the fixture
+         * sizes the cells it searches: a power of two, big enough to want seven whole cars at a free ceiling, whatever the town's.
+         */
+        for (Household c : buyers.subList(0, Math.min(3, buyers.size()))) c.households = EDGE_HOUSEHOLDS;
         /*
          * The price the edge is put at: a hundredth under the power of two below the world's price. A price whose leading binary
          * digits are near two is one whose product with a few cars rounds by most of a bit, which is what the quote's price per

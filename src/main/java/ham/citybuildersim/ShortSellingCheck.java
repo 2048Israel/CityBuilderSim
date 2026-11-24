@@ -567,6 +567,7 @@ public class ShortSellingCheck {
         double room = Math.min(Exchange.MAX_SHORT_INTEREST * cityReg.getOutstanding(f), city.getHouseholdBalance().sharesHeld(f) + cityReg.getCityMarketShares(f));
         double want = .9 * room;
         double at = cityEx.fair(f) * (1 + Exchange.SHORT_BAND);
+        handDeskMeans(city, f, want);
         cityEx.tradeForCheck(f, Exchange.WORLD_SHORT, OrderBook.Side.SELL, at, want);
         double sold = filled(cityEx.tradeForCheck(f, Exchange.DESK, OrderBook.Side.BUY, at, want));
         cityEx.bookOf(f).withdrawAll();
@@ -575,6 +576,30 @@ public class ShortSellingCheck {
         out.printf("   %s: %,.0f shares in issue, the fund holds %,.0f, short %,.0f (%.2f%% of the shares outstanding)%n", Equity.COMPANIES[f],
                 cityReg.getShares(f), cityReg.getCityMarketShares(f), cityEx.shortShares(f), 100 * cityEx.shortShares(f) / cityReg.getOutstanding(f));
         return fundGot > 0 && sold > 0 && cityEx.shortShares(f) == sold ? new Shorted(city, f) : null;
+    }
+
+    /**
+     * FC2, 2026-11-23: THE DESK GIVEN THE MEANS TO BUY THE SHORT, between months. Whatever the bank's equity lacks of the desk's two
+     * limits at fair value is put in its till, with the short's shares added (Exchange.POSITION_LIMIT in the company, BOOK_LIMIT over
+     * its whole book). Bank.setCash is the lever, as FloatLinkCheck.handBankRoom() hands its room. The fixture sells the short "to a
+     * desk with the means to buy" and causes everything else. On FC2's path the 48-month town's bank stood on D$382 of equity, with
+     * 29,793 of Construction's shares on its desk already (D$304 at fair value, over a quarter of its equity). So the desk bid
+     * nothing and no short opened (room 14,025, want 12,623, sold 0). Nothing is put in where the equity covers both limits.
+     * Returns the cash put in.
+     */
+    static double handDeskMeans(Game city, int f, double shares) {
+        Bank bank = city.getBank();
+        Equity reg = city.getEquity();
+        Exchange ex = city.getExchange();
+        double book = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) if (c != Equity.BANK) book += Math.max(0, reg.getDealerShares(c)) * ex.fair(c);
+        double adds = shares * ex.fair(f);
+        double needs = Math.max((Math.max(0, reg.getDealerShares(f)) * ex.fair(f) + adds) / Exchange.POSITION_LIMIT,
+                (book + adds) / Exchange.BOOK_LIMIT);
+        double lacking = needs - bank.equity();
+        if (!(lacking > 0)) return 0;
+        bank.setCash(bank.getCash() + lacking);
+        return lacking;
     }
 
     /** A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. */

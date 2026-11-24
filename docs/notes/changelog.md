@@ -18,6 +18,27 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.197 — FC2, construction traded with the world — 2026-11-23, ready, see docs/queue/FC2-notes.md
+Jerus, 2026-11-22: "make it a imported/exported good... the base cost is still in domestic currency but the excess is in foreign currency". Foreign crews are always on offer at the city's base price for a point plus an excess of 15% of the world's base price for the same work, in foreign money (`BuildersShort.FOREIGN_EXCESS`), so a strong D$ makes them cheaper and a weak one dearer.
+An order's work goes abroad past the months queued at which the builders' premium reaches that excess: never under the 9-month knee, and at most 21 months whatever the currency (`SURE_MONTHS`, a year past the knee, the time an owner takes to tender work abroad and have the winner start); 20.5 at par.
+A weak currency barely raises the threshold: the cap, the premium at 21 months (16%), is barely over the 15%, so a D$ about 6% under par already sits at it and every weaker one changes nothing more than the share of the price paid in foreign money, while a strong D$ lowers the threshold as far as the knee.
+An order's work past the threshold goes to the foreign crews as it is billed, a building the threshold falls in split at it (so one giant building, a substation or a power plant, no longer holds the city's queue past the threshold and sends every later order abroad), at what its quote charged for them: the excess at the month the order itself makes them run, so the payer pays a big backlog's dearer price and the builders' cash carries no gap. Work quoted at home stays at home, and a restart, a demolition and the paving are priced at the premium at home. A cancelled order takes its own share of the crews' book off it, and a currency reform carries the book's price and the world's price of a point, so a reformed city is the same city. Their month is their book in the threshold's months, so a 240-month backlog is built at the threshold's pace. Their excess rises with their month, half way to +80% at twice the builders' own (`SUPPLY_HALF`), and they bring their own crews.
+Under the knee the builders sell the points no site took abroad, at the world's base and the city's own excess, booked once as the builders' exports in the audit, the national accounts and the current account.
+The Construction screen's gauge and rows, the build card's line and the BUILDERS flag show both offers; the Trade tab carries the builders' export on a row of its own, so its sold abroad is still the balance of payments' exports. FC1's 5% floor, its double price and its quarter-month capacity are gone.
+The figures rest on the World Bank's 7.5% domestic preference, the cost of flying crews in (up to 10% of a job), expatriate costs, demand surge after disasters (10-50%), and the time to procure works abroad (270 days in Korea, years in the slowest; FIDIC's 42 days to commence).
+ForeignCrewsCheck proves each bound at three rates, under domestic inflation, for the export and for a 240-month backlog, its bill the payer's quote to the bit, for the building the threshold splits, the cancels and a currency reform; ForeignCheck's founded town, with the crews on, is built partly abroad at its payers' price (139,931 points quoted for 37,152.30, billed to 1.96e-16, the 500 houses whole at month 13 with 1,253 people); ConstructionTrapCheck moved to the new truth. A saved split factor under 1e-12 now loads as saved. No format bump.
+
+### 0.9.196 — R6f, research: the 1996-2024 medicine, business and law rows — 2026-11-24, ready, see docs/queue/R6f-notes.md
+Three rows enter research with something behind them, each undone in a 1900 city until it is known.
+M12, robot-assisted surgery (Jul 2000): its 0.23 days off keyhole surgery on 0.78% of stays, so
+general care's stays are a little longer before it; the four later stays rows keep 1950's 10.0 days.
+B10, the AI assistant (Nov 2020): the Contact Centre's agents are 14% more posts before it, for the
+same calls. L8, Basel III (Jan 2013): the 8% minimum stands throughout; the 2.5-point conservation
+buffer comes with the row, and before it a bank's buffer is its own worst year alone. A load or a find
+re-derives the bank's rule and the medicine at once. ModernRowsCheck proves the three. A city founded
+the default way is unchanged. SAVE_FORMAT and its floor rise to 64: a format-63 Contact Centre before
+B10 loads modern. M19 (hospital at home) and B9 (the tick) are queued, with what each needs.
+
 ### 0.9.195 — LP-G1, keep ground ahead across the player's long skips — 2026-11-23, ready, see docs/queue/LP-G1-notes.md
 The test player looks at its ground across a skip: `LongPlaytest.skipWatchingGround()` runs the skip a month at a
 time and makes the unchanged `keepGroundAhead()` look whenever `BuildAdvice.HORIZON` months have passed since the

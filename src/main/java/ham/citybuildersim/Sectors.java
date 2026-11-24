@@ -361,14 +361,17 @@ public final class Sectors {
      * it, the imports with no good behind them by the sector that bought
      * them, and the households' cars and - since 0.7.62, when fuel became a
      * good - their fuel, counted among the cars and the fuel bought, with
-     * HOUSEHOLDS among the buyers.
+     * HOUSEHOLDS among the buyers - and since FC2 the exports with no good behind them by the sector that sold them
+     * (servicesSold: the builders' spare points worked abroad, sectors.Construction.sellPointsAbroad()), which until then
+     * no sector had, so the goods alone were the exports.
      */
     public record TradeByGood(Map<Good, GoodTrade> goods, Map<String, Double> services, double householdCars,
-                              double householdFuel) {
-        /** Everything sold abroad: the balance of payments' exports, by its own construction. */
+                              double householdFuel, Map<String, Double> servicesSold) {
+        /** Everything sold abroad - the goods and the services with no good: the balance of payments' exports, by its own construction. */
         public double sold() {
             double total = 0;
             for (GoodTrade g : goods.values()) total += g.sold();
+            for (double v : servicesSold.values()) total += v;
             return total;
         }
         /** Everything bought abroad - the goods, the households' cars among them, and the services with no good: its imports. */
@@ -429,13 +432,14 @@ public final class Sectors {
                                    double cityCrudeSold, Map<Good, Double> utilityFuel, double utilityAbroad) {
         Map<Good, double[]> sums = new EnumMap<>(Good.class);
         Map<Good, Map<String, Double>> sellers = new EnumMap<>(Good.class), buyers = new EnumMap<>(Good.class);
-        Map<String, Double> services = new LinkedHashMap<>();
+        Map<String, Double> services = new LinkedHashMap<>(), servicesSold = new LinkedHashMap<>();
         for (Sector s : all) {
             Sector.Statement st = s.statement();
-            double goodsBought = 0;
+            double goodsBought = 0, goodsSold = 0;
             for (Map.Entry<Good, Sector.Split> e : st.sold.entrySet()) {
                 double v = e.getValue().abroad;
                 if (v == 0) continue;
+                goodsSold += v;
                 sums.computeIfAbsent(e.getKey(), k -> new double[2])[0] += v;
                 sellers.computeIfAbsent(e.getKey(), k -> new LinkedHashMap<>()).merge(s.key(), v, Double::sum);
             }
@@ -449,6 +453,9 @@ public final class Sectors {
             // ...and what it imported that is no good at all: its import line less its goods.
             double rest = st.imports - goodsBought;
             if (Math.abs(rest) > 1e-9 * Math.max(1, Math.abs(st.imports))) services.put(s.key(), rest);
+            // ...and what it sold abroad that is no good (FC2): its export line less its goods.
+            double sold = st.exports - goodsSold;
+            if (Math.abs(sold) > 1e-9 * Math.max(1, Math.abs(st.exports))) servicesSold.put(s.key(), sold);
         }
         if (householdFuel > 0) {
             sums.computeIfAbsent(Good.PETROL, k -> new double[2])[1] += householdFuel;
@@ -481,7 +488,7 @@ public final class Sectors {
                     Collections.unmodifiableMap(buyers.getOrDefault(g, new LinkedHashMap<>()))));
         }
         return new TradeByGood(Collections.unmodifiableMap(goods), Collections.unmodifiableMap(services),
-                Math.max(0, householdCars), Math.max(0, householdFuel));
+                Math.max(0, householdCars), Math.max(0, householdFuel), Collections.unmodifiableMap(servicesSold));
     }
 
     public List<SectorState> toState() {

@@ -2064,6 +2064,13 @@ public abstract class Sector {
         public final Map<String, Double> otherInputs = new LinkedHashMap<>();
 
         /**
+         * ...and the parts of the EXPORTS that are not a good (FC2): the builders' spare points worked abroad, by name, as
+         * they are sold (bookExportedService()). In exports, so in revenue, and in no good's split - so the opened revenue
+         * line names them, or it would not add up to its own figure.
+         */
+        public final Map<String, Double> servicesSold = new LinkedHashMap<>();
+
+        /**
          * ...AND STOCK IT PAID FOR EARLIER (0.7.8): an input drawn this month
          * out of stock the sector bought in an earlier month and paid cash for
          * then - the builders' material from scrapped plant, booked at what
@@ -2131,6 +2138,7 @@ public abstract class Sector {
             sold.clear();
             bought.clear();
             otherInputs.clear();
+            servicesSold.clear();
         }
 
         /*
@@ -2151,6 +2159,7 @@ public abstract class Sector {
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
             otherInputs.replaceAll((k, v) -> v * s);
+            servicesSold.replaceAll((k, v) -> v * s);
         }
     }
 
@@ -2588,6 +2597,19 @@ public abstract class Sector {
         pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
     }
 
+    /**
+     * ...and one SOLD to the world with no good behind it (FC2): the builders' spare points worked abroad
+     * (sectors.Construction.sellPointsAbroad()). An export (Ledger.exports): revenue, the money audit's "+ <sector>
+     * Exports" and the national accounts' exports, as any sale abroad, with no good's line beside it: named instead
+     * (`what`, Ledger.servicesSold), so the opened revenue line adds up. No cash moves here: bank() settles the month at
+     * net income, as for every sale.
+     */
+    protected final void bookExportedService(String what, double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.exports += amount;
+        pending.servicesSold.merge(what == null ? "Services" : what, amount, Double::sum);
+    }
+
     /* ===================================================================
        THE STATEMENT
        =================================================================== */
@@ -2625,6 +2647,8 @@ public abstract class Sector {
          * at strike() like everything else here. See Ledger.otherInputs.
          */
         public Map<String, Double> otherInputs = new LinkedHashMap<>();
+        /** ...and the parts of the exports that are not a good, by name (FC2; Ledger.servicesSold): in exports and revenue, beside the goods sold. */
+        public Map<String, Double> servicesSold = new LinkedHashMap<>();
         /** The part of inputs drawn from stock paid for in an earlier month - see Ledger.paidEarlier. In inputs, and added back to the cash at bank(). */
         public double paidEarlier;
         /** What its borrowing cost it up front, the month's share of each over its debt's life (0.7.102, A16): a cost before the profit tax, paid when it borrowed, so added back to the cash at bank(). See Sector, WHAT ITS BORROWING COST IT UP FRONT. */
@@ -2668,6 +2692,7 @@ public abstract class Sector {
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
             otherParts.replaceAll((k, v) -> v * s);
             otherInputs.replaceAll((k, v) -> v * s);
+            servicesSold.replaceAll((k, v) -> v * s);
         }
     }
 
@@ -2704,6 +2729,7 @@ public abstract class Sector {
         s.sold = copyOf(pending.sold);
         s.bought = copyOf(pending.bought);
         s.otherInputs = new LinkedHashMap<>(pending.otherInputs);
+        s.servicesSold = new LinkedHashMap<>(pending.servicesSold);
         s.paidEarlier = pending.paidEarlier;
         s.inputs = pending.purchases() + pending.paidEarlier;
         // ...and what it paid the city (FR3), added only when there is some: a zero added is not always nothing.
@@ -2845,6 +2871,9 @@ public abstract class Sector {
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherParts);
         s.otherInputs = saved.otherInputs == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherInputs);
+        // ...a statement saved before FC2 named none (null): it sold none.
+        s.servicesSold = saved.servicesSold == null
+                ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.servicesSold);
         s.paidEarlier = saved.paidEarlier;
         s.borrowingCosts = saved.borrowingCosts;
         s.capitalBySupplier = saved.capitalBySupplier == null
@@ -3961,6 +3990,9 @@ public abstract class Sector {
      * so every month - so a sector that splits this figure splits all of it.
      */
     public Map<String, Double> otherRevenueParts() { return statement.otherParts; }
+
+    /** ...and the exports that are not a good, by name (FC2; Statement.servicesSold): the builders' work sold abroad. In revenue beside the goods sold and otherRevenue. */
+    public Map<String, Double> servicesSoldParts() { return statement.servicesSold; }
 
     /**
      * ...and the same for the cost line: what is in Inputs that is not a good.

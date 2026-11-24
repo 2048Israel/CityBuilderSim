@@ -578,15 +578,20 @@ public final class CityNeeds {
          * every crew and the sites get none - before it reads anything else, and severe, since nothing the player
          * orders advances; a premium at half its ceiling is listed, not severe; else the row as it was.
          */
+        // ...and since FC2 the foreign crews always on offer: the queue past the threshold going abroad is listed, and severe
+        // only where the sites get no points at all, every post offered - the trap itself, with everything abroad.
         BuildingManager builders = game.getBuildingManager();
-        boolean foreign = builders.foreignCrewsTakeOrders();
+        BuildingManager.ForeignTerms terms = builders.foreignTerms();
+        boolean abroad = terms != null && terms.monthsQueued() > terms.thresholdMonths();
+        boolean none = terms != null && !(terms.sites() > 0);
         double premium = builders.scarcityPremium();
-        boolean scarce = !foreign && premium >= BuildersShort.CEILING / 2;
+        boolean scarce = !abroad && premium >= BuildersShort.CEILING / 2;
         flag(out, "BUILDERS",
-                foreign ? String.format("all on repairs: foreign crews at ×%.1f", BuildersShort.FOREIGN_PRICE)
+                none ? String.format("all on repairs: foreign crews at +%d%%", Math.round(terms.share() * 100))
+                        : abroad ? String.format("overflow abroad: +%d%% a point", Math.round(terms.share() * 100))
                         : scarce ? String.format("short: +%d%% on every order", Math.round(premium * 100))
                         : game.isConstructionShedding() ? "being laid off" : "in work",
-                foreign || scarce || game.isConstructionShedding(), foreign, Kind.BUILDERS, Go.BUILDERS, 0);
+                abroad || scarce || game.isConstructionShedding(), none, Kind.BUILDERS, Go.BUILDERS, 0);
 
         /* -------------------------------- the money -------------------------------- */
         double cash = game.getCash();

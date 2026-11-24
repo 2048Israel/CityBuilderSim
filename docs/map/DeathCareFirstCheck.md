@@ -1,4 +1,4 @@
-# DeathCareFirstCheck.java - 536 lines · 18 methods · 5 constants · harnesses
+# DeathCareFirstCheck.java - 556 lines · 19 methods · 6 constants · harnesses
 
 `ham/citybuildersim/DeathCareFirstCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -53,21 +53,21 @@
 > whole month (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST); that is
 > BuildersFirstCheck's 7, and no depot goes first here.
 
-**Uses:** [BuildingManager](BuildingManager.md) (21), [Game](Game.md) (19), [ConstructionControl](ConstructionControl.md) (10), [Healthcare](Healthcare.md) (6), [Health](Health.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Founding](Founding.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [Sectors](Sectors.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1), [EssentialWorksCheck](EssentialWorksCheck.md) (1)
+**Uses:** [BuildingManager](BuildingManager.md) (21), [Game](Game.md) (20), [ConstructionControl](ConstructionControl.md) (10), [Healthcare](Healthcare.md) (6), [Health](Health.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Founding](Founding.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [GameFiles](GameFiles.md) (2), [Sectors](Sectors.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1), [EssentialWorksCheck](EssentialWorksCheck.md) (1)
 
-**Used by (3):** [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [GapOrderCheck](GapOrderCheck.md)
+**Used by (5):** [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [GapOrderCheck](GapOrderCheck.md), [SectorStatementCheck](SectorStatementCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 148 | 1. THE RULE'S ARITHMETIC |
-| 196 | 2. THE TRAP, CAUSED |
-| 325 | 3. BEFORE AND WITH |
-| 386 | 4. THE LOOP BREAKS |
-| 454 | 5. THE PLAYER'S ORDER |
-| 494 | 6. ONCE NOBODY LIES UNBURIED |
-| 526 | 7. CONSERVED |
+| 151 | 1. THE RULE'S ARITHMETIC |
+| 199 | 2. THE TRAP, CAUSED |
+| 345 | 3. BEFORE AND WITH |
+| 406 | 4. THE LOOP BREAKS |
+| 474 | 5. THE PLAYER'S ORDER |
+| 514 | 6. ONCE NOBODY LIES UNBURIED |
+| 546 | 7. CONSERVED |
 
 ## Constants
 
@@ -77,7 +77,8 @@
 | 101 | `DeathCareFirstCheck.CEMETERY` | `"Memorial Cemetery"` | The death care the fixture puts on site: the smaller cemetery, which serves the dead by its care type. |
 | 104 | `DeathCareFirstCheck.ROAD` | `"Paved Road"` | The road whose repairs fill the builders' month: it has its own repairs share (0.7.103), and carries traffic, nothing else. |
 | 112 | `DeathCareFirstCheck.TRAP_MONTHS` | `12` | The months the cemetery's points take at the trap's city share, in the fixture: the trace's measure A opened Jerus's in about twelve (why-the-builders-stall.md), so the repairs leave the builders' sick month a year's ... |
-| 115 | `DeathCareFirstCheck.CAP_MONTHS_MORE` | `36` | The most months the trap's city plays past its three years for the backlog to reach its cap (R0b). |
+| 115 | `DeathCareFirstCheck.TRAP_REPAIRS` | `.8` | The share of the builders' sick month the trap's repairs take, at the least (section 2's fixture): most of it, as in the trace's city. |
+| 118 | `DeathCareFirstCheck.CAP_MONTHS_MORE` | `36` | The most months the trap's city plays past its three years for the backlog to reach its cap (R0b). |
 
 ## Fields (state)
 
@@ -86,65 +87,66 @@
 | 64 | `static int fails` |  |
 | 65 | `static PrintStream out` |  |
 | 66 | `static PrintStream quiet` |  |
-| 118 | `static double worstResidual` | The worst month of the audit any month here saw, and the worst drift after it. |
-| 119 | `static int monthsAudited` |  |
+| 121 | `static double worstResidual` | The worst month of the audit any month here saw, and the worst drift after it. |
+| 122 | `static int monthsAudited` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 475 | **type** `public class DeathCareFirstCheck` | Death care first while the dead wait (0.7.129, batch T1-B): the rule that serves the city's own cemeteries and crematoria first out of its share of the crews while anybody lies unburied, held on a city that is caught ... |
+| 62 | 495 | **type** `public class DeathCareFirstCheck` | Death care first while the dead wait (0.7.129, batch T1-B): the rule that serves the city's own cemeteries and crematoria first out of its share of the crews while anybody lies unburied, held on a city that is caught ... |
 | 68 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 79 | 5 | `static void bits(String label, double actual, double expected)` |  |
 | 85 | 5 | `static void quietly(Runnable r)` |  |
 | 91 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 122 | 7 | `static void month(Game g)` | One month, audited. |
-| 130 | 17 | `public static void main(String[] args) throws Exception` |  |
+| 125 | 7 | `static void month(Game g)` | One month, audited. |
+| 133 | 17 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE RULE'S ARITHMETIC (lines 148-195)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 151 | 3 | `static double crew(double points, int buildings)` | A site's crew by the rule (BuildingManager.weightOf()): its buildings times one's points to CREW_SCALE_EXPONENT. |
-| 155 | 40 | `static void arithmetic()` |  |
-
-### 2. THE TRAP, CAUSED (lines 196-324)
+### 1. THE RULE'S ARITHMETIC (lines 151-198)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 210 | 32 | `static Game city(Path root, String name)` | A city caught in the trap: works, homes, a clinic for everybody, one depot, every sector held so no planner builds or scraps anything but by this fixture's hand - the founding churchyard full and no crematorium, so th... |
-| 250 | 10 | `static void toTheCap(Game without, Game with)` | ...and on until the backlog is at its cap (R0b), both twins month for month: on 1900's causes of death the month's dead rise through the three years (2.7 a month at the end, a cap of 64, against a backlog of 56), so t... |
-| 262 | 16 | `static void sites(Game g)` | ...and the roads and the sites: the half of the fixture that follows the trap. |
-| 279 | 45 | `static Game[] trap(Path root)` |  |
+| 154 | 3 | `static double crew(double points, int buildings)` | A site's crew by the rule (BuildingManager.weightOf()): its buildings times one's points to CREW_SCALE_EXPONENT. |
+| 158 | 40 | `static void arithmetic()` |  |
 
-### 3. BEFORE AND WITH (lines 325-385)
+### 2. THE TRAP, CAUSED (lines 199-344)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 327 | 58 | `static void beforeAndWith(Game without, Game with)` |  |
+| 213 | 32 | `static Game city(Path root, String name)` | A city caught in the trap: works, homes, a clinic for everybody, one depot, every sector held so no planner builds or scraps anything but by this fixture's hand - the founding churchyard full and no crematorium, so th... |
+| 253 | 10 | `static void toTheCap(Game without, Game with)` | ...and on until the backlog is at its cap (R0b), both twins month for month: on 1900's causes of death the month's dead rise through the three years (2.7 a month at the end, a cap of 64, against a backlog of 56), so t... |
+| 265 | 1 | `static void sites(Game g)` | ...and the roads and the sites: the half of the fixture that follows the trap. |
+| 274 | 18 | `static void sites(Game g, double repairsAtLeast)` | ...with the repairs over `repairsAtLeast` of the builders' sick month (0: none asked), the roads leaving it no more than the rest less a road's repairs, so the roads' whole number cannot bring them under it. |
+| 293 | 51 | `static Game[] trap(Path root)` |  |
 
-### 4. THE LOOP BREAKS (lines 386-453)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 388 | 65 | `static void loopBreaks(Game without, Game with)` |  |
-
-### 5. THE PLAYER'S ORDER (lines 454-493)
+### 3. BEFORE AND WITH (lines 345-405)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 456 | 37 | `static void playersOrder(Path root)` |  |
+| 347 | 58 | `static void beforeAndWith(Game without, Game with)` |  |
 
-### 6. ONCE NOBODY LIES UNBURIED (lines 494-525)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 496 | 29 | `static void onceBuried(Game g)` |  |
-
-### 7. CONSERVED (lines 526-536)
+### 4. THE LOOP BREAKS (lines 406-473)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 528 | 8 | `static void conserved()` |  |
+| 408 | 65 | `static void loopBreaks(Game without, Game with)` |  |
+
+### 5. THE PLAYER'S ORDER (lines 474-513)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 476 | 37 | `static void playersOrder(Path root)` |  |
+
+### 6. ONCE NOBODY LIES UNBURIED (lines 514-545)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 516 | 29 | `static void onceBuried(Game g)` |  |
+
+### 7. CONSERVED (lines 546-556)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 548 | 8 | `static void conserved()` |  |
 
