@@ -4267,3 +4267,35 @@ The original scalar effect print now preserves round-trip precision.
 There is no new public API, dial, model saved field or format change.
 Source patches were statically checked and reviewed before adoption;
 native old/new finding proof and named harnesses still follow the push.
+
+For the remaining CPI correction, the parent verifies the primary BLS
+[calculation methodology](https://www.bls.gov/opub/hom/cpi/calculation.htm):
+upper-level weights represent reference-period consumer expenditures;
+the current sample spans 12 months and expenditure references update
+annually. That supports retaining this model's fixed quantities within
+its existing link period while reconciling actual consumption coverage
+and weights. It supplies no numerical US shelter target for this city.
+The source-only plan must identify actual saved vehicle/fuel flows and
+prices, state/load dimensions and caused cash/reload/price-only checks;
+no CPI edit or probe is yet adopted. The new order-proof native run is
+queued at the shared box lock with no compile/JVM started.
+
+The next native attempt stops at compile, before any finding or named
+harness runs: the new Invest quantity block redeclares main's existing
+forecast local. Review missed that enclosing name. The test-only mend
+renames four references to quantityForecast; every assertion, input and
+model line stays unchanged. Reports 0f10/bca7 retain the exact compiler
+error and empty old-production diff. No current 761 native pass is
+claimed. The reviewed rename is pushed before repeating the old/current
+proof and normal named calls.
+
+The bounded CPI plan identifies actual Motoring new-car flow fields not
+yet in DataSave, existing saved fuel and pump/queue flow fields, explicit
+five-component HistorySave lists, and the need to avoid pump/queue mix
+reading as inflation. It remains a source plan only. Cadence clarification
+767c/e97f keeps REBASE_MONTHS=120: annual January linking was not
+approved by this batch and cannot be silently imported from BLS while
+fixed-basket policy premises remain. Also, zero new-car/fuel/luxury/meal
+base spending was measured before the NOI mend, not established for the
+current model; no claim a future CPI correction has zero original effect.
+Every monetary law must still pass on its final model.

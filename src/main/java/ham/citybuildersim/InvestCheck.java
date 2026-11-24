@@ -810,17 +810,17 @@ public class InvestCheck {
         var quantityMarket = housed.getSectors().realEstate().housingMarket();
         assertTrue("fixture: the land-order quantity uses actual funded housing demand", quantityMarket.active());
         if (d.build && d.template != null) {
-            var forecast = quantityMarket.forecast(housed);
+            var quantityForecast = quantityMarket.forecast(housed);
             double hurdle = housed.getEconomyManager().housingBuildHurdle(d.template);
             assertTrue("the returned order clears its actual forecast-income hurdle",
-                    forecast.income(d.template, d.quantity) >= hurdle * d.quantity);
-            boolean nextRequested = d.quantity < forecast.quantityNeeded(d.template)
+                    quantityForecast.income(d.template, d.quantity) >= hurdle * d.quantity);
+            boolean nextRequested = d.quantity < quantityForecast.quantityNeeded(d.template)
                     && d.quantity < tight.plotsAvailableFor(d.template);
             assertTrue("fixture: the next quantity is inside both funded demand and the land cap", nextRequested);
             if (nextRequested) {
                 long next = d.quantity + 1;
                 assertTrue("the next requested quantity is blocked by its actual forecast-income hurdle",
-                        forecast.income(d.template, next) < hurdle * next);
+                        quantityForecast.income(d.template, next) < hurdle * next);
             }
         }
 
