@@ -4064,3 +4064,66 @@ all guard classes under the helper's target/fraction-pay/native/3d2;
 all its test processes have ended. A fresh tracing session is required
 for the remaining original-town effect and supply response; no calibration
 or law change is inferred from their closeness to the floor.
+
+Current passive monetary/default diagnosis (d2eb/f44f, exact c2d85d597,
+production identical to 3d2cb76de): all native capture guards pass and
+all original component/weight doubles match the clean completed monetary
+run exactly. Original annual total inflation at 3/10/40 is
+.14591404778818662/.14188799551962683/.13843167909369813; total effect
+is +0.74823686944884840 percentage points. Shelter and the common
+physical non-shelter basket each transmit about .74 points. Reducing
+shelter weight toward non-shelter therefore does not explain the missing
+quarter point in this fixture. Original base meals/luxury/cars/fuel remain
+zero and luxury cap is inactive; no window/rebase escape is justified.
+
+The supply trace finds different project selection and available cash,
+rather than a reversed fixed-input lender test. At low-rate month 45 the
+mid-rise gross income/cost score .005484259853846704 beats the house's
+.005429462448169069, while their actual operating-net income/cost is
+.0018324526914791487 versus .0023970347520867997. The selected mid-rise
+fails lender coverage (.624053 versus 1.20), and no alternative is tried
+that month. The 10-percent path chooses the house and starts 23 doors at
+45 plus two in each following month; the 3-percent path starts 22 at 46,
+then two and two. This yields the observed 26/29 early-door reversal.
+Later C01 ask differences pass their check, but C01 has no standing homes
+or actual trades at months 49-60; this is an ask result, not paid-rent
+transmission. That limitation remains explicit.
+
+★ Rank housing alternatives on forecast net operating income per actual
+project cost, subtracting the existing housingCarry before interest.
+Keep forecast receipts, physical demand, the build hurdle, all mortgage,
+equity and land gates, and paid settlement. This corrects the demonstrated
+cost-blind gross ranking without a fitted dial. The Federal Reserve Board's
+[Real Estate Loans 3100.1, page 6](https://www.federalreserve.gov/boarddocs/SupManual/us_branches/usbranch.pdf#page=146)
+uses net operating income in income-property valuation and evaluates loan
+service from achievable rents, occupancy and expenses. This project's
+ranking rule is an engineering inference from that source, not an
+imported empirical coefficient. Board text is public domain with credit,
+as its [disclaimer](https://www.federalreserve.gov/disclaimer.htm) states.
+No claim either remaining monetary assertion is fixed before replay.
+
+Current native DEFAULT random48213/variation0, months 240-600 inclusive:
+rent/consumption 40.618235441 percent, mean base CPI shelter weight
+48.645020098 (41.204563351-51.977948821). Paying-renter gross aggregate
+burden is 35.961605100 percent, while all-household gross 19.757952430
+masks it. Paying-cell weighted gross-income rent-only medians at
+240/360/480/600 are 42.521505514/47.096696974/35.265893665/44.748801020.
+This proxy allocates actual wages/pensions/benefits and observed property
+receipts, excludes principal/assetsales/gains, and differs from ACS's
+cash-renter gross-rent-plus-utilities microdata median 30.9. Actual new
+cars are 5.914469519 percent of consumption and omitted from CPI; petrol
+.621911723 is counted at the grocery rather than pump price. Luxury's
+15-percent cap raises rent weight at link 273 from raw 40.937398727 to
+51.977948821 and link 393 from 39.234424967 to 50.826277426. Thus mature
+index weight excess is measured, beyond actual rent burden. The official
+BLS/StatsCan expenditure and shelter benchmark distinctions cited above
+still apply; these coverage issues have zero direct base-quantity effect
+in the original monetary fixture and are not a proven floor remedy.
+
+The current captures' compile/pair/default exits are 0/0/0, all own jobs
+ended, native data/JDK hashes and passive diffs retained under the trace
+helper's target/policy-trace and
+~/cbs/runs/res3-policy-trace-c2d85d597-20261124. Property-credit audit
+reconciliation is within 6.22e-15 in the original and 7.28e-12 in default;
+recipient counts match exactly and prior default lease bills within
+2.28e-13. No production or law changed during diagnosis.
