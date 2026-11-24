@@ -4024,3 +4024,43 @@ conservation at quarter/half/just-below-half/zero counts before claiming
 these corrections verified. This is financial counterpart completion,
 not a numeric rent or CPI calibration. Report f321 distinguishes these
 source findings from the exactly proved founding deposit residual.
+
+Payment finding proof and integrated replay: harness-only overlay on
+pushed 0894946a7 leaves production unchanged and fails 28 of 227 actual
+assertions (eight deposit, twenty paper/bond ownership). The corrected
+examples in report d489 supersede d7cb's transcription: quarter deposit
+debit 1 credits .8803911882965281; principal 5 pays/redeems 4; buyback
+cash 11 pays 8 and face 5.5 redeems 4; the fractional owner's recorded
+bond coupon .5 is redirected away from it. Counts and cause are unchanged.
+The half and exact-zero cases pass there. Native compile/driver exits are
+0/0, finding exit 1; source/data/JDK manifests remain with the old proof.
+
+The exact pushed corrected candidate
+3d2cb76debbb10ebd5e230ee09308bc351f5dcf2 compiles and passes all 227
+caused assertions without source/test repair. Separate normal named
+HouseholdCheck and HousingMarketCheck both return batch exit 0 with
+exactly one selected harness each. Every prior 55 household-conservation
+failure now passes, together with all catalogue, stock, save and lease
+guards and the 31 corrected gross-quote expectations. Shared-lock native
+runs are under ~/cbs/runs/res3-fraction-pay-20261124-candidate-3d2cb76de;
+reports 3bfd/70f4 retain the source-labelled evidence. Unchanged full
+MonetaryCheck now runs on that exact candidate; its result is pending.
+
+The unchanged full MonetaryCheck on exact 3d2cb76de finishes with 489
+assertions passing and two hard failures (native exit 1, batch exit 4).
+The original total effect improves from -3.891767 points to +0.748
+printed points, still below the unchanged +1 floor. Original 3/10-rate
+accepted starts are 26/29 in months 25-48, so the original supply-order
+assertion also fails. Later comparable C01 rents
+.02362122335/.02362469045 satisfy their later-rent assertion. These are
+open model findings, not known reds or premise changes.
+
+Across declared paths 16-31, mean total effect is +1.932654 points and
+non-shelter effect +1.806459; pooled whole-window delay .330867 is below
+.750, and maximum calendar-year reversal 1.196466 is below 2. Currency,
+physical/calendar/crew, fixed-basket reconstruction, saving-plan and
+curve guards pass. Report 4df6 keeps current native source, exits and
+all guard classes under the helper's target/fraction-pay/native/3d2;
+all its test processes have ended. A fresh tracing session is required
+for the remaining original-town effect and supply response; no calibration
+or law change is inferred from their closeness to the floor.
