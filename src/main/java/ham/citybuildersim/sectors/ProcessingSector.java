@@ -485,16 +485,20 @@ public abstract class ProcessingSector extends Sector {
      * staff, then the ground. It was "one order in flight" to BA1
      * (2026-11-02): the works on site are now counted in the values it is
      * weighed at (plannedValues()) and in each feed gate, as what is coming.
+     * Since CY1 each is tested on the lesser of its month's earnings and its
+     * year's (overYear()).
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
         String sector = key();
-        List<SpreadPlanner.Candidate> all = appraise(plans, game);
+        Map<BuildingsTemplate, Double> held = new java.util.HashMap<>();
+        List<SpreadPlanner.Candidate> all = overYear(appraise(plans, game), plans, game, held);
         SpreadPlanner.Candidate best = SpreadPlanner.best(all);
         if (best != null) {
             return new BusinessInvestment.Decision(sector, best.template(), 1, String.format(
-                    "%s earns %s a month on %s at the city's prices, %.2f%% a month", a(best.template().getName()),
-                    Currency.writing().write(String.format("%,.1fk", best.earns())), Currency.writing().write(String.format("%,.0fk", best.cost())), 100 * best.score()), true);
+                    "%s earns %s a month on %s at the city's prices, %.2f%% a month%s", a(best.template().getName()),
+                    Currency.writing().write(String.format("%,.1fk", best.earns())), Currency.writing().write(String.format("%,.0fk", best.cost())), 100 * best.score(),
+                    yearWords(best.template(), held)), true);
         }
         SpreadPlanner.Candidate land = SpreadPlanner.bestBlockedByLand(all);
         if (land != null) return BusinessInvestment.Decision.noLand(sector, plans.landReason(land.template()));
@@ -508,8 +512,42 @@ public abstract class ProcessingSector extends Sector {
             return BusinessInvestment.Decision.unstaffed(sector, staffing(fed.template()), staff);
         }
         return BusinessInvestment.Decision.no(sector, money != null
-                ? a(fed.template().getName()) + " " + money + (fed.earns() > 0 ? "" : ": it does not pay")
+                ? a(fed.template().getName()) + " " + money + yearWords(fed.template(), held) + (fed.earns() > 0 ? "" : ": it does not pay")
                 : fed.why());
+    }
+
+    /**
+     * Each candidate tested on the lesser of its month's earnings and its year's (SpreadPlanner,
+     * OVER ITS YEAR; CY1): the month's noted for its kind first, then a candidate whose year
+     * reads lower is asked its gates again on the year's, its month's put in `held`. A frame
+     * with no game notes nothing and weighs the month alone, as before CY1.
+     */
+    private List<SpreadPlanner.Candidate> overYear(List<SpreadPlanner.Candidate> month, BusinessInvestment plans, Game game,
+                                                   Map<BuildingsTemplate, Double> held) {
+        if (game == null) return month;
+        SpreadPlanner.City city = null;
+        List<SpreadPlanner.Candidate> all = new ArrayList<>(month.size());
+        for (SpreadPlanner.Candidate c : month) {
+            String kind = kindOf(c.template());
+            planner.noteMargin(kind, game.getMonth(), c.earns());
+            double earns = SpreadPlanner.lesser(c.earns(), planner.marginOverYear(kind));
+            if (!(earns < c.earns())) {
+                all.add(c);
+                continue;
+            }
+            if (city == null) city = planner.city(this, plans, game);
+            held.put(c.template(), c.earns());
+            all.add(SpreadPlanner.judge(c.template(), earns, c.cost(), c.refusal(SpreadPlanner.Gate.FEED), city, c.with()));
+        }
+        return all;
+    }
+
+    /** The plan's words for a candidate its year held lower: its mean over the months noted, against the month's; nothing for one the month decided. */
+    private String yearWords(BuildingsTemplate t, Map<BuildingsTemplate, Double> held) {
+        Double month = held.get(t);
+        if (month == null) return "";
+        return String.format(", its mean over its last %d months (%s this month)", planner.marginMonths(kindOf(t)),
+                Currency.writing().write(String.format("%,.1fk", month)));
     }
 
     /** What one more of its works would earn its owner a month: the planner's estimate (THE PLAN) - what Game.consider() tests the order on, and the build card shows. */
@@ -541,7 +579,8 @@ public abstract class ProcessingSector extends Sector {
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;
             boolean standing = buildings.getQuantity(t.getId()) > 0;
-            planner.noteMonth(kindOf(t), standing, standing && lastOneEarns(t, v, city) < 0);
+            // ...in the month or over its year (CY1; SpreadPlanner.noteMonth() with its earnings).
+            planner.noteMonth(kindOf(t), standing, game.getMonth(), standing ? lastOneEarns(t, v, city) : Double.NaN);
         }
     }
 
@@ -580,17 +619,61 @@ public abstract class ProcessingSector extends Sector {
         return weighs(t) ? 1 : 0;
     }
 
+    /* ----- the run its works made (CY1) ----- */
+
+    /**
+     * The share of nameplate the works that make `t`'s goods would run at on last month's make,
+     * counted over those standing and on site now (CY1): of each good `t` makes, what was made
+     * (Output's produced, export-bound and captive) over what was made and idled, times last
+     * month's capacity over the capacity standing and on site, at most 1; the highest of its
+     * goods, as a building runs at its best-ordered good (Sector.buildingOrder()). NaN where none
+     * of its goods was made or idled last month, or none stands or is on site (nothing to read;
+     * a month not yet run since a load).
+     */
+    public double standingRun(BuildingsTemplate t) {
+        double best = Double.NaN;
+        if (t == null) return best;
+        for (Good g : t.goodsMade().keySet()) {
+            Output o = outputRow(g);
+            if (o == null) continue;
+            double made = o.produced + o.exportBound + o.captive, full = made + o.idled;
+            double now = getCapacity(g) + (buildings == null ? 0 : buildings.underConstructionOfNew(key(), u -> u.makes(g)));
+            if (!(full > 0) || !(o.capacity > 0) || !(now > 0)) continue;
+            double run = Math.min(1, made / full * o.capacity / now);
+            if (Double.isNaN(best) || run > best) best = run;
+        }
+        return best;
+    }
+
+    /**
+     * A feed gate on the run (CY1; a client's feedRefusal() may return it): no more of `t` while
+     * the works standing and on site that make its goods would run under FEED_GATE of nameplate
+     * on last month's make - the gate HeavyIndustry's yards have on old steel, read for a feed
+     * the market sells but does not pay for (Copper Refining's mills, on cathode past the
+     * city's own: Sector.inputCost()). Null with nothing to read.
+     */
+    protected String underRunRefusal(BuildingsTemplate t) {
+        double run = standingRun(t);
+        if (!(run < SpreadPlanner.FEED_GATE)) return null;
+        StringBuilder goods = new StringBuilder();
+        for (Good g : t.goodsMade().keySet()) goods.append(goods.length() == 0 ? "" : " and ").append(g.label().toLowerCase());
+        return String.format("its works that make %s, standing and on site, would run at %.0f%% of nameplate on last month's make; one more is weighed from %.0f%%",
+                goods, 100 * run, 100 * SpreadPlanner.FEED_GATE);
+    }
+
     /* ----- its idle months across a save ----- */
 
     @Override
     protected void saveExtras(Map<String, Double> extras) {
         planner.saveIdle(extras, planner.idleKinds());
+        planner.saveMargins(extras);
     }
 
-    /** A save without them reads none. */
+    /** A save without them reads none; one from before CY1 no year, which its planner fills again (SpreadPlanner.restoreMargins()). */
     @Override
     protected void restoreExtras(Map<String, Double> extras) {
         planner.restoreIdle(extras);
+        planner.restoreMargins(extras);
     }
 
     @Override
