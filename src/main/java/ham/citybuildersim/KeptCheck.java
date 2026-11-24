@@ -9345,6 +9345,20 @@ public class KeptCheck {
     static void fb2Repairs(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 103: the geometry and retention repairs of FB2, each caused on its own ---");
 
+        for (KeptBench.BlankLabels labels : fx(bench::blankLabelsProbe)) {
+            String name = labels.name();
+            check("fixture: " + name + " first rendered real words through its native skin", labels.rendered());
+            check(name + " retains every node through blank, repeated blank, raw text return and redraw (" + labels.made() + " made)",
+                    labels.identities() && labels.made() == 0);
+            String[] phases = {"made blank", "drawn blank again", "given words by raw setText", "drawn with words again"};
+            for (int i = 0; i < phases.length; i++) {
+                String difference = firstDifference(labels.signatures().get(i * 2), labels.signatures().get(i * 2 + 1));
+                check(name + ", " + phases[i] + ", has a page built new's exact native signature", difference == null, difference);
+            }
+            check(name + " has a page built new's exact pixels in all four states", labels.pixels());
+            check(name + " leaves its real Text graphic visible", labels.graphic());
+        }
+
         // KL1: the buyback ladder is the same picture while what moved is under the picture's resolution.
         int[] ladder = fx(bench::ladderProbe);
         String[] cities = {"nothing taken", "part of it taken"};
@@ -9472,6 +9486,18 @@ public class KeptCheck {
 
     /** Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. */
     private static void rendererCacheControls(KeptBench bench) throws Exception {
+        var retiredFixture = fx(KeptBench::retiredRendererFixture);
+        check("fixture: attaching the actual rail starts its minimap pump, and no-window layout stops it",
+                retiredFixture.started() && retiredFixture.stopped());
+        fx(() -> null);
+        System.gc();
+        System.gc();
+        check("a held fixture UI releases its completed bench", retiredFixture.bench().get() == null && retiredFixture.ui().get() != null);
+        retiredFixture.drop();
+        fx(() -> null);
+        System.gc();
+        System.gc();
+        check("the no-window minimap pump does not retain a dropped fixture UI", retiredFixture.ui().get() == null);
         boolean refusedFx = fx(() -> {
             try { KeptBench.releaseIdleEffectImages(); return false; }
             catch (IllegalStateException expected) { return true; }

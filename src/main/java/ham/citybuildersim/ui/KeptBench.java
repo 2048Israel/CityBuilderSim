@@ -227,12 +227,13 @@ public final class KeptBench {
 
     /**
      * The minimap's node hidden (never removed: it stays in the rail where the rail puts it). In a
-     * scene it starts its own pump, which draws a map of the city; the bench has no use for that,
-     * and a node out of view returns from its tick at once.
+     * scene it starts its own pump, which the bench stops: an invisible stamp still belongs to
+     * its scene, so the timer would otherwise retain a completed fixture's entire UI.
      */
     private void keepMiniMapOff() {
         Node mini = ui.miniMapNode();
         if (mini != null && mini.isVisible()) mini.setVisible(false);
+        ui.stopMiniMapPumpForBench();
     }
 
     /** The envelope drawn on its own, as a notice read elsewhere draws it (refreshInboxButton()). */
@@ -1921,6 +1922,24 @@ public final class KeptBench {
         done.await();
         if (error.get() != null) throw new Exception("idle effect-image release failed", error.get());
         return counts;
+    }
+
+    /** The actual fixture UI remains usable after its bench ends, then must release when its owner drops. */
+    public record FixtureLifecycle(java.lang.ref.WeakReference<KeptBench> bench,
+            java.lang.ref.WeakReference<?> ui, Object[] heldUi, boolean started, boolean stopped) {
+        public void drop() { heldUi[0] = null; }
+    }
+
+    public static FixtureLifecycle retiredRendererFixture() throws Exception {
+        KeptBench other = new KeptBench(null);
+        // Attaching the actual rail creates MiniMap and starts its AnimationTimer, even without a city/window.
+        other.ui.refreshTabRail();
+        boolean started = other.ui.miniMapPumpRunningForBench();
+        other.passes();
+        boolean stopped = !other.ui.miniMapPumpRunningForBench();
+        other.release();
+        return new FixtureLifecycle(new java.lang.ref.WeakReference<>(other),
+                new java.lang.ref.WeakReference<>(other.ui), new Object[]{other.ui}, started, stopped);
     }
 
     /** A real skin viewport's reconstructible bitmap, containing a non-reconstructible Canvas drawing. */
@@ -4085,6 +4104,7 @@ public final class KeptBench {
      * the public applyCss() and layout() instead, which restyle every node and so cost more.
      */
     public double[] passes() throws Exception {
+        keepMiniMapOff();
         return passes(scene, column);
     }
 
@@ -5738,6 +5758,97 @@ public final class KeptBench {
         List<String> out = new ArrayList<>();
         sign(n, "", out);
         return out;
+    }
+
+    /** FS5H: actual native signatures through rendered words, empty words, an unchanged draw and raw CountUp text return. */
+    public record BlankLabels(String name, List<List<String>> signatures, boolean rendered,
+                              boolean identities, int made, boolean pixels, boolean graphic) { }
+
+    public List<BlankLabels> blankLabelsProbe() throws Exception {
+        var schedule = SectorScreen.class.getDeclaredMethod("scheduleRow", String.class, double[].class,
+                double.class, double.class, boolean.class, boolean.class);
+        schedule.setAccessible(true);
+        List<BlankLabels> out = new ArrayList<>();
+        for (int kind = 0; kind < 3; kind++) for (boolean scroll : kind == 2 ? new boolean[]{false} : new boolean[]{false, true}) {
+            final int at = kind;
+            boolean[] blank = {false};
+            javafx.scene.text.Text graphic = kind == 2 ? new javafx.scene.text.Text("real Text graphic") : null;
+            Node[] node = new Node[1];
+            Kept.Pool pool = new Kept.Pool();
+            Runnable draw = () -> Kept.draw(pool, () -> node[0] = blankLabelNode(at, blank[0], graphic, schedule));
+            draw.run();
+            Node original = node[0];
+            Pane host = blankLabelHost(original, scroll);
+            blankLabelPasses(host);
+            Label reading = kind == 0 ? (Label) ((Pane) original).getChildren().getFirst()
+                    : kind == 1 ? (Label) ((Pane) original).getChildren().get(2) : (Label) original;
+            String words = reading.getText();
+            boolean rendered = reading.getChildrenUnmodifiable().stream().anyMatch(n ->
+                    n instanceof javafx.scene.text.Text t && n != graphic && n.isVisible() && !t.getText().isEmpty());
+            List<Node> originals = new ArrayList<>();
+            each(original, originals::add);
+            List<List<String>> signatures = new ArrayList<>();
+            boolean identities = true, pixels = true, visible = true;
+            int made = 0;
+            for (int phase = 0; phase < 4; phase++) {
+                blank[0] = phase < 2;
+                if (phase == 2) reading.setText(words); // CountUp writes this way: no Kept.label call.
+                else draw.run();
+                blankLabelPasses(host);
+                made += pool.lastMade();
+                List<Node> now = new ArrayList<>();
+                each(node[0], now::add);
+                identities &= node[0] == original && originals.equals(now);
+                visible &= graphic == null || graphic.isVisible() && graphic.getBoundsInParent().getWidth() > 0;
+                Node[] fresh = new Node[1];
+                javafx.scene.text.Text freshGraphic = kind == 2 ? new javafx.scene.text.Text("real Text graphic") : null;
+                Kept.draw(new Kept.Pool(), () -> fresh[0] = blankLabelNode(at, blank[0], freshGraphic, schedule));
+                Pane freshHost = blankLabelHost(fresh[0], scroll);
+                blankLabelPasses(freshHost);
+                signatures.add(signLines(node[0]));
+                signatures.add(signLines(fresh[0]));
+                pixels &= java.util.Arrays.equals(pixelsOf(host), pixelsOf(freshHost));
+                freshHost.getChildren().clear();
+            }
+            out.add(new BlankLabels((kind == 0 ? "Lending's 150px blank header" : kind == 1 ? "the debt schedule's "
+                    + (SectorScreen.DEBT_KIND + 5 * SectorScreen.DEBT_FIGURE + SectorScreen.SCHEDULE_RATE
+                    + SectorScreen.SCHEDULE_RUNS + 7 * Palette.GAP) + "px row" : "a label with a real Text graphic")
+                    + (scroll ? " inside a ScrollPane" : ""), signatures, rendered, identities, made, pixels, visible));
+            host.getChildren().clear();
+        }
+        return out;
+    }
+
+    private static Node blankLabelNode(int kind, boolean blank, javafx.scene.text.Text graphic, java.lang.reflect.Method schedule) {
+        if (kind == 0) {
+            javafx.scene.layout.GridPane grid = Pieces.grid(new double[]{150, 100, 100, 96, 90}, Pieces.rightAfterFirst(5));
+            Pieces.gridHead(grid, blank ? "" : "Construction", "this month", "in total", "went under", "status");
+            return grid;
+        }
+        if (kind == 2) {
+            Label label = Kept.label(blank ? "" : "a rendered reading", graphic);
+            label.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
+            return label;
+        }
+        try {
+            return (Node) schedule.invoke(null, "Its suppliers", new double[]{123, blank ? Double.NaN : 456, 789, 0, 0},
+                    Double.NaN, 0d, false, false);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+    }
+
+    private Pane blankLabelHost(Node node, boolean scroll) {
+        VBox page = new VBox(node);
+        page.setFillWidth(false);
+        page.setMaxWidth(Region.USE_PREF_SIZE);
+        if (!scroll) return probeHost(page, WIDTH, 900);
+        ScrollPane pane = new ScrollPane(page);
+        pane.setFitToWidth(true);
+        pane.setPrefSize(WIDTH, 700);
+        return probeHost(pane, WIDTH, 900);
+    }
+
+    private static void blankLabelPasses(Pane host) throws Exception {
+        for (int i = 0; i < SETTLE_PASSES; i++) passes(host.getScene(), host);
     }
 
     /** A quote of the buyback ladder: six slices of Buyback.Holder's four, their faces times `scale`, the face taken (when `taken`) too. */

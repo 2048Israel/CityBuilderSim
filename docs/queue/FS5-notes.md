@@ -2986,3 +2986,39 @@ current-main merge, helper diagnosis and necessary named checks.
   geometry helper takes actual Grid/StatementView/ScrollPane state cycles;
   20 previous maker-only transitions did not reproduce the historical
   geometry fault, so no speculative Pieces/wrapText change is made.
+- The first normalized native validation (07e223341) has one hard red,
+  objects about 1557 MiB: raw warm 1593.6 to normalized 1575.2, six live
+  node bitmap caches cleared, pool locked 42 to 36. Every other assertion
+  passes, including Bank 10176 fresh nodes/Government 1832 nodes released,
+  actual held-page negative controls, fund 155 outstanding bids drained to
+  zero, and its explicit second-hold cancellation. Evidence:
+  target/FS5b-checks/KeptCheck-normalized-07e.log. No bound was moved.
+- A fresh helper proves the missing lifecycle: PrimaryTimer.animationTimers
+  retains MiniMap and two completed research fixture UIs (m37 and m154).
+  An invisible minimap remains in its Scene, so tick returns but its pump
+  keeps the entire UI alive. The no-stage bench already hides that stamp;
+  now its normal layout hook also stops its pump and hides any preview.
+  Preserve the stamp, all pools/nodes and normal application's behavior.
+  A null-Game actual-rail control passes on .199: running true before layout,
+  false afterward, Bench collected while UI held, UI collected after drop.
+  Evidence: target/FS5b-minimap-lifecycle/KeptCheck.log and
+  target/FS5b-heap-199/ui-root-summary.txt. The m31 UI owner was not proved
+  in nine bounded passes; no claim of its owner is made. The speculative
+  weak-UI registry was removed in favor of this real lifecycle repair.
+- Geometry cause is now independent and exact: after words were rendered,
+  an empty JavaFX skin LabeledText retains an unmanaged font strut. Native
+  bounds become 150x20 despite allocated 150x13, and the actual
+  SectorScreen.scheduleRow becomes 836x24 despite allocated 836x16.
+  Wrap=false still reproduces it. Kept's Label factory now installs one
+  child observer and binds only the skin Text's visibility to text presence,
+  excluding an actual Text graphic. Raw CountUp text writes also restore
+  visible text. No signature builder, geometry comparison or bound changes.
+  The committed regression covers both real makers, with/without ScrollPane,
+  rendered→blank→repeat→raw words→redraw, exact signatures/pixels, same
+  node identities and zero allocations. Box Labels6 passes all five profiles;
+  unpatched profiles fail. Evidence: target/FS5b-labels6/KeptCheck.log.
+- Historical Healthcare attribution remains limited: the bounded Healthcare7
+  city/width probe never caused a wrapping-height transition, and Monocle
+  Stage resizing produced buffer errors. It proves no owner or cure for
+  that old 1454x684/1446x700 difference. The original hard broad comparison
+  remains present and green in current native runs; no exemption is added.
