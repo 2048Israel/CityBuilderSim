@@ -273,34 +273,56 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
 - After ★R, one at a time: **PowerPlanCheck** green with 8a (shown red first without the rule), 8b and 6a's two
   parts; **BuildAdviceCheck, EssentialWorksCheck, WorksFinanceCheck, BuildCardCheck, HydroCheck, WaterPowerCheck,
   NewUnitCheck** green; **AutoBuildCheck** with only its known red (FS12's care fee, `docs/notes/gate.txt`);
-  LP_AFTER_R
+  **LongPlaytest** (the default run, 2,400 months): green, every month audited and every reload matched (§5).
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
 LongPlaytest's default city (founded 1900, today's buildings but every power plant from its year, PW2), the
 automatic path's power orders by the decade they were placed in:
 
-| decade | after REV-PW3's mends | before them (★Q in) |
+| decade | after ★R | after REV-PW3's mends |
 |---|---|---|
 | 1900s | 1 Oil-Fired Plant | 1 Oil-Fired Plant |
-| 1910s-1950s | nothing (the founding grid and the works' own power carry the town) | nothing |
-| 1960s | 1 diesel, 1 turbine, 1 coal | 1 diesel, 1 turbine, 1 coal |
-| 1970s | 4 diesel, 2 turbines | 4 diesel, 2 turbines |
-| 1980s | 8 diesel, 8 turbines, **3 Wind Farms**, 1 coal | 7 diesel, 7 turbines, 1 coal |
-| 1990s | 4 diesel, 2 turbines, 1 coal | 7 diesel, 1 turbine |
-| 2000s | 13 diesel, 7 turbines, 1 Oil-Fired Plant | 3 diesel, 2 turbines, 1 Oil-Fired Plant |
-| 2010s | 2 diesel, 2 turbines | 15 diesel, 14 turbines, 1 coal |
-| 2020s | 4 diesel, 2 turbines | nothing |
-| 2030s | 15 diesel, 15 turbines, 2 coal, **1 Solar Farm** | 5 diesel, 4 turbines, 2 Oil-Fired Plants |
-| 2040s | 12 diesel, 6 turbines, 1 coal | 17 turbines, 5 diesel, 3 coal |
-| 2050s | 1 coal | 7 diesel, 2 coal, 1 turbine, 1 Oil-Fired Plant |
-| 2060s | 23 diesel, 12 turbines, 5 Oil-Fired Plants, **2 Wind Farms, 1 Solar Farm, 2 Biomass**, 1 coal | 19 diesel, 2 turbines, 2 Oil-Fired Plants, 1 coal |
-| 2070s | 1 coal | nothing |
+| 1910s | 2 diesel | nothing |
+| 1920s-1950s | nothing (the founding grid and the works' own power carry the town) | nothing |
+| 1960s | 7 diesel, 1 coal | 1 diesel, 1 turbine, 1 coal |
+| 1970s | nothing | 4 diesel, 2 turbines |
+| 1980s | 4 diesel, 2 turbines, **3 Wind Farms, 4 Solar Farms** | 8 diesel, 8 turbines, **3 Wind Farms**, 1 coal |
+| 1990s | 8 diesel, 1 turbine, 2 coal, **3 Wind Farms, 1 Solar Farm** | 4 diesel, 2 turbines, 1 coal |
+| 2000s | 4 diesel, 3 turbines, **8 Wind Farms, 4 Solar Farms** | 13 diesel, 7 turbines, 1 Oil-Fired Plant |
+| 2010s | 14 diesel, 7 turbines, 6 Oil-Fired Plants, 1 coal, **10 Solar Farms, 1 Biomass** | 2 diesel, 2 turbines |
+| 2020s | 4 turbines | 4 diesel, 2 turbines |
+| 2030s | nothing | 15 diesel, 15 turbines, 2 coal, **1 Solar Farm** |
+| 2040s | 9 diesel, 13 turbines, 1 Oil-Fired Plant, 1 coal | 12 diesel, 6 turbines, 1 coal |
+| 2050s-2060s | nothing | 2050s 1 coal; 2060s 23 diesel, 12 turbines, 5 Oil-Fired Plants, **2 Wind Farms, 1 Solar Farm, 2 Biomass**, 1 coal |
+| 2070s | 1 coal | 1 coal |
+| 2080s | 1 diesel, 1 Oil-Fired Plant, 1 coal, **1 Wind Farm, 1 Biomass** | nothing |
+| 2090s | 17 diesel, 8 turbines, 1 Oil-Fired Plant | nothing |
 
-After the mends: 86 Diesel Stations, 57 Oil-Fired Turbines, 9 coal plants, 7 Oil-Fired Plants, 5 Wind Farms, 2
-Solar Farms and 2 Biomass Plants (before: 73, 51, 9, 7 and no farms); 447 reserve suggestions and 8 spread
-suggestions (292 and 11); one offer assembled past the listing; no copper works but 3 Wire & Cable Works, as
-before. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
+**The totals after ★R**, with REV-PW3's mends in brackets:
+
+| | after ★R | REV-PW3's mends |
+|---|---|---|
+| Diesel Stations | 66 | 86 |
+| Oil-Fired Turbines | 38 | 57 |
+| coal plants | 7 | 9 |
+| Oil-Fired Plants | 10 | 7 |
+| Wind Farms | 15 | 5 |
+| Solar Farms | 19 | 2 |
+| Biomass Plants | 2 | 2 |
+| reserve suggestions | 390 | 447 |
+| spread suggestions | 9 | 8 |
+| offers assembled past the listing | 0 | 1 |
+| Wire & Cable Works (no other copper works) | 5 | 3 |
+
+Before REV-PW3's mends the run built 73 diesels, 51 turbines, 9 coal plants, 7 Oil-Fired Plants and no farms, with
+292 reserve and 11 spread suggestions.
+
+The farms rose with ★R: a gap in the reserve alone that no firm row fills three tenths of leaves the farms that
+close it as the order (PowerPlanCheck 6a (i)). The run's farms were not traced one by one.
+
+The 1900s Oil-Fired Plant (m107) still passes, because its gap at its opening, 149.5 months out, is no small
+reserve gap: its physical relief is 27,395 a month. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
 Turbines, 8 Diesel Stations and 1 Oil-Fired Plant, no coal and no farms.
 
 **Why so few farms** (the orchestrator asked: did research find them, and what did the planner price them at;
