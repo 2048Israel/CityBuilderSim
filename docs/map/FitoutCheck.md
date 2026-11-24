@@ -1,6 +1,6 @@
 # FitoutCheck.java - 757 lines · 32 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FitoutCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FitoutCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e):
 > Fitout, BuildingsStacks' lots, Game.fitWhatFinished().

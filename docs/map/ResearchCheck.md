@@ -1,6 +1,6 @@
 # ResearchCheck.java - 1,080 lines · 26 methods · 11 constants · harnesses
 
-`ham/citybuildersim/ResearchCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses
 > what is not a discovery (R2, slice A: ResearchCatalog and research.json; docs/studies/research-design.md 4, research-1900.md 8).

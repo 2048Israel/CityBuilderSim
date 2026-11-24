@@ -1,6 +1,6 @@
 # OrphanHousehold.java - 42 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/OrphanHousehold.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrphanHousehold.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > Children no family holds, by age band.
 > 

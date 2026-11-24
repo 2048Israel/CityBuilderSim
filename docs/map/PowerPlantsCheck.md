@@ -1,6 +1,6 @@
 # PowerPlantsCheck.java - 642 lines · 23 methods · 16 constants · harnesses
 
-`ham/citybuildersim/PowerPlantsCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerPlantsCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the
 > Oil-Fired Turbine, the Biomass Plant and the Solar Farm, and the Coal Power Plant and the Wind Farm refigured, each burning its fuel

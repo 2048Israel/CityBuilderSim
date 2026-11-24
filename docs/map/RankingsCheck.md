@@ -1,6 +1,6 @@
 # RankingsCheck.java - 1,804 lines · 51 methods · 9 constants · harnesses
 
-`ham/citybuildersim/RankingsCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RankingsCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9):
 > Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading

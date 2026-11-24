@@ -1,6 +1,6 @@
 # WageLadderCheck.java - 458 lines · 14 methods · 2 constants · harnesses
 
-`ham/citybuildersim/WageLadderCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WageLadderCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The wage ladder a city is founded on (R0d): today's PayTier ladder in every city but one founded the 1900 way, which pays 1901's, the
 > census's. Not part of the game.

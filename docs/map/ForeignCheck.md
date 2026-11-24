@@ -1,6 +1,6 @@
 # ForeignCheck.java - 2,206 lines · 18 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ForeignCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > The balance of payments, and whether the boundary it is drawn on is honest.
 > 

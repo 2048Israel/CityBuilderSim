@@ -1,6 +1,6 @@
 # CardCheck.java - 434 lines · 15 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CardCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CardCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
 > Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1).
 > WHY: a cell average used to discharge all its neighbours and conceal thin buffers.
