@@ -239,13 +239,13 @@ public final class HousingMarket {
             final var seeker=d;
             double used=0;
             for(var l:leases)if(l.cell().equals(d.key())){
-                used+=l.count();
+                used+=l.households();
                 var home=pricedOffers.stream().filter(o->o.key().equals(l.home())).findFirst().orElseThrow();
-                // A guest who could fund this suitable home still wants a whole door
-                // in this class. A half bill alone does not establish that budget.
+                // Funded doors include a host's donated room. Physical shares would
+                // count that donation again even when its guest cannot pay.
                 if(HousingChoice.suitable(seeker,home,false)&&HousingChoice.affordable(seeker,home)){
-                    double extra=Math.max(0,l.households()-l.count());
-                    classes.get(l.home()).demand+=extra;used+=extra;
+                    double funded=home.rent()>0?l.bill()/home.rent():l.households();
+                    classes.get(l.home()).demand+=Math.max(0,l.households()-funded);
                 }
             }
             double left=Math.max(0,d.count()-used),best=Double.NEGATIVE_INFINITY;

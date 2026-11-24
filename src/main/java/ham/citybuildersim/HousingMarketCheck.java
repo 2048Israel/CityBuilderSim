@@ -1038,8 +1038,61 @@ public final class HousingMarketCheck {
     }
 
 
+    private record FundingFixture(Game game,HousingMarket market,BuildingsTemplate house,BuildingsTemplate studio,HousingInventory.Key home) { }
+    static HousingChoice.Demand fundingDemand(String key,double count,boolean retired,double budget){
+        return new HousingChoice.Demand(key,count,retired?1:2,0,retired,0,false,budget);
+    }
+    static FundingFixture fundingFixture(String label,List<HousingChoice.Demand> demand,boolean pair,boolean cheap){
+        Game g=new Game(GameFiles.scratch("res3-funded-pressure-"+label),Founding.defaults().withUnfitted(false));g.run();
+        var bm=g.getBuildingManager();var house=bm.getTemplate(0);var studio=bm.getTemplate(1);bm.addStack(house,1,true);
+        var m=g.getSectors().realEstate().housingMarket();m.clear(g,List.of());
+        var home=new HousingInventory.Key(house.getId(),house.getHousingRecipe().mix().getFirst().id());
+        check(label+" fixture is one actual owned recipe door",house.getDwellings()==1&&bm.getHousingInventory().owned(home,HousingInventory.Owner.REAL_ESTATE)==1);
+        check(label+" fixture excludes endogenous source households",g.getCohorts().total()==0);
+        check(label+" fixture cheap alternative is currently known",bm.isTemplateKnown(studio));
+        var state=m.forSave();var a=state.classes.stream().filter(c->c.key().equals(home)).findFirst().orElseThrow();
+        a.ask=a.lastTrade=20;a.occupied=a.tradeQuantity=1;a.tradeValue=20;a.demand=2;
+        if(cheap)for(var c:state.classes)if(c.recipe==studio.getId())c.ask=c.lastTrade=10;
+        state.month=g.getMonth()-1;state.demand=List.copyOf(demand);state.sharing=List.of();
+        if(pair&&demand.size()==1)state.leases=List.of(new HousingChoice.Lease(demand.getFirst().key(),home,1,20,2));
+        else if(pair)state.leases=List.of(new HousingChoice.Lease(demand.get(0).key(),home,.5,10,1),new HousingChoice.Lease(demand.get(1).key(),home,.5,10,1));
+        else state.leases=List.of(new HousingChoice.Lease(demand.get(0).key(),home,.5,20,1),new HousingChoice.Lease(demand.get(1).key(),home,.5,0,1));
+        state.kept=1;state.crowded=1;state.hosted=pair?0:1;state.suitable=state.unaffordable=state.noSuitable=state.unplaced=0;
+        m.restore(state);var result=m.clear(g,demand);
+        near(label+" fixture keeps ask twenty",m.price(home),20);
+        near(label+" actual household source closes",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()+result.unplaced(),2);
+        near(label+" actual occupied door",m.occupied(),1);near(label+" actual total bill",m.receipts(),20);
+        for(var d:demand){double hh=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            check(label+" current source can fund its bill "+d.key(),m.rentFor(d.key(),1)<=d.budget()*hh+MoneyAudit.tolerance(d.budget()*hh));}
+        return new FundingFixture(g,m,house,studio,home);
+    }
+    static void fundedPressureAndForecast(){
+        out.println("--- financial claims and physical guest donations do not create a second funded bid ---");
+        for(double guestBudget:new double[]{0,20}){
+            String label="host-guest-"+(int)guestBudget;
+            var f=fundingFixture(label,List.of(fundingDemand("host",1,false,20),fundingDemand("guest",1,true,guestBudget)),false,false);
+            var m=f.market();String before=JSON.toJson(m.forSave()),inventory=JSON.toJson(f.game().getBuildingManager().getHousingInventory().forSave());
+            near(label+" host keeps its one full bill",m.rentFor("host",1),20);near(label+" guest remains free",m.rentFor("guest",1),0);
+            near(label+" funded class price pressure",m.classes().stream().filter(c->c.key().equals(f.home())).findFirst().orElseThrow().demand,guestBudget==0?1:2);
+            near(label+" new full-door forecast",m.forecast(f.game()).income(f.house(),1),guestBudget);
+            check(label+" forecast preserves actual leases and stock",before.equals(JSON.toJson(m.forSave()))&&inventory.equals(JSON.toJson(f.game().getBuildingManager().getHousingInventory().forSave())));
+        }
+        var paid=fundingFixture("paid-pair",List.of(fundingDemand("paid-a",1,false,20),fundingDemand("paid-b",1,false,20)),true,false);
+        near("paid pair keeps its two funded normal bids",paid.market().classes().stream().filter(c->c.key().equals(paid.home())).findFirst().orElseThrow().demand,2);
+        near("paid pair can fund another full door",paid.market().forecast(paid.game()).income(paid.house(),1),20);
+        var cheap=fundingFixture("cheap-alternative",List.of(fundingDemand("old-pair",2,false,12)),true,true);var m=cheap.market();
+        var bm=cheap.game().getBuildingManager();
+        near("cheap alternative has no finished current stock",bm.getHousingInventory().stock().stream().filter(s->s.key().recipe()==cheap.studio().getId()).mapToDouble(s->bm.getHousingInventory().owned(s.key(),HousingInventory.Owner.REAL_ESTATE)).sum(),0);
+        for(var dw:cheap.studio().getHousingRecipe().mix())near("cheap alternative is quoted at ten "+dw.id(),m.price(new HousingInventory.Key(cheap.studio().getId(),dw.id())),10);
+        String before=JSON.toJson(m.forSave()),inventory=JSON.toJson(bm.getHousingInventory().forSave());
+        double income=m.forecast(cheap.game()).income(cheap.studio(),1),oldBill=m.receipts(),remaining=2*12-oldBill;
+        check("new alternative income fits resources remaining after retained claims",income<=remaining+MoneyAudit.tolerance(remaining));
+        check("implied remaining incumbents can still pay the retained bill",oldBill<=12*(2-income/10)+MoneyAudit.tolerance(oldBill));
+        check("alternative quote preserves actual leases and stock",before.equals(JSON.toJson(m.forSave()))&&inventory.equals(JSON.toJson(bm.getHousingInventory().forSave())));
+    }
+
     public static void main(String[] args)throws Exception{
-        out=System.out;rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
+        out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
         try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);

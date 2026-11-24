@@ -3380,3 +3380,98 @@ additional demand despite no funded new-door forecast. The minimal proposed
 case is one door at ask 20, a host with budget/bill 20 and a zero-budget
 free guest. This is not yet a finding or a pricing-change authorization;
 source reasoning and a caused countercase are required first.
+
+The strict witness is exact: 3 percent month 53, recipe 160/F stock 12
+(bits 4028000000000000). Old use 8.9303497310702970 is valid; free and
+new-alone sum both equal 3.0696502689297027. Sequentially combining the
+34 old rows and five new additions gives 12.000000000000002 (bits
+4028000000000001), one ULP above stock. This is a new combination/order
+defect; neither old stock nor the matcher's separate free-cap check fails.
+The repeated run still fails unchanged at the strict assertion. No magnitude
+waiver is taken.
+
+★ Bound only new additions against the actual sequential remaining stock.
+An excess above the existing packing bound must still throw; a rounding
+residue can only reduce a new count, with its full-price bill and household
+count recomputed. Derive moved households from those bounded additions
+before reducing old household quantities. Preserve every old count/bill
+and all strict stock, source and budget checks. This is a pure-proof repair
+pending the same nine boundaries and all seventy-two frozen frames.
+
+Source review also confirms the closed host-pressure mismatch algebraically:
+physical base one plus a full-funded host's .5 physical donation gives
+pressure 1.5, while the host pays for one door, has no remaining resources,
+and the guest cannot pay. Both coverage and extra-demand coordinates need
+coherent accounting; changing the extra alone leaves a residual source.
+No executed pricing finding is claimed yet. Authorize a caused live-model
+witness with paid-pair and affordable-guest controls, and a cheap-alternative
+forecast-budget case, before any pricing or forecast change. Preserve every
+existing demand and funding test. The original monetary law stays hard.
+
+The repaired pure proof passes the same nine boundaries and all seventy-two
+actual snapshots: batch 0, one HousingChoiceCheck, .7 seconds, 177,698
+guards. Exactly two new additions are directed down, total
+4.5657921887709560e-15 doors. Every original count/bill/class is bit-exact;
+strict stock and all source/budget/host/price guards stay unchanged.
+Independent snapshot sums upgrade 36.537275984431254 households at 3 percent
+and 23.111946463575567 at 40 percent (means 1.0149243329008681 and
+.6419985128770991). These are frozen proposals, not longitudinal city results
+or production integration.
+
+The closed pricing probe executes the host finding: actual pressure 1.5
+for one funded door, with no new funded forecast income. Paid-pair and
+whole-affordable guest controls both produce pressure two and income 20.
+The fourth cheap-alternative case initially calls inventory.owned on an
+absent physical row and throws before its finding; the quoted class does
+exist. Its read-only correction sums existing physical rows, yielding zero
+for empty stock without adding a building or changing money/price inputs.
+Complete that same four-case witness, preserving the partial failure log.
+No pricing/forecast fix is authorized before the executed findings.
+
+Before live integration, require the current hosted-guest coalescence case:
+a positive-paid cell/home can also contain a sponsored guest this press.
+Dropping its household count in the frozen upgrade can otherwise leave a
+stale hosted reason counter greater than remaining crowding. Separate
+zero-bill guest records do not prove this case. Request actual phase guest
+provenance and a caused test/accounting proposal; do not reconstruct a
+flow from ending bills or alter a counter merely to satisfy its bound.
+
+The corrected closed witness completes all four cases and seventeen checks:
+raw batch 4, one HousingMarketCheck, 1.7 seconds, three real finding failures
+and no fixture exception. The first three case objects match the initial
+partial run exactly. Host-plus-poor-guest pressure is 1.5 versus expected
+one, with occupancy one, bill 20 and new forecast income/quantity zero.
+Paid-pair and whole-affordable guest controls both show pressure two and
+new income 20/one project. For the cheap alternative, the old B12 pair has
+24 resources and holds A's bill 20, leaving four; B has no current stock
+and ask 10. Forecast promises income 10/one project, implying one new
+household and only one old household to pay the retained bill 20 on budget
+12. Planned rent 30 exceeds resources 24. These are caused findings, not
+an expected trajectory or an attribution to main. All production sources
+remain unchanged and all diagnostic code is removed after the probe.
+
+Request source/accounting recommendations before integration for sponsored
+guests coalesced into positive-paid cells this press, and for affordability
+of a retained full/half mixture under one representative budget. These
+checks must distinguish actual guest provenance and price-region funding
+from aggregate ending bills. No extra run, production fix or economic-law
+change is authorized merely by those source hypotheses.
+
+The root adds the four closed finding cases to the permanent housing harness
+and mends the confirmed price-source coordinates. Coverage counts assigned
+households; extra normal pressure uses households minus funded bill/current
+ask, so a host's donated physical share is not a second bid. The paid-pair
+and affordable-guest controls stay at two. Cheap-alternative forecast funding
+is still an unresolved hard case. The normal named root HousingMarketCheck
+returns exact batch 4; its immutable run archive is retained for helper review,
+without assuming the complete failure list before that review.
+
+Source review confirms representation-dependent full/half affordability and
+the need to preserve actual sponsored components through coalescence. A new
+funding-core mend must keep full, paid-half and sponsored quantities distinct
+for eligibility and next-month retention. This is contract accounting on
+existing cells/classes, not a new preference-profile axis. Any saved contract
+metadata must pass DataSave/load and the real format-65 refusal boundary,
+under RES3's owed format/floor 66. No old-save conversion or policy-test
+weakening is authorized. Existing guests and truthful reason counters,
+new-only strict stock bounds and valid incumbent claims remain mandatory.
