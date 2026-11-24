@@ -1608,7 +1608,7 @@ public class MaterialsCheck {
 
         // THE COUNT OVER ITS YEAR: FC2's cycle of the last one's earnings.
         SpreadPlanner year = new SpreadPlanner(), mains = new SpreadPlanner();
-        int mainsMax = 0, reachedAt = -1, peaksCounted = 0;
+        int mainsMax = 0, reachedAt = -1, peaksCounted = 0, countedAt = -1;
         boolean everyMonth = true;
         for (int m = 1; m <= 3 * SpreadPlanner.IDLE_MONTHS; m++) {
             double earns = FC2_CYCLE[(m - 1) % FC2_CYCLE.length];
@@ -1618,15 +1618,21 @@ public class MaterialsCheck {
             mainsMax = Math.max(mainsMax, mains.idleMonths("rod"));
             if (m >= 2) everyMonth &= year.idleMonths("rod") == before + 1;
             if (m >= 2 && earns > 0 && year.idleMonths("rod") == before + 1) peaksCounted++;
+            if (countedAt < 0 && year.idleMonths("rod") >= SpreadPlanner.IDLE_MONTHS) countedAt = m;
             if (reachedAt < 0 && year.mayShed("rod")) reachedAt = m;
         }
+        // REV-CY1: a paying month sells none, so the kind is shed from the first losing month the count has reached IDLE_MONTHS by.
+        int losingFrom = countedAt;
+        while (losingFrom > 0 && FC2_CYCLE[(losingFrom - 1) % FC2_CYCLE.length] >= 0) losingFrom++;
         report("premise: on FC2's figures (+54k, -83k, -33k) the count that a working month starts again (noteMonth(kind, standing, idle)) never reaches"
                         + " IDLE_MONTHS (" + SpreadPlanner.IDLE_MONTHS + ")",
                 mainsMax > 0 && mainsMax < SpreadPlanner.IDLE_MONTHS && !mains.mayShed("rod"),
                 String.format("its count reached %d", mainsMax));
-        report("CY1: the same figures count every month idle from the second - the working months too, the year's mean below nothing - and the kind may be shed",
-                everyMonth && peaksCounted > 0 && reachedAt > 0 && reachedAt <= SpreadPlanner.IDLE_MONTHS + 1 && year.mayShed("rod"),
-                String.format("mayShed from month %d; %d working months counted; mean over its year %,.1fk", reachedAt, peaksCounted, year.lastOverYear("rod")));
+        report("CY1: the same figures count every month idle from the second - the working months too, the year's mean below nothing - and the kind may be shed from the first"
+                        + " losing month its count has reached IDLE_MONTHS by (REV-CY1: a paying month sells none)",
+                everyMonth && peaksCounted > 0 && countedAt > 0 && countedAt <= SpreadPlanner.IDLE_MONTHS + 1 && reachedAt == losingFrom && year.mayShed("rod"),
+                String.format("the count reached %d at month %d, mayShed from month %d; %d working months counted; mean over its year %,.1fk", SpreadPlanner.IDLE_MONTHS,
+                        countedAt, reachedAt, peaksCounted, year.lastOverYear("rod")));
         SpreadPlanner one = new SpreadPlanner();
         for (int m = 1; m < n; m++) one.noteMonth("rod", true, m, 50);
         int working = one.idleMonths("rod");
@@ -1637,6 +1643,68 @@ public class MaterialsCheck {
         report("one losing month in a year of paying ones counts one idle month, and the next paying month starts the count again",
                 working == 0 && lost == 1 && !shed && one.idleMonths("rod") == 0,
                 String.format("%d, then %d, then %d", working, lost, one.idleMonths("rod")));
+
+        // SOLD ONLY IN A MONTH IT LOSES IN AND OVER ITS YEAR (REV-CY1): a paying month, though the year's mean lags it, sells none.
+        final int idleMonths = SpreadPlanner.IDLE_MONTHS;
+        SpreadPlanner lag = new SpreadPlanner();
+        for (int m = 1; m <= idleMonths; m++) lag.noteMonth("rod", 3.0, m, -100);
+        boolean bothLose = lag.mayShed("rod");
+        int atIdle = lag.idleMonths("rod");
+        lag.noteMonth("rod", 3.0, idleMonths + 1, 20);
+        report("a kind idle IDLE_MONTHS (" + idleMonths + ") running, its last month and its year both losing, may be shed; and the month after, the last one paying while the year's mean"
+                        + " still lags below nothing, it may not, though its count is past IDLE_MONTHS",
+                bothLose && atIdle == idleMonths && lag.idleMonths("rod") == idleMonths + 1 && lag.lastOverYear("rod") < 0 && !lag.mayShed("rod"),
+                String.format("count %d, may shed %s; then count %d, year D$%,.1fk, may shed %s", atIdle, bothLose, lag.idleMonths("rod"), lag.lastOverYear("rod"),
+                        lag.mayShed("rod")));
+        lag.noteMonth("rod", 3.0, idleMonths + 2, -30);
+        assertTrue("...and the month after that, losing again with the year below nothing, it may be shed again", lag.mayShed("rod") && lag.idleMonths("rod") == idleMonths + 2);
+        SpreadPlanner rich = new SpreadPlanner();
+        rich.noteMonth("rod", 3.0, 1, 1_000);
+        for (int m = 2; m <= idleMonths + 1; m++) rich.noteMonth("rod", 3.0, m, -10);
+        report("a kind idle IDLE_MONTHS running whose last month loses but whose year pays (the mean above nothing) may not be shed",
+                rich.idleMonths("rod") == idleMonths && rich.lastOverYear("rod") > 0 && !rich.mayShed("rod"),
+                String.format("count %d, year D$%,.1fk, may shed %s", rich.idleMonths("rod"), rich.lastOverYear("rod"), rich.mayShed("rod")));
+
+        // A HOLDING SMALLER THAN AT THE LAST NOTE (one sold) STARTS THE YEAR AGAIN; an equal, a larger and an unknown one do not.
+        final double held = 4;
+        double[] prior = new double[n - 1];
+        double priorSum = 0;
+        for (int m = 1; m < n; m++) priorSum += prior[m - 1] = -50 - m;
+        double[] holdings = { held - 1, held, held + 1, Double.NaN };
+        String[] names = { "smaller", "equal", "larger", "unknown (NaN)" };
+        boolean cleared = true, kept = true;
+        StringBuilder holdingsSeen = new StringBuilder();
+        for (int i = 0; i < holdings.length; i++) {
+            SpreadPlanner h = new SpreadPlanner();
+            for (int m = 1; m < n; m++) h.noteMonth("rod", held, m, prior[m - 1]);
+            h.noteMonth("rod", holdings[i], n, -9);
+            double expectAll = (priorSum - 9) / n;
+            if (i == 0) cleared = h.lastOverYear("rod") == -9 && h.idleMonths("rod") == n && h.mayShed("rod");
+            else kept &= near(h.lastOverYear("rod"), expectAll) && h.idleMonths("rod") == n;
+            holdingsSeen.append(String.format("%s: year D$%,.2fk; ", names[i], h.lastOverYear("rod")));
+        }
+        report("a holding smaller than at the kind's last note starts its year again (the new figure alone), its count going on; an equal, a larger and an unknown (NaN) holding keep the year",
+                cleared && kept, holdingsSeen.toString());
+        SpreadPlanner paid = new SpreadPlanner();
+        for (int m = 1; m < n; m++) paid.noteMonth("rod", held, m, prior[m - 1]);
+        int idleBefore = paid.idleMonths("rod");
+        paid.noteMonth("rod", held - 1, n, 30);
+        assertTrue("...a smaller holding and a paying month: the year is that month alone and the count starts again, as it would not on the year that lagged",
+                idleBefore == n - 1 && paid.lastOverYear("rod") == 30 && paid.idleMonths("rod") == 0 && !paid.mayShed("rod"));
+        // ...and the holding survives a save: a smaller one after the restore still clears the year, an equal one does not.
+        SpreadPlanner kept1 = new SpreadPlanner(), cleared1 = new SpreadPlanner(), saved = new SpreadPlanner();
+        for (int m = 1; m < n; m++) saved.noteMonth("rod", held, m, prior[m - 1]);
+        Map<String, Double> held1 = new LinkedHashMap<>();
+        saved.saveMargins(held1);
+        kept1.restoreMargins(held1);
+        cleared1.restoreMargins(held1);
+        kept1.noteMonth("rod", held, n, 30);
+        cleared1.noteMonth("rod", held - 1, n, 30);
+        report("the holding survives saveMargins/restoreMargins (HOLDING_KEY): a smaller holding noted after the restore starts the year again, an equal one does not",
+                held1.get(SpreadPlanner.HOLDING_KEY + "rod") != null && held1.get(SpreadPlanner.HOLDING_KEY + "rod") == held && cleared1.lastOverYear("rod") == 30
+                        && near(kept1.lastOverYear("rod"), (priorSum + 30) / n),
+                String.format("saved holding %s; after the restore a holding of %.0f: year D$%,.2fk, of %.0f: D$%,.2fk", held1.get(SpreadPlanner.HOLDING_KEY + "rod"), held - 1,
+                        cleared1.lastOverYear("rod"), held, kept1.lastOverYear("rod")));
         year.noteMonth("rod", false, 100, Double.NaN);
         assertTrue("none standing clears the kind's count and its year", year.idleMonths("rod") == 0 && !year.mayShed("rod")
                 && Double.isNaN(year.lastOverYear("rod")));
@@ -1915,6 +1983,24 @@ public class MaterialsCheck {
         report("a kind none of whose goods' works stand is not refused on it: a smelter's run reads nothing and its feed gate is open",
                 Double.isNaN(cr.standingRun(smelter)) && other.refusal(SpreadPlanner.Gate.FEED) == null, String.format("%s", cr.standingRun(smelter)));
 
+        // (a, saved) the run crosses a save (REV-CY1): the month's Output rows are not saved, so the month after a load read none and the gate stood open on a works
+        // it should refuse. The whole city is saved to its scratch files (never a save slot of the player's) and read back by a fresh game.
+        double savedRun = cr.standingRun(rod);
+        quietly(() -> g.saveGame(10, "feedshort"));
+        Game back = new Game(g.getGameFiles());
+        quietly(() -> back.loadGameSave(10));
+        CopperRefining br = back.getSectors().copperRefining();
+        BuildingsTemplate backRod = back.getBuildingManager().getTemplate(CopperRefining.ROD_MILL);
+        double backRun = br.standingRun(backRod);
+        String backWords = br.appraise(backRod, back.getBusinessInvestment()).refusal(SpreadPlanner.Gate.FEED);
+        report("premise: the loaded town has read no month yet: its save loaded, no Output row for rod, and the Rod Mills as many as were saved",
+                back.getLoadFailure() == null && br.outputRow(Good.COPPER_ROD) == null && back.getBuildingManager().getQuantity(backRod.getId()) == b.getQuantity(rod.getId()),
+                String.format("%s; %d Rod Mills", back.getLoadFailure() == null ? "loaded" : back.getLoadFailure(), back.getBuildingManager().getQuantity(backRod.getId())));
+        report("CY1 (REV-CY1): the feed gate's run survives a save: before any month runs the loaded town reads the saved town's run, under FEED_GATE, and refuses a Rod Mill on its feed",
+                near(backRun, savedRun) && backRun < SpreadPlanner.FEED_GATE && backWords != null && backWords.contains("of nameplate on last month's make")
+                        && backWords.contains(String.format("%.0f%%", 100 * backRun)),
+                String.format("saved %.6f, loaded %.6f; %s", savedRun, backRun, backWords));
+
         // (b) the other side: rod paying, the same mills run their whole nameplate.
         Game paid = CopperRefiningCheck.copperWorks("materialscheck-feedpays", 0, 0, 3, Double.NaN);
         CopperRefining pr = paid.getSectors().copperRefining();
@@ -2012,6 +2098,8 @@ public class MaterialsCheck {
         int streak = plans.getLossMonths(Sectors.COPPER_REFINING);
         long millsBefore = b.getQuantity(rod.getId()), orders = b.getUnderConstructionBySector(Sectors.COPPER_REFINING);
         double[] now = cr.retirementDemandAndCapacity(g);
+        final int idleAtSale = cr.idleMonths(rod);
+        final double yearAtSale = cr.planner().lastOverYear(kind);
         BusinessInvestment.Decision d = now == null ? BusinessInvestment.Decision.no(Sectors.COPPER_REFINING, "no idle kind")
                 : plans.planRetirement(cr, now[0], now[1], orders);
         rodAt(g, TROUGH_SCALE);
@@ -2024,5 +2112,85 @@ public class MaterialsCheck {
         report("CY1: the rule sells the idle kind on its own year, and the city's month sells a Rod Mill",
                 orders == 0 && d.build && d.template == rod && d.quantity >= 1 && millsAfter < millsBefore,
                 String.format("%s (%s); %d Rod Mills before the month, %d after", d.build ? d.template.getName() + " x" + d.quantity : "no", d.reason, millsBefore, millsAfter));
+        report("CY1: the sale's reason names the idle kind and its months over its year, not the sector's own \"0 months of losses\"",
+                d.build && d.reason.startsWith(String.format("%s idle %d months over its year", rod.getName(), idleAtSale))
+                        && d.reason.startsWith(rod.getName() + " idle ") && !d.reason.contains("0 months of losses") && idleAtSale >= idleMonths,
+                d.reason);
+        // ...and the holding that fell by the sale started the last one's year again (REV-CY1): the month's figure alone, not the seven before it.
+        double figureAfter = cr.lastEarns(rod), yearAfter = cr.planner().lastOverYear(kind);
+        report("CY1: the sale started the last Rod Mill's year again: the month after it has that month's figure alone for its year, not the year's mean before it",
+                millsAfter < millsBefore && near(yearAfter, figureAfter) && !near(yearAfter, yearAtSale),
+                String.format("D$%,.1fk over its year after the month's sale, D$%,.1fk before it (the month's figure D$%,.1fk)", yearAfter, yearAtSale, figureAfter));
+
+        idleLagsItsYear(idleMonths);
+    }
+
+    /**
+     * REV-CY1: the month a kind's last works PAID while its year's mean still lagged below nothing. The count (a month counts idle when it or the year is
+     * below nothing) was at IDLE_MONTHS and past it, and with nothing else braking the sale Game.runRetirement() sold ceil 25% of the kind each month on the lag.
+     * It cannot come after a sale - one starts the year again, and a month after is a paying figure alone (the count starts again) or a losing one (sold
+     * again) - so it is played on the cycle's own first peak at the count, the year nothing but its troughs and that peak.
+     */
+    static void idleLagsItsYear(int idleMonths) {
+        Game g = CopperRefiningCheck.copperWorks("materialscheck-idlelag", 0, 0, 3, Double.NaN);
+        CopperRefining cr = g.getSectors().copperRefining();
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate rod = b.getTemplate(CopperRefining.ROD_MILL);
+        String kind = ProcessingSector.kindOf(rod);
+        quietly(() -> b.addStack(b.getTemplate(Manufacturing.WIRE_CABLE_WORKS), 1, true));
+        final long standing = b.getQuantity(rod.getId());
+        int k = 0, lagAt = -1, lagCount = 0;
+        double lagLast = Double.NaN, lagYear = Double.NaN;
+        boolean lagMayShed = true, sold = false;
+        long lagMills = -1;
+        double lagIdle = -1;
+        double[] measure = null;
+        while (k < 3 * idleMonths && lagAt < 0) {
+            rodAt(g, k % 3 == 2 ? PEAK_SCALE : TROUGH_SCALE);
+            handWorkers(g);
+            quietly(() -> g.simulateMonths(1));
+            double last = cr.lastEarns(rod);
+            sold |= b.getQuantity(rod.getId()) < standing;
+            if (last >= 0 && cr.idleMonths(rod) >= idleMonths && cr.planner().lastOverYear(kind) < 0) {
+                lagAt = k;
+                lagLast = last;
+                lagCount = cr.idleMonths(rod);
+                lagYear = cr.planner().lastOverYear(kind);
+                lagMayShed = cr.planner().mayShed(kind);
+                lagMills = b.getQuantity(rod.getId());
+                measure = cr.retirementDemandAndCapacity(g);
+                lagIdle = cr.idleBuildings();
+            }
+            k++;
+        }
+        report("premise: a month in which the last Rod Mill earns something while its idle count is at IDLE_MONTHS (" + idleMonths
+                        + ") or past it and its year's mean is still below nothing, and none was sold before it",
+                lagAt >= 0 && lagLast >= 0 && lagCount >= idleMonths && lagYear < 0 && !sold && lagMills == standing,
+                String.format("month %d of the cycle: the last one earned D$%,.1fk, %d idle months, D$%,.1fk over its year; %d Rod Mills standing", lagAt + 1,
+                        lagLast, lagCount, lagYear, lagMills));
+        report("CY1 (REV-CY1): ...the kind may not be sold on that note, though its count is at IDLE_MONTHS: the last one paid, so the sector counts no idle works and offers"
+                        + " the retirement no measure for it",
+                !lagMayShed && lagIdle == 0 && measure == null,
+                String.format("mayShed %s, %,.0f idle works, %s", lagMayShed, lagIdle, measure == null ? "no measure" : "a measure"));
+        // The next real month: its start runs Game.runRetirement() on that note.
+        rodAt(g, k % 3 == 2 ? PEAK_SCALE : TROUGH_SCALE);
+        handWorkers(g);
+        quietly(() -> g.simulateMonths(1));
+        k++;
+        long after = b.getQuantity(rod.getId());
+        report("CY1 (REV-CY1): the next month's retirement, run on that note, sells none: the Rod Mill count is unchanged across it",
+                after == lagMills && b.getUnderConstructionBySector(Sectors.COPPER_REFINING) == 0,
+                String.format("%d Rod Mills before the month, %d after", lagMills, after));
+        // ...and nothing else was braking it: the last one loses again that month, in it and over its year, and the retirement of the month after sells one.
+        boolean mayAgain = cr.planner().mayShed(kind), losing = cr.lastEarns(rod) < 0;
+        int idleNow = cr.idleMonths(rod);
+        double yearNow = cr.planner().lastOverYear(kind);
+        rodAt(g, k % 3 == 2 ? PEAK_SCALE : TROUGH_SCALE);
+        handWorkers(g);
+        quietly(() -> g.simulateMonths(1));
+        long later = b.getQuantity(rod.getId());
+        report("...and nothing else was braking it: the month after, the last one losing again in its month and over its year, the rule may shed it and the retirement sells a Rod Mill",
+                mayAgain && losing && idleNow >= idleMonths && yearNow < 0 && later < after,
+                String.format("%d idle months, D$%,.1fk over its year, mayShed %s; %d Rod Mills before the month, %d after", idleNow, yearNow, mayAgain, after, later));
     }
 }

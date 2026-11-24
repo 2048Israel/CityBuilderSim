@@ -632,7 +632,7 @@ public final class SpreadPlanner {
      * working, as it did; a holding that is not a number is not compared.
      */
     public void noteMonth(String kind, double holding, int month, double lastEarns) {
-        if (!(holding > 0)) {
+        if (holding <= 0) {
             lasts.remove(kind);
             noteMonth(kind, false, false);
             return;
