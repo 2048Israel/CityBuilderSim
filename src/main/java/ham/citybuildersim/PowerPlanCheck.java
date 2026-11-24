@@ -12,8 +12,9 @@ import java.util.Set;
  * up as if it ran, the works' own power as nothing, and ranked plants by the plan's present value with no slice of the load in it
  * (PW1-P's five gaps). PW3 reads the wind's, the sun's and the river's months at the city's latitude, the south on its own
  * season, credits a variable row with its peak hours, falling with its share, and plans as the study's prototype does
- * (spec-electricity 2.8): the reserve test first, its order the cheapest firm row for the slice of the load the gap lies in,
- * then the spread.
+ * (spec-electricity 2.8): the reserve test first, its order the firm row the screening curve picks for the slice of the load the gap lies
+ * in - unless a wind or solar farm, credited at its falling credit as planners credit them at their ELCC toward the reserve margin,
+ * closes the gap for less in total net cost than that pick (the thermal capital it avoids; PJM's Net CONE) - then the spread.
  *
  * WHAT THIS HAS TO PROVE:
  *
@@ -23,12 +24,14 @@ import java.util.Set;
  *      line down to CREDIT_FLOOR at CREDIT_HALF of the energy, and the floor past it; a fuelled row counts all of it.
  *   3. THE FIRM SUPPLY counts the works' own power, rises with a wind farm added (its posts never take more than it adds),
  *      and counts a plant still going up only from its opening.
- *   4. THE RESERVE TEST ORDERS THE SLICE'S CHEAPEST ROW: short at the base, coal; short at the peak alone, by more than a coal
- *      plant, a peaker.
- *   5. WIND ALONE NEVER PASSES THE TEST: a city knowing only wind and sun has no reserve order, however short; knowing a firm
- *      row too, the same city has.
+ *   4. THE RESERVE TEST ORDERS THE SLICE'S CHEAPEST FIRM ROW: short at the base, coal; short at the peak alone, by more than a
+ *      coal plant, a peaker.
+ *   5. WIND ALONE NEVER PASSES THE TEST: a city knowing only wind and sun may order farms, never more than keep their share of
+ *      the energy at CREDIT_HALF, and with them added is still short; knowing a firm row too, the order closes it.
  *   6. THE SPREAD orders wind where the fuelled rows standing run dear (diesel), and none where they run cheap (coal).
  *      A plant still going up counts in it from its own opening: coal that opens after the farm does takes none of its saving.
+ *      And the reserve test credits a farm: where the town runs dear and one Wind Farm's credited firm kW closes the gap, the
+ *      farm is the order, its total net cost below the screening curve's firm pick's (6a).
  *   7. THE GROUND: a coal plant's is planned past the one listing, and the automatic path assembles it over several offers;
  *      past ASSEMBLE_MOST offers none is planned.
  *   8. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
@@ -88,6 +91,18 @@ public final class PowerPlanCheck {
         u.setWattsConsumption(Math.max(0, c1 + (share * one[0] - one[1]) / perKw));
     }
 
+    /** The city's draw set so the planner's peak-hour demand at `p` exceeds its firm supply by `gap` kW (demand is linear in the draw). */
+    static void drawGap(Game g, BuildAdvice.Ahead p, double gap) {
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        double c1 = Math.max(1, u.getProduction()), c2 = 2 * c1;
+        u.setWattsConsumption(c1);
+        double[] one = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
+        u.setWattsConsumption(c2);
+        double[] two = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
+        double perKw = (two[1] - one[1]) / (c2 - c1);
+        u.setWattsConsumption(Math.max(0, c1 + (one[0] + gap - one[1]) / perKw));
+    }
+
     /** The slice of the load the gap at now(g) lies in (BuildAdvice.slice()). */
     static int slice(Game g) {
         double[] sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), now(g));
@@ -98,6 +113,34 @@ public final class PowerPlanCheck {
     static BuildAdvice.Suggestion suggest(Game g) {
         return BuildAdvice.suggestFor(g, null, POWER, g.getCash(), g.getLandManager().getAvailableSqFt(),
                 g.getAutoBuilder().getSlack(), Set.of(), false, true);
+    }
+
+    /**
+     * The reserve order as the planner ranks it, best first: each candidate's suggestion with the ones before it left out (suggestFor()'s
+     * `skip`), its count, and its figures: a firm row's screening curve (BuildAdvice.screening()) and its total net cost
+     * (BuildAdvice.reserveRank(), the farms' comparison with it), a farm's total net cost when it closes the gap and its net cost a firm kW
+     * added when it does not. Counts as the suggestions it asks.
+     */
+    static String order(Game g) {
+        Set<BuildingsTemplate> skip = new java.util.HashSet<>();
+        StringBuilder b = new StringBuilder();
+        double land = g.getLandManager().getAvailableSqFt();
+        for (int i = 0; i < 8; i++) {
+            BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, null, POWER, g.getCash(), land, g.getAutoBuilder().getSlack(), skip, false, true);
+            if (s == null) break;
+            BuildingsTemplate t = s.template();
+            Map<BuildingsTemplate, Long> at = WorksValue.openBy(g, BuildAdvice.onSite(g, POWER), s.lead());
+            boolean farm = t.isWind() || t.isSolar();
+            String figure = farm
+                    ? String.format(s.closes() ? "total net cost %.4g" : "net cost a firm kW %.4g",
+                            BuildAdvice.reserveRank(g, t, s.count(), s.closes(), s.lead(), at, s.ahead(), land))
+                    : String.format("screening %.4g, total net cost %.4g", BuildAdvice.screening(g, t, s.count(), at, s.ahead(), land),
+                            BuildAdvice.reserveRank(g, t, s.count(), true, s.lead(), at, s.ahead(), land));
+            b.append(i == 0 ? "" : ", then ").append(s.count()).append(' ').append(t.getName())
+                    .append(" (").append(s.closes() ? "closes" : "does not close").append("; ").append(figure).append(')');
+            skip.add(t);
+        }
+        return b.length() == 0 ? "no candidate" : b.toString();
     }
 
     static String named(BuildAdvice.Suggestion s) { return s == null ? "nothing" : s.count() + " " + s.template().getName(); }
@@ -217,6 +260,7 @@ public final class PowerPlanCheck {
         check("short at the base the reserve test orders coal (" + named(base) + ")", base != null && base.template() == coal);
         check("...counted once as a reserve order and never as a spread",
                 BuildAdvice.RESERVE_ORDERS.get() == r0 + 1 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+        out.println("the order, short at the base: " + order(g));
 
         // The peak alone, short by more than a coal plant's firm kW, so coal's size does not decide it: the works' own power
         // (firm, PW3's first gap) lifts the supply, and the draw puts the gap above the shoulder.
@@ -231,6 +275,7 @@ public final class PowerPlanCheck {
         check("short at the peak the reserve test orders a peaker, not coal (" + named(peak) + ")",
                 peak != null && (peak.template() == turbine || peak.template() == diesel));
         check("...counted once as a reserve order", BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+        out.println("the order, short at the peak alone: " + order(g));
         check("the slices' hours: the base all of the year's, the peak its peak block's",
                 close(BuildAdvice.sliceHours(0), BuildAdvice.YEAR_HOURS, 1e-12)
                         && close(BuildAdvice.sliceHours(2), PowerDispatch.BLOCK_HOURS[PowerDispatch.PEAK] * BuildAdvice.YEAR_HOURS, 1e-12));
@@ -242,17 +287,26 @@ public final class PowerPlanCheck {
         Game g = town(root, "wind-alone", WIND, SOLAR);
         drawAt(g, 4);
         check("fixture: power is short", !BuildAdvice.maintained(g, POWER, Map.of(), now(g)));
-        long r0 = BuildAdvice.RESERVE_ORDERS.get(), s0 = BuildAdvice.SPREAD_ORDERS.get();
+        long r0 = BuildAdvice.RESERVE_ORDERS.get();
         BuildAdvice.Suggestion s = suggest(g);
-        check("a city knowing only wind and sun has no reserve order (" + named(s) + ")", BuildAdvice.RESERVE_ORDERS.get() == r0);
-        check("...what it is offered is the spread's, counted there, or nothing",
-                s == null ? BuildAdvice.SPREAD_ORDERS.get() == s0
-                        : BuildAdvice.SPREAD_ORDERS.get() == s0 + 1 && (s.template().isWind() || s.template().isSolar()));
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
+        Map<BuildingsTemplate, Long> farms = s == null ? Map.of() : Map.of(s.template(), s.count());
+        double share = BuildAdvice.variableShare(g, farms);
+        check(String.format("a city knowing only wind and sun orders farms or nothing, within CREDIT_HALF of the energy (%s: the variable share %.3f, CREDIT_HALF %.2f)",
+                        named(s), share, PowerDispatch.CREDIT_HALF),
+                s == null ? BuildAdvice.RESERVE_ORDERS.get() == r0
+                        : (s.template().isWind() || s.template().isSolar()) && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1
+                                && share <= PowerDispatch.CREDIT_HALF * (1 + 1e-9));
+        double[] after = BuildAdvice.supplyDemand(g, POWER, BuildAdvice.plus(site, farms), s == null ? now(g) : s.ahead());
+        check(String.format("...and with those farms added the reserve test is still not passed (firm supply %.0f kW under the %.0f kW the test asks)", after[0], after[1]),
+                after[0] < after[1] && (s == null || !s.closes()));
         know(g, WIND, SOLAR, DIESEL);
         r0 = BuildAdvice.RESERVE_ORDERS.get();
         BuildAdvice.Suggestion firm = suggest(g);
-        check("knowing a firm row as well, the same city has a reserve order, the firm row (" + named(firm) + ")",
-                firm != null && firm.template() == plant(g, DIESEL) && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+        Map<BuildingsTemplate, Long> closed = firm == null ? Map.of() : Map.of(firm.template(), firm.count());
+        check("knowing a firm row as well, the same city has a reserve order that closes it, the firm row (" + named(firm) + ")",
+                firm != null && firm.template() == plant(g, DIESEL) && firm.closes() && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1
+                        && BuildAdvice.maintained(g, POWER, BuildAdvice.plus(site, closed), firm.ahead()));
         check("at CREDIT_HALF of the energy or more a wind farm counts CREDIT_FLOOR of its peak hours",
                 close(PowerDispatch.windCredit(PowerDispatch.CREDIT_HALF), PowerDispatch.WIND_PEAK_CREDIT * PowerDispatch.CREDIT_FLOOR, 1e-12)
                         && close(PowerDispatch.windCredit(1), PowerDispatch.WIND_PEAK_CREDIT * PowerDispatch.CREDIT_FLOOR, 1e-12));
@@ -306,7 +360,61 @@ public final class PowerPlanCheck {
                         s == null && BuildAdvice.SPREAD_ORDERS.get() == s0 && BuildAdvice.RESERVE_ORDERS.get() == r0);
             }
         }
+        reserveCredit(root);
         spreadPending(root);
+    }
+
+    /** What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. */
+    static final double GAP_SHARE = 0.5;
+
+    /** The firm kW one `t` adds at `p`'s opening to the site's, the rank's denominator (BuildAdvice.reserveRank()). */
+    static double firmAdded(Game g, BuildingsTemplate t, Map<BuildingsTemplate, Long> at, BuildAdvice.Ahead p) {
+        return BuildAdvice.supplyDemand(g, POWER, BuildAdvice.plus(at, t, 1), p)[0] - BuildAdvice.supplyDemand(g, POWER, at, p)[0];
+    }
+
+    /**
+     * PW3 (REV-PW3 #3): the reserve test credits a farm. The dear town of the spread (diesels standing, which the farm displaces) is made
+     * short at a farm's opening by GAP_SHARE of one Wind Farm's credited firm kW, less than the farm's credit: one farm closes the gap,
+     * a diesel (the screening curve's firm pick) closes it too, and the farm's total net cost (its year's capital and running less the
+     * diesel fuel it saves) is far below the diesel's, which saves none. Without wind a candidate the order is a diesel.
+     */
+    static void reserveCredit(Path root) {
+        out.println("--- 6a. the reserve test credits a farm and weighs it against the screening curve's firm pick ---");
+        Game g = covered(root, "reserve-credit", DIESEL);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        BuildingsTemplate wind = plant(g, WIND), diesel = plant(g, DIESEL);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
+        double lead = g.quoteBuild(wind, 1).months;
+        BuildAdvice.Ahead p = BuildAdvice.opening(g, lead, g.getAutoBuilder().getSlack());
+        // ...the gap is a share of the farm's credit, which itself falls with the draw: settle the two, wiring the town for the draw each time.
+        for (int pass = 0; pass < 4; pass++) {
+            drawGap(g, p, GAP_SHARE * firmAdded(g, wind, site, p));
+            double draw = u.getConsumption();
+            SubstationCheck.wiresFor(g, BuildAdvice.supplyDemand(g, BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), Map.of(), p)[1]);
+            g.getServicesManager().updateServices();
+            u.setWattsConsumption(draw);
+        }
+        double farm = firmAdded(g, wind, site, p), dsl = firmAdded(g, diesel, site, p);
+        double[] sd = BuildAdvice.supplyDemand(g, POWER, site, p);
+        check(String.format("fixture: the dear town is short at a farm's opening by %.0f kW, %.0f%% of one Wind Farm's %.0f credited firm kW and under a Diesel Station's %.0f",
+                        sd[1] - sd[0], 100 * (sd[1] - sd[0]) / farm, farm, dsl),
+                sd[1] - sd[0] > 0 && sd[1] - sd[0] < farm && farm < dsl);
+        Map<BuildingsTemplate, Long> at = WorksValue.openBy(g, site, lead);
+        long[] cw = BuildAdvice.count(g, POWER, at, Map.of(wind, 1L), p, BuildAdvice.reserveMost(g, wind, at), true);
+        double land = g.getLandManager().getAvailableSqFt();
+        double rw = BuildAdvice.reserveRank(g, wind, 1, cw[1] == 1, lead, at, p, land);
+        // ...the screening curve's firm pick: the order with the farm left out, and its total net cost by the same formula.
+        BuildAdvice.Suggestion pick = BuildAdvice.suggestFor(g, null, POWER, g.getCash(), land, g.getAutoBuilder().getSlack(), Set.of(wind), false, true);
+        double rd = pick == null ? Double.NaN : BuildAdvice.reserveRank(g, pick.template(), pick.count(), true, pick.lead(),
+                WorksValue.openBy(g, site, pick.lead()), pick.ahead(), land);
+        out.printf("total net cost of the order a year: Wind Farm %.4g (count %d, closes %b) against the screening curve's firm pick, %s %.4g (closes %b)%n",
+                rw, cw[0], cw[1] == 1, named(pick), rd, pick != null && pick.closes());
+        long r0 = BuildAdvice.RESERVE_ORDERS.get();
+        BuildAdvice.Suggestion s = suggest(g);
+        check(String.format("one credited Wind Farm closes a gap smaller than its firm credit, and against the screening curve's firm pick, by total net cost, it is the lowest "
+                        + "(%.4g against %.4g), so the reserve order is the farm, not a diesel (%s)", rw, rd, named(s)),
+                cw[0] == 1 && cw[1] == 1 && pick != null && pick.closes() && pick.template() == diesel && rw < rd
+                        && s != null && s.template() == wind && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
     }
 
     /** Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. */

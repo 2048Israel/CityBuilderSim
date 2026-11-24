@@ -316,10 +316,9 @@ public final class EssentialWorksCheck {
         serveGrid(g);
         BuildingsTemplate cheapest = null;
         double one = Double.POSITIVE_INFINITY, second = Double.POSITIVE_INFINITY;
-        // PW3: the cheapest plant the reserve test can order, a firm row the city knows (spec 2.8: a wind or solar farm's credit
-        // falls with its share, and the spread, not the reserve test, orders one; PW2 dates every plant).
-        for (BuildingsTemplate t : g.getBuildingManager().getKnownTemplates()) if (power.serves(t) && !t.isWind() && !t.isSolar()
-                && BuildAdvice.unit(g, power, t) > 0) {
+        // PW3: the cheapest plant the reserve test can order, one the city knows (PW2 dates every plant); a wind or solar farm is a
+        // candidate at its credit (REV-PW3 #3).
+        for (BuildingsTemplate t : g.getBuildingManager().getKnownTemplates()) if (power.serves(t) && BuildAdvice.unit(g, power, t) > 0) {
             double price = g.quoteBuild(t, 1).total;
             if (price < one) { second = one; one = price; cheapest = t; }
             else second = Math.min(second, price);
@@ -834,17 +833,22 @@ public final class EssentialWorksCheck {
         Game g = town(root, "interim-power");
         g.setCashForTest(1e14);
         quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 8, true));
-        BuildingManager bm = g.getBuildingManager();
-        BuildingsTemplate coal = bm.getTemplateByName("Coal Power Plant");
-        BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
-        // THE FIXTURE CAUSES IT (PW3): the reserve test orders firm rows alone (a wind farm's credit falls with its share, spec 2.8; it
-        // is the spread's), each with what is on site counted from its own opening (WorksValue.openBy()), so the loss before the pending
-        // coal opens is a faster firm row's to meet: the Diesel Station (1910, 30 months) is dated to this town's year. PW1 met it with
-        // a wind farm priced at half and built 1 / WIND_FIRM larger, levers PW3 has no use for. PW2's lever stands: the Oil-Fired Plant
-        // (48 months) is dated past this town's year, so the faster firm row is the diesel's alone; the founding's own stands and runs.
-        BuildingsTemplate fast = bm.getTemplateByName("Diesel Station");
-        fast.setSince(CityCalendar.yearOf(g.getMonth()));
-        bm.getTemplateByName("Oil-Fired Plant").setSince(2100);
+        BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
+        BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
+        // THE FIXTURE CAUSES IT (PW1): the advice credits a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, the calm peak), so
+        // wind built for the peak needs three times the farms, and over the twenty years coal is the cheaper plan even opening later
+        // (coal $193M against wind $285M on this town, the prevented loss $1.5M against $1.8M). The section is the timing, not that price:
+        // the fixture's farm is built 1 / WIND_FIRM larger, firm at the nameplate the section was written against.
+        wind.setProduction1(wind.getProduction1() / PowerDispatch.WIND_FIRM);
+        // THE FIXTURE CAUSES IT (PW2): the section is the wind's timing against pending coal; the Oil-Fired Plant opens between
+        // them (its 48 months to the wind's 36 and the coal's 60), and the pass ordered it. Dated past this town's year it is no
+        // candidate; the founding's own oil-fired plant stands and runs as before. And PW2's refigure (spec-electricity 2.3) made
+        // the coal plant cheaper a unit of power than the section was written against (776,914 of cash for 280,086, was 1,071,816
+        // for 280,000) and the wind farm dearer (25,023 for 6,854, was 23,240 for 8,100): firm at its nameplate the farm's plan was
+        // still 3% dearer than a second coal plant's here. The section is the timing, not that price, so the fixture's farm is
+        // also priced at half.
+        g.getBuildingManager().getTemplateByName("Oil-Fired Plant").setSince(2100);
+        wind.setCashCost(wind.getCashCost() / 2);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         AutoBuilder ab = g.getAutoBuilder();
         g.setCashForTest(1e14);
@@ -860,54 +864,41 @@ public final class EssentialWorksCheck {
         utilities.setWattsConsumption(utilities.getProduction() * 1.1);
         Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, power);
         double first = Math.ceil(g.onSiteMonths(coal));
-        double fastLead = g.quoteBuild(fast, 1).months;
-        check("fixture: constant physical power is short and pending coal covers the entire horizon, opening after the diesel",
+        double windLead = g.quoteBuild(wind, 1).months;
+        check("fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind",
                 !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
-                        && Double.isFinite(first) && first < BuildAdvice.LIFE_MONTHS && fastLead < first);
-        WorksValue.Value value = WorksValue.of(g, power, site, fast, 1, g.getLandManager().getAvailableSqFt());
-        check("the diesel prevents positive physical output loss before the pending coal opens", value.used() > 0 && value.avoided() > 0);
+                        && Double.isFinite(first) && first < BuildAdvice.LIFE_MONTHS && windLead < first);
+        WorksValue.Value value = WorksValue.of(g, power, site, wind, 1, g.getLandManager().getAvailableSqFt());
+        check("wind prevents positive physical output loss before the pending coal opens", value.used() > 0 && value.avoided() > 0);
         long pop = g.getPopulationManager().getPopulation();
         for (int i = 0; i <= 12; i++) {
             people.add(Math.round(pop * (.8 + .2 * i / 12)));
             months.add(g.getMonth() - 12 + i);
         }
         g.getBusinessInvestment().restorePopulationHistory(people);
-        // ...the draw a fifth inside the supply as the advice reads it (PW1: the peak over the firm supply).
+        // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
         powerDrawAt(g, .8);
         serveGrid(g);
-        BuildAdvice.Ahead atFast = BuildAdvice.opening(g, fastLead, ab.getSlack());
-        check("fixture: power is covered now, its forecast is short before coal opens, and the diesel can open sooner",
+        check("fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner",
                 BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
-                        && !BuildAdvice.maintained(g, power, Map.of(), atFast)
+                        && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.opening(g, windLead, ab.getSlack()))
                         && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
-                        && Double.isFinite(first) && first < BuildAdvice.LIFE_MONTHS && fastLead < first);
-        check("...and counting the pending coal only from its opening (PW3), the forecast at the diesel's opening is short still",
-                !BuildAdvice.maintained(g, power, WorksValue.openBy(g, site, fastLead), atFast));
+                        && Double.isFinite(first) && first < BuildAdvice.LIFE_MONTHS && windLead < first);
 
-        // The screening curve ranks by the price a firm kW-year, not by the date: a pass may first order coal for the shortfall at
-        // coal's own opening, and the next then the diesel for the loss before it (one order a measure a pass).
         ab.setOn(true, null);
-        java.util.List<String> orders = new java.util.ArrayList<>();
-        for (int pass = 0; pass < 2; pass++) {
-            quietly(() -> ab.pass(g));
-            AutoBuilder.Step order = step(g, power);
-            orders.add(order == null ? "nothing" : order.ordered() + " " + order.building() + " " + order.outcome());
-            BuildingsStacks ordered = bm.getStack(fast);
-            if (ordered != null && ordered.getUnderConstruction() > 0) break;
-        }
-        BuildingsStacks pendingFast = bm.getStack(fast);
-        check("within two passes the automatic path orders the faster firm row before the forecast shortage becomes physical, and no wind "
-                        + orders,
-                pendingFast != null && pendingFast.getUnderConstruction() > 0
-                        && orders.stream().noneMatch(o -> o.contains(wind.getName())));
-        if (pendingFast == null || pendingFast.getUnderConstruction() <= 0) return;
-        double fastFirst = Math.ceil(bm.siteUnitMonths(fast, 1, g.getBuildingOutputAtEveryPost()));
+        quietly(() -> ab.pass(g));
+        AutoBuilder.Step order = step(g, power);
+        check("the automatic path orders earlier wind before the forecast shortage becomes physical",
+                order != null && order.ordered() > 0 && order.building().equals(wind.getName()));
+        BuildingsStacks pendingWind = g.getBuildingManager().getStack(wind);
+        if (pendingWind == null || pendingWind.getUnderConstruction() <= 0) return;
+        double windFirst = Math.ceil(g.getBuildingManager().siteUnitMonths(wind, 1, g.getBuildingOutputAtEveryPost()));
         var state = new com.google.gson.Gson().toJsonTree(ab.toState()).getAsJsonObject();
         var dates = state.has("pendingUntil") ? state.getAsJsonObject("pendingUntil") : null;
         double due = dates != null && dates.has(power.label()) ? dates.get(power.label()).getAsDouble() : Double.POSITIVE_INFINITY;
-        check("the faster diesel brings the saved first-completion deadline forward from the coal quote",
-                due <= g.getMonth() + fastFirst && due < g.getMonth() + first);
+        check("the faster wind brings the saved first-completion deadline forward from the coal quote",
+                due <= g.getMonth() + windFirst && due < g.getMonth() + first);
     }
 
     static void waterAtCap(Path root) {
@@ -1069,8 +1060,10 @@ public final class EssentialWorksCheck {
         Game g = town(root, "overdue-pending");
         AutoBuilder ab = g.getAutoBuilder();
         BuildingManager bm = g.getBuildingManager();
-        // THE FIXTURE CAUSES IT (PW3): the pending capacity is firm (the reserve test counts a wind farm at its credit, which falls
-        // with its share, so no count of farms closes this shortage): Diesel Stations (1910, 30 months), dated to this town's year.
+        // THE FIXTURE CAUSES IT (PW3): the pending capacity is firm, Diesel Stations (1910, 30 months) dated to this town's year: a wind
+        // farm's credit falls as the variable rows' share rises (PowerDispatch.creditFall()), so no fleet of farms is firm kW enough for
+        // a shortage this deep, as the line below shows (the Wind Farm of PW1's fixture counted a third of its average at any share).
+        BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
         BuildingsTemplate fast = bm.getTemplateByName("Diesel Station");
         fast.setSince(CityCalendar.yearOf(g.getMonth()));
         BuildingsTemplate road = bm.getTemplateByName("Paved Road");
@@ -1083,8 +1076,14 @@ public final class EssentialWorksCheck {
         // ...Diesel Stations pending twice what covers it (PW1 queued a hundred Wind Farms' firm kW): the advice's own count for this
         // shortage at the builder's slack (BuildAdvice.count()), twice over, so the pending site covers each candidate's later
         // opening through the deadline (a quarter more did not: five more were ordered two months on, the planner's own reading).
-        long[] covers = BuildAdvice.count(g, power, Map.of(), Map.of(fast, 1L), BuildAdvice.opening(g, 0, ab.getSlack()),
-                BuildAdvice.MOST, true);
+        BuildAdvice.Ahead slackNow = BuildAdvice.opening(g, 0, ab.getSlack());
+        double[] short0 = BuildAdvice.supplyDemand(g, power, Map.of(), slackNow);
+        double windBest = 0;
+        for (long n = 1; n <= 256; n++)
+            windBest = Math.max(windBest, BuildAdvice.supplyDemand(g, power, Map.of(wind, n), slackNow)[0] - short0[0]);
+        check(String.format("fixture: no fleet of Wind Farms covers this shortage, so the pending capacity is firm (the most firm kW a fleet adds %.0f, the gap %.0f)",
+                windBest, short0[1] - short0[0]), short0[1] - short0[0] > windBest);
+        long[] covers = BuildAdvice.count(g, power, Map.of(), Map.of(fast, 1L), slackNow, BuildAdvice.MOST, true);
         long farms = 2 * covers[0];
         quietly(() -> g.buildStack(fast, farms, false));
         double first = Math.ceil(bm.siteUnitMonths(fast, 1, g.getBuildingOutputAtEveryPost()));

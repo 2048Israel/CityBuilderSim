@@ -1497,14 +1497,18 @@ public final class BuildAdvice {
             return power ? spread(game, need, m, site, before, whenOnSite, cashLeft, landLeft, skip) : null;
 
         List<Weighed> weighed = new ArrayList<>();
+        // PW3: what each power candidate was read with (the plants open at its own opening, and its lead), for placeFarms() below.
+        Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened = new LinkedHashMap<>();
+        Map<BuildingsTemplate, Double> leads = new LinkedHashMap<>();
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             // The streets' candidates: every road and line but a highway, which gives no access (FR7); the highways' the Elevated Highway alone.
             boolean candidate = m.kind() == Kind.ROADS
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() : m.serves(t);
             if (!candidate || skip.contains(t)) continue;
-            // PW3: the reserve test orders firm rows alone (spec 2.8, the study's plan()): a wind or solar farm's credit falls with
-            // the variable rows' share, so wind alone never passes the test; the spread orders one where it saves its cost.
-            if (m.kind() == Kind.POWER && (t.isWind() || t.isSolar())) continue;
+            // PW3 (REV-PW3 #3): the reserve test credits a wind or solar farm at its falling credit (THE FIRM SUPPLY), as planners credit
+            // them at their ELCC, and holds its count to the farms that keep the variable rows' share of the energy at or under
+            // PowerDispatch.CREDIT_HALF (reserveMost()): past it a fleet adds only the floor's tenth, so wind alone never passes the test.
+            // The firm rows are ranked by the screening curve and a farm that closes the gap is weighed against that pick (placeFarms()).
             double unit = unit(game, m, t);
             if (maintain && roadKind(m) && unit <= 0) unit = built(game, m, t);
             // A building the city cannot staff at all, or one that does not
@@ -1512,7 +1516,7 @@ public final class BuildAdvice {
             if (!(unit > 0)) continue;
             // Counted twice: at today's demand with the slack, for the order's
             // own wait; then at the demand it opens to after that wait.
-            long most = m.kind() == Kind.POWER && t.isHydro() ? Math.min(MOST, game.hydroSlotsFree(t)) : MOST;
+            long most = power ? reserveMost(game, t, site) : MOST;
             Map<BuildingsTemplate, Long> one = plus(new LinkedHashMap<>(), t, 1);
             long[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain);
             if (today[0] <= 0 && !full) continue;
@@ -1526,7 +1530,10 @@ public final class BuildAdvice {
                 p = opening(game, lead, slack);
                 // PW3: power's own test is at its opening, with what the site has open by then (WorksValue.openBy()); past the
                 // automatic path's promise, the site whole (above).
-                if (power) at = lead > promised ? site : WorksValue.openBy(game, site, lead);
+                if (power) {
+                    at = lead > promised ? site : WorksValue.openBy(game, site, lead);
+                    most = reserveMost(game, t, at);
+                }
                 found = count(game, m, at, one, p, most, maintain);
                 if (!full || found[0] <= n) break;
                 n = found[0];
@@ -1538,6 +1545,17 @@ public final class BuildAdvice {
                 found = new long[] {1, 1};
             }
             boolean closes = found[1] == 1;
+            // PW3 (REV-PW3 #3): a firm row (all but wind and solar) is ranked by the screening curve; a wind or solar farm by its net cost
+            // (reserveRank()): the total for one that closes the gap, which placeFarms() weighs against the firm pick, and a firm kW added
+            // for one that does not. A farm that adds no firm kW is no reserve.
+            boolean farm = power && (t.isWind() || t.isSolar());
+            double rank = !power ? 0 : farm ? reserveRank(game, t, found[0], closes, lead, at, p, landLeft)
+                    : screening(game, t, found[0], at, p, landLeft);
+            if (farm && !(rank < Double.POSITIVE_INFINITY)) continue;
+            if (power) {
+                opened.put(t, at);
+                leads.put(t, lead);
+            }
             boolean fits = game.landNeededFor(t, found[0]) <= availableGround(game, t, landLeft);
             // Every candidate's figure since 0.7.101: its order over its life
             // for each unit it will serve - see A BUILDING OVER ITS LIFE. (A
@@ -1547,12 +1565,12 @@ public final class BuildAdvice {
             WorksValue.Value value = WorksValue.of(game, m, onSite(game, m), t, found[0], landLeft, cashLeft);
             double per = value.perUsed();
             // Automatic building can buy land: its full price ranks it, rather than a free-land veto (HW1).
-            // PW3: power's reserve order is ranked by the screening curve, its price a firm kW-year in the slice the gap lies in;
-            // every other measure by the plan's present value, as HW1 ranks it.
+            // PW3: power's reserve order is ranked by the screening curve among the firm rows, and a wind or solar farm by its net cost
+            // (above), within HW1's tier; every other measure by the plan's present value, as HW1 ranks it.
             int tier = closes ? 0 : 1;
             weighed.add(new Weighed(t, tier, per, unit, found[0], closes, fits, p,
                     game.quoteBuild(t, found[0]).months,
-                    false, value, power ? screening(game, t, found[0], at, p, landLeft) : value.net()));
+                    false, value, power ? rank : value.net()));
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
         Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain, cashLeft) : null;
@@ -1566,6 +1584,7 @@ public final class BuildAdvice {
          * the catalogue's order (the sort is stable).
          */
         weighed.sort(java.util.Comparator.comparingInt(Weighed::tier).thenComparingDouble(Weighed::rank));
+        if (power) placeFarms(game, weighed, opened, leads, landLeft);
         Weighed best = weighed.get(0);
         // Plan the chosen work before its actual order can open. A cheaper small
         // alternative can wait for its own lead, while a coal-sized plan starts earlier. (Power's candidates were each
@@ -1629,9 +1648,26 @@ public final class BuildAdvice {
           real rate over its life (lifeFactor()), its fixed running and its
           fuel for those hours, over the firm kW the gap can use (a unit
           bigger than the gap pays for its idle part): the screening curve.
-          A wind or solar farm is no candidate (the study's plan()): its
-          credit falls with the variable rows' share, so wind alone never
-          passes the test.
+          That curve picks among the firm rows (everything but wind and
+          solar), HW1's tier of those that close the gap first.
+          A wind or solar farm is a candidate at the credit the firm supply
+          gives it (planners credit them at their ELCC toward the reserve
+          margin: NREL, docs.nlr.gov/docs/fy14osti/61182.pdf), a credit that
+          falls as the variable rows' share of the energy rises; its count is
+          held to the farms that keep that share at or under
+          PowerDispatch.CREDIT_HALF (reserveMost()), where the credit has
+          reached its floor and a fleet adds only a tenth: so wind alone
+          never passes the test. A farm whose credit closes the gap is
+          compared with the screening curve's firm pick on total net cost
+          (reserveRank(): the year's capital at the real rate and fixed
+          running, less the year's running it saves, the twelve months
+          dispatched with it as the spread reads it), so that a farm carries
+          the thermal capital it avoids (PJM's Net CONE: the cost of new
+          entry less its energy margins): the farm that costs less is the
+          reserve order, the lowest of several, and with no firm row closing
+          the farms rank among themselves by it. A farm that cannot close is
+          ranked after the firm rows that do, by its net cost a firm kW it
+          adds at its own opening.
        2. THE SPREAD. When the test passes, a plant is still ordered if one
           more saves the year's running more than it costs: the twelve months
           dispatched again with it (UtilitiesHandler.yearRunning(), at today's
@@ -1665,15 +1701,40 @@ public final class BuildAdvice {
         return share * YEAR_HOURS;
     }
 
+    /**
+     * The most of a power plant the reserve test counts with `at` open (PW3, REV-PW3 #3): a hydro station's the slots its river has free
+     * (HY1); a wind or solar farm's the farms that keep the variable rows' share of the energy (variableShare(), the figure the credit
+     * falls by) at or under PowerDispatch.CREDIT_HALF, past which a fleet adds only CREDIT_FLOOR's tenth, no reserve a planner builds;
+     * every other row MOST. 0 skips the candidate.
+     */
+    static long reserveMost(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> at) {
+        if (t.isHydro()) return Math.min(MOST, game.hydroSlotsFree(t));
+        if (!(t.isWind() || t.isSolar())) return MOST;
+        double have = variableShare(game, at), each = variableShare(game, plus(at, t, 1)) - have;
+        // A city drawing nothing has no share to fall by.
+        if (!(each > 0)) return MOST;
+        return Math.max(0, Math.min(MOST, (long) Math.floor((PowerDispatch.CREDIT_HALF - have) / each + 1e-9)));
+    }
+
     /** What a kWh a plant runs costs the city: a fuelled row's fuel and variable upkeep (UtilitiesHandler.marginalOf()), a station's variable upkeep, a wind or solar farm's nothing. */
     public static double runningPerKwh(Game game, BuildingsTemplate t) {
         return game.getServicesManager().getUtilitiesHandler().runningPerKwh(t);
     }
 
+    /** n of a plant's capital and ground: the quote of the order, its ground at landValue() on the land left. */
+    static double capitalOf(Game game, BuildingsTemplate t, long n, double landLeft) {
+        return game.quoteBuild(t, n).total + landValue(game, t.getLandSqFt() * (double) n, landLeft);
+    }
+
+    /** What n of a plant cost a year: twelve months of its `capital` over lifeFactor() `life` and of its fixed running (the spread's cost, and the reserve rank's). */
+    static double yearCost(Game game, BuildingsTemplate t, long n, double capital, double life) {
+        return 12 * (capital / life + n * runningCostAt(game, NewUnit.of(game, t), 0));
+    }
+
     /**
      * n of a plant's price a firm kW-year for the slice the gap at `p`'s demand lies in, with `at` open (the screening curve, rule 1):
-     * twelve months of its capital and ground over lifeFactor() and of its fixed running, and its running a kWh for the slice's hours,
-     * over the firm kW of the gap it serves; +infinity for one that adds no firm kW.
+     * twelve months of its capital and ground over lifeFactor() and of its fixed running (yearCost()), and its running a kWh for the
+     * slice's hours, over the firm kW of the gap it serves; +infinity for one that adds no firm kW. The firm rows' rank.
      */
     static double screening(Game game, BuildingsTemplate t, long n, Map<BuildingsTemplate, Long> at, Ahead p, double landLeft) {
         Measure m = Measure.of(Kind.POWER);
@@ -1681,9 +1742,56 @@ public final class BuildAdvice {
         double firm = n * unit(game, m, t), used = Math.min(firm, Math.max(0, sd[1] - sd[0]));
         if (!(used > 0)) return Double.POSITIVE_INFINITY;
         double hours = sliceHours(slice(sd[0], sd[1] / PowerDispatch.PLAN_PEAK_HOUR));
-        double capital = game.quoteBuild(t, n).total + landValue(game, t.getLandSqFt() * (double) n, landLeft);
-        double fixed = n * runningCostAt(game, NewUnit.of(game, t), 0);
-        return (12 * (capital / lifeFactor(game) + fixed) + runningPerKwh(game, t) * used * hours) / used;
+        double year = yearCost(game, t, n, capitalOf(game, t, n, landLeft), lifeFactor(game));
+        return (year + runningPerKwh(game, t) * used * hours) / used;
+    }
+
+    /**
+     * A plant's net cost a year (PW3, REV-PW3 #3), lower first: n of it, its yearCost() less the year's running it saves
+     * (UtilitiesHandler.yearRunning() on what is on site by `lead`, the plant's own opening, as spreads() reads it). A wind or solar
+     * farm's rank, and the firm pick's to weigh it against (placeFarms()). For one that `closes` the gap it is the total; for one
+     * that does not, that net cost a firm kW added (PJM's Net CONE), over the firm supply with it at `at` open at `p`'s demand
+     * less without. +infinity for one that adds no firm kW.
+     */
+    static double reserveRank(Game game, BuildingsTemplate t, long n, boolean closes, double lead, Map<BuildingsTemplate, Long> at, Ahead p,
+                              double landLeft) {
+        Measure m = Measure.of(Kind.POWER);
+        double added = supplyDemand(game, m, plus(at, t, n), p)[0] - supplyDemand(game, m, at, p)[0];
+        if (!(added > 0)) return Double.POSITIVE_INFINITY;
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        Map<BuildingsTemplate, Long> base = WorksValue.openBy(game, onSite(game, m), lead);
+        double saved = u.yearRunning(base) - u.yearRunning(plus(base, t, n));
+        double net = yearCost(game, t, n, capitalOf(game, t, n, landLeft), lifeFactor(game)) - saved;
+        return closes ? net : net / added;
+    }
+
+    /** A wind or solar farm: the rows whose credit falls with their share (reserveMost(), placeFarms()). */
+    private static boolean isFarm(BuildingsTemplate t) { return t.isWind() || t.isSolar(); }
+
+    /**
+     * Where the farms that close the gap stand among the sorted candidates (PW3, REV-PW3 #3; the reviewer's: a farm's credit avoids a
+     * thermal plant's capital). `weighed` is sorted by tier and rank, the firm closers first by the screening curve; a closing farm
+     * carries its total net cost as its rank (reserveRank()). The farms whose total is below the firm pick's, computed by the same
+     * formula at the pick's own n and lead, go first, the lowest first; then the firm closers; then the dearer farms; then the rest
+     * (HW1's second tier). With no firm closer the farms lead, by their totals.
+     */
+    private static void placeFarms(Game game, List<Weighed> weighed, Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened,
+                                   Map<BuildingsTemplate, Double> leads, double landLeft) {
+        List<Weighed> farms = new ArrayList<>(), rest = new ArrayList<>();
+        for (Weighed w : weighed) (w.closes() && isFarm(w.t()) ? farms : rest).add(w);
+        if (farms.isEmpty()) return;
+        farms.sort(java.util.Comparator.comparingDouble(Weighed::rank));
+        Weighed pick = rest.isEmpty() || !rest.get(0).closes() ? null : rest.get(0);
+        double firm = pick == null ? Double.POSITIVE_INFINITY
+                : reserveRank(game, pick.t(), pick.count(), true, leads.get(pick.t()), opened.get(pick.t()), pick.ahead(), landLeft);
+        List<Weighed> order = new ArrayList<>();
+        int f = 0, r = 0;
+        while (f < farms.size() && farms.get(f).rank() < firm) order.add(farms.get(f++));
+        while (r < rest.size() && rest.get(r).closes()) order.add(rest.get(r++));
+        while (f < farms.size()) order.add(farms.get(f++));
+        while (r < rest.size()) order.add(rest.get(r++));
+        weighed.clear();
+        weighed.addAll(order);
     }
 
     /** One more of a plant weighed by the spread (rule 2): the year's running it saves, what it costs a year, and the net over its capital. */
@@ -1710,8 +1818,8 @@ public final class BuildAdvice {
             // when this one is, so it takes none of its saving (nor blocks it for years while its site is delayed).
             Map<BuildingsTemplate, Long> base = WorksValue.openBy(game, site, game.quoteBuild(t, 1).months);
             double saved = u.yearRunning(base) - u.yearRunning(plus(base, t, 1));
-            double capital = game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft);
-            double cost = 12 * (capital / life + runningCostAt(game, NewUnit.of(game, t), 0));
+            double capital = capitalOf(game, t, 1, landLeft);
+            double cost = yearCost(game, t, 1, capital, life);
             out.add(new Spread(t, saved, cost, capital));
         }
         return out;
