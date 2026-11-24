@@ -16477,58 +16477,58 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
   - L182 fixture: the played home offer exceeds a spur's step, so real spurs can leave positive room short of the home tonnes
-- **L365 1. no railway, no change: with no station and no spur the city's own bulk rides the trucks, to the bit**
-  - L382 dealHome() with no station and no siding takes exactly nothing, whatever is offered or left of the track
-  - L401 legTonnes() with zero shares is the three-argument form for every sector, good and railed share, bit for bit
-  - L403 ...and that form is the pre-FR6 leg: the tonnes bought at home in full and the crossing tonnes less the siding's railed part
-  - L407 a played city with no station and no spur: the railway is offered the home tonnes and takes none, bills none
-  - L414 ...and so is a city with four freight lines laid and no station or spur: track alone rails nothing of it
-- **L426 2. dealt after the boundary: what the track and the stations leave of the boundary's tonnes, never more**
-  - L455 each cap binds in turn: the offer, the track or sets, the stations and sidings, each alone, and each used up
-  - L460 the boundary's bulk and goods take the room first: a boundary that fills the railway leaves the city's tonnes nothing
-  - L467 ...a lighter one leaves what the stations and sidings have left when that is the lesser (track 1,000, rooms 700 less the boundary's 300)
-  - L470 ...and what the track has left when that is the lesser (track 600, rooms 700 less the boundary's 150)
-  - L492 at random: never negative, never more than the offer, the track left or the stations and sidings left, and one of them is the answer
-  - L496 an offer that is not a positive number is nothing, with room to spare
-  - L504 a played city whose boundary fills the railway (a depot and three spurs): the city's own bulk is offered and none is dealt
-  - L511 ...and one the boundary leaves room in (a depot and spurs sized from its offer): the city's tonnes are exactly the room left, the share in force strictly bet...
-- **L522 3. each leg once: a home tonne's truck leg and the railway's tonnes are the tonne, billed and relieved together**
-  - L528 fixture: the railway carries a share of the city's own bulk, strictly between nothing and all, and of the landed ore
-  - L531 the plant's ore leg at the home share h is its home tonnes x (1 - RAIL_ROAD_RELIEF x h) plus its crossing tonnes at the boundary's rule
-  - L542 ...and at any share the truck tonnes and the railed tonnes (RAIL_ROAD_RELIEF x h of it) are the home tonne, once
-  - L544 a home share cannot make a leg dearer or the legs negative: the share is clamped to a share
-  - L574 ...and the home tonnes are the railway's and the trucks' together, none paid twice and none left out
-- **L585 4. the port yard: a station and a sea terminal both standing, and then the quay's tonnes ride rails too**
-  - L610 hasPortYard() is true with a station and a sea terminal standing, and false with either missing, a spur or track alone not being a station
-  - L613 fixture: the depot is a station and the berth a sea terminal, and the spur is neither, so the combinations above are what they say
-  - L620 a played city with a Rail Depot and a Bulk Berth: the yard stands, the ore comes by sea, and the quay share is above zero
-  - L623 ...the quay and the home tonnes are dealt together, one share for both, pro rata
-  - L627 a city with a depot and spurs and no sea terminal has no yard and no quay share, while its home share is above zero
-  - L631 ...and a city with spurs, track and a berth but no station has no yard either, the ore going by sea all the same
-  - L641 with the yard and a quay share q, a sea tonne's truck leg is 1 - RAIL_ROAD_RELIEF x rail - PORT_YARD_SHARE x q x sea of it
-  - L644 ...so the yard takes exactly PORT_YARD_SHARE x q x sea of the crossing tonnes off the legs, and nothing off the home tonnes
-  - L651 by hand: a tonne wholly by sea has PORT_YARD_SHARE of its leg railed at a quay share of 1, half of that at a half, none at none
-  - L653 ...and a leg is never below zero, whatever shares are asked of it
-  - L660 ...and a haul run by hand in the cities with no yard leaves the quay share at nought
-- **L670 5. the bill: the city's tonnes pay the railway its quote on Haulage's, in the shippers' own line, once**
-  - L692 ...the lines come to Freight's rail revenue (boundary and city), to the cent
-  - L696 ...the city part is the railed city tonnes x the railway's quote x Haulage's, both read before the haul
-  - L707 the mines that sold their ore at home pay the railway no city bill for it: their line is their boundary tonnes alone
-  - L712 ...while the plant that bought the ore at home pays its home tonnes' city leg, on top of its boundary tonnes
-- **L728 6. the diesel: a city tonne burns CITY_LITRES_A_TONNE, a third of a truck's leg, and the boundary's tonnes their own**
-  - L730 a city tonne burns less than a truck's whole leg and far less than a boundary haul's tonne: CITY_LITRES_A_TONNE is a third of Haulage's
-  - L741 ...and the haul's diesel is the boundary tonnes' at FUEL_LITRES_PER_TONNE and the city's on top, the boundary's count untouched by them
-  - L747 a city with no railway burns nothing on city tonnes
-- **L757 7. the weighing: a planner weighs a home-bought tonne at the steady quote x (its truck weight + the railway's quote x its rail weight)**
-  - L793 ...a received tonne of the ore is cheaper to plan for with the railway on the city's tonnes than with the trucks alone, the railway's quote being below 1
-  - L801 ...by exactly the steady quote x the rail weight x (1 - the railway's quote)
-- **L812 8. the save: the shares in force cross a save, and the reload bills the next month as the live city does**
-  - L824 the home and quay shares come back from the file to the bit, and the month's tonnes, bill and offer with them
-  - L829 ...the yard stands in the loaded city as it does in the live one, and the litres, which are not saved, are none until the next haul
-  - L842 the next haul bills the city's tonnes the same in the loaded city as in the live one, to the bit: every shipper's line
-  - L846 ...and the shares they strike for the month after are the same too, as are the litres burned
-- **L857 9. a real run: LongPlaytest's city, played with its advisor, counted month by month**
-  - L954 a home share is never above zero without a station or a spur to take it, and the quay share never above zero without a yard (at the haul that struck it or at...
+- **L368 1. no railway, no change: with no station and no spur the city's own bulk rides the trucks, to the bit**
+  - L385 dealHome() with no station and no siding takes exactly nothing, whatever is offered or left of the track
+  - L404 legTonnes() with zero shares is the three-argument form for every sector, good and railed share, bit for bit
+  - L406 ...and that form is the pre-FR6 leg: the tonnes bought at home in full and the crossing tonnes less the siding's railed part
+  - L410 a played city with no station and no spur: the railway is offered the home tonnes and takes none, bills none
+  - L417 ...and so is a city with four freight lines laid and no station or spur: track alone rails nothing of it
+- **L429 2. dealt after the boundary: what the track and the stations leave of the boundary's tonnes, never more**
+  - L458 each cap binds in turn: the offer, the track or sets, the stations and sidings, each alone, and each used up
+  - L463 the boundary's bulk and goods take the room first: a boundary that fills the railway leaves the city's tonnes nothing
+  - L470 ...a lighter one leaves what the stations and sidings have left when that is the lesser (track 1,000, rooms 700 less the boundary's 300)
+  - L473 ...and what the track has left when that is the lesser (track 600, rooms 700 less the boundary's 150)
+  - L495 at random: never negative, never more than the offer, the track left or the stations and sidings left, and one of them is the answer
+  - L499 an offer that is not a positive number is nothing, with room to spare
+  - L507 a played city whose boundary fills the railway (a depot and two spurs): the city's own bulk is offered and none is dealt
+  - L514 ...and one the boundary leaves room in (a depot and spurs sized from its offer): the city's tonnes are exactly the room left, the share in force strictly bet...
+- **L525 3. each leg once: a home tonne's truck leg and the railway's tonnes are the tonne, billed and relieved together**
+  - L531 fixture: the railway carries a share of the city's own bulk, strictly between nothing and all, and of the landed ore
+  - L534 the plant's ore leg at the home share h is its home tonnes x (1 - RAIL_ROAD_RELIEF x h) plus its crossing tonnes at the boundary's rule
+  - L545 ...and at any share the truck tonnes and the railed tonnes (RAIL_ROAD_RELIEF x h of it) are the home tonne, once
+  - L547 a home share cannot make a leg dearer or the legs negative: the share is clamped to a share
+  - L577 ...and the home tonnes are the railway's and the trucks' together, none paid twice and none left out
+- **L588 4. the port yard: a station and a sea terminal both standing, and then the quay's tonnes ride rails too**
+  - L613 hasPortYard() is true with a station and a sea terminal standing, and false with either missing, a spur or track alone not being a station
+  - L616 fixture: the depot is a station and the berth a sea terminal, and the spur is neither, so the combinations above are what they say
+  - L623 a played city with a Rail Depot and a Bulk Berth: the yard stands, the ore comes by sea, and the quay share is above zero
+  - L626 ...the quay and the home tonnes are dealt together, one share for both, pro rata
+  - L630 a city with a depot and spurs and no sea terminal has no yard and no quay share, while its home share is above zero
+  - L634 ...and a city with spurs, track and a berth but no station has no yard either, the ore going by sea all the same
+  - L644 with the yard and a quay share q, a sea tonne's truck leg is 1 - RAIL_ROAD_RELIEF x rail - PORT_YARD_SHARE x q x sea of it
+  - L647 ...so the yard takes exactly PORT_YARD_SHARE x q x sea of the crossing tonnes off the legs, and nothing off the home tonnes
+  - L654 by hand: a tonne wholly by sea has PORT_YARD_SHARE of its leg railed at a quay share of 1, half of that at a half, none at none
+  - L656 ...and a leg is never below zero, whatever shares are asked of it
+  - L663 ...and a haul run by hand in the cities with no yard leaves the quay share at nought
+- **L673 5. the bill: the city's tonnes pay the railway its quote on Haulage's, in the shippers' own line, once**
+  - L695 ...the lines come to Freight's rail revenue (boundary and city), to the cent
+  - L699 ...the city part is the railed city tonnes x the railway's quote x Haulage's, both read before the haul
+  - L710 the mines that sold their ore at home pay the railway no city bill for it: their line is their boundary tonnes alone
+  - L715 ...while the plant that bought the ore at home pays its home tonnes' city leg, on top of its boundary tonnes
+- **L731 6. the diesel: a city tonne burns CITY_LITRES_A_TONNE, a third of a truck's leg, and the boundary's tonnes their own**
+  - L733 a city tonne burns less than a truck's whole leg and far less than a boundary haul's tonne: CITY_LITRES_A_TONNE is a third of Haulage's
+  - L744 ...and the haul's diesel is the boundary tonnes' at FUEL_LITRES_PER_TONNE and the city's on top, the boundary's count untouched by them
+  - L750 a city with no railway burns nothing on city tonnes
+- **L760 7. the weighing: a planner weighs a home-bought tonne at the steady quote x (its truck weight + the railway's quote x its rail weight)**
+  - L796 ...a received tonne of the ore is cheaper to plan for with the railway on the city's tonnes than with the trucks alone, the railway's quote being below 1
+  - L804 ...by exactly the steady quote x the rail weight x (1 - the railway's quote)
+- **L815 8. the save: the shares in force cross a save, and the reload bills the next month as the live city does**
+  - L827 the home and quay shares come back from the file to the bit, and the month's tonnes, bill and offer with them
+  - L832 ...the yard stands in the loaded city as it does in the live one, and the litres, which are not saved, are none until the next haul
+  - L845 the next haul bills the city's tonnes the same in the loaded city as in the live one, to the bit: every shipper's line
+  - L849 ...and the shares they strike for the month after are the same too, as are the litres burned
+- **L860 9. a real run: LongPlaytest's city, played with its advisor, counted month by month**
+  - L957 a home share is never above zero without a station or a spur to take it, and the quay share never above zero without a yard (at the haul that struck it or at...
 
 ## HouseholdCheck.java - 285 labelled assertions
 
