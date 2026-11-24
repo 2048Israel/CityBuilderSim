@@ -6884,13 +6884,67 @@ public class KeptCheck {
         return words[0] != null && !words[0].equals(words[1]);
     }
 
+    /** The exact prior saved-month entries used by TradeScreen.countFrom, restored before another model month. */
+    record TradeCountHistory(List<List<Number>> series, int[] at, Number[] before) implements AutoCloseable {
+        @Override public void close() {
+            for (int i = 0; i < series.size(); i++) series.get(i).set(at[i], before[i]);
+        }
+    }
+
     /**
-     * One clock speed of section 79 on a Trade page: the page is shown through its real show method, a month that moved SOLD ABROAD or BOUGHT ABROAD
-     * lands and it is shown again; each of the strip's two figures that moved starts a count, and the bars (on the pages that have them) grow, exactly
+     * KP6-N/FS5: stagnant real trade is valid. Cause the animation's displayed prior endpoints, not a change in the economy.
+     * The real month has already landed; its ForeignAccounts flows, cash and audit are untouched. Only the previous monthly
+     * history points read by countFrom are held at distinct words (or the current words for the no-move control).
+     * Every caller closes this frame before playing another month, restoring the exact Number objects in both series.
+     */
+    @SuppressWarnings("unchecked")
+    static TradeCountHistory tradeCountHistory(Game g, KeptBench bench, boolean changed) {
+        HistorySave history = g.getHistorySave();
+        List<List<Number>> series = new ArrayList<>();
+        int[] at = new int[2];
+        Number[] before = new Number[2];
+        String[] names = {"exportsAbroad", "importsAbroad"};
+        for (int i = 0; i < names.length; i++) {
+            List<Number> points = (List<Number>) (List<?>) history.seriesByName().get(names[i]);
+            if (points == null || points.size() < 2 || history.months() - 2 < history.yearlyPoints())
+                throw new IllegalStateException("Trade count-up fixture has no prior monthly point for " + names[i]);
+            series.add(points);
+            at[i] = points.size() - 2;
+            before[i] = points.get(at[i]);
+        }
+        TradeCountHistory saved = new TradeCountHistory(series, at, before);
+        try {
+            ForeignAccounts accounts = g.getForeignAccounts();
+            double[] current = {accounts.getExports(), accounts.tradeImports()};
+            for (int i = 0; i < series.size(); i++) series.get(i).set(at[i], changed ? 0.0 : current[i]);
+            String[][] words = bench.tradeWords();
+            // Both 0 and 1 model units are finite; at least one is visibly different from a finite current figure.
+            for (int i = 0; i < series.size(); i++) if (changed && !moved(words[i])) series.get(i).set(at[i], 1.0);
+            words = bench.tradeWords();
+            boolean caused = accounts.isMonthCounted() && Double.isFinite(current[0]) && Double.isFinite(current[1]);
+            for (String[] pair : words) caused &= pair[0] != null && (moved(pair) == changed);
+            check("fixture: both SOLD and BOUGHT prior saved-month words " + (changed ? "differ from" : "equal")
+                    + " the real current month", caused);
+            return saved;
+        } catch (RuntimeException | Error failure) {
+            saved.close();
+            throw failure;
+        }
+    }
+
+    /** The actual started-animation predicate, shared by positive counts and the no-move controls. */
+    static boolean tradeCountMatches(javafx.scene.control.Label figure, Animation before, boolean wanted) {
+        boolean started = KeptBench.countOf(figure) != before && KeptBench.counting(figure);
+        return started == wanted;
+    }
+
+    /**
+     * One clock speed of section 79 on a Trade page: one real month lands, with both prior saved-month words caused by tradeCountHistory.
+     * Each changed strip figure starts a count, and the bars (on the pages that have them) grow, exactly
      * where `expect` says. Where nothing counts, nothing runs, each figure reads this month's words at once, and the page is the page built new.
      * Null, or what was wrong.
      */
-    static String tradeRung(Game g, KeptBench bench, String page, boolean bars, int at, boolean paused, boolean expect) throws Exception {
+    static String tradeRung(Game g, KeptBench bench, String page, boolean bars, int at, boolean paused, boolean expect, boolean changed) throws Exception {
         bench.clock(!paused, null);
         bench.speed(at);
         bench.tradeOpen(page);
@@ -6904,47 +6958,52 @@ public class KeptCheck {
         List<? extends javafx.scene.Node> mirrors = bench.tradeBars();
         List<Animation> mirrorsBefore = new ArrayList<>();
         for (javafx.scene.Node m : mirrors) mirrorsBefore.add(KeptBench.countOf(m));
-        if (!landUntil(g, () -> {
-            String[][] w = bench.tradeWords();
-            return moved(w[0]) || moved(w[1]);
-        })) return "no month in twelve moved SOLD ABROAD or BOUGHT ABROAD";
-        bench.showTrade();
-        bench.passes();
-        String[][] words = bench.tradeWords();
-        StringBuilder bad = new StringBuilder();
-        if (!bench.tradeFigures().equals(figures)) bad.append("the strip's figures were made new; ");
-        for (int i = 0; i < 2; i++) {
-            javafx.scene.control.Label f = figures.get(i);
-            boolean started = KeptBench.countOf(f) != before.get(i) && KeptBench.counting(f);
-            boolean want = expect && moved(words[i]);
-            if (started != want) bad.append(i == 0 ? "SOLD ABROAD " : "BOUGHT ABROAD ").append(want ? "did not count" : "counted").append("; ");
-            if (!expect && !f.getText().equals(words[i][1])) bad.append("a figure reads \"").append(f.getText()).append("\" at once, not this month's; ");
-        }
-        List<? extends javafx.scene.Node> mirrorsNow = bench.tradeBars();
-        if (bars) {
-            if (mirrorsNow.isEmpty()) bad.append("the page has no bars to grow; ");
-            for (int i = 0; i < mirrorsNow.size(); i++) {
-                boolean grew = i < mirrors.size() && mirrorsNow.get(i) == mirrors.get(i) ? KeptBench.countOf(mirrorsNow.get(i)) != mirrorsBefore.get(i) && KeptBench.counting(mirrorsNow.get(i))
-                        : KeptBench.counting(mirrorsNow.get(i));
-                if (grew != expect) bad.append(expect ? "the bars did not grow" : "the bars grew").append("; ");
-            }
-        }
-        if (!expect) {
-            // Nothing counts, so the page is already the page a month's figures draw: equal to a page built new, with no animation finished first.
-            bad.append(stillOrNot(bench));
-            KeptBench.Page p = bench.trade("the page", page);
-            String d = againstNewAsIs(bench, p);
-            if (d != null) bad.append("not the page built new: ").append(d.replace('\n', ' ')).append("; ");
-        } else {
-            bench.finishPageAnimations();
+        month(g);
+        try (TradeCountHistory saved = tradeCountHistory(g, bench, changed)) {
+            bench.showTrade();
             bench.passes();
+            String[][] words = bench.tradeWords();
+            StringBuilder bad = new StringBuilder();
+            if (!bench.tradeFigures().equals(figures)) bad.append("the strip's figures were made new; ");
             for (int i = 0; i < 2; i++) {
-                if (!figures.get(i).getText().equals(words[i][1])) {
-                    bad.append("a figure reads \"").append(figures.get(i).getText()).append("\" after its count, not \"").append(words[i][1]).append("\"; ");
+                javafx.scene.control.Label f = figures.get(i);
+                boolean want = expect && changed;
+                if (!tradeCountMatches(f, before.get(i), want)) bad.append(i == 0 ? "SOLD ABROAD " : "BOUGHT ABROAD ").append(want ? "did not count" : "counted").append("; ");
+                if (!want && KeptBench.counting(f)) bad.append("an unchanged or fast figure still counts; ");
+                if (!changed && KeptBench.countOf(f) != before.get(i)) bad.append("equal words created a new count; ");
+                if ((!expect || !changed) && !f.getText().equals(words[i][1])) bad.append("a figure reads \"").append(f.getText()).append("\" at once, not this month's; ");
+            }
+            if (changed && expect && !paused && at == 0) {
+                boolean rejected = true;
+                for (int i = 0; i < figures.size(); i++) rejected &= !tradeCountMatches(figures.get(i), before.get(i), false);
+                check("the no-count predicate rejects both actual counts started from changed saved-month words", rejected);
+            }
+            List<? extends javafx.scene.Node> mirrorsNow = bench.tradeBars();
+            if (bars) {
+                if (mirrorsNow.isEmpty()) bad.append("the page has no bars to grow; ");
+                for (int i = 0; i < mirrorsNow.size(); i++) {
+                    boolean grew = i < mirrors.size() && mirrorsNow.get(i) == mirrors.get(i) ? KeptBench.countOf(mirrorsNow.get(i)) != mirrorsBefore.get(i) && KeptBench.counting(mirrorsNow.get(i))
+                            : KeptBench.counting(mirrorsNow.get(i));
+                    if (grew != expect) bad.append(expect ? "the bars did not grow" : "the bars grew").append("; ");
                 }
             }
+            if (!expect || (!changed && !bars)) {
+                // Nothing counts, so the page is already the page a month's figures draw: equal to a page built new, with no animation finished first.
+                bad.append(stillOrNot(bench));
+                KeptBench.Page p = bench.trade("the page", page);
+                String d = againstNewAsIs(bench, p);
+                if (d != null) bad.append("not the page built new: ").append(d.replace('\n', ' ')).append("; ");
+            } else {
+                bench.finishPageAnimations();
+                bench.passes();
+                for (int i = 0; i < 2; i++) {
+                    if (!figures.get(i).getText().equals(words[i][1])) {
+                        bad.append("a figure reads \"").append(figures.get(i).getText()).append("\" after its count, not \"").append(words[i][1]).append("\"; ");
+                    }
+                }
+            }
+            return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on " + page + ": " + bad;
         }
-        return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on " + page + ": " + bad;
     }
 
     /**
@@ -6995,7 +7054,7 @@ public class KeptCheck {
                 boolean paused = rung == ladder.length;
                 int at = paused ? ladder.length - 1 : rung;
                 boolean expect = paused || ladder[at] <= top;
-                String result = fx(() -> tradeRung(g, bench, view[0], !view[1].isEmpty(), at, paused, expect));
+                String result = fx(() -> tradeRung(g, bench, view[0], !view[1].isEmpty(), at, paused, expect, true));
                 if (result != null) wrong.append(wrong.length() == 0 ? "" : "; ").append(result);
             }
             if (wrong.length() > 0) System.out.println("  " + view[2] + ": " + wrong);
@@ -7011,42 +7070,56 @@ public class KeptCheck {
                 bench.showTrade();
                 bench.finishPageAnimations();
                 bench.passes();
-                if (!landUntil(g, () -> {
-                    String[][] w = bench.tradeWords();
-                    return moved(w[0]) || moved(w[1]);
-                })) return "no month in twelve moved the figures";
-                bench.showTrade();
-                bench.passes();
-                List<javafx.scene.control.Label> figures = bench.tradeFigures();
-                boolean counting = false;
-                for (javafx.scene.control.Label f : figures) counting |= KeptBench.counting(f);
-                List<? extends javafx.scene.Node> mirrors = bench.tradeBars();
-                for (javafx.scene.Node m : mirrors) counting |= KeptBench.counting(m);
-                if (!counting) return "no count or growth was running to stop";
-                List<Animation> running = new ArrayList<>(bench.pageAnimations());
+                List<javafx.scene.control.Label> figures;
+                List<Animation> running;
+                List<javafx.scene.control.Label> atRest = bench.tradeFigures();
+                if (atRest.size() != 2) return "the strip has no two figures before the month";
+                List<Animation> before = new ArrayList<>();
+                for (javafx.scene.control.Label f : atRest) before.add(KeptBench.countOf(f));
+                month(g);
+                try (TradeCountHistory saved = tradeCountHistory(g, bench, true)) {
+                    bench.showTrade();
+                    bench.passes();
+                    figures = bench.tradeFigures();
+                    if (figures.size() != 2) return "the strip has no two figures to count";
+                    for (int i = 0; i < figures.size(); i++)
+                        if (!tradeCountMatches(figures.get(i), before.get(i), true)) return "a changed figure had no actual count to stop";
+                    running = new ArrayList<>(bench.pageAnimations());
+                }
+                // The first history override is restored before this real model transition.
                 bench.speed(ladder.length - 1);
-                if (!landUntil(g, () -> {
-                    String[][] w = bench.tradeWords();
-                    return moved(w[0]) || moved(w[1]);
-                })) return "no month in twelve moved the figures";
-                bench.showTrade();
-                bench.passes();
-                String[][] words = bench.tradeWords();
-                java.util.Set<Animation> onPage = animationsNow(bench);
-                for (Animation a : running) {
-                    if (onPage.contains(a) && a.getStatus() != Animation.Status.STOPPED) return "an animation is still " + a.getStatus();
+                month(g);
+                try (TradeCountHistory saved = tradeCountHistory(g, bench, true)) {
+                    bench.showTrade();
+                    bench.passes();
+                    String[][] words = bench.tradeWords();
+                    java.util.Set<Animation> onPage = animationsNow(bench);
+                    for (Animation a : running) {
+                        if (onPage.contains(a) && a.getStatus() != Animation.Status.STOPPED) return "an animation is still " + a.getStatus();
+                    }
+                    String bad = stillOrNot(bench);
+                    if (!bad.isEmpty()) return bad;
+                    for (int i = 0; i < 2; i++) {
+                        if (!figures.get(i).getText().equals(words[i][1])) return "a figure reads \"" + figures.get(i).getText() + "\", not \"" + words[i][1] + "\"";
+                    }
+                    String d = againstNewAsIs(bench, bench.trade("the page", view[0]));
+                    return d == null ? null : "the page is not the page built new: " + d.replace('\n', ' ');
                 }
-                String bad = stillOrNot(bench);
-                if (!bad.isEmpty()) return bad;
-                for (int i = 0; i < 2; i++) {
-                    if (!figures.get(i).getText().equals(words[i][1])) return "a figure reads \"" + figures.get(i).getText() + "\", not \"" + words[i][1] + "\"";
-                }
-                String d = againstNewAsIs(bench, bench.trade("the page", view[0]));
-                return d == null ? null : "the page is not the page built new: " + d.replace('\n', ' ');
             });
             if (stopped != null) System.out.println("  " + view[2] + ": " + stopped);
             check("a count running when a month lands past COUNT_UP_TOP is stopped on " + view[2] + ", and the page is the month's", stopped == null);
         }
+
+        // Equal displayed endpoints must not start a count even at a slow or paused clock; stagnant trade is legitimate.
+        int slow = 0;
+        while (ladder[slow] > top) slow++;
+        final int slowRung = slow;
+        String unchanged = fx(() -> tradeRung(g, bench, names.get(1), false, slowRung, false, true, false));
+        if (unchanged != null) System.out.println("  unchanged Month figures: " + unchanged);
+        check("equal SOLD and BOUGHT saved-month words start no count at a slow clock", unchanged == null);
+        unchanged = fx(() -> tradeRung(g, bench, names.get(1), false, ladder.length - 1, true, true, false));
+        if (unchanged != null) System.out.println("  unchanged Month figures, paused: " + unchanged);
+        check("equal SOLD and BOUGHT saved-month words start no count at a paused clock", unchanged == null);
 
         // Government and Policy: no month animation. Nothing starts at any rung, and past the gate the page is the month's.
         record Quiet(String name, KeptBench.Page page, Runnable open, Runnable show) { }

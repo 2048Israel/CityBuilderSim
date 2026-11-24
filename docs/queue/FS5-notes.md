@@ -3022,3 +3022,21 @@ current-main merge, helper diagnosis and necessary named checks.
   Stage resizing produced buffer errors. It proves no owner or cure for
   that old 1454x684/1446x700 difference. The original hard broad comparison
   remains present and green in current native runs; no exemption is added.
+- Native SW validation of f4c60493f finishes ALL OK: objects 1509.8 MiB
+  (live 1528.3, Canvas 18.5), unchanged hard bound 1536. Bank's 10176 and
+  Government's 1832 fresh nodes all release, including the aborted-draw and
+  deliberately held-then-dropped controls. All five exact native blank-label
+  profiles and the real minimap fixture lifetime control pass. Zero KRT1
+  readings; two nonrepeating KBP1 content blocks. The preceding fast build,
+  Timing, ChartFit, Toast, MoneyWords, NewUnit, Steps and ResearchView calls
+  also pass. Receipts: target/FS5b-checks/*-ship.log and *-ship-suite.txt.
+- The 39-row audit finds one uncured premise in section 79: twelve natural
+  months need not change formatted exports/imports. Equal words correctly
+  start no count (TradeScreen.countFrom/SectorScreen.countUp). ★ Cause the
+  UI's actual prior saved-month endpoints after one real month, leaving
+  current ForeignAccounts flows and cash untouched; restore the exact prior
+  Number objects in finally before another month. Keep both changed-word
+  premises, all ladder/stop/current-word laws, and add slow/paused equal-word
+  controls. The actual positive counts must be rejected by the no-count
+  predicate. Source-only helper patch reviewed; --fast compiles (28s), zero
+  firm Stale. Native validation of this final fixture change is still due.

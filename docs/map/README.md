@@ -4,7 +4,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 637 files, 690,528 lines, 30,175 methods, 6,727 constants. `GameVersion.VERSION` is "0.9.199", `SAVE_FORMAT` 65.
+**The tree:** 637 files, 690,601 lines, 30,178 methods, 6,727 constants. `GameVersion.VERSION` is "0.9.199", `SAVE_FORMAT` 65.
 
 ## model (280 files)
 
@@ -129,7 +129,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Health.java](Health.md) | 450 | 27 | How much of the workforce is off sick this month. | 29 |
 | [Healthcare.java](Healthcare.md) | 997 | 57 | The city's healthcare service: what it costs, what it collects, and what it does with the dead. | 28 |
 | [HistoryGrapher.java](HistoryGrapher.md) | 115 | 1 |  | 1 |
-| [HistorySave.java](HistorySave.md) | 2,565 | 96 | Every month the city has ever lived, one number at a time. | 58 |
+| [HistorySave.java](HistorySave.md) | 2,565 | 96 | Every month the city has ever lived, one number at a time. | 59 |
 | [HomeFuel.java](HomeFuel.md) | 171 | 20 | The homes' lamp oil and coal: what the households that light with a lamp and heat with a stove ask of the shops each month, as two shares of the ho... | 4 |
 | [Household.java](Household.md) | 1,594 | 138 | Every household of one shape at one pay tier, as one ledger. | 58 |
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,458 | 110 | The city's residents, treated as one household. | 19 |
@@ -521,7 +521,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [IslandNetCheck.java](IslandNetCheck.md) | 834 | 32 | A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5). | 3 |
 | [IslandRailCheck.java](IslandRailCheck.md) | 1,017 | 47 | The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the islands... | 1 |
 | [JunctionCheck.java](JunctionCheck.md) | 2,549 | 98 | Proves that the junctions and interchanges of spec-freight 4.6 are drawn by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19). | 5 |
-| [KeptCheck.java](KeptCheck.md) | 9,856 | 248 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 8 |
+| [KeptCheck.java](KeptCheck.md) | 9,929 | 251 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 8 |
 | [KeptTimingCheck.java](KeptTimingCheck.md) | 682 | 20 | What the kept pages cost: KeptCheck's timed sections, each kept month on a page against the same month built new, within its budget through Timing. | 0 |
 | [KnownRedsCheck.java](KnownRedsCheck.md) | 351 | 12 | The harness for AllChecks' known reds, time limit and resource admission. | 0 |
 | [LabourCheck.java](LabourCheck.md) | 1,833 | 19 | Verifies the labour market: who can hold a job, and what it costs. | 2 |
