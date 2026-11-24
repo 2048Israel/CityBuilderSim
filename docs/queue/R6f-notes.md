@@ -40,7 +40,7 @@ default way knows every row from month 0 and runs as before.
   either was back: a loaded 1900 city held today's buffer until its next
   month.
 - **ModernRowsCheck** (new; in AllChecks after ModernEngineeringCheck; its
-  line in docs/tree.md): 160 assertions in three sections, one per row.
+  line in docs/tree.md): 177 assertions in three sections, one per row.
   ResearchCheck (100 entries, the counts, needs, dates and work),
   MedicineCheck (M12 a STAYS row, the re-struck split) and
   PostwarRecipeCheck (30 template changes: its `postwar()` pattern takes
@@ -192,7 +192,7 @@ One at a time on the PC, on 34c278b8b's code, each with the data paths
 | harness | result |
 |---|---|
 | `./batch-check.sh --fast` | exit 0 |
-| ModernRowsCheck | all 160 ok (121 at the mends of e83309220) |
+| ModernRowsCheck | all 177 ok (121 at the mends of e83309220, 160 at 0a4609cd7) |
 | ResearchCheck | all 245 ok |
 | MedicineCheck | exit 0 |
 | PostwarRecipeCheck | exit 0, 231 assertions |
@@ -235,7 +235,8 @@ without the mend:
   a held town's live factor STAYS_BEFORE_M12, its long recovery, death
   lift, `recoveryAt` and `servedRecovery()` equal after a load, at once.
   With the line removed: 6 reds. The long recovery and death lift are at
-  today's at this fixture's month, so those two do not discriminate.
+  today's at this fixture's month, so those two do not discriminate there:
+  the second review (REV-R6fb) asked for the case below.
 - **The medicine half of hearTheFinds()** (R6f's own, the same defect for a
   stays row found in a month): a town with a Medical School finds M12 in a
   real month 24 before history's; its factor is 1 in that month and equal
@@ -244,6 +245,26 @@ without the mend:
 After the mends, on the PC, one at a time: `--fast` exit 0, ModernRowsCheck
 all 160 ok, MedicineCheck exit 0, SaveFileCheck exit 0, DiscoveryCheck all
 270 ok.
+
+**REV-R6fb** (01:08): P1 and P2 closed, the default city unchanged; one
+finding, mended. The load case above sits after M1 and M2, where the long
+recovery (1) and death lift (0) are a fresh Sickness's defaults, so their
+equalities passed with the load's medicine omitted, and the order against
+the coverage's restore was untested. Added (section 1, 17 assertions): the
+stock 1900 town played to month 5, before M1 (month 630) and M2 (633),
+neither found, its general care coverage the month noted 0.8347 (strictly
+between 0 and 1, no building stood for it). Live: long recovery
+`LONG_RECOVERY_BEFORE_M1` (0.61878), death lift `SERVED_DEATHS_BEFORE_M2`
+times the coverage (0.15071), stays factor 0.66364. Saved and loaded, at
+once, before any month: the coverage, the stays factor, the long recovery
+and the death lift equal the live ones and the constants. Red with the
+load's `setMedicine` removed: 12 of 177 (this group's six: stays 1.0 vs
+0.66364, long recovery 1.0 vs 0.61878, death lift 0.0 vs 0.15071, two
+labels each; and the M12 group's six). Red with the line moved before
+`healthcare.restore`, so the coverage is restored after it: 2 of 177, the
+death lift's two (0.18056, at the default coverage 1, vs 0.15071); the long
+recovery does not read the coverage and stays green. ModernRowsCheck all
+177 ok after, `--fast` exit 0.
 
 ## 9. The dry run
 

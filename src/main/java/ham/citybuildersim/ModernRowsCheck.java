@@ -30,7 +30,9 @@ import java.util.Set;
  *    long recovery, the death lift and the recovery at every coverage) at once, before any month, since
  *    the medicine is derived and not saved (REV-R6f P2); a city whose Medical School's faculty complete M12
  *    in a played month ahead of history runs the stays factor 1 in that same month, not the next, and a
- *    reload of that month reads the same.
+ *    reload of that month reads the same; and a 1900 city played before M1 and M2 are known, whose general
+ *    care covers part of its people, loads the long recovery and the death lift (a figure times that
+ *    coverage) it ran at once, which a month with both known cannot tell (they are 1 and 0 there; REV-R6f P2).
  * 2. B10: the Contact Centre's NO_DIPLOMA posts are today's plus buildings.json's undo, rounded once, with
  *    every other figure and the output unchanged, before November 2020 and today's from it (by a recipe
  *    call and by a real month); a default city runs today's; a held city's save loads the same posts and
@@ -177,6 +179,8 @@ public final class ModernRowsCheck {
         step(loaded, "the loaded city");
         near("...and the month after the load it still reads Sickness.STAYS_BEFORE_M12", loaded.getSickness().getStaysFactor(), Sickness.STAYS_BEFORE_M12, 1e-12);
 
+        medicineBeforeM1AndM2();
+
         // A find in a played month: the Medical School's faculty complete M12 two years before history's month, and the sickness runs the new medicine in that month (REV-R6f P2).
         Game finds = HistoricalLicenceCheck.town("R6f-m12-find", true);
         HistoricalRecipeCheck.allExcept(finds, "M12");
@@ -209,6 +213,53 @@ public final class ModernRowsCheck {
                 findLoaded.getLoadFailure() + " " + findLoaded.getMonth());
         near("the loaded city's stays factor is the live city's", findLoaded.getSickness().getStaysFactor(), liveFinds.getStaysFactor(), 1e-12);
         near("...and is 1", findLoaded.getSickness().getStaysFactor(), 1, 1e-12);
+    }
+
+    /**
+     * The M12 group's month has M1 and M2 known, where the long recovery is 1 and the death lift 0, the fresh defaults, so it cannot tell a load that
+     * derives them from one that does not. This is a 1900 city played before both, with general care covering part of its people: the death lift is
+     * then a figure times that coverage, so a load must restore the coverage the month noted before it derives the medicine from it (REV-R6f P2).
+     */
+    static void medicineBeforeM1AndM2() throws Exception {
+        Game care = HistoricalLicenceCheck.town("R6f-m1m2-held", true);
+        step(care, "held 1900 city, early, before M1 and M2");
+        int month = care.getMonth();
+        int m1 = ResearchCatalog.knownFrom("M1"), m2 = ResearchCatalog.knownFrom("M2");
+        Research research = care.getResearch();
+        check("fixture: a city founded the 1900 way, played to a month before history's M1 and M2, with neither found nor known",
+                care.foundedUnfitted() && month < m1 && month < m2 && !research.foundHere("M1") && !research.foundHere("M2")
+                        && !research.known("M1", month) && !research.known("M2", month),
+                month + " " + m1 + " " + m2);
+        double stays = 1;
+        boolean noneKnown = true;
+        for (String code : Sickness.STAYS_ROWS) {
+            noneKnown &= !research.known(code, month);
+            stays *= Sickness.staysBefore(code);
+        }
+        check("fixture: no row that shortens general care's stays is known that month either, so its stays factor is the product of what each leaves, under 1",
+                noneKnown && stays < 1, Sickness.STAYS_ROWS + " " + stays);
+        double coverage = care.getHealthcare().getCoverage(CareType.GENERAL);
+        check("fixture: the month noted a general care coverage strictly between 0 and 1, neither none nor the default 1", coverage > 0 && coverage < 1, coverage);
+        Sickness live = care.getSickness();
+        near("the live city's stays factor is the product of every stays row's share", live.getStaysFactor(), stays, 1e-12);
+        near("the live city's long recovery is Sickness.LONG_RECOVERY_BEFORE_M1", live.getLongRecovery(), Sickness.LONG_RECOVERY_BEFORE_M1, 1e-12);
+        near("the live city's death lift is Sickness.SERVED_DEATHS_BEFORE_M2 times the coverage the month noted", live.getDeathLift(), Sickness.SERVED_DEATHS_BEFORE_M2 * coverage, 1e-12);
+        check("...so the death lift is not the fresh default 0, nor is the long recovery the default 1", live.getDeathLift() != 0 && live.getLongRecovery() != 1,
+                live.getDeathLift() + " " + live.getLongRecovery());
+
+        GameFiles.Result saved = RecipeCheck.save10(care, "R6f M1 M2 held");
+        check("the early city's save writes wholly", saved.whole(), saved.message());
+        Game loaded = RecipeCheck.load10(care);
+        check("the early city loads in the month it was saved", loaded.getLoadFailure() == null && loaded.getMonth() == month,
+                loaded.getLoadFailure() + " " + loaded.getMonth());
+        near("the loaded city's general care coverage is the live city's, as the month noted it", loaded.getHealthcare().getCoverage(CareType.GENERAL), coverage, 1e-12);
+        Sickness back = loaded.getSickness();
+        near("the loaded city's stays factor is the live city's at once, before any month", back.getStaysFactor(), live.getStaysFactor(), 1e-12);
+        near("...and is the product of every stays row's share", back.getStaysFactor(), stays, 1e-12);
+        near("the loaded city's long recovery is the live city's", back.getLongRecovery(), live.getLongRecovery(), 1e-12);
+        near("...and is Sickness.LONG_RECOVERY_BEFORE_M1", back.getLongRecovery(), Sickness.LONG_RECOVERY_BEFORE_M1, 1e-12);
+        near("the loaded city's death lift is the live city's", back.getDeathLift(), live.getDeathLift(), 1e-12);
+        near("...and is Sickness.SERVED_DEATHS_BEFORE_M2 times the coverage", back.getDeathLift(), Sickness.SERVED_DEATHS_BEFORE_M2 * coverage, 1e-12);
     }
 
     /* ----- 2. B10 ----- */
