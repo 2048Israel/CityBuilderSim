@@ -146,6 +146,11 @@ The runs here, on the PC, one at a time:
   planner, the processing sectors or the retirement ran one at a time: InvestCheck red on its known line, and HomeRailCheck
   red, new (section 6), green on two spurs.
 - The pick is ALL (`BusinessInvestment.java`, 66 readers), so the dry run judges LongPlaytest and the rest.
+- **The ensemble** (`docs/ensemble/CY1.md`), on 41d77afb0 after REV-CY1b's SHIP, 80 of 80 runs on the gate box, scored
+  against 0.9.198 (FC2b's): batch verdict PASS, hard criteria 10 of 10 (M1 0 months, F1 0 of 16 in every policy), no
+  verdict changed. Beside the baseline: AUTO2 reaches 40,000 people at m331 (m322), its final population 9,223,026
+  (9,078,825), inflation m240 on 2.63% (2.66%); A2, the longest spell over 10%, is 13 months, FAIL as the baseline's
+  (13); HIGH's unemployment over its twin 2.94 points (3.37); the pairing 64 of 64.
 
 ## 5. Left as found
 
