@@ -109,3 +109,20 @@ more to get just roads fixed").
   moved city can bring it back), so FRW1 stays queued in the ship file; if the dry run shows it, the row naming FRW1 goes back.
 - The review owed: money and saves (the brief; tools/pick.sh reads no money or saves in the diff, but the handover's payment, the
   crews' import and format 65 are both). The ensemble is owed after the review (the trace moves: businesses hand sites abroad).
+
+## 6. The review (REV-FC2b-1) and what it folded
+
+- SHIP, no P1 (the orchestrator, 2026-11-24: money booked once; the interest call right, only the earnings brought forward are
+  incremental; the split exact; the bump owed; the refusal real). Three notes folded, no further review:
+  - (2) A handover record kept +Infinity for a wait at home that never ends, and DataSave's Gson refuses an infinity. Every figure
+    the record keeps is now finite (BuildingManager.handSiteAbroad(), finiteOr0()), the endless wait as Double.MAX_VALUE, siteMonths()'
+    own never. ForeignChoiceCheck 8 saves and loads such a record (its save line throws without the guard). No input of a played city
+    reaches it: Game.orderWaitOutput() adds the crews' month, never nothing while trade is on, so the section reaches the endless wait
+    through abroadTermsOf()'s wait output of nothing and says so (★: kept as a guard, not a path).
+  - (3) ForeignChoiceCheck 9: a Paved Road site paving two Gravel Roads handed by the card; its record is the site's whole owed work, the
+    gravel roads retire as the paved ones open, all by month 20 against month 28 in the twin kept at home.
+  - (5) ForeignChoiceCheck 10: a landlord that must borrow its extra moves and its debt rises by the shortfall, and its twin barred from
+    borrowing (a write-down's ban, restoreCreditRecord) stays with nothing moved; the treasury holding the card's extra hands the site,
+    and holding half of it refuses ("the treasury holds ... and the crews' extra costs ...") with nothing moved. Found on the way: the
+    government never borrows (Game's government canBorrow() is false), so the card's shortfall always refuses, as fit()'s does.
+- ForeignChoiceCheck: 281 assertions green, 1m48s with its compile. Main had not moved: nothing to merge.
