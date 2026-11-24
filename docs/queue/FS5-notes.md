@@ -2960,7 +2960,7 @@ Other caused mends and calls:
 | 31–32 | Household grid depends on ledger households too, not only FamilyModel counts. Hold both across its tooltip month; zero cell closure and same Tooltip stay hard. |
 | 19,21 | Held payer need not remain last after rankings change. Find slider by identity; cause a newly added first-ranked payer before the held last-ranked one. Same node/held thumb/reading/ladder remain hard. |
 | 3 | KRW1: a one-minute file-read deadline measured load. Await actual worker completion with ten-minute hang guard AND require saved scratch city on the board. |
-| 24 | CD9-K: all natural paper offers can refuse. Try real offers, then book a Term through booked if necessary; reread actual financesPieces and require nonempty paper. The fallback branch was not exercised in 07e. |
+| 24 | CD9-K: default-cap offers can refuse. REV-FS5 removes the unfunded booked fallback: try a real model Fill-it sale, assert treasury proceeds/settle obligation, then actual paid holdings after the month. Required every-kind/nonempty premises remain hard if the market still refuses. |
 | 25,27,38 | FS5H/FC2: exact actual Lending/scheduleRow blank-skin strut cause and native regression above. |
 | 36 | KP6-N: no natural formatted-word move guaranteed; 240e91713 causes both prior endpoints and tests unchanged words too; complete native validation passes. |
 | 22 | Heap: renderer soft-age/viewport caches and proven Bank/MiniMap lifetimes above. Native1509.8/1509.6 and box1499.0 all pass1536; actual retained-page leak controls remain hard. |
@@ -3022,9 +3022,37 @@ KBP1/KRT1 restatements, and the three explicitly unresolved old owners.
 Final fetch still has e1b58f210. Every owned helper/JVM/job has ended;
 the marker remains provisional and no dry run has been started.
 
+REV-FS5 at512a0902e returns SHIP/noP1 (report:
+`C:/Users/Jerus/cbs/sessions/REV-FS5/out-1.jsonl`). The orchestrator's
+17:25 mail directs four P2 mends and P3, then fast/native validation and
+DRY GO without another question. This clears the review checkpoint above;
+the historical attribution limits remain facts, not a claimed cure or
+an exemption. No extra Pending/queued owner is invented.
+
+- ★ Replace unfunded `booked()` with the actual model sale at Fill it after
+  a default-cap refusal. A real sale may reopen an existing piece; detect
+  its added Sale record, require matching treasury cash/proceeds/settleDue,
+  and require paid holder positions after settlement. No injected bank cash,
+  fake holder or direct DebtManager.add* booking. A remaining refusal returns
+  null and leaves the caller's every-kind/nonempty premise hard red.
+- Retain main's KP6_HANDED_BACK=.75 as a hard floor on every nonrepeating
+  choice-content reading; .9 and the recurring-block guard remain for their
+  existing cases. Readings now print their count and lowest share.
+- The tooltip hold restores post-month ledger household counts in finally:
+  savings and debts per household must not drift after a UI-only premise.
+- Bound Prism's callback wait at60seconds; a missing callback is a timeout
+  failure, never an indefinite latch wait. Correct the ship paragraph:
+  the weak-reference predicate rejects a retained page; the1536MiB budget
+  alone cannot reject a5MiB leak within its26–37MiB margin.
+- Helper paper_sale supplies the real-sale mend, reviewed against the
+  production Sale/allotment fields. UnsettledFace and Sale.face use the
+  same principal; no bidder-sum tolerance or copied pricing formula.
+  --fast compiles31seconds, zero firm Stale. Native KeptCheck is next.
+  No gameplay/default trace changed; no ensemble is owed.
+
 One-in/out: `git diff --numstat origin/main` over AllChecks, KeptCheck,
 Observation, TimingCheck, KeptBench, the bench-only MiniMap/UserInterface
-entry points and generated dials/harness/maps is 4128 added/3516 removed,
+entry points and generated dials/harness/maps is 4204 added/3546 removed,
 notes and ship excluded. Repeated section prose is condensed beside the
 actual assertions; existing guards are retained. The ordinary Label mend
 is production UI code and is outside that process count.

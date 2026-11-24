@@ -1868,6 +1868,9 @@ public final class KeptBench {
         return releaseRendererImages(caches, true);
     }
 
+    /** REV-FS5: a missing render callback must fail the check rather than wait forever. */
+    private static final int RENDER_RELEASE_SECONDS = 60;
+
     private static int[] releaseRendererImages(java.util.Set<Object> caches, boolean pruneIdle) throws Exception {
         if (javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("cache release needs the harness thread");
         int[] counts = new int[8];
@@ -1919,7 +1922,8 @@ public final class KeptBench {
         toolkit.getMethod("addRenderJob", job).invoke(toolkit.getMethod("getToolkit").invoke(null),
                 job.getConstructor(Runnable.class).newInstance(release));
         // RenderJob.run() uses runAndReset(), so its Future never completes; wait on our own completion.
-        done.await();
+        if (!done.await(RENDER_RELEASE_SECONDS, java.util.concurrent.TimeUnit.SECONDS))
+            throw new java.util.concurrent.TimeoutException("Prism cache release did not finish within " + RENDER_RELEASE_SECONDS + " seconds");
         if (error.get() != null) throw new Exception("idle effect-image release failed", error.get());
         return counts;
     }

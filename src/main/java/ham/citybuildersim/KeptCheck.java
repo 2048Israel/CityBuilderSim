@@ -1183,6 +1183,9 @@ public class KeptCheck {
     /** The share of a page's nodes a month's redraw hands back, at least: nine in ten (the People page's rule). */
     static final double HANDED_BACK = 0.9;
 
+    /** Main's floor for changing content; REV-FS5: a nonrepeating block is still subject to a hard retention law. */
+    static final double KP6_HANDED_BACK = .75;
+
     /**
      * Kept's rule as a share, the same on any city (FS4): a redraw hands back HANDED_BACK of the nodes it draws again, that is of the
      * smaller of the last draw and this one, summed over the redraws watched. WHY: the rule was read against the first draw over a
@@ -1595,7 +1598,7 @@ public class KeptCheck {
     /**
      * Each choice and its following month equal a page built new; opened folds add to it.
      * KBP1: recurring new blocks fail. Nonrepeating content blocks are printed/countable readings out of the
-     * single-month share, while pageKeptCaused retains all 25 months. Every exclusion/refusal is reported.
+     * single-month share, with KP6_HANDED_BACK still hard; pageKeptCaused retains all 25 months. Every exclusion/refusal is reported.
      */
     static void pageReshapedCaused(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices) throws Exception {
         pageReshapedCaused(g, bench, page, n, choices, false);
@@ -1618,6 +1621,7 @@ public class KeptCheck {
             return bench.signature().size();
         });
         double worst = Double.MAX_VALUE;
+        double worstReading = 1;
         String worstAt = "";
         int worstMade = 0, worstKept = 0, repeated = 0, counted = 0, readings = 0, acted = 0, refused = 0;
         for (Choice c : choices) {
@@ -1658,6 +1662,7 @@ public class KeptCheck {
             } else if ((boolean) r[6]) {
                 readings++;
                 blockReadings++;
+                worstReading = Math.min(worstReading, (double) r[2]);
                 System.out.printf("  %s: the month after handed back %.1f%% of the nodes it drew again, a block of the month's content (a reading: not counted below)%n",
                         c.name(), (double) r[2] * 100);
             } else {
@@ -1676,6 +1681,8 @@ public class KeptCheck {
         else System.out.printf("  the month's redraw after a choice handed back %.1f%% of the nodes it drew again at the fewest (after \"%s\": %d made, %d handed back)%n",
                 worst * 100, worstAt, worstMade, worstKept);
         check("a month's redraw after each choice hands back nine in ten of the nodes it draws again, or more", worst >= HANDED_BACK);
+        check("nonrepeating content blocks still hand back at least three in four of the nodes drawn again ("
+                + readings + " readings, least " + String.format(java.util.Locale.ROOT, "%.1f%%", worstReading * 100) + ")", worstReading >= KP6_HANDED_BACK);
         check("...and no block a month made new after a choice repeats drawn again held still (KBP1: " + repeated + " did)", repeated == 0);
     }
 
@@ -3987,52 +3994,79 @@ public class KeptCheck {
     }
 
     /**
-     * The city's books put where the Finances screens have something to draw: one piece of every kind of paper sold through the
-     * model, as the Borrow page's own button sells it (executeDebtLogic, at the default highest yield), and a month played. Returns
-     * the pieces that came of it, sold in SELL_ORDER and returned in PAPER's order (null for a sale the auction would not make), after printing what each sale said.
+     * One piece of every kind PAPER names, sold through the Borrow page's model handlers and settled by a month played.
+     * A refused default-cap sale is tried at Fill it; a market that still takes nothing is a hard fixture failure.
      */
     static List<Debt> sellPaper(Game g, KeptBench bench) throws Exception {
         Debt[] out = new Debt[PAPER.length];
         double ask = fx(() -> Math.max(g.minimumIssueSize() * 3, g.getCash() / 40));
-        for (int i : SELL_ORDER) {
-            String[] p = PAPER[i];
-            List<Debt> before = fx(bench::financesPieces);
-            String said = fx(() -> quietly(() -> bench.financesSell(p[0], Integer.parseInt(p[1]), ask, !p[2].isEmpty())));
-            List<Debt> after = fx(bench::financesPieces);
-            after.removeAll(before);
-            out[i] = after.isEmpty() ? fx(() -> booked(g, p, ask)) : after.get(0);
-            System.out.println("  sold " + p[0] + " " + p[1] + (p[2].isEmpty() ? "" : " " + p[2]) + ": "
-                    + (after.isEmpty() ? "nothing came of it (" + said.split("\n")[0] + "); put on the books as the sale would have: " + pieceWords(out[i])
-                    : pieceWords(after.get(0))));
-        }
+        for (int i : SELL_ORDER) out[i] = sellPiece(g, bench, PAPER[i], ask);
         List<Debt> on = fx(bench::financesPieces);
-        check("fixture: the books hold one piece of every kind of paper PAPER names, sold or put there (" + java.util.Arrays.stream(out).filter(on::contains).count()
+        check("fixture: the books hold one piece of every kind of paper PAPER names, sold through the model (" + java.util.Arrays.stream(out).filter(on::contains).count()
                 + " of " + PAPER.length + ")", java.util.Arrays.stream(out).allMatch(d -> d != null && on.contains(d)));
         fx(() -> {
             month(g);
+            for (Debt d : out) if (d != null) settledPaper(d);
             return null;
         });
         return new ArrayList<>(java.util.Arrays.asList(out));
     }
 
     /**
-     * CD9-K (FS5): a piece of paper of a kind PAPER names put on the city's books directly, through the DebtManager's own booking (the one the
-     * sale and the central bank's roll use), when the market refused the sale: what the auction takes is the city's path (on AP1's city it
-     * refused five of the six as "Nothing issued."), and the book's pages need the piece, not the sale. Its coupon is a point over the policy rate.
+     * A real sale at the default cap, then Fill it if refused. The handlers set the price, fund the treasury and register
+     * the buyers' allotment; neither a refusal nor a reopening of an existing line may be mistaken for a new unfunded piece.
      */
-    static Debt booked(Game g, String[] paper, double face) {
-        DebtManager dm = g.getDebtManager();
-        int month = g.getMonth(), months = Integer.parseInt(paper[1]) * (paper[0].equals("Note") ? 1 : 12);
-        double coupon = Math.max(.01, dm.getPolicyRate() + .01);
-        Debt d = switch (paper[0]) {
-            case "Note" -> dm.addShortTermTBill(face, months, month);
-            case "Float" -> dm.addFloatingRateNote(face, months, month, .01, dm.getPolicyRate());
-            case "Serial" -> dm.addMediumTermBond(face, months, month, coupon);
-            case "Linked" -> dm.addLinkedBond(face, months, month, .01, dm.priceIndexLevel());
-            default -> paper[2].isEmpty() ? dm.addLongTermBond(face, months, month, coupon) : dm.addCallableBond(face, months, month, coupon, month + 60);
-        };
-        dm.updateInterest();
-        return d;
+    static Debt sellPiece(Game g, KeptBench bench, String[] paper, double face) throws Exception {
+        return fx(() -> {
+            Map<Debt, Integer> sales = new LinkedHashMap<>();
+            Map<Debt, Double> due = new LinkedHashMap<>();
+            for (Debt d : bench.financesPieces()) {
+                sales.put(d, d.getSales().size());
+                due.put(d, d.getSettleDue());
+            }
+            double cash = g.getCash();
+            int auctions = g.getDebtManager().auctionSales(), term = Integer.parseInt(paper[1]);
+            String what = paper[0] + " " + paper[1] + (paper[2].isEmpty() ? "" : " " + paper[2]);
+            String said = "";
+            for (int attempt = 0; attempt < 2; attempt++) {
+                boolean fill = attempt > 0;
+                said = quietly(() -> {
+                    if (!fill) return bench.financesSell(paper[0], term, face, !paper[2].isEmpty());
+                    double lot = g.issueLot(paper[0]);
+                    return switch (paper[0]) {
+                        case "Note" -> g.handleTBillLogic(face, term, lot, Auction.Cap.FILL);
+                        case "Float" -> g.handleFloatingNoteLogic(face, term, lot, Auction.Cap.FILL);
+                        case "Serial" -> g.handleMediumBondLogic(face, term, lot, Auction.Cap.FILL);
+                        case "Linked" -> g.handleLinkedBondLogic(face, term, lot, Auction.Cap.FILL);
+                        default -> g.handleLongBondLogic(face, term, lot, Auction.Cap.FILL, !paper[2].isEmpty());
+                    };
+                });
+                for (Debt d : bench.financesPieces()) {
+                    if (d.getSales().size() <= sales.getOrDefault(d, 0)) continue;
+                    Debt.Sale sale = d.getSales().get(d.getSales().size() - 1);
+                    double paid = sale.getProceeds();
+                    // Subtracting a small sale from a large treasury can lose its last bits.
+                    double tolerance = Math.max(1e-9, Math.ulp(cash) * 2);
+                    boolean funded = Debt.AUCTION.equals(sale.getHow()) && sale.getFace() > 0 && paid > 0
+                            && g.getDebtManager().auctionSales() == auctions + 1
+                            && Math.abs(g.getCash() - cash - paid) <= tolerance
+                            && Math.abs(d.getSettleDue() - due.getOrDefault(d, 0.0) - paid) <= tolerance
+                            && d.unsettledFace() >= sale.getFace();
+                    check("fixture: " + what + " sold through the model, its proceeds fund the treasury and its buyers owe the settle", funded);
+                    System.out.println("  sold " + what + (fill ? " at Fill it" : "") + ": " + pieceWords(d));
+                    return funded ? d : null;
+                }
+            }
+            System.out.println("  no sale of " + what + " at the default cap or Fill it: " + said.split("\n")[0]);
+            return null;
+        });
+    }
+
+    /** The model's settle has paid for the paper and registered at least one actual holder. */
+    static void settledPaper(Debt d) {
+        double held = 0;
+        for (Debt.Holder h : Debt.Holder.values()) held += d.heldBy(h);
+        check("fixture: " + pieceWords(d) + " has settled into paid holdings", d.getSettleDue() == 0 && d.unsettledFace() == 0 && held > 0);
     }
 
     /** The hand that puts the Finances tab on an area and a page. */
@@ -8329,7 +8363,7 @@ public class KeptCheck {
     /**
      * KHT1/FS5: hold FamilyModel and ledger cell counts across one month so grid cells stay open.
      * Return {tips before, surviving, same Tooltip, lost on kept nodes, cells closed, closures without hold}.
-     * The month's monetary stocks remain; only the grid's population premise is held.
+     * The month's monetary stocks remain; ledger counts are held only for the measurement and restored in finally.
      */
     static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception {
         return fx(() -> {
@@ -8343,43 +8377,49 @@ public class KeptCheck {
             List<Household> ledgerCells = g.getHouseholdBalance().cells();
             double[] households = ledgerCells.stream().mapToDouble(Household::households).toArray();
             month(g);
-            List<String> unheld = bench.householdCells();
-            g.getFamilies().restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), held);
-            g.getFamilies().restoreOwnerAdults(owners);
-            // FS5/KP7-N: below-the-rule cells are counted by the ledger, not FamilyModel; hold their counts too.
-            for (int i = 0; i < households.length; i++) ledgerCells.get(i).households = households[i];
-            List<String> kept = bench.householdCells();
-            int emptied = 0, wouldHave = 0;
-            for (String cell : cells) {
-                if (!kept.contains(cell)) emptied++;
-                if (!unheld.contains(cell)) {
-                    wouldHave++;
-                    System.out.println("  household grid cell " + cell + " closed in the month; after holding its counts: " + kept.contains(cell));
-                }
-            }
-            bench.drawKept(page);
-            bench.passes();
-            java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> after = bench.tooltips();
-            java.util.Set<javafx.scene.Node> still = bench.nodesOnPage();
-            int both = 0, same = 0, lost = 0;
-            for (java.util.Map.Entry<javafx.scene.Node, javafx.scene.control.Tooltip> e : before.entrySet()) {
-                javafx.scene.control.Tooltip now = after.get(e.getKey());
-                if (now == null) {
-                    // (A node kept on the page that has no tooltip now lost the one it had: Kept takes the tooltip off a kept node its draw does not tip.)
-                    if (still.contains(e.getKey())) {
-                        lost++;
-                        javafx.scene.Node node = e.getKey();
-                        String words = node instanceof javafx.scene.control.Labeled label ? label.getText() : node.getClass().getSimpleName();
-                        System.out.printf("  tooltip removed from kept %s, width %.4f, text %s, former tip %s%n",
-                                node.getClass().getSimpleName(), node.getLayoutBounds().getWidth(), words,
-                                String.valueOf(e.getValue().getText()).replace('\n', ' '));
+            double[] landed = ledgerCells.stream().mapToDouble(Household::households).toArray();
+            try {
+                List<String> unheld = bench.householdCells();
+                g.getFamilies().restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), held);
+                g.getFamilies().restoreOwnerAdults(owners);
+                // FS5/KP7-N: below-the-rule cells are counted by the ledger, not FamilyModel; hold their counts too.
+                for (int i = 0; i < households.length; i++) ledgerCells.get(i).households = households[i];
+                List<String> kept = bench.householdCells();
+                int emptied = 0, wouldHave = 0;
+                for (String cell : cells) {
+                    if (!kept.contains(cell)) emptied++;
+                    if (!unheld.contains(cell)) {
+                        wouldHave++;
+                        System.out.println("  household grid cell " + cell + " closed in the month; after holding its counts: " + kept.contains(cell));
                     }
-                    continue;
                 }
-                both++;
-                if (now == e.getValue()) same++;
+                bench.drawKept(page);
+                bench.passes();
+                java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> after = bench.tooltips();
+                java.util.Set<javafx.scene.Node> still = bench.nodesOnPage();
+                int both = 0, same = 0, lost = 0;
+                for (java.util.Map.Entry<javafx.scene.Node, javafx.scene.control.Tooltip> e : before.entrySet()) {
+                    javafx.scene.control.Tooltip now = after.get(e.getKey());
+                    if (now == null) {
+                        // (A node kept on the page that has no tooltip now lost the one it had: Kept takes the tooltip off a kept node its draw does not tip.)
+                        if (still.contains(e.getKey())) {
+                            lost++;
+                            javafx.scene.Node node = e.getKey();
+                            String words = node instanceof javafx.scene.control.Labeled label ? label.getText() : node.getClass().getSimpleName();
+                            System.out.printf("  tooltip removed from kept %s, width %.4f, text %s, former tip %s%n",
+                                    node.getClass().getSimpleName(), node.getLayoutBounds().getWidth(), words,
+                                    String.valueOf(e.getValue().getText()).replace('\n', ' '));
+                        }
+                        continue;
+                    }
+                    both++;
+                    if (now == e.getValue()) same++;
+                }
+                return new int[]{before.size(), both, same, lost, emptied, wouldHave};
+            } finally {
+                // REV-FS5: savings/debt are per household; the UI premise must not change the played city's money.
+                for (int i = 0; i < landed.length; i++) ledgerCells.get(i).households = landed[i];
             }
-            return new int[]{before.size(), both, same, lost, emptied, wouldHave};
         });
     }
 
@@ -8620,24 +8660,18 @@ public class KeptCheck {
         nothingSet(bench, page, name, null);
     }
 
-    /**
-     * The pieces of paper on the city's books; where there are none (the months the sections before this played let every maturity pass) one
-     * sold through the model, as the Borrow page's own button sells it, the first of a Term, a Note and a Serial the auction takes.
-     */
+    /** The pieces on the books, or a real sale settled through the model; a refusal leaves the nonempty premise hard red. */
     static List<Debt> piecesOnTheBooks(Game g, KeptBench bench) throws Exception {
         List<Debt> pieces = fx(bench::financesPieces);
         double ask = fx(() -> Math.max(g.minimumIssueSize() * 3, g.getCash() / 40));
-        for (String[] kind : new String[][]{{"Term", "10"}, {"Note", "12"}, {"Serial", "10"}}) {
+        for (String[] kind : new String[][]{{"Term", "10", ""}, {"Note", "12", ""}, {"Serial", "10", ""}}) {
             if (!pieces.isEmpty()) break;
-            String said = fx(() -> quietly(() -> bench.financesSell(kind[0], Integer.parseInt(kind[1]), ask, false)));
-            pieces = fx(bench::financesPieces);
-            System.out.println("  the books held no paper; " + kind[0] + " " + kind[1] + " sold through the model: "
-                    + (pieces.isEmpty() ? "nothing came of it (" + said.split("\n")[0] + ")" : pieceWords(pieces.get(0))));
-        }
-        if (pieces.isEmpty()) {
-            // FS5 (CD9-K): none sold, so a Term put on the books as the sale would have.
-            Debt d = fx(() -> booked(g, PAPER[3], ask));
-            System.out.println("  ...and none was taken: " + pieceWords(d) + " put on the books");
+            Debt sold = sellPiece(g, bench, kind, ask);
+            if (sold != null) fx(() -> {
+                month(g);
+                settledPaper(sold);
+                return null;
+            });
             pieces = fx(bench::financesPieces);
         }
         return pieces;
