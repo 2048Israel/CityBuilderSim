@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FS5-dKjxpGov -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — FS5, the KeptCheck sweep from section 55 — 2026-11-24, ready, see docs/queue/FS5-notes.md
 KeptCheck causes its fund settlements, standing bids, held household cells, paper holdings and policy controls, and awaits the saved-city worker's result.
