@@ -4342,3 +4342,50 @@ Native source is clean, all owned jobs ended, and source/data/JDK hashes
 are verified. Earlier compile stops remain unrun historical checkpoints.
 The housing core is green here; CPI coverage/weight correction and final
 money/save verification remain open before mends.
+
+The CPI source audit (269e/fd51) establishes an end-of-step sample after
+Markets seller sales/endOfMonth and before closeMonth; the start-of-step
+strike is not repeated there. Existing FOOD and RENT weights read struck
+M-1 seller statements, while meals/luxury and billed fees use current
+flows. The initially suggested subtraction of the latest fuel bill from
+struck retail sales is therefore wrong-period. Retail's current pending
+ledger and current rent bill are already saved/restored; no payment or
+strike change is needed.
+
+★ Observe completed current acquisitions at that existing CPI phase:
+read only current actual food sales, the actual charged shelf observation
+and existing getRentIncomeBilled, retain current meal/luxury and existing
+billed-service convention, and add actual current car/fuel purchases.
+Narrow scalar getters may read the already saved pending ledger; no
+mutable ledger is exposed. This corrects observation periods, rather than
+moving transactions, settlement, recordMonth, cadence or policy windows.
+Normal adjacent-month varying-fuel cases must prove period reconciliation.
+
+The audit also finds home-fuel sales in the old retail household total.
+Selecting only GROCERIES would omit that existing consumption unless it
+is explicitly covered. Do not drop it or leave it priced as food. The
+source builder must identify its exact Good, current quantity/bill/price,
+saved state and any rental-provided-energy counterpart before choosing
+its separate comparable component. No home-fuel coefficient, new UI,
+annual relink or actual transaction change is authorized by that finding.
+
+Home-fuel source report a99b identifies two homogeneous goods, rather
+than a single interchangeable energy unit: household JET/lamp oil in
+litres and THERMAL_COAL in tonnes. Retail records each actual household
+trade separately at its own VAT-inclusive price, without petrol duty or
+queue pricing. HomeFuel.heldSale already saves homes/litres/tonnes and
+bill/cost/imported money, and the per-Good pending ledger is saved too.
+These are separate household fuel bills, not rental-provided energy.
+
+★ Append LAMP_OIL and HOME_COAL after NEW_CARS/PETROL, leaving the old
+five positions unchanged (nine components total). Include each current
+household bill once at its comparable paid unit price; no heterogeneous
+fuel-unit average or unnecessary new home-fuel flow state. Use actual
+household quantities, or prove the corresponding Retail good has only
+household buyers, before dividing household value by units. Fixtures must
+reconcile the two bills/quantities with the saved HomeFuel sale and exclude
+industrial JET/coal from the consumer basket. Current food is only the
+actual GROCERIES line. Check the CPI service-fee sub-basket explicitly so
+home fuel is not counted there as well. These observation/coverage changes
+move no actual transaction, strike or settlement, and keep the existing
+120-month cadence, explicit parity rent cap and every policy law.
