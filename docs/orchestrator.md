@@ -53,6 +53,21 @@ pace or whether to go ahead. One mail per decision, sent once: no reminders,
 no "still waiting". Keep it to a few short lines with the question first (his
 phone cut 11-23's long ones off).
 
+**A check red on new behaviour: check reality first** (Jerus, 2026-11-23, desk
+chat: "sometimes its as simple as check reality"). WHY: RES3's lenders held
+housing back at high rates, homes finished later and rents rose, and
+MonetaryCheck went red; all three options put to him treated that as a defect,
+yet it is how the real world works (high rates cut building and shelter costs
+then rise, US 2022-24; the cost channel; the price puzzle), and his answer was
+"even reality higher interest rates doesnt always equal liwer inflation". So,
+for the orchestrator, every builder and every reviewer: (1) ask whether the
+real world does it, looking it up when unsure (the data, the economics,
+history); (2) if it does, the model is right and the check's law incomplete:
+restate the check to the real law, keep what still holds, add an assertion
+that the real effect is there, and cite the evidence in the notes; never hide
+it with a fixture change or call it noise; (3) if it does not, it is a defect:
+mend it; (4) only what reality cannot settle goes to Jerus.
+
 ## Dispatch
 
 - **Read live budget at the start of EVERY turn and immediately before every
