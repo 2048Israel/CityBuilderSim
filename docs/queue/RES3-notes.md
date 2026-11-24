@@ -3964,3 +3964,63 @@ standing-stock, glut, funding and actual expense rules are unchanged.
 Test-only commit d379c33e1 precedes the production correction so the new
 findings can be demonstrated against the old pushed model. No compile or
 JVM has run on this candidate yet; remote validation remains required.
+
+Remote old/new finding proof (24 November, 15:50): the test-only pushed
+commit d379c33e155c8d6ed891ba60c2da54b8e6b4a41d compiles on the box,
+as does a temporary package driver calling the two new caused sections.
+It fails 20 of the 110 assertions: 16 fractional financial assertions and
+four gross-quote assertions. The exact pushed candidate
+0894946a75bbf191e06d4ea04c184ac5953c1bdc compiles and passes all 110,
+with no fixture repair or source/test alteration. These are caused finding
+proofs, not substitutes for the normal named harnesses or MonetaryCheck.
+Native Temurin/data/source hashes are in finding-old.manifest.txt under
+~/cbs/runs/res3-fraction-pay-20261124-old-d379c33e1 and
+finding-new.manifest.txt under
+~/cbs/runs/res3-fraction-pay-20261124-candidate-0894946a7. Shared box.lock
+covers each native compile/run. No laptop JVM ran. The helper proceeds
+with separate normal HouseholdCheck, HousingMarketCheck and unchanged
+MonetaryCheck calls; their results are still pending at this checkpoint.
+
+The first normal named HouseholdCheck passes (batch exit 0, exactly one
+selected harness) on 0894946a7. Normal HousingMarketCheck fails: the
+corrected classification is 31 stale additive unbuilt-quote expectations
+in fractionalPressure and 55 household-money conservation failures across
+integrated fixture months, first foundingBudgets month 4. The caused 110
+assertions still pass; no pool-conservation failure is reported. The
+conservation failure is a real counterpart defect to diagnose and mend,
+not a waived finding. MonetaryCheck is held until that counterpart is
+fixed. A peer-only correction of the stale additive expectation is
+authorized; every cash/claim/audit bound remains unchanged. Reports efb0
+and 5aeb retain the exact normal run and distinguish the two failure
+classes. No JVM remains from those finished checks.
+
+The bounded native founding diagnostic proves the first conservation
+counterpart: at month 4, bank deposit-interest debit is
+0.0005624801107814218, while actual weighted depositIncome credited is
+0.0002881474130932002. The missing 0.00027433269768822156 equals the
+household residual -0.00027433269768714543 within 1.08e-15. Account fees,
+lending, settlement allocation and the pool audit reconcile; genuinely
+unfunded 0.005729148740415714 remains explicit. MoneyAudit uses the actual
+weighted savings and has no empty-cell exception to relax.
+
+★ Pay actual deposit interest to each positive balance owner.
+creditDepositInterest's totalSavings denominator now retains fractional
+owners, while its old isEmpty payment guard still skips them. Change only
+the recipient count guard, keep the denominator, total bank debit and
+weights, and cause a deposit ownership/counterpart regression. Optional
+whole-cell credit eligibility remains unchanged. Reports 7343/8eaa prove
+the exact source and recipient difference; full HousingMarketCheck must
+still pass every repeated conservation guard after the pushed correction.
+
+The narrow source audit also finds existing paper/bond payments affected
+by preserving positive owners. paperWeight's totalPaper denominator
+includes them, but its isEmpty recipient guard drops their share of
+coupon, principal and buyback payments. creditBondCoupons instead calls
+a positive fractional bond owner's coupon orphaned and redistributes it.
+★ Pay those actual owned claims to the positive owner, keeping genuine
+ownerless fallback, totals, principal/basis changes and all optional
+purchase eligibility unchanged. Cause ownership, source debit and face
+conservation at quarter/half/just-below-half/zero counts before claiming
+these corrections verified. This is financial counterpart completion,
+not a numeric rent or CPI calibration. Report f321 distinguishes these
+source findings from the exactly proved founding deposit residual.

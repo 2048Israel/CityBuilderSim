@@ -4833,7 +4833,7 @@ public class HouseholdBalance {
 
     /** Pro rata to the paper held: what a dollar of face in the households' book is spread as, cell by cell. */
     private double paperWeight(Household c, double total) {
-        return total > 0 && !c.isEmpty() ? c.paper * c.households / total : 0;
+        return total > 0 && c.households > 0 ? c.paper * c.households / total : 0;
     }
 
     /** A coupon on the households' share, into savings and the month's investment income, pro rata to the paper. Untaxed, as the foreign coupon is. */
@@ -5054,7 +5054,7 @@ public class HouseholdBalance {
             double v = e.getValue() == null ? 0 : e.getValue();
             if (!(v > 0)) continue;
             Household c = cellByKey(e.getKey());
-            if (c == null || c.isEmpty()) { orphaned += v; continue; }
+            if (c == null || !(c.households > 0)) { orphaned += v; continue; }
             double each = v / c.households;
             c.savings += each;
             c.investmentIncome += each;
@@ -5536,7 +5536,7 @@ public class HouseholdBalance {
         double base = totalSavings();
         if (base <= 0) return;
         for (Household c : cells) {
-            if (c.savings <= 0 || c.isEmpty()) continue;
+            if (c.savings <= 0 || !(c.households > 0)) continue;
             double share = c.totalSavings() / base;
             c.depositIncome = total * share / c.households;
             c.savings += c.depositIncome;

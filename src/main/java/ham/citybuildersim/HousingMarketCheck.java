@@ -315,7 +315,78 @@ public final class HousingMarketCheck {
             near("load preserves the secured tax claims: "+count,copy.sum(c->c.taxClaim[0]*c.households()),claimBefore);
             near("load reproduces the positive fractional spending plan: "+count,copy.getSpendingCapacity(),b.getSpendingCapacity());
             near("load retains the fractional recipient own cash: "+count,copy.cell(FamilyStructure.SINGLE_ADULT,tier).savings(),fraction.savings());
+            double depositsBefore=b.totalSavings(),fractionBefore=fraction.savings(),coupleBefore=couple.savings();
+            // The existing credit method receives the bank's booked debit; the
+            // full native founding audit also checks its actual bank counterparty.
+            double sourceDebit=unit;b.creditDepositInterest(sourceDebit);
+            near("the booked deposit-interest debit reaches actual account holders: "+count,b.totalSavings()-depositsBefore,sourceDebit);
+            near("credited deposit-income flows reconcile the actual source debit: "+count,b.sum(c->c.depositIncome*c.households()),sourceDebit);
+            if(count>0){
+                check("a positive fractional deposit receives its own interest: "+count,fraction.depositIncome>0);
+                near("existing deposit balances receive the same actual return: "+count,
+                        fraction.depositIncome/fractionBefore,couple.depositIncome/coupleBefore);
+                near("the fractional owner retains its interest payment: "+count,fraction.savings()-fractionBefore,fraction.depositIncome);
+            }else{
+                near("exact zero receives no deposit interest",fraction.depositIncome+fraction.savings(),0);
+            }
         }
+    }
+    static void fractionalClaims(){
+        out.println("--- positive fractional owners receive existing paper and bond claims ---");
+        for(double count:new double[]{.25,HouseholdBalance.EMPTY_CELL,Math.nextDown(HouseholdBalance.EMPTY_CELL),0}){
+            var b=new HouseholdBalance();var tier=PayTier.UNSKILLED;
+            java.util.function.ToDoubleBiFunction<FamilyStructure,PayTier> census=(s,p)->p!=tier?0:
+                    s==FamilyStructure.SINGLE_ADULT?count:s==FamilyStructure.COUPLE?1:0;
+            b.censusOnly(census);var fraction=b.cell(FamilyStructure.SINGLE_ADULT,tier);var couple=b.cell(FamilyStructure.COUPLE,tier);
+            for(var c:List.of(fraction,couple))if(c.households()>0){
+                c.savings=10;c.paper=12;c.putBondFace(7,6);c.recountBonds();c.shares[0]=2;c.basis[0]=3;
+            }
+            double basis=b.sum(c->c.basis[0]*c.households());
+            double cash=b.totalSavings(),paper=b.totalPaper(),fractionCash=fraction.savings();
+            double coupon=paper/12;b.creditPaperCoupon(coupon);
+            near("paper coupon debit reaches all actual owners: "+count,b.totalSavings()-cash,coupon);
+            near("paper coupon preserves its source face: "+count,b.totalPaper(),paper);
+            if(count>0){
+                check("the fractional paper owner receives its coupon: "+count,fraction.savings()>fractionCash);
+                near("fractional and whole paper claims receive the same coupon per face: "+count,fraction.paperIncome/fraction.paper,couple.paperIncome/couple.paper);
+            }
+            cash=b.totalSavings();double fractionPaper=fraction.paper;double principal=paper/3;
+            b.creditPaperPrincipal(principal);
+            near("paper principal debit reaches every actual owner: "+count,b.totalSavings()-cash,principal);
+            near("paper principal reduces exactly the redeemed face: "+count,paper-b.totalPaper(),principal);
+            if(count>0)check("fractional principal is actually redeemed: "+count,fraction.paper<fractionPaper);
+            cash=b.totalSavings();paper=b.totalPaper();fractionPaper=fraction.paper;
+            double boughtFace=paper/2,buybackPrice=boughtFace*2;b.creditPaperBuyback(boughtFace,buybackPrice);
+            near("paper buyback pays its actual source cash: "+count,b.totalSavings()-cash,buybackPrice);
+            near("paper buyback reduces its actual source face: "+count,paper-b.totalPaper(),boughtFace);
+            if(count>0)check("fractional buyback reduces its own paper: "+count,fraction.paper<fractionPaper);
+            cash=b.totalSavings();fractionCash=fraction.savings();double dueFraction=count*2,dueCouple=2;
+            double credited=b.creditBondCoupons(Map.of(fraction.key(),dueFraction,couple.key(),dueCouple));
+            near("record-date bond coupons reach their actual owners: "+count,credited,dueFraction+dueCouple);
+            near("bond coupon source debit equals aggregate account credit: "+count,b.totalSavings()-cash,credited);
+            near("the fractional owner's own recorded coupon stays with it: "+count,(fraction.savings()-fractionCash)*count,dueFraction);
+            double[] noIncome=new double[Household.ROWS];
+            var copy=new HouseholdBalance();check("paper and bond owner cell save restores",copy.restoreCells(b.cellKeys(),b.toCellSaveArray(),Equity.COMPANIES));
+            copy.restoreBondsByCell(b.bondsByCellToSave());
+            cash=b.totalSavings();b.planOnly(census,noIncome,0,noIncome,0,0);copy.planOnly(census,noIncome,0,noIncome,0,0);
+            near("claim reload/replan conserves every owner's cash: "+count,copy.totalSavings(),cash);
+            near("claim reload retains the actual paper face: "+count,copy.totalPaper(),b.totalPaper());
+            near("claim reload retains the actual bond face: "+count,copy.totalBonds(),b.totalBonds());
+            near("claim payments preserve existing security basis: "+count,b.sum(c->c.basis[0]*c.households()),basis);
+            near("claim reload preserves existing security basis: "+count,copy.sum(c->c.basis[0]*c.households()),basis);
+            near("claim reload reproduces the same spending plan: "+count,copy.getSpendingCapacity(),b.getSpendingCapacity());
+            cash=b.totalSavings();double face=b.bondFaceHeld(7);double paid=b.creditBondPrincipal(7);
+            near("maturing bond principal pays all actual face: "+count,paid,face);
+            near("maturing bond source debit reaches accounts: "+count,b.totalSavings()-cash,paid);
+            near("maturity extinguishes exactly that bond claim: "+count,b.bondFaceHeld(7),0);
+            if(count==0)near("exact zero has no paper, bond or payment",fraction.paper+fraction.bonds+fraction.savings(),0);
+            cash=b.totalSavings();double orphaned=b.creditBondCoupons(Map.of("no-owner",1.0));
+            near("a genuine orphan coupon retains the existing eligible-recipient fallback: "+count,orphaned,1);
+            near("the genuine orphan fallback conserves its actual source debit: "+count,b.totalSavings()-cash,orphaned);
+        }
+        var nobody=new HouseholdBalance();
+        near("no eligible recipient creates no orphan-coupon cash",nobody.creditBondCoupons(Map.of("no-owner",1.0)),0);
+        near("no eligible recipient leaves aggregate cash unchanged",nobody.totalSavings(),0);
     }
     static void foundingBudgets(){
         out.println("--- a founding worker's current wage funds the first actual home ---");
@@ -339,7 +410,8 @@ public final class HousingMarketCheck {
         check("no unbuilt class receives floating-point leftover demand",market.classes().stream().filter(c->c.homes==0).allMatch(c->c.demand==0));
         market.reprice(0);
         for(var c:market.classes())if(c.available&&c.homes==0)
-            near("an unbuilt class keeps its opening cost quote "+c.key(),c.ask,c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12+c.carry);
+            near("an unbuilt class keeps its gross quote or actual cost floor "+c.key(),c.ask,
+                    Math.max(c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12,c.carry));
     }
     static void sharingOrder(){
         out.println("--- affordable singles before emergency sharing; one quote and conserved existing cells ---");
@@ -1331,7 +1403,7 @@ public final class HousingMarketCheck {
         }
     }
     public static void main(String[] args)throws Exception{
-        out=System.out;fractionalSettlement();
+        out=System.out;fractionalSettlement();fractionalClaims();
         out=System.out;unbuiltGrossQuotes();
         out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
         out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
