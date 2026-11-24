@@ -3812,3 +3812,40 @@ are historical and must not be read as merged validation. The current
 not-started marker is target/RES3-root-fast-current-status.json; resumption
 uses target/RES3-root-fast-merged-cy1-20261124.sh, which samples MG1 first
 and writes source-labelled new logs rather than reusing old output.
+
+The orchestrator's 14:30 call (mail
+20261124-143014-040-orchestrator-9d23) keeps the total high-versus-low
+MonetaryCheck effect at or above its positive one-point floor. The earlier
+premise-call recommendation was wrong: observing a valid shelter supply
+response did not establish a valid total CPI response. Mend the model's
+rent calibration or expenditure coverage/weight if the measured burden is
+too high; keep the law, window, rates, seeds, bounds and supply assertions.
+First measure default-city months 240-600 against actual housing-cost and
+CPI benchmarks. No calibration target is chosen before that measurement.
+
+The same call authorizes heavy named replays on the gate box, from the
+pushed commit, holding box.lock shared and running one model at a time,
+following FC2-notes section 6. Laptop RAM will not clear soon; do not wait
+for it or run heavy replays here. Central's laptop timeout is treated as
+under-pressure until the box provides its verdict. Fresh sub-session
+RES3-rent-weight starts at fb2f3a74d with the measurement and source diagnosis;
+parent keeps decisions, review and records. It has no model-edit authority
+yet. It reports the reachable box's existing ensemble write lock and
+prepares passive capture while waiting, with no laptop JVM.
+
+Verified benchmarks, retrieved 2026-11-24:
+
+| Measure | Published benchmark | Interpretation/source |
+|---|---:|---|
+| U.S. CPI-U shelter, December 2025 | 35.625% | Includes owners' equivalent rent; primary-residence rent alone is 7.840%, not the whole shelter service. [BLS relative importance](https://www.bls.gov/cpi/tables/relative-importance/2025.htm), [definitions](https://www.bls.gov/cpi/factsheets/owners-equivalent-rent-and-rent.htm). |
+| Canadian 2026 basket, 2025 expenditures | 28.51% shelter | Reference-period expenditure share; the article distinguishes it from price-updated link-month weights. [Statistics Canada](https://www150.statcan.gc.ca/n1/pub/62f0014m/62f0014m2026005-eng.htm). |
+| U.S. cash-paying renter households, 2024 ACS | 30.9% median gross-rent/income | Table estimate; the release rounds it to 31%. Gross rent includes utilities. [B25071](https://data.census.gov/table/ACSDT1Y2024.B25071), [release](https://www.census.gov/newsroom/press-releases/2025/acs-1-year-estimates.html). |
+| Canadian affordability standard | Less than 30% before-tax income | A normative standard, not an observed population median or CPI weight. [CMHC](https://www.cmhc-schl.gc.ca/professionals/housing-markets-data-and-research/housing-research/core-housing-need/identifying-core-housing-need). |
+
+The income burden and CPI expenditure share have different denominators;
+do not substitute one for the other, or compare the model's whole shelter
+service with only the U.S. primary-rent subcomponent. Model measurements
+must report actual-flow/statement timing and paying versus sponsored
+households. BLS statistical material is public domain with attribution
+([policy](https://www.bls.gov/bls/linksite.htm)); Statistics Canada data is
+under its commercially reusable [Open Licence](https://www.statcan.gc.ca/en/terms-conditions/open-licence).
