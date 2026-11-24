@@ -658,6 +658,8 @@ public class SectorStatementCheck {
                         && sameParts(c.servicesSoldParts(), cb.servicesSoldParts()));
         assertTrue("...so its revenue is its goods, its other revenue and the work sold abroad, to the cent (\"revenue by good\")",
                 Math.abs(goods + st.otherRevenue + services - st.revenue) <= CENT);
+        assertTrue(String.format("...and the loaded town's revenue is the saved town's, to the bit (%,.6f, %,.6f; REV-FC2c)", st.revenue, c.statement().revenue),
+                Double.compare(st.revenue, c.statement().revenue) == 0);
         quietly(() -> back.saveGame(STRUCK_SLOT));
         Game again = new Game(back.getGameFiles());
         quietly(() -> again.loadGameSave(STRUCK_SLOT));

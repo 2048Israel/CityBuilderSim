@@ -8734,8 +8734,8 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 263 | `SectorStatementCheck.bondsSoonBefore` | `new LinkedHashMap<>()` | Last month's bonds falling due within a year, by sector: what this month's bond repayments must be inside. |
 | 607 | `SectorStatementCheck.SOLD_MONTHS` | `48` | The months the calm town is given to sell its builders' spare points abroad (ForeignCrewsCheck 5 gives it 24 to run its queue down, and 24 more). |
 | 609 | `SectorStatementCheck.SOLD_SLOT` | `11, STRUCK_SLOT = 12` | The scratch slots the builders' sale is saved in: the month it is pending, and the month it is struck. |
-| 862 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", "bondsWrit...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
-| 1100 | `SectorStatementCheck.BooksAudit.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
+| 864 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", "bondsWrit...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
+| 1102 | `SectorStatementCheck.BooksAudit.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
 
 ### ShortSellingCheck.java ([map](map/ShortSellingCheck.md))
 

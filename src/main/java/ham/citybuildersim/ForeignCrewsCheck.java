@@ -690,12 +690,13 @@ public class ForeignCrewsCheck {
                 bm.monthsQueued(), bm.thresholdMonths(), next.points(), houseEach, b1, bm.abroadOwedOf(plant), bm.abroadOwedOf(house));
         ok("a month on, the queue at home is under the threshold again", bm.monthsQueued() < bm.thresholdMonths());
         ok("...and the next order is built at home", next.points() < houseEach);
-        // ...in its share, never more than the points it owes (the plant's rule below): PW2's cap holds the plant to its month, so the month's
-        // points past it land on the Houses' site, which may then owe less than its share (on the merged branch 14,654.9 against 15,238.1).
+        // ...in its share: the claim itself, as the save carries it (getAbroadOwedById(), no cut to the points owed; REV-FC2c). PW2's cap holds
+        // the plant to its month, so the month's points past it land on the Houses' site, which may then owe less than its share (FC2-C's
+        // trace: on the merged branch 14,654.9 against 15,238.1), and abroadOwedOf() reads the points owed there.
         out.printf("  the Houses' site owes %,.1f points against its share of his book %,.1f; the plant's %,.1f against %,.1f%n",
                 bm.getStack(house).owedPoints(), H * b1 / (P + H), bm.getStack(plant).owedPoints(), P * b1 / (P + H));
-        near("his month fell on the Houses' work on his book in its share, never more than the points it owes", bm.abroadOwedOf(house),
-                Math.min(bm.getStack(house).owedPoints(), H * b1 / (P + H)), 1e-9);
+        near("his month fell on the Houses' work on his book in its share", bm.getAbroadOwedById().getOrDefault(house.getId(), 0.0),
+                H * b1 / (P + H), 1e-9);
         near("...and on the plant's, never more than the points it owes", bm.abroadOwedOf(plant),
                 Math.min(bm.getStack(plant).owedPoints(), P * b1 / (P + H)), 1e-9);
 

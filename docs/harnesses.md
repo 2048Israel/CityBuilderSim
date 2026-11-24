@@ -12214,48 +12214,48 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L680 ...the sites' work on his book still his book
   - L691 a month on, the queue at home is under the threshold again
   - L692 ...and the next order is built at home
-  - L697 his month fell on the Houses' work on his book in its share, never more than the points it owes
-  - L699 ...and on the plant's, never more than the points it owes
-  - L703 fixture: the school is still on site
-  - L705 fixture: the school's and the plant's sites can be cancelled
-  - L714 fixture: the month's end stopped both with points left
-  - L715 a cancel of an order quoted at home takes no share of his book
-  - L716 the plant's takes its work's share of his book
-  - L717 ...off his book after his month, never more than its points left
-  - L718 ...which leaves the Houses' work on his book whole
-  - L762 fixture: a second plant, split at the threshold, its work past it on his book beside the Houses'
-  - L768 fixture: the Houses' site finished with the plant's work still on his book
-  - L799 fixture: Houses on the finished site are quoted at home, in the city and in its loaded twin
-  - L801 fixture: ...and ordered in both
-  - L804 an order quoted at home on a site that finished claims none of his book
-  - L805 ...as its loaded twin reads it
-  - L806 ...and the plant's work on his book is the twin's
-  - L808 fixture: the Houses' and the plant's sites can be cancelled, in both
-  - L817 fixture: the month's end stopped both, in both, with points left
-  - L819 the Houses' cancel takes no share of his book: their order was quoted at home
-  - L820 ...nor in the twin
-  - L821 the plant's takes the share the twin's takes
-  - L822 ...and his book after the cancels is the twin's
-  - L842 fixture: on foothill ground it carries its pad's preparation, and the threshold splits it
-  - L844 ...its preparation quoted abroad in the share its building's points are
-  - L847 fixture: ...and ordered
-  - L849 the queue counts its preparation with its building: what the sites owe rose by both
-  - L850 ...his book took its work quoted abroad, the preparation's share with it
-  - L851 ...which the sites owe: the offer's cut to what they owe takes none of it
-  - L853 a month on, his book is what it held less what he built: the offer cut none of the work its payer paid for abroad
-- **L866 8. a currency reform: his book's price a point is the city's money, divided with it**
-  - L869 fixture: his book holds points at a price
-  - L872 fixture: the reform is made
-  - L876 the book's price a point is divided by the reform
-  - L877 ...and the offer bills his month at it
-  - L882 fixture: he built in the month after
-  - L883 ...and billed them at the book's price in the new unit, not a thousandfold
-  - L909 the builders' workers are the same with and without the foreign crews: no city worker is taken
-  - L910 ...in every sector, not the builders' alone
-  - L914 ...and the city offers the same posts in every tier: his crews are his own, and open none
-  - L916 the foreign crews built in a and not in the twin
-  - L917 a's sites took more points than the twin's
-  - L918 ...by his month
+  - L698 his month fell on the Houses' work on his book in its share
+  - L700 ...and on the plant's, never more than the points it owes
+  - L704 fixture: the school is still on site
+  - L706 fixture: the school's and the plant's sites can be cancelled
+  - L715 fixture: the month's end stopped both with points left
+  - L716 a cancel of an order quoted at home takes no share of his book
+  - L717 the plant's takes its work's share of his book
+  - L718 ...off his book after his month, never more than its points left
+  - L719 ...which leaves the Houses' work on his book whole
+  - L763 fixture: a second plant, split at the threshold, its work past it on his book beside the Houses'
+  - L769 fixture: the Houses' site finished with the plant's work still on his book
+  - L800 fixture: Houses on the finished site are quoted at home, in the city and in its loaded twin
+  - L802 fixture: ...and ordered in both
+  - L805 an order quoted at home on a site that finished claims none of his book
+  - L806 ...as its loaded twin reads it
+  - L807 ...and the plant's work on his book is the twin's
+  - L809 fixture: the Houses' and the plant's sites can be cancelled, in both
+  - L818 fixture: the month's end stopped both, in both, with points left
+  - L820 the Houses' cancel takes no share of his book: their order was quoted at home
+  - L821 ...nor in the twin
+  - L822 the plant's takes the share the twin's takes
+  - L823 ...and his book after the cancels is the twin's
+  - L843 fixture: on foothill ground it carries its pad's preparation, and the threshold splits it
+  - L845 ...its preparation quoted abroad in the share its building's points are
+  - L848 fixture: ...and ordered
+  - L850 the queue counts its preparation with its building: what the sites owe rose by both
+  - L851 ...his book took its work quoted abroad, the preparation's share with it
+  - L852 ...which the sites owe: the offer's cut to what they owe takes none of it
+  - L854 a month on, his book is what it held less what he built: the offer cut none of the work its payer paid for abroad
+- **L867 8. a currency reform: his book's price a point is the city's money, divided with it**
+  - L870 fixture: his book holds points at a price
+  - L873 fixture: the reform is made
+  - L877 the book's price a point is divided by the reform
+  - L878 ...and the offer bills his month at it
+  - L883 fixture: he built in the month after
+  - L884 ...and billed them at the book's price in the new unit, not a thousandfold
+  - L910 the builders' workers are the same with and without the foreign crews: no city worker is taken
+  - L911 ...in every sector, not the builders' alone
+  - L915 ...and the city offers the same posts in every tier: his crews are his own, and open none
+  - L917 the foreign crews built in a and not in the twin
+  - L918 a's sites took more points than the twin's
+  - L919 ...by his month
 
 ## ForeignDebtCheck.java - 111 labelled assertions
 
@@ -31766,51 +31766,51 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L643 fixture: the town loads through the game's own load
   - L656 the month after, the loaded town's statement names the work sold abroad as the saved one's does, to the cent
   - L659 ...so its revenue is its goods, its other revenue and the work sold abroad, to the cent (\"revenue by good\")
-  - L664 ...and the struck statement's names are saved too: loaded again, it names the same work sold abroad
-- **L676 6. a save and a load keep every comparative**
-  - L689 fixture: the loaded city stands on its buildings, its bank's branches with them (
-  - L737 a sector owes, and its loaded sheet splits the debt by when it falls due
-  - L738 R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the
-  - L740 the shares are saved (FW6): after a load every sector's share, this month's and last month's, reads the
-  - L788 a month on, R1 and R2 are counted, the split's last month is the saved city's (FW2), and the sheet's
-  - L815 ...and the loaded city's month holds every identity of sections 1 to 5 (
-- **L822 7. the formats**
-  - L839 the shops, the luxury shops and the kitchens are merchants, the landlords landlords, the builders builders,
-  - L841 every format but the bank's is some sector's:
-  - L848 the landlords' statement has no gross line and its middle line is its net operating income; a maker's
-  - L856 an income statement with R1 not counted keeps no finance note
-- **L876 6b. a format-32 save is refused since 0.7.120 (to 0.7.119 it loaded, its paid-in derived)**
-  - L881 the save says format
-  - L910 a format-32 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
-  - L914 ...so no sector's paid-in is derived
-- **L920 8. the debt schedule (R7)**
-  - L932 fixture: the cities' schedules borrowed, repaid and wrote off
-  - L934 the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)
-- **L950 9. every building at every gate (R4)**
-  - L1010 ...and the ground put back, each city is as it was
-- **L1057 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16)**
-- **L1138 the sheet**
-  - L1140 balance sheet
-- **L1143 the income statement**
-  - L1144 operating
-  - L1150 pre-tax
-  - L1154 net
-- **L1157 the cash flow**
-  - L1158 cash flow
-  - L1187 revenue by good
-  - L1193 cost of sales by good and named line
-  - L1206 exports by good
-  - L1217 imports by good
-  - L1232 other revenue named
-- **L1251 AND IT HAS TO SURVIVE A SAVE.**
-  - L1269 survives a save
-  - L1271 ...and its cash
-- **L1283 and the month after**
-  - L1286 cash flow across a reload
-- **L1289 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46)**
-  - L1332 fixture: the crews bought materials in more than one month, and in the month last struck
-  - L1342 Construction's struck materials are the row as it stood at the strike, and cross a save
-  - L1353 ...and a save from before them loads them as not counted, not as nothing
+  - L666 ...and the struck statement's names are saved too: loaded again, it names the same work sold abroad
+- **L678 6. a save and a load keep every comparative**
+  - L691 fixture: the loaded city stands on its buildings, its bank's branches with them (
+  - L739 a sector owes, and its loaded sheet splits the debt by when it falls due
+  - L740 R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the
+  - L742 the shares are saved (FW6): after a load every sector's share, this month's and last month's, reads the
+  - L790 a month on, R1 and R2 are counted, the split's last month is the saved city's (FW2), and the sheet's
+  - L817 ...and the loaded city's month holds every identity of sections 1 to 5 (
+- **L824 7. the formats**
+  - L841 the shops, the luxury shops and the kitchens are merchants, the landlords landlords, the builders builders,
+  - L843 every format but the bank's is some sector's:
+  - L850 the landlords' statement has no gross line and its middle line is its net operating income; a maker's
+  - L858 an income statement with R1 not counted keeps no finance note
+- **L878 6b. a format-32 save is refused since 0.7.120 (to 0.7.119 it loaded, its paid-in derived)**
+  - L883 the save says format
+  - L912 a format-32 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
+  - L916 ...so no sector's paid-in is derived
+- **L922 8. the debt schedule (R7)**
+  - L934 fixture: the cities' schedules borrowed, repaid and wrote off
+  - L936 the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)
+- **L952 9. every building at every gate (R4)**
+  - L1012 ...and the ground put back, each city is as it was
+- **L1059 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16)**
+- **L1140 the sheet**
+  - L1142 balance sheet
+- **L1145 the income statement**
+  - L1146 operating
+  - L1152 pre-tax
+  - L1156 net
+- **L1159 the cash flow**
+  - L1160 cash flow
+  - L1189 revenue by good
+  - L1195 cost of sales by good and named line
+  - L1208 exports by good
+  - L1219 imports by good
+  - L1234 other revenue named
+- **L1253 AND IT HAS TO SURVIVE A SAVE.**
+  - L1271 survives a save
+  - L1273 ...and its cash
+- **L1285 and the month after**
+  - L1288 cash flow across a reload
+- **L1291 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46)**
+  - L1334 fixture: the crews bought materials in more than one month, and in the month last struck
+  - L1344 Construction's struck materials are the row as it stood at the strike, and cross a save
+  - L1355 ...and a save from before them loads them as not counted, not as nothing
 
 ## ShortSellingCheck.java - 282 labelled assertions
 

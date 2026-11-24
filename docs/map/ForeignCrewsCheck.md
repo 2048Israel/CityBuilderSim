@@ -1,4 +1,4 @@
-# ForeignCrewsCheck.java - 920 lines · 26 methods · 17 constants · harnesses
+# ForeignCrewsCheck.java - 921 lines · 26 methods · 17 constants · harnesses
 
 `ham/citybuildersim/ForeignCrewsCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -68,7 +68,7 @@
 | 344 | 5. THE EXPORT |
 | 422 | 6. A 240-MONTH BACKLOG |
 | 569 | 7. THE BUILDING THE THRESHOLD FALLS IN |
-| 863 | 8. A CURRENCY REFORM |
+| 864 | 8. A CURRENCY REFORM |
 
 ## Constants
 
@@ -102,7 +102,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 842 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
+| 79 | 843 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
 | 139 | 1 | `static void ok(String label, boolean cond)` |  |
 | 141 | 1 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 143 | 1 | `static void exact(String label, double actual, double expected)` |  |
@@ -155,24 +155,24 @@
 | 429 | 22 | `static Game backlog(Path root, String name, double months)` | A calm city with the landlords' Houses ordered on top of its own, enough that the queue at home is `months` of the sites (ConstructionTrapCheck.calm()'s own way of ordering them: the landlords given twice the quoted p... |
 | 452 | 116 | `static Game theBacklog(Path root)` |  |
 
-### 7. THE BUILDING THE THRESHOLD FALLS IN (lines 569-862)
+### 7. THE BUILDING THE THRESHOLD FALLS IN (lines 569-863)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 572 | 4 | `static ConstructionControl.Refund refundOf(Game g, BuildingsTemplate t)` | The refund the month's end made for t's site, or null. |
 | 578 | 10 | `static boolean cityOrders(Game g, BuildingsTemplate t, long n)` | n of t ordered by the city, quietly, its cash and ground given first; false if the order was not placed. |
-| 589 | 134 | `static void theSplit(Path root)` |  |
-| 729 | 7 | `static long housesToOutlast(Game g, BuildingsTemplate house, double houseEach)` | The Houses section 7 orders after the plant: HOUSES, doubled until their site owes more than HOUSE_MONTHS of everything the city's crews (at every post, before the repairs) and his (his month at his book with them on ... |
-| 738 | 5 | `static double monthOfEveryCrew(Game g, double moreOnHisBook)` | Everything the city's crews (at every post, before the repairs) and his (his month at his book, and this more on it) could build in a month. |
-| 745 | 4 | `static double roomAtHome(Game g)` | The points the queue at home has under the threshold: its months under it, in the sites' month at every post. |
-| 756 | 68 | `static void claimOfAFinishedSite(Path root, Game g)` | REV-FC2, the third review (P2-1): the Houses' site finishes with the work its orders handed him on his book beside a second plant's; a load reads no claim for a site that owes nothing, and the city must read none eith... |
-| 831 | 25 | `static void partsAbroadOwedOnSite(Game g)` | REV-FC2, the third review (P2-2): a works on foothill ground, split at the threshold, hands him its pad's preparation in the share its building's points are (Game.abroadWork()); the preparation is owed on its site wit... |
-| 857 | 5 | `static double sum(java.util.Map<Integer, Double> m)` |  |
+| 589 | 135 | `static void theSplit(Path root)` |  |
+| 730 | 7 | `static long housesToOutlast(Game g, BuildingsTemplate house, double houseEach)` | The Houses section 7 orders after the plant: HOUSES, doubled until their site owes more than HOUSE_MONTHS of everything the city's crews (at every post, before the repairs) and his (his month at his book with them on ... |
+| 739 | 5 | `static double monthOfEveryCrew(Game g, double moreOnHisBook)` | Everything the city's crews (at every post, before the repairs) and his (his month at his book, and this more on it) could build in a month. |
+| 746 | 4 | `static double roomAtHome(Game g)` | The points the queue at home has under the threshold: its months under it, in the sites' month at every post. |
+| 757 | 68 | `static void claimOfAFinishedSite(Path root, Game g)` | REV-FC2, the third review (P2-1): the Houses' site finishes with the work its orders handed him on his book beside a second plant's; a load reads no claim for a site that owes nothing, and the city must read none eith... |
+| 832 | 25 | `static void partsAbroadOwedOnSite(Game g)` | REV-FC2, the third review (P2-2): a works on foothill ground, split at the threshold, hands him its pad's preparation in the share its building's points are (Game.abroadWork()); the preparation is owed on its site wit... |
+| 858 | 5 | `static double sum(java.util.Map<Integer, Double> m)` |  |
 
-### 8. A CURRENCY REFORM (lines 863-920)
+### 8. A CURRENCY REFORM (lines 864-921)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 865 | 20 | `static void theReform(Game a)` |  |
-| 887 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
+| 866 | 20 | `static void theReform(Game a)` |  |
+| 888 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
 

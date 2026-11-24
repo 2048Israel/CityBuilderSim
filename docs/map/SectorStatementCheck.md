@@ -1,4 +1,4 @@
-# SectorStatementCheck.java - 1,365 lines · 30 methods · 7 constants · harnesses
+# SectorStatementCheck.java - 1,367 lines · 30 methods · 7 constants · harnesses
 
 `ham/citybuildersim/SectorStatementCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -82,17 +82,17 @@
 | 482 | · 8, a month |
 | 516 | · 1-5 |
 | 549 | · 6 |
-| 819 | · 7 |
-| 859 | · 6, an older save |
-| 917 | · 8 |
-| 938 | · 9 |
-| 1057 | 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) |
-| 1138 | · · the sheet |
-| 1143 | · · the income statement |
-| 1157 | · · the cash flow |
-| 1251 | · AND IT HAS TO SURVIVE A SAVE. |
-| 1283 | · · and the month after |
-| 1289 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
+| 821 | · 7 |
+| 861 | · 6, an older save |
+| 919 | · 8 |
+| 940 | · 9 |
+| 1059 | 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) |
+| 1140 | · · the sheet |
+| 1145 | · · the income statement |
+| 1159 | · · the cash flow |
+| 1253 | · AND IT HAS TO SURVIVE A SAVE. |
+| 1285 | · · and the month after |
+| 1291 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
 
 ## Constants
 
@@ -103,8 +103,8 @@
 | 263 | `SectorStatementCheck.bondsSoonBefore` | `new LinkedHashMap<>()` | Last month's bonds falling due within a year, by sector: what this month's bond repayments must be inside. |
 | 607 | `SectorStatementCheck.SOLD_MONTHS` | `48` | The months the calm town is given to sell its builders' spare points abroad (ForeignCrewsCheck 5 gives it 24 to run its queue down, and 24 more). |
 | 609 | `SectorStatementCheck.SOLD_SLOT` | `11, STRUCK_SLOT = 12` | The scratch slots the builders' sale is saved in: the month it is pending, and the month it is struck. |
-| 862 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
-| 1100 | `SectorStatementCheck.BooksAudit.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
+| 864 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
+| 1102 | `SectorStatementCheck.BooksAudit.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
 
 ## Fields (state)
 
@@ -120,16 +120,16 @@
 | 141 | `static int upfrontMonths, bondCostMonths, foundedMonths, issuedMonths, boughtBackMonths, derivedMonths, sto...` | ...and S2's (0.7.75): sector-months with each of the new lines, and with each flow of the debt schedule. |
 | 146 | `static int expensedMonths` | ...and 0.7.102's (A16): sector-months that expensed some of what their borrowing cost them up front. |
 | 582 | `static String worstRow` | The row the last comparison missed worst on, for the message. |
-| 1052 | `static int fails` |  |
-| 1053 | `static int months` |  |
-| 1054 | `static int statements` |  |
-| 1055 | `static int screenLines` |  |
+| 1054 | `static int fails` |  |
+| 1055 | `static int months` |  |
+| 1056 | `static int statements` |  |
+| 1057 | `static int screenLines` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 1279 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
+| 87 | 1281 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
 | 96 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 101 | 5 | `static void quietly(Runnable r)` |  |
 | 108 | 22 | **type** `static final class Tally` | One identity's tally over a run: how many times it was checked, how many missed by more than a cent, and the worst miss. |
@@ -165,7 +165,7 @@
 |---:|---:|---|---|
 | 518 | 30 | `static void everyMonth()` |  |
 
-### 6 (lines 549-818)
+### 6 (lines 549-820)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -174,37 +174,37 @@
 | 585 | 6 | `static boolean sameDebt(SectorBooks.Debt x, SectorBooks.Debt y)` | Two of R1 and R2's records the same to the cent, field by field: both null, or every array alike. |
 | 592 | 6 | `static boolean near(double[][] x, double[][] y)` |  |
 | 599 | 6 | `static boolean near(double[] x, double[] y)` |  |
-| 620 | 47 | `static void theWorkSoldAbroadSaved(Path root)` | REV-FC2b: the builders' spare points sold abroad (FC2) are an export with no good behind it, named on the opened revenue line (Sector.Ledger.servicesSold, struck into Statement.servicesSold). |
-| 669 | 5 | `static boolean sameParts(Map<String, Double> x, Map<String, Double> y)` | Two named maps the same to the cent, name by name. |
-| 675 | 143 | `static void savedAndLoaded(Path root, Game g)` |  |
+| 620 | 49 | `static void theWorkSoldAbroadSaved(Path root)` | REV-FC2b: the builders' spare points sold abroad (FC2) are an export with no good behind it, named on the opened revenue line (Sector.Ledger.servicesSold, struck into Statement.servicesSold). |
+| 671 | 5 | `static boolean sameParts(Map<String, Double> x, Map<String, Double> y)` | Two named maps the same to the cent, name by name. |
+| 677 | 143 | `static void savedAndLoaded(Path root, Game g)` |  |
 
-### 7 (lines 819-858)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 821 | 37 | `static void theFormats(Game g)` |  |
-
-### 6, an older save (lines 859-916)
+### 7 (lines 821-860)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 875 | 41 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - is refused since 0.7.120 (batch I3: the floor, Gam... |
+| 823 | 37 | `static void theFormats(Game g)` |  |
 
-### 8 (lines 917-937)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 919 | 18 | `static void theSchedule()` |  |
-
-### 9 (lines 938-1365)
+### 6, an older save (lines 861-918)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 949 | 63 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
-| 1050 | 315 | **type** `static final class BooksAudit` | Plays a city and audits every sector's statements, every month. |
-| 1073 | 10 | `static boolean isAFigure(String value)` _(in SectorStatementCheck.BooksAudit)_ |  |
-| 1084 | 14 | `static void pageIsReadable(Game game)` _(in SectorStatementCheck.BooksAudit)_ |  |
-| 1103 | 4 | `static void check(String label, boolean ok, String detail)` _(in SectorStatementCheck.BooksAudit)_ | One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. |
-| 1108 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` _(in SectorStatementCheck.BooksAudit)_ |  |
-| 1118 | 246 | `static void run(String[] args)` _(in SectorStatementCheck.BooksAudit)_ |  |
+| 877 | 41 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - is refused since 0.7.120 (batch I3: the floor, Gam... |
+
+### 8 (lines 919-939)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 921 | 18 | `static void theSchedule()` |  |
+
+### 9 (lines 940-1367)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 951 | 63 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
+| 1052 | 315 | **type** `static final class BooksAudit` | Plays a city and audits every sector's statements, every month. |
+| 1075 | 10 | `static boolean isAFigure(String value)` _(in SectorStatementCheck.BooksAudit)_ |  |
+| 1086 | 14 | `static void pageIsReadable(Game game)` _(in SectorStatementCheck.BooksAudit)_ |  |
+| 1105 | 4 | `static void check(String label, boolean ok, String detail)` _(in SectorStatementCheck.BooksAudit)_ | One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. |
+| 1110 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` _(in SectorStatementCheck.BooksAudit)_ |  |
+| 1120 | 246 | `static void run(String[] args)` _(in SectorStatementCheck.BooksAudit)_ |  |
 

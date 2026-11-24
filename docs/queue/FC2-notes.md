@@ -266,7 +266,8 @@ No format bump is owed under the old-saves rule: a save before FC2 sold no work 
 reads is what it had pending and struck, and no FC2 save is in any player's hands. SectorStatementCheck 6a saves
 ConstructionTrapCheck's calm town in the month it sold 19.0 points abroad for 3.418447, loads it through the game's
 own load (pending 3.418447 after it), plays both a month (both statements name 3.418447; the loaded one's revenue
-26.549287 is its other revenue 23.130841 and the work sold abroad), and saves and loads the struck statement again.
+26.549287 is its other revenue 23.130841 and the work sold abroad, and the saved town's to the bit), and saves and loads the
+struck statement again.
 
 ## 5. Checks
 
@@ -561,7 +562,9 @@ FC2's consequences, owned (REV-FC2b's P1 4), each with its queued row in the shi
   month's points past their caps land on the other sites, those quoted at home among them, and his book falls by what he built
   there. ForeignCrewsCheck 7's Coal Power Plant, held to 1,449.7 points a month, took that of a month of 4,125 while the Houses'
   site took 2,447 and the Middle School, quoted at home, 229; later, his book only the plant's, 118 Houses quoted at home met his
-  3,729 and finished in the month. Whether his month is what the sites holding his book can take is the queued row's to decide.
+  3,729 and finished in the month. It is not a money error (REV-FC2c): the builders alone pay the world, the points he built at
+  his book's price, and the swap sits in their margin, the home price their payers paid for the work he built and his price for
+  the capped sites' work they build later. Whether his month is what the sites holding his book can take is the queued row's.
 
 The merge of main at 0.9.194 (PW1-W, PW2; 6c487106e). Every harness the merge touched on either side was rerun alone, and
 `--fast`; three were red, each a premise the merged path moved, and each is now caused:
@@ -583,8 +586,8 @@ The merge of main at 0.9.194 (PW1-W, PW2; 6c487106e). Every harness the merge to
   the point of use (the fee scale 0, as HealthCheck's insured city has it), a month is played with the landlords' Houses on site
   so the crews are struck at every post (posts offered 1.0), and the Houses are as many as outlast HOUSE_MONTHS of everything the
   city's crews and his could build (1,600): the month on worked 355 points, the sites' month 355 then 342, the queue at home 20.76
-  months. The Houses' claim line reads the model's rule, in its share and never past the points the site owes, as the plant's line
-  does: the Houses' site took his month past the plant's cap and owed 14,654.9 against its share of 15,238.1 (the plant's owed
-  85,793.9 against 80,122.9, so the share itself is still read on the plant). `claimOfAFinishedSite()` plays the city and its twin
+  months. The Houses' claim line reads the claim itself, as the save carries it (`getAbroadOwedById()`, no cut to the points owed;
+  REV-FC2c), against their share: the Houses' site took his month past the plant's cap and owed 14,654.9 against its share of
+  15,238.1, printed as FC2-C's trace. `claimOfAFinishedSite()` plays the city and its twin
   on alike until half the room under the threshold owes more than a month of every crew (37 months; 158 Houses against 1,577
   points), so the Houses quoted at home are on site at the cancel.
