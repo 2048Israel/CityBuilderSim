@@ -762,9 +762,23 @@ public final class Kept {
         }
     }
 
+    /** A native Label whose skin text disappears with empty words, including raw CountUp updates. */
+    private static Label newLabel() {
+        Label label = new Label();
+        label.getChildrenUnmodifiable().addListener((javafx.collections.ListChangeListener<Node>) change -> {
+            while (change.next()) for (Node child : change.getAddedSubList()) {
+                // A player's graphic may itself be Text; only the skin's text follows the label's words.
+                if (child instanceof javafx.scene.text.Text && child != label.getGraphic() && !child.visibleProperty().isBound()) {
+                    child.visibleProperty().bind(label.textProperty().isNotEmpty());
+                }
+            }
+        });
+        return label;
+    }
+
     /** A Label with this text and no graphic. */
     static Label label(String text) {
-        Label l = of(Label.class, Label::new);
+        Label l = of(Label.class, Kept::newLabel);
         l.setText(text);
         if (l.getGraphic() != null) l.setGraphic(null);
         return l;
@@ -772,7 +786,7 @@ public final class Kept {
 
     /** A Label with this text and this graphic. */
     static Label label(String text, Node graphic) {
-        Label l = of(Label.class, Label::new);
+        Label l = of(Label.class, Kept::newLabel);
         l.setText(text);
         l.setGraphic(graphic);
         return l;

@@ -1,4 +1,4 @@
-# TimingCheck.java - 781 lines · 35 methods · 9 constants · harnesses
+# TimingCheck.java - 787 lines · 35 methods · 9 constants · harnesses
 
 `ham/citybuildersim/TimingCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -11,7 +11,7 @@
 > recorded figures and paired margins, with both passing and failing fixtures.
 > The harness restores its timing properties before returning.
 
-**Uses:** [Timing](Timing.md) (85), [AllChecks](AllChecks.md) (21), [TempDirs](TempDirs.md) (3), [FollowBench](FollowBench.md) (1)
+**Uses:** [Timing](Timing.md) (85), [AllChecks](AllChecks.md) (24), [TempDirs](TempDirs.md) (3), [FollowBench](FollowBench.md) (1)
 
 ## Sections
 
@@ -22,11 +22,11 @@
 | 240 | 3. ONLY A CLOCK IS SOFT |
 | 284 | 4. THE PROPERTY'S VALUES |
 | 298 | 5. ACROSS THE JVM BOUNDARY |
-| 361 | 6. THE SUITE GOES THROUGH IT |
-| 510 | 7. THE REST OF THE SUITE IS UNTOUCHED |
-| 524 | 8. THE FIGURES' RECORD (TM3) |
-| 614 | 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk |
-| 734 | 10. THE DISPLAY (GB5) |
+| 367 | 6. THE SUITE GOES THROUGH IT |
+| 516 | 7. THE REST OF THE SUITE IS UNTOUCHED |
+| 530 | 8. THE FIGURES' RECORD (TM3) |
+| 620 | 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk |
+| 740 | 10. THE DISPLAY (GB5) |
 
 ## Constants
 
@@ -39,8 +39,8 @@
 | 55 | `TimingCheck.ALLOWED_TEXT` | `"cpuStepMs()<= CPU_STEP_MS"` | The one line the dial rule allows outside Timing: MapCheck deciding whether the thread-CPU clock is fine enough to time with at all (a test of the clock's resolution, not an assertion). |
 | 58 | `TimingCheck.FIXTURE_HARNESS` | `"TimingCheck$Fixture"` | What a child JVM is started as: the fixture's own main, below. |
 | 61 | `TimingCheck.ALL_SOURCES` | `Paths.get("src", "main", "java")` | Where the walk of every source starts. |
-| 618 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
-| 739 | `TimingCheck.DISPLAY_FIXTURE` | `"ChartFitCheck", NO_PIPELINE = "nonesuch"` | GB5: the display harness the children run (its toolkit start is its first act), and the pipeline Prism has none of. |
+| 624 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
+| 745 | `TimingCheck.DISPLAY_FIXTURE` | `"ChartFitCheck", NO_PIPELINE = "nonesuch"` | GB5: the display harness the children run (its toolkit start is its first act), and the pipeline Prism has none of. |
 
 ## Fields (state)
 
@@ -56,7 +56,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 752 | **type** `public class TimingCheck` | Checks hard and soft timing, JVM forwarding, suite coverage and paired medians. |
+| 30 | 758 | **type** `public class TimingCheck` | Checks hard and soft timing, JVM forwarding, suite coverage and paired medians. |
 | 35 | 4 | `static void check(String label, boolean ok)` | This harness's own assertion line: never Timing.verdict, so its own lines are never soft. |
 | 66 | 26 | `public static void main(String[] args) throws Exception` |  |
 | 94 | 40 | **type** `public static final class Fixture` | A miniature timing harness that writes to a buffer locally or stdout in a child JVM. |
@@ -99,49 +99,49 @@
 |---:|---:|---|---|
 | 288 | 9 | `static void propertyValues()` |  |
 
-### 5. ACROSS THE JVM BOUNDARY (lines 298-360)
+### 5. ACROSS THE JVM BOUNDARY (lines 298-366)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 302 | 1 | **type** `private record Run(int exit, String output)` |  |
 | 305 | 3 | `static Run runFixture(String javaExe, String classpath) throws Exception` | A child JVM started exactly as AllChecks starts a harness, with the parent's property the only source of its mode. |
 | 310 | 12 | `static Run run(List<String> command) throws Exception` | A child JVM on this command alone: JDK_JAVA_OPTIONS (the gate box's display, the data files) is not passed down. |
-| 323 | 37 | `static void acrossTheJvm() throws Exception` |  |
+| 323 | 43 | `static void acrossTheJvm() throws Exception` |  |
 
-### 6. THE SUITE GOES THROUGH IT (lines 361-509)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 365 | 17 | `static void skippedSections()` |  |
-| 383 | 26 | `static void suiteOrder() throws IOException` |  |
-| 410 | 99 | `static void suiteGoesThroughIt() throws IOException` |  |
-
-### 7. THE REST OF THE SUITE IS UNTOUCHED (lines 510-523)
+### 6. THE SUITE GOES THROUGH IT (lines 367-515)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 514 | 9 | `static void restUntouched()` |  |
+| 371 | 17 | `static void skippedSections()` |  |
+| 389 | 26 | `static void suiteOrder() throws IOException` |  |
+| 416 | 99 | `static void suiteGoesThroughIt() throws IOException` |  |
 
-### 8. THE FIGURES' RECORD (TM3) (lines 524-613)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 529 | 6 | `static List<String[]> rows(Path file) throws IOException` | A figures file's rows, each split on tabs (a trailing empty column kept); none when the file is not there. |
-| 536 | 77 | `static void theFiguresRecord() throws Exception` |  |
-
-### 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk (lines 614-733)
+### 7. THE REST OF THE SUITE IS UNTOUCHED (lines 516-529)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 621 | 17 | `static List<String> awk(List<String> args) throws Exception` | awk with these arguments, the repository root as its folder; its output lines, or null when awk cannot be started here. |
-| 640 | 8 | `static String pairRows(String harness, String label, double[] main, double[] batch)` | The pairs file's rows for one label: the figures of each side in turn, one per round. |
-| 650 | 9 | `static List<String> judge(Path dir, String pairs, String hard, String residual, String margin) throws Exception` | The judge's answer for these files: one "VERDICT\tline\twhy" per residual line. |
-| 660 | 74 | `static void theMarginsArithmetic() throws Exception` |  |
+| 520 | 9 | `static void restUntouched()` |  |
 
-### 10. THE DISPLAY (GB5) (lines 734-781)
+### 8. THE FIGURES' RECORD (TM3) (lines 530-619)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 742 | 7 | `static Run onMonocle(String...options) throws Exception` | The gate box draws on Monocle; the children do too, on this machine, with only these options (the box's own not passed down). |
-| 750 | 31 | `static void noDisplayHarnessSkips() throws Exception` |  |
+| 535 | 6 | `static List<String[]> rows(Path file) throws IOException` | A figures file's rows, each split on tabs (a trailing empty column kept); none when the file is not there. |
+| 542 | 77 | `static void theFiguresRecord() throws Exception` |  |
+
+### 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk (lines 620-739)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 627 | 17 | `static List<String> awk(List<String> args) throws Exception` | awk with these arguments, the repository root as its folder; its output lines, or null when awk cannot be started here. |
+| 646 | 8 | `static String pairRows(String harness, String label, double[] main, double[] batch)` | The pairs file's rows for one label: the figures of each side in turn, one per round. |
+| 656 | 9 | `static List<String> judge(Path dir, String pairs, String hard, String residual, String margin) throws Exception` | The judge's answer for these files: one "VERDICT\tline\twhy" per residual line. |
+| 666 | 74 | `static void theMarginsArithmetic() throws Exception` |  |
+
+### 10. THE DISPLAY (GB5) (lines 740-787)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 748 | 7 | `static Run onMonocle(String...options) throws Exception` | The gate box draws on Monocle; the children do too, on this machine, with only these options (the box's own not passed down). |
+| 756 | 31 | `static void noDisplayHarnessSkips() throws Exception` |  |
 
