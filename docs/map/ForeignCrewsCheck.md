@@ -56,6 +56,8 @@
 
 **Uses:** [Game](Game.md) (47), [BuildersShort](BuildersShort.md) (29), [BuildingManager](BuildingManager.md) (23), [Construction](Construction.md) (10), [ConstructionControl](ConstructionControl.md) (10), [ConstructionTrapCheck](ConstructionTrapCheck.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [MoneyAudit](MoneyAudit.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [Fitout](Fitout.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [GameFiles](GameFiles.md) (3), [DeathCareFirstCheck](DeathCareFirstCheck.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [CityLand](CityLand.md) (1), [PopulationManager](PopulationManager.md) (1)
 
+**Used by (1):** [ForeignChoiceCheck](ForeignChoiceCheck.md)
+
 ## Sections
 
 | line | section |

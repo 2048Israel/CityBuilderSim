@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.198 — FC2b, the choices that use the foreign crews — 2026-11-24, ready, see docs/queue/FC2b-notes.md
+A payer may now hand its share of one site's remaining work to the foreign crews (Jerus, 2026-11-22: "something finished in 20 months is better than something finished in 100 months"). They build it on the site at their own pace, about the threshold's months, and at their price; the payer pays the extra over the home price, and money already spent is sunk. A business weighs it each month by its earnings brought forward over the months saved, which is the interest on its cost plus the earnings past it. The city hands a site from the Construction screen's Foreign crews card (Jerus: "if roads are causing the issues then you could pay more to get just roads fixed"), which shows the price, the months saved and the interest saved. A shared site splits by the points each payer put on it, and the other payers' work stays with the city's crews. The crews' bill is the builders' import of services. Save format 65.
+
 ### 0.9.197 — FC2, construction traded with the world — 2026-11-23, ready, see docs/queue/FC2-notes.md
 Jerus, 2026-11-22: "make it a imported/exported good... the base cost is still in domestic currency but the excess is in foreign currency". Foreign crews are always on offer at the city's base price for a point plus an excess of 15% of the world's base price for the same work, in foreign money (`BuildersShort.FOREIGN_EXCESS`), so a strong D$ makes them cheaper and a weak one dearer.
 An order's work goes abroad past the months queued at which the builders' premium reaches that excess: never under the 9-month knee, and at most 21 months whatever the currency (`SURE_MONTHS`, a year past the knee, the time an owner takes to tender work abroad and have the winner start); 20.5 at par.
