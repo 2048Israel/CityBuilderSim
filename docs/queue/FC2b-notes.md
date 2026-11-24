@@ -126,3 +126,20 @@ more to get just roads fixed").
     and holding half of it refuses ("the treasury holds ... and the crews' extra costs ...") with nothing moved. Found on the way: the
     government never borrows (Game's government canBorrow() is false), so the card's shortfall always refuses, as fit()'s does.
 - ForeignChoiceCheck: 281 assertions green, 1m48s with its compile. Main had not moved: nothing to merge.
+
+## 7. The ensemble
+
+- docs/ensemble/FC2b.md: 80 of 80 runs on the gate box, classes of 5b0ec70b8 (the final model; the commits after it are records),
+  no JVM options beyond the box's data files (the baseline's), scored against docs/ensemble/0.9.195.md as the orchestrator set
+  (LP-G1 on main, the newest baseline of a main: 0.9.197.md is FC2's branch at 348fdae18, before PW2, LP-G1 and R6f were merged into
+  it, so not FC2b's parent). Exit 0: **M1 and F1 pass in every policy** (no month the money audit failed, no LongPlaytest finding),
+  and no verdict moved. The trace moves, faster: AUTO2 reaches 40,000 people at m322 [275 to 397] against m400 [345 to 465], its final
+  population 9.08 M against 9.03 M; ZERO_SLACK 7.63 M against 7.14 M, SHOCK 1.50 M against 1.15 M, HIGH 712 k against 355 k. The move
+  against 0.9.195 carries FC2's and R6f's too; scored against 0.9.197 (not like for like) the change is larger (AUTO2 at m678 there).
+- **The handovers** (the count the orchestrator asked for): the driver silences the model's lines, so AUTO2's 16 seeds were run again
+  on the box (label FC2b-count, not committed; each run's population equal to its scored twin's every month's end, so the read-only
+  columns moved nothing) with three getter columns: the records standing, and the crews-on-sites points and bill each month. A
+  handover shows as a rise in the records standing, so the rises are a floor on the count: **at least 124 to 283 handovers a run of
+  2,400 months, median about 175, 3,006 over the 16 seeds**; at most 8 to 14 sites with the crews at once; the first at month 11 or 12
+  in every seed (the founding's queue, the city's builders few), and some site with the crews in 269 to 712 of the 2,400 months.
+  All are businesses' (the city's are the player's).
