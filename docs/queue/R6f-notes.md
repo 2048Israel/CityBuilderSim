@@ -181,8 +181,10 @@ today's (`MedicalRows.isToday()`, a default city); `Recipes.choose` and
 CONSERVATION_BUFFER is the old expression. ModernRowsCheck asserts a default
 city's factor 1, its Contact Centre at today's anchor and its bank requiring
 the buffer at each month across the three dates. So the default trace is
-expected unchanged and the ensemble not owed; the dry run's LongPlaytest
-report against main's retained gate report confirms it or not (section 9).
+expected unchanged, and the dry run confirms it: its LongPlaytest report is
+byte-identical to main's after the wall-clock fields alone are normalized
+(section 9). The ensemble is not owed and was not run; no 80-run score or
+baseline is claimed, and the latest baseline stays docs/ensemble/0.9.195.md.
 
 ## 8. Checks run by R6f
 
@@ -268,4 +270,25 @@ recovery does not read the coverage and stays green. ModernRowsCheck all
 
 ## 9. The dry run
 
-Not yet run.
+`sh tools/gate.sh R6f --dry-run` on the gate box, 2026-11-24, after the
+orchestrator's go: run `/home/jerus/cbs/runs/cbs-gate-R6f-ZLaak94X`, kept
+(copied to the PC's Temp), main.commit bfbaae192, branch.commit 062310f4c.
+The suite finished in 1,100 s with exit 3, known red only: BankCheck,
+CurrencyCheck, DeathRecordCheck, DeskCheck, FloatLinkCheck, Forms1900Check,
+FundCheck, HoldersCheck, InvestCheck, KeptCheck, PlanCheck, RailDrawCheck,
+RoadCheck, ScaleCheck; unnamed.txt is empty; `gate exit 0`, "the tree is as
+it was". No harness of R6f's is red.
+
+**The default trace.** Main's report is LP-G1's: its real ship gate
+(cbs-gate-LP-G1-EvJqQsEm, 0c7f55602, 0.9.195) reused the dry run
+cbs-gate-LP-G1-3DhXEO5s, whose `checks/LongPlaytest.log` has the same
+SHA256; that run's tree differs from 0c7f55602's in `src` only by the
+version stamp, and bfbaae192's `src` is 0c7f55602's. Both reports have 614
+lines. Four line pairs differ raw, none a model number: the header's run
+seconds (284 s, 269 s), the layout watch's runtime suffix, and two
+`[HH:MM:SS]` prefixes on lines whose money and land figures are equal.
+Normalizing only those (target/R6f-trace/normalize.sed), the two are
+byte-identical. SHA256: main raw
+48555df9cab92bc14e684b7604e33e6be71ef270a0469e96e7c2fbfcbcabdc91, R6f raw
+8b78a8bf2c0ca61b4ef3d47a9e0eafdcdb22ec0c40c2050bfbf8975fab70adff, both
+normalized 7d11f65d8f26429fd8ce5446c3875ed2dae0b8c8e82c34718dc75913193c6d3f.
