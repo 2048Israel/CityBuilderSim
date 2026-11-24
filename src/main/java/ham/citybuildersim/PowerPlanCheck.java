@@ -33,7 +33,8 @@ import java.util.Set;
  *      And the reserve test credits a farm: where the town runs dear and one Wind Farm's credited firm kW closes the gap, the
  *      farm is the order, its total net cost below the screening curve's firm pick's (6a).
  *   7. THE GROUND: a coal plant's is planned past the one listing, and the automatic path assembles it over several offers;
- *      past ASSEMBLE_MOST offers none is planned.
+ *      past ASSEMBLE_MOST offers none is planned. (7a) The quote is what the ground costs, offers past the listing at their own prices; (7b) an
+ *      assembly that cannot cover the order buys nothing and borrows nothing; (7c) an order the builders would refuse moves no money (REV-PW3 #1, #2).
  *   8. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
  */
@@ -520,6 +521,140 @@ public final class PowerPlanCheck {
         u.setWattsConsumption(u.getConsumption());
     }
 
+    /** Section 7's town (PW3, REV-PW3 #1, #2): owns no ground spare, `past` the fewest coal plants whose ground runs past its listing, and a reserve test asking for at least that many. */
+    record GroundTown(Game g, BuildingsTemplate coal, long past, BuildAdvice.Suggestion asked) { }
+
+    static GroundTown groundTown(Path root, String name) {
+        Game g = town(root, name, COAL);
+        LandManager land = g.getLandManager();
+        land.setOwnedSqFt(land.getAllocatedSqFt());
+        BuildingsTemplate coal = plant(g, COAL);
+        long past = 1;
+        for (AutoBuilder.Ground gr; past < 64 && (gr = AutoBuilder.groundFor(g, coal, past)) != null && !(gr.more() > 0); ) past++;
+        BuildAdvice.Suggestion asked = null;
+        for (double share = 4; share < 1e4; share *= 1.5) {
+            drawAt(g, share);
+            asked = suggest(g);
+            if (asked != null && asked.template() == coal && asked.count() >= past) break;
+        }
+        return new GroundTown(g, coal, past, asked);
+    }
+
+    /** What these offers cost in cash as paying for them moves it (the land office's toggle): the listed ones' prices, as groundFor() prices the listing. */
+    static double listedCash(Game g, java.util.List<LandParcel> offers) {
+        java.util.List<Integer> ids = offers.stream().map(LandParcel::getId).toList();
+        return g.isLandPaidFromVault() ? g.landTopUpLocal(ids) : g.landPriceLocal(ids);
+    }
+
+    /* ----- 7a. the quote is the cost ----- */
+    static void quoteIsCost(Path root) {
+        out.println("--- 7a. dearer replenishment: the ground past the listing is quoted at what it costs ---");
+        GroundTown f = groundTown(root, "ground-quote");
+        Game g = f.g();
+        AutoBuilder ab = g.getAutoBuilder();
+        BuildAdvice.Suggestion s = f.asked();
+        check("fixture: the reserve test asks for at least " + f.past() + " coal plants (" + named(s) + ")",
+                s != null && s.template() == f.coal() && s.count() >= f.past());
+        if (s == null || s.template() != f.coal()) return;
+        // ...each count's ground as the pass weighs it, and what the same ground would cost at the office's rate a square foot.
+        double office = g.getLandManager().getOfficePricePerSqFt();
+        java.util.List<Double> quote = new java.util.ArrayList<>(), atRate = new java.util.ArrayList<>();
+        quote.add(0.0);
+        atRate.add(0.0);
+        for (long k = 1; k <= s.count(); k++) {
+            AutoBuilder.Ground gr = AutoBuilder.groundFor(g, f.coal(), k);
+            if (gr == null) break;
+            quote.add(gr.cash());
+            atRate.add(listedCash(g, gr.offers()) + gr.more() * office);
+        }
+        int n = quote.size() - 1;
+        check("fixture: ground is quoted for " + n + " coal plants, at least " + f.past(), n >= f.past());
+        if (n < f.past()) return;
+        // ...the cash set to cover the order and exactly the quote's ground, no more: what the cash protects is the reserve (AutoBuilder.reserve()).
+        double floor = AutoBuilder.reserve(g);
+        g.setCashForTest(floor + (AutoBuilder.total(g, s, n) + quote.get(n)) * (1 + 1e-9));
+        double spent = ab.getLandSpent();
+        int offers = ab.getLandOffers(), past = ab.getAssembledOffers();
+        boolean placed = ab.placeForTest(g, POWER, s, n);
+        double paid = ab.getLandSpent() - spent;
+        check("fixture: the order of " + n + " coal plants is placed on ground assembled past the listing (placed " + placed + "; "
+                + (ab.getLandOffers() - offers) + " offers bought, " + (ab.getAssembledOffers() - past) + " of them past the listing)",
+                ab.getAssembledOffers() > past);
+        check(String.format("fixture: the offers past the listing cost more than the office's rate for their square feet (paid %.0f; %.0f at the rate)",
+                paid, atRate.get(n)), paid > atRate.get(n) * (1 + 1e-3));
+        check(String.format("the quote is what the ground costs: the assembly pays no more than groundFor() quoted, and the cash protected stays untouched "
+                + "(placed %b; paid %.0f against %.0f quoted; cash %.0f against %.0f protected)", placed, paid, quote.get(n), g.getCash(), floor),
+                placed && close(paid, quote.get(n), 1e-6) && g.getCash() >= floor - 1e-6 * Math.max(1, floor));
+    }
+
+    /**
+     * A town whose world has no ground left to list (one purchase of all of it, on the books as any purchase is) and three offers standing:
+     * the ground the order needs past them is none that can be had.
+     */
+    static GroundTown shortTown(Path root, String name) {
+        GroundTown f = groundTown(root, name);
+        Game g = f.g();
+        LandManager land = g.getLandManager();
+        LandMarket market = land.getMarket();
+        market.putOffers(market.getListing().stream().filter(LandMarket::bareGround).limit(3).toList());
+        land.land().extend(new LandParcel(-7, 0, 0, land.land().level(), 0, 0, World.SIDE, World.SIDE, null, null, null, 0, g.getMonth()),
+                g.getMonth(), 0);
+        return f;
+    }
+
+    /* ----- 7b. an assembly that cannot cover ----- */
+    static void cannotCover(Path root) {
+        out.println("--- 7b. an assembly that cannot cover the order ---");
+        GroundTown f = shortTown(root, "ground-short");
+        Game g = f.g();
+        AutoBuilder ab = g.getAutoBuilder();
+        LandMarket market = g.getLandManager().getMarket();
+        double standing = 0;
+        for (LandParcel p : market.getListing()) standing += p.getSizeSqFt();
+        double lack = AutoBuilder.lacks(g, f.coal(), 1);
+        check(String.format("fixture: the %d offers standing hold %.0f sq ft, less than the %.0f one coal plant lacks, and no place can list another",
+                market.getListing().size(), standing, lack), standing < lack && lack > 0);
+        BuildAdvice.Suggestion s = suggest(g);
+        check("fixture: the reserve test asks for coal (" + named(s) + ")", s != null && s.template() == f.coal());
+        if (s == null || s.template() != f.coal()) return;
+        double[][] before = market.getOffersState();
+        double owned = g.getLandManager().getOwnedSqFt(), cash = g.getCash(), borrowed = ab.getBorrowed();
+        int offers = ab.getLandOffers(), bonds = ab.getBonds(), debts = g.getDebtManager().getDebt().size();
+        boolean placed = ab.placeForTest(g, POWER, s, 1);
+        check(String.format("an assembly that cannot cover the order buys nothing, borrows nothing and leaves the market as it was "
+                + "(placed %b; %d offers bought, %d bonds sold, %d debts raised, offers state %s)", placed, ab.getLandOffers() - offers, ab.getBonds() - bonds,
+                g.getDebtManager().getDebt().size() - debts, java.util.Arrays.deepEquals(before, market.getOffersState()) ? "unchanged" : "changed"),
+                !placed && ab.getLandOffers() == offers && g.getLandManager().getOwnedSqFt() == owned && ab.getBonds() == bonds && ab.getBorrowed() == borrowed
+                && g.getDebtManager().getDebt().size() == debts && g.getCash() == cash && java.util.Arrays.deepEquals(before, market.getOffersState()));
+    }
+
+    /* ----- 7c. an order the builders would refuse ----- */
+    static void refused(Path root) {
+        out.println("--- 7c. an order the builders would refuse ---");
+        GroundTown f = groundTown(root, "ground-refused");
+        Game g = f.g();
+        AutoBuilder ab = g.getAutoBuilder();
+        BuildAdvice.Suggestion s = f.asked();
+        check("fixture: the reserve test asks for coal (" + named(s) + ")", s != null && s.template() == f.coal());
+        if (s == null || s.template() != f.coal()) return;
+        AutoBuilder.Ground ground = AutoBuilder.groundFor(g, f.coal(), 1);
+        check("fixture: ground can be had for one coal plant, past what the town owns spare", ground != null && AutoBuilder.lacks(g, f.coal(), 1) > 0);
+        // ...and the plant not known any more: the builders refuse it before land and money (Game.buildStack(): NOT_KNOWN).
+        know(g);
+        check("fixture: the builders refuse the plant for no ground and no money (" + g.buildStack(f.coal(), 1, false, Landmasses.RULE) + ")",
+                g.buildStack(f.coal(), 1, false, Landmasses.RULE) == Game.BuildResult.NOT_KNOWN);
+        double owned = g.getLandManager().getOwnedSqFt(), cash = g.getCash(), borrowed = ab.getBorrowed();
+        int offers = ab.getLandOffers(), bonds = ab.getBonds();
+        double[][] before = g.getLandManager().getMarket().getOffersState();
+        boolean placed = ab.placeForTest(g, POWER, s, 1);
+        check(String.format("an order the builders would refuse moves no money: no ground bought and no bond sold (placed %b; %d offers bought, "
+                + "%.0f sq ft owned against %.0f, %d bonds sold, cash %.0f against %.0f)", placed, ab.getLandOffers() - offers,
+                g.getLandManager().getOwnedSqFt(), owned, ab.getBonds() - bonds, g.getCash(), cash),
+                !placed && ab.getLandOffers() == offers && g.getLandManager().getOwnedSqFt() == owned && ab.getBonds() == bonds
+                && ab.getBorrowed() == borrowed && g.getCash() == cash
+                && java.util.Arrays.deepEquals(before, g.getLandManager().getMarket().getOffersState()));
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("powerplancheck");
@@ -530,6 +665,9 @@ public final class PowerPlanCheck {
         windAlone(root);
         spread(root);
         ground(root);
+        quoteIsCost(root);
+        cannotCover(root);
+        refused(root);
         out.println("--- 8. how often each fires ---");
         out.printf("this harness's suggestions: reserve test %d, spread %d (the default run's: LongPlaytest, \"the power planner (PW3)\")%n",
                 BuildAdvice.RESERVE_ORDERS.get(), BuildAdvice.SPREAD_ORDERS.get());
