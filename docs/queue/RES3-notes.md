@@ -2664,3 +2664,111 @@ provisional marker and review-required ALL pick remain. The independent
 diagnostic's temporary worktrees are removed after its source patches,
 commands, data and logs are kept under `target/RES3-P1-trace/`. No helper
 or JVM is left running at the short P1 re-review handoff.
+
+### Final-model ensemble after REV-RES3y
+
+REV-RES3y SHIPs `563b5f17c` (orchestrator mail
+`20261124-035534-148-orchestrator-7ab0`). Its next-step instruction explicitly
+does not wait for FC2, which is held on a box-only red: run the final
+ensemble against `docs/ensemble/0.9.195.md`, commit its baseline before
+any dry run, then request the dry-run slot on current main. Whichever
+batch ships second merges the other and verifies CallCheck's six plus
+two, DeskCheck's spare, FundCheck's market book and BankCheck's TAB_LOSS
+pair. Those guards remain required if FC2 ships first; no wait on that
+batch is introduced here.
+
+The ensemble starts at 04:00 on 2026-11-24 from pushed, source-clean
+`563b5f17c`, label RES3, with the fresh local output parent
+`target/ensemble/RES3-final-20261124/`. BASELINE names 0.9.195 explicitly;
+JAVA_OPTS and JDK_JAVA_OPTIONS are empty for the box handoff, with no
+laptop data paths. The box uses its own native data copies. All sixteen
+seeds and all five policies retain the runner defaults. The Bash runner
+starts in the background under a 7,200-second timeout; its outer log
+and final exit file are `target/RES3-ensemble-final-20261124.{txt,exit}`.
+A temporary local Maven guard makes an unannounced laptop fallback stop
+before compilation, so its cause can be stated before any laptop JVM.
+Read-only MemWatch `RES3-ensemble-logs`, launched at 64-percent committed
+memory in its own detached checkout, handles progress, logs and the
+final comparison; no other RES3 JVM runs beside the ensemble.
+
+The box confirms `jerus@192.168.0.16`, Java 21.0.13, snapshot `563b5f17c`,
+eight runs at once and no laptop fallback. The first pass runs for 16.7
+minutes before FC2's dry run takes priority. At 17 completed runs (all
+sixteen AUTO2 and ZERO_SLACK seed 0), AUTO2 seed 4 has a new F1 occurrence:
+"households with no home" at month 37. Baseline 0.9.195 has no F1 run.
+
+★ Stop this known-failed candidate rather than complete eighty runs on
+a model that must be mended. The parent verifies its own timeout process
+613029 and sends TERM only to that PID at 04:25:25. The wrapper records
+143, after 25m19s; FC2 and other sessions are untouched. No final eighty-run
+score or M1 pass is claimed. The helper preserves all available remote
+output, sixty files, under
+`target/RES3-ensemble-review/failed-563b5f17c/`, excluding classes/driver/tmp.
+A fresh full eighty follows the model mend and its review. The existing
+`docs/ensemble/RES3.md` remains an earlier-model report, not validation of
+this candidate, and no dry-run slot is requested.
+
+The completed sample has 40,423 clean audited months: AUTO2 38,384 and the
+one ZERO_SLACK 2,039, with no failed or unread audit in those rows. Other
+policies are unmeasured. AUTO2 F1 fails 1/16, seed 4, against baseline zero.
+For information, AUTO2 A2 remains red and A3 changes PASS to FAIL (deflation
+spells of 15 months in seed 2 and 26 in seed 8). A1/T1/T2 pass in the
+complete AUTO2 sample. Its median final population is 6,780,860.5 against
+9,031,627, down 24.92 percent and narrowly above the T2 floor; takeoff is
+median m554 against m400. These partial-sample observations are retained,
+not presented as the missing overall criterion score.
+
+The CSV rent reader is `RealEstate.getAverageRentPaid`: now a chained
+comparable-class price level, formerly a weighted unit value, so their raw
+levels are not comparable. No affordability/unplaced/ground series was
+requested in this run. Do not invent an aggregate affordability measure
+from wages or deposits. Seed 9 is actually inspected at m605 in AUTO2:
+audit clean, residual zero, findings zero. Its other policy rows are not
+available in this stopped sample; ZERO_HOT would end at m402. Ground
+shortage is not directly measured there. The final complete ensemble must
+report the available policy rows after the mend.
+
+For causal evidence, the helper prepares an exact driver copy with only
+read-only housing observations. One named laptop diagnostic runs through
+m45 while the immutable box snapshot continues: temporary MonetaryCheck
+property `res3.seed4Trace` returns to the driver before its own fixture
+changes, using AUTO2 seed 4 and native Earth/world bytes. It is a diagnostic,
+not a passing MonetaryCheck law run. All 44 CSV rows m2-45, all 68 columns
+(2,992 cells), match the immutable gatebox AUTO2-4 prefix byte-for-byte,
+without runtime exclusions. Its trace/source, prefix proof and compact
+three-month data are under `target/RES3-ensemble-review/seed4-causal/` and
+the review folder. No model decision or additional month step is added.
+
+The actual m37 result is 5.334830455751835 unplaced households, all
+affordability and noSuitable zero, despite 135.27691877 compatible vacant
+door-equivalents and no pipeline. At m36 and m38 unplaced is zero. The
+affected senior cells bid .00501710/.00684241/.01057528 against compatible
+quoted bills .05983892/.12256114/.05754492/.04922548. They already have
+zero-bill D90 guest assignments in their m36 cell keys; net growth of those
+three cells is only .14682126. This is aggregate cell evidence, not a claim
+to identify every individual across a census. The first unemployment wave
+(0 to 46.9496 percent) introduces zero-funded demand and exhausts current
+funded guest room. No real-estate ground block or simple missing-door
+shortage causes this observed failure.
+
+The source omits hosted incumbency: HousingMarket.clear converts prior
+bill/lastTrade to primary count, making a zero-bill guest zero before
+HousingChoice receives incumbents. Its primary gate also uses the new
+offer's affordability rather than the prior arrangement. The design's
+incumbent/shortfall rule therefore needs a conserving implementation proof.
+Opening-pool EI is intentionally paid before the new unemployment census,
+so zero m37 EI alone proves no benefit lag defect and authorizes no invented
+same-month income. Primitive financial cash/fees/debt-minimum terms were
+not captured by the first housing-only trace. A focused isolated probe is
+required before selecting the repair, preserving real funding, at most two
+households per door, class rent updates and all existing invariants.
+
+The temporary named route/class and its generated artifacts are removed.
+The first inline restore invocation did not execute; the explicit Bash
+restore script then compiles successfully (exit 0, 54 seconds, 0 firm/199
+soft Stale), and the compiled MonetaryCheck is checked to contain no
+`res3.seed4Trace` route. Source remains the reviewed model, with only these
+notes pending. The final partial helper report is fifteen-line mail
+`20261124-043132-158-RES3-ensemble-logs-e2eb`. Its focused continuation is
+launched at 65-percent committed memory in the same isolated checkout;
+the parent runs no JVM alongside that probe.
