@@ -1228,6 +1228,8 @@ public class Game {
      */
     private void policyHearsTheMonth() {
         moneyHearsTheMonth();
+        // ...and the bank which capital rule stands (bankHearsTheRule()), before the month reads it.
+        bankHearsTheRule();
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
         // push (where the households are told their bills) comes after anything that reads it. The founding opens the pension at zero (OP1).
         households.setPensionPerSenior(economyManager.getTaxPolicy().pensionPerSenior());
@@ -1237,6 +1239,15 @@ public class Game {
         recipes.apply(this);
         // ...and the sectors the 1900 forms their unfitted buildings leave (R1; EquipmentForms): nothing in a city with none unfitted.
         equipmentForms.apply(this);
+    }
+
+    /**
+     * Tells the bank which capital rule stands (R6f, L8; Bank, BASEL III IS A DATE): the conservation buffer from the month L8 is known, the
+     * minimum alone before it; today's rule in a city founded the default way, which knows every row. Said where the month is heard and again
+     * at a load once the founding and the finds are back (loadGame()), since neither is saved with the bank.
+     */
+    private void bankHearsTheRule() {
+        bank.hearCapitalRule(!foundedUnfitted() || research.known("L8", month));
     }
 
     /** The recipes each template's buildings run, chosen in a city founded the 1900 way and saved there (R1c): nothing in any other. */
@@ -1575,8 +1586,20 @@ public class Game {
             labs.put(f, standing);
             labResearchers.put(f, Research.filledResearchers(f, standing * Research.LAB_POSTS, fill));
         }
-        if (foundedUnfitted()) research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
-        else research.idleMonth(researchers, labs, labResearchers);
+        if (foundedUnfitted()) {
+            research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
+            hearTheFinds();
+        } else research.idleMonth(researchers, labs, labResearchers);
+    }
+
+    /**
+     * What the month's finds change at once (R6f review, REV-R6f P1 and P2): a row found this month is known all of it (Research.known()),
+     * so the bank hears its capital rule again and the sickness its medicine, at the coverage the month noted. Without it a city that found
+     * L8 or a stays row ahead of history ran the old rule to the month's end, and a reload of that month read the new one.
+     */
+    private void hearTheFinds() {
+        bankHearsTheRule();
+        sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
     }
 
     /**
@@ -21930,6 +21953,9 @@ public class Game {
                 economyManager.setResearch(savedResearch.payroll, savedResearch.costs);
                 prizePaid = Double.isFinite(savedResearch.prizePaid) ? Math.max(0, savedResearch.prizePaid) : 0;
             }
+            // ...and the bank its capital rule again (R6f, L8), now the founding and the finds are back: policyHearsTheMonth(), far above, said it
+            // before either was, so a loaded 1900 city before 2013 would have held today's buffer until the next month's top.
+            bankHearsTheRule();
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
@@ -22414,6 +22440,10 @@ public class Game {
             if (!causesOfDeath.restore(restoredFlows.getCausesOfDeath())) causesOfDeath.reset();
             healthcare.restore(restoredFlows.getHealthcare());
             healthcare.restoreAccessState(restoredFlows.getHealthcareAccess());
+            // ...and the medicine the city knows (R2f; R6f review, REV-R6f P2), derived from the finds, the month and the coverage the month
+            // noted, all restored by now: unsaved, it read today's (1, 1, 0) until the next month's demographics, so a 1900 city before a
+            // stays row (M12 among them) showed a faster recovery loaded than it ran.
+            sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
 
             labourMarket.restore(restoredFlows.getLabour());
             wantedPosts.restore(restoredFlows.getWantedPosts());

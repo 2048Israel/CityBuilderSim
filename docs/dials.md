@@ -2,9 +2,9 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,647 constants in 634 files.**
+**6,661 constants in 635 files.**
 
-## model (3037 constants)
+## model (3043 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -120,16 +120,17 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 4224 | `Bank.SECTOR_WATCH_LEVERAGE` | `BusinessDebtManager.MAX_LOAN_TO_ASSETS` | Leverage past which a business borrower is in trouble ("stage 2"): BusinessDebtManager.MAX_LOAN_TO_ASSETS, the most the shortfall desk lends against a borrower's assets - past it the bank would not... |
 | 4228 | `Bank.HOUSEHOLD_BOOK` | `"Households"` | The key the families' book is saved and shown under, beside the sectors' names. |
 | 4503 | `Bank.CONSERVATION_BUFFER` | `.025` | The least buffer a bank holds over the minimum: the Basel III capital conservation buffer, 2.5% of risk-weighted assets (BCBS, December 2010). |
-| 4506 | `Bank.MANAGEMENT_CUSHION` | `.025` | How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). |
-| 4509 | `Bank.YEAR_MONTHS` | `12` | A year, in months: the loss record's window, the dividends' and buybacks' "over the year", and how long an excess takes to return. |
-| 4600 | `Bank.MAX_BUFFER` | `.085` | The most buffer a bank holds over the minimum, however bad a year it has seen: 8.5 points, the whole Basel III stack - the 2.5-point conservation buffer, a countercyclical buffer at its 2.5-point c... |
-| 4694 | `Bank.PAYOUT_IN_BAND` | `.45` | The share of its profit after tax a bank inside its band pays its owners: 45%, inside the 40-50% payout range Canada's big banks target; RBC paid 43% of its 2025 earnings. |
-| 4697 | `Bank.EXCESS_PAYOUT_MONTHS` | `YEAR_MONTHS` | How many months a bank over the top of its band takes to return the excess: a year, the term of a normal-course issuer bid on the TSX. |
-| 4900 | `Bank.OWN_ISSUE_DEAD_BAND` | `1e-9` | How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into... |
-| 4981 | `Bank.RATIONED_GROWTH` | `.01` | A borrower's debt may grow this much a month halfway between the minimum and the target: 1%, the top of the 0-1% a month Jerus's brief gave a bank short of capital; nothing at the minimum, no limit... |
-| 5365 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate inf... |
-| 6328 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet.FAMILIES,...` | The asset lines, in the page's order: they sum to totalAssets(). |
-| 6332 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHORT, Sheet....` | ...and the liability lines: they sum to totalLiabilities(). |
+| 4521 | `Bank.BUFFER_BEFORE_L8` | `0` | The least buffer a bank holds over the minimum before Basel III (L8): none was required, so its buffer is its worst year alone (BIS, 12 Sep 2010: the conservation buffer is Basel III's). |
+| 4536 | `Bank.MANAGEMENT_CUSHION` | `.025` | How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). |
+| 4539 | `Bank.YEAR_MONTHS` | `12` | A year, in months: the loss record's window, the dividends' and buybacks' "over the year", and how long an excess takes to return. |
+| 4630 | `Bank.MAX_BUFFER` | `.085` | The most buffer a bank holds over the minimum, however bad a year it has seen: 8.5 points, the whole Basel III stack - the 2.5-point conservation buffer, a countercyclical buffer at its 2.5-point c... |
+| 4724 | `Bank.PAYOUT_IN_BAND` | `.45` | The share of its profit after tax a bank inside its band pays its owners: 45%, inside the 40-50% payout range Canada's big banks target; RBC paid 43% of its 2025 earnings. |
+| 4727 | `Bank.EXCESS_PAYOUT_MONTHS` | `YEAR_MONTHS` | How many months a bank over the top of its band takes to return the excess: a year, the term of a normal-course issuer bid on the TSX. |
+| 4930 | `Bank.OWN_ISSUE_DEAD_BAND` | `1e-9` | How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into... |
+| 5011 | `Bank.RATIONED_GROWTH` | `.01` | A borrower's debt may grow this much a month halfway between the minimum and the target: 1%, the top of the 0-1% a month Jerus's brief gave a bank short of capital; nothing at the minimum, no limit... |
+| 5395 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate inf... |
+| 6358 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet.FAMILIES,...` | The asset lines, in the page's order: they sum to totalAssets(). |
+| 6362 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHORT, Sheet....` | ...and the liability lines: they sum to totalLiabilities(). |
 
 ### BoatSchedule.java ([map](map/BoatSchedule.md))
 
@@ -1672,36 +1673,36 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
 | 838 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 | 969 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1819 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1822 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
-| 1825 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 2156 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
-| 3407 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
-| 4107 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 4110 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
-| 7447 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 7450 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 8575 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
-| 9355 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 9585 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 10795 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 11374 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 12174 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 12817 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 12987 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 13031 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 13191 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15121 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 15133 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 15136 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15164 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 15175 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 15215 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 17024 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 17431 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 18085 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 18088 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 18091 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 1842 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1845 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1848 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
+| 2179 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
+| 3430 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
+| 4130 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 4133 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
+| 7470 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 7473 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 8598 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
+| 9378 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 9608 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 10818 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 11397 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 12197 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 12840 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 13010 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 13054 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 13214 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15144 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 15156 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 15159 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15187 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 15198 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 15238 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 17047 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 17454 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 18108 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 18111 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 18114 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1742,10 +1743,10 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.195"` | Bump on release. |
-| 8366 | `GameVersion.SAVE_FORMAT` | `63` | PW5 after HC1's shipped format 62: closing grid costs are a saved flow absent from that native layout. |
-| 8426 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `63` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8434 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 7372 | `GameVersion.VERSION` | `"0.9.196"` | Bump on release. |
+| 8374 | `GameVersion.SAVE_FORMAT` | `64` | R6f: THE CONTACT CENTRE BEFORE THE AI ASSISTANT (format 64). |
+| 8437 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `64` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8445 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -3404,8 +3405,13 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 137 | `Sickness.LONG_RECOVERY_BEFORE_M1` | `224 / 362.0` | Before the TB drugs (M1) the sick of a year or more get better at this share of the month's recovery: Canadian TB stays fell from 362 to 224 days with them [M-S1]. |
 | 145 | `Sickness.SERVED_DEATHS_BEFORE_M2` | `55 / 900.0 *(87 / 22.0 - 1)` | Before the breathing machine (M2) the long sick general care serves die this much more often: it took respiratory polio's deaths from 87% to 22% [M-M5], on the respiratory share of deaths, pneumoni... |
 | 148 | `Sickness.STAYS_BEFORE_PM5` | `10 / 11.0` | General care's part of the recovery before penicillin (PM5) is this share of its part after: Canada's general-hospital stay fell from 11.0 to 10.0 days, 1945-50 (observed, not proven causal) [SC-B2... |
-| 155 | `Sickness.STAYS_BEFORE_LATER_ROW` | `Math.pow(7.3 / 10.0, 1 / 4.0)` | ...and before each of the four later rows that shorten a stay (M5, M6, M9, M10), this share: they split the fall from 1950's 10.0 days to 2022-23's 7.3 [SC-B285], [CIHI-LOS] evenly (est.). |
-| 158 | `Sickness.LATER_STAYS_ROWS` | `java.util.List.of("M5", "M6", "M9", "M10")` | The later rows that shorten general care's stays, each taking STAYS_BEFORE_LATER_ROW off until it is known. |
+| 160 | `Sickness.ROBOTIC_SHARE_OF_STAYS` | `276_325 / 35_527_500.0` | Robot-assisted stays' share of all stays: 276,325 of the US's 35,527,500 inpatient stays in 2018 [R6f-S1], [R6f-S2]; Canada's share was not found. |
+| 163 | `Sickness.ROBOT_DAYS_SAVED` | `0.23` | The days a robot-assisted operation takes off a stay against keyhole surgery (M9, the way before it): 0.23 in a 2024 meta-analysis of randomised trials [G-M39]; its 1.69 against open surgery is M9'... |
+| 166 | `Sickness.US_MEAN_STAY_2018` | `.270 * 5.1 +.730 * 4.5` | The US mean inpatient stay of 2018 those stays are of, in days: 27.0% of stays with an operating-room procedure at 5.1 days, the rest at 4.5 [R6f-S2]. |
+| 169 | `Sickness.STAYS_BEFORE_M12` | `US_MEAN_STAY_2018 /(US_MEAN_STAY_2018 + ROBOTIC_SHARE_OF_STAYS * ROBOT_DAYS_SAVED)` | General care's part of the recovery before robot-assisted surgery (M12) is this share of its part after: the mean stay over the mean stay with the robot's saving back on its share of the stays (est.). |
+| 177 | `Sickness.STAYS_BEFORE_LATER_ROW` | `Math.pow(7.3 / 10.0 / STAYS_BEFORE_M12, 1 / 4.0)` | ...and before each of the four later rows that shorten a stay (M5, M6, M9, M10), this share: they split evenly what the rows with their own measure (M12) leave of the fall from 1950's 10.0 days to ... |
+| 180 | `Sickness.LATER_STAYS_ROWS` | `java.util.List.of("M5", "M6", "M9", "M10")` | The later rows that shorten general care's stays, each taking STAYS_BEFORE_LATER_ROW off until it is known. |
+| 183 | `Sickness.STAYS_ROWS` | `java.util.List.of("PM5", "M5", "M6", "M9", "M10", "M12")` | Every row that shortens general care's stays, in date order: PM5, the later four, then the rows with their own measure (M12). |
 
 ### SitePreparation.java ([map](map/SitePreparation.md))
 
@@ -5972,7 +5978,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2114 constants)
+## harnesses (2122 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7952,7 +7958,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 52 | `MedicineCheck.out` | `System.out` | The real output: quietly() swaps System.out, and the log is this. |
 | 146 | `MedicineCheck.TABLE` | `new LinkedHashMap<>()` | Every medical row's group or groups, typed from research-design Q17 and R2f's notes; section 1 holds the model to it. |
-| 431 | `MedicineCheck.RATE` | `.05` | The sick rate the twins are seeded at. |
+| 445 | `MedicineCheck.RATE` | `.05` | The sick rate the twins are seeded at. |
 
 ### MiningCheck.java ([map](map/MiningCheck.md))
 
@@ -7972,6 +7978,15 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 44 | `ModernEngineeringCheck.LEGACY_FORMAT` | `58` | The exact pre-R6e source-plan base, .181, wrote format58; this is a legacy fixture, not a new format decision. |
 | 46 | `ModernEngineeringCheck.PRE_E21_FORMAT` | `59` | HT1's shipped .184 still predates E21's physical recipe flag. |
 | 47 | `ModernEngineeringCheck.FARMS` | `List.of("Mixed Farm", "Grain Farm")` |  |
+
+### ModernRowsCheck.java ([map](map/ModernRowsCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 51 | `ModernRowsCheck.OUT` | `System.out` |  |
+| 52 | `ModernRowsCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 54 | `ModernRowsCheck.AGENTS_GAIN` | `.14` | Brynjolfsson, Li and Raymond's 14% more issues resolved an hour, the ratio buildings.json's B10 undo gives the agents before the assistant. |
+| 56 | `ModernRowsCheck.COVERAGES` | `{.25,.5, 1 }` | The general-care coverages (0, 1] the recovery is read at. |
 
 ### MonetaryCheck.java ([map](map/MonetaryCheck.md))
 
@@ -8576,17 +8591,21 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 97 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
-| 143 | `ResearchCheck.MONTH_KNOWN` | `32` | The entries whose World column names a month: the tables' 30 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
-| 146 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 92 rows (HISTORY_ROWS). |
-| 147 | `ResearchCheck.PREFIX_COUNTS` | `{ 21, 10, 8, 5, 27, 6, 3, 12 }` |  |
-| 148 | `ResearchCheck.HISTORY_ROWS` | `92` |  |
-| 151 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE... |
-| 152 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
-| 155 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 92. |
-| 158 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "E21", 2151 }, { "M...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 568 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
-| 580 | `ResearchCheck.POWER_YEARS` | `new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"))` | The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. |
+| 98 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
+| 147 | `ResearchCheck.MONTH_KNOWN` | `35` | The entries whose World column names a month: the tables' 33 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
+| 150 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 95 rows (HISTORY_ROWS). |
+| 151 | `ResearchCheck.PREFIX_COUNTS` | `{ 21, 11, 9, 6, 27, 6, 3, 12 }` |  |
+| 152 | `ResearchCheck.HISTORY_ROWS` | `95` |  |
+| 155 | `ResearchCheck.STUDY_TAIL` | `List.of("L5", "E19", "E20", "E21", "M12", "B10", "L8")` | The studies' rows that come after the PL rows, in the file's order: L5, E19-E21, then M12, B10 and L8 (R6f). |
+| 158 | `ResearchCheck.LATE_HISTORY` | `Set.of("E21", "M12", "L8", "B10")` | The studies' rows dated after 1995, and the years they may be dated in: E21 (1996), M12 (2000), L8 (2013) and B10 (2020); every other non-F row is 1900 to 1995. |
+| 159 | `ResearchCheck.LATE_FROM` | `1996` |  |
+| 160 | `ResearchCheck.LATE_TO` | `2024` |  |
+| 163 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE... |
+| 164 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
+| 167 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 95. |
+| 170 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "E21", 2151 }, { "M...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
+| 581 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 593 | `ResearchCheck.POWER_YEARS` | `new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"))` | The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. |
 
 ### ResearchPreviewCheck.java ([map](map/ResearchPreviewCheck.md))
 

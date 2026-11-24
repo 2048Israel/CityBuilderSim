@@ -147,22 +147,53 @@ public class Sickness {
     /** General care's part of the recovery before penicillin (PM5) is this share of its part after: Canada's general-hospital stay fell from 11.0 to 10.0 days, 1945-50 (observed, not proven causal) [SC-B285]. */
     public static final double STAYS_BEFORE_PM5 = 10 / 11.0;
 
+    /*
+     * A STAYS ROW WITH ITS OWN MEASURE (R6f, M12; MED3's M14 takes the same
+     * rule): until the row is known a stay is longer by the row's saving an
+     * operation times the share of stays it reaches, so general care's part
+     * of the recovery is the mean stay over that longer stay. The four later
+     * rows below split evenly only what such rows leave of the fall from
+     * 1950 to today, so 1950's 10.0 days stay 10.0 [SC-B285].
+     */
+
+    /** Robot-assisted stays' share of all stays: 276,325 of the US's 35,527,500 inpatient stays in 2018 [R6f-S1], [R6f-S2]; Canada's share was not found. */
+    public static final double ROBOTIC_SHARE_OF_STAYS = 276_325 / 35_527_500.0;
+
+    /** The days a robot-assisted operation takes off a stay against keyhole surgery (M9, the way before it): 0.23 in a 2024 meta-analysis of randomised trials [G-M39]; its 1.69 against open surgery is M9's own saving and more. */
+    public static final double ROBOT_DAYS_SAVED = 0.23;
+
+    /** The US mean inpatient stay of 2018 those stays are of, in days: 27.0% of stays with an operating-room procedure at 5.1 days, the rest at 4.5 [R6f-S2]. */
+    public static final double US_MEAN_STAY_2018 = .270 * 5.1 + .730 * 4.5;
+
+    /** General care's part of the recovery before robot-assisted surgery (M12) is this share of its part after: the mean stay over the mean stay with the robot's saving back on its share of the stays (est.). */
+    public static final double STAYS_BEFORE_M12 = US_MEAN_STAY_2018 / (US_MEAN_STAY_2018 + ROBOTIC_SHARE_OF_STAYS * ROBOT_DAYS_SAVED);
+
     /**
      * ...and before each of the four later rows that shorten a stay (M5, M6,
-     * M9, M10), this share: they split the fall from 1950's 10.0 days to
-     * 2022-23's 7.3 [SC-B285], [CIHI-LOS] evenly (est.).
+     * M9, M10), this share: they split evenly what the rows with their own
+     * measure (M12) leave of the fall from 1950's 10.0 days to 2022-23's 7.3
+     * [SC-B285], [CIHI-LOS] (est.).
      */
-    public static final double STAYS_BEFORE_LATER_ROW = Math.pow(7.3 / 10.0, 1 / 4.0);
+    public static final double STAYS_BEFORE_LATER_ROW = Math.pow(7.3 / 10.0 / STAYS_BEFORE_M12, 1 / 4.0);
 
     /** The later rows that shorten general care's stays, each taking STAYS_BEFORE_LATER_ROW off until it is known. */
     public static final java.util.List<String> LATER_STAYS_ROWS = java.util.List.of("M5", "M6", "M9", "M10");
 
-    /** General care's part of the recovery in a month, as a share of today's: 1 once PM5 and the later stays rows are known. */
+    /** Every row that shortens general care's stays, in date order: PM5, the later four, then the rows with their own measure (M12). */
+    public static final java.util.List<String> STAYS_ROWS = java.util.List.of("PM5", "M5", "M6", "M9", "M10", "M12");
+
+    /** The share of today's part a stays row leaves until it is known: STAYS_BEFORE_PM5, STAYS_BEFORE_LATER_ROW or STAYS_BEFORE_M12; 1 for a code that is no stays row. */
+    public static double staysBefore(String code) {
+        if ("PM5".equals(code)) return STAYS_BEFORE_PM5;
+        if ("M12".equals(code)) return STAYS_BEFORE_M12;
+        return LATER_STAYS_ROWS.contains(code) ? STAYS_BEFORE_LATER_ROW : 1;
+    }
+
+    /** General care's part of the recovery in a month, as a share of today's: 1 once every stays row is known. */
     public static double staysFactor(MedicalRows rows, int month) {
         if (rows == null || rows.isToday()) return 1;
         double f = 1;
-        if (!rows.known("PM5", month)) f *= STAYS_BEFORE_PM5;
-        for (String code : LATER_STAYS_ROWS) if (!rows.known(code, month)) f *= STAYS_BEFORE_LATER_ROW;
+        for (String code : STAYS_ROWS) if (!rows.known(code, month)) f *= staysBefore(code);
         return f;
     }
 

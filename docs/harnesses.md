@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**248 harness files, 28,225 labelled assertions.** AllChecks runs 248 of them.
+**249 harness files, 28,346 labelled assertions.** AllChecks runs 249 of them.
 
 ## Which harnesses read which class
 
@@ -20,7 +20,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, PowerPlantsCheck, PublicLicenceCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SubstationCheck, WorksFinanceCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
-| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewUnitCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
+| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, ModernRowsCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewUnitCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
 | [BankScreen](map/BankScreen.md) | **none** |
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PartnerCallsCheck, PortCheck, QuayCraneCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BankFailureCheck, BondCheck, CapitalGainsCheck, CurveCheck, FundCheck, FundLedgerCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, MortgageCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, StepsCheck |
@@ -42,7 +42,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HousingInventoryCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerPlantsCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SubstationCheck, TruckRouteCheck, WaterPowerCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, MedicineCheck, ModernEngineeringCheck, NewUnitCheck, OutsideCheck, PostwarRecipeCheck, PowerPlantsCheck, PublicLicenceCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, WaterPowerCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, HoldersCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CardCheck, CreditCheck, CreditCrunchCheck, DistressBleedCheck, FittingCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
@@ -55,7 +55,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CapChips](map/CapChips.md) | **none** |
 | [CapSetting](map/CapSetting.md) | AuctionCheck |
 | [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, FloatLinkCheck, HoldersCheck, InterestAbroadCheck, LongPlaytest, ReadPathCheck, ReloadCheck, SaveFileCheck |
-| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, MedicineCheck, OwnerCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, WorksFinanceCheck |
+| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, MedicineCheck, ModernRowsCheck, OwnerCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, WorksFinanceCheck |
 | [CausesOfDeath](map/CausesOfDeath.md) | CausesOfDeathCheck, LongPlaytest, MedicineCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
 | [CellSpread](map/CellSpread.md) | CardCheck, DebtStatisticsCheck, HealthCheck, OutsideCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, Forms1900Check, IndustryViewCheck, QuarryingCheck |
@@ -138,8 +138,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | CapitalGainsCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | MapCheck, ReplayCheck, TruckRouteCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, CapitalGainsCheck, CardCheck, ChartCheck, ConstructionControlCheck, CreditsCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, GoldMiningCheck, LandmassCheck, MaterialsCheck, ModernEngineeringCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -150,7 +150,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck, GroundInputCheck |
 | [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CardCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CardCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperBufferCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GapOrderCheck, GdpCheck, GoldMiningCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
@@ -190,7 +190,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [IslandChip](map/IslandChip.md) | **none** |
 | [IslandRailRenders](map/IslandRailRenders.md) | **none** |
 | [JavaScan](map/JavaScan.md) | **none** |
-| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, DriverlessTruckCheck, ER1Check, EducationCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, StaffingDrawCheck, SubstationCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, YoungBankCheck |
+| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, DriverlessTruckCheck, ER1Check, EducationCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, ModernRowsCheck, NewUnitCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, StaffingDrawCheck, SubstationCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, YoungBankCheck |
 | [Kept](map/Kept.md) | **none** |
 | [KeptBench](map/KeptBench.md) | KeptCheck, KeptTimingCheck, MoneyWordsCheck, NewUnitCheck, ShortSellingCheck, StepsCheck |
 | [KnownReds](map/KnownReds.md) | KnownRedsCheck |
@@ -226,7 +226,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Maps](map/Maps.md) | **none** |
 | [Markets](map/Markets.md) | BankFailureCheck, BooksCheck, BuildMenuCheck, BuildingStackCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HomeRailCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, UndemandedFeedCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
-| [MedicalRows](map/MedicalRows.md) | MedicineCheck |
+| [MedicalRows](map/MedicalRows.md) | MedicineCheck, ModernRowsCheck |
 | [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CapitalGainsCheck, CentralBankCheck, DeskCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
 | [Migration](map/Migration.md) | ArrivalMixCheck, CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WantedPostsCheck |
 | [MiniMap](map/MiniMap.md) | **none** |
@@ -261,7 +261,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CapitalGainsCheck, CarCheck, CardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DeathRecordCheck, DebtStatisticsCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, KeptCheck, ResearchViewCheck |
-| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, FB13Check, GoldStandardCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, ModernEngineeringCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, FB13Check, GoldStandardCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, FundCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -298,8 +298,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ReplayGraphs](map/ReplayGraphs.md) | ReplayCheck |
 | [ReplayMode](map/ReplayMode.md) | **none** |
 | [ReplayMoveProbe](map/ReplayMoveProbe.md) | ReplayCheck |
-| [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, PolicyOpenCheck, PolicyPreviewCheck, PrizeCheck, ResearchPreviewCheck, ResearchViewCheck |
-| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, KeptCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, NewUnitCheck, PolicyOpenCheck, PolicyPreviewCheck, PostwarRecipeCheck, PowerPlantsCheck, PrizeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, SulphideLeachCheck, WaterPowerCheck |
+| [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, PolicyOpenCheck, PolicyPreviewCheck, PrizeCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, KeptCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PolicyOpenCheck, PolicyPreviewCheck, PostwarRecipeCheck, PowerPlantsCheck, PrizeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, SulphideLeachCheck, WaterPowerCheck |
 | [ResearchPreview](map/ResearchPreview.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchScreen](map/ResearchScreen.md) | **none** |
 | [ResearchView](map/ResearchView.md) | FB13Check, HistoricalRecipeCheck, KeptCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
@@ -331,7 +331,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShipShapes](map/ShipShapes.md) | PortCheck |
 | [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
-| [Sickness](map/Sickness.md) | CausesOfDeathCheck, LongPlaytest, MedicineCheck, PopulationCheck, ReadPathCheck, ScaleCheck, SicknessCheck |
+| [Sickness](map/Sickness.md) | CausesOfDeathCheck, LongPlaytest, MedicineCheck, ModernRowsCheck, PopulationCheck, ReadPathCheck, ScaleCheck, SicknessCheck |
 | [SignFont](map/SignFont.md) | MoneySignCheck |
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
 | [SitePreparation](map/SitePreparation.md) | LandClassCheck, PriceLevelCheck, RunWorksCheck, SlopeCheck |
@@ -22781,7 +22781,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1548 ...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be
   - L1553 ...and the next month's dig gives the hematite mines nothing and the magnetite works their share
 
-## MedicineCheck.java - 64 labelled assertions
+## MedicineCheck.java - 67 labelled assertions
 
 > Proves the research catalogue's medical rows (R2f) move the constants they map to: a medical row a 1900 city finds ahead of the world brings
 > its step on a cause of death forward, and a row it lacks leaves its constant undone until the month history had it or the month the city found
@@ -22797,77 +22797,80 @@ _(this harness does not label its checks through a helper - it prints its findin
 > What this has to prove:
 > ...
 
-- **L203 1. every medical row is mapped**
-  - L206 the catalogue's medicine rows, in file order, are exactly MedicalRows.CODES
-  - L208 ...and are the same sixteen codes whatever the order
-  - L210 the check's own table lists the catalogue's medicine rows
-  - L232 every code in CausesOfDeath.STEPS is a medical row
-  - L233 every code in Sickness.LATER_STAYS_ROWS is a medical row
-- **L239 2. the steps are history's**
-  - L241 history's pneumonia in January 1940 over January 1937 is sulfa's factor on pneumonia
-  - L244 history's childbirth in January 1940 over January 1937 is sulfa's factor on mothers
-  - L247 history's childbirth in January 1944 over January 1940 is penicillin's factor on mothers
-  - L250 history's TB in January 1952 over January 1948 is streptomycin's factor on TB
-- **L262 3. a city that found nothing is history's path to the bit**
-  - L275 for
-  - L288 for
-  - L299 Sickness's three static factors read 1, 1 and 0 for TODAY in every month to December 1980
-  - L304 a 1900 city that found nothing reads 1, 1 and 0 from the month of the last medical row on
-- **L314 4. a row found ahead of the world brings its step forward, and history then has it**
-- **L368 5. the undone constants switch at the row's month, and at a find**
-  - L371 the month before M1 the long slot recovers at LONG_RECOVERY_BEFORE_M1 of the month's recovery
-  - L373 ...and in full from M1's month
-  - L374 the served long sick die SERVED_DEATHS_BEFORE_M2 more the month before M2
-  - L376 ...and no more from M2's month
-  - L382 fixture: the stays rows are dated in different months, all after the first
-  - L383 general care's part of the recovery in month 1 is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row
-  - L393 ...and once every stays row is known the factor is 1
-  - L400 M1, M2 and M5 each found
-  - L403 with M1 found here the long slot is undone the month before the find
-  - L404 ...and recovers in full from the month of the find
-  - L405 with M2 found here the served long sick die more the month before the find
-  - L406 ...and no more from the month of the find
-  - L407 with M5 found here the stays factor in the month of the find over the month before is one over STAYS_BEFORE_LATER_ROW
-  - L409 ...while a city that found nothing is still undone the month of M5's find
-- **L454 6. a ring reads them**
-  - L463 fixture: the M1-unknown twin has the long slot undone and the other has it whole
-  - L471 the M1-unknown ring's last slot over the one before is q over one less (1 - h)(1 - r x LONG_RECOVERY_BEFORE_M1)
-  - L474 the ring with M1 known has its last slot over the one before q over one less q
-  - L476 the M1-unknown ring keeps more of its sick in the year-or-more slot
-  - L479 the M1-unknown ring's slots sum to the adults' share
-  - L480 the ring with M1 known has its slots sum to the adults' share
-  - L486 with only M2 unknown at half coverage the death lift is SERVED_DEATHS_BEFORE_M2 times a half
-  - L488 ...and the adults' death rate is the share sick past two months times their chance times one plus the lift
-  - L495 a twin on 1900's rows at month 1 recovers at the untreated share plus the served part times the stays factors, general care at 1
-  - L498 a TODAY twin recovers at RECOVERY_SERVED
-  - L503 a TODAY twin's ring is, slot for slot with ==, a ring that was never given its medicine
-  - L504 ...and its stays factor, long slot and death lift are 1, 1 and 0
-  - L507 the M1-unknown twin
-  - L508 the twin with M1 known
-  - L509 the M2-unknown twin
-  - L510 the twin on 1900's rows
-  - L511 the TODAY twin
-- **L537 7. a real city reads them**
-  - L540 fixture: both villages have a General Hospital standing
-  - L541 fixture: the 1900 village is founded the 1900 way and reads its research, the default one reads TODAY
-  - L549 the 1900 village's stays factor after two months is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row
-  - L551 ...its long slot recovers at LONG_RECOVERY_BEFORE_M1
-  - L552 fixture: its general care covers some of the people
-  - L553 ...and its death lift is SERVED_DEATHS_BEFORE_M2 times the month's general coverage
-  - L555 ...and above nothing
-  - L558 the default village's factors are 1, 1 and 0 and it reads TODAY
-  - L566 with M1 found here the 1900 village's long slot recovers in full the next month
-  - L568 ...while the stays are still undone
-  - L576 fixture: the twins are identical before the find, in people and in the TB dead last month
-  - L587 PM1 found at month 1 brings milk's step on TB forward: the factor in the month played is below 1
-  - L588 fixture: the twins played the same month
-  - L590 fixture: the twin without the find booked TB dead
-  - L591 the found twin's TB dead over the other's is CausesOfDeath.ahead() for the month
-  - L595 the Assisted Living Residence is dated by M8
-  - L599 it is unknown in a city that found nothing the month before M8's
-  - L600 ...and known from M8's month
-  - L602 with M8 found at month 100 it is known at month 100
-  - L603 ...and not the month before
+- **L211 1. every medical row is mapped**
+  - L214 the catalogue's medicine rows, in file order, are exactly MedicalRows.CODES
+  - L216 ...and are the same codes whatever the order
+  - L218 the check's own table lists the catalogue's medicine rows
+  - L240 every code in CausesOfDeath.STEPS is a medical row
+  - L241 every code in Sickness.LATER_STAYS_ROWS is a medical row
+  - L242 Sickness.STAYS_ROWS, the list staysFactor() reads, is exactly the stays rows typed here, in their order
+  - L246 ...and Sickness.staysBefore() gives each the share typed here
+  - L247 the even split and the rows with their own measure come home to 1950's 10.0 days against 2022-23's 7.3: STAYS_BEFORE_LATER_ROW to the fourth times STAYS_BEFO...
+- **L254 2. the steps are history's**
+  - L256 history's pneumonia in January 1940 over January 1937 is sulfa's factor on pneumonia
+  - L259 history's childbirth in January 1940 over January 1937 is sulfa's factor on mothers
+  - L262 history's childbirth in January 1944 over January 1940 is penicillin's factor on mothers
+  - L265 history's TB in January 1952 over January 1948 is streptomycin's factor on TB
+- **L277 3. a city that found nothing is history's path to the bit**
+  - L290 for
+  - L303 for
+  - L314 Sickness's three static factors read 1, 1 and 0 for TODAY in every month to December 1980
+  - L319 a 1900 city that found nothing reads 1, 1 and 0 from the month of the last medical row on
+- **L329 4. a row found ahead of the world brings its step forward, and history then has it**
+- **L383 5. the undone constants switch at the row's month, and at a find**
+  - L386 the month before M1 the long slot recovers at LONG_RECOVERY_BEFORE_M1 of the month's recovery
+  - L388 ...and in full from M1's month
+  - L389 the served long sick die SERVED_DEATHS_BEFORE_M2 more the month before M2
+  - L391 ...and no more from M2's month
+  - L397 fixture: the stays rows are dated in different months, all after the first
+  - L398 general care's part of the recovery in month 1 is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row and STAYS_BEFORE_M12
+  - L407 ...and once every stays row is known the factor is 1
+  - L414 M1, M2 and M5 each found
+  - L417 with M1 found here the long slot is undone the month before the find
+  - L418 ...and recovers in full from the month of the find
+  - L419 with M2 found here the served long sick die more the month before the find
+  - L420 ...and no more from the month of the find
+  - L421 with M5 found here the stays factor in the month of the find over the month before is one over STAYS_BEFORE_LATER_ROW
+  - L423 ...while a city that found nothing is still undone the month of M5's find
+- **L468 6. a ring reads them**
+  - L477 fixture: the M1-unknown twin has the long slot undone and the other has it whole
+  - L485 the M1-unknown ring's last slot over the one before is q over one less (1 - h)(1 - r x LONG_RECOVERY_BEFORE_M1)
+  - L488 the ring with M1 known has its last slot over the one before q over one less q
+  - L490 the M1-unknown ring keeps more of its sick in the year-or-more slot
+  - L493 the M1-unknown ring's slots sum to the adults' share
+  - L494 the ring with M1 known has its slots sum to the adults' share
+  - L500 with only M2 unknown at half coverage the death lift is SERVED_DEATHS_BEFORE_M2 times a half
+  - L502 ...and the adults' death rate is the share sick past two months times their chance times one plus the lift
+  - L509 a twin on 1900's rows at month 1 recovers at the untreated share plus the served part times the stays factors, general care at 1
+  - L512 a TODAY twin recovers at RECOVERY_SERVED
+  - L517 a TODAY twin's ring is, slot for slot with ==, a ring that was never given its medicine
+  - L518 ...and its stays factor, long slot and death lift are 1, 1 and 0
+  - L521 the M1-unknown twin
+  - L522 the twin with M1 known
+  - L523 the M2-unknown twin
+  - L524 the twin on 1900's rows
+  - L525 the TODAY twin
+- **L551 7. a real city reads them**
+  - L554 fixture: both villages have a General Hospital standing
+  - L555 fixture: the 1900 village is founded the 1900 way and reads its research, the default one reads TODAY
+  - L563 the 1900 village's stays factor after two months is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row and STAYS_BEFORE_M12
+  - L565 ...its long slot recovers at LONG_RECOVERY_BEFORE_M1
+  - L566 fixture: its general care covers some of the people
+  - L567 ...and its death lift is SERVED_DEATHS_BEFORE_M2 times the month's general coverage
+  - L569 ...and above nothing
+  - L572 the default village's factors are 1, 1 and 0 and it reads TODAY
+  - L580 with M1 found here the 1900 village's long slot recovers in full the next month
+  - L582 ...while the stays are still undone
+  - L590 fixture: the twins are identical before the find, in people and in the TB dead last month
+  - L601 PM1 found at month 1 brings milk's step on TB forward: the factor in the month played is below 1
+  - L602 fixture: the twins played the same month
+  - L604 fixture: the twin without the find booked TB dead
+  - L605 the found twin's TB dead over the other's is CausesOfDeath.ahead() for the month
+  - L609 the Assisted Living Residence is dated by M8
+  - L613 it is unknown in a city that found nothing the month before M8's
+  - L614 ...and known from M8's month
+  - L616 with M8 found at month 100 it is known at month 100
+  - L617 ...and not the month before
 
 ## MiningCheck.java - 36 labelled assertions
 
@@ -22958,6 +22961,144 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L386 mixed fleets: no patent can rent another template's co-produced crops or milk**
   - L452 E21 mixed farm's actual crop increment has positive standing value
 - **L488 6. immediate native load, next month, and the pre-R6e missing-flag record**
+
+## ModernRowsCheck.java - 118 labelled assertions
+
+> R6f's three research rows, each undone in a city founded the 1900 way until it is known: robot-assisted
+> surgery's share of general care's stays (M12), the Contact Centre's agents' 14% (B10) and Basel
+> III's conservation buffer (L8), on both sides of their months, in a default city and across a save.
+> <p>
+> WHY (R6f): a row in research.json alone changes nothing a city does. Each of these three needed a figure
+> the model reads by the city's own knowledge (a stays factor, a recipe change, a bank's floor), and B10's
+> undo is a recipe choice whose id is saved: a format-63 save lacked the flag, so a held city would have
+> loaded modern. A city founded the default way knows every row from its first month and must be unchanged.
+> <p>
+> What this proves:
+> 1. M12: the stays factor is Sickness.STAYS_BEFORE_M12 alone the month before July 2000 and 1 from it, in
+>    the unit and in a played 1900 city (recovery too); a default city reads 1; a find ahead of the world
+> ...
+
+- **L93 1. M12: general care's stays are longer until robot-assisted surgery is known**
+  - L95 M12 is known from July 2000 (PolicyDates.monthOf(2000, 7))
+  - L96 Sickness.STAYS_BEFORE_M12 is a share of today's part under 1, and M12 is one of Sickness.STAYS_ROWS
+  - L101 a 1900 city's rows know M12 from history's month and not the month before
+  - L107 every other row in Sickness.STAYS_ROWS is known the month before M12, so the factor then is M12's alone
+  - L108 the stays factor the month before M12 is Sickness.STAYS_BEFORE_M12
+  - L109 ...and is 1 from M12's month
+  - L110 a city founded the default way (MedicalRows.TODAY) reads 1 the month before M12
+  - L111 at coverage
+  - L120 a research that found M12 a year early knows it then and not the month before, though history's month is later
+  - L122 ...so its stays factor is STAYS_BEFORE_M12 the month before the find
+  - L123 ...and 1 from the find, before history's month
+  - L126 fixture: a city founded the 1900 way that has not found M12
+  - L139 fixture: a city founded the default way
+  - L143 default city, month
+  - L144 ...and recoveryAt(1) is Sickness.recovery(1, 1)
+  - L151 ...it still reads Sickness.STAYS_BEFORE_M12 the month before its own find
+  - L153 ...history's month is still ahead of it
+  - L154 ...and reads 1 from its own find, before history's month
+  - L163 fixture: the held city is before M12 with M12 not found and every other stays row known
+  - L166 fixture: the held city's live stays factor, after a real month, is Sickness.STAYS_BEFORE_M12
+  - L168 the held city's save writes wholly
+  - L170 the held city loads in the month it was saved
+  - L173 the loaded city's stays factor is Sickness.STAYS_BEFORE_M12 at once, before any month
+  - L174 ...and is the live city's
+  - L175 ...its long recovery is the live city's
+  - L176 ...its death lift is the live city's
+  - L177 ...recoveryAt(
+  - L178 ...and servedRecovery() is the live city's
+  - L180 ...and the month after the load it still reads Sickness.STAYS_BEFORE_M12
+  - L191 fixture: that month is the one two years before history's month
+  - L196 fixture: a city founded the 1900 way, every discovery but M12 found, M12 open to the medical field two years before history's month with its pile just under ...
+  - L200 fixture: its live stays factor before the month is Sickness.STAYS_BEFORE_M12
+  - L203 fixture: the Medical School's faculty worked in medicine that month and M12 was found in it, before history's month
+  - L207 in that same month the live stays factor is 1, before the next month is heard
+  - L209 the finder's save writes wholly
+  - L211 the finder loads in the month of the find, with M12 found in it
+  - L214 the loaded city's stays factor is the live city's
+  - L215 ...and is 1
+  - L229 fixture: a city founded the 1900 way, played to a month before history's M1 and M2, with neither found nor known
+  - L239 fixture: no row that shortens general care's stays is known that month either, so its stays factor is the product of what each leaves, under 1
+  - L242 fixture: the month noted a general care coverage strictly between 0 and 1, neither none nor the default 1
+  - L244 the live city's stays factor is the product of every stays row's share
+  - L245 the live city's long recovery is Sickness.LONG_RECOVERY_BEFORE_M1
+  - L246 the live city's death lift is Sickness.SERVED_DEATHS_BEFORE_M2 times the coverage the month noted
+  - L247 ...so the death lift is not the fresh default 0, nor is the long recovery the default 1
+  - L251 the early city's save writes wholly
+  - L253 the early city loads in the month it was saved
+  - L255 the loaded city's general care coverage is the live city's, as the month noted it
+  - L257 the loaded city's stays factor is the live city's at once, before any month
+  - L258 ...and is the product of every stays row's share
+  - L259 the loaded city's long recovery is the live city's
+  - L260 ...and is Sickness.LONG_RECOVERY_BEFORE_M1
+  - L261 the loaded city's death lift is the live city's
+  - L262 ...and is Sickness.SERVED_DEATHS_BEFORE_M2 times the coverage
+- **L303 2. B10: the Contact Centre's agents are more posts until the AI assistant is known**
+  - L305 B10 is known from November 2020 (PolicyDates.monthOf(2020, 11))
+  - L311 buildings.json's B10 undo on the Contact Centre changes the NO_DIPLOMA posts and nothing else
+  - L318 a default city's Contact Centre stands, and its NO_DIPLOMA posts are buildings.json's own at the month before B10
+  - L320 ...with no B10 flag on its choice
+  - L321 buildings.json's NO_DIPLOMA undo over that anchor is the source's AGENTS_GAIN
+  - L323 fixture: the source's 14% of the anchor, rounded once, is the anchor and buildings.json's undo, rounded once, and more than the anchor
+  - L330 fixture: a city founded the 1900 way
+  - L332 fixture: one Contact Centre stands in it, every discovery but B10 known
+  - L335 a 1900 Contact Centre the month before B10 has NO_DIPLOMA posts of Math.round(anchor + undo)
+  - L337 ...every other figure of it (other posts, power, water, land) is the default city's
+  - L339 ...and its output (Good.SUPPORT_WORK) is the default city's
+  - L340 ...and its running choice carries the missing-B10 flag, \"~B10\"
+  - L341 ...as the saved choice, which names it too
+  - L348 a 1900 Contact Centre in B10's month has today's NO_DIPLOMA posts, the anchor
+  - L350 ...every other figure still the default city's and no \"~B10\" on its choice
+  - L356 fixture: the month before B10 the stepped city runs the undo
+  - L358 ...and the real month into B10's month runs today's posts, the anchor, with no \"~B10\"
+  - L365 a default city's Contact Centre keeps the anchor posts and no \"~B10\" through B10's month
+  - L372 fixture: the held city runs the undo
+  - L374 the held city's save writes wholly
+  - L376 the held city loads
+  - L378 the loaded city's NO_DIPLOMA posts are Math.round(anchor + undo) at once, before any month (the saved flag, format 64)
+  - L380 ...with the \"~B10\" id the save held, and every other figure the default city's
+  - L384 ...and the next month's choice, still before B10, keeps the posts and the id
+  - L388 ...and B10's month drops both: the anchor posts, no \"~B10\"
+- **L396 3. L8: a bank holds no buffer over the minimum but its worst year until Basel III is the rule**
+  - L398 L8 is known from January 2013 (PolicyDates.monthOf(2013, 1))
+  - L399 fixture: Bank.BUFFER_BEFORE_L8 is under Bank.CONSERVATION_BUFFER, the rule a tightening
+  - L403 a bare bank requires the buffer, its floor Bank.CONSERVATION_BUFFER
+  - L405 ...so its capital target is Bank.CAPITAL_RATIO plus Bank.CONSERVATION_BUFFER
+  - L409 hearing that Basel III is not the rule drops the floor to Bank.BUFFER_BEFORE_L8
+  - L411 ...a fresh bank's buffer is then the larger of Bank.BUFFER_BEFORE_L8 and its worst year
+  - L413 ...and its capital target is Bank.CAPITAL_RATIO plus that
+  - L415 ...and its reason names Basel III, which the rule's own reason does not say
+  - L418 hearing Basel III again restores the floor Bank.CONSERVATION_BUFFER and the target Bank.CAPITAL_RATIO plus it
+  - L427 fixture: a bank halfway into the conservation buffer
+  - L428 fixture: its ratio is over the minimum plus Bank.BUFFER_BEFORE_L8
+  - L430 before Basel III that bank is at its target, and its lendingGrowthLimit() is unlimited
+  - L433 ...with the conservation buffer it is under its target, and the limit is finite
+  - L435 ...Bank.RATIONED_GROWTH, halfway between the minimum and the target
+  - L439 fixture: a city founded the 1900 way that has not found L8
+  - L440 at its founding the 1900 city's bank is before Basel III
+  - L452 fixture:
+  - L457 the 1900 city's capital target rises in L8's month, to Bank.CAPITAL_RATIO plus Bank.CONSERVATION_BUFFER, and holds there
+  - L463 fixture: a city founded the default way, its bank requiring the buffer at its founding
+  - L469 default city, month
+  - L477 fixture: the held 1900 city is two months before Basel III
+  - L479 the held city's save writes wholly
+  - L481 the held city loads and its bank is before Basel III at once, before any month, floor Bank.BUFFER_BEFORE_L8
+  - L486 ...and the loaded city hears Basel III by the month: still before it one month on
+  - L488 ...and requires it in L8's month
+  - L495 the default city's save writes wholly
+  - L497 the default city loads, and its bank requires the buffer at once though the month is before L8's
+  - L511 fixture: a city founded the 1900 way, every discovery but L8 found, L8 open to the law field two years before history's month with its pile just under its size
+  - L515 fixture: its bank has not heard Basel III before the month
+  - L520 fixture: the Law School's faculty worked in law that month and L8 was found in it, before history's month
+  - L524 in that same month the bank requires the buffer, its floor Bank.CONSERVATION_BUFFER, before the next month is heard
+  - L526 fixture: its worst loss rate is under Bank.CONSERVATION_BUFFER
+  - L527 ...so its capital target that month is Bank.CAPITAL_RATIO plus Bank.CONSERVATION_BUFFER
+  - L528 ...risen from the month before
+  - L530 the finder's save writes wholly
+  - L532 the finder loads in the month of the find, with L8 found in it
+  - L536 the loaded bank's conservationBufferRequired() is the live city's
+  - L538 ...and its bufferFloor() is the live city's
+  - L539 ...and its capitalTarget() is the live city's
 
 ## MonetaryCheck.java - 116 labelled assertions
 
@@ -26536,7 +26677,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 > fails on the earlier calibration (rotary without PE4 at 6,160 t, PE4 a loss).
 
 - **L43 1. every postwar undo on its standing template crosses its own month**
-  - L85 all 29 template changes were exercised (27 retained postwar rows plus both E21 farms)
+  - L85 all 30 template changes were exercised (27 retained postwar rows, R6f's B10 and both E21 farms)
 - **L121 3. zeolite affects catalytic cracking and leaves thermal cracking at 0.24**
   - L134 thermal before both discoveries stays at 0.24, order
   - L138 first discovery has only its process-scoped yield, order
@@ -29140,179 +29281,179 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > What it has to prove:
 > 
->   1. THE FILE READS. The packaged file gives 97 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+>   1. THE FILE READS. The packaged file gives 100 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
 >      unique and in the studies' order, the near future's FE1, FE2 and FE4 and the speculative tier's FE8 and FE10 after them; the counts by prefix and by field are the studies'; the
 > ...
 
-- **L230 1. the file reads**
-  - L235 the file has
-  - L237 a fresh reading of the file's text reads all 97 and writes nothing to the log
-  - L238 nothing was skipped: the fresh reading has the same codes, in the same order, as the file
-  - L241 the 97 codes are unique
-  - L242 the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E21, then the near future's FE1, FE2, FE4 and the...
-  - L255 ENGINEERING has 53 (the studies' 48 and FE1, FE2, FE4, FE8, FE10), MEDICINE 16, BUSINESS 11 and LAW 17 (
-  - L269 the field follows the code: E and PE engineering, M and PM medicine, B and PB business, L and PL law, and in an F code the second letter (FE, FM, FB, FL)
-  - L274 every entry has a name, a world, a touches, an effect and the study it comes from
-  - L275 the fields are read by the school that researches them
-  - L278 names are the tables': Cash machine (not the prototype's \"(ATM)\"), the tractor, the long pulverised-coal name, the by-law
-  - L281 a table's kind is read: E1 equipment, E4 building, E3 recipe, M1 and M3 and PM2 a drug
-  - L284 two kinds where the table says two: PE4 building + equipment, PE13 building + recipe, M9 equipment + recipe
-  - L287 is() asks the kinds: PE4 is a building and a piece of equipment and no recipe
-  - L289 PM1 (a by-law) is a recipe; the law rows are recipes with their notes: L1 a Policy dial, L2 a market rule, L3 a sentencing option, every PL and L5 a Policy l...
-- **L294 2. needs**
-  - L310 every need is a code in the catalogue
-  - L311 no entry needs itself
-  - L312 history dates every need no later than the entry that needs it
-  - L313 the tables give 26 needs to 23 entries, the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4) and the speculative tier's 3 to 2 more (FE8 needs...
-  - L317 M1 needs PM6, streptomycin (research-1900 8.6)
-  - L318 E18 needs E13 and E9, and E13 needs E9
-  - L320 PE17 needs PE14 (the combine and the tractor); PE16 needs PE6; PB3 needs PB2; B6 needs B1 and B2; B8 needs B1 and B5
-  - L323 what is not a discovery is in words: E1 needs hot iron from a blast furnace, E5 a coast, E4 a magnetite field, E10 fertiliser
-- **L327 3. history's dates**
-  - L341 every entry's world month is PolicyDates.monthOf(year, month), the game's one formula
-  - L342 no discovery is known at the founding (every world month is after month 1)
-  - L343 every original non-F row is 1900 to 1995, E21 is 1996, every F row is NEAR_FUTURE's year (
-  - L344 every row dated from NEAR_FUTURE on is coded F, and every F row is dated from it
-  - L353 the tables name a month for
-  - L354 E1 is November 1952:
-  - L369 PolicyDates has law levers, each held to the catalogue, and Money has no discovery key (
-  - L371 PL1 (1915) and PL11 (1942) have no lever: each is in its year's January, the year alone
-  - L374 every law entry is a recipe of the Law school: PL1-PL12 and L5 are Policy levers
-- **L376 4. the work**
-  - L385 every entry's work is within 1 of the rule, rounded (workByRule of its size, field and year)
-  - L391 B4, B6 and PB1 are buildings with a recipe's work
-  - L393 M1, M3, M10 and PM2 to PM6 are a drug's work
-  - L395 M9, PE4 and L4 are equipment's work; PE13 a building's; PM1 and M5 a recipe's
-  - L398 the rule's 1950 figures are the study's: a building 400, equipment 400, a recipe 200, a drug 500
-  - L410 in the rule's year the work is the kind's own figure, and a discovery costs more every year
-  - L414 work grows 5.3% a year, and 3.5% in medicine (ten years: x
-- **L419 5. known from**
-  - L421 a year is known from its January: \"1900\" is month 1, \"1907\" is PolicyDates.monthOf(1907, 1)
-  - L424 a code is known from its entry's month: E1 is November 1952
-  - L426 PE14 (the tractor) is known from its entry's month, June 1917
-  - L428 a code the catalogue lacks, a blank and null are never known
-  - L431 worldMonth(code) is never for a code the catalogue lacks, and entry() is null for it, for a blank and for null
-  - L440 buildings.json's since \"
-  - L443 every code buildings.json carries in a \"since\" is a discovery in the catalogue (
-  - L450 entries() is unmodifiable
-  - L461 get() is one catalogue, the same for every thread
-- **L463 6. the reader's refusals, and the fees**
-  - L466 a clean file is read whole and reports nothing
-  - L469 a fixture entry is read as written: engineering, a building's size, 1960 month 6, worldMonth = PolicyDates'
-  - L474 a duplicate code keeps the first entry and reports it
-  - L479 an unknown field is skipped and reported, and the next entry is still read
-  - L483 an unknown size is skipped and reported
-  - L487 an unknown kind is skipped and reported
-  - L491 an entry with no kind is skipped and reported
-  - L494 a month 13 and a month 0 are skipped and reported
-  - L498 a year before the epoch (
-  - L502 a negative work is skipped and reported; a work of 0 is read
-  - L506 a blank code is skipped and reported
-  - L510 a need that is not in the catalogue is reported, and the entry stays
-  - L515 a need dated after its entry is reported, and the entry stays
-  - L519 a need in the entry's own month is no fault and reports nothing
-  - L522 an entry that needs itself is reported and stays
-  - L525 a text that is not JSON gives an empty catalogue and a report
-  - L527 a text with no entries array gives an empty catalogue and a report
-  - L529 an entry that is not an object is skipped and reported, the rest read
-  - L531 an empty catalogue answers like the real one: no entry, never known
-- **L534 the fees the tables carry**
-  - L537 no law entry carries a licence fee (law is not patented, research-design 2.4) but L4's DNA lab, which is equipment, as its table says
-  - L539 E1 carries one and E10 does not; M3 does not (not patented, unverified); B1 does and B5 does not
-  - L542 PM4 carries one \"partly\"; M9's equipment does; E5 does not (est.); PE3 does (est.); PM2 does, University of Toronto, for $1; PE14 does not
-  - L546 the business methods are free: B7 lean production, B8 the online shop, PB2 the self-service grocery, PB3 the supermarket
-  - L549 E21 is an independent historical engineering recipe with no invented prerequisite or measured seed royalty
-- **L588 every code buildings.json carries is the right kind of discovery, and the dated rows are the studies'**
-  - L590 fixture: buildings.json loads
-  - L617 every template whose since is not a year has a code that is a discovery in the catalogue unlocking a building, and the template's year is the entry's (
-  - L619 ...every piece of equipment whose since is a code has one that unlocks equipment (
-  - L620 ...and every recipe whose since is a code has one that is not a building alone (
-  - L621 the templates dated by a code are exactly research-1900.md 1.2's list, 31 of them, and the near future's two (153 by FE2, 154 by FE4), 33 in all, each by the...
-  - L625 the Oxygen Steel Shop is dated 1900 (its Bessemer and open-hearth recipes are its 1900 ways; E1 dates its recipe, not the building)
-  - L627 the Panel Mill is E19 at sourced 1981 and the Wood Pellet Mill E20 at retained 1970 (Q13, R2e)
-  - L632 the power plants PW2 dates by a year after 1900 are dated exactly so (spec-electricity 2.3, Q2): the diesel station 1910, the turbine 1949, the biomass plant...
-  - L639 every other template is undated or 1900
-  - L648 every discovery that unlocks a building (
-  - L666 fixture: a file of four buildings, a code, a year, none and a ghost code, reads all four
-  - L670 a code is kept as written, its year is the entry's, and it is known from the entry's month (PE4, June 1902) and not the month before
-  - L672 a year is its digits, and is known from its January (the file's \"since\": 1902 and the code's year are the same year, not the same month)
-  - L674 no since is undated: empty text, year 0, known from the first month
-  - L675 a code the catalogue lacks is reported by name, kept as written, year 0, and never known
-  - L679 setSince(int) is setSince(String) of the digits, and 0 or less is undated; setSince(String) takes a code, trims, and blank or null is undated
-- **L688 a piece, a recipe and a building are known from history's month, and asking by the year agrees**
-  - L693 fixture: the Grain Farm, the Oxygen Steel Shop, the Container Terminal, the House, the Pulp Mill, the Electric Arc Furnace, the Scrap Yard and the Bakery are...
-  - L699 fixture: the tractor piece and recipe, the oxygen converter's recipe, kraft, the horses' recipe and the drive are read
-  - L704 the Grain Farm's tractor piece is known from PE14's month, June 1917, and not the month before; its tractor recipe the same
-  - L707 the Oxygen Steel Shop's recipe dated \"E1\" is known from E1's month, November 1952, and not the month before
-  - L709 the Container Terminal (96) is known from E5's month, April 1956, and not before; its year is 1956 and its text \"E5\"
-  - L711 the Electric Arc Furnace (11) is known from PE1's month, December 1900, and not the month before: a building a first-year discovery opens
-  - L713 the Pulp Mill's kraft recipe (\"1907\") is known from January 1907 and not the month before
-  - L722 an undated template (a House, and each of the
-  - L723 a template dated 1900 (the Scrap Yard) is known from the first month too
-  - L738 knownIn(y) is knownAt(PolicyDates.monthOf(y, 1)) for each of these, 1900 to 1960
-  - L739 ...and none of them, dated 1900 or later, is known in 1899, the year before the start (PolicyDates.monthOf clamps 1899 to month 1; Equipment.januaryOf does not)
-  - L740 a year since reads the same way at the boundary: the 1907 recipe is known in 1907 and not in 1906; the tractor in 1918 and not in 1917 (its June is after tha...
-- **L743 the verdict and the choice are made on history's month**
-  - L752 fixture: a gain a thousandth over both lines (the annuity's and the hurdle) earns back the cost and passes the gate
-  - L754 the tractor with figures that pay is NOT_KNOWN the month before PE14's, pricing nothing
-  - L755 ...and PAYS at PE14's month, with one building unfitted
-  - L756 ...while figures a thousandth short of paying are NOT_YET at that month: the rule runs once the piece is known
-  - L757 ...and with no building unfitted it is FITTED before it is known, as it always was
-  - L761 fixture: the Oxygen Steel Shop's recipe piece is the open hearth, which the basic-oxygen recipe does not need, and the open-hearth recipe does
-  - L763 the basic-oxygen recipe cannot be run by the part without the open hearth the month before E1's, and can at it
-  - L765 ...and the later oxygen process can supersede the old furnace from E1, while open hearth is available from the first month
-  - L768 the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout
-- **L796 10. buildings are candidates and orders only once known in a 1900 city**
-  - L814 fixture: the actual catalogue contains unknown buildings in January 1900
-  - L815 every sector's candidate list leaves out every unknown building
-  - L816 every category's candidate list leaves out every unknown building
-  - L817 every dated building joins its sector's candidates on its date, never the month before
-  - L822 the city's Build categories also contain only known candidates
-  - L844 fixture: with feed, staff, ground and money the spread planner really chooses the unknown cracker
-  - L847 the same paying cracker cannot be chosen from the 1900 city's candidates
-  - L851 on its date the spread planner chooses that paying cracker
-  - L854 a 1900 refinery's appraisals and their packages contain no future conversion unit
-  - L857 a local discovery does not make the cracker a candidate before the discovery's month
-  - L859 a local discovery makes the cracker a candidate before history's date
-  - L863 fixture: enough container trade pays back the actual Container Terminal
-  - L865 the berth planner never chooses that unknown terminal in 1900
-  - L868 on its date the berth planner chooses that paying terminal
-  - L878 a directly placed unknown order is refused before a site, cash or ground changes
-  - L880 the instant-build route refuses it too
-  - L881 a funded private order also refuses it before charging its payer
-  - L883 the run's preflight refuses an unknown order too
-  - L886 on its date the direct order succeeds and puts the building on site
-  - L888 on its date the private order also succeeds and charges its payer
-  - L901 fixture: the city has a power load and no generation to cover it
-  - L906 fixture: the city's power shortage actually selects a Wind Farm when known
-  - L909 the city's works never choose the same unknown Wind Farm in 1900
-  - L923 a city founded the default way keeps every sector candidate, including future buildings, but the near future's (
-  - L925 a default city's direct order for the December 1900 arc furnace succeeds in January
-- **L932 11. a row is projected exactly when its date is after HISTORY_ENDS, and its date words say so**
-  - L949 every entry is projected exactly when its world month is after HISTORY_ENDS (
-  - L950 every projected entry has a window of the form YYYY-YYYY whose years contain the entry's year
-  - L951 no history entry has a window
-  - L952 FE4 is projected with the window 2027-2030, FE8 with 2030-2036 and FE10 with 2031-2037; FE1 and FE2 are history (May 2025 and November 2025, before
-  - L956 a history entry's dateWords() is its world column and its mark is empty
-  - L957 a projected entry's mark is \"projected, \" and its window, and its dateWords() is its world column then the mark, naming projected and the window
-  - L958 FE4's date words as the screens print them:
-  - L963 mark() is \"projected\" for a projected row with a blank window, \"projected, 2029-2031\" with one, and \"\" for a history row
-  - L966 ResearchView.marked() puts the mark in brackets after a projected row's words and leaves a history row's and no entry's alone
-  - L984 nearFuture(code) and isNearFuture() are true exactly for the entries with worldMonth() >= NEAR_FUTURE (
-  - L986 every near-future code starts with F and every F code is near-future
-  - L987 nearFuture() is false for a blank, null, a year, and a code the catalogue lacks
-  - L990 ...and for a history row's code: E1, PE1, PL12 and L5
-  - L992 FE1 and FE2 are near-future history (dated after NEAR_FUTURE, not after HISTORY_ENDS) and FE4, FE8 and FE10 near-future and projected
-  - L995 the Research screens' count of what a city founded the default way never knows is the near future's rows (
-- **L1002 13. a city founded the default way never knows a near-future building; one founded the 1900 way knows it from its date**
-  - L1010 fixture: the three templates are there, the sulphide plant dated by FE2 and the steel works by FE4, the oxide plant by neither
-  - L1015 a default city set past FE4's month does not know the Sulphide Leach & SX-EW Plant or the Hydrogen Steel Works
-  - L1017 ...and knows the oxide Leach & SX-EW Plant, which it always did
-  - L1018 ...neither near-future building is a candidate of its sector there, and the oxide plant is
-  - L1020 ...and a direct order for the Hydrogen Steel Works is refused as not known
-  - L1030 a 1900 city knows the Sulphide Leach & SX-EW Plant from FE2's month (
-  - L1035 ...and the Hydrogen Steel Works from FE4's month (
-  - L1036 ...where its sector's candidates agree: the steel works is one at FE4's month and not the month before
+- **L242 1. the file reads**
+  - L247 the file has
+  - L249 a fresh reading of the file's text reads all 100 and writes nothing to the log
+  - L250 nothing was skipped: the fresh reading has the same codes, in the same order, as the file
+  - L253 the 100 codes are unique
+  - L254 the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E21, M12, B10, L8, then the near future's FE1, FE...
+  - L267 ENGINEERING has 53 (the studies' 48 and FE1, FE2, FE4, FE8, FE10), MEDICINE 17, BUSINESS 12 and LAW 18 (
+  - L281 the field follows the code: E and PE engineering, M and PM medicine, B and PB business, L and PL law, and in an F code the second letter (FE, FM, FB, FL)
+  - L286 every entry has a name, a world, a touches, an effect and the study it comes from
+  - L287 the fields are read by the school that researches them
+  - L290 names are the tables': Cash machine (not the prototype's \"(ATM)\"), the tractor, the long pulverised-coal name, the by-law
+  - L293 a table's kind is read: E1 equipment, E4 building, E3 recipe, M1 and M3 and PM2 a drug
+  - L296 two kinds where the table says two: PE4 building + equipment, PE13 building + recipe, M9 equipment + recipe
+  - L299 is() asks the kinds: PE4 is a building and a piece of equipment and no recipe
+  - L301 PM1 (a by-law) is a recipe; the law rows are recipes with their notes: L1 a Policy dial, L2 a market rule, L3 a sentencing option, every PL and L5 a Policy l...
+- **L306 2. needs**
+  - L322 every need is a code in the catalogue
+  - L323 no entry needs itself
+  - L324 history dates every need no later than the entry that needs it
+  - L325 the tables give 29 needs to 25 entries (M12 needs M9, B10 needs B1 and B2), the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4) and the specu...
+  - L330 M1 needs PM6, streptomycin (research-1900 8.6)
+  - L331 E18 needs E13 and E9, and E13 needs E9
+  - L333 PE17 needs PE14 (the combine and the tractor); PE16 needs PE6; PB3 needs PB2; B6 needs B1 and B2; B8 needs B1 and B5
+  - L336 what is not a discovery is in words: E1 needs hot iron from a blast furnace, E5 a coast, E4 a magnetite field, E10 fertiliser
+- **L340 3. history's dates**
+  - L354 every entry's world month is PolicyDates.monthOf(year, month), the game's one formula
+  - L355 no discovery is known at the founding (every world month is after month 1)
+  - L356 every original non-F row is 1900 to 1995 but
+  - L357 every row dated from NEAR_FUTURE on is coded F, and every F row is dated from it
+  - L366 the tables name a month for
+  - L367 E1 is November 1952:
+  - L382 PolicyDates has law levers, each held to the catalogue, and Money has no discovery key (
+  - L384 PL1 (1915) and PL11 (1942) have no lever: each is in its year's January, the year alone
+  - L387 every law entry is a recipe of the Law school: PL1-PL12 and L5 are Policy levers
+- **L389 4. the work**
+  - L398 every entry's work is within 1 of the rule, rounded (workByRule of its size, field and year)
+  - L404 B4, B6 and PB1 are buildings with a recipe's work
+  - L406 M1, M3, M10 and PM2 to PM6 are a drug's work
+  - L408 M9, PE4 and L4 are equipment's work; PE13 a building's; PM1 and M5 a recipe's
+  - L411 the rule's 1950 figures are the study's: a building 400, equipment 400, a recipe 200, a drug 500
+  - L423 in the rule's year the work is the kind's own figure, and a discovery costs more every year
+  - L427 work grows 5.3% a year, and 3.5% in medicine (ten years: x
+- **L432 5. known from**
+  - L434 a year is known from its January: \"1900\" is month 1, \"1907\" is PolicyDates.monthOf(1907, 1)
+  - L437 a code is known from its entry's month: E1 is November 1952
+  - L439 PE14 (the tractor) is known from its entry's month, June 1917
+  - L441 a code the catalogue lacks, a blank and null are never known
+  - L444 worldMonth(code) is never for a code the catalogue lacks, and entry() is null for it, for a blank and for null
+  - L453 buildings.json's since \"
+  - L456 every code buildings.json carries in a \"since\" is a discovery in the catalogue (
+  - L463 entries() is unmodifiable
+  - L474 get() is one catalogue, the same for every thread
+- **L476 6. the reader's refusals, and the fees**
+  - L479 a clean file is read whole and reports nothing
+  - L482 a fixture entry is read as written: engineering, a building's size, 1960 month 6, worldMonth = PolicyDates'
+  - L487 a duplicate code keeps the first entry and reports it
+  - L492 an unknown field is skipped and reported, and the next entry is still read
+  - L496 an unknown size is skipped and reported
+  - L500 an unknown kind is skipped and reported
+  - L504 an entry with no kind is skipped and reported
+  - L507 a month 13 and a month 0 are skipped and reported
+  - L511 a year before the epoch (
+  - L515 a negative work is skipped and reported; a work of 0 is read
+  - L519 a blank code is skipped and reported
+  - L523 a need that is not in the catalogue is reported, and the entry stays
+  - L528 a need dated after its entry is reported, and the entry stays
+  - L532 a need in the entry's own month is no fault and reports nothing
+  - L535 an entry that needs itself is reported and stays
+  - L538 a text that is not JSON gives an empty catalogue and a report
+  - L540 a text with no entries array gives an empty catalogue and a report
+  - L542 an entry that is not an object is skipped and reported, the rest read
+  - L544 an empty catalogue answers like the real one: no entry, never known
+- **L547 the fees the tables carry**
+  - L550 no law entry carries a licence fee (law is not patented, research-design 2.4) but L4's DNA lab, which is equipment, as its table says
+  - L552 E1 carries one and E10 does not; M3 does not (not patented, unverified); B1 does and B5 does not
+  - L555 PM4 carries one \"partly\"; M9's equipment does; E5 does not (est.); PE3 does (est.); PM2 does, University of Toronto, for $1; PE14 does not
+  - L559 the business methods are free: B7 lean production, B8 the online shop, PB2 the self-service grocery, PB3 the supermarket
+  - L562 E21 is an independent historical engineering recipe with no invented prerequisite or measured seed royalty
+- **L601 every code buildings.json carries is the right kind of discovery, and the dated rows are the studies'**
+  - L603 fixture: buildings.json loads
+  - L630 every template whose since is not a year has a code that is a discovery in the catalogue unlocking a building, and the template's year is the entry's (
+  - L632 ...every piece of equipment whose since is a code has one that unlocks equipment (
+  - L633 ...and every recipe whose since is a code has one that is not a building alone (
+  - L634 the templates dated by a code are exactly research-1900.md 1.2's list, 31 of them, and the near future's two (153 by FE2, 154 by FE4), 33 in all, each by the...
+  - L638 the Oxygen Steel Shop is dated 1900 (its Bessemer and open-hearth recipes are its 1900 ways; E1 dates its recipe, not the building)
+  - L640 the Panel Mill is E19 at sourced 1981 and the Wood Pellet Mill E20 at retained 1970 (Q13, R2e)
+  - L645 the power plants PW2 dates by a year after 1900 are dated exactly so (spec-electricity 2.3, Q2): the diesel station 1910, the turbine 1949, the biomass plant...
+  - L652 every other template is undated or 1900
+  - L661 every discovery that unlocks a building (
+  - L679 fixture: a file of four buildings, a code, a year, none and a ghost code, reads all four
+  - L683 a code is kept as written, its year is the entry's, and it is known from the entry's month (PE4, June 1902) and not the month before
+  - L685 a year is its digits, and is known from its January (the file's \"since\": 1902 and the code's year are the same year, not the same month)
+  - L687 no since is undated: empty text, year 0, known from the first month
+  - L688 a code the catalogue lacks is reported by name, kept as written, year 0, and never known
+  - L692 setSince(int) is setSince(String) of the digits, and 0 or less is undated; setSince(String) takes a code, trims, and blank or null is undated
+- **L701 a piece, a recipe and a building are known from history's month, and asking by the year agrees**
+  - L706 fixture: the Grain Farm, the Oxygen Steel Shop, the Container Terminal, the House, the Pulp Mill, the Electric Arc Furnace, the Scrap Yard and the Bakery are...
+  - L712 fixture: the tractor piece and recipe, the oxygen converter's recipe, kraft, the horses' recipe and the drive are read
+  - L717 the Grain Farm's tractor piece is known from PE14's month, June 1917, and not the month before; its tractor recipe the same
+  - L720 the Oxygen Steel Shop's recipe dated \"E1\" is known from E1's month, November 1952, and not the month before
+  - L722 the Container Terminal (96) is known from E5's month, April 1956, and not before; its year is 1956 and its text \"E5\"
+  - L724 the Electric Arc Furnace (11) is known from PE1's month, December 1900, and not the month before: a building a first-year discovery opens
+  - L726 the Pulp Mill's kraft recipe (\"1907\") is known from January 1907 and not the month before
+  - L735 an undated template (a House, and each of the
+  - L736 a template dated 1900 (the Scrap Yard) is known from the first month too
+  - L751 knownIn(y) is knownAt(PolicyDates.monthOf(y, 1)) for each of these, 1900 to 1960
+  - L752 ...and none of them, dated 1900 or later, is known in 1899, the year before the start (PolicyDates.monthOf clamps 1899 to month 1; Equipment.januaryOf does not)
+  - L753 a year since reads the same way at the boundary: the 1907 recipe is known in 1907 and not in 1906; the tractor in 1918 and not in 1917 (its June is after tha...
+- **L756 the verdict and the choice are made on history's month**
+  - L765 fixture: a gain a thousandth over both lines (the annuity's and the hurdle) earns back the cost and passes the gate
+  - L767 the tractor with figures that pay is NOT_KNOWN the month before PE14's, pricing nothing
+  - L768 ...and PAYS at PE14's month, with one building unfitted
+  - L769 ...while figures a thousandth short of paying are NOT_YET at that month: the rule runs once the piece is known
+  - L770 ...and with no building unfitted it is FITTED before it is known, as it always was
+  - L774 fixture: the Oxygen Steel Shop's recipe piece is the open hearth, which the basic-oxygen recipe does not need, and the open-hearth recipe does
+  - L776 the basic-oxygen recipe cannot be run by the part without the open hearth the month before E1's, and can at it
+  - L778 ...and the later oxygen process can supersede the old furnace from E1, while open hearth is available from the first month
+  - L781 the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout
+- **L809 10. buildings are candidates and orders only once known in a 1900 city**
+  - L827 fixture: the actual catalogue contains unknown buildings in January 1900
+  - L828 every sector's candidate list leaves out every unknown building
+  - L829 every category's candidate list leaves out every unknown building
+  - L830 every dated building joins its sector's candidates on its date, never the month before
+  - L835 the city's Build categories also contain only known candidates
+  - L857 fixture: with feed, staff, ground and money the spread planner really chooses the unknown cracker
+  - L860 the same paying cracker cannot be chosen from the 1900 city's candidates
+  - L864 on its date the spread planner chooses that paying cracker
+  - L867 a 1900 refinery's appraisals and their packages contain no future conversion unit
+  - L870 a local discovery does not make the cracker a candidate before the discovery's month
+  - L872 a local discovery makes the cracker a candidate before history's date
+  - L876 fixture: enough container trade pays back the actual Container Terminal
+  - L878 the berth planner never chooses that unknown terminal in 1900
+  - L881 on its date the berth planner chooses that paying terminal
+  - L891 a directly placed unknown order is refused before a site, cash or ground changes
+  - L893 the instant-build route refuses it too
+  - L894 a funded private order also refuses it before charging its payer
+  - L896 the run's preflight refuses an unknown order too
+  - L899 on its date the direct order succeeds and puts the building on site
+  - L901 on its date the private order also succeeds and charges its payer
+  - L914 fixture: the city has a power load and no generation to cover it
+  - L919 fixture: the city's power shortage actually selects a Wind Farm when known
+  - L922 the city's works never choose the same unknown Wind Farm in 1900
+  - L936 a city founded the default way keeps every sector candidate, including future buildings, but the near future's (
+  - L938 a default city's direct order for the December 1900 arc furnace succeeds in January
+- **L945 11. a row is projected exactly when its date is after HISTORY_ENDS, and its date words say so**
+  - L962 every entry is projected exactly when its world month is after HISTORY_ENDS (
+  - L963 every projected entry has a window of the form YYYY-YYYY whose years contain the entry's year
+  - L964 no history entry has a window
+  - L965 FE4 is projected with the window 2027-2030, FE8 with 2030-2036 and FE10 with 2031-2037; FE1 and FE2 are history (May 2025 and November 2025, before
+  - L969 a history entry's dateWords() is its world column and its mark is empty
+  - L970 a projected entry's mark is \"projected, \" and its window, and its dateWords() is its world column then the mark, naming projected and the window
+  - L971 FE4's date words as the screens print them:
+  - L976 mark() is \"projected\" for a projected row with a blank window, \"projected, 2029-2031\" with one, and \"\" for a history row
+  - L979 ResearchView.marked() puts the mark in brackets after a projected row's words and leaves a history row's and no entry's alone
+  - L997 nearFuture(code) and isNearFuture() are true exactly for the entries with worldMonth() >= NEAR_FUTURE (
+  - L999 every near-future code starts with F and every F code is near-future
+  - L1000 nearFuture() is false for a blank, null, a year, and a code the catalogue lacks
+  - L1003 ...and for a history row's code: E1, PE1, PL12 and L5
+  - L1005 FE1 and FE2 are near-future history (dated after NEAR_FUTURE, not after HISTORY_ENDS) and FE4, FE8 and FE10 near-future and projected
+  - L1008 the Research screens' count of what a city founded the default way never knows is the near future's rows (
+- **L1015 13. a city founded the default way never knows a near-future building; one founded the 1900 way knows it from its date**
+  - L1023 fixture: the three templates are there, the sulphide plant dated by FE2 and the steel works by FE4, the oxide plant by neither
+  - L1028 a default city set past FE4's month does not know the Sulphide Leach & SX-EW Plant or the Hydrogen Steel Works
+  - L1030 ...and knows the oxide Leach & SX-EW Plant, which it always did
+  - L1031 ...neither near-future building is a candidate of its sector there, and the oxide plant is
+  - L1033 ...and a direct order for the Hydrogen Steel Works is refused as not known
+  - L1043 a 1900 city knows the Sulphide Leach & SX-EW Plant from FE2's month (
+  - L1048 ...and the Hydrogen Steel Works from FE4's month (
+  - L1049 ...where its sector's candidates agree: the steel works is one at FE4's month and not the month before
 
 ## ResearchPreviewCheck.java - 82 labelled assertions
 

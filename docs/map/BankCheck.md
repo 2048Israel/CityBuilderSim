@@ -66,7 +66,7 @@
 
 **Uses:** [Bank](Bank.md) (394), [BusinessDebtManager](BusinessDebtManager.md) (124), [HouseholdBalance](HouseholdBalance.md) (47), [Sectors](Sectors.md) (46), [Game](Game.md) (44), [MoneyAudit](MoneyAudit.md) (44), [ExchangeCheck](ExchangeCheck.md) (33), [Equity](Equity.md) (25), [PriceLevel](PriceLevel.md) (20), [Exchange](Exchange.md) (19), [FamilyStructure](FamilyStructure.md) (19), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (15), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [TempDirs](TempDirs.md) (8), [Household](Household.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sector](Sector.md) (4), [BusinessLoan](BusinessLoan.md) (3), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3)... and 16 more
 
-**Used by (2):** [BondCheck](BondCheck.md), [YoungBankCheck](YoungBankCheck.md)
+**Used by (3):** [BondCheck](BondCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [YoungBankCheck](YoungBankCheck.md)
 
 ## Sections
 

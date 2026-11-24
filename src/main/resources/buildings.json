@@ -1639,6 +1639,15 @@
       }
      },
      "equipment": "business-computer"
+    },
+    {
+     "entry": "B10",
+     "source": "R6f: Brynjolfsson, Li and Raymond, Generative AI at Work, NBER w31161 (Apr 2023, rev. Nov 2023): issues resolved an hour +14% on average for the agents given the assistant, the bulk of them from Nov 2020 to Feb 2021. The agents are the NO_DIPLOMA posts (B1's clerks are the DIPLOMA and COLLEGE_BUSINESS posts); before B10 they are today's 255 times 1.14, for the same calls. No capital, licence price or other post changes: none was measured.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 35.7
+      }
+     }
     }
    ]
   },

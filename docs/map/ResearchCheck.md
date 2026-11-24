@@ -1,4 +1,4 @@
-# ResearchCheck.java - 1,080 lines · 26 methods · 11 constants · harnesses
+# ResearchCheck.java - 1,092 lines · 26 methods · 15 constants · harnesses
 
 `ham/citybuildersim/ResearchCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -12,13 +12,13 @@
 > 
 > What it has to prove:
 > 
->   1. THE FILE READS. The packaged file gives 97 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+>   1. THE FILE READS. The packaged file gives 100 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
 >      unique and in the studies' order, the near future's FE1, FE2 and FE4 and the speculative tier's FE8 and FE10 after them; the counts by prefix and by field are the studies'; the
 >      field follows the code (the second letter of an F code); every entry has a name, a world, a touches and an effect; the kinds, the kind
 >      notes and the names of a few are the tables'.
->   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 26
->      needs of 23 entries and the near future's 3 of 2 are there; M1 needs PM6 (research-1900 8.6), E18 needs E13 and E9, PE17 needs PE14.
->   3. HISTORY'S DATES. Every entry's world month is PolicyDates.monthOf() of its year and month; every original non-F row is 1900 to 1995, E21 is 1996, every F row
+>   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 29
+>      needs of 25 entries and the near future's 3 of 2 are there; M1 needs PM6 (research-1900 8.6), E18 needs E13 and E9, PE17 needs PE14, M12 needs M9, B10 needs B1 and B2.
+>   3. HISTORY'S DATES. Every entry's world month is PolicyDates.monthOf() of its year and month; every original non-F row is 1900 to 1995 but E21, M12, L8 and B10, which are 1996 to 2024, every F row
 >      NEAR_FUTURE's year to 2060, and every row from NEAR_FUTURE on is coded F; values typed from the tables (a dated month, and
 >      the study's model's month where the table names none); every PolicyDates lever with an entry key is a LAW entry on the lever's own year,
 >      month and monthKnown; PL1 and PL11, which have no lever, are in their year's January; nothing is known at the founding.
@@ -59,121 +59,125 @@
 
 | line | section |
 |---:|---|
-| 91 | · the specification, typed from the studies' tables |
-| 171 | · fixtures for the reader |
-| 230 | · 1. the file reads |
-| 294 | · 2. needs |
-| 327 | · 3. history's dates |
-| 376 | · 4. the work |
-| 419 | · 5. known from |
-| 463 | · 6. the reader's refusals, and the fees |
-| 565 | 7. buildings.json's codes (R2, slice B) |
-| 685 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
-| 773 | 10. the building candidates and orders (R2b) |
-| 929 | 11. the mark against HISTORY_ENDS (R6b) |
-| 971 | 12. the near future (R6b, call 1) |
-| 999 | 13. a near-future building, by the way the city was founded (R6b, call 1) |
-| 1039 | · helpers |
+| 92 | · the specification, typed from the studies' tables |
+| 183 | · fixtures for the reader |
+| 242 | · 1. the file reads |
+| 306 | · 2. needs |
+| 340 | · 3. history's dates |
+| 389 | · 4. the work |
+| 432 | · 5. known from |
+| 476 | · 6. the reader's refusals, and the fees |
+| 578 | 7. buildings.json's codes (R2, slice B) |
+| 698 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
+| 786 | 10. the building candidates and orders (R2b) |
+| 942 | 11. the mark against HISTORY_ENDS (R6b) |
+| 984 | 12. the near future (R6b, call 1) |
+| 1012 | 13. a near-future building, by the way the city was founded (R6b, call 1) |
+| 1052 | · helpers |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 97 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Sp...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
-| 143 | `ResearchCheck.MONTH_KNOWN` | `32` | The entries whose World column names a month: the tables' 30 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
-| 146 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 92 rows (HISTORY_ROWS). |
-| 147 | `ResearchCheck.PREFIX_COUNTS` | `{ 21, 10, 8, 5, 27, 6, 3, 12 }` |  |
-| 148 | `ResearchCheck.HISTORY_ROWS` | `92` |  |
-| 151 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE8 and FE10 are the s... |
-| 152 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
-| 155 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 92. |
-| 158 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "E21", 21...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 568 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map....` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
-| 580 | `ResearchCheck.POWER_YEARS` | `new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"))` | The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. |
+| 98 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Sp...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
+| 147 | `ResearchCheck.MONTH_KNOWN` | `35` | The entries whose World column names a month: the tables' 33 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
+| 150 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 95 rows (HISTORY_ROWS). |
+| 151 | `ResearchCheck.PREFIX_COUNTS` | `{ 21, 11, 9, 6, 27, 6, 3, 12 }` |  |
+| 152 | `ResearchCheck.HISTORY_ROWS` | `95` |  |
+| 155 | `ResearchCheck.STUDY_TAIL` | `List.of("L5", "E19", "E20", "E21", "M12", "B10", "L8")` | The studies' rows that come after the PL rows, in the file's order: L5, E19-E21, then M12, B10 and L8 (R6f). |
+| 158 | `ResearchCheck.LATE_HISTORY` | `Set.of("E21", "M12", "L8", "B10")` | The studies' rows dated after 1995, and the years they may be dated in: E21 (1996), M12 (2000), L8 (2013) and B10 (2020); every other non-F row is 1900 to 1995. |
+| 159 | `ResearchCheck.LATE_FROM` | `1996` |  |
+| 160 | `ResearchCheck.LATE_TO` | `2024` |  |
+| 163 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE8 and FE10 are the s... |
+| 164 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
+| 167 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 95. |
+| 170 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "E21", 21...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
+| 581 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map....` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 593 | `ResearchCheck.POWER_YEARS` | `new TreeMap<>(Map.of(168, "1910", 169, "1949", 170, "1970", 171, "1982"))` | The power plants dated by a year after 1900 (PW2, spec-electricity 2.3: each from the year its kind first ran, Jerus's Q2), by id. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 77 | `private static int fails` |  |
-| 78 | `private static int passes` |  |
+| 78 | `private static int fails` |  |
+| 79 | `private static int passes` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 1006 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
-| 80 | 4 | `static void check(String label, boolean ok)` |  |
-| 86 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
+| 76 | 1017 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
+| 81 | 4 | `static void check(String label, boolean ok)` |  |
+| 87 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 
-### the specification, typed from the studies' tables (lines 91-170)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 94 | 1 | **type** `record Spot(String code, int year, int month, boolean monthKnown)` | One date typed from a table: the year, the month and whether the table's World column names the month (else the study's model's month). |
-| 163 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month, worked out here and not by PolicyDates. |
-| 167 | 3 | `static String prefixOf(String code)` |  |
-
-### fixtures for the reader (lines 171-564)
+### the specification, typed from the studies' tables (lines 92-182)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 173 | 5 | `private static String quoted(String...items)` |  |
-| 180 | 4 | `static String entryJson(String code, String field, String size, String kind, int year, int month, int work, String...needs)` | One entry's JSON, with the fields the reader refuses on; the rest it reads as absent. |
-| 185 | 3 | `static String file(String...entries)` |  |
-| 190 | 3 | `static String good(String code, String...needs)` | A good entry: an engineering building in 1960. |
-| 195 | 1 | **type** `record Read(ResearchCatalog catalogue, String log)` | What a reading wrote and what it made. |
-| 198 | 12 | `static Read read(String json)` | Reads a text through the class's parse() with System.out captured, so that what it reports can be asserted. |
-| 211 | 5 | `static String text(String resource) throws Exception` |  |
-| 217 | 3 | `static Entry of(String code)` |  |
-| 221 | 3 | `static boolean has(Entry e, List<String> kinds)` |  |
-| 225 | 339 | `public static void main(String[] args) throws Exception` |  |
+| 95 | 1 | **type** `record Spot(String code, int year, int month, boolean monthKnown)` | One date typed from a table: the year, the month and whether the table's World column names the month (else the study's model's month). |
+| 175 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month, worked out here and not by PolicyDates. |
+| 179 | 3 | `static String prefixOf(String code)` |  |
 
-### 7. buildings.json's codes (R2, slice B) (lines 565-684)
+### fixtures for the reader (lines 183-577)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 582 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id)` |  |
-| 587 | 97 | `static void sectionSeven()` |  |
+| 185 | 5 | `private static String quoted(String...items)` |  |
+| 192 | 4 | `static String entryJson(String code, String field, String size, String kind, int year, int month, int work, String...needs)` | One entry's JSON, with the fields the reader refuses on; the rest it reads as absent. |
+| 197 | 3 | `static String file(String...entries)` |  |
+| 202 | 3 | `static String good(String code, String...needs)` | A good entry: an engineering building in 1960. |
+| 207 | 1 | **type** `record Read(ResearchCatalog catalogue, String log)` | What a reading wrote and what it made. |
+| 210 | 12 | `static Read read(String json)` | Reads a text through the class's parse() with System.out captured, so that what it reports can be asserted. |
+| 223 | 5 | `static String text(String resource) throws Exception` |  |
+| 229 | 3 | `static Entry of(String code)` |  |
+| 233 | 3 | `static boolean has(Entry e, List<String> kinds)` |  |
+| 237 | 340 | `public static void main(String[] args) throws Exception` |  |
 
-### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 685-772)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 687 | 85 | `static void sectionEightAndNine()` |  |
-
-### 10. the building candidates and orders (R2b) (lines 773-928)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 776 | 11 | `static Game datedCity(String label, boolean historical)` | A scratch city with ample land and cash; the date alone must refuse its orders. |
-| 789 | 5 | `static void atMonth(Game g, int month) throws Exception` | Set the clock at an exact boundary without playing decades of unrelated economics. |
-| 795 | 133 | `static void buildingsOnDates() throws Exception` |  |
-
-### 11. the mark against HISTORY_ENDS (R6b) (lines 929-970)
+### 7. buildings.json's codes (R2, slice B) (lines 578-697)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 931 | 39 | `static void theMark()` |  |
+| 595 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id)` |  |
+| 600 | 97 | `static void sectionSeven()` |  |
 
-### 12. the near future (R6b, call 1) (lines 971-998)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 973 | 25 | `static void theNearFuture()` |  |
-
-### 13. a near-future building, by the way the city was founded (R6b, call 1) (lines 999-1038)
+### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 698-785)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1001 | 37 | `static void nearFutureBuildings() throws Exception` |  |
+| 700 | 85 | `static void sectionEightAndNine()` |  |
 
-### helpers (lines 1039-1080)
+### 10. the building candidates and orders (R2b) (lines 786-941)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1041 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
-| 1048 | 13 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E21, then the near future's rows. |
-| 1063 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
-| 1073 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
+| 789 | 11 | `static Game datedCity(String label, boolean historical)` | A scratch city with ample land and cash; the date alone must refuse its orders. |
+| 802 | 5 | `static void atMonth(Game g, int month) throws Exception` | Set the clock at an exact boundary without playing decades of unrelated economics. |
+| 808 | 133 | `static void buildingsOnDates() throws Exception` |  |
+
+### 11. the mark against HISTORY_ENDS (R6b) (lines 942-983)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 944 | 39 | `static void theMark()` |  |
+
+### 12. the near future (R6b, call 1) (lines 984-1011)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 986 | 25 | `static void theNearFuture()` |  |
+
+### 13. a near-future building, by the way the city was founded (R6b, call 1) (lines 1012-1051)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1014 | 37 | `static void nearFutureBuildings() throws Exception` |  |
+
+### helpers (lines 1052-1092)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1054 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
+| 1061 | 12 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E21, M12, B10, L8 (STUDY_TAIL), then the near future's rows. |
+| 1075 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
+| 1085 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
 
