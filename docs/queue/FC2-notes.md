@@ -258,6 +258,16 @@ dollars (`getFoundingCashCost()`), which neither the level nor a reform moves - 
 the rounding. DenominationCheck holds its twins to 1e-9 again, a month, a year and a decade on. No save is touched: the
 rate is handed on with every strike and on a load.
 
+REV-FC2b (the fourth review's P1): the names of the exports with no good behind them, `Sector.Ledger.servicesSold`
+and `Statement.servicesSold` (the builders' work sold abroad), were never saved. The month's sale is in the pending
+ledger at every save, so a load struck its receipts into revenue with no line naming them, and "revenue by good"
+missed by the sale. Both are saved now (`SectorState.LedgerState` and `StatementState`, a name-to-amount map each).
+No format bump is owed under the old-saves rule: a save before FC2 sold no work abroad, so the empty map an older save
+reads is what it had pending and struck, and no FC2 save is in any player's hands. SectorStatementCheck 6a saves
+ConstructionTrapCheck's calm town in the month it sold 19.0 points abroad for 3.418447, loads it through the game's
+own load (pending 3.418447 after it), plays both a month (both statements name 3.418447; the loaded one's revenue
+26.549287 is its other revenue 23.130841 and the work sold abroad), and saves and loads the struck statement again.
+
 ## 5. Checks
 
 The scope moves below (BuildersFirstCheck, SaveFileCheck's brake town, GapOrderCheck's section 6, ForeignCheck's JVM)
@@ -469,7 +479,10 @@ abroad; each section's claim is the city's own builders', and it is still run wi
 The first dry run (e90eb0b93, gate box run cbs-gate-FC2-0uEcU2DO) was red in 27 harnesses, 168 NEW lines. Fourteen of them were red on
 RES3's dry run too; by the orchestrator's call (08:28) FC2 owns the mends to those fixtures, and RES3 verifies them after merging.
 The rule: a fixture causes its condition on any played path, a broken law is mended in the model, and a premise traced and not
-causable in FC2's scope passes by name to HT1-H. No law's assertion was changed. Each mend's comment in its harness carries the figures.
+causable in FC2's scope passes by name to its owner, with its trace. Two laws were restated to the model's own figures, neither
+loosened: CurrencyCheck's vault (read as the lean sold on it, since-founding as every sale since founding) and Forms1900Check 11's
+allowance (now to the cent: feed, hire and the carters' pay the haul priced). FundCheck 10's law gained the households' taxes on
+the shares the fund's buying moved, read from the model (below). Each mend's comment in its harness carries the figures.
 
 Model (for the delta review):
 - SectorStatementCheck: Construction's work sold abroad is a revenue line of its own, `Sector.Ledger/Statement.servicesSold` and
@@ -477,13 +490,25 @@ Model (for the delta review):
   sector screen's revenue detail (d241790cc). Before, the export's money reached the till without a line, and the statement did not add up.
 - MoneyWordsCheck: the builders-short line names the city's money by `Currency.name()` (BuildScreen, ConstructionScreen; f7043a5c7).
 
+REV-FC2b's (the fourth review, NOT SHIP, 4 P1), model and interface, for the delta review:
+- `Ledger/Statement.servicesSold` saved (section 4), with SectorStatementCheck 6a.
+- `BuildScreen.buildersShortInfo()` takes the money's name as a `%s` argument of its format: joined into the template, a typed
+  "100% Crown" threw where the build card's tooltip was drawn. MoneyWordsCheck 4 types it. The method and its class are public
+  so the harness, in the model's package, can call it.
+- `HouseholdBalance.offeringMeans()`: subscribe()'s own weighing summed, from one private `offeringWant(cell)` that subscribe()
+  now calls (the same arithmetic in the same order, so no offering moves by a bit). OrderDoorCheck's fixture reads it, and its
+  lift raises every cell's savings by the same sum a household until the model's figure covers OWNERS_COVER times the down
+  payment; until the review the harness kept its own copy of the weighing and asserted the copy.
+
 Fixtures, each caused between months by a lever the model has:
 - ScaleCheck: the builders' saved fill (`workFill`) is a share, left unscaled; the K-times copy worked K times its posts and sold the
   phantom crews' month abroad.
 - FundLedgerCheck, FundCheck: the founding hands the bank's quote where the town's orders left the cash short. FundCheck 9d lifts
-  the rescue book until the month's due is BOND_ROOM_MARGIN times the bond room. Section 10's pay-in twins play one step over the
-  default dial, where the fund trades with nobody: at the default, a's fund bought 5,016 Industry shares and the sellers' gains tax
-  moved the budget 0.0341. The law's `close` is unchanged. Its domain is now a pay-in with no trade behind it.
+  the rescue book until the month's due is BOND_ROOM_MARGIN times the bond room. Section 10 (REV-FC2b): the twins play at the
+  default dial, the player's case, and the law is the budget moving by the fund's transfer and by the households' taxes on the
+  shares its buying moved, both read from the model (`NationalAccounts.getCapitalGainsTax()`, `getDividendTax()`): balances
+  39.711545 and 0.614910, transfers 39.130746 and 0, the gains tax 0.082604 and 0.116715 (a's fund bought 5,016 Industry shares),
+  the dividend tax 0 in both. The twins one step over the default, where the fund trades with nobody, keep the bare law beside it.
 - FloatLinkCheck, DeskCheck: every played order is funded at its quote, and the town is still building at the sale, so the tax
   covers the sale's fee.
 - CallCheck: the bank's capital is kept over its share desk's book between months.
@@ -494,7 +519,8 @@ Fixtures, each caused between months by a lever the model has:
 - CentralBankCheck 19: an heirless estate of the households' paper goes to custody before the press. The two par-alone and add-on
   plans read nothing netted within 1e-9: the central bank's whole par is one ulp over the principal, against the exact `== 0` the
   fixture had.
-- OrderDoorCheck 2: the households' means for the offering are OWNERS_COVER times the down payment at the door's price.
+- OrderDoorCheck 2: the households' means for the offering, the model's (`HouseholdBalance.offeringMeans()`, REV-FC2b), are lifted
+  to OWNERS_COVER times the down payment at the door's price.
 - CarCheck OE1: the edge's cells hold EDGE_HOUSEHOLDS = 1024, so the take's count is exact. At 333.54 households, one car read an
   ulp under. The `==` is unchanged.
 - EssentialWorksCheck: the later priority work is one Container Terminal. The foreign crews had built the 10,000 roads, and their
@@ -504,7 +530,8 @@ Fixtures, each caused between months by a lever the model has:
 - ForeignDebtCheck: twenty-year paper is sold until "later" is the heaviest rung.
 - PegAnchorCheck 9: the euro town holds a vault of PEG_VAULT_MONTHS of imports.
 - DebtMoneysCheck: the window abroad is held open at the euro bill's roll, and at the save's quotes.
-- Forms1900Check: the carters' pay is read as the haul priced it (the month before), and the homes beside the bill. The lamp-lit
+- Forms1900Check: the carters' pay is read as the haul priced it (the month before), and the homes beside the bill; with it the
+  allowance covers the feed, the teams' hire and the pay to the cent (ALLOWANCE_CENT), the old 0.9 gone (REV-FC2b). The lamp-lit
   cells get half a car a grown-up.
 - GdpCheck: the railway is handed the cash for its sets.
 - InvestCheck: the House is priced out by its materials, and the crews are thinned to 95% of the best home, none of it past the
@@ -512,8 +539,52 @@ Fixtures, each caused between months by a lever the model has:
 - ER1Check: the restored cash is sized from the offer the cash brings.
 - CreditCheck: the banned retailer keeps a till of two shops for a statement's months, and Freight's founding is one month.
 
-Passed to HT1-H: DeathRecordCheck, `the orphan section does not fill behind it`. The row and its trace are in the ship file's
-known-reds; it is OX2's family.
+Passed by name to OX2: DeathRecordCheck, `the orphan section does not fill behind it`, a law and not a premise, so not FC2's to
+cause; its owner is OX2's queued row (the arrivals' children), beside its sibling row. The row and its trace are in the ship
+file's known-reds.
 
-Found, not FC2's: `Game.Slices.passes()` returns before `judged()` for a banned sector that borrows, so `consider()` prints
-"at NaN%" in the refusal (CreditCheck's banned retailer). A message only; the fix is to set firstRate before the early return.
+Found, not FC2's (queued FC2-N): `Game.Slices.passes()` returns before `judged()` for a banned sector that borrows, so
+`consider()` prints "at NaN%" in the refusal (CreditCheck's banned retailer); identical on main at b34277adc. A message only; the
+fix is to set firstRate before the early return.
+
+FC2's consequences, owned (REV-FC2b's P1 4), each with its queued row in the ship file:
+- FC2-G, Gold: the foreign crews' bills, an import of services, are paid in gold at the points and drain M0. GoldStandardCheck's
+  1933 town held M0 at 0.00 from world month 48, its cover reading Infinity from 120 to 398 while the regime stood (main's rule:
+  no break at an M0 of nothing); section 9's fixture brings M0 to M0_FLOOR by an advance. Whether a regime with no money breaks,
+  or the crews' bill waits on the reserves, is the queued row's to decide.
+- FC2-R, repairs: what the foreign crews build, the home builders repair. EssentialWorksCheck's 10,000 roads, 505 built abroad by
+  m38, took the repairs from 347 to 12,893 points by m41 and the builders' site output to 0, so the auto-builder held its power
+  order ("no site output"); the fixture's later priority work is one Container Terminal. Whether repairs past the builders' month
+  go abroad as new work does is the queued row's to decide.
+- FC2-C, the build-time caps (found on the merge of 0.9.194): his month is his book over the threshold's months, and PW2 caps what a
+  site takes in a month at its build time (`BuildingManager.siteCap()`), so where the sites holding his book are capped, the
+  month's points past their caps land on the other sites, those quoted at home among them, and his book falls by what he built
+  there. ForeignCrewsCheck 7's Coal Power Plant, held to 1,449.7 points a month, took that of a month of 4,125 while the Houses'
+  site took 2,447 and the Middle School, quoted at home, 229; later, his book only the plant's, 118 Houses quoted at home met his
+  3,729 and finished in the month. Whether his month is what the sites holding his book can take is the queued row's to decide.
+
+The merge of main at 0.9.194 (PW1-W, PW2; 6c487106e). Every harness the merge touched on either side was rerun alone, and
+`--fast`; three were red, each a premise the merged path moved, and each is now caused:
+- DeathCareFirstCheck 2: the trap's town was sicker on the merged path, 29.0% against main's 20.9% (the baseline 7.5%, 3.7% more
+  for the unhoused, the capped dead's 15%), its sick month 398 points against 443, so a year of the cemetery's points left 80 of
+  it and the repairs took 80.0%, at the bar and not over it (main's town 82.4%). The roads now leave the builders no more than
+  1 - TRAP_REPAIRS of their sick month less a road's repairs (`sites(g, TRAP_REPAIRS)`): the repairs take 81.6%.
+- CurrencyRegimeCheck 12: money arrives in the month saved only while that month's target, drawn on the month's own GDP, is over
+  the stock. The save month's GDP fell from 816.1 to 277.6 (its construction investment 970.5, then 247.3), its target to 2,499
+  under the stock of 3,826, and nothing arrived (main's town took 244.6k, FC2's before the merge 267.6k). The save month's target
+  is read from a twin played the month ahead from a save, and the stock set to HOT_SHARE of it (`InterestAbroadCheck.setHotStock()`,
+  the bank moved with it): 100.0k arrived, 23.0k left on doubt, and the save's checks read them to the bit.
+- ForeignCrewsCheck 7: the claims a month on read the queue at home in months of the sites a month after the split left it at the
+  threshold, 22.69 months against 21. The calm town's crews had been struck to the core crew on its last month, of repairs and
+  nothing on site (work ordered at the top of a month is crewed the month after, THE CREWS THE WORK NEEDS), so the month on worked
+  19 points of the queue at home; and the sites' month at every post fell from 351 to 324 as the town's sickness rose from 0.2084
+  to 0.2541 (its out-of-work cell, past its savings' cliff, paid no care: the coverage 1.0, then 0.6965). PW2's cap sent his month
+  onto the Houses' site, which finished in the cancels' month and took its claim on his book with it (FC2-C). Now care is free at
+  the point of use (the fee scale 0, as HealthCheck's insured city has it), a month is played with the landlords' Houses on site
+  so the crews are struck at every post (posts offered 1.0), and the Houses are as many as outlast HOUSE_MONTHS of everything the
+  city's crews and his could build (1,600): the month on worked 355 points, the sites' month 355 then 342, the queue at home 20.76
+  months. The Houses' claim line reads the model's rule, in its share and never past the points the site owes, as the plant's line
+  does: the Houses' site took his month past the plant's cap and owed 14,654.9 against its share of 15,238.1 (the plant's owed
+  85,793.9 against 80,122.9, so the share itself is still read on the plant). `claimOfAFinishedSite()` plays the city and its twin
+  on alike until half the room under the threshold owes more than a month of every crew (37 months; 158 Houses against 1,577
+  points), so the Houses quoted at home are on site at the cancel.

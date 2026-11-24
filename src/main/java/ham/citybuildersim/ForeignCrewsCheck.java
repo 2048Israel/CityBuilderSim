@@ -112,8 +112,11 @@ public class ForeignCrewsCheck {
     /** Section 7's buildings: one quoted at home, and one far bigger than the threshold's months of the sites, which it splits. */
     static final String SCHOOL = "Middle School", PLANT = "Coal Power Plant";
 
-    /** ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it. */
+    /** ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it (at the least; housesToOutlast()). */
     static final long HOUSES = 200;
+
+    /** ...as many as outlast this many months of everything the city's crews and his could build on their site: the month on, the cancels' month and one more. */
+    static final int HOUSE_MONTHS = 3;
 
     /** ...and the works ordered on foothill ground at the section's end, split at the threshold with its pad's preparation. */
     static final String WORKS = "Water Treatment Plant";
@@ -590,6 +593,24 @@ public class ForeignCrewsCheck {
         Construction c = g.getSectors().construction();
         BuildingsTemplate school = template(g, SCHOOL), plant = template(g, PLANT), house = template(g, HOUSE);
 
+        // CAUSED for any played path (FC2, on the merge of 0.9.194). The claims a month on, and the cancels', read the queue at home a month after
+        // the split left it at the threshold, in months of the sites then, and the Houses' work on his book beside the plant's: they hold while the
+        // city's crews' month on the sites outruns the threshold's months times any fall in the sites' month at every post, and while the Houses'
+        // site is on site. On the merged branch none of that held:
+        // - the calm town's crews were struck on its last month, of repairs and nothing on site, to the core crew (sectors.Construction, THE CREWS
+        //   THE WORK NEEDS: work ordered at the top of a month is crewed the month after), so the month on worked 19 points of the queue at home;
+        // - the sites' month at every post fell from 351 to 324 as the town's sickness rose from 0.2084 to 0.2541: its out-of-work cell, past its
+        //   savings' cliff, paid no care (the care coverage 1.0, then 0.6965);
+        // - PW2's build-time cap holds the plant to 1,449.7 points a month (BuildingManager.siteCap()), so his month landed on the Houses' site,
+        //   which finished in the cancels' month; their claim on his book went with it, and the plant's cancel took the whole book.
+        // So care is free at the point of use (the fee scale 0, as HealthCheck's insured city has it), and no cell that runs short takes the
+        // builders' health with it; a month is played with the landlords' Houses on site, so the crews are struck at every post the work needs;
+        // and as many Houses are ordered as outlast HOUSE_MONTHS of everything the city's crews and his could build on their site.
+        g.getEconomyManager().getTaxPolicy().setHealthFeeScale(0);
+        month(g);
+        ok("fixture: the builders' crews are struck at every post the work needs, the landlords' Houses on site (" + c.getPostsOfferedShare() + ")",
+                c.getPostsOfferedShare() == 1);
+
         // The school first, quoted at home: the queue at home is the calm city's, under the knee.
         Game.BuildQuote qs = g.quoteBuild(school, 1);
         ok("fixture: a Middle School quoted with the queue under the threshold is quoted at home", qs.abroadPoints == 0
@@ -624,10 +645,11 @@ public class ForeignCrewsCheck {
 
         // Houses after it, with the queue at home at the threshold: abroad whole, on his book beside the plant's work.
         double houseEach = Fitout.of(g, house).points();
-        Game.BuildQuote qh = g.quoteBuild(house, HOUSES);
-        ok("fixture: the Houses are ordered", cityOrders(g, house, HOUSES));
+        long houses = housesToOutlast(g, house, houseEach);
+        Game.BuildQuote qh = g.quoteBuild(house, houses);
+        ok("fixture: the " + houses + " Houses are ordered", cityOrders(g, house, houses));
         double P = qp.abroadPoints, H = qh.abroadPoints;
-        near("Houses ordered with the queue at home at the threshold go abroad whole", H, HOUSES * houseEach, 1e-9);
+        near("Houses ordered with the queue at home at the threshold go abroad whole", H, houses * houseEach, 1e-9);
         near("...his book is the plant's work abroad and theirs", c.getForeignBook(), P + H, 1e-12);
         near("the plant's site claims its own work on his book", bm.abroadOwedOf(plant), P, 1e-12);
         near("...the Houses' site theirs", bm.abroadOwedOf(house), H, 1e-9);
@@ -658,14 +680,22 @@ public class ForeignCrewsCheck {
         near("...the sites' work on his book still his book", sum(bmBack.getAbroadOwedById()), back.getSectors().construction().getForeignBook(), 1e-12);
 
         // A month on: his month falls on every site's work on his book alike.
+        int sitesBefore = g.getBuildingOutputAtEveryPost();
         month(g);
+        out.printf("  the month on: the sites' month at every post %,d, then %,d; the city's crews built %,.1f points on the sites, his %,.1f%n",
+                sitesBefore, g.getBuildingOutputAtEveryPost(), bm.getPointsBuilt() - c.getForeignPointsThisMonth(), c.getForeignPointsThisMonth());
         double b1 = c.getForeignBook();
         BuildingManager.OrderAbroad next = g.abroadOfOrder(house, 1);
         out.printf("  a month on: the queue at home %.4f months against the threshold %.4f; a House quoted %,.3f of its %,.3f points abroad; his book %,.1f, the plant's %,.1f, the Houses' %,.1f%n",
                 bm.monthsQueued(), bm.thresholdMonths(), next.points(), houseEach, b1, bm.abroadOwedOf(plant), bm.abroadOwedOf(house));
         ok("a month on, the queue at home is under the threshold again", bm.monthsQueued() < bm.thresholdMonths());
         ok("...and the next order is built at home", next.points() < houseEach);
-        near("his month fell on the Houses' work on his book in its share", bm.abroadOwedOf(house), H * b1 / (P + H), 1e-9);
+        // ...in its share, never more than the points it owes (the plant's rule below): PW2's cap holds the plant to its month, so the month's
+        // points past it land on the Houses' site, which may then owe less than its share (on the merged branch 14,654.9 against 15,238.1).
+        out.printf("  the Houses' site owes %,.1f points against its share of his book %,.1f; the plant's %,.1f against %,.1f%n",
+                bm.getStack(house).owedPoints(), H * b1 / (P + H), bm.getStack(plant).owedPoints(), P * b1 / (P + H));
+        near("his month fell on the Houses' work on his book in its share, never more than the points it owes", bm.abroadOwedOf(house),
+                Math.min(bm.getStack(house).owedPoints(), H * b1 / (P + H)), 1e-9);
         near("...and on the plant's, never more than the points it owes", bm.abroadOwedOf(plant),
                 Math.min(bm.getStack(plant).owedPoints(), P * b1 / (P + H)), 1e-9);
 
@@ -689,6 +719,32 @@ public class ForeignCrewsCheck {
 
         claimOfAFinishedSite(root, g);
         partsAbroadOwedOnSite(g);
+    }
+
+    /**
+     * The Houses section 7 orders after the plant: HOUSES, doubled until their site owes more than HOUSE_MONTHS of everything the city's
+     * crews (at every post, before the repairs) and his (his month at his book with them on it, BuildersShort.foreignMonth()) could build
+     * on it in each, so it is on site at the cancels whichever of the sites the month's points land on.
+     */
+    static long housesToOutlast(Game g, BuildingsTemplate house, double houseEach) {
+        BuildingsStacks sh = g.getBuildingManager().getStack(house);
+        double owed = sh == null ? 0 : sh.owedPoints();
+        long n = HOUSES;
+        while (owed + n * houseEach <= HOUSE_MONTHS * monthOfEveryCrew(g, n * houseEach)) n *= 2;
+        return n;
+    }
+
+    /** Everything the city's crews (at every post, before the repairs) and his (his month at his book, and this more on it) could build in a month. */
+    static double monthOfEveryCrew(Game g, double moreOnHisBook) {
+        BuildingManager bm = g.getBuildingManager();
+        return g.getConstructionOutputAtEveryPost() + BuildersShort.foreignMonth(g.getSectors().construction().getForeignBook() + moreOnHisBook,
+                bm.thresholdMonths(), bm.largestDepotPoints());
+    }
+
+    /** The points the queue at home has under the threshold: its months under it, in the sites' month at every post. */
+    static double roomAtHome(Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        return (bm.thresholdMonths() - bm.monthsQueued()) * g.getBuildingOutputAtEveryPost();
     }
 
     /**
@@ -723,9 +779,22 @@ public class ForeignCrewsCheck {
         BuildingManager tm = twin.getBuildingManager();
         Construction tc = twin.getSectors().construction();
         BuildingsTemplate tPlant = template(twin, PLANT), tHouse = template(twin, HOUSE);
-        // Houses quoted at home, half the room the queue at home has under the threshold.
-        double houseEach = Fitout.of(g, house).points(), sites = g.getBuildingOutputAtEveryPost();
+        // Houses quoted at home, half the room the queue at home has under the threshold. CAUSED (FC2, on the merge of 0.9.194): the cancel
+        // below needs their site on site at the month's end, and PW2's build-time cap holds the plant to its month (1,449.7 points), so the
+        // month's points past it land on the Houses: on the merged branch 118 Houses, 1,180 points, met the city's crews' 355 and his 3,729
+        // and finished in the month. So the city and its twin are played on alike until half the room owes more than a month of everything
+        // the city's crews and his could build (the room grows by the city's crews' month, and his month falls with his book).
+        double houseEach = Fitout.of(g, house).points();
+        int waited = 0;
+        while (waited < MOST_MONTHS_TO_FINISH && 0.5 * roomAtHome(g) <= monthOfEveryCrew(g, 0)) {
+            month(g);
+            month(twin);
+            waited++;
+        }
+        double sites = g.getBuildingOutputAtEveryPost();
         long n = Math.max(1, (long) Math.floor(0.5 * (bm.thresholdMonths() - bm.monthsQueued()) * sites / houseEach));
+        ok(String.format("fixture: the %d Houses to be quoted at home owe more than a month of everything the city's crews and his could build (%,.0f points, %d months on)",
+                n, monthOfEveryCrew(g, 0), waited), n * houseEach > monthOfEveryCrew(g, 0));
         Game.BuildQuote qh = g.quoteBuild(house, n), tqh = twin.quoteBuild(tHouse, n);
         ok("fixture: Houses on the finished site are quoted at home, in the city and in its loaded twin", qh.abroadPoints == 0
                 && tqh.abroadPoints == 0);
