@@ -175,7 +175,22 @@ Held for land, the player's city grew slowly; watched, it grows as fast as the r
 
 ## 7. The nightly's 4,000 months, on the box
 
-(running)
+The review: "Run the nightly's 4,000-month playtest of your pushed commit once on the box, with tools/nightly.sh's
+own JVM options". d3fff97f7 in a `~/cbs/tools/<sha>` worktree under `tools.lock`, `box.lock` held exclusive as the
+nightly takes it (no gate beside it), `java -Xmx2048m -Xms64m -Dcbs.timing=soft -Dstdout.encoding=UTF-8
+-Dplaytest.months=4000`, nightly.sh's line, with `-Xlog:gc` added and the headless display options.
+
+- **Time**: 716 s, against 335 s for main's last nightly (0.9.192, f937d2c22).
+- **Heap**: no full collection in 7,378 GC lines; at most 786 MB live after a collection, 1,810 MB before one,
+  1,941 MB committed of the 2,048 MB cap; the process's peak resident 2,624,300 kB. It fits, without much room.
+- **The city**: 18,901,049 people at m4005.
+- **Findings**: main's nightly was red for "households with no home 16 time(s), months 792-807", this batch's class;
+  that finding is gone. The run is still red (exit 1), for one finding: "industry stands farther out than the homes,
+  1 time(s), months 4000-4000: industry 111.53 km from the founding site (57,409 boxes), the homes' band 102.33 km
+  (218,255), the outer kinds 79.78 km (4,544)". That is the map ring's check at the last window
+  (`LongPlaytest.layoutFinish`), CL7's class (QUEUE.md's CL7 row; known reds row 89, the same sole finding at m2400
+  on fresh main 01e6c2d4b), reached now because the city that keeps its ground is large enough at m4000 to fill
+  the ring. Not this batch's to mend: the nightly goes from LP-G1's red to CL7's.
 
 ## 8. The ensemble
 
