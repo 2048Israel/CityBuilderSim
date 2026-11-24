@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,722 constants in 637 files.**
+**6,724 constants in 637 files.**
 
 ## model (3044 constants)
 
@@ -413,7 +413,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 707 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
 | 718 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
 | 727 | `BusinessInvestment.BLEED_MONTHS` | `DISTRESS_LOSS_MONTHS` | The months a price taker takes to sell its biggest holding once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running (its own saved streak, getOperatingLossMonths(), the old metal it... |
-| 1452 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
+| 1456 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
 
 ### Buyback.java ([map](map/Buyback.md))
 
@@ -4170,7 +4170,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 43 | `ZoningView.SHORT_SHARE` | `1e-6` | A zone holds less than it wants by more than this share of its want: SHORT (Z10's "holds 12.4 of 40 km²"), not a rounding. |
 
-## sectors (220 constants)
+## sectors (222 constants)
 
 ### Agriculture.java ([map](map/Agriculture.md))
 
@@ -4416,6 +4416,12 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 75 | `PortDivision.DUES_NAME` | `"Port dues"` | ...and the dues, on Freight's input line and the treasury's revenue. |
 | 77 | `PortDivision.KINDS` | `Ports.Cargo.values().length` |  |
 
+### ProcessingSector.java ([map](map/ProcessingSector.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 656 | `ProcessingSector.RUN_KEY` | `"run."` | The prefix of each good's last run in its saved extras ("run.<GOOD>.made", ".full", ".capacity"). |
+
 ### Quarrying.java ([map](map/Quarrying.md))
 
 | line | constant | value | says |
@@ -4517,9 +4523,10 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 487 | `SpreadPlanner.ON_ITS_BORROWING` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash) { return ...` | THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test until 0.7.113, which asked nothing of an order the till pa... |
 | 502 | `SpreadPlanner.ON_ITS_WHOLE_COST` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash) { return ...` | THE RULE IN FORCE SINCE 0.7.112 (batch I2; Jerus's decision A, 2026-10-08: "test every order on its whole cost, whoever pays"): on the whole cost - its ground at its zone's price with it (BusinessI... |
 | 509 | `SpreadPlanner.DEFAULT_MONEY_GATE` | `ON_ITS_WHOLE_COST` | The money gate every SpreadPlanner tests its sector's orders by unless a check or a probe sets another: ON_ITS_WHOLE_COST since 0.7.112 (decision A). |
-| 705 | `SpreadPlanner.TRAILING_MONTHS` | `12` | Months of a kind's appraisals the planner reads its margin over (CY1): a year, which counts a one-month spike a twelfth and a three-month cycle of the tallies at its mean, and lags a city that grow... |
-| 708 | `SpreadPlanner.MARGIN_KEY` | `"margin."` | The prefix of each kind's appraisals of one more, newest first, in a client's saved extras ("margin.<KIND>.<age in months>"). |
-| 711 | `SpreadPlanner.LAST_KEY` | `"lastMargin."` | ...and of what its last one standing earned ("lastMargin.<KIND>.<age in months>"). |
+| 726 | `SpreadPlanner.TRAILING_MONTHS` | `12` | Months of a kind's appraisals the planner reads its margin over (CY1): a year, which counts a one-month spike a twelfth and a three-month cycle of the tallies at its mean, and lags a city that grow... |
+| 729 | `SpreadPlanner.MARGIN_KEY` | `"margin."` | The prefix of each kind's appraisals of one more, newest first, in a client's saved extras ("margin.<KIND>.<age in months>"). |
+| 732 | `SpreadPlanner.LAST_KEY` | `"lastMargin."` | ...and of what its last one standing earned ("lastMargin.<KIND>.<age in months>"). |
+| 735 | `SpreadPlanner.HOLDING_KEY` | `"lastHolding."` | ...and the holding its last one's figures were noted at ("lastHolding.<KIND>"): a smaller one starts the year again. |
 
 ### WoodProducts.java ([map](map/WoodProducts.md))
 

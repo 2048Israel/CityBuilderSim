@@ -621,32 +621,53 @@ public final class SpreadPlanner {
     }
 
     /**
-     * ...with what the last one standing earned in `month` (CY1): a kind is idle in a month
-     * its last one earned below nothing, or whose mean over its year (OVER ITS YEAR) is below
-     * nothing. WHY: a working month started the count again, so a kind that lost two months
-     * in three, or most of a year on a spike's month, never reached IDLE_MONTHS (FC2's seed 1:
-     * 180 Rod Mills on a three-month cycle, none shed). None standing clears its year with its
-     * count; a figure that is not a number counts as working, as it did.
+     * ...with what the last one of `holding` standing earned in `month` (CY1): a kind counts a
+     * month idle when its last one earned below nothing in the month or over its year (OVER
+     * ITS YEAR), and starts again only when it earned in both. WHY: a working month started
+     * the count again, so a kind that lost two months in three never reached IDLE_MONTHS
+     * (FC2's seed 1: 180 Rod Mills on a three-month cycle, none shed). It is sold only in a
+     * month it loses in and over its year (mayShed()). A holding smaller than at its last note
+     * (one sold) starts its year again: the figures were the larger holding's (REV-CY1). None
+     * standing clears its year with its count; a figure that is not a number counts as
+     * working, as it did; a holding that is not a number is not compared.
      */
-    public void noteMonth(String kind, boolean standing, int month, double lastEarns) {
-        if (!standing) {
+    public void noteMonth(String kind, double holding, int month, double lastEarns) {
+        if (!(holding > 0)) {
             lasts.remove(kind);
             noteMonth(kind, false, false);
             return;
         }
+        Trail t = lasts.computeIfAbsent(kind, k -> new Trail());
+        if (holding < t.holding) t.figures.clear();
+        if (!Double.isNaN(holding)) t.holding = holding;
         if (!Double.isFinite(lastEarns)) {
             noteMonth(kind, true, false);
             return;
         }
-        lasts.computeIfAbsent(kind, k -> new Trail()).note(month, lastEarns);
-        noteMonth(kind, true, lesser(lastEarns, lastOverYear(kind)) < 0);
+        t.note(month, lastEarns);
+        noteMonth(kind, true, lesser(lastEarns, t.mean()) < 0);
+    }
+
+    /** ...for a kind standing or not, its holding not compared. */
+    public void noteMonth(String kind, boolean standing, int month, double lastEarns) {
+        noteMonth(kind, standing ? Double.NaN : 0, month, lastEarns);
     }
 
     /** Months a kind has stood idle running; 0 for one working or with none standing. */
     public int idleMonths(String kind) { return idle.getOrDefault(kind, 0); }
 
-    /** Whether a kind has stood idle IDLE_MONTHS running: the one its sector may sell back. */
-    public boolean mayShed(String kind) { return idleMonths(kind) >= IDLE_MONTHS; }
+    /**
+     * Whether a kind has stood idle IDLE_MONTHS running and, where its last one's earnings are
+     * noted (CY1), lost in the last month noted and over its year: the one its sector may sell
+     * back. A paying month sells none (REV-CY1: the year's mean lags a recovery, and the sale
+     * took ceil 25% of the kind each month on it); a kind with no figures noted (Refining's
+     * book, a save from before CY1) sells on its count, as before.
+     */
+    public boolean mayShed(String kind) {
+        if (idleMonths(kind) < IDLE_MONTHS) return false;
+        Trail t = lasts.get(kind);
+        return t == null || t.figures.isEmpty() || (t.figures.peekFirst() < 0 && t.mean() < 0);
+    }
 
     /** A fixture's: a kind's idle months as a save would give them. */
     public void setIdleMonthsForTest(String kind, int months) {
@@ -710,10 +731,14 @@ public final class SpreadPlanner {
     /** ...and of what its last one standing earned ("lastMargin.<KIND>.<age in months>"). */
     public static final String LAST_KEY = "lastMargin.";
 
-    /** One kind's figures over its year: the last TRAILING_MONTHS, newest first, and the month the newest was noted. */
+    /** ...and the holding its last one's figures were noted at ("lastHolding.<KIND>"): a smaller one starts the year again. */
+    public static final String HOLDING_KEY = "lastHolding.";
+
+    /** One kind's figures over its year: the last TRAILING_MONTHS, newest first, the month the newest was noted, and the holding they were noted at (the last one's; NaN where none is known). */
     private static final class Trail {
         private final java.util.ArrayDeque<Double> figures = new java.util.ArrayDeque<>();
         private int month = Integer.MIN_VALUE;
+        private double holding = Double.NaN;
 
         /** The month's figure: a second in the same month replaces the first (a check that weighs twice, the planner asked again). */
         void note(int m, double x) {
@@ -770,12 +795,22 @@ public final class SpreadPlanner {
     public void saveMargins(Map<String, Double> extras) {
         save(extras, MARGIN_KEY, margins);
         save(extras, LAST_KEY, lasts);
+        for (Map.Entry<String, Trail> e : lasts.entrySet()) {
+            if (Double.isFinite(e.getValue().holding)) extras.put(HOLDING_KEY + e.getKey(), e.getValue().holding);
+        }
     }
 
     /** ...and back, every kind the extras name; a save from before CY1 reads none, and its planner reads the month alone until its year fills. */
     public void restoreMargins(Map<String, Double> extras) {
         restore(extras, MARGIN_KEY, margins);
         restore(extras, LAST_KEY, lasts);
+        if (extras == null) return;
+        for (Map.Entry<String, Double> e : extras.entrySet()) {
+            String k = e.getKey();
+            if (!k.startsWith(HOLDING_KEY) || k.length() == HOLDING_KEY.length() || e.getValue() == null || !(e.getValue() > 0)
+                    || !Double.isFinite(e.getValue())) continue;
+            lasts.computeIfAbsent(k.substring(HOLDING_KEY.length()), x -> new Trail()).holding = e.getValue();
+        }
     }
 
     private static void save(Map<String, Double> extras, String prefix, Map<String, Trail> trails) {

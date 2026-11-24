@@ -1,4 +1,4 @@
-# ProcessingSector.java - 733 lines · 61 methods · 0 constants · sectors
+# ProcessingSector.java - 767 lines · 62 methods · 1 constants · sectors
 
 `ham/citybuildersim/sectors/ProcessingSector.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > price past it), so a works that replaces imports is not shed because one
 > ... (15 more lines in the source)
 
-**Uses:** [SpreadPlanner](SpreadPlanner.md) (81), [BuildingsTemplate](BuildingsTemplate.md) (44), [Good](Good.md) (27), [NewUnit](NewUnit.md) (21), [BusinessInvestment](BusinessInvestment.md) (13), [Game](Game.md) (6), [Sector](Sector.md) (4), [Traffic](Traffic.md) (4), [Haulage](Haulage.md) (4), [Currency](Currency.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [Trade](Trade.md) (1)
+**Uses:** [SpreadPlanner](SpreadPlanner.md) (81), [BuildingsTemplate](BuildingsTemplate.md) (44), [Good](Good.md) (33), [NewUnit](NewUnit.md) (21), [BusinessInvestment](BusinessInvestment.md) (13), [Game](Game.md) (6), [Sector](Sector.md) (4), [Traffic](Traffic.md) (4), [Haulage](Haulage.md) (4), [Currency](Currency.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [Trade](Trade.md) (1)
 
 **Used by (22):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BusinessInvestment](BusinessInvestment.md), [CementConcrete](CementConcrete.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [RecipeCheck](RecipeCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [WoodProducts](WoodProducts.md), [WoodProductsCheck](WoodProductsCheck.md)
 
@@ -76,21 +76,28 @@
 | 133 | · the candidates |
 | 473 | · the plan |
 | 561 | · idle, then shed |
-| 622 | · the run its works made (CY1) |
-| 664 | · its idle months across a save |
-| 684 | THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md |
+| 624 | · the run its works made (CY1) |
+| 684 | · its idle months across a save |
+| 718 | THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md |
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 656 | `ProcessingSector.RUN_KEY` | `"run."` | The prefix of each good's last run in its saved extras ("run.<GOOD>.made", ".full", ".capacity"). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 99 | `private final SpreadPlanner planner` | Its spread planner: its money gate and its kinds' idle months. |
+| 653 | `private final Map<Good, double[]> lastRun` | What each good its works make was made at, at the last month's end: {made, made and idled, the capacity it was made on}; the month's Output rows are not saved. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 96 | 638 | **type** `public abstract class ProcessingSector extends Sector` | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and 2.7). |
+| 96 | 672 | **type** `public abstract class ProcessingSector extends Sector` | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and 2.7). |
 | 101 | 3 | `protected ProcessingSector(String key, String label, BuildingType group)` |  |
 | 106 | 1 | `public SpreadPlanner planner()` | Its spread planner (a check or a probe sets its money gate for the counterfactual). |
 | 115 | 9 | `public void shipUnsoldStock(Good g, GoodsMarket market)` | The planner's world buyers also buy from its wholesale shed (BF1). |
@@ -151,40 +158,41 @@
 | 546 | 6 | `private String yearWords(BuildingsTemplate t, Map<BuildingsTemplate, Double> held)` | The plan's words for a candidate its year held lower: its mean over the months noted, against the month's; nothing for one the month decided. |
 | 555 | 5 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What one more of its works would earn its owner a month: the planner's estimate (THE PLAN) - what Game.consider() tests the order on, and the build card shows. |
 
-### idle, then shed (lines 561-621)
+### idle, then shed (lines 561-623)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 564 | 3 | `public static String kindOf(BuildingsTemplate t)` | A kind's name in the idle book and the extras: its template's id, which is permanent. |
-| 570 | 3 | `public void endOfMonth(Game game)` | The month's end: each kind of its works counted idle or working (IDLE, THEN SHED). |
-| 575 | 11 | `protected void noteIdleWorks(Game game)` | Each kind of its works standing counted idle (the last one earns below nothing at the month's values) or working; a kind with none standing clears its count. |
-| 588 | 3 | `public int idleMonths(BuildingsTemplate t)` | Months a kind of its works has stood idle running (extras idleMonths.<id>). |
-| 593 | 8 | `public double idleBuildings()` | Its buildings of the kinds idle long enough to shed, standing. |
-| 604 | 4 | `public boolean mayRetire(BuildingsTemplate t)` | A kind idle long enough while one is; any of its buildings while none is (the distress rule's, as every maker's plant is). |
-| 611 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (the mills' rule to 0.7.119). |
-| 618 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings is measured in, for the retirement rules: one building, for a works. |
+| 570 | 4 | `public void endOfMonth(Game game)` | The month's end: what its works made (THE RUN ITS WORKS MADE), then each kind of its works counted idle or working (IDLE, THEN SHED). |
+| 576 | 12 | `protected void noteIdleWorks(Game game)` | Each kind of its works standing counted idle (the last one earns below nothing at the month's values) or working; a kind with none standing clears its count. |
+| 590 | 3 | `public int idleMonths(BuildingsTemplate t)` | Months a kind of its works has stood idle running (extras idleMonths.<id>). |
+| 595 | 8 | `public double idleBuildings()` | Its buildings of the kinds idle long enough to shed, standing. |
+| 606 | 4 | `public boolean mayRetire(BuildingsTemplate t)` | A kind idle long enough while one is; any of its buildings while none is (the distress rule's, as every maker's plant is). |
+| 613 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (the mills' rule to 0.7.119). |
+| 620 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings is measured in, for the retirement rules: one building, for a works. |
 
-### the run its works made (CY1) (lines 622-663)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 633 | 14 | `public double standingRun(BuildingsTemplate t)` | The share of nameplate the works that make `t`'s goods would run at on last month's make, counted over those standing and on site now (CY1): of each good `t` makes, what was made (Output's produced, export-bound and c... |
-| 655 | 8 | `protected String underRunRefusal(BuildingsTemplate t)` | A feed gate on the run (CY1; a client's feedRefusal() may return it): no more of `t` while the works standing and on site that make its goods would run under FEED_GATE of nameplate on last month's make - the gate Heav... |
-
-### its idle months across a save (lines 664-683)
+### the run its works made (CY1) (lines 624-683)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 667 | 4 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 674 | 4 | `protected void restoreExtras(Map<String, Double> extras)` | A save without them reads none; one from before CY1 no year, which its planner fills again (SpreadPlanner.restoreMargins()). |
-| 680 | 3 | `protected void resetExtras()` |  |
+| 637 | 14 | `public double standingRun(BuildingsTemplate t)` | The share of nameplate the works that make `t`'s goods would run at on last month's make, counted over those standing and on site now (CY1): of each good `t` makes, what was made (Output's produced, export-bound and c... |
+| 659 | 8 | `private void noteRun()` | Notes the month's Output rows (THE RUN ITS WORKS MADE): of each good, what was made (produced, export-bound and captive), that and what was idled, and the capacity, where both are above nothing. |
+| 675 | 8 | `protected String underRunRefusal(BuildingsTemplate t)` | A feed gate on the run (CY1; a client's feedRefusal() may return it): no more of `t` while the works standing and on site that make its goods would run under FEED_GATE of nameplate on last month's make - the gate Heav... |
 
-### THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md (lines 684-733)
+### its idle months across a save (lines 684-717)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 698 | 14 | `private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | What the last one of `t` standing earns a month at `v` and `city`: lastEarns() at the share of nameplate its feed fills (feedShareStanding()), that feed and its lorries in its costs - IDLE, THEN SHED's test, and the p... |
-| 714 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. |
-| 719 | 4 | `public double lastEarns(BuildingsTemplate t)` | What the last one of `t` standing earns a month at this month's values, as IDLE, THEN SHED counts it (lastOneEarns()) - below nothing an idle month; NaN with no city or markets. |
-| 725 | 8 | `public double lastEarnsAt(BuildingsTemplate t, double rate)` | Standing earnings on the production actually dispatched, whose rate already includes feed/order limits (R2c). |
+| 687 | 10 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 700 | 11 | `protected void restoreExtras(Map<String, Double> extras)` | A save without them reads none; one from before CY1 no year, which its planner fills again (SpreadPlanner.restoreMargins()). |
+| 713 | 4 | `protected void resetExtras()` |  |
+
+### THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md (lines 718-767)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 732 | 14 | `private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | What the last one of `t` standing earns a month at `v` and `city`: lastEarns() at the share of nameplate its feed fills (feedShareStanding()), that feed and its lorries in its costs - IDLE, THEN SHED's test, and the p... |
+| 748 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. |
+| 753 | 4 | `public double lastEarns(BuildingsTemplate t)` | What the last one of `t` standing earns a month at this month's values, as IDLE, THEN SHED counts it (lastOneEarns()) - below nothing an idle month; NaN with no city or markets. |
+| 759 | 8 | `public double lastEarnsAt(BuildingsTemplate t, double rate)` | Standing earnings on the production actually dispatched, whose rate already includes feed/order limits (R2c). |
 

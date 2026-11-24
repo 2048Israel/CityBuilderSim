@@ -1,4 +1,4 @@
-# SpreadPlanner.java - 808 lines · 69 methods · 9 constants · sectors
+# SpreadPlanner.java - 843 lines · 70 methods · 10 constants · sectors
 
 `ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -78,7 +78,7 @@
 | 436 | · 5. the order |
 | 468 | · 4. the money gate, one replaceable piece |
 | 612 | · 6. idle, then shed |
-| 687 | · 7. over its year (CY1) |
+| 708 | · 7. over its year (CY1) |
 
 ## Enum constants
 
@@ -103,9 +103,10 @@
 | 487 | `SpreadPlanner.ON_ITS_BORROWING` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test until 0.7.113, which asked nothing of an order the till paid; for the counterf... |
 | 502 | `SpreadPlanner.ON_ITS_WHOLE_COST` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE IN FORCE SINCE 0.7.112 (batch I2; Jerus's decision A, 2026-10-08: "test every order on its whole cost, whoever pays"): on the whole cost - its ground at its zone's price with it (BusinessInvestment.getCostOf(... |
 | 509 | `SpreadPlanner.DEFAULT_MONEY_GATE` | `ON_ITS_WHOLE_COST` | The money gate every SpreadPlanner tests its sector's orders by unless a check or a probe sets another: ON_ITS_WHOLE_COST since 0.7.112 (decision A). |
-| 705 | `SpreadPlanner.TRAILING_MONTHS` | `12` | Months of a kind's appraisals the planner reads its margin over (CY1): a year, which counts a one-month spike a twelfth and a three-month cycle of the tallies at its mean, and lags a city that grows into a works by ha... |
-| 708 | `SpreadPlanner.MARGIN_KEY` | `"margin."` | The prefix of each kind's appraisals of one more, newest first, in a client's saved extras ("margin.<KIND>.<age in months>"). |
-| 711 | `SpreadPlanner.LAST_KEY` | `"lastMargin."` | ...and of what its last one standing earned ("lastMargin.<KIND>.<age in months>"). |
+| 726 | `SpreadPlanner.TRAILING_MONTHS` | `12` | Months of a kind's appraisals the planner reads its margin over (CY1): a year, which counts a one-month spike a twelfth and a three-month cycle of the tallies at its mean, and lags a city that grows into a works by ha... |
+| 729 | `SpreadPlanner.MARGIN_KEY` | `"margin."` | The prefix of each kind's appraisals of one more, newest first, in a client's saved extras ("margin.<KIND>.<age in months>"). |
+| 732 | `SpreadPlanner.LAST_KEY` | `"lastMargin."` | ...and of what its last one standing earned ("lastMargin.<KIND>.<age in months>"). |
+| 735 | `SpreadPlanner.HOLDING_KEY` | `"lastHolding."` | ...and the holding its last one's figures were noted at ("lastHolding.<KIND>"): a smaller one starts the year again. |
 
 ## Fields (state)
 
@@ -114,16 +115,17 @@
 | 293 | `private final boolean feedAtImport, outputAtImport` |  |
 | 511 | `private MoneyGate moneyGate` |  |
 | 615 | `private final Map<String, Integer> idle` | Months each kind has stood idle running, by its name. |
-| 715 | `private final java.util.ArrayDeque<Double> figures` |  |
-| 716 | `private int month` |  |
-| 736 | `private final Map<String, Trail> margins` | What one more of each kind was appraised to earn, its last TRAILING_MONTHS. |
-| 739 | `private final Map<String, Trail> lasts` | What the last one of each kind standing earned, its last TRAILING_MONTHS. |
+| 739 | `private final java.util.ArrayDeque<Double> figures` |  |
+| 740 | `private int month` |  |
+| 741 | `private double holding` |  |
+| 761 | `private final Map<String, Trail> margins` | What one more of each kind was appraised to earn, its last TRAILING_MONTHS. |
+| 764 | `private final Map<String, Trail> lasts` | What the last one of each kind standing earned, its last TRAILING_MONTHS. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 716 | **type** `public final class SpreadPlanner` | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of the buildings that pass its gates, the one that earns most on its cost ... |
+| 93 | 751 | **type** `public final class SpreadPlanner` | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of the buildings that pass its gates, the one that earns most on its cost ... |
 
 ### 1. the city's own price (spec-oil 2.4, cityValue) (lines 104-279)
 
@@ -204,35 +206,36 @@
 | 569 | 5 | `private static double rateFor(Sector sector, Game game, double amount)` | The rate a loan of `amount` would be written at for the sector (BusinessDebtManager.projectRate()); prime's placeholder 0 with no game. |
 | 576 | 35 | `public City city(Sector sector, BusinessInvestment plans, Game game)` | The game's answers for `sector`'s orders this month: BusinessInvestment's costs, ground and staffing, and this planner's money gate. |
 
-### 6. idle, then shed (lines 612-686)
+### 6. idle, then shed (lines 612-707)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 618 | 4 | `public void noteMonth(String kind, boolean standing, boolean idleThisMonth)` | The month's end for one kind: none standing clears its count; standing and idle adds a month; standing and working starts it again. |
-| 631 | 13 | `public void noteMonth(String kind, boolean standing, int month, double lastEarns)` | ...with what the last one standing earned in `month` (CY1): a kind is idle in a month its last one earned below nothing, or whose mean over its year (OVER ITS YEAR) is below nothing. |
-| 646 | 1 | `public int idleMonths(String kind)` | Months a kind has stood idle running; 0 for one working or with none standing. |
-| 649 | 1 | `public boolean mayShed(String kind)` | Whether a kind has stood idle IDLE_MONTHS running: the one its sector may sell back. |
-| 652 | 3 | `public void setIdleMonthsForTest(String kind, int months)` | A fixture's: a kind's idle months as a save would give them. |
-| 657 | 3 | `public void saveIdle(Map<String, Double> extras, Iterable<String> kinds)` | Into a client's extras: each kind's idle months, every kind named (IDLE_KEY + its name). |
-| 662 | 7 | `public void restoreIdle(Map<String, Double> extras, Iterable<String> kinds)` | ...and back: a kind missing, or not a whole number of months, reads none (a save from before 0.7.82). |
-| 671 | 1 | `public java.util.Set<String> idleKinds()` | The kinds counting idle months now (0.7.112): what a client whose kinds are its templates' ids saves (ProcessingSector). |
-| 674 | 5 | `public void restoreIdle(Map<String, Double> extras)` | ...and back, every kind the extras name (0.7.112): for a client whose kinds are not known until its buildings are (ProcessingSector). |
-| 681 | 5 | `public void reset()` | A founding sector: no kind idle. |
+| 634 | 16 | `public void noteMonth(String kind, double holding, int month, double lastEarns)` | ...with what the last one of `holding` standing earned in `month` (CY1): a kind counts a month idle when its last one earned below nothing in the month or over its year (OVER ITS YEAR), and starts again only when it e... |
+| 652 | 3 | `public void noteMonth(String kind, boolean standing, int month, double lastEarns)` | ...for a kind standing or not, its holding not compared. |
+| 657 | 1 | `public int idleMonths(String kind)` | Months a kind has stood idle running; 0 for one working or with none standing. |
+| 666 | 5 | `public boolean mayShed(String kind)` | Whether a kind has stood idle IDLE_MONTHS running and, where its last one's earnings are noted (CY1), lost in the last month noted and over its year: the one its sector may sell back. |
+| 673 | 3 | `public void setIdleMonthsForTest(String kind, int months)` | A fixture's: a kind's idle months as a save would give them. |
+| 678 | 3 | `public void saveIdle(Map<String, Double> extras, Iterable<String> kinds)` | Into a client's extras: each kind's idle months, every kind named (IDLE_KEY + its name). |
+| 683 | 7 | `public void restoreIdle(Map<String, Double> extras, Iterable<String> kinds)` | ...and back: a kind missing, or not a whole number of months, reads none (a save from before 0.7.82). |
+| 692 | 1 | `public java.util.Set<String> idleKinds()` | The kinds counting idle months now (0.7.112): what a client whose kinds are its templates' ids saves (ProcessingSector). |
+| 695 | 5 | `public void restoreIdle(Map<String, Double> extras)` | ...and back, every kind the extras name (0.7.112): for a client whose kinds are not known until its buildings are (ProcessingSector). |
+| 702 | 5 | `public void reset()` | A founding sector: no kind idle. |
 
-### 7. over its year (CY1) (lines 687-808)
+### 7. over its year (CY1) (lines 708-843)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 714 | 20 | **type** `private static final class Trail` | One kind's figures over its year: the last TRAILING_MONTHS, newest first, and the month the newest was noted. |
-| 719 | 6 | `void note(int m, double x)` _(in SpreadPlanner.Trail)_ | The month's figure: a second in the same month replaces the first (a check that weighs twice, the planner asked again). |
-| 727 | 6 | `double mean()` _(in SpreadPlanner.Trail)_ | Their mean; NaN with none. |
-| 742 | 3 | `public static double lesser(double month, double year)` | The lesser of a month's figure and its year's mean (pure): the month's where the year is not a number. |
-| 747 | 3 | `public void noteMargin(String kind, int month, double earns)` | Notes what one more of `kind` was appraised to earn in `month`; a second note in the same month replaces the first, and a figure that is not finite is not noted. |
-| 752 | 4 | `public double marginOverYear(String kind)` | The mean of what one more of `kind` was appraised to earn over its year, this month's with it; NaN with none noted. |
-| 758 | 4 | `public int marginMonths(String kind)` | The months of `kind`'s appraisals noted, at most TRAILING_MONTHS. |
-| 764 | 4 | `public double lastOverYear(String kind)` | The mean of what the last one of `kind` standing earned over its year; NaN with none standing or none noted. |
-| 770 | 4 | `public void saveMargins(Map<String, Double> extras)` | Into a client's extras: each kind's year, newest first (MARGIN_KEY and LAST_KEY + its name + "." + the figure's age). |
-| 776 | 4 | `public void restoreMargins(Map<String, Double> extras)` | ...and back, every kind the extras name; a save from before CY1 reads none, and its planner reads the month alone until its year fills. |
-| 781 | 6 | `private static void save(Map<String, Double> extras, String prefix, Map<String, Trail> trails)` |  |
-| 788 | 20 | `private static void restore(Map<String, Double> extras, String prefix, Map<String, Trail> trails)` |  |
+| 738 | 21 | **type** `private static final class Trail` | One kind's figures over its year: the last TRAILING_MONTHS, newest first, the month the newest was noted, and the holding they were noted at (the last one's; NaN where none is known). |
+| 744 | 6 | `void note(int m, double x)` _(in SpreadPlanner.Trail)_ | The month's figure: a second in the same month replaces the first (a check that weighs twice, the planner asked again). |
+| 752 | 6 | `double mean()` _(in SpreadPlanner.Trail)_ | Their mean; NaN with none. |
+| 767 | 3 | `public static double lesser(double month, double year)` | The lesser of a month's figure and its year's mean (pure): the month's where the year is not a number. |
+| 772 | 3 | `public void noteMargin(String kind, int month, double earns)` | Notes what one more of `kind` was appraised to earn in `month`; a second note in the same month replaces the first, and a figure that is not finite is not noted. |
+| 777 | 4 | `public double marginOverYear(String kind)` | The mean of what one more of `kind` was appraised to earn over its year, this month's with it; NaN with none noted. |
+| 783 | 4 | `public int marginMonths(String kind)` | The months of `kind`'s appraisals noted, at most TRAILING_MONTHS. |
+| 789 | 4 | `public double lastOverYear(String kind)` | The mean of what the last one of `kind` standing earned over its year; NaN with none standing or none noted. |
+| 795 | 7 | `public void saveMargins(Map<String, Double> extras)` | Into a client's extras: each kind's year, newest first (MARGIN_KEY and LAST_KEY + its name + "." + the figure's age). |
+| 804 | 11 | `public void restoreMargins(Map<String, Double> extras)` | ...and back, every kind the extras name; a save from before CY1 reads none, and its planner reads the month alone until its year fills. |
+| 816 | 6 | `private static void save(Map<String, Double> extras, String prefix, Map<String, Trail> trails)` |  |
+| 823 | 20 | `private static void restore(Map<String, Double> extras, String prefix, Map<String, Trail> trails)` |  |
 

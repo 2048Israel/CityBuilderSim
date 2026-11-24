@@ -565,9 +565,10 @@ public abstract class ProcessingSector extends Sector {
         return String.valueOf(t.getId());
     }
 
-    /** The month's end: each kind of its works counted idle or working (IDLE, THEN SHED). A sector that overrides it calls it. */
+    /** The month's end: what its works made (THE RUN ITS WORKS MADE), then each kind of its works counted idle or working (IDLE, THEN SHED). A sector that overrides it calls it. */
     @Override
     public void endOfMonth(Game game) {
+        noteRun();
         noteIdleWorks(game);
     }
 
@@ -578,9 +579,10 @@ public abstract class ProcessingSector extends Sector {
         SpreadPlanner.City city = planner.city(this, game.getBusinessInvestment(), game);
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;
-            boolean standing = buildings.getQuantity(t.getId()) > 0;
-            // ...in the month or over its year (CY1; SpreadPlanner.noteMonth() with its earnings).
-            planner.noteMonth(kindOf(t), standing, game.getMonth(), standing ? lastOneEarns(t, v, city) : Double.NaN);
+            long holding = buildings.getQuantity(t.getId());
+            boolean standing = holding > 0;
+            // ...in the month or over its year, its holding with it (CY1; SpreadPlanner.noteMonth() with its earnings).
+            planner.noteMonth(kindOf(t), (double) holding, game.getMonth(), standing ? lastOneEarns(t, v, city) : Double.NaN);
         }
     }
 
@@ -626,23 +628,41 @@ public abstract class ProcessingSector extends Sector {
      * counted over those standing and on site now (CY1): of each good `t` makes, what was made
      * (Output's produced, export-bound and captive) over what was made and idled, times last
      * month's capacity over the capacity standing and on site, at most 1; the highest of its
-     * goods, as a building runs at its best-ordered good (Sector.buildingOrder()). NaN where none
-     * of its goods was made or idled last month, or none stands or is on site (nothing to read;
-     * a month not yet run since a load).
+     * goods, as a building runs at its best-ordered good (Sector.buildingOrder()). Read from the
+     * month's end's note of the rows (noteRun()), saved, so the month after a load reads the
+     * month before it (REV-CY1: the rows are not saved, and the gate read open). NaN where none
+     * of its goods was made or idled at the last month's end, or none stands or is on site
+     * (nothing to read: a city with no month run).
      */
     public double standingRun(BuildingsTemplate t) {
         double best = Double.NaN;
         if (t == null) return best;
         for (Good g : t.goodsMade().keySet()) {
-            Output o = outputRow(g);
-            if (o == null) continue;
-            double made = o.produced + o.exportBound + o.captive, full = made + o.idled;
+            double[] r = lastRun.get(g);
+            if (r == null) continue;
+            double made = r[0], full = r[1], capacity = r[2];
             double now = getCapacity(g) + (buildings == null ? 0 : buildings.underConstructionOfNew(key(), u -> u.makes(g)));
-            if (!(full > 0) || !(o.capacity > 0) || !(now > 0)) continue;
-            double run = Math.min(1, made / full * o.capacity / now);
+            if (!(full > 0) || !(capacity > 0) || !(now > 0)) continue;
+            double run = Math.min(1, made / full * capacity / now);
             if (Double.isNaN(best) || run > best) best = run;
         }
         return best;
+    }
+
+    /** What each good its works make was made at, at the last month's end: {made, made and idled, the capacity it was made on}; the month's Output rows are not saved. */
+    private final Map<Good, double[]> lastRun = new java.util.EnumMap<>(Good.class);
+
+    /** The prefix of each good's last run in its saved extras ("run.<GOOD>.made", ".full", ".capacity"). */
+    static final String RUN_KEY = "run.";
+
+    /** Notes the month's Output rows (THE RUN ITS WORKS MADE): of each good, what was made (produced, export-bound and captive), that and what was idled, and the capacity, where both are above nothing. */
+    private void noteRun() {
+        lastRun.clear();
+        for (Map.Entry<Good, Output> e : outputs.entrySet()) {
+            Output o = e.getValue();
+            double made = o.produced + o.exportBound + o.captive, full = made + o.idled;
+            if (full > 0 && o.capacity > 0) lastRun.put(e.getKey(), new double[] { made, full, o.capacity });
+        }
     }
 
     /**
@@ -667,6 +687,12 @@ public abstract class ProcessingSector extends Sector {
     protected void saveExtras(Map<String, Double> extras) {
         planner.saveIdle(extras, planner.idleKinds());
         planner.saveMargins(extras);
+        for (Map.Entry<Good, double[]> e : lastRun.entrySet()) {
+            String k = RUN_KEY + e.getKey().name() + ".";
+            extras.put(k + "made", e.getValue()[0]);
+            extras.put(k + "full", e.getValue()[1]);
+            extras.put(k + "capacity", e.getValue()[2]);
+        }
     }
 
     /** A save without them reads none; one from before CY1 no year, which its planner fills again (SpreadPlanner.restoreMargins()). */
@@ -674,11 +700,19 @@ public abstract class ProcessingSector extends Sector {
     protected void restoreExtras(Map<String, Double> extras) {
         planner.restoreIdle(extras);
         planner.restoreMargins(extras);
+        lastRun.clear();
+        for (Good g : Good.values()) {
+            String k = RUN_KEY + g.name() + ".";
+            Double made = extras.get(k + "made"), full = extras.get(k + "full"), capacity = extras.get(k + "capacity");
+            if (made == null || full == null || capacity == null) continue;
+            if (made >= 0 && full > 0 && capacity > 0 && Double.isFinite(made + full + capacity)) lastRun.put(g, new double[] { made, full, capacity });
+        }
     }
 
     @Override
     protected void resetExtras() {
         planner.reset();
+        lastRun.clear();
     }
 
     /* =====================================================================

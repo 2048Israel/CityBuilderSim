@@ -882,9 +882,13 @@ public class BusinessInvestment {
                     : "losing money, but nothing spare to sell");
         }
 
+        // ...an idle kind sold on its own months says so (CY1), not the sector's streak it did not wait on.
+        String why = idleKind && losses < RETIREMENT_LOSS_MONTHS
+                ? String.format("%s idle %d months over its year", worst.getName(),
+                        ((ham.citybuildersim.sectors.ProcessingSector) sector).idleMonths(worst))
+                : String.format("%d months of losses", losses);
         return new Decision(key, worst, quantity,
-                String.format("%d months of losses, %,.0f capacity against %,.0f used",
-                        losses, capacity, demand),
+                String.format("%s, %,.0f capacity against %,.0f used", why, capacity, demand),
                 true);
     }
 
