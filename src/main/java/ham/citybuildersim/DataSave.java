@@ -2857,6 +2857,18 @@ public class DataSave implements Cloneable {
     public java.util.List<Double> getBuildersWork(){ return buildersWork; }
     public void setBuildersOwedAfterAdvance(Double v){ this.buildersOwedAfterAdvance = v; }
     public Double getBuildersOwedAfterAdvance(){ return buildersOwedAfterAdvance; }
+
+    /*
+     * What a used car went for in the month (PW2; Motoring.getUsedCarPrice()): the households' cars are marked at it
+     * in their assets (HouseholdBalance.assets(), Game's car mark), and a loaded city read none until its next month,
+     * so it marked them at the showroom's floor and its debt statistics parted from the live city's (SaveFileCheck's
+     * HC2 line, found when PW2's city sold used cars in the month it was saved). A save from before PW2 has none and
+     * reads as a month with no used car sold: the floor, as before.
+     */
+    private Double usedCarPrice;
+
+    public void setUsedCarPrice(Double v){ this.usedCarPrice = v; }
+    public Double getUsedCarPrice(){ return usedCarPrice; }
     public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }
     public double getCityCapitalSpending(){ return cityCapitalSpending; }
 

@@ -1,6 +1,6 @@
 # LuxuryRetailCheck.java - 249 lines · 10 methods · 2 constants · harnesses
 
-`ham/citybuildersim/LuxuryRetailCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LuxuryRetailCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > What a luxury shop's post sells: its payroll over its margin at BEA's mark (LX1, 2026-11-17).
 > 

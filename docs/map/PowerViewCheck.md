@@ -1,6 +1,6 @@
 # PowerViewCheck.java - 377 lines · 14 methods · 1 constants · harnesses
 
-`ham/citybuildersim/PowerViewCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerViewCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves.
 > WHY. A screen can look plausible while showing next month's fleet or calling row receipts profit. The fixtures cause

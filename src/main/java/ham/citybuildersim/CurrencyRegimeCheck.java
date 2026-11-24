@@ -332,7 +332,10 @@ public class CurrencyRegimeCheck {
             city.buildStack(ForeignCheck.template(city, "Convenience Store"), 8, false);
             city.buildStack(ForeignCheck.template(city, "Small Grocery Store"), 3, false);
             city.buildStack(ForeignCheck.template(city, "Construction Depot"), 4, false);
-            city.buildStack(ForeignCheck.template(city, "Coal Power Plant"), 1, false);
+            // NO COAL PLANT, THE TOWN THIS FIXTURE WAS WRITTEN AGAINST (PW2, 2026-11-23): until PW2 the treasury refused the one this
+            // list ordered (NEEDS_FUNDING: six sites, 49,012 cash after the list); PW2's refigured plant is cheaper and was bought
+            // (1,332 left), so GoldStandardCheck 7's gold, bought out of the cash, was a fraction of GOLD_LOCAL and the town broke
+            // off Gold on its cover in 1908. Without it the town runs on its founding's power, as it did.
             city.buildStack(ForeignCheck.template(city, "Water Treatment Plant"), 1, false);
             city.buildStack(ForeignCheck.template(city, "Industrial Bakery"), 2, false);
         });

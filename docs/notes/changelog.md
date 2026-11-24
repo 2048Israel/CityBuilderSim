@@ -18,6 +18,38 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.196 — R6f, research: the 1996-2024 medicine, business and law rows — 2026-11-24, ready, see docs/queue/R6f-notes.md
+Three rows enter research with something behind them, each undone in a 1900 city until it is known.
+M12, robot-assisted surgery (Jul 2000): its 0.23 days off keyhole surgery on 0.78% of stays, so
+general care's stays are a little longer before it; the four later stays rows keep 1950's 10.0 days.
+B10, the AI assistant (Nov 2020): the Contact Centre's agents are 14% more posts before it, for the
+same calls. L8, Basel III (Jan 2013): the 8% minimum stands throughout; the 2.5-point conservation
+buffer comes with the row, and before it a bank's buffer is its own worst year alone. A load or a find
+re-derives the bank's rule and the medicine at once. ModernRowsCheck proves the three. A city founded
+the default way is unchanged. SAVE_FORMAT and its floor rise to 64: a format-63 Contact Centre before
+B10 loads modern. M19 (hospital at home) and B9 (the tick) are queued, with what each needs.
+
+### 0.9.195 — LP-G1, keep ground ahead across the player's long skips — 2026-11-23, ready, see docs/queue/LP-G1-notes.md
+The test player looks at its ground across a skip: `LongPlaytest.skipWatchingGround()` runs the skip a month at a
+time and makes the unchanged `keepGroundAhead()` look whenever `BuildAdvice.HORIZON` months have passed since the
+last, in the playtest's loop, its Earth city and the ensemble's controller (the cash share per look, the line and
+the hold when the share cannot pay are as they were; the fixtures `probePlay()` builds keep main's rhythm). The
+default seed 0 went 62 months unlooked (m742-804) with its landlords held for land m756-804; now no gap passes
+six months and every month held for land follows an offer the share could not pay. The same in the ensemble's
+seed 9 (no look m482-603 before). Held for land, the player's city grew slowly: seed 0 now ends at 5.7 million
+people (1.3 million), in about twice the time. `GroundSkipCheck`: the old skip's hold, the timely look, the
+unaffordable offer. Versioned with no change to the game: the ensemble's baseline moves (docs/ensemble/0.9.195.md).
+
+### 0.9.194 — PW2, the power plants and their fuels — 2026-11-23, ready, see docs/queue/PW2-notes.md
+Five new power plants, each burning its fuel from the market by the MWh: the Oil-Fired Plant (1900), the Diesel Station (1910), the
+Oil-Fired Turbine (1949), the Biomass Plant (1970) and the Solar Farm (1982); the Coal Power Plant and the Wind Farm refigured to
+spec-electricity §2.3 (coal 325 MW at $3,271 a kW, 60 months, 200 acres; wind 20 MW at 33.8%, from December 1980). Fuel oil and diesel
+are bought from Refining, pellets from Wood Products, the rest imported, each paid once in the money audit and the Trade tab. The sun
+runs after the wind, by its hours. A coal, oil-fired or biomass plant stands only where the city owns sea, a lake or a river (NO WATER
+TO COOL IT); a plant stands no sooner than its months, whatever the crews; each kind is offered from the year it was first built
+(Jerus: "the rec, later research will change this"), so a 1900 city's first power is the oil-fired plant. Natural gas (PW7) waits
+for the world file's re-bake. New harness PowerPlantsCheck.
+
 ### 0.9.193 — PW1-W, water priced from its cost — 2026-11-23, ready, see docs/queue/PW1-W-notes.md
 The sea's water is priced as PW1 prices power, at its margin: while the city needs it, a unit costs its tariff and the
 desalination works' power over the water the sea delivers, at the struck commerce price with PW5's wires. A plant under half

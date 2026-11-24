@@ -1,6 +1,6 @@
-# Sickness.java - 519 lines · 39 methods · 11 constants · model
+# Sickness.java - 550 lines · 40 methods · 16 constants · model
 
-`ham/citybuildersim/Sickness.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sickness.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Who has been sick, and for how long - and the ones it kills.
 > 
@@ -40,7 +40,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (32), [PopulationCohorts](PopulationCohorts.md) (5), [MedicalRows](MedicalRows.md) (4), [Health](Health.md) (1)
 
-**Used by (14):** [BuildScreen](BuildScreen.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MedicineCheck](MedicineCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
+**Used by (15):** [BuildScreen](BuildScreen.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MedicineCheck](MedicineCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
 
 ## Sections
 
@@ -48,10 +48,10 @@
 |---:|---|
 | 42 | THE NUMBERS - every one of them Jerus's, from a table of what each |
 | 122 | THE MEDICAL ROWS (R2f) - what a 1900 city's sick lack until each is known |
-| 185 | · state |
-| 237 | · the month |
-| 360 | · reading it |
-| 431 | · saving |
+| 216 | · state |
+| 268 | · the month |
+| 391 | · reading it |
+| 462 | · saving |
 
 ## Constants
 
@@ -66,27 +66,32 @@
 | 137 | `Sickness.LONG_RECOVERY_BEFORE_M1` | `224 / 362.0` | Before the TB drugs (M1) the sick of a year or more get better at this share of the month's recovery: Canadian TB stays fell from 362 to 224 days with them [M-S1]. |
 | 145 | `Sickness.SERVED_DEATHS_BEFORE_M2` | `55 / 900.0 *(87 / 22.0 - 1)` | Before the breathing machine (M2) the long sick general care serves die this much more often: it took respiratory polio's deaths from 87% to 22% [M-M5], on the respiratory share of deaths, pneumonia's 55 of about 900 ... |
 | 148 | `Sickness.STAYS_BEFORE_PM5` | `10 / 11.0` | General care's part of the recovery before penicillin (PM5) is this share of its part after: Canada's general-hospital stay fell from 11.0 to 10.0 days, 1945-50 (observed, not proven causal) [SC-B285]. |
-| 155 | `Sickness.STAYS_BEFORE_LATER_ROW` | `Math.pow(7.3 / 10.0, 1 / 4.0)` | ...and before each of the four later rows that shorten a stay (M5, M6, M9, M10), this share: they split the fall from 1950's 10.0 days to 2022-23's 7.3 [SC-B285], [CIHI-LOS] evenly (est.). |
-| 158 | `Sickness.LATER_STAYS_ROWS` | `java.util.List.of("M5", "M6", "M9", "M10")` | The later rows that shorten general care's stays, each taking STAYS_BEFORE_LATER_ROW off until it is known. |
+| 160 | `Sickness.ROBOTIC_SHARE_OF_STAYS` | `276_325 / 35_527_500.0` | Robot-assisted stays' share of all stays: 276,325 of the US's 35,527,500 inpatient stays in 2018 [R6f-S1], [R6f-S2]; Canada's share was not found. |
+| 163 | `Sickness.ROBOT_DAYS_SAVED` | `0.23` | The days a robot-assisted operation takes off a stay against keyhole surgery (M9, the way before it): 0.23 in a 2024 meta-analysis of randomised trials [G-M39]; its 1.69 against open surgery is M9's own saving and more. |
+| 166 | `Sickness.US_MEAN_STAY_2018` | `.270 * 5.1 +.730 * 4.5` | The US mean inpatient stay of 2018 those stays are of, in days: 27.0% of stays with an operating-room procedure at 5.1 days, the rest at 4.5 [R6f-S2]. |
+| 169 | `Sickness.STAYS_BEFORE_M12` | `US_MEAN_STAY_2018 /(US_MEAN_STAY_2018 + ROBOTIC_SHARE_OF_STAYS * ROBOT_DAYS_S...` | General care's part of the recovery before robot-assisted surgery (M12) is this share of its part after: the mean stay over the mean stay with the robot's saving back on its share of the stays (est.). |
+| 177 | `Sickness.STAYS_BEFORE_LATER_ROW` | `Math.pow(7.3 / 10.0 / STAYS_BEFORE_M12, 1 / 4.0)` | ...and before each of the four later rows that shorten a stay (M5, M6, M9, M10), this share: they split evenly what the rows with their own measure (M12) leave of the fall from 1950's 10.0 days to 2022-23's 7.3 [SC-B2... |
+| 180 | `Sickness.LATER_STAYS_ROWS` | `java.util.List.of("M5", "M6", "M9", "M10")` | The later rows that shorten general care's stays, each taking STAYS_BEFORE_LATER_ROW off until it is known. |
+| 183 | `Sickness.STAYS_ROWS` | `java.util.List.of("PM5", "M5", "M6", "M9", "M10", "M12")` | Every row that shortens general care's stays, in date order: PM5, the later four, then the rows with their own measure (M12). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 187 | `private final double[][] ring` |  |
-| 189 | `private final double[] acute` | This month's acute influenza shares: visible, but never aged into the mortality ring (R0h). |
-| 190 | `private boolean seeded` |  |
-| 191 | `private double lastRecovery` |  |
-| 200 | `private double staysFactor` | This month's medical rows (R2f), set by Game before the month reads the ring and derived from the city's research, so never saved: general care's part of the recovery, the year-or-more slot's share of it, and how much... |
-| 201 | `private double longRecovery` |  |
-| 202 | `private double deathLift` |  |
-| 235 | `private final double[] lastDeaths` | The dead the pyramid booked to sickness last month, by band - set by Game. |
+| 218 | `private final double[][] ring` |  |
+| 220 | `private final double[] acute` | This month's acute influenza shares: visible, but never aged into the mortality ring (R0h). |
+| 221 | `private boolean seeded` |  |
+| 222 | `private double lastRecovery` |  |
+| 231 | `private double staysFactor` | This month's medical rows (R2f), set by Game before the month reads the ring and derived from the city's research, so never saved: general care's part of the recovery, the year-or-more slot's share of it, and how much... |
+| 232 | `private double longRecovery` |  |
+| 233 | `private double deathLift` |  |
+| 266 | `private final double[] lastDeaths` | The dead the pyramid booked to sickness last month, by band - set by Game. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 480 | **type** `public class Sickness` | Who has been sick, and for how long - and the ones it kills. |
+| 40 | 511 | **type** `public class Sickness` | Who has been sick, and for how long - and the ones it kills. |
 
 ### THE NUMBERS - every one of them Jerus's, from a table of what each (lines 42-121)
 
@@ -96,64 +101,65 @@
 | 108 | 8 | `public static double shareFor(AgeBand band, double cityRate, double childcareCoverage, double seniorCoverage)` | How much of a band is sick at a city rate, given the care that serves it. |
 | 118 | 3 | `public static double recovery(double generalCoverage)` | The share of the sick who get better this month. |
 
-### THE MEDICAL ROWS (R2f) - what a 1900 city's sick lack until each is known (lines 122-184)
+### THE MEDICAL ROWS (R2f) - what a 1900 city's sick lack until each is known (lines 122-215)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 161 | 7 | `public static double staysFactor(MedicalRows rows, int month)` | General care's part of the recovery in a month, as a share of today's: 1 once PM5 and the later stays rows are known. |
-| 170 | 3 | `public static double longRecoveryFactor(MedicalRows rows, int month)` | The year-or-more slot's share of the month's recovery: 1 once M1 is known. |
-| 175 | 3 | `public static double servedDeathsBefore(MedicalRows rows, int month)` | How much more often the served long sick die, per unit of general coverage: 0 once M2 is known. |
-| 180 | 4 | `public static double recovery(double generalCoverage, double staysFactor)` | The share of the sick who get better this month, general care's part times the stays factor: recovery(generalCoverage) itself where it is 1. |
+| 186 | 5 | `public static double staysBefore(String code)` | The share of today's part a stays row leaves until it is known: STAYS_BEFORE_PM5, STAYS_BEFORE_LATER_ROW or STAYS_BEFORE_M12; 1 for a code that is no stays row. |
+| 193 | 6 | `public static double staysFactor(MedicalRows rows, int month)` | General care's part of the recovery in a month, as a share of today's: 1 once every stays row is known. |
+| 201 | 3 | `public static double longRecoveryFactor(MedicalRows rows, int month)` | The year-or-more slot's share of the month's recovery: 1 once M1 is known. |
+| 206 | 3 | `public static double servedDeathsBefore(MedicalRows rows, int month)` | How much more often the served long sick die, per unit of general coverage: 0 once M2 is known. |
+| 211 | 4 | `public static double recovery(double generalCoverage, double staysFactor)` | The share of the sick who get better this month, general care's part times the stays factor: recovery(generalCoverage) itself where it is 1. |
 
-### state (lines 185-236)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 210 | 5 | `public void setMedicine(MedicalRows rows, int month, double generalCoverage)` | The month's medical rows (R2f): what the city knows this month, and general care's coverage, the share of the long sick the breathing machine would serve. |
-| 217 | 1 | `public double getStaysFactor()` | General care's part of the recovery this month, as a share of today's (R2f). |
-| 219 | 1 | `public double getLongRecovery()` | The year-or-more slot's share of the month's recovery (R2f). |
-| 221 | 1 | `public double getDeathLift()` | How much more often the long sick die this month than deathChance() says (R2f). |
-| 224 | 1 | `public double recoveryAt(double generalCoverage)` | The share of the sick who get better this month at a coverage, with the month's stays factor: what a notice or a screen quotes (R2f). |
-| 227 | 1 | `public double servedRecovery()` | The share of the sick who get better this month with everybody served: RECOVERY_SERVED once the stays rows are known (R2f). |
-| 230 | 3 | `public double chanceThisMonth(AgeBand band)` | A band's monthly chance of dying once sick past two months, this month: deathChance() raised by the lift before M2. |
-
-### the month (lines 237-359)
+### state (lines 216-267)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 245 | 7 | `public double[] deathRates()` | Each band's extra monthly chance of dying, from the ring as it stands: the share sick past two months times their age's chance. |
-| 261 | 4 | `public void advanceMonth(double cityRate, double generalCoverage, double childcareCoverage, double seniorCoverage)` | Turns every band's ring a month and meets this month's rate. |
-| 267 | 33 | `public void advanceMonth(double cityRate, double withoutInfluenza, double generalCoverage, double childcareCoverage, double sen...` | The full rate remains visible; only the rate without influenza enters the ring. |
-| 311 | 4 | `public void seed(double cityRate, double generalCoverage, double childcareCoverage, double seniorCoverage)` | Puts every band's ring at the steady state for a rate: a city that has been this sick, and this well served, for ever. |
-| 317 | 42 | `public void seed(double cityRate, double withoutInfluenza, double generalCoverage, double childcareCoverage, double seniorCover...` | Seeds the chronic steady state, carrying the month's acute shares beside it. |
+| 241 | 5 | `public void setMedicine(MedicalRows rows, int month, double generalCoverage)` | The month's medical rows (R2f): what the city knows this month, and general care's coverage, the share of the long sick the breathing machine would serve. |
+| 248 | 1 | `public double getStaysFactor()` | General care's part of the recovery this month, as a share of today's (R2f). |
+| 250 | 1 | `public double getLongRecovery()` | The year-or-more slot's share of the month's recovery (R2f). |
+| 252 | 1 | `public double getDeathLift()` | How much more often the long sick die this month than deathChance() says (R2f). |
+| 255 | 1 | `public double recoveryAt(double generalCoverage)` | The share of the sick who get better this month at a coverage, with the month's stays factor: what a notice or a screen quotes (R2f). |
+| 258 | 1 | `public double servedRecovery()` | The share of the sick who get better this month with everybody served: RECOVERY_SERVED once the stays rows are known (R2f). |
+| 261 | 3 | `public double chanceThisMonth(AgeBand band)` | A band's monthly chance of dying once sick past two months, this month: deathChance() raised by the lift before M2. |
 
-### reading it (lines 360-430)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 363 | 5 | `public double share(AgeBand b)` | The share of a band that is sick, including this month's acute influenza. |
-| 370 | 6 | `public double pastTwoMonths(AgeBand b)` | The share of a band sick for more than two months - the ones who can die of it. |
-| 378 | 1 | `public double aYearOrMore(AgeBand b)` | The share of a band sick for a year or more. |
-| 381 | 3 | `public double slot(AgeBand b, int k)` | One slot of one band's ring, 0 to RING - 1. |
-| 385 | 1 | `public boolean isSeeded()` |  |
-| 386 | 1 | `public double getLastRecovery()` |  |
-| 389 | 6 | `public double peoplePastTwoMonths(PopulationCohorts cohorts)` | People sick past two months, across the city. |
-| 401 | 6 | `public double peopleInSlot(PopulationCohorts cohorts, int k)` | People sick k months, across the city (0.7.28): one slot of every band's ring in people, with acute cases in slot 0 - the Services screen's long-sick bars. |
-| 409 | 6 | `public double peopleSick(PopulationCohorts cohorts)` | People sick this month, across the city. |
-| 417 | 5 | `public void setLastDeaths(double[] byBand)` | Recorded by Game from what the pyramid actually booked. |
-| 423 | 1 | `public double getLastDeaths(AgeBand b)` |  |
-| 425 | 5 | `public double getLastDeaths()` |  |
-
-### saving (lines 431-519)
+### the month (lines 268-390)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 434 | 1 | `public double[] getAcuteShares()` | A copy of this month's acute shares, saved separately from the chronic ring. |
-| 437 | 9 | `public void restoreAcute(String[] bands, double[] saved)` | Missing on an older save means none; names follow the same saved bands as the ring. |
-| 448 | 10 | `public double[] getState()` | Every ring, the month's dead by band, the recovery, and whether it has been seeded. |
-| 460 | 3 | `public boolean restore(double[] saved)` | A ring saved before the band names travelled with it. |
-| 477 | 23 | `public boolean restore(String[] bands, double[] saved)` | Refused whole on a length mismatch. |
-| 502 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 508 | 7 | `public void reset()` |  |
-| 516 | 3 | `private static double clamp(double v)` |  |
+| 276 | 7 | `public double[] deathRates()` | Each band's extra monthly chance of dying, from the ring as it stands: the share sick past two months times their age's chance. |
+| 292 | 4 | `public void advanceMonth(double cityRate, double generalCoverage, double childcareCoverage, double seniorCoverage)` | Turns every band's ring a month and meets this month's rate. |
+| 298 | 33 | `public void advanceMonth(double cityRate, double withoutInfluenza, double generalCoverage, double childcareCoverage, double sen...` | The full rate remains visible; only the rate without influenza enters the ring. |
+| 342 | 4 | `public void seed(double cityRate, double generalCoverage, double childcareCoverage, double seniorCoverage)` | Puts every band's ring at the steady state for a rate: a city that has been this sick, and this well served, for ever. |
+| 348 | 42 | `public void seed(double cityRate, double withoutInfluenza, double generalCoverage, double childcareCoverage, double seniorCover...` | Seeds the chronic steady state, carrying the month's acute shares beside it. |
+
+### reading it (lines 391-461)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 394 | 5 | `public double share(AgeBand b)` | The share of a band that is sick, including this month's acute influenza. |
+| 401 | 6 | `public double pastTwoMonths(AgeBand b)` | The share of a band sick for more than two months - the ones who can die of it. |
+| 409 | 1 | `public double aYearOrMore(AgeBand b)` | The share of a band sick for a year or more. |
+| 412 | 3 | `public double slot(AgeBand b, int k)` | One slot of one band's ring, 0 to RING - 1. |
+| 416 | 1 | `public boolean isSeeded()` |  |
+| 417 | 1 | `public double getLastRecovery()` |  |
+| 420 | 6 | `public double peoplePastTwoMonths(PopulationCohorts cohorts)` | People sick past two months, across the city. |
+| 432 | 6 | `public double peopleInSlot(PopulationCohorts cohorts, int k)` | People sick k months, across the city (0.7.28): one slot of every band's ring in people, with acute cases in slot 0 - the Services screen's long-sick bars. |
+| 440 | 6 | `public double peopleSick(PopulationCohorts cohorts)` | People sick this month, across the city. |
+| 448 | 5 | `public void setLastDeaths(double[] byBand)` | Recorded by Game from what the pyramid actually booked. |
+| 454 | 1 | `public double getLastDeaths(AgeBand b)` |  |
+| 456 | 5 | `public double getLastDeaths()` |  |
+
+### saving (lines 462-550)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 465 | 1 | `public double[] getAcuteShares()` | A copy of this month's acute shares, saved separately from the chronic ring. |
+| 468 | 9 | `public void restoreAcute(String[] bands, double[] saved)` | Missing on an older save means none; names follow the same saved bands as the ring. |
+| 479 | 10 | `public double[] getState()` | Every ring, the month's dead by band, the recovery, and whether it has been seeded. |
+| 491 | 3 | `public boolean restore(double[] saved)` | A ring saved before the band names travelled with it. |
+| 508 | 23 | `public boolean restore(String[] bands, double[] saved)` | Refused whole on a length mismatch. |
+| 533 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 539 | 7 | `public void reset()` |  |
+| 547 | 3 | `private static double clamp(double v)` |  |
 

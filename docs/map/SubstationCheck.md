@@ -1,6 +1,6 @@
 # SubstationCheck.java - 375 lines · 24 methods · 3 constants · harnesses
 
-`ham/citybuildersim/SubstationCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SubstationCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5).
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
@@ -8,7 +8,7 @@
 
 **Uses:** [Game](Game.md) (25), [UtilitiesHandler](UtilitiesHandler.md) (24), [Substations](Substations.md) (22), [PowerDispatch](PowerDispatch.md) (16), [PriceLevel](PriceLevel.md) (10), [Good](Good.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildAdvice](BuildAdvice.md) (7), [IndustryViewCheck](IndustryViewCheck.md) (6), [GameFiles](GameFiles.md) (4), [BuildingManager](BuildingManager.md) (3), [JobType](JobType.md) (3), [SaveFileCheck](SaveFileCheck.md) (3), [PowerPriceCheck](PowerPriceCheck.md) (3), [LongPlaytest](LongPlaytest.md) (3), [IndustryView](IndustryView.md) (2), [RecipeCheck](RecipeCheck.md) (2), [FittingCheck](FittingCheck.md) (2), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (2), [BuildingType](BuildingType.md) (1), [BuildCard](BuildCard.md) (1), [AutoBuilder](AutoBuilder.md) (1), [CityCalendar](CityCalendar.md) (1), [RailCheck](RailCheck.md) (1)
 
-**Used by (14):** [CopperRefiningCheck](CopperRefiningCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HaulageCheck](HaulageCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [OrderDoorCheck](OrderDoorCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ScaleCheck](ScaleCheck.md)
+**Used by (15):** [CopperRefiningCheck](CopperRefiningCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HaulageCheck](HaulageCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [OrderDoorCheck](OrderDoorCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Constants
 

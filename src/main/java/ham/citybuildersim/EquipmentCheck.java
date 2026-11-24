@@ -439,6 +439,9 @@ public class EquipmentCheck {
 
     /* ============================ 3. the counts set the forms ============================ */
 
+    /** The points of section 3's held fitting: more than the counted town's builders work in a month, so it stays on site. */
+    static final double HELD_FITTING_POINTS = 1e6;
+
     static void sectionThree(Game g, Game c) {
         out.println("\n--- 3. the counts set the forms: the unfitted share of the draw, the land and the truck room, set where the month begins ---");
         Sector industry = g.getSectors().industry();
@@ -458,7 +461,15 @@ public class EquipmentCheck {
         check("fixture: some of the draw and some of the land is unfitted, not all", steam > 0 && steam < 1 && horses > 0 && horses < 1,
                 steam + " / " + horses);
         check("fixture: before the month the shares are 0", industry.getSteamShare() == 0 && farms.getHorseShare() == 0);
+        // THE MONTH ORDERS NO FITTING (PW2, 2026-11-23): an electric drive on these bakeries pays (EquipmentFit), so the month orders one.
+        // Until PW2 its job stayed on site, 6 points short, and the counts held; PW2's coal plant, cheaper and built over its 60 months, leaves the builders room to
+        // finish it, and an Industrial Bakery was fitted in the month observed. A sector fits one at a time, so a job of Industry's
+        // already on site, too long to finish, orders none: the counts hold because the fixture makes them hold.
+        g.getFittings().add(industrial.getBuilding().getId(), DRIVE, industry.key(), HELD_FITTING_POINTS);
+        check("fixture: Industry has a fitting on site, so the month orders none", g.getFittings().hasOnSite(industry.key()));
         play(g, 1);
+        // ...and the held job goes with the month, so it does not outlive the section: 4, 6 and 7 play this town on (REV-PW2b).
+        g.getFittings().clear();
         check("fixture: the observed month keeps the same unfitted bakery counts",
                 bakery.getQuantity() == 2 && industrial.getQuantity() == industrialAll
                         && bakery.getUnfitted(DRIVE) == 1 && industrial.getUnfitted(DRIVE) == industrialAll);

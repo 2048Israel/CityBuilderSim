@@ -696,7 +696,11 @@ public class GoldStandardCheck {
         Game g = CurrencyRegimeCheck.town("gd3-gold", Founding.defaults());
         ForeignAccounts fx = g.getForeignAccounts();
         play(g, 1);
-        quietly(() -> g.buyForeignCurrency(GOLD_LOCAL, "XAU"));
+        // ...all of it (PW2, 2026-11-23): buyForeignCurrency() spends at most the cash, and a town that had spent its cash bought a
+        // fraction of the gold and broke off Gold on its cover in 1908, which this section is not about.
+        double[] paid = new double[1];
+        quietly(() -> paid[0] = g.buyForeignCurrency(GOLD_LOCAL, "XAU"));
+        assertTrue("fixture: the treasury pays all of GOLD_LOCAL for the town's gold, out of its cash", paid[0] == GOLD_LOCAL);
         fx.forgetDealing();
         entryRate = fx.getRate();
         quietly(() -> g.setCurrencyRegime(ON_GOLD));

@@ -255,6 +255,8 @@ public class ScaleCheck {
         System.setOut(quiet);
         try {
             g.run();
+            // PW2: keepAhead()'s plan builds a Wind Farm when power is short, which a 1900 city knows only from its year; its research found it first.
+            EssentialWorksCheck.knowWind(g);
             g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
             g.setRolloverMode(LongPlaytest.ROLLOVER);
             g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);

@@ -304,8 +304,11 @@ public class Game {
         }
 
         buildingManager = new BuildingManager();
-        // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE).
-        buildingManager.setTemplateKnown(t -> foundedUnfitted() ? knows(t) : !ResearchCatalog.nearFuture(t.getSinceText()));
+        // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE), and since
+        // PW2 every power plant from the year it was first built, in every city (spec-electricity 2.9, Jerus's Q2, 2026-11-02: "the rec, later
+        // research will change this"): a 1900 city builds coal and hydro, as 1900 did.
+        buildingManager.setTemplateKnown(t -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
+                : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
         householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
         householdBalance.attachInvestmentRegister(equity, c -> getExchange().shortShares(c));
@@ -1226,6 +1229,8 @@ public class Game {
      */
     private void policyHearsTheMonth() {
         moneyHearsTheMonth();
+        // ...and the bank which capital rule stands (bankHearsTheRule()), before the month reads it.
+        bankHearsTheRule();
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
         // push (where the households are told their bills) comes after anything that reads it. The founding opens the pension at zero (OP1).
         households.setPensionPerSenior(economyManager.getTaxPolicy().pensionPerSenior());
@@ -1235,6 +1240,15 @@ public class Game {
         recipes.apply(this);
         // ...and the sectors the 1900 forms their unfitted buildings leave (R1; EquipmentForms): nothing in a city with none unfitted.
         equipmentForms.apply(this);
+    }
+
+    /**
+     * Tells the bank which capital rule stands (R6f, L8; Bank, BASEL III IS A DATE): the conservation buffer from the month L8 is known, the
+     * minimum alone before it; today's rule in a city founded the default way, which knows every row. Said where the month is heard and again
+     * at a load once the founding and the finds are back (loadGame()), since neither is saved with the bank.
+     */
+    private void bankHearsTheRule() {
+        bank.hearCapitalRule(!foundedUnfitted() || research.known("L8", month));
     }
 
     /** The recipes each template's buildings run, chosen in a city founded the 1900 way and saved there (R1c): nothing in any other. */
@@ -1573,8 +1587,20 @@ public class Game {
             labs.put(f, standing);
             labResearchers.put(f, Research.filledResearchers(f, standing * Research.LAB_POSTS, fill));
         }
-        if (foundedUnfitted()) research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
-        else research.idleMonth(researchers, labs, labResearchers);
+        if (foundedUnfitted()) {
+            research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
+            hearTheFinds();
+        } else research.idleMonth(researchers, labs, labResearchers);
+    }
+
+    /**
+     * What the month's finds change at once (R6f review, REV-R6f P1 and P2): a row found this month is known all of it (Research.known()),
+     * so the bank hears its capital rule again and the sickness its medicine, at the coverage the month noted. Without it a city that found
+     * L8 or a stays row ahead of history ran the old rule to the month's end, and a reload of that month read the new one.
+     */
+    private void hearTheFinds() {
+        bankHearsTheRule();
+        sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
     }
 
     /**
@@ -6418,12 +6444,14 @@ public class Game {
     }
 
     /**
-     * The fuel the plants burned, bought (PW1; UtilitiesHandler, THE MERIT ORDER), at the top of the month beside the railway's diesel:
-     * the struck book's fuel by good, drawn from the market for the city (Markets.draw(): the sellers' stock first, booked on their rows
-     * before the strike banks their ledgers, and the rest from the world), and the plants' variable upkeep, bought abroad at the
-     * exchange rate. What came to is told to the utility every month (zeros when there is nothing), which pays it out of its takings in
-     * the month's servicesNet, inside the audit's window; the coal from the world and the upkeep are told to the national accounts as
-     * imports. The local coal is a pool paying a pool (the treasury to Coal Mining), the sellers' sales the draw booked.
+     * The fuel the plants burned, bought (PW1; UtilitiesHandler, THE MERIT ORDER; PW2 for every fuel), at the top of the month beside
+     * the railway's diesel: the struck book's fuel by good - thermal coal, fuel oil, diesel and wood pellets, by the MWh their rows
+     * burned - drawn from the market for the city (Markets.draw(): the sellers' stock first, booked on their rows before the strike
+     * banks their ledgers, and the rest from the world), and the plants' variable upkeep, bought abroad at the exchange rate. What
+     * came to is told to the utility every month (zeros when there is nothing), which pays it out of its takings in the month's
+     * servicesNet, inside the audit's window; each fuel from the world and the upkeep are told to the national accounts as imports.
+     * The local fuel is a pool paying a pool (the treasury to its seller: Coal Mining, Refining, Wood Products), the sellers' sales
+     * the draw booked.
      */
     private void buyPowerFuel() {
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
@@ -10785,7 +10813,7 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE, NOT_KNOWN}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE, NOT_KNOWN, NO_WATER}
 
     /* =======================================================================
        HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
@@ -11214,6 +11242,19 @@ public class Game {
         return t == null || !t.isHydro() || hydroSlotsFree(t) >= n;
     }
 
+    /* ===== THE STEAM PLANTS' COOLING WATER (PW2, 2026-11-23; spec-electricity 2.3; BuildingsTemplate, THE COOLING WATER) =====
+
+       A coal, oil-fired or biomass plant (BuildingsTemplate.cooling()) is cooled once-through by the sea, a lake or a river
+       the city owns, and takes nothing from its water: an order for one in a city that owns none is refused NO_WATER, before
+       land and money, as a hydro station with no river is refused NO_RIVER. Any owned water serves, on any landmass: the
+       plant's own ground beside it is not surveyed (a later refinement, with a dry-cooled row for a city with none). A plant
+       standing is never stopped by water sold back: only new orders are held. */
+
+    /** Whether this order has water to cool it: true for every building but a steam plant, which needs owned sea, lake or river. */
+    public boolean hasCoolingFor(BuildingsTemplate t) {
+        return t == null || !t.cooling() || landManager.getSeaKm2() > 0 || landManager.getFreshKm2() > 0;
+    }
+
     /* ===== THE LONG BRIDGES' CROSSING (ET6, 2026-10-26; BridgeSurvey, BridgeWorks, Bridges) =====
 
        A Highway, Rail or Road Bridge is ordered toward a far landmass the card picks (chooseBridgeLandmass(): one order's,
@@ -11534,6 +11575,10 @@ public class Game {
             return false;   // no river with a drop to dam (HY1)
         }
 
+        if (!hasCoolingFor(template)) {
+            return false;   // no water to cool a steam plant (PW2)
+        }
+
         if (template.isBridge()) {
             return false;   // a long bridge is the city's order alone (ET6): its crossing is the card's pick
         }
@@ -11684,6 +11729,12 @@ public class Game {
             return BuildResult.NO_RIVER;
         }
 
+        // ...and the cooling water before land and money, for the same reason (PW2): a steam plant with no sea, lake or river owned.
+        if (!hasCoolingFor(template)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NO_WATER;
+        }
+
         // ...and the crossing before land and money (ET6): a bridge with no path across the water is not a funding problem.
         if (!hasBridgeFor(template, quantity)) {
             this.hasNewReceipt = false;
@@ -11821,7 +11872,7 @@ public class Game {
         return runAhead(run, null);
     }
 
-    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_BRIDGE (ET6), NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
+    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_WATER (PW2), NO_BRIDGE (ET6), NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
     public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Long> run) {
         BuildResult[] stop = { BuildResult.SUCCESS };
         runAhead(run, stop);
@@ -11857,6 +11908,7 @@ public class Game {
                         : !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasRiverFor(t, hydroAhead + n) ? BuildResult.NO_RIVER
+                        : !hasCoolingFor(t) ? BuildResult.NO_WATER
                         : !hasBridgeFor(t, n) ? BuildResult.NO_BRIDGE
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
                         : !(island != Landmasses.NO_LANDMASS
@@ -17972,6 +18024,8 @@ public class Game {
         // ...and the work the city sends the builders (OG1): what their next depot order is sized to.
         dataSave.setBuildersWork(businessInvestment.getSiteWorkOrdered());
         dataSave.setBuildersOwedAfterAdvance(businessInvestment.getOthersOwedAfterAdvance());
+        // ...and what a used car went for in the month, the households' cars' mark (PW2; DataSave.usedCarPrice).
+        dataSave.setUsedCarPrice(motoring.getUsedCarPrice());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
         // ...and the investors' last word on each sector (0.7.102, A22): words written inside the tick.
@@ -21934,6 +21988,9 @@ public class Game {
                 economyManager.setResearch(savedResearch.payroll, savedResearch.costs);
                 prizePaid = Double.isFinite(savedResearch.prizePaid) ? Math.max(0, savedResearch.prizePaid) : 0;
             }
+            // ...and the bank its capital rule again (R6f, L8), now the founding and the finds are back: policyHearsTheMonth(), far above, said it
+            // before either was, so a loaded 1900 city before 2013 would have held today's buffer until the next month's top.
+            bankHearsTheRule();
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
@@ -22421,6 +22478,10 @@ public class Game {
             if (!causesOfDeath.restore(restoredFlows.getCausesOfDeath())) causesOfDeath.reset();
             healthcare.restore(restoredFlows.getHealthcare());
             healthcare.restoreAccessState(restoredFlows.getHealthcareAccess());
+            // ...and the medicine the city knows (R2f; R6f review, REV-R6f P2), derived from the finds, the month and the coverage the month
+            // noted, all restored by now: unsaved, it read today's (1, 1, 0) until the next month's demographics, so a 1900 city before a
+            // stays row (M12 among them) showed a faster recovery loaded than it ran.
+            sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
 
             labourMarket.restore(restoredFlows.getLabour());
             wantedPosts.restore(restoredFlows.getWantedPosts());
@@ -22454,6 +22515,7 @@ public class Game {
             businessInvestment.restoreOperatingLossMonths(restoredFlows.getSectorOperatingLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             businessInvestment.restoreSiteWork(restoredFlows.getBuildersWork(), restoredFlows.getBuildersOwedAfterAdvance());
+            motoring.restoreUsedCarPrice(restoredFlows.getUsedCarPrice() == null ? 0 : restoredFlows.getUsedCarPrice());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
             // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which

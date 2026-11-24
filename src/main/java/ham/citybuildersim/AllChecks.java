@@ -38,7 +38,7 @@ public class AllChecks {
 
     /** Every harness: the gate and nightly selections together cover this registry. */
     static final String[] HARNESSES = {
-        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck", "PowerDispatchCheck", "SubstationCheck", "PowerPriceCheck", "WaterPowerCheck", "PowerViewCheck",
+        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck", "PowerDispatchCheck", "SubstationCheck", "PowerPriceCheck", "PowerPlantsCheck", "WaterPowerCheck", "PowerViewCheck",
         "EarthCheck", "WorldDataCheck", "NationsCheck", "WorldMeasuresCheck", "RankingsCheck", "WorldMarketCheck", "WorldMoneysCheck", "RealDollarCheck", "PartnersCheck", "VaultMoneysCheck", "PegAnchorCheck", "InterestAbroadCheck", "GoldPriceCheck", "GoldStandardCheck", "EarthTerrainCheck", "EarthFoundingCheck", "EarthDepositsCheck", "GlobeCheck",
         "PolicyCheck", "PolicyOpenCheck", "MoneyDatesCheck", "LandCheck", "SlopeCheck", "LandClassCheck", "LandmassCheck", "LandNationsCheck", "BridgeCheck", "RunWorksCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck", "HousingDoorCheck", "CreditCrunchCheck", "OrderDoorCheck",
         "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "GapOrderCheck", "ConstructionTrapCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "EssentialWorksCheck", "WorksFinanceCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",
@@ -52,7 +52,7 @@ public class AllChecks {
         "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "DriverlessTruckCheck", "FieldOperatorsCheck", "ElectrolyserCheck", "RecipeCheck", "HistoricalRecipeCheck", "HistoricalLicenceCheck", "LicenceFeesCheck", "PublicLicenceCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
         "ReplayCheck", "StaffingDrawCheck", "StaffingTieCheck", "OwnerCheck",
         "HousingInventoryCheck", "HousingChoiceCheck", "HousingMarketCheck",
-        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check"
+        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "ModernRowsCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check", "GroundSkipCheck"
     };
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */

@@ -39,11 +39,19 @@ public final class EssentialWorksCheck {
     static Game town(Path root, String name) {
         ChildcareCheck.quiet = quiet;
         Game g = ChildcareCheck.town(root, name);
+        // THE FIXTURE CAUSES IT (PW2): a 1900 city knows the wind farm from E16 (December 1980) since each plant is offered from its year
+        // (Jerus's Q2), and these towns weigh wind against coal; so their research found its code at the founding (Research.knownFrom(), R3's lever).
+        knowWind(g);
         quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g),
                 Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
         g.getAutoBuilder().setDebtLimit(0, null);
         g.getAutoBuilder().setCashAnyway(true, null);
         return g;
+    }
+
+    /** A city's research finds the Wind Farm's code (its since) at month 1, so a 1900 city knows it: the fixture's lever, since PW2 dates every plant. */
+    static void knowWind(Game g) {
+        g.getResearch().restore(Map.of(), Map.of(), Map.of(), Map.of(g.getBuildingManager().getTemplateByName("Wind Farm").getSinceText(), 1));
     }
 
     static AutoBuilder.Step step(Game g, BuildAdvice.Measure m) {
@@ -830,6 +838,15 @@ public final class EssentialWorksCheck {
         // (coal $193M against wind $285M on this town, the prevented loss $1.5M against $1.8M). The section is the timing, not that price:
         // the fixture's farm is built 1 / WIND_FIRM larger, firm at the nameplate the section was written against.
         wind.setProduction1(wind.getProduction1() / PowerDispatch.WIND_FIRM);
+        // THE FIXTURE CAUSES IT (PW2): the section is the wind's timing against pending coal; the Oil-Fired Plant opens between
+        // them (its 48 months to the wind's 36 and the coal's 60), and the pass ordered it. Dated past this town's year it is no
+        // candidate; the founding's own oil-fired plant stands and runs as before. And PW2's refigure (spec-electricity 2.3) made
+        // the coal plant cheaper a unit of power than the section was written against (776,914 of cash for 280,086, was 1,071,816
+        // for 280,000) and the wind farm dearer (25,023 for 6,854, was 23,240 for 8,100): firm at its nameplate the farm's plan was
+        // still 3% dearer than a second coal plant's here. The section is the timing, not that price, so the fixture's farm is
+        // also priced at half.
+        g.getBuildingManager().getTemplateByName("Oil-Fired Plant").setSince(2100);
+        wind.setCashCost(wind.getCashCost() / 2);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         AutoBuilder ab = g.getAutoBuilder();
         g.setCashForTest(1e14);

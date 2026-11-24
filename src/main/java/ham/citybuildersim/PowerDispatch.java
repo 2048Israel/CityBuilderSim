@@ -75,26 +75,56 @@ public final class PowerDispatch {
     public static final double WIND_FIRM = windFirm();
 
     private static double windFirm() {
+        return firm(WIND_BLOCK, WIND_SWING);
+    }
+
+    /** A variable row's least share of its average over the six half-blocks: its block's share x (1 - its swing), the calmest or darkest. */
+    private static double firm(double[] block, double[] swing) {
         double least = Double.POSITIVE_INFINITY;
-        for (int b = 0; b < BLOCKS; b++) least = Math.min(least, WIND_BLOCK[b] * (1 - WIND_SWING[b]));
+        for (int b = 0; b < BLOCKS; b++) least = Math.min(least, block[b] * (1 - swing[b]));
         return least;
     }
 
-    /** MJ of fuel energy in a unit of a good (HHV), NaN for a good the model does not yet burn (PW2 adds the rest). */
+    /** The sun's output over its mean in each block, base to peak [M: EIA-930 2025, the lower 48, the study's vblocks.py; spec 2.4; the prototype, line 96]. */
+    public static final double[] SOLAR_BLOCK = {0.680, 1.136, 2.054};
+
+    /** How far the sun swings inside a block, over the block's average, the first half sunny and the second dark (the wind's halves) [M: EIA-930 2025, the coefficient of variation of hourly solar output inside each load block, median of 12 regions: 1.32 / 1.06 / 0.66 base to peak, a swing past 1 held at 1; the prototype, line 102]. */
+    public static final double[] SOLAR_SWING = {1.0, 1.0, 0.66};
+
+    /** What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]: the advice counts no firm power from the sun until PW3 credits it by the peak hours. */
+    public static final double SOLAR_FIRM = firm(SOLAR_BLOCK, SOLAR_SWING);
+
+    /** Megajoules in a litre of fuel oil [D: 40 CFR 98 subpart C table C-1, residual fuel oil No. 6, 0.150 MMBtu a gallon: 150,000 x 1,055.056 J over 3.785412 L = 41.81 MJ; spec 2.5]. */
+    public static final double FUEL_OIL_MJ_PER_LITRE = 0.150e6 * MJ_PER_BTU / 3.785412;
+
+    /** Megajoules in a litre of diesel [D: 40 CFR 98 subpart C table C-1, distillate fuel oil No. 2, 0.138 MMBtu a gallon: 138,000 x 1,055.056 J over 3.785412 L = 38.46 MJ; spec 2.5]. */
+    public static final double DIESEL_MJ_PER_LITRE = 0.138e6 * MJ_PER_BTU / 3.785412;
+
+    /** Megajoules in a tonne of wood pellets [E: 40 CFR 98 table C-1's wood and wood residuals, 17.48 MMBtu a short ton dry, 20.33 GJ a tonne, at 8% moisture (x 0.92) = 18.70 GJ; no government figure for pellets was found; spec 2.5 and 6]. */
+    public static final double PELLETS_MJ_PER_TONNE = 17.48e6 * MJ_PER_BTU / 0.90718474 * 0.92;
+
+    /** MJ of fuel energy in a unit of a good (HHV, the unit the good is sold in), NaN for a good no row burns: thermal coal (PW1), fuel oil, diesel and wood pellets (PW2). */
     public static double heatContentMJ(Good g) {
-        return g == Good.THERMAL_COAL ? COAL_MJ_PER_TONNE : Double.NaN;
+        if (g == null) return Double.NaN;
+        return switch (g) {
+            case THERMAL_COAL -> COAL_MJ_PER_TONNE;
+            case FUEL_OIL -> FUEL_OIL_MJ_PER_LITRE;
+            case DIESEL -> DIESEL_MJ_PER_LITRE;
+            case WOOD_PELLETS -> PELLETS_MJ_PER_TONNE;
+            default -> Double.NaN;
+        };
     }
 
     /* ===== THE ROWS ===== */
 
-    /** How a row is dispatched: the works' surplus first, wind at its weather, hydro levelling the load, the rest by marginal cost. */
-    public enum Kind { MUST_RUN, WIND, HYDRO, FUELLED }
+    /** How a row is dispatched: the works' surplus first, wind and sun at their weather, hydro levelling the load, the rest by marginal cost. Saved by name (a record's kind): append only. */
+    public enum Kind { MUST_RUN, WIND, HYDRO, FUELLED, SOLAR }
 
     /** One row of the month's fleet: what it offers and, after dispatch(), what it ran. */
     public static final class Row {
         public final String name;
         public final Kind kind;
-        /** MUST_RUN and FUELLED: kW offered in every half-block; WIND: its average kW; HYDRO: its cap, kW. */
+        /** MUST_RUN and FUELLED: kW offered in every half-block; WIND and SOLAR: its average kW; HYDRO: its cap, kW. */
         public final double kw;
         /** HYDRO: its month of water, kWh; 0 for the rest. */
         public final double waterKwh;
@@ -122,6 +152,9 @@ public final class PowerDispatch {
 
         /** Wind at its average kW; the weather (windAt) shapes it. */
         public static Row wind(String name, double averageKw) { return new Row(name, Kind.WIND, averageKw, 0, 0, null, 0, 0); }
+
+        /** The sun at its average kW (PW2); the day and the weather (solarAt) shape it. */
+        public static Row solar(String name, double averageKw) { return new Row(name, Kind.SOLAR, averageKw, 0, 0, null, 0, 0); }
 
         /** Hydro under a cap with a month of water to spend where the load is highest. */
         public static Row hydro(String name, double capKw, double waterKwh, double upkeepPerKwh) {
@@ -182,6 +215,11 @@ public final class PowerDispatch {
         return WIND_BLOCK[s / 2] * (1 + (s % 2 == 0 ? 1 : -1) * WIND_SWING[s / 2]);
     }
 
+    /** The sun's output over its average in half-block s (PW2): its block's share, sunny in the first half and dark in the second. */
+    public static double solarAt(int s) {
+        return SOLAR_BLOCK[s / 2] * (1 + (s % 2 == 0 ? 1 : -1) * SOLAR_SWING[s / 2]);
+    }
+
     /* ===== THE MONTH ===== */
 
     private static double nonNegative(double x) { return Double.isFinite(x) && x > 0 ? x : 0; }
@@ -197,8 +235,8 @@ public final class PowerDispatch {
 
     /**
      * One month's merit order: drawKw the grid's draw (kW, before losses), season the calendar month's load over the year's mean, voll
-     * what a short half-block clears at. Each half-block, in this order: the must-run rows take the load, wind runs at its weather
-     * (what the half-block cannot take is curtailed), hydro levels the load with its month of water, then the fuelled rows by
+     * what a short half-block clears at. Each half-block, in this order: the must-run rows take the load, wind and then the sun run at
+     * their weather (what the half-block cannot take is curtailed), hydro levels the load with its month of water, then the fuelled rows by
      * marginal cost, cheapest first, each up to its kW. A half-block clears at the marginal cost of the last fuelled row it ran
      * (0 if none), or at voll when it is left short. Sets every row's gen, kwh, fuelUnits and earned.
      */
@@ -218,14 +256,15 @@ public final class PowerDispatch {
         }
         for (Row r : rows) { Arrays.fill(r.gen, 0); r.kwh = r.fuelUnits = r.earned = 0; }
 
-        // 1. The works' surplus, then 2. the wind: what a half-block cannot take is curtailed.
-        for (int pass = 0; pass < 2; pass++) {
-            Kind steady = pass == 0 ? Kind.MUST_RUN : Kind.WIND;
+        // 1. The works' surplus, then 2. the wind, then the sun (PW2): what a half-block cannot take is curtailed.
+        for (int pass = 0; pass < 3; pass++) {
+            Kind steady = pass == 0 ? Kind.MUST_RUN : pass == 1 ? Kind.WIND : Kind.SOLAR;
             for (Row r : rows) {
                 if (r.kind != steady) continue;
                 observedOrder.add(rows.indexOf(r));
                 for (int s = 0; s < HALVES; s++) {
-                    double out = steady == Kind.WIND ? r.kw * windAt(s) : r.kw, take = Math.min(out, residual[s]);
+                    double out = steady == Kind.WIND ? r.kw * windAt(s) : steady == Kind.SOLAR ? r.kw * solarAt(s) : r.kw;
+                    double take = Math.min(out, residual[s]);
                     r.gen[s] = take; residual[s] -= take; m.curtailedKwh += (out - take) * halfHours(s);
                 }
             }

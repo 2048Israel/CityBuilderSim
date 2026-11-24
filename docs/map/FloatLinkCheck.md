@@ -1,6 +1,6 @@
 # FloatLinkCheck.java - 2,050 lines · 70 methods · 22 constants · harnesses
 
-`ham/citybuildersim/FloatLinkCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FloatLinkCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md
 > sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's policy rate
