@@ -9087,6 +9087,15 @@ public class BuildingManager {
         if (stack != null && amount > 0) control.runFor(template.getId()).billed += amount;
     }
 
+    /**
+     * The points an order of {@code payer}'s put on site (FC2b), booked after its contract (bookContract()): what a payer's
+     * share of a shared site is read by (BuildingsStacks.homePointsShare()).
+     */
+    public void noteContractPoints(BuildingsTemplate t, String payer, double points) {
+        BuildingsStacks stack = t == null ? null : getStack(t);
+        if (stack != null) stack.addPoints(payer, points);
+    }
+
     /** One payer's contract on one template's sites, as the save carries it (0.7.19). */
     public static final class ContractRecord {
         public int templateId;
@@ -9095,6 +9104,10 @@ public class BuildingManager {
         /** The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. */
         public Double recovered;
         public double value, units, allowance;
+        /** The points of work its orders put on site still owed (FC2b); absent from an older save, which reads none. */
+        public double points;
+        /** Whether it is a contract handed to the foreign crews (FC2b; BuildingsStacks.getAbroadContracts()), not a home one. */
+        public boolean abroad;
     }
 
     /** Every payer's contract on site, for the save. */
@@ -9110,6 +9123,21 @@ public class BuildingManager {
                 r.value = c.getValue();
                 r.units = c.getUnits();
                 r.allowance = c.getAllowance();
+                r.points = c.getPoints();
+                out.add(r);
+            }
+            // ...and the ones handed to the foreign crews (FC2b), marked.
+            for (BuildingsStacks.Contract c : stack.getAbroadContracts()) {
+                ContractRecord r = new ContractRecord();
+                r.templateId = stack.getBuilding().getId();
+                r.payer = c.payer;
+                r.creditable = c.creditable;
+                r.recovered = c.getRecovered();
+                r.value = c.getValue();
+                r.units = c.getUnits();
+                r.allowance = c.getAllowance();
+                r.points = c.getPoints();
+                r.abroad = true;
                 out.add(r);
             }
         }
@@ -9124,7 +9152,7 @@ public class BuildingManager {
             BuildingsTemplate t = getTemplate(r.templateId);
             BuildingsStacks stack = t == null ? null : getStack(t);
             double recovered = r.recovered != null ? r.recovered : (r.creditable ? 1 : 0);
-            if (stack != null) stack.restoreContract(r.payer, recovered, r.value, r.units, r.allowance);
+            if (stack != null) stack.restoreContract(r.payer, recovered, r.value, r.units, r.allowance, r.points, r.abroad);
         }
     }
 

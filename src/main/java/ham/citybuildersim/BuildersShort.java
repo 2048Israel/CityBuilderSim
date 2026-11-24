@@ -295,4 +295,77 @@ public final class BuildersShort {
     public static double multiplier(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare) {
         return 1 + meanShare(fromMonths, stepMonths, n, thresholdMonths, foreignShare);
     }
+
+    /* ===== THE CHOICE TO FINISH SOONER (FC2b, 2026-11-24) =====
+       The arithmetic a payer weighs a handover by: what a site's work handed to the foreign crews costs over the city's
+       own, and what its coming sooner is worth. WHY. Jerus, 2026-11-22: "allowing businesses to even decide to pay more
+       to finish sooner (for example, something finished in 20 months is better than something finished in 100 months,
+       cause thats 80 more months of paying interest...)" and "also let the city itself do it, like per building, aka for
+       example if roads are causing the issues then you could pay more to get just roads fixed". So the crews'
+       month on a site handed them (sitePace()), the months it takes them (monthsAbroad()), and what the months saved are
+       worth a payer, discounted at its own rate (broughtForward(), interestSaved()). Pure arithmetic: the payer reads
+       it, the harnesses call it and never copy it. */
+
+    /**
+     * The foreign crews' month on one site handed them, in points: the site's points over {@code thresholdMonths}
+     * (FC2's own rule for his book: the work abroad waits no longer than the work at home at the threshold), never under
+     * {@code floorPoints} (the builders' largest depot, FC1's floor, as foreignMonth()), never over the points (done in
+     * one month) and never over {@code capPoints} when that is finite and over nothing (PW2's build-time cap). Nothing
+     * for no points; a threshold of nothing, under or endless reads as one month, the whole site.
+     */
+    public static double sitePace(double points, double thresholdMonths, double floorPoints, double capPoints) {
+        if (!(points > 0)) return 0;
+        double month = thresholdMonths > 0 && Double.isFinite(thresholdMonths) ? points / thresholdMonths : points;
+        double floor = Double.isNaN(floorPoints) ? 0 : Math.max(0, floorPoints);
+        double pace = Math.min(points, Math.max(month, floor));
+        if (capPoints > 0 && Double.isFinite(capPoints)) pace = Math.min(pace, capPoints);
+        return pace;
+    }
+
+    /**
+     * The whole months the foreign crews take to build {@code points} at {@code pace} a month: the ceiling of their
+     * quotient (a ten-billionth over is not another month), at least one for any points. Nothing for no points;
+     * endless for no pace.
+     */
+    public static double monthsAbroad(double points, double pace) {
+        if (!(points > 0)) return 0;
+        if (!(pace > 0)) return Double.POSITIVE_INFINITY;
+        return Math.max(1, Math.ceil(points / pace - 1e-9));
+    }
+
+    /**
+     * What a stream of {@code perMonth} from the month it starts is worth today when its start comes forward from
+     * {@code monthsHome} to {@code monthsAbroad}, discounted month by month at {@code monthlyRate} (BA1's carry
+     * (1 + i)^W turned round): perMonth * ((1 + i)^-Wa - (1 + i)^-Wh) / i, the stream running on after either start.
+     * Without a rate (zero, under or NaN) the months themselves, perMonth * (Wh - Wa). Nothing when the start does not
+     * come forward (Wh at or under Wa) or either month is NaN, or perMonth is. A home start endless reads (1 + i)^-Wh
+     * as nothing (the stream never starts at home): perMonth / i discounted to Wa, and without a rate an endless sum
+     * of the sign of perMonth. Linear in perMonth. Written as exp and expm1 of the logarithm, the same figure to the
+     * last digits and kept exact for a rate near nothing.
+     */
+    public static double broughtForward(double perMonth, double monthlyRate, double monthsAbroad, double monthsHome) {
+        if (Double.isNaN(perMonth) || Double.isNaN(monthsAbroad) || Double.isNaN(monthsHome)) return 0;
+        if (!(monthsHome > monthsAbroad)) return 0;
+        if (!(monthlyRate > 0)) {
+            if (Double.isInfinite(monthsHome)) return perMonth > 0 ? Double.POSITIVE_INFINITY : (perMonth < 0 ? Double.NEGATIVE_INFINITY : 0);
+            return perMonth * (monthsHome - monthsAbroad);
+        }
+        double log = Math.log1p(monthlyRate);
+        // (1+i)^-Wa - (1+i)^-Wh = (1+i)^-Wa * (1 - (1+i)^-(Wh-Wa)); the second factor is 1 for an endless Wh.
+        double span = -Math.expm1(-(monthsHome - monthsAbroad) * log);
+        return perMonth * (Math.exp(-monthsAbroad * log) * span) / monthlyRate;
+    }
+
+    /**
+     * The interest on the months saved: broughtForward(cost * i, i, Wa, Wh) - the interest a cost carries a month while
+     * the site stands unbuilt, for each month it comes sooner, discounted as broughtForward() does. Nothing without a
+     * rate. A business's earnings pay that interest from the site's opening, so its whole saving is
+     * broughtForward(earns): interestSaved(cost) plus broughtForward(earns - cost * i) (the earnings over that
+     * interest) - the two parts, with no double count. The city's site earns no money, so for the city the interest
+     * saved alone.
+     */
+    public static double interestSaved(double cost, double monthlyRate, double monthsAbroad, double monthsHome) {
+        if (!(monthlyRate > 0)) return 0;
+        return broughtForward(cost * monthlyRate, monthlyRate, monthsAbroad, monthsHome);
+    }
 }

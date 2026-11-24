@@ -366,6 +366,33 @@ public final class ConstructionControl {
         return t != null && PAVE_FROM.equals(t.getName());
     }
 
+    /* =====================================================================
+       G. ABROAD: A SITE HANDED TO THE FOREIGN CREWS (FC2b, 2026-11-24)
+
+       A payer - the city, from the Construction screen, or a business by
+       its own test - hands its share of one site's remaining work to the
+       foreign crews at their price. They build it on the site at the pace
+       struck then, apart from the city's crews' rule and from the pooled
+       book of FC2; the site stays one stack, its buildings finishing front
+       first as ever, and its work splits in two, the home part and the
+       abroad part (BuildingsStacks.advanceConstruction()), each payer's
+       contract earned by its own part. WHY. Jerus, 2026-11-22: "allowing
+       businesses to even decide to pay more to finish sooner (for example,
+       something finished in 20 months is better than something finished in
+       100 months, cause thats 80 more months of paying interest...)", and
+       "also let the city itself do it, like per building, aka for example
+       if roads are causing the issues then you could pay more to get just
+       roads fixed". The arithmetic a payer weighs it by is BuildersShort,
+       THE CHOICE TO FINISH SOONER.
+
+       THE RECORD holds the part's work still owed and its terms - the
+       pace, the price a point is billed at, what the payer paid over and
+       the months it saved - and is saved whole with the rest of the state;
+       an older save has none. One record a site while it stands: it ends
+       when the part is built or the site empties. A site with a record is
+       not the city's to reorder, rush or stop (BuildingsStacks.isCitysOwn()).
+       ===================================================================== */
+
     /* ---------------------------------------------------------------------
        THE STATE, as the save carries it
        --------------------------------------------------------------------- */
@@ -539,6 +566,49 @@ public final class ConstructionControl {
         }
     }
 
+    /**
+     * G. A site's work handed to the foreign crews (FC2b): the part still owed, built on the site at the pace struck at
+     * the handover, and the terms it was struck on. One a site while it stands (the key is the stack's).
+     */
+    public static final class Abroad implements Cloneable {
+        /** The site's key: "B" and its template's id (keyOf()). */
+        public String key;
+        public int templateId;
+        public String building;
+        /** Who handed it over: "City", or a sector's key (BuildingsStacks.Contract). */
+        public String payer;
+        /** The month it was handed over. */
+        public int month;
+        /** The points of work handed over. */
+        public double points;
+        /** ...and the points still owed abroad. */
+        public double owed;
+        /** The units of material the part still draws. */
+        public double materials;
+        /** The foreign crews' month on it, in points a month, struck at the handover (BuildersShort.sitePace()). */
+        public double pace;
+        /** What the crews bill a point, in the city's money. */
+        public double pricePerPoint;
+        /** The extra the payer paid to hand it over, with the builders' tax in it. */
+        public double paid;
+        /** The months the part would have taken at home, and the months it takes abroad, at the handover. */
+        public double monthsHome;
+        public double monthsAbroad;
+        /** What the months saved are worth the payer in interest (BuildersShort.interestSaved()), and in the earnings over it (broughtForward() less that). */
+        public double interestSaved;
+        public double earningsForward;
+        public Abroad() { }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Abroad copy() {
+            try {
+                return (Abroad) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
+    }
+
     /** Everything above, under one key in the save. */
     public static final class State implements Cloneable {
         public boolean prioritySet;
@@ -552,6 +622,8 @@ public final class ConstructionControl {
         public java.util.List<Run> runs = new java.util.ArrayList<>();
         /** F. The pavings on the Paved Road site (0.7.70); none in an older save. */
         public java.util.List<Paving> paving = new java.util.ArrayList<>();
+        /** G. The sites handed to the foreign crews (FC2b); none in an older save. */
+        public java.util.List<Abroad> abroad = new java.util.ArrayList<>();
 
         /**
          * A copy that shares nothing with this state (UP1, 2026-10-22): toState()
@@ -570,6 +642,7 @@ public final class ConstructionControl {
                 c.expropriations = SaveCopy.list(expropriations, Expropriation::copy);
                 c.runs = SaveCopy.list(runs, Run::copy);
                 c.paving = SaveCopy.list(paving, Paving::copy);
+                c.abroad = SaveCopy.list(abroad, Abroad::copy);
                 return c;
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError(e);
@@ -593,6 +666,7 @@ public final class ConstructionControl {
         if (state.expropriations == null) state.expropriations = new java.util.ArrayList<>();
         if (state.runs == null) state.runs = new java.util.ArrayList<>();
         if (state.paving == null) state.paving = new java.util.ArrayList<>();
+        if (state.abroad == null) state.abroad = new java.util.ArrayList<>();
         if (state.nextDemolition < 1) state.nextDemolition = 1;
     }
 
@@ -843,6 +917,48 @@ public final class ConstructionControl {
         return paved;
     }
 
+    /* ----- G. the sites handed abroad ----- */
+
+    /** A site's record of work handed to the foreign crews, null if none (FC2b). */
+    public Abroad abroadOf(String key) {
+        for (Abroad a : state.abroad) if (a.key != null && a.key.equals(key)) return a;
+        return null;
+    }
+
+    /** Every site handed to the foreign crews, in the order they went: an unmodifiable view. */
+    public java.util.List<Abroad> abroadSites() { return java.util.Collections.unmodifiableList(state.abroad); }
+
+    /** Records a handover, replacing the site's own if it has one: a site has one while it stands. */
+    void addAbroad(Abroad a) {
+        state.abroad.removeIf(o -> o.key != null && o.key.equals(a.key));
+        state.abroad.add(a);
+    }
+
+    /** The part is built, or the site is empty: its record ends. */
+    void endAbroad(String key) {
+        state.abroad.removeIf(o -> o.key != null && o.key.equals(key));
+    }
+
+    /** The points still owed abroad on a site: nothing for a site with no record. */
+    public double abroadOwedOf(String key) {
+        Abroad a = abroadOf(key);
+        return a == null ? 0 : a.owed;
+    }
+
+    /** ...and on every site. */
+    public double abroadOwedTotal() {
+        double sum = 0;
+        for (Abroad a : state.abroad) sum += a.owed;
+        return sum;
+    }
+
+    /** The foreign crews' month on the sites handed them: the least of what each owes and its pace, summed. */
+    public double abroadMonth() {
+        double sum = 0;
+        for (Abroad a : state.abroad) sum += Math.max(0, Math.min(a.owed, a.pace));
+        return sum;
+    }
+
     /* ----- each stack's run ----- */
 
     /** A stack's run, null if none is on record. */
@@ -875,6 +991,9 @@ public final class ConstructionControl {
             e.buildingValue *= scale; e.ground *= scale; e.businessLoss *= scale;
         }
         for (Run r : state.runs) r.billed *= scale;
+        for (Abroad a : state.abroad) {
+            a.pricePerPoint *= scale; a.paid *= scale; a.interestSaved *= scale; a.earningsForward *= scale;
+        }
     }
 
     /* ---------------------------------------------------------------------

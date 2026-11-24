@@ -10404,6 +10404,8 @@ public class Game {
         double fromYard = deliverYardToSites(t, q.materialsNeeded);
         double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
         buildingManager.bookContract(t, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+        buildingManager.noteContractPoints(t, "City", pointsLeft);
         cityCapitalSpending += paid;
         getSectors().construction().bill(paid, pointsLeft);
         decisions.record(DecisionLog.CONSTRUCTION, "Restarted " + t.getName() + " for " + DecisionLog.money(q.total));
@@ -10500,6 +10502,8 @@ public class Game {
         drawBitumen(q.bitumenNeeded);
         double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
         buildingManager.bookContract(to, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+        buildingManager.noteContractPoints(to, "City", to.getConstructionPoints() * (double) n);
         cityCapitalSpending += paid;
         getSectors().construction().bill(paid, to.getConstructionPoints() * (double) n);
         buildingManager.getControl().addPaving(n, ahead, month);
@@ -10870,6 +10874,8 @@ public class Game {
                 getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
                 // ...and the site's claim on his book, what a cancel takes off it (REV-FC2, the second review).
                 buildingManager.noteAbroad(selected, billedPoints, quote.abroadPoints);
+                // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+                buildingManager.noteContractPoints(selected, "City", billedPoints);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -11745,6 +11751,8 @@ public class Game {
         // point for them (REV-FC2's P1): the builders bill on to the crews what the payer paid for that work.
         getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
         buildingManager.noteAbroad(template, billedPoints, quote.abroadPoints);
+        // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+        buildingManager.noteContractPoints(template, payer.getName(), billedPoints);
 
         return true;
     }
