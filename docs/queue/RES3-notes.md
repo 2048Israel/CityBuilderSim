@@ -2947,3 +2947,30 @@ for the two catalogue states, and 50.651/41.547 ms after growth to
 H/T/A are 82/32/341 and 62/32/178. Larger profiles follow the additional
 paid-service/continuation steps; the per-form tables precede them. These
 are loaded-laptop observations, not a nightly speed verdict.
+
+The merged InvestCheck initially returns 4 with two assertions: one known
+HT1-H rebate straddle premise, and one new four-plot fixture failure.
+The planner has selected the 1,248-capacity Large apartment block, id 163,
+with 100,000 square feet per plot. The literal 2,500 gap needs three
+projects; 400,000 free feet allow four, so the model correctly returns
+min(3,4)=3. Its independent whole-gap law already passes. ★ Cause the
+stated binding-land condition with five times the selected model
+capacity, retain expected four and the same land limit, and assert the
+strictly larger demand premise. Keep the existing literal-2,500 whole-gap,
+two-project and zero-land laws. This tiny fixture repair adds no FS11
+known-red row, pins no selected form and changes no model/order-size rule.
+The named check is rerun because its input changed.
+
+The other Invest line remains the recorded HT1-H premise: the builder
+index moves 1.139413 to 1, but both chosen quotes still have zero rebate.
+Actual restored-contract rebate equals the rule's zero and all independent
+caused rebate-band laws pass. No refund, price, conservation or loan law
+is changed to make that missing straddle green. SaveFileCheck passes on
+the final model before the remaining native/reload/finance matrix.
+
+The corrected InvestCheck rerun returns 3: the independent larger-demand
+premise and expected four-plot result pass; only the recorded HT1-H rebate
+premise remains. The original two failures/exit 4 are archived separately.
+The helper's outer PowerShell initially normalizes nested nonzero statuses
+to 1; the directly captured batch exit.txt (3) is authoritative and the
+outer wrapper is corrected without rerunning unchanged laws for labels.

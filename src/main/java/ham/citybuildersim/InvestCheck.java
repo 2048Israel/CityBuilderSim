@@ -495,7 +495,9 @@ public class InvestCheck {
         // ...and cut by the plots: the ground for four is four, however big the gap.
         BusinessInvestment fourPlots = new BusinessInvestment(hb, housed.getEconomyManager());
         fourPlots.setLandAvailable(picked.getLandSqFt() * 4, 0);
-        check("the ground for four plots -> four, however big the gap", fourPlots.orderSize(2500, picked.getCapacity(), picked), 4);
+        double moreThanFour = 5.0 * picked.getCapacity();
+        assertTrue("fixture: the gap needs more than four of the chosen building",moreThanFour>4.0*picked.getCapacity());
+        check("the ground for four plots -> four, however big the gap", fourPlots.orderSize(moreThanFour, picked.getCapacity(), picked), 4);
         check("...and the gap's own when it is under the plots", fourPlots.orderSize(picked.getCapacity() * 2.0, picked.getCapacity(), picked), 2);
         fourPlots.setLandAvailable(0, 0);
         check("...and none where there is no ground at all", fourPlots.orderSize(2500, picked.getCapacity(), picked), 0);
