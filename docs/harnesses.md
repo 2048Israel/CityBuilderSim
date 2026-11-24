@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 28,958 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 28,959 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -27450,7 +27450,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L406 a redenomination scales the book's prices and the fuel paid
   - L410 seedConstants re-strikes the wires: the dial over the unit
 
-## PowerPlanCheck.java - 57 labelled assertions
+## PowerPlanCheck.java - 58 labelled assertions
 
 > The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities.
 > 
@@ -27466,81 +27466,82 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L159 1. the south has its own season; the sun's year and months by place and rack; the tracker is E25's**
-  - L170 a city south of the equator reads each calendar month six on; the equator and the north as they are
-  - L172 ...so its load, wind, water and sun in January are the north's in July at the same latitude
-  - L180 a fixed rack yields less than a tracker in every band, 0 to 70 degrees
-  - L181 a farm far from the equator yields less than one near the tropics, fixed or tracked (65 against 25 degrees)
-  - L184 each place's twelve months average its year, fixed and tracked (the tables' rounding)
-  - L189 a generated world's farm (no latitude) is the tracked US fleet's year, its fixed rack SOLAR_US_FIXED of it
-  - L194 the wind's months average its year
-  - L200 a 1900 town's solar farms stand on fixed racks; once research finds E25 they track (
-- **L206 2. a variable row's credit falls with its share, a straight line to the floor; a fuelled row's is all of it**
-  - L208 no variable row standing keeps all of its peak hours
-  - L209 at CREDIT_HALF of the energy it keeps CREDIT_FLOOR, and the floor past it
-  - L211 halfway there it keeps halfway between (a straight line)
-  - L213 a share it cannot read (NaN) keeps all of it
-  - L214 a wind farm's credit is its peak hours' output times the fall
-  - L217 a solar farm's at the US fleet's place, tracked, is its peak hours' output
-  - L219 ...more firm near the tropics than far from them, and the same either side of the equator
-- **L226 3. the firm supply: the works' own power, a wind farm added, a plant from its opening**
-  - L230 a fuelled row's template credit is all of it; a wind farm's the windCredit at no share
-  - L246 fixture: a coal plant is going up, its first unit quoted to open
-  - L249 a plant still going up is open by its opening and not before
-  - L251 ...so it adds nothing to today's firm supply, and its firm kW from its opening
-- **L258 4. the reserve test: short at the base, coal; short at the peak alone, a peaker**
-  - L263 fixture: power is short at the base, its firm supply under the base block's draw (slice
-  - L267 short at the base the reserve test orders coal (
-  - L268 ...counted once as a reserve order and never as a spread
-  - L282 short at the peak the reserve test orders a peaker, not coal (
-  - L284 ...counted once as a reserve order
-  - L286 the slices' hours: the base all of the year's, the peak its peak block's
-- **L293 5. wind alone never passes the reserve test**
-  - L296 fixture: power is short
-  - L314 knowing a firm row as well, the same city has a reserve order that closes it, the firm row (
-  - L317 at CREDIT_HALF of the energy or more a wind farm counts CREDIT_FLOOR of its peak hours
-- **L344 6. the spread: wind where the fuelled rows run dear, none where they run cheap**
-  - L350 fixture:
-  - L359 with diesel running, one more wind farm saves the year more than it costs (
-  - L361 ...so the spread orders wind (
-  - L365 with coal running, no wind farm saves the year what it costs (
-  - L366 ...so nothing is ordered (
-- **L407 6a. the reserve test credits a farm: no firm row fills FIRST_WORK_SHARE of its order, so the farm that closes the gap is the order**
-- **L438 6a(ii). the farms that close a gap a firm row fills the share of are weighed against the screening curve's firm pick**
-- **L490 6b. the spread counts a plant on site from its opening**
-  - L504 fixture: with nothing on site the farm saves the year more than it costs (
-- **L532 7. a coal plant's ground, assembled past the one listing**
-  - L541 fixture: the town owns no ground spare, and its listing holds less than
-  - L547 past ASSEMBLE_MOST offers no ground is planned (
-  - L556 fixture: the reserve test asks for at least
-  - L564 the automatic path orders coal on ground it assembles past the listing (
-- **L599 7a. dearer replenishment: the ground past the listing is quoted at what it costs**
-  - L604 fixture: the reserve test asks for at least
-  - L619 fixture: ground is quoted for
-  - L628 fixture: the order of
-- **L655 7b. an assembly that cannot cover the order**
-  - L666 fixture: the reserve test asks for coal (
-- **L681 7c. an order the builders would refuse**
-  - L686 fixture: the reserve test asks for coal (
-  - L689 fixture: ground can be had for one coal plant, past what the town owns spare
-  - L692 fixture: the builders refuse the plant for no ground and no money (
-- **L723 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
-  - L747 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
-  - L758 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
-  - L768 with the seasonal peak short at the plant's opening it orders (
-  - L781 a gap under the share with the seasonal peak short at the plant's opening orders it (
-- **L812 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
-  - L835 a city drawing nothing lacks no power
-  - L847 fixture: every essential service but Power has its operating capacity
-- **L882 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
-  - L912 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
-  - L915 the peak block unserved, the roads wait to preserve Power's quoted first completion (
-  - L927 fixture: every essential service but General care has its operating capacity
-- **L950 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
-  - L977 the peak block served, Power is not lacked and its order waits to preserve
-  - L980 the peak block unserved, Power is lacked and its order is placed whatever it does to
-- **L1002 9. how often each fires**
-  - L1005 the reserve test and the spread each fired here
+- **L160 1. the south has its own season; the sun's year and months by place and rack; the tracker is E25's**
+  - L171 a city south of the equator reads each calendar month six on; the equator and the north as they are
+  - L173 ...so its load, wind, water and sun in January are the north's in July at the same latitude
+  - L181 a fixed rack yields less than a tracker in every band, 0 to 70 degrees
+  - L182 a farm far from the equator yields less than one near the tropics, fixed or tracked (65 against 25 degrees)
+  - L185 each place's twelve months average its year, fixed and tracked (the tables' rounding)
+  - L190 a generated world's farm (no latitude) is the tracked US fleet's year, its fixed rack SOLAR_US_FIXED of it
+  - L195 the wind's months average its year
+  - L201 a 1900 town's solar farms stand on fixed racks; once research finds E25 they track (
+- **L207 2. a variable row's credit falls with its share, a straight line to the floor; a fuelled row's is all of it**
+  - L209 no variable row standing keeps all of its peak hours
+  - L210 at CREDIT_HALF of the energy it keeps CREDIT_FLOOR, and the floor past it
+  - L212 halfway there it keeps halfway between (a straight line)
+  - L214 a share it cannot read (NaN) keeps all of it
+  - L215 a wind farm's credit is its peak hours' output times the fall
+  - L218 a solar farm's at the US fleet's place, tracked, is its peak hours' output
+  - L220 ...more firm near the tropics than far from them, and the same either side of the equator
+- **L227 3. the firm supply: the works' own power, a wind farm added, a plant from its opening**
+  - L231 a fuelled row's template credit is all of it; a wind farm's the windCredit at no share
+  - L247 fixture: a coal plant is going up, its first unit quoted to open
+  - L250 a plant still going up is open by its opening and not before
+  - L252 ...so it adds nothing to today's firm supply, and its firm kW from its opening
+- **L259 4. the reserve test: short at the base, coal; short at the peak alone, a peaker**
+  - L264 fixture: power is short at the base, its firm supply under the base block's draw (slice
+  - L268 short at the base the reserve test orders coal (
+  - L269 ...counted once as a reserve order and never as a spread
+  - L283 short at the peak the reserve test orders a peaker, not coal (
+  - L285 ...counted once as a reserve order
+  - L287 the slices' hours: the base all of the year's, the peak its peak block's
+- **L294 5. wind alone never passes the reserve test**
+  - L297 fixture: power is short
+  - L315 knowing a firm row as well, the same city has a reserve order that closes it, the firm row (
+  - L318 at CREDIT_HALF of the energy or more a wind farm counts CREDIT_FLOOR of its peak hours
+- **L345 6. the spread: wind where the fuelled rows run dear, none where they run cheap**
+  - L351 fixture:
+  - L360 with diesel running, one more wind farm saves the year more than it costs (
+  - L362 ...so the spread orders wind (
+  - L366 with coal running, no wind farm saves the year what it costs (
+  - L367 ...so nothing is ordered (
+- **L408 6a. the reserve test credits a farm: no firm row fills FIRST_WORK_SHARE of its order, so the farm that closes the gap is the order**
+- **L439 6a(ii). the farms that close a gap a firm row fills the share of are weighed against the screening curve's firm pick**
+- **L491 6b. the spread counts a plant on site from its opening**
+  - L505 fixture: with nothing on site the farm saves the year more than it costs (
+- **L533 7. a coal plant's ground, assembled past the one listing**
+  - L542 fixture: the town owns no ground spare, and its listing holds less than
+  - L548 past ASSEMBLE_MOST offers no ground is planned (
+  - L557 fixture: the reserve test asks for at least
+  - L565 the automatic path orders coal on ground it assembles past the listing (
+- **L600 7a. dearer replenishment: the ground past the listing is quoted at what it costs**
+  - L605 fixture: the reserve test asks for at least
+  - L620 fixture: ground is quoted for
+  - L629 fixture: the order of
+- **L656 7b. an assembly that cannot cover the order**
+  - L667 fixture: the reserve test asks for coal (
+- **L682 7c. an order the builders would refuse**
+  - L687 fixture: the reserve test asks for coal (
+  - L690 fixture: ground can be had for one coal plant, past what the town owns spare
+  - L693 fixture: the builders refuse the plant for no ground and no money (
+- **L727 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
+  - L751 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
+  - L762 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
+  - L772 with the seasonal peak short at the plant's opening it orders (
+  - L791 a seasonal gap under the share, projected to the plant's opening, that the month does not lack: the power suggestion orders nothing (
+  - L808 a gap under the share with the seasonal peak short at the plant's opening and in the month orders it (
+- **L839 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
+  - L862 a city drawing nothing lacks no power
+  - L874 fixture: every essential service but Power has its operating capacity
+- **L909 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
+  - L939 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
+  - L942 the peak block unserved, the roads wait to preserve Power's quoted first completion (
+  - L954 fixture: every essential service but General care has its operating capacity
+- **L977 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
+  - L1004 the peak block served, Power is not lacked and its order waits to preserve
+  - L1007 the peak block unserved, Power is lacked and its order is placed whatever it does to
+- **L1029 9. how often each fires**
+  - L1032 the reserve test and the spread each fired here
 
 ## PowerPlantsCheck.java - 59 labelled assertions
 

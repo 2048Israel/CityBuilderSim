@@ -1513,6 +1513,8 @@ public final class BuildAdvice {
         // PW3: what each power candidate was read with (the plants open at its own opening, and its lead), for placeFarms() below.
         Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened = new LinkedHashMap<>();
         Map<BuildingsTemplate, Double> leads = new LinkedHashMap<>();
+        // PW3 (REV-PW3d's P1 4): whether the month lacks power now, which alone lets a gap under FIRST_WORK_SHARE order a plant (below).
+        boolean lacking = power && lacksNow(game, m);
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             // The streets' candidates: every road and line but a highway, which gives no access (FR7); the highways' the Elevated Highway alone.
             boolean candidate = m.kind() == Kind.ROADS
@@ -1558,13 +1560,17 @@ public final class BuildAdvice {
                 found = new long[] {1, 1};
             }
             // PW3, 2026-11-24 (the ensemble: a 67,410 kW plant ordered for a 29 kW gap 60 months out, $8.1M borrowed, and a $22M one for a 257 kW
-            // gap): a reserve gap alone, the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's highest month, what the
-            // month's dispatch serves at its worst) covered at the plant's opening, is ordered only when it fills FIRST_WORK_SHARE (Jerus's HW1
-            // share) of what the order adds; a gap in the seasonal peak itself is ordered as ever, and so is a reserve gap that fills the share.
+            // gap): a gap the month does not lack is ordered only when it fills FIRST_WORK_SHARE (Jerus's HW1 share) of what the order adds,
+            // whether it is the reserve's alone or the seasonal peak's (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's highest
+            // month, what the month's dispatch serves at its worst) projected to the plant's opening. A gap in the seasonal peak at the opening
+            // that the month already lacks (lacksNow()) is ordered as ever, and so is any gap that fills the share. REV-PW3d's P1 4, 2026-11-24:
+            // with the share waived for any seasonal gap at the opening, all 16 of the ensemble's ZERO_HOT towns, drawing some 3,000 kW on a
+            // 10,000 kW founding grid that covered July until about m200, were sold an 86,181 kW Oil-Fired Plant at m72-81, $6.2-9.4M borrowed
+            // (0.8-1.2 times GDP), before the 1910 diesel stood. No utility buys a unit 29 times its draw for a summer gap four years out.
             if (power) {
                 double[] sd = supplyDemand(game, m, at, p);
-                if (sd[0] >= sd[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR
-                        && sd[1] - sd[0] < FIRST_WORK_SHARE * found[0] * unit) continue;
+                boolean peakShort = sd[0] < sd[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR;
+                if (!(peakShort && lacking) && sd[1] - sd[0] < FIRST_WORK_SHARE * found[0] * unit) continue;
             }
             boolean closes = found[1] == 1;
             // PW3 (REV-PW3 #3): a firm row (all but wind and solar) is ranked by the screening curve; a wind or solar farm by its net cost
@@ -1689,11 +1695,13 @@ public final class BuildAdvice {
           reserve order, the lowest of several, and with no firm row closing
           the farms rank among themselves by it. A farm that cannot close is
           ranked after the firm rows that do, by its net cost a firm kW it
-          adds at its own opening. A gap in the reserve alone (the seasonal
-          peak, PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's
-          highest month, covered at the plant's opening) orders it only when
-          the gap fills FIRST_WORK_SHARE of what the order adds (2026-11-24:
-          an order for a 29 kW gap, 60 months out, borrowed $8.1M). The
+          adds at its own opening. A gap the month does not lack orders a
+          plant only when the gap fills FIRST_WORK_SHARE of what the order
+          adds, whether the gap is the reserve's alone or the seasonal peak's
+          (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's
+          highest month) projected to the plant's opening (2026-11-24: an
+          order for a 29 kW gap, 60 months out, borrowed $8.1M; REV-PW3d, an
+          86,181 kW plant for towns drawing 3,000 kW on a 10,000 kW grid). The
           month's own reading of "short" is lacksNow(): that same block, which
           the dispatch serves at its worst, not the plan's peak hour, so the
           holds on every other essential order are not set by a reserve the
