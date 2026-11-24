@@ -1,4 +1,4 @@
-# BuildersShort.java - 298 lines · 16 methods · 8 constants · model
+# BuildersShort.java - 371 lines · 20 methods · 8 constants · model
 
 `ham/citybuildersim/BuildersShort.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -38,13 +38,14 @@
 
 **Uses:** [BusinessInvestment](BusinessInvestment.md) (1)
 
-**Used by (11):** [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CityNeeds](CityNeeds.md), [Construction](Construction.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [FitoutCheck](FitoutCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [Game](Game.md), [GapOrderCheck](GapOrderCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (13):** [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CityNeeds](CityNeeds.md), [Construction](Construction.md), [ConstructionControl](ConstructionControl.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [FitoutCheck](FitoutCheck.md), [ForeignChoiceCheck](ForeignChoiceCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [Game](Game.md), [GapOrderCheck](GapOrderCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 127 | THE FOREIGN CREWS, ALWAYS ON OFFER (FC2, 2026-11-22) |
+| 299 | THE CHOICE TO FINISH SOONER (FC2b, 2026-11-24) |
 
 ## Constants
 
@@ -63,7 +64,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 261 | **type** `public final class BuildersShort` | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months of work queued at the pace the builders leave the sites - and, since ... |
+| 38 | 334 | **type** `public final class BuildersShort` | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months of work queued at the pace the builders leave the sites - and, since ... |
 | 40 | 1 | `private BuildersShort()` |  |
 | 59 | 7 | `public static double monthsQueued(double queuePoints, double sitesAtEveryPost)` | The months of work queued at the pace the sites get: queue over sites. |
 | 72 | 7 | `public static double premium(double months)` | What a point's work carries over its price at that many months queued, as a share of it: none at or under KNEE_MONTHS, then CEILING * x^2 / (1 + x^2) for x the months past the knee over HALF_MONTHS - no slope at the k... |
@@ -85,4 +86,13 @@
 | 262 | 7 | `public static double homeUnits(double fromMonths, double stepMonths, long n, double thresholdMonths)` | How much of an order of {@code n} buildings (at least one) stands within {@code thresholdMonths}, in buildings (REV-FC2, the second review): the building i (from 0) takes the months {@code fromMonths + i * stepMonths}... |
 | 279 | 14 | `public static double meanShare(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare)` | The mean share an order of {@code n} buildings carries over its base price with the foreign crews on offer: the building i (from 0) stands in {@code fromMonths + i * stepMonths} months queued (meanPremium()); its work... |
 | 295 | 3 | `public static double multiplier(double fromMonths, double stepMonths, long n, double thresholdMonths, double foreignShare)` | ...and the multiple an order's non-material price is struck at: one and meanShare(). |
+
+### THE CHOICE TO FINISH SOONER (FC2b, 2026-11-24) (lines 299-371)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 316 | 8 | `public static double sitePace(double points, double thresholdMonths, double floorPoints, double capPoints)` | The foreign crews' month on one site handed them, in points: the site's points over {@code thresholdMonths} (FC2's own rule for his book: the work abroad waits no longer than the work at home at the threshold), never ... |
+| 330 | 5 | `public static double monthsAbroad(double points, double pace)` | The whole months the foreign crews take to build {@code points} at {@code pace} a month: the ceiling of their quotient (a ten-billionth over is not another month), at least one for any points. |
+| 346 | 12 | `public static double broughtForward(double perMonth, double monthlyRate, double monthsAbroad, double monthsHome)` | What a stream of {@code perMonth} from the month it starts is worth today when its start comes forward from {@code monthsHome} to {@code monthsAbroad}, discounted month by month at {@code monthlyRate} (BA1's carry (1 ... |
+| 367 | 4 | `public static double interestSaved(double cost, double monthlyRate, double monthsAbroad, double monthsHome)` | The interest on the months saved: broughtForward(cost * i, i, Wa, Wh) - the interest a cost carries a month while the site stands unbuilt, for each month it comes sooner, discounted as broughtForward() does. |
 

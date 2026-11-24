@@ -66,7 +66,7 @@
 
 **Uses:** [BuildersShort](BuildersShort.md) (117), [Game](Game.md) (60), [BuildingManager](BuildingManager.md) (31), [ConstructionControl](ConstructionControl.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (17), [Construction](Construction.md) (17), [MoneyAudit](MoneyAudit.md) (8), [DeathCareFirstCheck](DeathCareFirstCheck.md) (5), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (3), [Sectors](Sectors.md) (2), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [TempDirs](TempDirs.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Sector](Sector.md) (1)
 
-**Used by (2):** [ForeignCrewsCheck](ForeignCrewsCheck.md), [SectorStatementCheck](SectorStatementCheck.md)
+**Used by (3):** [ForeignChoiceCheck](ForeignChoiceCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [SectorStatementCheck](SectorStatementCheck.md)
 
 ## Sections
 
