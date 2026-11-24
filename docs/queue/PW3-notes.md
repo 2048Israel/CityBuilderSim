@@ -279,3 +279,15 @@ MW diesel) make every step of a growing town's gap small beside a coal plant, so
 than the gap pays for its idle part" gives most of it to the peakers, as the study's "town of 10 MW" built a diesel
 station (a reading of the rule, not measured month by month). So the mix is a peakers' fleet with coal base plants
 and a few farms among it, where main's was turbines alone; the ensemble will say what it costs the city (§6).
+
+## 6. The ensemble
+
+80 of 80 runs on the gate box, the classes of e3c61f908 (PW3 on main's 0.9.197), scored against
+`docs/ensemble/0.9.197.md` (FC2's, the newest baseline; PW3 holds FC2, so the difference is PW3's own), committed
+as `docs/ensemble/PW3.md`. **M1 and F1 pass in all five policies** (no month's money audit failed, no run with a
+LongPlaytest finding); batch verdict PASS, hard criteria 10/10, 25 of 26 criteria; no verdict changed. A2 fails as
+the baseline's does (the longest spell of yoy over 10% from m240: 14 months [8 to 34] against 12 [8 to 31]).
+Inflation from m240, 2.57% [2.27% to 2.90%] against 2.69%. The towns grow faster: every AUTO2 seed reaches 40,000
+people by m358 [283 to 449] against m678 [607 to 871], and ends at 9,461,410 [7,399,479 to 10,863,182] against
+5,627,582 [2,854,211 to 7,937,474] (T1 and T2 pass; why is not measured here: PW3 changes what power the planner
+orders and when, and an order's ground). FC2b (0.9.198) merged after the ensemble.
