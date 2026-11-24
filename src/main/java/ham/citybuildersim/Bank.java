@@ -4502,6 +4502,36 @@ public class Bank {
     /** The least buffer a bank holds over the minimum: the Basel III capital conservation buffer, 2.5% of risk-weighted assets (BCBS, December 2010). */
     public static final double CONSERVATION_BUFFER = .025;
 
+    /*
+     * BASEL III IS A DATE (R6f, L8): the conservation buffer is Basel III's,
+     * in force in Canada from 1 Jan 2013 (OSFI's capital guideline). The 8%
+     * minimum, CAPITAL_RATIO, is the total-capital one, the 1988 Accord's,
+     * which Basel III left "at the existing level of 8.0%" (BIS, 12 Sep
+     * 2010); this bank's capital is all common equity, so the common-equity
+     * and Tier 1 minimums under it (2% and 4% before, 4.5% and 6% after)
+     * never bind. So before L8 a bank holds over the minimum only what its
+     * own worst year asks. Game tells it which rule stands at the founding,
+     * at the top of every month and on a load (Game.policyHearsTheMonth()):
+     * today's in a city founded the default way, which knows every row, and
+     * in a 1900 city from the month L8 is known there. Not saved: the month
+     * and the city's research say it again.
+     */
+
+    /** The least buffer a bank holds over the minimum before Basel III (L8): none was required, so its buffer is its worst year alone (BIS, 12 Sep 2010: the conservation buffer is Basel III's). */
+    public static final double BUFFER_BEFORE_L8 = 0;
+
+    /** Whether the Basel III conservation buffer is the city's rule this month: true until Game says otherwise, as in every city that knows L8. */
+    private boolean conservationBufferRequired = true;
+
+    /** Hears which capital rule stands this month: true from the month L8 is known (always, in a city founded the default way). */
+    public void hearCapitalRule(boolean basel3) { conservationBufferRequired = basel3; }
+
+    /** Whether the Basel III conservation buffer is the rule this month (L8). */
+    public boolean conservationBufferRequired() { return conservationBufferRequired; }
+
+    /** The least buffer the rule asks over the minimum this month: CONSERVATION_BUFFER once L8 is known, BUFFER_BEFORE_L8 before. */
+    public double bufferFloor() { return conservationBufferRequired ? CONSERVATION_BUFFER : BUFFER_BEFORE_L8; }
+
     /** How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). */
     public static final double MANAGEMENT_CUSHION = .025;
 
@@ -4599,8 +4629,8 @@ public class Bank {
      */
     public static final double MAX_BUFFER = .085;
 
-    /** Its buffer over the minimum: the worst year it has recorded, never less than CONSERVATION_BUFFER nor more than MAX_BUFFER. */
-    public double capitalBuffer() { return Math.min(MAX_BUFFER, Math.max(CONSERVATION_BUFFER, worstLossRate)); }
+    /** Its buffer over the minimum: the worst year it has recorded, never less than the rule's floor (bufferFloor(): CONSERVATION_BUFFER from L8) nor more than MAX_BUFFER. */
+    public double capitalBuffer() { return Math.min(MAX_BUFFER, Math.max(bufferFloor(), worstLossRate)); }
 
     /** THE TARGET it chooses: the city's minimum and its own buffer. */
     public double capitalTarget() { return CAPITAL_RATIO + capitalBuffer(); }
@@ -6616,9 +6646,14 @@ public class Bank {
                     + " cost %.1f%% of its risk-weighted book, and no regulator asks for more",
                     MAX_BUFFER * 100, worstLossRate * 100);
         }
-        if (worstLossRate > CONSERVATION_BUFFER) {
+        if (worstLossRate > bufferFloor()) {
             return String.format("the minimum and its worst year of losses, %.1f%% of its risk-weighted"
                     + " book - so a year like that one would still leave it at the minimum", worstLossRate * 100);
+        }
+        if (!conservationBufferRequired) {
+            return lossMonths < YEAR_MONTHS
+                    ? "the minimum alone - no buffer over it is required before Basel III (2013), and it has not lived a year to judge its losses by"
+                    : "the minimum alone - no buffer over it is required before Basel III (2013), and it has lost nothing in a year";
         }
         if (lossMonths < YEAR_MONTHS) {
             return String.format("the minimum and the standard %.1f-point buffer - it has not lived a year"

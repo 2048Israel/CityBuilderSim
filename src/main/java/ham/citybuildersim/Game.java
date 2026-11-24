@@ -1228,6 +1228,9 @@ public class Game {
      */
     private void policyHearsTheMonth() {
         moneyHearsTheMonth();
+        // ...and the bank which capital rule stands (R6f, L8; Bank, BASEL III IS A DATE): the conservation buffer from the month L8 is known,
+        // before the month reads the bank's capital rule; today's rule in a city founded the default way, which knows every row.
+        bank.hearCapitalRule(!foundedUnfitted() || research.known("L8", month));
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
         // push (where the households are told their bills) comes after anything that reads it. The founding opens the pension at zero (OP1).
         households.setPensionPerSenior(economyManager.getTaxPolicy().pensionPerSenior());
