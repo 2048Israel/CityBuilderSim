@@ -3007,3 +3007,171 @@ The helper ends cleanly at 06:56 with no owned JVM or job. Its final
 `a24c28e6e135c7c02eb7c1dce70e85f1167c092911f6f5d760399d413b364b86`;
 blocked-report.md gives the exact nine pending filters. A parent recheck
 still finds gate 37156 active, 3,215 MiB available and 80-percent committed.
+
+### Resume after FC2b's full-suite stop, 2026-11-24
+
+The orchestrator corrects the process classification: PID 37156 was
+FC2b's wrongly started full suite, not a gate. He stops it at 07:03 and
+explicitly authorizes the remaining nine named checks, then root fast/maps
+and the money/saves mends handoff. The earlier gate description records
+our inference from its command line, not an actual publisher run; no kept
+gate/dry result exists from it. The low-RAM hold was separately observed.
+
+Read committed memory first: 71 percent, 8,258 MiB available, 41.77 of
+58.66 GB committed. Resume the same isolated helper on the exact nine
+pending filters, serially, with per-launch memory checks and no parent
+JVM. Preserve the completed ten and all raw/known-red evidence; no model
+or assertion change follows merely from the scheduling correction.
+
+DenominationCheck first returns 4 with one assertion: the played TP1 town
+is assumed to have prices and its lane floor above founding after at most
+twelve unforced months. Its index is instead .7730. TradeLanes applies
+MIN_LANE * FACTOR * index / unit without a founding-floor clamp, giving
+about 6.002 against founding 7.765. The exact floor identity, reform /100,
+lane/arrow partner equality, deliberately undivided-floor fault, direct
+double-price law and all four unit-boundary cases pass. No real
+currency/scale defect is demonstrated by this direction-only failure.
+
+★ Preserve the upward-price premise and all real laws; attribute only its
+exact .7730 line to queued HT1-H's uncaused played-city fixture class.
+DenominationCheck's FS2 sweep shipped, so FS2 cannot own a new red. DK1's
+full-desk arithmetic is not this mechanism. Do not restore a made-up CPI,
+change the time window or improvise a world-price shock merely for green.
+The helper's initial direct PriceIndex.restore proposal is withdrawn for
+that reason. The original raw exit 4 remains archived; refresh the exact
+branch records and judge it without repeating unchanged model months.
+
+The unchanged final MonetaryCheck returns 4 with two hard law failures.
+Original path 48213 mean CPI at 3/10/20/40 percent is approximately
+5.32/7.00/8.32/7.31 percent: the highest rate raises inflation by 1.99
+points rather than lowering it by at least one. All dial-only, fixed-D$,
+crew, three-calendar-year and basket premises pass. Across paths 16–31,
+common-basket non-shelter means are 2.662484889421045,
+2.487814813917172, 2.941129215897183 and 2.8748069355454096 percent;
+the low-to-high effect is -.212322 points, violating the retained
+one-point floor. These are hard failures, not HT1-H premises.
+
+Supply assertions pass: 103 versus 32 early accepted homes at 3/10
+percent, and later C01 rents .03123961074/.03422137073. Whole-window
+timing .466952 is below .750; calendar differences .619752/.740589/
+1.708418 are below two points. Mean CPI across the sixteen paths is
+7.133053/6.419554/7.042718/7.135521 percent. Preserve every law, fixture,
+window, threshold, source output and sample. No monetary known-red row,
+fake price state or weak aggregate guard is introduced.
+
+Pause Call/Desk/Fund/Bank/Water. The helper isolates original path 48213
+on FC2-merged pre-mend control `1ae98bb3c` and current model `05370e41e`,
+using only a temporary route to the existing original-town scenario in a
+separate scratch worktree. The current diagnostic must first reproduce
+the full run's unrounded outputs and shared setup. The control carries
+the necessary harness-only obsolete-FOREIGN_FLOOR compile repair, with
+original compatible HousingMarketCheck code; no production input changes.
+Only named MonetaryCheck diagnostic calls run, serially, after memory
+checks. Parent makes no model edit before the source-isolation evidence.
+
+The current original-only diagnostic reproduces every stored unrounded
+component/weight/factor vector, all eight CPI/rent endpoint strings at
+12-digit precision, policy rows and original premises. The earlier full
+run stored aggregate inflation to two decimals only; no unavailable
+17-digit historical equality is claimed. Fresh original results are
+captured at 17 digits. All diagnostics keep the normal main prefix,
+original comparison call, rates, window and monthly order.
+
+| Original-only production group | Low/high CPI percent | Reduction, points |
+|---|---:|---:|
+| FC2-merged pre-mend control 1ae98bb3c | 6.772473 / 2.257213 | 4.515260 |
+| Current 05370e41e | 5.318921 / 7.312324 | -1.993404 |
+| C: old ledger, new matching/market | 4.757488 / 8.306316 | -3.548829 |
+| D: new ledger, old matching/market | 5.424820 / 4.006548 | 1.418272 |
+| E: current plus blanket planning guard | 9.850778 / 8.781409 | 1.069369 |
+
+The latest matching/market group is sufficient for the original reversal;
+FC2 is not its attribution. Each version keeps its own endogenous m25 D$
+fixed across rates (control .7143, current .7233, C .7445, D .7148);
+no cross-version FX override is introduced. None of these subsets is a
+passing full seventeen-town MonetaryCheck. E also fails the unchanged
+supply-rent predicate (.041291549 below .041898393), so E is not accepted.
+
+A toy paid-halves probe initially treats emergency=false as forbidding all
+retained crowding. Its nine failed expectations are hypotheses, not new
+laws: the flag forbids emergency assumptions in new projects, while
+existing paid occupancy still has claims. The real-market boundary
+rejects the blanket guard. With one actual door at ask 20, two old half
+payers at budget 12 and a newcomer at 100, actual old incumbents remain
+housed and the newcomer needs one funded new door. Current forecasting
+preserves that case; the blanket guard incorrectly reports zero. At
+budget 20, all three households can fund independent doors: two new doors
+are needed, but current forecasting reports only one. Both versions keep
+actual source, occupancy, rent and read-only forecast assertions green.
+★ Reject the blanket guard, retaining its raw results as diagnostics.
+
+The separate commitment defect is executed in a minimal named market
+unit: ten old households/bill 20 shrink to two. Actual pure retention
+leaves bill 4, or 2 per household. Resources are 7 after the unchanged
+live non-rent floor. At saving factor .5, the current projected-count
+callback protects all 7 instead of 2+.5*(7-2)=4.5; a no-source case
+incorrectly protects 10 instead of bidding 5. Expansion, actual retention,
+all saved stocks/flows and live working fields pass. ★ Cap only the
+protected rent at min(live per-household rent, projected rent); keep the
+uncapped live rent for the fixed-bill floor. No factor, income, service,
+actual settlement or monetary law changes.
+
+A count-only forecast prototype plus that rent cap passes the original
+market boundaries, but three spare-stock cases expose phantom orders:
+full-budget incumbents with two/three doors, and a newcomer with three
+doors, request another home despite enough committed stock. ★ Derive
+independent-door pressure from physical reserved shares, then match it
+normally against unused committed offers before requesting construction.
+This forecast-only extra match preserves actual household accounting and
+existing paid occupancy. Twelve stock/budget/newcomer combinations guard
+both lost funded demand and duplicate orders. A pending-construction
+boundary is required too; no new order state is created.
+
+The complete three-file prototype remains outside the final source tree
+pending clean diff review and domain/original-law verification. Its first
+patch contains unwanted CRLF and pre-existing Unicode re-encoding;
+regenerate from exact parent UTF-8/LF bytes and retain only intended edits.
+No such incidental changes are accepted. No full sixteen-town rerun or
+remaining finance filters resume until the original effect and supply
+conditions pass on a domain-correct candidate.
+
+The clean F prototype fixes the domain boundaries: normal HousingMarketCheck
+passes, including twelve committed-stock cases, the actual half-built pipeline,
+incompatible completed studios and rent-commitment contraction/expansion/zero-source
+controls. Its 189-line UTF-8/LF patch changes no pre-existing text. It is not
+applied: original-only inflation is 7.749439/9.601061/10.372711/9.166562
+percent, a -1.417123-point reduction. Original non-shelter reduction is
+-1.779382 points. Supply starts 86/56 and later C01 rents
+.02662843807794349/.0267659874242694 satisfy the two supply predicates,
+but the hard policy effect does not. No full-grid pass is claimed.
+
+A separate eight-snapshot choice witness causes actual sticky crowding.
+With two current doors at ask 20 and two old paid half-households at budget
+20, ordinary matching without incumbents uses two doors and bills 40;
+retention keeps the same two households in one door and bills 20. Both
+have zero unplaced households. At budget 12 the paid shared arrangement
+must remain. With a rich newcomer, the existing free door must go to that
+mover before expanding old footprints; otherwise a funded mover is stranded.
+Source/funding/stock controls pass in all eight diagnostic snapshots.
+
+★ Interpret valid incumbency as preserving household and comparable class,
+while allowing a fully affordable suitable household to leave emergency
+crowding when current same-class stock remains after every mover. The
+brief distinguishes normal placement from emergency shelter; it does not
+require sticky crowding. Authorize only an isolated prototype of a late
+same-class footprint completion, with equivalent requests pro rata. Use
+households minus funded doors (bill/current ask), not households minus
+physical shares, so a fully funded host cannot be charged again. Add the
+same physical quantity and current-ask bill quantity; preserve zero-bill
+guests and their source counts. Require stock, price, newcomer, host and
+funding boundaries before the unchanged original monetary scenario. This
+is a model hypothesis under test, not a passing final model or a changed law.
+
+The native mixed-host witness confirms that physical and funded coordinates
+must stay separate: a paid cell has two households, physical footprint 1,
+bill 30 and 1.5 funded doors at ask 20; its one zero-bill guest occupies
+.5. Total occupied is 1.5, receipts 30 and hosted guests one. The proposed
+completion is .5, making total occupied two and receipts 40 while retaining
+the guest. Completing the physical gap of one would overcharge the host.
+All diagnostic source, stock, price and capacity controls pass; this witness
+precedes implementation and is not a final-model result.
