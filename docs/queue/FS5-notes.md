@@ -2870,3 +2870,31 @@ current-main merge, helper diagnosis and necessary named checks.
 - CY1 shipped 0.9.199 (b3ff7eb6d) during that owned run. Merge it after the
   run ends, before the remaining named checks. Only generated indexes
   conflict; regenerate them. Its model changes are upstream, not FS5's.
+- Merged .199 as 55647bb81; --fast passes (22s compile, zero firm Stale).
+  The helper's original-main .198 probe ends under its shared box lock:
+  raw heap 1867.3 MiB; three further GC/FX-drain readings stay unchanged,
+  and two forced-live histograms are byte-identical. This rules out an
+  unfinished collection for that sample. Retained four Games/five histories
+  are not the large payload: 122 large SWRTTexture physical arrays total
+  474.6 MiB. Of those, 81 arrays/319.484 MiB have only soft-reference effect
+  image ownership; 40/152.555 MiB also have ImageData/CacheFilter ownership,
+  and one/2.574 MiB is a Canvas target. Never subtract all textures or count
+  the same array via SWRTTexture, JavaSurface and HeapIntBuffer three times.
+  Evidence copied home to target/FS5b-heap-main; the .199 before/after probe
+  is queued under the shared box lock. No causal purge result claimed yet.
+- ★ Prefer pruning only ImagePool's idle/unlocked soft cache on Prism's
+  render thread to subtracting guessed cache bytes. The proposed operation
+  leaves node CacheFilter roots, locked images and live Canvas targets alone;
+  the 1536 MiB budget stays fixed. Validate before/after bytes, kept state,
+  cache recreation and a deliberately retained real retired-page control.
+  Primary source: [OpenJFX 21 ImagePool](https://raw.githubusercontent.com/openjdk/jfx/jfx21/modules/javafx.graphics/src/main/java/com/sun/scenario/effect/impl/ImagePool.java),
+  [JDK 21 soft-reference policy](https://docs.oracle.com/en/java/javase/21/docs/specs/man/java.html).
+- Current named-check receipts are in target/FS5b-checks. AutoBuildCheck
+  exits 3 on main's saved-care-fee premise; BankCheck (also selecting
+  CentralBankCheck and YoungBankCheck), BuildAdviceCheck, ChartFitCheck,
+  ConstructionControlCheck, FittingCheck, HealthCheck and HousingCheck pass.
+  Bank's apparent post-pass wait was the substring selection and resource
+  guard before its other children, not a shutdown deadlock. Stop only owned
+  loop PID 3856, let Health's current call finish, preserve its green receipt,
+  then resume remaining calls with cbs.parallel=1. TimingCheck will also
+  select KeptTimingCheck; run that pair serially once, not a separate replay.
