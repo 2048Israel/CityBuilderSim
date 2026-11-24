@@ -73,7 +73,7 @@ public class SaveFileCheck {
         assertTrue("native format61 save/history refusal preserves both files and a running loaded twin", nativeGrid61Refusal(false));
         assertTrue("HC1 native format61 refusal preserves bytes and the running loaded twin", nativeCard61Refusal(false));
         assertTrue("PW5 format63: native shipped format62 refusal preserves both files and the running loaded twin", nativeGrid62Refusal(false));
-        assertTrue("RES3 refuses the genuine shipped format62 and format63 pairs with both files and the running city intact", nativeHousingBoundaryRefusal(false));
+        assertTrue("RES3 refuses the genuine shipped format62, format63 and format64 pairs with both files and the running city intact", nativeHousingBoundaryRefusal(false));
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -3316,7 +3316,7 @@ public class SaveFileCheck {
                 Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(slot));
             }
         }
-        // The exact boundary is res3-format63's real save/history pair from shipped 0.9.192,
+        // The format-65 boundary is res3-format64's real pair from shipped R6f 0.9.196,
         // not today's schema with yesterday's format number pasted onto it.
         byte[] boundaryBytes = nativeHousingBoundaryBytes("save");
         Files.write(oldest.saveFile(10), boundaryBytes);
@@ -3463,16 +3463,19 @@ public class SaveFileCheck {
     }
 
     static byte[] nativeHousingBoundaryBytes(String name) throws IOException {
-        return nativeFixtureBytes("res3-format63", name);
+        return nativeFixtureBytes("res3-format64", name);
     }
 
     static boolean nativeHousingBoundaryRefusal(boolean readPaths) {
-        return GameVersion.OLDEST_LOADABLE_FORMAT - 1 == 63
+        return GameVersion.OLDEST_LOADABLE_FORMAT - 1 == 64
                 && nativeHousingFixtureRefusal(62, "0.9.191",
                         "4c2d3ae2e2fd4c4168b24446ab06d0f6db158d0a0b71b0a7018a8a621ba8ad0c",
                         "953d14f3113bf858b73f242370fcdb103fe76d818dcf001a6d4384fc8fa87a87", readPaths)
                 && nativeHousingFixtureRefusal(63, "0.9.192",
-                        "51f878c2b9bc9a635dfa1d7079cf9eee17615367ccd03c192289cef9e409a00c", "9bacc907f2c0c797e170208f39353ac9ab84d26e744ffb9d094f705c78cc1ad2", readPaths);
+                        "51f878c2b9bc9a635dfa1d7079cf9eee17615367ccd03c192289cef9e409a00c", "9bacc907f2c0c797e170208f39353ac9ab84d26e744ffb9d094f705c78cc1ad2", readPaths)
+                && nativeHousingFixtureRefusal(64, "0.9.196",
+                        "5f2c197a1e26cfd33dbd01fc0dbf10ef889ba374c130721071c6f2dca6bd712c",
+                        "e86d6f648d9f3b806397bca6c846de2c53f6f02b45867ddfb57f54a072d8662b", readPaths);
     }
 
     private static boolean nativeHousingFixtureRefusal(int format, String version, String saveHash,

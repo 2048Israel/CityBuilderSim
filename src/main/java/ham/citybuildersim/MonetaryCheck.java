@@ -36,13 +36,14 @@ import java.nio.file.Path;
  *      based, the world's prices moved, the currency off its bounds - set on
  *      it by PriceIndex.restore(), WorldEconomy.shockLevel() and pinRate().)
  *
- *   6. And does INFLATION FALL WITH THE RATE? One founding held at 3%, 10%,
- *      20% and 40% from month 25 to 84: each higher dial's inflation no
- *      higher than the lower one's, within the noise a month's delay in the
- *      hand makes, and the 3% row at least a point above the 40% row. A
- *      measurement from 0.6.11 to 0.7.2, the baseline 7.0 had to turn; an
- *      assertion since 0.7.3, with the households' saving answering the real
- *      deposit rate - and the columns that say which channel carried it.
+ *   6. Does the rate lower inflation overall, while higher financing costs
+ *      can delay housing starts and raise the same class's rents later?
+ *      Preserve the original founding's 3%-to-40% effect of at least one
+ *      point over months 49-84. Measure the policy slope and the timing of
+ *      the paired estimate across the fixed world-path sample, rather than make
+ *      a local supply inversion a universal adjacent-rate law. Jerus,
+ *      2026-11-23: "sometimes its as simple as check reality"; sources and
+ *      the revised law's authority are in docs/queue/RES3-notes.md.
  *      (FS10, MQ1: the D$ held by ForeignAccounts.pinRate() from month 25,
  *      so a month's delay in the hand cannot move the currency the rows
  *      ride on; read over three whole calendar years, months 49 to 84, the
@@ -51,6 +52,39 @@ import java.nio.file.Path;
  *      three, asserted hard, not waited for.)
  */
 public class MonetaryCheck {
+
+    /** Independent validation paths; timing limits were calibrated on the default town and paths 0-15. */
+    static final long[] POLICY_SEEDS = java.util.stream.LongStream.range(16, 32).toArray();
+    private static long policySeed = Founding.defaults().getPathSeed();
+    private record HousingStart(int month, long doors) { }
+    /** Harness-only observation at acceptance; no model flow or saved order state is reconstructed. */
+    private static final class HousingTown extends Game {
+        private final java.util.List<HousingStart> starts = new java.util.ArrayList<>();
+        private double laterRent;
+        private int laterSamples;
+        HousingTown(GameFiles files, Founding founding) { super(files, founding); }
+        @Override public boolean buildFor(Investor payer, BuildingsTemplate template, long quantity) {
+            boolean accepted = super.buildFor(payer, template, quantity);
+            if (accepted && starts != null && template.getHousingRecipe() != null)
+                starts.add(new HousingStart(getMonth(), Math.multiplyExact(quantity, template.getHousingRecipe().doors())));
+            return accepted;
+        }
+        long earlyStarts() {
+            int opens = MEASURED_MONTHS - windowMonths();
+            return starts.stream().filter(x -> x.month() >= HELD_FROM && x.month() < opens).mapToLong(HousingStart::doors).sum();
+        }
+        void observeSupply() {
+            int opens = MEASURED_MONTHS - windowMonths();
+            if (getMonth() < opens || getMonth() >= opens + 12) return;
+            var form = HousingForms.ALL.stream().filter(f -> f.code().equals("C01")).findFirst().orElseThrow();
+            var dwelling = form.recipe().mix().getFirst();
+            laterRent += getSectors().realEstate().housingMarket().price(new HousingInventory.Key(form.id(), dwelling.id()));
+            laterSamples++;
+        }
+        double laterRent() { return laterSamples > 0 ? laterRent / laterSamples : Double.NaN; }
+    }
+    private record PolicyComparison(double[] inflation, double[][] years, double[] late,
+                                    double[][] lateYears, long[] starts, double[] rents) { }
 
     static int fails = 0;
     static PrintStream out;
@@ -662,8 +696,9 @@ public class MonetaryCheck {
            0.7.2    +0.02%   +0.01%   -0.38%   -0.98%   the currency answers the real rate
            0.7.3    +0.04%   -0.00%   -0.37%   -0.99%   ...and the households' saving does
 
-       THE ASSERTION: each higher dial's inflation is no higher than the
-       lower one's, within MEASUREMENT_NOISE, and the 3% row is at least
+       THE HISTORICAL ASSERTION (revised by RES3 below): each higher dial's
+       inflation was no higher than the lower one's within MEASUREMENT_NOISE,
+       and the 3% row was at least
        TRANSMISSION_FLOOR above the 40% row - a point across the range, or
        the rate is not a channel. At 0.7.2 the spread was 0.996 of a point
        and the floor would have failed; at 0.7.3 it is 1.032.
@@ -776,7 +811,9 @@ public class MonetaryCheck {
     static final int HELD_FROM = LongPlaytest.HELD_AFTER + 1;
 
     /**
-     * How far apart two runs of the one founding may read when only the dial's timing moves: 0.65 points a year,
+     * The original 0.65-point ordering resolution. Timing limits below are independently calibrated. Individual towns' actual
+     * construction responses are reported separately, not called noise or waived. The retained bound was originally
+     * calibrated on a single founding:
      * about twice CB2's largest reading on RT2 main (0.9.113), holding each dial a month late over the same window.
      * On the harness's own setup (buildersShortOn false), the 3% / 10% / 20% / 40% rows differed by
      * 0.000 / 0.276 / 0.322 / 0.320 points; the 20% row is now largest.
@@ -786,7 +823,12 @@ public class MonetaryCheck {
      * Re-measured as at 0.7.11 (Jerus: "re-measure it"): the hand's timing fixes a mortgage's rate for its term,
      * so this allows timing variation, while TRANSMISSION_FLOOR still requires a full point across the dial's range.
      */
-    static final double MEASUREMENT_NOISE = .0065;
+    static final double ORDERING_RESOLUTION = .0065;
+
+    /** Frozen before validation: twice 0.356534 points on default/path 0-15, rounded up to a quarter point. */
+    static final double TIMING_LIMIT = .0075;
+    /** Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. */
+    static final double ANNUAL_TIMING_LIMIT = .02;
 
     /** How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. */
     static final double TRANSMISSION_FLOOR = .01;
@@ -796,15 +838,16 @@ public class MonetaryCheck {
         step(g, heldRate, HELD_FROM);
     }
 
-    /** ...holding the dial from a month of the caller's: the noise run holds it a month late. */
+    /** ...holding the dial from a month of the caller's: the paired timing run holds it a month late. */
     static void step(Game g, double heldRate, int heldFrom) {
         if (g.getMonth() >= heldFrom) g.getDebtManager().setPolicyRate(heldRate);
         int before = g.getMonth();
         g.simulateMonths(1);
         if (g.getMonth() == before) g.toggleNextMonth();
+        if (g instanceof HousingTown town) town.observeSupply();
     }
 
-    /** The playtest's founding (seed 0), to the month before the dial is held. */
+    /** The playtest's default founding, to the month before the dial is held. */
     static Game founding(Path root, String label) {
         return founding(root, label, false);
     }
@@ -833,7 +876,9 @@ public class MonetaryCheck {
      * borrow this founding (CurveCheck, ExpectationsCheck, HouseholdCheck) keep the deaths of 1900.
      */
     static Game founding(Path root, String label, boolean onLiterals, boolean causesHeldOff, String... held) {
-        Game g = new Game(new GameFiles(root.resolve(label), root.resolve("no-legacy")));
+        GameFiles files = new GameFiles(root.resolve(label), root.resolve("no-legacy"));
+        Founding base = Founding.defaults();
+        Game g = causesHeldOff ? new HousingTown(files, base.withPath(base.getPath(), policySeed)) : new Game(files);
         if (onLiterals) g.playOnLiterals();
         if (causesHeldOff) g.holdCausesOfDeathOff();
         g.run();
@@ -1012,11 +1057,69 @@ public class MonetaryCheck {
     }
 
     static void inflationFallsWithTheRate(Path root) {
-        out.println("\n--- inflation falls with the rate ---");
+        java.util.List<PolicyComparison> comparisons = new java.util.ArrayList<>();
+        PolicyComparison original;
+        try {
+            policySeed = Founding.defaults().getPathSeed();
+            original = policyComparison(root.resolve("original"), policySeed);
+            for (long seed : POLICY_SEEDS) {
+                policySeed = seed;
+                comparisons.add(policyComparison(root.resolve("seed-" + seed), seed));
+            }
+        } finally { policySeed = Founding.defaults().getPathSeed(); }
+        int n = HELD_RATES.length;
+        double meanEffect = 0, meanSlope = 0;
+        double[] meanCurve = new double[n];
+        double meanRate = java.util.Arrays.stream(HELD_RATES).average().orElseThrow();
+        for (var c : comparisons) {
+            meanEffect += c.inflation()[0] - c.inflation()[n - 1];
+            for (int r = 0; r < n; r++) meanCurve[r] += c.inflation()[r] / comparisons.size();
+            double meanInflation = java.util.Arrays.stream(c.inflation()).average().orElseThrow();
+            double numerator = 0, denominator = 0;
+            for (int r = 0; r < n; r++) {
+                numerator += (HELD_RATES[r] - meanRate) * (c.inflation()[r] - meanInflation);
+                denominator += Math.pow(HELD_RATES[r] - meanRate, 2);
+            }
+            meanSlope += numerator / denominator;
+        }
+        meanEffect /= comparisons.size();
+        meanSlope /= comparisons.size();
+        out.printf("   fixed paths %s: mean low-to-high effect %.6f points; mean policy/CPI slope %.6f%n",
+                java.util.Arrays.toString(POLICY_SEEDS), meanEffect * 100, meanSlope);
+        out.printf("   mean CPI curve on validation paths: %s percent%n", java.util.Arrays.toString(java.util.Arrays.stream(meanCurve).map(x -> x*100).toArray()));
+        assertTrue("the whole policy curve has no upward trend beyond the retained ordering resolution",
+                meanSlope * (HELD_RATES[n - 1] - HELD_RATES[0]) <= ORDERING_RESOLUTION);
+        double timing = 0;
+        double[] annual = new double[WINDOW_YEARS];
+        for (int r = 0; r < n; r++) {
+            double paired = 0;
+            double[] pairedYears = new double[WINDOW_YEARS];
+            for (var c : comparisons) {
+                paired += c.late()[r] - c.inflation()[r];
+                for (int y = 0; y < WINDOW_YEARS; y++) pairedYears[y] += c.lateYears()[r][y] - c.years()[r][y];
+            }
+            timing = Math.max(timing, Math.abs(paired / comparisons.size()));
+            for (int y = 0; y < WINDOW_YEARS; y++) annual[y] = Math.max(annual[y], Math.abs(pairedYears[y] / comparisons.size()));
+        }
+        out.printf("   timing of the paired multi-town estimate: %.6f points; calendar years %s; whole-window bound %.3f, annual bound %.3f%n",
+                timing * 100, java.util.Arrays.toString(java.util.Arrays.stream(annual).map(x -> x * 100).toArray()), TIMING_LIMIT * 100, ANNUAL_TIMING_LIMIT * 100);
+        assertTrue("a month's delay leaves the multi-town inflation estimate inside the timing bound", timing <= TIMING_LIMIT);
+        assertTrue("each whole calendar year's multi-town estimate stays inside the timing bound",
+                java.util.Arrays.stream(annual).allMatch(x -> x <= ANNUAL_TIMING_LIMIT));
+        out.printf("   original supply channel, 3/10 percent: accepted homes m%d-%d %d/%d; later C01 rent %.10g/%.10g%n",
+                HELD_FROM, MEASURED_MONTHS - windowMonths() - 1, original.starts()[0], original.starts()[1], original.rents()[0], original.rents()[1]);
+        assertTrue("a higher rate causes fewer funded homes to start before the window", original.starts()[1] < original.starts()[0]);
+        assertTrue("that higher-rate supply shortage raises the same class's rents later", original.rents()[1] > original.rents()[0]);
+    }
+
+    private static PolicyComparison policyComparison(Path root, long seed) {
+        out.println("\n--- demand and supply transmission on world path " + seed + " ---");
 
         int n = HELD_RATES.length;
         double[][] prints = new double[n][10];
         double[] inflation = new double[n];
+        long[] starts = new long[n];
+        double[] rents = new double[n];
         boolean dialsHeld = true;
         fewestCrews = 1;
         solvesOnTheCalendar = true;
@@ -1028,6 +1131,8 @@ public class MonetaryCheck {
             Game[] held = new Game[1];
             inflation[r] = heldRun(root, "rate-" + r, HELD_RATES[r], HELD_FROM, prints[r], held, years[r]);
             Game g = held[0];
+            starts[r] = ((HousingTown) g).earlyStarts();
+            rents[r] = ((HousingTown) g).laterRent();
             dialsHeld &= Math.abs(g.getDebtManager().getPolicyRate() - HELD_RATES[r]) < 1e-12;
             if (r == 0) {
                 out.printf("   the founding at month %d: %,.0f people, index %.4f (basket %s), policy %.2f%%%n",
@@ -1063,28 +1168,30 @@ public class MonetaryCheck {
         }
 
         /*
-         * THE NOISE, MEASURED AND NOT ASSUMED: every row again with its dial
+         * TIMING SENSITIVITY, MEASURED AND NOT ASSUMED: every row again with its dial
          * held from a month later. The only thing that moves is the hand's
          * timing, so how far the pair differ is how far two readings of this
-         * founding can differ without the dial's LEVEL meaning anything - the
-         * allowance the ordering below is given. The 3% row reads exactly
+         * founding can differ. This includes real changes to the construction
+         * path; inference below uses the paired multi-town estimate. The 3% row reads exactly
          * nothing, because 3% is the founding's own dial and a month's delay
          * changes no month.
          */
-        double noise = 0;
-        double[] yearNoise = new double[WINDOW_YEARS];
+        double[] lateInflation = new double[n];
+        double[][] lateAnnual = new double[n][WINDOW_YEARS];
+        double[] yearSensitivity = new double[WINDOW_YEARS];
         StringBuilder offsets = new StringBuilder();
         for (int r = 0; r < n; r++) {
             double[] lateYears = new double[WINDOW_YEARS];
             double late = heldRun(root, "late-" + r, HELD_RATES[r], HELD_FROM + 1, null, null, lateYears);
-            noise = Math.max(noise, Math.abs(late - inflation[r]));
-            for (int y = 0; y < WINDOW_YEARS; y++) yearNoise[y] = Math.max(yearNoise[y], Math.abs(lateYears[y] - years[r][y]));
+            lateInflation[r] = late;
+            lateAnnual[r] = lateYears;
+            for (int y = 0; y < WINDOW_YEARS; y++) yearSensitivity[y] = Math.max(yearSensitivity[y], Math.abs(lateYears[y] - years[r][y]));
             offsets.append(r == 0 ? "" : " / ").append(String.format("%.3f", Math.abs(late - inflation[r]) * 100));
         }
         StringBuilder yearOffsets = new StringBuilder();
-        for (int y = 0; y < WINDOW_YEARS; y++) yearOffsets.append(y == 0 ? "" : " / ").append(String.format("%.3f", yearNoise[y] * 100));
-        out.printf("   the same rows held a month late differ by %s points (at most %s in its calendar years); the allowance is %.3f%n",
-                offsets, yearOffsets, MEASUREMENT_NOISE * 100);
+        for (int y = 0; y < WINDOW_YEARS; y++) yearOffsets.append(y == 0 ? "" : " / ").append(String.format("%.3f", yearSensitivity[y] * 100));
+        out.printf("   the same rows held a month late differ by %s points (at most %s in its calendar years); actual per-town timing responses, not acceptance limits%n",
+                offsets, yearOffsets);
 
         out.printf("   the builders offered at least %.3f of their posts in every month the dial was held%n", fewestCrews);
         boolean oneFounding = true;
@@ -1100,18 +1207,11 @@ public class MonetaryCheck {
         assertTrue("fixture: the window is " + WINDOW_YEARS + " whole calendar years, and the world's yearly repricings fall on each of its Januaries in every run, on time or a month late",
                 solvesOnTheCalendar);
         assertTrue("fixture: the basket was based before every run's window opened", basedBeforeWindow);
-        assertTrue("...and a month's delay in the hand moves them less than the allowance", noise <= MEASUREMENT_NOISE);
-        boolean everyYear = true;
-        for (double y : yearNoise) everyYear &= y <= MEASUREMENT_NOISE;
-        assertTrue("...in each of the window's calendar years too (" + yearOffsets + " points)", everyYear);
-        for (int r = 1; r < n; r++) {
-            assertTrue(String.format("inflation at %.0f%% is no higher than at %.0f%%, within the noise",
-                            HELD_RATES[r] * 100, HELD_RATES[r - 1] * 100),
-                    inflation[r] <= inflation[r - 1] + MEASUREMENT_NOISE);
-        }
-        assertTrue(String.format("...and a dial of %.0f%% holds it at least a point under %.0f%%",
-                        HELD_RATES[n - 1] * 100, HELD_RATES[0] * 100),
-                inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
+        // Real construction timing is reported per town above; infer the policy estimate across the predeclared sample.
+        if (seed == Founding.defaults().getPathSeed())
+            assertTrue("the original highest rate lowers inflation by at least the effect bound over the original window",
+                    inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
+        return new PolicyComparison(inflation, years, lateInflation, lateAnnual, starts, rents);
     }
 
     /** The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. */

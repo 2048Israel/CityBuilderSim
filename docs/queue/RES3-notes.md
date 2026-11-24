@@ -2321,3 +2321,209 @@ queue notes pass `git diff --check`; generated month-order references keep
 Maps' existing Markdown hard-break spaces. No extra JVM or fixture probe
 remains running. The three MonetaryCheck lines stay owned and red; the
 provisional marker and the deferred combined review remain in place.
+
+### Lane resumed: reality, several towns and the format-65 boundary
+
+Jerus's 2026-11-23 23:33 answer is the authority for correcting the old
+universal adjacent-rate law: "even reality higher interest rates doesnt
+always equal liwer inflation". His 23:55 direction is "sometimes its as
+simple as check reality". The orchestrator's revised 23:42 instruction
+replaces the earlier B wording: retain the overall effect, assert the
+housing supply channel separately, and assess ordering/timing over several
+towns or a longer window without hiding an actual supply response as noise.
+The lane go is `20261124-015023-063-orchestrator-5dec`.
+
+The evidence supports that correction. [Jorda and Yalcin, FRBSF Economic
+Letter 2024-23, September 3, 2024](https://www.frbsf.org/research-and-insights/publications/economic-letter/2024/09/when-is-shelter-services-inflation-coming-down/)
+explain the opposing effects of higher rates on housing demand and supply:
+financing costs reduce new construction's returns, while leases reset
+slowly. Their US discussion through July 2024 shows why shelter inflation
+can remain high after other components cool. [Kmetz, Louie and Mondragon,
+FRBSF Economic Letter 2023-19](https://www.frbsf.org/research-and-insights/publications/economic-letter/where-is-shelter-inflation-headed/)
+document that divergence after the 2022 tightening as market asking rents
+slowed before the CPI shelter component. These observations establish
+persistence and timing, not a causal estimate from the dates alone.
+
+[Dias and Duarte, Federal Reserve IFDP 1248, May 2019](https://www.federalreserve.gov/econres/ifdp/monetary-policy-housing-rents-and-inflation.htm)
+find that rents can rise after a contractionary monetary shock, while
+other major CPI components decline or are unresponsive; shelter accounts
+for much of the measured price puzzle. Their tenure mechanism is evidence
+against a universal net-price sign, not a claim that RES3 already implements
+HO1's own-versus-rent choices. The game's lender-held construction is the
+financing/supply mechanism described by the 2024 FRBSF analysis. No model
+coefficient is fitted to these papers or to a passing harness result.
+
+★ Before the new measurement, fix world paths 0,1,2,3,4, all four original
+rates, and both original hold dates. Keep months 49-84, the original seed-0
+one-point effect bound, and the .650-point timing bound. The multi-town
+ordering statistic is the mean policy/CPI regression slope over the whole
+four-rate curve, plus the mean far-end effect; local adjacent inversions
+remain reported as actual outcomes. Timing is the absolute paired mean
+late-minus-on-time difference for each rate, over the window and in each
+calendar year. Individual magnitudes remain printed. This measures the
+timing of the aggregate estimate rather than cancelling an unreported
+failure or selecting towns after observing them.
+
+★ Observe accepted starts in a harness-only `HousingTown` subclass:
+`buildFor` calls the real implementation once and records housing doors
+only after it succeeds. The helper verified that BuildLog and the previous
+stock differences are completions, not starts. No model hook, new saved
+flow or inferred start from closing stock is introduced. The supply case
+is predeclared as the original town's 3/10-percent pair: count accepted
+housing doors from m25 through m48, then compare the same C01 class's
+average posted rent during m49-60. Both halves are hard assertions.
+
+Tracing was delegated first to a short read-only helper, then, under the
+new contract 4 rule, to MemWatch `RES3-logs` and `RES3-log2`, each reporting
+at most fifteen lines, with no source edits or JVMs. Committed memory was
+63/67 percent before launches. The builder retains implementation, source
+review, checks and commits. The helper sessions use an isolated checkout.
+
+Main through R6f 0.9.196 (`94ba28823`) is merged. PW2 already reserved
+156-166 for these housing forms and shipped power IDs 167-171, so no IDs
+are moved: the merged catalogue has unique IDs through 171, nextId 172,
+and the fallback preserves both catalogues. AllChecks keeps both batches'
+harnesses; date checks keep both the housing and power rows; both independent
+used-car reload checks remain.
+
+R6f owns the shipped format/floor 64. RES3 therefore raises both to 65,
+without conversion. A new real format-64 pair is captured from unchanged
+shipped `94ba28823`, 0.9.196, by HousingFormat64Fixture after that tree's
+`--fast` passed with an empty source diff. It plays twelve native months
+after probeCity and writes the native scratch slot-10 pair at m31. The
+compressed artifacts, raw hashes and provenance are beside the older
+pairs in `src/main/resources/fixtures/res3-format64/`. SaveFileCheck's exact
+one-below-floor boundary now uses that pair, with the same byte/history,
+fresh-city and running-city guards; the real format-62/63 checks remain.
+
+The first five-path probe exposed a fixture-control error: calling the
+old town "seed 0" did not make its default path seed zero. Founding's
+actual default is 48213. The helper caught that the first probe replaced
+the original town rather than retaining it. Correct it by explicitly
+including `Founding.defaults().getPathSeed()` first. Earlier MonetaryCheck
+references to its original "seed 0" mean this default town; ensemble path
+numbers are unaffected. All five pilot paths and their adverse outcomes
+remain in the record, not silently dropped. The pilot's four reds and
+per-path values are in the immutable helper mail
+`20261124-021155-604-RES3-log2-9efb` and
+`target/RES3-reality5-helper.txt`, with its wrapper output
+`target/RES3-reality-MonetaryCheck.txt`.
+
+★ Use the existing ensemble's sixteen consecutive world paths 0-15 for
+the broader paired estimate, retaining all pilot paths, and the original
+default town for its unchanged effect/supply tests. This is a sample-size
+increase, not a choice of passing towns; it is declared before the new run.
+The pilot's pooled yearly timing sensitivity was 1.543760 points, so five
+towns did not establish the retained .650-point bound. The expanded sample
+keeps that bound pending measurement. Do not impose a new universal
+one-point effect on every world-path population: the original bound is
+asserted on the original town, while the whole-curve slope is assessed
+over the fixed broader sample and all per-town effects are reported.
+
+The corrected 17-town calibration run preserves the actual default town:
+its effect is still 4.515 points, and the supply assertions now observe
+137 versus 24 accepted doors, followed by C01 average asks
+.02486437563/.04124895851. All founding, currency, crew, calendar and
+fixed-basket premises pass for every path. Pooled whole-window timing is
+.356534 points; the three annual maxima are
+.2011492203/.5114997838/.9612071193. Only the pooled third-year timing
+bound remains red. The pooled policy/CPI slope is -.000676, but individual
+paths have both positive and negative total effects, as the revised law
+allows. `RES3-log3` reports the complete results in immutable mail
+`20261124-022255-747-RES3-log3-bf93`; raw
+`target/RES3-reality17-MonetaryCheck.{txt,log}`.
+
+★ Freeze empirical timing limits with the old harness's own calibration
+convention: approximately twice the largest measured response, rounded up
+to a quarter percentage point. The 17-town calibration therefore gives
+.750 points for the whole-window estimate (twice .356534) and 2.000 for
+an annual estimate (twice .961207). Preserve the old .650-point ordering
+resolution and the original one-point effect bound. For ordering, compare
+the pooled whole-curve slope across the 3%-40% range with that retained
+resolution; do not assert an exact negative sign at arbitrarily small
+scale or require every local pair to fall. Print the full mean curve.
+These are calibrated harness measurement limits, not altered price,
+credit or household-response coefficients.
+
+Before seeing any new outcomes, choose the next sixteen consecutive paths
+16-31 as independent validation. The final harness retains the original
+default-town effect and supply cases, and applies the frozen aggregate
+ordering/timing limits to those validation paths. Every calibration path
+and every adverse outcome remains in the study record above; none is
+relabelled a pass or selected away. The source default resets to the
+actual default seed after measurement. No fixture intervention, new
+month window, model adjustment or per-town noise waiver is involved.
+
+The original calibration's .650-point ordering allowance is retained for
+the pooled curve: scale its regression slope by the full 3%-40% rate span
+and compare with that resolution, rather than impose an exact negative
+sign below the measurement's resolution. This does not change the original
+town's one-point effect assertion. The two newly calibrated timing limits
+are frozen at .750/2.000 points before validation on paths 16-31; the
+validation sample excludes the calibration paths. The original default
+town is tested separately, not reused in the validation estimate. The
+whole validation curve, paired timing estimates and every individual
+town's outcome remain printed for review.
+
+Calibration observations (percentage points; timing columns are each
+town's actual responses, not limits on the paired mean):
+
+| Path | Low-minus-high inflation | Largest full-window timing response | Largest annual timing response |
+|---:|---:|---:|---:|
+| 48213, original | 4.515 | 1.426 | 3.174 |
+| 0 | -1.916 | .256 | 1.183 |
+| 1 | 1.963 | .260 | .950 |
+| 2 | 1.276 | 1.633 | 3.943 |
+| 3 | -2.942 | .380 | 1.338 |
+| 4 | 1.409 | 1.310 | 4.047 |
+| 5 | 7.179 | .181 | 1.221 |
+| 6 | .791 | .251 | .706 |
+| 7 | -2.124 | 1.335 | 2.589 |
+| 8 | 1.791 | .697 | 2.182 |
+| 9 | -2.715 | .596 | 1.352 |
+| 10 | .462 | 2.254 | 5.713 |
+| 11 | -3.596 | .516 | 1.503 |
+| 12 | .571 | .265 | 1.080 |
+| 13 | -3.180 | .882 | 3.120 |
+| 14 | 2.761 | .565 | 1.449 |
+| 15 | -2.164 | .562 | 1.573 |
+
+The independent validation on paths 16-31 passes MonetaryCheck (exit 0),
+with no recalibration after observing them. Its mean 3/10/20/40-percent CPI
+curve is 4.056172/3.093337/4.375457/4.046189 percent. The whole-curve slope
+is +.010666, or +.3946 percentage points across the rate range, below the
+retained .650-point resolution. The mean far-end reduction is only
+.009983 points. That near-zero broader effect is a limitation of the
+result: the retained one-point transmission assertion is on the original
+town, whose curve remains 6.77/2.99/4.11/2.26 percent and effect 4.515
+points. The multi-town result does not establish a universal negative
+slope or a one-point effect in every town.
+
+Paired timing sensitivity on the validation sample is .193845 points for
+the full window and .130032/.329205/.774209 for its three calendar years,
+all within the predeclared .750/2.000 limits. Individual towns can have
+much larger real construction responses: path 29 reaches 4.313 points
+over the window and 15.071 in one year. Those printed observations remain
+actual supply/timing outcomes, not a per-town waiver or a claim that they
+are small. Every path passes the same dial-only, pinned-currency, full-crew,
+whole-calendar and based-basket premises. The separate original-town
+supply assertions pass with 137/24 accepted homes and later C01 rents
+.02486437563/.04124895851. Source cleanup after this run changes names,
+formatting and output wording only, including replacing the old
+MEASUREMENT_NOISE name with ORDERING_RESOLUTION; no statistic or bound
+changes. Raw `target/RES3-reality-validation-MonetaryCheck.{txt,log}`;
+the read-only helper's fifteen-line report is immutable mail
+`20261124-024247-795-RES3-validation-770c`. Its session has ended.
+
+After merging main, the named HousingMarketCheck, HousingInventoryCheck,
+HousingChoiceCheck, HousingCheck, HousingDoorCheck, HouseholdCheck,
+BuildingDataCheck, ReadPathCheck, ReloadCheck and ResearchCheck all pass
+with exit 0; InvestCheck returns 3 for only main's known red. The typed
+catalogue, paid builds, money/household audits and real reload comparisons
+therefore run under the format-65 model, not yesterday's classes. Their
+raw files are `target/RES3-resume-<Harness>.{txt,log}`. SaveFileCheck separately
+passes the real format-64 boundary and its older native pairs (exit 0),
+`target/RES3-format65-SaveFileCheck.{txt,log}`. The catalogue report is
+regenerated after the merge, including its current small and larger city
+integrated-month observations. The validation runner's subsequent
+`./batch-check.sh --fast` also passes, exit 0.
