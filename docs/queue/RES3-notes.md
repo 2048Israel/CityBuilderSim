@@ -4177,3 +4177,72 @@ ReadPathCheck or load/refusal guard changes. Reports 8fe1/0bd9 retain the
 failed fixture, exact model/source and cause. Candidate 62da was never
 compiled/run at this stage; no HMC/Invest/Mon result is claimed for it.
 The approved repair is test-only and awaits review/push before replay.
+
+Corrected old/new net-choice proof: old c2d85d597 production plus the full
+corrected finding passes 40 assertions and fails only the actual planner
+choice; exact pushed ffa2a3b558a59608d1f9f9e6cf013cf910fd271b passes
+all 41. Full normal HousingMarketCheck also passes, including all cash,
+lease, inventory and native saved-text guards. Actual catalogue and
+source-labelled generated documentation are archived with the native run.
+
+Unchanged full MonetaryCheck on that exact candidate passes all 491 hard
+assertions (compile/harness/batch 0, 107 seconds). Printed original total
+effect is +5.526 percentage points, with printed inflation 24.54/19.01
+percent at 3/40; these rounded figures are not labelled full precision.
+Pooled total effect is +2.643556 points, non-shelter +1.599910, policy
+slope -.069005, delay .218575 below .750 and maximum calendar-year
+reversal .7042097487189467 below 2. All currency, physical basket,
+calendar, crew, base-before-window and saving-plan guards pass unchanged.
+Original accepted starts are 44/23 at 3/10. Later C01 asks
+.02674760844/.02741129335 pass, with actual stock/trades still awaiting
+the authorized passive verification; no paid-rent conclusion is inferred.
+Report 3057 retains all guard labels and unchanged Monetary source hash.
+
+InvestCheck has a new unchanged quantity predicate failure, alongside its
+known builders-wage premise. The active typed planner chooses a Large
+high-rise; the five-plot plan returns five, while the unlimited predicate
+requires more than five. The exact unlimited decision was not logged,
+so the authorized bounded replay must establish its actual sizing and
+hurdle before any classification or fixture change. Source report 2e89
+rules out zero bestScore as the cause in this active fixture: each typed
+candidate passing the same forecast-income hurdle has positive NOI.
+Separately it identifies an unintended legacy gate from zero bestScore:
+full-occupancy profitability can pass while partial fillable income less
+full carry cannot beat zero. That behavior must be repaired while retaining
+the existing full-occupancy WHETHER and fillable-door WHICH semantics, with a caused legacy
+regression; no such source change has yet been adopted. No assertion or
+threshold is changed in this diagnosis.
+
+The bounded quantity extension (a19c) proves the unchanged Invest fixture
+already causes its >5 condition. On the same unrestricted state and
+unchanged quote/carry, six projects earn 106.58568465542092 against the
+existing 95.338992998680420 hurdle; seven earn 108.98909208883254 below
+111.22882516512716. Five remains feasible. The coarse search skips five
+and six and returns four. ★ Refine its last rejected/accepted integer
+bracket using the same actual forecast and hurdle, accepting only directly
+verified feasible quantities within the original wanted/land bound.
+Here rejected 9/accepted 4 probes 6 (pass), then 7 (fail), and returns 6.
+Do not enlarge/rebudget this fixture to avoid the owned search defect.
+Forecast's preference-based matching does not prove globally monotone
+rental revenue, so this refinement is not advertised as a global maximum;
+it returns a directly verified result at least as large as the prior
+accepted result, with logarithmically bounded additional probes.
+
+Completed passive FFA supply proof retains all 32 classes, all 12 later
+months and both rates, with exact clean-run component/weight parity.
+C01 has positive physical stock and actual trades in every month at both
+rates: physical homes 50 to 72 versus 39 to 71, mean paid rent per door
+.026157975829315686 versus .026971923076108545. The predefined founding
+House control was also captured regardless of outcome and has the
+opposite comparison (.045102163828695120/.044825779667611441); no class
+was substituted. ★ Strengthen the normal MonetaryCheck with explicit
+C01 physical/trade presence and actual paid-rent comparison, keeping the
+existing ask assertion, declared class, rates, windows and every bound.
+This prevents its earlier unbuilt-ask pass from masquerading as paid-rent
+transmission. The first target-only observer attempt was separately
+archived after an absent-inventory-key error; the repaired observation
+records absent quoted stock as zero, changes no model input, and completes
+with exact parity. Reports 2195/a19c retain all native manifests; all
+owned jobs have ended. Fresh source work will cover the search refinement,
+legacy candidate eligibility and stronger paid evidence before any new
+production replay. CPI coverage remains separate open work.
