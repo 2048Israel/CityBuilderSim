@@ -1,10 +1,12 @@
 package ham.citybuildersim;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Household debt as the statistics offices print it, read from the cells (HC2).
@@ -29,7 +31,7 @@ public final class DebtStatistics {
                            double debtorsPayingOver40, double adultsPayingOver40,
                            double adultDebtorsPayingOver40, double bankruptcies, double bankruptAdults, double forcedSales) {
         public Snapshot {
-            perHousehold = Map.copyOf(perHousehold); perAdult = Map.copyOf(perAdult);
+            perHousehold = orderedCopy(perHousehold); perAdult = orderedCopy(perAdult);
         }
         Snapshot scaled(double scale) {
             return new Snapshot(households, adults, scaledMeasures(perHousehold, scale), scaledMeasures(perAdult, scale),
@@ -39,12 +41,19 @@ public final class DebtStatistics {
     }
     /** Yearly surveys have their own year axis; they must not be folded as monthly series. */
     public record Survey(int month, Map<String, Snapshot> groups) {
-        public Survey { groups = Map.copyOf(groups); }
+        public Survey { groups = orderedCopy(groups); }
         public Survey scaled(double scale) {
             Map<String, Snapshot> scaled = new LinkedHashMap<>();
             groups.forEach((k, v) -> scaled.put(k, v.scaled(scale)));
             return new Survey(month, scaled);
         }
+    }
+
+    /** Immutable survey maps retain their recorded order across the native JSON round trip. */
+    private static <K, V> Map<K, V> orderedCopy(Map<K, V> values) {
+        Map<K, V> copy = new LinkedHashMap<>();
+        values.forEach((key, value) -> copy.put(Objects.requireNonNull(key), Objects.requireNonNull(value)));
+        return Collections.unmodifiableMap(copy);
     }
 
     private static Map<Kind, Measure> scaledMeasures(Map<Kind, Measure> measures, double scale) {

@@ -4505,3 +4505,33 @@ target/cpi-native-d211/evidence and box
 ~/cbs/runs/res3-cpi-d2114bf2d-20261124; evidence archive SHA256
 c73f748a19bfa0599918e5927624045a63c790228ff7c75897696749f59daf4a.
 All owned d211 jobs ended before the report. No monetary pass is claimed.
+
+The exact 0e76d1ff9 evidence replay compiles and reproduces 157/22, then
+ends all owned jobs. Forty-four snapshots are retained (archive SHA256
+26c3cacfebab5783da2a427d4a6b3937a92209e5147be002843a419a53fcad73).
+Every compared history has identical keys, numeric lexemes and values;
+only debtSurveys map iteration order differs (194 map orders in the
+fresh comparison). DebtStatistics Snapshot/Survey use Map.copyOf, which
+does not retain recorded input order. The first redenominated data load
+has only propertyTaxCharged different: default .029264137158463127 to
+.02926413715846312, historical .006653111851018367 to
+.006653111851018366. The loader restores the saved aggregate, then
+restoreSectorBills overwrites it by summing individually scaled bills.
+Both source paths predate the CPI correction; neither exact comparison
+is weakened to pass them.
+
+Review and adopt patch SHA256
+dfc8b60606d0e77cbfcdf6565952b873eedea6cdb7cd3932f08175193a54a9be:
+DebtStatistics takes an ordered private defensive map copy, rejects null
+maps/keys/values and exposes it unmodifiable. The load path restores the
+authoritative saved charged-property-tax total after component bills;
+the setter only restores a held value, charging or settling nothing.
+No comparator, tolerance, input or policy law changes. This preserves
+recorded data and the saved aggregate instead of recomputing a flow.
+It does not yet establish the cause of all 7,162/4,341 later field
+differences: unchanged fresh/running/next-month native guards must verify
+the candidate. No further format bump is owed beyond unshipped66; shipped65
+is still refused without conversion. Detailed field evidence is at helper
+target/cpi-native-0e76/evidence (archive SHA256
+57b1c80eeadf32a40042f25c4672240ecc47e048907174e9853fc9bec10c3493)
+and box ~/cbs/runs/res3-cpi-0e76d1ff9-20261124.

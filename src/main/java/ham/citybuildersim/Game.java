@@ -23018,6 +23018,9 @@ public class Game {
              * is not restoration when the thing being derived is a flow.
              */
             economyManager.restoreSectorBills(restoredFlows.getSectors());
+            // Keep the actual saved total after restoring its component bills: summing
+            // the individually redenominated bills is a different rounding of that flow.
+            economyManager.setTotalPropertyTax(restoredFlows.getPropertyTaxCharged());
             // The rebuild dispatches a notional month. Standing readers need
             // the saved production's royalty, just as the ledgers need its bill.
             restoreLicenceFees(restoredFlows.getLicenceFees());
