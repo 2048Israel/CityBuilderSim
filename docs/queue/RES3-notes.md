@@ -3598,3 +3598,59 @@ completed artifacts; any needed native paired replay may add only passive
 phase reads and must reproduce the native CPI exactly before attribution.
 The parent will decide whether the diagnosed channel needs a model mend
 or the orchestrator's premise call. There is no new ensemble or dry run.
+
+The one passive default-path 3/40 paired replay completes, scoped batch 0.
+Its twelve original rendered CPI/class/component output lines agree,
+including the full-double component arrays. Original binary CPI bits were
+not archived, so no bit-for-bit CPI-output claim is made. All 642 Java
+sources and 2,581 class artifacts are restored byte for byte: 3,223 hashes,
+zero mismatches. No diagnostic source or classes remain. Evidence is in
+the helper's target/res3-phase-probe (analysis.json, actual-phase-prices.csv,
+actual-build-events.json, events.jsonl.gz, native-parity-proof.json and
+restoration-proof.json); immutable fourteen-line report
+20261124-131242-608-RES3-funding-core-2a76. Its session and jobs have ended.
+
+The actual phases are clearing, sold, reprice, CPI. Closing asks are next
+quotes, so they cannot be treated as the current paid bill. At month 37,
+raw rent weights are 71.710185/70.503021 percent at 3/40; actual month-49
+expenditure shares are 72.393467/70.097763 percent. Base/current rent inputs
+use the same chained unit, with no capacity/door unit jump. The large rent
+share is real recorded spending, not a class-unit accounting defect.
+Weights do use the preceding twelve statement months: at base 37, cash
+25-36 rents are 38.262372/36.028504, food 12.587781/12.571959, fees
+2.506803/2.501609. Using synchronous 26-37 would give rent weights
+71.501695/70.613624 percent. Flag this separate phase-premise concern;
+do not change it or claim that it explains either monetary failure.
+
+During months 49-84, cumulative rent contributions are -.593462/+18.485310
+points and non-rent +10.758058/+4.217272, yielding the recorded annual
+3.374737/7.266504 percent. Original-town common non-shelter inflation falls
+7.316892 points. The sixteen-town common-basket non-shelter law also passes
+at 1.333409 points; it uses its declared different towns and baskets.
+
+All 72 captured clearings place every household. Funded pressure reconstructs
+within 7.2e-14, own-source resources are never exceeded, stock is never
+overbooked, and actual bills equal occupied doors times current ask within
+4.5e-15. The rent chain reconstructs within 6.1e-18. No remaining funding,
+price-demand or rent-accounting defect is observed in this pair.
+
+Actual business acceptances at months 25-48 are 122/34 homes. At 3 percent,
+the first Terrace is accepted at 35 and completed at 45; eight structures,
+48 doors, finish by 84. At 40 percent none starts. The first Mixed Walk-up
+goes 34 to 56 versus 45 to 58. These are native acceptance and BuildLog
+events, not flows reconstructed from closing stock. Low-rate T100's paid
+rent falls .052593319 to .034078883; at month 60 its demand/occupied is
+19.872367 against 24 homes and vacancy disables the full-market floor.
+High-rate H120's paid rent rises .041795942 to .060902224; at 84 its funded
+demand is 89.416434 against 60 homes, target .070997683 above carry
+.037865253. The captured real stock, replacement-capital and scarcity
+paths explain the original-town rent split; no calibration change is taken.
+
+The pooled timing failure remains .806726401 points at the high rate.
+Town 17 contributes +1.765666151 points; its archived annual rent growth
+is 9.526744 versus 11.875487 percent. At month 60, on-time/late H120 demand
+is 66.9274/77.3423 at the same 58 homes, with targets .048610050/.056211019.
+This is a changed native household/paid-price path, not a noise label.
+Its first causal order and completion calendar cannot be proven by the
+original-town replay; that limit is explicit. Both hard failures remain
+unwaived, and the current source is not mends-ready.
