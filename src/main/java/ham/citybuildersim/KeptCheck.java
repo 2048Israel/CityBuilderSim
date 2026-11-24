@@ -4365,6 +4365,22 @@ public class KeptCheck {
         });
     }
 
+    /** Automatic bids already committed before a rule hold: the following market step must drain both books. */
+    static long automaticFundBuys(Game g) {
+        long bonds = g.getBondMarket().getBonds().stream().flatMap(b -> g.getBondMarket().bookOf(b).bids().stream())
+                .filter(o -> BondMarket.FUND.equals(o.who())).count();
+        return bonds + java.util.stream.IntStream.range(0, Equity.COMPANIES.length)
+                .mapToLong(c -> g.getExchange().bookOf(c).bids().stream().filter(o -> Exchange.FUND.equals(o.who())).count()).sum();
+    }
+
+    /** Hold the automatic strategy and explicitly cancel its outstanding commitments, leaving the hand's orders alone. */
+    static int cancelAutomaticFundOrders(Game g) {
+        int cancelled = 0;
+        for (CorporateBond b : g.getBondMarket().getBonds()) cancelled += g.getBondMarket().bookOf(b).withdraw(BondMarket.FUND);
+        for (int c = 0; c < Equity.COMPANIES.length; c++) cancelled += g.getExchange().bookOf(c).withdraw(Exchange.FUND);
+        return cancelled;
+    }
+
     /** Sections 61 to 63: the city's fund kept. */
     static void fund(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The city's fund (KP5) ===");
@@ -4411,7 +4427,14 @@ public class KeptCheck {
         t = took("Portfolio kept and shown", t);
 
         // 63: what reshapes the fund, with the fund's rule held still (fundHeld): only the choices reshape it.
+        long beforeHold = fx(() -> automaticFundBuys(g));
         Runnable fundBack = fundHeld(g);
+        check("holding the fund's rule preserves already-committed automatic bids", fx(() -> automaticFundBuys(g)) == beforeHold);
+        // FS5 restart: the hold prevents new bids, but m2181's three existing bids can fill early in m2182,
+        // before takeMonth withdraws old orders. Drain that real commitment before the no-new-lot watch.
+        fx(() -> { month(g); return null; });
+        long outstanding = fx(() -> automaticFundBuys(g));
+        check("fixture: the held month drains outstanding automatic fund buys before 63's watch (" + beforeHold + " before, " + outstanding + " after)", outstanding == 0);
         List<String> lots = fx(bench::fundHoldings);
         KeptBench.Page tab = fx(() -> bench.finances("the city's fund", "The city's fund", "Portfolio"));
         List<Choice> pages = new ArrayList<>();
@@ -4595,6 +4618,9 @@ public class KeptCheck {
         }));
         settles.add(choice("...the rule held again, Portfolio with the holdings its month settled, every row that folds opened", b -> {
             fundRule(g, false);
+            int cancelled = cancelAutomaticFundOrders(g);
+            check("fixture: the held-again watch explicitly cancels automatic commitments (" + cancelled + "), leaving no automatic bid",
+                    automaticFundBuys(g) == 0);
             settled.clear();
             settled.addAll(b.fundHoldings());
             settled.removeAll(letGoFrom);
@@ -9432,34 +9458,53 @@ public class KeptCheck {
     static final double KEPT_HEAP_SHARE = .75;
 
     /** Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. */
-    private static void idleEffectCacheControls(KeptBench bench) throws Exception {
+    private static void rendererCacheControls(KeptBench bench) throws Exception {
         boolean refusedFx = fx(() -> {
             try { KeptBench.releaseIdleEffectImages(); return false; }
             catch (IllegalStateException expected) { return true; }
         });
         check("the cache release refuses the FX thread", refusedFx);
-        KeptBench.EffectPicture effect = fx(bench::effectCachePicture);
-        int[] picture = fx(effect::pixels);
+        KeptBench.BitmapPicture picture = fx(bench::bitmapCachePicture);
+        int[] original = fx(picture::pixels);
+        var viewport = fx(picture::viewport);
+        check("fixture: the real ScrollPane skin caches its viewport", fx(viewport::isCache));
+        var fixtureCaches = fx(picture::caches);
+        var mainPicture = fx(bench::pixels);
         var signature = fx(bench::signature);
         var nodes = fx(bench::nodesOnPage);
+        var flags = fx(() -> nodes.stream().map(n -> n.isCache() + "/" + n.getCacheHint()).toList());
         var targetsBefore = fx(bench::canvasTargetIdentities);
         KeptBench.Page policy = fx(bench::policy);
         int[] counters = fx(() -> bench.counts(policy));
+        int[] invalid = KeptBench.invalidateBitmapImages(fixtureCaches);
+        check("the real viewport owns a bitmap, and invalidate releases that bitmap", invalid[6] > 0 && invalid[7] == 0);
         int[] idle = KeptBench.releaseIdleEffectImages();
         System.out.printf("  effect image pools: %d; idle %d -> %d; locked %d -> %d%n",
                 idle[0], idle[1], idle[2], idle[3], idle[4]);
-        check("fixture: the real shadow draw put reusable images in a renderer pool", idle[0] > 0 && idle[1] > 0);
+        check("fixture: invalidating the real viewport returned an image to the idle pool", idle[0] > 0 && idle[1] > 0);
         check("idle effect images release without changing the locked-image count", idle[2] == 0 && idle[3] == idle[4]);
-        check("an idle-cache purge preserves the kept page's signature and every node identity",
+        var caches = fx(bench::bitmapCaches);
+        int[] released = KeptBench.releaseRendererImages(caches);
+        System.out.printf("  retained node bitmap caches: %d; images %d -> %d; idle %d -> %d; locked %d -> %d%n",
+                released[5], released[6], released[7], released[1], released[2], released[3], released[4]);
+        check("the retained node graph has reconstructible bitmaps, and invalidation clears them", released[6] > 0 && released[7] == 0);
+        check("a renderer-cache purge preserves the kept page's signature and every node identity",
                 signature.equals(fx(bench::signature)) && nodes.equals(fx(bench::nodesOnPage)));
-        check("an idle-cache purge preserves the exact Canvas render targets", !targetsBefore.isEmpty() && targetsBefore.equals(fx(bench::canvasTargetIdentities)));
-        check("an idle-cache purge changes no Policy draw counter", java.util.Arrays.equals(counters, fx(() -> bench.counts(policy))));
-        check("the same shadow's picture is identical after its idle images are pruned", java.util.Arrays.equals(picture, fx(effect::pixels)));
-        int[] recreated = KeptBench.releaseIdleEffectImages();
-        System.out.printf("  effect images after recreation: idle %d -> %d; locked %d -> %d%n",
-                recreated[1], recreated[2], recreated[3], recreated[4]);
-        check("redrawing the same effect recreates reusable images, which release again without changing locked images",
-                recreated[1] > 0 && recreated[2] == 0 && recreated[3] == recreated[4]);
+        check("bitmap invalidation changes no retained node's cached flag or hint",
+                flags.equals(fx(() -> nodes.stream().map(n -> n.isCache() + "/" + n.getCacheHint()).toList())));
+        check("a renderer-cache purge preserves the exact Canvas render targets", !targetsBefore.isEmpty() && targetsBefore.equals(fx(bench::canvasTargetIdentities)));
+        check("a renderer-cache purge changes no Policy draw counter", java.util.Arrays.equals(counters, fx(() -> bench.counts(policy))));
+        check("the kept page's exact picture survives bitmap invalidation", java.util.Arrays.equals(mainPicture, fx(bench::pixels)));
+        check("the real viewport and its Canvas picture survive invalidation", java.util.Arrays.equals(original, fx(picture::pixels))
+                && fx(() -> picture.viewport() == viewport && viewport.isCache()));
+        fx(() -> { picture.state("state B, deliberately changed"); return null; });
+        check("the viewport fixture really changes its picture", !java.util.Arrays.equals(original, fx(picture::pixels)));
+        fx(() -> { picture.state("state A"); return null; });
+        check("the viewport's original state redraws the exact original pixels", java.util.Arrays.equals(original, fx(picture::pixels)));
+        int[] recreated = KeptBench.releaseRendererImages(fixtureCaches);
+        check("normal rendering recreates the viewport bitmap, which releases again", recreated[6] > 0 && recreated[7] == 0 && recreated[2] == 0);
+        int[] finalRelease = KeptBench.releaseRendererImages(caches);
+        check("the final heap sample starts with reconstructible bitmap and idle caches empty", finalRelease[7] == 0 && finalRelease[2] == 0);
     }
 
     /** Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. */
@@ -9530,12 +9575,20 @@ public class KeptCheck {
         java.lang.ref.WeakReference<javafx.scene.Node> chrome = fx(bench::retiredChrome);
         fx(() -> { bench.release(); return null; });
         fx(() -> null); // FS5: complete queued restoreScroll work before measuring live ownership.
-        idleEffectCacheControls(bench);
+        var vm = java.lang.management.ManagementFactory.getPlatformMXBean(com.sun.management.HotSpotDiagnosticMXBean.class);
+        check("fixture: soft-only renderer images have zero GC retention age", "0".equals(vm.getVMOption("SoftRefLRUPolicyMSPerMB").getValue()));
+        // Soft references have one collection's grace; the second collection removes soft-only orphan pool images.
+        System.gc();
+        System.gc();
+        long warm = java.lang.management.ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+        rendererCacheControls(bench);
         fx(() -> null);
+        System.gc();
         System.gc();
         check("the repaint counter does not keep a retired picture alive", retired.get() == null);
         check("a no-stage chrome scene releases the fresh header after restore", chrome.get() == null);
         long used = java.lang.management.ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+        System.out.printf("  live heap with reconstructible renderer caches warm: %.1f MiB; normalized: %.1f MiB%n", warm / 1048576.0, used / 1048576.0);
         // FS5 (GB5's star 5): what the kept pages hold, on either renderer - the live heap less the canvases' render targets where the renderer
         // keeps them on it (software: the box), weighed on the canvases the kept screens hold (KeptBench.canvasTargets()).
         long[] targets = fx(bench::canvasTargets);

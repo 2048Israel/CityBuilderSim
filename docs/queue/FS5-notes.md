@@ -2931,3 +2931,43 @@ current-main merge, helper diagnosis and necessary named checks.
   is not an assertion failure. Probe log is the box experiment's
   viewport/KeptCheck.log. Trace the 90 branch owners before selecting this
   extension; never flush non-reconstructible Canvas drawing buffers.
+- Correction to the initial hypothesis: soft-only reachability is not the
+  same as idle pool membership. ImagePool uses SoftReference for locked
+  entries too. The .199 dump has 40 large CacheFilters: 39 trace through
+  ScrollPaneSkin.viewRect to real ScrollPane owners (BankScreen.body,
+  SectorScreen.body and the other normal retained pages); one NGRegion peer
+  has no live Node.peer edge. The pool has 90 locked entries, so orphan
+  soft-only images remain after clearing the live viewport bitmaps. The
+  exact historical 230 MiB cannot be byte-attributed without its dump;
+  current dumps prove both live viewport and soft-only renderer payload.
+- ★ Normalize the KeptCheck child JVM with SoftRefLRUPolicyMSPerMB=0,
+  already used by DeterminismCheck, and two full collections. The VM then
+  collects soft-only renderer objects without clearing any strongly owned
+  image. Never manually clear locked pool entries: that could break later
+  checkIn for a live image. Apply this in AllChecks.command for KeptCheck
+  alone, prove other model/timing children retain their normal policy in
+  TimingCheck, and assert the actual VM value in KeptCheck. This makes the
+  pick ALL; there is no local full pick. The orchestrator's review and dry
+  run sequence applies. HEAP_MB and KEPT_HEAP_SHARE stay unchanged.
+- Invalidate reconstructible CacheFilter bitmaps on the render thread,
+  using the same retained-node walk as Canvas discovery; then prune idle
+  images. A real ScrollPane with a painted Canvas proves cached flag/hint,
+  node/viewport identity, exact pixels and Canvas targets survive; normal
+  rendering recreates the viewport bitmap. Scope all strong controls out
+  before the final two GCs. Application node graphs still count in full.
+- Fund 63's cause is proved: m2181's three automatic city BUY bids for
+  B:2695-2697 fill early in m2182 before takeMonth's withdrawal; ledger
+  hand=false, no queued/posted hand orders. Holding the rule correctly
+  stops new automatic bids and does not cancel old commitments. This is
+  consistent with [standing-order semantics](https://www.investor.gov/introduction-investing/investing-basics/glossary/good-til-cancelled-order),
+  not a model defect. Keep the no-new-lot laws: first advance one held
+  month and assert both books have zero automatic bids before the baseline;
+  at the second hold explicitly cancel the automatic participant's open
+  orders through OrderBook.withdraw, leaving hand orders and the deliberate
+  positive settlement control intact. The initial hold asserts that merely
+  holding preserves existing bids, so the real effect remains covered.
+  Evidence: the .199 diagnostic's fund/KeptCheck.log.
+- The other 23 picked harnesses finish 0/3. Only AutoBuildCheck's already
+  recorded care-fee premise is red; KeptTimingCheck correctly skips soft
+  timing in an ordinary gate. Candidate --fast compiles; the initial viewport
+  edit's missing StackPane qualification was fixed before testing it.

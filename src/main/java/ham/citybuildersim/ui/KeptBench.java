@@ -1716,19 +1716,20 @@ public final class KeptBench {
         return targets;
     }
 
-    private long[] canvasTargetsProbe(java.util.Set<Object> identities) {
+    private List<Node> retainedNodes() {
+        if (!javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("node discovery needs the FX thread");
         java.util.Set<Object> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         java.util.Set<Class<?>> classes = new java.util.HashSet<>();
         java.util.ArrayDeque<Object> todo = new java.util.ArrayDeque<>();
         java.util.function.Consumer<Object> push = o -> { if (o != null) todo.push(o); };
         push.accept(ui);
         for (Scene sc : new Scene[]{scene, headerScene, railScene, cityScene, sitesScene, listScene, barScene, tabScene}) if (sc != null) push.accept(sc.getRoot());
-        List<javafx.scene.canvas.Canvas> canvases = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
         while (!todo.isEmpty()) {
             Object o = todo.pop();
             if (!seen.add(o)) continue;
-            if (o instanceof javafx.scene.canvas.Canvas c) canvases.add(c);
             if (o instanceof Node n) {
+                nodes.add(n);
                 push.accept(n.getParent());
                 if (n instanceof javafx.scene.Parent pa) for (Node k : pa.getChildrenUnmodifiable()) push.accept(k);
                 if (n instanceof Labeled l) push.accept(l.getGraphic());
@@ -1754,6 +1755,31 @@ public final class KeptBench {
                 }
             }
         }
+        return nodes;
+    }
+
+    /** Reconstructible bitmap caches on the exact retained node graph, including skin viewport children. */
+    public java.util.Set<Object> bitmapCaches() throws ReflectiveOperationException {
+        return bitmapCaches(retainedNodes());
+    }
+
+    private static java.util.Set<Object> bitmapCaches(List<Node> nodes) throws ReflectiveOperationException {
+        if (!javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("cache discovery needs the FX thread");
+        var peer = Node.class.getDeclaredField("peer");
+        var filter = Class.forName("com.sun.javafx.sg.prism.NGNode").getDeclaredField("cacheFilter");
+        peer.setAccessible(true);
+        filter.setAccessible(true);
+        var caches = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
+        for (Node node : nodes) {
+            Object ng = peer.get(node);
+            if (ng != null && filter.get(ng) != null) caches.add(filter.get(ng));
+        }
+        return caches;
+    }
+
+    private long[] canvasTargetsProbe(java.util.Set<Object> identities) {
+        var canvases = retainedNodes().stream().filter(javafx.scene.canvas.Canvas.class::isInstance)
+                .map(javafx.scene.canvas.Canvas.class::cast).toList();
         long holding = 0, onHeap = 0, bytes = 0;
         try {
             java.lang.reflect.Field peerField = Node.class.getDeclaredField("peer");
@@ -1813,11 +1839,25 @@ public final class KeptBench {
      * FS5: release only reusable, unlocked Decora images before weighing live UI ownership.
      * ImagePool.pruneCache leaves locked images and every node/Canvas/CacheFilter reference intact.
      * Called on the harness thread after an FX drain; Prism owns the textures on its render thread.
-     * Returns {pools, idle before, idle after, locked before, locked after}.
+     * Returns {pools, idle before/after, locked before/after, filters, cached before/after}.
      */
     public static int[] releaseIdleEffectImages() throws Exception {
+        return releaseRendererImages(java.util.Set.of(), true);
+    }
+
+    /** Release only reconstructible node bitmaps, leaving their nodes, cached flags and Canvas drawing buffers intact. */
+    public static int[] invalidateBitmapImages(java.util.Set<Object> caches) throws Exception {
+        return releaseRendererImages(caches, false);
+    }
+
+    /** Normalize reconstructible node bitmaps and idle pool images before the fixed object budget. */
+    public static int[] releaseRendererImages(java.util.Set<Object> caches) throws Exception {
+        return releaseRendererImages(caches, true);
+    }
+
+    private static int[] releaseRendererImages(java.util.Set<Object> caches, boolean pruneIdle) throws Exception {
         if (javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("cache release needs the harness thread");
-        int[] counts = new int[5];
+        int[] counts = new int[8];
         var done = new java.util.concurrent.CountDownLatch(1);
         var error = new java.util.concurrent.atomic.AtomicReference<Throwable>();
         Runnable release = () -> {
@@ -1839,7 +1879,19 @@ public final class KeptBench {
                     counts[0]++;
                     counts[1] += ((java.util.List<?>) idle.get(pool)).size();
                     counts[3] += ((java.util.List<?>) locked.get(pool)).size();
-                    prune.invoke(pool);
+                }
+                Class<?> filter = Class.forName("com.sun.javafx.sg.prism.CacheFilter");
+                var image = filter.getDeclaredField("cachedImageData");
+                var invalidate = filter.getMethod("invalidate");
+                image.setAccessible(true);
+                for (Object cache : caches) {
+                    counts[5]++;
+                    if (image.get(cache) != null) counts[6]++;
+                    invalidate.invoke(cache);
+                    if (image.get(cache) != null) counts[7]++;
+                }
+                for (Object pool : pools) synchronized (pool) {
+                    if (pruneIdle) prune.invoke(pool);
                     counts[2] += ((java.util.List<?>) idle.get(pool)).size();
                     counts[4] += ((java.util.List<?>) locked.get(pool)).size();
                 }
@@ -1859,20 +1911,29 @@ public final class KeptBench {
         return counts;
     }
 
-    /** The same real effect redrawn after the renderer's idle pool is pruned. */
-    public record EffectPicture(Node root) {
-        public int[] pixels() { return pixelsOf(root); }
+    /** A real skin viewport's reconstructible bitmap, containing a non-reconstructible Canvas drawing. */
+    public record BitmapPicture(javafx.scene.layout.StackPane root, ScrollPane pane, Label label) {
+        public int[] pixels() throws Exception { passes(root.getScene(), root); return pixelsOf(root); }
+        public Node viewport() { return pane.lookup(".viewport"); }
+        public java.util.Set<Object> caches() throws ReflectiveOperationException { return bitmapCaches(List.of(viewport())); }
+        public void state(String text) { label.setText(text); }
     }
 
-    /** A small uncached shadow forces Decora to check out and return temporary pool images on every draw. */
-    public EffectPicture effectCachePicture() throws Exception {
-        var rectangle = new javafx.scene.shape.Rectangle(48, 32, javafx.scene.paint.Color.CORNFLOWERBLUE);
-        rectangle.setEffect(new javafx.scene.effect.DropShadow(5, javafx.scene.paint.Color.BLACK));
-        var host = new javafx.scene.layout.StackPane(rectangle);
-        var sc = new Scene(host, 96, 80);
+    /** ScrollPaneSkin itself enables the viewport bitmap cache; no production cache flag is changed. */
+    public BitmapPicture bitmapCachePicture() throws Exception {
+        var label = new Label("state A");
+        var canvas = new javafx.scene.canvas.Canvas(80, 60);
+        canvas.getGraphicsContext2D().setFill(javafx.scene.paint.Color.RED);
+        canvas.getGraphicsContext2D().fillRect(3, 4, 40, 30);
+        var content = new VBox(4, label, canvas);
+        for (int i = 0; i < 40; i++) content.getChildren().add(new Label("row " + i));
+        var pane = new ScrollPane(content);
+        pane.setFitToWidth(true);
+        var host = new javafx.scene.layout.StackPane(pane);
+        var sc = new Scene(host, 640, 360);
         ui.applyTheme(sc);
         passes(sc, host);
-        return new EffectPicture(host);
+        return new BitmapPicture(host, pane, label);
     }
 
     /** Every box (Pane) under a node and the children it holds now. */

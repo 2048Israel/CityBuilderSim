@@ -544,6 +544,8 @@ public class AllChecks {
     /** Starts a heap-bounded harness with forwarded properties and UTF-8 logged output (SP1, TM3). */
     static List<String> command(String java, String classpath, String name, boolean logged) {
         List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m", "-Xms" + HEAP_START_MB + "m"));
+        // WHY (FS5): soft-only renderer images otherwise survive by heap headroom and wall time, including orphan locked pool entries.
+        if (name.equals("KeptCheck")) c.add("-XX:SoftRefLRUPolicyMSPerMB=0");
         Observation.forwardTo(c);
         c.add("-D" + Observation.HARNESS_PROPERTY + "=" + name);
         if (Timing.forwarded() != null) c.add(Timing.forwarded());
