@@ -175,6 +175,54 @@ and PW2's ground finding (REV-PW2).
     the works' surplus on top (129,053.32 kW: 128,813.32 generated and 240 sold), where it expected the pooled fill
     times the whole nameplate; the net draw and the surplus held exactly as before.
 
+- ★R **A gap in the reserve alone orders a plant only when it fills Jerus's HW1 share of it, and the month's
+  "short" is the calm peak** (the second ensemble, traced; 2026-11-24). The reserve test plans at the year's peak
+  hour (★D, 1.631 of the mean draw), and the month's dispatch serves and charges the calm peak's block (1.263). Two
+  things followed that nothing in the model pays for and no real planner does:
+  - **The holds.** `AutoBuilder.crewLimit()` and `pendingDelay()` read "short now" as `!maintained(NOW)`, the peak
+    hour. A city whose firm supply lay between the two lines read power as short, and every other essential order
+    "waited to preserve Power's quoted first completion". HIGH seed 8 held roads, childcare and schools from m160 to
+    m172 while its cash piled up to $2.3M, with power served in full. Both now read `BuildAdvice.lacksNow()`: power
+    is short below the calm peak, and every other measure reads as before. A real city does not stop its schools for
+    a reserve margin.
+  - **The lumpy orders.** The test ordered on any gap at a plant's opening.
+    - HIGH seed 10 at m117, in 1909 (no Diesel Station until 1910): a 3,440-person town on the 10,000 kW founding
+      grid ordered a 67,410 kW Oil-Fired Plant for a 29 kW gap 60 months out, borrowing $8.1M of its $9.8M; its
+      year's GDP was about $13M.
+    - The debt then held its Substation from m151 to m266 (cut=DEBT: "debt to 332% of GDP, past 240%"). The town
+      stood at 6,000 to 7,000 people while main's reached 35,000.
+    - Seed 8 at m226 ordered a $22.3M Oil-Fired Plant for a 257 kW gap, at a lead of 237 months.
+
+    Now a gap in the reserve alone, with the calm peak covered at the plant's opening, orders a plant only when it
+    fills `FIRST_WORK_SHARE` of what the order adds (Jerus's HW1: "150 students for a 500-seat college, and the same
+    share for other oversized works"). A calm-peak gap orders as ever. Reality: a shortfall that is a fraction of
+    one unit is met by small units or waits. No 10 MW system takes a 67 MW unit, whose own loss would be larger than
+    the system's whole load.
+  - **Main's rank** would have picked the same Oil-Fired Plant had it seen a gap (WorksValue's net, $10.8M against
+    coal's $76.5M). It saw none: at the calm peak the opening had a 2,231 kW surplus.
+  - **HIGH seeds 10, 8 and 14 to m300 after the mend** are identical to main's through m200 (PW3b had parted at
+    m118, m161 and m164):
+
+    | seed | after the mend, m299 | main | PW3b |
+    |---|---|---|---|
+    | 10 | 45,390 | 37,504 | 12,467 |
+    | 8 | 28,261 | 27,798 | 17,557 |
+    | 14 | 24,670 | 25,310 | 21,585 |
+  - **The fixtures.**
+    - PowerPlanCheck 8a, coal the only firm row:
+      - a 32,599 kW gap (15% of one plant) with the calm peak covered orders nothing; it was red without the rule,
+        ordering 1 Coal Power Plant;
+      - a 68,459 kW gap (31%) orders one;
+      - the calm peak short orders 3.
+    - PowerPlanCheck 8b: `lacksNow` is false at 1.447 of the draw and true at 1.137; `maintained(NOW)` is false at
+      both.
+    - 6a, restated in two:
+      - (i) a 1,542 kW gap is half one Wind Farm's 3,084 kW credit and under the share line of a Diesel Station's
+        14,411 kW (4,323 kW). No firm row is a pick, and the farm is the order.
+      - (ii) a 4,756 kW gap is over that line. Two Wind Farms (net -149.4) are weighed against the Diesel Station
+        (123.2), and the farms are the order.
+    - AutoBuildCheck's BUILDERS twin reads `lacksNow` as AutoBuilder does.
+
 ## 3. Old saves
 
 **No format bump.** PW3 saves nothing new: the months, the credits and the planner read the city's latitude (its
@@ -220,7 +268,12 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
   MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OrderDoorCheck, PortCheck, ReplayCheck, SaveFileCheck,
   TreasuryCheck, WaterCheck, WellCheck and EssentialWorksCheck) green; **KeptCheck** main's two red lines alone
   (`docs/notes/gate.txt`), the same on a clean copy of the commit before.
-- **LongPlaytest** (the default run, 2,400 months) on the final code: green, every month audited and every reload matched (§5).
+- **LongPlaytest** (the default run, 2,400 months) on the code before ★R: green, every month audited and every reload
+  matched.
+- After ★R, one at a time: **PowerPlanCheck** green with 8a (shown red first without the rule), 8b and 6a's two
+  parts; **BuildAdviceCheck, EssentialWorksCheck, WorksFinanceCheck, BuildCardCheck, HydroCheck, WaterPowerCheck,
+  NewUnitCheck** green; **AutoBuildCheck** with only its known red (FS12's care fee, `docs/notes/gate.txt`);
+  LP_AFTER_R
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
@@ -302,7 +355,9 @@ the baseline's m678 [607 to 871], and ended at 9,461,410 against 5,627,582. Trac
   on, 60 months (the longest 22). Off, pop, the works' orders, the treasury and GDP match the FC2 baseline's seed-12
   CSV exactly through m228; on, the city reaches 40,000 at m377 against m646 off and the baseline's m728.
 - Power is not the cause: `served_power` is 1.0 in all 8,016 of the baseline's city-months from m200 to m700; PW3's
-  cities have 37 months under 0.999, in 7 seeds, the least 0.715 (the faster cities brown out a little).
+  cities have 37 months under 0.999, in 7 seeds, the least 0.715. That column is the planner's reading, not a
+  brownout: `LongPlaytest.worksShares()` reads firm supply over the draw at the peak hour since ★D (the second
+  run's trace).
 - Everything past LP-G1 together (PW2, FC2, R6f, PW3) moves seed 12 about +5% at m250, +27% at m400 and +37% at m700,
   with the watch off; the parting month is m229 (one works order more, 28 against 27, its kind not traced).
 - Reality: outages cost firms some 5 to 10% of output (Allcott, Collard-Wexler and O'Connell, AER 2016, India; the
@@ -311,4 +366,23 @@ the baseline's m678 [607 to 871], and ended at 9,461,410 against 5,627,582. Trac
   this size is real, and none is here. A builder that cannot find ground for 100 months is the test player's, which
   LP-G1 mended.
 
-**The second run**, on the merged head (PW3 with FC2b, 0.9.198), against `docs/ensemble/0.9.198.md`: SECOND_RUN.
+**The second run**, on the merged head (20e448716, PW3 with FC2b, 0.9.198), was scored against
+`docs/ensemble/0.9.198.md`, FC2b's.
+- M1 and F1 pass in all five policies; the batch verdict is PASS, the hard criteria 10 of 10, and 24 of 26
+  criteria.
+- AUTO2 is level: T1 m326 against m322, T2 9,271,762 against 9,078,825, A1 2.65% against 2.66%; A2 fails as the
+  baseline's does (12 against 13).
+- One verdict changed: HIGH T2 (info), the final population, 488,620 [275,036 to 1,155,397] against 711,698, under
+  the 75% line.
+
+Two helpers traced it (`target/pw3-trace/`):
+- Five of the 16 seeds fall under 75% (8, 9, 10, 14 and 2), and five are over 110%.
+- HIGH is bit-identical to AUTO2 through m599 in both models, so the gap stood before the 15% rate began. From m600
+  to m720 PW3b grew more (×1.38 against ×1.24).
+- The seeds' paths parted from m92 to m175.
+- The mechanism was PW3's, and ★R mends it.
+- The `served_power` column is the planner's reading at the peak hour, not the dispatch's. The second run's
+  231 city-months under 1 in m100-m600, against FC2b's 161, are that reading; seed 8's energy ratio was about 1.0
+  in both models.
+
+THIRD_RUN
