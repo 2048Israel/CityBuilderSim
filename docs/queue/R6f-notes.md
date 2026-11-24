@@ -45,7 +45,7 @@ default way knows every row from month 0 and runs as before.
   MedicineCheck (M12 a STAYS row, the re-struck split) and
   PostwarRecipeCheck (30 template changes: its `postwar()` pattern takes
   B10) hold the new rows.
-- **M19 and B9 are Pending** (section 4).
+- **M19, B9 and the leverage floor's date are queued** (R6g, R6h, R6i; section 4).
 
 ## 2. The sources, re-opened 2026-11-23
 
@@ -102,15 +102,15 @@ Each page was opened again by R6f; none has stopped saying its figure.
   `LEVERAGE_RATIO_MIN x capitalTarget() / CAPITAL_RATIO`, so before L8 it
   follows the target down to the 3% minimum itself. The 3% leverage ratio
   is Basel III's too, but dating the leverage floor needs its own source
-  (what limit a Canadian bank had before it) and is left as it was.
+  (what limit a Canadian bank had before it) and is left as it was (queued as R6i).
 - **★ One harness, ModernRowsCheck,** with a section per row, in place of
   three classes: the three share their fixtures and their pattern.
 - **The bank's rule is not saved.** It is derived from the founding and the
   finds, both saved, and heard again at a load.
 
-## 4. Pending
+## 4. Not built: queued
 
-- **M19, hospital at home: Pending, with what it needs.** The measured
+- **M19, hospital at home: queued as R6g, with what it needs.** The measured
   national effect is not a shorter stay: MedPAC (June 2024, ch. 6) gives
   6.6 days at home against 5.7 in hospital for the same DRGs (two-column
   text: "6.6 ... compared with 5.7 days, respectively"), and Levine's trial
@@ -121,14 +121,14 @@ Each page was opened again by R6f; none has stopped saying its figure.
   study's recipe there has nothing to act on. It needs a mechanism for
   acute care at home with its cost a stay (MedPAC: resource use "18 percent
   lower"), and a measured share.
-- **B9, the tick: Pending, with what it needs.** The tick Toronto cut from
+- **B9, the tick: queued as R6h, with what it needs.** The tick Toronto cut from
   on 15 Apr 1996 is on no opened page: La Spada, Farmer and Lillo (arXiv
   1009.2329, Oct 2010) say only "the April 15, 1996 Toronto Stock Exchange
   (TSE) reduction in the minimum tick size to five cents". And the game's
   share price is SX1's wage band (between 0.25% and 25% of the monthly
   wage), not a real share's, so a nominal step would be some 14% of a 1900
   share and 0.2% of a 1995 one. It needs the old tick and its price tiers
-  sourced, and Jerus's call on a nominal against a relative step.
+  sourced. Nominal against relative was the orchestrator's call (2026-11-24): relative, since a tick's effect on trading is its size against the price; so the real tick as a share of the era's real share price is carried onto the game's price.
 
 ## 5. L8: the harnesses that read Bank.CAPITAL_RATIO
 
@@ -160,7 +160,7 @@ A format bump is owed, for B10, and made: SAVE_FORMAT 64 and
 OLDEST_LOADABLE_FORMAT 64 (GameVersion). A format-63 1900 city before Nov
 2020 saved its Contact Centre's choice as "default", which is not written;
 it now holds "default~B10". Loaded, it would run 255 agents, not 291, until
-the next month's choice: an old save read wrongly, R6e's precedent for E21.
+the next month's choice: an old save read wrongly, R6e's precedent for E21. RES3 wants 64 as well: whichever ships second bumps to 65 (the orchestrator, 2026-11-24).
 M12 and L8 add no saved state: the stays factor is set every month and the
 bank's rule is heard at a load, both from the saved founding and finds.
 
