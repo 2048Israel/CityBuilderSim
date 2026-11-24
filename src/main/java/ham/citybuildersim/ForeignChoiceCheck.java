@@ -6,8 +6,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static ham.citybuildersim.ConstructionTrapCheck.BUILDERS;
 import static ham.citybuildersim.ConstructionTrapCheck.HOUSE;
@@ -66,8 +68,19 @@ import static ham.citybuildersim.ConstructionTrapCheck.template;
  *      the audit's TRADE scope and the national and foreign accounts; every month of it balanced.
  *   7. THE SAVED CHOICE: a city with a record half done, saved and loaded, has the record and the abroad contracts it had
  *      and plays on month for month as its live twin.
+ *   8. A WAIT AT HOME THAT NEVER ENDS CROSSES A SAVE (REV-FC2b-1): the terms of a site read at a wait output of nothing have an endless
+ *      wait at home; the record made of them keeps it as the greatest finite wait and every figure it keeps finite, so that DataSave's Gson,
+ *      which writes no infinity, saves the city; loaded, the record is the same field for field and plays on as its live twin. In the city's
+ *      own read no wait is endless: the contractor's month keeps orderWaitOutput() over nothing when the repairs take every point.
+ *   9. A PAVING HANDED ABROAD (ConstructionControl, F): the city's Paved Road site that paves its gravel roads is handed by its card; the
+ *      record owes the paving's whole work, nothing of it stays at home, and the gravel roads retire as the paved roads open, all of them in
+ *      fewer months than in the twin that keeps the paving at home.
+ *  10. THE PAYMENT'S TWO REFUSALS, BOTH SIDES EACH: a business that must borrow its extra moves when the bank lends it (its debt up by the
+ *      shortfall, its cash what the loan and the extra leave) and stays, nothing booked, when the bank will not (its borrowing barred); the
+ *      city moves when its treasury holds the card's extra and is refused, nothing booked, when it holds less (it cannot borrow).
  *
- * Every fixture causes its condition: the orders placed, the standing roads, the exchange rate, the payer's cash.
+ * Every fixture causes its condition: the orders placed, the standing roads, the exchange rate, the payer's cash, the paving ordered, the
+ * borrowing ban on the credit record, the treasury's cash.
  */
 public class ForeignChoiceCheck {
 
@@ -102,6 +115,15 @@ public class ForeignChoiceCheck {
 
     /** The months played on before a save (the record half done), and after it, in both twins. */
     static final int BEFORE_THE_SAVE = 2, AFTER_THE_SAVE = 4;
+
+    /** Section 9's gravel roads the city orders paved: a pair, whose paving at 25 months queued at home still leaves the crews' excess over the home premium (the extra is something). */
+    static final int PAVINGS = 2;
+
+    /** Section 10(a)'s landlords hold this share of the gross extra they would pay, so that they must borrow the rest. */
+    static final double SHORT_CASH_SHARE = 0.5;
+
+    /** Section 10(b)'s treasury holds this many times the card's extra when it can pay and this many when it cannot (the city never borrows: Game's government). */
+    static final double TREASURY_OVER = 2, TREASURY_UNDER = 0.5;
 
     /** The slot the saved city is written to, in its own scratch folder. */
     static final int SCRATCH_SLOT = ConstructionTrapCheck.SCRATCH_SLOT;
@@ -149,6 +171,9 @@ public class ForeignChoiceCheck {
         theCitysSite(root);
         theMoney(root);
         theSave(root);
+        theEndlessWait(root);
+        thePaving(root);
+        thePayment(root);
         out.println("\n--- the audit ---");
         audited("in every month here");
 
@@ -843,5 +868,313 @@ public class ForeignChoiceCheck {
         check("...the record is the live twin's every month, to the bit (or ended in both)", recordSame);
         check("...the crews' points and bill on the sites, to the bit", bills);
         check("...and the treasury's cash", cash);
+    }
+
+    /* ============================ 8. A WAIT AT HOME THAT NEVER ENDS, SAVED ============================ */
+
+    /** The figures a record keeps as numbers: the ones differ() compares. */
+    static final String[] RECORD_FIGURES = { "points", "owed", "materials", "pace", "pricePerPoint", "paid", "monthsHome", "monthsAbroad", "interestSaved", "earningsForward" };
+
+    /** The first of a record's figures that is not finite, or null when every one is. */
+    static String notFinite(ConstructionControl.Abroad r) {
+        for (String f : RECORD_FIGURES) {
+            try {
+                if (!Double.isFinite(ConstructionControl.Abroad.class.getField(f).getDouble(r))) return f;
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The city saved to the scratch slot of its own folder and loaded into a fresh Game over that folder, held as the live one is (a hold is a
+     * harness lever a save does not carry). Null when the save or the load threw or the save was not written; the reason is in {@code why}.
+     */
+    static Game savedAndLoaded(Path root, String name, Game live, String slotName, String[] why) {
+        Game back = new Game(filesOf(root, name));
+        try {
+            GameFiles.Result[] result = new GameFiles.Result[1];
+            quietly(() -> result[0] = live.saveGame(SCRATCH_SLOT, slotName));
+            if (result[0] == null || !result[0].ok) {
+                why[0] = result[0] == null ? "no result" : String.valueOf(result[0].error);
+                return null;
+            }
+            quietly(() -> {
+                back.run();
+                back.loadGameSave(SCRATCH_SLOT);
+                for (Sector s : back.getSectors().all()) back.getBusinessInvestment().holdSector(s.key());
+            });
+        } catch (RuntimeException e) {
+            why[0] = e.toString();
+            return null;
+        }
+        return back;
+    }
+
+    static void theEndlessWait(Path root) {
+        out.println("\n--- 8. a record from a wait at home that never ends: kept at the greatest finite wait, every figure finite, so that the city saves; loaded, the same ---");
+        Game live = choiceCity(root, "endless", 0, 0);
+        BuildingManager bm = live.getBuildingManager();
+        EconomyManager em = live.getEconomyManager();
+        Construction c = live.getSectors().construction();
+        BuildingsTemplate house = template(live, HOUSE);
+        String key = ConstructionControl.keyOf(house);
+        em.setExchangeRate(strongRate(live));
+        Verdict v = verdict(live, house, RE);
+        check("fixture: the landlords' Houses are on site with terms to hand over", v != null && contractOf(bm.getStack(house), RE) != null);
+        if (v == null) return;
+
+        // THE CAUSE. No input of the city reaches an endless wait (the last lines of this section show why); the wait output the terms are read at is the one
+        // the method takes as its argument, and a city of no builders' month and no contractor would pass nothing: siteMonths() is then NaN, its never.
+        check("the cause: with no output to build with, the site's wait at home is NaN (siteMonths(): its never)", Double.isNaN(bm.siteMonths(key, 0)));
+        BuildingManager.AbroadTerms terms = bm.abroadTermsOf(house, RE, 0);
+        check("...the terms read at it have a wait at home that is +Infinity, and a finite wait abroad",
+                terms != null && terms.monthsHome() == INF && Double.isFinite(terms.monthsAbroad()), String.valueOf(terms == null ? null : terms.monthsHome() + " / " + terms.monthsAbroad()));
+        if (terms == null) return;
+        double cost = costOnSite(live, house, v);
+        double perMonth = live.getBusinessInvestment().estimatedMonthlyProfit(RE, house) * terms.buildings();
+        double rate = v.rate();
+        double interest = BuildersShort.interestSaved(cost, rate, terms.monthsAbroad(), terms.monthsHome());
+        double earnings = BuildersShort.broughtForward(perMonth, 0, terms.monthsAbroad(), terms.monthsHome());
+        check("fixture: handed an endless wait, the earnings brought forward at a rate of nothing are endless (what the record must not keep)",
+                perMonth > 0 && earnings == INF, perMonth + " a month, " + earnings);
+        check("...and the interest saved at the real rate is a figure", Double.isFinite(interest) && interest >= 0, String.valueOf(interest));
+
+        // The handover, as investorsHandAbroad() makes it: the payment out of the landlords' cash and billed to the builders, then the books' half.
+        double gross = terms.extra() / (1 - v.rB());
+        double unearned0 = c.getUnearnedRevenue();
+        live.getSectorInvestor(RE).spend(gross);
+        c.bill(gross, 0);
+        ConstructionControl.Abroad rec = bm.handSiteAbroad(terms, live.getMonth(), gross, interest, earnings);
+        check("the site is handed: the record stands and the stack has work abroad", rec != null && bm.getControl().abroadOf(key) != null && bm.getStack(house).hasAbroad());
+        if (rec == null) return;
+        check("the terms' wait at home is infinite and the record's is Double.MAX_VALUE, the greatest finite wait", terms.monthsHome() == INF && rec.monthsHome == Double.MAX_VALUE,
+                terms.monthsHome() + " -> " + rec.monthsHome);
+        String bad = notFinite(rec);
+        check("every figure the record keeps is finite", bad == null, bad == null ? "all ten" : "not finite: " + bad);
+        exact("...the endless earnings brought forward it was handed are kept as nothing", rec.earningsForward, 0);
+        near("...its points are the terms'", rec.points, terms.points(), 1e-12);
+        near("...at the pace and the price a point the terms struck", rec.pace * rec.pricePerPoint, terms.pace() * terms.pricePerPoint(), 1e-12);
+        exact("...and the months abroad", rec.monthsAbroad, terms.monthsAbroad());
+        near("...it paid the gross extra, which is in the builders' book", c.getUnearnedRevenue() - unearned0, rec.paid, 1e-9);
+
+        // THE SAVE.
+        String[] why = { "" };
+        Game back = savedAndLoaded(root, "endless", live, "the endless wait", why);
+        check("the city saves and loads with the record in it (without BuildingManager's guard the record's infinity is DataSave's Gson refusing it, and this line throws)",
+                back != null, why[0]);
+        if (back == null) return;
+        BuildingManager bb = back.getBuildingManager();
+        ConstructionControl.Abroad got = bb.getControl().abroadOf(key);
+        check("the loaded city has the record", got != null);
+        if (got == null) return;
+        List<String> d = differ(rec, got);
+        check("...every field of it the same to the bit", d.isEmpty(), d.isEmpty() ? "monthsHome " + got.monthsHome : "differ: " + d);
+        exact("...its wait at home still the greatest finite wait", got.monthsHome, Double.MAX_VALUE);
+        BuildingsStacks sl = bm.getStack(house), sb = bb.getStack(template(back, HOUSE));
+        check("...the abroad contracts and the home contracts the live city's", sameContracts(sl.getAbroadContracts(), sb.getAbroadContracts()) && !sb.getAbroadContracts().isEmpty()
+                && sameContracts(sl.getContracts(), sb.getContracts()));
+        boolean recordSame = true, cash = true;
+        for (int m = 1; m <= AFTER_THE_SAVE; m++) {
+            month(live);
+            month(back);
+            ConstructionControl.Abroad l = bm.getControl().abroadOf(key), r = bb.getControl().abroadOf(key);
+            recordSame &= (l == null) == (r == null) && (l == null || differ(l, r).isEmpty());
+            cash &= Math.abs(live.getCash() - back.getCash()) <= 1e-9 * Math.max(1, Math.abs(live.getCash()));
+        }
+        check("the next " + AFTER_THE_SAVE + " months the record is the live twin's every month, to the bit (or ended in both)", recordSame);
+        check("...and the treasury's cash", cash);
+
+        // WHY NO INPUT OF THE CITY REACHES IT: the repairs of standing roads take every point of the builders' month and the sites' month is
+        // nothing, so that read at it alone a wait is endless (the trap, ConstructionTrapCheck) - but orders and the card read at orderWaitOutput(),
+        // which adds the contractor's month, and that keeps every wait finite.
+        roads(live, (int) Math.ceil(live.getBuildingOutputAtEveryPost() / ConstructionTrapCheck.perRoad(live)) + 1);
+        check("fixture: standing roads' repairs take every point of the builders' month: the sites' output at every post is nothing", live.getBuildingOutputAtEveryPost() == 0,
+                String.valueOf(live.getBuildingOutputAtEveryPost()));
+        check("...read at that output alone the Houses' wait is endless (NaN)", Double.isNaN(bm.siteMonths(key, live.getBuildingOutputAtEveryPost())));
+        double wait = bm.siteMonths(key, live.orderWaitOutput());
+        check("...but orderWaitOutput() adds the contractor's month, which is over nothing, and the wait read at it is a finite number of months",
+                live.orderWaitOutput() > 0 && !Double.isNaN(wait) && wait < Double.MAX_VALUE, live.orderWaitOutput() + " -> " + wait);
+    }
+
+    /* ============================ 9. A PAVING HANDED ABROAD ============================ */
+
+    /**
+     * A calm city whose landlords' Houses are built (nothing else on site), PAVINGS Gravel Roads standing and their paving ordered on the Paved
+     * Road's site, the queue at home made long by standing Paved Roads to CITY_QUEUE_MONTHS; the city's cash given for the extra.
+     */
+    static Game pavingCity(Path root, String name) {
+        Game g = calm(root, name);
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate house = template(g, HOUSE), gravel = template(g, ConstructionControl.PAVE_FROM);
+        for (int k = 0; k < MOST_MONTHS && bm.getStack(house).getUnderConstruction() > 0; k++) month(g);
+        if (bm.getStack(house).getUnderConstruction() > 0) throw new IllegalStateException("the landlords' Houses did not finish in " + MOST_MONTHS + " months");
+        g.setCashForTest(g.getCash() + 1e9);
+        Game.BuildResult[] built = new Game.BuildResult[1];
+        quietly(() -> built[0] = g.buildStack(gravel, PAVINGS, true));
+        if (built[0] != Game.BuildResult.SUCCESS) throw new IllegalStateException("the gravel roads could not be stood: " + built[0]);
+        boolean[] ordered = new boolean[1];
+        quietly(() -> ordered[0] = g.paveRoads(PAVINGS));
+        if (!ordered[0]) throw new IllegalStateException("the paving could not be ordered");
+        roads(g, roadsFor(g, CITY_QUEUE_MONTHS));
+        g.setCashForTest(g.getCash() + 1e9);
+        return g;
+    }
+
+    static void thePaving(Path root) {
+        out.println("\n--- 9. a paving handed abroad: its whole work to the foreign crews, nothing of it at home, the gravel roads retired as the paved roads open, sooner than in the twin ---");
+        Game a = pavingCity(root, "paving-a"), b = pavingCity(root, "paving-b");
+        BuildingManager bmA = a.getBuildingManager(), bmB = b.getBuildingManager();
+        BuildingsTemplate paved = template(a, ConstructionControl.PAVE_TO), gravel = template(a, ConstructionControl.PAVE_FROM);
+        String key = ConstructionControl.keyOf(paved);
+        BuildingsStacks sa = bmA.getStack(paved), sb = bmB.getStack(template(b, ConstructionControl.PAVE_TO));
+        check("fixture: the twins are the same city: the queue at home, the sites' month, the points owed on the Paved Road site and the treasury",
+                bmA.queueAtHome() == bmB.queueAtHome() && a.getBuildingOutputAtEveryPost() == b.getBuildingOutputAtEveryPost()
+                        && sa.owedPoints() == sb.owedPoints() && a.getCash() == b.getCash());
+        check("fixture: the Paved Road site is a paving site with PAVINGS gravel roads being paved and none left to pave, the paving the whole of the site",
+                a.isPavingSite(key) && b.isPavingSite(key) && a.pavingNow() == PAVINGS && a.paveable() == 0 && sa.getUnderConstruction() == PAVINGS,
+                a.pavingNow() + " being paved, " + a.paveable() + " to pave, " + sa.getUnderConstruction() + " on site");
+        check("fixture: the queue at home is long, past the knee and the threshold", bmA.monthsQueued() > bmA.thresholdMonths() && bmA.thresholdMonths() >= BuildersShort.KNEE_MONTHS,
+                String.format("%.2f months queued, the threshold %.2f", bmA.monthsQueued(), bmA.thresholdMonths()));
+        Game.AbroadCard card = a.abroadPreview(key);
+        out.printf("  the card on the Paved Road site: %,.0f points at %,.1f a month; extra %,.4f; %,.0f months abroad against %,.2f at home%n",
+                card.points(), card.pace(), card.extra(), card.monthsAbroad(), card.monthsHome());
+        check("the card is open on the paving site, with months saved and an extra to pay", card.open() && card.why().isEmpty() && card.monthsSaved() > 0 && card.extra() > 0, card.why());
+        double owed0 = sa.owedPoints(), queue0 = bmA.queueAtHome(), cash0 = a.getCash();
+        near("fixture: the site owes the paving's work: its pavings' points, nothing worked yet", owed0, PAVINGS * paved.getConstructionPoints(), 1e-9);
+        String refused = a.handSiteAbroad(key);
+        check("the city hands the paving over: handSiteAbroad returns null", refused == null, String.valueOf(refused));
+        ConstructionControl.Abroad rec = bmA.getControl().abroadOf(key);
+        check("...the twin keeps its paving at home: no record, the card still open", bmB.getControl().abroadOf(key) == null && b.abroadPreview(key).open());
+        if (rec == null) return;
+        near("the record's points are the paving's work: the site's owed points at the handover, the card's points", rec.points, owed0, 1e-9);
+        near("...the card's", rec.points, card.points(), 1e-12);
+        near("...and what it owes is all of them: nothing built yet", rec.owed, rec.points, 1e-12);
+        near("the treasury paid the card's extra (to the rounding of a treasury of a billion: a few of its last digits)", cash0 - a.getCash(), card.extra(), 8 * Math.ulp(cash0));
+        check("the site is still the paving site, and open on the card no longer", a.isPavingSite(key) && !a.abroadPreview(key).open());
+        check("nothing of the paving stays at home: the city has no home contract on the site and no share of its home work",
+                contractOf(sa, "City") == null && sa.homePointsShare("City") == 0 && sa.getAbroadContracts().size() == 1);
+        check("...the home work on the site is nothing: its owed points less the part abroad", Math.abs(sa.owedPoints() - rec.owed) <= 1e-9 * Math.max(1, rec.owed),
+                String.format("%,.6f owed, %,.6f abroad", sa.owedPoints(), rec.owed));
+        near("...the queue at home fell by the paving's work", queue0 - bmA.queueAtHome(), rec.owed, 1e-9);
+        check("...and nothing is left to hand: no terms for the city on the site", bmA.abroadTermsOf(paved, "City", a.orderWaitOutput()) == null);
+
+        // Months in step: the gravel roads retire as the paved roads open, in step with the paved roads standing; the handed site's all of them sooner.
+        long gravel0 = bmA.getQuantity(gravel.getId()), paved0 = bmA.getQuantity(paved.getId());
+        LandManager land = a.getLandManager();
+        boolean order = true, ledger = true;
+        int doneA = -1, doneB = -1, firstRetired = -1;
+        for (int m = 1; m <= MOST_MONTHS && (doneA < 0 || doneB < 0); m++) {
+            if (doneA < 0) month(a);
+            if (doneB < 0) month(b);
+            long retired = gravel0 - bmA.getQuantity(gravel.getId()), opened = bmA.getQuantity(paved.getId()) - paved0;
+            order &= retired == opened && a.pavingNow() == PAVINGS - retired;
+            ledger &= Double.doubleToLongBits(land.getAllocatedSqFt()) == Double.doubleToLongBits(bmA.getTotalLandFootprint());
+            if (firstRetired < 0 && retired > 0) firstRetired = m;
+            if (doneA < 0 && retired == PAVINGS && a.pavingNow() == 0) doneA = m;
+            if (doneB < 0 && gravel0 - bmB.getQuantity(gravel.getId()) == PAVINGS && b.pavingNow() == 0) doneB = m;
+        }
+        out.printf("  the last gravel road retires in month %d abroad against %s at home; the first in month %d%n", doneA, doneB < 0 ? "not by month " + MOST_MONTHS : String.valueOf(doneB), firstRetired);
+        check("the gravel roads retired as the paved roads opened: each month as many retired as had opened, and the pavings left were the rest", order);
+        check("...every one of them retired and the paving is done", doneA > 0 && a.pavingNow() == 0 && bmA.getControl().pavings().isEmpty()
+                && bmA.getQuantity(gravel.getId()) == gravel0 - PAVINGS && bmA.getQuantity(paved.getId()) == paved0 + PAVINGS);
+        check("...the land ledger was the buildings' footprint every month, to the bit", ledger);
+        check("they all retired in fewer months than in the twin that keeps the paving at home", doneA > 0 && (doneB < 0 ? b.pavingNow() > 0 : doneA < doneB),
+                doneA + " against " + (doneB < 0 ? "not by month " + MOST_MONTHS : String.valueOf(doneB)));
+        check("...and sooner than the card's months at home", doneA > 0 && doneA < card.monthsHome(), doneA + " against " + card.monthsHome());
+        check("the record ended with the paving built", bmA.getControl().abroadOf(key) == null && !sa.hasAbroad());
+    }
+
+    /* ============================ 10. THE PAYMENT'S TWO REFUSALS ============================ */
+
+    /** The saving the landlords' months saved are worth at the rate of a loan for the shortfall (Game.judged(): the loan's rate; a bond's cheaper coupon can only raise it). */
+    static double savingBorrowing(Game g, Verdict v, double borrowed) {
+        double annual = g.getEconomyManager().getBusinessDebtManager().projectRate(RE, borrowed);
+        return BuildersShort.broughtForward(v.perMonth(), g.getBusinessInvestment().realTestRate(annual) / 12, v.terms().monthsAbroad(), v.terms().monthsHome());
+    }
+
+    /** Section 2's mover at the strong D$, its landlords' cash cut to SHORT_CASH_SHARE of the gross extra they would pay: they must borrow the rest. */
+    static Game shortMover(Path root, String name) {
+        Game g = choiceCity(root, name, 0, 0);
+        g.getEconomyManager().setExchangeRate(strongRate(g));
+        Verdict v = verdict(g, template(g, HOUSE), RE);
+        if (v == null) throw new IllegalStateException("the mover has no terms");
+        g.getEconomyManager().setSectorCash(RE, SHORT_CASH_SHARE * v.gross());
+        return g;
+    }
+
+    static void thePayment(Path root) {
+        out.println("\n--- 10. the payment's two refusals, both sides each: a business that must borrow (the bank lends / will not), the city's treasury (holds the extra / does not) ---");
+        // (a) A BUSINESS THAT MUST BORROW.
+        Game lends = shortMover(root, "borrows"), barred = shortMover(root, "barred");
+        BusinessDebtManager credit = barred.getEconomyManager().getBusinessDebtManager();
+        // The ban a default writes on a sector's credit record (BusinessDebtManager.restoreCreditRecord(), as BuildCardCheck sets it): its months are a default's exclusion.
+        Map<String, Integer> ban = new LinkedHashMap<>(credit.getBlockedMonthsAll());
+        ban.put(RE, BusinessDebtManager.exclusionFor(1));
+        credit.restoreCreditRecord(credit.getRestructureCounts(), ban);
+        BuildingsTemplate house = template(lends, HOUSE);
+        String key = ConstructionControl.keyOf(house);
+        Verdict vl = verdict(lends, house, RE), vb = verdict(barred, template(barred, HOUSE), RE);
+        double shortL = vl.gross() - lends.getEconomyManager().getSectorCash(RE), shortB = vb.gross() - barred.getEconomyManager().getSectorCash(RE);
+        check("fixture: the landlords hold under the gross extra in both, so each is short and must borrow", shortL > 0 && shortB > 0 && shortL == shortB, String.format("short %,.4f of %,.4f", shortL, vl.gross()));
+        check("fixture: in both the extra, net of the tax recovered, is under the saving at the loan's rate for the shortfall, and the crews would finish it sooner: the sum says move",
+                soonerAbroad(vl) && soonerAbroad(vb) && vl.cost() > 0 && vl.cost() < savingBorrowing(lends, vl, shortL) && vb.cost() < savingBorrowing(barred, vb, shortB),
+                String.format("%,.4f under %,.4f", vl.cost(), savingBorrowing(lends, vl, shortL)));
+        check("fixture: the one input that differs: one is under a borrowing ban, and the bank lends the shortfall to the other and not to it",
+                !lends.getEconomyManager().getBusinessDebtManager().isBorrowingBlocked(RE) && credit.isBorrowingBlocked(RE)
+                        && lends.getSectorInvestor(RE).canBorrow(shortL) && !barred.getSectorInvestor(RE).canBorrow(shortB));
+        BuildingManager bmL = lends.getBuildingManager(), bmB = barred.getBuildingManager();
+        EconomyManager emL = lends.getEconomyManager(), emB = barred.getEconomyManager();
+        Construction cL = lends.getSectors().construction(), cB = barred.getSectors().construction();
+        BuildingsStacks slb = bmB.getStack(template(barred, HOUSE));
+        double cashL = emL.getSectorCash(RE), debtL = emL.getBusinessDebtManager().getPrincipal(RE), unearnedL = cL.getUnearnedRevenue();
+        double cashB = emB.getSectorCash(RE), debtB = credit.getPrincipal(RE), unearnedB = cB.getUnearnedRevenue(), buildersB = emB.getSectorCash(BUILDERS);
+        Snap homeB = Snap.of(contractOf(slb, RE));
+        quietly(lends::investorsHandAbroad);
+        quietly(barred::investorsHandAbroad);
+        ConstructionControl.Abroad rec = bmL.getControl().abroadOf(key);
+        check("the landlords the bank lends to move: a record of work abroad on the site", rec != null && bmL.getStack(house).hasAbroad());
+        if (rec != null) {
+            double tol = 1e-6 * vl.gross();
+            near("...they paid the gross extra, as a business that holds the cash does", rec.paid, vl.gross(), 1e-9);
+            check("...their debt rose by the shortfall (the loan grossed for its fee: not under it)", emL.getBusinessDebtManager().getPrincipal(RE) - debtL >= shortL - tol,
+                    String.format("%,.4f against the shortfall %,.4f", emL.getBusinessDebtManager().getPrincipal(RE) - debtL, shortL));
+            near("...their cash after is the cash less the gross extra plus the loan: what the loan handed them", emL.getSectorCash(RE), cashL - rec.paid + shortL, tol);
+            near("...and the extra is in the builders' book: unearned revenue up by it", cL.getUnearnedRevenue() - unearnedL, rec.paid, 1e-9);
+        }
+        check("the landlords the bank will not lend to stay: no record, no work abroad, the home contract theirs still",
+                bmB.getControl().abroadOf(key) == null && !slb.hasAbroad() && Snap.of(contractOf(slb, RE)).same(homeB));
+        exact("...their cash unchanged", emB.getSectorCash(RE), cashB);
+        exact("...their debt unchanged: nothing borrowed", credit.getPrincipal(RE), debtB);
+        exact("...the builders' unearned revenue unchanged", cB.getUnearnedRevenue(), unearnedB);
+        exact("...and the builders' cash", emB.getSectorCash(BUILDERS), buildersB);
+
+        // (b) THE CITY'S TREASURY.
+        Game over = citySite(root, "treasury-over", SCHOOLS, 0, CITY_QUEUE_MONTHS), under = citySite(root, "treasury-under", SCHOOLS, 0, CITY_QUEUE_MONTHS);
+        String ck = key(over, SCHOOL);
+        BuildingManager bmO = over.getBuildingManager(), bmU = under.getBuildingManager();
+        BuildingsStacks so = bmO.getStack(template(over, SCHOOL)), su = bmU.getStack(template(under, SCHOOL));
+        Game.AbroadCard cardO = over.abroadPreview(ck), cardU = under.abroadPreview(ck);
+        check("fixture: the card is open on the city's site in both, at the same extra", cardO.open() && cardU.open() && cardO.extra() > 0 && cardO.extra() == cardU.extra(), cardO.why());
+        over.setCashForTest(TREASURY_OVER * cardO.extra());
+        under.setCashForTest(TREASURY_UNDER * cardU.extra());
+        check("fixture: the one input that differs: the treasury holds over the card's extra in one and under it in the other", over.getCash() > cardO.extra() && under.getCash() < cardU.extra(),
+                String.format("%,.2f and %,.2f against the extra %,.2f", over.getCash(), under.getCash(), cardO.extra()));
+        double cashO = over.getCash(), unearnedO = over.getSectors().construction().getUnearnedRevenue();
+        double cashU = under.getCash(), unearnedU = under.getSectors().construction().getUnearnedRevenue(), valueU = su.getContractValue();
+        Snap homeU = Snap.of(contractOf(su, "City"));
+        String paid = over.handSiteAbroad(ck), refused = under.handSiteAbroad(ck);
+        check("the treasury that holds the extra hands the site over: handSiteAbroad returns null and the record stands", paid == null && bmO.getControl().abroadOf(ck) != null && so.hasAbroad(),
+                String.valueOf(paid));
+        near("...it paid the card's extra out of the treasury", cashO - over.getCash(), cardO.extra(), 1e-9);
+        near("...which is in the builders' book", over.getSectors().construction().getUnearnedRevenue() - unearnedO, cardO.extra(), 1e-9);
+        check("the treasury that holds less is refused with the reason: \"the treasury holds ...\"", refused != null && refused.startsWith("the treasury holds"), String.valueOf(refused));
+        check("...no record, no work abroad, no abroad contract: the stack is the city's own as it was", bmU.getControl().abroadOf(ck) == null && !su.hasAbroad()
+                && su.getAbroadContracts().isEmpty() && su.isCitysOwn() && Snap.of(contractOf(su, "City")).same(homeU));
+        exact("...the treasury unchanged", under.getCash(), cashU);
+        exact("...the builders' unearned revenue unchanged", under.getSectors().construction().getUnearnedRevenue(), unearnedU);
+        exact("...the stack's contract value unchanged", su.getContractValue(), valueU);
+        check("...and the card is open still, at the same extra", under.abroadPreview(ck).open() && under.abroadPreview(ck).extra() == cardU.extra());
     }
 }

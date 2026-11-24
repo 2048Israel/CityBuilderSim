@@ -6795,7 +6795,8 @@ public class BuildingManager {
      * The books' half of a handover (FC2b): the payer's home contract on the site moves to the foreign crews' part
      * (BuildingsStacks.handAbroad()), what it paid over is booked to it (bookAbroad()), and the site's record is made and
      * kept (ConstructionControl.addAbroad()), owing the points and the units the terms give, at the pace and price they
-     * struck; returned. The payer's payment and the builders' bill are Game's. Null for a site that is not there.
+     * struck; returned. The payer's payment and the builders' bill are Game's. Null for a site that is not there. Every
+     * figure it keeps is finite (REV-FC2b-1): the record is saved, and the save's Gson refuses an infinity.
      */
     public ConstructionControl.Abroad handSiteAbroad(AbroadTerms a, int month, double paid, double interestSaved,
                                                      double earningsForward) {
@@ -6810,19 +6811,23 @@ public class BuildingManager {
         r.building = a.building();
         r.payer = a.payer();
         r.month = month;
-        r.points = a.points();
-        r.owed = a.points();
-        r.materials = a.materials();
-        r.pace = a.pace();
-        r.pricePerPoint = a.pricePerPoint();
-        r.paid = paid;
-        r.monthsHome = a.monthsHome();
-        r.monthsAbroad = a.monthsAbroad();
-        r.interestSaved = interestSaved;
-        r.earningsForward = earningsForward;
+        r.points = finiteOr0(a.points());
+        r.owed = r.points;
+        r.materials = finiteOr0(a.materials());
+        r.pace = finiteOr0(a.pace());
+        r.pricePerPoint = finiteOr0(a.pricePerPoint());
+        r.paid = finiteOr0(paid);
+        // ...a wait at home that never ends is siteMonths()' never, Double.MAX_VALUE: the save's Gson writes no infinity (REV-FC2b-1).
+        r.monthsHome = a.monthsHome() < Double.MAX_VALUE ? a.monthsHome() : Double.MAX_VALUE;
+        r.monthsAbroad = a.monthsAbroad() < Double.MAX_VALUE ? a.monthsAbroad() : Double.MAX_VALUE;
+        r.interestSaved = finiteOr0(interestSaved);
+        r.earningsForward = finiteOr0(earningsForward);
         control.addAbroad(r);
         return r;
     }
+
+    /** A figure for the saved record (REV-FC2b-1): itself when finite, else nothing - the save's Gson refuses an infinity or a NaN. */
+    private static double finiteOr0(double x) { return Double.isFinite(x) ? x : 0; }
 
     /** The foreign crews' excess share at the curve's first point (BuildersShort.excessShare(): E x / p, capped). */
     public double foreignExcessShare() {

@@ -591,7 +591,7 @@ public final class ConstructionControl {
         public double pricePerPoint;
         /** The extra the payer paid to hand it over, with the builders' tax in it. */
         public double paid;
-        /** The months the part would have taken at home, and the months it takes abroad, at the handover. */
+        /** The months the part would have taken at home, and the months it takes abroad, at the handover: Double.MAX_VALUE for a wait that never ends (siteMonths()' never; the save's Gson writes no infinity, REV-FC2b-1). */
         public double monthsHome;
         public double monthsAbroad;
         /** What the months saved are worth the payer in interest (BuildersShort.interestSaved()), and in the earnings over it (broughtForward() less that). */

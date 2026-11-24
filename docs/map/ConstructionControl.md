@@ -137,7 +137,7 @@
 | 589 | `public double pace` | The foreign crews' month on it, in points a month, struck at the handover (BuildersShort.sitePace()). |
 | 591 | `public double pricePerPoint` | What the crews bill a point, in the city's money. |
 | 593 | `public double paid` | The extra the payer paid to hand it over, with the builders' tax in it. |
-| 595 | `public double monthsHome` | The months the part would have taken at home, and the months it takes abroad, at the handover. |
+| 595 | `public double monthsHome` | The months the part would have taken at home, and the months it takes abroad, at the handover: Double.MAX_VALUE for a wait that never ends (siteMonths()' never; the save's Gson writes no infinity, REV-FC2b-1). |
 | 596 | `public double monthsAbroad` |  |
 | 598 | `public double interestSaved` | What the months saved are worth the payer in interest (BuildersShort.interestSaved()), and in the earnings over it (broughtForward() less that). |
 | 599 | `public double earningsForward` |  |
