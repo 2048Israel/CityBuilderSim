@@ -314,6 +314,11 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
   reverted, its second with `crewLimit`'s guard reverted), each shown red first; **MaterialsCheck, BuildAdviceCheck,
   EssentialWorksCheck, WorksFinanceCheck, BuildCardCheck, NewUnitCheck, HydroCheck, WaterPowerCheck** green;
   **AutoBuildCheck** with only its known FS12 red; **LongPlaytest** (the default run, 2,400 months): green, every
+  month audited and every reload matched.
+- After REV-PW3d's mend (the share waived only in a month that lacks), one at a time: **PowerPlanCheck** green, 94
+  lines, 8a's last two fixtures shown red first (§2, ★R); **BuildAdviceCheck, EssentialWorksCheck,
+  WorksFinanceCheck, BuildCardCheck, NewUnitCheck, HydroCheck, WaterPowerCheck, MaterialsCheck** green;
+  **AutoBuildCheck** with only its known FS12 red; **LongPlaytest** (the default run, 2,400 months): green, every
   month audited and every reload matched (§5).
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
@@ -321,41 +326,44 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
 LongPlaytest's default city (founded 1900, today's buildings but every power plant from its year, PW2), the
 automatic path's power orders by the decade they were placed in:
 
-| decade | after ★R's seasonal line (REV-PW3c) | ★R's first form |
+| decade | after REV-PW3d's mend | the seasonal line (REV-PW3c) |
 |---|---|---|
-| 1900s | 1 Oil-Fired Plant | 1 Oil-Fired Plant |
-| 1910s-1930s | nothing (the founding grid and the works' own power carry the town) | 1910s 2 diesel |
-| 1940s | 9 diesel, 1 Oil-Fired Plant | nothing |
-| 1950s | 1 coal | nothing |
-| 1960s | 23 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal | 7 diesel, 1 coal |
-| 1970s | nothing | nothing |
-| 1980s | 7 turbines, 1 Oil-Fired Plant, **2 Wind Farms** | 4 diesel, 2 turbines, **3 Wind Farms, 4 Solar Farms** |
-| 1990s | nothing | 8 diesel, 1 turbine, 2 coal, **3 Wind Farms, 1 Solar Farm** |
-| 2000s | 15 diesel, 7 turbines | 4 diesel, 3 turbines, **8 Wind Farms, 4 Solar Farms** |
-| 2010s | 3 diesel, 2 turbines, 3 Oil-Fired Plants, **1 Solar Farm** | 14 diesel, 7 turbines, 6 Oil-Fired Plants, 1 coal, **10 Solar Farms, 1 Biomass** |
-| 2020s | 4 diesel, 3 turbines, 4 Oil-Fired Plants, **11 Wind Farms, 1 Biomass** | 4 turbines |
-| 2030s | 5 diesel, 11 turbines, 2 coal | nothing |
-| 2040s | 1 diesel, 4 turbines, 5 coal | 9 diesel, 13 turbines, 1 Oil-Fired Plant, 1 coal |
-| 2050s-2060s | nothing | nothing |
-| 2070s | 2 diesel, 2 coal | 1 coal |
-| 2080s | nothing | 1 diesel, 1 Oil-Fired Plant, 1 coal, **1 Wind Farm, 1 Biomass** |
-| 2090s-2100 | 2100 (m2400) 5 turbines | 2090s 17 diesel, 8 turbines, 1 Oil-Fired Plant |
+| 1900s | nothing (the founding grid carries the town) | 1 Oil-Fired Plant |
+| 1910s | 2 diesel | nothing |
+| 1920s | nothing | nothing |
+| 1930s | 1 diesel | nothing |
+| 1940s | 4 diesel | 9 diesel, 1 Oil-Fired Plant |
+| 1950s | 2 diesel, 1 Oil-Fired Plant | 1 coal |
+| 1960s | 2 diesel, 1 turbine, 1 coal | 23 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal |
+| 1970s | 6 diesel, 3 turbines, 1 Oil-Fired Plant | nothing |
+| 1980s | 17 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal, **13 Wind Farms** | 7 turbines, 1 Oil-Fired Plant, **2 Wind Farms** |
+| 1990s | 10 diesel, 12 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Solar Farm, 1 Biomass** | nothing |
+| 2000s | nothing | 15 diesel, 7 turbines |
+| 2010s | 8 diesel, 5 turbines, 1 Oil-Fired Plant, 1 coal, **2 Wind Farms** | 3 diesel, 2 turbines, 3 Oil-Fired Plants, **1 Solar Farm** |
+| 2020s | 3 diesel, 1 turbine, **1 Wind Farm** | 4 diesel, 3 turbines, 4 Oil-Fired Plants, **11 Wind Farms, 1 Biomass** |
+| 2030s | 11 diesel, 3 turbines, 2 coal | 5 diesel, 11 turbines, 2 coal |
+| 2040s | 6 diesel, 10 turbines, 2 coal, **9 Solar Farms** | 1 diesel, 4 turbines, 5 coal |
+| 2050s | 6 diesel, 2 turbines, 2 coal, **1 Solar Farm** | nothing |
+| 2060s | 11 diesel, 5 turbines | nothing |
+| 2070s | nothing | 2 diesel, 2 coal |
+| 2080s | 1 coal | nothing |
+| 2090s-2100 | nothing | 2100 (m2400) 5 turbines |
 
-**The totals**, after ★R's seasonal line, its first form and REV-PW3's mends:
+**The totals**, after REV-PW3d's mend, the seasonal line, ★R's first form and REV-PW3's mends:
 
-| | seasonal line | ★R's first form | REV-PW3's mends |
-|---|---|---|---|
-| Diesel Stations | 62 | 66 | 86 |
-| Oil-Fired Turbines | 45 | 38 | 57 |
-| coal plants | 11 | 7 | 9 |
-| Oil-Fired Plants | 12 | 10 | 7 |
-| Wind Farms | 13 | 15 | 5 |
-| Solar Farms | 1 | 19 | 2 |
-| Biomass Plants | 1 | 2 | 2 |
-| reserve suggestions | 119 | 390 | 447 |
-| spread suggestions | 13 | 9 | 8 |
-| offers assembled past the listing | 0 | 0 | 1 |
-| Wire & Cable Works (no other copper works) | 4 | 5 | 3 |
+| | REV-PW3d's mend | seasonal line | ★R's first form | REV-PW3's mends |
+|---|---|---|---|---|
+| Diesel Stations | 89 | 62 | 66 | 86 |
+| Oil-Fired Turbines | 48 | 45 | 38 | 57 |
+| coal plants | 11 | 11 | 7 | 9 |
+| Oil-Fired Plants | 6 | 12 | 10 | 7 |
+| Wind Farms | 19 | 13 | 15 | 5 |
+| Solar Farms | 11 | 1 | 19 | 2 |
+| Biomass Plants | 1 | 1 | 2 | 2 |
+| reserve suggestions | 139 | 119 | 390 | 447 |
+| spread suggestions | 12 | 13 | 9 | 8 |
+| offers assembled past the listing | 0 | 0 | 0 | 1 |
+| Wire & Cable Works (no other copper works) | 2 | 4 | 5 | 3 |
 
 Before REV-PW3's mends the run built 73 diesels, 51 turbines, 9 coal plants, 7 Oil-Fired Plants and no farms, with
 292 reserve and 11 spread suggestions.
@@ -364,10 +372,13 @@ The farms rose with ★R: a gap in the reserve alone that no firm row fills thre
 close it as the order (PowerPlanCheck 6a (i)). With the seasonal line fewer gaps are the reserve's alone (July's peak
 block is 1.507 times the draw, the year's 1.263), so the rule passes over a firm row less often, and the Wind and
 Solar Farms fall from 34 to 14 (a reading of the rule; the run's farms and its 119 reserve suggestions against 390
-were not traced one by one).
+were not traced one by one). With REV-PW3d's mend a gap the month does not lack waits for a row it fills three tenths
+of, a small one or a farm, and the farms are 30 again (19 wind, 11 solar), the Oil-Fired Plants 6 against 12 (not
+traced one by one).
 
-The 1900s Oil-Fired Plant (m102 with the seasonal line, $13.7M; m107 in the first form) still passes, because its
-gap at its opening, 102.8 months out, is no small reserve gap: its physical relief is 11,850 a month. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
+The 1900s Oil-Fired Plant is gone with REV-PW3d's mend: the first order is 2 Diesel Stations at m122 (1910, the
+diesel's first year), $4.4M, physical relief 20,444 a month, open 63.1 months on. The seasonal line had ordered the
+Oil-Fired Plant at m102 ($13.7M, opening 102.8 months out, relief 11,850 a month) and the first form at m107. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
 Turbines, 8 Diesel Stations and 1 Oil-Fired Plant, no coal and no farms.
 
 **Why so few farms** (the orchestrator asked: did research find them, and what did the planner price them at;
@@ -390,8 +401,8 @@ prices rural ground apart from the city's (a helper's reading of the tree: the c
 `LandFactors` is a nation's multiplier; agriculture buys at the city's price, with a property-tax relief at use
 value; no building rents its ground; a farm's ground use is a coal plant's). Rural ground for the power farms is
 RG1's (Queued on main after FS6, 77c77ab8c: a policy, Jerus 2026-11-24, "that also lets farms crops as well be cheaper"), not PW3's, so PW3 ships with the city's price and the mix follows
-it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; the seasonal run's 1980s, 2010s
-and 2020s; REV-PW3's run's 1980s, 2030s and 2060s).
+it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s, 1990s, 2010s,
+2020s, 2040s and 2050s).
 
 **Against §2.9's table:** 1900's city burned coal in plants of half a megawatt and took a third of its power from
 rivers; this one has no hydro site ordered, and today's sizes (a 280 MW coal unit, an 86 MW Oil-Fired Plant, a 19
@@ -508,5 +519,33 @@ against `docs/ensemble/0.9.199.md` (CY1, 41d77afb0).
   main's, not PW3's: OA1 on the queue (main e1b58f210).
 - The holds: 112 months held against CY1's 59, 37 of them in months physically short of power; months physically
   short, 106 against 222; power orders, 40 against 72.
+
+**The fifth run**, after REV-PW3d's mend, on f9f0ccc7a (PW3 on 0.9.199), was scored against
+`docs/ensemble/0.9.199.md`.
+- M1 and F1 pass in all five policies; the batch verdict is PASS, the hard criteria 10 of 10, and 24 of 26 criteria
+  (A2 fails as the baseline's does, 15 [9 to 24] against 13 [10 to 26]).
+- ZERO_HOT's T2 passes again. One verdict changed: ZERO_HOT's H2, an info criterion, PASS to FAIL.
+
+| policy | measure | the fifth run | the fourth | 0.9.199 |
+|---|---|---|---|---|
+| ZERO_HOT | T2, final population | 53,423 [14,169 to 128,477] | 37,968 | 51,906 [15,266 to 79,127] |
+| ZERO_HOT | H2, inflation m342-402 over the twin's | 1.21% [-4.49% to 7.15%], 15 of 16 below | 0.51% | 0.81% [-1.71% to 9.41%] |
+| HIGH | T2 | 689,474 [303,585 to 985,997] | 622,866 | 734,788 |
+| HIGH | R2 | 2.67% | 2.74% | 2.94% |
+| AUTO2 | T1 | m320 [262 to 429] | m324 | m331 |
+| AUTO2 | T2 | 9,080,089 | 9,075,280 | 9,223,026 |
+| AUTO2 | A1 | 2.62% | 2.63% | 2.63% |
+| ZERO_SLACK | T2 | 7,516,550 | 7,410,132 | 7,646,013 |
+| SHOCK | T2 | 1,436,180 | 1,433,391 | 1,516,325 |
+
+**ZERO_HOT's H2 is noise** (a helper's trace, `C:\Users\Jerus\AppData\Local\Temp\pw3edit\h2a.py` to `h2d.py`):
+- The scorer's own formula reproduces both PW3 medians. Seed by seed the fourth and fifth runs' values correlate at
+  -0.08: 14 of 16 seeds move by over a point, eight up and eight down, the mean +0.49.
+- Resampling the 16 seeds 10,000 times, the median's standard error is 1.33 points (the fourth run's 0.77), and 55%
+  of the resamples are over 1.00% (the fourth run's 21%): the fifth run misses the line by 0.21 points.
+- Both sides sit near main's: the run's own inflation 3.18% against CY1's 2.74%, the twin's 1.68% against 1.86%.
+  The fourth run's 0.51% was the low draw.
+- Power is not in it: `served_power` is at least 0.987 in every ZERO_HOT run in m342-m402.
+- CY1's seed-by-seed H2 cannot be rebuilt here (its AUTO2 twins' CSVs are not kept; the baseline stores medians).
 
 `docs/ensemble/PW3.md` is this run's snapshot.
