@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-R6f-ZLaak94X -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R6f, research: the 1996-2024 medicine, business and law rows — 2026-11-24, ready, see docs/queue/R6f-notes.md
 Three rows enter research with something behind them, each undone in a 1900 city until it is known.
