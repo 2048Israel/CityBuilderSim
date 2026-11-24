@@ -1694,16 +1694,22 @@ public final class BuildAdvice {
         public double ratio() { return capital > 0 ? net() / capital : Double.NEGATIVE_INFINITY; }
     }
 
-    /** Every power plant the city could order one more of, weighed by the spread with what is on site standing; `skip` left out. */
+    /**
+     * Every power plant the city could order one more of, weighed by the spread with what is on site standing at that plant's own
+     * opening (WorksValue.openBy() at its quoted lead, as the reserve test reads a site; PW3, REV-PW3 #4); `skip` left out.
+     */
     public static List<Spread> spreads(Game game, double landLeft, java.util.Set<BuildingsTemplate> skip) {
         Measure m = Measure.of(Kind.POWER);
         UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
-        Map<BuildingsTemplate, Long> base = onSite(game, m);
-        double year = u.yearRunning(base), life = lifeFactor(game);
+        Map<BuildingsTemplate, Long> site = onSite(game, m);
+        double life = lifeFactor(game);
         List<Spread> out = new ArrayList<>();
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (!m.serves(t) || skip.contains(t) || !(unit(game, m, t) > 0)) continue;
-            double saved = year - u.yearRunning(plus(base, t, 1));
+            // PW3: a plant on site counts from its opening, as the reserve test reads it: one that opens after this plant does is not running
+            // when this one is, so it takes none of its saving (nor blocks it for years while its site is delayed).
+            Map<BuildingsTemplate, Long> base = WorksValue.openBy(game, site, game.quoteBuild(t, 1).months);
+            double saved = u.yearRunning(base) - u.yearRunning(plus(base, t, 1));
             double capital = game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft);
             double cost = 12 * (capital / life + runningCostAt(game, NewUnit.of(game, t), 0));
             out.add(new Spread(t, saved, cost, capital));

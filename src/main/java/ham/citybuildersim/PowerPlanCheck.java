@@ -28,6 +28,7 @@ import java.util.Set;
  *   5. WIND ALONE NEVER PASSES THE TEST: a city knowing only wind and sun has no reserve order, however short; knowing a firm
  *      row too, the same city has.
  *   6. THE SPREAD orders wind where the fuelled rows standing run dear (diesel), and none where they run cheap (coal).
+ *      A plant still going up counts in it from its own opening: coal that opens after the farm does takes none of its saving.
  *   7. THE GROUND: a coal plant's is planned past the one listing, and the automatic path assembles it over several offers;
  *      past ASSEMBLE_MOST offers none is planned.
  *   8. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
@@ -305,6 +306,68 @@ public final class PowerPlanCheck {
                         s == null && BuildAdvice.SPREAD_ORDERS.get() == s0 && BuildAdvice.RESERVE_ORDERS.get() == r0);
             }
         }
+        spreadPending(root);
+    }
+
+    /** Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. */
+    static final long DEPOTS = 100;
+
+    /** The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. */
+    static final double PREP_MONTHS = 60;
+
+    /** The Wind Farm's row of the spread at `g`, or null when it is not weighed. */
+    static BuildAdvice.Spread windRow(Game g) {
+        BuildingsTemplate wind = plant(g, WIND);
+        for (BuildAdvice.Spread s : BuildAdvice.spreads(g, g.getLandManager().getAvailableSqFt(), Set.of()))
+            if (s.template() == wind) return s;
+        return null;
+    }
+
+    /**
+     * PW3 (REV-PW3 #4): a plant still going up counts in the spread from its own opening, as the reserve test reads it. The dear town
+     * of the spread (diesel standing, wind's net above 0) with coal on site that opens after the farm does: counted open at once, that
+     * coal would carry the energy the farm displaces and take its saving; counted from its opening, the farm opens first and saves what
+     * it saves with nothing pending. The coal is as many plants as it takes for the whole site to leave the farm under half its saving.
+     */
+    static void spreadPending(Path root) {
+        out.println("--- 6b. the spread counts a plant on site from its opening ---");
+        Game g = covered(root, "spread-pending", DIESEL);
+        know(g, DIESEL, WIND, COAL);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        BuildingsTemplate wind = plant(g, WIND), coal = plant(g, COAL), depot = plant(g, BuildersFirstCheck.DEPOT);
+        // ...the diesels' upkeep takes more of the builders' output than the town has, so no order is quoted to open (siteUnitMonths() is
+        // NaN at no output): depots enough that the farm and the coal each have an opening.
+        double draw = u.getConsumption();
+        quietly(() -> g.buildStack(depot, DEPOTS, true));
+        g.getServicesManager().updateServices();
+        u.setWattsConsumption(draw);
+        check(String.format("fixture: the builders have output to quote an opening (%d at every post)", g.getBuildingOutputAtEveryPost()),
+                g.getBuildingOutputAtEveryPost() > 0);
+        BuildAdvice.Spread bare = windRow(g);
+        check("fixture: with nothing on site the farm saves the year more than it costs ("
+                        + (bare == null ? "no wind weighed" : String.format("saves %.0f against %.0f", bare.saved(), bare.cost())) + ")",
+                bare != null && bare.net() > 0);
+        double nothing = bare == null ? 0 : bare.saved();
+        long k = 1;
+        for (; k <= 4096; k *= 2) {
+            Map<BuildingsTemplate, Long> asked = Map.of(coal, k);
+            if (u.yearRunning(asked) - u.yearRunning(BuildAdvice.plus(asked, wind, 1)) < nothing / 2) break;
+        }
+        final long plants = k;
+        quietly(() -> g.buildStack(coal, plants, false));
+        g.getBuildingManager().addPreparation(coal, PREP_MONTHS * g.getBuildingOutputAtEveryPost());
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
+        double first = g.getBuildingManager().siteUnitMonths(coal, 1, g.getBuildingOutputAtEveryPost()), lead = g.quoteBuild(wind, 1).months;
+        check(String.format("fixture: %d coal plants are going up, the first to open in %.1f months, after the farm's %.1f", plants, first, lead),
+                BuildAdvice.units(site) == plants && Double.isFinite(first) && first > lead);
+        double counted = u.yearRunning(site) - u.yearRunning(BuildAdvice.plus(site, wind, 1));
+        check(String.format("fixture: counted open at once, that coal leaves the farm %.0f a year, well below the %.0f it saves with nothing pending",
+                counted, nothing), counted < nothing / 2);
+        BuildAdvice.Spread row = windRow(g);
+        check(String.format("a coal plant still being built past the farm's opening does not take the farm's saving: the spread's wind net is above 0 "
+                        + "and its saving within 1%% of the town's with nothing pending (saved %.0f, cost %.0f; %.0f with nothing pending, %.0f with the coal counted open)",
+                        row == null ? Double.NaN : row.saved(), row == null ? Double.NaN : row.cost(), nothing, counted),
+                row != null && row.net() > 0 && close(row.saved(), nothing, .01));
     }
 
     /* ----- 7. the ground ----- */
