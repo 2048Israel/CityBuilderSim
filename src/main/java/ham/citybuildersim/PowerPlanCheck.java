@@ -30,12 +30,17 @@ import java.util.Set;
  *      the energy at CREDIT_HALF, and with them added is still short; knowing a firm row too, the order closes it.
  *   6. THE SPREAD orders wind where the fuelled rows standing run dear (diesel), and none where they run cheap (coal).
  *      A plant still going up counts in it from its own opening: coal that opens after the farm does takes none of its saving.
- *      And the reserve test credits a farm: where the town runs dear and one Wind Farm's credited firm kW closes the gap, the
- *      farm is the order, its total net cost below the screening curve's firm pick's (6a).
+ *      And the reserve test credits a farm: where the town runs dear and one Wind Farm's credited firm kW closes a gap under
+ *      FIRST_WORK_SHARE of a Diesel Station's, no firm row is a candidate (the share, 2026-11-24) and the farm is the order (6a); where the gap
+ *      is at or over the share, the farms that close it are weighed against the diesel and, their total net cost below the firm pick's,
+ *      are the order (6a(ii)).
  *   7. THE GROUND: a coal plant's is planned past the one listing, and the automatic path assembles it over several offers;
  *      past ASSEMBLE_MOST offers none is planned. (7a) The quote is what the ground costs, offers past the listing at their own prices; (7b) an
  *      assembly that cannot cover the order buys nothing and borrows nothing; (7c) an order the builders would refuse moves no money (REV-PW3 #1, #2).
- *   8. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
+ *   8. A GAP IN THE RESERVE ALONE IS NOT A PLANT (2026-11-24): with the calm peak (PLAN_PEAK) covered at a plant's opening, a gap to the peak
+ *      hour (PLAN_PEAK_HOUR) orders it only when it fills FIRST_WORK_SHARE of the plant; a calm-peak gap orders as ever (8a). And the month
+ *      lacks power below the calm peak the dispatch serves, not below the plan's peak hour (BuildAdvice.lacksNow(), the holds', 8b).
+ *   9. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
  */
 public final class PowerPlanCheck {
@@ -362,6 +367,7 @@ public final class PowerPlanCheck {
             }
         }
         reserveCredit(root);
+        reserveFarms(root);
         spreadPending(root);
     }
 
@@ -373,49 +379,90 @@ public final class PowerPlanCheck {
         return BuildAdvice.supplyDemand(g, POWER, BuildAdvice.plus(at, t, 1), p)[0] - BuildAdvice.supplyDemand(g, POWER, at, p)[0];
     }
 
+    /** (6a(ii)) The second dear town's gap at a farm's opening, as a multiple of FIRST_WORK_SHARE of one Diesel Station's firm kW: over the share, so the diesel is a candidate, and under what the farms that close it credit. */
+    static final double OVER_SHARE = 1.1;
+
     /**
-     * PW3 (REV-PW3 #3): the reserve test credits a farm. The dear town of the spread (diesels standing, which the farm displaces) is made
-     * short at a farm's opening by GAP_SHARE of one Wind Farm's credited firm kW, less than the farm's credit: one farm closes the gap,
-     * a diesel (the screening curve's firm pick) closes it too, and the farm's total net cost (its year's capital and running less the
-     * diesel fuel it saves) is far below the diesel's, which saves none. Without wind a candidate the order is a diesel.
+     * The dear town of the spread (diesels standing, which a farm displaces) made short at a farm's opening by `gap` kW, wired to carry the draw
+     * that sets: a farm's credit and a diesel's fall with the draw, so `gap` is read again over four passes, each wiring the town for the draw.
      */
-    static void reserveCredit(Path root) {
-        out.println("--- 6a. the reserve test credits a farm and weighs it against the screening curve's firm pick ---");
-        Game g = covered(root, "reserve-credit", DIESEL);
+    static void settleGap(Game g, BuildAdvice.Ahead p, java.util.function.DoubleSupplier gap) {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
-        BuildingsTemplate wind = plant(g, WIND), diesel = plant(g, DIESEL);
-        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
-        double lead = g.quoteBuild(wind, 1).months;
-        BuildAdvice.Ahead p = BuildAdvice.opening(g, lead, g.getAutoBuilder().getSlack());
-        // ...the gap is a share of the farm's credit, which itself falls with the draw: settle the two, wiring the town for the draw each time.
         for (int pass = 0; pass < 4; pass++) {
-            drawGap(g, p, GAP_SHARE * firmAdded(g, wind, site, p));
+            drawGap(g, p, gap.getAsDouble());
             double draw = u.getConsumption();
             SubstationCheck.wiresFor(g, BuildAdvice.supplyDemand(g, BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), Map.of(), p)[1]);
             g.getServicesManager().updateServices();
             u.setWattsConsumption(draw);
         }
-        double farm = firmAdded(g, wind, site, p), dsl = firmAdded(g, diesel, site, p);
+    }
+
+    /**
+     * PW3 (REV-PW3 #3): the reserve test credits a farm. The dear town of the spread is made short at a farm's opening by GAP_SHARE of one Wind
+     * Farm's credited firm kW, less than the farm's credit and under FIRST_WORK_SHARE of a Diesel Station's firm kW: no firm row fills Jerus's HW1
+     * share of its order (2026-11-24), so the screening curve's pick is none, and the reserve order is the one credited farm that closes the gap.
+     */
+    static void reserveCredit(Path root) {
+        out.println("--- 6a. the reserve test credits a farm: no firm row fills FIRST_WORK_SHARE of its order, so the farm that closes the gap is the order ---");
+        Game g = covered(root, "reserve-credit", DIESEL);
+        BuildingsTemplate wind = plant(g, WIND), diesel = plant(g, DIESEL);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
+        double lead = g.quoteBuild(wind, 1).months;
+        BuildAdvice.Ahead p = BuildAdvice.opening(g, lead, g.getAutoBuilder().getSlack());
+        // ...the gap is a share of the farm's credit, which itself falls with the draw: settle the two.
+        settleGap(g, p, () -> GAP_SHARE * firmAdded(g, wind, site, p));
+        double farm = firmAdded(g, wind, site, p), dsl = firmAdded(g, diesel, site, p), line = BuildAdvice.FIRST_WORK_SHARE * dsl;
         double[] sd = BuildAdvice.supplyDemand(g, POWER, site, p);
-        check(String.format("fixture: the dear town is short at a farm's opening by %.0f kW, %.0f%% of one Wind Farm's %.0f credited firm kW and under a Diesel Station's %.0f",
-                        sd[1] - sd[0], 100 * (sd[1] - sd[0]) / farm, farm, dsl),
-                sd[1] - sd[0] > 0 && sd[1] - sd[0] < farm && farm < dsl);
+        check(String.format("fixture: the dear town is short at a farm's opening by %.0f kW, %.0f%% of one Wind Farm's %.0f credited firm kW and under FIRST_WORK_SHARE's %.0f kW of a Diesel Station's %.0f",
+                        sd[1] - sd[0], 100 * (sd[1] - sd[0]) / farm, farm, line, dsl),
+                sd[1] - sd[0] > 0 && sd[1] - sd[0] < farm && sd[1] - sd[0] < line);
         Map<BuildingsTemplate, Long> at = WorksValue.openBy(g, site, lead);
         long[] cw = BuildAdvice.count(g, POWER, at, Map.of(wind, 1L), p, BuildAdvice.reserveMost(g, wind, at), true);
         double land = g.getLandManager().getAvailableSqFt();
-        double rw = BuildAdvice.reserveRank(g, wind, 1, cw[1] == 1, lead, at, p, land);
-        // ...the screening curve's firm pick: the order with the farm left out, and its total net cost by the same formula.
+        // ...the screening curve's firm pick: the order with the farm left out.
+        BuildAdvice.Suggestion pick = BuildAdvice.suggestFor(g, null, POWER, g.getCash(), land, g.getAutoBuilder().getSlack(), Set.of(wind), false, true);
+        long r0 = BuildAdvice.RESERVE_ORDERS.get();
+        BuildAdvice.Suggestion s = suggest(g);
+        check(String.format("no firm row fills FIRST_WORK_SHARE of its order (the gap %.0f kW under the %.0f kW of a Diesel Station's %.0f), so the screening curve's pick is none (%s) "
+                        + "and the reserve order is the one credited Wind Farm that closes it (%s)", sd[1] - sd[0], line, dsl, named(pick), named(s)),
+                pick == null && cw[0] == 1 && cw[1] == 1 && s != null && s.template() == wind && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+    }
+
+    /**
+     * 6a's original point, on a second town: the gap at a farm's opening is OVER_SHARE of FIRST_WORK_SHARE of a Diesel Station's firm kW, so a
+     * diesel (the screening curve's firm pick) fills the share and closes it, and more than one farm's credit, so the farms that close it are
+     * weighed against that pick: their total net cost (the year's capital and running less the diesel fuel they save) is the lower, and the order is the farms.
+     */
+    static void reserveFarms(Path root) {
+        out.println("--- 6a(ii). the farms that close a gap a firm row fills the share of are weighed against the screening curve's firm pick ---");
+        Game g = covered(root, "reserve-credit-farms", DIESEL);
+        BuildingsTemplate wind = plant(g, WIND), diesel = plant(g, DIESEL);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
+        double lead = g.quoteBuild(wind, 1).months;
+        BuildAdvice.Ahead p = BuildAdvice.opening(g, lead, g.getAutoBuilder().getSlack());
+        settleGap(g, p, () -> OVER_SHARE * BuildAdvice.FIRST_WORK_SHARE * firmAdded(g, diesel, site, p));
+        Map<BuildingsTemplate, Long> at = WorksValue.openBy(g, site, lead);
+        long[] cw = BuildAdvice.count(g, POWER, at, Map.of(wind, 1L), p, BuildAdvice.reserveMost(g, wind, at), true);
+        double[] sd = BuildAdvice.supplyDemand(g, POWER, site, p);
+        double gap = sd[1] - sd[0], one = firmAdded(g, wind, site, p), dsl = firmAdded(g, diesel, site, p), line = BuildAdvice.FIRST_WORK_SHARE * dsl;
+        double farms = BuildAdvice.supplyDemand(g, POWER, BuildAdvice.plus(site, wind, cw[0]), p)[0] - sd[0];
+        check(String.format("fixture: the dear town is short at a farm's opening by %.0f kW, at or over FIRST_WORK_SHARE's %.0f kW of a Diesel Station's %.0f, over one Wind Farm's %.0f credited firm kW "
+                        + "and under the %.0f of the %d farms that close it", gap, line, dsl, one, farms, cw[0]),
+                gap >= line && gap > one && cw[0] > 1 && cw[1] == 1 && gap < farms);
+        double land = g.getLandManager().getAvailableSqFt();
+        double rw = BuildAdvice.reserveRank(g, wind, cw[0], cw[1] == 1, lead, at, p, land);
+        // ...the screening curve's firm pick: the order with the farms left out, and its total net cost by the same formula.
         BuildAdvice.Suggestion pick = BuildAdvice.suggestFor(g, null, POWER, g.getCash(), land, g.getAutoBuilder().getSlack(), Set.of(wind), false, true);
         double rd = pick == null ? Double.NaN : BuildAdvice.reserveRank(g, pick.template(), pick.count(), true, pick.lead(),
                 WorksValue.openBy(g, site, pick.lead()), pick.ahead(), land);
-        out.printf("total net cost of the order a year: Wind Farm %.4g (count %d, closes %b) against the screening curve's firm pick, %s %.4g (closes %b)%n",
-                rw, cw[0], cw[1] == 1, named(pick), rd, pick != null && pick.closes());
+        out.printf("total net cost of the order a year: %d Wind Farms %.4g (closes %b) against the screening curve's firm pick, %s %.4g (closes %b)%n",
+                cw[0], rw, cw[1] == 1, named(pick), rd, pick != null && pick.closes());
         long r0 = BuildAdvice.RESERVE_ORDERS.get();
         BuildAdvice.Suggestion s = suggest(g);
-        check(String.format("one credited Wind Farm closes a gap smaller than its firm credit, and against the screening curve's firm pick, by total net cost, it is the lowest "
-                        + "(%.4g against %.4g), so the reserve order is the farm, not a diesel (%s)", rw, rd, named(s)),
-                cw[0] == 1 && cw[1] == 1 && pick != null && pick.closes() && pick.template() == diesel && rw < rd
-                        && s != null && s.template() == wind && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+        check(String.format("the %d Wind Farms close the gap a Diesel Station closes too, and by total net cost the farms are the lowest (%.4g against %.4g), so the reserve order is the farms, not a diesel (%s)",
+                        cw[0], rw, rd, named(s)),
+                cw[0] > 1 && cw[1] == 1 && pick != null && pick.closes() && pick.template() == diesel && rw < rd
+                        && s != null && s.template() == wind && s.count() == cw[0] && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
     }
 
     /** Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. */
@@ -655,6 +702,99 @@ public final class PowerPlanCheck {
                 && java.util.Arrays.deepEquals(before, g.getLandManager().getMarket().getOffersState()));
     }
 
+    /* ----- 8. a gap in the reserve alone is not a plant; what the month lacks is the calm peak ----- */
+
+    /** The calm peak's share of the peak hour's draw: the firm supply the month's dispatch needs over the supply the plan does (PowerDispatch.PLAN_PEAK over PLAN_PEAK_HOUR). */
+    static final double CALM = PowerDispatch.PLAN_PEAK / PowerDispatch.PLAN_PEAK_HOUR;
+
+    /** The city's draw set so the peak hour's demand at `p` is `ratio` of its firm supply (the gap that makes it so is drawGap()'s). */
+    static void drawRatio(Game g, BuildAdvice.Ahead p, double ratio) {
+        drawGap(g, p, BuildAdvice.supplyDemand(g, POWER, Map.of(), p)[0] * (ratio - 1));
+    }
+
+    /** The firm supply over the city's draw at `p`: the plan's peak hour is PLAN_PEAK_HOUR of the draw, the calm peak the month's dispatch serves PLAN_PEAK. */
+    static double supplyOverDraw(Game g, BuildAdvice.Ahead p) {
+        double[] sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
+        return sd[0] / (sd[1] / PowerDispatch.PLAN_PEAK_HOUR);
+    }
+
+    static void calmPeak(Path root) {
+        out.println("--- 8a. a reserve gap with the calm peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant ---");
+        Game g = town(root, "calm-peak", COAL);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        BuildingsTemplate coal = plant(g, COAL);
+        double unit = BuildAdvice.unit(g, POWER, coal), share = BuildAdvice.FIRST_WORK_SHARE;
+        // ...the firm supply lifted by the works' own power (firm, PW3's first gap) so a gap of a share of one plant lies inside the calm peak's cover.
+        u.setWorksPower(u.getWorksPower() + 4 * unit);
+        double lead = g.quoteBuild(coal, 1).months;
+        BuildAdvice.Ahead p = BuildAdvice.opening(g, lead, g.getAutoBuilder().getSlack());
+        long r0, s0;
+        BuildAdvice.Suggestion s;
+        double[] sd;
+
+        drawGap(g, p, .5 * share * unit);
+        sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
+        out.println("the firm supply " + Math.round(sd[0]) + " kW, the peak hour's draw " + Math.round(sd[1]) + " kW, the calm peak's " + Math.round(sd[1] * CALM)
+                + " kW, one coal plant " + Math.round(unit) + " kW");
+        check(String.format("fixture: coal is the only firm row known; at its opening (%.0f months) the firm supply %.0f kW covers the calm peak's %.0f and is short of the peak hour's %.0f "
+                        + "by %.0f kW, %.0f%% of one coal plant's %.0f, under FIRST_WORK_SHARE's %.0f%%",
+                        lead, sd[0], sd[1] * CALM, sd[1], sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit, unit, 100 * share),
+                sd[0] >= sd[1] * CALM && sd[1] > sd[0] && sd[1] - sd[0] < share * unit && BuildAdvice.units(BuildAdvice.onSite(g, POWER)) == 0);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s0 = BuildAdvice.SPREAD_ORDERS.get();
+        s = suggest(g);
+        check("the peak-hour gap under the share, the calm peak covered: the power suggestion orders nothing (" + named(s) + ")",
+                s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+
+        // ...the same city, the gap at the share and a little over: it fills the share, so the plant is ordered.
+        drawGap(g, p, 1.05 * share * unit);
+        sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
+        check(String.format("fixture: the same city, short of the peak hour by %.0f kW, %.0f%% of one coal plant's, the calm peak still covered (%.0f of %.0f kW)",
+                        sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit, sd[0], sd[1] * CALM),
+                sd[0] >= sd[1] * CALM && sd[1] - sd[0] >= share * unit);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s = suggest(g);
+        check("a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (" + named(s) + ")",
+                s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+
+        // ...and the calm peak itself short at the opening: ordered as ever, whatever the share.
+        drawRatio(g, p, 1 / CALM * 1.2);
+        sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
+        check(String.format("fixture: the same city with the calm peak short at the opening (the firm supply %.0f kW under the calm peak's %.0f)", sd[0], sd[1] * CALM),
+                sd[0] < sd[1] * CALM);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s = suggest(g);
+        check("with the calm peak short at the plant's opening it orders (" + named(s) + ")",
+                s != null && s.template() == coal && s.count() >= 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+    }
+
+    static void lacksNow(Path root) {
+        out.println("--- 8b. the month lacks power below the calm peak, not below the peak hour ---");
+        Game g = town(root, "lacks-now", COAL);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        BuildAdvice.Ahead now = BuildAdvice.NOW;
+        // The firm supply a ratio of the draw (the mean the month's dispatch is asked for); the plan's peak hour is PLAN_PEAK_HOUR of it, the calm peak PLAN_PEAK.
+        double mid = (PowerDispatch.PLAN_PEAK + PowerDispatch.PLAN_PEAK_HOUR) / 2;
+        drawRatio(g, now, PowerDispatch.PLAN_PEAK_HOUR / mid);
+        double have = supplyOverDraw(g, now);
+        check(String.format("fixture: the firm supply %.0f kW is %.3f of the draw, between PLAN_PEAK %.3f and PLAN_PEAK_HOUR %.3f; the plan reads power as short and the calm peak does not",
+                        BuildAdvice.supplyDemand(g, POWER, Map.of(), now)[0], have, PowerDispatch.PLAN_PEAK, PowerDispatch.PLAN_PEAK_HOUR),
+                have > PowerDispatch.PLAN_PEAK && have < PowerDispatch.PLAN_PEAK_HOUR);
+        check("between the calm peak and the peak hour: maintained(NOW) is false, lacksNow() is false",
+                !BuildAdvice.maintained(g, POWER, Map.of(), now) && !BuildAdvice.lacksNow(g, POWER));
+        drawRatio(g, now, PowerDispatch.PLAN_PEAK_HOUR / (.9 * PowerDispatch.PLAN_PEAK));
+        have = supplyOverDraw(g, now);
+        check(String.format("below the calm peak (the firm supply %.0f kW, %.3f of the draw, under PLAN_PEAK %.3f): maintained(NOW) is false, lacksNow() is true",
+                        BuildAdvice.supplyDemand(g, POWER, Map.of(), now)[0], have, PowerDispatch.PLAN_PEAK),
+                have < PowerDispatch.PLAN_PEAK && !BuildAdvice.maintained(g, POWER, Map.of(), now) && BuildAdvice.lacksNow(g, POWER));
+        drawRatio(g, now, PowerDispatch.PLAN_PEAK_HOUR / (1.1 * PowerDispatch.PLAN_PEAK_HOUR));
+        check("above the peak hour: maintained(NOW) is true, lacksNow() is false", BuildAdvice.maintained(g, POWER, Map.of(), now) && !BuildAdvice.lacksNow(g, POWER));
+        // The hold itself (AutoBuilder.crewLimit(), pendingDelay()) is private and driven by a saved first-completion date for the short measure,
+        // which takes a queue of the builders to set up; not driven here. AutoBuildCheck's BUILDERS case reads the same two lines.
+        u.setWattsConsumption(0);
+        check("a city drawing nothing lacks no power", !BuildAdvice.lacksNow(g, POWER));
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("powerplancheck");
@@ -668,7 +808,9 @@ public final class PowerPlanCheck {
         quoteIsCost(root);
         cannotCover(root);
         refused(root);
-        out.println("--- 8. how often each fires ---");
+        calmPeak(root);
+        lacksNow(root);
+        out.println("--- 9. how often each fires ---");
         out.printf("this harness's suggestions: reserve test %d, spread %d (the default run's: LongPlaytest, \"the power planner (PW3)\")%n",
                 BuildAdvice.RESERVE_ORDERS.get(), BuildAdvice.SPREAD_ORDERS.get());
         check("the reserve test and the spread each fired here", BuildAdvice.RESERVE_ORDERS.get() > 0 && BuildAdvice.SPREAD_ORDERS.get() > 0);

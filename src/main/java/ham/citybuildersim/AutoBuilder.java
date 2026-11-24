@@ -1369,8 +1369,11 @@ public final class AutoBuilder {
 
     private CrewLimit crewLimit(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure,
                                 BuildAdvice.Suggestion suggestion, long wanted) {
+        // PW3, 2026-11-24: "short now" is BuildAdvice.lacksNow(), not !maintained(NOW): power's plan is the year's peak hour (1.631 of the mean)
+        // and the month's dispatch serves the calm peak (1.263), so a city whose firm supply lay between the two read power as short, and every
+        // other essential order "waited to preserve Power's quoted first completion" (roads, schools and care held 12 months, power fully served).
         if (pendingUntil.isEmpty() || essential(measure)
-                && !BuildAdvice.maintained(game, measure, Map.of(), BuildAdvice.NOW))
+                && BuildAdvice.lacksNow(game, measure))
             return new CrewLimit(wanted, null);
         String blocked = pendingDelay(game, kept, measure, suggestion, wanted);
         if (blocked == null) return new CrewLimit(wanted, null);
@@ -1393,8 +1396,9 @@ public final class AutoBuilder {
         double points = 0;
         for (BuildAdvice.Measure current : kept) {
             Double due = pendingUntil.get(current.label());
+            // PW3, 2026-11-24: a measure the month does not lack holds nothing (lacksNow(): power's calm peak, not the plan's peak hour; see crewLimit()).
             if (due == null || current.equals(measure) || !essential(current) || current.serves(additional)
-                    || BuildAdvice.maintained(game, current, Map.of(), BuildAdvice.NOW)) continue;
+                    || !BuildAdvice.lacksNow(game, current)) continue;
             if (quote == null) {
                 quote = suggestion.paving() ? game.quotePave(count) : game.quoteBuild(additional, count);
                 // ...the order's buildings at the points their equipment takes (R1e; the quote's fitout, the template's own in a default city).

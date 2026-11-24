@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 28,886 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 28,892 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -918,59 +918,59 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L512 ...and bare ground only: no field bought for its ore (
   - L520 ...nor spends the cash under a month's tax, the reserve (
   - L521 essential works in the remit never acquire a payback veto
-- **L806 4. a saved city plays on as the one it was saved from**
-  - L820 fixture: the decades' city, auto-build on, saved
-  - L830 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
-  - L835 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
-  - L837 ...the debt it reads the limit against (0.7.81)
-  - L838 ...and the year of GDP it sets the debt against
-  - L850 fixture: the saved city turned people away from general care for its fee
-  - L891 fixture: ...and it placed orders in those months (
-  - L906 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
-  - L935 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
-- **L974 5. what holds it back, caused**
-  - L991 fixture: the town short of road, its cash at a month's tax
-  - L993 a debt limit of 0%: it holds and borrows nothing
-  - L1047 a first police station is a service it keeps where there is none, however far past the need one goes
-  - L1080 the first warranted school is essential and ordered without a payback veto
-  - L1085 the inbox does not invent a payback refusal for the essential school
-  - L1098 the twin with fiscal room also orders its first school without weighing a payback
-  - L1113 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
-- **L1134 6. essential cards carry no payback veto, including after a save**
-  - L1143 fixture: the missing elementary school has a category card before the essential order is placed
-  - L1147 the deficit town orders its warranted school without weighing payback
-  - L1151 the card carries no payback hold after the essential order
-  - L1152 no payback appraisal was retained for the essential card
-  - L1155 the inbox also carries no invented payback refusal
-  - L1160 saved and loaded mid-month, the essential card still has no payback hold
-  - L1163 switched off, it holds nothing back, and the card carries no line
-  - L1167 fiscal room does not reintroduce a payback veto on work already ordered
-- **L1310 7. a young city refused for a small sum keeps building (FW4)**
-  - L1378 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
-  - L1381 fixture: the first refused order is for the young city's own general-care shortage
-  - L1463 the formerly refused general-care service itself gains operating capacity, and the city grows
-  - L1586 fixture: the first measure the town is short of (those before it brought ahead, standing) has a card in its ranking
-  - L1610 ...and its log says the first was more than the money would pay for
-  - L1646 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1651 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1684 fixture: the town short of a service, with no ground free
-  - L1699 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1705 ...its log's order carries the ground: its square feet, price and places
-  - L1724 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1725 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1748 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1782 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1822 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1824 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1827 ...and the inbox says so, naming the land office
-  - L1830 ...settled the month it is switched off
-  - L1928 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1982 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L2007 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L2012 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L2043 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
-- **L2060 8. care of every kind is essential, on a deficit (CC1-S)**
-  - L2101 a school is essential too: the same deficit does not hold it for payback
+- **L807 4. a saved city plays on as the one it was saved from**
+  - L821 fixture: the decades' city, auto-build on, saved
+  - L831 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
+  - L836 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
+  - L838 ...the debt it reads the limit against (0.7.81)
+  - L839 ...and the year of GDP it sets the debt against
+  - L851 fixture: the saved city turned people away from general care for its fee
+  - L892 fixture: ...and it placed orders in those months (
+  - L907 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
+  - L936 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
+- **L975 5. what holds it back, caused**
+  - L992 fixture: the town short of road, its cash at a month's tax
+  - L994 a debt limit of 0%: it holds and borrows nothing
+  - L1048 a first police station is a service it keeps where there is none, however far past the need one goes
+  - L1081 the first warranted school is essential and ordered without a payback veto
+  - L1086 the inbox does not invent a payback refusal for the essential school
+  - L1099 the twin with fiscal room also orders its first school without weighing a payback
+  - L1114 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
+- **L1135 6. essential cards carry no payback veto, including after a save**
+  - L1144 fixture: the missing elementary school has a category card before the essential order is placed
+  - L1148 the deficit town orders its warranted school without weighing payback
+  - L1152 the card carries no payback hold after the essential order
+  - L1153 no payback appraisal was retained for the essential card
+  - L1156 the inbox also carries no invented payback refusal
+  - L1161 saved and loaded mid-month, the essential card still has no payback hold
+  - L1164 switched off, it holds nothing back, and the card carries no line
+  - L1168 fiscal room does not reintroduce a payback veto on work already ordered
+- **L1311 7. a young city refused for a small sum keeps building (FW4)**
+  - L1379 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
+  - L1382 fixture: the first refused order is for the young city's own general-care shortage
+  - L1464 the formerly refused general-care service itself gains operating capacity, and the city grows
+  - L1587 fixture: the first measure the town is short of (those before it brought ahead, standing) has a card in its ranking
+  - L1611 ...and its log says the first was more than the money would pay for
+  - L1647 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1652 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1685 fixture: the town short of a service, with no ground free
+  - L1700 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1706 ...its log's order carries the ground: its square feet, price and places
+  - L1725 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1726 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1749 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1783 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1823 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1825 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1828 ...and the inbox says so, naming the land office
+  - L1831 ...settled the month it is switched off
+  - L1929 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L1983 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L2008 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L2013 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L2044 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L2061 8. care of every kind is essential, on a deficit (CC1-S)**
+  - L2102 a school is essential too: the same deficit does not hold it for payback
 
 ## BankCheck.java - 611 labelled assertions
 
@@ -27393,7 +27393,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L406 a redenomination scales the book's prices and the fuel paid
   - L410 seedConstants re-strikes the wires: the dial over the unit
 
-## PowerPlanCheck.java - 46 labelled assertions
+## PowerPlanCheck.java - 52 labelled assertions
 
 > The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities.
 > 
@@ -27409,65 +27409,74 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L153 1. the south has its own season; the sun's year and months by place and rack; the tracker is E25's**
-  - L164 a city south of the equator reads each calendar month six on; the equator and the north as they are
-  - L166 ...so its load, wind, water and sun in January are the north's in July at the same latitude
-  - L174 a fixed rack yields less than a tracker in every band, 0 to 70 degrees
-  - L175 a farm far from the equator yields less than one near the tropics, fixed or tracked (65 against 25 degrees)
-  - L178 each place's twelve months average its year, fixed and tracked (the tables' rounding)
-  - L183 a generated world's farm (no latitude) is the tracked US fleet's year, its fixed rack SOLAR_US_FIXED of it
-  - L188 the wind's months average its year
-  - L194 a 1900 town's solar farms stand on fixed racks; once research finds E25 they track (
-- **L200 2. a variable row's credit falls with its share, a straight line to the floor; a fuelled row's is all of it**
-  - L202 no variable row standing keeps all of its peak hours
-  - L203 at CREDIT_HALF of the energy it keeps CREDIT_FLOOR, and the floor past it
-  - L205 halfway there it keeps halfway between (a straight line)
-  - L207 a share it cannot read (NaN) keeps all of it
-  - L208 a wind farm's credit is its peak hours' output times the fall
-  - L211 a solar farm's at the US fleet's place, tracked, is its peak hours' output
-  - L213 ...more firm near the tropics than far from them, and the same either side of the equator
-- **L220 3. the firm supply: the works' own power, a wind farm added, a plant from its opening**
-  - L224 a fuelled row's template credit is all of it; a wind farm's the windCredit at no share
-  - L240 fixture: a coal plant is going up, its first unit quoted to open
-  - L243 a plant still going up is open by its opening and not before
-  - L245 ...so it adds nothing to today's firm supply, and its firm kW from its opening
-- **L252 4. the reserve test: short at the base, coal; short at the peak alone, a peaker**
-  - L257 fixture: power is short at the base, its firm supply under the base block's draw (slice
-  - L261 short at the base the reserve test orders coal (
-  - L262 ...counted once as a reserve order and never as a spread
-  - L276 short at the peak the reserve test orders a peaker, not coal (
-  - L278 ...counted once as a reserve order
-  - L280 the slices' hours: the base all of the year's, the peak its peak block's
-- **L287 5. wind alone never passes the reserve test**
-  - L290 fixture: power is short
-  - L308 knowing a firm row as well, the same city has a reserve order that closes it, the firm row (
-  - L311 at CREDIT_HALF of the energy or more a wind farm counts CREDIT_FLOOR of its peak hours
-- **L338 6. the spread: wind where the fuelled rows run dear, none where they run cheap**
-  - L344 fixture:
-  - L353 with diesel running, one more wind farm saves the year more than it costs (
-  - L355 ...so the spread orders wind (
-  - L359 with coal running, no wind farm saves the year what it costs (
-  - L360 ...so nothing is ordered (
-- **L383 6a. the reserve test credits a farm and weighs it against the screening curve's firm pick**
-- **L442 6b. the spread counts a plant on site from its opening**
-  - L456 fixture: with nothing on site the farm saves the year more than it costs (
-- **L484 7. a coal plant's ground, assembled past the one listing**
-  - L493 fixture: the town owns no ground spare, and its listing holds less than
-  - L499 past ASSEMBLE_MOST offers no ground is planned (
-  - L508 fixture: the reserve test asks for at least
-  - L516 the automatic path orders coal on ground it assembles past the listing (
-- **L551 7a. dearer replenishment: the ground past the listing is quoted at what it costs**
-  - L556 fixture: the reserve test asks for at least
-  - L571 fixture: ground is quoted for
-  - L580 fixture: the order of
-- **L607 7b. an assembly that cannot cover the order**
-  - L618 fixture: the reserve test asks for coal (
-- **L633 7c. an order the builders would refuse**
-  - L638 fixture: the reserve test asks for coal (
-  - L641 fixture: ground can be had for one coal plant, past what the town owns spare
-  - L644 fixture: the builders refuse the plant for no ground and no money (
-- **L671 8. how often each fires**
-  - L674 the reserve test and the spread each fired here
+- **L158 1. the south has its own season; the sun's year and months by place and rack; the tracker is E25's**
+  - L169 a city south of the equator reads each calendar month six on; the equator and the north as they are
+  - L171 ...so its load, wind, water and sun in January are the north's in July at the same latitude
+  - L179 a fixed rack yields less than a tracker in every band, 0 to 70 degrees
+  - L180 a farm far from the equator yields less than one near the tropics, fixed or tracked (65 against 25 degrees)
+  - L183 each place's twelve months average its year, fixed and tracked (the tables' rounding)
+  - L188 a generated world's farm (no latitude) is the tracked US fleet's year, its fixed rack SOLAR_US_FIXED of it
+  - L193 the wind's months average its year
+  - L199 a 1900 town's solar farms stand on fixed racks; once research finds E25 they track (
+- **L205 2. a variable row's credit falls with its share, a straight line to the floor; a fuelled row's is all of it**
+  - L207 no variable row standing keeps all of its peak hours
+  - L208 at CREDIT_HALF of the energy it keeps CREDIT_FLOOR, and the floor past it
+  - L210 halfway there it keeps halfway between (a straight line)
+  - L212 a share it cannot read (NaN) keeps all of it
+  - L213 a wind farm's credit is its peak hours' output times the fall
+  - L216 a solar farm's at the US fleet's place, tracked, is its peak hours' output
+  - L218 ...more firm near the tropics than far from them, and the same either side of the equator
+- **L225 3. the firm supply: the works' own power, a wind farm added, a plant from its opening**
+  - L229 a fuelled row's template credit is all of it; a wind farm's the windCredit at no share
+  - L245 fixture: a coal plant is going up, its first unit quoted to open
+  - L248 a plant still going up is open by its opening and not before
+  - L250 ...so it adds nothing to today's firm supply, and its firm kW from its opening
+- **L257 4. the reserve test: short at the base, coal; short at the peak alone, a peaker**
+  - L262 fixture: power is short at the base, its firm supply under the base block's draw (slice
+  - L266 short at the base the reserve test orders coal (
+  - L267 ...counted once as a reserve order and never as a spread
+  - L281 short at the peak the reserve test orders a peaker, not coal (
+  - L283 ...counted once as a reserve order
+  - L285 the slices' hours: the base all of the year's, the peak its peak block's
+- **L292 5. wind alone never passes the reserve test**
+  - L295 fixture: power is short
+  - L313 knowing a firm row as well, the same city has a reserve order that closes it, the firm row (
+  - L316 at CREDIT_HALF of the energy or more a wind farm counts CREDIT_FLOOR of its peak hours
+- **L343 6. the spread: wind where the fuelled rows run dear, none where they run cheap**
+  - L349 fixture:
+  - L358 with diesel running, one more wind farm saves the year more than it costs (
+  - L360 ...so the spread orders wind (
+  - L364 with coal running, no wind farm saves the year what it costs (
+  - L365 ...so nothing is ordered (
+- **L406 6a. the reserve test credits a farm: no firm row fills FIRST_WORK_SHARE of its order, so the farm that closes the gap is the order**
+- **L437 6a(ii). the farms that close a gap a firm row fills the share of are weighed against the screening curve's firm pick**
+- **L489 6b. the spread counts a plant on site from its opening**
+  - L503 fixture: with nothing on site the farm saves the year more than it costs (
+- **L531 7. a coal plant's ground, assembled past the one listing**
+  - L540 fixture: the town owns no ground spare, and its listing holds less than
+  - L546 past ASSEMBLE_MOST offers no ground is planned (
+  - L555 fixture: the reserve test asks for at least
+  - L563 the automatic path orders coal on ground it assembles past the listing (
+- **L598 7a. dearer replenishment: the ground past the listing is quoted at what it costs**
+  - L603 fixture: the reserve test asks for at least
+  - L618 fixture: ground is quoted for
+  - L627 fixture: the order of
+- **L654 7b. an assembly that cannot cover the order**
+  - L665 fixture: the reserve test asks for coal (
+- **L680 7c. an order the builders would refuse**
+  - L685 fixture: the reserve test asks for coal (
+  - L688 fixture: ground can be had for one coal plant, past what the town owns spare
+  - L691 fixture: the builders refuse the plant for no ground and no money (
+- **L722 8a. a reserve gap with the calm peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
+  - L746 the peak-hour gap under the share, the calm peak covered: the power suggestion orders nothing (
+  - L757 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
+  - L767 with the calm peak short at the plant's opening it orders (
+- **L772 8b. the month lacks power below the calm peak, not below the peak hour**
+  - L783 between the calm peak and the peak hour: maintained(NOW) is false, lacksNow() is false
+  - L791 above the peak hour: maintained(NOW) is true, lacksNow() is false
+  - L795 a city drawing nothing lacks no power
+- **L813 9. how often each fires**
+  - L816 the reserve test and the spread each fired here
 
 ## PowerPlantsCheck.java - 59 labelled assertions
 

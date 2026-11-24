@@ -1,4 +1,4 @@
-# PowerPlanCheck.java - 678 lines · 32 methods · 6 constants · harnesses
+# PowerPlanCheck.java - 820 lines · 38 methods · 8 constants · harnesses
 
 `ham/citybuildersim/PowerPlanCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -26,134 +26,153 @@
 >      the energy at CREDIT_HALF, and with them added is still short; knowing a firm row too, the order closes it.
 >   6. THE SPREAD orders wind where the fuelled rows standing run dear (diesel), and none where they run cheap (coal).
 >      A plant still going up counts in it from its own opening: coal that opens after the farm does takes none of its saving.
->      And the reserve test credits a farm: where the town runs dear and one Wind Farm's credited firm kW closes the gap, the
->      farm is the order, its total net cost below the screening curve's firm pick's (6a).
+>      And the reserve test credits a farm: where the town runs dear and one Wind Farm's credited firm kW closes a gap under
+>      FIRST_WORK_SHARE of a Diesel Station's, no firm row is a candidate (the share, 2026-11-24) and the farm is the order (6a); where the gap
+>      is at or over the share, the farms that close it are weighed against the diesel and, their total net cost below the firm pick's,
+>      are the order (6a(ii)).
 >   7. THE GROUND: a coal plant's is planned past the one listing, and the automatic path assembles it over several offers;
 >      past ASSEMBLE_MOST offers none is planned. (7a) The quote is what the ground costs, offers past the listing at their own prices; (7b) an
 >      assembly that cannot cover the order buys nothing and borrows nothing; (7c) an order the builders would refuse moves no money (REV-PW3 #1, #2).
->   8. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
+>   8. A GAP IN THE RESERVE ALONE IS NOT A PLANT (2026-11-24): with the calm peak (PLAN_PEAK) covered at a plant's opening, a gap to the peak
+>      hour (PLAN_PEAK_HOUR) orders it only when it fills FIRST_WORK_SHARE of the plant; a calm-peak gap orders as ever (8a). And the month
+>      lacks power below the calm peak the dispatch serves, not below the plan's peak hour (BuildAdvice.lacksNow(), the holds', 8b).
+>   9. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
 >      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (119), [PowerDispatch](PowerDispatch.md) (65), [Game](Game.md) (30), [BuildingsTemplate](BuildingsTemplate.md) (25), [AutoBuilder](AutoBuilder.md) (23), [UtilitiesHandler](UtilitiesHandler.md) (9), [WorksValue](WorksValue.md) (5), [LandManager](LandManager.md) (4), [LandParcel](LandParcel.md) (4), [LandMarket](LandMarket.md) (3), [EssentialWorksCheck](EssentialWorksCheck.md) (2), [SubstationCheck](SubstationCheck.md) (2), [World](World.md) (2), [Landmasses](Landmasses.md) (2), [WorksFinanceCheck](WorksFinanceCheck.md) (1), [BuildingType](BuildingType.md) (1), [Substations](Substations.md) (1), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (169), [PowerDispatch](PowerDispatch.md) (81), [Game](Game.md) (36), [BuildingsTemplate](BuildingsTemplate.md) (29), [AutoBuilder](AutoBuilder.md) (23), [UtilitiesHandler](UtilitiesHandler.md) (11), [WorksValue](WorksValue.md) (6), [LandManager](LandManager.md) (4), [LandParcel](LandParcel.md) (4), [LandMarket](LandMarket.md) (3), [EssentialWorksCheck](EssentialWorksCheck.md) (2), [SubstationCheck](SubstationCheck.md) (2), [World](World.md) (2), [Landmasses](Landmasses.md) (2), [WorksFinanceCheck](WorksFinanceCheck.md) (1), [BuildingType](BuildingType.md) (1), [Substations](Substations.md) (1), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 151 | · 1. the place and the season |
-| 198 | · 2. the credit falls with the share |
-| 218 | · 3. the firm supply |
-| 250 | · 4. the reserve test orders the slice's cheapest row |
-| 285 | · 5. wind alone never passes the test |
-| 316 | · 6. the spread |
-| 482 | · 7. the ground |
-| 549 | · 7a. the quote is the cost |
-| 605 | · 7b. an assembly that cannot cover |
-| 631 | · 7c. an order the builders would refuse |
+| 156 | · 1. the place and the season |
+| 203 | · 2. the credit falls with the share |
+| 223 | · 3. the firm supply |
+| 255 | · 4. the reserve test orders the slice's cheapest row |
+| 290 | · 5. wind alone never passes the test |
+| 321 | · 6. the spread |
+| 529 | · 7. the ground |
+| 596 | · 7a. the quote is the cost |
+| 652 | · 7b. an assembly that cannot cover |
+| 678 | · 7c. an order the builders would refuse |
+| 705 | · 8. a gap in the reserve alone is not a plant; what the month lacks is the calm peak |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 42 | `PowerPlanCheck.out` | `System.out` |  |
-| 54 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
-| 56 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station",...` |  |
-| 369 | `PowerPlanCheck.GAP_SHARE` | `0.5` | What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. |
-| 422 | `PowerPlanCheck.DEPOTS` | `100` | Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. |
-| 425 | `PowerPlanCheck.PREP_MONTHS` | `60` | The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. |
+| 47 | `PowerPlanCheck.out` | `System.out` |  |
+| 59 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
+| 61 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station",...` |  |
+| 375 | `PowerPlanCheck.GAP_SHARE` | `0.5` | What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. |
+| 383 | `PowerPlanCheck.OVER_SHARE` | `1.1` | (6a(ii)) The second dear town's gap at a farm's opening, as a multiple of FIRST_WORK_SHARE of one Diesel Station's firm kW: over the share, so the diesel is a candidate, and under what the farms that close it credit. |
+| 469 | `PowerPlanCheck.DEPOTS` | `100` | Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. |
+| 472 | `PowerPlanCheck.PREP_MONTHS` | `60` | The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. |
+| 708 | `PowerPlanCheck.CALM` | `PowerDispatch.PLAN_PEAK / PowerDispatch.PLAN_PEAK_HOUR` | The calm peak's share of the peak hour's draw: the firm supply the month's dispatch needs over the supply the plan does (PowerDispatch.PLAN_PEAK over PLAN_PEAK_HOUR). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 43 | `static int fails` |  |
+| 48 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 638 | **type** `public final class PowerPlanCheck` | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. |
-| 45 | 4 | `static void check(String label, boolean ok)` |  |
-| 50 | 3 | `static boolean close(double a, double b, double tol)` |  |
-| 64 | 7 | `static Game town(Path root, String name, String...menu)` | WorksFinanceCheck.town()'s founded 1900 town (its one coal plant, people at three-quarters of its homes, a flat history, the builder's debt limit 0 and cash anyway) knowing only `menu` of the power plants, with the ca... |
-| 72 | 5 | `static void know(Game g, String...menu)` |  |
-| 78 | 1 | `static BuildingsTemplate plant(Game g, String name)` |  |
-| 81 | 1 | `static BuildAdvice.Ahead now(Game g)` | The automatic path's opening for an order placed now: its slack, the town's flat history. |
-| 84 | 10 | `static void drawAt(Game g, double share)` | The city's draw set so the planner's peak-hour demand at now(g) is `share` of its firm supply (demand is linear in the draw). |
-| 96 | 10 | `static void drawGap(Game g, BuildAdvice.Ahead p, double gap)` | The city's draw set so the planner's peak-hour demand at `p` exceeds its firm supply by `gap` kW (demand is linear in the draw). |
-| 108 | 4 | `static int slice(Game g)` | The slice of the load the gap at now(g) lies in (BuildAdvice.slice()). |
-| 114 | 4 | `static BuildAdvice.Suggestion suggest(Game g)` | The automatic path's power suggestion, as AutoBuilder.step() asks it: the city's cash and ground, its slack, every plant. |
-| 125 | 21 | `static String order(Game g)` | The reserve order as the planner ranks it, best first: each candidate's suggestion with the ones before it left out (suggestFor()'s `skip`), its count, and its figures: a firm row's screening curve (BuildAdvice.screen... |
-| 147 | 1 | `static String named(BuildAdvice.Suggestion s)` |  |
-| 149 | 1 | `static void quietly(Runnable r)` |  |
+| 46 | 775 | **type** `public final class PowerPlanCheck` | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. |
+| 50 | 4 | `static void check(String label, boolean ok)` |  |
+| 55 | 3 | `static boolean close(double a, double b, double tol)` |  |
+| 69 | 7 | `static Game town(Path root, String name, String...menu)` | WorksFinanceCheck.town()'s founded 1900 town (its one coal plant, people at three-quarters of its homes, a flat history, the builder's debt limit 0 and cash anyway) knowing only `menu` of the power plants, with the ca... |
+| 77 | 5 | `static void know(Game g, String...menu)` |  |
+| 83 | 1 | `static BuildingsTemplate plant(Game g, String name)` |  |
+| 86 | 1 | `static BuildAdvice.Ahead now(Game g)` | The automatic path's opening for an order placed now: its slack, the town's flat history. |
+| 89 | 10 | `static void drawAt(Game g, double share)` | The city's draw set so the planner's peak-hour demand at now(g) is `share` of its firm supply (demand is linear in the draw). |
+| 101 | 10 | `static void drawGap(Game g, BuildAdvice.Ahead p, double gap)` | The city's draw set so the planner's peak-hour demand at `p` exceeds its firm supply by `gap` kW (demand is linear in the draw). |
+| 113 | 4 | `static int slice(Game g)` | The slice of the load the gap at now(g) lies in (BuildAdvice.slice()). |
+| 119 | 4 | `static BuildAdvice.Suggestion suggest(Game g)` | The automatic path's power suggestion, as AutoBuilder.step() asks it: the city's cash and ground, its slack, every plant. |
+| 130 | 21 | `static String order(Game g)` | The reserve order as the planner ranks it, best first: each candidate's suggestion with the ones before it left out (suggestFor()'s `skip`), its count, and its figures: a firm row's screening curve (BuildAdvice.screen... |
+| 152 | 1 | `static String named(BuildAdvice.Suggestion s)` |  |
+| 154 | 1 | `static void quietly(Runnable r)` |  |
 
-### 1. the place and the season (lines 151-197)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 152 | 45 | `static void placeAndSeason(Path root)` |  |
-
-### 2. the credit falls with the share (lines 198-217)
+### 1. the place and the season (lines 156-202)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 199 | 18 | `static void credits()` |  |
+| 157 | 45 | `static void placeAndSeason(Path root)` |  |
 
-### 3. the firm supply (lines 218-249)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 219 | 30 | `static void firmSupply(Path root)` |  |
-
-### 4. the reserve test orders the slice's cheapest row (lines 250-284)
+### 2. the credit falls with the share (lines 203-222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 251 | 33 | `static void reserveTest(Path root)` |  |
+| 204 | 18 | `static void credits()` |  |
 
-### 5. wind alone never passes the test (lines 285-315)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 286 | 29 | `static void windAlone(Path root)` |  |
-
-### 6. the spread (lines 316-481)
+### 3. the firm supply (lines 223-254)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 322 | 14 | `static Game covered(Path root, String name, String fuelled)` | A town whose fuelled row `fuelled` stands to cover the reserve test at a wind farm's opening, knowing it and the wind farm, and wired to carry it: the dispatch runs no more than the wires carry (Substations.costs()), ... |
-| 337 | 30 | `static void spread(Path root)` |  |
-| 372 | 3 | `static double firmAdded(Game g, BuildingsTemplate t, Map<BuildingsTemplate, Long> at, BuildAdvice.Ahead p)` | The firm kW one `t` adds at `p`'s opening to the site's, the rank's denominator (BuildAdvice.reserveRank()). |
-| 382 | 38 | `static void reserveCredit(Path root)` | PW3 (REV-PW3 #3): the reserve test credits a farm. |
-| 428 | 6 | `static BuildAdvice.Spread windRow(Game g)` | The Wind Farm's row of the spread at `g`, or null when it is not weighed. |
-| 441 | 40 | `static void spreadPending(Path root)` | PW3 (REV-PW3 #4): a plant still going up counts in the spread from its own opening, as the reserve test reads it. |
+| 224 | 30 | `static void firmSupply(Path root)` |  |
 
-### 7. the ground (lines 482-548)
+### 4. the reserve test orders the slice's cheapest row (lines 255-289)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 483 | 40 | `static void ground(Path root)` |  |
-| 525 | 1 | **type** `record GroundTown(Game g, BuildingsTemplate coal, long past, BuildAdvice.Suggestion asked)` | Section 7's town (PW3, REV-PW3 #1, #2): owns no ground spare, `past` the fewest coal plants whose ground runs past its listing, and a reserve test asking for at least that many. |
-| 527 | 15 | `static GroundTown groundTown(Path root, String name)` |  |
-| 544 | 4 | `static double listedCash(Game g, java.util.List<LandParcel> offers)` | What these offers cost in cash as paying for them moves it (the land office's toggle): the listed ones' prices, as groundFor() prices the listing. |
+| 256 | 33 | `static void reserveTest(Path root)` |  |
 
-### 7a. the quote is the cost (lines 549-604)
+### 5. wind alone never passes the test (lines 290-320)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 550 | 39 | `static void quoteIsCost(Path root)` |  |
-| 594 | 10 | `static GroundTown shortTown(Path root, String name)` | A town whose world has no ground left to list (one purchase of all of it, on the books as any purchase is) and three offers standing: the ground the order needs past them is none that can be had. |
+| 291 | 29 | `static void windAlone(Path root)` |  |
 
-### 7b. an assembly that cannot cover (lines 605-630)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 606 | 24 | `static void cannotCover(Path root)` |  |
-
-### 7c. an order the builders would refuse (lines 631-678)
+### 6. the spread (lines 321-528)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 632 | 25 | `static void refused(Path root)` |  |
-| 658 | 20 | `public static void main(String[] args) throws Exception` |  |
+| 327 | 14 | `static Game covered(Path root, String name, String fuelled)` | A town whose fuelled row `fuelled` stands to cover the reserve test at a wind farm's opening, knowing it and the wind farm, and wired to carry it: the dispatch runs no more than the wires carry (Substations.costs()), ... |
+| 342 | 31 | `static void spread(Path root)` |  |
+| 378 | 3 | `static double firmAdded(Game g, BuildingsTemplate t, Map<BuildingsTemplate, Long> at, BuildAdvice.Ahead p)` | The firm kW one `t` adds at `p`'s opening to the site's, the rank's denominator (BuildAdvice.reserveRank()). |
+| 389 | 10 | `static void settleGap(Game g, BuildAdvice.Ahead p, java.util.function.DoubleSupplier gap)` | The dear town of the spread (diesels standing, which a farm displaces) made short at a farm's opening by `gap` kW, wired to carry the draw that sets: a farm's credit and a diesel's fall with the draw, so `gap` is read... |
+| 405 | 25 | `static void reserveCredit(Path root)` | PW3 (REV-PW3 #3): the reserve test credits a farm. |
+| 436 | 31 | `static void reserveFarms(Path root)` | 6a's original point, on a second town: the gap at a farm's opening is OVER_SHARE of FIRST_WORK_SHARE of a Diesel Station's firm kW, so a diesel (the screening curve's firm pick) fills the share and closes it, and more... |
+| 475 | 6 | `static BuildAdvice.Spread windRow(Game g)` | The Wind Farm's row of the spread at `g`, or null when it is not weighed. |
+| 488 | 40 | `static void spreadPending(Path root)` | PW3 (REV-PW3 #4): a plant still going up counts in the spread from its own opening, as the reserve test reads it. |
+
+### 7. the ground (lines 529-595)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 530 | 40 | `static void ground(Path root)` |  |
+| 572 | 1 | **type** `record GroundTown(Game g, BuildingsTemplate coal, long past, BuildAdvice.Suggestion asked)` | Section 7's town (PW3, REV-PW3 #1, #2): owns no ground spare, `past` the fewest coal plants whose ground runs past its listing, and a reserve test asking for at least that many. |
+| 574 | 15 | `static GroundTown groundTown(Path root, String name)` |  |
+| 591 | 4 | `static double listedCash(Game g, java.util.List<LandParcel> offers)` | What these offers cost in cash as paying for them moves it (the land office's toggle): the listed ones' prices, as groundFor() prices the listing. |
+
+### 7a. the quote is the cost (lines 596-651)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 597 | 39 | `static void quoteIsCost(Path root)` |  |
+| 641 | 10 | `static GroundTown shortTown(Path root, String name)` | A town whose world has no ground left to list (one purchase of all of it, on the books as any purchase is) and three offers standing: the ground the order needs past them is none that can be had. |
+
+### 7b. an assembly that cannot cover (lines 652-677)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 653 | 24 | `static void cannotCover(Path root)` |  |
+
+### 7c. an order the builders would refuse (lines 678-704)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 679 | 25 | `static void refused(Path root)` |  |
+
+### 8. a gap in the reserve alone is not a plant; what the month lacks is the calm peak (lines 705-820)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 711 | 3 | `static void drawRatio(Game g, BuildAdvice.Ahead p, double ratio)` | The city's draw set so the peak hour's demand at `p` is `ratio` of its firm supply (the gap that makes it so is drawGap()'s). |
+| 716 | 4 | `static double supplyOverDraw(Game g, BuildAdvice.Ahead p)` | The firm supply over the city's draw at `p`: the plan's peak hour is PLAN_PEAK_HOUR of the draw, the calm peak the month's dispatch serves PLAN_PEAK. |
+| 721 | 49 | `static void calmPeak(Path root)` |  |
+| 771 | 26 | `static void lacksNow(Path root)` |  |
+| 798 | 22 | `public static void main(String[] args) throws Exception` |  |
 
