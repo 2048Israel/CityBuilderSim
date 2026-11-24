@@ -1515,6 +1515,8 @@ public final class BuildAdvice {
         Map<BuildingsTemplate, Double> leads = new LinkedHashMap<>();
         // ...and every firm row the city could order, the faster ones each due row is weighed against (THE NEED DATE, below).
         List<BuildingsTemplate> firmRows = new ArrayList<>();
+        // ...and the rows due by the waiver alone whose need date is already past their last on-time month (late, below).
+        java.util.Set<BuildingsTemplate> late = new java.util.HashSet<>();
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             // The streets' candidates: every road and line but a highway, which gives no access (FR7); the highways' the Elevated Highway alone.
             boolean candidate = m.kind() == Kind.ROADS
@@ -1565,13 +1567,15 @@ public final class BuildAdvice {
             // month, what the month's dispatch serves at its worst) is short at the row's own completion: its lead and the town's growth over it,
             // no horizon and no slack. A gap only the opening's horizon and slack project waits for the share (the ensemble: a 67,410 kW plant
             // for a 29 kW gap 60 months out, $8.1M borrowed). A row that passes is due: the need date falls at or before its completion, so this
-            // month is its last on time, or it is late. Which due row orders is decided over them all after the loop (THE NEED DATE).
+            // month is its last on time, or it is late: due by the waiver alone and short a month before its completion too. Which due row
+            // orders is decided over them all after the loop (THE NEED DATE).
             if (power) {
                 double wait = Double.isNaN(lead) ? 0 : Math.max(0, lead);
-                double[] done = supplyDemand(game, m, at, new Ahead(wait, game.getBusinessInvestment().growthFactor(wait), 0));
-                boolean shortAtCompletion = done[1] > 0 && done[0] < done[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR;
                 double[] sd = supplyDemand(game, m, at, p);
-                if (!shortAtCompletion && sd[1] - sd[0] < FIRST_WORK_SHARE * found[0] * unit) continue;
+                boolean share = sd[1] - sd[0] >= FIRST_WORK_SHARE * found[0] * unit;
+                if (!share && !seasonalShort(game, m, at, wait)) continue;
+                double prior = Math.max(0, wait - 1);
+                if (!share && seasonalShort(game, m, prior > promised ? site : WorksValue.openBy(game, site, prior), prior)) late.add(t);
             }
             boolean closes = found[1] == 1;
             // PW3 (REV-PW3 #3): a firm row (all but wind and solar) is ranked by the screening curve; a wind or solar farm by its net cost
@@ -1609,7 +1613,8 @@ public final class BuildAdvice {
         if (power) {
             List<Weighed> due = new ArrayList<>(weighed);
             weighed.clear();
-            for (Weighed w : due) if (timely(game, m, w, opened.get(w.t()), firmRows, maintain, landLeft)) weighed.add(w);
+            for (Weighed w : due)
+                if (timely(game, m, w, opened.get(w.t()), late.contains(w.t()), site, promised, firmRows, maintain, landLeft)) weighed.add(w);
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
         Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain, cashLeft) : null;
@@ -1716,7 +1721,10 @@ public final class BuildAdvice {
           THE NEED DATE (REV-PW3f): a row that passes is due, the date the
           forecast first falls short at or before its completion; it orders
           only when no faster firm row, which could still be on line by
-          then, meets the need at its opening for less (timely()). So a
+          then, meets the need at its opening for less (timely()), and a
+          row due by the waiver alone and already past its last on-time
+          month is no candidate while a faster row can still be on line by
+          the date, whatever it costs. So a
           long-lead unit is committed early only as the least-cost way to
           meet the date, a few-MW gap waits for the diesel's own last
           on-time month, and a month already short orders the cheapest at
@@ -1830,15 +1838,22 @@ public final class BuildAdvice {
      * firm rows that can be on line by then; among them the least-cost by the screening curve, a long-lead unit committed early only as
      * the least-cost way to meet the date; a few-MW gap a diesel, ordered at the last month it can still be on time; a month already
      * short ordering at once. Each row's own test reads the date at its own completion, so the rows that can still be on line by it are
-     * the faster ones: `d` waits (false) while a faster firm row, its order for the gap at `d`'s opening (`at`, `d.ahead()`) built
-     * within `d`'s own lead, closes a gap `d` does not (HW1's tier) or closes it at a lower cost - the screening curve against a firm
-     * row's, the total net cost against a farm's (placeFarms()'s comparison). That row orders at its own last on-time month instead,
-     * when it is due itself. In a month already short every row is due, and the cheapest orders at once.
+     * the faster ones. `d` waits (false) while a faster firm row:
+     * - can still be on line by the need date, its completion covered, when `d` is `late` (due by the waiver alone, the seasonal peak
+     *   short a month before its own completion too): `d` is no candidate, whatever it costs;
+     * - or, its order for the gap at `d`'s opening (`at`, `d.ahead()`) built within `d`'s own lead, closes a gap `d` does not (HW1's
+     *   tier) or closes it at a lower cost: the screening curve against a firm row's, the total net cost against a farm's
+     *   (placeFarms()'s comparison).
+     * That row orders at its own last on-time month instead, when it is due itself. In a month already short every row is late and none
+     * covered at its completion, and the cheapest orders at once. `site` and `promised` read a faster row's completion as the loop does.
      */
-    private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, List<BuildingsTemplate> firm,
+    private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, boolean late,
+                                  Map<BuildingsTemplate, Long> site, double promised, List<BuildingsTemplate> firm,
                                   boolean maintain, double landLeft) {
         for (BuildingsTemplate u : firm) {
-            if (u == d.t() || !(game.quoteBuild(u, 1).months < d.lead())) continue;
+            double one = game.quoteBuild(u, 1).months;
+            if (u == d.t() || !(one < d.lead())) continue;
+            if (late && !seasonalShort(game, m, one > promised ? site : WorksValue.openBy(game, site, one), one)) return false;
             long[] c = count(game, m, at, plus(new LinkedHashMap<>(), u, 1), d.ahead(), reserveMost(game, u, at), maintain);
             if (c[0] <= 0 || c[1] != 1) continue;
             double soon = game.quoteBuild(u, c[0]).months;
@@ -1849,6 +1864,16 @@ public final class BuildAdvice {
             if (cost < d.rank()) return false;
         }
         return true;
+    }
+
+    /**
+     * Whether the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON, the peak block of the year's highest month) is short `months` on, with
+     * `at` open: the town's growth to then (BusinessInvestment.growthFactor()), no horizon past it and no slack. A row's completion in
+     * suggestFor()'s own test, and THE NEED DATE's reading of which rows can still be on line by it (timely()).
+     */
+    static boolean seasonalShort(Game game, Measure m, Map<BuildingsTemplate, Long> at, double months) {
+        double[] sd = supplyDemand(game, m, at, new Ahead(months, game.getBusinessInvestment().growthFactor(months), 0));
+        return sd[1] > 0 && sd[0] < sd[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR;
     }
 
     /** A wind or solar farm: the rows whose credit falls with their share (reserveMost(), placeFarms()). */

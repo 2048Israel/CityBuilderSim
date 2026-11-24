@@ -754,8 +754,11 @@ public final class PowerPlanCheck {
      *                                                    over the year's mean peak block
      *   the shortage waited out for a lead (REV-PW3e)    (iii) covered now, short at the completion           the share waived only in a month that lacks
      *   two firm rows of different leads (REV-PW3f)      (v) short at coal's completion, covered at the       each row tested at its own lead alone,
-     *                                                    diesel's: nothing; (vi) short at the diesel's own:   no need date (BuildAdvice.timely())
-     *                                                    the diesel
+     *                                                    diesel's, the diesel the cheaper: nothing            no need date (BuildAdvice.timely())
+     *                                                    (vii) the same with coal the cheaper: coal late,     the late row weighed on its cost alone
+     *                                                    no candidate, nothing                                (timely()'s first clause)
+     *                                                    (vi) short at the diesel's own completion: the       every due row held (a control: green
+     *                                                    diesel, its last on-time month                       without the need date)
      */
     static void calmPeak(Path root) {
         out.println("--- 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant ---");
@@ -942,6 +945,36 @@ public final class PowerPlanCheck {
         s = suggest(g);
         check("short at the fast row's own completion: the fast row orders, not the slow (" + named(s) + ")",
                 s != null && s.template() == diesel && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+
+        // (vii) (v)'s draw again, the diesel's fuel doubled from the world's price until coal is the cheaper at its own opening by the
+        // screening curve: coal is due by the waiver alone and late (the seasonal peak short a month before its completion too), and the
+        // diesel can still be on line by the need date, so coal is no candidate whatever it costs (the rule's (b)), and nothing orders.
+        drawRatio(g, pFast, 1 / NOW_OVER);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        Good oil = diesel.getFuel();
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
+        double land = g.getLandManager().getAvailableSqFt(), dearer = 1;
+        while (dearer < 4096) {
+            dearer *= 2;
+            double k = dearer;
+            u.setFuelPrice(good -> (good == oil ? k : 1) * good.worldImportPrice());
+            n = BuildAdvice.count(g, POWER, site, Map.of(diesel, 1L), pSlow, BuildAdvice.MOST, true)[0];
+            if (BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land) > BuildAdvice.screening(g, coal, 1, site, pSlow, land)) break;
+        }
+        cheap = BuildAdvice.screening(g, coal, 1, site, pSlow, land);
+        dear = BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land);
+        sdSlow = BuildAdvice.supplyDemand(g, POWER, Map.of(), pSlow);
+        boolean late = BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, slow - 1), slow - 1),
+                fastCovered = !BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, fast), fast);
+        check(String.format("fixture: the diesel's fuel %.0f times the world's price, and coal the cheaper at its own opening (%.4g a kW against %d diesels' %.4g); "
+                                + "the gap there %.0f%% of one coal plant's, under FIRST_WORK_SHARE's; the seasonal peak short a month before coal's completion (%b) "
+                                + "and covered at the diesel's (%b)", dearer, cheap, n, dear, 100 * (sdSlow[1] - sdSlow[0]) / unit, late, fastCovered),
+                cheap < dear && sdSlow[1] - sdSlow[0] < share * unit && late && fastCovered);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s0 = BuildAdvice.SPREAD_ORDERS.get();
+        s = suggest(g);
+        check("the slow row the cheaper but past its last on-time month, the fast row still able to be on line by the need date: nothing orders (" + named(s) + ")",
+                s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
         g.getAutoBuilder().setSlack(slack, null);
     }
 
