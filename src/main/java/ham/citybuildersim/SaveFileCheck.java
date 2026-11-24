@@ -1579,6 +1579,17 @@ public class SaveFileCheck {
         // ...and the spread planner's idle months (0.7.82), which no city founds with: two kinds idle, the rest working.
         full.getSectors().refining().planner().setIdleMonthsForTest("ASPHALT", 4);
         full.getSectors().refining().planner().setIdleMonthsForTest("COKER", 9);
+        // ...and Copper Refining's planner's year (CY1), which no city founds with: what one more of two kinds was appraised to earn over more months than the year
+        // keeps, each month's figure its own, and what the last Rod Mill standing earned over five, noted at the holding it stood at (REV-CY1: a smaller one starts the year again).
+        ham.citybuildersim.sectors.SpreadPlanner copperYear = full.getSectors().copperRefining().planner();
+        final String yearSmelter = ham.citybuildersim.sectors.ProcessingSector.kindOf(full.getBuildingManager().getTemplate(ham.citybuildersim.sectors.CopperRefining.SMELTER));
+        final String yearRod = ham.citybuildersim.sectors.ProcessingSector.kindOf(full.getBuildingManager().getTemplate(ham.citybuildersim.sectors.CopperRefining.ROD_MILL));
+        for (int m = 1; m <= ham.citybuildersim.sectors.SpreadPlanner.TRAILING_MONTHS + 4; m++) {
+            copperYear.noteMargin(yearSmelter, m, -900.25 + 17.125 * m);
+            copperYear.noteMargin(yearRod, m, 61.5 - 0.765625 * m * m);
+        }
+        final double rodHolding = 7;
+        for (int m = 1; m <= 5; m++) copperYear.noteMonth(yearRod, rodHolding, m, 40.75 - 19.5 * m);
         // ...and the wells' vintages (0.7.84), which no city founds with: two batches, struck as given.
         java.util.List<ham.citybuildersim.sectors.Oil.Vintage> vintages = java.util.List.of(
                 new ham.citybuildersim.sectors.Oil.Vintage(full.getMonth() - 30, 3, ham.citybuildersim.sectors.Oil.WellKind.LAND),
@@ -1767,6 +1778,29 @@ public class SaveFileCheck {
         }
         assertTrue("the refiners' idle months by kind, the spread planner's (0.7.82)", idle
                 && back.getSectors().refining().idleMonths(ham.citybuildersim.sectors.RefineryFlow.Kind.COKER) == 9);
+        // ...and the processing planners' year (CY1): Copper Refining's, one more's and the last one's, kind by kind, in the order the figures were noted.
+        ham.citybuildersim.sectors.SpreadPlanner thenYear = full.getSectors().copperRefining().planner(),
+                nowYear = back.getSectors().copperRefining().planner();
+        assertTrue("fixture: Copper Refining's planner holds a full year of one more's earnings for two kinds and five months of the last Rod Mill's",
+                thenYear.marginMonths(yearSmelter) == ham.citybuildersim.sectors.SpreadPlanner.TRAILING_MONTHS
+                        && thenYear.marginMonths(yearRod) == ham.citybuildersim.sectors.SpreadPlanner.TRAILING_MONTHS
+                        && Double.isFinite(thenYear.marginOverYear(yearSmelter)) && Double.isFinite(thenYear.marginOverYear(yearRod))
+                        && Double.isFinite(thenYear.lastOverYear(yearRod)) && Double.isNaN(thenYear.lastOverYear(yearSmelter))
+                        && thenYear.marginOverYear(yearSmelter) != thenYear.marginOverYear(yearRod));
+        assertEquals("the processing planners' year, one more's: the smelter's months (CY1)", nowYear.marginMonths(yearSmelter), thenYear.marginMonths(yearSmelter));
+        same("...its mean", nowYear.marginOverYear(yearSmelter), thenYear.marginOverYear(yearSmelter));
+        assertEquals("...the Rod Mill's months", nowYear.marginMonths(yearRod), thenYear.marginMonths(yearRod));
+        same("...its mean", nowYear.marginOverYear(yearRod), thenYear.marginOverYear(yearRod));
+        same("...and what the last Rod Mill earned, over its year", nowYear.lastOverYear(yearRod), thenYear.lastOverYear(yearRod));
+        assertTrue("...the smelter, none of which stood, has no last one's year after the load either", Double.isNaN(nowYear.lastOverYear(yearSmelter)));
+        java.util.Map<String, Double> thenExtras = new java.util.TreeMap<>(), nowExtras = new java.util.TreeMap<>();
+        thenYear.saveMargins(thenExtras);
+        nowYear.saveMargins(nowExtras);
+        assertTrue("...and the figures themselves, month by month, newest first", !thenExtras.isEmpty() && thenExtras.equals(nowExtras));
+        assertTrue("...and the holding the last Rod Mill's figures were noted at (REV-CY1), in the saved extras and read back the same: a smaller one would start its year again",
+                Double.valueOf(rodHolding).equals(thenExtras.get(ham.citybuildersim.sectors.SpreadPlanner.HOLDING_KEY + yearRod))
+                        && Double.valueOf(rodHolding).equals(nowExtras.get(ham.citybuildersim.sectors.SpreadPlanner.HOLDING_KEY + yearRod))
+                        && !nowExtras.containsKey(ham.citybuildersim.sectors.SpreadPlanner.HOLDING_KEY + yearSmelter));
         assertTrue("the wells' vintages, each batch's month, count and kind (0.7.84)",
                 back.getSectors().oil().vintages().equals(vintages));
         assertTrue("the oil at sea's platforms - each one's field, wells and month - and pipelines, each one's field,"

@@ -548,9 +548,9 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 93. **L16373** `buildingManager.getHousingInventory().match(families.occupiedBySize());` → [BuildingManager.getHousingInventory](map/BuildingManager.md) (L5241), [FamilyModel.occupiedBySize](map/FamilyModel.md) (L1695)
 94. **L16378** `getSectors().realEstate().setRentWeight(` → [Game.getSectors](map/Game.md) (L3237), [FamilyModel.studioRentWeight](map/FamilyModel.md) (L1386), [FamilyModel.familyRentWeight](map/FamilyModel.md) (L1387)  
    _What the landlords can bill, off the match rather than off an average, and split by which segment the door was in._
-95. **L16382** `businessInvestment.setFamilies(families);` → [BusinessInvestment.setFamilies](map/BusinessInvestment.md) (L1578)  
+95. **L16382** `businessInvestment.setFamilies(families);` → [BusinessInvestment.setFamilies](map/BusinessInvestment.md) (L1585)  
    _And the advisor prices a new home on who would move into it._
-96. **L16383** `businessInvestment.setBank(bank);` → [BusinessInvestment.setBank](map/BusinessInvestment.md) (L1583)
+96. **L16383** `businessInvestment.setBank(bank);` → [BusinessInvestment.setBank](map/BusinessInvestment.md) (L1590)
 97. **L16399** `families.shareByAffordability(households.livingAlonePressure(families));` → [FamilyModel.shareByAffordability](map/FamilyModel.md) (L2060), [HouseholdAccounts.livingAlonePressure](map/HouseholdAccounts.md) (L915)  
    _...and the ones who cannot afford one either._
 98. **L16401** `families.shareSeekersByAffordability(households.seekerPressure(new double[] {` → [FamilyModel.shareSeekersByAffordability](map/FamilyModel.md) (L2102), [HouseholdAccounts.seekerPressure](map/HouseholdAccounts.md) (L1022), [Unemployment.getHoused](map/Unemployment.md) (L155), [FamilyModel.getSeekers](map/FamilyModel.md) (L286)  
