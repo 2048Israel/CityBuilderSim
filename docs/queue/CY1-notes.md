@@ -84,3 +84,51 @@ docs/queue/FC2-notes.md section 6). Built by Claude (Opus) on batch/CY1 from 77c
   the shed.
 
 ## 4. The checks
+
+The harnesses' new sections (MaterialsCheck 18 to 22, written by a slice, reviewed and amended here) cause each case through
+the copper town's prices (`CopperRefiningCheck.copperWorks()`, `rodPays()`/`rodUnpaid()`, a `rodAt()` scale), month by
+month in real months, each beside a twin on main's rule (its year emptied before each month):
+
+- **18, the year itself:** the same month replaces, at most `TRAILING_MONTHS` kept, `lesser()`, and the idle count on FC2's
+  Rod Mill figures (+54, -83, -33). CY1 idles from month 2 and may shed from month 7; main's count reaches 2. The extras
+  round trip holds, and bad keys are ignored.
+- **19, a one-month spike:** eleven unpaid months, then one paying month. The month alone earns D$839.6k against a
+  hurdle of D$12.9k, and the twin orders a Rod Mill. The year's mean is D$-615.5k, so the city orders none. Its words:
+  "..., its mean over its last 12 months (...this month)". With rod paying on, the first Rod Mill comes in paying month 6.
+- **20, a three-month cycle (a trough that strands no works):** 24 months, 8 peaks, 5 passing alone (the first: D$655.9k a
+  month, its year D$-87.5k, hurdle D$8.5k). The city orders 0 Rod Mills and owes D$0k. The twin orders 2 and owes
+  D$6,695k, its last mill losing D$75.5k a month in the last trough.
+- **21, a feed-short works:** three mills with rod unpaid make 665 t and idle 12,328 t, a run of 0.0512, which equals the
+  Output row's figure. The Rod Mill's first gate is FEED, worded "would run at 5% of nameplate on last month's make". With
+  rod paying they run at 1.0 and the gate is open. A town with no month run reads NaN and nothing is refused.
+- **22, an idle works shed:** the last Rod Mill earns D$+336.4k at a peak and D$-629.5k in a trough. CY1 counts all six
+  months, peaks included; main's count reaches 2. The sector's own losing streak stands at 0, under
+  `RETIREMENT_LOSS_MONTHS`, and the game's own month sells a Rod Mill (2 to 1). **The review's change:** the slice's
+  sale first set six sector losses by hand (`recordSectorResult`). That exposed the second wait, and ★7 mends it. The sale
+  is now the game's own, with the streak asserted as the premise.
+- **SaveFileCheck:** Copper Refining's planner's year (two kinds over 16 months, the last Rod Mill over 5) survives a save,
+  month by month, newest first.
+
+The runs here, on the PC, one at a time:
+
+- `--fast` was green on 47cb0c5e4 and again after the merge of FC2b (9ff3d6a78).
+- MaterialsCheck and SaveFileCheck were green, and InvestCheck red only on its known line (`docs/notes/gate.txt`), on
+  0c610bc2b and again after the merge.
+- The first pick's readers ran on 0c610bc2b: SaveFileCheck, InvestCheck, BuildCardCheck, BuildingDataCheck,
+  CementConcreteCheck, CoalMiningCheck, CopperBufferCheck, CopperMiningCheck, EquipmentCheck, FittingCheck, ForestryCheck,
+  GdpCheck, HaulageCheck, HistoricalRecipeCheck, HydrogenSteelCheck, IndustryViewCheck, LicenceFeesCheck,
+  ModernEngineeringCheck, OilCheck, OilViewCheck, OrderSearchCheck, PortCheck, QuarryingCheck, ReadPathCheck, RecipeCheck,
+  RefineryCheck, RefineryViewCheck, ResearchCheck, SulphideLeachCheck, UndemandedFeedCheck and WoodProductsCheck. They
+  exited 3, InvestCheck's known red the only red.
+- CopperRefiningCheck ran on 47cb0c5e4, the model before ★7. It exited 3, red only on FS8's known "the rule cut an order"
+  line. Seed 1 stands 0 Rod Mills at m2400 in 23.1 minutes, as main does on the PC; the 181 are box-only (OpenJDK
+  21.0.13). The box's dry run is the first judge of that assertion. The row's known-reds line names CY1 as its fix, so
+  `ship.sh` drops it (`tools/known-reds.sh CY1` prints it under "!").
+- The pick is ALL (`BusinessInvestment.java`, 66 readers), so the dry run judges LongPlaytest and the rest.
+
+## 5. Left as found
+
+- One more works is weighed at the sector's operating rate, and so is the last one standing (`SpreadPlanner.City.rate()`,
+  `lastEarns()`), while the works may run cut by their order. The feed gate bounds this for copper under 60%. Between 60%
+  and 100%, one more is weighed at more than it will run. Not changed: nothing in the evidence turns on it.
+- Seed 2's smelters built at a peak several years wide (★1): a year does not see a nine-year charge whole.
