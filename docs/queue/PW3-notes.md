@@ -54,23 +54,36 @@ and PW2's ground finding (REV-PW2).
   `NETWORK_YELLOW` 0.75.
 - ★E **One life for every row**: the game's 20-year bond life and its real rate (BuildAdvice.lifeFactor), as every
   other order is valued; buildings.json has no life field and the study's per-row lives would be a new one.
-- ★F **groundFor() assembles**: when the standing listing cannot cover, the plan prices the rest at the land
-  office's price a square foot (as `WorksValue.GroundPlan` prices ground, so the plan and the value agree) and
-  `place()` buys offer by offer (each purchase lists the place's next), until it covers or `ASSEMBLE_MOST`
-  offers are bought (4 x `LandMarket.OFFERS`, 96: past the 18 a 325 MW coal plant's 200 acres took in
-  LandCheck); null past that. An offer on a landmass the city has not linked counts its linked dry ground alone
-  (`linkedSqFt()`, ET5's rule held). Ground bought for an order that is not then placed stays the city's.
+- ★F **groundFor() assembles, on a rehearsal** (REV-PW3 #1, #2). When the standing listing cannot cover, the offers
+  past it are bought on a rehearsal, a copy of the land office on a copy of the land (`LandManager.rehearse()`,
+  `AutoBuilder.assembled()`): each purchase lists the place's next, as the office does, until the held ground covers
+  or `ASSEMBLE_MOST` offers are held (4 x `LandMarket.OFFERS`, 96: past the 18 a 325 MW coal plant's 200 acres took
+  in LandCheck); null past that. The quote is the cash that paying exactly those whole offers moves
+  (`Game.landCashFor()`). It was the missing square feet at the office's price a square foot, which the replenished
+  offers at their own prices outran (the reviewer's #1; PowerPlanCheck 7a: 741 paid against 670 quoted, the cash 21
+  against 92 protected). `place()` now asks the builders' refusals first (`Game.blocker()`, which `buildStack()` asks
+  itself, one copy of the rules), rehearses the ground, sizes the bond to its exact cost, and only then sells the bond
+  and buys the offers held, each checked by id and price. An order that cannot be placed buys nothing and sells no
+  bond (the reviewer's #2, which bought the ground and sold the bond first; 7b, 7c). Listing draws on no random
+  stream, so the rehearsal's offers are the office's. An offer held unbought was the first design: with its ground
+  unclaimed the office lists the same rectangle again under a new id, so it would be paid twice. An offer on a
+  landmass the city has not linked counts its linked dry ground alone (`linkedSqFt()`, ET5's rule held). The
+  refusals are read on the city as it stands: an order whose refusal only the ground it buys would clear (a river or
+  a coast arriving with an offer) is held.
 - ★G **E25 fits, E31 does not.** The tracker raises the farm's yield a kWp (PVGIS tracked over fixed, by band):
   before E25 is known the farm runs at the fixed rack's yield, after it at the tracked (the undone pattern, today's
   figure the tracked). The tandem module raises a module's watts a square metre, not its yield a kWp: its gain is
   the farm's ground, which is FE9's question, so E31 stays Pending with PW7/FE9.
 
-- ★H **Firm rows alone in the reserve test** (the study's `plan()`): a wind or solar farm is no candidate. Its
-  credit falls with the variable rows' share, so each farm added lowers every farm's credit and the firm supply is
-  not monotone in the count of farms (`count()` stopped at 8 farms for a shortage no count closes); and a fleet of
-  farms as the peak's reserve is not what a planner builds (NERC credits wind at its ELCC, falling with its share,
-  which is `creditFall()`). The spread orders a farm where it saves its cost. So "wind alone never passes the test"
-  is the planner's rule, not arithmetic: at `MOST` farms the floor's tenth would pass.
+- ★H **Wind and solar in the reserve test, at their falling credit** (REV-PW3 #3; the first design, firm rows
+  alone, was the study's `plan()`). A planner credits a farm toward the reserve margin at its ELCC, which falls with
+  the variable rows' share (NREL, docs.nlr.gov/docs/fy14osti/61182.pdf; `creditFall()`). So a farm is a candidate at
+  the credit the firm supply gives it, its count held to the farms that keep the variable rows' share of the energy
+  at or under `CREDIT_HALF` (`BuildAdvice.reserveMost()`), where the credit is at its floor and a fleet adds a
+  tenth: wind alone never passes the test (PowerPlanCheck 5: 12 Solar Farms at a share of 0.242, the firm supply
+  305,208 kW against the 898,111 the test asks; knowing a diesel, the order closes it). Left out, a farm whose
+  credit closes a gap lost the thermal capital it avoids, since the spread values running alone (the reviewer's #3;
+  PowerPlanCheck 6a ordered 1 Diesel Station for a gap of half a farm's credit). ★L compares a farm with a firm row.
 - ★I **The firm supply walks the standing stacks**, not the catalogue's templates: a plant off the menu still stands
   and runs (WorksFinanceCheck's highway fixture took the menu's templates away and the city's own plants with them).
 - ★J **Each plant's firm kW at its own posts' fill** (PW1-P's fifth gap): a standing stack and an added plant count
@@ -101,10 +114,19 @@ and PW2's ground finding (REV-PW2).
   `promisedMonths()` reads NaN once the promise has expired. HW1's late order still comes where a candidate opens
   before the plants pending (EssentialWorksCheck: 17 Diesel Stations past the deadline, 2 of the 37 pending opening
   after the candidate). Seed 1 now ends with no copper works but 6 Wire & Cable Works (CU2's run: 1), 0 Rod Mills.
-- ★L **The screening curve ranks the reserve order** (rule 1): a candidate's twelve months of capital and ground over
-  `lifeFactor()` and of its fixed running, plus its running a kWh for the slice's hours, over the firm kW of the gap
-  it serves; the slice from where the firm supply sits against the blocks' loads over the losses. HW1's tier (an
-  order that closes the gap before one that cannot) still comes first.
+- ★L **The screening curve ranks the firm rows, and a closing farm is weighed against its pick** (rule 1). A firm
+  candidate's twelve months of capital and ground over `lifeFactor()` and of its fixed running, plus its running a
+  kWh for the slice's hours, over the firm kW of the gap it serves; the slice from where the firm supply sits against
+  the blocks' loads over the losses. A wind or solar farm whose credit closes the gap is compared with the screening
+  curve's firm pick on the year's capital and fixed running less the year's running each saves (`reserveRank()`, the
+  spread's dispatch at each one's opening: PJM's Net CONE, the cost of new entry less its energy margins), the
+  cheaper the order (`placeFarms()`; PowerPlanCheck 6a: 1 Wind Farm at -37.5 against 1 Diesel Station's 164.5). A
+  farm that cannot close ranks after the firm rows that do, by that net cost a firm kW. HW1's tier (an order that
+  closes the gap before one that cannot) still comes first. One rank by total net cost for every row was tried and
+  dropped. At the base it tied coal and diesel within 0.12% (47 diesel at -167,700 against 4 coal at -167,500): the
+  dispatch at today's draw does not see the hours of a gap measured at the reserve test's margin. And orders sized to
+  the margin chased their own queue (EssentialWorksCheck's overdue pending: 26 diesel in month 37 and 3 more in month
+  39, before the deadline).
 - ★M **The spread at today's draw** (rule 2): the twelve months dispatched again with one more unit
   (`UtilitiesHandler.yearRunning()`), the fuel and the shortage it displaces against twelve months of its capital
   over its life and its fixed running; one unit a suggestion, the best net a dollar of capital first.
@@ -117,9 +139,12 @@ and PW2's ground finding (REV-PW2).
   PowerPlanCheck 1).
 - ★P **Fixtures restated** (Jerus's rule, 2026-11-23: check reality first). Each red was new behaviour that is the
   real law, so the check keeps what holds and states the real effect:
-  - the reserve plant is a firm row where it was a Wind Farm (★H): WorksFinanceCheck's highway promise and
-    independent pending load, EssentialWorksCheck's interim power, overdue pending and scarce cash, with the Diesel
-    Station (1910) dated to the town's year (PW2's lever); each premise now asserts the firm row is the proposal;
+  - the reserve plant was a firm row where it was a Wind Farm (★H's first design). With the farms back in the
+    reserve test (REV-PW3 #3), main's Wind Farm fixtures are restored: WorksFinanceCheck's highway promise (2 Wind
+    Farms) and independent pending load (8), EssentialWorksCheck's interim power (1) and scarce cash (the cash
+    step's 1 Wind Farm). The overdue pending keeps the Diesel Station (1910, dated to the town's year, PW2's lever)
+    for reality's reason, which a fixture line now asserts: no fleet of farms within the credit's cap covers its gap
+    (the best adds 129,953 firm kW against 296,446), and a planner short by that much builds firm plant;
   - EssentialWorksCheck's overdue pending: twice the advice's count pending (a quarter more ran short of the
     forecast two months on, and the planner's five more were its own reading); its loaded twin is given the
     fixture's lever as it is given the sector holds (a template's date is the catalogue's, which no save carries:
@@ -176,40 +201,68 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
 - After ★Q, one at a time: **AutoBuildCheck, BuildAdviceCheck, WorksFinanceCheck, PowerPlanCheck, BuildCardCheck,
   NewUnitCheck** green; **EssentialWorksCheck** green with its twin's lever (★P); **CopperRefiningCheck** green
   (seed 1 at m2400: 0 Rod Mills, 6 Wire & Cable Works, 26.3 minutes).
-- **LongPlaytest** (the default run, 2,400 months) on the final code: green, every month audited and every reload
-  matched (§5).
+- After REV-PW3's four mends, one at a time: **PowerPlanCheck** green with its new lines, each shown red first on
+  the unmended code (6a, the farm that closes a gap; 6b, a plant on site counted from its opening in the spread; 7a,
+  the quote is what the ground costs; 7b, an assembly that cannot cover buys nothing and leaves the market as it was;
+  7c, an order the builders would refuse moves no money); **BuildAdviceCheck, AutoBuildCheck, WorksFinanceCheck,
+  EssentialWorksCheck, BuildCardCheck, NewUnitCheck, LandCheck** green; the twenty that buy land (CreditCrunchCheck,
+  EarthFoundingCheck, HousingDoorCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LicenceFeesCheck, MapCheck,
+  MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OrderDoorCheck, PortCheck, ReplayCheck, SaveFileCheck,
+  TreasuryCheck, WaterCheck, WellCheck and EssentialWorksCheck) green; **KeptCheck** main's two red lines alone
+  (`docs/notes/gate.txt`), the same on a clean copy of the commit before.
+- **LongPlaytest** (the default run, 2,400 months) on the final code: green, every month audited and every reload matched (§5).
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
 LongPlaytest's default city (founded 1900, today's buildings but every power plant from its year, PW2), the
 automatic path's power orders by the decade they were placed in:
 
-| decade | ordered |
-|---|---|
-| 1900s | 1 Oil-Fired Plant |
-| 1910s-1950s | nothing (the founding grid and the works' own power carry the town) |
-| 1960s | 1 Diesel Station, 1 Oil-Fired Turbine, 1 Coal Power Plant |
-| 1970s | 4 diesel, 2 turbines |
-| 1980s | 7 diesel, 7 turbines, 1 coal |
-| 1990s | 7 diesel, 1 turbine |
-| 2000s | 3 diesel, 2 turbines, 1 Oil-Fired Plant |
-| 2010s | 15 diesel, 14 turbines, 1 coal |
-| 2020s | nothing |
-| 2030s | 5 diesel, 4 turbines, 2 Oil-Fired Plants |
-| 2040s | 17 turbines, 5 diesel, 3 coal |
-| 2050s | 7 diesel, 2 coal, 1 turbine, 1 Oil-Fired Plant |
-| 2060s | 19 diesel, 2 turbines, 2 Oil-Fired Plants, 1 coal |
+| decade | after REV-PW3's mends | before them (★Q in) |
+|---|---|---|
+| 1900s | 1 Oil-Fired Plant | 1 Oil-Fired Plant |
+| 1910s-1950s | nothing (the founding grid and the works' own power carry the town) | nothing |
+| 1960s | 1 diesel, 1 turbine, 1 coal | 1 diesel, 1 turbine, 1 coal |
+| 1970s | 4 diesel, 2 turbines | 4 diesel, 2 turbines |
+| 1980s | 8 diesel, 8 turbines, **3 Wind Farms**, 1 coal | 7 diesel, 7 turbines, 1 coal |
+| 1990s | 4 diesel, 2 turbines, 1 coal | 7 diesel, 1 turbine |
+| 2000s | 13 diesel, 7 turbines, 1 Oil-Fired Plant | 3 diesel, 2 turbines, 1 Oil-Fired Plant |
+| 2010s | 2 diesel, 2 turbines | 15 diesel, 14 turbines, 1 coal |
+| 2020s | 4 diesel, 2 turbines | nothing |
+| 2030s | 15 diesel, 15 turbines, 2 coal, **1 Solar Farm** | 5 diesel, 4 turbines, 2 Oil-Fired Plants |
+| 2040s | 12 diesel, 6 turbines, 1 coal | 17 turbines, 5 diesel, 3 coal |
+| 2050s | 1 coal | 7 diesel, 2 coal, 1 turbine, 1 Oil-Fired Plant |
+| 2060s | 23 diesel, 12 turbines, 5 Oil-Fired Plants, **2 Wind Farms, 1 Solar Farm, 2 Biomass**, 1 coal | 19 diesel, 2 turbines, 2 Oil-Fired Plants, 1 coal |
+| 2070s | 1 coal | nothing |
 
-In all: 73 Diesel Stations, 51 Oil-Fired Turbines, 9 coal plants and 7 Oil-Fired Plants; no wind, no solar and
-no biomass (whether the run's research found the farms, or the spread weighed them and found them dear, is not
-measured). The planner suggested 292 reserve orders and 11 spread orders; one offer was assembled past the
-listing. Measured on the final code, ★Q in: before it the same run ordered 125 diesel, 39 turbines, 22
-Oil-Fired Plants, 7 coal and 2 biomass, and stood a copper chain (8 smelters, 6 refineries, 19 scrap refineries,
-1 Rod Mill) that it no longer stands (3 Wire & Cable Works alone). **Against main:** FC2's gate run on 0.9.195
-(2026-11-23, the same default run) ordered 170 Oil-Fired Turbines, 8 Diesel Stations and 1 Oil-Fired Plant, no
-coal. **Against §2.9's table:** 1900's city burned coal in plants of half a megawatt and took a third of its power
-from rivers; this one has no hydro site ordered, and today's sizes (a 280 MW coal unit, an 86 MW Oil-Fired Plant,
-a 19 MW diesel) make every step of a growing town's gap small beside a coal plant, so spec §2.8 rule 1's "a unit
-bigger than the gap pays for its idle part" gives most of it to the peakers, as the study's "town of 10 MW" built
-a diesel station (a reading of the rule, not measured month by month). So the mix is a peakers' fleet with coal
-base plants among it, where main's was turbines alone; the ensemble will say what it costs the city (§6).
+After the mends: 86 Diesel Stations, 57 Oil-Fired Turbines, 9 coal plants, 7 Oil-Fired Plants, 5 Wind Farms, 2
+Solar Farms and 2 Biomass Plants (before: 73, 51, 9, 7 and no farms); 447 reserve suggestions and 8 spread
+suggestions (292 and 11); one offer assembled past the listing; no copper works but 3 Wire & Cable Works, as
+before. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
+Turbines, 8 Diesel Stations and 1 Oil-Fired Plant, no coal and no farms.
+
+**Why so few farms** (the orchestrator asked: did research find them, and what did the planner price them at;
+measured by a helper on this run's city kept at January 2012 and January 2042, before the mends, in the model's
+$k). The farms are known: E16 is dated December 1980, so the Wind Farm stands from then (the 1980s' three), solar
+from 1982, biomass from 1970; the city has no hydro slot. What rules a farm out is its ground. The city buys a
+farm's ground at its land office, 0.119 a square foot at the market in 2012 and 0.259 in 2042 (the office's own
+0.260 and 0.642): ground is 87% of a Wind Farm's capital (1.74M sq ft) and 96% of a Solar Farm's (14.5M). On the
+screening curve's peak slice, a firm kW-year cost 0.41 in a turbine, 0.54 in a diesel or an Oil-Fired Plant, 0.57
+in coal, 1.43 in biomass, 3.23 in a Wind Farm and 3.75 in a Solar Farm (about 2.5 times each in 2042). The spread
+saw the same: a year's saving against its cost of 0.09 for coal and wind, 0.04 for solar in 2012, 0.43, 0.35 and
+0.12 in 2042. With free ground a Wind Farm would pass the spread in 2042 (2.16) and a Solar Farm too (2.45); ground
+would have to cost 57.7 (wind) and 18.8 (solar) a thousand square feet against the market's 258.7. And in 2012 the
+works' own must-run power (2.44M kW) was above the city's mean draw (2.31M), so the grid's own plants served only
+the peak (the diesels and turbines ran at a capacity factor of 0), where no farm's energy is worth its capital.
+**Against reality:** grids grew on coal and hydro base load, and wind and solar are the largest additions since the
+2010s, oil a few percent. Here the base is the works' own power, and a farm's ground is bought at a city's land
+price: real farms stand on rural ground leased or bought at farmland's price. What a farm's ground should cost is
+FE9's question (★G: the tandem module's gain is the farm's ground too), so PW3 leaves the price as it stands and the
+mix follows it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s,
+2030s and 2060s).
+
+**Against §2.9's table:** 1900's city burned coal in plants of half a megawatt and took a third of its power from
+rivers; this one has no hydro site ordered, and today's sizes (a 280 MW coal unit, an 86 MW Oil-Fired Plant, a 19
+MW diesel) make every step of a growing town's gap small beside a coal plant, so spec §2.8 rule 1's "a unit bigger
+than the gap pays for its idle part" gives most of it to the peakers, as the study's "town of 10 MW" built a diesel
+station (a reading of the rule, not measured month by month). So the mix is a peakers' fleet with coal base plants
+and a few farms among it, where main's was turbines alone; the ensemble will say what it costs the city (§6).

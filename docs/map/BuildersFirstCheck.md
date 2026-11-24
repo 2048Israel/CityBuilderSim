@@ -66,7 +66,7 @@
 
 **Uses:** [BuildingManager](BuildingManager.md) (30), [Game](Game.md) (21), [ConstructionControl](ConstructionControl.md) (10), [DeathCareFirstCheck](DeathCareFirstCheck.md) (8), [BuildingsStacks](BuildingsStacks.md) (8), [Construction](Construction.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [Sectors](Sectors.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [MortgageCheck](MortgageCheck.md) (4), [Good](Good.md) (2), [Sector](Sector.md) (2), [MoneyAudit](MoneyAudit.md) (1), [TempDirs](TempDirs.md) (1)
 
-**Used by (2):** [ConstructionTrapCheck](ConstructionTrapCheck.md), [GapOrderCheck](GapOrderCheck.md)
+**Used by (3):** [ConstructionTrapCheck](ConstructionTrapCheck.md), [GapOrderCheck](GapOrderCheck.md), [PowerPlanCheck](PowerPlanCheck.md)
 
 ## Sections
 

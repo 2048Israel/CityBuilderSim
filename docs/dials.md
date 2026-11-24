@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,672 constants in 635 files.**
+**6,675 constants in 635 files.**
 
 ## model (3058 constants)
 
@@ -55,9 +55,9 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 217 | `AutoBuilder.ORDER_MONTHS` | `12` | No more than opens inside this many months: the businesses' own rule for an order until BA1 (BusinessInvestment.MAX_ORDER_MONTHS, which went with the cap on orders), kept for the city's automatic o... |
 | 422 | `AutoBuilder.HELD_BACK` | `"Automatic building holds it back; "` | What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. |
 | 708 | `AutoBuilder.PAID_MONTHS` | `12` | Months of monthPaid() the payback's figure averages: a year, as a lender reads a city's accounts - a year of its own recurring revenue, the sale of its property left out, as a city's debt limit is ... |
-| 1869 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
-| 1971 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
-| 1996 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
+| 1897 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
+| 2000 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
+| 2025 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
 
 ### Bank.java ([map](map/Bank.md))
 
@@ -228,14 +228,14 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1244 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size... |
 | 1257 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
 | 1310 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
-| 1644 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
-| 1647 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
-| 1650 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
-| 1907 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
-| 2218 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
-| 2779 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
-| 2785 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
-| 2956 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
+| 1680 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
+| 1683 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
+| 1686 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
+| 2021 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
+| 2332 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
+| 2893 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
+| 2899 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
+| 3070 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
 
 ### BuildCard.java ([map](map/BuildCard.md))
 
@@ -1682,31 +1682,31 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1829 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
 | 2160 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
 | 3411 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
-| 4111 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 4114 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
-| 7451 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 7454 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 8579 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
-| 9359 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 9589 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 10799 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 11378 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 12178 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 12821 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 12991 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 13035 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 13195 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15125 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 15137 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 15140 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15168 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 15179 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 15219 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 17028 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 17435 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 18089 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 18092 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 18095 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 4126 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 4129 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
+| 7466 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 7469 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 8594 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
+| 9374 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 9604 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 10814 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 11393 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 12201 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 12844 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 13014 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 13058 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 13218 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15148 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 15160 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 15163 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15191 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 15202 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 15242 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 17051 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 17458 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 18112 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 18115 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 18118 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -2351,9 +2351,9 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 192 | `LandManager.FOUNDING_FRESH_KM2` | `FOUNDING_FRESH_UNITS / UtilitiesHandler.FRESH_UNITS_PER_KM2` | ...as lake and river ground in its centre, in square kilometres: FOUNDING_FRESH_UNITS over what one yields a month (UtilitiesHandler.FRESH_UNITS_PER_KM2), 0.4934 km2 (CityLand.found()). |
 | 246 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001 * PriceLevel.FACTOR` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
 | 333 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
-| 1051 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 2617 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 3138 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1091 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
+| 2657 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 3178 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
@@ -5993,7 +5993,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2118 constants)
+## harnesses (2121 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6809,7 +6809,7 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 24 | `EssentialWorksCheck.out` | `System.out` |  |
 | 25 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 | 26 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
-| 557 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
+| 556 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
 
 ### ExchangeCheck.java ([map](map/ExchangeCheck.md))
 
@@ -8360,9 +8360,12 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 37 | `PowerPlanCheck.out` | `System.out` |  |
-| 49 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
-| 51 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station", WIND = "W...` |  |
+| 42 | `PowerPlanCheck.out` | `System.out` |  |
+| 54 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
+| 56 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station", WIND = "W...` |  |
+| 369 | `PowerPlanCheck.GAP_SHARE` | `0.5` | What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. |
+| 422 | `PowerPlanCheck.DEPOTS` | `100` | Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. |
+| 425 | `PowerPlanCheck.PREP_MONTHS` | `60` | The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. |
 
 ### PowerPlantsCheck.java ([map](map/PowerPlantsCheck.md))
 

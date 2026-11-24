@@ -1,4 +1,4 @@
-# LandMarket.java - 1,807 lines · 111 methods · 14 constants · model
+# LandMarket.java - 1,830 lines · 112 methods · 14 constants · model
 
 `ham/citybuildersim/LandMarket.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 > Jerus: "when you buy land, make it so that it costs USD not domestic
 > ... (17 more lines in the source)
 
-**Uses:** [LandParcel](LandParcel.md) (93), [CityLand](CityLand.md) (45), [World](World.md) (19), [GridOffers](GridOffers.md) (18), [Resource](Resource.md) (13), [LandSellers](LandSellers.md) (9), [LandManager](LandManager.md) (8), [Landmasses](Landmasses.md) (4), [PriceLevel](PriceLevel.md) (2), [LandGrid](LandGrid.md) (2), [LandFactors](LandFactors.md) (1), [SitePreparation](SitePreparation.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [LandParcel](LandParcel.md) (93), [CityLand](CityLand.md) (46), [World](World.md) (19), [GridOffers](GridOffers.md) (18), [Resource](Resource.md) (13), [LandSellers](LandSellers.md) (9), [LandManager](LandManager.md) (8), [Landmasses](Landmasses.md) (4), [PriceLevel](PriceLevel.md) (2), [LandGrid](LandGrid.md) (2), [LandFactors](LandFactors.md) (1), [SitePreparation](SitePreparation.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
-**Used by (33):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [ER1Check](ER1Check.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [GroundSkipCheck](GroundSkipCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (34):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [ER1Check](ER1Check.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [GroundSkipCheck](GroundSkipCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 
@@ -82,7 +82,7 @@
 | 977 | THE LISTING |
 | 1262 | THE PLAYER'S GROUND, DRAFTED INTO THE OFFICE (BL1, 2026-10-26) |
 | 1498 | A QUOTE AWAY FROM THE SCREEN'S THREAD (WN5b, 2026-11-02) |
-| 1590 | SAVE AND RESTORE |
+| 1613 | SAVE AND RESTORE |
 
 ## Constants
 
@@ -137,20 +137,20 @@
 | 1433 | `private final List<long[]> rects` |  |
 | 1434 | `private volatile boolean cancelled` |  |
 | 1435 | `private boolean finished` |  |
-| 1536 | `private final LandMarket frozen` |  |
-| 1537 | `private final CityLand original` |  |
-| 1538 | `private final LandGrid grid` |  |
-| 1539 | `private final long owned` |  |
-| 1540 | `private final int level` |  |
-| 1572 | `private final Quoter source` |  |
-| 1573 | `private final DraftGround ground` |  |
-| 1683 | `private boolean groundFromLocal` | True when the price state came back without a dollar ground price (an older save). |
+| 1559 | `private final LandMarket frozen` |  |
+| 1560 | `private final CityLand original` |  |
+| 1561 | `private final LandGrid grid` |  |
+| 1562 | `private final long owned` |  |
+| 1563 | `private final int level` |  |
+| 1595 | `private final Quoter source` |  |
+| 1596 | `private final DraftGround ground` |  |
+| 1706 | `private boolean groundFromLocal` | True when the price state came back without a dollar ground price (an older save). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 88 | 1720 | **type** `public class LandMarket` | The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's edge, or none while that side has no room - and what the ground costs. |
+| 88 | 1743 | **type** `public class LandMarket` | The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's edge, or none while that side has no room - and what the ground costs. |
 
 ### what the city pays (lines 101-148)
 
@@ -281,37 +281,38 @@
 | 1459 | 13 | `public boolean acceptDrafts(DraftRequest request)` | Owner (FX) thread only: rejects changed ground, then prices the returned geometry in the CURRENT month. |
 | 1479 | 18 | `private LandParcel takeDraft(int id)` | A draft bought: it leaves its shelf, and every standing offer whose free ground its rectangle meets leaves the office's, unbought - its place emptied as take() empties one - because an offer keeps its listed price and... |
 
-### A QUOTE AWAY FROM THE SCREEN'S THREAD (WN5b, 2026-11-02) (lines 1498-1589)
+### A QUOTE AWAY FROM THE SCREEN'S THREAD (WN5b, 2026-11-02) (lines 1498-1612)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1517 | 12 | `public Quoter quoter()` | A copy of this office for quoting on another thread, or null on a bare office (no land) and where the land cannot be copied. |
-| 1535 | 34 | **type** `public static final class Quoter` | The office as it stood when quoter() was called, for quoting blocks on any thread: its answer is the office's quote() of that moment, to the bit (the same code, on a copy of the land). |
-| 1542 | 7 | `private Quoter(LandMarket frozen, CityLand original)` _(in LandMarket.Quoter)_ |  |
-| 1551 | 9 | `public synchronized MeasuredQuote measure(long[] rect)` _(in LandMarket.Quoter)_ | Immutable measured ground for an FX-thread price, using only this quoter's private office. |
-| 1562 | 3 | `public synchronized LandParcel quote(long x0, long y0, long x1, long y1)` _(in LandMarket.Quoter)_ | LandMarket.quote() of the office as it stood: any thread, one call at a time (the copy's land is not made for two readers at once). |
-| 1567 | 1 | `public int month()` _(in LandMarket.Quoter)_ | The month the office priced in when it was copied. |
-| 1571 | 9 | **type** `public static final class MeasuredQuote` | A worker's immutable geometry and its source, published through the screen's owner dispatcher. |
-| 1575 | 4 | `private MeasuredQuote(Quoter source, DraftGround ground)` _(in LandMarket.MeasuredQuote)_ |  |
-| 1582 | 7 | `public LandParcel priceQuote(MeasuredQuote quote)` | FX thread only. |
+| 1538 | 14 | `LandMarket rehearsal()` | A copy of this office on a copy of its land, to buy offers on one after another with nothing of the city's moved (PW3, REV-PW3 #1, #2): the offers standing (as DataSave carries them, getOffersState() and its two compa... |
+| 1558 | 34 | **type** `public static final class Quoter` | The office as it stood when quoter() was called, for quoting blocks on any thread: its answer is the office's quote() of that moment, to the bit (the same code, on a copy of the land). |
+| 1565 | 7 | `private Quoter(LandMarket frozen, CityLand original)` _(in LandMarket.Quoter)_ |  |
+| 1574 | 9 | `public synchronized MeasuredQuote measure(long[] rect)` _(in LandMarket.Quoter)_ | Immutable measured ground for an FX-thread price, using only this quoter's private office. |
+| 1585 | 3 | `public synchronized LandParcel quote(long x0, long y0, long x1, long y1)` _(in LandMarket.Quoter)_ | LandMarket.quote() of the office as it stood: any thread, one call at a time (the copy's land is not made for two readers at once). |
+| 1590 | 1 | `public int month()` _(in LandMarket.Quoter)_ | The month the office priced in when it was copied. |
+| 1594 | 9 | **type** `public static final class MeasuredQuote` | A worker's immutable geometry and its source, published through the screen's owner dispatcher. |
+| 1598 | 4 | `private MeasuredQuote(Quoter source, DraftGround ground)` _(in LandMarket.MeasuredQuote)_ |  |
+| 1605 | 7 | `public LandParcel priceQuote(MeasuredQuote quote)` | FX thread only. |
 
-### SAVE AND RESTORE (lines 1590-1807)
+### SAVE AND RESTORE (lines 1613-1830)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1604 | 6 | `public double[][] getOffersState()` | The offers standing, one record each (LandParcel.offerRow()), side by side and place by place. |
-| 1612 | 6 | `public double[][] getOffersReliefState()` | The offers' ground by relief (ET1), a record each in getOffersState()'s order (LandParcel.reliefRow()): DataSave's landOffersRelief. |
-| 1623 | 10 | `public double[][] getOffersSellersState()` | The offers' sellers (WN5), a record each in getOffersState()'s order (LandParcel.sellersRow()): DataSave's landOffersSellers. |
-| 1635 | 1 | `public int getNextOfferId()` | The id the next offer listed will take: DataSave's nextOfferId. |
-| 1642 | 3 | `public void restoreOffers(double[][] rows, int nextOfferId)` | Saved offers back on the shelf, each in its own place, and the next id; a record of the wrong width, or a second one for a place, is dropped, and update() lists that place's next. |
-| 1647 | 3 | `public void restoreOffers(double[][] rows, double[][] relief, int nextOfferId)` | ...with their ground by relief (ET1; getOffersReliefState(), a row for each of `rows` by its place): a key a save has not, or a row of the wrong width, reads the offer all flat. |
-| 1652 | 10 | `public void restoreOffers(double[][] rows, double[][] relief, double[][] sellerRows, int nextOfferId)` | ...and their sellers (WN5; getOffersSellersState(), a row for each of `rows` by its place): none for a key a save has not, a row missing or not a record of sellers - an older save's offers were listed with no factor, ... |
-| 1664 | 17 | `public void putOffers(List<LandParcel> list)` | These offers on the shelf in place of whatever stood there, each in its own place (a second for a place is dropped), their rectangles stood on the land's grid; the next id past the largest. |
-| 1696 | 7 | `public int settleLocalPrices(double rate)` | AN OLDER SAVE'S QUOTE WAS LOCAL MONEY, and this reads it as US dollars at the rate of the day the save is loaded (0.7.6), when the price state came back without a dollar ground price - so the local quote the player sa... |
-| 1705 | 1 | `public long getBlockPlots()` | The side of the city's blocks now, in plots: 2^getLevel() (four plots, 120 m, for a new city); 0 on a bare office. |
-| 1735 | 4 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
-| 1740 | 20 | `public void restorePriceState(double[] state)` |  |
-| 1761 | 14 | `public void reset()` |  |
-| 1790 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
-| 1803 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
+| 1627 | 6 | `public double[][] getOffersState()` | The offers standing, one record each (LandParcel.offerRow()), side by side and place by place. |
+| 1635 | 6 | `public double[][] getOffersReliefState()` | The offers' ground by relief (ET1), a record each in getOffersState()'s order (LandParcel.reliefRow()): DataSave's landOffersRelief. |
+| 1646 | 10 | `public double[][] getOffersSellersState()` | The offers' sellers (WN5), a record each in getOffersState()'s order (LandParcel.sellersRow()): DataSave's landOffersSellers. |
+| 1658 | 1 | `public int getNextOfferId()` | The id the next offer listed will take: DataSave's nextOfferId. |
+| 1665 | 3 | `public void restoreOffers(double[][] rows, int nextOfferId)` | Saved offers back on the shelf, each in its own place, and the next id; a record of the wrong width, or a second one for a place, is dropped, and update() lists that place's next. |
+| 1670 | 3 | `public void restoreOffers(double[][] rows, double[][] relief, int nextOfferId)` | ...with their ground by relief (ET1; getOffersReliefState(), a row for each of `rows` by its place): a key a save has not, or a row of the wrong width, reads the offer all flat. |
+| 1675 | 10 | `public void restoreOffers(double[][] rows, double[][] relief, double[][] sellerRows, int nextOfferId)` | ...and their sellers (WN5; getOffersSellersState(), a row for each of `rows` by its place): none for a key a save has not, a row missing or not a record of sellers - an older save's offers were listed with no factor, ... |
+| 1687 | 17 | `public void putOffers(List<LandParcel> list)` | These offers on the shelf in place of whatever stood there, each in its own place (a second for a place is dropped), their rectangles stood on the land's grid; the next id past the largest. |
+| 1719 | 7 | `public int settleLocalPrices(double rate)` | AN OLDER SAVE'S QUOTE WAS LOCAL MONEY, and this reads it as US dollars at the rate of the day the save is loaded (0.7.6), when the price state came back without a dollar ground price - so the local quote the player sa... |
+| 1728 | 1 | `public long getBlockPlots()` | The side of the city's blocks now, in plots: 2^getLevel() (four plots, 120 m, for a new city); 0 on a bare office. |
+| 1758 | 4 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
+| 1763 | 20 | `public void restorePriceState(double[] state)` |  |
+| 1784 | 14 | `public void reset()` |  |
+| 1813 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
+| 1826 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
 
