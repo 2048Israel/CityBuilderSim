@@ -138,8 +138,15 @@ public final class HousingMarketCheck {
         market.clear(g,List.of(new HousingChoice.Demand("planner-adults",80,2,0,true,0,false,1000)));
         for(var form:HousingForms.ALL){var t=bm.getTemplate(form.id());if(!bm.isTemplateKnown(t))continue;
             double rent=market.classes().stream().filter(c->c.recipe==t.getId()).mapToDouble(c->c.ask*t.getHousingRecipe().mix().stream().filter(d->d.id().equals(c.dwelling)).findFirst().orElseThrow().count()).sum();
-            double capital=market.classes().stream().filter(c->c.recipe==t.getId()).mapToDouble(c->c.capital*t.getHousingRecipe().mix().stream().filter(d->d.id().equals(c.dwelling)).findFirst().orElseThrow().count()).sum()*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
-            check("unbuilt "+form.code()+" quotes its real operation and capital return",rent-g.getEconomyManager().housingCarry(t)>=capital-MoneyAudit.tolerance(capital));
+            double expected=0,carried=0;
+            for(var c:market.classes())if(c.recipe==t.getId()){
+                var d=t.getHousingRecipe().mix().stream().filter(home->home.id().equals(c.dwelling)).findFirst().orElseThrow();
+                double anchor=c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
+                near("unbuilt "+form.code()+"/"+d.id()+" quotes gross yield or actual operating cost",c.ask,Math.max(anchor,c.carry));
+                expected+=Math.max(anchor,c.carry)*d.count();carried+=c.carry*d.count();
+            }
+            near("unbuilt "+form.code()+" rent reconciles its comparable class quotes",rent,expected);
+            near("unbuilt "+form.code()+" actual carry is allocated exactly once",carried,g.getEconomyManager().housingCarry(t));
         }
         near("unbuilt supply quotes earn no actual rent",market.receipts(),0);
         var terrace=HousingForms.ALL.stream().filter(f->f.code().equals("C05")).findFirst().orElseThrow();
@@ -208,6 +215,107 @@ public final class HousingMarketCheck {
         near("a monetary reform scales saved household budgets",debt.forSave().demand.getFirst().budget(),.2);
         near("a monetary reform scales committed pipeline asks",debt.forSave().pipeline.getFirst().rent(),.1);
         near("a monetary reform scales committed pipeline recurring costs",debt.forSave().pipeline.getFirst().recurring(),.02);
+    }
+    static void unbuiltGrossQuotes(){
+        out.println("--- unbuilt gross rent covers actual costs without adding them to gross yield ---");
+        Game g=new Game(GameFiles.scratch("res3-unbuilt-gross"));g.run();
+        var bm=g.getBuildingManager();var em=g.getEconomyManager();var market=g.getSectors().realEstate().housingMarket();
+        var t=bm.getTemplate(0);var recipe=t.getHousingRecipe();var dwelling=recipe.mix().getFirst();
+        var key=new HousingInventory.Key(t.getId(),dwelling.id());
+        for(boolean high:new boolean[]{false,true}){
+            em.getTaxPolicy().setPropertyTaxRate(high?TaxPolicy.MAX_PROPERTY_TAX:0);
+            market.reset();market.clear(g,List.of());
+            var c=market.classes().stream().filter(row->row.key().equals(key)).findFirst().orElseThrow();
+            double anchor=c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
+            double cost=em.housingCarry(t)*dwelling.costWeight()/recipe.costWeight();
+            check("fixture has an available unbuilt quote",c.available&&c.homes==0&&anchor>0&&cost>0);
+            check("actual property-tax input causes costs "+(high?"above":"below")+" gross yield",high?cost>anchor:cost<anchor);
+            near("unbuilt carry comes from the actual operating-cost getter",c.carry,cost);
+            near("opening quote uses "+(high?"actual cost floor":"gross market yield"),c.ask,high?cost:anchor);
+            market.reprice(0);
+            c=market.classes().stream().filter(row->row.key().equals(key)).findFirst().orElseThrow();
+            near("later unbuilt target uses "+(high?"actual cost floor":"gross market yield"),c.target,high?cost:anchor);
+            near("an already correct unbuilt quote stays at its target",c.ask,c.target);
+            near("unbuilt vacancy earns no rent",market.receipts(),0);
+            market.sold();c=market.classes().stream().filter(row->row.key().equals(key)).findFirst().orElseThrow();
+            near("unbuilt quote records no actual rental trade",c.tradeQuantity+c.tradeValue,0);
+            String before=JSON.toJson(market.forSave());market.price(key);market.meanPerCapacity(t);
+            check("reading the unbuilt quote changes no saved market field",before.equals(JSON.toJson(market.forSave())));
+            if(high){
+                double costOfHome=g.doorPriceOf(t,1);
+                var refused=Mortgage.decide(1,n->g.doorPriceOf(t,n),Mortgage.ownFundsFor(costOfHome),
+                        market.candidateIncome(g,t,1)-em.housingCarry(t),g.getBank().insuredMortgageRate(0));
+                check("the existing lender still refuses an unviable vacant project",refused.quantity()==0
+                        &&Mortgage.Decision.LENDERS_TEST.equals(refused.trimmedBy()));
+            }
+        }
+    }
+    static void fractionalSettlement(){
+        out.println("--- actual fractional households receive income and pay their supplied bills ---");
+        for(double count:new double[]{.25,HouseholdBalance.EMPTY_CELL,Math.nextDown(HouseholdBalance.EMPTY_CELL),0}){
+            Game g=new Game(GameFiles.scratch("res3-fractional-settle-"+count));g.run();
+            var bm=g.getBuildingManager();var t=bm.getTemplate(0);bm.addStack(t,4,true);
+            var market=g.getSectors().realEstate().housingMarket();var b=new HouseholdBalance();
+            var tier=PayTier.UNSKILLED;
+            java.util.function.ToDoubleBiFunction<FamilyStructure,PayTier> census=(s,p)->p!=tier?0:
+                    s==FamilyStructure.SINGLE_ADULT?count:s==FamilyStructure.COUPLE?1:0;
+            b.censusOnly(census);var fraction=b.cell(FamilyStructure.SINGLE_ADULT,tier);var couple=b.cell(FamilyStructure.COUPLE,tier);
+            market.clear(g,List.of(new HousingChoice.Demand(fraction.key(),count,1,0,true,0,false,1e9),
+                    new HousingChoice.Demand(couple.key(),1,2,0,true,0,false,1e9)));
+            double unit=Math.max(1,market.rentFor(couple.key(),1));double each=100*unit;
+            b.setRentBills(c->market.rentFor(c.key(),c.households()));b.setHousedShares(c->c.households()>0?1:0);
+            b.setAccountFee(unit);b.setStudentLoanRate(.06);b.setCardLenderOpenForHarness(false);
+            for(var c:List.of(fraction,couple))if(c.households()>0){
+                c.savings=20*unit;c.debt=3*unit;c.revolving=.5;c.studentDebt=2*unit;
+                c.shares[0]=4;c.basis[0]=2*unit;c.taxShares[0]=1;c.taxClaim[0]=unit;
+            }
+            double[] income=new double[Household.ROWS],fees=new double[Household.ROWS],shopping=new double[Household.ROWS];
+            income[tier.ordinal()]=(count*fraction.earningWeight()+couple.earningWeight())*each;
+            fees[tier.ordinal()]=(count*fraction.headcount()+couple.headcount())*unit;
+            b.planOnly(census,income,0,fees,unit,.05);
+            double supplied=b.groceriesWanted(unit);b.allocateGroceries(supplied,unit,unit);shopping[tier.ordinal()]=supplied*unit;
+            double cashBefore=b.totalSavings(),debtBefore=b.totalDebt(),studentBefore=b.totalStudentDebt();
+            double claimBefore=b.sum(c->c.taxClaim[0]*c.households()),sharesBefore=b.sharesHeld(0);
+            double fractionCash=fraction.savings(),fractionDebt=fraction.debt();
+            b.advanceMonth(census,income,0,fees,shopping,unit,.05,1);
+            near("actual fractional count is retained: "+count,fraction.households(),count);
+            near("no allocated income is left unsettled: "+count,b.getUnsettledIncome(),0);
+            near("no supplied fee, shopping or rent is left unsettled: "+count,b.getUnsettledFees()+b.getUnsettledShopping()+b.getUnsettledRent(),0);
+            near("the funded fixture invents no cash for unpaid bills: "+count,b.getUnfunded(),0);
+            double paidRent=b.sum(c->market.rentFor(c.key(),c.households())*c.households());
+            near("actual household rent equals its landlord recipient: "+count,paidRent,market.receipts());
+            double sellers=paidRent+fees[tier.ordinal()]+shopping[tier.ordinal()]+b.totalEmergencyBills();
+            double bank=b.totalAccountFees()+b.totalInterest()+b.totalRepaid()-b.totalBorrowed();
+            double treasury=b.totalStudentRepaid()+b.totalStudentInterest();
+            near("sender and all actual recipients conserve cash: "+count,b.totalSavings()+sellers+bank+treasury-income[tier.ordinal()],cashBefore);
+            near("card principal and fee claims conserve: "+count,b.totalDebt()+b.totalRepaid()+b.getWrittenOff(),debtBefore+b.totalBorrowed()+b.totalLoanFees());
+            near("student loan claims conserve: "+count,b.totalStudentDebt()+b.totalStudentRepaid(),studentBefore+b.totalStudentBorrowed());
+            near("secured tax claims are not cleared or transferred: "+count,b.sum(c->c.taxClaim[0]*c.households()),claimBefore);
+            near("the existing share holdings are conserved: "+count,b.sharesHeld(0),sharesBefore);
+            if(count>0){
+                near("fractional recipient receives its own earning-weighted income: "+count,fraction.disposable(),each);
+                near("fractional recipient pays its actual account bill: "+count,fraction.accountFee,unit);
+                check("fractional recipient buys actual supplied groceries: "+count,fraction.groceriesGot>0&&shopping[tier.ordinal()]>0);
+                check("fractional recipient services its own card and student loan: "+count,fraction.repaid()>0&&fraction.studentRepaid>0);
+                near("fractional card claim follows only its own settled flows: "+count,fraction.debt()+fraction.repaid()+fraction.cardWrittenOff,fractionDebt+fraction.borrowed()+fraction.loanFee);
+                near("fractional cash follows only its own bills: "+count,fraction.savings()-fractionCash,
+                        fraction.disposable()-market.rentFor(fraction.key(),count)-unit-unit-fraction.groceriesGot*unit
+                                -fraction.interest()-fraction.studentRepaid-fraction.studentInterest-fraction.repaid()-fraction.emergencyBill+fraction.borrowed());
+            }else{
+                near("exact zero receives no income, groceries, account bill or stock",fraction.disposable()+fraction.groceriesGot+fraction.accountFee+fraction.savings()+fraction.debt(),0);
+            }
+            var copy=new HouseholdBalance();check("the cell save restores its existing schema",copy.restoreCells(b.cellKeys(),b.toCellSaveArray(),Equity.COMPANIES));
+            copy.setRentBills(c->market.rentFor(c.key(),c.households()));copy.setHousedShares(c->c.households()>0?1:0);
+            copy.setAccountFee(unit);copy.setStudentLoanRate(.06);copy.setCardLenderOpenForHarness(false);
+            double settledCash=b.totalSavings();b.planOnly(census,income,0,fees,unit,.05);copy.planOnly(census,income,0,fees,unit,.05);
+            near("load/restrike spends no cash and preserves fractional ownership: "+count,copy.totalSavings(),settledCash);
+            near("live restrike spends no cash: "+count,b.totalSavings(),settledCash);
+            near("load preserves the actual card claims: "+count,copy.totalDebt(),b.totalDebt());
+            near("load preserves the student claims: "+count,copy.totalStudentDebt(),b.totalStudentDebt());
+            near("load preserves the secured tax claims: "+count,copy.sum(c->c.taxClaim[0]*c.households()),claimBefore);
+            near("load reproduces the positive fractional spending plan: "+count,copy.getSpendingCapacity(),b.getSpendingCapacity());
+            near("load retains the fractional recipient own cash: "+count,copy.cell(FamilyStructure.SINGLE_ADULT,tier).savings(),fraction.savings());
+        }
     }
     static void foundingBudgets(){
         out.println("--- a founding worker's current wage funds the first actual home ---");
@@ -1223,6 +1331,8 @@ public final class HousingMarketCheck {
         }
     }
     public static void main(String[] args)throws Exception{
+        out=System.out;fractionalSettlement();
+        out=System.out;unbuiltGrossQuotes();
         out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
         out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
