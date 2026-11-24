@@ -91,7 +91,7 @@ public class MonetaryCheck {
                     .filter(s -> s.key().equals(key)).mapToDouble(HousingInventory.Stock::homes).sum();
             if (homes > 0) laterStockMonths++;
             var traded = market.classes().stream()
-                    .filter(c -> c.recipe == key.recipe() && key.dwelling().equals(c.dwelling())).findFirst().orElse(null);
+                    .filter(c -> c.recipe == key.recipe() && key.dwelling().equals(c.dwelling)).findFirst().orElse(null);
             if (traded != null && traded.tradeQuantity > 0) {
                 laterPaidRent += traded.tradeValue / traded.tradeQuantity;
                 laterTradeMonths++;

@@ -4299,3 +4299,17 @@ fixed-basket policy premises remain. Also, zero new-car/fuel/luxury/meal
 base spending was measured before the NOI mend, not established for the
 current model; no claim a future CPI correction has zero original effect.
 Every monetary law must still pass on its final model.
+
+The corrected old FFA legacy proof now compiles and runs: ten assertions
+pass and only the intended eligible partial-fill choice fails; all seven
+prerequisites and three refusal cases pass. Its exact corrected Invest
+source hash is retained. Candidate 3d84 then stops at compile because the
+new Monetary guard calls public field ClassState.dwelling as dwelling().
+The one-line test-only correction uses the field. Review verifies the
+other new class trade fields and physical Stock.homes accessor against
+the actual declarations. No candidate driver or normal HMC/Invest/Mon
+runs before that compile stop, and no pass is inferred for 3d84.
+Report 29e9 retains exact source/asset/JDK manifests and old proof;
+its proof is reusable because the corrected Invest and old production
+remain byte-identical. Only the candidate needs its compile and runtime
+checks after the new pushed correction; no model behavior changes.
