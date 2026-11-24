@@ -60,11 +60,14 @@ public class MonetaryCheck {
     static final long[] POLICY_SEEDS = java.util.stream.LongStream.range(16, 32).toArray();
     private static long policySeed = Founding.defaults().getPathSeed();
     private record HousingStart(int month, long doors) { }
+    private record PaidSupply(double rentPerDoor, int stockMonths, int tradeMonths) { }
     /** Harness-only observation at acceptance; no model flow or saved order state is reconstructed. */
     private static final class HousingTown extends Game {
         private final java.util.List<HousingStart> starts = new java.util.ArrayList<>();
         private double laterRent;
         private int laterSamples;
+        private double laterPaidRent;
+        private int laterStockMonths, laterTradeMonths;
         HousingTown(GameFiles files, Founding founding) { super(files, founding); }
         @Override public boolean buildFor(Investor payer, BuildingsTemplate template, long quantity) {
             boolean accepted = super.buildFor(payer, template, quantity);
@@ -81,10 +84,25 @@ public class MonetaryCheck {
             if (getMonth() < opens || getMonth() >= opens + 12) return;
             var form = HousingForms.ALL.stream().filter(f -> f.code().equals("C01")).findFirst().orElseThrow();
             var dwelling = form.recipe().mix().getFirst();
-            laterRent += getSectors().realEstate().housingMarket().price(new HousingInventory.Key(form.id(), dwelling.id()));
+            var key = new HousingInventory.Key(form.id(), dwelling.id());
+            var market = getSectors().realEstate().housingMarket();
+            laterRent += market.price(key);
+            double homes = getBuildingManager().getHousingInventory().stock().stream()
+                    .filter(s -> s.key().equals(key)).mapToDouble(HousingInventory.Stock::homes).sum();
+            if (homes > 0) laterStockMonths++;
+            var traded = market.classes().stream()
+                    .filter(c -> c.recipe == key.recipe() && key.dwelling().equals(c.dwelling())).findFirst().orElse(null);
+            if (traded != null && traded.tradeQuantity > 0) {
+                laterPaidRent += traded.tradeValue / traded.tradeQuantity;
+                laterTradeMonths++;
+            }
             laterSamples++;
         }
         double laterRent() { return laterSamples > 0 ? laterRent / laterSamples : Double.NaN; }
+        PaidSupply paidSupply() {
+            return new PaidSupply(laterTradeMonths > 0 ? laterPaidRent / laterTradeMonths : Double.NaN,
+                    laterStockMonths, laterTradeMonths);
+        }
     }
     /** Flatten the services sub-basket too: changing fee shares must not masquerade as a price response. */
     private record BasketPrices(double[] quantities, double[] prices, int linked, double index) {
@@ -119,7 +137,7 @@ public class MonetaryCheck {
     }
     private record PolicyComparison(double[] inflation, double[][] years, double[] late,
                                     double[][] lateYears, long[] starts, double[] rents,
-                                    double[] nonShelter) { }
+                                    double[] nonShelter, PaidSupply[] supply) { }
 
     static int fails = 0;
     static PrintStream out;
@@ -1172,6 +1190,17 @@ public class MonetaryCheck {
                 HELD_FROM, MEASURED_MONTHS - windowMonths() - 1, original.starts()[0], original.starts()[1], original.rents()[0], original.rents()[1]);
         assertTrue("a higher rate causes fewer funded homes to start before the window", original.starts()[1] < original.starts()[0]);
         assertTrue("that higher-rate supply shortage raises the same class's rents later", original.rents()[1] > original.rents()[0]);
+        var lowSupply = original.supply()[0];
+        var highSupply = original.supply()[1];
+        out.printf("   later C01 actual paid per door/month %.10g/%.10g; physical months %d/%d, traded months %d/%d of 12%n",
+                lowSupply.rentPerDoor(), highSupply.rentPerDoor(), lowSupply.stockMonths(), highSupply.stockMonths(),
+                lowSupply.tradeMonths(), highSupply.tradeMonths());
+        assertTrue("declared C01 physical homes are positive in every measured month at both 3 and 10 percent",
+                lowSupply.stockMonths() == 12 && highSupply.stockMonths() == 12);
+        assertTrue("declared C01 actual trade quantity is positive in every measured month at both 3 and 10 percent",
+                lowSupply.tradeMonths() == 12 && highSupply.tradeMonths() == 12);
+        assertTrue("that higher-rate supply shortage raises the same class's actual paid rent per door later",
+                highSupply.rentPerDoor() > lowSupply.rentPerDoor());
     }
 
     private static PolicyComparison policyComparison(Path root, long seed) {
@@ -1182,6 +1211,7 @@ public class MonetaryCheck {
         double[] inflation = new double[n];
         long[] starts = new long[n];
         double[] rents = new double[n];
+        PaidSupply[] supply = new PaidSupply[n];
         PriceWindow[] prices = new PriceWindow[n];
         boolean dialsHeld = true;
         fewestCrews = 1;
@@ -1198,6 +1228,7 @@ public class MonetaryCheck {
             Game g = held[0];
             starts[r] = ((HousingTown) g).earlyStarts();
             rents[r] = ((HousingTown) g).laterRent();
+            supply[r] = ((HousingTown) g).paidSupply();
             dialsHeld &= Math.abs(g.getDebtManager().getPolicyRate() - HELD_RATES[r]) < 1e-12;
             if (r == 0) {
                 out.printf("   the founding at month %d: %,.0f people, index %.4f (basket %s), policy %.2f%%%n",
@@ -1223,7 +1254,7 @@ public class MonetaryCheck {
             rates.append(r == 0 ? "" : " / ").append(String.format("%.0f%%", HELD_RATES[r] * 100));
             rows.append(r == 0 ? "" : " / ").append(String.format("%.2f%%", inflation[r] * 100));
         }
-        out.printf("   inflation at %s: %s a year, months %d-%d (the %d months from a January's solve to the December %d years on, the D$ held at %.4f); %.3f points from the lowest dial to the highest%n",
+        out.printf("   inflation at %s: %s a year, months %d-%d (the %d months from a January's solve to the December %d years on, the D$ held at %.4f); %s points from the lowest dial to the highest%n",
                 rates, rows, MEASURED_MONTHS - windowMonths(), MEASURED_MONTHS, windowMonths(), WINDOW_YEARS, heldAt, (inflation[0] - inflation[n - 1]) * 100);
         double[] commonQuantities = prices[0].from().quantities();
         double[] nonShelter = java.util.Arrays.stream(prices).mapToDouble(p -> p.nonShelterInflation(commonQuantities)).toArray();
@@ -1283,7 +1314,7 @@ public class MonetaryCheck {
         if (seed == Founding.defaults().getPathSeed())
             assertTrue("the original highest rate lowers inflation by at least the effect bound over the original window",
                     inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
-        return new PolicyComparison(inflation, years, lateInflation, lateAnnual, starts, rents, nonShelter);
+        return new PolicyComparison(inflation, years, lateInflation, lateAnnual, starts, rents, nonShelter, supply);
     }
 
     /** The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. */

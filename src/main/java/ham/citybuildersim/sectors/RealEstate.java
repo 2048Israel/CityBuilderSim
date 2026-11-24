@@ -741,7 +741,9 @@ public final class RealEstate extends Sector {
             // Rank the rent these doors would earn after their own operating
             // costs, before interest; the lender still judges the financing.
             double score = (income - game.getEconomyManager().housingCarry(t)) / cost;
-            if (score > bestScore) {
+            // Legacy partial-fill NOI ranks eligible positive-gross projects;
+            // it must not add another profitability gate after the full hurdle.
+            if (income > 0 && (best == null || score > bestScore)) {
                 bestScore = score;
                 best = t;
                 bestDoors = doors;
@@ -767,8 +769,23 @@ public final class RealEstate extends Sector {
 
         // ...what the shortage needs, on the land there is: no months of the builders' work to fit it in (BA1, above).
         int quantity = Math.min(wanted, plots);
-        if(housingMarket.active())while(quantity>1 && typedForecast.income(best,quantity)
-                < game.getEconomyManager().housingBuildHurdle(best)*quantity)quantity=Math.max(1,quantity/2);
+        if (typedForecast != null) {
+            double hurdle = game.getEconomyManager().housingBuildHurdle(best);
+            int rejected = 0;
+            while (quantity > 1 && typedForecast.income(best, quantity) < hurdle * quantity) {
+                rejected = quantity;
+                quantity = Math.max(1, quantity / 2);
+            }
+            // One project already cleared this forecast/hurdle above. Explore
+            // the last rejected bracket without discarding the accepted lower.
+            // Placement preferences do not imply globally monotone receipts;
+            // every midpoint we accept must clear the actual hurdle itself.
+            while (rejected - quantity > 1) {
+                int midpoint = quantity + (rejected - quantity) / 2;
+                if (typedForecast.income(best, midpoint) >= hurdle * midpoint) quantity = midpoint;
+                else rejected = midpoint;
+            }
+        }
 
         return new BusinessInvestment.Decision(sector, best, quantity,
                 familyShortfall > 0 && headShortfall <= 0

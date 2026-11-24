@@ -80,6 +80,57 @@ public class InvestCheck {
         try { g.simulateMonths(1); } finally { System.setOut(out); }
     }
 
+    /** Full occupancy decides eligibility; sparse current rent only ranks the legacy alternatives. */
+    static void legacyPartialFill(Path root) {
+        System.out.println("\n--- legacy housing keeps positive-gross partial-fill projects eligible ---");
+        Game g = city(root, "legacy-partial-fill");
+        var bm = g.getBuildingManager();
+        var em = g.getEconomyManager();
+        var re = g.getSectors().realEstate();
+        var house = template(g, "House");
+        bm.addStack(house, 100, true);
+        re.housingMarket().reset();
+        var plans = new BusinessInvestment(bm, em);
+        plans.setFamilies(g.getFamilies());
+        plans.setLandAvailable(house.getLandSqFt(), 0);
+        assertTrue("fixture: legacy housing market is inactive", !re.housingMarket().active());
+        assertTrue("fixture: standing housing covers latent job demand", re.latentHeadShortfall() <= 0);
+        assertTrue("fixture: House is the only known family form that fits",
+                bm.getTemplatesBySector(re.key()).stream()
+                        .filter(t -> t.getCapacity() > 0 && t.homeSize() > FamilyModel.STUDIO_MAX_SIZE
+                                && plans.plotsAvailableFor(t) > 0)
+                        .toList().equals(java.util.List.of(house)));
+
+        double carry = em.housingCarry(house);
+        double hurdle = em.housingBuildHurdle(house);
+        double rent = hurdle / house.getCapacity() * (1 + ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN);
+        re.setRentPrice(rent);
+        // Half the doors needed to cover this project's actual operating carry.
+        double partialDoors = carry / (FamilyModel.rentWeightOf(house.homeSize()) * rent) / 2;
+        long familyHomes = bm.getHousingInventory().stock().stream()
+                .filter(s -> s.dwelling().capacity() > FamilyModel.STUDIO_MAX_SIZE)
+                .mapToLong(s -> s.structures() * s.dwelling().count()).sum();
+        re.setSegments(0, familyHomes, 0, familyHomes + partialDoors,
+                0, (familyHomes + partialDoors) * house.homeSize());
+        double gross = re.estimatedMonthlyProfit(NewUnit.standing(house), plans);
+        assertTrue("fixture: sparse fill is positive and below a whole House", partialDoors > 0 && partialDoors < house.getDwellings());
+        assertTrue("fixture: House has a positive actual project quote and carry", plans.getCostOf(house, 1) > 0 && carry > 0);
+        assertTrue("fixture: full House rent clears its actual build hurdle", house.getCapacity() * re.priceForSegment(house) >= hurdle);
+        assertTrue("fixture: currently fillable House rent is positive with negative NOI", gross > 0 && gross - carry < 0);
+        var choice = re.plan(plans, g);
+        assertTrue("legacy full-hurdle eligibility survives negative partial-fill NOI", choice.build && choice.template == house);
+
+        plans.setLandAvailable(0, 0);
+        var noLand = re.plan(plans, g);
+        assertTrue("legacy positive-gross project still requires land", !noLand.build && noLand.reason.startsWith("no land"));
+        plans.setLandAvailable(house.getLandSqFt(), 0);
+        re.setRentPrice(hurdle / house.getCapacity() / 2);
+        assertTrue("legacy project below its full-occupancy hurdle still refuses", !re.plan(plans, g).build);
+        re.setRentPrice(rent);
+        re.setSegments(0, familyHomes, 0, familyHomes, 0, familyHomes * (double) house.homeSize());
+        assertTrue("legacy zero fillable doors still produce no order", !re.plan(plans, g).build);
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -218,6 +269,8 @@ public class InvestCheck {
         assertTrue("fixture: the landlords hold with a thousand posts or more", !hold.build && heldJobs >= 1_000
                 && hold.reason.startsWith("housing ahead of jobs"));
         assertTrue("the hold's word groups its thousands", hold.reason.contains(String.format("(%,d now, ", heldJobs)));
+
+        legacyPartialFill(root);
 
         /* ==================== 4. retail ==================== */
         System.out.println("\n--- retail: baskets wanted against what the shops hand over ---");
@@ -754,6 +807,22 @@ public class InvestCheck {
         tight.setLandAvailable(1e12, 0);
         d = landlords.plan(tight, housed);
         assertTrue("land no longer binding -> the order is back", d.build && d.quantity > 5);
+        var quantityMarket = housed.getSectors().realEstate().housingMarket();
+        assertTrue("fixture: the land-order quantity uses actual funded housing demand", quantityMarket.active());
+        if (d.build && d.template != null) {
+            var forecast = quantityMarket.forecast(housed);
+            double hurdle = housed.getEconomyManager().housingBuildHurdle(d.template);
+            assertTrue("the returned order clears its actual forecast-income hurdle",
+                    forecast.income(d.template, d.quantity) >= hurdle * d.quantity);
+            boolean nextRequested = d.quantity < forecast.quantityNeeded(d.template)
+                    && d.quantity < tight.plotsAvailableFor(d.template);
+            assertTrue("fixture: the next quantity is inside both funded demand and the land cap", nextRequested);
+            if (nextRequested) {
+                long next = d.quantity + 1;
+                assertTrue("the next requested quantity is blocked by its actual forecast-income hurdle",
+                        forecast.income(d.template, next) < hurdle * next);
+            }
+        }
 
         /*
          * THE LANDLORDS ORDER THE GAP, NOT MONTHS OF WORK (BA1). REWRITTEN: this asserted that sites owing more than

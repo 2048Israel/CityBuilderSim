@@ -4246,3 +4246,24 @@ with exact parity. Reports 2195/a19c retain all native manifests; all
 owned jobs have ended. Fresh source work will cover the search refinement,
 legacy candidate eligibility and stronger paid evidence before any new
 production replay. CPI coverage remains separate open work.
+
+The fresh source review accepts the three mends. Typed order sizing keeps
+its last rejected/accepted bracket and directly checks every accepted
+midpoint with the existing forecast and operating hurdle; it preserves the
+prior feasible lower, original caps and lender path. No global optimum or
+monotone preference-based revenue is assumed. Legacy selection explicitly
+retains positive gross income and chooses the first eligible candidate
+before comparing net scores, so a negative partial-fill net cannot add a
+new eligibility gate after the existing full-occupancy hurdle. Its new
+fixture uses the public inactive-market path, real family stock and a
+sparse shortfall derived from actual costs/rent, with all prerequisites
+asserted before the selection claim. It remains unrun at this checkpoint.
+
+Invest's original land inputs and >5 assertion stay unchanged, with direct
+returned/next-order hurdle checks added. Monetary retains all 491 old
+assertions and adds declared C01 physical/trade presence in every later
+month and higher actual paid rent per door; no fallback to asks is used.
+The original scalar effect print now preserves round-trip precision.
+There is no new public API, dial, model saved field or format change.
+Source patches were statically checked and reviewed before adoption;
+native old/new finding proof and named harnesses still follow the push.
