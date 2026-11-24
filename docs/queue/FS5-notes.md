@@ -3047,8 +3047,22 @@ an exemption. No extra Pending/queued owner is invented.
 - Helper paper_sale supplies the real-sale mend, reviewed against the
   production Sale/allotment fields. UnsettledFace and Sale.face use the
   same principal; no bidder-sum tolerance or copied pricing formula.
-  --fast compiles31seconds, zero firm Stale. Native KeptCheck is next.
+  --fast compiles31seconds, zero firm Stale. Native KeptCheck on023c67952
+  then exits0/ALL OK: all six real sales have funded proceeds and paid
+  holdings after settlement; content readings86.5%/84.4% pass the hard75%
+  floor; household tooltips, lifetime/cache/pixel controls all pass. Objects
+  1510.7MiB (live1529.2, Canvas18.5), unchanged1536 bound. Zero KRT1
+  readings and zero recurring KBP1 blocks. Maps unchanged, zero firm Stale.
+  Receipts: target/FS5b-review-fast.txt, target/FS5b-review-KeptCheck.txt,
+  target/FS5b-checks/KeptCheck-review.log and -review-suite.txt.
   No gameplay/default trace changed; no ensemble is owed.
+
+Final pre-dry fetch at17:45 still has e1b58f210/0.9.199; no merge is needed.
+The orchestrator's17:25 DRY GO is explicit authorization; no repeated
+question is asked. Keep the provisional marker through the dry run, run
+ALL251 on the box via tools/gate.sh, and change only notes/ship afterward.
+If its KeptCheck heap is red, a helper traces it and the orchestrator is
+mailed before any change, as ordered. All local/helper jobs have ended.
 
 One-in/out: `git diff --numstat origin/main` over AllChecks, KeptCheck,
 Observation, TimingCheck, KeptBench, the bench-only MiniMap/UserInterface
