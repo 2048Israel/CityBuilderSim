@@ -1,6 +1,6 @@
 # HousingInventory.java - 288 lines · 33 methods · 1 constants · model
 
-`ham/citybuildersim/HousingInventory.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingInventory.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Aggregate housing titles, occupants and listings over the physical stacks.
 > WHY (RES2): listings and titles partition existing homes; neither creates

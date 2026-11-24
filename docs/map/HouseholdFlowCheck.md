@@ -1,6 +1,6 @@
 # HouseholdFlowCheck.java - 718 lines · 22 methods · 4 constants · harnesses
 
-`ham/citybuildersim/HouseholdFlowCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdFlowCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Money follows people: the households' balance carries each month's own flows
 > - the retiring, the ageing on, the dead and the leavers - with the stocks

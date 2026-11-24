@@ -1,6 +1,6 @@
 # DistressBleedCheck.java - 550 lines · 18 methods · 11 constants · harnesses
 
-`ham/citybuildersim/DistressBleedCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DistressBleedCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over
 > BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running while it owes the desk,
