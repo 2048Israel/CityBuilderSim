@@ -26,14 +26,20 @@ import java.util.Set;
  * What this proves:
  * 1. M12: the stays factor is Sickness.STAYS_BEFORE_M12 alone the month before July 2000 and 1 from it, in
  *    the unit and in a played 1900 city (recovery too); a default city reads 1; a find ahead of the world
- *    lifts it early.
+ *    lifts it early; a 1900 city held before M12 and saved loads the medicine it ran (the stays factor, the
+ *    long recovery, the death lift and the recovery at every coverage) at once, before any month, since
+ *    the medicine is derived and not saved (REV-R6f P2); a city whose Medical School's faculty complete M12
+ *    in a played month ahead of history runs the stays factor 1 in that same month, not the next, and a
+ *    reload of that month reads the same.
  * 2. B10: the Contact Centre's NO_DIPLOMA posts are today's plus buildings.json's undo, rounded once, with
  *    every other figure and the output unchanged, before November 2020 and today's from it (by a recipe
  *    call and by a real month); a default city runs today's; a held city's save loads the same posts and
  *    "~B10" id at once, and the next month's choice keeps it.
  * 3. L8: the bank's floor is Bank.CONSERVATION_BUFFER or Bank.BUFFER_BEFORE_L8 by the rule it hears, which
  *    moves its target, its reason and its lending limit; a 1900 city hears it by the month (founding,
- *    each month, a load) and a default city always the buffer.
+ *    each month, a load) and a default city always the buffer; a city whose Law School's faculty complete L8
+ *    in a played month ahead of history hears it in that same month, not the next, and a reload of that
+ *    month hears the same (REV-R6f P1).
  * <p>
  * Every city is the existing fixtures': the licence factory's (three months played) or the recipe
  * checks' on GameFiles.scratch, and every save and load is slot 10 of the fixture's own scratch folder.
@@ -144,6 +150,65 @@ public final class ModernRowsCheck {
         step(finder, "1900 city that found M12 a year early, month of the find");
         check("...history's month is still ahead of it", finder.getMonth() < w, finder.getMonth());
         near("...and reads 1 from its own find, before history's month", finder.getSickness().getStaysFactor(), 1, 1e-12);
+
+        // A held city, saved and loaded: the medicine is derived from the finds, the month and the coverage and is not saved, so the load must work it out again.
+        Game held = HistoricalLicenceCheck.town("R6f-m12-held", true);
+        HistoricalRecipeCheck.at(held, w - 3);
+        step(held, "held 1900 city before M12");
+        Sickness live = held.getSickness();
+        boolean othersKnown = true;
+        for (String code : others) othersKnown &= held.getResearch().known(code, held.getMonth());
+        check("fixture: the held city is before M12 with M12 not found and every other stays row known",
+                held.getMonth() < w && !held.getResearch().foundHere("M12") && !held.getResearch().known("M12", held.getMonth()) && othersKnown,
+                held.getMonth());
+        near("fixture: the held city's live stays factor, after a real month, is Sickness.STAYS_BEFORE_M12", live.getStaysFactor(), Sickness.STAYS_BEFORE_M12, 1e-12);
+        GameFiles.Result saved = RecipeCheck.save10(held, "R6f M12 held");
+        check("the held city's save writes wholly", saved.whole(), saved.message());
+        Game loaded = RecipeCheck.load10(held);
+        check("the held city loads in the month it was saved", loaded.getLoadFailure() == null && loaded.getMonth() == held.getMonth(),
+                loaded.getLoadFailure() + " " + loaded.getMonth());
+        Sickness back = loaded.getSickness();
+        near("the loaded city's stays factor is Sickness.STAYS_BEFORE_M12 at once, before any month", back.getStaysFactor(), Sickness.STAYS_BEFORE_M12, 1e-12);
+        near("...and is the live city's", back.getStaysFactor(), live.getStaysFactor(), 1e-12);
+        near("...its long recovery is the live city's", back.getLongRecovery(), live.getLongRecovery(), 1e-12);
+        near("...its death lift is the live city's", back.getDeathLift(), live.getDeathLift(), 1e-12);
+        for (double c : COVERAGES) near("...recoveryAt(" + c + ") is the live city's", back.recoveryAt(c), live.recoveryAt(c), 1e-12);
+        near("...and servedRecovery() is the live city's", back.servedRecovery(), live.servedRecovery(), 1e-12);
+        step(loaded, "the loaded city");
+        near("...and the month after the load it still reads Sickness.STAYS_BEFORE_M12", loaded.getSickness().getStaysFactor(), Sickness.STAYS_BEFORE_M12, 1e-12);
+
+        // A find in a played month: the Medical School's faculty complete M12 two years before history's month, and the sickness runs the new medicine in that month (REV-R6f P2).
+        Game finds = HistoricalLicenceCheck.town("R6f-m12-find", true);
+        HistoricalRecipeCheck.allExcept(finds, "M12");
+        int lead = w - 24;
+        // The fixture's medicine was last told in its first months, before allExcept(): one month played with no school lets the sickness hear the finds it now has.
+        HistoricalRecipeCheck.at(finds, lead - 1);
+        step(finds, "the 1900 city, every discovery but M12 found, with no school yet");
+        check("fixture: that month is the one two years before history's month", finds.getMonth() == lead, finds.getMonth());
+        HistoricalLicenceCheck.stand(finds, "Medical School", 1);
+        ResearchCatalog.Entry m12 = ResearchCatalog.get().entry("M12");
+        DiscoveryCheck.pileJustUnder(finds, m12);
+        Research seeking = finds.getResearch();
+        check("fixture: a city founded the 1900 way, every discovery but M12 found, M12 open to the medical field two years before history's month with its pile just under its size",
+                finds.foundedUnfitted() && !seeking.foundHere("M12") && seeking.openProblems(ResearchCatalog.Field.MEDICINE, lead + 1).contains(m12)
+                        && seeking.piles().containsKey("M12") && seeking.piles().get("M12") < Research.hiddenSize(finds.getWorldSeed(), m12),
+                seeking.piles());
+        near("fixture: its live stays factor before the month is Sickness.STAYS_BEFORE_M12", finds.getSickness().getStaysFactor(), Sickness.STAYS_BEFORE_M12, 1e-12);
+        step(finds, "the 1900 city whose faculty complete M12");
+        int playedM12 = finds.getMonth();
+        check("fixture: the Medical School's faculty worked in medicine that month and M12 was found in it, before history's month",
+                seeking.researchers(ResearchCatalog.Field.MEDICINE) > 0 && seeking.foundThisMonth().contains("M12") && seeking.foundMonth("M12") == playedM12 && playedM12 < w,
+                seeking.researchers(ResearchCatalog.Field.MEDICINE) + " " + seeking.foundHere() + " " + playedM12);
+        Sickness liveFinds = finds.getSickness();
+        near("in that same month the live stays factor is 1, before the next month is heard", liveFinds.getStaysFactor(), 1, 1e-12);
+        GameFiles.Result findSave = RecipeCheck.save10(finds, "R6f M12 found");
+        check("the finder's save writes wholly", findSave.whole(), findSave.message());
+        Game findLoaded = RecipeCheck.load10(finds);
+        check("the finder loads in the month of the find, with M12 found in it",
+                findLoaded.getLoadFailure() == null && findLoaded.getMonth() == playedM12 && findLoaded.getResearch().foundMonth("M12") == playedM12,
+                findLoaded.getLoadFailure() + " " + findLoaded.getMonth());
+        near("the loaded city's stays factor is the live city's", findLoaded.getSickness().getStaysFactor(), liveFinds.getStaysFactor(), 1e-12);
+        near("...and is 1", findLoaded.getSickness().getStaysFactor(), 1, 1e-12);
     }
 
     /* ----- 2. B10 ----- */
@@ -382,6 +447,45 @@ public final class ModernRowsCheck {
                 keptLoaded.getLoadFailure() == null && keptLoaded.getMonth() < w && keptLoaded.getBank().conservationBufferRequired()
                         && keptLoaded.getBank().bufferFloor() == Bank.CONSERVATION_BUFFER,
                 keptLoaded.getLoadFailure() + " " + keptLoaded.getMonth());
+
+        // A find in a played month: the Law School's faculty complete L8 two years before history's month, and the bank hears it in that month (REV-R6f P1).
+        Game finder = HistoricalLicenceCheck.town("R6f-l8-find", true);
+        HistoricalRecipeCheck.allExcept(finder, "L8");
+        int ahead = w - 24;
+        HistoricalRecipeCheck.at(finder, ahead);
+        HistoricalLicenceCheck.stand(finder, "Law School", 1);
+        ResearchCatalog.Entry l8 = ResearchCatalog.get().entry("L8");
+        DiscoveryCheck.pileJustUnder(finder, l8);
+        Research research = finder.getResearch();
+        check("fixture: a city founded the 1900 way, every discovery but L8 found, L8 open to the law field two years before history's month with its pile just under its size",
+                finder.foundedUnfitted() && !research.foundHere("L8") && research.openProblems(ResearchCatalog.Field.LAW, ahead + 1).contains(l8)
+                        && research.piles().containsKey("L8") && research.piles().get("L8") < Research.hiddenSize(finder.getWorldSeed(), l8),
+                research.piles());
+        check("fixture: its bank has not heard Basel III before the month", !finder.getBank().conservationBufferRequired() && finder.getBank().bufferFloor() == Bank.BUFFER_BEFORE_L8,
+                finder.getBank().bufferFloor());
+        double targetBefore = finder.getBank().capitalTarget();
+        step(finder, "the 1900 city whose faculty complete L8");
+        int played = finder.getMonth();
+        check("fixture: the Law School's faculty worked in law that month and L8 was found in it, before history's month",
+                research.researchers(ResearchCatalog.Field.LAW) > 0 && research.foundThisMonth().contains("L8") && research.foundMonth("L8") == played && played < w,
+                research.researchers(ResearchCatalog.Field.LAW) + " " + research.foundHere() + " " + played);
+        Bank hearing = finder.getBank();
+        check("in that same month the bank requires the buffer, its floor Bank.CONSERVATION_BUFFER, before the next month is heard",
+                hearing.conservationBufferRequired() && hearing.bufferFloor() == Bank.CONSERVATION_BUFFER, hearing.conservationBufferRequired() + " " + hearing.bufferFloor());
+        check("fixture: its worst loss rate is under Bank.CONSERVATION_BUFFER", hearing.getWorstLossRate() < Bank.CONSERVATION_BUFFER, hearing.getWorstLossRate());
+        near("...so its capital target that month is Bank.CAPITAL_RATIO plus Bank.CONSERVATION_BUFFER", hearing.capitalTarget(), Bank.CAPITAL_RATIO + Bank.CONSERVATION_BUFFER, 1e-12);
+        check("...risen from the month before", hearing.capitalTarget() > targetBefore, targetBefore + " -> " + hearing.capitalTarget());
+        GameFiles.Result foundSave = RecipeCheck.save10(finder, "R6f L8 found");
+        check("the finder's save writes wholly", foundSave.whole(), foundSave.message());
+        Game reread = RecipeCheck.load10(finder);
+        check("the finder loads in the month of the find, with L8 found in it",
+                reread.getLoadFailure() == null && reread.getMonth() == played && reread.getResearch().foundMonth("L8") == played,
+                reread.getLoadFailure() + " " + reread.getMonth());
+        Bank heard = reread.getBank();
+        check("the loaded bank's conservationBufferRequired() is the live city's", heard.conservationBufferRequired() == hearing.conservationBufferRequired(),
+                heard.conservationBufferRequired() + " vs " + hearing.conservationBufferRequired());
+        check("...and its bufferFloor() is the live city's", heard.bufferFloor() == hearing.bufferFloor(), heard.bufferFloor() + " vs " + hearing.bufferFloor());
+        near("...and its capitalTarget() is the live city's", heard.capitalTarget(), hearing.capitalTarget(), 1e-12);
     }
 
     public static void main(String[] args) throws Exception {

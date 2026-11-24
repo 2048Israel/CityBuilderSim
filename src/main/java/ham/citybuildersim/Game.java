@@ -1586,8 +1586,20 @@ public class Game {
             labs.put(f, standing);
             labResearchers.put(f, Research.filledResearchers(f, standing * Research.LAB_POSTS, fill));
         }
-        if (foundedUnfitted()) research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
-        else research.idleMonth(researchers, labs, labResearchers);
+        if (foundedUnfitted()) {
+            research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
+            hearTheFinds();
+        } else research.idleMonth(researchers, labs, labResearchers);
+    }
+
+    /**
+     * What the month's finds change at once (R6f review, REV-R6f P1 and P2): a row found this month is known all of it (Research.known()),
+     * so the bank hears its capital rule again and the sickness its medicine, at the coverage the month noted. Without it a city that found
+     * L8 or a stays row ahead of history ran the old rule to the month's end, and a reload of that month read the new one.
+     */
+    private void hearTheFinds() {
+        bankHearsTheRule();
+        sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
     }
 
     /**
@@ -22428,6 +22440,10 @@ public class Game {
             if (!causesOfDeath.restore(restoredFlows.getCausesOfDeath())) causesOfDeath.reset();
             healthcare.restore(restoredFlows.getHealthcare());
             healthcare.restoreAccessState(restoredFlows.getHealthcareAccess());
+            // ...and the medicine the city knows (R2f; R6f review, REV-R6f P2), derived from the finds, the month and the coverage the month
+            // noted, all restored by now: unsaved, it read today's (1, 1, 0) until the next month's demographics, so a 1900 city before a
+            // stays row (M12 among them) showed a faster recovery loaded than it ran.
+            sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
 
             labourMarket.restore(restoredFlows.getLabour());
             wantedPosts.restore(restoredFlows.getWantedPosts());
