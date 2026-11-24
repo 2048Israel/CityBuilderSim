@@ -2898,3 +2898,16 @@ current-main merge, helper diagnosis and necessary named checks.
   loop PID 3856, let Health's current call finish, preserve its green receipt,
   then resume remaining calls with cbs.parallel=1. TimingCheck will also
   select KeptTimingCheck; run that pair serially once, not a separate replay.
+- Apply the reviewed candidate while the box probe waits, rather than leave
+  implementation until the queue clears: idle-only purge on the render
+  thread, with an FX-thread rejection and its own completion latch (RenderJob
+  uses runAndReset, so waiting on its Future would hang). Controls preserve
+  the active Policy counters, exact Canvas target identities, every kept
+  node and signature, and a real shadow's pixels/cache recreation. Scope all
+  diagnostic strong roots in a helper that returns before the heap sample.
+  Government's same release predicate rejects an actual deliberately held
+  distinct fresh-node graph, then accepts it after its strong root drops.
+  This is a candidate, not a claimed green before/after experiment yet.
+- LongPlaytest's complete 2400 months pass on .199. MapCheck is the current
+  owned call; compile/validation of the candidate begins at the next named
+  call, followed by the final native KeptCheck. No gameplay model changed.

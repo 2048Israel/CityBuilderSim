@@ -1626,8 +1626,22 @@ public final class KeptBench {
     public record ReleasedComparison(List<java.lang.ref.WeakReference<Node>> fresh, boolean signature,
                                      boolean counters, boolean nodes, boolean roots, boolean aborted) { }
 
+    /** An actual temporary page held deliberately by the release guard's negative control. */
+    private List<Node> retainedGovernmentControl = List.of();
+
+    /** Drop only the negative control's deliberately retained roots. */
+    public void clearGovernmentReleaseControl() {
+        retainedGovernmentControl = List.of();
+        release();
+    }
+
     /** Eight comparisons of an already active Government page; the last deliberately aborts after making its fresh graph. */
     public ReleasedComparison retiredGovernmentComparisons() throws Exception {
+        return retiredGovernmentComparisons(false);
+    }
+
+    /** The same release fixture, optionally retaining its first actual fresh page as a leak control. */
+    public ReleasedComparison retiredGovernmentComparisons(boolean retain) throws Exception {
         if (!"showGovernmentMenu".equals(ui.currentScreen)) throw new IllegalStateException("Government must already be active");
         Page page = government();
         finishPageAnimations();
@@ -1637,7 +1651,9 @@ public final class KeptBench {
         int[] counts = counts(page);
         List<java.lang.ref.WeakReference<Node>> fresh = new ArrayList<>();
         Runnable remember = () -> {
-            for (Node n : nodesOnPage()) if (!keptNodes.contains(n)) fresh.add(new java.lang.ref.WeakReference<>(n));
+            var distinct = nodesOnPage().stream().filter(n -> !keptNodes.contains(n)).toList();
+            if (retain && retainedGovernmentControl.isEmpty()) retainedGovernmentControl = distinct;
+            for (Node n : distinct) fresh.add(new java.lang.ref.WeakReference<>(n));
         };
         boolean sameSignature = true, sameCounters = true, sameNodes = true, cleared = true, aborted = false;
         for (int i = 0; i < 8; i++) {
@@ -1690,6 +1706,17 @@ public final class KeptBench {
      * This measures found buffers only; unexplained residual bytes remain subject to the hard heap bound.
      */
     public long[] canvasTargets() {
+        return canvasTargetsProbe(null);
+    }
+
+    /** Actual live Canvas textures: the cache purge must preserve these exact objects. */
+    public java.util.Set<Object> canvasTargetIdentities() {
+        var targets = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
+        canvasTargetsProbe(targets);
+        return targets;
+    }
+
+    private long[] canvasTargetsProbe(java.util.Set<Object> identities) {
         java.util.Set<Object> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         java.util.Set<Class<?>> classes = new java.util.HashSet<>();
         java.util.ArrayDeque<Object> todo = new java.util.ArrayDeque<>();
@@ -1754,6 +1781,7 @@ public final class KeptBench {
                             }
                         }
                         for (Object t : targets) {
+                            if (identities != null) identities.add(t);
                             any = true;
                             if (t.getClass().getName().startsWith("com.sun.prism.sw.")) {
                                 heap = true;
@@ -1779,6 +1807,72 @@ public final class KeptBench {
         } catch (ReflectiveOperationException | RuntimeException e) {
             return "not asked (" + e.getClass().getSimpleName() + ")";
         }
+    }
+
+    /**
+     * FS5: release only reusable, unlocked Decora images before weighing live UI ownership.
+     * ImagePool.pruneCache leaves locked images and every node/Canvas/CacheFilter reference intact.
+     * Called on the harness thread after an FX drain; Prism owns the textures on its render thread.
+     * Returns {pools, idle before, idle after, locked before, locked after}.
+     */
+    public static int[] releaseIdleEffectImages() throws Exception {
+        if (javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("cache release needs the harness thread");
+        int[] counts = new int[5];
+        var done = new java.util.concurrent.CountDownLatch(1);
+        var error = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        Runnable release = () -> {
+            try {
+                Class<?> renderer = Class.forName("com.sun.scenario.effect.impl.Renderer");
+                Class<?> poolType = Class.forName("com.sun.scenario.effect.impl.ImagePool");
+                var map = renderer.getDeclaredField("rendererMap");
+                var imagePool = renderer.getDeclaredField("imagePool");
+                var idle = poolType.getDeclaredField("unlocked");
+                var locked = poolType.getDeclaredField("locked");
+                var prune = poolType.getDeclaredMethod("pruneCache");
+                for (var f : new java.lang.reflect.Field[]{map, imagePool, idle, locked}) f.setAccessible(true);
+                prune.setAccessible(true);
+                java.util.Set<Object> pools = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+                synchronized (renderer) {
+                    for (Object r : ((java.util.Map<?, ?>) map.get(null)).values()) pools.add(imagePool.get(r));
+                }
+                for (Object pool : pools) synchronized (pool) {
+                    counts[0]++;
+                    counts[1] += ((java.util.List<?>) idle.get(pool)).size();
+                    counts[3] += ((java.util.List<?>) locked.get(pool)).size();
+                    prune.invoke(pool);
+                    counts[2] += ((java.util.List<?>) idle.get(pool)).size();
+                    counts[4] += ((java.util.List<?>) locked.get(pool)).size();
+                }
+            } catch (Throwable failure) {
+                error.set(failure);
+            } finally {
+                done.countDown();
+            }
+        };
+        Class<?> toolkit = Class.forName("com.sun.javafx.tk.Toolkit");
+        Class<?> job = Class.forName("com.sun.javafx.tk.RenderJob");
+        toolkit.getMethod("addRenderJob", job).invoke(toolkit.getMethod("getToolkit").invoke(null),
+                job.getConstructor(Runnable.class).newInstance(release));
+        // RenderJob.run() uses runAndReset(), so its Future never completes; wait on our own completion.
+        done.await();
+        if (error.get() != null) throw new Exception("idle effect-image release failed", error.get());
+        return counts;
+    }
+
+    /** The same real effect redrawn after the renderer's idle pool is pruned. */
+    public record EffectPicture(Node root) {
+        public int[] pixels() { return pixelsOf(root); }
+    }
+
+    /** A small uncached shadow forces Decora to check out and return temporary pool images on every draw. */
+    public EffectPicture effectCachePicture() throws Exception {
+        var rectangle = new javafx.scene.shape.Rectangle(48, 32, javafx.scene.paint.Color.CORNFLOWERBLUE);
+        rectangle.setEffect(new javafx.scene.effect.DropShadow(5, javafx.scene.paint.Color.BLACK));
+        var host = new javafx.scene.layout.StackPane(rectangle);
+        var sc = new Scene(host, 96, 80);
+        ui.applyTheme(sc);
+        passes(sc, host);
+        return new EffectPicture(host);
     }
 
     /** Every box (Pane) under a node and the children it holds now. */

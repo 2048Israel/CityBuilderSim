@@ -5811,7 +5811,25 @@ public class KeptCheck {
         check("fixture: Government comparisons made distinct fresh nodes and exercised an aborted draw", !r.fresh().isEmpty() && r.aborted());
         check("Government comparison restore keeps the same nodes, signature and draw counters", r.signature() && r.counters() && r.nodes());
         check("Government comparison captures clear on normal and exceptional restore", r.roots());
-        check("restored Government fresh nodes release after queued callbacks finish (" + alive + " alive)", alive == 0);
+        check("restored Government fresh nodes release after queued callbacks finish (" + alive + " alive)", governmentFreshReleased(r));
+        KeptBench.ReleasedComparison leaked = fx(() -> bench.retiredGovernmentComparisons(true));
+        try {
+            fx(() -> null);
+            KeptBench.releaseIdleEffectImages();
+            System.gc();
+            check("the same release predicate rejects an actual fresh Government page deliberately retained through the cache purge",
+                    !governmentFreshReleased(leaked));
+        } finally {
+            fx(() -> { bench.clearGovernmentReleaseControl(); return null; });
+        }
+        fx(() -> null);
+        System.gc();
+        check("the same retired page releases when the deliberate strong root is dropped", governmentFreshReleased(leaked));
+    }
+
+    /** The identical lifetime law for the ordinary restore and its real leaked-page negative control. */
+    private static boolean governmentFreshReleased(KeptBench.ReleasedComparison r) {
+        return r.fresh().stream().noneMatch(w -> w.get() != null);
     }
 
     /** Sections 69 to 71: the Government tab kept. */
@@ -9413,6 +9431,33 @@ public class KeptCheck {
      */
     static final double KEPT_HEAP_SHARE = .75;
 
+    /** Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. */
+    private static void idleEffectCacheControls(KeptBench bench) throws Exception {
+        boolean refusedFx = fx(() -> {
+            try { KeptBench.releaseIdleEffectImages(); return false; }
+            catch (IllegalStateException expected) { return true; }
+        });
+        check("the cache release refuses the FX thread", refusedFx);
+        KeptBench.EffectPicture effect = fx(bench::effectCachePicture);
+        int[] picture = fx(effect::pixels);
+        var signature = fx(bench::signature);
+        var nodes = fx(bench::nodesOnPage);
+        var targetsBefore = fx(bench::canvasTargetIdentities);
+        KeptBench.Page policy = fx(bench::policy);
+        int[] counters = fx(() -> bench.counts(policy));
+        int[] idle = KeptBench.releaseIdleEffectImages();
+        check("fixture: the real shadow draw put reusable images in a renderer pool", idle[0] > 0 && idle[1] > 0);
+        check("idle effect images release without changing the locked-image count", idle[2] == 0 && idle[3] == idle[4]);
+        check("an idle-cache purge preserves the kept page's signature and every node identity",
+                signature.equals(fx(bench::signature)) && nodes.equals(fx(bench::nodesOnPage)));
+        check("an idle-cache purge preserves the exact Canvas render targets", !targetsBefore.isEmpty() && targetsBefore.equals(fx(bench::canvasTargetIdentities)));
+        check("an idle-cache purge changes no Policy draw counter", java.util.Arrays.equals(counters, fx(() -> bench.counts(policy))));
+        check("the same shadow's picture is identical after its idle images are pruned", java.util.Arrays.equals(picture, fx(effect::pixels)));
+        int[] recreated = KeptBench.releaseIdleEffectImages();
+        check("redrawing the same effect recreates reusable images, which release again without changing locked images",
+                recreated[1] > 0 && recreated[2] == 0 && recreated[3] == recreated[4]);
+    }
+
     /** Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. */
     static void kp2cMends(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 102: unchanged state stays put, a press survives greying, retired pages are released ---");
@@ -9481,6 +9526,8 @@ public class KeptCheck {
         java.lang.ref.WeakReference<javafx.scene.Node> chrome = fx(bench::retiredChrome);
         fx(() -> { bench.release(); return null; });
         fx(() -> null); // FS5: complete queued restoreScroll work before measuring live ownership.
+        idleEffectCacheControls(bench);
+        fx(() -> null);
         System.gc();
         check("the repaint counter does not keep a retired picture alive", retired.get() == null);
         check("a no-stage chrome scene releases the fresh header after restore", chrome.get() == null);
