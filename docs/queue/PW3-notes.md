@@ -282,12 +282,33 @@ and a few farms among it, where main's was turbines alone; the ensemble will say
 
 ## 6. The ensemble
 
-80 of 80 runs on the gate box, the classes of e3c61f908 (PW3 on main's 0.9.197), scored against
-`docs/ensemble/0.9.197.md` (FC2's, the newest baseline; PW3 holds FC2, so the difference is PW3's own), committed
-as `docs/ensemble/PW3.md`. **M1 and F1 pass in all five policies** (no month's money audit failed, no run with a
+**The first run**, 80 of 80 on the gate box, the classes of e3c61f908 (PW3 on main's 0.9.197), scored against
+`docs/ensemble/0.9.197.md`: M1 and F1 pass in all five policies (no month's money audit failed, no run with a
 LongPlaytest finding); batch verdict PASS, hard criteria 10/10, 25 of 26 criteria; no verdict changed. A2 fails as
 the baseline's does (the longest spell of yoy over 10% from m240: 14 months [8 to 34] against 12 [8 to 31]).
-Inflation from m240, 2.57% [2.27% to 2.90%] against 2.69%. The towns grow faster: every AUTO2 seed reaches 40,000
-people by m358 [283 to 449] against m678 [607 to 871], and ends at 9,461,410 [7,399,479 to 10,863,182] against
-5,627,582 [2,854,211 to 7,937,474] (T1 and T2 pass; why is not measured here: PW3 changes what power the planner
-orders and when, and an order's ground). FC2b (0.9.198) merged after the ensemble.
+Inflation from m240, 2.57% [2.27% to 2.90%] against 2.69%.
+
+**The towns grew faster, and it is not PW3's.** Every AUTO2 seed reached 40,000 people by m358 [283 to 449] against
+the baseline's m678 [607 to 871], and ended at 9,461,410 against 5,627,582. Traced by a helper (the runs in
+`target/pw3-trace/`):
+- `docs/ensemble/0.9.197.md` is labelled FC2 and is a snapshot of 348fdae18, whose `GameVersion.VERSION` is 0.9.193:
+  FC2's branch before PW2, LP-G1 and R6f were merged, not 0.9.197 without PW3.
+- The ensembles' medians by label (T1, the month AUTO2 reaches 40,000; T2, the final population): FC2 (0.9.193 and
+  FC2) m678, 5.63M; PW2 (0.9.194) m789, 4.27M; **LP-G1 (0.9.195) m400, 9.03M**; FC2b (0.9.198) m322, 9.08M; PW3 (0.9.197
+  and PW3) m358, 9.46M. The jump is LP-G1's, the test player's ground watched through a long skip
+  (`LongPlaytest.skipWatchingGround`).
+- Seed 12 on PW3's classes, 720 months, the watch off and on: off, the city's free ground fell to 1,960 sq ft from m47
+  to m58 with its homes stuck at 172, and the real-estate sector was held for land 281 of 719 months (one spell of 94);
+  on, 60 months (the longest 22). Off, pop, the works' orders, the treasury and GDP match the FC2 baseline's seed-12
+  CSV exactly through m228; on, the city reaches 40,000 at m377 against m646 off and the baseline's m728.
+- Power is not the cause: `served_power` is 1.0 in all 8,016 of the baseline's city-months from m200 to m700; PW3's
+  cities have 37 months under 0.999, in 7 seeds, the least 0.715 (the faster cities brown out a little).
+- Everything past LP-G1 together (PW2, FC2, R6f, PW3) moves seed 12 about +5% at m250, +27% at m400 and +37% at m700,
+  with the watch off; the parting month is m229 (one works order more, 28 against 27, its kind not traced).
+- Reality: outages cost firms some 5 to 10% of output (Allcott, Collard-Wexler and O'Connell, AER 2016, India; the
+  World Bank's Enterprise Surveys, several percent of sales in Sub-Saharan Africa), and infrastructure, power chiefly,
+  some 2 points of growth a year in Africa (Foster and Briceño-Garmendia, World Bank AICD 2010): no power effect of
+  this size is real, and none is here. A builder that cannot find ground for 100 months is the test player's, which
+  LP-G1 mended.
+
+**The second run**, on the merged head (PW3 with FC2b, 0.9.198), against `docs/ensemble/0.9.198.md`: SECOND_RUN.
