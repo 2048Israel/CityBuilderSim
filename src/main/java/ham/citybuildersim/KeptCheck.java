@@ -9446,6 +9446,8 @@ public class KeptCheck {
         KeptBench.Page policy = fx(bench::policy);
         int[] counters = fx(() -> bench.counts(policy));
         int[] idle = KeptBench.releaseIdleEffectImages();
+        System.out.printf("  effect image pools: %d; idle %d -> %d; locked %d -> %d%n",
+                idle[0], idle[1], idle[2], idle[3], idle[4]);
         check("fixture: the real shadow draw put reusable images in a renderer pool", idle[0] > 0 && idle[1] > 0);
         check("idle effect images release without changing the locked-image count", idle[2] == 0 && idle[3] == idle[4]);
         check("an idle-cache purge preserves the kept page's signature and every node identity",
@@ -9454,6 +9456,8 @@ public class KeptCheck {
         check("an idle-cache purge changes no Policy draw counter", java.util.Arrays.equals(counters, fx(() -> bench.counts(policy))));
         check("the same shadow's picture is identical after its idle images are pruned", java.util.Arrays.equals(picture, fx(effect::pixels)));
         int[] recreated = KeptBench.releaseIdleEffectImages();
+        System.out.printf("  effect images after recreation: idle %d -> %d; locked %d -> %d%n",
+                recreated[1], recreated[2], recreated[3], recreated[4]);
         check("redrawing the same effect recreates reusable images, which release again without changing locked images",
                 recreated[1] > 0 && recreated[2] == 0 && recreated[3] == recreated[4]);
     }
