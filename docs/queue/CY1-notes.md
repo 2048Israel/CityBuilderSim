@@ -151,6 +151,10 @@ The runs here, on the PC, one at a time:
   verdict changed. Beside the baseline: AUTO2 reaches 40,000 people at m331 (m322), its final population 9,223,026
   (9,078,825), inflation m240 on 2.63% (2.66%); A2, the longest spell over 10%, is 13 months, FAIL as the baseline's
   (13); HIGH's unemployment over its twin 2.94 points (3.37); the pairing 64 of 64.
+- **The dry run** on f838e8398, on the gate box (`/home/jerus/cbs/runs/cbs-gate-CY1-ZTXQCieG`): gate exit 0, the suite
+  1,302 s, exit 3, known reds only. CopperRefiningCheck's seed 1 stands 0 Rod Mills at m2400 in 5.0 minutes on the box,
+  so its known-reds row, which names CY1 as its fix, goes at the merge; FS8's "the rule cut an order" line is the one
+  red left there, as on main.
 
 ## 5. Left as found
 

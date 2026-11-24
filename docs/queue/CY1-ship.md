@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-CY1-ZTXQCieG -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — CY1, the planner appraises a processing works over its cycle — 2026-11-24, ready, see docs/queue/CY1-notes.md
