@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.195 — LP-G1, keep ground ahead across the player's long skips — 2026-11-23, ready, see docs/queue/LP-G1-notes.md
+The test player looks at its ground across a skip: `LongPlaytest.skipWatchingGround()` runs the skip a month at a
+time and makes the unchanged `keepGroundAhead()` look whenever `BuildAdvice.HORIZON` months have passed since the
+last, in the playtest's loop, its Earth city and the ensemble's controller (the cash share per look, the line and
+the hold when the share cannot pay are as they were; the fixtures `probePlay()` builds keep main's rhythm). The
+default seed 0 went 62 months unlooked (m742-804) with its landlords held for land m756-804; now no gap passes
+six months and every month held for land follows an offer the share could not pay. The same in the ensemble's
+seed 9 (no look m482-603 before). Held for land, the player's city grew slowly: seed 0 now ends at 5.7 million
+people (1.3 million), in about twice the time. `GroundSkipCheck`: the old skip's hold, the timely look, the
+unaffordable offer. Versioned with no change to the game: the ensemble's baseline moves (docs/ensemble/0.9.195.md).
+
 ### 0.9.194 — PW2, the power plants and their fuels — 2026-11-23, ready, see docs/queue/PW2-notes.md
 Five new power plants, each burning its fuel from the market by the MWh: the Oil-Fired Plant (1900), the Diesel Station (1910), the
 Oil-Fired Turbine (1949), the Biomass Plant (1970) and the Solar Farm (1982); the Coal Power Plant and the Wind Farm refigured to

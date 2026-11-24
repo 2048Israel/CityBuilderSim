@@ -2678,7 +2678,8 @@ public class LongPlaytest {
             while (g.getMonth() < months) {
                 stop++;
                 int skip = switch (stop % 6) { case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120; };
-                run(g, Math.min(skip, months - g.getMonth()));
+                // ...its ground watched across the skip, as main()'s (LP-G1).
+                skipWatchingGround(g, Math.min(skip, months - g.getMonth()), () -> run(g, 1));
                 if (g.getMonth() >= months) break;
                 for (int move = 0; move < movesPerLook(); move++) {
                     if (advise(g) == null) break;
@@ -3696,6 +3697,11 @@ public class LongPlaytest {
          * 3,000 the city was half 0.7.55's size (19,846 and 59,965 people on
          * average against 41,222 and 126,562). Keeping its ground ahead, it is
          * 43,217 and 119,800 (runs/fixJ1d-notes.md).
+         *
+         * ...AND ACROSS THE SKIP AFTER IT (LP-G1): the line holds HORIZON
+         * months' growth, and the skip that follows a look can be twenty
+         * times that, so the skip looks at the ground again each HORIZON
+         * months (skipWatchingGround(), THE GROUND, WATCHED ACROSS A SKIP).
          */
         keepGroundAhead(g);
         // ...and the ground automatic building was held back for (0.7.73, -Dplaytest.autobuild).
@@ -4537,17 +4543,25 @@ public class LongPlaytest {
      * more of the dry ground is built on than groundAheadUtilisation(), the
      * offers together costing no more than GROUND_AHEAD_CASH_SHARE of the
      * cash at the look. Stops at the first offer past what is left of that
-     * share, and counts the look as stopped short.
+     * share, and counts the look as stopped short. Made at each of the
+     * advisor's looks and, since LP-G1, inside a skip whenever
+     * BuildAdvice.HORIZON months have passed since the last
+     * (skipWatchingGround()).
      */
     static void keepGroundAhead(Game g) {
         LandManager land = g.getLandManager();
+        // ...a look at the ground, whoever makes it: the skip's next is BuildAdvice.HORIZON months from here (LP-G1, skipWatchingGround()).
+        groundLooked.put(g, g.getMonth());
         double most = groundAheadUtilisation(g);
         // ...and while ground the city owns lies across the water, the island is linked as the AutoBuilder links it (AL1): the same rule, BuildAdvice.linkFor().
         if (land.getOwnedSqFt() > 0 && land.getUsedShare() > most && land.getLandmasses().anyUnlinked()) linkIslands(g);
         double budget = Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE;
         boolean traceGround = Boolean.getBoolean("cbs.pw5.traceFixtures") && g.getMonth() >= 700 && g.getMonth() <= 835;
+        // ...or inside -Dplaytest.groundTrace's window (LP-G1), to the error stream, which the ensemble does not quiet.
+        PrintStream tr = groundTraced(g) ? System.err : out;
+        traceGround |= groundTraced(g);
         if (traceGround)
-            out.printf("PW5_GROUND_LOOK month=%d cash=%.9f budget=%.9f used=%.12f threshold=%.12f freeSqFt=%.9f%n",
+            tr.printf("PW5_GROUND_LOOK month=%d cash=%.9f budget=%.9f used=%.12f threshold=%.12f freeSqFt=%.9f%n",
                     g.getMonth(), g.getCash(), budget, land.getUsedShare(), most, (double) land.getAvailableSqFt());
         int guard = 0;
         while (land.getOwnedSqFt() > 0 && land.getUsedShare() > most
@@ -4555,25 +4569,129 @@ public class LongPlaytest {
             LandParcel best = g.bestOffer(Game.LandNeed.room());
             // ...and none wholly across the water (ET5): the used share reads the linked ground, so it would not move and the loop would buy on.
             if (best == null || !LandMarket.hasLinkedDry(best)) {
-                if (traceGround) out.printf("PW5_GROUND_NONE month=%d offer=%s%n", g.getMonth(), best == null ? "none" : "unlinked");
+                if (traceGround) tr.printf("PW5_GROUND_NONE month=%d offer=%s%n", g.getMonth(), best == null ? "none" : "unlinked");
                 break;
             }
             double local = best.localPrice(g.getForeignAccounts().getRate());
             if (traceGround)
-                out.printf("PW5_GROUND_OFFER month=%d id=%s price=%.9f budget=%.9f sizeSqFt=%.9f%n",
+                tr.printf("PW5_GROUND_OFFER month=%d id=%s price=%.9f budget=%.9f sizeSqFt=%.9f%n",
                         g.getMonth(), best.getId(), local, budget, (double) best.getSizeSqFt());
             if (local > budget || !g.canAffordParcel(best)) {
-                if (traceGround) out.printf("PW5_GROUND_HELD month=%d reason=%s%n", g.getMonth(), local > budget ? "cash-share" : "cannot-afford");
+                if (traceGround) tr.printf("PW5_GROUND_HELD month=%d reason=%s%n", g.getMonth(), local > budget ? "cash-share" : "cannot-afford");
                 groundAheadShort++;
                 break;
             }
             if (!g.buyLandParcel(best.getId())) break;
-            if (traceGround) out.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f%n", g.getMonth(), best.getId(), local);
+            if (traceGround) tr.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f%n", g.getMonth(), best.getId(), local);
             budget -= local;
             groundAheadBought++;
             groundAheadSqFt += best.getSizeSqFt();
             groundAheadUsd += best.getPriceUsd();
         }
+    }
+
+    /* =====================================================================
+       THE GROUND, WATCHED ACROSS A SKIP (LP-G1, 2026-11-23)
+
+       keepGroundAhead() leaves room for BuildAdvice.HORIZON months of the
+       businesses' growth with BuildAdvice.SLACK past it, and until LP-G1 ran
+       only at the advisor's looks - which the rhythm puts six to a hundred
+       and twenty months apart. Each long skip spent its six months' reserve
+       and then held the landlords' orders for land until the next look:
+       WHY, measured (docs/queue/PW5-notes.md): the default playtest's seed 0
+       looked at its ground at m743 (0.935 built on against its 0.946 line,
+       nothing bought) and next at m805; from m760 the housing order said
+       "no land - needs 5,570 m², 922 m² free" with no home on site, full
+       power, unlimited mortgage capital and builders to spare, and 12.3
+       households had nowhere at m807. Native main showed the same hold
+       (looks m741 then m804), and the ensemble's seed 9 made no look from
+       m500 to m603 and flagged m605. The forecast was not what failed: the
+       ground went at about the rate the line allowed for, for ten times as
+       long.
+
+       So the look's timing is made to agree with its horizon: inside a skip
+       the player looks at its ground (keepGroundAhead(), the whole of it:
+       the same line, the same best value, the same GROUND_AHEAD_CASH_SHARE
+       of the cash at that look, the same hold when the share cannot pay)
+       whenever HORIZON months have passed since its last look at it, and
+       at no other time. The skip's length, the advisor's looks and moves,
+       and every other rule are as they were. A look the share cannot cover
+       still buys nothing and pays nothing, and the next is HORIZON months on.
+
+       WHO WATCHES. The player: main()'s loop, earthCity()'s and the
+       ensemble's controller (in tools/ensemble), the runs that judge the
+       city. Not probePlay(), nor the rhythms AuctionCheck, AutoBuildCheck,
+       HomeRailCheck and SectorStatementCheck copy by hand: those build the
+       towns their harnesses wrote premises on, and a town no longer held for
+       land is another town - measured, KeptCheck's town at m605 grew from
+       2,518 people to 21,945, its Bank Overview took a new sentence in
+       the month and its 2 GB heap ran out at section 63, none of it ground.
+       Held for land, the player's city grew slowly; watched, it grows as
+       fast as the rest of the model lets it: the default seed 0 ends at
+       5.7 million people where it ended at 1.3 million, in about twice the
+       time (docs/queue/LP-G1-notes.md).
+       ===================================================================== */
+
+    /** -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. */
+    static final boolean GROUND_WATCH = !"off".equalsIgnoreCase(System.getProperty("playtest.groundWatch", "on").trim());
+
+    /** The month each city's ground was last looked at (keepGroundAhead()), by the city: weakly held, so a harness's cities are let go. */
+    private static final java.util.Map<Game, Integer> groundLooked =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /** Over the run (LP-G1): the ground looks made inside a skip, and the most months a skip let the ground go without one. */
+    static int groundLooksInSkips, longestGroundGap;
+
+    /** Whether the city's ground is due a look: never looked at, last looked at in a month after this one, or BuildAdvice.HORIZON months or more ago. */
+    static boolean groundLookDue(Game g) {
+        Integer last = groundLooked.get(g);
+        return last == null || g.getMonth() < last || g.getMonth() - last >= BuildAdvice.HORIZON;
+    }
+
+    /** The months since the city's ground was last looked at, 0 when it never was (or was in a later month). */
+    static int monthsSinceGroundLook(Game g) {
+        Integer last = groundLooked.get(g);
+        return last == null || g.getMonth() < last ? 0 : g.getMonth() - last;
+    }
+
+    /**
+     * The skip, its ground watched (see the banner): `months` months run one at a time through `month` (the caller's own
+     * month: runPlayer(), earthCity()'s, the ensemble's), a ground look before any month it falls due.
+     */
+    static void skipWatchingGround(Game g, int months, Runnable month) {
+        for (int i = 0; i < months; i++) {
+            if (GROUND_WATCH && groundLookDue(g)) {
+                groundLooksInSkips++;
+                if (groundTraced(g)) System.err.printf("LPG1_SKIP_LOOK month=%d since=%d%n", g.getMonth(), monthsSinceGroundLook(g));
+                keepGroundAhead(g);
+            }
+            month.run();
+            longestGroundGap = Math.max(longestGroundGap, monthsSinceGroundLook(g));
+        }
+    }
+
+    /** -Dplaytest.groundTrace=FROM-TO (LP-G1): the months whose ground looks and landlords are traced, to the error stream; unset, none and the run as it was. */
+    static final int[] GROUND_TRACE = groundTraceWindow(System.getProperty("playtest.groundTrace"));
+
+    static int[] groundTraceWindow(String s) {
+        if (s == null) return null;
+        String[] two = s.trim().split("-");
+        return two.length == 2 ? new int[] {Integer.parseInt(two[0].trim()), Integer.parseInt(two[1].trim())} : null;
+    }
+
+    static boolean groundTraced(Game g) {
+        return GROUND_TRACE != null && g.getMonth() >= GROUND_TRACE[0] && g.getMonth() <= GROUND_TRACE[1];
+    }
+
+    /** The trace's month (run()): the households nowhere, the homes standing and on site, the ground against the line, the months since a look, and the landlords' order. */
+    static void traceGroundMonth(Game g) {
+        if (!groundTraced(g)) return;
+        LandManager land = g.getLandManager();
+        System.err.printf("LPG1_MONTH month=%d unplaced=%.9f homes=%d onSite=%.0f used=%.12f line=%.12f freeSqFt=%.0f since=%d heldForLand=%b cash=%.3f order=%s%n",
+                g.getMonth(), g.getFamilies().getStillUnplaced(), g.getBuildingManager().getTotalHomes(),
+                (double) g.getBuildingManager().getHousingInventory().pipelineHomes(), land.getUsedShare(),
+                groundAheadUtilisation(g), (double) land.getAvailableSqFt(), monthsSinceGroundLook(g),
+                g.getLandBlockedSectors().contains(Sectors.REAL_ESTATE), g.getCash(), g.getLastInvestment(Sectors.REAL_ESTATE));
     }
 
     /** Over the run (AL1): the bridges and the sea terminals the test player ordered to link an island, and the links it could not order (none can be made, or an order was refused). */
@@ -6178,6 +6296,7 @@ public class LongPlaytest {
             audit(g);
             countWorks(g, worksOn, worksOver, worksOrders);
             traceMonth(g);
+            traceGroundMonth(g);
         }
     }
 
@@ -6901,7 +7020,9 @@ public class LongPlaytest {
                 // the note on ATTENTIVE above; without the flag this is the
                 // same unbounded skip it always was.
                 skip = Math.min(skip, longestSkip());
-                runPlayer(g, Math.min(skip, TARGET_MONTHS - g.getMonth()));
+                // ...and across it the player keeps an eye on its ground, a look whenever BuildAdvice.HORIZON months have
+                // passed since the last (LP-G1, THE GROUND, WATCHED ACROSS A SKIP); the skip is the same length.
+                skipWatchingGround(g, Math.min(skip, TARGET_MONTHS - g.getMonth()), () -> runPlayer(g, 1));
                 ensureSchools(g);
                 childcareWhenNeeded(g);
 
@@ -8167,6 +8288,8 @@ public class LongPlaytest {
         out.printf("  ...ground kept ahead (0.7.58): %,d offer(s) bought over the run, %.2f km2 dry, US$%,.0fk; the"
                 + " cash share stopped a look short %,d time(s)%n", groundAheadBought,
                 LandManager.km2(groundAheadSqFt), groundAheadUsd, groundAheadShort);
+        out.printf("  ...and across the skips (LP-G1): %,d ground look(s) inside a skip; the most months a skip let the"
+                + " ground go unlooked at, %d (the horizon %.0f)%n", groundLooksInSkips, longestGroundGap, BuildAdvice.HORIZON);
         out.printf("  ...the build's bonds (CC1-S): %,d at home, %,d abroad, the dearest abroad %.2f%%%n",
                 bondsAtHome, bondsAbroad, dearestAbroad * 100);
         out.printf("  ...room to grow past the ground-ahead line (0.7.67, M3b): %,d offer(s) bought by the move; %,d Bus"
@@ -8779,6 +8902,7 @@ public class LongPlaytest {
                     case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120;
                 };
                 skip = Math.min(skip, longestSkip());
+                // ...its skip NOT watched: the probe's town is the fixture its borrowers wrote their premises on (LP-G1, THE GROUND, WATCHED ACROSS A SKIP, who watches).
                 probeRun(g, Math.min(skip, Math.max(1, toMonth - g.getMonth())));
                 ensureSchools(g);
                 childcareWhenNeeded(g);

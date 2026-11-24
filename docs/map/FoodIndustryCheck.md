@@ -1,6 +1,6 @@
 # FoodIndustryCheck.java - 67 lines · 2 methods · 1 constants · harnesses
 
-`ham/citybuildersim/FoodIndustryCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoodIndustryCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The mills counted in the heads their retirement measure serves (RT2).
 > 

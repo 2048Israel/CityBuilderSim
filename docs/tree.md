@@ -1023,6 +1023,10 @@ adds its line here, not in `CLAUDE.md`.
         FB13Check.java             FB13's three texts asked of the model that says them: the island's words (table, chip, notice,
                                    door, the Build tab's card) naming a bridge where the survey allows one, the coupons' note, and
                                    the build card's licence line; a screen's read moves nothing of the rule's
+        GroundSkipCheck.java       the test player keeps its ground across its long skips (batch LP-G1): a growing village at its
+                                   line skipped sixty months the old way runs its reserve out and holds the landlords for land;
+                                   the watched skip (LongPlaytest.skipWatchingGround()) looks each BuildAdvice.HORIZON months,
+                                   buys within the cash share and pays, and an offer the share cannot pay still waits
         InterventionCheck.java     a purchase or sale of dollars moves the D$ a bounded amount (batch XI1): ForeignAccounts'
                                    interventionMove() and its inverse equal the old linear expressions to the bit up to
                                    INTERVENTION_LINEAR of a year's GDP and are logarithmic past it, continuous in value and slope;

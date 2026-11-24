@@ -1,8 +1,8 @@
-# gate of Merge batch/PW2: the power plants and their fuels (after PW1): an oil-fired plant, a diesel station, an oil-fired turbine, a biomass plant and a solar farm, the coal plant and wind farm refigured, each burning its fuel from the market; the cooling-water gate; a build-time floor; each kind offered from its first year (Jerus: "the rec, later research will change this"). Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **PW7**: Natural gas, imported (after PW2; Jerus: "Imported gas"): a natural gas good at the Pink Sheet's gas price, the combined-cycle plant and the gas turbine; its speculative rows are in research-speculative §7 (R6-T-P, 2026-11-16); for R6-G-P (2026-11-20): E25 the single-axis tracker, E31 the tandem module (before FE9) and E28 the 60% combined cycle enter `research.json` here ([the 1996-2024 study §8.2](docs/studies/research-1996-2024.md#82-for-their-owners)), 0.9.194
-# date: 2026-11-23
+# gate of Merge batch/LP-G1: the test player's ground forecast must cover its long skip: main also holds housing orders for land across a 63-month gap between looks; retain the cash-share limit and every housing and money bound (PW5, 0.9.192; next by Jerus, 2026-11-23, desk chat: "Yes go", to clear the nightly's red), 0.9.195
+# date: 2026-11-24
 # earth-2.bin: named
 # nightly: 2026-11-23 02:51 0.9.192 f937d2c22 4,000 months: RED, exit 1 in 335 s: FAIL households with no home 16 time(s), months 792-807; nightly tier OK; observations: 5 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-23-f937d2c22-eGpFQhFj
-# suite: 246 harnesses run in 979s: 232 passed, 14 failed
+# suite: 241 harnesses run in 1069s: 227 passed, 14 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED

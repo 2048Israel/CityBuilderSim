@@ -1,6 +1,6 @@
 # KeptTimingCheck.java - 682 lines · 20 methods · 23 constants · harnesses
 
-`ham/citybuildersim/KeptTimingCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/KeptTimingCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > What the kept pages cost: KeptCheck's timed sections, each kept month on a page against the same month built new, within its
 > budget through Timing.

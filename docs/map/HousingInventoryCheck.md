@@ -1,6 +1,6 @@
 # HousingInventoryCheck.java - 288 lines · 11 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HousingInventoryCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingInventoryCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Aggregate housing inventory, caused through recipes, construction and transfers.
 > WHY (RES2): title/listing quantities must conserve homes independently of the

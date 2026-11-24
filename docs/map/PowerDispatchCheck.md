@@ -1,6 +1,6 @@
 # PowerDispatchCheck.java - 413 lines · 24 methods · 1 constants · harnesses
 
-`ham/citybuildersim/PowerDispatchCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerDispatchCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the
 > works first, the wind at its weather, the hydro levelling the load, the fuelled rows by marginal cost, the price each half-block

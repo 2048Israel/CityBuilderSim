@@ -52,7 +52,7 @@ public class AllChecks {
         "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "DriverlessTruckCheck", "FieldOperatorsCheck", "ElectrolyserCheck", "RecipeCheck", "HistoricalRecipeCheck", "HistoricalLicenceCheck", "LicenceFeesCheck", "PublicLicenceCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
         "ReplayCheck", "StaffingDrawCheck", "StaffingTieCheck", "OwnerCheck",
         "HousingInventoryCheck",
-        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check"
+        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check", "GroundSkipCheck"
     };
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
