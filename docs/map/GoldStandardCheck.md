@@ -1,4 +1,4 @@
-# GoldStandardCheck.java - 1,115 lines · 33 methods · 17 constants · harnesses
+# GoldStandardCheck.java - 1,119 lines · 33 methods · 17 constants · harnesses
 
 `ham/citybuildersim/GoldStandardCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -62,9 +62,9 @@
 | 477 | 5. DOUBT IS SCALED BY THE COVER |
 | 541 | 6. DEFEND THE GOLD SETS THE DIAL |
 | 611 | THE TOWN (7-10): one town played to March 1933, saved once, loaded for each |
-| 892 | 11 and 12 |
-| 934 | 13-14. FB14: THE GOLD'S OWN DEFENCE, AND THE START-ON-GOLD BOX |
-| 1084 | 15 |
+| 896 | 11 and 12 |
+| 938 | 13-14. FB14: THE GOLD'S OWN DEFENCE, AND THE START-ON-GOLD BOX |
+| 1088 | 15 |
 
 ## Constants
 
@@ -85,8 +85,8 @@
 | 625 | `GoldStandardCheck.MIDWAY` | `(ForeignAccounts.COVER_RATIO + DebtManager.GOLD_DEFENCE_FROM) / 2` | The cover section 9 sets the town's gold to, between the floor and the defence's own: where the autopilot's spread is neither nothing nor the whole. |
 | 628 | `GoldStandardCheck.QUIET_SLOT` | `4` | The slot section 9 saves its town to after the quiet month, in the same scratch folder as SLOT (and not section 10's). |
 | 631 | `GoldStandardCheck.M0_FLOOR` | `5_000` | The base section 9 puts under the town when its own is less, D$ thousands: what the central bank held in March 1933 on the path without the builders' trade (4,964), so the gold the cover keeps outlasts the months' pay... |
-| 949 | `GoldStandardCheck.REDEEM_MONTHS` | `120` | The months section 13 plays its town on Gold, looking for the gold's sales. |
-| 1014 | `GoldStandardCheck.DEEP_VAULT_USD` | `Game.FOUNDING_CASH` | A custom founding whose vault is the treasury's worth: deeper than the law's 40%, so the box keeps the rest in dollars. |
+| 953 | `GoldStandardCheck.REDEEM_MONTHS` | `120` | The months section 13 plays its town on Gold, looking for the gold's sales. |
+| 1018 | `GoldStandardCheck.DEEP_VAULT_USD` | `Game.FOUNDING_CASH` | A custom founding whose vault is the treasury's worth: deeper than the law's 40%, so the box keeps the rest in dollars. |
 
 ## Fields (state)
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 1062 | **type** `public class GoldStandardCheck` | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the centre that moves with gold, the sale paid in gold ... |
+| 54 | 1066 | **type** `public class GoldStandardCheck` | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the centre that moves with gold, the sale paid in gold ... |
 | 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 77 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
 | 84 | 5 | `static void close(String label, double actual, double expected, double tol)` | Equal within a share of the expected. |
@@ -159,7 +159,7 @@
 |---:|---:|---|---|
 | 545 | 65 | `static void defendTheGoldSetsTheDial()` |  |
 
-### THE TOWN (7-10): one town played to March 1933, saved once, loaded for each (lines 611-891)
+### THE TOWN (7-10): one town played to March 1933, saved once, loaded for each (lines 611-895)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -168,31 +168,31 @@
 | 644 | 5 | `static boolean said(Game g, int from, String text)` |  |
 | 651 | 7 | **type** `static final class Run` | One answer's run from March 1933 to February 1934 (or the month the city came off gold). |
 | 659 | 40 | `static Run through(Game from, ForeignAccounts.GoldChoice answer, String said)` |  |
-| 700 | 68 | `static void aTownOnGoldThroughNineteenThirtyThreeAndFour()` |  |
-| 769 | 81 | `static void theDialInTheTown()` |  |
-| 851 | 34 | `static void savedMidGold()` |  |
-| 886 | 1 | `static double[] figures(Game g)` |  |
-| 888 | 1 | `static boolean sameBits(double[] a, double[] b)` |  |
-| 890 | 1 | `static void play(Game g, int months)` |  |
+| 700 | 72 | `static void aTownOnGoldThroughNineteenThirtyThreeAndFour()` |  |
+| 773 | 81 | `static void theDialInTheTown()` |  |
+| 855 | 34 | `static void savedMidGold()` |  |
+| 890 | 1 | `static double[] figures(Game g)` |  |
+| 892 | 1 | `static boolean sameBits(double[] a, double[] b)` |  |
+| 894 | 1 | `static void play(Game g, int months)` |  |
 
-### 11 and 12 (lines 892-933)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 896 | 25 | `static void gdTwosTwoFindings()` |  |
-| 922 | 11 | `static void leanIsTheDefault()` |  |
-
-### 13-14. FB14: THE GOLD'S OWN DEFENCE, AND THE START-ON-GOLD BOX (lines 934-1083)
+### 11 and 12 (lines 896-937)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 939 | 8 | `static Game founded(String label, Founding f)` | A city founded through newGame(), the founding screen's door (UserInterface.foundCity()), in the harness's own scratch folder. |
-| 951 | 61 | `static void theGoldsSalesRetireMZero()` |  |
-| 1016 | 67 | `static void theStartOnGoldBox()` |  |
+| 900 | 25 | `static void gdTwosTwoFindings()` |  |
+| 926 | 11 | `static void leanIsTheDefault()` |  |
 
-### 15 (lines 1084-1115)
+### 13-14. FB14: THE GOLD'S OWN DEFENCE, AND THE START-ON-GOLD BOX (lines 938-1087)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1088 | 27 | `static void theDatesPassItBy()` |  |
+| 943 | 8 | `static Game founded(String label, Founding f)` | A city founded through newGame(), the founding screen's door (UserInterface.foundCity()), in the harness's own scratch folder. |
+| 955 | 61 | `static void theGoldsSalesRetireMZero()` |  |
+| 1020 | 67 | `static void theStartOnGoldBox()` |  |
+
+### 15 (lines 1088-1119)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1092 | 27 | `static void theDatesPassItBy()` |  |
 
