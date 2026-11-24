@@ -40,7 +40,7 @@ import java.util.Set;
  *   8. A GAP IN THE RESERVE ALONE IS NOT A PLANT (2026-11-24): with the seasonal peak (PLAN_PEAK_SEASON: the peak block of the year's highest
  *      month) covered at a plant's opening, a gap to the peak hour (PLAN_PEAK_HOUR) orders it only when it fills FIRST_WORK_SHARE of the
  *      plant; a gap in the seasonal peak orders as ever (8a). And the month lacks power when its peak month's peak block goes unserved, which
- *      the city's own dispatch shows at three firm levels, not below the plan's peak hour (BuildAdvice.lacksNow(), 8b).
+ *      the city's own dispatch shows at three firm levels, not below the plan's peak hour (BuildAdvice.lacksNow(), 8b); and the auto-builder's holds read the same "short now", through a real pass, in both directions (AutoBuilder.crewLimit() and pendingDelay(), 8b (b)).
  *   9. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
  */
@@ -834,6 +834,154 @@ public final class PowerPlanCheck {
         u.setWattsConsumption(0);
         check("a city drawing nothing lacks no power", !BuildAdvice.lacksNow(g, POWER));
     }
+    /**
+     * 8b (b): WorksFinanceCheck.reserveTown()'s founded town, every other essential service given its operating capacity, with a second Coal Power Plant going up, nearly built
+     * (Power's saved completion, AutoBuilder's pendingUntil, as rememberPending() quotes it: the month and the months to its first power), the builders' output so tight that any order slows it past
+     * that quote, the streets carrying their load with 1% to spare (the plan orders Gravel Roads ahead of need: the other essential order), and the firm supply
+     * `level` of the draw; the pass not yet run.
+     */
+    static Game holdTown(Path root, String name, double level) {
+        Game g = WorksFinanceCheck.reserveTown(root, name);
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate coal = plant(g, COAL), road = plant(g, "Paved Road");
+        check("fixture: every essential service but Power has its operating capacity", EssentialWorksCheck.serveOtherEssentials(g, POWER));
+        quietly(() -> g.buildStack(coal, 1, false));
+        // ...its remaining work scaled to 4 months of the first quote, a few months short of finished; the quote it then gives (it reads the build time too) and its room are asserted below.
+        double first = bm.siteUnitMonths(coal, 1, g.getBuildingOutputAtEveryPost());
+        BuildingsStacks site = bm.getStack(coal);
+        site.setConstructionProgress(coal.getConstructionPoints() - (coal.getConstructionPoints() - site.getConstructionProgress()) * 4 / first);
+        InfrastructureManager roads = g.getInfrastructureManager();
+        roads.setModes(0, 0);
+        roads.setThrough(0, g.getLandManager().getAllocatedSqFt(), 0);
+        roads.setBuiltCapacity(20.0 * road.getCapacity());
+        roads.setLoad(roads.getStreetCapacity() / 1.01);
+        double[] traffic = new double[Traffic.values().length];
+        traffic[Traffic.COMMUTERS.ordinal()] = roads.getLoad();
+        roads.setBreakdown(traffic);
+        roads.setBuiltCapacity(roads.getStreetLoad() * 1.01 - InfrastructureManager.BASE_CAPACITY);
+        // ...the draw set so the firm supply is `level` of it (the wires carry it, as peakBlock()'s do), and set again after the wires are stood.
+        drawRatio(g, BuildAdvice.NOW, PowerDispatch.PLAN_PEAK_HOUR / level);
+        SubstationCheck.wiresFor(g, 1.05 * g.getServicesManager().getUtilitiesHandler().getConsumption() * PowerDispatch.PLAN_PEAK_SEASON);
+        drawRatio(g, BuildAdvice.NOW, PowerDispatch.PLAN_PEAK_HOUR / level);
+        AutoBuilder ab = g.getAutoBuilder();
+        AutoBuilder.State state = ab.toState();
+        state.on = true;
+        state.pendingUntil.clear();
+        state.pendingUntil.put(POWER.label(), g.getMonth() + BuildAdvice.firstCompletion(g, POWER, BuildAdvice.onSite(g, POWER)));
+        ab.restore(state);
+        return g;
+    }
+
+    /**
+     * 8b (b): the holds read the same "short now" as the month does, through a real pass (AutoBuilder.crewLimit() and pendingDelay()). Power's plant is nearly
+     * built and the Gravel Roads the plan orders ahead of need would slow it past its saved quote. With the firm supply between PLAN_PEAK_SEASON and
+     * PLAN_PEAK_HOUR of the draw the month's dispatch serves the peak block, lacksNow() is false and the roads are ordered; below PLAN_PEAK_SEASON the peak block goes
+     * unserved, and the order waits to preserve Power's quoted first completion. (The plan's peak hour read as short would hold them in the first case: the mend's twin.)
+     */
+    static void holds(Path root) {
+        out.println("--- 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only when the peak block goes unserved ---");
+        double[] levels = {(PowerDispatch.PLAN_PEAK_SEASON + PowerDispatch.PLAN_PEAK_HOUR) / 2, (PowerDispatch.PLAN_PEAK + PowerDispatch.PLAN_PEAK_SEASON) / 2};
+        String[] where = {"between PLAN_PEAK_SEASON and PLAN_PEAK_HOUR", "between PLAN_PEAK and PLAN_PEAK_SEASON"};
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        for (int i = 0; i < levels.length; i++) {
+            Game g = holdTown(root, "hold-" + i, levels[i]);
+            AutoBuilder ab = g.getAutoBuilder();
+            BuildingManager bm = g.getBuildingManager();
+            BuildingsTemplate coal = plant(g, COAL);
+            BuildAdvice.Suggestion order = BuildAdvice.suggestFor(g, null, streets, g.getCash(), g.getLandManager().getAvailableSqFt(), ab.getSlack(), Set.of(), false, true);
+            double due = ab.toState().pendingUntil.getOrDefault(POWER.label(), Double.NaN), output = g.getBuildingOutputAtEveryPost();
+            double alone = bm.siteUnitMonths(coal, 1, output);
+            double with = order == null ? Double.NaN : bm.siteUnitMonthsAfter(coal, 1, output, order.template(), order.count(),
+                    WorksFinanceCheck.addedPoints(g.quoteBuild(order.template(), order.count()), order.template(), order.count()));
+            double one = order == null ? Double.NaN : bm.siteUnitMonthsAfter(coal, 1, output, order.template(), 1,
+                    WorksFinanceCheck.addedPoints(g.quoteBuild(order.template(), 1), order.template(), 1));
+            double firm = supplyOverDraw(g, BuildAdvice.NOW);
+            check(String.format("fixture: firm supply %.3f of the draw, %s (Power lacks now: %b); Power's plant is due month %.2f (now %d) and opens in %.4f months, the order (%s) would open it in %.4f "
+                            + "(month %.2f), past the saved quote, as would one alone (%.4f); the builders' output is %.0f",
+                            firm, where[i], BuildAdvice.lacksNow(g, POWER), due, g.getMonth(), alone, named(order), with, g.getMonth() + with, one, output),
+                    close(firm, levels[i], 1e-6) && BuildAdvice.lacksNow(g, POWER) == (i == 1) && !BuildAdvice.lacksNow(g, streets) && order != null && !order.paving()
+                            && g.getMonth() + alone <= due + 1e-9 && g.getMonth() + Math.ceil(one - 1e-9) > due && g.getMonth() + Math.ceil(with - 1e-9) > due);
+            if (order == null) continue;
+            quietly(() -> ab.pass(g));
+            AutoBuilder.Step step = EssentialWorksCheck.step(g, streets);
+            String hold = ab.toState().crewHolds.get(streets.label());
+            boolean words = ab.held().stream().anyMatch(h -> h.contains(streets.label() + " waits to preserve " + POWER.label() + "'s quoted first completion."));
+            String said = step == null ? "no step" : step.outcome() + " " + step.ordered() + " of " + step.wanted() + " " + step.building() + ", cut " + step.cut();
+            double slipped = bm.siteUnitMonths(coal, 1, g.getBuildingOutputAtEveryPost());
+            if (i == 0)
+                check("the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (" + said + "; the plant now opens in " + String.format("%.4f", slipped) + " months)",
+                        step != null && step.ordered() == step.wanted() && step.ordered() > 0 && hold == null && !words && g.getMonth() + Math.ceil(slipped - 1e-9) > due);
+            else
+                check("the peak block unserved, the roads wait to preserve Power's quoted first completion (" + said + ", held for " + hold + ", the step's words " + words + "; the plant still opens in " + String.format("%.4f", slipped) + " months)",
+                        step != null && step.ordered() == 0 && step.cut() == AutoBuilder.Cut.BUILDERS && POWER.label().equals(hold) && words && close(slipped, alone, 1e-9));
+        }
+    }
+
+    /**
+     * 8b (b), the other way round: reserveTown()'s founded town with General care lacking now, its Community Health Centres going up and their first completion saved
+     * (pendingUntil, as rememberPending() quotes it), and no plant on site: the plan's order ahead of need is Power's. The firm supply is `level` of the draw; the pass not yet run.
+     */
+    static Game careTown(Path root, String name, double level, BuildAdvice.Measure care) {
+        Game g = WorksFinanceCheck.reserveTown(root, name);
+        BuildingManager bm = g.getBuildingManager();
+        check("fixture: every essential service but General care has its operating capacity", EssentialWorksCheck.serveOtherEssentials(g, care));
+        for (BuildingsTemplate t : bm.getTemplates()) if (care.serves(t) && bm.getQuantity(t.getId()) > 0) quietly(() -> bm.retire(t, bm.getQuantity(t.getId())));
+        BuildingsTemplate centre = plant(g, "Community Health Centre");
+        long required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1L), g.getAutoBuilder().target(), BuildAdvice.MOST, true)[0];
+        quietly(() -> g.buildStack(centre, required, false));
+        drawRatio(g, BuildAdvice.NOW, PowerDispatch.PLAN_PEAK_HOUR / level);
+        SubstationCheck.wiresFor(g, 1.05 * g.getServicesManager().getUtilitiesHandler().getConsumption() * PowerDispatch.PLAN_PEAK_SEASON);
+        drawRatio(g, BuildAdvice.NOW, PowerDispatch.PLAN_PEAK_HOUR / level);
+        AutoBuilder ab = g.getAutoBuilder();
+        AutoBuilder.State state = ab.toState();
+        state.on = true;
+        state.pendingUntil.clear();
+        state.pendingUntil.put(care.label(), g.getMonth() + BuildAdvice.firstCompletion(g, care, BuildAdvice.onSite(g, care)));
+        ab.restore(state);
+        return g;
+    }
+
+    /**
+     * 8b (b), the guard: the order of a measure the month lacks is never held (AutoBuilder.crewLimit()). Power's own order ahead of need would slow the saved completion of
+     * General care's centres, which lacks now. With the firm supply between PLAN_PEAK_SEASON and PLAN_PEAK_HOUR of the draw the peak block is served, Power is not lacked,
+     * and its order waits to preserve care's quoted first completion; below PLAN_PEAK_SEASON the peak block goes unserved and the order, a lacked measure's, is placed.
+     */
+    static void holdsPower(Path root) {
+        out.println("--- 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when its own peak block is served ---");
+        double[] levels = {(PowerDispatch.PLAN_PEAK_SEASON + PowerDispatch.PLAN_PEAK_HOUR) / 2, (PowerDispatch.PLAN_PEAK + PowerDispatch.PLAN_PEAK_SEASON) / 2};
+        String[] where = {"between PLAN_PEAK_SEASON and PLAN_PEAK_HOUR", "between PLAN_PEAK and PLAN_PEAK_SEASON"};
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        for (int i = 0; i < levels.length; i++) {
+            Game g = careTown(root, "hold-care-" + i, levels[i], care);
+            AutoBuilder ab = g.getAutoBuilder();
+            BuildingManager bm = g.getBuildingManager();
+            BuildingsTemplate centre = plant(g, "Community Health Centre");
+            BuildAdvice.Suggestion order = suggest(g);
+            double due = ab.toState().pendingUntil.getOrDefault(care.label(), Double.NaN), output = g.getBuildingOutputAtEveryPost();
+            double alone = bm.siteUnitMonths(centre, 1, output);
+            double with = order == null ? Double.NaN : bm.siteUnitMonthsAfter(centre, 1, output, order.template(), order.count(),
+                    WorksFinanceCheck.addedPoints(g.quoteBuild(order.template(), order.count()), order.template(), order.count()));
+            double firm = supplyOverDraw(g, BuildAdvice.NOW);
+            check(String.format("fixture: firm supply %.3f of the draw, %s (Power lacks now: %b); care lacks now (%b), its centres due month %.2f (now %d) and open in %.4f months, "
+                            + "Power's order (%s) would open them in %.4f (month %.2f), past the saved quote; the builders' output is %.0f",
+                            firm, where[i], BuildAdvice.lacksNow(g, POWER), BuildAdvice.lacksNow(g, care), due, g.getMonth(), alone, named(order), with, g.getMonth() + with, output),
+                    close(firm, levels[i], 1e-6) && BuildAdvice.lacksNow(g, POWER) == (i == 1) && BuildAdvice.lacksNow(g, care) && order != null
+                            && g.getMonth() + alone <= due + 1e-9 && g.getMonth() + Math.ceil(with - 1e-9) > due);
+            if (order == null) continue;
+            quietly(() -> ab.pass(g));
+            AutoBuilder.Step step = EssentialWorksCheck.step(g, POWER);
+            String hold = ab.toState().crewHolds.get(POWER.label());
+            boolean words = ab.held().stream().anyMatch(h -> h.contains(POWER.label() + " waits to preserve " + care.label() + "'s quoted first completion."));
+            String said = step == null ? "no step" : step.outcome() + " " + step.ordered() + " of " + step.wanted() + " " + step.building() + ", cut " + step.cut();
+            if (i == 0)
+                check("the peak block served, Power is not lacked and its order waits to preserve " + care.label() + "'s quoted first completion (" + said + ", held for " + hold + ", the step's words " + words + ")",
+                        step != null && step.ordered() == 0 && step.cut() == AutoBuilder.Cut.BUILDERS && care.label().equals(hold) && words);
+            else
+                check("the peak block unserved, Power is lacked and its order is placed whatever it does to " + care.label() + "'s completion (" + said + ", held for " + hold + ")",
+                        step != null && step.ordered() > 0 && hold == null && !words);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("powerplancheck");
@@ -849,6 +997,8 @@ public final class PowerPlanCheck {
         refused(root);
         calmPeak(root);
         lacksNow(root);
+        holds(root);
+        holdsPower(root);
         out.println("--- 9. how often each fires ---");
         out.printf("this harness's suggestions: reserve test %d, spread %d (the default run's: LongPlaytest, \"the power planner (PW3)\")%n",
                 BuildAdvice.RESERVE_ORDERS.get(), BuildAdvice.SPREAD_ORDERS.get());
