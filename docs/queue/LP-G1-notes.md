@@ -194,7 +194,25 @@ nightly takes it (no gate beside it), `java -Xmx2048m -Xms64m -Dcbs.timing=soft 
 
 ## 8. The ensemble
 
-(after the review)
+`tools/ensemble/ensemble.sh LP-G1` against `docs/ensemble/0.9.194.md` (PW2's), the classes of d3fff97f7, 80 of 80
+runs on the box (8 at once, 31.4 min, once the nightly's run of §7 let go of the box), scored here:
+**batch verdict PASS, hard criteria 10/10**; 25 of 26 criteria pass, one retired.
+
+- **M1**: 0 months the money audit failed, in all five policies (0 on the baseline).
+- **F1**: 0/16 runs with a LongPlaytest finding, in all five (0/16 on the baseline): the seed 9 windows of §5 are
+  clean in AUTO2, ZERO_SLACK, SHOCK and HIGH.
+- **T1 and T2 moved up, as the review expected**: AUTO2's seeds reach 40,000 people by m400 [345 to 465], against
+  m789 [606 to 2,117]; the final population, median, AUTO2 9,031,627 (4,274,015), ZERO_SLACK 7,136,952 (2,454,255),
+  ZERO_HOT 40,748 (8,145), SHOCK 1,147,563 (44,720: SHOCK's T2, an info row, FAIL on the baseline, PASS now), HIGH
+  354,943 (28,578).
+- **A2** (info), AUTO2's longest spell of a year's inflation over 10% from m240: 14 months [9 to 25], FAIL as on
+  the baseline (12 [7 to 37]). The young city that grows faster runs hotter for a little longer; not a stop.
+- **Time per run**, median: AUTO2 398 s (257), ZERO_SLACK 355 s (207), ZERO_HOT 20 s (18), SHOCK 91 s (45), HIGH
+  54 s (41); 250 min of runs in all against 147.
+
+The baseline is committed as `docs/ensemble/LP-G1.md`, its heading and introductory line `{next}` for ship.sh to
+name and rename (tools/ensemble/README.md; the review: "it must become the baseline every later batch compares
+against").
 
 ## 9. The dry run
 
