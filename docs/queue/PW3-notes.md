@@ -175,9 +175,9 @@ and PW2's ground finding (REV-PW2).
     the works' surplus on top (129,053.32 kW: 128,813.32 generated and 240 sold), where it expected the pooled fill
     times the whole nameplate; the net draw and the surplus held exactly as before.
 
-- ★R **A gap in the reserve alone orders a plant only when it fills Jerus's HW1 share of it, and the month's
+- ★R **A gap the month does not lack orders a plant only when it fills Jerus's HW1 share of it, and the month's
   "short" is the peak block of the year's highest month.** Found by tracing the second ensemble, with REV-PW3c's two
-  P1s, 2026-11-24.
+  P1s and REV-PW3d's P1 4, 2026-11-24.
   - **The two lines.** The reserve test plans at the year's peak hour (★D, 1.631 of the mean draw).
     `PowerDispatch.dispatch()` serves draw × season × the block's load, losses in. Its worst block is July's peak
     block, `PLAN_PEAK_SEASON` = `PLAN_PEAK` × SEASON's highest = 1.263 × 1.193 = 1.507 of the draw. On the south's
@@ -200,11 +200,19 @@ and PW2's ground finding (REV-PW2).
       stood at 6,000 to 7,000 people while main's reached 35,000.
     - Seed 8 at m226 ordered a $22.3M Oil-Fired Plant for a 257 kW gap, at a lead of 237 months.
 
-    Now a gap in the reserve alone, with `PLAN_PEAK_SEASON` covered at the plant's opening, orders a plant only when
-    it fills `FIRST_WORK_SHARE` of what the order adds (Jerus's HW1: "150 students for a 500-seat college, and the
-    same share for other oversized works"). A gap in the seasonal peak itself orders as ever. Reality: a shortfall
-    that is a fraction of one unit is met by small units or waits. No 10 MW system takes a 67 MW unit, whose own loss
-    would be larger than the system's whole load.
+    Now a gap the month does not lack (`lacksNow()` false) orders a plant only when it fills `FIRST_WORK_SHARE` of
+    what the order adds (Jerus's HW1: "150 students for a 500-seat college, and the same share for other oversized
+    works"), whether the gap is the reserve's alone or the seasonal peak's projected to the plant's opening. A gap in
+    the seasonal peak that the month already lacks orders as ever. Reality: a shortfall that is a fraction of one unit
+    is met by small units or waits. No 10 MW system takes a 67 MW unit, whose own loss would be larger than the
+    system's whole load.
+  - **The seasonal gap at the opening** (REV-PW3d's P1 4). ★R's second form waived the share for any gap in the
+    seasonal peak at the plant's opening, which the slack (15%) and the town's growth project months past the month's
+    own draw. In the fourth ensemble all 16 ZERO_HOT towns, 2,064 to 2,538 people drawing 2,049 to 3,425 kW on the
+    10,000 kW founding grid, were sold one 86,181 kW Oil-Fired Plant at m72 to m81, $6.2M to $9.4M borrowed (0.74 to
+    1.17 times the month's GDP), before the 1910 diesel stood; seed 6's grid covered its July peak to about m200. No
+    utility buys a unit 29 times its draw for a summer gap four years out: it waits for the small unit or the
+    shortage. So only a month that lacks waives the share.
   - **Main's rank** would have picked the same Oil-Fired Plant had it seen a gap (WorksValue's net, $10.8M against
     coal's $76.5M). It saw none: at main's line the opening had 7,769 kW against 10,000. At the seasonal line it is
     9,269 kW against 10,000, so still a reserve gap alone, under the share.
@@ -220,7 +228,11 @@ and PW2's ground finding (REV-PW2).
     - a 32,599 kW gap (15% of one plant) with the seasonal peak covered orders nothing; it was red without the rule,
       ordering 1 Coal Power Plant;
     - a 68,459 kW gap (31%) orders one;
-    - with the seasonal peak short by a gap under the share (supply 224,523 kW against 237,623), it orders one;
+    - with the seasonal peak short at the opening by a gap under the share (supply 224,523 kW against 253,139 at the
+      opening, a gap 23% of one plant) and covered in the month (against 220,121 now), it orders nothing; it was red
+      without REV-PW3d's mend, ordering 1 Coal Power Plant;
+    - with the month short too (224,523 kW against 226,791 now, over the year's mean block's 190,101), a gap 27% of
+      one plant orders one; it was red with both lines at `PLAN_PEAK`, ordering nothing, and 8b's lines red with it;
     - with the peak short by more, it orders 3.
   - **PowerPlanCheck 8b (a)** dispatches the town in July (season 1.193) at four firm levels, reading
     `getLatestMonth()`'s peak half-blocks:
@@ -473,21 +485,27 @@ against `docs/ensemble/0.9.199.md` (CY1, 41d77afb0).
 | ZERO_SLACK | T2 | 7,410,132 | 7,646,013 |
 | SHOCK | T2 | 1,433,391 | 1,516,325 |
 
-**ZERO_HOT's T2 is the median of a split outcome, over one real effect** (a helper's trace of the 16 seeds on both
-heads, `target/pw3-trace/zh`):
+**ZERO_HOT's T2: a split outcome, and a defect under it** (helpers' traces of the 16 seeds on both heads,
+`target/pw3-trace/zh`; the first reading here misstated them, REV-PW3d's P1 3, and was restated from the trace):
 - The seeds part both ways: six end under 0.75 of their CY1 twin (seeds 5, 6, 7, 8, 9 and 15: 0.68, 0.28, 0.57, 0.40,
   0.26, 0.22), six over 1.4 (0, 1, 11, 12, 13 and 14, up to 6.1 times). The median of the seed-by-seed ratios is
-  1.03, the geometric mean 0.93 (its log -0.075, standard error 0.23), the mean population 50,099 against 49,151.
-  Nine of PW3's seeds end under 40,000 against CY1's three, so the median falls between the two groups. Two medians
-  of the same code part by more than a quarter about 4.6% of the time.
-- The real effect: every seed orders its first Oil-Fired Plant ($9M to $10.6M, $6M to $8M of it borrowed) at m72 to
-  m81, planning for July's peak block; CY1 orders it at m102 to m137 in nine seeds and in the same month in seven.
-  Those nine seeds are 7% smaller at m100 and 18% at m162. A utility plans for its seasonal peak (REV-PW3c's P1 1),
-  and a town that borrows for its plant a little earlier grows a little slower while it pays.
-- The three deepest (seeds 15, 9 and 6) stall at 16,000 to 17,000 people on a Water Treatment Plant (about $51M)
-  held for cash from m290 for 110 to 135 months: the bond is raised but "the month's bills have drawn the rest". That
-  is main's AutoBuilder paying for a large works, not PW3's: these seeds have no power holds and are never short of
-  power. A candidate for the queue, not mended here.
+  1.03, the geometric mean 0.93, the mean population 50,099 against 49,151. Nine of PW3's seeds end under 40,000
+  against CY1's three, so the median falls between the two groups. Two medians of the same code part by more than a
+  quarter about 4.6% of the time.
+- The defect, mended (★R, REV-PW3d's P1 4): every PW3 seed's first power order is one 86,181 kW Oil-Fired Plant at
+  m72 to m81, $6.2M to $9.4M borrowed, for a town of 2,064 to 2,538 people drawing 2,049 to 3,425 kW on its
+  10,000 kW founding grid. CY1's first order differs in seven seeds (0, 1, 4, 5, 7, 9 and 10): a Diesel Station at
+  m122 to m137 for $2.0M to $2.7M. In two (3 and 15) it is the Oil-Fired Plant later (m115 and m102); in seven the
+  same plant, five of them the identical order (2, 8, 11, 12 and 13).
+- What the early plant explains and what it does not: seeds 5, 7, 9 and 15 fall short after a different first order
+  (9 and 15 already trail at m162, 0.78 and 0.69 of their twins). Seeds 6 and 8 buy the same plant on both heads.
+  Seed 6 tracks CY1 to m290 (18,218 against 19,038), then stalls on the water hold below. Seed 8, the identical
+  order at m80, parts from its twin at m106 and stands near 7,000 people from m200 to m360, with no water or power
+  shortage in the trace; its cause is not traced.
+- The water hold (seeds 6, 9 and 15, not the deepest: seed 8 ends lowest, at 16,026): water served 24% to 26% from
+  m268 to m293 on, to m402, the energy ratio 1.000, a Water Treatment Plant held on DEBT (the open ask,
+  `AutoBuilder.covered()` and `stillToRaise()`), with debt at 0.9 to 1.2 of GDP against the 2.40 limit. That is
+  main's, not PW3's: OA1 on the queue (main e1b58f210).
 - The holds: 112 months held against CY1's 59, 37 of them in months physically short of power; months physically
   short, 106 against 222; power orders, 40 against 72.
 
