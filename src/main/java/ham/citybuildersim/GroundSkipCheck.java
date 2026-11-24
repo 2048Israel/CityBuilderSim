@@ -25,7 +25,7 @@ import java.io.PrintStream;
  *      through skipWatchingGround(): no month comes more than HORIZON months after a look at the ground; the looks
  *      inside the skip buy ground, each look within its GROUND_AHEAD_CASH_SHARE of the cash, and every offer bought is
  *      paid (the land office's dollars and the city's ground grow by the offers); the landlords are never held for
- *      land; and the playtest's own audit of every month (LongPlaytest.audit()) finds nothing the old skip did not.
+ *      land; and the playtest's own audit of every month (LongPlaytest.audit()) flags nothing in it the old skip did not.
  *   3. AN OFFER THE SHARE CANNOT PAY STILL WAITS. The same town skipped the old way until its landlords are held for
  *      land, its cash then short of the best offer over GROUND_AHEAD_CASH_SHARE but within the cash: the look the
  *      watched skip makes buys nothing, pays nothing and places nothing, and is counted short; the next comes HORIZON
@@ -140,9 +140,22 @@ public class GroundSkipCheck {
                 g.getLastInvestment(Sectors.REAL_ESTATE));
     }
 
-    /** The playtest's findings' names, as its audit has them now. */
-    static java.util.Set<String> findingNames() {
-        return new java.util.TreeSet<>(LongPlaytest.findings.keySet());
+    /** The months the playtest's audit has flagged each finding in so far, by its name (LongPlaytest.Finding.count). */
+    static java.util.Map<String, Integer> findingCounts() {
+        java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
+        LongPlaytest.findings.forEach((name, f) -> counts.put(name, f.count));
+        return counts;
+    }
+
+    /**
+     * The findings the audit flagged since `before`: each whose count of months grew, so a name the founding, the
+     * town's play or an earlier section raised already is counted again when a month of this skip raises it again
+     * (REV-LP-G1: names alone missed those).
+     */
+    static java.util.Set<String> flaggedSince(java.util.Map<String, Integer> before) {
+        java.util.Set<String> flagged = new java.util.TreeSet<>();
+        LongPlaytest.findings.forEach((name, f) -> { if (f.count > before.getOrDefault(name, 0)) flagged.add(name); });
+        return flagged;
     }
 
     public static void main(String[] args) throws Exception {
@@ -172,7 +185,7 @@ public class GroundSkipCheck {
         check("premise: a look now buys nothing - the ground holds HORIZON months' growth with the slack",
                 LongPlaytest.groundAheadBought == boughtBefore && al.getOwnedSqFt() == aOwned);
         check("premise: the landlords are not held for land at the look", !landlordsHeld(a));
-        java.util.Set<String> aFound = findingNames();
+        java.util.Map<String, Integer> aFound = findingCounts();
         java.util.List<Seen> aSeen = new java.util.ArrayList<>();
         for (int i = 0; i < SKIP; i++) {
             month(a);
@@ -182,12 +195,11 @@ public class GroundSkipCheck {
         Seen aUnserved = aSeen.stream().filter(s -> s.used() > s.line() && s.sinceLook() > BuildAdvice.HORIZON).findFirst().orElse(null);
         Seen aHeld = aSeen.stream().filter(s -> s.held() && s.onSite() == 0).findFirst().orElse(null);
         long aHeldMonths = aSeen.stream().filter(Seen::held).count();
-        java.util.Set<String> aNew = findingNames();
-        aNew.removeAll(aFound);
+        java.util.Set<String> aNew = flaggedSince(aFound);
         out.printf("   past the line first at m%s; unserved (past it, %.0f months or more since a look) first at m%s; held for land %d of %d months, first with no home on site at m%s (%s)%n",
                 aPast == null ? "-" : aPast.month(), BuildAdvice.HORIZON + 1, aUnserved == null ? "-" : aUnserved.month(),
                 aHeldMonths, SKIP, aHeld == null ? "-" : aHeld.month(), aHeld == null ? "" : aHeld.order());
-        out.printf("   at m%d: %.4f built on, %,.0f sq ft free, findings new in the skip %s%n", a.getMonth(), al.getUsedShare(), al.getAvailableSqFt(), aNew);
+        out.printf("   at m%d: %.4f built on, %,.0f sq ft free, findings flagged in the skip %s%n", a.getMonth(), al.getUsedShare(), al.getAvailableSqFt(), aNew);
         check("the old skip makes no look at the ground in its sixty months",
                 LongPlaytest.monthsSinceGroundLook(a) == SKIP && al.getOwnedSqFt() == aOwned);
         check("...its ground passes the line more than HORIZON months after the look, with no look to serve it", aUnserved != null);
@@ -202,7 +214,7 @@ public class GroundSkipCheck {
         double bOwned = bl.getOwnedSqFt();
         quietly(() -> LongPlaytest.keepGroundAhead(b));
         check("premise: a look now buys nothing here too", bl.getOwnedSqFt() == bOwned);
-        java.util.Set<String> bFound = findingNames();
+        java.util.Map<String, Integer> bFound = findingCounts();
         int looksBefore = LongPlaytest.groundLooksInSkips, bought = LongPlaytest.groundAheadBought, shortBefore = LongPlaytest.groundAheadShort;
         int purchases = b.getCityLand().purchases().size();
         double landUsd = b.getForeignAccounts().getLandUsdLifetime();
@@ -231,9 +243,8 @@ public class GroundSkipCheck {
         }
         double usdPaid = made.stream().mapToDouble(p -> p.offer().getPriceUsd()).sum();
         double sqFtBought = made.stream().mapToDouble(p -> p.offer().getSizeSqFt()).sum();
-        java.util.Set<String> bNew = findingNames();
-        bNew.removeAll(bFound);
-        out.printf("   %d look(s) inside the skip, %d offer(s) bought at m%s (%d stopped short); the most months without a look %d; held for land %d of %d months; at m%d %.4f built on against %.4f; findings new in the skip %s%n",
+        java.util.Set<String> bNew = flaggedSince(bFound);
+        out.printf("   %d look(s) inside the skip, %d offer(s) bought at m%s (%d stopped short); the most months without a look %d; held for land %d of %d months; at m%d %.4f built on against %.4f; findings flagged in the skip %s%n",
                 looks, offers, spentAt.keySet(), LongPlaytest.groundAheadShort - shortBefore, worstGap, bHeldMonths, SKIP, b.getMonth(),
                 bl.getUsedShare(), LongPlaytest.groundAheadUtilisation(b), bNew);
         check("no month of the watched skip comes more than HORIZON months after a look at the ground",
@@ -247,7 +258,7 @@ public class GroundSkipCheck {
                 && Math.abs(bl.getOwnedSqFt() - bOwned - sqFtBought) <= 1e-6 * Math.max(1, sqFtBought));
         check("the landlords are never held for land across the watched skip, where the old skip held them "
                 + aHeldMonths + " month(s)", bHeldMonths == 0 && aHeldMonths > 0);
-        check("...and the playtest's audit of every month finds nothing the old skip did not",
+        check("...and the playtest's audit flags no finding in a month of the watched skip that it did not flag in the old skip",
                 aNew.containsAll(bNew));
 
         /* ---------- 3. the unaffordable offer ---------- */

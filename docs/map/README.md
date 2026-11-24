@@ -4,7 +4,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 634 files, 683,214 lines, 29,882 methods, 6,647 constants. `GameVersion.VERSION` is "0.9.194", `SAVE_FORMAT` 63.
+**The tree:** 634 files, 683,225 lines, 29,883 methods, 6,647 constants. `GameVersion.VERSION` is "0.9.194", `SAVE_FORMAT` 63.
 
 ## model (280 files)
 
@@ -492,7 +492,7 @@ Generated 2026-11-23 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [GridCheck.java](GridCheck.md) | 621 | 22 | The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - ap... | 1 |
 | [GroceryCheck.java](GroceryCheck.md) | 463 | 10 | Groceries at a price, the shelf cleared stickily, and food assistance (0.7.43): the households' demand curve, the clearing price, who is handed the... | 0 |
 | [GroundInputCheck.java](GroundInputCheck.md) | 371 | 17 | A works the ground limits buys the inputs of what its ground gives it, not of its plant (NG1). | 0 |
-| [GroundSkipCheck.java](GroundSkipCheck.md) | 315 | 11 | The test player's ground across its long skips (LP-G1): a growing town whose ground holds the look's BuildAdvice.HORIZON months but not the skip af... | 0 |
+| [GroundSkipCheck.java](GroundSkipCheck.md) | 326 | 12 | The test player's ground across its long skips (LP-G1): a growing town whose ground holds the look's BuildAdvice.HORIZON months but not the skip af... | 0 |
 | [HaulageCheck.java](HaulageCheck.md) | 1,673 | 44 | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the v... | 9 |
 | [HealthCheck.java](HealthCheck.md) | 1,921 | 9 | Sickness: what it moves, and - much more importantly - what it does not. | 0 |
 | [HistoricalLicenceCheck.java](HistoricalLicenceCheck.md) | 602 | 22 | R2d's independent discoveries meet R2c's captured patent service. | 10 |

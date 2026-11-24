@@ -14607,37 +14607,37 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
   - L110 premise: the playtest's town is played to month
-- **L154 1. the old skip**
-  - L163 premise: the town is growing: the businesses' growthFactor() over HORIZON is above 1
-  - L165 premise: its ground is built on up to the player's line, under it
-  - L167 premise: by the businesses' own forecast its ground holds HORIZON months' growth with the slack, and not the skip's
-  - L172 premise: a look now buys nothing - the ground holds HORIZON months' growth with the slack
-  - L174 premise: the landlords are not held for land at the look
-  - L191 the old skip makes no look at the ground in its sixty months
-  - L193 ...its ground passes the line more than HORIZON months after the look, with no look to serve it
-  - L194 ...and the landlords' order is held for land with no home on site
-- **L196 2. the watched skip**
-  - L200 premise: the town built again is the same town at the look
-  - L204 premise: a look now buys nothing here too
-  - L239 no month of the watched skip comes more than HORIZON months after a look at the ground
-  - L241 ...a look each HORIZON months: as many looks as the skip holds horizons after the look's own
-  - L243 ...and its looks bought ground, each offer counted
-  - L244 ...each look spending no more than GROUND_AHEAD_CASH_SHARE of the cash it had
-  - L245 ...paid: the land office's dollars grew by the offers' and the city's ground by their dry ground
-  - L248 the landlords are never held for land across the watched skip, where the old skip held them
-  - L250 ...and the playtest's audit of every month finds nothing the old skip did not
-- **L253 3. the unaffordable offer**
-  - L258 premise: skipped the old way, the landlords are held for land and a look is due
-  - L263 premise: the best value is past the cash share, inside the cash
-  - L269 the watched skip looks, and the look is counted stopped short
-  - L271 ...buys nothing and pays nothing: the ground, the purchases and the land office's dollars as they were
-  - L274 ...and places nothing: the landlords are still held for land
-  - L280 the next look is due HORIZON months after the held one
-  - L286 ...and with the share able to pay, that look buys the offer and pays for it
-  - L291 ...and the landlords are released
-- **L293 4. each city its own look**
-  - L304 the two look at their ground in the same months, HORIZON apart
-  - L306 ...and end alike: the month, the cash, the ground owned and built on
+- **L167 1. the old skip**
+  - L176 premise: the town is growing: the businesses' growthFactor() over HORIZON is above 1
+  - L178 premise: its ground is built on up to the player's line, under it
+  - L180 premise: by the businesses' own forecast its ground holds HORIZON months' growth with the slack, and not the skip's
+  - L185 premise: a look now buys nothing - the ground holds HORIZON months' growth with the slack
+  - L187 premise: the landlords are not held for land at the look
+  - L203 the old skip makes no look at the ground in its sixty months
+  - L205 ...its ground passes the line more than HORIZON months after the look, with no look to serve it
+  - L206 ...and the landlords' order is held for land with no home on site
+- **L208 2. the watched skip**
+  - L212 premise: the town built again is the same town at the look
+  - L216 premise: a look now buys nothing here too
+  - L250 no month of the watched skip comes more than HORIZON months after a look at the ground
+  - L252 ...a look each HORIZON months: as many looks as the skip holds horizons after the look's own
+  - L254 ...and its looks bought ground, each offer counted
+  - L255 ...each look spending no more than GROUND_AHEAD_CASH_SHARE of the cash it had
+  - L256 ...paid: the land office's dollars grew by the offers' and the city's ground by their dry ground
+  - L259 the landlords are never held for land across the watched skip, where the old skip held them
+  - L261 ...and the playtest's audit flags no finding in a month of the watched skip that it did not flag in the old skip
+- **L264 3. the unaffordable offer**
+  - L269 premise: skipped the old way, the landlords are held for land and a look is due
+  - L274 premise: the best value is past the cash share, inside the cash
+  - L280 the watched skip looks, and the look is counted stopped short
+  - L282 ...buys nothing and pays nothing: the ground, the purchases and the land office's dollars as they were
+  - L285 ...and places nothing: the landlords are still held for land
+  - L291 the next look is due HORIZON months after the held one
+  - L297 ...and with the share able to pay, that look buys the offer and pays for it
+  - L302 ...and the landlords are released
+- **L304 4. each city its own look**
+  - L315 the two look at their ground in the same months, HORIZON apart
+  - L317 ...and end alike: the month, the cash, the ground owned and built on
 
 ## HaulageCheck.java - 128 labelled assertions
 

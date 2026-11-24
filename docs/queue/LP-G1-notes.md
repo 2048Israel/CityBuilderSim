@@ -3,9 +3,13 @@
 Builder: Claude (Opus), headless, started by the orchestrator 2026-11-23, on `batch/LP-G1` cut from origin/main
 0c4249711 (0.9.194, PW2, SAVE_FORMAT 63). The brief: [docs/queue/LP-G1.md](LP-G1.md).
 
-**Untagged.** The change is in the reference player (`LongPlaytest`), the ensemble's controller
-(`tools/ensemble/Ensemble.java`), a new harness and its line in `AllChecks`, and `docs/tree.md`: no model class, no
-save field, no balance file. The ship file's heading has no `{next}`; the dry run runs with `--no-tag`.
+**Versioned, with no change to the game.** The change is in the reference player (`LongPlaytest`), the ensemble's
+controller (`tools/ensemble/Ensemble.java`), a new harness and its line in `AllChecks`, and `docs/tree.md`: no
+model class, no save field, no balance file. The brief allowed it untagged, and the first ship file was. The
+orchestrator made it versioned at the review (2026-11-23): the ensemble's cities grow 4 to 28 times as large
+(§5-6), so this batch's ensemble becomes the baseline every later batch is scored against, and a baseline is named
+by a version (`docs/ensemble/LP-G1.md`, renamed by the publisher; ship.sh refuses one under a heading without
+`{next}`). So the heading carries `{next}` and the dry run is tagged as any.
 
 ## 0. Scope
 
@@ -85,6 +89,9 @@ All on the PC, one JVM at a time, with the data files named.
      best offer is past the share and inside the cash; the look is counted short, buys, pays and places nothing, the
      next is due HORIZON months on, and with the share able to pay that look buys and the landlords are released.
   4. Two towns played in step look in the same months and end alike (the look is kept per city).
+  - The review (REV-LP-G1, SHIP, no P1) found section 2's audit line compared finding names: a name the founding,
+    the town's play or section 1 had already raised was not counted again in the watched skip. Now each skip's
+    findings are those whose count of months grew in it (`GroundSkipCheck.flaggedSince()`); both skips flag none.
   - ★ Fixed in the harness on the way: `LongPlaytest.lastM0` is one static, and the harness plays several towns,
     so section 2's first month was read against section 1's last ("M0 moved by something other than the money
     made"). `GroundSkipCheck.play()` gives a town its own M0 when the month is another town's than the last; months
@@ -157,18 +164,23 @@ Held for land, the player's city grew slowly; watched, it grows as fast as the r
 - **The ensemble's seed 9**: 958,293 people at m700 against 34,408; 276 s to m700 against 101 s on the PC.
 - **The playtest's seed 1** (CopperRefiningCheck's child): 5,511,003 people at m2405, 1,647 s alone on the PC.
 - **What it moves**: the ensemble's T1 (seeds reaching 40,000 people) and T2 (final population) are info rows and
-  will move up; M1 and F1 are what stop a ship (§7). The fixtures built by `probePlay()` do not move (★5).
+  will move up; M1 and F1 are what stop a ship (§8). The fixtures built by `probePlay()` do not move (★5).
 - **For the orchestrator: the PC as the gate.** On the box the two playtest runs fit easily (main's LongPlaytest
   160 s and CopperRefiningCheck 225 s at PW5's gate; about twice that now). On the PC CopperRefiningCheck now
   passes 1,740 s (above), and LongPlaytest's 1,377 s leaves little room under a full suite's load. A gate run on
   the PC while the box is down would end CopperRefiningCheck at the limit. Neither `HARNESS_SECONDS` nor
   `ROD_CHILD_MINUTES` is changed here: they guard against a hang for every harness, and are main's to set. The
-  nightly's 4,000-month playtest and the ensemble's 80 runs grow the same way.
+  ship file queues GB6 for it (the review: "queue a row in the ship file for the PC-as-gate fallback"). The
+  nightly's 4,000-month playtest (§7) and the ensemble's 80 runs (§8) grow the same way.
 
-## 7. The ensemble
+## 7. The nightly's 4,000 months, on the box
+
+(running)
+
+## 8. The ensemble
 
 (after the review)
 
-## 8. The dry run
+## 9. The dry run
 
 (after the ensemble)

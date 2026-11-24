@@ -1,4 +1,4 @@
-# GroundSkipCheck.java - 315 lines · 11 methods · 5 constants · harnesses
+# GroundSkipCheck.java - 326 lines · 12 methods · 5 constants · harnesses
 
 `ham/citybuildersim/GroundSkipCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
 
@@ -23,7 +23,7 @@
 >      through skipWatchingGround(): no month comes more than HORIZON months after a look at the ground; the looks
 >      inside the skip buy ground, each look within its GROUND_AHEAD_CASH_SHARE of the cash, and every offer bought is
 >      paid (the land office's dollars and the city's ground grow by the offers); the landlords are never held for
->      land; and the playtest's own audit of every month (LongPlaytest.audit()) finds nothing the old skip did not.
+>      land; and the playtest's own audit of every month (LongPlaytest.audit()) flags nothing in it the old skip did not.
 >   3. AN OFFER THE SHARE CANNOT PAY STILL WAITS. The same town skipped the old way until its landlords are held for
 >      land, its cash then short of the best offer over GROUND_AHEAD_CASH_SHARE but within the cash: the look the
 >      watched skip makes buys nothing, pays nothing and places nothing, and is counted short; the next comes HORIZON
@@ -31,16 +31,16 @@
 >   4. EACH CITY KEEPS ITS OWN LOOK. Two towns built alike and skipped watched in step, a month of one and a month of
 >      the other, look at their ground in the same months and end alike: the record of the last look is the city's.
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (43), [Game](Game.md) (18), [BuildAdvice](BuildAdvice.md) (13), [LandManager](LandManager.md) (5), [Sectors](Sectors.md) (2), [GameFiles](GameFiles.md) (2), [CityLand](CityLand.md) (2), [LandParcel](LandParcel.md) (2), [LandMarket](LandMarket.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (44), [Game](Game.md) (18), [BuildAdvice](BuildAdvice.md) (13), [LandManager](LandManager.md) (5), [Sectors](Sectors.md) (2), [GameFiles](GameFiles.md) (2), [CityLand](CityLand.md) (2), [LandParcel](LandParcel.md) (2), [LandMarket](LandMarket.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 154 | · · 1. the old skip |
-| 196 | · · 2. the watched skip |
-| 253 | · · 3. the unaffordable offer |
-| 293 | · · 4. each city its own look |
+| 167 | · · 1. the old skip |
+| 208 | · · 2. the watched skip |
+| 264 | · · 3. the unaffordable offer |
+| 304 | · · 4. each city its own look |
 
 ## Constants
 
@@ -65,7 +65,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 280 | **type** `public class GroundSkipCheck` | The test player's ground across its long skips (LP-G1): a growing town whose ground holds the look's BuildAdvice.HORIZON months but not the skip after it, skipped as the player skipped until LP-G1 and as it skips now ... |
+| 36 | 291 | **type** `public class GroundSkipCheck` | The test player's ground across its long skips (LP-G1): a growing town whose ground holds the look's BuildAdvice.HORIZON months but not the skip after it, skipped as the player skipped until LP-G1 and as it skips now ... |
 | 48 | 4 | `static void check(String label, boolean ok)` |  |
 | 53 | 5 | `static void quietly(Runnable action)` |  |
 | 60 | 3 | `static void month(Game g)` | One month of the player's own play, as the playtest's skip runs it (LongPlaytest.runPlayer()). |
@@ -76,6 +76,7 @@
 | 118 | 14 | `static Game town()` | A copy of the town, loaded from its save, at its look: the look made (keepGroundAhead()), then its dry ground built on up to UNDER_THE_LINE below the player's line (LandManager.allocate(), as LandCheck 22 builds a cit... |
 | 134 | 1 | **type** `record Seen(int month, double cash, double used, double line, int sinceLook, boolean held, double onSite, S...` | What a month of a skip saw. |
 | 136 | 6 | `static Seen seen(Game g)` |  |
-| 144 | 3 | `static java.util.Set<String> findingNames()` | The playtest's findings' names, as its audit has them now. |
-| 148 | 167 | `public static void main(String[] args) throws Exception` |  |
+| 144 | 5 | `static java.util.Map<String, Integer> findingCounts()` | The months the playtest's audit has flagged each finding in so far, by its name (LongPlaytest.Finding.count). |
+| 155 | 5 | `static java.util.Set<String> flaggedSince(java.util.Map<String, Integer> before)` | The findings the audit flagged since `before`: each whose count of months grew, so a name the founding, the town's play or an earlier section raised already is counted again when a month of this skip raises it again (... |
+| 161 | 165 | `public static void main(String[] args) throws Exception` |  |
 
