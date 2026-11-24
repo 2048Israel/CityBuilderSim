@@ -1216,8 +1216,10 @@ public final class AutoBuilder {
         Double due = pendingUntil.get(m.label());
         boolean shortAhead = !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, 0, slack));
         if (shortAhead && due != null && game.getMonth() > due) return Map.of();
-        // A slow site cannot cover service that faster work can deliver sooner.
-        if (essential(m) && BuildAdvice.units(site) > 0) {
+        // A slow site cannot cover service that faster work can deliver sooner. Power's planner reads each plant on site from its
+        // own opening at each candidate's (PW3, WorksValue.openBy()), so a slow power site is kept: dropped whole, a second coal plant
+        // would be ordered against the shortfall the first already meets at its opening.
+        if (essential(m) && m.kind() != BuildAdvice.Kind.POWER && BuildAdvice.units(site) > 0) {
             double first = BuildAdvice.firstCompletion(game, m, site);
             for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
                 if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
@@ -1230,6 +1232,18 @@ public final class AutoBuilder {
             }
         }
         return site;
+    }
+
+    /**
+     * The months until a measure's pending first completion is due (HW1's saved promise), from this month; NaN with none.
+     * Power's planner (PW3) reads it: a candidate opening before the promise counts the site only from each plant's opening
+     * (WorksValue.openBy(), PW1-P's second gap); one opening after it counts the site whole while the promise stands, as
+     * pendingCapacity() does, since each order shares the builders and puts back what is on site: read from its opening, the
+     * site that order slows would order again the next month, and the next.
+     */
+    public double promisedMonths(Game game, BuildAdvice.Measure m) {
+        Double due = pendingUntil.get(m.label());
+        return due == null ? Double.NaN : due - game.getMonth();
     }
 
     private void rememberPending(Game game, BuildAdvice.Measure m, boolean newOrder) {
@@ -1944,7 +1958,8 @@ public final class AutoBuilder {
     /**
      * The ground an order lacks, as the offers it would buy for it in turn, the cash that takes, and whether one offer covers it all;
      * `more` the dry ground past those offers it buys offer by offer as each purchase lists the place's next (PW3, ASSEMBLE_MOST),
-     * priced in `cash` at what the offers it plans cost a square foot.
+     * priced in `cash` at the land office's price a square foot (LandManager.getOfficePricePerSqFt()), as WorksValue prices ground
+     * no offer standing holds.
      */
     public record Ground(List<LandParcel> offers, double cash, boolean covers, double more) {
         /** No ground to buy: the order fits what is free. */
@@ -1978,9 +1993,9 @@ public final class AutoBuilder {
     /**
      * The same whole-parcel selection for a projected shortage, omitting already bought offers. When the listing standing runs out
      * short of it (PW3, REV-PW2: a young city's offers hold a few acres each, a coal plant asks 200), the rest is bought offer by offer
-     * as each purchase lists the place's next (LandManager.buyParcel()), priced at what the offers planned cost a square foot, so long
-     * as the offers it would take, at the planned ones' average size, are no more than ASSEMBLE_MOST; null past that, or with no bare
-     * offer at all.
+     * as each purchase lists the place's next (LandManager.buyParcel()), priced at the land office's price a square foot (as the
+     * value's ground plan prices it, WorksValue.GroundPlan.take()), so long as the offers it would take, at the planned ones' average
+     * size, are no more than ASSEMBLE_MOST; null past that, or with no bare offer at all.
      */
     static Ground groundFor(Game game, double lack, Set<Integer> alreadyTaken) {
         if (!(lack > 0)) return Ground.NONE;
@@ -2001,7 +2016,7 @@ public final class AutoBuilder {
         if (more > 0) {
             double offers = Math.ceil(more / (got / picks.size()));
             if (picks.size() + offers > ASSEMBLE_MOST) return null;
-            cash += more * cash / got;
+            cash += more * game.getLandManager().getOfficePricePerSqFt();
         }
         return new Ground(List.copyOf(picks), cash, picks.size() == 1 && linkedSqFt(picks.get(0)) >= lack, more);
     }

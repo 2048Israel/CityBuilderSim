@@ -706,8 +706,10 @@ public final class BuildAdvice {
         if (!(draw > 0)) return 0;
         BuildingManager bm = game.getBuildingManager();
         double sun = PowerDispatch.solarYear(u.latitude(), u.trackers()), kw = 0;
-        for (BuildingsTemplate t : bm.getTemplates()) {
-            if (t.isWind() || t.isSolar()) kw += bm.getQuantity(t.getId()) * t.getProduction1() * (t.isSolar() ? sun : 1);
+        // ...the standing stacks, not the catalogue: a plant off the menu still stands and still generates.
+        for (BuildingsStacks stack : bm.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.isWind() || t.isSolar()) kw += stack.getQuantity() * t.getProduction1() * (t.isSolar() ? sun : 1);
         }
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
             BuildingsTemplate t = e.getKey();
@@ -743,10 +745,12 @@ public final class BuildAdvice {
         double filled = u.getAverageUtilityFill() * jobs;
         double demand = p.scale() * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
         double share = variableShare(game, added), firm = Math.max(0, u.getWorksPower());
-        for (BuildingsTemplate t : bm.getTemplates()) {
-            if (t.getCategory() != BuildingType.ELECTRICITY) continue;
-            long q = bm.getQuantity(t.getId());
-            if (q > 0) firm += q * t.getProduction1() * credit(game, t, share) * firmFill(t, staffing(t, fill));
+        // ...each standing stack (not the catalogue's templates: a plant off the menu still stands), at its own posts' fill.
+        for (BuildingsStacks stack : bm.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            long q = stack.getQuantity();
+            if (t.getCategory() == BuildingType.ELECTRICITY && q > 0)
+                firm += q * t.getProduction1() * credit(game, t, share) * firmFill(t, staffing(t, fill));
         }
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
             BuildingsTemplate t = e.getKey();
@@ -1486,6 +1490,9 @@ public final class BuildAdvice {
         boolean full = maintain && AutoBuilder.essential(m), power = m.kind() == Kind.POWER;
         double before = need != null ? need.value() : figure(game, m, new LinkedHashMap<>());
         Ahead now = opening(game, 0, slack);
+        // ...and the automatic path's promise (HW1, AutoBuilder.promisedMonths()): a candidate opening after the site's first
+        // completion is due counts the site whole while the promise stands; NaN (none, or the Build card's) reads every one by opening.
+        double promised = full && power ? game.getAutoBuilder().promisedMonths(game, m) : Double.NaN;
         if (!full && ahead(game, m, power ? WorksValue.openBy(game, site, now.months()) : site, now))
             return power ? spread(game, need, m, site, before, whenOnSite, cashLeft, landLeft, skip) : null;
 
@@ -1495,6 +1502,9 @@ public final class BuildAdvice {
             boolean candidate = m.kind() == Kind.ROADS
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() : m.serves(t);
             if (!candidate || skip.contains(t)) continue;
+            // PW3: the reserve test orders firm rows alone (spec 2.8, the study's plan()): a wind or solar farm's credit falls with
+            // the variable rows' share, so wind alone never passes the test; the spread orders one where it saves its cost.
+            if (m.kind() == Kind.POWER && (t.isWind() || t.isSolar())) continue;
             double unit = unit(game, m, t);
             if (maintain && roadKind(m) && unit <= 0) unit = built(game, m, t);
             // A building the city cannot staff at all, or one that does not
@@ -1514,8 +1524,9 @@ public final class BuildAdvice {
             while (true) {
                 lead = game.quoteBuild(t, n).months;
                 p = opening(game, lead, slack);
-                // PW3: power's own test is at its opening, with what the site has open by then (WorksValue.openBy()).
-                if (power) at = WorksValue.openBy(game, site, lead);
+                // PW3: power's own test is at its opening, with what the site has open by then (WorksValue.openBy()); past the
+                // automatic path's promise, the site whole (above).
+                if (power) at = lead > promised ? site : WorksValue.openBy(game, site, lead);
                 found = count(game, m, at, one, p, most, maintain);
                 if (!full || found[0] <= n) break;
                 n = found[0];
@@ -1536,11 +1547,9 @@ public final class BuildAdvice {
             WorksValue.Value value = WorksValue.of(game, m, onSite(game, m), t, found[0], landLeft, cashLeft);
             double per = value.perUsed();
             // Automatic building can buy land: its full price ranks it, rather than a free-land veto (HW1).
-            // PW3: power's reserve order is ranked by the screening curve, its price a firm kW-year in the slice the gap lies in, a wind
-            // or solar farm after every firm row (its credit is not a plan for the peak: the last resort); every other measure by
-            // the plan's present value, as HW1 ranks it.
+            // PW3: power's reserve order is ranked by the screening curve, its price a firm kW-year in the slice the gap lies in;
+            // every other measure by the plan's present value, as HW1 ranks it.
             int tier = closes ? 0 : 1;
-            if (power && (t.isWind() || t.isSolar())) tier = 2;
             weighed.add(new Weighed(t, tier, per, unit, found[0], closes, fits, p,
                     game.quoteBuild(t, found[0]).months,
                     false, value, power ? screening(game, t, found[0], at, p, landLeft) : value.net()));
@@ -1620,7 +1629,9 @@ public final class BuildAdvice {
           real rate over its life (lifeFactor()), its fixed running and its
           fuel for those hours, over the firm kW the gap can use (a unit
           bigger than the gap pays for its idle part): the screening curve.
-          A wind or solar farm is ranked after every firm row.
+          A wind or solar farm is no candidate (the study's plan()): its
+          credit falls with the variable rows' share, so wind alone never
+          passes the test.
        2. THE SPREAD. When the test passes, a plant is still ordered if one
           more saves the year's running more than it costs: the twelve months
           dispatched again with it (UtilitiesHandler.yearRunning(), at today's

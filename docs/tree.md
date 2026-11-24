@@ -13,6 +13,7 @@ adds its line here, not in `CLAUDE.md`.
         SubstationCheck.java       both carry edges, grid shortages, peak-growth orders, cost-based bills and the saved closing costs (PW5)
         WaterPowerCheck.java       the water priced at its margin works' power, its bills once and its save, PW1-L's licence power and PW1-G's recipe surplus (PW1-W)
         PowerPlantsCheck.java      the oil, diesel, turbine, biomass and solar rows and the refigured coal and wind: the study's figures, the sun's hours, each fuel bought once, the cooling gate, the build-time floor and each row from its year (PW2)
+        PowerPlanCheck.java        the power planner: the south's season and the sun by place and rack, the credit falling with its share, the firm supply, the reserve test by slice, wind never passing it, the spread and an order's ground assembled (PW3)
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
         Game.java                  the month, the seam every system meets at; over 17,000 lines, 45 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
