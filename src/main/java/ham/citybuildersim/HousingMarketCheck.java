@@ -667,11 +667,25 @@ public final class HousingMarketCheck {
         for(var f:HousingForms.ALL)if(starts.getOrDefault(f.id(),0L)>0)
             check("funded form completes through actual builder work "+f.code(),completed.getOrDefault(f.id(),0L)>0);
         writeReport(report,g,label,starts,completed,24,ms);
+        // A paid branch causes a real non-rent bill before the native continuation twin.
+        check("native fixed-floor twin funds an actual bank branch",g.buildStack(bm.getTemplateByName("Commercial Bank"),1,false)==Game.BuildResult.SUCCESS);
+        Map<String,Double> billedRent=new HashMap<>();
+        for(int i=0;i<2;i++){
+            billedRent.clear();
+            for(Household c:g.getHouseholdBalance().cells())billedRent.put(c.key(),re.housingMarket().rentFor(c.key(),1));
+            g.toggleNextMonth();audits(g);
+        }
+        check("the paid native-twin branch charges its model account fee",g.getBank().accountFee(1)>0);
+        double fixedFloor=g.getHouseholdBalance().cells().stream()
+                .filter(c->c instanceof WorkingHousehold&&!c.isEmpty()&&c.disposable()>0&&c.accountFee>0)
+                .mapToDouble(c->c.disposable()-c.afterFixed()-billedRent.get(c.key())/c.households()).max().orElse(0);
+        check("native twin has positive disposable income and an actual non-rent fixed-bill floor",fixedFloor>0);
+        out.printf(Locale.ROOT,"   %s native fixed floor %.12g; account fee %.12g%n",label,fixedFloor,g.getBank().accountFee(1));
         String saved=JSON.toJson(re.housingMarket().forSave());
         g.saveGame(10);Game back=new Game(files);back.loadGame(10);
         check("native reload preserves asks, assignments, actual trades and staleness",saved.equals(JSON.toJson(back.getSectors().realEstate().housingMarket().forSave())));
         g.toggleNextMonth();back.toggleNextMonth();audits(g);audits(back);
-        check("next native month preserves the class market",JSON.toJson(re.housingMarket().forSave()).equals(JSON.toJson(back.getSectors().realEstate().housingMarket().forSave())));
+        check("next native month preserves the class market and housing budgets after positive fixed bills",JSON.toJson(re.housingMarket().forSave()).equals(JSON.toJson(back.getSectors().realEstate().housingMarket().forSave())));
         int cells=g.getHouseholdBalance().cells().size();g.getCohorts().migrate(100_000);
         long at=System.nanoTime();g.toggleNextMonth();double largeMs=(System.nanoTime()-at)/1e6;audits(g);
         check("larger population adds no permanent household cells",g.getHouseholdBalance().cells().size()==cells);

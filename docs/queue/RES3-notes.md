@@ -2899,3 +2899,51 @@ contract calculations on carried principal, rather than stale flow
 getters. Keep the repayment term, forbearance, rates and actual settlement
 unchanged; a caused positive-service and zero/forbearance case must pass
 before the wider matrix. No new save or accounting flow is introduced.
+The final merged AUTO2 seed-four m2–45 diagnostic is clean: 44 rows,
+68 columns, 2,992 values, all audits valid with zero residual, no findings
+and no invalid saved housing allocation. This is bounded confirmation of
+the original F1 case, not the missing full eighty-run verdict. Diagnostic
+routes/classes are archived and removed before normal checks; all 641
+tracked Java sources are compared with parent model `05370e41e`.
+
+The load-context inquiry finds no missing production save dependency.
+Load refreshes household accounts through planOnly/restrike, then restores
+saved afterFixed, so idle disposable need not be identical. The only
+production housing-budget strike is clearTypedHousing during demographics;
+the actual month's earlier financial settlement refreshes disposable and
+afterFixed before that call. Forecasts use saved market demand rather than
+restriking a budget in the idle hybrid. ★ Preserve that phase order and
+add a paid-bank/positive-fixed-floor native continuation premise to the
+existing twins; do not persist an unused idle context. No additional saved
+field, conversion, format bump or actual settlement change is needed.
+Format/floor 65 remain owed above shipped 64 for the existing RES3 state.
+
+The first merged fast check passes. The final BuildCardCheck command,
+using the branch's validated records, returns 3 with its five exact FS12
+lines (three Rail, two Pellet); the earlier raw 1/4 outcomes remain in the
+record. A premature HousingInventory launch is held before any JVM because
+the helper mistakenly adds heap reserve to the available-RAM requirement;
+the corrected wrapper applies MG1's separate commitment/RAM conditions.
+The retry passes. No model threshold or fixture is changed for that hold.
+The positive-floor native twins pass in both eras. A bank branch is built
+through the public paid path after the measured 24-month catalogue tables;
+two audited months establish actual fee payments. Non-rent fixed floors
+are .0450394087901 modern and .00475167644396 historical, with positive
+income and actual account fees .000317810711720/.000319994827405. Native
+save/load and the next real month preserve the complete typed market,
+including demand budgets, and all audits. Six new premise assertions are
+retained. A narrower duplicate budget equality also passes, then is
+removed because the unchanged full-state comparison already includes it;
+only that comparison's label is clarified. No conservation/save condition
+is weakened, and a label/redundancy-only edit warrants no additional run.
+
+The final generated catalogue replaces RES3-catalogue.md, with fourteen
+unique forms and thirty-two classes in each of two eras. It explicitly
+reports affordability failures in the deliberately oversized migrant
+fixtures; it does not claim those inputs house everyone. Single integrated
+months on this laptop are 48.896 ms for 265 residents, 52.771/41.335 ms
+for the two catalogue states, and 50.651/41.547 ms after growth to
+148,464/147,404 residents. Both larger states retain 141 permanent cells;
+H/T/A are 82/32/341 and 62/32/178. Larger profiles follow the additional
+paid-service/continuation steps; the per-form tables precede them. These
+are loaded-laptop observations, not a nightly speed verdict.
