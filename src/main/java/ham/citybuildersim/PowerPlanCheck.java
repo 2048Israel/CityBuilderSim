@@ -37,9 +37,10 @@ import java.util.Set;
  *   7. THE GROUND: a coal plant's is planned past the one listing, and the automatic path assembles it over several offers;
  *      past ASSEMBLE_MOST offers none is planned. (7a) The quote is what the ground costs, offers past the listing at their own prices; (7b) an
  *      assembly that cannot cover the order buys nothing and borrows nothing; (7c) an order the builders would refuse moves no money (REV-PW3 #1, #2).
- *   8. A GAP IN THE RESERVE ALONE IS NOT A PLANT (2026-11-24): with the calm peak (PLAN_PEAK) covered at a plant's opening, a gap to the peak
- *      hour (PLAN_PEAK_HOUR) orders it only when it fills FIRST_WORK_SHARE of the plant; a calm-peak gap orders as ever (8a). And the month
- *      lacks power below the calm peak the dispatch serves, not below the plan's peak hour (BuildAdvice.lacksNow(), the holds', 8b).
+ *   8. A GAP IN THE RESERVE ALONE IS NOT A PLANT (2026-11-24): with the seasonal peak (PLAN_PEAK_SEASON: the peak block of the year's highest
+ *      month) covered at a plant's opening, a gap to the peak hour (PLAN_PEAK_HOUR) orders it only when it fills FIRST_WORK_SHARE of the
+ *      plant; a gap in the seasonal peak orders as ever (8a). And the month lacks power when its peak month's peak block goes unserved, which
+ *      the city's own dispatch shows at three firm levels, not below the plan's peak hour (BuildAdvice.lacksNow(), 8b).
  *   9. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
  */
@@ -702,30 +703,30 @@ public final class PowerPlanCheck {
                 && java.util.Arrays.deepEquals(before, g.getLandManager().getMarket().getOffersState()));
     }
 
-    /* ----- 8. a gap in the reserve alone is not a plant; what the month lacks is the calm peak ----- */
+    /* ----- 8. a gap in the reserve alone is not a plant; the month lacks power when its peak month's peak block goes unserved ----- */
 
-    /** The calm peak's share of the peak hour's draw: the firm supply the month's dispatch needs over the supply the plan does (PowerDispatch.PLAN_PEAK over PLAN_PEAK_HOUR). */
-    static final double CALM = PowerDispatch.PLAN_PEAK / PowerDispatch.PLAN_PEAK_HOUR;
+    /** The year's highest month's peak block over the peak hour's draw: the firm supply the month's dispatch needs at its worst over the supply the plan does (PowerDispatch.PLAN_PEAK_SEASON over PLAN_PEAK_HOUR). */
+    static final double SEASONAL = PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR;
 
     /** The city's draw set so the peak hour's demand at `p` is `ratio` of its firm supply (the gap that makes it so is drawGap()'s). */
     static void drawRatio(Game g, BuildAdvice.Ahead p, double ratio) {
         drawGap(g, p, BuildAdvice.supplyDemand(g, POWER, Map.of(), p)[0] * (ratio - 1));
     }
 
-    /** The firm supply over the city's draw at `p`: the plan's peak hour is PLAN_PEAK_HOUR of the draw, the calm peak the month's dispatch serves PLAN_PEAK. */
+    /** The firm supply over the city's draw at `p`: the plan's peak hour is PLAN_PEAK_HOUR of the draw, the month's peak block PLAN_PEAK, in the year's highest month PLAN_PEAK_SEASON. */
     static double supplyOverDraw(Game g, BuildAdvice.Ahead p) {
         double[] sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
         return sd[0] / (sd[1] / PowerDispatch.PLAN_PEAK_HOUR);
     }
 
     static void calmPeak(Path root) {
-        out.println("--- 8a. a reserve gap with the calm peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant ---");
+        out.println("--- 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant ---");
         Game g = town(root, "calm-peak", COAL);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         BuildingsTemplate coal = plant(g, COAL);
-        double unit = BuildAdvice.unit(g, POWER, coal), share = BuildAdvice.FIRST_WORK_SHARE;
-        // ...the firm supply lifted by the works' own power (firm, PW3's first gap) so a gap of a share of one plant lies inside the calm peak's cover.
-        u.setWorksPower(u.getWorksPower() + 4 * unit);
+        double unit = BuildAdvice.unit(g, POWER, coal), share = BuildAdvice.FIRST_WORK_SHARE, works = u.getWorksPower();
+        // ...the firm supply lifted by the works' own power (firm, PW3's first gap) so a gap of a share of one plant lies inside the seasonal peak's cover.
+        u.setWorksPower(works + 4 * unit);
         double lead = g.quoteBuild(coal, 1).months;
         BuildAdvice.Ahead p = BuildAdvice.opening(g, lead, g.getAutoBuilder().getSlack());
         long r0, s0;
@@ -734,67 +735,105 @@ public final class PowerPlanCheck {
 
         drawGap(g, p, .5 * share * unit);
         sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
-        out.println("the firm supply " + Math.round(sd[0]) + " kW, the peak hour's draw " + Math.round(sd[1]) + " kW, the calm peak's " + Math.round(sd[1] * CALM)
+        out.println("the firm supply " + Math.round(sd[0]) + " kW, the peak hour's draw " + Math.round(sd[1]) + " kW, the seasonal peak's " + Math.round(sd[1] * SEASONAL)
                 + " kW, one coal plant " + Math.round(unit) + " kW");
-        check(String.format("fixture: coal is the only firm row known; at its opening (%.0f months) the firm supply %.0f kW covers the calm peak's %.0f and is short of the peak hour's %.0f "
+        check(String.format("fixture: coal is the only firm row known; at its opening (%.0f months) the firm supply %.0f kW covers the seasonal peak's %.0f and is short of the peak hour's %.0f "
                         + "by %.0f kW, %.0f%% of one coal plant's %.0f, under FIRST_WORK_SHARE's %.0f%%",
-                        lead, sd[0], sd[1] * CALM, sd[1], sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit, unit, 100 * share),
-                sd[0] >= sd[1] * CALM && sd[1] > sd[0] && sd[1] - sd[0] < share * unit && BuildAdvice.units(BuildAdvice.onSite(g, POWER)) == 0);
+                        lead, sd[0], sd[1] * SEASONAL, sd[1], sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit, unit, 100 * share),
+                sd[0] >= sd[1] * SEASONAL && sd[1] > sd[0] && sd[1] - sd[0] < share * unit && BuildAdvice.units(BuildAdvice.onSite(g, POWER)) == 0);
         r0 = BuildAdvice.RESERVE_ORDERS.get();
         s0 = BuildAdvice.SPREAD_ORDERS.get();
         s = suggest(g);
-        check("the peak-hour gap under the share, the calm peak covered: the power suggestion orders nothing (" + named(s) + ")",
+        check("the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (" + named(s) + ")",
                 s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
 
         // ...the same city, the gap at the share and a little over: it fills the share, so the plant is ordered.
         drawGap(g, p, 1.05 * share * unit);
         sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
-        check(String.format("fixture: the same city, short of the peak hour by %.0f kW, %.0f%% of one coal plant's, the calm peak still covered (%.0f of %.0f kW)",
-                        sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit, sd[0], sd[1] * CALM),
-                sd[0] >= sd[1] * CALM && sd[1] - sd[0] >= share * unit);
+        check(String.format("fixture: the same city, short of the peak hour by %.0f kW, %.0f%% of one coal plant's, the seasonal peak still covered (%.0f of %.0f kW)",
+                        sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit, sd[0], sd[1] * SEASONAL),
+                sd[0] >= sd[1] * SEASONAL && sd[1] - sd[0] >= share * unit);
         r0 = BuildAdvice.RESERVE_ORDERS.get();
         s = suggest(g);
         check("a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (" + named(s) + ")",
                 s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
 
-        // ...and the calm peak itself short at the opening: ordered as ever, whatever the share.
-        drawRatio(g, p, 1 / CALM * 1.2);
+        // ...and the seasonal peak itself short at the opening: ordered as ever, whatever the share.
+        drawRatio(g, p, 1 / SEASONAL * 1.2);
         sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
-        check(String.format("fixture: the same city with the calm peak short at the opening (the firm supply %.0f kW under the calm peak's %.0f)", sd[0], sd[1] * CALM),
-                sd[0] < sd[1] * CALM);
+        check(String.format("fixture: the same city with the seasonal peak short at the opening (the firm supply %.0f kW under the seasonal peak's %.0f)", sd[0], sd[1] * SEASONAL),
+                sd[0] < sd[1] * SEASONAL);
         r0 = BuildAdvice.RESERVE_ORDERS.get();
         s = suggest(g);
-        check("with the calm peak short at the plant's opening it orders (" + named(s) + ")",
+        check("with the seasonal peak short at the plant's opening it orders (" + named(s) + ")",
                 s != null && s.template() == coal && s.count() >= 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+
+        // ...the first condition alone: the works' power taken off again, one coal plant and the founding grid stand, and the first fixture's gap
+        // (under the share) leaves the seasonal peak short, as the month's dispatch would in its highest month: it orders.
+        u.setWorksPower(works);
+        drawGap(g, p, .5 * share * unit);
+        sd = BuildAdvice.supplyDemand(g, POWER, Map.of(), p);
+        check(String.format("fixture: the supply %.0f kW, short of the peak hour by %.0f kW, %.0f%% of one coal plant's and under FIRST_WORK_SHARE's, and under the seasonal peak's %.0f",
+                        sd[0], sd[1] - sd[0], 100 * (sd[1] - sd[0]) / unit, sd[1] * SEASONAL),
+                sd[0] < sd[1] * SEASONAL && sd[1] - sd[0] < share * unit);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s = suggest(g);
+        check("a gap under the share with the seasonal peak short at the plant's opening orders it (" + named(s) + ")",
+                s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+    }
+
+    /** The calendar month of the year's highest load at this city's latitude, as its dispatch reads it (PowerDispatch.season(month, latitude)). */
+    static int peakCalendarMonth(UtilitiesHandler u) {
+        int best = 1;
+        for (int m = 2; m <= 12; m++) if (PowerDispatch.season(m, u.latitude()) > PowerDispatch.season(best, u.latitude())) best = m;
+        return best;
+    }
+
+    /**
+     * The town's month dispatched by the city's own update (UtilitiesHandler.updateEnergyRatio()) in its peak month, the draw set so its firm
+     * supply is `have` of it and the wires carry whatever the dispatch asks: the peak block's load asked and what it left unserved, kW.
+     */
+    static double[] peakBlock(Game g, double have) {
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        int month = peakCalendarMonth(u);
+        u.setCalendarMonth(() -> month);
+        drawRatio(g, BuildAdvice.NOW, PowerDispatch.PLAN_PEAK_HOUR / have);
+        double draw = u.getConsumption();
+        SubstationCheck.wiresFor(g, 1.05 * draw * PowerDispatch.PLAN_PEAK_SEASON);
+        g.getServicesManager().updateServices();
+        u.setWattsConsumption(draw);
+        u.updateEnergyRatio();
+        PowerDispatch.Month m = u.getLatestMonth();
+        int s = 2 * PowerDispatch.PEAK;
+        return new double[] {m.load[s] + m.load[s + 1], m.unserved[s] + m.unserved[s + 1]};
     }
 
     static void lacksNow(Path root) {
-        out.println("--- 8b. the month lacks power below the calm peak, not below the peak hour ---");
+        out.println("--- 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch ---");
         Game g = town(root, "lacks-now", COAL);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
-        BuildAdvice.Ahead now = BuildAdvice.NOW;
-        // The firm supply a ratio of the draw (the mean the month's dispatch is asked for); the plan's peak hour is PLAN_PEAK_HOUR of it, the calm peak PLAN_PEAK.
-        double mid = (PowerDispatch.PLAN_PEAK + PowerDispatch.PLAN_PEAK_HOUR) / 2;
-        drawRatio(g, now, PowerDispatch.PLAN_PEAK_HOUR / mid);
-        double have = supplyOverDraw(g, now);
-        check(String.format("fixture: the firm supply %.0f kW is %.3f of the draw, between PLAN_PEAK %.3f and PLAN_PEAK_HOUR %.3f; the plan reads power as short and the calm peak does not",
-                        BuildAdvice.supplyDemand(g, POWER, Map.of(), now)[0], have, PowerDispatch.PLAN_PEAK, PowerDispatch.PLAN_PEAK_HOUR),
-                have > PowerDispatch.PLAN_PEAK && have < PowerDispatch.PLAN_PEAK_HOUR);
-        check("between the calm peak and the peak hour: maintained(NOW) is false, lacksNow() is false",
-                !BuildAdvice.maintained(g, POWER, Map.of(), now) && !BuildAdvice.lacksNow(g, POWER));
-        drawRatio(g, now, PowerDispatch.PLAN_PEAK_HOUR / (.9 * PowerDispatch.PLAN_PEAK));
-        have = supplyOverDraw(g, now);
-        check(String.format("below the calm peak (the firm supply %.0f kW, %.3f of the draw, under PLAN_PEAK %.3f): maintained(NOW) is false, lacksNow() is true",
-                        BuildAdvice.supplyDemand(g, POWER, Map.of(), now)[0], have, PowerDispatch.PLAN_PEAK),
-                have < PowerDispatch.PLAN_PEAK && !BuildAdvice.maintained(g, POWER, Map.of(), now) && BuildAdvice.lacksNow(g, POWER));
-        drawRatio(g, now, PowerDispatch.PLAN_PEAK_HOUR / (1.1 * PowerDispatch.PLAN_PEAK_HOUR));
-        check("above the peak hour: maintained(NOW) is true, lacksNow() is false", BuildAdvice.maintained(g, POWER, Map.of(), now) && !BuildAdvice.lacksNow(g, POWER));
-        // The hold itself (AutoBuilder.crewLimit(), pendingDelay()) is private and driven by a saved first-completion date for the short measure,
-        // which takes a queue of the builders to set up; not driven here. AutoBuildCheck's BUILDERS case reads the same two lines.
+        String peak = "month " + peakCalendarMonth(u) + ", season " + PowerDispatch.season(peakCalendarMonth(u), u.latitude());
+        check(String.format("the dials: PLAN_PEAK_SEASON %.3f is PLAN_PEAK %.3f times the highest season, between PLAN_PEAK and PLAN_PEAK_HOUR %.3f",
+                        PowerDispatch.PLAN_PEAK_SEASON, PowerDispatch.PLAN_PEAK, PowerDispatch.PLAN_PEAK_HOUR),
+                close(PowerDispatch.PLAN_PEAK_SEASON, PowerDispatch.PLAN_PEAK * PowerDispatch.season(peakCalendarMonth(u), u.latitude()), 1e-12)
+                        && PowerDispatch.PLAN_PEAK < PowerDispatch.PLAN_PEAK_SEASON && PowerDispatch.PLAN_PEAK_SEASON < PowerDispatch.PLAN_PEAK_HOUR);
+        // The firm supply as a multiple of the draw (the mean the month is asked for), each level dispatched in the peak month by the city's own update.
+        double[] levels = {1.1 * PowerDispatch.PLAN_PEAK_HOUR,
+                (PowerDispatch.PLAN_PEAK_SEASON + PowerDispatch.PLAN_PEAK_HOUR) / 2,
+                (PowerDispatch.PLAN_PEAK + PowerDispatch.PLAN_PEAK_SEASON) / 2,
+                .9 * PowerDispatch.PLAN_PEAK};
+        String[] where = {"above PLAN_PEAK_HOUR", "between PLAN_PEAK_SEASON and PLAN_PEAK_HOUR", "between PLAN_PEAK and PLAN_PEAK_SEASON", "below PLAN_PEAK"};
+        for (int i = 0; i < levels.length; i++) {
+            double[] block = peakBlock(g, levels[i]);
+            double have = supplyOverDraw(g, BuildAdvice.NOW);
+            boolean short_ = block[1] > 0, lacks = BuildAdvice.lacksNow(g, POWER), planned = BuildAdvice.maintained(g, POWER, Map.of(), BuildAdvice.NOW);
+            check(String.format("firm supply %.3f of the draw, %s: in the peak month (%s) its peak block asks %.0f kW and %.0f is left unserved, so lacksNow() is %b "
+                            + "(maintained(NOW) %b)", have, where[i], peak, block[0], block[1], lacks, planned),
+                    close(have, levels[i], 1e-6) && lacks == short_ && short_ == (i >= 2) && planned == (i == 0));
+        }
         u.setWattsConsumption(0);
         check("a city drawing nothing lacks no power", !BuildAdvice.lacksNow(g, POWER));
     }
-
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("powerplancheck");

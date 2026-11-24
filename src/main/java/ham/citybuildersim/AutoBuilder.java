@@ -1370,7 +1370,7 @@ public final class AutoBuilder {
     private CrewLimit crewLimit(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure,
                                 BuildAdvice.Suggestion suggestion, long wanted) {
         // PW3, 2026-11-24: "short now" is BuildAdvice.lacksNow(), not !maintained(NOW): power's plan is the year's peak hour (1.631 of the mean)
-        // and the month's dispatch serves the calm peak (1.263), so a city whose firm supply lay between the two read power as short, and every
+        // and the month's dispatch serves the peak block of its highest month (1.507), so a city whose firm supply lay between the two read power as short, and every
         // other essential order "waited to preserve Power's quoted first completion" (roads, schools and care held 12 months, power fully served).
         if (pendingUntil.isEmpty() || essential(measure)
                 && BuildAdvice.lacksNow(game, measure))
@@ -1396,7 +1396,7 @@ public final class AutoBuilder {
         double points = 0;
         for (BuildAdvice.Measure current : kept) {
             Double due = pendingUntil.get(current.label());
-            // PW3, 2026-11-24: a measure the month does not lack holds nothing (lacksNow(): power's calm peak, not the plan's peak hour; see crewLimit()).
+            // PW3, 2026-11-24: a measure the month does not lack holds nothing (lacksNow(): power's peak block in the year's highest month, not the plan's peak hour; see crewLimit()).
             if (due == null || current.equals(measure) || !essential(current) || current.serves(additional)
                     || !BuildAdvice.lacksNow(game, current)) continue;
             if (quote == null) {

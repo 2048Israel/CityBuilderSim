@@ -71,6 +71,9 @@ public final class PowerDispatch {
     /** The draw a firm kW must cover in the peak block, losses in [D: BLOCK_LOAD at the peak over (1 - GRID_LOSSES)]: what the build advice plans power against. */
     public static final double PLAN_PEAK = BLOCK_LOAD[PEAK] / (1 - GRID_LOSSES);
 
+    /** The draw a firm kW must cover in the peak block of the year's highest month, losses in [D: PLAN_PEAK times SEASON's highest, July's 1.193 on the north's calendar, so 1.263 x 1.193 = 1.507 of the mean draw; the south's calendar is six months on and season(peakMonth()) is SEASON's maximum either way]: what the month's dispatch serves at its worst, the draw below which some month leaves its peak block short (PW3 R). */
+    public static final double PLAN_PEAK_SEASON = PLAN_PEAK * season(peakMonth());
+
     /** What a wind farm's average delivers in its calmest half-block [D: the least of WIND_BLOCK x (1 - WIND_SWING) over the blocks: 0.806 x 0.41 = 0.330]. */
     public static final double WIND_FIRM = windFirm();
 

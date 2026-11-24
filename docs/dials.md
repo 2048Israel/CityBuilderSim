@@ -2,9 +2,9 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,746 constants in 638 files.**
+**6,747 constants in 638 files.**
 
-## model (3065 constants)
+## model (3066 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -228,15 +228,15 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1241 | `BuildAdvice.SLACK` | `BusinessInvestment.TARGET_HEADROOM` | The businesses' headroom, retained for explicit callers. |
 | 1244 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size... |
 | 1257 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
-| 1322 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
-| 1706 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
-| 1709 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
-| 1712 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
-| 2047 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
-| 2358 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
-| 2919 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
-| 2925 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
-| 3096 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
+| 1323 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
+| 1710 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
+| 1713 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
+| 1716 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
+| 2051 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
+| 2362 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
+| 2923 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
+| 2929 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
+| 3100 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
 
 ### BuildCard.java ([map](map/BuildCard.md))
 
@@ -2958,32 +2958,33 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 66 | `PowerDispatch.MJ_PER_BTU` | `0.001055056` | Megajoules in a Btu, so a heat rate in Btu a kWh is MJ a kWh [D: 1,055.056 J a Btu]. |
 | 69 | `PowerDispatch.COAL_MJ_PER_TONNE` | `25_120` | Megajoules in a tonne of thermal coal [E: the Pink Sheet's Newcastle grade, 6,000 kcal/kg = 25.12 GJ a tonne, spec 2.5]. |
 | 72 | `PowerDispatch.PLAN_PEAK` | `BLOCK_LOAD [ PEAK ] /(1 - GRID_LOSSES)` | The draw a firm kW must cover in the peak block, losses in [D: BLOCK_LOAD at the peak over (1 - GRID_LOSSES)]: what the build advice plans power against. |
-| 75 | `PowerDispatch.WIND_FIRM` | `windFirm()` | What a wind farm's average delivers in its calmest half-block [D: the least of WIND_BLOCK x (1 - WIND_SWING) over the blocks: 0.806 x 0.41 = 0.330]. |
-| 89 | `PowerDispatch.SOLAR_BLOCK` | `{ 0.680, 1.136, 2.054 }` | The sun's output over its mean in each block, base to peak [M: EIA-930 2025, the lower 48, the study's vblocks.py; spec 2.4; the prototype, line 96]. |
-| 92 | `PowerDispatch.SOLAR_SWING` | `{ 1.0, 1.0, 0.66 }` | How far the sun swings inside a block, over the block's average, the first half sunny and the second dark (the wind's halves) [M: EIA-930 2025, the coefficient of variation of hourly solar output i... |
-| 95 | `PowerDispatch.SOLAR_FIRM` | `firm(SOLAR_BLOCK, SOLAR_SWING)` | What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]; the reserve test cred... |
-| 105 | `PowerDispatch.WIND_MONTH_CF` | `{ 37.4, 37.2, 43.1, 40.7, 32.1, 32.2, 27.5, 23.8, 23.1, 33.8, 35.4, 39.2 }` | Wind's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a month's index is its figure over the twelve's mean. |
-| 108 | `PowerDispatch.SOLAR_MONTH_CF` | `{ 16.2, 18.7, 23.6, 27.5, 29.3, 31.9, 31.9, 29.7, 26.7, 22.4, 16.9, 13.1 }` | Solar photovoltaic's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: the US fleet's months, a generated world's. |
-| 111 | `PowerDispatch.HYDRO_MONTH_CF` | `{ 34.7, 35.1, 38.2, 40.8, 42.8, 39.8, 34.2, 32.3, 26.1, 24.9, 28.5, 36.1 }` | Conventional hydro's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a station's month of water is its average times t... |
-| 114 | `PowerDispatch.PEAK_HOUR` | `760_649.0 / 491_034.0` | The year's peak hour over its mean [D: EIA-930 2025, the lower 48, 760,649 / 491,034 MW; spec 2.2]. |
-| 117 | `PowerDispatch.PLAN_PEAK_HOUR` | `PEAK_HOUR /(1 - GRID_LOSSES)` | The draw the firm supply must cover, losses in [D: PEAK_HOUR over (1 - GRID_LOSSES)]: what the reserve test plans power against (PLAN_PEAK, the peak block's, stays the substations'). |
-| 120 | `PowerDispatch.RESERVE` | `0.15` | The firm supply's margin over the peak hour the reserve test asks [E: NERC's reference margin level, cited as evidence; spec 2.8, 6]: power's NEEDS YOU line is 1 / (1 + RESERVE). |
-| 123 | `PowerDispatch.WIND_PEAK_CREDIT` | `0.730` | Wind's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.247 of nameplate over 33.8%; spec 2.4]: its credit alone. |
-| 126 | `PowerDispatch.SOLAR_PEAK_CREDIT` | `2.621` | Solar's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.629 of nameplate over 24.0%; spec 2.4]: its credit alone, at the US fleet's place. |
-| 129 | `PowerDispatch.CREDIT_FLOOR` | `0.1` | What a variable row's credit falls to, over its credit alone, once the variable rows make CREDIT_HALF of the city's energy [E: the study's straight line, spec 2.4; NREL's and ERCOT's direction as e... |
-| 132 | `PowerDispatch.CREDIT_HALF` | `0.5` | The variable rows' share of the city's energy at which their credit has fallen to CREDIT_FLOOR [E: spec 2.4]. |
-| 135 | `PowerDispatch.SOLAR_BAND_DEGREES` | `10` | The latitude bands' centres the sun's tables are read at, degrees from the equator either way [D: PVGIS's places averaged in 10-degree bands, docs/studies/electricity/pvgis.py]. |
-| 138 | `PowerDispatch.SOLAR_PLACE_FIXED` | `new double[] { 0.6537, 0.7379, 0.7714, 0.7921, 0.7396, 0.6128, 0.5027, 0.3959 }` | A fixed rack's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0, ERA5, 14% losses; the US reference seven places at 32.8-35.5... |
-| 141 | `PowerDispatch.SOLAR_PLACE_TRACKED` | `new double[] { 0.8359, 0.9611, 0.9930, 1.0011, 0.8909, 0.7125, 0.5910, 0.4825 }` | A single-axis tracker's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0; out/pvgis.txt]. |
-| 144 | `PowerDispatch.SOLAR_US_FIXED` | `0.7940` | A fixed rack's yield at the US fleet's places over a tracker's there [S: PVGIS 5.3, out/pvgis.txt]: a generated world's farm before the tracker. |
-| 147 | `PowerDispatch.SOLAR_SHAPE_FIXED` | `new double[][] { { 1.030, 1.037, 1.080, 1.035, 0.957, 0.936, 0.992, 0.982, 1.049, 0.994...` | A fixed rack's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt; the south's places turned six months]. |
-| 158 | `PowerDispatch.SOLAR_SHAPE_TRACKED` | `new double[][] { { 1.035, 1.044, 1.090, 1.039, 0.957, 0.936, 1.006, 0.996, 1.049, 0.971...` | A tracker's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt]. |
-| 244 | `PowerDispatch.FUEL_OIL_MJ_PER_LITRE` | `0.150e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of fuel oil [D: 40 CFR 98 subpart C table C-1, residual fuel oil No. |
-| 247 | `PowerDispatch.DIESEL_MJ_PER_LITRE` | `0.138e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of diesel [D: 40 CFR 98 subpart C table C-1, distillate fuel oil No. |
-| 250 | `PowerDispatch.PELLETS_MJ_PER_TONNE` | `17.48e6 * MJ_PER_BTU / 0.90718474 * 0.92` | Megajoules in a tonne of wood pellets [E: 40 CFR 98 table C-1's wood and wood residuals, 17.48 MMBtu a short ton dry, 20.33 GJ a tonne, at 8% moisture (x 0.92) = 18.70 GJ; no government figure for ... |
-| 374 | `PowerDispatch.SHORT_KW` | `1e-9` | A half-block left with more than this much unserved is short, kW. |
-| 377 | `PowerDispatch.LEVEL_STEPS` | `40` | Halvings of the water's level, as the prototype loops them. |
-| 380 | `PowerDispatch.LEVEL_EPS` | `1e-6` | The level's resolution, kW. |
+| 75 | `PowerDispatch.PLAN_PEAK_SEASON` | `PLAN_PEAK * season(peakMonth())` | The draw a firm kW must cover in the peak block of the year's highest month, losses in [D: PLAN_PEAK times SEASON's highest, July's 1.193 on the north's calendar, so 1.263 x 1.193 = 1.507 of the me... |
+| 78 | `PowerDispatch.WIND_FIRM` | `windFirm()` | What a wind farm's average delivers in its calmest half-block [D: the least of WIND_BLOCK x (1 - WIND_SWING) over the blocks: 0.806 x 0.41 = 0.330]. |
+| 92 | `PowerDispatch.SOLAR_BLOCK` | `{ 0.680, 1.136, 2.054 }` | The sun's output over its mean in each block, base to peak [M: EIA-930 2025, the lower 48, the study's vblocks.py; spec 2.4; the prototype, line 96]. |
+| 95 | `PowerDispatch.SOLAR_SWING` | `{ 1.0, 1.0, 0.66 }` | How far the sun swings inside a block, over the block's average, the first half sunny and the second dark (the wind's halves) [M: EIA-930 2025, the coefficient of variation of hourly solar output i... |
+| 98 | `PowerDispatch.SOLAR_FIRM` | `firm(SOLAR_BLOCK, SOLAR_SWING)` | What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]; the reserve test cred... |
+| 108 | `PowerDispatch.WIND_MONTH_CF` | `{ 37.4, 37.2, 43.1, 40.7, 32.1, 32.2, 27.5, 23.8, 23.1, 33.8, 35.4, 39.2 }` | Wind's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a month's index is its figure over the twelve's mean. |
+| 111 | `PowerDispatch.SOLAR_MONTH_CF` | `{ 16.2, 18.7, 23.6, 27.5, 29.3, 31.9, 31.9, 29.7, 26.7, 22.4, 16.9, 13.1 }` | Solar photovoltaic's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: the US fleet's months, a generated world's. |
+| 114 | `PowerDispatch.HYDRO_MONTH_CF` | `{ 34.7, 35.1, 38.2, 40.8, 42.8, 39.8, 34.2, 32.3, 26.1, 24.9, 28.5, 36.1 }` | Conventional hydro's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a station's month of water is its average times t... |
+| 117 | `PowerDispatch.PEAK_HOUR` | `760_649.0 / 491_034.0` | The year's peak hour over its mean [D: EIA-930 2025, the lower 48, 760,649 / 491,034 MW; spec 2.2]. |
+| 120 | `PowerDispatch.PLAN_PEAK_HOUR` | `PEAK_HOUR /(1 - GRID_LOSSES)` | The draw the firm supply must cover, losses in [D: PEAK_HOUR over (1 - GRID_LOSSES)]: what the reserve test plans power against (PLAN_PEAK, the peak block's, stays the substations'). |
+| 123 | `PowerDispatch.RESERVE` | `0.15` | The firm supply's margin over the peak hour the reserve test asks [E: NERC's reference margin level, cited as evidence; spec 2.8, 6]: power's NEEDS YOU line is 1 / (1 + RESERVE). |
+| 126 | `PowerDispatch.WIND_PEAK_CREDIT` | `0.730` | Wind's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.247 of nameplate over 33.8%; spec 2.4]: its credit alone. |
+| 129 | `PowerDispatch.SOLAR_PEAK_CREDIT` | `2.621` | Solar's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.629 of nameplate over 24.0%; spec 2.4]: its credit alone, at the US fleet's place. |
+| 132 | `PowerDispatch.CREDIT_FLOOR` | `0.1` | What a variable row's credit falls to, over its credit alone, once the variable rows make CREDIT_HALF of the city's energy [E: the study's straight line, spec 2.4; NREL's and ERCOT's direction as e... |
+| 135 | `PowerDispatch.CREDIT_HALF` | `0.5` | The variable rows' share of the city's energy at which their credit has fallen to CREDIT_FLOOR [E: spec 2.4]. |
+| 138 | `PowerDispatch.SOLAR_BAND_DEGREES` | `10` | The latitude bands' centres the sun's tables are read at, degrees from the equator either way [D: PVGIS's places averaged in 10-degree bands, docs/studies/electricity/pvgis.py]. |
+| 141 | `PowerDispatch.SOLAR_PLACE_FIXED` | `new double[] { 0.6537, 0.7379, 0.7714, 0.7921, 0.7396, 0.6128, 0.5027, 0.3959 }` | A fixed rack's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0, ERA5, 14% losses; the US reference seven places at 32.8-35.5... |
+| 144 | `PowerDispatch.SOLAR_PLACE_TRACKED` | `new double[] { 0.8359, 0.9611, 0.9930, 1.0011, 0.8909, 0.7125, 0.5910, 0.4825 }` | A single-axis tracker's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0; out/pvgis.txt]. |
+| 147 | `PowerDispatch.SOLAR_US_FIXED` | `0.7940` | A fixed rack's yield at the US fleet's places over a tracker's there [S: PVGIS 5.3, out/pvgis.txt]: a generated world's farm before the tracker. |
+| 150 | `PowerDispatch.SOLAR_SHAPE_FIXED` | `new double[][] { { 1.030, 1.037, 1.080, 1.035, 0.957, 0.936, 0.992, 0.982, 1.049, 0.994...` | A fixed rack's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt; the south's places turned six months]. |
+| 161 | `PowerDispatch.SOLAR_SHAPE_TRACKED` | `new double[][] { { 1.035, 1.044, 1.090, 1.039, 0.957, 0.936, 1.006, 0.996, 1.049, 0.971...` | A tracker's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt]. |
+| 247 | `PowerDispatch.FUEL_OIL_MJ_PER_LITRE` | `0.150e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of fuel oil [D: 40 CFR 98 subpart C table C-1, residual fuel oil No. |
+| 250 | `PowerDispatch.DIESEL_MJ_PER_LITRE` | `0.138e6 * MJ_PER_BTU / 3.785412` | Megajoules in a litre of diesel [D: 40 CFR 98 subpart C table C-1, distillate fuel oil No. |
+| 253 | `PowerDispatch.PELLETS_MJ_PER_TONNE` | `17.48e6 * MJ_PER_BTU / 0.90718474 * 0.92` | Megajoules in a tonne of wood pellets [E: 40 CFR 98 table C-1's wood and wood residuals, 17.48 MMBtu a short ton dry, 20.33 GJ a tonne, at 8% moisture (x 0.92) = 18.70 GJ; no government figure for ... |
+| 377 | `PowerDispatch.SHORT_KW` | `1e-9` | A half-block left with more than this much unserved is short, kW. |
+| 380 | `PowerDispatch.LEVEL_STEPS` | `40` | Halvings of the water's level, as the prototype loops them. |
+| 383 | `PowerDispatch.LEVEL_EPS` | `1e-6` | The level's resolution, kW. |
 
 ### PriceIndex.java ([map](map/PriceIndex.md))
 
@@ -8438,14 +8439,14 @@ Generated 2026-11-24 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 47 | `PowerPlanCheck.out` | `System.out` |  |
-| 59 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
-| 61 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station", WIND = "W...` |  |
-| 375 | `PowerPlanCheck.GAP_SHARE` | `0.5` | What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. |
-| 383 | `PowerPlanCheck.OVER_SHARE` | `1.1` | (6a(ii)) The second dear town's gap at a farm's opening, as a multiple of FIRST_WORK_SHARE of one Diesel Station's firm kW: over the share, so the diesel is a candidate, and under what the farms th... |
-| 469 | `PowerPlanCheck.DEPOTS` | `100` | Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. |
-| 472 | `PowerPlanCheck.PREP_MONTHS` | `60` | The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. |
-| 708 | `PowerPlanCheck.CALM` | `PowerDispatch.PLAN_PEAK / PowerDispatch.PLAN_PEAK_HOUR` | The calm peak's share of the peak hour's draw: the firm supply the month's dispatch needs over the supply the plan does (PowerDispatch.PLAN_PEAK over PLAN_PEAK_HOUR). |
+| 48 | `PowerPlanCheck.out` | `System.out` |  |
+| 60 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
+| 62 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station", WIND = "W...` |  |
+| 376 | `PowerPlanCheck.GAP_SHARE` | `0.5` | What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. |
+| 384 | `PowerPlanCheck.OVER_SHARE` | `1.1` | (6a(ii)) The second dear town's gap at a farm's opening, as a multiple of FIRST_WORK_SHARE of one Diesel Station's firm kW: over the share, so the diesel is a candidate, and under what the farms th... |
+| 470 | `PowerPlanCheck.DEPOTS` | `100` | Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. |
+| 473 | `PowerPlanCheck.PREP_MONTHS` | `60` | The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. |
+| 709 | `PowerPlanCheck.SEASONAL` | `PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR` | The year's highest month's peak block over the peak hour's draw: the firm supply the month's dispatch needs at its worst over the supply the plan does (PowerDispatch.PLAN_PEAK_SEASON over PLAN_PEAK... |
 
 ### PowerPlantsCheck.java ([map](map/PowerPlantsCheck.md))
 

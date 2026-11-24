@@ -1308,14 +1308,15 @@ public final class BuildAdvice {
 
     /**
      * What the city lacks this month (PW3, 2026-11-24): every measure but power is lacking when it is not maintained now; power is short when
-     * the firm supply is below the calm peak's draw (PowerDispatch.PLAN_PEAK), the peak block the month's dispatch serves and charges: the
-     * peak hour (PLAN_PEAK_HOUR) is the plan's, not the month's.
+     * the firm supply is below the draw of the peak block in the year's highest month (PowerDispatch.PLAN_PEAK_SEASON), the block the month's
+     * dispatch serves and charges at its worst: the peak hour (PLAN_PEAK_HOUR) is the plan's, not the month's, and the peak block at the
+     * year's mean (PLAN_PEAK) leaves the highest month's unserved.
      */
     public static boolean lacksNow(Game game, Measure m) {
         if (m.kind() != Kind.POWER) return !maintained(game, m, Map.of(), NOW);
         if (!warranted(game, m)) return false;
         double[] sd = supplyDemand(game, m, Map.of(), NOW);
-        return sd[1] > 0 && sd[0] < sd[1] * PowerDispatch.PLAN_PEAK / PowerDispatch.PLAN_PEAK_HOUR;
+        return sd[1] > 0 && sd[0] < sd[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR;
     }
 
     /** Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. */
@@ -1557,11 +1558,12 @@ public final class BuildAdvice {
                 found = new long[] {1, 1};
             }
             // PW3, 2026-11-24 (the ensemble: a 67,410 kW plant ordered for a 29 kW gap 60 months out, $8.1M borrowed, and a $22M one for a 257 kW
-            // gap): a reserve gap alone, the calm peak covered at the plant's opening, is ordered only when it fills FIRST_WORK_SHARE (Jerus's
-            // HW1 share) of what the order adds; a gap in the calm peak itself is ordered as ever, and so is a reserve gap that fills the share.
+            // gap): a reserve gap alone, the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's highest month, what the
+            // month's dispatch serves at its worst) covered at the plant's opening, is ordered only when it fills FIRST_WORK_SHARE (Jerus's HW1
+            // share) of what the order adds; a gap in the seasonal peak itself is ordered as ever, and so is a reserve gap that fills the share.
             if (power) {
                 double[] sd = supplyDemand(game, m, at, p);
-                if (sd[0] >= sd[1] * PowerDispatch.PLAN_PEAK / PowerDispatch.PLAN_PEAK_HOUR
+                if (sd[0] >= sd[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR
                         && sd[1] - sd[0] < FIRST_WORK_SHARE * found[0] * unit) continue;
             }
             boolean closes = found[1] == 1;
@@ -1687,13 +1689,15 @@ public final class BuildAdvice {
           reserve order, the lowest of several, and with no firm row closing
           the farms rank among themselves by it. A farm that cannot close is
           ranked after the firm rows that do, by its net cost a firm kW it
-          adds at its own opening. A gap in the reserve alone (the calm peak,
-          PowerDispatch.PLAN_PEAK, covered at the plant's opening) orders it
-          only when the gap fills FIRST_WORK_SHARE of what the order adds
-          (2026-11-24: an order for a 29 kW gap, 60 months out, borrowed $8.1M).
-          The month's own reading of "short" is lacksNow(): the calm peak the
-          dispatch serves, not the plan's peak hour, so the holds on every
-          other essential order are not set by a reserve the month never uses.
+          adds at its own opening. A gap in the reserve alone (the seasonal
+          peak, PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's
+          highest month, covered at the plant's opening) orders it only when
+          the gap fills FIRST_WORK_SHARE of what the order adds (2026-11-24:
+          an order for a 29 kW gap, 60 months out, borrowed $8.1M). The
+          month's own reading of "short" is lacksNow(): that same block, which
+          the dispatch serves at its worst, not the plan's peak hour, so the
+          holds on every other essential order are not set by a reserve the
+          month never uses.
        2. THE SPREAD. When the test passes, a plant is still ordered if one
           more saves the year's running more than it costs: the twelve months
           dispatched again with it (UtilitiesHandler.yearRunning(), at today's
