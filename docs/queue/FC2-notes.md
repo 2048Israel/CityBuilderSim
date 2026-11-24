@@ -591,3 +591,18 @@ The merge of main at 0.9.194 (PW1-W, PW2; 6c487106e). Every harness the merge to
   15,238.1, printed as FC2-C's trace. `claimOfAFinishedSite()` plays the city and its twin
   on alike until half the room under the threshold owes more than a month of every crew (37 months; 158 Houses against 1,577
   points), so the Houses quoted at home are on site at the cancel.
+
+The merge of main at 0.9.195 (LP-G1; 975886be7). Every harness the merge touched was rerun alone, and `--fast`; one was red,
+GroundSkipCheck (LP-G1's own), in two lines, both passed by name to HT1-H with their traces (the ship file's known-reds):
+- Its town is the playtest's probe town played to m245 (probePlay()), and its premises are found in main's path: on main the old
+  skip holds the landlords for land 17 of 60 months, first with no home on site at m283, and the watched skip never. FC2 moves
+  the path (section 5): its town at m245 is 1,285 people, 0.9274 built on against the line 0.9295, growth 1.024620 over HORIZON
+  (main's 1.039056), and Manufacturing and Agriculture are held for land from the skip's first month.
+- Section 1: with the industry held, jobs do not grow; the landlords decline (rent cover 1.10-1.19x against the lender's 1.20x)
+  or hold "housing ahead of jobs", and are held for land only at m291-m292, with homes for 252 on site.
+- Section 2: Manufacturing's order is a 480,000 sq ft Fabrication Shop, about 10% of the ground, more than the look's reserve
+  (HORIZON months of growth with the slack). The m269 look bought the town to 0.8946 built on; the Fabrication Shop took it at
+  m270 (0.9923), and the landlords were held for land m271-m275, no home on site, until the m275 look; never after (Fabrication
+  Shops again at m281, m283 and m289 took the later looks' ground too). keepGroundAhead() sizes a look by the used share alone,
+  not by what the sectors held for land asked for (`Game.getLandBlockedNeeds()`); whether it should is LP-G1's player, and a town
+  with no lump past the reserve is a fixture's to cause. FC2 changes no ground, look or landlord rule.
