@@ -175,9 +175,9 @@ and PW2's ground finding (REV-PW2).
     the works' surplus on top (129,053.32 kW: 128,813.32 generated and 240 sold), where it expected the pooled fill
     times the whole nameplate; the net draw and the surplus held exactly as before.
 
-- ★R **A gap the month does not lack orders a plant only when it fills Jerus's HW1 share of it, and the month's
-  "short" is the peak block of the year's highest month.** Found by tracing the second ensemble, with REV-PW3c's two
-  P1s and REV-PW3d's P1 4, 2026-11-24.
+- ★R **A gap under Jerus's HW1 share of a plant orders it only when the seasonal peak is short at the plant's own
+  completion, and the month's "short" is the peak block of the year's highest month.** Found by tracing the second
+  ensemble, with REV-PW3c's two P1s, REV-PW3d's P1 4 and REV-PW3e's P1, 2026-11-24.
   - **The two lines.** The reserve test plans at the year's peak hour (★D, 1.631 of the mean draw).
     `PowerDispatch.dispatch()` serves draw × season × the block's load, losses in. Its worst block is July's peak
     block, `PLAN_PEAK_SEASON` = `PLAN_PEAK` × SEASON's highest = 1.263 × 1.193 = 1.507 of the draw. On the south's
@@ -200,10 +200,11 @@ and PW2's ground finding (REV-PW2).
       stood at 6,000 to 7,000 people while main's reached 35,000.
     - Seed 8 at m226 ordered a $22.3M Oil-Fired Plant for a 257 kW gap, at a lead of 237 months.
 
-    Now a gap the month does not lack (`lacksNow()` false) orders a plant only when it fills `FIRST_WORK_SHARE` of
-    what the order adds (Jerus's HW1: "150 students for a 500-seat college, and the same share for other oversized
-    works"), whether the gap is the reserve's alone or the seasonal peak's projected to the plant's opening. A gap in
-    the seasonal peak that the month already lacks orders as ever. Reality: a shortfall that is a fraction of one unit
+    Now a gap under `FIRST_WORK_SHARE` of what the order adds (Jerus's HW1: "150 students for a 500-seat college,
+    and the same share for other oversized works") orders a plant only when the seasonal peak is short at the
+    plant's own completion: its lead, and the town's growth over the lead, with no horizon past it and no slack. A
+    gap that only the opening's horizon and slack project, the reserve's or the seasonal peak's, waits for the share;
+    any gap that fills it orders. Reality: a shortfall that is a fraction of one unit
     is met by small units or waits. No 10 MW system takes a 67 MW unit, whose own loss would be larger than the
     system's whole load.
   - **The seasonal gap at the opening** (REV-PW3d's P1 4). ★R's second form waived the share for any gap in the
@@ -211,8 +212,15 @@ and PW2's ground finding (REV-PW2).
     own draw. In the fourth ensemble all 16 ZERO_HOT towns, 2,064 to 2,538 people drawing 2,049 to 3,425 kW on the
     10,000 kW founding grid, were sold one 86,181 kW Oil-Fired Plant at m72 to m81, $6.2M to $9.4M borrowed (0.74 to
     1.17 times the month's GDP), before the 1910 diesel stood; seed 6's grid covered its July peak to about m200. No
-    utility buys a unit 29 times its draw for a summer gap four years out: it waits for the small unit or the
-    shortage. So only a month that lacks waives the share.
+    utility buys a unit 29 times its draw for a summer gap four years out. REV-PW3d's mend waived the share only in
+    a month that already lacked (`lacksNow()`).
+  - **The in-service date** (REV-PW3e's P1). Waived only in a month already short, the share held each plant until
+    the shortage had begun, and it opened a whole lead after it, a Diesel Station's 30 months. In the fifth ensemble
+    529 ZERO_HOT seed-months fell under `lacksNow()`'s line (508 before m200) against the fourth run's 120 and CY1's
+    59, and 409 in HIGH and in AUTO2 against 145; seeds 0 and 5 stood at 0.74 to 0.87 for 31 months each (m127 to
+    m157, m131 to m161), short even of the year's mean block. A utility orders for the peak projected at the unit's
+    in-service date, not after the shortage. So the share is waived when the seasonal peak is short at the plant's
+    completion; the 48-month Oil-Fired Plant of m72 to m81, with July covered to about m200, still orders nothing.
   - **Main's rank** would have picked the same Oil-Fired Plant had it seen a gap (WorksValue's net, $10.8M against
     coal's $76.5M). It saw none: at main's line the opening had 7,769 kW against 10,000. At the seasonal line it is
     9,269 kW against 10,000, so still a reserve gap alone, under the share.
@@ -228,11 +236,17 @@ and PW2's ground finding (REV-PW2).
     - a 32,599 kW gap (15% of one plant) with the seasonal peak covered orders nothing; it was red without the rule,
       ordering 1 Coal Power Plant;
     - a 68,459 kW gap (31%) orders one;
-    - with the seasonal peak short at the opening by a gap under the share (supply 224,523 kW against 253,139 at the
-      opening, a gap 23% of one plant) and covered in the month (against 220,121 now), it orders nothing; it was red
-      without REV-PW3d's mend, ordering 1 Coal Power Plant;
-    - with the month short too (224,523 kW against 226,791 now, over the year's mean block's 190,101), a gap 27% of
-      one plant orders one; it was red with both lines at `PLAN_PEAK`, ordering nothing, and 8b's lines red with it;
+    - covered now and at the plant's completion, short at the opening by the slack alone (supply 224,523 kW against
+      253,139 at the opening, a gap 23% of one plant), it orders nothing; red under ★R's second form (the share
+      waived for any seasonal gap at the opening), ordering 1 Coal Power Plant;
+    - short in the month and at the completion (224,523 kW against 226,791, over the year's mean block's 190,101), a
+      gap 27% of one plant orders one; red with the completion's line at `PLAN_PEAK`, ordering nothing;
+    - a growing town (`GROWTH_AT_LEAD`: 1.305 over the coal plant's 355-month lead, 1.316 to the opening, the slack
+      0), covered now (224,523 kW against 194,801) and short at the completion (against 254,245): a gap 24% of one
+      plant orders one; red under REV-PW3d's mend (the share waived only in a month that lacks), ordering nothing,
+      and with the line at `PLAN_PEAK`;
+    - the same town covered at the completion (224,523 kW against 223,639) and short only at the horizon past it
+      (225,407): a gap 9% of one plant orders nothing; red under ★R's second form, ordering 1 Coal Power Plant;
     - with the peak short by more, it orders 3.
   - **PowerPlanCheck 8b (a)** dispatches the town in July (season 1.193) at four firm levels, reading
     `getLatestMonth()`'s peak half-blocks:
@@ -497,7 +511,7 @@ against `docs/ensemble/0.9.199.md` (CY1, 41d77afb0).
 | SHOCK | T2 | 1,433,391 | 1,516,325 |
 
 **ZERO_HOT's T2: a split outcome, and a defect under it** (helpers' traces of the 16 seeds on both heads,
-`target/pw3-trace/zh`; the first reading here misstated them, REV-PW3d's P1 3, and was restated from the trace):
+`target/pw3-trace/zh`, the scripts in `target/pw3-trace/scripts/`, `zh*.py`, `trace_q.py` and `q2.py` to `q7.py`; the first reading here misstated them, REV-PW3d's P1 3, and was restated from the trace):
 - The seeds part both ways: six end under 0.75 of their CY1 twin (seeds 5, 6, 7, 8, 9 and 15: 0.68, 0.28, 0.57, 0.40,
   0.26, 0.22), six over 1.4 (0, 1, 11, 12, 13 and 14, up to 6.1 times). The median of the seed-by-seed ratios is
   1.03, the geometric mean 0.93, the mean population 50,099 against 49,151. Nine of PW3's seeds end under 40,000
@@ -513,9 +527,10 @@ against `docs/ensemble/0.9.199.md` (CY1, 41d77afb0).
   Seed 6 tracks CY1 to m290 (18,218 against 19,038), then stalls on the water hold below. Seed 8, the identical
   order at m80, parts from its twin at m106 and stands near 7,000 people from m200 to m360, with no water or power
   shortage in the trace; its cause is not traced.
-- The water hold (seeds 6, 9 and 15, not the deepest: seed 8 ends lowest, at 16,026): water served 24% to 26% from
-  m268 to m293 on, to m402, the energy ratio 1.000, a Water Treatment Plant held on DEBT (the open ask,
-  `AutoBuilder.covered()` and `stillToRaise()`), with debt at 0.9 to 1.2 of GDP against the 2.40 limit. That is
+- The water hold (seeds 6, 9 and 15, not the deepest: seed 8 ends lowest, at 16,026): water served first falls to
+  40% to 43% (m267, m289 and m292) and to 24% to 26% from about m289 to m300 on, to m402, the energy ratio 1.000, a
+  Water Treatment Plant held on DEBT (the open ask, `AutoBuilder.covered()` and `stillToRaise()`), the debt ratio
+  after m270 0.50 to 1.96 of GDP (medians 1.04 to 1.24) against the 2.40 limit (REV-PW3e's P3). That is
   main's, not PW3's: OA1 on the queue (main e1b58f210).
 - The holds: 112 months held against CY1's 59, 37 of them in months physically short of power; months physically
   short, 106 against 222; power orders, 40 against 72.
@@ -538,7 +553,7 @@ against `docs/ensemble/0.9.199.md` (CY1, 41d77afb0).
 | ZERO_SLACK | T2 | 7,516,550 | 7,410,132 | 7,646,013 |
 | SHOCK | T2 | 1,436,180 | 1,433,391 | 1,516,325 |
 
-**ZERO_HOT's H2 is noise** (a helper's trace, `C:\Users\Jerus\AppData\Local\Temp\pw3edit\h2a.py` to `h2d.py`):
+**ZERO_HOT's H2 is noise** (a helper's trace, `target/pw3-trace/scripts/h2a.py` to `h2d.py`):
 - The scorer's own formula reproduces both PW3 medians. Seed by seed the fourth and fifth runs' values correlate at
   -0.08: 14 of 16 seeds move by over a point, eight up and eight down, the mean +0.49.
 - Resampling the 16 seeds 10,000 times, the median's standard error is 1.33 points (the fourth run's 0.77), and 55%
